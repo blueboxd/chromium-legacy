@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">Выбрана 1 фотография</translation>
 <translation id="2421044535038393232">Продолжить редактирование</translation>
 <translation id="2435457462613246316">Показать пароль</translation>
-<translation id="2481538920734869610">ДОБАВИТЬ АККАУНТ</translation>
 <translation id="2497852260688568942">Ваш администратор отключил синхронизацию</translation>
 <translation id="2500374554657206846">Параметры сохранения пароля</translation>
 <translation id="2523363575747517183">Этот сайт часто пытается открыть другое приложение.</translation>
@@ -480,7 +479,6 @@
 <translation id="7203585745079012652">Озвучивать результаты поиска</translation>
 <translation id="7265758999917665941">Никогда для этого сайта</translation>
 <translation id="7272437679830969316">Не удалось пройти проверку. Пароль не скопирован.</translation>
-<translation id="7285236536143823449">ОК</translation>
 <translation id="7291368939935408496">Подготовка паролей…</translation>
 <translation id="7293171162284876153">Чтобы начать ее, нажмите "Синхронизировать данные Chrome".</translation>
 <translation id="7336264872878993241">Скачивается: <ph name="PERCENT" />%</translation>
@@ -496,6 +494,7 @@
 <translation id="7460314822154045102">Использовать камеру</translation>
 <translation id="7464701184726199289">Синхронизированные данные будут удалены со всех устройств. Настройки сайтов не изменятся, поэтому данные о вашей работе в Интернете сохранятся. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Название компании</translation>
+<translation id="7473891865547856676">Пропустить</translation>
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="750493650310597496">Закладки не выбраны</translation>
 <translation id="7514365320538308">Скачать</translation>
@@ -517,7 +516,6 @@
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="778855399387580014">Запускайте поиск в новой вкладке Chrome.</translation>
 <translation id="7791543448312431591">Добавить</translation>
-<translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7840771868269352570">Выбранные элементы будут удалены</translation>
 <translation id="7856733331829174190">Не удалось скачать файл</translation>
 <translation id="7859704718976024901">История просмотра веб-страниц</translation>
@@ -587,6 +585,7 @@
 <translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8881801611828450202">Найти это изображение в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Поделиться...</translation>
+<translation id="8917490105272468696">Включить функцию</translation>
 <translation id="895541991026785598">Сообщить о проблеме</translation>
 <translation id="8976382372951310360">Справка</translation>
 <translation id="8981454092730389528">Отслеживание действий в Google</translation>

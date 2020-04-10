@@ -30,6 +30,25 @@ enum ProbeCategoryEnum {
   kFan,
 };
 
+// An enumeration of the different categories of errors that can occur when
+// probing telemetry information.
+[Extensible]
+enum ErrorType {
+  // An error reading a system file.
+  kFileReadError,
+  // An error parsing data into a consumable form.
+  kParseError,
+};
+
+// Structure that contains error information for a telemetry probe.
+struct ProbeError {
+  // The type of error that occurred.
+  ErrorType type;
+  // A debug message with more information about the error. This string is not
+  // intended to be shown to the user.
+  string msg;
+};
+
 // Information related to a Smart Battery, as defined in
 // http://sbs-forum.org/specs/sbdat110.pdf.
 struct SmartBatteryInfo {
@@ -91,6 +110,15 @@ struct NonRemovableBlockDeviceInfo {
 struct CachedVpdInfo {
   // Contents of /sys/firmware/vpd/ro/sku_number, if the device supports it.
   string? sku_number;
+};
+
+// CPU probe result. Can either be populated with the CpuInfo or an error
+// retrieving the information.
+union CpuResult {
+  // Valid CpuInfo.
+  array<CpuInfo> cpu_info;
+  // The error that occurred attempting to retrieve the CpuInfo.
+  ProbeError error;
 };
 
 // Information related to a device's CPU.
@@ -160,7 +188,7 @@ struct TelemetryInfo {
   CachedVpdInfo? vpd_info;
   // Information about each of the device's CPUs. Only present when kCpu was
   // included in the categories input to ProbeTelemetryInfo.
-  array<CpuInfo>? cpu_info;
+  CpuResult? cpu_result;
   // Information about the device's timezone. Only present when kTimezone was
   // included in the categories input to ProbeTelemetryInfo.
   TimezoneInfo? timezone_info;

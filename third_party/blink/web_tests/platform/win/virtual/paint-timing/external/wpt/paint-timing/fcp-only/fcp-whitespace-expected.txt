@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Whitespace should not count as contentful. assert_equals: Expected first contentful paint not found.  expected 1 but got 0
-Harness: the test ran to completion.
-

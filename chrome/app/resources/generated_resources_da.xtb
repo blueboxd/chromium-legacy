@@ -94,6 +94,7 @@
 <translation id="1122960773616686544">Bogmærkets navn</translation>
 <translation id="1124772482545689468">Bruger</translation>
 <translation id="1125550662859510761">Ligner <ph name="WIDTH" /> x <ph name="HEIGHT" /> (oprindelig)</translation>
+<translation id="1126809382673880764">Beskytter dig ikke mod skadelige websites, downloads og udvidelser. Du er stadig beskyttet med Beskyttet browsing i andre Google-tjenester som f.eks. Gmail og Søgning, hvor dette er tilgængeligt.</translation>
 <translation id="1128109161498068552">Tillad ikke, at websites bruger interne systemmeddelelser til at få adgang til MIDI-enheder</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Rediger søgemaskine</translation>
@@ -185,6 +186,7 @@
 <translation id="1235458158152011030">Kendte netværk</translation>
 <translation id="123578888592755962">Disken er fuld</translation>
 <translation id="1238191093934674082">Åben VPN</translation>
+<translation id="1239439601391236986">Vis forslag til angivelse af personlige oplysninger</translation>
 <translation id="1239594683407221485">Udforsk enhedens indhold i appen Filer.</translation>
 <translation id="124116460088058876">Flere sprog</translation>
 <translation id="1241753985463165747">Læse og redigere alle dine data på det aktuelle website, når dette er aktiveret</translation>
@@ -301,6 +303,7 @@
 <translation id="140723521119632973">Aktivering af mobildata</translation>
 <translation id="1407489512183974736">Centrér, beskær</translation>
 <translation id="1408504635543854729">Udforsk enhedens indhold i appen Filer. Indholdet er begrænset af en administrator og kan ikke redigeres.</translation>
+<translation id="1408980562518920698">Administrer personlige oplysninger</translation>
 <translation id="1410197035576869800">Appikon</translation>
 <translation id="1410616244180625362">Tillad fortsat, at <ph name="HOST" /> har adgang til dit kamera</translation>
 <translation id="1414648216875402825">Du er ved at opdatere til en ustabil version af <ph name="PRODUCT_NAME" />, der indeholder ufærdige funktioner. Nedbrud og uventede fejl kan forekomme. Vær forsigtig, hvis du fortsætter.</translation>
@@ -434,6 +437,7 @@
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1587275751631642843">&amp;JavaScript-konsol</translation>
 <translation id="1587907146729660231">Sæt fingeren på afbryderknappen.</translation>
+<translation id="1588200577109872591">Smarte forslag</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="158849752021629804">Hjemmenetværk mangler</translation>
 <translation id="1588870296199743671">Åbn link med...</translation>
@@ -669,6 +673,7 @@
 <translation id="1879000426787380528">Log ind som</translation>
 <translation id="1880905663253319515">Slet certifikatet "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1884013283844450420">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, opret forbindelse</translation>
+<translation id="1884705339276589024">Juster størrelsen på Linux-disken</translation>
 <translation id="1886996562706621347">Tillad, at websites må bede om at håndtere protokoller som standard (anbefales)</translation>
 <translation id="1887442540531652736">Loginfejl</translation>
 <translation id="1887597546629269384">Sig "Hey Google" igen</translation>
@@ -738,6 +743,7 @@
 <translation id="1979280758666859181">Du er ved at skifte til en kanal med en ældre version af <ph name="PRODUCT_NAME" />. Kanalskiftet træder i kraft, når kanalversionen matcher den version, der i øjeblikket er installeret på din enhed.</translation>
 <translation id="197989455406964291">KDC understøtter ikke krypteringstypen</translation>
 <translation id="1982354452682152483">Der er ingen beskrivelse.</translation>
+<translation id="1984417487208496350">Ingen beskyttelse (anbefales ikke)</translation>
 <translation id="1987317783729300807">Konti</translation>
 <translation id="1989112275319619282">Gennemse</translation>
 <translation id="1990512225220753005">Vis ikke genveje på denne side</translation>
@@ -807,6 +813,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2090165459409185032">Du gendanner dine kontooplysninger ved at gå til: google.com/accounts/recovery</translation>
 <translation id="2090876986345970080">Indstillinger for systemsikkerhed</translation>
 <translation id="2091887806945687916">Lyd</translation>
+<translation id="2096478741073211388">Forslag til personlige oplysninger hjælper dig med at skrive hurtigere ved at foreslå dit navn, din adresse eller dit telefonnummer, når du skriver visse ord. Det er kun dig, der kan se din egne private, tilpassede forslag til din konto.</translation>
 <translation id="2096715839409389970">Slet cookies fra tredjeparter</translation>
 <translation id="2097372108957554726">Du skal logge ind i Chrome for at registrere nye enheder</translation>
 <translation id="2099172618127234427">Du aktiverer Chrome OS-fejlretningsfunktioner, som konfigurerer sshd daemon og aktiverer systemgenstart via USB-drev.</translation>
@@ -823,6 +830,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2114326799768592691">Genindlæs &amp;ramme</translation>
 <translation id="2114896190328250491">Foto af <ph name="NAME" /></translation>
 <translation id="2119349053129246860">Åbn i <ph name="APP" /></translation>
+<translation id="2119461801241504254">Beskyttet browsing er aktiveret og beskytter dig mod skadelige websites og downloads</translation>
 <translation id="2120297377148151361">Aktivitet og interaktioner</translation>
 <translation id="2120639962942052471">Blokerede <ph name="PERMISSION" /></translation>
 <translation id="2121055421682309734">{COUNT,plural, =0{Cookies er blokeret}=1{Cookies er blokeret, 1 undtagelse}one{Cookies er blokeret, {COUNT} undtagelse}other{Cookies er blokeret, {COUNT} undtagelser}}</translation>
@@ -1891,6 +1899,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3515983984924808886">Tryk på din sikkerhedsnøgle igen for at bekræfte nulstillingen. Alle de oplysninger, der er gemt på sikkerhedsnøglen, bl.a. pinkoden, slettes.</translation>
 <translation id="3518985090088779359">Acceptér og fortsæt</translation>
 <translation id="351952459507671940">Føj til ny gruppe</translation>
+<translation id="3521606918211282604">Skift diskstørrelse</translation>
 <translation id="3523642406908660543">Spørg, når et website vil anvende et plugin til at få adgang til din computer (anbefales)</translation>
 <translation id="3524965460886318643">Eksportér aktiviteter</translation>
 <translation id="3526034519184079374">Kan hverken læse eller ændre websitedata</translation>
@@ -1978,6 +1987,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3629631988386925734">Angiv din adgangskode for at aktivere Smart Lock. Næste gang låser din telefon din <ph name="DEVICE_TYPE" /> op. Du kan deaktivere Smart Lock i Indstillinger.</translation>
 <translation id="3630132874740063857">Din telefon</translation>
 <translation id="3630995161997703415">Føj dette website til din hylde for at bruge det når som helst</translation>
+<translation id="3633309367764744750">Forudhentede oplysninger fra sider, bl.a. sider, du ikke har besøgt endnu. De hentede oplysninger omfatter muligvis cookies, hvis du har tilladt cookies.</translation>
 <translation id="3634507049637220048">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, administreret af din administrator, oplysninger</translation>
 <translation id="3635241501480133979">Disse data overtræder din organisations sikkerhedspolitikker og kan ikke trækkes hertil.</translation>
 <translation id="3635353578505343390">Send feedback til Google</translation>
@@ -3938,6 +3948,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6298962879096096191">Brug Google Play til at installere Android-apps</translation>
 <translation id="630065524203833229">Af&amp;slut</translation>
 <translation id="6300718114348072351"><ph name="PRINTER_NAME" /> kunne ikke konfigureres automatisk. Angiv avancerede indstillinger for printeren. <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
+<translation id="630292539633944562">Forslag til personlige oplysninger</translation>
 <translation id="6305607932814307878">Global politik:</translation>
 <translation id="6307990684951724544">Systemet er optaget</translation>
 <translation id="6308493641021088955">Login leveres af <ph name="EXTENSION_NAME" /></translation>
@@ -4016,6 +4027,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="641081527798843608">Emnematch</translation>
 <translation id="6412673304250309937">Tjekker webadresser ift. en liste over usikre websites, der er gemt i Chrome. Hvis et website forsøger at stjæle din adgangskode, eller når du downloader en skadelig fil, sender Chrome muligvis også webadresser, bl.a. mindre mængder sideindhold, til Beskyttet browsing.</translation>
 <translation id="6412931879992742813">Nyt inkognitovindue</translation>
+<translation id="6413591858632097328">Dette rydder alle data og cookies, der er gemt af <ph name="ORIGIN_NAME" /> og de apps, den har installeret.</translation>
 <translation id="641469293210305670">Installer opdateringer og apps</translation>
 <translation id="6414888972213066896">Du har spurgt en af dine forældre, om det er i orden, at du besøger dette website.</translation>
 <translation id="6415900369006735853">Opret forbindelse til internettet via din telefon</translation>

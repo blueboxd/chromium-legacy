@@ -3,6 +3,7 @@
     --ntp-theme-shortcut-background-color: rgb(229, 231, 232);
     --ntp-theme-text-color: var(--google-grey-800);
     --ntp-theme-text-shadow: none;
+    --ntp-one-google-bar-height: 64px;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -31,6 +32,7 @@
 
   #backgroundImage {
     border: none;
+    pointer-events: none;
   }
 
   #backgroundGradient {
@@ -41,15 +43,9 @@
     align-items: center;
     display: flex;
     flex-direction: column;
-  }
-
-  #oneGoogleBar {
-    pointer-events: none;
-  }
-
-  #oneGoogleBarSpacer {
-    height: 56px;
-    width: 100%;
+    height: calc(100% - var(--ntp-one-google-bar-height));
+    top: var(--ntp-one-google-bar-height);
+    z-index: 1;
   }
 
   #logo {
@@ -172,7 +168,6 @@
   </ntp-untrusted-iframe>
   <div id="backgroundGradient" hidden="[[!showBackgroundImage_]]"></div>
   <div id="content">
-    <div id="oneGoogleBarSpacer"></div>
     <ntp-logo id="logo" doodle-allowed$="[[doodleAllowed_]]"
         single-colored$="[[singleColoredLogo_]]">
     </ntp-logo>

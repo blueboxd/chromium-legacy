@@ -201,7 +201,7 @@
 <translation id="1259152067760398571">Säkerhetskontrollen kördes i går</translation>
 <translation id="1260451001046713751">Tillåt alltid popup-fönster och omdirigeringar från <ph name="HOST" /></translation>
 <translation id="126156426083987769">Ett problem med enhetslicenser för demoläge uppstod.</translation>
-<translation id="1263490604593716556">Kontot hanteras av <ph name="FIRST_PARENT_EMAIL" /> och <ph name="SECOND_PARENT_EMAIL" />. Klicka på klockan på skärmen om du vill logga ut från det primära kontot. Klicka på Logga ut i menyn som visas.</translation>
+<translation id="1263490604593716556">Kontot hanteras av <ph name="FIRST_PARENT_EMAIL" /> och <ph name="SECOND_PARENT_EMAIL" />. Klicka på klockan på skärmen om du vill logga ut från det primära kontot på den här enheten. Klicka på Logga ut i menyn som visas.</translation>
 <translation id="126710816202626562">Översättningsspråk:</translation>
 <translation id="126768002343224824">16x</translation>
 <translation id="1272079795634619415">Stopp</translation>
@@ -872,7 +872,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2172784515318616985">Fortsätt</translation>
 <translation id="2173302385160625112">Kontrollera internetanslutningen</translation>
 <translation id="2173801458090845390">Lägg till rekvirerings-id på enheten</translation>
-<translation id="2174948148799307353">Kontot hanteras av <ph name="PARENT_EMAIL" />. Klicka på klockan på skärmen om du vill logga ut från det primära kontot. Klicka på Logga ut i menyn som visas.</translation>
+<translation id="2174948148799307353">Kontot hanteras av <ph name="PARENT_EMAIL" />. Klicka på klockan på skärmen om du vill logga ut från det primära kontot på den här enheten. Klicka på Logga ut i menyn som visas.</translation>
 <translation id="2175607476662778685">Fältet Snabbstart</translation>
 <translation id="217576141146192373">Det gick inte att lägga till en skrivare. Kontrollera skrivarens konfiguration och försök igen.</translation>
 <translation id="2177950615300672361">Fliken Inkognito: <ph name="TAB_NAME" /></translation>

@@ -36,9 +36,12 @@ class MetricsReporter : public FeedStream::EventObserver {
   MetricsReporter(const MetricsReporter&) = delete;
   MetricsReporter& operator=(const MetricsReporter&) = delete;
 
-  // User interactions.
+  // User interactions. See |FeedStreamApi| for definitions.
 
   virtual void ContentSliceViewed(int index_in_stream);
+  void SendFeedbackAction();
+  void LearnMoreAction();
+  void DownloadAction();
   void NavigationStarted();
   void NavigationDone();
   void RemoveAction();

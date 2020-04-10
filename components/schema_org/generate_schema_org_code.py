@@ -50,9 +50,20 @@ def is_enum_type(class_obj):
         return parent_class['@id'] == schema_org_id('Enumeration')
 
 
-def find_enum_options(obj_id, schema):
+def make_entity(thing, names):
+    return {
+        "name": object_name_from_id(thing['@id']),
+        "name_hash": names[object_name_from_id(thing['@id'])]
+    }
+
+
+def make_entity_from_name(name, names):
+    return {"name": name, "name_hash": names[name]}
+
+
+def find_enum_options(obj_id, schema, names):
     return [
-        object_name_from_id(obj['@id']) for obj in schema['@graph']
+        make_entity(obj, names) for obj in schema['@graph']
         if obj['@type'] == obj_id
     ]
 
@@ -85,10 +96,11 @@ def get_root_type(the_class, schema):
     return class_obj
 
 
-def parse_property(prop, schema):
+def parse_property(prop, schema, names):
     """Parse out details about the property, including what type it can be."""
     parsed_prop = {
         'name': object_name_from_id(prop['@id']),
+        'name_hash': names[object_name_from_id(prop['@id'])],
         'thing_types': [],
         'enum_types': []
     }
@@ -142,7 +154,7 @@ def lookup_parents(thing, schema, lookup_table):
     obj_name = object_name_from_id(thing['@id'])
     if obj_name in lookup_table:
         return lookup_table[obj_name]
-    lookup_table[obj_name] = []
+    lookup_table[obj_name] = set()
 
     if 'rdfs:subClassOf' in thing:
         parent_classes = thing['rdfs:subClassOf']
@@ -160,23 +172,19 @@ def lookup_parents(thing, schema, lookup_table):
         ]
         # flatten the list
         found_parents = [item for sublist in found_parents for item in sublist]
-        lookup_table[obj_name].extend(found_parents)
+        lookup_table[obj_name].update(found_parents)
 
-    lookup_table[obj_name].append(obj_name)
+    lookup_table[obj_name].add(obj_name)
     return lookup_table[obj_name]
 
 
-def get_template_vars(schema_file_path, overrides_file_path):
-    """Read the needed template variables from the schema file."""
-    template_vars = {
-        'entities': [],
-        'properties': [],
-        'enums': [],
-        'entity_parent_lookup': {}
-    }
-
+def get_template_vars_from_file(schema_file_path, overrides_file_path,
+                                name_file_path):
     with open(schema_file_path) as schema_file:
         schema = json.loads(schema_file.read())
+
+    with open(name_file_path) as names_file:
+        names = json.loads(names_file.read())
 
     if overrides_file_path:
         with open(overrides_file_path) as overrides_file:
@@ -184,24 +192,50 @@ def get_template_vars(schema_file_path, overrides_file_path):
         for thing in overrides['@graph']:
             merge_with_schema(schema, overrides, thing)
 
+    return get_template_vars(schema, names)
+
+
+def get_template_vars(schema, names):
+    """Read the needed template variables from the schema file."""
+    template_vars = {
+        'entities': [],
+        'properties': [],
+        'enums': [],
+        'entity_parent_lookup': []
+    }
+
+    entity_parent_lookup = {}
+
     for thing in schema['@graph']:
         if thing['@type'] == 'rdfs:Class':
-            template_vars['entities'].append(object_name_from_id(thing['@id']))
-            lookup_parents(thing, schema,
-                           template_vars['entity_parent_lookup'])
+            template_vars['entities'].append(make_entity(thing, names))
+            lookup_parents(thing, schema, entity_parent_lookup)
             if is_enum_type(thing):
                 template_vars['enums'].append({
                     'name':
                     object_name_from_id(thing['@id']),
                     'id':
                     thing['@id'],
+                    'id_hash':
+                    names[thing['@id']],
                     'options':
-                    find_enum_options(thing['@id'], schema)
+                    find_enum_options(thing['@id'], schema, names)
                 })
         elif thing['@type'] == 'rdf:Property':
-            template_vars['properties'].append(parse_property(thing, schema))
+            template_vars['properties'].append(
+                parse_property(thing, schema, names))
 
-    template_vars['entities'].sort()
+    for entity, parents in entity_parent_lookup.iteritems():
+        template_vars['entity_parent_lookup'].append({
+            'name':
+            entity,
+            'name_hash':
+            names[entity],
+            'parents':
+            [make_entity_from_name(parent, names) for parent in parents]
+        })
+
+    template_vars['entities'].sort(key=lambda p: p['name_hash'])
     template_vars['properties'].sort(key=lambda p: p['name'])
 
     return template_vars
@@ -226,12 +260,16 @@ def main():
         help='JSON-LD schema file with overrides to support changes not in the '
         'latest schema.org version. Optional.')
     parser.add_argument(
+        '--name-file',
+        help='JSON file of hashed schema.org names to speed up lookups.')
+    parser.add_argument(
         '--output-dir',
         help='Output directory in which to place generated code files.')
     parser.add_argument('--templates', nargs='+')
     args = parser.parse_args()
 
-    template_vars = get_template_vars(args.schema_file, args.overrides_file)
+    template_vars = get_template_vars_from_file(
+        args.schema_file, args.overrides_file, args.name_file)
     for template_file in args.templates:
         generate_file(
             os.path.join(args.output_dir,

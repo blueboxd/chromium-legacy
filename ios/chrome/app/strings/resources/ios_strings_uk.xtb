@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">Вибрано 1</translation>
 <translation id="2421044535038393232">Продовжити редагувати</translation>
 <translation id="2435457462613246316">Показати пароль</translation>
-<translation id="2481538920734869610">ДОД. ОБЛ. ЗАПИС</translation>
 <translation id="2497852260688568942">Ваш адміністратор вимкнув синхронізацію</translation>
 <translation id="2500374554657206846">Опції для збереження паролів</translation>
 <translation id="2523363575747517183">Цей веб-сайт періодично намагається відкрити інший додаток.</translation>
@@ -480,7 +479,6 @@
 <translation id="7203585745079012652">Озвучувати відповіді</translation>
 <translation id="7265758999917665941">Ніколи для цього сайту</translation>
 <translation id="7272437679830969316">Не вдалося підтвердити особу. Пароль не скопійовано.</translation>
-<translation id="7285236536143823449">ТАК, УВІМКНУТИ</translation>
 <translation id="7291368939935408496">Готуються паролі…</translation>
 <translation id="7293171162284876153">Щоб почати синхронізацію, увімкніть параметр "Синхронізувати дані Chrome".</translation>
 <translation id="7336264872878993241">Завантажено <ph name="PERCENT" />%</translation>
@@ -496,6 +494,7 @@
 <translation id="7460314822154045102">Відкрити камеру</translation>
 <translation id="7464701184726199289">Синхронізовані дані буде видалено з усіх пристроїв. Збережені налаштування, які можуть стосуватися ваших зацікавлень в Інтернеті, не буде видалено. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Назва компанії</translation>
+<translation id="7473891865547856676">Ні, дякую</translation>
 <translation id="7481312909269577407">Переслати</translation>
 <translation id="750493650310597496">Вибрано 0</translation>
 <translation id="7514365320538308">Завантажити</translation>
@@ -517,7 +516,6 @@
 <translation id="7781829728241885113">Учора</translation>
 <translation id="778855399387580014">Пошук у новій вкладці Chrome.</translation>
 <translation id="7791543448312431591">Додати</translation>
-<translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7840771868269352570">Вибраний елемент буде видалено.</translation>
 <translation id="7856733331829174190">Не вдалося завантажити</translation>
 <translation id="7859704718976024901">Історія веб-перегляду</translation>
@@ -587,6 +585,7 @@
 <translation id="8870413625673593573">Нещодавно закриті</translation>
 <translation id="8881801611828450202">Пошук цього зображення в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Надіслати…</translation>
+<translation id="8917490105272468696">Так</translation>
 <translation id="895541991026785598">Повідомити про проблему</translation>
 <translation id="8976382372951310360">Довідка</translation>
 <translation id="8981454092730389528">Відстеження дій у Google</translation>

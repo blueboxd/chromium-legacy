@@ -66,8 +66,9 @@ IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
 #if !defined(OS_WIN)
 // Regression test for https://crbug.com/1042010, it should be possible to focus
 // the bubble with the "focus dialog" hotkey combination (Alt+Shift+A).
+// Disabled due to flake: https://crbug.com/1068579
 IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
-                       CanFocusBubbleWithFocusDialogHotkey) {
+                       DISABLED_CanFocusBubbleWithFocusDialogHotkey) {
   ShowUi("SessionCrashedBubble");
 
   views::FocusManager* focus_manager = crash_bubble_->GetFocusManager();
@@ -83,8 +84,9 @@ IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
 
 // Regression test for https://crbug.com/1042010, it should be possible to focus
 // the bubble with the "rotate pane focus" (F6) hotkey.
+// Disabled due to flake: https://crbug.com/1068579
 IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
-                       CanFocusBubbleWithRotatePaneFocusHotkey) {
+                       DISABLED_CanFocusBubbleWithRotatePaneFocusHotkey) {
   ShowUi("SessionCrashedBubble");
   views::FocusManager* focus_manager = crash_bubble_->GetFocusManager();
   views::View* bubble_focused_view = crash_bubble_->GetInitiallyFocusedView();

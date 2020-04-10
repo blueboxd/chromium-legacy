@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">已選取 1 張</translation>
 <translation id="2421044535038393232">繼續編輯</translation>
 <translation id="2435457462613246316">顯示密碼</translation>
-<translation id="2481538920734869610">新增帳戶</translation>
 <translation id="2497852260688568942">你的管理員停用了同步功能</translation>
 <translation id="2500374554657206846">儲存密碼的選項</translation>
 <translation id="2523363575747517183">這個網站不斷嘗試開啟其他應用程式。</translation>
@@ -480,7 +479,6 @@
 <translation id="7203585745079012652">語音答覆</translation>
 <translation id="7265758999917665941">一律不儲存這個網站的密碼</translation>
 <translation id="7272437679830969316">無法驗證你的身分，因此未複製密碼。</translation>
-<translation id="7285236536143823449">是，我同意</translation>
 <translation id="7291368939935408496">正在準備匯出密碼...</translation>
 <translation id="7293171162284876153">如要開始同步處理，請開啟「同步處理你的 Chrome 資料」。</translation>
 <translation id="7336264872878993241">已下載 <ph name="PERCENT" /> %</translation>
@@ -496,6 +494,7 @@
 <translation id="7460314822154045102">使用相機</translation>
 <translation id="7464701184726199289">系統會將保持同步的資料從所有裝置上刪除。已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">公司名稱</translation>
+<translation id="7473891865547856676">不用了，謝謝</translation>
 <translation id="7481312909269577407">往前</translation>
 <translation id="750493650310597496">已選取 0 個項目</translation>
 <translation id="7514365320538308">下載</translation>
@@ -517,7 +516,6 @@
 <translation id="7781829728241885113">昨天</translation>
 <translation id="778855399387580014">在 Chrome 新分頁中進行搜尋。</translation>
 <translation id="7791543448312431591">新增</translation>
-<translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7840771868269352570">系統將移除所選項目。</translation>
 <translation id="7856733331829174190">無法下載</translation>
 <translation id="7859704718976024901">瀏覽記錄</translation>
@@ -587,6 +585,7 @@
 <translation id="8870413625673593573">最近關閉的分頁</translation>
 <translation id="8881801611828450202">透過 <ph name="SEARCH_ENGINE" /> 搜尋這張圖片</translation>
 <translation id="8909135823018751308">分享…</translation>
+<translation id="8917490105272468696">是，我同意</translation>
 <translation id="895541991026785598">回報問題</translation>
 <translation id="8976382372951310360">說明</translation>
 <translation id="8981454092730389528">Google 活動控制項</translation>

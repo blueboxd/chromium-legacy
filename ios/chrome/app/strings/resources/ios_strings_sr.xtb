@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">Изабрана је 1 слика</translation>
 <translation id="2421044535038393232">Настави изменe</translation>
 <translation id="2435457462613246316">Прикажи лозинку</translation>
-<translation id="2481538920734869610">ДОДАЈ НАЛОГ</translation>
 <translation id="2497852260688568942">Администратор је онемогућио синхронизацију</translation>
 <translation id="2500374554657206846">Опције за чување лозинке</translation>
 <translation id="2523363575747517183">Овај веб-сајт непрекидно покушава да отвори другу апликацију.</translation>
@@ -480,7 +479,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7203585745079012652">Изговарај одговоре</translation>
 <translation id="7265758999917665941">Никада за овај сајт</translation>
 <translation id="7272437679830969316">Верификација идентитета није успела. Лозинка није копирана.</translation>
-<translation id="7285236536143823449">ДА, СЛАЖЕМ СЕ</translation>
 <translation id="7291368939935408496">Припремају се лозинке...</translation>
 <translation id="7293171162284876153">Да бисте покренули синхронизацију, укључите опцију „Синхронизујте Chrome податке“.</translation>
 <translation id="7336264872878993241">Проценат преузимања: <ph name="PERCENT" /></translation>
@@ -496,6 +494,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7460314822154045102">Користи Камеру</translation>
 <translation id="7464701184726199289">Ово ће обрисати синхронизоване податке са свих уређаја. Нећемо избрисати сачувана подешавања сајтова и она могу да одражавају ваше навике при прегледању. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Назив компаније</translation>
+<translation id="7473891865547856676">Не, хвала</translation>
 <translation id="7481312909269577407">Проследи</translation>
 <translation id="750493650310597496">Изабрано је 0 ставки</translation>
 <translation id="7514365320538308">Преузми</translation>
@@ -517,7 +516,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7781829728241885113">Јуче</translation>
 <translation id="778855399387580014">Започните претрагу на новој Chrome картици.</translation>
 <translation id="7791543448312431591">Додај</translation>
-<translation id="780301667611848630">Не, хвала</translation>
 <translation id="7840771868269352570">Ставке које сте изабрали ће бити уклоњене.</translation>
 <translation id="7856733331829174190">Преузимање није успело</translation>
 <translation id="7859704718976024901">Историја прегледања</translation>
@@ -587,6 +585,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8870413625673593573">Недавно затворено</translation>
 <translation id="8881801611828450202">Претражи ову слику у <ph name="SEARCH_ENGINE" />-у</translation>
 <translation id="8909135823018751308">Дели...</translation>
+<translation id="8917490105272468696">Да, омогући</translation>
 <translation id="895541991026785598">Пријавите проблем</translation>
 <translation id="8976382372951310360">Помоћ</translation>
 <translation id="8981454092730389528">Google контроле активности</translation>

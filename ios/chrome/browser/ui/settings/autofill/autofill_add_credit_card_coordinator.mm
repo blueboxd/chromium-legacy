@@ -134,6 +134,7 @@
 - (void)showActionSheetAlert {
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.addCreditCardViewController
+                         browser:self.browser
                            title:
                                l10n_util::GetNSString(
                                    IDS_IOS_ADD_CREDIT_CARD_VIEW_CONTROLLER_DISMISS_ALERT_TITLE)
@@ -165,6 +166,7 @@
 - (void)showAlertWithMessage:(NSString*)message {
   self.alertCoordinator = [[AlertCoordinator alloc]
       initWithBaseViewController:self.addCreditCardViewController
+                         browser:self.browser
                            title:message
                          message:nil];
 

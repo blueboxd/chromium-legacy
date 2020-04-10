@@ -1142,6 +1142,8 @@ void RenderFrameHostImpl::OnPortalActivated(
                   kRejectedDueToPredecessorNavigation:
               case blink::mojom::PortalActivateResult::
                   kRejectedDueToPortalNotReady:
+              case blink::mojom::PortalActivateResult::
+                  kRejectedDueToErrorInPortal:
               case blink::mojom::PortalActivateResult::kDisconnected:
               case blink::mojom::PortalActivateResult::kAbortedDueToBug:
                 // The renderer is misbehaving.

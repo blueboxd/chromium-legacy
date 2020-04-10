@@ -13,6 +13,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/main_function_params.h"
+#include "fuchsia/base/legacymetrics_client.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
@@ -22,6 +23,13 @@
 #include "ui/gfx/switches.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
+
+namespace {
+
+constexpr base::TimeDelta kMetricsReportingInterval =
+    base::TimeDelta::FromMinutes(1);
+
+}  // namespace
 
 WebEngineBrowserMainParts::WebEngineBrowserMainParts(
     const content::MainFunctionParams& parameters,
@@ -61,6 +69,13 @@ void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
                                                    devtools_controller_.get());
   context_binding_ = std::make_unique<fidl::Binding<fuchsia::web::Context>>(
       context_service_.get(), std::move(request_));
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseLegacyMetricsService)) {
+    legacy_metrics_client_ =
+        std::make_unique<cr_fuchsia::LegacyMetricsClient>();
+    legacy_metrics_client_->Start(kMetricsReportingInterval);
+  }
 
   // Quit the browser main loop when the Context connection is dropped.
   context_binding_->set_error_handler([this](zx_status_t status) {
@@ -104,6 +119,7 @@ void WebEngineBrowserMainParts::PostMainMessageLoopRun() {
   // These resources must be freed while a MessageLoop is still available, so
   // that they may post cleanup tasks during teardown.
   // NOTE: Please destroy objects in the reverse order of their creation.
+  legacy_metrics_client_.reset();
   context_binding_.reset();
   browser_context_.reset();
   screen_.reset();

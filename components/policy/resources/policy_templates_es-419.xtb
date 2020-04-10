@@ -2335,7 +2335,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="4389091865841123886">Permite configurar la atestación remota con el mecanismo de TPM.</translation>
 <translation id="4401496838830169080">Te permite controlar si se habilita o no la función de Navegación segura de <ph name="PRODUCT_NAME" /> y el modo en el que opera.
 
-      Si se establece esta política como "NoProtection" (value 0), no se activará nunca la Navegación segura.
+      Si se establece esta política como "NoProtection" (valor 0), no se activará nunca la Navegación segura.
 
       Si se establece como "StandardProtection" (valor 1, el cual es el predeterminado), la Navegación segura estará siempre activa en el modo estándar.
 
@@ -4444,7 +4444,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si la habilitas o inhabilitas, los usuarios no podrán cambiar ni anular la configuración para habilitar la protección contra software malicioso y suplantación de identidad (phishing) en <ph name="PRODUCT_NAME" />.
 
-      Si no se establece esta política, la configuración estará habilitada, pero el usuario podrá cambiarla.
+      Si no se establece esta política, la protección estará habilitada, pero el usuario podrá cambiarla.
 
       Para obtener más información sobre la Navegación segura, consulta https://developers.google.com/safe-browsing.
 

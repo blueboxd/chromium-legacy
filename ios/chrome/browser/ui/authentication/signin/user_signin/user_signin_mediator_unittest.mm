@@ -157,7 +157,8 @@ class UserSigninMediatorTest : public PlatformTest {
     OCMExpect([performer_mock_
                   showAuthenticationError:[OCMArg any]
                            withCompletion:[OCMArg any]
-                           viewController:presenting_view_controller_mock_])
+                           viewController:presenting_view_controller_mock_
+                                  browser:browser_.get()])
         .andDo(^(NSInvocation* invocation) {
           __weak ProceduralBlock completionBlock;
           [invocation getArgument:&completionBlock atIndex:3];

@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 არჩეულია</translation>
 <translation id="2421044535038393232">რედაქტირების გაგრძელება</translation>
 <translation id="2435457462613246316">პაროლის ჩვენება</translation>
-<translation id="2481538920734869610">ანგარიშის დამატება</translation>
 <translation id="2497852260688568942">სინქრონიზაცია გათიშულია თქვენი ადმინისტრატორის მიერ</translation>
 <translation id="2500374554657206846">პაროლის შენახვის ვარიანტები</translation>
 <translation id="2523363575747517183">ეს ვებსაიტი განუწყვეტლივ ცდილობს სხვა აპლიკაციის გახსნას.</translation>
@@ -480,7 +479,6 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="7203585745079012652">აბრუნებს ხმოვან პასუხებს</translation>
 <translation id="7265758999917665941">არასდროს ამ საიტისთვის</translation>
 <translation id="7272437679830969316">თქვენი ვინაობა ვერ დადასტურდა. პაროლი არ დაკოპირდა.</translation>
-<translation id="7285236536143823449">დიახ, თანახმა ვარ</translation>
 <translation id="7291368939935408496">მიმდინარეობს პაროლების მომზადება...</translation>
 <translation id="7293171162284876153">სიქრონიზაციის დასაწყებად ჩართეთ „თქვენი Chrome მონაცემების სინქრონიზაციის“ პარამეტრი.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> პროცენტი ჩამოიტვირთა</translation>
@@ -496,6 +494,7 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="7460314822154045102">კამერის გამოყენება</translation>
 <translation id="7464701184726199289">ეს მოქმედება გაასუფთავებს სინქრონიზებულ მონაცემებს ყველა მოწყობილობიდან. საიტის შენახული პარამეტრები არ წაიშლება და შეიძლება თქვენ მიერ ვების დათვალიერებაზე აისახოს. <ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">კომპანიის სახელი</translation>
+<translation id="7473891865547856676">არა, გმადლობთ</translation>
 <translation id="7481312909269577407">გადამისამართება</translation>
 <translation id="750493650310597496">0 არჩეულია</translation>
 <translation id="7514365320538308">ჩამოტვირთვა</translation>
@@ -517,7 +516,6 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="7781829728241885113">გუშინ</translation>
 <translation id="778855399387580014">ძიების დაწყება Chrome-ის ახალ ჩანართში.</translation>
 <translation id="7791543448312431591">დამატება</translation>
-<translation id="780301667611848630">არა, მადლობთ</translation>
 <translation id="7840771868269352570">თქვენ მიერ არჩეული ერთეულები ამოიშლება.</translation>
 <translation id="7856733331829174190">ჩამოტვირთვა ვერ მოხერხდა</translation>
 <translation id="7859704718976024901">დათვალიერების ისტორია</translation>
@@ -587,6 +585,7 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="8870413625673593573">ბოლოს დახურული</translation>
 <translation id="8881801611828450202">ამ სურათის ძიება <ph name="SEARCH_ENGINE" />-ში</translation>
 <translation id="8909135823018751308">გაზიარება…</translation>
+<translation id="8917490105272468696">დიახ, თანახმა ვარ</translation>
 <translation id="895541991026785598">მოხსენება პრობლემის შესახებ</translation>
 <translation id="8976382372951310360">დახმარება</translation>
 <translation id="8981454092730389528">Google აქტივობის მართვის საშუალებები</translation>

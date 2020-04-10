@@ -29,18 +29,21 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.v
 
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.drawable.Animatable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingRootException;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.MediumTest;
 import android.support.test.uiautomator.UiDevice;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -63,6 +66,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
@@ -76,6 +80,12 @@ import java.io.IOException;
 @Features.DisableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)
 public class TabGridIphTest {
     // clang-format on
+    private ModalDialogManager mModalDialogManager;
+
+    // Disable animations to reduce flakiness.
+    @ClassRule
+    public static DisableAnimationsTestRule sEnableAnimationsRule = new DisableAnimationsTestRule();
+
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -94,6 +104,7 @@ public class TabGridIphTest {
                                             .getTabModelSelector()
                                             .getTabModelFilterProvider()
                                             .getCurrentTabModelFilter()::isTabModelRestored);
+        mModalDialogManager = mActivityTestRule.getActivity().getModalDialogManager();
     }
 
     @After
@@ -138,8 +149,8 @@ public class TabGridIphTest {
         verifyIphDialogShowing(cta);
 
         // Click outside of the dialog area to close the IPH dialog.
-        ModalDialogManager manager = cta.getModalDialogManager();
-        View dialogView = manager.getCurrentDialogForTest().get(ModalDialogProperties.CUSTOM_VIEW);
+        View dialogView = mModalDialogManager.getCurrentDialogForTest().get(
+                ModalDialogProperties.CUSTOM_VIEW);
         int[] location = new int[2];
         // Get the position of the dialog view and click slightly above so that we essentially click
         // on the scrim.
@@ -192,7 +203,8 @@ public class TabGridIphTest {
                 TabSwitcherCoordinator::hasAppendedMessagesForTesting);
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
 
-        mRenderTestRule.render(cta.findViewById(R.id.tab_grid_message_item), "iph_portrait");
+        mRenderTestRule.render(
+                cta.findViewById(R.id.tab_grid_message_item), "iph_entrance_portrait");
     }
 
     @Test
@@ -207,7 +219,55 @@ public class TabGridIphTest {
                 TabSwitcherCoordinator::hasAppendedMessagesForTesting);
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
 
-        mRenderTestRule.render(cta.findViewById(R.id.tab_grid_message_item), "iph_landscape");
+        mRenderTestRule.render(
+                cta.findViewById(R.id.tab_grid_message_item), "iph_entrance_landscape");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testRenderIphDialog_Portrait() throws IOException {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+
+        enterTabSwitcher(cta);
+        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        onView(allOf(withId(R.id.action_button), withParent(withId(R.id.tab_grid_message_item))))
+                .perform(click());
+        verifyIphDialogShowing(cta);
+
+        View iphDialogView = mModalDialogManager.getCurrentDialogForTest().get(
+                ModalDialogProperties.CUSTOM_VIEW);
+        // Freeze animation and wait until animation is really frozen.
+        ChromeRenderTestRule.sanitize(iphDialogView);
+        ImageView iphImageView = iphDialogView.findViewById(R.id.animation_drawable);
+        Animatable iphAnimation = (Animatable) iphImageView.getDrawable();
+        CriteriaHelper.pollUiThread(() -> !iphAnimation.isRunning());
+
+        mRenderTestRule.render(iphDialogView, "iph_dialog_portrait");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testRenderIphDialog_Landscape() throws IOException {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+
+        enterTabSwitcher(cta);
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        onView(allOf(withId(R.id.action_button), withParent(withId(R.id.tab_grid_message_item))))
+                .perform(click());
+        verifyIphDialogShowing(cta);
+
+        View iphDialogView = mModalDialogManager.getCurrentDialogForTest().get(
+                ModalDialogProperties.CUSTOM_VIEW);
+        // Freeze animation and wait until animation is really frozen.
+        ChromeRenderTestRule.sanitize(iphDialogView);
+        ImageView iphImageView = iphDialogView.findViewById(R.id.animation_drawable);
+        Animatable iphAnimation = (Animatable) iphImageView.getDrawable();
+        CriteriaHelper.pollUiThread(() -> !iphAnimation.isRunning());
+
+        mRenderTestRule.render(iphDialogView, "iph_dialog_landscape");
     }
 
     @Test

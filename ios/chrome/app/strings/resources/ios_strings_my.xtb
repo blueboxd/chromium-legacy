@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 ရွေးချယ်ထားသည်</translation>
 <translation id="2421044535038393232">ဆက်လက်တည်းဖြတ်ရန်</translation>
 <translation id="2435457462613246316">စကားဝှက်ကို ပြပါ</translation>
-<translation id="2481538920734869610">အကောင့် ထည့်ရန်</translation>
 <translation id="2497852260688568942">စင့်ခ်ပြုလုပ်ခြင်းကို သင့်စီမံခန့်ခွဲသူက ပိတ်ဆို့ထားပါသည်</translation>
 <translation id="2500374554657206846">'စကားဝှက် သိမ်းရန်' ရွေးစရာများ</translation>
 <translation id="2523363575747517183">ဤဝဘ်ဆိုက်က နောက်ထပ် အပလီကေးရှင်းတစ်ခုကို ထပ်တလဲလဲ ဖွင့်နေပါသည်။</translation>
@@ -479,7 +478,6 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="7203585745079012652">အဖြေများကို ပြန်လည်ပြောကြားမည်</translation>
 <translation id="7265758999917665941">ဤဝဘ်ဆိုက်အတွက် လုံးဝမလုပ်ရန်</translation>
 <translation id="7272437679830969316">သင်မည်သူမည်ဝါဖြစ်ကြောင်း အတည်ပြု၍ မရနိုင်ပါ။ စကားဝှက်ကို မိတ္ထူကူးမထားပါ။</translation>
-<translation id="7285236536143823449">သဘောတူပါသည်</translation>
 <translation id="7291368939935408496">စကားဝှက်များကို အသင့်ပြင်နေသည်...</translation>
 <translation id="7293171162284876153">စင့်ခ် စတင်ရန်အတွက် "သင်၏ Chrome ဒေတာ စင့်ခ်လုပ်ပါ" ကို ဖွင့်ပါ။</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> ရာခိုင်နှုန်းဒေါင်းလုဒ်လုပ်ပြီးပါပြီ</translation>
@@ -495,6 +493,7 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="7460314822154045102">'ကင်မရာ' အသုံးပြုရန်</translation>
 <translation id="7464701184726199289">၎င်းသည် စက်ပစ္စည်းများအားလုံးမှ စင့်ခ်လုပ်ထားသည့် ဒေတာများကို ရှင်းလင်းသွားပါမည်။ သိမ်းဆည်းထားသည့် ဆိုက်ဆက်တင်များကိုတော့ ဖျက်လိုက်မည် မဟုတ်ဘဲ သင်အင်တာနက် အသုံးပြုမှု အမူအကျင့်များကို ဖော်ပြပါလိမ့်မည်။ <ph name="BEGIN_LINK" />ပိုမိုလေ့လာရန်<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">ကုမ္ပဏီ အမည်</translation>
+<translation id="7473891865547856676">မလို ကျေးဇူးပဲ</translation>
 <translation id="7481312909269577407">ရှေ့သို့</translation>
 <translation id="750493650310597496">0 ရွေးချယ်ထားပါသည်</translation>
 <translation id="7514365320538308">ဒေါင်းလုဒ်</translation>
@@ -516,7 +515,6 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="7781829728241885113">မနေ့က</translation>
 <translation id="778855399387580014">Chrome တဘ်အသစ်တွင် ရှာဖွေမှု စတင်ပါ။</translation>
 <translation id="7791543448312431591">ထည့်ရန်</translation>
-<translation id="780301667611848630">မလို ကျေးဇူးပဲ</translation>
 <translation id="7840771868269352570">သင်ရွေးထားသည့် အရာများကို ဖယ်ရှားလိုက်ပါမည်။</translation>
 <translation id="7856733331829174190">ဒေါင်းလုဒ် လုပ်၍မရပါ</translation>
 <translation id="7859704718976024901">ရှာဖွေမှု မှတ်တမ်း</translation>
@@ -586,6 +584,7 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="8870413625673593573">မကြာမီက ပိတ်ခဲ့</translation>
 <translation id="8881801611828450202">ဤရုပ်ပုံကို <ph name="SEARCH_ENGINE" /> တွင်ရှာရန်</translation>
 <translation id="8909135823018751308">ၐေမျှရန်...</translation>
+<translation id="8917490105272468696">သဘောတူပါသည်</translation>
 <translation id="895541991026785598">ပြဿနာတစ်ခု အစီရင်ခံမည်</translation>
 <translation id="8976382372951310360">အကူအညီ</translation>
 <translation id="8981454092730389528">Google လုပ်ဆောင်ချက်များ ထိန်းချုပ်ရန်</translation>

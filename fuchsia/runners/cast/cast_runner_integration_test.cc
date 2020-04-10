@@ -2,19 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuchsia/legacymetrics/cpp/fidl.h>
+#include <fuchsia/legacymetrics/cpp/fidl_test_base.h>
 #include <fuchsia/modular/cpp/fidl.h>
 #include <lib/fdio/directory.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/ui/scenic/cpp/view_token_pair.h>
 #include <lib/zx/channel.h>
+#include <zircon/processargs.h>
 
 #include "base/base_paths_fuchsia.h"
 #include "base/callback_helpers.h"
 #include "base/fuchsia/file_utils.h"
+#include "base/fuchsia/filtered_service_directory.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/scoped_service_binding.h"
+#include "base/fuchsia/test_component_context_for_process.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
@@ -26,6 +32,7 @@
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/fuchsia_dir_scheme.h"
 #include "fuchsia/base/mem_buffer_util.h"
+#include "fuchsia/base/release_channel.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/string_util.h"
 #include "fuchsia/base/test_devtools_list_fetcher.h"
@@ -34,11 +41,8 @@
 #include "fuchsia/runners/cast/cast_runner.h"
 #include "fuchsia/runners/cast/fake_application_config_manager.h"
 #include "fuchsia/runners/cast/test_api_bindings.h"
-#include "fuchsia/runners/common/web_component.h"
-#include "fuchsia/runners/common/web_content_runner.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -47,7 +51,6 @@ constexpr char kTestAppId[] = "00000000";
 
 constexpr char kBlankAppUrl[] = "/defaultresponse";
 constexpr char kEchoHeaderPath[] = "/echoheader?Test";
-constexpr char kEchoAppPath[] = "/echo.html";
 
 constexpr char kTestServerRoot[] =
     FILE_PATH_LITERAL("fuchsia/runners/cast/testdata");
@@ -55,10 +58,6 @@ constexpr char kTestServerRoot[] =
 constexpr char kDummyAgentUrl[] =
     "fuchsia-pkg://fuchsia.com/dummy_agent#meta/dummy_agent.cmx";
 
-void ComponentErrorHandler(zx_status_t status) {
-  ZX_LOG(ERROR, status) << "Component launch failed";
-  ADD_FAILURE();
-}
 
 // Helper used to ensure that cr_fuchsia::RegisterFuchsiaDirScheme() is called
 // once per process to register fuchsia-dir scheme. In cast_runner this function
@@ -94,7 +93,8 @@ class FakeUrlRequestRewriteRulesProvider
     rules_sent_ = true;
 
     std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
-    rewrites.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test", "Value"));
+    rewrites.push_back(
+        cr_fuchsia::CreateRewriteAddHeaders("Test", "TestHeaderValue"));
     fuchsia::web::UrlRequestRewriteRule rule;
     rule.set_rewrites(std::move(rewrites));
     std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
@@ -197,31 +197,39 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
       context_binding_;
   base::OnceClosure on_delete_;
 };
-
 }  // namespace
 
 class CastRunnerIntegrationTest : public testing::Test {
  public:
-  CastRunnerIntegrationTest()
-      : CastRunnerIntegrationTest(fuchsia::web::ContextFeatureFlags::NETWORK) {}
+  CastRunnerIntegrationTest() : CastRunnerIntegrationTest(/*headless=*/false) {}
   CastRunnerIntegrationTest(const CastRunnerIntegrationTest&) = delete;
   CastRunnerIntegrationTest& operator=(const CastRunnerIntegrationTest&) =
       delete;
 
   void TearDown() override {
+    if (component_controller_)
+      ShutdownComponent();
+
     // Disconnect the CastRunner & let things tear-down.
     cast_runner_ptr_.Unbind();
     base::RunLoop().RunUntilIdle();
   }
 
  protected:
-  explicit CastRunnerIntegrationTest(
-      fuchsia::web::ContextFeatureFlags feature_flags)
+  explicit CastRunnerIntegrationTest(bool headless)
       : app_config_manager_binding_(&component_services_,
                                     &app_config_manager_) {
     EnsureFuchsiaDirSchemeInitialized();
 
     // Create the CastRunner, published into |outgoing_directory_|.
+    fuchsia::web::ContextFeatureFlags feature_flags =
+        fuchsia::web::ContextFeatureFlags::NETWORK |
+        fuchsia::web::ContextFeatureFlags::LEGACYMETRICS;
+    if (headless) {
+      feature_flags =
+          feature_flags | fuchsia::web::ContextFeatureFlags::HEADLESS;
+    }
+
     WebContentRunner::GetContextParamsCallback get_context_params =
         base::BindLambdaForTesting([feature_flags]() {
           fuchsia::web::CreateContextParams create_context_params;
@@ -231,19 +239,15 @@ class CastRunnerIntegrationTest : public testing::Test {
                   base::FilePath(base::fuchsia::kServiceDirectoryPath)));
           CHECK(create_context_params.service_directory());
 
-          const uint16_t kRemoteDebuggingAnyPort = 0;
           create_context_params.set_remote_debugging_port(
-              kRemoteDebuggingAnyPort);
+              CastRunner::kRemoteDebuggingPort);
           return create_context_params;
         });
-    cast_runner_ = std::make_unique<CastRunner>(
-        std::move(get_context_params),
-        (feature_flags & fuchsia::web::ContextFeatureFlags::HEADLESS) ==
-            fuchsia::web::ContextFeatureFlags::HEADLESS,
-        &outgoing_directory_);
+    cast_runner_ =
+        std::make_unique<CastRunner>(std::move(get_context_params), headless);
+    cast_runner_->PublishRunnerService(&outgoing_directory_);
 
-    cast_runner_->SetContextProviderForTest(cr_fuchsia::ConnectContextProvider(
-        context_provider_controller_.NewRequest()));
+    StartAndPublishWebEngine();
 
     // Connect to the CastRunner's fuchsia.sys.Runner interface.
     fidl::InterfaceHandle<fuchsia::io::Directory> directory;
@@ -260,6 +264,24 @@ class CastRunnerIntegrationTest : public testing::Test {
     test_server_.ServeFilesFromSourceDirectory(kTestServerRoot);
     net::test_server::RegisterDefaultHandlers(&test_server_);
     EXPECT_TRUE(test_server_.Start());
+
+    // Inject ApiBinding that used by ExecuteJavaScript().
+    std::vector<chromium::cast::ApiBinding> binding_list;
+    chromium::cast::ApiBinding eval_js_binding;
+    eval_js_binding.set_before_load_script(cr_fuchsia::MemBufferFromString(
+        "window.addEventListener('DOMContentLoaded', (event) => {"
+        "  var port = cast.__platform__.PortConnector.bind('testport');"
+        "  port.onmessage = (e) => {"
+        "    var result = eval(e.data);"
+        "    if (typeof(result) == \"undefined\") {"
+        "      result = \"undefined\";"
+        "    }"
+        "    port.postMessage(result);"
+        "  };"
+        "});",
+        "test"));
+    binding_list.emplace_back(std::move(eval_js_binding));
+    api_bindings_.set_bindings(std::move(binding_list));
   }
 
   std::unique_ptr<cr_fuchsia::AgentImpl::ComponentStateBase> OnComponentConnect(
@@ -269,10 +291,29 @@ class CastRunnerIntegrationTest : public testing::Test {
         url_request_rewrite_rules_provider_.get());
     component_state_ = component_state.get();
 
-    if (init_component_state_callback_)
-      std::move(init_component_state_callback_).Run(component_state_);
+    if (component_state_created_callback_)
+      std::move(component_state_created_callback_).Run();
 
     return component_state;
+  }
+
+  void StartAndPublishWebEngine() {
+    fidl::InterfaceHandle<fuchsia::io::Directory> web_engine_outgoing_dir =
+        cr_fuchsia::StartWebEngineForTests(web_engine_controller_.NewRequest());
+    sys::ServiceDirectory web_engine_outgoing_services(
+        std::move(web_engine_outgoing_dir));
+
+    test_component_context_.additional_services()
+        ->RemovePublicService<fuchsia::web::ContextProvider>();
+    test_component_context_.additional_services()->AddPublicService(
+        std::make_unique<vfs::Service>(
+            [web_engine_outgoing_services =
+                 std::move(web_engine_outgoing_services)](
+                zx::channel channel, async_dispatcher_t* dispatcher) {
+              web_engine_outgoing_services.Connect(
+                  fuchsia::web::ContextProvider::Name_, std::move(channel));
+            }),
+        fuchsia::web::ContextProvider::Name_);
   }
 
   void RegisterAppWithTestData(GURL url) {
@@ -296,7 +337,8 @@ class CastRunnerIntegrationTest : public testing::Test {
     auto component_url = base::StringPrintf("cast:%s", kTestAppId);
     CreateComponentContext(component_url);
     StartCastComponent(component_url);
-    WaitComponentCreated();
+    WaitComponentState();
+    WaitTestPort();
   }
 
   void CreateComponentContext(const base::StringPiece& component_url) {
@@ -322,7 +364,7 @@ class CastRunnerIntegrationTest : public testing::Test {
     startup_info.launch_info.directory_request =
         outgoing_directory.NewRequest().TakeChannel();
 
-    fidl::InterfaceHandle<::fuchsia::io::Directory> svc_directory;
+    fidl::InterfaceHandle<fuchsia::io::Directory> svc_directory;
     CHECK_EQ(fdio_service_connect_at(
                  outgoing_directory.channel().get(), "svc",
                  svc_directory.NewRequest().TakeChannel().release()),
@@ -340,50 +382,82 @@ class CastRunnerIntegrationTest : public testing::Test {
     fuchsia::sys::Package package;
     package.resolved_url = component_url.as_string();
 
-    cast_runner_ptr_->StartComponent(std::move(package),
-                                     std::move(startup_info),
-                                     component_controller_.NewRequest());
-    component_controller_.set_error_handler(&ComponentErrorHandler);
+    cast_runner_->StartComponent(std::move(package), std::move(startup_info),
+                                 component_controller_.NewRequest());
+    component_controller_.set_error_handler([](zx_status_t status) {
+      ZX_LOG(ERROR, status) << "Component launch failed";
+      ADD_FAILURE();
+    });
   }
 
-  void WaitComponentCreated() {
-    ASSERT_FALSE(cast_component_);
+  // Executes |code| in the context of the test application and the returns
+  // serialized as string.
+  std::string ExecuteJavaScript(const std::string& code) {
+    fuchsia::web::WebMessage message;
+    message.set_data(cr_fuchsia::MemBufferFromString(code, "test-msg"));
+    test_port_->PostMessage(
+        std::move(message),
+        [](fuchsia::web::MessagePort_PostMessage_Result result) {
+          EXPECT_TRUE(result.is_response());
+        });
 
+    base::RunLoop response_loop;
+    cr_fuchsia::ResultReceiver<fuchsia::web::WebMessage> response(
+        response_loop.QuitClosure());
+    test_port_->ReceiveMessage(
+        cr_fuchsia::CallbackToFitFunction(response.GetReceiveCallback()));
+    response_loop.Run();
+
+    std::string response_string;
+    EXPECT_TRUE(
+        cr_fuchsia::StringFromMemBuffer(response->data(), &response_string));
+
+    return response_string;
+  }
+
+  void WaitComponentState() {
     base::RunLoop run_loop;
-    cr_fuchsia::ResultReceiver<WebComponent*> component_receiver(
-        run_loop.QuitClosure());
-    cast_runner_->SetWebComponentCreatedCallbackForTest(
-        base::AdaptCallbackForRepeating(
-            component_receiver.GetReceiveCallback()));
+    component_state_created_callback_ = run_loop.QuitClosure();
     run_loop.Run();
-    ASSERT_NE(*component_receiver, nullptr);
-    cast_component_ = reinterpret_cast<CastComponent*>(*component_receiver);
   }
 
-  void WaitUrlAndTitle(const GURL& url, const std::string& title) {
+  void WaitTestPort() {
+    CHECK(!test_port_);
+    test_port_ = api_bindings_.RunUntilMessagePortReceived("testport").Bind();
+  }
+
+  void CheckAppUrl(const GURL& app_url) {
+    EXPECT_EQ(ExecuteJavaScript("window.location.href"), app_url.spec());
+  }
+
+  void ShutdownComponent() {
+    DCHECK(component_controller_);
+
     base::RunLoop run_loop;
-    cr_fuchsia::TestNavigationListener listener;
-    fidl::Binding<fuchsia::web::NavigationEventListener> listener_binding(
-        &listener);
-    cast_component_->frame()->SetNavigationEventListener(
-        listener_binding.NewBinding());
-    listener.RunUntilUrlAndTitleEquals(url, title);
+    component_state_->set_on_delete(run_loop.QuitClosure());
+    component_controller_.Unbind();
+    run_loop.Run();
+
+    component_controller_ = nullptr;
   }
 
   void WaitForComponentDestroyed() {
-    ASSERT_TRUE(cast_component_);
     ASSERT_TRUE(component_state_);
-
     base::RunLoop state_loop;
     component_state_->set_on_delete(state_loop.QuitClosure());
 
+    base::RunLoop controller_loop;
     if (component_controller_) {
-      base::RunLoop controller_loop;
       component_controller_.set_error_handler(
           [&controller_loop](zx_status_t status) {
             EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
             controller_loop.Quit();
           });
+    }
+
+    web_engine_controller_->Kill();
+
+    if (component_controller_) {
       controller_loop.Run();
     }
 
@@ -392,12 +466,13 @@ class CastRunnerIntegrationTest : public testing::Test {
     component_context_ = nullptr;
     component_services_client_ = nullptr;
     component_state_ = nullptr;
-    cast_component_ = nullptr;
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   net::EmbeddedTestServer test_server_;
+
+  fuchsia::sys::ComponentControllerPtr web_engine_controller_;
 
   FakeApplicationConfigManager app_config_manager_;
   TestApiBindings api_bindings_;
@@ -412,16 +487,17 @@ class CastRunnerIntegrationTest : public testing::Test {
   fuchsia::sys::ComponentControllerPtr component_controller_;
   std::unique_ptr<sys::ServiceDirectory> component_services_client_;
   FakeComponentState* component_state_ = nullptr;
-  CastComponent* cast_component_ = nullptr;
+  fuchsia::web::MessagePortPtr test_port_;
 
-  base::OnceCallback<void(FakeComponentState*)> init_component_state_callback_;
+  base::OnceClosure component_state_created_callback_;
 
   // ServiceDirectory into which the CastRunner will publish itself.
   sys::OutgoingDirectory outgoing_directory_;
 
   std::unique_ptr<CastRunner> cast_runner_;
   fuchsia::sys::RunnerPtr cast_runner_ptr_;
-  fuchsia::sys::ComponentControllerPtr context_provider_controller_;
+  base::TestComponentContextForProcess test_component_context_{
+      base::TestComponentContextForProcess::InitialState::kCloneAll};
 };
 
 // A basic integration test ensuring a basic cast request launches the right
@@ -431,28 +507,8 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
   app_config_manager_.AddApp(kTestAppId, app_url);
 
   CreateComponentContextAndStartComponent();
-  fuchsia::web::NavigationControllerPtr nav_controller;
-  cast_component_->frame()->GetNavigationController(
-      nav_controller.NewRequest());
 
-  // Ensure the NavigationState has the expected URL.
-  {
-    base::RunLoop run_loop;
-    cr_fuchsia::ResultReceiver<fuchsia::web::NavigationState> nav_entry(
-        run_loop.QuitClosure());
-    nav_controller->GetVisibleEntry(
-        cr_fuchsia::CallbackToFitFunction(nav_entry.GetReceiveCallback()));
-    run_loop.Run();
-    ASSERT_TRUE(nav_entry->has_url());
-    EXPECT_EQ(nav_entry->url(), app_url.spec());
-  }
-
-  EXPECT_FALSE(cast_runner_->is_headless());
-
-  // Verify that the component is torn down when |component_controller| is
-  // unbound.
-  component_controller_.Unbind();
-  WaitForComponentDestroyed();
+  CheckAppUrl(app_url);
 }
 
 // Verify that the Runner can continue to be used even after its Context has
@@ -462,67 +518,40 @@ TEST_F(CastRunnerIntegrationTest, CanRecreateContext) {
   // Execute two iterations of launching the component and verifying that it
   // reaches the expected URL.
   for (int i = 0; i < 2; ++i) {
+    SCOPED_TRACE(testing::Message() << "Test iteration " << i);
+
     const GURL app_url = test_server_.GetURL(kBlankAppUrl);
     app_config_manager_.AddApp(kTestAppId, app_url);
 
     CreateComponentContextAndStartComponent();
 
-    fuchsia::web::NavigationControllerPtr nav_controller;
-    cast_component_->frame()->GetNavigationController(
-        nav_controller.NewRequest());
+    CheckAppUrl(app_url);
 
-    base::RunLoop run_loop;
-    cr_fuchsia::ResultReceiver<fuchsia::web::NavigationState> nav_entry(
-        run_loop.QuitClosure());
-    nav_controller->GetVisibleEntry(
-        cr_fuchsia::CallbackToFitFunction(nav_entry.GetReceiveCallback()));
-    run_loop.Run();
+    // Setup a loop to wait for Context destruction after WebEngine is killed
+    // below.
+    base::RunLoop context_lost_loop;
+    cast_runner_->SetOnContextLostCallback(context_lost_loop.QuitClosure());
 
-    ASSERT_TRUE(nav_entry->has_url());
-    EXPECT_EQ(nav_entry->url(), app_url.spec());
+    web_engine_controller_->Kill();
 
-    // Fake teardown of the Context, forcing the next StartComponent to create
-    // a new one.
-    cast_runner_->DisconnectContextForTest();
+    // Wait for the component and the Context to be torn down.
     WaitForComponentDestroyed();
+    context_lost_loop.Run();
+
+    // Start a new WebEngine instance for the next iteration.
+    if (i < 1)
+      StartAndPublishWebEngine();
   }
 }
 
 TEST_F(CastRunnerIntegrationTest, ApiBindings) {
-  app_config_manager_.AddApp(kTestAppId, test_server_.GetURL(kEchoAppPath));
-
-  std::vector<chromium::cast::ApiBinding> binding_list;
-  chromium::cast::ApiBinding echo_binding;
-  echo_binding.set_before_load_script(cr_fuchsia::MemBufferFromString(
-      "window.echo = cast.__platform__.PortConnector.bind('echoService');",
-      "test"));
-  binding_list.emplace_back(std::move(echo_binding));
-  api_bindings_.set_bindings(std::move(binding_list));
+  app_config_manager_.AddApp(kTestAppId, test_server_.GetURL(kBlankAppUrl));
 
   CreateComponentContextAndStartComponent();
 
-  fuchsia::web::MessagePortPtr port =
-      api_bindings_.RunUntilMessagePortReceived("echoService").Bind();
-
-  fuchsia::web::WebMessage message;
-  message.set_data(cr_fuchsia::MemBufferFromString("ping", "ping-msg"));
-  port->PostMessage(std::move(message),
-                    [](fuchsia::web::MessagePort_PostMessage_Result result) {
-                      EXPECT_TRUE(result.is_response());
-                    });
-
-  base::RunLoop response_loop;
-  cr_fuchsia::ResultReceiver<fuchsia::web::WebMessage> response(
-      response_loop.QuitClosure());
-  port->ReceiveMessage(
-      cr_fuchsia::CallbackToFitFunction(response.GetReceiveCallback()));
-  response_loop.Run();
-
-  std::string response_string;
-  EXPECT_TRUE(
-      cr_fuchsia::StringFromMemBuffer(response->data(), &response_string));
-  EXPECT_EQ("ack ping", response_string);
-  EXPECT_TRUE(component_state_->api_bindings_has_clients());
+  // Verify that we can communicate with the binding added in
+  // CastRunnerIntegrationTest().
+  EXPECT_EQ(ExecuteJavaScript("1+2+\"\""), "3");
 }
 
 TEST_F(CastRunnerIntegrationTest, IncorrectCastAppId) {
@@ -538,12 +567,9 @@ TEST_F(CastRunnerIntegrationTest, IncorrectCastAppId) {
     EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
     run_loop.Quit();
   });
-  cr_fuchsia::ResultReceiver<WebComponent*> web_component(
-      run_loop.QuitClosure());
-  cast_runner_->SetWebComponentCreatedCallbackForTest(
-      AdaptCallbackForRepeating(web_component.GetReceiveCallback()));
   run_loop.Run();
-  EXPECT_FALSE(web_component.has_value());
+
+  EXPECT_FALSE(component_state_->api_bindings_has_clients());
 }
 
 TEST_F(CastRunnerIntegrationTest, UrlRequestRewriteRulesProvider) {
@@ -552,20 +578,9 @@ TEST_F(CastRunnerIntegrationTest, UrlRequestRewriteRulesProvider) {
 
   CreateComponentContextAndStartComponent();
 
-  // Bind a TestNavigationListener to the Frame.
-  cr_fuchsia::TestNavigationListener navigation_listener;
-  fidl::Binding<fuchsia::web::NavigationEventListener>
-      navigation_listener_binding(&navigation_listener);
-  cast_component_->frame()->SetNavigationEventListener(
-      navigation_listener_binding.NewBinding());
-  navigation_listener.RunUntilUrlEquals(echo_app_url);
+  CheckAppUrl(echo_app_url);
 
-  // Check the header was properly set.
-  base::Optional<base::Value> result = cr_fuchsia::ExecuteJavaScript(
-      cast_component_->frame(), "document.body.innerText");
-  ASSERT_TRUE(result);
-  ASSERT_TRUE(result->is_string());
-  EXPECT_EQ(result->GetString(), "Value");
+  EXPECT_EQ(ExecuteJavaScript("document.body.innerText"), "TestHeaderValue");
 }
 
 TEST_F(CastRunnerIntegrationTest, ApplicationControllerBound) {
@@ -589,25 +604,9 @@ TEST_F(CastRunnerIntegrationTest, RemoteDebugging) {
 
   CreateComponentContextAndStartComponent();
 
-  // Get the remote debugging port from the Context.
-  uint16_t remote_debugging_port = 0;
-  {
-    base::RunLoop run_loop;
-    cr_fuchsia::ResultReceiver<
-        fuchsia::web::Context_GetRemoteDebuggingPort_Result>
-        port_receiver(run_loop.QuitClosure());
-    cast_runner_->GetContext()->GetRemoteDebuggingPort(
-        cr_fuchsia::CallbackToFitFunction(port_receiver.GetReceiveCallback()));
-    run_loop.Run();
-
-    ASSERT_TRUE(port_receiver->is_response());
-    remote_debugging_port = port_receiver->response().port;
-    ASSERT_TRUE(remote_debugging_port != 0);
-  }
-
   // Connect to the debug service and ensure we get the proper response.
   base::Value devtools_list =
-      cr_fuchsia::GetDevToolsListFromPort(remote_debugging_port);
+      cr_fuchsia::GetDevToolsListFromPort(CastRunner::kRemoteDebuggingPort);
   ASSERT_TRUE(devtools_list.is_list());
   EXPECT_EQ(devtools_list.GetList().size(), 1u);
 
@@ -617,23 +616,11 @@ TEST_F(CastRunnerIntegrationTest, RemoteDebugging) {
 }
 
 TEST_F(CastRunnerIntegrationTest, IsolatedContext) {
-  const GURL kContentDirectoryUrl("fuchsia-dir://testdata/echo.html");
-
-  EXPECT_EQ(cast_runner_->GetChildCastRunnerCountForTest(), 0u);
+  const GURL kContentDirectoryUrl("fuchsia-dir://testdata/empty.html");
 
   RegisterAppWithTestData(kContentDirectoryUrl);
-
   CreateComponentContextAndStartComponent();
-  EXPECT_EQ(cast_runner_->GetChildCastRunnerCountForTest(), 1u);
-
-  WaitUrlAndTitle(kContentDirectoryUrl, "echo");
-
-  // Verify that the component is torn down when |component_controller| is
-  // unbound.
-  component_controller_.Unbind();
-  WaitForComponentDestroyed();
-
-  EXPECT_EQ(cast_runner_->GetChildCastRunnerCountForTest(), 0u);
+  CheckAppUrl(kContentDirectoryUrl);
 }
 
 // Test the lack of CastAgent service does not cause a CastRunner crash.
@@ -655,9 +642,6 @@ TEST_F(CastRunnerIntegrationTest, DisconnectedCastAgent) {
   app_config_manager_.AddApp(kTestAppId, test_server_.GetURL(kEchoHeaderPath));
 
   CreateComponentContextAndStartComponent();
-  fuchsia::web::NavigationControllerPtr nav_controller;
-  cast_component_->frame()->GetNavigationController(
-      nav_controller.NewRequest());
 
   base::RunLoop run_loop;
   component_controller_.set_error_handler([&run_loop](zx_status_t error) {
@@ -684,7 +668,7 @@ TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrl) {
 
   // Indicate that this app is to get bindings from a secondary agent.
   auto app_config = FakeApplicationConfigManager::CreateConfig(
-      kTestAppId, test_server_.GetURL(kEchoAppPath));
+      kTestAppId, test_server_.GetURL(kBlankAppUrl));
   app_config.set_agent_url(kDummyAgentUrl);
   app_config_manager_.AddAppConfig(std::move(app_config));
 
@@ -713,6 +697,7 @@ TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrl) {
           }));
 
   StartCastComponent(component_url);
+  WaitComponentState();
 
   base::RunLoop().RunUntilIdle();
 
@@ -720,6 +705,9 @@ TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrl) {
   EXPECT_FALSE(component_state_->api_bindings_has_clients());
   // Validate that the correct rewrite rules were requested.
   EXPECT_FALSE(component_state_->url_request_rules_provider_has_clients());
+
+  // Shutdown component before destroying dummy_agent_api_bindings.
+  ShutdownComponent();
 }
 
 // Test that when RewriteRules are not provided, a WebComponent is still
@@ -727,10 +715,9 @@ TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrl) {
 // or RewriteRules.
 TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrlRewriteOptional) {
   TestApiBindings dummy_agent_api_bindings;
-
   // Indicate that this app is to get bindings from a secondary agent.
   auto app_config = FakeApplicationConfigManager::CreateConfig(
-      kTestAppId, test_server_.GetURL(kEchoAppPath));
+      kTestAppId, test_server_.GetURL(kBlankAppUrl));
   app_config.set_agent_url(kDummyAgentUrl);
   app_config_manager_.AddAppConfig(std::move(app_config));
 
@@ -759,7 +746,7 @@ TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrlRewriteOptional) {
           }));
 
   StartCastComponent(component_url);
-  WaitComponentCreated();
+  WaitComponentState();
 
   base::RunLoop().RunUntilIdle();
 
@@ -767,10 +754,13 @@ TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrlRewriteOptional) {
   EXPECT_FALSE(component_state_->api_bindings_has_clients());
   // Validate that the primary agent didn't provide its RewriteRules.
   EXPECT_FALSE(component_state_->url_request_rules_provider_has_clients());
+
+  // Shutdown component before destroying dummy_agent_api_bindings.
+  ShutdownComponent();
 }
 
-TEST_F(CastRunnerIntegrationTest, MicRedirect) {
-  GURL app_url = test_server_.GetURL("/mic.html");
+TEST_F(CastRunnerIntegrationTest, MicrophoneRedirect) {
+  GURL app_url = test_server_.GetURL("/microphone.html");
   auto app_config =
       FakeApplicationConfigManager::CreateConfig(kTestAppId, app_url);
 
@@ -779,82 +769,87 @@ TEST_F(CastRunnerIntegrationTest, MicRedirect) {
   app_config.mutable_permissions()->push_back(std::move(mic_permission));
   app_config_manager_.AddAppConfig(std::move(app_config));
 
-  base::RunLoop run_loop;
-
-  init_component_state_callback_ = base::BindOnce(
-      [](base::OnceClosure quit_closure, FakeComponentState* component_state) {
-        component_state->outgoing_directory()->AddPublicService(
-            std::make_unique<vfs::Service>(
-                [quit_closure = std::move(quit_closure)](
-                    zx::channel channel,
-                    async_dispatcher_t* dispatcher) mutable {
-                  std::move(quit_closure).Run();
-                }),
-            fuchsia::media::Audio::Name_);
-      },
-      base::Passed(run_loop.QuitClosure()));
-
   CreateComponentContextAndStartComponent();
 
+  // Expect fuchsia.media.Audio connection to be redirected to the agent.
+  base::RunLoop run_loop;
+  component_state_->outgoing_directory()->AddPublicService(
+      std::make_unique<vfs::Service>(
+          [quit_closure = run_loop.QuitClosure()](
+              zx::channel channel, async_dispatcher_t* dispatcher) mutable {
+            std::move(quit_closure).Run();
+          }),
+      fuchsia::media::Audio::Name_);
+
+  ExecuteJavaScript("connectMicrophone();");
+
+  // Will quit once AudioCapturer is connected.
   run_loop.Run();
 }
 
 class HeadlessCastRunnerIntegrationTest : public CastRunnerIntegrationTest {
  public:
   HeadlessCastRunnerIntegrationTest()
-      : CastRunnerIntegrationTest(fuchsia::web::ContextFeatureFlags::HEADLESS |
-                                  fuchsia::web::ContextFeatureFlags::NETWORK) {}
+      : CastRunnerIntegrationTest(/*headless=*/true) {}
 };
 
 // A basic integration test ensuring a basic cast request launches the right
 // URL in the Chromium service.
 TEST_F(HeadlessCastRunnerIntegrationTest, Headless) {
-  ASSERT_TRUE(cast_runner_->is_headless());
-
   const char kAnimationPath[] = "/css_animation.html";
   const GURL animation_url = test_server_.GetURL(kAnimationPath);
   app_config_manager_.AddApp(kTestAppId, animation_url);
 
   CreateComponentContextAndStartComponent();
   auto tokens = scenic::ViewTokenPair::New();
-  cast_component_->CreateView(std::move(tokens.view_holder_token.value), {},
-                              {});
 
-  WaitUrlAndTitle(animation_url, "animation finished");
+  // Create a view.
+  auto view_provider =
+      component_services_client_->Connect<fuchsia::ui::app::ViewProvider>();
+  view_provider->CreateView(std::move(tokens.view_holder_token.value), {}, {});
 
-  // Verify that dropping the "view" EventPair is handled by the CastComponent.
-  {
-    base::RunLoop run_loop;
-    cast_component_->set_on_headless_disconnect_for_test(
-        run_loop.QuitClosure());
-    tokens.view_token.value.reset();
-    run_loop.Run();
-  }
+  api_bindings_.RunUntilMessagePortReceived("animation_finished");
 
-  component_controller_.Unbind();
-  base::RunLoop().RunUntilIdle();
+  // Verify that dropped "view" EventPair is handled properly.
+  tokens.view_token.value.reset();
+  api_bindings_.RunUntilMessagePortReceived("view_hidden");
 }
 
 // Isolated *and* headless? Doesn't sound like much fun!
 TEST_F(HeadlessCastRunnerIntegrationTest, IsolatedAndHeadless) {
-  ASSERT_TRUE(cast_runner_->is_headless());
-
-  const GURL kContentDirectoryUrl("fuchsia-dir://testdata/echo.html");
-
-  EXPECT_EQ(cast_runner_->GetChildCastRunnerCountForTest(), 0u);
+  const GURL kContentDirectoryUrl("fuchsia-dir://testdata/empty.html");
 
   RegisterAppWithTestData(kContentDirectoryUrl);
-
   CreateComponentContextAndStartComponent();
-  EXPECT_TRUE(cast_component_->runner()->is_headless());
-  EXPECT_EQ(cast_runner_->GetChildCastRunnerCountForTest(), 1u);
+  CheckAppUrl(kContentDirectoryUrl);
+}
 
-  WaitUrlAndTitle(kContentDirectoryUrl, "echo");
+// Verifies that the Context can establish a connection to the Agent's
+// MetricsRecorder service.
+TEST_F(CastRunnerIntegrationTest, LegacyMetricsRedirect) {
+  GURL app_url = test_server_.GetURL(kBlankAppUrl);
+  app_config_manager_.AddApp(kTestAppId, app_url);
 
-  // Verify that the component is torn down when |component_controller| is
-  // unbound.
-  component_controller_.Unbind();
-  WaitForComponentDestroyed();
+  auto component_url = base::StringPrintf("cast:%s", kTestAppId);
+  CreateComponentContext(component_url);
+  EXPECT_NE(component_context_, nullptr);
 
-  EXPECT_EQ(cast_runner_->GetChildCastRunnerCountForTest(), 0u);
+  StartCastComponent(component_url);
+
+  // Wait until we see the CastRunner connect to the LegacyMetrics service.
+  base::RunLoop run_loop;
+  component_state_created_callback_ = base::BindOnce(
+      [](FakeComponentState** component_state,
+         base::RepeatingClosure quit_closure) {
+        (*component_state)
+            ->outgoing_directory()
+            ->AddPublicService(
+                std::make_unique<vfs::Service>(
+                    [quit_closure](zx::channel, async_dispatcher_t*) {
+                      quit_closure.Run();
+                    }),
+                fuchsia::legacymetrics::MetricsRecorder::Name_);
+      },
+      base::Unretained(&component_state_), run_loop.QuitClosure());
+  run_loop.Run();
 }

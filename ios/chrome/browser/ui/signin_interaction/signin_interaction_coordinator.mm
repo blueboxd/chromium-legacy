@@ -230,8 +230,8 @@
   DCHECK(!self.alertCoordinator);
   DCHECK(self.topViewController);
   DCHECK(![self.topViewController presentedViewController]);
-  self.alertCoordinator =
-      ErrorCoordinator(error, dismissAction, self.topViewController);
+  self.alertCoordinator = ErrorCoordinator(
+      error, dismissAction, self.topViewController, self.browser);
   [self.alertCoordinator start];
 }
 

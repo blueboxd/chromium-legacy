@@ -107,6 +107,10 @@ void PortalContents::OnActivateResponse(
       reject(DOMExceptionCode::kInvalidStateError,
              "The portal was not yet ready or was blocked.");
       break;
+    case mojom::blink::PortalActivateResult::kRejectedDueToErrorInPortal:
+      reject(DOMExceptionCode::kInvalidStateError,
+             "The portal is in an error state.");
+      break;
     case mojom::blink::PortalActivateResult::kDisconnected:
       // Only called when |remote_portal_| is disconnected. This usually happens
       // when the browser/test runner is being shut down.

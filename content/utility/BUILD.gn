@@ -83,7 +83,7 @@ jumbo_source_set("utility") {
   }
 
   if (is_linux) {
-    deps += [ "//content/utility/soda:soda_sandbox_hook" ]
+    deps += [ "//content/utility/speech:speech_recognition_sandbox_hook" ]
   }
 
   if (enable_vr && !is_android) {

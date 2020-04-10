@@ -1,29 +1,39 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// A JSON parser, converting from a base::StringPiece to a base::Value.
 //
-// A JSON parser.  Converts strings of JSON into a Value object (see
-// base/values.h).
-// http://www.ietf.org/rfc/rfc4627.txt?number=4627
+// The JSON spec is:
+// https://tools.ietf.org/rfc/rfc8259.txt
+// which obsoletes the earlier RFCs 4627, 7158 and 7159.
 //
-// Known limitations/deviations from the RFC:
-// - Only knows how to parse ints within the range of a signed 32 bit int and
-//   decimal numbers within a double.
-// - Assumes input is encoded as UTF8.  The spec says we should allow UTF-16
-//   (BE or LE) and UTF-32 (BE or LE) as well.
-// - We limit nesting to 100 levels to prevent stack overflow (this is allowed
-//   by the RFC).
-// - A Unicode FAQ ("http://unicode.org/faq/utf_bom.html") writes a data
-//   stream may start with a Unicode Byte-Order-Mark (U+FEFF), i.e. the input
-//   UTF-8 string for the JSONReader::JsonToValue() function may start with a
-//   UTF-8 BOM (0xEF, 0xBB, 0xBF).
-//   To avoid the function from mis-treating a UTF-8 BOM as an invalid
-//   character, the function skips a Unicode BOM at the beginning of the
-//   Unicode string (converted from the input UTF-8 string) before parsing it.
+// This RFC should be equivalent to the informal spec:
+// https://www.json.org/json-en.html
 //
-// TODO(tc): Add a parsing option to to relax object keys being wrapped in
-//   double quotes
-// TODO(tc): Add an option to disable comment stripping
+// Implementation choices permitted by the RFC:
+// - Nesting is limited (to a configurable depth, 200 by default).
+// - Numbers are limited to those representable by a finite double. The
+//   conversion from a JSON number (in the base::StringPiece input) to a
+//   double-flavored base::Value may also be lossy.
+// - The input (which must be UTF-8) may begin with a BOM (Byte Order Mark).
+// - Duplicate object keys (strings) are silently allowed. Last key-value pair
+//   wins. Previous pairs are discarded.
+//
+// Configurable (see the JSONParserOptions type) deviations from the RFC:
+// - Allow trailing commas: "[1,2,]".
+// - Replace invalid Unicode with U+FFFD REPLACEMENT CHARACTER.
+//
+// Non-configurable deviations from the RFC:
+// - Allow "// etc\n" and "/* etc */" C-style comments.
+// - Allow ASCII control characters, including literal (not escaped) NUL bytes
+//   and new lines, within a JSON string.
+// - Allow "\\v" escapes within a JSON string, producing a vertical tab.
+// - Allow "\\x23" escapes within a JSON string. Subtly, the 2-digit hex value
+//   is a Unicode code point, not a UTF-8 byte. For example, "\\xFF" in the
+//   JSON source decodes to a base::Value whose string contains "\xC3\xBF", the
+//   UTF-8 encoding of U+00FF LATIN SMALL LETTER Y WITH DIAERESIS. Converting
+//   from UTF-8 to UTF-16, e.g. via UTF8ToWide, will recover a 16-bit 0x00FF.
 
 #ifndef BASE_JSON_JSON_READER_H_
 #define BASE_JSON_JSON_READER_H_
@@ -44,7 +54,7 @@ class JSONParser;
 }
 
 enum JSONParserOptions {
-  // Parses the input strictly according to RFC 4627, except for where noted
+  // Parses the input strictly according to RFC 8259, except for where noted
   // above.
   JSON_PARSE_RFC = 0,
 

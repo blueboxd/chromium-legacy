@@ -280,7 +280,8 @@ NSError* IdentityMissingError() {
     case SHOW_MANAGED_CONFIRMATION:
       [_performer
           showManagedConfirmationForHostedDomain:_identityToSignInHostedDomain
-                                  viewController:_presentingViewController];
+                                  viewController:_presentingViewController
+                                         browser:_browser];
       return;
 
     case SIGN_OUT_IF_NEEDED:
@@ -389,7 +390,8 @@ NSError* IdentityMissingError() {
                          [strongSelf setHandlingError:NO];
                          [strongSelf continueSignin];
                        }
-                       viewController:_presentingViewController];
+                       viewController:_presentingViewController
+                              browser:_browser];
 }
 
 #pragma mark AuthenticationFlowPerformerDelegate

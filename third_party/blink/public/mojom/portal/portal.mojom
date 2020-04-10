@@ -23,6 +23,10 @@ enum PortalActivateResult {
   // to load a document, or its load was canceled.
   kRejectedDueToPortalNotReady,
 
+  // The activation could not proceed because the portal is showing an error
+  // page.
+  kRejectedDueToErrorInPortal,
+
   // The activation could not proceed since the predecessor main frame was
   // navigating and the navigation could not be cancelled.
   kRejectedDueToPredecessorNavigation,

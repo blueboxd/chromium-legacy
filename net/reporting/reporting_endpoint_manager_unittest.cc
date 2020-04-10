@@ -47,7 +47,8 @@ class TestReportingCache : public ReportingCache {
   }
 
   // Everything below is NOTREACHED.
-  void AddReport(const GURL& url,
+  void AddReport(const NetworkIsolationKey& network_isolation_key,
+                 const GURL& url,
                  const std::string& user_agent,
                  const std::string& group_name,
                  const std::string& type,

@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">La contrasenya del compte de la feina no s'ha pogut sincronitzar amb el teu perfil de Windows perquè la teva organització ha restringit les actualitzacions de contrasenyes al dispositiu. Contacta amb l'administrador per obtenir ajuda.</translation>
 <translation id="5186761973554910131">S'ha proporcionat un nom de l'ordinador que no és vàlid en provar de canviar la contrasenya. Contacta amb l'administrador.</translation>
 <translation id="5265714013989877288">No es pot continuar perquè s'ha produït un error en canviar la contrasenya de Windows. Contacta amb l'administrador.</translation>
+<translation id="5581861273642234526">Ja hi ha un altre compte de la feina associat a aquest dispositiu. Inicia la sessió amb el teu compte de Windows.</translation>
 <translation id="6033715878377252112">Aplicació d'ajuda del proveïdor de credencials de Google per a Windows</translation>
 <translation id="6149399665202317746">Proveïdor de credencials de Google per a Windows</translation>
 <translation id="6243062314475217481">La contrasenya del compte de la feina no compleix els requisits de complexitat de Windows. Contacta amb l'administrador per obtenir ajuda.</translation>

@@ -54,8 +54,8 @@ std::string GetSandboxTypeInEnglish(content::SandboxType sandbox_type) {
       return "Print Compositor";
     case content::SandboxType::kAudio:
       return "Audio";
-    case content::SandboxType::kSoda:
-      return "SODA";
+    case content::SandboxType::kSpeechRecognition:
+      return "Speech Recognition";
     case content::SandboxType::kProxyResolver:
       return "Proxy Resolver";
     case content::SandboxType::kPdfConversion:

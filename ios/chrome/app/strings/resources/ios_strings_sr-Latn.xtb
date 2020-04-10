@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">Izabrana je 1 slika</translation>
 <translation id="2421044535038393232">Nastavi izmene</translation>
 <translation id="2435457462613246316">Prikaži lozinku</translation>
-<translation id="2481538920734869610">DODAJ NALOG</translation>
 <translation id="2497852260688568942">Administrator je onemogućio sinhronizaciju</translation>
 <translation id="2500374554657206846">Opcije za čuvanje lozinke</translation>
 <translation id="2523363575747517183">Ovaj veb-sajt neprekidno pokušava da otvori drugu aplikaciju.</translation>
@@ -480,7 +479,6 @@ Podaci su šifrovani pomoću pristupne fraze za sinhronizaciju <ph name="TIME" 
 <translation id="7203585745079012652">Izgovaraj odgovore</translation>
 <translation id="7265758999917665941">Nikada za ovaj sajt</translation>
 <translation id="7272437679830969316">Verifikacija identiteta nije uspela. Lozinka nije kopirana.</translation>
-<translation id="7285236536143823449">DA, SLAŽEM SE</translation>
 <translation id="7291368939935408496">Pripremaju se lozinke...</translation>
 <translation id="7293171162284876153">Da biste pokrenuli sinhronizaciju, uključite opciju „Sinhronizujte Chrome podatke“.</translation>
 <translation id="7336264872878993241">Procenat preuzimanja: <ph name="PERCENT" /></translation>
@@ -496,6 +494,7 @@ Podaci su šifrovani pomoću pristupne fraze za sinhronizaciju <ph name="TIME" 
 <translation id="7460314822154045102">Koristi Kameru</translation>
 <translation id="7464701184726199289">Ovo će obrisati sinhronizovane podatke sa svih uređaja. Nećemo izbrisati sačuvana podešavanja sajtova i ona mogu da odražavaju vaše navike pri pregledanju. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Naziv kompanije</translation>
+<translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7481312909269577407">Prosledi</translation>
 <translation id="750493650310597496">Izabrano je 0 stavki</translation>
 <translation id="7514365320538308">Preuzmi</translation>
@@ -517,7 +516,6 @@ Pošto vašim nalogom upravlja <ph name="HOSTED_DOMAIN" />, Chrome podaci će s
 <translation id="7781829728241885113">Juče</translation>
 <translation id="778855399387580014">Započnite pretragu na novoj Chrome kartici.</translation>
 <translation id="7791543448312431591">Dodaj</translation>
-<translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7840771868269352570">Stavke koje ste izabrali će biti uklonjene.</translation>
 <translation id="7856733331829174190">Preuzimanje nije uspelo</translation>
 <translation id="7859704718976024901">Istorija pregledanja</translation>
@@ -587,6 +585,7 @@ Pošto vašim nalogom upravlja <ph name="HOSTED_DOMAIN" />, Chrome podaci će s
 <translation id="8870413625673593573">Nedavno zatvoreno</translation>
 <translation id="8881801611828450202">Pretraži ovu sliku u <ph name="SEARCH_ENGINE" />-u</translation>
 <translation id="8909135823018751308">Deli...</translation>
+<translation id="8917490105272468696">Da, omogući</translation>
 <translation id="895541991026785598">Prijavite problem</translation>
 <translation id="8976382372951310360">Pomoć</translation>
 <translation id="8981454092730389528">Google kontrole aktivnosti</translation>

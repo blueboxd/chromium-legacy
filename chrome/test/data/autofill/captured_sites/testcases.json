@@ -117,7 +117,7 @@
     { "site_name": "mango" },
     { "site_name": "mapsofindia" },
     { "site_name": "mercurypay" },
-    { "site_name": "mlbshop" },
+    { "site_name": "mlbshop", "disabled":true, "bug_number":1069615 },
     { "site_name": "modcloth" },
     { "site_name": "moma" },
     { "site_name": "monoprice" },

@@ -34,6 +34,10 @@ class CreateChromeApplicationShortcutView : public views::DialogDelegateView,
       Profile* profile,
       const extensions::Extension* app,
       const base::Callback<void(bool)>& close_callback);
+  CreateChromeApplicationShortcutView(
+      Profile* profile,
+      const std::string& web_app_id,
+      const base::Callback<void(bool)>& close_callback);
   ~CreateChromeApplicationShortcutView() override;
 
   // Initialize the controls on the dialog.

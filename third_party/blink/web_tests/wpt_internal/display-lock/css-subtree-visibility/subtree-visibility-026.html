@@ -33,13 +33,13 @@ function setUp(container) {
 test(() => {
   setUp(container);
   container.classList.add("hidden");
-  assert_equals(getComputedStyle(container).contain, "size layout style");
+  assert_equals(getComputedStyle(container).contain, "size layout style paint");
 }, "subtree-visibility: hidden adds contain: size layout style;");
 
 async_test((t) => {
   setUp(async_container);
   async_container.classList.add("auto");
-  t.step(() => assert_equals(getComputedStyle(async_container).contain, "size layout style"));
+  t.step(() => assert_equals(getComputedStyle(async_container).contain, "size layout style paint"));
   // Considering this as frame 1:
   // At frame 2, the container has size-containment, and intersection
   //   observations will be delivered at the end of that frame.
@@ -48,31 +48,31 @@ async_test((t) => {
   // At frame 4, the container is no longer size-contained since it is visible.
   requestAnimationFrame(() => {
     // Frame 2 checks:
-    t.step(() => assert_equals(getComputedStyle(async_container).contain, "size layout style"));
+    t.step(() => assert_equals(getComputedStyle(async_container).contain, "size layout style paint"));
 
     requestAnimationFrame(() => {
       // Frame 3 checks:
-      t.step(() => assert_equals(getComputedStyle(async_container).contain, "size layout style"));
+      t.step(() => assert_equals(getComputedStyle(async_container).contain, "size layout style paint"));
 
       requestAnimationFrame(() => {
         // Frame 4 checks:
-        t.step(() => assert_equals(getComputedStyle(async_container).contain, "layout style"));
+        t.step(() => assert_equals(getComputedStyle(async_container).contain, "layout style paint"));
         t.done();
       });
     });
   });
-}, "subtree-visibility: auto adds contain: size layout style;");
+}, "subtree-visibility: auto adds contain: size layout style paint;");
 
 test(() => {
   setUp(container);
   container.classList.add("auto");
   container.style = "contain: style;";
-  assert_equals(getComputedStyle(container).contain, "size layout style");
+  assert_equals(getComputedStyle(container).contain, "size layout style paint");
   container.style = "contain: style layout;";
-  assert_equals(getComputedStyle(container).contain, "size layout style");
+  assert_equals(getComputedStyle(container).contain, "size layout style paint");
   container.style = "";
-  assert_equals(getComputedStyle(container).contain, "size layout style");
-}, "subtree-visibility: auto adds contain: size layout style, can't be overridden");
+  assert_equals(getComputedStyle(container).contain, "size layout style paint");
+}, "subtree-visibility: auto adds contain: size layout style paint, can't be overridden");
 
 test(() => {
   setUp(container);
@@ -83,5 +83,5 @@ test(() => {
   assert_equals(getComputedStyle(container).contain, "size layout style paint");
   container.style = "contain: content;";
   assert_equals(getComputedStyle(container).contain, "size layout style paint");
-}, "subtree-visibility adds contain: size layout style and keeps paint if it exists");
+}, "subtree-visibility keeps all containment even when shorthands are specified");
 </script>

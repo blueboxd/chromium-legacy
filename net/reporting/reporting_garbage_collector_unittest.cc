@@ -26,6 +26,7 @@ class ReportingGarbageCollectorTest : public ReportingTestBase {
     return reports.size();
   }
 
+  const NetworkIsolationKey kNik_;
   const GURL kUrl_ = GURL("https://origin/path");
   const std::string kUserAgent_ = "Mozilla/1.0";
   const std::string kGroup_ = "group";
@@ -41,7 +42,7 @@ TEST_F(ReportingGarbageCollectorTest, Created) {
 TEST_F(ReportingGarbageCollectorTest, Timer) {
   EXPECT_FALSE(garbage_collection_timer()->IsRunning());
 
-  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
+  cache()->AddReport(kNik_, kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
 
@@ -53,7 +54,7 @@ TEST_F(ReportingGarbageCollectorTest, Timer) {
 }
 
 TEST_F(ReportingGarbageCollectorTest, Report) {
-  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
+  cache()->AddReport(kNik_, kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
   garbage_collection_timer()->Fire();
@@ -62,7 +63,7 @@ TEST_F(ReportingGarbageCollectorTest, Report) {
 }
 
 TEST_F(ReportingGarbageCollectorTest, ExpiredReport) {
-  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
+  cache()->AddReport(kNik_, kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
   tick_clock()->Advance(2 * policy().max_report_age);
@@ -72,7 +73,7 @@ TEST_F(ReportingGarbageCollectorTest, ExpiredReport) {
 }
 
 TEST_F(ReportingGarbageCollectorTest, FailedReport) {
-  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
+  cache()->AddReport(kNik_, kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
 

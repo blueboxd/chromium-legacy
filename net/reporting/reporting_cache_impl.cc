@@ -29,17 +29,19 @@ ReportingCacheImpl::~ReportingCacheImpl() {
   }
 }
 
-void ReportingCacheImpl::AddReport(const GURL& url,
-                                   const std::string& user_agent,
-                                   const std::string& group_name,
-                                   const std::string& type,
-                                   std::unique_ptr<const base::Value> body,
-                                   int depth,
-                                   base::TimeTicks queued,
-                                   int attempts) {
-  auto report = std::make_unique<ReportingReport>(url, user_agent, group_name,
-                                                  type, std::move(body), depth,
-                                                  queued, attempts);
+void ReportingCacheImpl::AddReport(
+    const NetworkIsolationKey& network_isolation_key,
+    const GURL& url,
+    const std::string& user_agent,
+    const std::string& group_name,
+    const std::string& type,
+    std::unique_ptr<const base::Value> body,
+    int depth,
+    base::TimeTicks queued,
+    int attempts) {
+  auto report = std::make_unique<ReportingReport>(
+      network_isolation_key, url, user_agent, group_name, type, std::move(body),
+      depth, queued, attempts);
 
   auto inserted = reports_.insert(std::move(report));
   DCHECK(inserted.second);
@@ -84,6 +86,9 @@ base::Value ReportingCacheImpl::GetReportsAsValue() const {
   std::vector<base::Value> report_list;
   for (const ReportingReport* report : sorted_reports) {
     base::Value report_dict(base::Value::Type::DICTIONARY);
+    report_dict.SetKey(
+        "network_isolation_key",
+        base::Value(report->network_isolation_key.ToDebugString()));
     report_dict.SetKey("url", base::Value(report->url.spec()));
     report_dict.SetKey("group", base::Value(report->group));
     report_dict.SetKey("type", base::Value(report->type));

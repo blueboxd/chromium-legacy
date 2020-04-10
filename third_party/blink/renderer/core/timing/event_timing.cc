@@ -46,6 +46,7 @@ bool IsEventTypeForEventTiming(const Event& event) {
           event.IsCompositionEvent() || event.IsDragEvent()) &&
          event.type() != event_type_names::kMousemove &&
          event.type() != event_type_names::kPointermove &&
+         event.type() != event_type_names::kPointerrawupdate &&
          event.type() != event_type_names::kTouchmove &&
          event.type() != event_type_names::kWheel &&
          event.type() != event_type_names::kDrag;

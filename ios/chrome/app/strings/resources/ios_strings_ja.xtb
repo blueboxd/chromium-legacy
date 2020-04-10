@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 枚選択されています</translation>
 <translation id="2421044535038393232">編集を続ける</translation>
 <translation id="2435457462613246316">パスワードを表示</translation>
-<translation id="2481538920734869610">アカウントを追加</translation>
 <translation id="2497852260688568942">同期は管理者により無効にされています</translation>
 <translation id="2500374554657206846">パスワードの保存オプション</translation>
 <translation id="2523363575747517183">このウェブサイトは別のアプリケーションを繰り返し開こうとしています。</translation>
@@ -480,7 +479,6 @@
 <translation id="7203585745079012652">回答を音声で聞く</translation>
 <translation id="7265758999917665941">このサイトでは保存しない</translation>
 <translation id="7272437679830969316">ユーザー認証に失敗しました。パスワードはコピーされませんでした。</translation>
-<translation id="7285236536143823449">利用する</translation>
 <translation id="7291368939935408496">パスワードの準備中...</translation>
 <translation id="7293171162284876153">同期を開始するには、[Chrome データを同期] をオンにしてください。</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />%ダウンロード</translation>
@@ -496,6 +494,7 @@
 <translation id="7460314822154045102">カメラを使う</translation>
 <translation id="7464701184726199289">すべてのデバイスから同期データを削除します。保存済みのサイト設定は削除されず、普段の閲覧行動を反映した設定などが残る場合があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">会社名</translation>
+<translation id="7473891865547856676">スキップ</translation>
 <translation id="7481312909269577407">進む</translation>
 <translation id="750493650310597496">選択されていません</translation>
 <translation id="7514365320538308">ダウンロード</translation>
@@ -517,7 +516,6 @@
 <translation id="7781829728241885113">昨日</translation>
 <translation id="778855399387580014">新しい Chrome タブで検索を開始します。</translation>
 <translation id="7791543448312431591">追加</translation>
-<translation id="780301667611848630">いいえ</translation>
 <translation id="7840771868269352570">選択したアイテムが削除されます。</translation>
 <translation id="7856733331829174190">ダウンロードできませんでした</translation>
 <translation id="7859704718976024901">閲覧履歴</translation>
@@ -587,6 +585,7 @@
 <translation id="8870413625673593573">最近閉じたタブ</translation>
 <translation id="8881801611828450202">この画像を <ph name="SEARCH_ENGINE" /> で検索</translation>
 <translation id="8909135823018751308">共有...</translation>
+<translation id="8917490105272468696">有効にする</translation>
 <translation id="895541991026785598">問題の報告</translation>
 <translation id="8976382372951310360">ヘルプ</translation>
 <translation id="8981454092730389528">Google アクティビティ管理</translation>

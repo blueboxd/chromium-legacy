@@ -405,11 +405,11 @@ void GpuWatchdogThreadImplV2::InProgress() {
 
 bool GpuWatchdogThreadImplV2::IsArmed() {
   // It's an odd number.
-  return base::subtle::Release_Load(&arm_disarm_counter_) & 1;
+  return base::subtle::NoBarrier_Load(&arm_disarm_counter_) & 1;
 }
 
 base::subtle::Atomic32 GpuWatchdogThreadImplV2::ReadArmDisarmCounter() {
-  return base::subtle::Release_Load(&arm_disarm_counter_);
+  return base::subtle::NoBarrier_Load(&arm_disarm_counter_);
 }
 
 // Running on the watchdog thread.

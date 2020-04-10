@@ -262,7 +262,7 @@ std::string SandboxMac::GetSandboxProfile(SandboxType sandbox_type) {
       break;
     case service_manager::SandboxType::kNoSandbox:
     case service_manager::SandboxType::kInvalid:
-    case service_manager::SandboxType::kSoda:
+    case service_manager::SandboxType::kSpeechRecognition:
       CHECK(false);
       break;
   }

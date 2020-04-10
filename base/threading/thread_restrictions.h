@@ -96,6 +96,7 @@
 // that's okay.
 
 class BrowserProcessImpl;
+class ChromeNSSCryptoModuleDelegate;
 class HistogramSynchronizer;
 class KeyStorageLinux;
 class NativeBackendKWallet;
@@ -426,6 +427,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
 
   // Allowed usage:
   friend class SimpleThread;
+  friend class ::ChromeNSSCryptoModuleDelegate;
   friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
   friend class blink::SourceStream;
   friend class blink::WorkerThread;

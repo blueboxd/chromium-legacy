@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 valgt</translation>
 <translation id="2421044535038393232">Rediger videre</translation>
 <translation id="2435457462613246316">Vis adgangskode</translation>
-<translation id="2481538920734869610">TILFØJ KONTO</translation>
 <translation id="2497852260688568942">Synkronisering er deaktiveret af din administrator.</translation>
 <translation id="2500374554657206846">Valgmuligheder for at gemme adgangskode</translation>
 <translation id="2523363575747517183">Dette website forsøger hele tiden at åbne en anden app.</translation>
@@ -480,7 +479,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7203585745079012652">Giv talte svar</translation>
 <translation id="7265758999917665941">Aldrig for dette website</translation>
 <translation id="7272437679830969316">Din identitet kunne ikke bekræftes. Adgangskoden blev ikke kopieret.</translation>
-<translation id="7285236536143823449">JA TAK</translation>
 <translation id="7291368939935408496">Forbereder adgangskoder...</translation>
 <translation id="7293171162284876153">Aktivér "Synkroniser dine Chrome-data" for starte synkroniseringen.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent er downloadet</translation>
@@ -496,6 +494,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7460314822154045102">Brug Kamera</translation>
 <translation id="7464701184726199289">Dette rydder synkroniserede data fra alle enheder. Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Virksomhedsnavn</translation>
+<translation id="7473891865547856676">Nej tak</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="750493650310597496">0 valgt</translation>
 <translation id="7514365320538308">Download</translation>
@@ -517,7 +516,6 @@ Eftersom din konto administreres af <ph name="HOSTED_DOMAIN" />, slettes dine Ch
 <translation id="7781829728241885113">I går</translation>
 <translation id="778855399387580014">Start en søgning i en ny Chrome-fane.</translation>
 <translation id="7791543448312431591">Tilføj</translation>
-<translation id="780301667611848630">Nej tak</translation>
 <translation id="7840771868269352570">De valgte elementer fjernes.</translation>
 <translation id="7856733331829174190">Downloaden mislykkedes</translation>
 <translation id="7859704718976024901">Browserhistorik</translation>
@@ -587,6 +585,7 @@ Eftersom din konto administreres af <ph name="HOSTED_DOMAIN" />, slettes dine Ch
 <translation id="8870413625673593573">Senest lukkede</translation>
 <translation id="8881801611828450202">Søg på <ph name="SEARCH_ENGINE" /> efter dette billede</translation>
 <translation id="8909135823018751308">Del…</translation>
+<translation id="8917490105272468696">Ja tak</translation>
 <translation id="895541991026785598">Rapportér et problem</translation>
 <translation id="8976382372951310360">Hjælp</translation>
 <translation id="8981454092730389528">Aktivitetsadministration på Google</translation>

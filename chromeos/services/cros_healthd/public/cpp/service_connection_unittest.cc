@@ -104,7 +104,7 @@ mojom::CachedVpdInfoPtr MakeCachedVpdInfo() {
   return mojom::CachedVpdInfo::New("fake_sku_number" /* sku_number */);
 }
 
-base::Optional<std::vector<mojom::CpuInfoPtr>> MakeCpuInfo() {
+mojom::CpuResultPtr MakeCpuResult() {
   std::vector<mojom::CpuInfoPtr> cpu_info;
   cpu_info.push_back(mojom::CpuInfo::New(
       "Dank CPU 1" /* model_name */,
@@ -114,7 +114,7 @@ base::Optional<std::vector<mojom::CpuInfoPtr>> MakeCpuInfo() {
       "Dank CPU 2" /* model_name */,
       mojom::CpuArchitectureEnum::kX86_64 /* architecture */,
       2600000 /* max_clock_speed_khz */));
-  return cpu_info;
+  return mojom::CpuResult::NewCpuInfo(std::move(cpu_info));
 }
 
 mojom::TimezoneInfoPtr MakeTimezoneInfo() {
@@ -149,7 +149,7 @@ mojom::TelemetryInfoPtr MakeTelemetryInfo() {
   return mojom::TelemetryInfo::New(
       MakeBatteryInfo() /* battery_info */,
       MakeNonRemovableBlockDeviceInfo() /* block_device_info */,
-      MakeCachedVpdInfo() /* vpd_info */, MakeCpuInfo() /* cpu_info */,
+      MakeCachedVpdInfo() /* vpd_info */, MakeCpuResult() /* cpu_result */,
       MakeTimezoneInfo() /* timezone_info */,
       MakeMemoryInfo() /* memory_info */,
       MakeBacklightInfo() /* backlight_info */, MakeFanInfo() /* fan_info */

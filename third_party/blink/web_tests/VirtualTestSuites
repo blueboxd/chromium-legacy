@@ -270,11 +270,6 @@
     "args": ["--force-presentation-receiver-for-testing"]
   },
   {
-    "prefix": "paint-timing",
-    "bases": ["external/wpt/paint-timing"],
-    "args": ["--enable-threaded-compositing"]
-  },
-  {
     "prefix": "cors-rfc1918",
     "bases": ["http/tests/security/cors-rfc1918"],
     "args": ["--enable-blink-features=CorsRFC1918"]

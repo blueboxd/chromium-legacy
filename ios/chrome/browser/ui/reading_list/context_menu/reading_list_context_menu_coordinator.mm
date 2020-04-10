@@ -9,7 +9,9 @@
 #include "base/metrics/user_metrics_action.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/tracker.h"
-#import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_commands.h"
+#import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_params.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -47,14 +49,16 @@ enum UMAContextMenuAction {
 @end
 
 @implementation ReadingListContextMenuCoordinator
-@synthesize commandHandler = _commandHandler;
+@synthesize delegate = _delegate;
 @synthesize params = _params;
 @synthesize started = _started;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
                                     params:
                                         (ReadingListContextMenuParams*)params {
   self = [super initWithBaseViewController:viewController
+                                   browser:browser
                                      title:params.title
                                    message:params.message
                                       rect:params.rect
@@ -72,8 +76,7 @@ enum UMAContextMenuAction {
   if (self.started)
     return;
 
-  __weak id<ReadingListContextMenuCommands> weakCommandHandler =
-      self.commandHandler;
+  __weak id<ReadingListContextMenuDelegate> weakDelegate = self.delegate;
   __weak ReadingListContextMenuParams* weakParams = self.params;
 
   // Add "Open In New Tab" option.
@@ -81,11 +84,10 @@ enum UMAContextMenuAction {
       l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
   [self addItemWithTitle:openInNewTabTitle
                   action:^{
-                    [weakCommandHandler
+                    [weakDelegate
                         openURLInNewTabForContextMenuWithParams:weakParams];
                     UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu",
                                               NEW_TAB, ENUM_MAX);
-
                   }
                    style:UIAlertActionStyleDefault];
 
@@ -94,7 +96,7 @@ enum UMAContextMenuAction {
       l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
   [self addItemWithTitle:openInNewTabIncognitoTitle
                   action:^{
-                    [weakCommandHandler
+                    [weakDelegate
                         openURLInNewIncognitoTabForContextMenuWithParams:
                             weakParams];
                     UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu",
@@ -107,8 +109,7 @@ enum UMAContextMenuAction {
       l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_COPY);
   [self addItemWithTitle:copyLinkTitle
                   action:^{
-                    [weakCommandHandler
-                        copyURLForContextMenuWithParams:weakParams];
+                    [weakDelegate copyURLForContextMenuWithParams:weakParams];
                     UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu",
                                               COPY_LINK, ENUM_MAX);
                   }
@@ -120,7 +121,7 @@ enum UMAContextMenuAction {
         l10n_util::GetNSString(IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE);
     [self addItemWithTitle:viewOfflineVersionTitle
                     action:^{
-                      [weakCommandHandler
+                      [weakDelegate
                           openOfflineURLInNewTabForContextMenuWithParams:
                               weakParams];
                       UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu",
@@ -132,7 +133,7 @@ enum UMAContextMenuAction {
   // Add "Cancel" option.
   [self addItemWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
                   action:^{
-                    [weakCommandHandler
+                    [weakDelegate
                         cancelReadingListContextMenuWithParams:weakParams];
                     UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu", CANCEL,
                                               ENUM_MAX);

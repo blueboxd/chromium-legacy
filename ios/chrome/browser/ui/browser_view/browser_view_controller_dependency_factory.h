@@ -9,19 +9,16 @@
 
 
 @class AlertCoordinator;
+class Browser;
 @class BrowserViewControllerHelper;
-class ChromeBrowserState;
 @class KeyCommandsProvider;
-class WebStateList;
 
 // Creates helper objects needed by BrowserViewController.
 @interface BrowserViewControllerDependencyFactory : NSObject
 
-// Creates a new factory backed by |browserState|. This must be the same browser
-// state provided to BrowserViewController (and like BVC, this is a weak
-// reference).
-- (id)initWithBrowserState:(ChromeBrowserState*)browserState
-              webStateList:(WebStateList*)webStateList;
+// Creates a new factory backed by |browser|. This must be the same browser
+// provided to BrowserViewController (and like BVC, this is a weak reference).
+- (instancetype)initWithBrowser:(Browser*)browser;
 
 - (BrowserViewControllerHelper*)newBrowserViewControllerHelper;
 

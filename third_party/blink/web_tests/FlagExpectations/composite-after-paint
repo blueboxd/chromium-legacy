@@ -113,3 +113,8 @@ crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gestu
 
 compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
 http/tests/images/image-decode-in-frame.html [ Pass Failure ]
+
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-opacity-descendant.html [ Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-opacity.html [ Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-opacity.html [ Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-typographic-pseudo.html [ Failure ]

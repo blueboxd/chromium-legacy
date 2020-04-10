@@ -31,7 +31,6 @@
 #include "chrome/browser/bad_message.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/background_printing_manager.h"
-#include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
@@ -45,6 +44,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/webui/print_preview/cloud_print_signin.h"
 #include "chrome/browser/ui/webui/print_preview/pdf_printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/policy_settings.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
@@ -965,7 +965,7 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
 #endif
 
   chrome::ScopedTabbedBrowserDisplayer displayer(profile);
-  print_dialog_cloud::CreateCloudPrintSigninTab(
+  CreateCloudPrintSigninTab(
       displayer.browser(), add_account,
       base::BindOnce(&PrintPreviewHandler::OnSignInTabClosed,
                      weak_factory_.GetWeakPtr()));

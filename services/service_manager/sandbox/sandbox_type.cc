@@ -54,7 +54,7 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
 #if !defined(OS_MACOSX)
     case SandboxType::kSharingService:
 #endif
-    case SandboxType::kSoda:
+    case SandboxType::kSpeechRecognition:
       return false;
   }
 }
@@ -112,7 +112,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
 #if !defined(OS_MACOSX)
     case SandboxType::kSharingService:
 #endif
-    case SandboxType::kSoda:
+    case SandboxType::kSpeechRecognition:
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kUtilityProcess);
       DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
@@ -192,8 +192,8 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
     case SandboxType::kSharingService:
       return switches::kSharingServiceSandbox;
 #endif
-    case SandboxType::kSoda:
-      return switches::kSodaSandbox;
+    case SandboxType::kSpeechRecognition:
+      return switches::kSpeechRecognitionSandbox;
 #if defined(OS_WIN)
     case SandboxType::kXrCompositing:
       return switches::kXrCompositingSandbox;
@@ -252,8 +252,8 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
 #endif
   if (sandbox_string == switches::kAudioSandbox)
     return SandboxType::kAudio;
-  if (sandbox_string == switches::kSodaSandbox)
-    return SandboxType::kSoda;
+  if (sandbox_string == switches::kSpeechRecognitionSandbox)
+    return SandboxType::kSpeechRecognition;
 #if defined(OS_CHROMEOS)
   if (sandbox_string == switches::kImeSandbox)
     return SandboxType::kIme;

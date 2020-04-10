@@ -157,6 +157,8 @@ void AXTableInfo::ClearVectors() {
   unique_cell_ids.clear();
   cell_data_vector.clear();
   row_nodes.clear();
+  cell_id_to_index.clear();
+  row_id_to_index.clear();
 }
 
 void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(

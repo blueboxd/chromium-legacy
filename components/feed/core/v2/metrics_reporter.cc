@@ -79,6 +79,21 @@ void MetricsReporter::ContentSliceViewed(int index_in_stream) {
                              index_in_stream, kMaxSuggestionsTotal);
 }
 
+void MetricsReporter::SendFeedbackAction() {
+  // TODO(harringtond): Report UMA/UserAction for this.
+  RecordInteraction();
+}
+
+void MetricsReporter::DownloadAction() {
+  // TODO(harringtond): Report UMA/UserAction for this.
+  RecordInteraction();
+}
+
+void MetricsReporter::LearnMoreAction() {
+  // TODO(harringtond): Report UMA/UserAction for this.
+  RecordInteraction();
+}
+
 void MetricsReporter::NavigationStarted() {
   // TODO(harringtond): Add user actions.
   // Report Feed_OpeningContent

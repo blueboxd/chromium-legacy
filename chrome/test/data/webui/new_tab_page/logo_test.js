@@ -8,6 +8,27 @@ import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
 import {assertNotStyle, assertStyle, createTestProxy, keydown} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
+function createImageDoodle(config = {}) {
+  const doodle = {
+    content: {
+      imageDoodle: {
+        imageUrl: {url: config.imageUrl || 'data:foo'},
+        onClickUrl: {url: config.onClickUrl || 'https://foo.com'},
+        shareButton: {
+          backgroundColor: {value: config.backgroundColor || 0xFFFF0000},
+          x: config.x || 0,
+          y: config.y || 0,
+          iconUrl: {url: config.iconUrl || 'data:bar'},
+        },
+      }
+    }
+  };
+  if (config.animationUrl) {
+    doodle.content.imageDoodle.animationUrl = {url: config.animationUrl};
+  }
+  return doodle;
+}
+
 suite('NewTabPageLogoTest', () => {
   /**
    * @implements {BrowserProxy}
@@ -34,19 +55,13 @@ suite('NewTabPageLogoTest', () => {
 
   test('setting simple doodle shows image', async () => {
     // Act.
-    const logo = await createLogo({
-      content: {
-        imageDoodle: {
-          imageUrl: {url: 'data:foo'},
-          shareButton: {
-            backgroundColor: {value: 0xFFFF0000},
-            x: 11,
-            y: 12,
-            iconUrl: {url: 'data:bar'},
-          },
-        }
-      }
-    });
+    const logo = await createLogo(createImageDoodle({
+      imageUrl: 'data:foo',
+      backgroundColor: 0xFFFF0000,
+      x: 11,
+      y: 12,
+      iconUrl: 'data:bar',
+    }));
 
     // Assert.
     assertNotStyle(logo.$.doodle, 'display', 'none');
@@ -64,14 +79,10 @@ suite('NewTabPageLogoTest', () => {
 
   test('setting animated doodle shows image', async () => {
     // Act.
-    const logo = await createLogo({
-      content: {
-        imageDoodle: {
-          imageUrl: {url: 'data:foo'},
-          animationUrl: {url: 'https://foo.com'},
-        }
-      }
-    });
+    const logo = await createLogo(createImageDoodle({
+      imageUrl: 'data:foo',
+      animationUrl: 'https://foo.com',
+    }));
 
     // Assert.
     assertNotStyle(logo.$.doodle, 'display', 'none');
@@ -96,7 +107,7 @@ suite('NewTabPageLogoTest', () => {
 
   test('disallowing doodle shows logo', async () => {
     // Act.
-    const logo = await await createLogo({content: {image: 'data:foo'}});
+    const logo = await createLogo(createImageDoodle());
     logo.doodleAllowed = false;
 
     // Assert.
@@ -201,14 +212,10 @@ suite('NewTabPageLogoTest', () => {
 
   test('clicking simple doodle opens link', async () => {
     // Arrange.
-    const logo = await createLogo({
-      content: {
-        imageDoodle: {
-          imageUrl: {url: 'data:foo'},
-          onClickUrl: {url: 'https://foo.com'},
-        }
-      }
-    });
+    const logo = await createLogo(createImageDoodle({
+      imageUrl: 'data:foo',
+      onClickUrl: 'https://foo.com',
+    }));
 
     // Act.
     logo.$.image.click();
@@ -241,14 +248,10 @@ suite('NewTabPageLogoTest', () => {
 
   test('clicking image of animated doodle starts animation', async () => {
     // Arrange.
-    const logo = await createLogo({
-      content: {
-        imageDoodle: {
-          imageUrl: {url: 'data:foo'},
-          animationUrl: {url: 'https://foo.com'},
-        }
-      }
-    });
+    const logo = await createLogo(createImageDoodle({
+      imageUrl: 'data:foo',
+      animationUrl: 'https://foo.com',
+    }));
 
     // Act.
     logo.$.image.click();
@@ -262,15 +265,11 @@ suite('NewTabPageLogoTest', () => {
 
   test('clicking animation of animated doodle opens link', async () => {
     // Arrange.
-    const logo = await createLogo({
-      content: {
-        imageDoodle: {
-          imageUrl: {url: 'data:foo'},
-          animationUrl: {url: 'https://foo.com'},
-          onClickUrl: {url: 'https://bar.com'},
-        }
-      }
-    });
+    const logo = await createLogo(createImageDoodle({
+      imageUrl: 'data:foo',
+      animationUrl: 'https://foo.com',
+      onClickUrl: 'https://bar.com',
+    }));
     logo.$.image.click();
 
     // Act.
@@ -279,5 +278,40 @@ suite('NewTabPageLogoTest', () => {
 
     // Assert.
     assertEquals(url, 'https://bar.com');
+  });
+
+  test('share dialog removed on start', async () => {
+    // Arrange.
+    const logo = await createLogo(createImageDoodle());
+
+    // Assert.
+    assertFalse(!!logo.shadowRoot.querySelector('ntp-doodle-share-dialog'));
+  });
+
+  test('clicking share button adds share dialog', async () => {
+    // Arrange.
+    const logo = await createLogo(createImageDoodle());
+
+    // Act.
+    logo.$.shareButton.click();
+    await flushTasks();
+
+    // Assert.
+    assertTrue(!!logo.shadowRoot.querySelector('ntp-doodle-share-dialog'));
+  });
+
+  test('closing share dialog removes share dialog', async () => {
+    // Arrange.
+    const logo = await createLogo(createImageDoodle());
+    logo.$.shareButton.click();
+    await flushTasks();
+
+    // Act.
+    logo.shadowRoot.querySelector('ntp-doodle-share-dialog')
+        .dispatchEvent(new Event('close'));
+    await flushTasks();
+
+    // Assert.
+    assertFalse(!!logo.shadowRoot.querySelector('ntp-doodle-share-dialog'));
   });
 });

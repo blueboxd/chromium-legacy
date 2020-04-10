@@ -76,6 +76,9 @@ Polymer({
       type: Object,
       observer: 'focusConfigChanged_',
     },
+
+    /** @private */
+    showDisableSafebrowsingDialog_: Boolean,
   },
 
   observers: [
@@ -147,8 +150,7 @@ Polymer({
       this.setPrefValue('safebrowsing.enabled', true);
       this.setPrefValue('safebrowsing.enhanced', false);
     } else {  // disabled state
-      this.setPrefValue('safebrowsing.enabled', false);
-      this.setPrefValue('safebrowsing.enhanced', false);
+      this.showDisableSafebrowsingDialog_ = true;
     }
   },
 
@@ -189,6 +191,30 @@ Polymer({
   /** @private */
   onSecurityKeysClick_() {
     settings.Router.getInstance().navigateTo(settings.routes.SECURITY_KEYS);
+  },
+
+  /**
+   * Handles the closure of the disable safebrowsing dialog, reselects the
+   * appropriate radio button if the user cancels the dialog, and puts focus on
+   * the disable safebrowsing button.
+   * @private
+   */
+  onDisableSafebrowsingDialogClose_() {
+    // Check if the dialog was confirmed before closing it.
+    if (/** @type {!SettingsDisableSafebrowsingDialogElement} */
+        (this.$$('settings-disable-safebrowsing-dialog')).wasConfirmed()) {
+      this.setPrefValue('safebrowsing.enabled', false);
+      this.setPrefValue('safebrowsing.enhanced', false);
+    }
+
+    this.showDisableSafebrowsingDialog_ = false;
+
+    // Have the correct radio button highlighted.
+    this.$.safeBrowsingRadio.selected = this.selectSafeBrowsingRadio_;
+
+    // Set focus back to the no protection button regardless of user interaction
+    // with the dialog, as it was the entry point to the dialog.
+    cr.ui.focusWithoutInk(assert(this.$.safeBrowsingDisabled));
   },
 });
 })();

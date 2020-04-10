@@ -33,15 +33,17 @@
 // |-executeCancelHandler|) has occurred.
 @property(nonatomic, copy) ProceduralBlock noInteractionAction;
 
+// TODO(crbug.com/1029346): Remove this init after migrate away from downstream
+// AlertCoordinator use.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                     title:(NSString*)title
+                                   message:(NSString*)message;
+
 // Init a coordinator for displaying a alert on this view controller.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
                                      title:(NSString*)title
                                    message:(NSString*)message
-    NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                     title:(NSString*)title
-                                   message:(NSString*)message
-                              browserState:(ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController

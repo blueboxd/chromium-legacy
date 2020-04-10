@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">Seleccionouse un</translation>
 <translation id="2421044535038393232">Seguir editando</translation>
 <translation id="2435457462613246316">Mostrar contrasinal</translation>
-<translation id="2481538920734869610">ENGADIR CONTA</translation>
 <translation id="2497852260688568942">O administrador desactivou a sincronización</translation>
 <translation id="2500374554657206846">Opcións para gardar contrasinais</translation>
 <translation id="2523363575747517183">Este sitio web está tentando abrir outra aplicación.</translation>
@@ -480,7 +479,6 @@ Os teus datos encriptáronse co teu contrasinal de sincronización o <ph name="T
 <translation id="7203585745079012652">Dicir as respostas</translation>
 <translation id="7265758999917665941">Nunca neste sitio</translation>
 <translation id="7272437679830969316">Non se pode verificar a túa identidade, polo que non se copiou o contrasinal.</translation>
-<translation id="7285236536143823449">SI, ACEPTO</translation>
 <translation id="7291368939935408496">Preparando contrasinais…</translation>
 <translation id="7293171162284876153">Para iniciar a sincronización, activa a opción Sincronizar os teus datos de Chrome.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> por cento descargado</translation>
@@ -496,6 +494,7 @@ Os teus datos encriptáronse co teu contrasinal de sincronización o <ph name="T
 <translation id="7460314822154045102">Usar cámara</translation>
 <translation id="7464701184726199289">Esta acción borra os datos sincronizados de todos os dispositivos. As opcións de configuración dos sitios gardados non se eliminarán e quizais se reflictan os teus hábitos de navegación. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Nome da empresa</translation>
+<translation id="7473891865547856676">Non, grazas</translation>
 <translation id="7481312909269577407">Adiante</translation>
 <translation id="750493650310597496">0 seleccionados</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -517,7 +516,6 @@ Ademais, dado que a conta está xestionada por <ph name="HOSTED_DOMAIN" />, os t
 <translation id="7781829728241885113">Onte</translation>
 <translation id="778855399387580014">Inicia unha busca nunha nova pestana de Chrome.</translation>
 <translation id="7791543448312431591">Engadir</translation>
-<translation id="780301667611848630">Non, grazas</translation>
 <translation id="7840771868269352570">Quitaranse os elementos seleccionados.</translation>
 <translation id="7856733331829174190">Non se puido descargar o ficheiro</translation>
 <translation id="7859704718976024901">Historial de navegación</translation>
@@ -587,6 +585,7 @@ Ademais, dado que a conta está xestionada por <ph name="HOSTED_DOMAIN" />, os t
 <translation id="8870413625673593573">Pechados recentemente</translation>
 <translation id="8881801611828450202">Buscar esta imaxe en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Compartir...</translation>
+<translation id="8917490105272468696">Si, acepto</translation>
 <translation id="895541991026785598">Informar dun problema</translation>
 <translation id="8976382372951310360">Axuda</translation>
 <translation id="8981454092730389528">Controis de actividade de Google</translation>

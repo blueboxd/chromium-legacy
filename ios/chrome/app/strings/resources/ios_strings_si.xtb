@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">0 ක් තෝරා ගන්නා ලදි</translation>
 <translation id="2421044535038393232">සංස්කරණ කර ගෙන යන්න</translation>
 <translation id="2435457462613246316">මුරපදය පෙන්වන්න</translation>
-<translation id="2481538920734869610">ගිණුම එක් කරන්න</translation>
 <translation id="2497852260688568942">සමමුහුර්ත කිරීම ඔබේ පරිපාලක විසින් අබල කර ඇත</translation>
 <translation id="2500374554657206846">මුරපදය සුරැකීමට විකල්ප</translation>
 <translation id="2523363575747517183">මෙම වෙබ් අඩවිය තවත් යෙදුමක් විවෘත කිරීමට නැවත නැවතත් උත්සාහ කරයි.</translation>
@@ -480,7 +479,6 @@
 <translation id="7203585745079012652">පිළිතුරු ආපසු දෙන්න</translation>
 <translation id="7265758999917665941">කිසි විටෙක මෙම වෙබ් අඩවිය සඳහා නැත</translation>
 <translation id="7272437679830969316">ඔබගේ අනන්‍යතාව තහවුරු කළ නොහැකිය. මුරපදය පිටපත් නොකරන ලදී.</translation>
-<translation id="7285236536143823449">ඔව්, මම එනවා</translation>
 <translation id="7291368939935408496">මුරපද සූදානම් කරමින්...</translation>
 <translation id="7293171162284876153">සමමුහුර්තය ඇරඹීමට, "ඔබේ Chrome දත්ත සමමුහුර්තය" ක්‍රියාත්මක කරන්න.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> ක් බාගන්නා ලදි</translation>
@@ -496,6 +494,7 @@
 <translation id="7460314822154045102">කැමරාව භාවිත කරන්න</translation>
 <translation id="7464701184726199289">සියලු උපාංග වලින් සමමුහුර්ත කළ දත්ත මෙයින් හිස් කරයි. සුරැකි අඩවි සැකසීම් නොමැකෙනු ඇති අතර එයින් ඔබගේ බ්‍රවුස් කිරීමේ පුරුදු පිළිබිඹු විය හැක. <ph name="BEGIN_LINK" />තවත් දැන ගන්න<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">සමාගමේ නම</translation>
+<translation id="7473891865547856676">එපා ස්තූතියි</translation>
 <translation id="7481312909269577407">ඉදිරියට යන්න</translation>
 <translation id="750493650310597496">0 තේරා ගන්නා ලදි</translation>
 <translation id="7514365320538308">බාගන්න</translation>
@@ -517,7 +516,6 @@
 <translation id="7781829728241885113">ඊයේ</translation>
 <translation id="778855399387580014">නව Chrome පටිත්තක් තුළ සෙවීම ආරම්භ කරන්න.</translation>
 <translation id="7791543448312431591">එක් කරන්න</translation>
-<translation id="780301667611848630">එපා, ස්තූතියි</translation>
 <translation id="7840771868269352570">ඔබ තෝරාගත් අයිතම ඉවත් කෙරෙනු ඇත.</translation>
 <translation id="7856733331829174190">බාගැනීමට නොහැකි විය</translation>
 <translation id="7859704718976024901">බ්‍රවුස් කිරීමේ ඉතිහාසය</translation>
@@ -587,6 +585,7 @@
 <translation id="8870413625673593573">මෑතකදී වසන ලද</translation>
 <translation id="8881801611828450202">මෙම රූපය සඳහා <ph name="SEARCH_ENGINE" /> සොයන්න</translation>
 <translation id="8909135823018751308">බෙදාගන්න…</translation>
+<translation id="8917490105272468696">ඔව්, මම කැමතියි</translation>
 <translation id="895541991026785598">ගැටලුවක් වාර්තා කරන්න</translation>
 <translation id="8976382372951310360">උදවු</translation>
 <translation id="8981454092730389528">Google ක්‍රියාකාරකම් පාලනය</translation>

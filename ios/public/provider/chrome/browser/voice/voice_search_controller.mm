@@ -20,7 +20,8 @@ void VoiceSearchController::PrepareToAppear() {}
 
 void VoiceSearchController::StartRecognition(
     UIViewController* presenting_view_controller,
-    web::WebState* current_web_state) {}
+    web::WebState* current_web_state,
+    Browser* browser) {}
 
 bool VoiceSearchController::IsTextToSpeechEnabled() {
   return false;

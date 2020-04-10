@@ -1143,7 +1143,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self ensureVoiceSearchControllerCreated];
 
   // Present voice search.
-  _voiceSearchController->StartRecognition(self, self.currentWebState);
+  _voiceSearchController->StartRecognition(self, self.currentWebState,
+                                           self.browser);
   [self.omniboxHandler cancelOmniboxEdit];
 }
 
@@ -1811,8 +1812,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   for (int index = 0; index < webStateList->count(); ++index)
     [self installDelegatesForWebState:webStateList->GetWebStateAt(index)];
 
-  self.imageSaver = [[ImageSaver alloc] initWithBaseViewController:self];
-  self.imageCopier = [[ImageCopier alloc] initWithBaseViewController:self];
+  self.imageSaver =
+      [[ImageSaver alloc] initWithBaseViewController:self browser:self.browser];
+  self.imageCopier =
+      [[ImageCopier alloc] initWithBaseViewController:self
+                                              browser:self.browser];
 
   // Set the TTS playback controller's WebStateList.
   TextToSpeechPlaybackControllerFactory::GetInstance()

@@ -137,6 +137,7 @@ class AppElement extends PolymerElement {
         }
       }
     });
+    this.setupShortcutDragDropOgbWorkaround_();
   }
 
   /** @override */
@@ -286,21 +287,18 @@ class AppElement extends PolymerElement {
   /**
    * Handles messages from the OneGoogleBar iframe. The messages that are
    * handled include show bar on load and activate/deactivate.
-   * The activate/deactivate controls if the OneGoogleBar accepts mouse events,
-   * though other events need to be forwarded to support touch.
+   * The activate/deactivate controls if the OneGoogleBar is layered on top of
+   * #content. This would happen when OneGoogleBar has an overlay open.
    * @param {!Object} data
    * @private
    */
   handleOneGoogleBarMessage_(data) {
     if (data.messageType === 'loaded') {
       this.oneGoogleBarLoaded_ = true;
-      this.eventTracker_.add(window, 'mousemove', ({x, y}) => {
-        this.$.oneGoogleBar.postMessage({type: 'mousemove', x, y});
-      });
     } else if (data.messageType === 'activate') {
-      this.$.oneGoogleBar.style.pointerEvents = 'unset';
+      this.$.oneGoogleBar.style.zIndex = '1000';
     } else if (data.messageType === 'deactivate') {
-      this.$.oneGoogleBar.style.pointerEvents = 'none';
+      this.$.oneGoogleBar.style.zIndex = '0';
     }
   }
 
@@ -322,6 +320,50 @@ class AppElement extends PolymerElement {
       this.eventTracker_.add(window, 'resize', onResize);
       onResize();
     }
+  }
+
+  /**
+   * During a shortcut drag, an iframe behind ntp-most-visited will prevent
+   * 'dragover' events from firing. To workaround this, 'pointer-events: none'
+   * can be set on the iframe. When doing this after the 'dragstart' event is
+   * fired is too late. We can instead set 'pointer-events: none' when the
+   * pointer enters ntp-most-visited.
+   *
+   * 'pointerenter' and pointerleave' events fire during drag. The iframe
+   * 'pointer-events' needs to be reset to the original value when 'dragend'
+   * fires if the pointer has left ntp-most-visited.
+   * @private
+   */
+  setupShortcutDragDropOgbWorkaround_() {
+    const iframe = this.$.oneGoogleBar;
+    let resetAtDragEnd = false;
+    let dragging = false;
+    let originalPointerEvents;
+    this.eventTracker_.add(this.$.mostVisited, 'pointerenter', () => {
+      if (dragging) {
+        resetAtDragEnd = false;
+        return;
+      }
+      originalPointerEvents = getComputedStyle(iframe).pointerEvents;
+      iframe.style.pointerEvents = 'none';
+    });
+    this.eventTracker_.add(this.$.mostVisited, 'pointerleave', () => {
+      if (dragging) {
+        resetAtDragEnd = true;
+        return;
+      }
+      iframe.style.pointerEvents = originalPointerEvents;
+    });
+    this.eventTracker_.add(this.$.mostVisited, 'dragstart', () => {
+      dragging = true;
+    });
+    this.eventTracker_.add(this.$.mostVisited, 'dragend', () => {
+      dragging = false;
+      if (resetAtDragEnd) {
+        resetAtDragEnd = false;
+        iframe.style.pointerEvents = originalPointerEvents;
+      }
+    });
   }
 }
 

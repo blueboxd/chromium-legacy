@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/fuchsia/startup_context.h"
-#include "base/gtest_prod_util.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_fuchsia.h"
 #include "base/optional.h"
@@ -58,13 +57,6 @@ class CastComponent : public WebComponent,
   // WebComponent overrides.
   void StartComponent() final;
 
-  // Sets a callback that will be invoked when the handle controlling the
-  // lifetime of a headless "view" is dropped.
-  void set_on_headless_disconnect_for_test(
-      base::OnceClosure on_headless_disconnect_cb) {
-    on_headless_disconnect_cb_ = std::move(on_headless_disconnect_cb);
-  }
-
   const chromium::cast::ApplicationConfig& application_config() {
     return application_config_;
   }
@@ -74,8 +66,6 @@ class CastComponent : public WebComponent,
   CastRunner* runner() const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(HeadlessCastRunnerIntegrationTest, Headless);
-
   void OnRewriteRulesReceived(
       std::vector<fuchsia::web::UrlRequestRewriteRule> rewrite_rules);
 
@@ -112,8 +102,6 @@ class CastComponent : public WebComponent,
   uint64_t media_session_id_ = 0;
   zx::eventpair headless_view_token_;
   base::MessagePumpForIO::ZxHandleWatchController headless_disconnect_watch_;
-
-  base::OnceClosure on_headless_disconnect_cb_;
 
   fidl::Binding<fuchsia::web::NavigationEventListener>
       navigation_listener_binding_;

@@ -25,6 +25,7 @@ class WebState;
 
 @protocol ApplicationCommands;
 class AuthenticationService;
+class Browser;
 @protocol BrowserCommands;
 @class ContentSuggestionsHeaderSynchronizer;
 @class ContentSuggestionsMediator;
@@ -81,6 +82,8 @@ class VoiceSearchAvailability;
     ContentSuggestionsMediator* suggestionsMediator;
 // Consumer for this mediator.
 @property(nonatomic, weak, nullable) id<NTPHomeConsumer> consumer;
+// The browser.
+@property(nonatomic, assign, nullable) Browser* browser;
 
 // Inits the mediator.
 - (void)setUp;

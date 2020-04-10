@@ -281,6 +281,9 @@ cr.define('settings', function() {
     /** @private {?settings.PrivacyPageBrowserProxy} */
     browserProxy_: null,
 
+    /** @private {?settings.MetricsBrowserProxy} */
+    metricsBrowserProxy_: null,
+
     /** @override */
     ready() {
       this.ContentSettingsTypes = settings.ContentSettingsTypes;

@@ -540,7 +540,7 @@ enum AuthenticationState {
   if (!ShouldHandleSigninError(error)) {
     return;
   }
-  _alertCoordinator = ErrorCoordinator(error, nil, self);
+  _alertCoordinator = ErrorCoordinator(error, nil, self, self.browser);
   [_alertCoordinator start];
 }
 

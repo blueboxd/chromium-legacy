@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 izbrana</translation>
 <translation id="2421044535038393232">Nadaljuj urejanje</translation>
 <translation id="2435457462613246316">Pokaži geslo</translation>
-<translation id="2481538920734869610">DODAJ RAČUN</translation>
 <translation id="2497852260688568942">Sinhronizacijo je onemogočil skrbnik</translation>
 <translation id="2500374554657206846">Možnosti shranjevanja gesel</translation>
 <translation id="2523363575747517183">To spletno mesto nenehno poskuša odpreti drugo aplikacijo.</translation>
@@ -480,7 +479,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7203585745079012652">Izgovorjava odgovorov</translation>
 <translation id="7265758999917665941">Nikoli za to spletno mesto</translation>
 <translation id="7272437679830969316">Identitete ni mogoče preveriti. Geslo ni kopirano.</translation>
-<translation id="7285236536143823449">DA, SEM ZA</translation>
 <translation id="7291368939935408496">Pripravljanje gesel ...</translation>
 <translation id="7293171162284876153">Če želite začeti sinhronizacijo, vklopite »Sinhronizacija podatkov v Chromu«.</translation>
 <translation id="7336264872878993241">Preneseno: <ph name="PERCENT" /> %</translation>
@@ -496,6 +494,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7460314822154045102">Uporabi fotoaparat</translation>
 <translation id="7464701184726199289">S tem bodo sinhronizirani podatki izbrisani iz vseh naprav. Shranjene nastavitve spletnih mest ne bodo izbrisane in morda odražajo vaše brskalne navade. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Ime podjetja</translation>
+<translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7481312909269577407">Naprej</translation>
 <translation id="750493650310597496">0 izbranih</translation>
 <translation id="7514365320538308">Prenos</translation>
@@ -517,7 +516,6 @@ Ker vaš račun upravlja <ph name="HOSTED_DOMAIN" />, bodo podatki v Chromu ob o
 <translation id="7781829728241885113">Včeraj</translation>
 <translation id="778855399387580014">Začnite iskanje na novem Chromovem zavihku.</translation>
 <translation id="7791543448312431591">Dodaj</translation>
-<translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7840771868269352570">Izbrani elementi bodo odstranjeni.</translation>
 <translation id="7856733331829174190">Prenos ni uspel</translation>
 <translation id="7859704718976024901">Zgodovina brskanja</translation>
@@ -587,6 +585,7 @@ Ker vaš račun upravlja <ph name="HOSTED_DOMAIN" />, bodo podatki v Chromu ob o
 <translation id="8870413625673593573">Nedavno zaprto</translation>
 <translation id="8881801611828450202">Uporabi <ph name="SEARCH_ENGINE" /> za iskanje te slike</translation>
 <translation id="8909135823018751308">Skupna raba …</translation>
+<translation id="8917490105272468696">Da, sem za</translation>
 <translation id="895541991026785598">Prijavite težavo</translation>
 <translation id="8976382372951310360">Pomoč</translation>
 <translation id="8981454092730389528">Googlovi kontrolniki za dejavnost</translation>

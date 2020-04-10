@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Text input should become contentful when its value is non-empty assert_equals: First contentful paint marked too early.  expected 0 but got 1
-Harness: the test ran to completion.
-

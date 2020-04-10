@@ -3607,7 +3607,7 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     case service_manager::SandboxType::kCdm:
     case service_manager::SandboxType::kPrintCompositor:
     case service_manager::SandboxType::kAudio:
-    case service_manager::SandboxType::kSoda:
+    case service_manager::SandboxType::kSpeechRecognition:
     case service_manager::SandboxType::kProxyResolver:
     case service_manager::SandboxType::kPdfConversion:
     case service_manager::SandboxType::kSharingService:

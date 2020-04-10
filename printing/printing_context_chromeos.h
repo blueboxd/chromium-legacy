@@ -23,10 +23,6 @@ class PRINTING_EXPORT PrintingContextChromeos : public PrintingContext {
   explicit PrintingContextChromeos(Delegate* delegate);
   ~PrintingContextChromeos() override;
 
-  // Returns true if the ColorMode setting is a color ColorMode and false if it
-  // is a monochrome ColorMode.
-  static base::Optional<bool> ColorModeIsColor(int color_mode);
-
   // PrintingContext implementation.
   void AskUserForSettings(int max_pages,
                           bool has_selection,

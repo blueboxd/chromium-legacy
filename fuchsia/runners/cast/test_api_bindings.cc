@@ -4,6 +4,7 @@
 
 #include "fuchsia/runners/cast/test_api_bindings.h"
 
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/run_loop.h"
 
 TestApiBindings::TestApiBindings() = default;
@@ -25,7 +26,14 @@ TestApiBindings::RunUntilMessagePortReceived(base::StringPiece port_name) {
 }
 
 void TestApiBindings::GetAll(GetAllCallback callback) {
-  callback(std::move(bindings_));
+  std::vector<chromium::cast::ApiBinding> bindings_clone;
+  for (auto& binding : bindings_) {
+    chromium::cast::ApiBinding binding_clone;
+    zx_status_t status = binding.Clone(&binding_clone);
+    ZX_CHECK(status == ZX_OK, status);
+    bindings_clone.push_back(std::move(binding_clone));
+  }
+  callback(std::move(bindings_clone));
 }
 
 void TestApiBindings::Connect(

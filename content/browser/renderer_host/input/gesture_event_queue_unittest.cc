@@ -242,11 +242,6 @@ class GestureEventQueueTest : public testing::Test,
 #endif
 };
 
-// This is for tests that are to be run for all source devices.
-class GestureEventQueueWithSourceTest
-    : public GestureEventQueueTest,
-      public testing::WithParamInterface<WebGestureDevice> {};
-
 class GestureEventQueueWithCompositorEventQueueTest
     : public GestureEventQueueTest {};
 
@@ -279,11 +274,6 @@ TEST_F(GestureEventQueueTest, SyncAckQueuesEvent) {
   EXPECT_EQ(0U, GestureEventQueueSize());
   EXPECT_EQ(1U, GetAndResetAckedGestureEventCount());
 }
-
-INSTANTIATE_TEST_SUITE_P(AllSources,
-                         GestureEventQueueWithSourceTest,
-                         testing::Values(blink::WebGestureDevice::kTouchscreen,
-                                         blink::WebGestureDevice::kTouchpad));
 
 // Test that a GestureScrollEnd is deferred during the debounce interval,
 // that Scrolls are not and that the deferred events are sent after that

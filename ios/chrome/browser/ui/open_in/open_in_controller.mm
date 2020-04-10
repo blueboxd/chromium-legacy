@@ -222,6 +222,7 @@ class OpenInControllerBridge
 }
 
 @synthesize baseView = _baseView;
+@synthesize browser = _browser;
 @synthesize previousScrollViewOffset = _previousScrollViewOffset;
 
 - (id)initWithURLLoaderFactory:
@@ -424,6 +425,7 @@ class OpenInControllerBridge
 
   _alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:topViewController
+                                                   browser:_browser
                                                      title:nil
                                                    message:message];
 

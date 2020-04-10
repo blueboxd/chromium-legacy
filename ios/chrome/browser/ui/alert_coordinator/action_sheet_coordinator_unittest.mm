@@ -7,6 +7,8 @@
 #import <UIKit/UIKit.h>
 
 #import "base/mac/foundation_util.h"
+#import "base/test/task_environment.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #include "testing/platform_test.h"
 
@@ -18,8 +20,11 @@ using ActionSheetCoordinatorTest = PlatformTest;
 
 // Tests that if there is a popover, it uses the CGRect passed in init.
 TEST_F(ActionSheetCoordinatorTest, CGRectUsage) {
+  base::test::TaskEnvironment task_environment_;
+
   ScopedKeyWindow scoped_key_window;
   UIViewController* viewController = [[UIViewController alloc] init];
+  std::unique_ptr<Browser> browser_ = std::make_unique<TestBrowser>();
   [scoped_key_window.Get() setRootViewController:viewController];
 
   UIView* view = [[UIView alloc] initWithFrame:viewController.view.bounds];
@@ -28,6 +33,7 @@ TEST_F(ActionSheetCoordinatorTest, CGRectUsage) {
   CGRect rect = CGRectMake(124, 432, 126, 63);
   AlertCoordinator* alertCoordinator =
       [[ActionSheetCoordinator alloc] initWithBaseViewController:viewController
+                                                         browser:browser_.get()
                                                            title:@"title"
                                                          message:nil
                                                             rect:rect

@@ -43,8 +43,9 @@ static constexpr const char* kServices[] = {
     "fuchsia.ui.scenic.Scenic",
     "fuchsia.vulkan.loader.Loader",
 
-    // Redirected to the agent.
-    // fuchsia.media.Audio
+    // These services are redirected to the Agent:
+    // * fuchsia.media.Audio
+    // * fuchsia.legacymetrics.MetricsRecorder
 };
 
 bool AreCastComponentParamsValid(
@@ -68,7 +69,8 @@ fuchsia::web::CreateContextParams BuildCreateContextParamsForIsolatedRunners(
 
   // Isolated contexts receive only a limited set of features.
   fuchsia::web::ContextFeatureFlags features =
-      fuchsia::web::ContextFeatureFlags::AUDIO;
+      fuchsia::web::ContextFeatureFlags::AUDIO |
+      fuchsia::web::ContextFeatureFlags::LEGACYMETRICS;
 
   if ((create_context_params.features() &
        fuchsia::web::ContextFeatureFlags::HEADLESS) ==
@@ -117,23 +119,12 @@ const char CastRunner::kAgentComponentUrl[] =
 
 CastRunner::CastRunner(
     WebContentRunner::GetContextParamsCallback get_context_params_callback,
-    bool is_headless,
-    sys::OutgoingDirectory* outgoing_directory)
+    bool is_headless)
     : WebContentRunner(base::BindRepeating(&CastRunner::GetMainContextParams,
-                                           base::Unretained(this)),
-                       outgoing_directory),
+                                           base::Unretained(this))),
       get_context_params_callback_(std::move(get_context_params_callback)),
       is_headless_(is_headless),
-      common_create_context_params_(BuildCreateContextParamsForIsolatedRunners(
-          get_context_params_callback_.Run())),
       service_directory_(CreateServiceDirectory()) {}
-
-CastRunner::CastRunner(OnDestructionCallback on_destruction_callback,
-                       fuchsia::web::ContextPtr context,
-                       bool is_headless)
-    : WebContentRunner(std::move(context)),
-      is_headless_(is_headless),
-      on_destruction_callback_(std::move(on_destruction_callback)) {}
 
 CastRunner::~CastRunner() = default;
 
@@ -210,10 +201,6 @@ void CastRunner::StartComponent(
       });
 
   pending_components_.emplace(std::move(pending_component_params));
-}
-
-size_t CastRunner::GetChildCastRunnerCountForTest() {
-  return isolated_runners_.size();
 }
 
 void CastRunner::DestroyComponent(WebComponent* component) {
@@ -318,6 +305,17 @@ CastRunner::CreateServiceDirectory() {
       }),
       fuchsia::media::Audio::Name_);
 
+  // Proxy fuchsia.legacymetrics.MetricsRecorder connection requests to the
+  // Agent.
+  service_directory->outgoing_directory()->AddPublicService(
+      std::make_unique<vfs::Service>(
+          [this](zx::channel channel, async_dispatcher_t*) {
+            this->ConnectMetricsRecorderProtocol(
+                fidl::InterfaceRequest<fuchsia::legacymetrics::MetricsRecorder>(
+                    std::move(channel)));
+          }),
+      fuchsia::legacymetrics::MetricsRecorder::Name_);
+
   return service_directory;
 }
 
@@ -330,7 +328,7 @@ void CastRunner::MaybeStartComponent(
   CastRunner* component_owner = this;
   if (pending_component_params->app_config
           .has_content_directories_for_isolated_application()) {
-    // Create a isolated, isolated CastRunner instance which will own the
+    // Create an isolated CastRunner instance which will own the
     // CastComponent.
     component_owner =
         CreateChildRunnerForIsolatedComponent(pending_component_params);
@@ -370,38 +368,27 @@ void CastRunner::CreateAndRegisterCastComponent(
 
 CastRunner* CastRunner::CreateChildRunnerForIsolatedComponent(
     CastComponent::CastComponentParams* component_params) {
-  // Construct the CreateContextParams in order to create a new Context.
-  // Some common parameters must be inherited from
-  // |common_create_context_params_|.
-  fuchsia::web::CreateContextParams isolated_context_params;
-  zx_status_t status =
-      common_create_context_params_.Clone(&isolated_context_params);
-  if (status != ZX_OK) {
-    ZX_LOG(ERROR, status) << "clone";
-    return nullptr;
-  }
-
-  // Service redirection is not necessary for isolated context. Pass default
-  // /svc as is, without overriding any services.
-  isolated_context_params.set_service_directory(base::fuchsia::OpenDirectory(
-      base::FilePath(base::fuchsia::kServiceDirectoryPath)));
-  DCHECK(isolated_context_params.service_directory());
+  // Construct the CreateContextParams in order to create a new Context.  Some
+  // common parameters must be inherited from default params returned from
+  // |get_context_params_callback_|.
+  fuchsia::web::CreateContextParams isolated_context_params =
+      BuildCreateContextParamsForIsolatedRunners(
+          get_context_params_callback_.Run());
 
   isolated_context_params.set_content_directories(
       std::move(*component_params->app_config
                      .mutable_content_directories_for_isolated_application()));
 
-  std::unique_ptr<CastRunner> cast_runner(new CastRunner(
-      base::BindOnce(&CastRunner::OnChildRunnerDestroyed,
-                     base::Unretained(this)),
-      CreateWebContext(std::move(isolated_context_params)), is_headless()));
+  auto create_context_params_callback = base::BindRepeating(
+      [](fuchsia::web::CreateContextParams isolated_context_params) {
+        return isolated_context_params;
+      },
+      base::Passed(std::move(isolated_context_params)));
 
-  // If test code is listening for Component creation events, then wire up the
-  // isolated CastRunner to signal component creation events.
-  if (web_component_created_callback_for_test()) {
-    cast_runner->SetWebComponentCreatedCallbackForTest(
-        web_component_created_callback_for_test());
-  }
+  auto cast_runner = std::make_unique<CastRunner>(
+      std::move(create_context_params_callback), is_headless());
+  cast_runner->on_destruction_callback_ = base::BindOnce(
+      &CastRunner::OnChildRunnerDestroyed, base::Unretained(this));
 
   CastRunner* cast_runner_ptr = cast_runner.get();
   isolated_runners_.insert(std::move(cast_runner));
@@ -429,6 +416,16 @@ void CastRunner::ConnectAudioProtocol(
   // Otherwise use the default fuchsia.media.Audio implementation.
   base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
       std::move(request));
+}
+
+void CastRunner::ConnectMetricsRecorderProtocol(
+    fidl::InterfaceRequest<fuchsia::legacymetrics::MetricsRecorder> request) {
+  CastComponent* component =
+      reinterpret_cast<CastComponent*>(GetAnyComponent());
+  DCHECK(component);
+
+  component->agent_manager()->ConnectToAgentService(
+      component->application_config().agent_url(), std::move(request));
 }
 
 fuchsia::web::CreateContextParams CastRunner::GetMainContextParams() {

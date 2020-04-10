@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">Eitt valið</translation>
 <translation id="2421044535038393232">Halda áfram að breyta</translation>
 <translation id="2435457462613246316">Sýna aðgangsorð</translation>
-<translation id="2481538920734869610">NÝR REIKNINGUR</translation>
 <translation id="2497852260688568942">Kerfisstjóri hefur gert samstillingu óvirka</translation>
 <translation id="2500374554657206846">Val um vistun aðgangsorðs</translation>
 <translation id="2523363575747517183">Þetta vefsvæði reynir ítrekað að opna annað forrit.</translation>
@@ -335,7 +334,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="54401264925851789">Öryggisupplýsingar síðu</translation>
 <translation id="5443952882982198570">Kreditkort</translation>
 <translation id="5457907402803865181">Villa við að samstilla aðgangsorð.</translation>
-<translation id="5508435575041083207">Skrá þig út og hreinsa gögn úr þessu tæki</translation>
+<translation id="5508435575041083207">Skrá út og hreinsa gögn úr þessu tæki</translation>
 <translation id="5525269841082836315">Búa til aðgangsorð</translation>
 <translation id="5548760955356983418">Handoff gerir þér kleift að byrja að skoða vefsvæði í þessu tæki og halda því síðan áfram á einfaldan hátt í Mac-tölvunni. Vefsvæðið sem er opið birtist í kvínni í Mac-tölvunni.
 
@@ -480,7 +479,6 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="7203585745079012652">Lesa upp svör</translation>
 <translation id="7265758999917665941">Aldrei fyrir þetta vefsvæði</translation>
 <translation id="7272437679830969316">Ekki tókst að staðfesta hver þú ert. Aðgangsorð var ekki afritað.</translation>
-<translation id="7285236536143823449">JÁ, ÉG ER MEÐ</translation>
 <translation id="7291368939935408496">Undirbýr aðgangsorð...</translation>
 <translation id="7293171162284876153">Til að hefja samstillingu skaltu kveikja á „Samstilla gögnin þín í Chrome“.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> prósent sótt</translation>
@@ -496,6 +494,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="7460314822154045102">Nota myndavél</translation>
 <translation id="7464701184726199289">Þetta hreinsar samstillt gögn út af öllum tækjum. Vistuðum stillingum vefsvæða verður ekki eytt og þær kunna að endurspegla vefnotkun þína. <ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Heiti fyrirtækis</translation>
+<translation id="7473891865547856676">Nei, takk</translation>
 <translation id="7481312909269577407">Áfram</translation>
 <translation id="750493650310597496">Ekkert valið</translation>
 <translation id="7514365320538308">Sækja</translation>
@@ -517,7 +516,6 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="7781829728241885113">Í gær</translation>
 <translation id="778855399387580014">Hefja leit í nýjum flipa í Chrome.</translation>
 <translation id="7791543448312431591">Bæta við</translation>
-<translation id="780301667611848630">Nei, takk</translation>
 <translation id="7840771868269352570">Atriðin sem þú valdir verða fjarlægð.</translation>
 <translation id="7856733331829174190">Tókst ekki að sækja</translation>
 <translation id="7859704718976024901">Vafraferill</translation>
@@ -587,6 +585,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="8870413625673593573">Nýlega lokað</translation>
 <translation id="8881801611828450202">Leita að þessari mynd á <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Deila…</translation>
+<translation id="8917490105272468696">Já, ég er til</translation>
 <translation id="895541991026785598">Tilkynna um vandamál</translation>
 <translation id="8976382372951310360">Hjálp</translation>
 <translation id="8981454092730389528">Virknistýringar Google</translation>

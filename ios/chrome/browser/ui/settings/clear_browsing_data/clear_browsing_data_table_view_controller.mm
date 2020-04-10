@@ -358,6 +358,7 @@
 
   self.alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:self
+                                                   browser:_browser
                                                      title:title
                                                    message:message];
 
@@ -411,6 +412,7 @@
   self.actionSheetCoordinator = [self.dataManager
       actionSheetCoordinatorWithDataTypesToRemove:dataTypeMaskToRemove
                                baseViewController:self
+                                          browser:_browser
                               sourceBarButtonItem:sender];
   [self.actionSheetCoordinator start];
 }

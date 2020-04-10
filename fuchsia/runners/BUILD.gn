@@ -76,6 +76,7 @@ source_set("cast_runner_core") {
   public_deps = [
     ":common",
     "//fuchsia:cast_fidl",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.legacymetrics",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
   ]
   visibility = [ ":*" ]

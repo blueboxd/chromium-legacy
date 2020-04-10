@@ -99,6 +99,23 @@ void FeedStreamSurface::ReportSliceViewed(
       base::android::ConvertJavaStringToUTF8(env, slice_id));
 }
 
+void FeedStreamSurface::ReportSendFeedbackAction(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  feed_stream_api_->ReportSendFeedbackAction();
+}
+
+void FeedStreamSurface::ReportLearnMoreAction(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  feed_stream_api_->ReportLearnMoreAction();
+}
+
+void FeedStreamSurface::ReportDownloadAction(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
+  feed_stream_api_->ReportDownloadAction();
+}
+
 void FeedStreamSurface::ReportNavigationStarted(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

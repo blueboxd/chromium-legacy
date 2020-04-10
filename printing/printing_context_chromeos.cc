@@ -38,8 +38,7 @@ namespace {
 // Convert from a ColorMode setting to a print-color-mode value from PWG 5100.13
 const char* GetColorModelForMode(int color_mode) {
   const char* mode_string;
-  base::Optional<bool> is_color =
-      PrintingContextChromeos::ColorModeIsColor(color_mode);
+  base::Optional<bool> is_color = IsColorModelSelected(color_mode);
   if (is_color.has_value()) {
     mode_string = is_color.value() ? CUPS_PRINT_COLOR_MODE_COLOR
                                    : CUPS_PRINT_COLOR_MODE_MONOCHROME;
@@ -255,41 +254,6 @@ PrintingContextChromeos::PrintingContextChromeos(Delegate* delegate)
 
 PrintingContextChromeos::~PrintingContextChromeos() {
   ReleaseContext();
-}
-
-// static
-base::Optional<bool> PrintingContextChromeos::ColorModeIsColor(int color_mode) {
-  switch (color_mode) {
-    case COLOR:
-    case CMYK:
-    case CMY:
-    case KCMY:
-    case CMY_K:
-    case RGB:
-    case RGB16:
-    case RGBA:
-    case COLORMODE_COLOR:
-    case BROTHER_CUPS_COLOR:
-    case BROTHER_BRSCRIPT3_COLOR:
-    case HP_COLOR_COLOR:
-    case PRINTOUTMODE_NORMAL:
-    case PROCESSCOLORMODEL_CMYK:
-    case PROCESSCOLORMODEL_RGB:
-      return true;
-    case GRAY:
-    case BLACK:
-    case GRAYSCALE:
-    case COLORMODE_MONOCHROME:
-    case BROTHER_CUPS_MONO:
-    case BROTHER_BRSCRIPT3_BLACK:
-    case HP_COLOR_BLACK:
-    case PRINTOUTMODE_NORMAL_GRAY:
-    case PROCESSCOLORMODEL_GREYSCALE:
-      return false;
-    default:
-      LOG(WARNING) << "Unrecognized color mode.";
-      return base::nullopt;
-  }
 }
 
 void PrintingContextChromeos::AskUserForSettings(

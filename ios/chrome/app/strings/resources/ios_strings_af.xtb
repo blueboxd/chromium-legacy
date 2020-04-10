@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 gekies</translation>
 <translation id="2421044535038393232">Hou wysiging</translation>
 <translation id="2435457462613246316">Wys wagwoord</translation>
-<translation id="2481538920734869610">VOEG REKENING BY</translation>
 <translation id="2497852260688568942">Jou administrateur het sinkronisering gedeaktiveer</translation>
 <translation id="2500374554657206846">Opsies om wagwoord te stoor</translation>
 <translation id="2523363575747517183">Hierdie webwerf probeer herhaaldelik 'n ander program oopmaak.</translation>
@@ -480,7 +479,6 @@ Jou data is op <ph name="TIME" /> met jou sinkroniseringwagfrase geënkripteer.<
 <translation id="7203585745079012652">Praat antwoorde terug</translation>
 <translation id="7265758999917665941">Nooit vir hierdie werf nie</translation>
 <translation id="7272437679830969316">Kan nie jou identiteit verifieer nie. Wagwoord is nie gekopieer nie.</translation>
-<translation id="7285236536143823449">JA, EK'S IN</translation>
 <translation id="7291368939935408496">Maak tans wagwoorde gereed …</translation>
 <translation id="7293171162284876153">Skakel "Sinkroniseer jou Chrome-data" aan om met sinkronisering te begin.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> persent afgelaai</translation>
@@ -496,6 +494,7 @@ Jou data is op <ph name="TIME" /> met jou sinkroniseringwagfrase geënkripteer.<
 <translation id="7460314822154045102">Gebruik Kamera</translation>
 <translation id="7464701184726199289">Dit vee gesinkroniseerde data op alle toestelle uit. Gestoorde werfinstellings sal nie uitgevee word nie en sal dalk jou blaaigewoontes weerspieël. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Maatskappynaam</translation>
+<translation id="7473891865547856676">Nee, dankie</translation>
 <translation id="7481312909269577407">Vorentoe</translation>
 <translation id="750493650310597496">0 gekies</translation>
 <translation id="7514365320538308">Laai af</translation>
@@ -517,7 +516,6 @@ Wanneer jy afmeld, sal jou Chrome-data op hierdie toestel uigevee word omdat jou
 <translation id="7781829728241885113">Gister</translation>
 <translation id="778855399387580014">Begin 'n soektog in 'n nuwe Chrome-oortjie.</translation>
 <translation id="7791543448312431591">Voeg by</translation>
-<translation id="780301667611848630">Nee, dankie</translation>
 <translation id="7840771868269352570">Die items wat jy gekies het, sal verwyder word.</translation>
 <translation id="7856733331829174190">Kon nie aflaai nie</translation>
 <translation id="7859704718976024901">Blaaigeskiedenis</translation>
@@ -587,6 +585,7 @@ Wanneer jy afmeld, sal jou Chrome-data op hierdie toestel uigevee word omdat jou
 <translation id="8870413625673593573">Onlangs toegemaak</translation>
 <translation id="8881801611828450202">Deursoek <ph name="SEARCH_ENGINE" /> vir hierdie prent</translation>
 <translation id="8909135823018751308">Deel …</translation>
+<translation id="8917490105272468696">Ja, ek is in</translation>
 <translation id="895541991026785598">Gee 'n kwessie aan</translation>
 <translation id="8976382372951310360">Hulp</translation>
 <translation id="8981454092730389528">Google-aktiwiteitkontroles</translation>

@@ -38,6 +38,10 @@ extern const char kUserAgentProductAndVersion[];
 // necessary.
 extern const char kAllowRunningInsecureContent[];
 
+// Enables use of the fuchsia.legacymetrics.MetricsRecorder service for
+// telemetry.
+extern const char kUseLegacyMetricsService[];
+
 }  // namespace switches
 
 #endif  // FUCHSIA_ENGINE_SWITCHES_H_

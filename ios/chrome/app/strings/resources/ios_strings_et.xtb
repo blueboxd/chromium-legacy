@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 on valitud</translation>
 <translation id="2421044535038393232">Jätka töötlemist</translation>
 <translation id="2435457462613246316">Kuva parool</translation>
-<translation id="2481538920734869610">LISA KONTO</translation>
 <translation id="2497852260688568942">Administraator on sünkroonimise keelanud</translation>
 <translation id="2500374554657206846">Valikud parooli salvestamiseks</translation>
 <translation id="2523363575747517183">See veebisait üritab korduvalt avada teist rakendust.</translation>
@@ -480,7 +479,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="7203585745079012652">Vastuste esitamine</translation>
 <translation id="7265758999917665941">Selle saidi puhul mitte kunagi</translation>
 <translation id="7272437679830969316">Teie isikut ei õnnestu tuvastada. Parooli ei kopeeritud.</translation>
-<translation id="7285236536143823449">JAH, SOBIB</translation>
 <translation id="7291368939935408496">Paroolide ettevalmistamine …</translation>
 <translation id="7293171162284876153">Sünkroonimise alustamiseks lülitage sisse valik „Chrome'i andmete sünkroonimine”.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> protsenti on alla laaditud</translation>
@@ -496,6 +494,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="7460314822154045102">Kasuta kaamerat</translation>
 <translation id="7464701184726199289">See kustutab sünkroonitud andmed kõikidest seadmetest. Saitide salvestatud seadeid ei kustutata ja need võivad kajastada teie sirvimisharjumusi. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Ettevõtte nimi</translation>
+<translation id="7473891865547856676">Tänan, ei</translation>
 <translation id="7481312909269577407">Edasta</translation>
 <translation id="750493650310597496">0 valitud</translation>
 <translation id="7514365320538308">Laadi alla</translation>
@@ -517,7 +516,6 @@ Kuna teie kontot haldab domeen <ph name="HOSTED_DOMAIN" />, kustutatakse teie Ch
 <translation id="7781829728241885113">Eile</translation>
 <translation id="778855399387580014">Alustage otsingut uuel Chrome'i vahelehel.</translation>
 <translation id="7791543448312431591">Lisa</translation>
-<translation id="780301667611848630">Ei, aitäh</translation>
 <translation id="7840771868269352570">Teie valitud üksused eemaldatakse.</translation>
 <translation id="7856733331829174190">Ei saanud alla laadida</translation>
 <translation id="7859704718976024901">Sirvimisajalugu</translation>
@@ -587,6 +585,7 @@ Kuna teie kontot haldab domeen <ph name="HOSTED_DOMAIN" />, kustutatakse teie Ch
 <translation id="8870413625673593573">Viimati suletud</translation>
 <translation id="8881801611828450202">Otsi pilti teenusest <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Jaga ...</translation>
+<translation id="8917490105272468696">Jah, olen nõus</translation>
 <translation id="895541991026785598">Teavitage probleemist</translation>
 <translation id="8976382372951310360">Abi</translation>
 <translation id="8981454092730389528">Google'i kontotegevuste haldus</translation>

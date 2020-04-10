@@ -52,6 +52,7 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
                         .spec());
 
   static constexpr webui::LocalizedString kStrings[] = {
+      {"doneButton", IDS_DONE},
       {"title", IDS_NEW_TAB_TITLE},
       {"undo", IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE},
 
@@ -80,7 +81,6 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"customizeButton", IDS_NTP_CUSTOMIZE_BUTTON_LABEL},
       {"customizeThisPage", IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL},
       {"defaultThemeLabel", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
-      {"doneButton", IDS_DONE},
       {"hideShortcuts", IDS_NTP_CUSTOMIZE_HIDE_SHORTCUTS_LABEL},
       {"hideShortcutsDesc", IDS_NTP_CUSTOMIZE_HIDE_SHORTCUTS_DESC},
       {"mostVisited", IDS_NTP_CUSTOMIZE_MOST_VISITED_LABEL},
@@ -115,7 +115,12 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"searchBoxHint", IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD},
 
       // Logo/doodle.
+      {"copyLink", IDS_NTP_DOODLE_SHARE_DIALOG_COPY_LABEL},
+      {"doodleLink", IDS_NTP_DOODLE_SHARE_DIALOG_LINK_LABEL},
+      {"email", IDS_NTP_DOODLE_SHARE_DIALOG_MAIL_LABEL},
+      {"facebook", IDS_NTP_DOODLE_SHARE_DIALOG_FACEBOOK_LABEL},
       {"shareDoodle", IDS_NTP_DOODLE_SHARE_LABEL},
+      {"twitter", IDS_NTP_DOODLE_SHARE_DIALOG_TWITTER_LABEL},
   };
   AddLocalizedStringsBulk(source, kStrings);
 

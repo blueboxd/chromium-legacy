@@ -23,6 +23,10 @@ namespace content {
 struct MainFunctionParams;
 }
 
+namespace cr_fuchsia {
+class LegacyMetricsClient;
+}
+
 class WebEngineBrowserMainParts : public content::BrowserMainParts {
  public:
   explicit WebEngineBrowserMainParts(
@@ -55,6 +59,7 @@ class WebEngineBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<ContextImpl> context_service_;
   std::unique_ptr<fidl::Binding<fuchsia::web::Context>> context_binding_;
   std::unique_ptr<WebEngineDevToolsController> devtools_controller_;
+  std::unique_ptr<cr_fuchsia::LegacyMetricsClient> legacy_metrics_client_;
 
   bool run_message_loop_ = true;
   base::OnceClosure quit_closure_;

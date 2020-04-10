@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 ikhethiwe</translation>
 <translation id="2421044535038393232">Qhubeka nokuhlela</translation>
 <translation id="2435457462613246316">Bonisa iphasiwedi</translation>
-<translation id="2481538920734869610">ENGEZA I-AKHAWUNTI</translation>
 <translation id="2497852260688568942">Ukuvumelanisa kukhutshazwe umlawuli wakho.</translation>
 <translation id="2500374554657206846">Izinketho zokulondoloza iphasiwedi</translation>
 <translation id="2523363575747517183">Le webhusayithi izama kaningi ukuvula olunye uhlelo lokusebenza.</translation>
@@ -480,7 +479,6 @@ Idatha yakho ibethelwe ngomushwana wokungena wakho ngo-<ph name="TIME" />. Yifak
 <translation id="7203585745079012652">Khulumela emuva izimpendulo</translation>
 <translation id="7265758999917665941">Ungalokothi kuleli sayithi</translation>
 <translation id="7272437679830969316">Ayikwazi ukuqinisekisa ubunikazi bakho. Iphasiwedi ayikopishiwe.</translation>
-<translation id="7285236536143823449">YEBO, NGINGENILE</translation>
 <translation id="7291368939935408496">Ilungiselela amaphasiwedi...</translation>
 <translation id="7293171162284876153">Ukuze uqale ukuvumelanisa, vula idatha yokuthi "Vumelanisa i-Chrome yakho".</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> iphesenti elilandiwe</translation>
@@ -496,6 +494,7 @@ Idatha yakho ibethelwe ngomushwana wokungena wakho ngo-<ph name="TIME" />. Yifak
 <translation id="7460314822154045102">Sebenzisa ikhamera</translation>
 <translation id="7464701184726199289">Lokhu kusula idatha evunyelanisiwe kusukela kuwo onke amadivayisi. Izilungiselelo ezilondoloziwe zesayithi ngeke zize zisuswe futhi zingabonisa imikhuba yakho yokuphequlula amehlo. <ph name="BEGIN_LINK" />Funda kabanzi<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Igama lenkampani</translation>
+<translation id="7473891865547856676">Cha ngiyabonga</translation>
 <translation id="7481312909269577407">Dlulisela</translation>
 <translation id="750493650310597496">0 kukhethiwe</translation>
 <translation id="7514365320538308">Landa</translation>
@@ -517,7 +516,6 @@ Ngoba i-akhawunti yakho iphethwe yi-<ph name="HOSTED_DOMAIN" />, idatha yakho ye
 <translation id="7781829728241885113">Izolo</translation>
 <translation id="778855399387580014">Qala usesho kuthebhu elisha le-Chrome.</translation>
 <translation id="7791543448312431591">Engeza</translation>
-<translation id="780301667611848630">Cha ngiyabonga</translation>
 <translation id="7840771868269352570">Izinto ozikhethile zizosuswa.</translation>
 <translation id="7856733331829174190">Ayikwazanga ukulanda</translation>
 <translation id="7859704718976024901">Umlando wokuphequlula</translation>
@@ -587,6 +585,7 @@ Ngoba i-akhawunti yakho iphethwe yi-<ph name="HOSTED_DOMAIN" />, idatha yakho ye
 <translation id="8870413625673593573">Okuvalwe kamuva</translation>
 <translation id="8881801611828450202">Sesha i-<ph name="SEARCH_ENGINE" /> yalesi sithombe</translation>
 <translation id="8909135823018751308">Yabelana…</translation>
+<translation id="8917490105272468696">Yebo, ngingenile</translation>
 <translation id="895541991026785598">Bika inkinga</translation>
 <translation id="8976382372951310360">Usizo</translation>
 <translation id="8981454092730389528">Izilawuli zomsebenzi we-Google</translation>

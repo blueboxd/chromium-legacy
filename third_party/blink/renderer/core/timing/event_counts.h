@@ -18,7 +18,7 @@ class EventCounts final : public ScriptWrappable,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  EventCounts() = default;
+  EventCounts();
 
   const HashMap<AtomicString, unsigned>& Map() const {
     return event_count_map_;

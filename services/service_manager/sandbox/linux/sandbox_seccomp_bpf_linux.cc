@@ -44,7 +44,7 @@
 #include "services/service_manager/sandbox/linux/bpf_print_compositor_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_renderer_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_sharing_service_policy_linux.h"
-#include "services/service_manager/sandbox/linux/bpf_soda_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_speech_recognition_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_utility_policy_linux.h"
 
 #if !defined(OS_NACL_NONSFI)
@@ -179,8 +179,8 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
       return std::make_unique<AudioProcessPolicy>();
     case SandboxType::kSharingService:
       return std::make_unique<SharingServiceProcessPolicy>();
-    case SandboxType::kSoda:
-      return std::make_unique<SodaProcessPolicy>();
+    case SandboxType::kSpeechRecognition:
+      return std::make_unique<SpeechRecognitionProcessPolicy>();
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
       return std::make_unique<ImeProcessPolicy>();
@@ -229,7 +229,7 @@ void SandboxSeccompBPF::RunSandboxSanityChecks(
 #endif  // defined(OS_CHROMEOS)
     case SandboxType::kAudio:
     case SandboxType::kSharingService:
-    case SandboxType::kSoda:
+    case SandboxType::kSpeechRecognition:
     case SandboxType::kNetwork:
     case SandboxType::kUtility:
     case SandboxType::kNoSandbox:

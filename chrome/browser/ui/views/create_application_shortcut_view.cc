@@ -10,7 +10,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -38,6 +40,18 @@ void ShowCreateChromeAppShortcutsDialog(
       parent_window)->Show();
 }
 
+void ShowCreateChromeAppShortcutsDialog(
+    gfx::NativeWindow parent_window,
+    Profile* profile,
+    const std::string& web_app_id,
+    const base::Callback<void(bool)>& close_callback) {
+  constrained_window::CreateBrowserModalDialogViews(
+      new CreateChromeApplicationShortcutView(profile, web_app_id,
+                                              close_callback),
+      parent_window)
+      ->Show();
+}
+
 }  // namespace chrome
 
 CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
@@ -57,6 +71,28 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
       app, profile,
       base::Bind(&CreateChromeApplicationShortcutView::OnAppInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::CREATE_CHROME_APPLICATION_SHORTCUT);
+}
+
+CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
+    Profile* profile,
+    const std::string& web_app_id,
+    const base::Callback<void(bool)>& close_callback)
+    : profile_(profile), close_callback_(close_callback) {
+  DialogDelegate::SetButtonLabel(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT));
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::TEXT, views::TEXT));
+  InitControls();
+
+  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
+  provider->shortcut_manager().GetShortcutInfoForApp(
+      web_app_id,
+      base::Bind(&CreateChromeApplicationShortcutView::OnAppInfoLoaded,
+                 weak_ptr_factory_.GetWeakPtr()));
+
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::CREATE_CHROME_APPLICATION_SHORTCUT);
 }

@@ -31,14 +31,14 @@
         isStarted = true;
       });
       animated.addEventListener('animationend', function() {
-        document.title = 'animation finished';
-      });
+        cast.__platform__.PortConnector.bind('animation_finished');
 
-      // Indicates that no animation has run within a second of document load.
-      setTimeout(function() {
-        if (!isStarted)
-          document.title = 'animation never started';
-      }, 1000);
+        document.addEventListener("visibilitychange", ()=>{
+          if (document.hidden) {
+            cast.__platform__.PortConnector.bind('view_hidden');
+          }
+        }, false);
+      });
     </script>
   </body>
 </html>

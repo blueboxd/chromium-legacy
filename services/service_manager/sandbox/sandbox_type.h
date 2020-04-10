@@ -79,10 +79,10 @@ enum class SandboxType {
   kSharingService,
 #endif
 
-  // The Speech On-Device API service process.
-  kSoda,
+  // The speech recognition service process.
+  kSpeechRecognition,
 
-  kMaxValue = kSoda
+  kMaxValue = kSpeechRecognition
 };
 
 SERVICE_MANAGER_SANDBOX_EXPORT bool IsUnsandboxedSandboxType(

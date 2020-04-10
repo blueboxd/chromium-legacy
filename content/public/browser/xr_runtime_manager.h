@@ -17,26 +17,12 @@ class BrowserXRRuntime;
 // active BrowserXRRuntime instances. An Observer interface is provided in case
 // runtimes need to interact with runtimes when they are added (e.g. to notify
 // them of any current state that they may need to know about).
-class CONTENT_EXPORT XRRuntimeManager {
+class XRRuntimeManager {
  public:
   class Observer : public base::CheckedObserver {
    public:
     virtual void OnRuntimeAdded(content::BrowserXRRuntime* runtime) {}
   };
-
-  // Provides access to the XRRuntimeManager singleton, if it exists.
-  // This method does not extend the lifetime of the singleton, so you should be
-  // careful with the lifetime of this reference.
-  static content::XRRuntimeManager* GetInstanceIfCreated();
-
-  // Exits any currently presenting immersive session.
-  static void ExitImmersivePresentation();
-
-  // Observer registration methods are static so that observers may subscribe
-  // and unsubscribe independent of the lifecycle of the XRRuntimeManager
-  // Singleton.
-  static void AddObserver(content::XRRuntimeManager::Observer* observer);
-  static void RemoveObserver(content::XRRuntimeManager::Observer* observer);
 
   XRRuntimeManager() = default;
   virtual ~XRRuntimeManager() = default;

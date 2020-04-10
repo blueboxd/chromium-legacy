@@ -34,22 +34,9 @@ class WindowState;
 // attempt to restore the old height.
 class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
  public:
-  // When dragging an attached window this is the min size we'll make sure is
-  // visible. In the vertical direction we take the max of this and that from
-  // the delegate.
-  static const int kMinOnscreenSize;
-
   // Min height we'll force on screen when dragging the caption.
   // TODO: this should come from a property on the window.
-  static const int kMinOnscreenHeight;
-
-  // Snap region when dragging close to the edges. That is, as the window gets
-  // this close to an edge of the screen it snaps to the edge.
-  static const int kScreenEdgeInset;
-
-  // Distance in pixels that the cursor must move past an edge for a window
-  // to move or resize beyond that edge.
-  static const int kStickyDistancePixels;
+  static constexpr int kMinOnscreenHeight = 32;
 
   ~WorkspaceWindowResizer() override;
 
@@ -179,41 +166,36 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // Returns the currently used instance for test.
   static WorkspaceWindowResizer* GetInstanceForTest();
 
-  bool did_lock_cursor_;
+  bool did_lock_cursor_ = false;
 
   // Set to true once Drag() is invoked and the bounds of the window change.
-  bool did_move_or_resize_;
+  bool did_move_or_resize_ = false;
 
   // True if the window initially had |bounds_changed_by_user_| set in state.
-  bool initial_bounds_changed_by_user_;
+  const bool initial_bounds_changed_by_user_;
 
   // The initial size of each of the windows in |attached_windows_| along the
   // primary axis.
   std::vector<int> initial_size_;
 
   // Sum of the minimum sizes of the attached windows.
-  int total_min_;
+  int total_min_ = 0;
 
   // Sum of the sizes in |initial_size_|.
-  int total_initial_size_;
+  int total_initial_size_ = 0;
 
   // Gives a previews of where the the window will end up. Only used if there
   // is a grid and the caption is being dragged.
   std::unique_ptr<PhantomWindowController> snap_phantom_window_controller_;
 
   // The edge to which the window should be snapped to at the end of the drag.
-  SnapType snap_type_;
-
-  // Number of mouse moves since the last bounds change. Only used for phantom
-  // placement to track when the mouse is moved while pushed against the edge of
-  // the screen.
-  int num_mouse_moves_since_bounds_change_;
+  SnapType snap_type_ = SNAP_NONE;
 
   // The mouse location passed to Drag().
   gfx::PointF last_mouse_location_;
 
   // Window the drag has magnetically attached to.
-  aura::Window* magnetism_window_;
+  aura::Window* magnetism_window_ = nullptr;
 
   // Used to verify |magnetism_window_| is still valid.
   aura::WindowTracker window_tracker_;

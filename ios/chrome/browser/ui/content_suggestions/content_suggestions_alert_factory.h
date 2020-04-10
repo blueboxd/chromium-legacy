@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @class AlertCoordinator;
+class Browser;
 @class ContentSuggestionsItem;
 @class ContentSuggestionsMostVisitedItem;
 @protocol ContentSuggestionsGestureCommands;
@@ -21,22 +22,26 @@
 // The |commandHandler| will receive callbacks when the user chooses one of the
 // options displayed by the alert.
 + (AlertCoordinator*)
-alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
-                 onViewController:(UICollectionViewController*)viewController
-                          atPoint:(CGPoint)touchLocation
-                      atIndexPath:(NSIndexPath*)indexPath
-                  readLaterAction:(BOOL)readLaterAction
-                   commandHandler:
-                       (id<ContentSuggestionsGestureCommands>)commandHandler;
+    alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
+                     onViewController:
+                         (UICollectionViewController*)viewController
+                              atPoint:(CGPoint)touchLocation
+                          atIndexPath:(NSIndexPath*)indexPath
+                      readLaterAction:(BOOL)readLaterAction
+                       commandHandler:
+                           (id<ContentSuggestionsGestureCommands>)commandHandler
+                              browser:(Browser*)browser;
 
 // Same as above but for a MostVisited item.
 + (AlertCoordinator*)
-alertCoordinatorForMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
-                  onViewController:(UICollectionViewController*)viewController
-                           atPoint:(CGPoint)touchLocation
-                       atIndexPath:(NSIndexPath*)indexPath
-                    commandHandler:
-                        (id<ContentSuggestionsGestureCommands>)commandHandler;
+    alertCoordinatorForMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
+                      onViewController:
+                          (UICollectionViewController*)viewController
+                           withBrowser:(Browser*)browser
+                               atPoint:(CGPoint)touchLocation
+                           atIndexPath:(NSIndexPath*)indexPath
+                        commandHandler:(id<ContentSuggestionsGestureCommands>)
+                                           commandHandler;
 
 @end
 

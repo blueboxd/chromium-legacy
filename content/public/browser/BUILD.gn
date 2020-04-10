@@ -394,6 +394,8 @@ jumbo_source_set("browser_sources") {
     "webrtc_log.cc",
     "webrtc_log.h",
     "websocket_handshake_request_info.h",
+    "webvr_service_provider.cc",
+    "webvr_service_provider.h",
   ]
   configs += [
     "//build/config:precompiled_headers",

@@ -1191,8 +1191,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
 // Tests that multiple enabled extensions with declarative rulesets having
 // blocking rules behave correctly.
+// Disabled due to flake: https://crbug.com/1069665
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       BlockRequests_MultipleExtensions) {
+                       DISABLED_BlockRequests_MultipleExtensions) {
   struct {
     std::string url_filter;
     int id;
@@ -1296,7 +1297,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 }
 
 // Tests a combination of blocking and redirect rules.
-IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
+// Disabled due to flake: https://crbug.com/1069665
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       DISABLED_BlockAndRedirect) {
   auto get_url_for_host = [this](std::string hostname) {
     return embedded_test_server()
         ->GetURL(hostname, "/pages_with_script/index.html")
@@ -1542,8 +1545,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, UpgradeRules) {
 
 // Tests that only extensions enabled in incognito mode affect network requests
 // from an incognito context.
+// Disabled due to flake: https://crbug.com/1069665
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       BlockRequests_Incognito) {
+                       DISABLED_BlockRequests_Incognito) {
   // Block all main-frame requests to example.com.
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string("example.com");
@@ -1702,7 +1706,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, ZeroRulesets) {
 }
 
 // Test an extension with multiple static rulesets.
-IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, MultipleRulesets) {
+// Disabled due to flake: https://crbug.com/1069665
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       DISABLED_MultipleRulesets) {
   set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   const int kNumStaticRulesets = 5;
@@ -1776,7 +1782,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, MultipleRulesets) {
 }
 
 // Ensure that Blink's in-memory cache is cleared on adding/removing rulesets.
-IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RendererCacheCleared) {
+// Disabled due to flake: https://crbug.com/1069665
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       DISABLED_RendererCacheCleared) {
   // Set-up an observer for RulesetMatcher to monitor requests to
   // script.js.
   URLRequestMonitor script_monitor(
@@ -2789,8 +2797,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Redirect) {
 
 // Test that the badge text for an extension will update to reflect the number
 // of actions taken on requests matching the extension's ruleset.
+// Disabled due to flake: https://crbug.com/1069665
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       ActionsMatchedCountAsBadgeText) {
+                       DISABLED_ActionsMatchedCountAsBadgeText) {
   // Load the extension with a background script so scripts can be run from its
   // generated background page. Also grant the feedback permission for the
   // extension so it has access to the getMatchedRules API function.

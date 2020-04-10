@@ -105,7 +105,7 @@ static_library("utility") {
       "//chrome/common/importer:interfaces",
       "//chrome/services/sharing",
       "//chrome/services/sharing/public/mojom",
-      "//chrome/services/soda:lib",
+      "//chrome/services/speech:lib",
       "//components/autofill/core/common",
       "//services/proxy_resolver:lib",
     ]

@@ -37,9 +37,6 @@ struct ASH_EXPORT DragDetails {
   // Location passed to the constructor, in |window->parent()|'s coordinates.
   const gfx::PointF initial_location_in_parent;
 
-  // Initial opacity of the window.
-  const float initial_opacity;
-
   // The component the user pressed on.
   const int window_component;
 

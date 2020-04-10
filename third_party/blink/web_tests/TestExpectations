@@ -220,6 +220,9 @@ crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform-2.html [ Pass Crash ]
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform.html [ Pass Crash ]
 
+# This will likely be fixed as we finish off the origin isolation architecture work
+crbug.com/1067389 external/wpt/origin-isolation/parent-no-child-yes-same.sub.https.html [ Pass Failure Crash ]
+
 # Flakily timing out or failing.
 # TODO(ccameron): Investigate this.
 crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pass Timeout Failure ]
@@ -845,7 +848,6 @@ crbug.com/591099 fast/writing-mode/percentage-height-orthogonal-writing-modes.ht
 crbug.com/835484 paint/invalidation/outline/inline-focus.html [ Failure ]
 crbug.com/591099 paint/invalidation/scroll/fixed-under-composited-fixed-scrolled.html [ Failure ]
 crbug.com/591099 external/wpt/paint-timing/sibling-painting-first-image.html [ Failure ]
-crbug.com/591099 virtual/paint-timing/external/wpt/paint-timing/sibling-painting-first-image.html [ Failure ]
 crbug.com/591099 virtual/scalefactor200/css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html [ Failure ]
 
 # LayoutNG ref-tests that need to be updated (cannot be rebaselined).
@@ -5553,59 +5555,13 @@ crbug.com/936827 external/wpt/fullscreen/api/element-request-fullscreen-and-remo
 crbug.com/930462 virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-resume.https.html [ Pass Failure ]
 
 # Paint Timing failures
-crbug.com/1062984 external/wpt/paint-timing/border-image.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-background-size.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-bg-image-set.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-bg-image-two-steps.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-canvas-context.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-gradient.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate-descendant.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-invisible-scale.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-invisible-scale-transition.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-invisible-text.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-opacity-descendant.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-opacity.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-out-of-bounds.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-out-of-bounds-translate.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-display.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-image.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-opacity.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-text.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-visibility.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-svg.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-video-frame.html [ Timeout Failure Pass ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-video-poster.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-whitespace.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/mask-image.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/replaced-content-image.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/border-image.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-background-size.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-bg-image-set.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-bg-image-two-steps.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-canvas-context.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-gradient.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate-descendant.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-invisible-scale.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-invisible-scale-transition.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-invisible-text.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-opacity-descendant.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-opacity.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-out-of-bounds.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-out-of-bounds-translate.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-overflow.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-pseudo-element-display.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-pseudo-element-image.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-pseudo-element-opacity.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-pseudo-element-text.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-pseudo-element-visibility.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-svg.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-video-frame.html [ Pass Failure Timeout ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-video-poster.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-whitespace.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/mask-image.html [ Pass Failure ]
-crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/replaced-content-image.html [ Pass Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-gradient.html [ Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate-descendant.html [ Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate.html [ Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-out-of-bounds-translate.html [ Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-svg.html [ Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-text-input.html [ Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-video-frame.html [ Failure Timeout ]
 
 # Sheriff 2019-03-01
 crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-htmlimports.js [ Pass Failure ]
@@ -6537,8 +6493,6 @@ crbug.com/1054577 [ Win ] virtual/storage-access-api/external/wpt/storage-access
 crbug.com/1054577 [ Mac ] external/wpt/media-source/mediasource-detach.html [ Pass Failure ]
 crbug.com/1054577 [ Mac ] virtual/storage-access-api/external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Pass Failure ]
 crbug.com/1054577 [ Mac ] external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Pass Failure ]
-crbug.com/1066848 external/wpt/paint-timing/fcp-only/fcp-typographic-pseudo.html [ Pass Failure ]
-crbug.com/1066848 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-typographic-pseudo.html [ Pass Failure ]
 
 # Sheriff 2020-02-07
 
@@ -6567,9 +6521,6 @@ crbug.com/1025274 http/tests/security/mixedContent/insecure-audio-video-in-main-
 #Mixed content autoupgrade tests that can be re-enabled once image autoupgrades launch
 crbug.com/1042877 virtual/autoupgrade-optionally-blockable-mixed-content/http/tests/mixed-autoupgrade/optionally/image-upgrade-console-message.https.html [ Failure ]
 crbug.com/1042877 virtual/autoupgrade-optionally-blockable-mixed-content/http/tests/mixed-autoupgrade/optionally/image-upgrade.https.html [ Failure ]
-
-# V8 roll
-crbug.com/v8/6751 http/tests/devtools/console/console-format-es6.js [ Skip ]
 
 # DevTools roll
 crbug.com/1006759 http/tests/devtools/profiler/agents-disabled-check.js [ Skip ]
@@ -6704,11 +6655,11 @@ crbug.com/1066732 fast/events/platform-wheelevent-paging-y-in-scrolling-div.html
 # These tests will pass once the --enable-features=TrustTokens flag is on by default.
 crbug.com/1061765 external/wpt/trust-tokens/end-to-end/* [ Skip ]
 
-# Sheriff 2020-04-02
-crbug.com/1067084 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-with-rtl.html [ Pass Failure ]
-
 # Sheriff 2020-04-04
 crbug.com/1067533 [ Mac10.10 ] external/wpt/shape-detection/idlharness.https.any.sharedworker.html [ Pass Failure ]
 
 crbug.com/1064422 external/wpt/html/user-activation/propagation-crossorigin.sub.tentative.html [ Pass Timeout ]
 crbug.com/1066178 external/wpt/html/user-activation/consumption-crossorigin.sub.tentative.html [ Pass Timeout ]
+
+# Sheriff 2020-04-10
+crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html [ Pass Failure Timeout ]

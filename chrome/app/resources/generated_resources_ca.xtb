@@ -94,6 +94,7 @@
 <translation id="1122960773616686544">Nom de l'adreça d'interès</translation>
 <translation id="1124772482545689468">Usuari</translation>
 <translation id="1125550662859510761">Resolució: <ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativa)</translation>
+<translation id="1126809382673880764">No et protegeix contra baixades, extensions ni llocs web perillosos. Continuaràs obtenint protecció mitjançant Navegació segura, sempre que estigui disponible, en altres serveis de Google, com ara Gmail i la Cerca.</translation>
 <translation id="1128109161498068552">No permetis que cap lloc utilitzi els missatges exclusius del sistema per accedir als dispositius MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Edita el motor de cerca</translation>
@@ -185,6 +186,7 @@
 <translation id="1235458158152011030">Xarxes conegudes</translation>
 <translation id="123578888592755962">El disc és ple</translation>
 <translation id="1238191093934674082">VPN oberta</translation>
+<translation id="1239439601391236986">Mostra els suggeriments sobre informació personal</translation>
 <translation id="1239594683407221485">Explora el contingut del dispositiu a l'aplicació Fitxers.</translation>
 <translation id="124116460088058876">Més idiomes</translation>
 <translation id="1241753985463165747">Llegir i modificar totes les teves dades del lloc web que estàs visitant quan s'invoqui</translation>
@@ -301,6 +303,7 @@
 <translation id="140723521119632973">Activació d'una xarxa mòbil</translation>
 <translation id="1407489512183974736">Retallat al centre</translation>
 <translation id="1408504635543854729">Explora el contingut del dispositiu a l'aplicació Fitxers. L'administrador ha restringit el contingut i no es pot modificar.</translation>
+<translation id="1408980562518920698">Gestiona informació personal</translation>
 <translation id="1410197035576869800">Icona de l'aplicació</translation>
 <translation id="1410616244180625362">Continua permetent que <ph name="HOST" /> accedeixi a la càmera</translation>
 <translation id="1414648216875402825">Esteu a punt de passar a una versió inestable de <ph name="PRODUCT_NAME" /> que conté funcions en curs. Es produiran bloqueigs i errors inesperats. Continueu amb precaució.</translation>
@@ -434,6 +437,7 @@
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1587275751631642843">&amp;Consola de JavaScript</translation>
 <translation id="1587907146729660231">Toca el botó d'engegada amb el dit</translation>
+<translation id="1588200577109872591">Entrades intel·ligents</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="158849752021629804">Es necessita una xarxa domèstica</translation>
 <translation id="1588870296199743671">Obre l'enllaç amb...</translation>
@@ -669,6 +673,7 @@
 <translation id="1879000426787380528">Inicia la sessió com a</translation>
 <translation id="1880905663253319515">Voleu suprimir el certificat "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1884013283844450420">Xarxa <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, connecta</translation>
+<translation id="1884705339276589024">Canvia la mida del disc de Linux</translation>
 <translation id="1886996562706621347">Permet que els llocs web sol·licitin esdevenir gestors predeterminats de protocols (opció recomanada)</translation>
 <translation id="1887442540531652736">Error d'inici de sessió</translation>
 <translation id="1887597546629269384">Torna a dir "Ok Google"</translation>
@@ -738,6 +743,7 @@
 <translation id="1979280758666859181">Esteu a punt de canviar a un canal amb una versió més antiga de <ph name="PRODUCT_NAME" />. El canvi de canal s'aplicarà quan la versió del canal coincideixi amb la versió qui hi ha instal·lada actualment en el vostre dispositiu.</translation>
 <translation id="197989455406964291">El Centre de distribució de claus de Kerberos no admet aquest tipus d'encriptació</translation>
 <translation id="1982354452682152483">No hi ha cap descripció disponible.</translation>
+<translation id="1984417487208496350">Sense protecció (opció no recomanada)</translation>
 <translation id="1987317783729300807">Comptes</translation>
 <translation id="1989112275319619282">Examina</translation>
 <translation id="1990512225220753005">No mostris dreceres en aquesta pàgina</translation>
@@ -807,6 +813,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2090165459409185032">Per recuperar la informació del compte, accediu a: google.com/accounts/recovery</translation>
 <translation id="2090876986345970080">Configuració de seguretat del sistema</translation>
 <translation id="2091887806945687916">So</translation>
+<translation id="2096478741073211388">Els suggeriments sobre informació personal t'ajuden a escriure més ràpidament, ja que et suggereixen el teu nom, la teva adreça o el teu telèfon quan escrius determinades paraules. Ets l'única persona que pot veure els suggeriments personalitzats privats del teu compte.</translation>
 <translation id="2096715839409389970">Esborra les galetes de tercers</translation>
 <translation id="2097372108957554726">Inicieu la sessió a Chrome per registrar dispositius nous</translation>
 <translation id="2099172618127234427">Esteu activant les funcions de depuració de Chrome OS, de manera que es configurarà el dimoni sshd i es permetrà iniciar el sistema des d'unitats USB.</translation>
@@ -823,6 +830,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2114326799768592691">Torna a carregar el &amp;marc</translation>
 <translation id="2114896190328250491">Foto feta per <ph name="NAME" /></translation>
 <translation id="2119349053129246860">Obre a <ph name="APP" /></translation>
+<translation id="2119461801241504254">Navegació segura està activada i et protegeix contra els llocs web i les baixades perjudicials</translation>
 <translation id="2120297377148151361">Activitat i interaccions</translation>
 <translation id="2120639962942052471">S'ha bloquejat <ph name="PERMISSION" /></translation>
 <translation id="2121055421682309734">{COUNT,plural, =0{Les galetes estan bloquejades}=1{Les galetes estan bloquejades, 1 excepció}other{Les galetes estan bloquejades, {COUNT} excepcions}}</translation>
@@ -1888,6 +1896,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3515983984924808886">Torna a tocar la clau de seguretat per confirmar el restabliment. Se suprimirà tota la informació desada a la clau de seguretat, inclòs el PIN.</translation>
 <translation id="3518985090088779359">Accepta i continua</translation>
 <translation id="351952459507671940">Afegeix a un grup nou</translation>
+<translation id="3521606918211282604">Canvia la mida del disc</translation>
 <translation id="3523642406908660543">Pregunta'm quan un lloc vulgui fer servir un connector per accedir a l'ordinador (opció recomanada)</translation>
 <translation id="3524965460886318643">Exporta les activitats</translation>
 <translation id="3526034519184079374">No es poden llegir o canviar les dades del lloc web</translation>
@@ -1975,6 +1984,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3629631988386925734">Introdueix la contrasenya per activar Smart Lock. La propera vegada, <ph name="DEVICE_TYPE" /> es desbloquejarà amb el telèfon. Pots desactivar Smart Lock des de Configuració.</translation>
 <translation id="3630132874740063857">El teu telèfon</translation>
 <translation id="3630995161997703415">Afegeix aquest lloc web al teu prestatge per utilitzar-lo en qualsevol moment</translation>
+<translation id="3633309367764744750">Recull prèviament informació de pàgines, incloses pàgines que encara no has visitat. La informació recollida pot incloure galetes, si les permets.</translation>
 <translation id="3634507049637220048">Xarxa <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, gestionada per l'administrador, detalls</translation>
 <translation id="3635241501480133979">Aquestes dades infringeixen les polítiques de seguretat de la teva organització i no es poden deixar anar.</translation>
 <translation id="3635353578505343390">Envia suggeriments a Google</translation>
@@ -3936,6 +3946,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6298962879096096191">Utilitza Google Play per instal·lar aplicacions per a Android</translation>
 <translation id="630065524203833229">S&amp;urt</translation>
 <translation id="6300718114348072351"><ph name="PRINTER_NAME" /> no s'ha pogut configurar automàticament. Especifica els detalls avançats de la impressora. <ph name="LINK_BEGIN" />Més informació<ph name="LINK_END" /></translation>
+<translation id="630292539633944562">Suggeriments sobre informació personal</translation>
 <translation id="6305607932814307878">Política global:</translation>
 <translation id="6307990684951724544">El sistema està ocupat</translation>
 <translation id="6308493641021088955">Inici de sessió proporcionat per <ph name="EXTENSION_NAME" /></translation>
@@ -4014,6 +4025,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="641081527798843608">Coincidència d'assumpte</translation>
 <translation id="6412673304250309937">Compara els URL amb una llista de llocs web no segurs emmagatzemada a Chrome. Si un lloc web prova de robar-te la contrasenya o si baixes un fitxer maliciós, és possible que Chrome també n'enviï els URL, inclosos fragments de contingut de les pàgines, a Navegació segura.</translation>
 <translation id="6412931879992742813">Finestra d'incògnit nova</translation>
+<translation id="6413591858632097328">Amb aquesta acció s'esborraran totes les dades i galetes emmagatzemades per <ph name="ORIGIN_NAME" /> i per les seves aplicacions instal·lades.</translation>
 <translation id="641469293210305670">Instal·la actualitzacions i aplicacions</translation>
 <translation id="6414888972213066896">Has demanat permís als teus pares per visitar aquest lloc web</translation>
 <translation id="6415900369006735853">Connecta't a Internet a través del telèfon</translation>

@@ -57,7 +57,8 @@ class NET_EXPORT ReportingCache {
   //
   // All parameters correspond to the desired values for the relevant fields in
   // ReportingReport.
-  virtual void AddReport(const GURL& url,
+  virtual void AddReport(const NetworkIsolationKey& network_isolation_key,
+                         const GURL& url,
                          const std::string& user_agent,
                          const std::string& group_name,
                          const std::string& type,

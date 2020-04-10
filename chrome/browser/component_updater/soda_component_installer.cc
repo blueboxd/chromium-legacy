@@ -65,7 +65,7 @@ void SODAComponentInstallerPolicy::UpdateSODAComponentOnDemand() {
 bool SODAComponentInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
-  return base::PathExists(install_dir.Append(soda::kSodaBinaryRelativePath));
+  return base::PathExists(install_dir.Append(speech::kSodaBinaryRelativePath));
 }
 
 bool SODAComponentInstallerPolicy::SupportsGroupPolicyEnabledComponentUpdates()
@@ -97,7 +97,7 @@ void SODAComponentInstallerPolicy::ComponentReady(
 }
 
 base::FilePath SODAComponentInstallerPolicy::GetRelativeInstallDir() const {
-  return base::FilePath(soda::kSodaInstallationRelativePath);
+  return base::FilePath(speech::kSodaInstallationRelativePath);
 }
 
 void SODAComponentInstallerPolicy::GetHash(std::vector<uint8_t>* hash) const {
@@ -122,7 +122,7 @@ void UpdateSODAInstallDirPref(PrefService* prefs,
                               const base::FilePath& install_dir) {
 #if !defined(OS_ANDROID)
   prefs->SetFilePath(prefs::kSODAPath,
-                     install_dir.Append(soda::kSodaBinaryRelativePath));
+                     install_dir.Append(speech::kSodaBinaryRelativePath));
 #endif
 }
 

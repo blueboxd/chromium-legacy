@@ -60,6 +60,13 @@ class FeedStreamApi {
   // A slice was viewed (2/3rds of it is in the viewport). Should be called
   // once for each viewed slice in the stream.
   virtual void ReportSliceViewed(const std::string& slice_id) = 0;
+  // The user pressed the 'send feedback' context menu option, but may have not
+  // completed the feedback process.
+  virtual void ReportSendFeedbackAction() = 0;
+  // The user selected the 'learn more' option on the context menu.
+  virtual void ReportLearnMoreAction() = 0;
+  // The user selected the 'download' option on the context menu.
+  virtual void ReportDownloadAction() = 0;
   virtual void ReportNavigationStarted() = 0;
   virtual void ReportNavigationDone() = 0;
   // A piece of content was removed or dismissed explicitly by the user.

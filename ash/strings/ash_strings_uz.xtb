@@ -105,7 +105,7 @@
 <translation id="2268813581635650749">Hammani tizimdan chiqarish</translation>
 <translation id="2277103315734023688">Oldinga o‘tkazish</translation>
 <translation id="2292698582925480719">Ekran ko‘lami</translation>
-<translation id="2295777434187870477">Yoniq, ustiga bosish orqali ovoz qilish mumkin.</translation>
+<translation id="2295777434187870477">Mikrofon yoniq, uni oʻchirish uchun ustiga bosing.</translation>
 <translation id="2298170939937364391">Butun ekran rejimidagi lupa yoniq. Uni olib tashlash uchun Ctrl+Qidiruv+M tugmalarini bosing.</translation>
 <translation id="2302092602801625023">Ushbu hisob Family Link orqali boshqariladi</translation>
 <translation id="2303600792989757991">Ko‘rish rejimiga almashtirish</translation>
@@ -412,6 +412,7 @@
 <translation id="6267036997247669271"><ph name="NAME" />: faollashtirilmoqda...</translation>
 <translation id="6283712521836204486">Bezovta qilinmasin rejimi oʻchiq.</translation>
 <translation id="6284232397434400372">Piksellar sig‘imi o‘zgardi</translation>
+<translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> hisobini keyinroq ota-ona ruxsati bilan qayta kiritish mumkin.</translation>
 <translation id="6297287540776456956">Ekran qismini belgilash uchun stilusdan foydalaning</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />: joylashuv <ph name="ROTATION" /> ga o‘zgartirildi</translation>
 <translation id="6376931439017688372">Bluetooth yoniq</translation>

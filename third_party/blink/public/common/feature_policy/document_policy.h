@@ -10,6 +10,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/policy_value.h"
 #include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
@@ -110,6 +111,9 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   // problems, e.g. double value out of the range supported.
   static base::Optional<std::string> Serialize(const FeatureState& policy);
 
+  static base::Optional<std::string> SerializeInternal(
+      const FeatureState& policy,
+      const DocumentPolicyFeatureInfoMap&);
 
   // Merge two FeatureState map. Take stricter value when there is conflict.
   static FeatureState MergeFeatureState(const FeatureState& policy1,

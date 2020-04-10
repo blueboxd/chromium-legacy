@@ -4,6 +4,8 @@
 
 #include "net/dns/public/doh_provider_list.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/no_destructor.h"
 
@@ -86,8 +88,8 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
            "1dot1dot1dot1.cloudflare-dns.com"} /* dns_over_tls_hostnames */,
           "https://chrome.cloudflare-dns.com/dns-query",
           "Cloudflare (1.1.1.1)" /* ui_name */,
-          "https://developers.cloudflare.com/1.1.1.1/commitment-to-privacy/"
-          "privacy-policy/privacy-policy/" /* privacy_policy */,
+          "https://developers.cloudflare.com/1.1.1.1/privacy/"
+          "public-dns-resolver/" /* privacy_policy */,
           true /* display_globally */, {} /* display_countries */),
       DohProviderEntry("Comcast", base::nullopt /* provider_id_for_histogram */,
                        {"75.75.75.75", "75.75.76.76", "2001:558:feed::1",

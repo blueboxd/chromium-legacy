@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">تم تحديد عنصر واحد</translation>
 <translation id="2421044535038393232">متابعة التعديل</translation>
 <translation id="2435457462613246316">عرض كلمة المرور</translation>
-<translation id="2481538920734869610">إضافة حساب</translation>
 <translation id="2497852260688568942">تم إيقاف المزامنة من قِبل المشرف</translation>
 <translation id="2500374554657206846">خيارات حفظ كلمة المرور</translation>
 <translation id="2523363575747517183">يحاول موقع الويب هذا فتح تطبيق آخر بشكلٍ متكرر.</translation>
@@ -480,7 +479,6 @@
 <translation id="7203585745079012652">النطق بالإجابات</translation>
 <translation id="7265758999917665941">عدم حفظ كلمة المرور لهذا الموقع الإلكتروني</translation>
 <translation id="7272437679830969316">تعذَّر التحقق من هويتك. لم يتم نسخ كلمة المرور.</translation>
-<translation id="7285236536143823449">نعم، موافق</translation>
 <translation id="7291368939935408496">جارٍ تحضير كلمات المرور…</translation>
 <translation id="7293171162284876153">‏لبدء المزامنة، يُرجى تفعيل "مزامنة بيانات Chrome".</translation>
 <translation id="7336264872878993241">تم تنزيل <ph name="PERCENT" /> بالمائة</translation>
@@ -496,6 +494,7 @@
 <translation id="7460314822154045102">استخدام الكاميرا</translation>
 <translation id="7464701184726199289">يمحو هذا الخيار البيانات المتزامنة من كافة الأجهزة. لن يتم حذف إعدادات موقع الويب المحفوظة وقد تعكس عادات التصفح. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">اسم الشركة</translation>
+<translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="750493650310597496">لم يتم اختيار أي إشارات</translation>
 <translation id="7514365320538308">تنزيل</translation>
@@ -517,7 +516,6 @@
 <translation id="7781829728241885113">أمس</translation>
 <translation id="778855399387580014">‏يمكنك بدء البحث في علامة تبويب Chrome جديدة.</translation>
 <translation id="7791543448312431591">إضافة</translation>
-<translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7840771868269352570">ستتم إزالة العناصر التي اخترتها.</translation>
 <translation id="7856733331829174190">تعذّر التنزيل.</translation>
 <translation id="7859704718976024901">سجلّ التصفّح</translation>
@@ -587,6 +585,7 @@
 <translation id="8870413625673593573">العناصر المغلقة مؤخرًا</translation>
 <translation id="8881801611828450202">البحث في <ph name="SEARCH_ENGINE" /> عن هذه الصورة</translation>
 <translation id="8909135823018751308">مشاركة…</translation>
+<translation id="8917490105272468696">نعم، أنا موافق</translation>
 <translation id="895541991026785598">الإبلاغ عن مشكلة</translation>
 <translation id="8976382372951310360">مساعدة</translation>
 <translation id="8981454092730389528">‏عناصر التحكم في النشاط على Google</translation>

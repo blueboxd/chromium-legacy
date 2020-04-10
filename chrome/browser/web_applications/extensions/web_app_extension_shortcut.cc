@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -239,6 +240,20 @@ void CreateShortcuts(ShortcutCreationReason reason,
   GetShortcutInfoForApp(app, profile,
                         base::BindOnce(&CreateShortcutsWithInfo, reason,
                                        locations, std::move(callback)));
+}
+
+void CreateShortcutsForWebApp(ShortcutCreationReason reason,
+                              const ShortcutLocations& locations,
+                              Profile* profile,
+                              const std::string& app_id,
+                              CreateShortcutsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  WebAppProviderBase::GetProviderBase(profile)
+      ->shortcut_manager()
+      .GetShortcutInfoForApp(
+          app_id, base::BindOnce(&CreateShortcutsWithInfo, reason, locations,
+                                 std::move(callback)));
 }
 
 void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app) {

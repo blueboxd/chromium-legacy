@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/base/network_isolation_key.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -51,7 +52,8 @@ struct NET_EXPORT ReportingReport {
   };
 
   // TODO(chlily): Remove |attempts| argument as it is (almost?) always 0.
-  ReportingReport(const GURL& url,
+  ReportingReport(const NetworkIsolationKey& network_isolation_key,
+                  const GURL& url,
                   const std::string& user_agent,
                   const std::string& group,
                   const std::string& type,
@@ -68,6 +70,10 @@ struct NET_EXPORT ReportingReport {
 
   // Whether the report is part of an ongoing delivery attempt.
   bool IsUploadPending() const;
+
+  // The NIK of the request that triggered this report. (Not included in the
+  // delivered report.)
+  NetworkIsolationKey network_isolation_key;
 
   // The URL of the document that triggered the report. (Included in the
   // delivered report.)

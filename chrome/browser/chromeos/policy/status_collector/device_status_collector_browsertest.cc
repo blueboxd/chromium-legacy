@@ -469,6 +469,8 @@ void GetFakeCrosHealthdData(
       kFakeModelName, kFakeMojoArchitecture, kFakeMaxClockSpeed);
   std::vector<chromeos::cros_healthd::mojom::CpuInfoPtr> cpu_vector;
   cpu_vector.push_back(cpu_info.Clone());
+  auto cpu_result = chromeos::cros_healthd::mojom::CpuResult::NewCpuInfo(
+      std::move(cpu_vector));
   chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo storage_info(
       kFakeStoragePath, kFakeStorageSize, kFakeStorageType, kFakeStorageManfid,
       kFakeStorageName, kFakeStorageSerial);
@@ -491,7 +493,7 @@ void GetFakeCrosHealthdData(
   fan_vector.push_back(fan_info.Clone());
   chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
       battery_info.Clone(), std::move(block_device_info),
-      cached_vpd_info.Clone(), std::move(cpu_vector), timezone_info.Clone(),
+      cached_vpd_info.Clone(), std::move(cpu_result), timezone_info.Clone(),
       memory_info.Clone(), std::move(backlight_vector), std::move(fan_vector));
 
   // Create fake SampledData.

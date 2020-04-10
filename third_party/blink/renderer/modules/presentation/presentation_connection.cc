@@ -240,7 +240,7 @@ ControllerPresentationConnection* ControllerPresentationConnection::Take(
   DCHECK(request);
 
   auto* connection = MakeGarbageCollected<ControllerPresentationConnection>(
-      *controller->GetFrame(), controller, presentation_info.id,
+      *controller->GetSupplementable(), controller, presentation_info.id,
       presentation_info.url);
   controller->RegisterConnection(connection);
 

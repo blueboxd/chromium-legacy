@@ -60,6 +60,92 @@ using ::payments::mojom::PaymentShippingOption;
 using ::payments::mojom::PaymentShippingOptionPtr;
 using ::payments::mojom::PaymentShippingType;
 
+void OnGotAllPaymentApps(
+    const JavaRef<jobject>& jcallback,
+    content::PaymentAppProvider::PaymentApps apps,
+    payments::ServiceWorkerPaymentAppFinder::InstallablePaymentApps
+        installable_apps,
+    const std::string& error_message) {
+  JNIEnv* env = AttachCurrentThread();
+
+  if (!error_message.empty()) {
+    Java_PaymentHandlerFinder_onGetPaymentAppsError(
+        env, jcallback, ConvertUTF8ToJavaString(env, error_message));
+  }
+
+  for (const auto& app_info : apps) {
+    // Sends related application Ids to java side if the app prefers related
+    // applications.
+    std::vector<std::string> preferred_related_application_ids;
+    if (app_info.second->prefer_related_applications) {
+      for (const auto& related_application :
+           app_info.second->related_applications) {
+        // Only consider related applications on Google play for Android.
+        if (related_application.platform == "play")
+          preferred_related_application_ids.emplace_back(
+              related_application.id);
+      }
+    }
+
+    base::android::ScopedJavaLocalRef<jobjectArray> jcapabilities =
+        Java_ServiceWorkerPaymentAppBridge_createCapabilities(
+            env, app_info.second->capabilities.size());
+    for (size_t i = 0; i < app_info.second->capabilities.size(); i++) {
+      Java_ServiceWorkerPaymentAppBridge_addCapabilities(
+          env, jcapabilities, base::checked_cast<int>(i),
+          ToJavaIntArray(
+              env, app_info.second->capabilities[i].supported_card_networks));
+    }
+
+    base::android::ScopedJavaLocalRef<jobject> jsupported_delegations =
+        Java_ServiceWorkerPaymentAppBridge_createSupportedDelegations(
+            env, app_info.second->supported_delegations.shipping_address,
+            app_info.second->supported_delegations.payer_name,
+            app_info.second->supported_delegations.payer_phone,
+            app_info.second->supported_delegations.payer_email);
+
+    // TODO(crbug.com/846077): Find a proper way to make use of user hint.
+    Java_PaymentHandlerFinder_onInstalledPaymentHandlerFound(
+        env, jcallback, app_info.second->registration_id,
+        ConvertUTF8ToJavaString(env, app_info.second->scope.spec()),
+        app_info.second->name.empty()
+            ? nullptr
+            : ConvertUTF8ToJavaString(env, app_info.second->name),
+        nullptr, ConvertUTF8ToJavaString(env, app_info.second->scope.host()),
+        app_info.second->icon == nullptr
+            ? nullptr
+            : gfx::ConvertToJavaBitmap(app_info.second->icon.get()),
+        ToJavaArrayOfStrings(env, app_info.second->enabled_methods),
+        app_info.second->has_explicitly_verified_methods, jcapabilities,
+        ToJavaArrayOfStrings(env, preferred_related_application_ids),
+        jsupported_delegations);
+  }
+
+  for (const auto& installable_app : installable_apps) {
+    base::android::ScopedJavaLocalRef<jobject> jsupported_delegations =
+        Java_ServiceWorkerPaymentAppBridge_createSupportedDelegations(
+            env, installable_app.second->supported_delegations.shipping_address,
+            installable_app.second->supported_delegations.payer_name,
+            installable_app.second->supported_delegations.payer_phone,
+            installable_app.second->supported_delegations.payer_email);
+
+    Java_PaymentHandlerFinder_onInstallablePaymentHandlerFound(
+        env, jcallback,
+        ConvertUTF8ToJavaString(env, installable_app.second->name),
+        ConvertUTF8ToJavaString(env, installable_app.second->sw_js_url),
+        ConvertUTF8ToJavaString(env, installable_app.second->sw_scope),
+        installable_app.second->sw_use_cache,
+        installable_app.second->icon == nullptr
+            ? nullptr
+            : gfx::ConvertToJavaBitmap(installable_app.second->icon.get()),
+        ConvertUTF8ToJavaString(env, installable_app.first.spec()),
+        ToJavaArrayOfStrings(env, installable_app.second->preferred_app_ids),
+        jsupported_delegations);
+  }
+
+  Java_PaymentHandlerFinder_onAllPaymentAppsCreated(env, jcallback);
+}
+
 void OnHasServiceWorkerPaymentAppsResponse(
     const JavaRef<jobject>& jcallback,
     content::PaymentAppProvider::PaymentApps apps) {
@@ -92,10 +178,11 @@ void OnGetServiceWorkerPaymentAppsInfo(
 }
 
 void OnCanMakePayment(const JavaRef<jobject>& jcallback,
+                      const JavaRef<jobject>& japp,
                       payments::mojom::CanMakePaymentResponsePtr response) {
   JNIEnv* env = AttachCurrentThread();
-  Java_ServiceWorkerPaymentAppBridge_onCanMakePaymentEventResponse(
-      env, jcallback,
+  Java_PaymentHandlerFinder_onCanMakePaymentEventResponse(
+      env, jcallback, japp,
       ConvertUTF8ToJavaString(
           env, payments::ConvertCanMakePaymentEventResponseTypeToErrorString(
                    response->response_type)),
@@ -332,6 +419,35 @@ PaymentRequestEventDataPtr ConvertPaymentRequestEventDataFromJavaToNative(
 
 }  // namespace
 
+static void JNI_ServiceWorkerPaymentAppBridge_GetAllPaymentApps(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jorigin,
+    const JavaParamRef<jobject>& jrender_frame_host,
+    const JavaParamRef<jobjectArray>& jmethod_data,
+    jboolean jmay_crawl_for_installable_payment_apps,
+    const JavaParamRef<jobject>& jcallback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromJavaRenderFrameHost(jrender_frame_host);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+
+  payments::ServiceWorkerPaymentAppFinder::GetInstance()->GetAllPaymentApps(
+      url::Origin::FromJavaObject(jorigin), render_frame_host, web_contents,
+      WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+          ServiceAccessType::EXPLICIT_ACCESS),
+      ConvertPaymentMethodDataFromJavaToNative(env, jmethod_data),
+      jmay_crawl_for_installable_payment_apps,
+      base::BindOnce(&OnGotAllPaymentApps,
+                     ScopedJavaGlobalRef<jobject>(env, jcallback)),
+      base::BindOnce([]() {
+        /* Nothing needs to be done after writing cache. This callback is used
+         * only in tests. */
+      }));
+}
+
 static void JNI_ServiceWorkerPaymentAppBridge_HasServiceWorkerPaymentApps(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcallback) {
@@ -363,7 +479,8 @@ static void JNI_ServiceWorkerPaymentAppBridge_FireCanMakePaymentEvent(
     const JavaParamRef<jobjectArray>& jmethod_data,
     const JavaParamRef<jobjectArray>& jmodifiers,
     const JavaParamRef<jstring>& jcurrency,
-    const JavaParamRef<jobject>& jcallback) {
+    const JavaParamRef<jobject>& jcallback,
+    const JavaParamRef<jobject>& japp) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
@@ -416,7 +533,8 @@ static void JNI_ServiceWorkerPaymentAppBridge_FireCanMakePaymentEvent(
           GURL(ConvertJavaStringToUTF8(env, jservice_worker_scope))),
       ConvertJavaStringToUTF8(env, jpayment_request_id), std::move(event_data),
       base::BindOnce(&OnCanMakePayment,
-                     ScopedJavaGlobalRef<jobject>(env, jcallback)));
+                     ScopedJavaGlobalRef<jobject>(env, jcallback),
+                     ScopedJavaGlobalRef<jobject>(env, japp)));
 }
 
 static void JNI_ServiceWorkerPaymentAppBridge_InvokePaymentApp(

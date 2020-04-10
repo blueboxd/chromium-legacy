@@ -397,6 +397,11 @@ void ContextProviderImpl::Create(
     launch_command.AppendSwitch(switches::kHeadless);
   }
 
+  if ((features & fuchsia::web::ContextFeatureFlags::LEGACYMETRICS) ==
+      fuchsia::web::ContextFeatureFlags::LEGACYMETRICS) {
+    launch_command.AppendSwitch(switches::kUseLegacyMetricsService);
+  }
+
   bool enable_vulkan = (features & fuchsia::web::ContextFeatureFlags::VULKAN) ==
                        fuchsia::web::ContextFeatureFlags::VULKAN;
   bool enable_widevine =

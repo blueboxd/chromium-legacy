@@ -100,13 +100,13 @@
 #else
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/payments/payment_request_factory.h"
-#include "chrome/browser/soda/soda_service.h"
-#include "chrome/browser/soda/soda_service_factory.h"
+#include "chrome/browser/speech/speech_recognition_service.h"
+#include "chrome/browser/speech/speech_recognition_service_factory.h"
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
-#include "media/mojo/mojom/soda_service.mojom.h"
+#include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
@@ -346,14 +346,16 @@ void BindNetworkHintsHandler(
 }
 
 #if !defined(OS_ANDROID)
-void BindSodaContextHandler(
+void BindSpeechRecognitionContextHandler(
     content::RenderFrameHost* frame_host,
-    mojo::PendingReceiver<media::mojom::SodaContext> receiver) {
+    mojo::PendingReceiver<media::mojom::SpeechRecognitionContext> receiver) {
   Profile* profile = Profile::FromBrowserContext(
       frame_host->GetProcess()->GetBrowserContext());
   PrefService* profile_prefs = profile->GetPrefs();
-  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled))
-    SodaServiceFactory::GetForProfile(profile)->Create(std::move(receiver));
+  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled)) {
+    SpeechRecognitionServiceFactory::GetForProfile(profile)->Create(
+        std::move(receiver));
+  }
 }
 #endif
 
@@ -436,8 +438,8 @@ void PopulateChromeFrameBinders(
       base::BindRepeating(&BindNetworkHintsHandler));
 
 #if !defined(OS_ANDROID)
-  map->Add<media::mojom::SodaContext>(
-      base::BindRepeating(&BindSodaContextHandler));
+  map->Add<media::mojom::SpeechRecognitionContext>(
+      base::BindRepeating(&BindSpeechRecognitionContextHandler));
 #endif
 }
 

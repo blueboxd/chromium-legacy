@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 e përzgjedhur</translation>
 <translation id="2421044535038393232">Vazhdo modifikimin</translation>
 <translation id="2435457462613246316">Shfaq fjalëkalimin</translation>
-<translation id="2481538920734869610">SHTO LLOGARI</translation>
 <translation id="2497852260688568942">Sinkronizimi është çaktivizuar nga administratori</translation>
 <translation id="2500374554657206846">Opsionet për të ruajtur fjalëkalimin</translation>
 <translation id="2523363575747517183">Ky sajt uebi po përpiqet vazhdimisht të hapë një aplikacion tjetër.</translation>
@@ -480,7 +479,6 @@ Të dhënat e tua janë koduar me frazën tënde të kalimit më <ph name="TIME"
 <translation id="7203585745079012652">Thuaji përgjigjet mbrapsht</translation>
 <translation id="7265758999917665941">Asnjëherë për këtë faqe</translation>
 <translation id="7272437679830969316">Nuk mund të verifikohet identiteti yt. Fjalëkalimi nuk u kopjua.</translation>
-<translation id="7285236536143823449">PO, JAM DAKORD</translation>
 <translation id="7291368939935408496">Po përgatit fjalëkalimet...</translation>
 <translation id="7293171162284876153">Për të nisur sinkronizimin, aktivizo "Sinkronizo të dhënat e tua të Chrome".</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> përqind të shkarkuara</translation>
@@ -496,6 +494,7 @@ Të dhënat e tua janë koduar me frazën tënde të kalimit më <ph name="TIME"
 <translation id="7460314822154045102">Përdor kamerën</translation>
 <translation id="7464701184726199289">Kjo pastron të dhënat e sinkronizuara nga të gjitha pajisjet. Cilësimet e ruajtura të sajteve nuk do të fshihen dhe mund të pasqyrojnë zakonet e tua të shfletimit. <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Emri i kompanisë</translation>
+<translation id="7473891865547856676">Jo, faleminderit</translation>
 <translation id="7481312909269577407">Përpara</translation>
 <translation id="750493650310597496">0 të përzgjedhura</translation>
 <translation id="7514365320538308">Shkarko</translation>
@@ -517,7 +516,6 @@ Duke qenë se llogaria jote menaxhohet nga <ph name="HOSTED_DOMAIN" />, të dhë
 <translation id="7781829728241885113">Dje</translation>
 <translation id="778855399387580014">Nis një kërkim në një skedë të re Chrome.</translation>
 <translation id="7791543448312431591">Shtoje</translation>
-<translation id="780301667611848630">Jo, faleminderit</translation>
 <translation id="7840771868269352570">Artikujt që zgjodhe do të hiqen.</translation>
 <translation id="7856733331829174190">Nuk mundi të shkarkohej</translation>
 <translation id="7859704718976024901">Historiku i shfletimit</translation>
@@ -587,6 +585,7 @@ Duke qenë se llogaria jote menaxhohet nga <ph name="HOSTED_DOMAIN" />, të dhë
 <translation id="8870413625673593573">Të mbyllura së fundi</translation>
 <translation id="8881801611828450202">Kërko në <ph name="SEARCH_ENGINE" /> për këtë imazh</translation>
 <translation id="8909135823018751308">Ndaj…</translation>
+<translation id="8917490105272468696">Po, jam dakord</translation>
 <translation id="895541991026785598">Raporto një problem</translation>
 <translation id="8976382372951310360">Ndihma</translation>
 <translation id="8981454092730389528">Kontrollet e aktivitetit të Google</translation>

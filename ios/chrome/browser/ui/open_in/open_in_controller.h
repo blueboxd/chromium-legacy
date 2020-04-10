@@ -21,6 +21,8 @@ namespace web {
 class WebState;
 }
 
+class Browser;
+
 // Enum for the IOS.OpenIn.DownloadResult UMA histogram to log the result of
 // the file download initiated when the user tap on "open in" button.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -42,6 +44,8 @@ enum class OpenInDownloadResult {
 
 // Base view on which the Open In toolbar will be presented.
 @property(nonatomic, weak) UIView* baseView;
+
+@property(nonatomic, assign) Browser* browser;
 
 // Removes the |openInToolbar_| from the |webController_|'s view and resets the
 // variables specific to the loaded document.

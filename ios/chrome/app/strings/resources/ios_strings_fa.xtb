@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">۱ مورد انتخاب شد</translation>
 <translation id="2421044535038393232">ادامه ویرایش</translation>
 <translation id="2435457462613246316">نمایش گذرواژه</translation>
-<translation id="2481538920734869610">افزودن حساب</translation>
 <translation id="2497852260688568942">سرپرستتان همگام‌سازی را غیرفعال کرده است</translation>
 <translation id="2500374554657206846">گزینه‌هایی برای ذخیره گذرواژه</translation>
 <translation id="2523363575747517183">این وب‌سایت به‌طور مکرر تلاش می‌کند برنامه دیگری را باز کند.</translation>
@@ -460,7 +459,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6973630695168034713">پوشه‌ها</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6988572888918530647">‏مدیریت حساب Google</translation>
+<translation id="6988572888918530647">‏مدیریت «حساب Google»</translation>
 <translation id="6995899638241819463">اگر گذرواژه‌ها به دلیل نقض داده لو رفته باشد، هشدار می‌دهد</translation>
 <translation id="6998989275928107238">به</translation>
 <translation id="7004499039102548441">برگه‌های جدید</translation>
@@ -480,7 +479,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7203585745079012652">پاسخ گفتاری</translation>
 <translation id="7265758999917665941">هرگز برای این سایت</translation>
 <translation id="7272437679830969316">نمی‌توانیم هویتتان را به تأیید برسانیم. گذرواژه کپی نشد.</translation>
-<translation id="7285236536143823449">بله، موافقم</translation>
 <translation id="7291368939935408496">درحال آماده‌سازی گذرواژه‌ها…</translation>
 <translation id="7293171162284876153">‏برای شروع همگام‌سازی، «همگام‌سازی داده‌های Chrome» را روشن کنید.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> درصد بارگیری شد</translation>
@@ -496,6 +494,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7460314822154045102">استفاده از دوربین</translation>
 <translation id="7464701184726199289">با این کار داده‌های همگام‌سازی‌شده در همه دستگاه‌ها پاک می‌شوند. تنظیمات ذخیره‌شده سایت حذف نمی‌شوند و احتمالاً عادات مرور شما را نشان می‌دهند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">نام شرکت</translation>
+<translation id="7473891865547856676">نه متشکرم</translation>
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="750493650310597496">۰ نشانک انتخاب شده است</translation>
 <translation id="7514365320538308">بارگیری</translation>
@@ -517,7 +516,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7781829728241885113">دیروز</translation>
 <translation id="778855399387580014">‏جستجویی در برگه Chrome جدیدی شروع کنید.</translation>
 <translation id="7791543448312431591">افزودن</translation>
-<translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7840771868269352570">موارد انتخاب‌شده برداشته خواهد شد.</translation>
 <translation id="7856733331829174190">بارگیری نشد</translation>
 <translation id="7859704718976024901">سابقه مرور</translation>
@@ -587,6 +585,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8870413625673593573">اخیراً بسته‌شده</translation>
 <translation id="8881801611828450202">جستجوی <ph name="SEARCH_ENGINE" /> برای این تصویر</translation>
 <translation id="8909135823018751308">اشتراک‌گذاری‌...</translation>
+<translation id="8917490105272468696">بله، موافقم</translation>
 <translation id="895541991026785598">گزارش یک مسئله</translation>
 <translation id="8976382372951310360">راهنما</translation>
 <translation id="8981454092730389528">‏کنترل‌های فعالیت Google</translation>

@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">১টা বাছনি কৰা হৈছে</translation>
 <translation id="2421044535038393232">সম্পাদনা কৰি থাকক</translation>
 <translation id="2435457462613246316">পাছৱৰ্ড দেখুৱাওক</translation>
-<translation id="2481538920734869610">একাউণ্ট যোগ কৰক</translation>
 <translation id="2497852260688568942">আপোনাৰ প্ৰশাসকে ছিংক অক্ষম কৰিছে</translation>
 <translation id="2500374554657206846">পাছৱৰ্ড ছেভ কৰাৰ বিকল্পসমূহ</translation>
 <translation id="2523363575747517183">এই ৱেবছাইটটোৱে বাৰে বাৰে অন্য এটা এপ্লিকেশ্বন খুলিবলৈ চেষ্টা কৰি আছে।</translation>
@@ -479,7 +478,6 @@
 <translation id="7203585745079012652">সঁহাৰিটো কৈ দিয়ক</translation>
 <translation id="7265758999917665941">এই ছাইটটোৰ বাবে কেতিয়াও নহয়</translation>
 <translation id="7272437679830969316">আপোনাৰ পৰিচয় সত্যাপন কৰিব পৰা নগ’ল। পাছৱৰ্ড প্ৰতিলিপি কৰা নহ’ল।</translation>
-<translation id="7285236536143823449">হয়, মই সন্মত</translation>
 <translation id="7291368939935408496">পাছৱর্ড সাজু কৰি থকা হৈছে...</translation>
 <translation id="7293171162284876153">ছিংক কৰা আৰম্ভ কৰিবলৈ "আপোনাৰ Chrome ডেটা ছিংক কৰক" অন কৰক।</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> শতাংশ ডাউনল’ড কৰা হ’ল</translation>
@@ -495,6 +493,7 @@
 <translation id="7460314822154045102">কেমেৰা ব্যৱহাৰ কৰক</translation>
 <translation id="7464701184726199289">এইটোৱে সকলো ডিভাইচৰ পৰা ছিংক কৰি থোৱা ডেটা মচে। ছেভ কৰি থোৱা ছাইটৰ ছেটিংসমূহ মচা নাযায় আৰু আপোনাৰ ব্ৰাউজিঙৰ ধৰণ প্ৰতিফলিত কৰিব পাৰে। <ph name="BEGIN_LINK" />অধিক জানক<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">কোম্পানীৰ নাম</translation>
+<translation id="7473891865547856676">নালাগে, ধন্যবাদ</translation>
 <translation id="7481312909269577407">ফৰৱাৰ্ড কৰক</translation>
 <translation id="750493650310597496">এটাও বাছনি কৰা হোৱা নাই</translation>
 <translation id="7514365320538308">ডাউনল'ড কৰক</translation>
@@ -514,7 +513,6 @@
 <translation id="7781829728241885113">কালি</translation>
 <translation id="778855399387580014">Chromeৰ নতুন টেবত সন্ধান আৰম্ভ কৰক।</translation>
 <translation id="7791543448312431591">যোগ কৰক</translation>
-<translation id="780301667611848630">নালাগে, ধন্যবাদ</translation>
 <translation id="7840771868269352570">আপুনি বাছনি কৰা বস্তুটো আঁতৰোৱা হ’ব।</translation>
 <translation id="7856733331829174190">ডাউনল'ড কৰিব পৰা নগ'ল</translation>
 <translation id="7859704718976024901">ব্ৰাউজিঙৰ ইতিহাস</translation>
@@ -584,6 +582,7 @@
 <translation id="8870413625673593573">শেহতীয়াকৈ বন্ধ কৰা</translation>
 <translation id="8881801611828450202">এই প্ৰতিচ্ছবিটোৰ কাৰণে <ph name="SEARCH_ENGINE" />ত সন্ধান কৰক</translation>
 <translation id="8909135823018751308">শ্বেয়াৰ কৰক…</translation>
+<translation id="8917490105272468696">হয়, মই সন্মত</translation>
 <translation id="895541991026785598">কোনো সমস্যাৰ অভিযোগ দিয়ক</translation>
 <translation id="8976382372951310360">সহায়</translation>
 <translation id="8981454092730389528">Googleৰ কাৰ্যকলাপৰ নিয়ন্ত্ৰণ</translation>

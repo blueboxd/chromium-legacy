@@ -8,6 +8,7 @@
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 
+class Browser;
 class BrowsingDataRemover;
 enum class BrowsingDataRemoveMask;
 class ChromeBrowserState;
@@ -92,6 +93,7 @@ enum ClearBrowsingDataItemType {
         (BrowsingDataRemoveMask)dataTypeMaskToRemove
                              baseViewController:
                                  (UIViewController*)baseViewController
+                                        browser:(Browser*)browser
                             sourceBarButtonItem:
                                 (UIBarButtonItem*)sourceBarButtonItem;
 

@@ -27,6 +27,7 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/page_type.h"
 #include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -40,6 +41,7 @@
 #include "content/test/portal/portal_created_observer.h"
 #include "content/test/portal/portal_interceptor_for_testing.h"
 #include "content/test/test_render_frame_host_factory.h"
+#include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -77,7 +79,8 @@ class PortalBrowserTest : public ContentBrowserTest {
 
   Portal* CreatePortalToUrl(WebContentsImpl* host_contents,
                             GURL portal_url,
-                            int number_of_navigations = 1) {
+                            int number_of_navigations = 1,
+                            bool expected_to_succeed = true) {
     EXPECT_GE(number_of_navigations, 1);
     RenderFrameHostImpl* main_frame = host_contents->GetMainFrame();
 
@@ -103,7 +106,7 @@ class PortalBrowserTest : public ContentBrowserTest {
     EXPECT_TRUE(portal_contents);
 
     navigation_observer.WaitForNavigationFinished();
-    EXPECT_TRUE(WaitForLoadStop(portal_contents));
+    EXPECT_EQ(expected_to_succeed, WaitForLoadStop(portal_contents));
 
     return portal;
   }
@@ -1749,6 +1752,60 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigationPrecedence) {
 
   pending_back_navigation.WaitForNavigationFinished();
   EXPECT_TRUE(pending_back_navigation.was_successful());
+}
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, RejectActivationOfErrorPages) {
+  net::EmbeddedTestServer bad_https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  bad_https_server.AddDefaultHandlers(GetTestDataFilePath());
+  bad_https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  ASSERT_TRUE(bad_https_server.Start());
+
+  GURL main_url(embedded_test_server()->GetURL("portal.test", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  GURL bad_portal_url(bad_https_server.GetURL("a.com", "/title1.html"));
+  Portal* portal = CreatePortalToUrl(web_contents_impl, bad_portal_url,
+                                     /* number_of_navigations */ 1,
+                                     /* expected_to_succeed */ false);
+
+  PortalActivatedObserver activated_observer(portal);
+  EXPECT_EQ("reject", EvalJs(main_frame,
+                             "document.querySelector('portal').activate().then("
+                             "    () => 'resolve', () => 'reject');"));
+  EXPECT_EQ(blink::mojom::PortalActivateResult::kRejectedDueToErrorInPortal,
+            activated_observer.result());
+}
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
+                       RejectActivationOfPostCommitErrorPages) {
+  GURL main_url(embedded_test_server()->GetURL("portal.test", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  GURL portal_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  Portal* portal = CreatePortalToUrl(web_contents_impl, portal_url);
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+
+  std::string error_html = "Error page";
+  TestNavigationObserver error_observer(portal_contents);
+  portal_contents->GetController().LoadPostCommitErrorPage(
+      portal_contents->GetMainFrame(), portal_url, error_html,
+      net::ERR_BLOCKED_BY_CLIENT);
+  error_observer.Wait();
+  EXPECT_FALSE(error_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, error_observer.last_net_error_code());
+
+  PortalActivatedObserver activated_observer(portal);
+  EXPECT_EQ("reject", EvalJs(main_frame,
+                             "document.querySelector('portal').activate().then("
+                             "    () => 'resolve', () => 'reject');"));
+  EXPECT_EQ(blink::mojom::PortalActivateResult::kRejectedDueToErrorInPortal,
+            activated_observer.result());
 }
 
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, CallCreateProxyAndAttachPortalTwice) {

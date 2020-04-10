@@ -13,21 +13,47 @@
 namespace blink {
 
 WGPUBindGroupLayoutEntry AsDawnType(
-    const GPUBindGroupLayoutEntry* webgpu_binding) {
+    const GPUBindGroupLayoutEntry* webgpu_binding,
+    GPUDevice* device) {
   WGPUBindGroupLayoutEntry dawn_binding = {};
 
   dawn_binding.binding = webgpu_binding->binding();
   dawn_binding.type = AsDawnEnum<WGPUBindingType>(webgpu_binding->type());
   dawn_binding.visibility =
       AsDawnEnum<WGPUShaderStage>(webgpu_binding->visibility());
-  dawn_binding.textureDimension =
-      AsDawnEnum<WGPUTextureViewDimension>(webgpu_binding->textureDimension());
+
+  // Note: in this case we check for the deprecated member first, because
+  // the new member is optional so we can't check for its presence.
+  if (webgpu_binding->hasTextureDimension()) {
+    device->AddConsoleWarning(
+        "GPUBindGroupLayoutEntry.textureDimension is deprecated: renamed to "
+        "viewDimension");
+    dawn_binding.textureDimension = AsDawnEnum<WGPUTextureViewDimension>(
+        webgpu_binding->textureDimension());
+  } else {
+    dawn_binding.textureDimension =
+        AsDawnEnum<WGPUTextureViewDimension>(webgpu_binding->viewDimension());
+  }
+
   dawn_binding.textureComponentType = AsDawnEnum<WGPUTextureComponentType>(
       webgpu_binding->textureComponentType());
   dawn_binding.multisampled = webgpu_binding->multisampled();
   dawn_binding.hasDynamicOffset = webgpu_binding->hasDynamicOffset();
 
   return dawn_binding;
+}
+
+// TODO(crbug.com/1069302): Remove when unused.
+std::unique_ptr<WGPUBindGroupLayoutEntry[]> AsDawnType(
+    const HeapVector<Member<GPUBindGroupLayoutEntry>>& webgpu_objects,
+    GPUDevice* device) {
+  wtf_size_t count = webgpu_objects.size();
+  std::unique_ptr<WGPUBindGroupLayoutEntry[]> dawn_objects(
+      new WGPUBindGroupLayoutEntry[count]);
+  for (wtf_size_t i = 0; i < count; ++i) {
+    dawn_objects[i] = AsDawnType(webgpu_objects[i].Get(), device);
+  }
+  return dawn_objects;
 }
 
 // static
@@ -48,7 +74,8 @@ GPUBindGroupLayout* GPUBindGroupLayout::Create(
   std::unique_ptr<WGPUBindGroupLayoutEntry[]> entries;
   if (webgpu_desc->hasEntries()) {
     entry_count = static_cast<uint32_t>(webgpu_desc->entries().size());
-    entries = entry_count != 0 ? AsDawnType(webgpu_desc->entries()) : nullptr;
+    entries =
+        entry_count != 0 ? AsDawnType(webgpu_desc->entries(), device) : nullptr;
   } else {
     if (!webgpu_desc->hasBindings()) {
       exception_state.ThrowTypeError("required member entries is undefined.");
@@ -56,7 +83,8 @@ GPUBindGroupLayout* GPUBindGroupLayout::Create(
     }
 
     entry_count = static_cast<uint32_t>(webgpu_desc->bindings().size());
-    entries = entry_count != 0 ? AsDawnType(webgpu_desc->bindings()) : nullptr;
+    entries = entry_count != 0 ? AsDawnType(webgpu_desc->bindings(), device)
+                               : nullptr;
   }
 
   WGPUBindGroupLayoutDescriptor dawn_desc = {};

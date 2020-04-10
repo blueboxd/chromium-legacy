@@ -65,6 +65,20 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
         std::unique_ptr<FakeDB<DecodeStatsProto>>(fake_db_)));
   }
 
+  ~VideoDecodeStatsDBImplTest() override {
+    // Tests should always complete any pending operations
+    VerifyNoPendingOps();
+  }
+
+  void VerifyOnePendingOp(std::string op_name) {
+    EXPECT_EQ(stats_db_->pending_ops_.size(), 1u);
+    VideoDecodeStatsDBImpl::PendingOperation* pending_op =
+        stats_db_->pending_ops_.begin()->second.get();
+    EXPECT_EQ(pending_op->uma_str_, op_name);
+  }
+
+  void VerifyNoPendingOps() { EXPECT_TRUE(stats_db_->pending_ops_.empty()); }
+
   int GetMaxFramesPerBuffer() {
     return VideoDecodeStatsDBImpl::GetMaxFramesPerBuffer();
   }
@@ -95,7 +109,9 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
         key, entry,
         base::BindOnce(&VideoDecodeStatsDBImplTest::MockAppendDecodeStatsCb,
                        base::Unretained(this)));
+    VerifyOnePendingOp("Read");
     fake_db_->GetCallback(true);
+    VerifyOnePendingOp("Write");
     fake_db_->UpdateCallback(true);
     testing::Mock::VerifyAndClearExpectations(this);
   }
@@ -106,6 +122,7 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
     stats_db_->GetDecodeStats(
         key, base::BindOnce(&VideoDecodeStatsDBImplTest::GetDecodeStatsCb,
                             base::Unretained(this)));
+    VerifyOnePendingOp("Read");
     fake_db_->GetCallback(true);
     testing::Mock::VerifyAndClearExpectations(this);
   }
@@ -115,6 +132,7 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
     stats_db_->GetDecodeStats(
         key, base::BindOnce(&VideoDecodeStatsDBImplTest::GetDecodeStatsCb,
                             base::Unretained(this)));
+    VerifyOnePendingOp("Read");
     fake_db_->GetCallback(true);
     testing::Mock::VerifyAndClearExpectations(this);
   }
@@ -157,7 +175,8 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
   MOCK_METHOD0(MockClearStatsCb, void());
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   const VideoDescKey kStatsKeyVp9;
   const VideoDescKey kStatsKeyAvc;
@@ -175,9 +194,30 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeStatsDBImplTest);
 };
 
-TEST_F(VideoDecodeStatsDBImplTest, FailedInitialize) {
+TEST_F(VideoDecodeStatsDBImplTest, InitializeFailed) {
   stats_db_->Initialize(base::BindOnce(
       &VideoDecodeStatsDBImplTest::OnInitialize, base::Unretained(this)));
+  EXPECT_CALL(*this, OnInitialize(false));
+  fake_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kError);
+}
+
+TEST_F(VideoDecodeStatsDBImplTest, InitializeTimedOut) {
+  // Queue up an Initialize.
+  stats_db_->Initialize(base::BindOnce(
+      &VideoDecodeStatsDBImplTest::OnInitialize, base::Unretained(this)));
+  VerifyOnePendingOp("Initialize");
+
+  // Move time forward enough to trigger timeout.
+  EXPECT_CALL(*this, OnInitialize(_)).Times(0);
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(100));
+  task_environment_.RunUntilIdle();
+
+  // Verify we didn't get an init callback and task is no longer considered
+  // pending (because it timed out).
+  testing::Mock::VerifyAndClearExpectations(this);
+  VerifyNoPendingOps();
+
+  // Verify callback still works if init completes very late.
   EXPECT_CALL(*this, OnInitialize(false));
   fake_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kError);
 }
@@ -204,9 +244,12 @@ TEST_F(VideoDecodeStatsDBImplTest, WriteReadAndClear) {
   VerifyReadStats(kStatsKeyVp9, aggregate_entry);
 
   // Clear all stats from the DB.
+  EXPECT_CALL(*this, MockClearStatsCb);
   stats_db_->ClearStats(base::BindOnce(
       &VideoDecodeStatsDBImplTest::MockClearStatsCb, base::Unretained(this)));
+  VerifyOnePendingOp("LoadKeys");
   fake_db_->LoadKeysCallback(true);
+  VerifyOnePendingOp("Clear");
   fake_db_->UpdateCallback(true);
 
   // Database is now empty. Expect null entry.

@@ -80,9 +80,7 @@
         close-text="$i18n{close}" on-cancel="onAllowSharedDialogCancel_"
         on-close="onAllowSharedDialogClose_">
       <div slot="title">
-        [[getAllowSharedDialogTitle_(prefs.settings.use_shared_proxies.value,
-            '$i18n{networkProxyAllowSharedEnableWarningTitle}',
-            '$i18n{networkProxyAllowSharedDisableWarningTitle}')]]
+        [[getAllowSharedDialogTitle_(prefs.settings.use_shared_proxies.value)]]
       </div>
       <div slot="body">
         $i18n{networkProxyAllowSharedWarningMessage}

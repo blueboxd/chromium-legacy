@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 тандалды</translation>
 <translation id="2421044535038393232">Түзөтө берүү</translation>
 <translation id="2435457462613246316">Сырсөздү көрсөтүү</translation>
-<translation id="2481538920734869610">АККАУНТ КОШУУ</translation>
 <translation id="2497852260688568942">Шайкештирүү функциясын администраторуңуз өчүрүп койгон</translation>
 <translation id="2500374554657206846">Сырсөздү сактоо параметрлери</translation>
 <translation id="2523363575747517183">Бул вебсайт башка колдонмону ачууга бир нече жолу аракет кылууда.</translation>
@@ -480,7 +479,6 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="7203585745079012652">Жоопторду айтуу</translation>
 <translation id="7265758999917665941">Бул сайт үчүн эч качан</translation>
 <translation id="7272437679830969316">Аныктыгыңыз тастыкталган жок. Сырсөз көчүрүлгөн жок.</translation>
-<translation id="7285236536143823449">ООБА, МАКУЛМУН</translation>
 <translation id="7291368939935408496">Сырсөздөр даярдалууда…</translation>
 <translation id="7293171162284876153">Шайкештирүүнү баштоо үчүн, "Chrome дайындарын шайкештирүүнү" күйгүзүңүз.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> пайыз жүктөлүп алынды</translation>
@@ -496,6 +494,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="7460314822154045102">Камераны колдонуу</translation>
 <translation id="7464701184726199289">Бул учурда шайкештештирилген дайындар бардык түзмөктөрдөн тазаланат. Сакталган сайт жөндөөлөрү өзгөрүлбөйт, андыктан, сайттарды адаттагыдай карай бересиз. <ph name="BEGIN_LINK" />Көбүрөөк маалымат алуу<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Компаниянын аты</translation>
+<translation id="7473891865547856676">Жок, рахмат</translation>
 <translation id="7481312909269577407">Багыттоо</translation>
 <translation id="750493650310597496">0 тандалды</translation>
 <translation id="7514365320538308">Жүктөп алуу</translation>
@@ -517,7 +516,6 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="7781829728241885113">Кечээ</translation>
 <translation id="778855399387580014">Chrome'дун жаңы өтмөгүндө издеңиз.</translation>
 <translation id="7791543448312431591">Кошуу</translation>
-<translation id="780301667611848630">Жок, рахмат</translation>
 <translation id="7840771868269352570">Тандалган элементтер өчүрүлөт.</translation>
 <translation id="7856733331829174190">Жүктөлүп алынган жок</translation>
 <translation id="7859704718976024901">Серептөө таржымалы</translation>
@@ -587,6 +585,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="8870413625673593573">Жакында жабылган</translation>
 <translation id="8881801611828450202">Бул сүрөттү <ph name="SEARCH_ENGINE" /> издөө каражатынан издөө</translation>
 <translation id="8909135823018751308">Бөлүшүү…</translation>
+<translation id="8917490105272468696">Ооба, мен макулмун</translation>
 <translation id="895541991026785598">Маселе жөнндө кабрл</translation>
 <translation id="8976382372951310360">Жардам</translation>
 <translation id="8981454092730389528">Google'дагы аракеттерди көзөмөлдөө каражаттары</translation>

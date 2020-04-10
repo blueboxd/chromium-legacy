@@ -32,7 +32,6 @@
 #include "chrome/browser/downgrade/snapshot_manager.h"
 #include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -223,36 +222,30 @@ bool DowngradeManager::PrepareUserDataDirectoryForCurrentVersion(
     return type_ == Type::kAdministrativeWipe;
   }
 
-  if (current_version == *last_version)
-    return false;  // Nothing to do if the version has not changed.
-
-  if (current_version < *last_version) {
-    type_ = GetDowngradeTypeWithSnapshot(user_data_dir, current_version,
-                                         *last_version);
-    if (type_ != Type::kNone)
-      base::UmaHistogramEnumeration("Downgrade.Type", type_);
-
-    return type_ == Type::kAdministrativeWipe ||
-           type_ == Type::kSnapshotRestore;
-  }
-
   auto current_milestone = current_version.components()[0];
-  int max_number_of_snapshots = g_browser_process->local_state()->GetInteger(
-      prefs::kUserDataSnapshotRentionLimit);
-  base::Optional<uint32_t> purge_milestone;
-  if (current_milestone == last_version->components()[0]) {
-    // Mid-milestone snapshots are only taken on canary installs.
-    if (chrome::GetChannel() != version_info::Channel::CANARY)
-      return false;
-    // Keep one snapshot in this milestone unless snapshots are disabled.
-    max_number_of_snapshots = std::min(max_number_of_snapshots, 1);
-    purge_milestone = current_milestone;
+  auto last_milestone = last_version->components()[0];
+
+  // Take a snapshot on the first launch after a major version jump.
+  if (current_milestone > last_milestone) {
+    const int max_number_of_snapshots =
+        g_browser_process->local_state()->GetInteger(
+            prefs::kUserDataSnapshotRentionLimit);
+    SnapshotManager snapshot_manager(user_data_dir);
+    if (max_number_of_snapshots > 0)
+      snapshot_manager.TakeSnapshot(*last_version);
+    snapshot_manager.PurgeInvalidAndOldSnapshots(max_number_of_snapshots);
+    return false;
   }
-  SnapshotManager snapshot_manager(user_data_dir);
-  snapshot_manager.TakeSnapshot(*last_version);
-  snapshot_manager.PurgeInvalidAndOldSnapshots(max_number_of_snapshots,
-                                               purge_milestone);
-  return false;
+
+  if (current_version >= *last_version)
+    return false;  // Same version or mid-milestone upgrade.
+
+  type_ = GetDowngradeTypeWithSnapshot(user_data_dir, current_version,
+                                       *last_version);
+  if (type_ != Type::kNone)
+    base::UmaHistogramEnumeration("Downgrade.Type", type_);
+
+  return type_ == Type::kAdministrativeWipe || type_ == Type::kSnapshotRestore;
 }
 
 void DowngradeManager::UpdateLastVersion(const base::FilePath& user_data_dir) {

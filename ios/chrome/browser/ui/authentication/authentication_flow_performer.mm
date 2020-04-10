@@ -196,7 +196,8 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 - (void)promptSwitchFromManagedEmail:(NSString*)managedEmail
                     withHostedDomain:(NSString*)hostedDomain
                              toEmail:(NSString*)toEmail
-                      viewController:(UIViewController*)viewController {
+                      viewController:(UIViewController*)viewController
+                             browser:(Browser*)browser {
   DCHECK(!_alertCoordinator);
   NSString* title = l10n_util::GetNSString(IDS_IOS_MANAGED_SWITCH_TITLE);
   NSString* subtitle = l10n_util::GetNSStringF(
@@ -209,6 +210,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
   _alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:viewController
+                                                   browser:browser
                                                      title:title
                                                    message:subtitle];
 
@@ -269,7 +271,8 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
     [self promptSwitchFromManagedEmail:lastSignedInEmail
                       withHostedDomain:hostedDomain
                                toEmail:[identity userEmail]
-                        viewController:viewController];
+                        viewController:viewController
+                               browser:browser];
     return;
   }
   _navigationController = [SettingsNavigationController
@@ -360,8 +363,8 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 }
 
 - (void)showManagedConfirmationForHostedDomain:(NSString*)hostedDomain
-                                viewController:
-                                    (UIViewController*)viewController {
+                                viewController:(UIViewController*)viewController
+                                       browser:(Browser*)browser {
   DCHECK(!_alertCoordinator);
   NSString* title = l10n_util::GetNSString(IDS_IOS_MANAGED_SIGNIN_TITLE);
   NSString* subtitle = l10n_util::GetNSStringF(
@@ -372,6 +375,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
   _alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:viewController
+                                                   browser:browser
                                                      title:title
                                                    message:subtitle];
 
@@ -404,10 +408,11 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
 - (void)showAuthenticationError:(NSError*)error
                  withCompletion:(ProceduralBlock)callback
-                 viewController:(UIViewController*)viewController {
+                 viewController:(UIViewController*)viewController
+                        browser:(Browser*)browser {
   DCHECK(!_alertCoordinator);
 
-  _alertCoordinator = ErrorCoordinatorNoItem(error, viewController);
+  _alertCoordinator = ErrorCoordinatorNoItem(error, viewController, browser);
 
   __weak AuthenticationFlowPerformer* weakSelf = self;
   __weak AlertCoordinator* weakAlert = _alertCoordinator;

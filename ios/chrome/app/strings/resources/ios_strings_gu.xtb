@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 પસંદ કર્યું છે</translation>
 <translation id="2421044535038393232">ફેરફાર કરતા રહો</translation>
 <translation id="2435457462613246316">પાસવર્ડ બતાવો</translation>
-<translation id="2481538920734869610">એકાઉન્ટ ઉમેરો</translation>
 <translation id="2497852260688568942">સમન્વયન, તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવ્યું છે</translation>
 <translation id="2500374554657206846">પાસવર્ડ સાચવવાના વિકલ્પો</translation>
 <translation id="2523363575747517183">આ વેબસાઇટ વારંવાર અન્ય ઍપ્લિકેશન ખોલવાનો પ્રયાસ કરી રહી છે.</translation>
@@ -480,7 +479,6 @@
 <translation id="7203585745079012652">જવાબો પાછા બોલો</translation>
 <translation id="7265758999917665941">આ સાઇટ માટે ક્યારેય નહીં</translation>
 <translation id="7272437679830969316">તમારી ઓળખની ચકાસણી કરી શકાતી નથી. પાસવર્ડ કૉપિ કરેલો નથી.</translation>
-<translation id="7285236536143823449">હા, હું સંમત છું</translation>
 <translation id="7291368939935408496">પાસવર્ડ તૈયાર કરી રહ્યાં છીએ…</translation>
 <translation id="7293171162284876153">સિંક શરુ કરવા માટે, "તમારો Chromeનો ડેટા સિંક કરો" ચાલુ કરો.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> ટકા ડાઉનલોડ થઈ</translation>
@@ -496,6 +494,7 @@
 <translation id="7460314822154045102">કૅમેરાનો ઉપયોગ કરો</translation>
 <translation id="7464701184726199289">આનાથી તમામ ઉપકરણોમાંથી સમન્વયિત ડેટા સાફ થાય છે. સાચવેલ સાઇટ સેટિંગ્સ કાઢી નાખવામાં આવશે નહીં અને તે તમારી બ્રાઉઝિંગ ટેવોને પ્રતિબિંબિત કરી શકે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">કંપનીનું નામ</translation>
+<translation id="7473891865547856676">નહીં આભાર</translation>
 <translation id="7481312909269577407">ફોર્વર્ડ કરો</translation>
 <translation id="750493650310597496">0 પસંદ કર્યાં</translation>
 <translation id="7514365320538308">ડાઉનલોડ કરો</translation>
@@ -517,7 +516,6 @@
 <translation id="7781829728241885113">ગઈ કાલે</translation>
 <translation id="778855399387580014">નવા Chrome ટૅબમાં શોધ શરૂ કરો.</translation>
 <translation id="7791543448312431591">ઉમેરો</translation>
-<translation id="780301667611848630">નહીં, આભાર</translation>
 <translation id="7840771868269352570">તમે પસંદ કરેલી આઇટમ કાઢી નાખવામાં આવશે.</translation>
 <translation id="7856733331829174190">ડાઉનલોડ ન કરી શક્યાં</translation>
 <translation id="7859704718976024901">બ્રાઉઝિંગ ઇતિહાસ</translation>
@@ -587,6 +585,7 @@
 <translation id="8870413625673593573">તાજેતરમાં બંધ કરેલા</translation>
 <translation id="8881801611828450202"><ph name="SEARCH_ENGINE" /> પર આ છબી શોધો</translation>
 <translation id="8909135823018751308">શેર કરો…</translation>
+<translation id="8917490105272468696">હા, હું સંમત છું</translation>
 <translation id="895541991026785598">સમસ્યાની જાણ કરો</translation>
 <translation id="8976382372951310360">સહાય</translation>
 <translation id="8981454092730389528">Google પ્રવૃત્તિ નિયંત્રણો</translation>

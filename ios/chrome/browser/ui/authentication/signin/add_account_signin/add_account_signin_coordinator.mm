@@ -156,8 +156,8 @@ using signin_metrics::PromoAction;
                                                       identity:nil];
   };
 
-  self.alertCoordinator =
-      ErrorCoordinator(error, dismissAction, self.baseViewController);
+  self.alertCoordinator = ErrorCoordinator(
+      error, dismissAction, self.baseViewController, self.browser);
   [self.alertCoordinator start];
 }
 

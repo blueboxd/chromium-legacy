@@ -16,7 +16,9 @@
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/metrics/metrics_helper.h"
+#include "chrome/browser/vr/xr_runtime_manager_statics.h"
 #include "content/public/browser/browser_xr_runtime.h"
+#include "content/public/browser/webvr_service_provider.h"
 #include "content/public/browser/xr_runtime_manager.h"
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/android/gvr/gvr_device.h"
@@ -64,12 +66,12 @@ VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   j_vr_shell_delegate_.Reset(env, obj);
-  content::XRRuntimeManager::AddObserver(this);
+  XRRuntimeManagerStatics::AddObserver(this);
 }
 
 VrShellDelegate::~VrShellDelegate() {
   DVLOG(1) << __FUNCTION__ << "=" << this;
-  content::XRRuntimeManager::RemoveObserver(this);
+  XRRuntimeManagerStatics::RemoveObserver(this);
   device::GvrDevice* gvr_device = GetGvrDevice();
   if (gvr_device)
     gvr_device->OnExitPresent();
@@ -99,7 +101,7 @@ void VrShellDelegate::SetDelegate(VrShell* vr_shell,
   // When VrShell is created, we disable magic window mode as the user is inside
   // the headset. As currently implemented, orientation-based magic window
   // doesn't make sense when the window is fixed and the user is moving.
-  auto* xr_runtime_manager = content::XRRuntimeManager::GetInstanceIfCreated();
+  auto* xr_runtime_manager = XRRuntimeManagerStatics::GetInstanceIfCreated();
   if (xr_runtime_manager) {
     // If the XRRuntimeManager singleton currently exists, this will disable
     // inline VR. Otherwise, the callback for 'XRRuntimeManager::Observer'
@@ -126,7 +128,7 @@ void VrShellDelegate::RemoveDelegate() {
     std::move(on_present_result_callback_).Run(false);
   }
 
-  auto* xr_runtime_manager = content::XRRuntimeManager::GetInstanceIfCreated();
+  auto* xr_runtime_manager = XRRuntimeManagerStatics::GetInstanceIfCreated();
   if (xr_runtime_manager) {
     SetInlineVrEnabled(*xr_runtime_manager, true);
   }

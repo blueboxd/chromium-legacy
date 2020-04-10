@@ -70,13 +70,14 @@ Polymer({
 
   /**
    * @param {boolean} allowShared
-   * @param {string} enableStr
-   * @param {string} disableStr
    * @return {string}
    * @private
    */
-  getAllowSharedDialogTitle_(allowShared, enableStr, disableStr) {
-    return allowShared ? disableStr : enableStr;
+  getAllowSharedDialogTitle_(allowShared) {
+    if (allowShared) {
+      return this.i18n('networkProxyAllowSharedDisableWarningTitle');
+    }
+    return this.i18n('networkProxyAllowSharedEnableWarningTitle');
   },
 
   /**

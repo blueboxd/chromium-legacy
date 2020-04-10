@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">১টি নির্বাচিত</translation>
 <translation id="2421044535038393232">এডিট করতে থাকুন</translation>
 <translation id="2435457462613246316">পাসওয়ার্ড দেখান</translation>
-<translation id="2481538920734869610">অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="2497852260688568942">আপনার প্রশাসকের দ্বারা সিঙ্ক অক্ষম করা হয়েছে</translation>
 <translation id="2500374554657206846">পাসওয়ার্ড সেভ করার বিকল্প</translation>
 <translation id="2523363575747517183">এই ওয়েবসাইটটি ক্রমাগত অন্য অ্যাপ্লিকেশন খোলার চেষ্টা করছে।</translation>
@@ -481,7 +480,6 @@
 <translation id="7203585745079012652">আবার উত্তরগুলি বলে</translation>
 <translation id="7265758999917665941">এই সাইটের জন্য কখনই নয়</translation>
 <translation id="7272437679830969316">আপনার পরিচয় যাচাই করা যাবে না। পাসওয়ার্ড কপি করা হয়নি।</translation>
-<translation id="7285236536143823449">হ্যাঁ, আমি রাজি</translation>
 <translation id="7291368939935408496">পাসওয়ার্ড তৈরি করা হচ্ছে...</translation>
 <translation id="7293171162284876153">সিঙ্ক চালু করতে "আপনার Chrome ডেটা সিঙ্ক করুন" বিকল্পটি চালু করুন।</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> শতাংশ ডাউনলোড হয়েছে</translation>
@@ -497,6 +495,7 @@
 <translation id="7460314822154045102">ক্যামেরা ব্যবহার করুন</translation>
 <translation id="7464701184726199289">এটি সব ডিভাইস থেকে সিঙ্ক হওয়া ডেটা সাফ করবে। সংরক্ষিত সাইটের সেটিংস মোছা হবে না এবং আপনার ব্রাউজিং অভ্যাস প্রতিফলিত হতে পারে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">কোম্পানির নাম:</translation>
+<translation id="7473891865547856676">না থাক</translation>
 <translation id="7481312909269577407">ফরওয়ার্ড</translation>
 <translation id="750493650310597496">০টি নির্বাচিত</translation>
 <translation id="7514365320538308">ডাউনলোড করুন</translation>
@@ -518,7 +517,6 @@
 <translation id="7781829728241885113">গতকাল</translation>
 <translation id="778855399387580014">নতুন Chrome ট্যাবে সার্চ করা শুরু করুন।</translation>
 <translation id="7791543448312431591">জুড়ুন</translation>
-<translation id="780301667611848630">না থাক</translation>
 <translation id="7840771868269352570">আপনার বেছে নেওয়া আইটেমগুলি সরানো হবে।</translation>
 <translation id="7856733331829174190">ডাউনলোড করা যায়নি</translation>
 <translation id="7859704718976024901">ব্রাউজিং ইতিহাস</translation>
@@ -588,6 +586,7 @@
 <translation id="8870413625673593573">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="8881801611828450202">এই ইমেজটির জন্য <ph name="SEARCH_ENGINE" />-এ খুঁজুন</translation>
 <translation id="8909135823018751308">শেয়ার করুন...</translation>
+<translation id="8917490105272468696">হ্যাঁ, আমি রাজি</translation>
 <translation id="895541991026785598">কোনও সমস্যা অভিযোগ করুন</translation>
 <translation id="8976382372951310360">সহায়তা</translation>
 <translation id="8981454092730389528">Google অ্যাক্টিভিটির নিয়ন্ত্রণগুলি</translation>

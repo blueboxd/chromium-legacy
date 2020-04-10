@@ -70,7 +70,6 @@ DragDetails::DragDetails(aura::Window* window,
       // When drag starts, we might be in the middle of a window opacity
       // animation, on drag completion we must set the opacity to the target
       // opacity rather than the current opacity (crbug.com/687003).
-      initial_opacity(window->layer()->GetTargetOpacity()),
       window_component(window_component),
       bounds_change(
           WindowResizer::GetBoundsChangeForWindowComponent(window_component)),

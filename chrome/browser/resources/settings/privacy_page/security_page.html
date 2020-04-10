@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="collapse_radio_button.html">
+<link rel="import" href="disable_safebrowsing_dialog.html">
 <link rel="import" href="passwords_leak_detection_toggle.html">
 <link rel="import" href="privacy_page_browser_proxy.html">
 <link rel="import" href="safe_browsing_browser_proxy.html">
@@ -175,7 +176,7 @@
       </cr-radio-group>
     </div>
     <div class="settings-box first line-only">
-      <h2>$i18n{securityPageAdvancedSectionLabel}</h2>
+      <h2>$i18n{advancedPageTitle}</h2>
     </div>
     <template is="dom-if" if="[[showSecureDnsSetting_]]">
       <settings-secure-dns prefs="{{prefs}}"></settings-secure-dns>
@@ -197,12 +198,18 @@
         sub-label="$i18n{manageCertificatesDescription}"
         on-click="onManageCertificatesClick_"></cr-link-row>
 </if>
-        <cr-link-row id="advanced-protection-program-link"
-            class="hr"
-            label="$i18n{advancedProtectionProgramTitle}"
-            sub-label="$i18n{advancedProtectionProgramDesc}"
-            on-click="onAdvancedProtectionProgramLinkClick_"
-            external></cr-link-row>
+    <cr-link-row id="advanced-protection-program-link"
+        class="hr"
+        label="$i18n{advancedProtectionProgramTitle}"
+        sub-label="$i18n{advancedProtectionProgramDesc}"
+        on-click="onAdvancedProtectionProgramLinkClick_"
+        external>
+    </cr-link-row>
+    <template is="dom-if" if="[[showDisableSafebrowsingDialog_]]" restamp>
+      <settings-disable-safebrowsing-dialog prefs="{{prefs}}"
+          on-close="onDisableSafebrowsingDialogClose_">
+      </settings-disable-safebrowsing-dialog>
+    </template>
   </template>
   <script src="security_page.js"></script>
 </dom-module>

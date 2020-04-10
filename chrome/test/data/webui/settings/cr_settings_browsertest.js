@@ -1559,6 +1559,7 @@ CrSettingsSecurityPageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    '../test_util.js',
     'test_safe_browsing_browser_proxy.js',
     'test_sync_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',

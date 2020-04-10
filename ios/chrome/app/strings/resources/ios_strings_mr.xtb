@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 निवडले</translation>
 <translation id="2421044535038393232">संपादन करणे सुरू ठेवा</translation>
 <translation id="2435457462613246316">पासवर्ड दर्शवा</translation>
-<translation id="2481538920734869610">खाते जोडा</translation>
 <translation id="2497852260688568942">तुमच्या ॲडमिनिस्ट्रेटरने सिंक अक्षम केले आहे</translation>
 <translation id="2500374554657206846">पासवर्ड सेव्ह करण्यासाठी पर्याय</translation>
 <translation id="2523363575747517183">ही वेबसाइट वारंवार दुसरे अ‍ॅप्लिकेशन उघडण्याचा प्रयत्न करत आहे.</translation>
@@ -481,7 +480,6 @@
 <translation id="7203585745079012652">उत्तरे वाचून सांगा</translation>
 <translation id="7265758999917665941">या साइटसाठी कधीही नाही</translation>
 <translation id="7272437679830969316">तुमच्या ओळखीची पडताळणी करता आली नाही. पासवर्ड कॉपी केला नाही.</translation>
-<translation id="7285236536143823449">होय, मी तयार आहे</translation>
 <translation id="7291368939935408496">पासवर्ड तयार करत आहे…</translation>
 <translation id="7293171162284876153">सिंक सुरू करण्यासाठी, "तुमचा Chrome डेटा सिंक करा" सुरू करा.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> टक्के डाउनलोड केले</translation>
@@ -497,6 +495,7 @@
 <translation id="7460314822154045102">कॅमेरा वापरा</translation>
 <translation id="7464701184726199289">हे सर्व डिव्हाइसेसवरून संकालित केलेला डेटा साफ करेल. सेव्ह केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">कंपनीचे नाव</translation>
+<translation id="7473891865547856676">नाही, नको</translation>
 <translation id="7481312909269577407">पुढील</translation>
 <translation id="750493650310597496">0 निवडले</translation>
 <translation id="7514365320538308">डाउनलोड करा</translation>
@@ -518,7 +517,6 @@
 <translation id="7781829728241885113">काल</translation>
 <translation id="778855399387580014">एका नवीन Chrome टॅबमध्ये शोध सुरू करा.</translation>
 <translation id="7791543448312431591">जोडा</translation>
-<translation id="780301667611848630">नाही, नको</translation>
 <translation id="7840771868269352570">तुम्ही निवडलेले आयटम काढून टाकले जातील.</translation>
 <translation id="7856733331829174190">डाउनलोड करता आले नाही</translation>
 <translation id="7859704718976024901">ब्राउझिंग इतिहास</translation>
@@ -588,6 +586,7 @@
 <translation id="8870413625673593573">अलीकडे बंद</translation>
 <translation id="8881801611828450202">या इमेजसाठी <ph name="SEARCH_ENGINE" /> शोधा</translation>
 <translation id="8909135823018751308">शेअर करा...</translation>
+<translation id="8917490105272468696">होय, मला मान्य आहे</translation>
 <translation id="895541991026785598">समस्या नोंदवणे</translation>
 <translation id="8976382372951310360">मदत</translation>
 <translation id="8981454092730389528">Google ॲक्टिव्हिटी नियंत्रणे</translation>

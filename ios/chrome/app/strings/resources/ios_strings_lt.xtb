@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">Pasirinkta: 1</translation>
 <translation id="2421044535038393232">Toliau redaguoti</translation>
 <translation id="2435457462613246316">Rodyti slaptažodį</translation>
-<translation id="2481538920734869610">PRIDĖTI PASKYRĄ</translation>
 <translation id="2497852260688568942">Sinchronizavimą išjungė jūsų administratorius</translation>
 <translation id="2500374554657206846">Slaptažodžio išsaugojimo parinktys</translation>
 <translation id="2523363575747517183">Ši svetainė pakartotinai bando atidaryti kitą programą.</translation>
@@ -480,7 +479,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7203585745079012652">Sakyti atsakymus</translation>
 <translation id="7265758999917665941">Niekada šioje svetainėje</translation>
 <translation id="7272437679830969316">Nepavyko patvirtinti tapatybės. Slaptažodis nenukopijuotas.</translation>
-<translation id="7285236536143823449">TAIP, NAUDOTI</translation>
 <translation id="7291368939935408496">Ruošiami slaptažodžiai…</translation>
 <translation id="7293171162284876153">Norėdami pradėti sinchronizuoti, įjunkite parinktį „Chrome“ duomenų sinchronizavimas“.</translation>
 <translation id="7336264872878993241">Atsisiųsta <ph name="PERCENT" /> proc.</translation>
@@ -496,6 +494,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7460314822154045102">Naudoti fotoaparatą</translation>
 <translation id="7464701184726199289">Taip sinchronizuoti duomenys bus išvalyti iš visų įrenginių. Išsaugoti svetainių nustatymai nebus ištrinti ir gali nurodyti naršymo įpročius. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Įmonės pavad.</translation>
+<translation id="7473891865547856676">Ne, ačiū</translation>
 <translation id="7481312909269577407">Persiųsti</translation>
 <translation id="750493650310597496">Pasirinkta: 0</translation>
 <translation id="7514365320538308">Atsisiųsti</translation>
@@ -517,7 +516,6 @@ Kadangi paskyrą tvarko <ph name="HOSTED_DOMAIN" />, atsijungus „Chrome“ duo
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="778855399387580014">Pradėti paiešką naujame „Chrome“ skirtuke.</translation>
 <translation id="7791543448312431591">Pridėti</translation>
-<translation id="780301667611848630">Ačiū, ne</translation>
 <translation id="7840771868269352570">Pasirinkti elementai bus pašalinti.</translation>
 <translation id="7856733331829174190">Nepavyko atsisiųsti</translation>
 <translation id="7859704718976024901">Naršymo istorija</translation>
@@ -587,6 +585,7 @@ Kadangi paskyrą tvarko <ph name="HOSTED_DOMAIN" />, atsijungus „Chrome“ duo
 <translation id="8870413625673593573">Neseniai uždaryta</translation>
 <translation id="8881801611828450202">Ieškoti „<ph name="SEARCH_ENGINE" />“ šio vaizdo</translation>
 <translation id="8909135823018751308">Bendrinti…</translation>
+<translation id="8917490105272468696">Taip, sutinku</translation>
 <translation id="895541991026785598">Pranešti apie problemą</translation>
 <translation id="8976382372951310360">Pagalba</translation>
 <translation id="8981454092730389528">„Google“ veiklos valdikliai</translation>

@@ -58,7 +58,7 @@ void GetColorModelForMode(int color_mode,
   constexpr char kCUPSXeroxXRXColor[] = "cups-XRXColor";
 #endif  // defined(OS_MACOSX)
 
-  color_setting_name->assign(kCUPSColorModel);
+  *color_setting_name = kCUPSColorModel;
 
   base::Optional<ColorModel> color_model = ColorModeToColorModel(color_mode);
   if (!color_model.has_value()) {
@@ -68,116 +68,116 @@ void GetColorModelForMode(int color_mode,
 
   switch (color_model.value()) {
     case UNKNOWN_COLOR_MODEL:
-      color_value->assign(kGrayscale);
+      *color_value = kGrayscale;
       break;
     case GRAY:
-      color_value->assign(kGray);
+      *color_value = kGray;
       break;
     case COLOR:
-      color_value->assign(kColor);
+      *color_value = kColor;
       break;
     case CMYK:
-      color_value->assign(kCMYK);
+      *color_value = kCMYK;
       break;
     case CMY:
-      color_value->assign(kCMY);
+      *color_value = kCMY;
       break;
     case KCMY:
-      color_value->assign(kKCMY);
+      *color_value = kKCMY;
       break;
     case CMY_K:
-      color_value->assign(kCMY_K);
+      *color_value = kCMY_K;
       break;
     case BLACK:
-      color_value->assign(kBlack);
+      *color_value = kBlack;
       break;
     case GRAYSCALE:
-      color_value->assign(kGrayscale);
+      *color_value = kGrayscale;
       break;
     case RGB:
-      color_value->assign(kRGB);
+      *color_value = kRGB;
       break;
     case RGB16:
-      color_value->assign(kRGB16);
+      *color_value = kRGB16;
       break;
     case RGBA:
-      color_value->assign(kRGBA);
+      *color_value = kRGBA;
       break;
     case COLORMODE_COLOR:
-      color_setting_name->assign(kCUPSColorMode);
-      color_value->assign(kColor);
+      *color_setting_name = kCUPSColorMode;
+      *color_value = kColor;
       break;
     case COLORMODE_MONOCHROME:
-      color_setting_name->assign(kCUPSColorMode);
-      color_value->assign(kMonochrome);
+      *color_setting_name = kCUPSColorMode;
+      *color_value = kMonochrome;
       break;
     case HP_COLOR_COLOR:
-      color_setting_name->assign(kColor);
-      color_value->assign(kColor);
+      *color_setting_name = kColor;
+      *color_value = kColor;
       break;
     case HP_COLOR_BLACK:
-      color_setting_name->assign(kColor);
-      color_value->assign(kBlack);
+      *color_setting_name = kColor;
+      *color_value = kBlack;
       break;
     case PRINTOUTMODE_NORMAL:
-      color_setting_name->assign(kCUPSPrintoutMode);
-      color_value->assign(kNormal);
+      *color_setting_name = kCUPSPrintoutMode;
+      *color_value = kNormal;
       break;
     case PRINTOUTMODE_NORMAL_GRAY:
-      color_setting_name->assign(kCUPSPrintoutMode);
-      color_value->assign(kNormalGray);
+      *color_setting_name = kCUPSPrintoutMode;
+      *color_value = kNormalGray;
       break;
     case PROCESSCOLORMODEL_CMYK:
-      color_setting_name->assign(kCUPSProcessColorModel);
-      color_value->assign(kCMYK);
+      *color_setting_name = kCUPSProcessColorModel;
+      *color_value = kCMYK;
       break;
     case PROCESSCOLORMODEL_GREYSCALE:
-      color_setting_name->assign(kCUPSProcessColorModel);
-      color_value->assign(kGreyscale);
+      *color_setting_name = kCUPSProcessColorModel;
+      *color_value = kGreyscale;
       break;
     case PROCESSCOLORMODEL_RGB:
-      color_setting_name->assign(kCUPSProcessColorModel);
-      color_value->assign(kRGB);
+      *color_setting_name = kCUPSProcessColorModel;
+      *color_value = kRGB;
       break;
     case BROTHER_CUPS_COLOR:
-      color_setting_name->assign(kCUPSBrotherMonoColor);
-      color_value->assign(kFullColor);
+      *color_setting_name = kCUPSBrotherMonoColor;
+      *color_value = kFullColor;
       break;
     case BROTHER_CUPS_MONO:
-      color_setting_name->assign(kCUPSBrotherMonoColor);
-      color_value->assign(kMono);
+      *color_setting_name = kCUPSBrotherMonoColor;
+      *color_value = kMono;
       break;
     case BROTHER_BRSCRIPT3_COLOR:
-      color_setting_name->assign(kCUPSBrotherPrintQuality);
-      color_value->assign(kColor);
+      *color_setting_name = kCUPSBrotherPrintQuality;
+      *color_value = kColor;
       break;
     case BROTHER_BRSCRIPT3_BLACK:
-      color_setting_name->assign(kCUPSBrotherPrintQuality);
-      color_value->assign(kBlack);
+      *color_setting_name = kCUPSBrotherPrintQuality;
+      *color_value = kBlack;
       break;
     case EPSON_INK_COLOR:
-      color_setting_name->assign(kCUPSInk);
-      color_value->assign(kColor);
+      *color_setting_name = kCUPSInk;
+      *color_value = kColor;
       break;
     case EPSON_INK_MONO:
-      color_setting_name->assign(kCUPSInk);
-      color_value->assign(kMono);
+      *color_setting_name = kCUPSInk;
+      *color_value = kMono;
       break;
     case SHARP_ARCMODE_CMCOLOR:
-      color_setting_name->assign(kCUPSSharpARCMode);
-      color_value->assign(kSharpCMColor);
+      *color_setting_name = kCUPSSharpARCMode;
+      *color_value = kSharpCMColor;
       break;
     case SHARP_ARCMODE_CMBW:
-      color_setting_name->assign(kCUPSSharpARCMode);
-      color_value->assign(kSharpCMBW);
+      *color_setting_name = kCUPSSharpARCMode;
+      *color_value = kSharpCMBW;
       break;
     case XEROX_XRXCOLOR_AUTOMATIC:
-      color_setting_name->assign(kCUPSXeroxXRXColor);
-      color_value->assign(kXeroxAutomatic);
+      *color_setting_name = kCUPSXeroxXRXColor;
+      *color_value = kXeroxAutomatic;
       break;
     case XEROX_XRXCOLOR_BW:
-      color_setting_name->assign(kCUPSXeroxXRXColor);
-      color_value->assign(kXeroxBW);
+      *color_setting_name = kCUPSXeroxXRXColor;
+      *color_value = kXeroxBW;
       break;
   }
   // The default case is excluded from the above switch statement to ensure that

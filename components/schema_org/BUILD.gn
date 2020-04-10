@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/compiled_action.gni")
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -20,6 +22,26 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+}
+
+executable("schema_org_name_generator") {
+  sources = [ "schema_org_name_generator.cc" ]
+  deps = [
+    "//base",
+    "//url",
+  ]
+}
+
+compiled_action("schema_org_name_data") {
+  tool = ":schema_org_name_generator"
+
+  args = [
+    rebase_path("//third_party/schema_org/schema.jsonld", root_build_dir),
+    rebase_path("//third_party/schema_org/overrides.jsonld", root_build_dir),
+    rebase_path("$target_gen_dir/schema_org_name_data.json", root_build_dir),
+  ]
+
+  outputs = [ "$target_gen_dir/schema_org_name_data.json" ]
 }
 
 action("generate_schema_org_code") {
@@ -41,6 +63,9 @@ action("generate_schema_org_code") {
         "--overrides-file",
         rebase_path("//third_party/schema_org/overrides.jsonld",
                     root_build_dir),
+        "--name-file",
+        rebase_path("$target_gen_dir/schema_org_name_data.json",
+                    root_build_dir),
         "--output-dir",
         rebase_path("$target_gen_dir", root_build_dir),
         "--templates",
@@ -55,6 +80,7 @@ action("generate_schema_org_code") {
     "$target_gen_dir/schema_org_enums.h",
     "$target_gen_dir/schema_org_enums.cc",
   ]
+  deps = [ ":schema_org_name_data" ]
 }
 
 static_library("schema_org_properties") {

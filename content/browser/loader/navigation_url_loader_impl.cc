@@ -855,11 +855,18 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
     head_ = std::move(head);
+    on_receive_response_time_ = base::TimeTicks::Now();
   }
 
   // network::mojom::URLLoaderClient implementation:
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle response_body) override {
+    if (!on_receive_response_time_.is_null()) {
+      UMA_HISTOGRAM_TIMES(
+          "Navigation.OnReceiveResponseToOnStartLoadingResponseBody",
+          base::TimeTicks::Now() - on_receive_response_time_);
+    }
+
     response_body_ = std::move(response_body);
     received_response_ = true;
 
@@ -1190,8 +1197,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   mojo::PendingRemote<network::mojom::URLLoader> response_url_loader_;
 
   // Set to true if we receive a valid response from a URLLoader, i.e.
-  // URLLoaderClient::OnReceivedResponse() is called.
+  // URLLoaderClient::OnStartLoadingResponseBody() is called.
   bool received_response_ = false;
+
+  // When URLLoaderClient::OnReceiveResponse() is called. For UMA.
+  base::TimeTicks on_receive_response_time_;
 
   bool started_ = false;
 

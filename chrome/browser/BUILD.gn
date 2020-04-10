@@ -3618,14 +3618,14 @@ jumbo_static_library("browser") {
       "signin/signin_promo.h",
       "signin/signin_ui_util.cc",
       "signin/signin_ui_util.h",
-      "soda/soda_service.cc",
-      "soda/soda_service.h",
-      "soda/soda_service_factory.cc",
-      "soda/soda_service_factory.h",
       "speech/extension_api/tts_extension_api_constants.cc",  # Should be moved
                                                               # to extensions
                                                               # section?
       "speech/extension_api/tts_extension_api_constants.h",
+      "speech/speech_recognition_service.cc",
+      "speech/speech_recognition_service.h",
+      "speech/speech_recognition_service_factory.cc",
+      "speech/speech_recognition_service_factory.h",
       "ssl/ssl_client_auth_observer.cc",
       "ssl/ssl_client_auth_observer.h",
       "status_icons/desktop_notification_balloon.cc",
@@ -4551,9 +4551,6 @@ jumbo_static_library("browser") {
         "printing/background_printing_manager.h",
         "printing/pdf_nup_converter_client.cc",
         "printing/pdf_nup_converter_client.h",
-        "printing/print_dialog_cloud.cc",
-        "printing/print_dialog_cloud.h",
-        "printing/print_dialog_cloud_win.cc",
         "printing/print_error_dialog.cc",
         "printing/print_error_dialog.h",
         "printing/print_preview_context_menu_observer.cc",
@@ -4576,8 +4573,11 @@ jumbo_static_library("browser") {
 
       deps += [ "//components/printing/common:mojo_interfaces" ]
 
-      if (is_posix || is_fuchsia) {
-        sources += [ "printing/print_dialog_cloud_posix.cc" ]
+      if (is_win) {
+        sources += [
+          "printing/print_dialog_cloud_win.cc",
+          "printing/print_dialog_cloud_win.h",
+        ]
       }
 
       if (!is_chromeos) {
@@ -5428,11 +5428,25 @@ jumbo_static_library("browser") {
       deps += [ "//device/vr/public/mojom" ]
     }
 
+    if (!is_android) {
+      sources += [
+        "vr/service/isolated_device_provider.cc",
+        "vr/service/isolated_device_provider.h",
+      ]
+    }
+
     sources += [
       "component_updater/vr_assets_component_installer.cc",
       "component_updater/vr_assets_component_installer.h",
       "vr/chrome_xr_integration_client.cc",
       "vr/chrome_xr_integration_client.h",
+      "vr/service/browser_xr_runtime_impl.cc",
+      "vr/service/browser_xr_runtime_impl.h",
+      "vr/service/vr_service_impl.cc",
+      "vr/service/vr_service_impl.h",
+      "vr/service/xr_runtime_manager_impl.cc",
+      "vr/service/xr_runtime_manager_impl.h",
+      "vr/xr_runtime_manager_statics.h",
     ]
 
     deps += [

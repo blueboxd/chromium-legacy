@@ -138,10 +138,11 @@ void DisplayLockContext::SetRequestedState(ESubtreeVisibility state) {
 void DisplayLockContext::AdjustElementStyle(ComputedStyle* style) const {
   if (state_ == ESubtreeVisibility::kVisible)
     return;
-  // If not visible, element gains style and layout containment. If skipped, it
-  // also gains size containment.
+  // If not visible, element gains style, layout, and paint containment. If
+  // skipped, it also gains size containment.
   // https://wicg.github.io/display-locking/#subtree-visibility
-  auto contain = style->Contain() | kContainsStyle | kContainsLayout;
+  auto contain =
+      style->Contain() | kContainsStyle | kContainsLayout | kContainsPaint;
   if (IsLocked())
     contain |= kContainsSize;
   style->SetContain(contain);

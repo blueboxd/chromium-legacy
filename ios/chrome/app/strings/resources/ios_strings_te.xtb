@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 ఎంచుకోబడింది</translation>
 <translation id="2421044535038393232">సవరణను కొనసాగించు</translation>
 <translation id="2435457462613246316">పాస్‌వర్డ్‌ను చూపించు</translation>
-<translation id="2481538920734869610">ఖాతాను జోడించు</translation>
 <translation id="2497852260688568942">సింక్‌ను మీ నిర్వాహకులు నిలిపివేశారు</translation>
 <translation id="2500374554657206846">పాస్‌వర్డ్‌ను సేవ్ చేసే ఎంపికలు</translation>
 <translation id="2523363575747517183">ఈ వెబ్‌సైట్ మరో అప్లికేషన్‌ను తెరవడానికి పలుసార్లు ప్రయత్నిస్తోంది.</translation>
@@ -480,7 +479,6 @@
 <translation id="7203585745079012652">సమాధానాలను చదివి వినిపించు</translation>
 <translation id="7265758999917665941">ఈ సైట్ కోసం ఎప్పటికీ వద్దు</translation>
 <translation id="7272437679830969316">మీ గుర్తింపును ధృవీకరించడం సాధ్యపడలేదు. పాస్‌వర్డ్ కాపీ చేయబడలేదు.</translation>
-<translation id="7285236536143823449">సరే, నాకు సమ్మతమే</translation>
 <translation id="7291368939935408496">పాస్‌వర్డ్‌లను సిద్ధం చేస్తోంది...</translation>
 <translation id="7293171162284876153">సింక్‌ను మొదలుపెట్టడానికి, "మీ Chrome డేటాను సింక్ చేయడం" ఆన్ చేయండి</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> శాతం డౌన్‌లోడ్ అయ్యింది</translation>
@@ -496,6 +494,7 @@
 <translation id="7460314822154045102">కెమెరాను ఉపయోగించు</translation>
 <translation id="7464701184726199289">ఇది అన్ని పరికరాల నుండి సింక్ చేయబడిన డేటాను తీసివేస్తుంది. సేవ్ చేసిన సైట్ సెట్టింగ్‌లు తొలగించబడవు, ఇవి మీ బ్రౌజింగ్ అలవాట్లను ప్రదర్శించవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">కంపెనీ పేరు</translation>
+<translation id="7473891865547856676">వద్దు, ధన్యవాదాలు</translation>
 <translation id="7481312909269577407">ఫార్వర్డ్</translation>
 <translation id="750493650310597496">0 ఎంచుకోబడ్డాయి</translation>
 <translation id="7514365320538308">డౌన్‌లోడ్ చేయి</translation>
@@ -517,7 +516,6 @@
 <translation id="7781829728241885113">నిన్న</translation>
 <translation id="778855399387580014">కొత్త Chrome ట్యాబ్‌లో శోధనను ప్రారంభించండి.</translation>
 <translation id="7791543448312431591">జోడించు</translation>
-<translation id="780301667611848630">వద్దు , ధన్యవాదాలు</translation>
 <translation id="7840771868269352570">మీరు ఎంచుకున్న అంశాలు తీసివేయబడతాయి.</translation>
 <translation id="7856733331829174190">డౌన్‌లోడ్ సాధ్యపడలేదు</translation>
 <translation id="7859704718976024901">బ్రౌజింగ్ చరిత్ర</translation>
@@ -587,6 +585,7 @@
 <translation id="8870413625673593573">ఇటీవల మూసివేసినవి</translation>
 <translation id="8881801611828450202">ఈ చిత్రం కోసం <ph name="SEARCH_ENGINE" />ని వెతకండి</translation>
 <translation id="8909135823018751308">భాగస్వామ్యం చేయి…</translation>
+<translation id="8917490105272468696">సరే, నాకు సమ్మతమే</translation>
 <translation id="895541991026785598">ఒక సమస్యను నివేదించండి</translation>
 <translation id="8976382372951310360">సహాయం</translation>
 <translation id="8981454092730389528">Google కార్య‌క‌లాపాల నియంత్రణలు</translation>

@@ -7,11 +7,24 @@
         overflow: hidden;
       }
 
+      #overlayBackdrop {
+        background: rgba(0, 0, 0, .6);
+        display: none;
+        height: 100vh;
+        position: fixed;
+        width: 100%;
+      }
+
+      #overlayBackdrop[show] {
+        display: block;
+      }
+
       $i18nRaw{inHeadStyle}
     </style>
     <script>$i18nRaw{inHeadScript}</script>
   </head>
   <body>
+    <div id="overlayBackdrop"></div>
     $i18nRaw{barHtml}
     <script>$i18nRaw{afterBarScript}</script>
     $i18nRaw{endOfBodyHtml}

@@ -192,7 +192,8 @@ bool OscillatorHandler::CalculateSampleAccuratePhaseIncrements(
 
   float final_scale = periodic_wave_->RateScale();
 
-  if (frequency_->HasSampleAccurateValues()) {
+  if (frequency_->HasSampleAccurateValuesTimeline() &&
+      frequency_->IsAudioRate()) {
     has_sample_accurate_values = true;
     has_frequency_changes = true;
 
@@ -202,11 +203,11 @@ bool OscillatorHandler::CalculateSampleAccuratePhaseIncrements(
                                               frames_to_process);
   } else {
     // Handle ordinary parameter changes if there are no scheduled changes.
-    float frequency = frequency_->Value();
+    float frequency = frequency_->FinalValue();
     final_scale *= frequency;
   }
 
-  if (detune_->HasSampleAccurateValues()) {
+  if (detune_->HasSampleAccurateValuesTimeline() && detune_->IsAudioRate()) {
     has_sample_accurate_values = true;
 
     // Get the sample-accurate detune values.
@@ -230,7 +231,7 @@ bool OscillatorHandler::CalculateSampleAccuratePhaseIncrements(
   } else {
     // Handle ordinary parameter changes if there are no scheduled
     // changes.
-    float detune = detune_->Value();
+    float detune = detune_->FinalValue();
     float detune_scale = DetuneToFrequencyMultiplier(detune);
     final_scale *= detune_scale;
   }
@@ -410,8 +411,8 @@ void OscillatorHandler::Process(uint32_t frames_to_process) {
   float table_interpolation_factor = 0;
 
   if (!has_sample_accurate_values) {
-    frequency = frequency_->Value();
-    float detune = detune_->Value();
+    frequency = frequency_->FinalValue();
+    float detune = detune_->FinalValue();
     float detune_scale = DetuneToFrequencyMultiplier(detune);
     frequency *= detune_scale;
     ClampFrequency(&frequency, 1, Context()->sampleRate() / 2);

@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1장 선택됨</translation>
 <translation id="2421044535038393232">수정 계속</translation>
 <translation id="2435457462613246316">비밀번호 표시</translation>
-<translation id="2481538920734869610">계정 추가</translation>
 <translation id="2497852260688568942">관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="2500374554657206846">비밀번호 저장 옵션</translation>
 <translation id="2523363575747517183">다른 애플리케이션을 열려는 반복적인 시도가 실행되는 웹사이트입니다.</translation>
@@ -480,7 +479,6 @@
 <translation id="7203585745079012652">음성 응답</translation>
 <translation id="7265758999917665941">이 사이트 제외</translation>
 <translation id="7272437679830969316">신원을 인증할 수 없습니다. 비밀번호가 복사되지 않았습니다.</translation>
-<translation id="7285236536143823449">예</translation>
 <translation id="7291368939935408496">비밀번호 준비 중...</translation>
 <translation id="7293171162284876153">동기화를 시작하려면 'Chrome 데이터 동기화'를 사용 설정하세요.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% 다운로드됨</translation>
@@ -496,6 +494,7 @@
 <translation id="7460314822154045102">카메라 사용</translation>
 <translation id="7464701184726199289">모든 기기에서 동기화된 데이터가 삭제됩니다. 저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관이 반영될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">회사명</translation>
+<translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="750493650310597496">선택된 항목 없음</translation>
 <translation id="7514365320538308">다운로드</translation>
@@ -517,7 +516,6 @@
 <translation id="7781829728241885113">어제</translation>
 <translation id="778855399387580014">새 Chrome 탭에서 검색을 시작합니다.</translation>
 <translation id="7791543448312431591">추가</translation>
-<translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7840771868269352570">선택한 항목 삭제</translation>
 <translation id="7856733331829174190">다운로드할 수 없음</translation>
 <translation id="7859704718976024901">인터넷 사용 기록</translation>
@@ -587,6 +585,7 @@
 <translation id="8870413625673593573">최근에 닫은 탭</translation>
 <translation id="8881801611828450202"><ph name="SEARCH_ENGINE" />에서 이 이미지 검색</translation>
 <translation id="8909135823018751308">공유…</translation>
+<translation id="8917490105272468696">사용</translation>
 <translation id="895541991026785598">문제 신고</translation>
 <translation id="8976382372951310360">도움말</translation>
 <translation id="8981454092730389528">Google 활동 제어</translation>

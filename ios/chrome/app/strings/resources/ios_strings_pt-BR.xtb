@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">Uma selecionada</translation>
 <translation id="2421044535038393232">Continuar editando</translation>
 <translation id="2435457462613246316">Mostrar senha</translation>
-<translation id="2481538920734869610">ADICIONAR CONTA</translation>
 <translation id="2497852260688568942">A sincronização foi desativada pelo administrador</translation>
 <translation id="2500374554657206846">Opções para salvar senha</translation>
 <translation id="2523363575747517183">Este site está tentando repetidamente abrir outro aplicativo.</translation>
@@ -480,7 +479,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7203585745079012652">Falar as respostas</translation>
 <translation id="7265758999917665941">Nunca para este site</translation>
 <translation id="7272437679830969316">Não é possível verificar sua identidade. Senha não copiada.</translation>
-<translation id="7285236536143823449">SIM, VAMOS LÁ</translation>
 <translation id="7291368939935408496">Preparando senhas…</translation>
 <translation id="7293171162284876153">Para iniciar a sincronização, ative a opção "Sincronizar seus dados do Chrome".</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> por cento baixados</translation>
@@ -496,6 +494,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7460314822154045102">Usar a câmera</translation>
 <translation id="7464701184726199289">Isso limpa os dados sincronizados de todos os dispositivos. As configurações salvas em sites não são excluídas e podem refletir seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Nome da empresa</translation>
+<translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="750493650310597496">0 selecionados</translation>
 <translation id="7514365320538308">Fazer o download</translation>
@@ -517,7 +516,6 @@ Como a conta é gerenciada por <ph name="HOSTED_DOMAIN" />, seus dados do Chrome
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="778855399387580014">Inicie uma pesquisa em uma nova guia do Chrome.</translation>
 <translation id="7791543448312431591">Adicionar</translation>
-<translation id="780301667611848630">Não</translation>
 <translation id="7840771868269352570">Os itens selec. serão removidos.</translation>
 <translation id="7856733331829174190">Falha no download</translation>
 <translation id="7859704718976024901">Histórico de navegação</translation>
@@ -587,6 +585,7 @@ Como a conta é gerenciada por <ph name="HOSTED_DOMAIN" />, seus dados do Chrome
 <translation id="8870413625673593573">Recentemente fechadas</translation>
 <translation id="8881801611828450202">Pesquisar esta imagem no <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Compartilhar...</translation>
+<translation id="8917490105272468696">Sim</translation>
 <translation id="895541991026785598">Informar um problema</translation>
 <translation id="8976382372951310360">Ajuda</translation>
 <translation id="8981454092730389528">Controles de atividades do Google</translation>

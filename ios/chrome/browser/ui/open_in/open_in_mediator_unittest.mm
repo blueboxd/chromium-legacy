@@ -5,9 +5,8 @@
 #import "ios/chrome/browser/ui/open_in/open_in_mediator.h"
 
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ui/open_in/open_in_toolbar.h"
-#include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
-#include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
@@ -25,10 +24,9 @@
 class OpenInMediatorTest : public PlatformTest {
  protected:
   OpenInMediatorTest()
-      : web_state_list_(&web_state_list_delegate_),
-        browser_state_(TestChromeBrowserState::Builder().Build()),
-        mediator_(
-            [[OpenInMediator alloc] initWithWebStateList:&web_state_list_]) {}
+      : browser_state_(TestChromeBrowserState::Builder().Build()),
+        browser_(std::make_unique<TestBrowser>(browser_state_.get())),
+        mediator_([[OpenInMediator alloc] initWithBrowser:browser_.get()]) {}
 
   std::unique_ptr<web::TestWebState> CreateWebStateWithView() {
     auto web_state = std::make_unique<web::TestWebState>();
@@ -44,9 +42,8 @@ class OpenInMediatorTest : public PlatformTest {
   }
 
   web::WebTaskEnvironment task_environment_;
-  FakeWebStateListDelegate web_state_list_delegate_;
-  WebStateList web_state_list_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
+  std::unique_ptr<Browser> browser_;
   id web_view_proxy_mock;
   CRWWebViewScrollViewProxy* scroll_view_proxy_;
   OpenInMediator* mediator_;

@@ -257,7 +257,7 @@ class Uri {
   Uri();
 
   // Constructor, it tries to parse |uri|.
-  // Leading and trailing white spaces (space, \t, \n, \r, \f) are ignored.
+  // Leading and trailing whitespaces (space, \t, \n, \r, \f, \v) are ignored.
   explicit Uri(const std::string& uri);
 
   Uri(const Uri&);
@@ -367,4 +367,4 @@ class Uri {
 
 }  // namespace chromeos
 
-#endif /* CHROMEOS_PRINTING_URI_H_ */
+#endif  // CHROMEOS_PRINTING_URI_H_

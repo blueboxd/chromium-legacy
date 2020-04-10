@@ -3,6 +3,13 @@ def _ensure_ci_jobs_can_be_bucketed_or_not(ctx):
 
   ci_jobs = {}
   for j in cfg.job:
+    # The default behavior is the same as 'triggered', so look for non-empty
+    # schedules that are not 'triggered', we don't want to create duplicates of
+    # those jobs because it will cause double the number of builds to be
+    # scheduled
+    if j.schedule and j.schedule != 'triggered':
+      continue
+
     bucket = j.buildbucket.bucket
     if bucket != 'luci.chromium.ci':
       continue

@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 selecionada</translation>
 <translation id="2421044535038393232">Continuar a editar</translation>
 <translation id="2435457462613246316">Mostrar palavra-passe</translation>
-<translation id="2481538920734869610">ADICIONAR CONTA</translation>
 <translation id="2497852260688568942">A sincronização foi desativada pelo gestor</translation>
 <translation id="2500374554657206846">Opções para Guardar palavra-passe</translation>
 <translation id="2523363575747517183">Este Website está a tentar repetidamente abrir outra aplicação.</translation>
@@ -480,7 +479,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7203585745079012652">Ouvir Respostas</translation>
 <translation id="7265758999917665941">Nunca para este site</translation>
 <translation id="7272437679830969316">Não é possível validar a sua identidade. Palavra-passe não copiada.</translation>
-<translation id="7285236536143823449">SIM, ACEITO</translation>
 <translation id="7291368939935408496">A preparar palavras-passe…</translation>
 <translation id="7293171162284876153">Para iniciar a sincronização, ative a opção "Sincronizar dados do Chrome".</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> por cento transferido</translation>
@@ -496,6 +494,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7460314822154045102">Utilizar a Câmara</translation>
 <translation id="7464701184726199289">Esta ação limpa os dados sincronizados de todos os dispositivos. As definições de sites guardadas não são eliminadas e podem refletir os seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Nome da empresa</translation>
+<translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="750493650310597496">0 selecionados</translation>
 <translation id="7514365320538308">Transferir</translation>
@@ -517,7 +516,6 @@ Uma vez que a sua conta é gerida pelo domínio <ph name="HOSTED_DOMAIN" />, os 
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="778855399387580014">Inicie uma pesquisa no novo separador do Chrome.</translation>
 <translation id="7791543448312431591">Adicionar</translation>
-<translation id="780301667611848630">Não, obrigado</translation>
 <translation id="7840771868269352570">Os itens selecionados serão removidos.</translation>
 <translation id="7856733331829174190">Impossível transferir</translation>
 <translation id="7859704718976024901">Histórico de navegação</translation>
@@ -587,6 +585,7 @@ Uma vez que a sua conta é gerida pelo domínio <ph name="HOSTED_DOMAIN" />, os 
 <translation id="8870413625673593573">Fechadas recentemente</translation>
 <translation id="8881801611828450202">Pesquisar esta imagem no <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Partilhar…</translation>
+<translation id="8917490105272468696">Sim, aceito</translation>
 <translation id="895541991026785598">Comunicar um problema</translation>
 <translation id="8976382372951310360">Ajuda</translation>
 <translation id="8981454092730389528">Controlos da atividade Google</translation>

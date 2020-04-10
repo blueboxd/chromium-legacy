@@ -116,6 +116,11 @@ void FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded() {
     }
 
     if (num_of_frame_sinks_with_fixed_interval < 2) {
+      TRACE_EVENT_INSTANT0(
+          "viz",
+          "FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded - not enough "
+          "frame sinks to toggle",
+          TRACE_EVENT_SCOPE_THREAD);
       SetPreferredInterval(UnspecifiedFrameInterval());
       return;
     }
@@ -136,25 +141,20 @@ void FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded() {
         min_frame_sink_interval,
         client_->GetPreferredFrameIntervalForFrameSinkId(frame_sink_id));
   }
+  TRACE_EVENT_INSTANT1("viz",
+                       "FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded",
+                       TRACE_EVENT_SCOPE_THREAD, "min_frame_sink_interval",
+                       min_frame_sink_interval.InMillisecondsF());
 
   // If we don't have an explicit preference from the active frame sinks, then
   // we use a 0 value for preferred frame interval to let the framework pick the
   // ideal refresh rate.
   base::TimeDelta new_preferred_interval = UnspecifiedFrameInterval();
   if (min_frame_sink_interval != BeginFrameArgs::MinInterval()) {
-    constexpr float kMaxIntervalDelta = 0.05;
     for (auto supported_interval : supported_intervals_) {
-      // We only use a supported interval if it is in perfect cadence with the
-      // desired interval.
-      float delta_int = 0;
-      float delta = std::modf(min_frame_sink_interval.InMicrosecondsF() /
-                                  supported_interval.InMicrosecondsF(),
-                              &delta_int);
-      bool in_perfect_cadence =
-          delta < kMaxIntervalDelta || delta > (1 - kMaxIntervalDelta);
-      if (in_perfect_cadence && supported_interval > new_preferred_interval) {
-        // Make sure that we select the largest one in the
-        // |supported_intervals_| that meets the requirements
+      // Pick the display interval which is closest to the preferred interval.
+      if ((min_frame_sink_interval - supported_interval).magnitude() <
+          (min_frame_sink_interval - new_preferred_interval).magnitude()) {
         new_preferred_interval = supported_interval;
       }
     }
@@ -165,6 +165,10 @@ void FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded() {
 
 void FrameRateDecider::SetPreferredInterval(
     base::TimeDelta new_preferred_interval) {
+  TRACE_EVENT_INSTANT1("viz", "FrameRateDecider::SetPreferredInterval",
+                       TRACE_EVENT_SCOPE_THREAD, "new_preferred_interval",
+                       new_preferred_interval.InMillisecondsF());
+
   if (new_preferred_interval == last_computed_preferred_frame_interval_) {
     num_of_frames_since_preferred_interval_changed_++;
   } else {

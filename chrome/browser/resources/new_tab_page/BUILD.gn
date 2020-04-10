@@ -11,6 +11,7 @@ js_type_check("closure_compile") {
     ":app",
     ":browser_proxy",
     ":customize_dialog",
+    ":doodle_share_dialog",
     ":fakebox",
     ":grid",
     ":logo",
@@ -128,8 +129,19 @@ js_library("fakebox") {
 
 js_library("logo") {
   deps = [
+    ":doodle_share_dialog",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+  ]
+}
+
+js_library("doodle_share_dialog") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
   ]
 }
 
@@ -211,6 +223,12 @@ polymer_modulizer("logo") {
   html_type = "v3-ready"
 }
 
+polymer_modulizer("doodle_share_dialog") {
+  js_file = "doodle_share_dialog.js"
+  html_file = "doodle_share_dialog.html"
+  html_type = "v3-ready"
+}
+
 group("polymer3_elements") {
   public_deps = [
     ":app_module",
@@ -218,6 +236,7 @@ group("polymer3_elements") {
     ":customize_dialog_module",
     ":customize_shortcuts_module",
     ":customize_themes_module",
+    ":doodle_share_dialog_module",
     ":fakebox_module",
     ":grid_module",
     ":logo_module",

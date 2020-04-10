@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 کو منتخب کیا گیا</translation>
 <translation id="2421044535038393232">ترمیم جاری رکھیں</translation>
 <translation id="2435457462613246316">پاس ورڈ دکھائیں</translation>
-<translation id="2481538920734869610">اکاؤنٹ شامل کریں</translation>
 <translation id="2497852260688568942">مطابقت پذیری کو آپ کے منتظم نے غیر فعال کر دیا ہے</translation>
 <translation id="2500374554657206846">پاس ورڈ محفوظ کرنے کے اختیارات</translation>
 <translation id="2523363575747517183">یہ ویب سائٹ بار بار ایک اور ایپلیکیشن کھولنے کی کوشش کر رہی ہے۔</translation>
@@ -480,7 +479,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7203585745079012652">جوابات دوبارہ بولیں</translation>
 <translation id="7265758999917665941">اس سائٹ کیلئے کبھی نہیں</translation>
 <translation id="7272437679830969316">آپ کی شناخت کی توثیق نہیں کی جا سکتی۔ پاسورڈ کاپی نہیں ہوا۔</translation>
-<translation id="7285236536143823449">ہاں، میں شامل ہوں</translation>
 <translation id="7291368939935408496">پاسورڈز تیار کیے جا رہے ہيں...</translation>
 <translation id="7293171162284876153">‏مطابقت پذیری شروع کرنے کے لیے، "اپنے Chrome ڈیٹا کو مطابقت پذیر بنائیں" کو آن کریں۔</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> فیصد ڈاؤن لوڈ ہوگئی۔</translation>
@@ -496,6 +494,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7460314822154045102">کیمرا استعمال کریں</translation>
 <translation id="7464701184726199289">یہ سبھی آلات سے مطابقت پذیر ڈیٹا کو صاف کرتا ہے۔ محفوظ کردہ سائٹ کی ترتیبات حذف نہیں کی جائیں گی اور یہ آپ کے براؤزنگ کی عادات کی عکاسی کر سکتی ہے۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">کمپنی کا نام</translation>
+<translation id="7473891865547856676">نہیں شکریہ</translation>
 <translation id="7481312909269577407">فارورڈ کریں</translation>
 <translation id="750493650310597496">0 منتخب کیا گیا</translation>
 <translation id="7514365320538308">ڈاؤن لوڈ کریں</translation>
@@ -517,7 +516,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7781829728241885113">گزشتہ کل</translation>
 <translation id="778855399387580014">‏نئے Chrome ٹیب میں تلاش شروع کریں۔</translation>
 <translation id="7791543448312431591">شامل کریں</translation>
-<translation id="780301667611848630">نہیں شکریہ</translation>
 <translation id="7840771868269352570">آپ کے منتخب کردہ آئٹمز کو ہٹا دیا جائے گا۔</translation>
 <translation id="7856733331829174190">ڈاؤن لوڈ نہیں ہو سکی</translation>
 <translation id="7859704718976024901">براؤزنگ سرگزشت</translation>
@@ -587,6 +585,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8870413625673593573">حال ہی میں بند کردہ</translation>
 <translation id="8881801611828450202">اس تصویر کیلئے <ph name="SEARCH_ENGINE" /> پر تلاش کریں</translation>
 <translation id="8909135823018751308">اشتراک کریں…</translation>
+<translation id="8917490105272468696">ہاں میں متفق ہوں</translation>
 <translation id="895541991026785598">ایک مسئلہ کی اطلاع دیں</translation>
 <translation id="8976382372951310360">مدد</translation>
 <translation id="8981454092730389528">‏Google سرگرمی کنٹرولز</translation>

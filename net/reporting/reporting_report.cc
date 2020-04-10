@@ -24,15 +24,18 @@ void RecordReportOutcome(ReportingReport::Outcome outcome) {
 
 }  // namespace
 
-ReportingReport::ReportingReport(const GURL& url,
-                                 const std::string& user_agent,
-                                 const std::string& group,
-                                 const std::string& type,
-                                 std::unique_ptr<const base::Value> body,
-                                 int depth,
-                                 base::TimeTicks queued,
-                                 int attempts)
-    : url(url),
+ReportingReport::ReportingReport(
+    const NetworkIsolationKey& network_isolation_key,
+    const GURL& url,
+    const std::string& user_agent,
+    const std::string& group,
+    const std::string& type,
+    std::unique_ptr<const base::Value> body,
+    int depth,
+    base::TimeTicks queued,
+    int attempts)
+    : network_isolation_key(network_isolation_key),
+      url(url),
       user_agent(user_agent),
       group(group),
       type(type),

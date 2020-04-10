@@ -82,6 +82,7 @@ component("web_engine_core") {
     "//content/public/common",
     "//content/public/renderer",
     "//fuchsia/base",
+    "//fuchsia/base:legacymetrics",
     "//fuchsia/base:message_port",
     "//fuchsia/base:modular",
     "//gpu/command_buffer/service",

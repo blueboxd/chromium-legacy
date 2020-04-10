@@ -864,8 +864,10 @@ NSString* const kSuggestionSuffix = @" ••••••••";
            object:nil];
 
   // TODO(crbug.com/886583): add eg tests
+  // TODO(crbug.com/1029346): add browser value.
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.baseViewController
+                         browser:nil
                            title:@""
                          message:@""
                             rect:self.baseViewController.view.frame

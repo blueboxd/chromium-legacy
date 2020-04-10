@@ -1,0 +1,91 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_VR_METRICS_SESSION_METRICS_HELPER_H_
+#define CHROME_BROWSER_VR_METRICS_SESSION_METRICS_HELPER_H_
+
+#include <memory>
+#include <set>
+#include <unordered_map>
+
+#include "base/time/time.h"
+#include "chrome/browser/vr/vr_base_export.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "device/vr/public/mojom/vr_service.mojom-forward.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
+
+namespace vr {
+class SessionTimer;
+class WebXRSessionTracker;
+
+// This class is not thread-safe and must only be used from the main thread.
+// This class tracks metrics for various kinds of sessions, including VR
+// browsing sessions, WebXR presentation sessions, and others. It mainly tracks
+// metrics that require state monitoring, such as durations, but also tracks
+// data we want attached to that, such as number of videos watched and how the
+// session was started.
+class VR_BASE_EXPORT SessionMetricsHelper
+    : public content::WebContentsObserver {
+ public:
+  // Returns the SessionMetricsHelper singleton if it has been created for the
+  // WebContents.
+  static SessionMetricsHelper* FromWebContents(content::WebContents* contents);
+  static SessionMetricsHelper* CreateForWebContents(
+      content::WebContents* contents);
+
+  ~SessionMetricsHelper() override;
+
+  // Records that an inline session was started and returns the |PendingRemote|
+  // for the created session recorder.
+  mojo::PendingRemote<device::mojom::XRSessionMetricsRecorder>
+  StartInlineSession(
+      const device::mojom::XRSessionOptions& session_options,
+      const std::set<device::mojom::XRSessionFeature>& enabled_features,
+      size_t session_id);
+
+  // Records that inline session was stopped. Will record an UKM entry.
+  void StopAndRecordInlineSession(size_t session_id);
+
+  // Records that an immersive session was started and returns the
+  // |PendingRemote| for the created session recorder. Two immersive sessions
+  // may not exist simultaneously.
+  mojo::PendingRemote<device::mojom::XRSessionMetricsRecorder>
+  StartImmersiveSession(
+      const device::mojom::XRSessionOptions& session_options,
+      const std::set<device::mojom::XRSessionFeature>& enabled_features);
+
+  // Records that an immersive session was stopped. Will record a UKM entry.
+  void StopAndRecordImmersiveSession();
+
+ private:
+  explicit SessionMetricsHelper(content::WebContents* contents);
+
+  // WebContentsObserver
+  void MediaStartedPlaying(const MediaPlayerInfo& media_info,
+                           const content::MediaPlayerId&) override;
+  void MediaStoppedPlaying(
+      const MediaPlayerInfo& media_info,
+      const content::MediaPlayerId&,
+      WebContentsObserver::MediaStoppedReason reason) override;
+  void DidStartNavigation(content::NavigationHandle* handle) override;
+
+  std::unique_ptr<SessionTimer> session_video_timer_;
+  std::unique_ptr<SessionTimer> session_timer_;
+
+  std::unique_ptr<WebXRSessionTracker> webxr_immersive_session_tracker_;
+
+  // Map associating active inline session Ids to their trackers. The contents
+  // of the map are managed by |StartInlineSession| and
+  // |StopAndRecordInlineSession|.
+  std::unordered_map<size_t, std::unique_ptr<WebXRSessionTracker>>
+      webxr_inline_session_trackers_;
+
+  int num_videos_playing_ = 0;
+  int num_session_video_playback_ = 0;
+};
+
+}  // namespace vr
+
+#endif  // CHROME_BROWSER_VR_METRICS_SESSION_METRICS_HELPER_H_

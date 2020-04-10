@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.payments;
 
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,7 +27,9 @@ public class PaymentAppService implements PaymentAppFactoryInterface {
     /** Prevent instantiation. */
     private PaymentAppService() {
         mFactories.add(new AutofillPaymentAppFactory());
-        mFactories.add(new PaymentAppServiceBridge());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
+            mFactories.add(new ServiceWorkerPaymentAppBridge());
+        }
         mFactories.add(new AndroidPaymentAppFactory());
     }
 

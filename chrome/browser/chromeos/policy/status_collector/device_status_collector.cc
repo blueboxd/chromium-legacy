@@ -874,17 +874,25 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       const auto& smart_info = battery_info->smart_battery_info;
       if (!smart_info.is_null())
         battery_info_out->set_manufacture_date(smart_info->manufacture_date);
-      const auto& cpu_info = probe_result->cpu_info;
-      if (cpu_info.has_value()) {
-        for (const auto& cpu : cpu_info.value()) {
-          em::CpuInfo* const cpu_info_out =
-              response_params_.device_status->add_cpu_info();
-          cpu_info_out->set_model_name(cpu->model_name);
-          cpu_info_out->set_architecture(
-              em::CpuInfo::Architecture(cpu->architecture));
-          cpu_info_out->set_max_clock_speed_khz(cpu->max_clock_speed_khz);
+
+      // Process CpuResult.
+      const auto& cpu_result = probe_result->cpu_result;
+      if (!cpu_result.is_null()) {
+        if (cpu_result->is_error()) {
+          LOG(ERROR) << "cros_healthd: Error getting CPU info: "
+                     << cpu_result->get_error()->msg;
+        } else {
+          for (const auto& cpu : cpu_result->get_cpu_info()) {
+            em::CpuInfo* const cpu_info_out =
+                response_params_.device_status->add_cpu_info();
+            cpu_info_out->set_model_name(cpu->model_name);
+            cpu_info_out->set_architecture(
+                em::CpuInfo::Architecture(cpu->architecture));
+            cpu_info_out->set_max_clock_speed_khz(cpu->max_clock_speed_khz);
+          }
         }
       }
+
       const auto& timezone_info = probe_result->timezone_info;
       if (!timezone_info.is_null()) {
         em::TimezoneInfo* const timezone_info_out =

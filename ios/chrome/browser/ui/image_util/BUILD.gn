@@ -25,6 +25,7 @@ source_set("web") {
     "//components/image_fetcher/ios",
     "//components/strings",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/web",
     "//ios/web",

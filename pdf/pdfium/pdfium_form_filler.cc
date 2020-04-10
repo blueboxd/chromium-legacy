@@ -207,7 +207,7 @@ FPDF_PAGE PDFiumFormFiller::Form_GetPage(FPDF_FORMFILLINFO* param,
 FPDF_PAGE PDFiumFormFiller::Form_GetCurrentPage(FPDF_FORMFILLINFO* param,
                                                 FPDF_DOCUMENT document) {
   PDFiumEngine* engine = GetEngine(param);
-  int index = engine->last_page_mouse_down_;
+  int index = engine->last_focused_page_;
   if (index == -1) {
     index = engine->GetMostVisiblePage();
     if (index == -1) {
@@ -235,7 +235,7 @@ void PDFiumFormFiller::Form_ExecuteNamedAction(FPDF_FORMFILLINFO* param,
     return;
   }
 
-  int index = engine->last_page_mouse_down_;
+  int index = engine->last_focused_page_;
   /* Don't try to calculate the most visible page if we don't have a left click
      before this event (this code originally copied Form_GetCurrentPage which of
      course needs to do that and which doesn't have recursion). This can end up

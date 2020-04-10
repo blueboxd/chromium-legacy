@@ -200,20 +200,4 @@ TEST_F(SmsFetcherImplTest, TwoOriginsTwoSubscribers) {
   provider()->NotifyReceive(kOrigin1, "123");
 }
 
-TEST_F(SmsFetcherImplTest, SubscribeIsIdempotent) {
-  const url::Origin kOrigin = url::Origin::Create(GURL("https://a.com"));
-
-  StrictMock<MockSubscriber> subscriber;
-
-  SmsFetcherImpl fetcher(nullptr, base::WrapUnique(provider()));
-  fetcher.Subscribe(kOrigin, &subscriber);
-  fetcher.Subscribe(kOrigin, &subscriber);
-
-  EXPECT_TRUE(fetcher.HasSubscribers());
-
-  fetcher.Unsubscribe(kOrigin, &subscriber);
-
-  EXPECT_FALSE(fetcher.HasSubscribers());
-}
-
 }  // namespace content

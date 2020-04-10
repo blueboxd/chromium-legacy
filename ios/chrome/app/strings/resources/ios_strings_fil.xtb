@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 ang napili</translation>
 <translation id="2421044535038393232">Magpatuloy sa Pag-edit</translation>
 <translation id="2435457462613246316">Ipakita ang password</translation>
-<translation id="2481538920734869610">MAGDAGDAG NG ACCOUNT</translation>
 <translation id="2497852260688568942">Na-disable ng iyong administrator ang pag-sync</translation>
 <translation id="2500374554657206846">Mga Opsyon para Mag-save ng Password</translation>
 <translation id="2523363575747517183">Paulit-ulit na sinusubukang buksan ng website na ito ang isa pang application.</translation>
@@ -480,7 +479,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7203585745079012652">Bigkasin ang Mga Sagot</translation>
 <translation id="7265758999917665941">Hindi Kailanman Para sa Site na Ito</translation>
 <translation id="7272437679830969316">Hindi ma-verify ang iyong pagkakakilanlan. Hindi nakopya ang password.</translation>
-<translation id="7285236536143823449">OO, SASALI AKO</translation>
 <translation id="7291368939935408496">Inihahanda ang Mga Password...</translation>
 <translation id="7293171162284876153">Para simulan ang pag-sync, i-on ang "I-sync ang iyong data sa Chrome."</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> (na) porsyento ang na-download na</translation>
@@ -496,6 +494,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7460314822154045102">Gamitin ang Camera</translation>
 <translation id="7464701184726199289">Maki-clear nito ang mga naka-sync na data mula sa lahat ng device. Hindi made-delete ang mga naka-save na setting ng site at maaari nitong ipakita ang iyong mga gawi sa pagba-browse. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Pangalan ng Kumpanya</translation>
+<translation id="7473891865547856676">Hindi, Salamat</translation>
 <translation id="7481312909269577407">Sumulong</translation>
 <translation id="750493650310597496">0 ang napili</translation>
 <translation id="7514365320538308">I-download</translation>
@@ -517,7 +516,6 @@ Dahil pinapamahalaan ng <ph name="HOSTED_DOMAIN" /> ang iyong account, made-dele
 <translation id="7781829728241885113">Kahapon</translation>
 <translation id="778855399387580014">Start a search in a new Chrome tab.</translation>
 <translation id="7791543448312431591">Idagdag</translation>
-<translation id="780301667611848630">Hindi salamat</translation>
 <translation id="7840771868269352570">Maaalis ang mga pinili mong item.</translation>
 <translation id="7856733331829174190">Hindi Ma-download</translation>
 <translation id="7859704718976024901">History ng Pag-browse</translation>
@@ -587,6 +585,7 @@ Dahil pinapamahalaan ng <ph name="HOSTED_DOMAIN" /> ang iyong account, made-dele
 <translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8881801611828450202">Hanapin sa <ph name="SEARCH_ENGINE" /> ang Larawang Ito</translation>
 <translation id="8909135823018751308">Ibahagi…</translation>
+<translation id="8917490105272468696">Oo, Tinatanggap Ko</translation>
 <translation id="895541991026785598">Mag-ulat ng Isyu</translation>
 <translation id="8976382372951310360">Tulong</translation>
 <translation id="8981454092730389528">Mga Kontrol ng Aktibidad ng Google</translation>

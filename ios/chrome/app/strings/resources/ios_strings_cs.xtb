@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">Vybrána 1 fotka</translation>
 <translation id="2421044535038393232">Pokračovat v úpravách</translation>
 <translation id="2435457462613246316">Zobrazit heslo</translation>
-<translation id="2481538920734869610">PŘIDAT ÚČET</translation>
 <translation id="2497852260688568942">Synchronizace je administrátorem zakázána.</translation>
 <translation id="2500374554657206846">Možnosti uložení hesla</translation>
 <translation id="2523363575747517183">Tento web se opakovaně pokouší otevřít jinou aplikaci.</translation>
@@ -480,7 +479,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7203585745079012652">Vyslovovat odpovědi</translation>
 <translation id="7265758999917665941">Pro tento web nikdy</translation>
 <translation id="7272437679830969316">Vaši totožnost nelze ověřit. Heslo nebylo zkopírováno.</translation>
-<translation id="7285236536143823449">ANO, ZAPNOUT</translation>
 <translation id="7291368939935408496">Příprava hesel…</translation>
 <translation id="7293171162284876153">Chcete-li synchronizaci spustit, zapněte přepínač Synchronizovat data prohlížeče Chrome.</translation>
 <translation id="7336264872878993241">Staženo <ph name="PERCENT" /> %</translation>
@@ -496,6 +494,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7460314822154045102">Použít aplikaci Fotoaparát</translation>
 <translation id="7464701184726199289">Tímto vymažete synchronizovaná data ze všech zařízení. Uložená nastavení webů nebudou smazána a mohou vypovídat o vašich zvycích při prohlížení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Název společnosti</translation>
+<translation id="7473891865547856676">Ne, děkuji</translation>
 <translation id="7481312909269577407">Vpřed</translation>
 <translation id="750493650310597496">Vybráno 0</translation>
 <translation id="7514365320538308">Stáhnout</translation>
@@ -517,7 +516,6 @@ Protože váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, při odhlá�
 <translation id="7781829728241885113">Včera</translation>
 <translation id="778855399387580014">Spustit vyhledávání na nové kartě Chromu.</translation>
 <translation id="7791543448312431591">Přidat</translation>
-<translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7840771868269352570">Vybrané položky budou odstraněny.</translation>
 <translation id="7856733331829174190">Stažení se nezdařilo</translation>
 <translation id="7859704718976024901">Historie procházení</translation>
@@ -587,6 +585,7 @@ Protože váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, při odhlá�
 <translation id="8870413625673593573">Nedávno zavřené</translation>
 <translation id="8881801611828450202">Vyhledat tento obrázek ve službě <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Sdílet…</translation>
+<translation id="8917490105272468696">Souhlasím</translation>
 <translation id="895541991026785598">Nahlásit problém</translation>
 <translation id="8976382372951310360">Nápověda</translation>
 <translation id="8981454092730389528">Ovládací prvky aktivity Google</translation>

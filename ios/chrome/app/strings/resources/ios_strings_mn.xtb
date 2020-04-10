@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 сонгогдсон</translation>
 <translation id="2421044535038393232">Үргэлжлүүлэн засах</translation>
 <translation id="2435457462613246316">Нууц үг харуулах</translation>
-<translation id="2481538920734869610">БҮРТГЭЛ НЭМЭХ</translation>
 <translation id="2497852260688568942">Таны админ синкийг идэвхгүй болгосон байна.</translation>
 <translation id="2500374554657206846">Нууц үг хадгалах сонголтууд</translation>
 <translation id="2523363575747517183">Энэ вебсайт өөр апп нээхээр удаа дараа оролдож байна.</translation>
@@ -479,7 +478,6 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="7203585745079012652">Хариултыг буцааж хэлэх</translation>
 <translation id="7265758999917665941">Энэ сайтад хэзээ ч хадгалахгүй</translation>
 <translation id="7272437679830969316">Таныг баталгаажуулж чадсангүй. Нууц үгийг хуулаагүй байна.</translation>
-<translation id="7285236536143823449">ТИЙМ, БИ АШИГЛАНА</translation>
 <translation id="7291368939935408496">Нууц үгийг бэлтгэж байна...</translation>
 <translation id="7293171162284876153">Синк хийж эхлэхийн тулд "Chrome-н өгөгдлөө синк хийх" гэснийг асаана уу.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> хувь татагдсан байна</translation>
@@ -495,6 +493,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="7460314822154045102">Камер ашиглах</translation>
 <translation id="7464701184726199289">Энэ нь синк хийсэн өгөгдлийг бүх төхөөрөмжөөс устгах болно. Сайтын хадгалсан тохиргоо устахгүй бөгөөд таны хайлтын тохиргоонд нөлөөлж болзошгүй. <ph name="BEGIN_LINK" />Дэлгэрэнгүй үзэх<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Компанийн нэр</translation>
+<translation id="7473891865547856676">Үгүй, баярлалаа</translation>
 <translation id="7481312909269577407">Forward</translation>
 <translation id="750493650310597496">0 сонгогдсон</translation>
 <translation id="7514365320538308">Татаж авах</translation>
@@ -516,7 +515,6 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="7781829728241885113">Өчигдөр</translation>
 <translation id="778855399387580014">Хайлтыг Chrome-н шинэ табад эхлүүлнэ үү.</translation>
 <translation id="7791543448312431591">Нэмэх</translation>
-<translation id="780301667611848630">Үгүй, баярлалаа</translation>
 <translation id="7840771868269352570">Таны сонгосон зүйлсийг устгах болно.</translation>
 <translation id="7856733331829174190">Татаж чадсангүй</translation>
 <translation id="7859704718976024901">Хайлтын түүх</translation>
@@ -586,6 +584,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="8870413625673593573">Саяхан хаагдсан</translation>
 <translation id="8881801611828450202">Энэ зургийг <ph name="SEARCH_ENGINE" />-с хайх</translation>
 <translation id="8909135823018751308">Мэдээллийг хуваалцах ...</translation>
+<translation id="8917490105272468696">Тийм, би зөвшөөрч байна</translation>
 <translation id="895541991026785598">Асуудлыг мэдэгдэх…</translation>
 <translation id="8976382372951310360">Тусламж</translation>
 <translation id="8981454092730389528">Google-н Ашиглалтын удирдлага</translation>

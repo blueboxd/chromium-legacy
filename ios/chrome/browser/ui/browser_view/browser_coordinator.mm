@@ -295,8 +295,7 @@
   DCHECK(self.browserContainerCoordinator.viewController);
   BrowserViewControllerDependencyFactory* factory =
       [[BrowserViewControllerDependencyFactory alloc]
-          initWithBrowserState:self.browserState
-                  webStateList:self.browser->GetWebStateList()];
+          initWithBrowser:self.browser];
   _viewController = [[BrowserViewController alloc]
                      initWithBrowser:self.browser
                    dependencyFactory:factory
@@ -904,8 +903,7 @@
 
 // Installs delegates for each WebState in WebStateList.
 - (void)installDelegatesForAllWebStates {
-  self.openInMediator = [[OpenInMediator alloc]
-      initWithWebStateList:self.browser->GetWebStateList()];
+  self.openInMediator = [[OpenInMediator alloc] initWithBrowser:self.browser];
 
   for (int i = 0; i < self.browser->GetWebStateList()->count(); i++) {
     web::WebState* webState = self.browser->GetWebStateList()->GetWebStateAt(i);

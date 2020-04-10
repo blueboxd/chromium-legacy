@@ -48,7 +48,7 @@ function resetTilePosition(tile) {
  * @private
  */
 function setTilePosition(tile, {x, y}) {
-  tile.style.position = 'absolute';
+  tile.style.position = 'fixed';
   tile.style.left = `${x}px`;
   tile.style.top = `${y}px`;
 }

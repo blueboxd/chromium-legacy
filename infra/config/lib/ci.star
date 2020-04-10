@@ -20,12 +20,17 @@ defaults = args.defaults(
     add_to_console_view = False,
     console_view = args.COMPUTE,
     header = None,
+    main_console_view = None,
     repo = None,
 )
 
 
 def _console_view_ordering_graph_key(console_name):
   return graph.key('@chromium', '', 'console_view_ordering', console_name)
+
+
+def _main_console_view_ordering_graph_key(console_name):
+  return graph.key('@chromium', '', 'main_console_view_ordering', console_name)
 
 
 def _console_view_ordering_impl(ctx, *, console_name, ordering):
@@ -38,6 +43,16 @@ def _console_view_ordering_impl(ctx, *, console_name, ordering):
 
 _console_view_ordering = lucicfg.rule(impl=_console_view_ordering_impl)
 
+
+def _main_console_view_ordering_impl(ctx, *, console_name, top_level_ordering):
+  key = _main_console_view_ordering_graph_key(console_name)
+  graph.add_node(key, props = {
+      'top_level_ordering': top_level_ordering,
+  })
+  graph.add_edge(keys.project(), key)
+  return graph.keyset(key)
+
+_main_console_view_ordering = lucicfg.rule(impl=_main_console_view_ordering_impl)
 
 
 def _category_join(parent, category):
@@ -63,7 +78,7 @@ def _level_sort_key(category, ordering):
   return (len(ordering), category)
 
 
-def _builder_sort_key(console_name, console_ordering, builder):
+def _builder_sort_key(console_ordering, category, short_name, names):
   """Compute the key for a builder.
 
   Builders are sorted lexicographically by the sequence of category
@@ -77,43 +92,111 @@ def _builder_sort_key(console_name, console_ordering, builder):
   Returns:
     A key that can be used to sort builder entries within the same console.
   """
-  category = None
+  current_category = None
 
   # Build the category key as a sequence of the keys for each level
   category_key = []
-  if builder.category:
-    for c in builder.category.split('|'):
-      ordering = console_ordering.get(category, [])
+  if category:
+    for c in category.split('|'):
+      ordering = console_ordering.get(current_category, [])
       if type(ordering) == type(''):
         ordering = console_ordering[ordering]
       if type(ordering) == type(struct()):
         ordering = ordering.categories
       category_key.append(_level_sort_key(c, ordering))
-      category = _category_join(category, c)
+      current_category = _category_join(current_category, c)
 
   short_name_key = ()
-  if builder.short_name:
+  if short_name:
     ordering = console_ordering.get(category, [])
     if type(ordering) == type(''):
       ordering = console_ordering[ordering]
     short_name_ordering = getattr(ordering, 'short_names', [])
-    short_name_key = _level_sort_key(builder.short_name, short_name_ordering)
+    short_name_key = _level_sort_key(short_name, short_name_ordering)
 
   return (
       category_key,
       short_name_key,
-      list(builder.name),
+      list(names),
   )
+
+
+def _get_console_ordering(console_name):
+  """Get the ordering dict used for sorting entries of a console_view.
+
+  Returns:
+    The ordering dict used to sort entries of the console_view with the
+    given name or None if the name does not refer to a console_view with
+    an ordering.
+  """
+  graph_key = _console_view_ordering_graph_key(console_name)
+  node = graph.node(graph_key)
+  return node.props.ordering if node != None else None
+
+
+def _get_console_view_key_fn(console_name):
+  """Get the key function for sorting entries of a console_view.
+
+  Returns:
+    The key function used to sort entries of the console_view with the
+    given name or None if the name does not refer to a console_view with
+    an ordering.
+  """
+  ordering = _get_console_ordering(console_name)
+  if ordering == None:
+    return None
+
+  def key_fn(b):
+    return _builder_sort_key(ordering, b.category, b.short_name, b.name)
+  return key_fn
+
+
+def _get_main_console_view_key_fn(console_name):
+  """Get the key function for sorting entries of a main_console_view.
+
+  Returns:
+    The key function used to sort entries of the main_console_view with
+    the given name or None if the name does not refer to a
+    main_console_view.
+  """
+  main_console_ordering = graph.node(
+      _main_console_view_ordering_graph_key(console_name))
+  if main_console_ordering == None:
+    return None
+
+  top_level_ordering = main_console_ordering.props.top_level_ordering
+
+  def key_fn(b):
+    if not b.category:
+      fail('Builder {} must have a category'.format(b))
+    category_components = b.category.split('|', 1)
+
+    subconsole = category_components[0]
+    subconsole_sort_key = _level_sort_key(subconsole, top_level_ordering)
+
+    builder_sort_key = ()
+    subconsole_ordering = _get_console_ordering(subconsole)
+    if subconsole_ordering != None:
+      category = ''
+      if len(category_components) > 1:
+        category = category_components[1]
+      builder_sort_key = _builder_sort_key(
+          subconsole_ordering, category, b.short_name, b.name)
+
+    return (
+        subconsole_sort_key,
+        builder_sort_key,
+    )
+
+  return key_fn
 
 
 def _sort_consoles(ctx):
   milo = ctx.output['luci-milo.cfg']
   for console in milo.consoles:
-    graph_key = graph.key('@chromium', '', 'console_view_ordering', console.id)
-    node = graph.node(graph_key)
-    if node != None:
-      def key_fn(b):
-        return _builder_sort_key(console.id, node.props.ordering, b)
+    key_fn = (_get_console_view_key_fn(console.id)
+              or _get_main_console_view_key_fn(console.id))
+    if key_fn:
       console.builders = sorted(console.builders, key_fn)
   milo.consoles = sorted(milo.consoles, lambda c: c.id)
 
@@ -188,6 +271,42 @@ def console_view(*, name, ordering=None, **kwargs):
   )
 
 
+def main_console_view(*, name, top_level_ordering, **kwargs):
+  """Create a main console view.
+
+  A main console view is a console view that contains a subset of
+  entries from other consoles. The entries from each console will have
+  that console's name prepended to the entries' categories and will
+  appear in the same order as they do in that console. The ordering of
+  entries from different consoles is controlled by the
+ `top_level_ordering` parameter.
+
+  Args:
+    name - The name of the console view.
+    top_level_ordering - A list of strings defining the order that
+      entries from different consoles will appear. Entries will be
+      sorted by the name of the console they come from, appearing in the
+      same order as in top_level_ordering. Entries from consoles whose
+      name does not appear in the list will be sorted lexicographically
+      by the console name and appear after entries whose console does
+      appear in the list.
+    kwargs - Additional keyword arguments to forward on to
+      `luci.console_view`. The header and repo arguments support
+       module-level defaults.
+  """
+  kwargs['header'] = defaults.get_value_from_kwargs('header', kwargs)
+  kwargs['repo'] = defaults.get_value_from_kwargs('repo', kwargs)
+  luci.console_view(
+      name = name,
+      **kwargs
+  )
+
+  _main_console_view_ordering(
+      console_name = name,
+      top_level_ordering = top_level_ordering,
+  )
+
+
 def console_view_entry(*, category=None, short_name=None):
   """Specifies the details of a console view entry.
 
@@ -210,6 +329,7 @@ def ci_builder(
     name,
     add_to_console_view=args.DEFAULT,
     console_view=args.DEFAULT,
+    main_console_view=args.DEFAULT,
     console_view_entry=None,
     **kwargs):
   """Define a CI builder.
@@ -225,7 +345,12 @@ def ci_builder(
       the mastername of the builder, if provided. An entry will be added
       only if `add_to_console_view` is True and `console_view_entry` is
       provided.
-   console_view_entry - A structure providing the details of the entry
+    main_console_view - A string identifying the ID of the main console
+      view to add an entry to. Supports a module-level default that
+      defaults to None. An entry will be added only if
+      `console_view_entry` is provided. Note that `add_to_console_view`
+      has no effect on creating an entry to the main console view.
+    console_view_entry - A structure providing the details of the entry
       to add to the console view. See `ci.console_view_entry` for details.
   """
   # Define the builder first so that any validation of luci.builder arguments
@@ -252,6 +377,15 @@ def ci_builder(
             builder = builder,
             console_view = console_view,
             category = console_view_entry.category,
+            short_name = console_view_entry.short_name,
+        )
+
+      main_console_view = defaults.get_value('main_console_view', main_console_view)
+      if main_console_view:
+        luci.console_view_entry(
+            builder = builder,
+            console_view = main_console_view,
+            category = '|'.join([console_view, console_view_entry.category]),
             short_name = console_view_entry.short_name,
         )
 
@@ -675,6 +809,7 @@ ci = struct(
     console_view = console_view,
     console_view_entry = console_view_entry,
     defaults = defaults,
+    main_console_view = main_console_view,
     ordering = ordering,
 
     android_builder = android_builder,

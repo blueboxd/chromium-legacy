@@ -1174,6 +1174,15 @@
   <message name="IDS_SETTINGS_SAFEBROWSING_NONE_DESC" desc="Description for safe browsing no protection mode">
     Does not protect you against dangerous websites, downloads, and extensions. You’ll still get Safe Browsing protection, where available, in other Google services, like Gmail and Search.
   </message>
+  <message name="IDS_SETTINGS_SAFEBROWSING_DISABLE_DIALOG_TITLE" desc="Title for the confirmation dialog to turn off SafeBrowsing">
+    Turn off Safe Browsing?
+  </message>
+  <message name="IDS_SETTINGS_SAFEBROWSING_DISABLE_DIALOG_DESC" desc="Description for the confirmation dialog to turn off SafeBrowsing">
+    Safe Browsing protects you against attackers who may trick you into doing something dangerous like installing malicious software or revealing personal information like passwords, phone numbers, or credit cards. If you turn it off, be careful when browsing unfamiliar or unreputable sites.
+  </message>
+  <message name="IDS_SETTINGS_SAFEBROWSING_DISABLE_DIALOG_CONFIRM" desc="Title for the confirmation dialog to turn off SafeBrowsing">
+    Turn off
+  </message>
   <message name="IDS_SETTINGS_ENABLE_DO_NOT_TRACK" desc="The label of the checkbox to enable/disable sending the 'Do Not track' header">
     Send a "Do Not Track" request with your browsing traffic
   </message>
@@ -1201,10 +1210,6 @@
   </message>
   <message name="IDS_SETTINGS_SECURITY_DESCRIPTION" desc="Description of the controls available on the security settings page">
     Safe Browsing (protection from dangerous sites) and other security settings
-  </message>
-  <message name="IDS_SETTINGS_SECURITY_ADVANCED_SECTION_LABEL" desc="Name of the section in the
-    security settings page which groups advanced security settings">
-    Advanced security
   </message>
   <message name="IDS_SETTINGS_ADVANCED_PROTECTION_PROGRAM" desc="Name of the link which takes users
     to the Google Advanced Protection Program external webpage">

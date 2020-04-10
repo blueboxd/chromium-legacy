@@ -1,0 +1,21 @@
+This is a testharness.js-based test.
+PASS idl_test setup
+PASS idl_test validation
+PASS Partial interface HTMLVideoElement: original interface defined
+PASS Partial interface HTMLVideoElement: member names are unique
+PASS HTMLElement includes GlobalEventHandlers: member names are unique
+PASS HTMLElement includes DocumentAndElementEventHandlers: member names are unique
+PASS HTMLElement includes ElementContentEditable: member names are unique
+PASS HTMLElement includes HTMLOrSVGElement: member names are unique
+PASS Element includes ParentNode: member names are unique
+PASS Element includes NonDocumentTypeChildNode: member names are unique
+PASS Element includes ChildNode: member names are unique
+PASS Element includes Slotable: member names are unique
+FAIL HTMLVideoElement interface: operation requestVideoFrameCallback(VideoFrameRequestCallback) assert_own_property: interface prototype object missing non-static operation expected property "requestVideoFrameCallback" missing
+FAIL HTMLVideoElement interface: operation cancelVideoFrameCallback(unsigned long) assert_own_property: interface prototype object missing non-static operation expected property "cancelVideoFrameCallback" missing
+FAIL HTMLVideoElement interface: video must inherit property "requestVideoFrameCallback(VideoFrameRequestCallback)" with the proper type assert_inherits: property "requestVideoFrameCallback" not found in prototype chain
+FAIL HTMLVideoElement interface: calling requestVideoFrameCallback(VideoFrameRequestCallback) on video with too few arguments must throw TypeError assert_inherits: property "requestVideoFrameCallback" not found in prototype chain
+FAIL HTMLVideoElement interface: video must inherit property "cancelVideoFrameCallback(unsigned long)" with the proper type assert_inherits: property "cancelVideoFrameCallback" not found in prototype chain
+FAIL HTMLVideoElement interface: calling cancelVideoFrameCallback(unsigned long) on video with too few arguments must throw TypeError assert_inherits: property "cancelVideoFrameCallback" not found in prototype chain
+Harness: the test ran to completion.
+

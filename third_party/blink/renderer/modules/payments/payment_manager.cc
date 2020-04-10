@@ -17,8 +17,10 @@
 namespace blink {
 
 PaymentInstruments* PaymentManager::instruments() {
-  if (!instruments_)
-    instruments_ = MakeGarbageCollected<PaymentInstruments>(manager_);
+  if (!instruments_) {
+    instruments_ = MakeGarbageCollected<PaymentInstruments>(
+        manager_, registration_->GetExecutionContext());
+  }
   return instruments_;
 }
 
@@ -78,13 +80,16 @@ ScriptPromise PaymentManager::enableDelegations(
 
 void PaymentManager::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
+  visitor->Trace(manager_);
   visitor->Trace(instruments_);
   visitor->Trace(enable_delegations_resolver_);
   ScriptWrappable::Trace(visitor);
 }
 
 PaymentManager::PaymentManager(ServiceWorkerRegistration* registration)
-    : registration_(registration), instruments_(nullptr) {
+    : registration_(registration),
+      manager_(registration->GetExecutionContext()),
+      instruments_(nullptr) {
   DCHECK(registration);
 
   if (ExecutionContext* context = registration->GetExecutionContext()) {

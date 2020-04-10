@@ -1413,6 +1413,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self
+                         browser:_browser
                            title:nil
                          message:nil
                    barButtonItem:self.moreButton];
@@ -1737,6 +1738,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self
+                         browser:_browser
                            title:nil
                          message:nil
                             rect:CGRectMake(touchPoint.x, touchPoint.y, 1, 1)

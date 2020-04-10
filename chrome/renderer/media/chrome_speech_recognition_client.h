@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_CHROME_SPEECH_RECOGNITION_CLIENT_H_
-#define CHROME_RENDERER_CHROME_SPEECH_RECOGNITION_CLIENT_H_
+#ifndef CHROME_RENDERER_MEDIA_CHROME_SPEECH_RECOGNITION_CLIENT_H_
+#define CHROME_RENDERER_MEDIA_CHROME_SPEECH_RECOGNITION_CLIENT_H_
 
 #include <memory>
 
 #include "media/base/audio_buffer.h"
 #include "media/base/speech_recognition_client.h"
-#include "media/mojo/mojom/soda_service.mojom.h"
+#include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -19,7 +19,7 @@ class RenderFrame;
 
 class ChromeSpeechRecognitionClient
     : public media::SpeechRecognitionClient,
-      public media::mojom::SodaRecognizerClient {
+      public media::mojom::SpeechRecognitionRecognizerClient {
  public:
   explicit ChromeSpeechRecognitionClient(content::RenderFrame* render_frame);
   ChromeSpeechRecognitionClient(const ChromeSpeechRecognitionClient&) = delete;
@@ -31,21 +31,24 @@ class ChromeSpeechRecognitionClient
   void AddAudio(scoped_refptr<media::AudioBuffer> buffer) override;
   bool IsSpeechRecognitionAvailable() override;
 
-  // media::mojom::SodaRecognizerClient
-  void OnSodaRecognitionEvent(const std::string& transcription) override;
+  // media::mojom::SpeechRecognitionRecognizerClient
+  void OnSpeechRecognitionRecognitionEvent(
+      const std::string& transcription) override;
 
  private:
   media::mojom::AudioDataS16Ptr ConvertToAudioDataS16(
       scoped_refptr<media::AudioBuffer> buffer);
 
-  mojo::Remote<media::mojom::SodaContext> soda_context_;
-  mojo::Remote<media::mojom::SodaRecognizer> soda_recognizer_;
-  mojo::Receiver<media::mojom::SodaRecognizerClient>
-      soda_recognition_client_receiver_{this};
+  mojo::Remote<media::mojom::SpeechRecognitionContext>
+      speech_recognition_context_;
+  mojo::Remote<media::mojom::SpeechRecognitionRecognizer>
+      speech_recognition_recognizer_;
+  mojo::Receiver<media::mojom::SpeechRecognitionRecognizerClient>
+      speech_recognition_client_receiver_{this};
 
   // The temporary audio bus used to convert the raw audio to the appropriate
   // format.
   std::unique_ptr<media::AudioBus> temp_audio_bus_;
 };
 
-#endif  // CHROME_RENDERER_CHROME_SPEECH_RECOGNITION_CLIENT_H_
+#endif  // CHROME_RENDERER_MEDIA_CHROME_SPEECH_RECOGNITION_CLIENT_H_

@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -91,7 +92,7 @@ TEST(JSONReaderTest, Ints) {
 }
 
 TEST(JSONReaderTest, NonDecimalNumbers) {
-  // According to RFC4627, oct, hex, and leading zeros are invalid JSON.
+  // According to RFC 8259, oct, hex, and leading zeros are invalid JSON.
   EXPECT_FALSE(JSONReader::Read("043"));
   EXPECT_FALSE(JSONReader::Read("0x43"));
   EXPECT_FALSE(JSONReader::Read("00"));
@@ -113,61 +114,61 @@ TEST(JSONReaderTest, LargeIntPromotion) {
   // storage as doubles
   Optional<Value> root = JSONReader::Read("2147483648");
   ASSERT_TRUE(root);
-  double double_val;
   EXPECT_TRUE(root->is_double());
-  double_val = 0.0;
-  EXPECT_TRUE(root->GetAsDouble(&double_val));
-  EXPECT_DOUBLE_EQ(2147483648.0, double_val);
+  EXPECT_DOUBLE_EQ(2147483648.0, root->GetDouble());
   root = JSONReader::Read("-2147483649");
   ASSERT_TRUE(root);
   EXPECT_TRUE(root->is_double());
-  double_val = 0.0;
-  EXPECT_TRUE(root->GetAsDouble(&double_val));
-  EXPECT_DOUBLE_EQ(-2147483649.0, double_val);
+  EXPECT_DOUBLE_EQ(-2147483649.0, root->GetDouble());
+}
+
+TEST(JSONReaderTest, LargerIntIsLossy) {
+  // Parse LONG_MAX as a JSON number (not a JSON string). The result of the
+  // parse is a base::Value, either a (32-bit) int or a (64-bit) double.
+  // LONG_MAX would overflow an int and can only be approximated by a double.
+  // In this case, parsing is lossy.
+  const char* etc807 = "9223372036854775807";
+  const char* etc808 = "9223372036854775808.000000";
+  Optional<Value> root = JSONReader::Read(etc807);
+  ASSERT_TRUE(root);
+  ASSERT_FALSE(root->is_int());
+  ASSERT_TRUE(root->is_double());
+  // We use StringPrintf instead of NumberToString, because the NumberToString
+  // function does not let you specify the precision, and its default output,
+  // "9.223372036854776e+18", isn't precise enough to see the lossiness.
+  EXPECT_EQ(std::string(etc808), StringPrintf("%f", root->GetDouble()));
 }
 
 TEST(JSONReaderTest, Doubles) {
   Optional<Value> root = JSONReader::Read("43.1");
   ASSERT_TRUE(root);
   EXPECT_TRUE(root->is_double());
-  double double_val = 0.0;
-  EXPECT_TRUE(root->GetAsDouble(&double_val));
-  EXPECT_DOUBLE_EQ(43.1, double_val);
+  EXPECT_DOUBLE_EQ(43.1, root->GetDouble());
 
   root = JSONReader::Read("4.3e-1");
   ASSERT_TRUE(root);
   EXPECT_TRUE(root->is_double());
-  double_val = 0.0;
-  EXPECT_TRUE(root->GetAsDouble(&double_val));
-  EXPECT_DOUBLE_EQ(.43, double_val);
+  EXPECT_DOUBLE_EQ(.43, root->GetDouble());
 
   root = JSONReader::Read("2.1e0");
   ASSERT_TRUE(root);
   EXPECT_TRUE(root->is_double());
-  double_val = 0.0;
-  EXPECT_TRUE(root->GetAsDouble(&double_val));
-  EXPECT_DOUBLE_EQ(2.1, double_val);
+  EXPECT_DOUBLE_EQ(2.1, root->GetDouble());
 
   root = JSONReader::Read("2.1e+0001");
   ASSERT_TRUE(root);
   EXPECT_TRUE(root->is_double());
-  double_val = 0.0;
-  EXPECT_TRUE(root->GetAsDouble(&double_val));
-  EXPECT_DOUBLE_EQ(21.0, double_val);
+  EXPECT_DOUBLE_EQ(21.0, root->GetDouble());
 
   root = JSONReader::Read("0.01");
   ASSERT_TRUE(root);
   EXPECT_TRUE(root->is_double());
-  double_val = 0.0;
-  EXPECT_TRUE(root->GetAsDouble(&double_val));
-  EXPECT_DOUBLE_EQ(0.01, double_val);
+  EXPECT_DOUBLE_EQ(0.01, root->GetDouble());
 
   root = JSONReader::Read("1.00");
   ASSERT_TRUE(root);
   EXPECT_TRUE(root->is_double());
-  double_val = 0.0;
-  EXPECT_TRUE(root->GetAsDouble(&double_val));
-  EXPECT_DOUBLE_EQ(1.0, double_val);
+  EXPECT_DOUBLE_EQ(1.0, root->GetDouble());
 
   // This is syntaxtically valid, but out of range of a double.
   auto value_with_error =
@@ -191,7 +192,8 @@ TEST(JSONReaderTest, ExponentialNumbers) {
   EXPECT_FALSE(JSONReader::Read("1e1.0"));
 }
 
-TEST(JSONReaderTest, InvalidNAN) {
+TEST(JSONReaderTest, InvalidInfNAN) {
+  // The largest finite double is roughly 1.8e308.
   EXPECT_FALSE(JSONReader::Read("1e1000"));
   EXPECT_FALSE(JSONReader::Read("-1e1000"));
   EXPECT_FALSE(JSONReader::Read("NaN"));
@@ -200,6 +202,8 @@ TEST(JSONReaderTest, InvalidNAN) {
 }
 
 TEST(JSONReaderTest, InvalidNumbers) {
+  EXPECT_TRUE(JSONReader::Read("4.3"));
+  EXPECT_FALSE(JSONReader::Read("4."));
   EXPECT_FALSE(JSONReader::Read("4.3.1"));
   EXPECT_FALSE(JSONReader::Read("4e3.1"));
   EXPECT_FALSE(JSONReader::Read("4.a"));
@@ -234,12 +238,12 @@ TEST(JSONReaderTest, BasicStringEscapes) {
 
 TEST(JSONReaderTest, UnicodeEscapes) {
   // Test hex and unicode escapes including the null character.
-  Optional<Value> root = JSONReader::Read("\"\\x41\\x00\\u1234\\u0000\"");
+  Optional<Value> root = JSONReader::Read("\"\\x41\\xFF\\x00\\u1234\\u0000\"");
   ASSERT_TRUE(root);
   EXPECT_TRUE(root->is_string());
   std::string str_val;
   EXPECT_TRUE(root->GetAsString(&str_val));
-  EXPECT_EQ(std::wstring(L"A\0\x1234\0", 4), UTF8ToWide(str_val));
+  EXPECT_EQ(std::wstring(L"A\x00FF\0\x1234\0", 5), UTF8ToWide(str_val));
 
   // The contents of a Unicode escape may only be four hex chars. Previously the
   // parser accepted things like "0x01" and "0X01".
@@ -433,6 +437,16 @@ TEST(JSONReaderTest, DictionaryKeysWithPeriods) {
   integer_value = dict_val->FindIntKey("a.b");
   ASSERT_TRUE(integer_value);
   EXPECT_EQ(1, *integer_value);
+}
+
+TEST(JSONReaderTest, DuplicateKeys) {
+  Optional<Value> dict_val = JSONReader::Read("{\"x\":1,\"x\":2,\"y\":3}");
+  ASSERT_TRUE(dict_val);
+  ASSERT_TRUE(dict_val->is_dict());
+
+  auto integer_value = dict_val->FindIntKey("x");
+  ASSERT_TRUE(integer_value);
+  EXPECT_EQ(2, *integer_value);
 }
 
 TEST(JSONReaderTest, InvalidDictionaries) {
@@ -721,6 +735,19 @@ TEST(JSONReaderTest, IllegalTrailingNull) {
   JSONReader reader;
   EXPECT_FALSE(reader.ReadToValue(json_string));
   EXPECT_EQ(JSONReader::JSON_UNEXPECTED_DATA_AFTER_ROOT, reader.error_code());
+}
+
+TEST(JSONReaderTest, ASCIIControlCodes) {
+  // A literal NUL byte or a literal new line, in a JSON string, should be
+  // rejected. RFC 8259 section 7 says "the characters that MUST be escaped
+  // [include]... the control characters (U+0000 through U+001F)".
+  //
+  // Nonetheless, we accept them, for backwards compatibility.
+  const char json[] = {'"', 'a', '\0', 'b', '\n', 'c', '"'};
+  Optional<Value> root = JSONReader::Read(std::string(json, sizeof(json)));
+  ASSERT_TRUE(root);
+  ASSERT_TRUE(root->is_string());
+  EXPECT_EQ(5u, root->GetString().length());
 }
 
 TEST(JSONReaderTest, MaxNesting) {

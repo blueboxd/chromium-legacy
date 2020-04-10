@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 kijelölve</translation>
 <translation id="2421044535038393232">Szerkesztés folytatása</translation>
 <translation id="2435457462613246316">Jelszó megjelenítése</translation>
-<translation id="2481538920734869610">FIÓK HOZZÁADÁSA</translation>
 <translation id="2497852260688568942">A szinkronizálást letiltotta a rendszergazda</translation>
 <translation id="2500374554657206846">A jelszó mentésére szolgáló lehetőségek</translation>
 <translation id="2523363575747517183">Ez a webhely folyamatosan próbál megnyitni egy másik alkalmazást.</translation>
@@ -480,7 +479,6 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7203585745079012652">Mondja ki a válaszokat</translation>
 <translation id="7265758999917665941">Ezen a webhelyen soha</translation>
 <translation id="7272437679830969316">Nem sikerült ellenőrizni a személyazonosságát. A jelszó nem lett másolva.</translation>
-<translation id="7285236536143823449">BELEEGYEZEM</translation>
 <translation id="7291368939935408496">Jelszavak előkészítése…</translation>
 <translation id="7293171162284876153">A szinkronizálás megkezdéséhez kapcsolja be a „Chrome-adatok szinkronizálása” beállítást.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> százalék letöltve</translation>
@@ -496,6 +494,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7460314822154045102">A Kamera használata</translation>
 <translation id="7464701184726199289">Az összes eszközről törli a szinkronizált adatokat. A mentett webhelybeállítások nem törlődnek, és tájékozódási alapul szolgálhatnak böngészési szokásait illetően. <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Vállalat neve</translation>
+<translation id="7473891865547856676">Nem, köszönöm</translation>
 <translation id="7481312909269577407">Előre</translation>
 <translation id="750493650310597496">0 kiválasztva</translation>
 <translation id="7514365320538308">Letöltés</translation>
@@ -517,7 +516,6 @@ Mivel fiókját a(z) <ph name="HOSTED_DOMAIN" /> kezeli, Chrome-adatai törölve
 <translation id="7781829728241885113">Tegnap</translation>
 <translation id="778855399387580014">Keresés indítása új Chrome-lapon.</translation>
 <translation id="7791543448312431591">Hozzáadás</translation>
-<translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="7840771868269352570">A kiválasztott elemek törlődnek.</translation>
 <translation id="7856733331829174190">Nem sikerült letölteni</translation>
 <translation id="7859704718976024901">Böngészési előzmények</translation>
@@ -587,6 +585,7 @@ Mivel fiókját a(z) <ph name="HOSTED_DOMAIN" /> kezeli, Chrome-adatai törölve
 <translation id="8870413625673593573">Mostanában bezárt</translation>
 <translation id="8881801611828450202">Kép keresése a(z) <ph name="SEARCH_ENGINE" /> segítségével</translation>
 <translation id="8909135823018751308">Megosztás...</translation>
+<translation id="8917490105272468696">Igen, elfogadom</translation>
 <translation id="895541991026785598">Hibabejelentés</translation>
 <translation id="8976382372951310360">Súgó</translation>
 <translation id="8981454092730389528">Google Tevékenységvezérlők</translation>

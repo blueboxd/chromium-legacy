@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">Heslo pracovného účtu sa nepodarilo synchronizovať s profilom systému Windows, pretože vaša organizácia obmedzila v zariadení aktualizácie hesiel. Obráťte sa na správcu a požiadajte ho o pomoc.</translation>
 <translation id="5186761973554910131">Pri pokuse o zmenu hesla bol zadaný nesprávny názov počítača. Kontaktujte správcu.</translation>
 <translation id="5265714013989877288">Pri zmene hesla systému Windows sa vyskytla chyba, a preto nie je možné pokračovať. Kontaktujte správcu.</translation>
+<translation id="5581861273642234526">S týmto zariadením je už spojený iný pracovný účet. Prihláste sa pomocou svojho účtu Windows.</translation>
 <translation id="6033715878377252112">Pomocník poskytovateľa poverení Google pre Windows</translation>
 <translation id="6149399665202317746">Poskytovateľ poverení Google pre Windows</translation>
 <translation id="6243062314475217481">Heslo pracovného účtu nespĺňa požiadavky zložitosti systému Windows. Obráťte sa na správcu a požiadajte ho o pomoc.</translation>

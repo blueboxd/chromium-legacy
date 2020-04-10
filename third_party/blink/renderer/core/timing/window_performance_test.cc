@@ -350,8 +350,7 @@ TEST_F(WindowPerformanceTest, FirstInput) {
     bool should_report;
   } inputs[] = {{"click", true},     {"keydown", true},
                 {"keypress", false}, {"pointerdown", false},
-                {"mousedown", true}, {"mousemove", false},
-                {"mouseover", false}};
+                {"mousedown", true}, {"mouseover", false}};
   for (const auto& input : inputs) {
     // first-input does not have a |duration| threshold so use close values.
     performance_->RegisterEventTiming(
@@ -370,7 +369,7 @@ TEST_F(WindowPerformanceTest, FirstInput) {
 // Test that the 'firstInput' is populated after some irrelevant events are
 // ignored.
 TEST_F(WindowPerformanceTest, FirstInputAfterIgnored) {
-  AtomicString several_events[] = {"mousemove", "mouseover", "mousedown"};
+  AtomicString several_events[] = {"mouseover", "mousedown", "pointerup"};
   for (const auto& event : several_events) {
     performance_->RegisterEventTiming(
         event, GetTimeOrigin(),

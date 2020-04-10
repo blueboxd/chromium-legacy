@@ -1647,7 +1647,7 @@ class MetaBuildWrapper(object):
           '../../testing/test_env.py',
           '../../build/android/test_wrapper/logdog_wrapper.py',
           '--target', target,
-          '--logdog-bin-cmd', '../../bin/logdog_butler',
+          '--logdog-bin-cmd', '../../.task_template_packages/logdog_butler',
           '--store-tombstones']
       if clang_coverage or java_coverage:
         cmdline += ['--coverage-dir', '${ISOLATED_OUTDIR}']

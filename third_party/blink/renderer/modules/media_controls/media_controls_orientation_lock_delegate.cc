@@ -69,7 +69,8 @@ constexpr base::TimeDelta MediaControlsOrientationLockDelegate::kLockToAnyDelay;
 
 MediaControlsOrientationLockDelegate::MediaControlsOrientationLockDelegate(
     HTMLVideoElement& video)
-    : video_element_(video) {
+    : monitor_(video.GetDocument().ToExecutionContext()),
+      video_element_(video) {
   if (VideoElement().isConnected())
     Attach();
 }
@@ -187,7 +188,8 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
 #if defined(OS_ANDROID)
   DCHECK(!monitor_.is_bound());
   Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-      monitor_.BindNewPipeAndPassReceiver());
+      monitor_.BindNewPipeAndPassReceiver(
+          GetDocument().GetTaskRunner(TaskType::kMediaElementEvent)));
   monitor_->IsAutoRotateEnabledByUser(WTF::Bind(
       &MediaControlsOrientationLockDelegate::GotIsAutoRotateEnabledByUser,
       WrapPersistent(this)));
@@ -438,6 +440,7 @@ void MediaControlsOrientationLockDelegate::
 
 void MediaControlsOrientationLockDelegate::Trace(Visitor* visitor) {
   NativeEventListener::Trace(visitor);
+  visitor->Trace(monitor_);
   visitor->Trace(video_element_);
 }
 

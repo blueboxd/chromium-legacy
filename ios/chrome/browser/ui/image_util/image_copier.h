@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+class Browser;
 class GURL;
 
 namespace web {
@@ -18,8 +19,8 @@ class WebState;
 @interface ImageCopier : NSObject
 
 // Init the ImageCopier with a |baseViewController| used to display alerts.
-- (instancetype)initWithBaseViewController:
-    (UIViewController*)baseViewController;
+- (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
+                                   browser:(Browser*)browser;
 
 // Copies the image at |url|. |web_state| is used for fetching image data by
 // JavaScript. |referrer| is used for download.

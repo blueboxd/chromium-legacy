@@ -50,7 +50,7 @@ mojom("mojom") {
   if (is_android) {
     sources += [ "android_overlay.mojom" ]
   } else {
-    sources += [ "soda_service.mojom" ]
+    sources += [ "speech_recognition_service.mojom" ]
   }
 
   if (is_chromecast) {

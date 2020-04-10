@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">Počet vybratých fotografií: 1</translation>
 <translation id="2421044535038393232">Ďalej upravovať</translation>
 <translation id="2435457462613246316">Zobraziť heslo</translation>
-<translation id="2481538920734869610">PRIDAŤ ÚČET</translation>
 <translation id="2497852260688568942">Synchronizácia je zakázaná správcom</translation>
 <translation id="2500374554657206846">Možnosti uloženia hesla</translation>
 <translation id="2523363575747517183">Tento web sa opakovane pokúša otvoriť ďalšiu aplikáciu.</translation>
@@ -480,7 +479,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7203585745079012652">Vysloviť odpovede</translation>
 <translation id="7265758999917665941">Nikdy pre tento web</translation>
 <translation id="7272437679830969316">Vašu totožnosť nie je možné overiť. Heslo sa neskopírovalo.</translation>
-<translation id="7285236536143823449">ÁNO, SÚHLASÍM</translation>
 <translation id="7291368939935408496">Pripravujú sa heslá...</translation>
 <translation id="7293171162284876153">Ak chcete spustiť synchronizáciu, zapnite možnosť „Synchronizovať údaje Chromu“.</translation>
 <translation id="7336264872878993241">Stiahnuté: <ph name="PERCENT" /> percent</translation>
@@ -496,6 +494,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7460314822154045102">Použiť fotoaparát</translation>
 <translation id="7464701184726199289">Táto akcia vymaže synchronizované údaje zo všetkých zariadení. Uložené nastavenia webov sa neodstránia a môžu odrážať vaše návyky prehliadania. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Názov spoločnosti</translation>
+<translation id="7473891865547856676">Nie, ďakujem</translation>
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="750493650310597496">Počet vybraných záložiek: 0</translation>
 <translation id="7514365320538308">Stiahnuť</translation>
@@ -517,7 +516,6 @@ Váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, takže vaše údaje C
 <translation id="7781829728241885113">Včera</translation>
 <translation id="778855399387580014">Začnite vyhľadávanie na novej karte Chrome.</translation>
 <translation id="7791543448312431591">Pridať</translation>
-<translation id="780301667611848630">Nie, ďakujem</translation>
 <translation id="7840771868269352570">Vybrané položky budú odstránené.</translation>
 <translation id="7856733331829174190">Sťahovanie zlyhalo</translation>
 <translation id="7859704718976024901">História prehliadania</translation>
@@ -587,6 +585,7 @@ Váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, takže vaše údaje C
 <translation id="8870413625673593573">Nedávno zatvorené</translation>
 <translation id="8881801611828450202">Hľadať tento obrázok v službe <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Zdieľať…</translation>
+<translation id="8917490105272468696">Áno, súhlasím</translation>
 <translation id="895541991026785598">Nahlásiť problém</translation>
 <translation id="8976382372951310360">Pomocník</translation>
 <translation id="8981454092730389528">Riadenie aktivity Google</translation>

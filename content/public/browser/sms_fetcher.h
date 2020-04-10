@@ -25,6 +25,9 @@ class RenderFrameHost;
 // There is one SmsFetcher per profile.
 class SmsFetcher {
  public:
+  SmsFetcher() = default;
+  virtual ~SmsFetcher() = default;
+
   // Retrieval for devices that exclusively listen for SMSes coming from other
   // telephony devices. (eg. desktop)
   CONTENT_EXPORT static SmsFetcher* Get(BrowserContext* context);

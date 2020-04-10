@@ -29,22 +29,13 @@ class WebContentRunner : public fuchsia::sys::Runner {
   // specified OutgoingDirectory.
   // |get_context_params_callback|: Returns parameters for the Runner's
   //     web.Context.
-  // |outgoing_directory|: The directory that the Runner's services will be
-  //     published to.
-  WebContentRunner(GetContextParamsCallback get_context_params_callback,
-                   sys::OutgoingDirectory* outgoing_directory);
-
-  // Creates a Runner which launches components using the specified |context|.
-  // The caller may publish the Runner, or call StartComponent() manually to
-  // create new components with it.
-  explicit WebContentRunner(fuchsia::web::ContextPtr context);
+  explicit WebContentRunner(
+      GetContextParamsCallback get_context_params_callback);
 
   ~WebContentRunner() override;
 
-  // TODO(crbug.com/1046615): Make this static when the injected ContextProvider
-  // goes away.
-  fuchsia::web::ContextPtr CreateWebContext(
-      fuchsia::web::CreateContextParams context_params);
+  // Publishes the fuchsia.sys.Runner service to |outgoing_directory|.
+  void PublishRunnerService(sys::OutgoingDirectory* outgoing_directory);
 
   // Gets a pointer to this runner's Context, creating one if needed.
   fuchsia::web::Context* GetContext();
@@ -59,37 +50,24 @@ class WebContentRunner : public fuchsia::sys::Runner {
                       fidl::InterfaceRequest<fuchsia::sys::ComponentController>
                           controller_request) override;
 
-  // Used by tests to asynchronously access the first WebComponent.
-  void SetWebComponentCreatedCallbackForTest(
-      base::RepeatingCallback<void(WebComponent*)> callback);
-
   // Registers a WebComponent, or specialization, with this Runner.
   void RegisterComponent(std::unique_ptr<WebComponent> component);
 
-  // Overrides the environment's the ContextProvider to use.
-  // TODO(crbug.com/1046615): Use test manifests for package specification.
-  void SetContextProviderForTest(
-      fuchsia::web::ContextProviderPtr context_provider);
-
-  // Disconnects the Context used by this Runner.
-  void DisconnectContextForTest();
+  // Sets a callback that's called when the context is lost.
+  void SetOnContextLostCallback(base::OnceClosure callback);
 
  protected:
-  base::RepeatingCallback<void(WebComponent*)>
-  web_component_created_callback_for_test() const {
-    return web_component_created_callback_for_test_;
-  }
+  // Returns a pointer to any currently running component, or nullptr if no
+  // components are currently running.
+  WebComponent* GetAnyComponent();
 
  private:
-  fuchsia::web::ContextProvider* GetContextProvider();
-
   const GetContextParamsCallback get_context_params_callback_;
 
   // If set, invoked whenever a WebComponent is created.
   base::RepeatingCallback<void(WebComponent*)>
       web_component_created_callback_for_test_;
 
-  fuchsia::web::ContextProviderPtr context_provider_;
   fuchsia::web::ContextPtr context_;
   std::set<std::unique_ptr<WebComponent>, base::UniquePtrComparator>
       components_;
@@ -98,6 +76,8 @@ class WebContentRunner : public fuchsia::sys::Runner {
   // This is not set for child runner instances.
   base::Optional<base::fuchsia::ScopedServiceBinding<fuchsia::sys::Runner>>
       service_binding_;
+
+  base::OnceClosure on_context_lost_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentRunner);
 };

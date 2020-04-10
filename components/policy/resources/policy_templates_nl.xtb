@@ -4515,7 +4515,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling 'Bescherming tegen phishing en malware inschakelen' in <ph name="PRODUCT_NAME" /> niet wijzigen of overschrijven.
 
-      Als dit beleid niet is ingesteld, is het beleid ingeschakeld, maar kan de gebruiker dit wijzigen.
+      Als dit beleid niet is ingesteld, is Safe Browsing ingeschakeld, maar kan de gebruiker dit wijzigen.
 
       Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.
 

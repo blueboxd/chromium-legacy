@@ -37,7 +37,6 @@
 #include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/browser/worker_host/shared_worker_connector_impl.h"
 #include "content/browser/worker_host/shared_worker_host.h"
-#include "content/browser/xr/service/vr_service_impl.h"
 #include "content/common/input/input_injector.mojom.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
@@ -46,12 +45,12 @@
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_instance.h"
+#include "content/public/browser/webvr_service_provider.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "device/gamepad/gamepad_monitor.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
-#include "device/vr/buildflags/buildflags.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "media/capture/mojom/image_capture.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom-forward.h"
@@ -117,7 +116,7 @@
 #if !defined(OS_ANDROID)
 #include "content/browser/installedapp/installed_app_provider_impl.h"
 #include "content/public/common/content_switches.h"
-#include "media/mojo/mojom/soda_service.mojom.h"
+#include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #endif
@@ -669,8 +668,8 @@ void PopulateBinderMapWithContext(
   map->Add<blink::mojom::AnchorElementMetricsHost>(base::BindRepeating(
       &EmptyBinderForFrame<blink::mojom::AnchorElementMetricsHost>));
 #if !defined(OS_ANDROID)
-  map->Add<media::mojom::SodaContext>(
-      base::BindRepeating(&EmptyBinderForFrame<media::mojom::SodaContext>));
+  map->Add<media::mojom::SpeechRecognitionContext>(base::BindRepeating(
+      &EmptyBinderForFrame<media::mojom::SpeechRecognitionContext>));
 #endif
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
   map->Add<blink::mojom::UnhandledTapNotifier>(base::BindRepeating(
@@ -695,13 +694,8 @@ void PopulateBinderMapWithContext(
       base::BindRepeating(&PictureInPictureServiceImpl::Create));
   map->Add<blink::mojom::WakeLockService>(
       base::BindRepeating(&WakeLockServiceImpl::Create));
-#if BUILDFLAG(ENABLE_VR)
   map->Add<device::mojom::VRService>(
-      base::BindRepeating(&VRServiceImpl::Create));
-#else
-  map->Add<device::mojom::VRService>(
-      base::BindRepeating(&EmptyBinderForFrame<device::mojom::VRService>));
-#endif
+      base::BindRepeating(&WebvrServiceProvider::BindWebvrService));
   map->Add<::mojom::ProcessInternalsHandler>(
       base::BindRepeating(&BindProcessInternalsHandler));
 #if defined(OS_ANDROID)

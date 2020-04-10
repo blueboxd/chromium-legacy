@@ -17,7 +17,6 @@
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
@@ -158,15 +157,13 @@ class WorkspaceWindowResizerTest : public AshTestBase {
   // Returns a string identifying the z-order of each of the known child windows
   // of |parent|.  The returned string constains the id of the known windows and
   // is ordered from topmost to bottomost windows.
-  std::string WindowOrderAsString(aura::Window* parent) const {
-    std::string result;
+  std::vector<int> WindowOrderAsIntVector(aura::Window* parent) const {
+    std::vector<int> result;
     const aura::Window::Windows& windows = parent->children();
     for (aura::Window::Windows::const_reverse_iterator i = windows.rbegin();
          i != windows.rend(); ++i) {
       if (*i == window_.get() || *i == window2_.get() || *i == window3_.get()) {
-        if (!result.empty())
-          result += " ";
-        result += base::NumberToString((*i)->id());
+        result.push_back((*i)->id());
       }
     }
     return result;
@@ -633,10 +630,9 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     EXPECT_EQ(root_windows[0], window_->GetRootWindow());
     resizer->CompleteDrag();
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
-    EXPECT_EQ("0,0 250x" + base::NumberToString(bottom),
-              window_->bounds().ToString());
-    EXPECT_EQ("820,30 400x60",
-              window_state->GetRestoreBoundsInScreen().ToString());
+    EXPECT_EQ(gfx::Rect(250, bottom), window_->bounds());
+    EXPECT_EQ(gfx::Rect(820, 30, 400, 60),
+              window_state->GetRestoreBoundsInScreen());
   }
 
   // Restore the window to clear snapped state.
@@ -658,10 +654,9 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
         screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
     resizer->CompleteDrag();
     // TODO(varkha): Insets are updated because of http://crbug.com/292238
-    EXPECT_EQ("250,0 250x" + base::NumberToString(bottom),
-              window_->bounds().ToString());
-    EXPECT_EQ("820,30 400x60",
-              window_state->GetRestoreBoundsInScreen().ToString());
+    EXPECT_EQ(gfx::Rect(250, 0, 250, bottom), window_->bounds());
+    EXPECT_EQ(gfx::Rect(820, 30, 400, 60),
+              window_state->GetRestoreBoundsInScreen());
   }
 }
 
@@ -812,7 +807,8 @@ TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
     resizer->Drag(CalculateDragPoint(*resizer, 100, -10), 0);
 
     // 2 should be topmost since it's initially the highest in the stack.
-    EXPECT_EQ("2 1 3", WindowOrderAsString(window_->parent()));
+    const std::vector<int> expected_order = {2, 1, 3};
+    EXPECT_EQ(expected_order, WindowOrderAsIntVector(window_->parent()));
   }
 
   {
@@ -826,7 +822,8 @@ TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
     resizer->Drag(CalculateDragPoint(*resizer, 100, -10), 0);
 
     // 2 should be topmost since it's initially the highest in the stack.
-    EXPECT_EQ("2 3 1", WindowOrderAsString(window_->parent()));
+    const std::vector<int> expected_order = {2, 3, 1};
+    EXPECT_EQ(expected_order, WindowOrderAsIntVector(window_->parent()));
   }
 }
 
@@ -844,8 +841,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
   resizer->Drag(CalculateDragPoint(*resizer, 0, 600), 0);
   int expected_y =
       kRootHeight - WorkspaceWindowResizer::kMinOnscreenHeight - 10;
-  EXPECT_EQ("100," + base::NumberToString(expected_y) + " 300x400",
-            window_->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(100, expected_y, 300, 400), window_->bounds());
 }
 
 // Makes sure we don't allow dragging on the work area with multidisplay.
@@ -874,8 +870,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
     // When the mouse cursor is in the primary display, the window cannot move
     // on non-work area but can get all the way towards the bottom,
     // restricted only by the window height.
-    EXPECT_EQ("100," + base::NumberToString(expected_y) + " 300x20",
-              window_->bounds().ToString());
+    EXPECT_EQ(gfx::Rect(100, expected_y, 300, 20), window_->bounds());
     // Revert the drag in order to not remember the restore bounds.
     resizer->RevertDrag();
   }
@@ -893,8 +888,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
         kRootHeight - WorkspaceWindowResizer::kMinOnscreenHeight - 10;
     // When the mouse cursor is in the primary display, the window cannot move
     // on non-work area with kMinOnscreenHeight margin.
-    EXPECT_EQ("100," + base::NumberToString(expected_y) + " 300x400",
-              window_->bounds().ToString());
+    EXPECT_EQ(gfx::Rect(100, expected_y, 300, 400), window_->bounds());
     resizer->CompleteDrag();
   }
 
@@ -949,9 +943,8 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
       window_.get(), gfx::Point(pixels_to_left_border, 0), HTRIGHT));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, -window_width, 0), 0);
-  EXPECT_EQ(base::NumberToString(window_x) + ",100 " +
-                base::NumberToString(kMinimumOnScreenArea - window_x) + "x380",
-            window_->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(window_x, 100, kMinimumOnScreenArea - window_x, 380),
+            window_->bounds());
 }
 
 TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
@@ -967,11 +960,11 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
       CreateResizerForTest(window_.get(), gfx::Point(window_x, 0), HTLEFT));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
-  EXPECT_EQ(base::NumberToString(right - kMinimumOnScreenArea) + ",100 " +
-                base::NumberToString(window_width - pixels_to_right_border +
-                                     kMinimumOnScreenArea) +
-                "x380",
-            window_->bounds().ToString());
+  EXPECT_EQ(
+      gfx::Rect(right - kMinimumOnScreenArea, 100,
+                window_width - pixels_to_right_border + kMinimumOnScreenArea,
+                380),
+      window_->bounds());
 }
 
 TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
@@ -986,11 +979,9 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
       window_.get(), gfx::Point(0, bottom - delta_to_bottom), HTTOP));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, 0, bottom), 0);
-  EXPECT_EQ("100," + base::NumberToString(bottom - kMinimumOnScreenArea) +
-                " 300x" +
-                base::NumberToString(height -
-                                     (delta_to_bottom - kMinimumOnScreenArea)),
-            window_->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(100, bottom - kMinimumOnScreenArea, 300,
+                      height - (delta_to_bottom - kMinimumOnScreenArea)),
+            window_->bounds());
 }
 
 // Verifies that 'outside' check of the resizer take into account the extended
@@ -1010,9 +1001,8 @@ TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
       CreateResizerForTest(window_.get(), gfx::Point(window_x, 0), HTCAPTION));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
-  EXPECT_EQ(base::NumberToString(right - kMinimumOnScreenArea) + ",100 " +
-                base::NumberToString(window_width) + "x380",
-            window_->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(right - kMinimumOnScreenArea, 100, window_width, 380),
+            window_->bounds());
 
   // With secondary display.  Operation itself is same but doesn't change
   // the position because the window is still within the secondary display.
@@ -1021,9 +1011,8 @@ TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
                                          gfx::Insets(0, 0, 50, 0));
   window_->SetBounds(gfx::Rect(window_x, 100, window_width, 380));
   resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
-  EXPECT_EQ(base::NumberToString(window_x + window_width) + ",100 " +
-                base::NumberToString(window_width) + "x380",
-            window_->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(window_x + window_width, 100, window_width, 380),
+            window_->bounds());
 }
 
 // Verifies snapping to edges works.

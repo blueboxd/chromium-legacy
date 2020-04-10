@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 seleccionada</translation>
 <translation id="2421044535038393232">Continua editant</translation>
 <translation id="2435457462613246316">Mostra la contrasenya</translation>
-<translation id="2481538920734869610">AFEGEIX UN COMPTE</translation>
 <translation id="2497852260688568942">L'administrador ha desactivat la sincronització</translation>
 <translation id="2500374554657206846">Opcions per desar la contrasenya</translation>
 <translation id="2523363575747517183">Aquest lloc web està provant d'obrir una altra aplicació repetidament.</translation>
@@ -480,7 +479,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7203585745079012652">Pronuncia les respostes</translation>
 <translation id="7265758999917665941">Mai per a aquest lloc web</translation>
 <translation id="7272437679830969316">No es pot verificar la teva identitat. La contrasenya no s'ha copiat.</translation>
-<translation id="7285236536143823449">SÍ, HO ACCEPTO</translation>
 <translation id="7291368939935408496">S'estan preparant les contrasenyes...</translation>
 <translation id="7293171162284876153">Per iniciar la sincronització, activa l'opció Sincronitza les dades de Chrome.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> per cent baixat</translation>
@@ -496,6 +494,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7460314822154045102">Utilitza la càmera</translation>
 <translation id="7464701184726199289">S'esborraran les dades sincronitzades de tots els dispositius. La configuració desada del lloc no se suprimirà i és possible que reflecteixi els vostres hàbits de navegació. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Nom de l'empresa</translation>
+<translation id="7473891865547856676">No, gràcies</translation>
 <translation id="7481312909269577407">Endavant</translation>
 <translation id="750493650310597496">No se n'ha seleccionat cap</translation>
 <translation id="7514365320538308">Baixa</translation>
@@ -517,7 +516,6 @@ Com que <ph name="HOSTED_DOMAIN" /> gestiona el teu compte, les dades de Chrome 
 <translation id="7781829728241885113">Ahir</translation>
 <translation id="778855399387580014">Inicia una cerca en una pestanya nova de Chrome.</translation>
 <translation id="7791543448312431591">Afegeix</translation>
-<translation id="780301667611848630">No, gràcies</translation>
 <translation id="7840771868269352570">Els elements seleccionats se suprimiran.</translation>
 <translation id="7856733331829174190">No s'ha pogut baixar</translation>
 <translation id="7859704718976024901">Historial de navegació</translation>
@@ -587,6 +585,7 @@ Com que <ph name="HOSTED_DOMAIN" /> gestiona el teu compte, les dades de Chrome 
 <translation id="8870413625673593573">Tancades recentment</translation>
 <translation id="8881801611828450202">Cerca aquesta imatge a <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Comparteix...</translation>
+<translation id="8917490105272468696">Sí, ho accepto</translation>
 <translation id="895541991026785598">Informa d'un problema</translation>
 <translation id="8976382372951310360">Ajuda</translation>
 <translation id="8981454092730389528">Controls d'activitat de Google</translation>

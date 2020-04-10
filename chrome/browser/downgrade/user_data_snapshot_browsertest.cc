@@ -18,7 +18,6 @@
 #include "base/test/mock_callback.h"
 #include "base/time/time.h"
 #include "base/version.h"
-#include "build/branding_buildflags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/downgrade/downgrade_manager.h"
 #include "chrome/browser/first_run/scoped_relaunch_chrome_browser_override.h"
@@ -45,12 +44,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include "base/threading/thread_restrictions.h"
-#include "chrome/install_static/install_modes.h"
-#include "chrome/install_static/test/scoped_install_details.h"
-#endif
 
 namespace downgrade {
 
@@ -423,82 +416,5 @@ IN_PROC_BROWSER_TEST_F(TabsSnapshotTest, PRE_PRE_PRE_Test) {}
 IN_PROC_BROWSER_TEST_F(TabsSnapshotTest, PRE_PRE_Test) {}
 IN_PROC_BROWSER_TEST_F(TabsSnapshotTest, PRE_Test) {}
 IN_PROC_BROWSER_TEST_F(TabsSnapshotTest, Test) {}
-
-// Tests that Google Chrome does not takes snapshots on mid-milestone updates.
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, SameMilestoneSnapshot) {
-  DowngradeManager::EnableSnapshotsForTesting(true);
-  base::ScopedAllowBlockingForTesting scoped_allow_blocking;
-  base::FilePath user_data_dir;
-  ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-  auto current_version = version_info::GetVersion().GetString();
-
-  downgrade::DowngradeManager downgrade_manager;
-
-  // No snapshots for same version.
-  base::WriteFile(user_data_dir.Append(kDowngradeLastVersionFile),
-                  current_version.c_str(), current_version.size());
-  EXPECT_FALSE(downgrade_manager.PrepareUserDataDirectoryForCurrentVersion(
-      user_data_dir));
-  EXPECT_FALSE(
-      base::PathExists(user_data_dir.Append(downgrade::kSnapshotsDir)));
-
-  // Snapshot taken for minor update
-  std::vector<uint32_t> last_minor_version_components;
-  for (const auto& component : version_info::GetVersion().components()) {
-    // Decrement all but the major version.
-    last_minor_version_components.push_back(
-        !last_minor_version_components.empty() && component > 0 ? component - 1
-                                                                : component);
-  }
-  auto last_minor_version =
-      base::Version(last_minor_version_components).GetString();
-  base::WriteFile(user_data_dir.Append(kDowngradeLastVersionFile),
-                  last_minor_version.c_str(), last_minor_version.size());
-
-  EXPECT_FALSE(downgrade_manager.PrepareUserDataDirectoryForCurrentVersion(
-      user_data_dir));
-  EXPECT_FALSE(
-      base::PathExists(user_data_dir.Append(downgrade::kSnapshotsDir)));
-}
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-// Tests that Google Chrome canary takes snapshots on mid-milestone updates.
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, CanarySameMilestoneSnapshot) {
-  DowngradeManager::EnableSnapshotsForTesting(true);
-  install_static::ScopedInstallDetails install_details(
-      /*system_level=*/false, install_static::CANARY_INDEX);
-  base::ScopedAllowBlockingForTesting scoped_allow_blocking;
-  base::FilePath user_data_dir;
-  ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-  auto current_version = version_info::GetVersion().GetString();
-
-  downgrade::DowngradeManager downgrade_manager;
-
-  // No snapshots for same version.
-  base::WriteFile(user_data_dir.Append(kDowngradeLastVersionFile),
-                  current_version.c_str(), current_version.size());
-  EXPECT_FALSE(downgrade_manager.PrepareUserDataDirectoryForCurrentVersion(
-      user_data_dir));
-  EXPECT_FALSE(
-      base::PathExists(user_data_dir.Append(downgrade::kSnapshotsDir)));
-
-  // Snapshot taken for minor update
-  std::vector<uint32_t> last_minor_version_components;
-  for (const auto& component : version_info::GetVersion().components()) {
-    // Decrement all but the major version.
-    last_minor_version_components.push_back(
-        !last_minor_version_components.empty() && component > 0 ? component - 1
-                                                                : component);
-  }
-  auto last_minor_version =
-      base::Version(last_minor_version_components).GetString();
-  base::WriteFile(user_data_dir.Append(kDowngradeLastVersionFile),
-                  last_minor_version.c_str(), last_minor_version.size());
-
-  EXPECT_FALSE(downgrade_manager.PrepareUserDataDirectoryForCurrentVersion(
-      user_data_dir));
-  EXPECT_TRUE(base::PathExists(user_data_dir.Append(downgrade::kSnapshotsDir)));
-}
-#endif
 
 }  // namespace downgrade

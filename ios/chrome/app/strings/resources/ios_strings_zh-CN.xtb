@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">已选择 1 张</translation>
 <translation id="2421044535038393232">继续修改</translation>
 <translation id="2435457462613246316">显示密码</translation>
-<translation id="2481538920734869610">添加帐号</translation>
 <translation id="2497852260688568942">您的管理员已停用同步</translation>
 <translation id="2500374554657206846">保存密码的选项</translation>
 <translation id="2523363575747517183">该网站屡次尝试打开其他应用。</translation>
@@ -480,7 +479,6 @@
 <translation id="7203585745079012652">说出答案</translation>
 <translation id="7265758999917665941">此网站一律不保存密码</translation>
 <translation id="7272437679830969316">无法验证您的身份。未复制密码。</translation>
-<translation id="7285236536143823449">立即启用</translation>
 <translation id="7291368939935408496">正在准备密码…</translation>
 <translation id="7293171162284876153">要开始同步，请开启“同步 Chrome 数据”。</translation>
 <translation id="7336264872878993241">已下载<ph name="PERCENT" />%</translation>
@@ -496,6 +494,7 @@
 <translation id="7460314822154045102">使用相机</translation>
 <translation id="7464701184726199289">这将清除所有设备上的已同步数据。已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">公司名称</translation>
+<translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="750493650310597496">未选中任何项</translation>
 <translation id="7514365320538308">下载</translation>
@@ -517,7 +516,6 @@
 <translation id="7781829728241885113">昨天</translation>
 <translation id="778855399387580014">在新的 Chrome 标签页中发起搜索。</translation>
 <translation id="7791543448312431591">添加</translation>
-<translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7840771868269352570">系统将会移除您所选的各项内容。</translation>
 <translation id="7856733331829174190">无法下载</translation>
 <translation id="7859704718976024901">浏览记录</translation>
@@ -587,6 +585,7 @@
 <translation id="8870413625673593573">最近关闭的标签页</translation>
 <translation id="8881801611828450202">在 <ph name="SEARCH_ENGINE" /> 中搜索此图片</translation>
 <translation id="8909135823018751308">分享…</translation>
+<translation id="8917490105272468696">我同意</translation>
 <translation id="895541991026785598">报告问题</translation>
 <translation id="8976382372951310360">帮助</translation>
 <translation id="8981454092730389528">Google 活动控件</translation>

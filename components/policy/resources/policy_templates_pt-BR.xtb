@@ -4419,7 +4419,7 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7687943045976362719">Se esta política for definida, os tipos de conteúdo especificados serão processados pelo <ph name="PRODUCT_FRAME_NAME" />.
 
 Se esta política não for definida, o renderizador padrão será usado para todos os sites. A política <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> pode ser usada para configurar o renderizador padrão.</translation>
-<translation id="7691028179743802462">Essa política está obsoleta na versão M83, use a SafeBrowsingProtectionLevel.
+<translation id="7691028179743802462">Essa política está obsoleta na versão M83. Use a SafeBrowsingProtectionLevel.
 
       Ativa o recurso "Navegação segura" do <ph name="PRODUCT_NAME" /> e impede que os usuários mudem essa configuração.
 
@@ -4429,7 +4429,7 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 
       Se você ativar ou desativar essa configuração, os usuários não poderão mudar ou substituir a configuração "Ativar proteção contra phishing e malware" no <ph name="PRODUCT_NAME" />.
 
-      Se esta política não for definida, a configuração será ativada, mas os usuários não poderão mudá-la.
+      Se esta política não for definida, a configuração será ativada, mas os usuários poderão mudá-la.
 
       Consulte https://developers.google.com/safe-browsing (em inglês) para ver mais informações sobre o "Navegação segura".
 

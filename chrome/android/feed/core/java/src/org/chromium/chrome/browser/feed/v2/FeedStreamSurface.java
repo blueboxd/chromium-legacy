@@ -131,6 +131,12 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         void reportSliceViewed(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, String sliceId);
         // TODO(jianli): Call this function at the appropriate time.
+        void reportSendFeedbackAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
+        // TODO(jianli): Call this function at the appropriate time.
+        void reportLearnMoreAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
+        // TODO(jianli): Call this function at the appropriate time.
+        void reportDownloadAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
+        // TODO(jianli): Call this function at the appropriate time.
         void reportNavigationDone(long nativeFeedStreamSurface, FeedStreamSurface caller,
                 String url, boolean inNewTab);
         // TODO(jianli): Call this function at the appropriate time.

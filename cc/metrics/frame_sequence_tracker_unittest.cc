@@ -229,7 +229,7 @@ class FrameSequenceTrackerTest : public testing::Test {
 
   void ReportMetrics() { tracker_->metrics_->ReportMetrics(); }
 
-  base::TimeDelta TimeDeltaToReort() const {
+  base::TimeDelta TimeDeltaToReport() const {
     return tracker_->time_delta_to_report_;
   }
 
@@ -246,6 +246,7 @@ class FrameSequenceTrackerTest : public testing::Test {
   uint64_t BeginImplFrameDataPreviousSequence() const {
     return tracker_->begin_impl_frame_data_.previous_sequence;
   }
+
   uint64_t BeginMainFrameDataPreviousSequence() const {
     return tracker_->begin_main_frame_data_.previous_sequence;
   }
@@ -257,31 +258,28 @@ class FrameSequenceTrackerTest : public testing::Test {
   FrameSequenceMetrics::ThroughputData& ImplThroughput() const {
     return tracker_->impl_throughput();
   }
+
   FrameSequenceMetrics::ThroughputData& MainThroughput() const {
     return tracker_->main_throughput();
   }
+
   FrameSequenceMetrics::ThroughputData& AggregatedThroughput() const {
     return tracker_->aggregated_throughput();
   }
 
-  void SetTerminationStatus(FrameSequenceTracker::TerminationStatus status) {
-    tracker_->termination_status_ = status;
+  FrameSequenceTracker::TerminationStatus GetTerminationStatus(
+      FrameSequenceTracker* tracker) {
+    return tracker->termination_status_;
   }
-
   FrameSequenceTracker::TerminationStatus GetTerminationStatus() {
     return tracker_->termination_status_;
   }
 
-  FrameSequenceTracker::TerminationStatus GetTerminationStatusForTracker(
-      FrameSequenceTracker* tracker) {
-    return tracker->termination_status_;
-  }
-
- protected:
-  uint32_t number_of_frames_checkerboarded() const {
+  uint32_t NumberOfFramesCheckerboarded() const {
     return tracker_->metrics_->frames_checkerboarded();
   }
 
+ protected:
   std::unique_ptr<CompositorFrameReportingController>
       compositor_frame_reporting_controller_;
   FrameSequenceTrackerCollection collection_;
@@ -383,7 +381,7 @@ TEST_F(FrameSequenceTrackerTest, CheckerboardingSimple) {
       gfx::PresentationFeedback(base::TimeTicks::Now() + interval, interval, 0);
   collection_.NotifyFramePresented(frame_token, feedback);
 
-  EXPECT_EQ(1u, number_of_frames_checkerboarded());
+  EXPECT_EQ(1u, NumberOfFramesCheckerboarded());
 }
 
 // Present a single frame with checkerboarding, followed by a non-checkerboard
@@ -414,7 +412,7 @@ TEST_F(FrameSequenceTrackerTest, CheckerboardingMultipleFrames) {
                                        interval, 0);
   collection_.NotifyFramePresented(frame_token, feedback);
 
-  EXPECT_EQ(3u, number_of_frames_checkerboarded());
+  EXPECT_EQ(3u, NumberOfFramesCheckerboarded());
 }
 
 // Present multiple checkerboarded frames, followed by a non-checkerboard
@@ -452,7 +450,7 @@ TEST_F(FrameSequenceTrackerTest, MultipleCheckerboardingFrames) {
   gfx::PresentationFeedback feedback(present_now, interval, 0);
   collection_.NotifyFramePresented(frame_token, feedback);
 
-  EXPECT_EQ(kFrames, number_of_frames_checkerboarded());
+  EXPECT_EQ(kFrames, NumberOfFramesCheckerboarded());
 }
 
 TEST_F(FrameSequenceTrackerTest, ReportMetrics) {
@@ -533,7 +531,7 @@ TEST_F(FrameSequenceTrackerTest, ReportMetricsAtFixedInterval) {
   // Now args.frame_time is 5s since the tracker creation time, so this tracker
   // should be scheduled to report its throughput.
   args = CreateBeginFrameArgs(source, ++sequence,
-                              args.frame_time + TimeDeltaToReort());
+                              args.frame_time + TimeDeltaToReport());
   collection_.NotifyBeginImplFrame(args);
   collection_.NotifyImplFrameCausedNoDamage(viz::BeginFrameAck(args, false));
   collection_.NotifyFrameEnd(args, args);
@@ -1076,13 +1074,13 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame1) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("P(1)");
   // There is still one impl-frame not processed not, so the tracker is not yet
   // ready for termination.
   EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
 }
 
@@ -1100,7 +1098,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame2) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("s(1)e(1,0)P(1)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1128,7 +1126,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame3) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("e(1,0)P(1)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1156,7 +1154,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame4) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("P(1)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1182,11 +1180,11 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame5) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("s(1)P(1)");
   EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
 }
 
@@ -1197,11 +1195,11 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame6) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("P(1)");
   EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
 }
 
@@ -1225,7 +1223,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame7) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("n(2)e(2,0)P(1)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1253,7 +1251,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame8) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("e(2,0)P(1)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1281,7 +1279,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame9) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("P(1)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1304,11 +1302,11 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame10) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("n(2)P(1)");
   EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
 }
 
@@ -1319,11 +1317,11 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame11) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("P(1)");
   EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
 }
 
@@ -1342,7 +1340,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame12) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("n(2)e(2,0)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1370,7 +1368,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame13) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("e(2,0)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1426,7 +1424,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame15) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("s(1)e(1,0)b(2)s(2)e(2,0)P(1)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1454,7 +1452,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame16) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("e(1,0)b(2)s(2)e(2,0)P(1)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1482,7 +1480,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame17) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("b(2)s(2)e(2,0)P(1)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1511,7 +1509,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame18) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("s(1)e(1,0)b(2)n(2)e(2,0)P(1)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1539,7 +1537,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame19) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("e(1,0)b(2)n(2)e(2,0)P(1)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1567,7 +1565,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame20) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("b(2)n(2)e(2,0)P(1)");
   // Now the |removal_tracker| should have been destroyed.
@@ -1597,7 +1595,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame21) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("n(1)e(1,0)");
   // Ensure that this tracker is actually removed from the |removal_trackers_|
@@ -1622,7 +1620,7 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame22) {
   FrameSequenceTracker* removal_tracker =
       collection_.GetRemovalTrackerForTesting(
           FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(GetTerminationStatusForTracker(removal_tracker),
+  EXPECT_EQ(GetTerminationStatus(removal_tracker),
             FrameSequenceTracker::TerminationStatus::kScheduledForTermination);
   GenerateSequence("e(1,0)");
   // Ensure that this tracker is actually removed from the |removal_trackers_|

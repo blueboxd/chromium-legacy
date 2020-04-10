@@ -109,6 +109,9 @@ class FeedStream : public FeedStreamApi,
   bool RejectEphemeralChange(EphemeralChangeId id) override;
 
   void ReportSliceViewed(const std::string& slice_id) override;
+  void ReportSendFeedbackAction() override;
+  void ReportLearnMoreAction() override;
+  void ReportDownloadAction() override;
   void ReportNavigationStarted() override;
   void ReportNavigationDone() override;
   void ReportRemoveAction() override;

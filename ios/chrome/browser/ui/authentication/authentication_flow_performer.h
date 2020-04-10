@@ -71,13 +71,14 @@ class ChromeBrowserState;
 // Shows a confirmation dialog for signing in to an account managed by
 // |hostedDomain|.
 - (void)showManagedConfirmationForHostedDomain:(NSString*)hostedDomain
-                                viewController:
-                                    (UIViewController*)viewController;
+                                viewController:(UIViewController*)viewController
+                                       browser:(Browser*)browser;
 
 // Shows |error| to the user and calls |callback| on dismiss.
 - (void)showAuthenticationError:(NSError*)error
                  withCompletion:(ProceduralBlock)callback
-                 viewController:(UIViewController*)viewController;
+                 viewController:(UIViewController*)viewController
+                        browser:(Browser*)browser;
 
 @property(nonatomic, weak, readonly) id<AuthenticationFlowPerformerDelegate>
     delegate;

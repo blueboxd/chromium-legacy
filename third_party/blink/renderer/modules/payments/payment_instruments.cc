@@ -144,8 +144,10 @@ class PaymentInstrumentParameter final
 };
 
 PaymentInstruments::PaymentInstruments(
-    const mojo::Remote<payments::mojom::blink::PaymentManager>& manager)
-    : manager_(manager) {}
+    const HeapMojoRemote<payments::mojom::blink::PaymentManager,
+                         HeapMojoWrapperMode::kWithoutContextObserver>& manager,
+    ExecutionContext* context)
+    : manager_(manager), permission_service_(context) {}
 
 ScriptPromise PaymentInstruments::deleteInstrument(
     ScriptState* script_state,
@@ -287,12 +289,19 @@ ScriptPromise PaymentInstruments::clear(ScriptState* script_state,
   return promise;
 }
 
+void PaymentInstruments::Trace(Visitor* visitor) {
+  visitor->Trace(permission_service_);
+  ScriptWrappable::Trace(visitor);
+}
+
 mojom::blink::PermissionService* PaymentInstruments::GetPermissionService(
     ScriptState* script_state) {
-  if (!permission_service_) {
+  if (!permission_service_.is_bound()) {
     ConnectToPermissionService(
         ExecutionContext::From(script_state),
-        permission_service_.BindNewPipeAndPassReceiver());
+        permission_service_.BindNewPipeAndPassReceiver(
+            ExecutionContext::From(script_state)
+                ->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
   return permission_service_.get();
 }

@@ -9,7 +9,7 @@
 #include "base/path_service.h"
 #include "components/component_updater/component_updater_paths.h"
 
-namespace soda {
+namespace speech {
 
 constexpr base::FilePath::CharType kSodaInstallationRelativePath[] =
     FILE_PATH_LITERAL("SODA");
@@ -55,4 +55,4 @@ const base::FilePath GetSodaConfigPath() {
                           : soda_dir.Append(kSodaConfigFileRelativePath);
 }
 
-}  // namespace soda
+}  // namespace speech

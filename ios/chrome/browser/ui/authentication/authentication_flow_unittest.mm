@@ -264,8 +264,9 @@ TEST_F(AuthenticationFlowTest, TestFailFetchManagedStatus) {
     [invocation getArgument:&completionBlock atIndex:3];
     completionBlock();
   }] showAuthenticationError:[OCMArg any]
-               withCompletion:[OCMArg any]
-               viewController:view_controller_];
+              withCompletion:[OCMArg any]
+              viewController:view_controller_
+                     browser:browser_.get()];
 
   [authentication_flow_ startSignInWithCompletion:sign_in_completion_];
 
@@ -290,7 +291,8 @@ TEST_F(AuthenticationFlowTest, TestShowManagedConfirmation) {
   [[[performer_ expect] andDo:^(NSInvocation*) {
     [authentication_flow_ didAcceptManagedConfirmation];
   }] showManagedConfirmationForHostedDomain:@"foo.com"
-                              viewController:view_controller_];
+                             viewController:view_controller_
+                                    browser:browser_.get()];
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
     [authentication_flow_ didClearData];

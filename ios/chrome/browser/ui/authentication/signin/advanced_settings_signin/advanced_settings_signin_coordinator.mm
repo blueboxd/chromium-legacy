@@ -191,6 +191,7 @@ using l10n_util::GetNSString;
   RecordAction(UserMetricsAction("Signin_Signin_CancelAdvancedSyncSettings"));
   self.cancelConfirmationAlertCoordinator = [[AlertCoordinator alloc]
       initWithBaseViewController:self.advancedSettingsSigninNavigationController
+                         browser:self.browser
                            title:
                                GetNSString(
                                    IDS_IOS_ADVANCED_SIGNIN_SETTINGS_CANCEL_SYNC_ALERT_TITLE)

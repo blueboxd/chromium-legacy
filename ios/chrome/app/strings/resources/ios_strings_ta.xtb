@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 தேர்ந்தெடுப்பட்டது</translation>
 <translation id="2421044535038393232">தொடர்ந்து திருத்து</translation>
 <translation id="2435457462613246316">கடவுச்சொல்லைக் காண்பி</translation>
-<translation id="2481538920734869610">கணக்கைச் சேர்</translation>
 <translation id="2497852260688568942">உங்கள் நிர்வாகி ஒத்திசைவை முடக்கியுள்ளார்</translation>
 <translation id="2500374554657206846">கடவுச்சொல்லைச் சேமிப்பதற்கான விருப்பத்தேர்வுகள்</translation>
 <translation id="2523363575747517183">இந்த இணையதளம், மற்றொரு பயன்பாட்டைத் திறப்பதற்கு மீண்டும் மீண்டும் முயல்கிறது.</translation>
@@ -480,7 +479,6 @@
 <translation id="7203585745079012652">பதில்களை மீண்டும் படி</translation>
 <translation id="7265758999917665941">இந்தத் தளத்திற்கு எப்போதும் வேண்டாம்</translation>
 <translation id="7272437679830969316">அடையாளத்தைச் சரிபார்க்க முடியவில்லை. கடவுச்சொல் நகலெடுக்கப்படவில்லை.</translation>
-<translation id="7285236536143823449">ஏற்கிறேன்</translation>
 <translation id="7291368939935408496">கடவுச்சொற்கள் தயாராகின்றன...</translation>
 <translation id="7293171162284876153">ஒத்திசைவைத் தொடங்க "Chrome தரவை ஒத்திசை" என்பதை இயக்கவும்.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> சதவீதம் பதிவிறக்கப்பட்டது</translation>
@@ -496,6 +494,7 @@
 <translation id="7460314822154045102">கேமராவைப் பயன்படுத்து</translation>
 <translation id="7464701184726199289">இது எல்லா சாதனங்களிலிருந்தும் ஒத்திசைத்த தரவை அழிக்கும். சேமித்த தள அமைப்புகள் நீக்கப்படாது, அவை உங்கள் உலாவல் தகவல்களைப் பிரதிபலிக்கக்கூடும். <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">நிறுவனப் பெயர்</translation>
+<translation id="7473891865547856676">வேண்டாம் நன்றி</translation>
 <translation id="7481312909269577407">அடுத்த பக்கம்</translation>
 <translation id="750493650310597496">எதுவும் தேர்ந்தெடுக்கப்படவில்லை</translation>
 <translation id="7514365320538308">பதிவிறக்கு</translation>
@@ -517,7 +516,6 @@
 <translation id="7781829728241885113">நேற்று</translation>
 <translation id="778855399387580014">புதிய Chrome தாவலில் தேடலைத் தொடங்கும்.</translation>
 <translation id="7791543448312431591">சேர்</translation>
-<translation id="780301667611848630">தேவையில்லை</translation>
 <translation id="7840771868269352570">நீங்கள் தேர்ந்தெடுத்தவை அகற்றப்படும்.</translation>
 <translation id="7856733331829174190">பதிவிறக்க முடியவில்லை</translation>
 <translation id="7859704718976024901">உலாவல் வரலாறு</translation>
@@ -587,6 +585,7 @@
 <translation id="8870413625673593573">சமீபத்தில் மூடியவை</translation>
 <translation id="8881801611828450202">இந்தப் படத்தை <ph name="SEARCH_ENGINE" /> இல் தேடு</translation>
 <translation id="8909135823018751308">பகிர்...</translation>
+<translation id="8917490105272468696">ஏற்கிறேன்</translation>
 <translation id="895541991026785598">சிக்கலைப் புகார் செய்க</translation>
 <translation id="8976382372951310360">உதவி</translation>
 <translation id="8981454092730389528">Google செயல்பாட்டுக் கட்டுப்பாடுகள்</translation>

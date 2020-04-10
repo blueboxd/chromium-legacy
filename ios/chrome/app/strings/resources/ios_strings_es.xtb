@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 foto seleccionada</translation>
 <translation id="2421044535038393232">Seguir editando</translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
-<translation id="2481538920734869610">AÑADIR CUENTA</translation>
 <translation id="2497852260688568942">El administrador ha inhabilitado la sincronización</translation>
 <translation id="2500374554657206846">Opciones para guardar las contraseñas</translation>
 <translation id="2523363575747517183">Este sitio web está intentando abrir otra aplicación reiteradamente.</translation>
@@ -480,7 +479,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7203585745079012652">Decir las respuestas</translation>
 <translation id="7265758999917665941">Jamás para este sitio web</translation>
 <translation id="7272437679830969316">No se puede verificar tu identidad. No se ha copiado la contraseña.</translation>
-<translation id="7285236536143823449">SÍ, ACEPTO</translation>
 <translation id="7291368939935408496">Preparando contraseñas...</translation>
 <translation id="7293171162284876153">Para iniciar la sincronización, activa "Sincronizar tus datos de Chrome".</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% descargado</translation>
@@ -496,6 +494,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7460314822154045102">Utilizar la cámara</translation>
 <translation id="7464701184726199289">Se borrarán los datos sincronizados de todos los dispositivos. No se eliminará la configuración guardada de los sitios web, lo cual puede reflejar tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Nombre de empresa</translation>
+<translation id="7473891865547856676">No, gracias</translation>
 <translation id="7481312909269577407">Adelante</translation>
 <translation id="750493650310597496">0 seleccionados</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -517,7 +516,6 @@ Tu cuenta está gestionada por <ph name="HOSTED_DOMAIN" />, por lo que tus datos
 <translation id="7781829728241885113">Ayer</translation>
 <translation id="778855399387580014">Inicia una búsqueda en una nueva pestaña de Chrome.</translation>
 <translation id="7791543448312431591">Añadir</translation>
-<translation id="780301667611848630">No, gracias</translation>
 <translation id="7840771868269352570">Se eliminarán los elementos que hayas seleccionado.</translation>
 <translation id="7856733331829174190">No se ha podido descargar</translation>
 <translation id="7859704718976024901">Historial de navegación</translation>
@@ -587,6 +585,7 @@ Tu cuenta está gestionada por <ph name="HOSTED_DOMAIN" />, por lo que tus datos
 <translation id="8870413625673593573">Cerrado recientemente</translation>
 <translation id="8881801611828450202">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Compartir…</translation>
+<translation id="8917490105272468696">Sí, acepto</translation>
 <translation id="895541991026785598">Notificar un problema</translation>
 <translation id="8976382372951310360">Ayuda</translation>
 <translation id="8981454092730389528">Gestión de tu actividad en Google</translation>

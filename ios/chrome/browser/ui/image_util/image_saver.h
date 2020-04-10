@@ -9,6 +9,7 @@
 
 #include "components/image_fetcher/core/request_metadata.h"
 
+class Browser;
 class GURL;
 namespace web {
 class WebState;
@@ -19,8 +20,8 @@ struct Referrer;
 @interface ImageSaver : NSObject
 
 // Init the ImageSaver with a |baseViewController| used to display alerts.
-- (instancetype)initWithBaseViewController:
-    (UIViewController*)baseViewController;
+- (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
+                                   browser:(Browser*)browser;
 
 // Fetches and saves the image at |url| to the system's album. |web_state| is
 // used for fetching image data by JavaScript and must not be nullptr.

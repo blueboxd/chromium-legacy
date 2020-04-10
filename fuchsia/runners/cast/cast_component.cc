@@ -156,7 +156,4 @@ void CastComponent::OnZxHandleSignalled(zx_handle_t handle,
   DCHECK(runner()->is_headless());
 
   frame()->DisableHeadlessRendering();
-
-  if (on_headless_disconnect_cb_)
-    std::move(on_headless_disconnect_cb_).Run();
 }

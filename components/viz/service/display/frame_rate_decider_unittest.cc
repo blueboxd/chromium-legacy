@@ -222,7 +222,7 @@ TEST_F(FrameRateDeciderTest, OptimalFrameSinkIntervelIsPicked) {
     FrameRateDecider::ScopedAggregate scope(frame_rate_decider_.get());
     frame_rate_decider_->OnSurfaceWillBeDrawn(surface1);
   }
-  EXPECT_EQ(display_interval_, FrameRateDecider::UnspecifiedFrameInterval());
+  EXPECT_EQ(display_interval_, min_supported_interval * 2);
 
   UpdateFrame(surface2);
   {

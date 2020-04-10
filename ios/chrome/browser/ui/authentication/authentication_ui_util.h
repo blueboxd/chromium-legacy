@@ -10,13 +10,15 @@
 #include "base/ios/block_types.h"
 
 @class AlertCoordinator;
+class Browser;
 
 // Returns the sign in alert coordinator for |error|. |dismissAction| is called
 // when the dialog is dismissed (the user taps on the Ok button) or cancelled
 // (the alert coordinator is cancelled programatically).
 AlertCoordinator* ErrorCoordinator(NSError* error,
                                    ProceduralBlock dismissAction,
-                                   UIViewController* viewController);
+                                   UIViewController* viewController,
+                                   Browser* browser);
 
 // Returns a message to display, as an error, to the user. This message
 // contains:
@@ -29,6 +31,7 @@ NSString* DialogMessageFromError(NSError* error);
 // Returns the sign in alert coordinator for |error|, with no associated
 // action. An action should be added before starting it.
 AlertCoordinator* ErrorCoordinatorNoItem(NSError* error,
-                                         UIViewController* viewController);
+                                         UIViewController* viewController,
+                                         Browser* browser);
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_AUTHENTICATION_UI_UTIL_H_

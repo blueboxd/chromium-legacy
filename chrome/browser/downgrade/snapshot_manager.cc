@@ -313,8 +313,7 @@ void SnapshotManager::RestoreSnapshot(const base::Version& version) {
 }
 
 void SnapshotManager::PurgeInvalidAndOldSnapshots(
-    int max_number_of_snapshots,
-    base::Optional<uint32_t> milestone) const {
+    int max_number_of_snapshots) const {
   const auto snapshot_dir = user_data_dir_.Append(kSnapshotsDir);
 
   // Move the invalid snapshots within from Snapshots/NN to Snapshots.DELETE/NN.
@@ -330,17 +329,7 @@ void SnapshotManager::PurgeInvalidAndOldSnapshots(
                                "Downgrade.InvalidSnapshotMove.FailureCount");
   }
 
-  base::flat_set<base::Version> available_snapshots =
-      GetAvailableSnapshots(snapshot_dir);
-  if (milestone.has_value()) {
-    // Only consider versions for the specified milestone.
-    available_snapshots.erase(available_snapshots.upper_bound(
-                                  base::Version({*milestone + 1, 0, 0, 0})),
-                              available_snapshots.end());
-    available_snapshots.erase(
-        available_snapshots.begin(),
-        available_snapshots.lower_bound(base::Version({*milestone, 0, 0, 0})));
-  }
+  auto available_snapshots = GetAvailableSnapshots(snapshot_dir);
 
   if (available_snapshots.size() <=
       base::checked_cast<size_t>(max_number_of_snapshots)) {

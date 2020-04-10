@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 चयन गरियो</translation>
 <translation id="2421044535038393232">सम्पादन गरिरहनुहोस्</translation>
 <translation id="2435457462613246316">पासवर्ड देखाउनुहोस्</translation>
-<translation id="2481538920734869610">खाता थप्नुहोस्</translation>
 <translation id="2497852260688568942">तपाईंको प्रशासकले सिंंक असक्षम पार्नुभएको छ।</translation>
 <translation id="2500374554657206846">पासवर्ड सुरक्षित गर्ने विकल्पहरू</translation>
 <translation id="2523363575747517183">यो वेबसाइटले बारम्बार अर्को अनुप्रयोग खोल्ने प्रयास गर्दैछ।</translation>
@@ -480,7 +479,6 @@
 <translation id="7203585745079012652">जवाफहरू पुन: भन्नुहोस्</translation>
 <translation id="7265758999917665941">यो साइटका हकमा कहिल्यै पनि नसम्झनुहोस्</translation>
 <translation id="7272437679830969316">तपाईंको पहिचान पुष्टि गर्न सकिएन। पासवर्डको प्रतिलिपि गरिएको छैन।</translation>
-<translation id="7285236536143823449">हुन्छ, म सहमत छु</translation>
 <translation id="7291368939935408496">पासवर्डहरू निर्यात गर्ने तयारी गरिँदै…</translation>
 <translation id="7293171162284876153">सिंक गर्ने कार्य सुरु गर्न "Chrome को आफ्नो डेटा सिंक गर्नुहोस्"।</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> प्रतिशत डाउनलोड भयो</translation>
@@ -496,6 +494,7 @@
 <translation id="7460314822154045102">क्यामेरा प्रयोग गर्नुहोस्</translation>
 <translation id="7464701184726199289">यसले सबै यन्त्रहरूबाट सिंक गरिएको डेटालाई खाली गर्छ। सुरक्षित गरिएका साइटका सेटिङहरूलाई मेटाइने छैन र त्यसले तपाईँको ब्राउज गर्ने बानीलाई झल्काउन सक्छ। <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">कम्पनीको नाम</translation>
+<translation id="7473891865547856676">पर्दैन, धन्यवाद</translation>
 <translation id="7481312909269577407">अगाडि</translation>
 <translation id="750493650310597496">0 चयन गरियो</translation>
 <translation id="7514365320538308">डाउनलोड गर्नुहोस्</translation>
@@ -517,7 +516,6 @@
 <translation id="7781829728241885113">हिजो</translation>
 <translation id="778855399387580014">Chrome को नयाँ ट्याबमा खोज सुरु गर्नुहोस्।</translation>
 <translation id="7791543448312431591">थप्नुहोस्</translation>
-<translation id="780301667611848630">भयो, धन्यवाद</translation>
 <translation id="7840771868269352570">तपाईंले चयन गर्नुभएका वस्तुहरू हटाइने छन्।</translation>
 <translation id="7856733331829174190">डाउनलोड गर्न सकिएन</translation>
 <translation id="7859704718976024901">ब्राउजिङ इतिहास</translation>
@@ -587,6 +585,7 @@
 <translation id="8870413625673593573">हालै बन्द गरिएको</translation>
 <translation id="8881801611828450202"><ph name="SEARCH_ENGINE" /> मा यो छवि खोज्नुहोस्</translation>
 <translation id="8909135823018751308">साझा गर्नुहोस्...</translation>
+<translation id="8917490105272468696">हो, म सहमत छु</translation>
 <translation id="895541991026785598">समस्या रिपोर्ट गर्नुहोस्</translation>
 <translation id="8976382372951310360">मद्दत</translation>
 <translation id="8981454092730389528">Google गतिविधि नियन्त्रणहरू</translation>

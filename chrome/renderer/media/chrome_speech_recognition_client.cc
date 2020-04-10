@@ -10,13 +10,14 @@
 
 ChromeSpeechRecognitionClient::ChromeSpeechRecognitionClient(
     content::RenderFrame* render_frame) {
-  mojo::PendingReceiver<media::mojom::SodaContext> soda_context_receiver =
-      soda_context_.BindNewPipeAndPassReceiver();
-  soda_context_->BindRecognizer(
-      soda_recognizer_.BindNewPipeAndPassReceiver(),
-      soda_recognition_client_receiver_.BindNewPipeAndPassRemote());
+  mojo::PendingReceiver<media::mojom::SpeechRecognitionContext>
+      speech_recognition_context_receiver =
+          speech_recognition_context_.BindNewPipeAndPassReceiver();
+  speech_recognition_context_->BindRecognizer(
+      speech_recognition_recognizer_.BindNewPipeAndPassReceiver(),
+      speech_recognition_client_receiver_.BindNewPipeAndPassRemote());
   render_frame->GetBrowserInterfaceBroker()->GetInterface(
-      std::move(soda_context_receiver));
+      std::move(speech_recognition_context_receiver));
 }
 
 ChromeSpeechRecognitionClient::~ChromeSpeechRecognitionClient() = default;
@@ -25,15 +26,17 @@ void ChromeSpeechRecognitionClient::AddAudio(
     scoped_refptr<media::AudioBuffer> buffer) {
   DCHECK(buffer);
   if (IsSpeechRecognitionAvailable()) {
-    soda_recognizer_->SendAudioToSoda(ConvertToAudioDataS16(std::move(buffer)));
+    speech_recognition_recognizer_->SendAudioToSpeechRecognitionService(
+        ConvertToAudioDataS16(std::move(buffer)));
   }
 }
 
 bool ChromeSpeechRecognitionClient::IsSpeechRecognitionAvailable() {
-  return soda_recognizer_.is_bound() && soda_recognizer_.is_connected();
+  return speech_recognition_recognizer_.is_bound() &&
+         speech_recognition_recognizer_.is_connected();
 }
 
-void ChromeSpeechRecognitionClient::OnSodaRecognitionEvent(
+void ChromeSpeechRecognitionClient::OnSpeechRecognitionRecognitionEvent(
     const std::string& transcription) {
   // TODO(evliu): Pass the captions to the caption controller.
   NOTIMPLEMENTED();

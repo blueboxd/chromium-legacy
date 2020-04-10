@@ -157,4 +157,18 @@ void ShowCreateChromeAppShortcutsDialog(
     close_callback.Run(true);
 }
 
+void ShowCreateChromeAppShortcutsDialog(
+    gfx::NativeWindow /*parent_window*/,
+    Profile* profile,
+    const std::string& app_id,
+    const base::Callback<void(bool)>& close_callback) {
+  // On Mac, the Applications folder is the only option, so don't bother asking
+  // the user anything. Just create shortcuts.
+  CreateShortcutsForWebApp(web_app::SHORTCUT_CREATION_BY_USER,
+                           web_app::ShortcutLocations(), profile, app_id,
+                           base::DoNothing());
+  if (!close_callback.is_null())
+    close_callback.Run(true);
+}
+
 }  // namespace chrome

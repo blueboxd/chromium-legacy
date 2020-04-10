@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">נבחרה תמונה אחת</translation>
 <translation id="2421044535038393232">המשך העריכה</translation>
 <translation id="2435457462613246316">הצג סיסמה</translation>
-<translation id="2481538920734869610">הוספת חשבון</translation>
 <translation id="2497852260688568942">מנהל המערכת שלך השבית את הסנכרון</translation>
 <translation id="2500374554657206846">אפשרויות לשמירת סיסמה</translation>
 <translation id="2523363575747517183">האתר הזה מנסה שוב ושוב לפתוח אפליקציה אחרת.</translation>
@@ -480,7 +479,6 @@
 <translation id="7203585745079012652">משוב לתשובות על-ידי דיבור</translation>
 <translation id="7265758999917665941">אף פעם עבור אתר זה</translation>
 <translation id="7272437679830969316">לא ניתן לאמת את הזהות שלך. הסיסמה לא הועתקה.</translation>
-<translation id="7285236536143823449">כן, אני רוצה</translation>
 <translation id="7291368939935408496">מכין סיסמאות...</translation>
 <translation id="7293171162284876153">‏כדי להתחיל לסנכרן צריך להפעיל את האפשרות "סנכרון הנתונים מ-Chrome".</translation>
 <translation id="7336264872878993241">הושלמה הורדה של <ph name="PERCENT" /> אחוז</translation>
@@ -496,6 +494,7 @@
 <translation id="7460314822154045102">שימוש במצלמה</translation>
 <translation id="7464701184726199289">פעולה זו מוחקת נתונים מסונכרנים מכל המכשירים. הגדרות אתרים שנשמרו לא יימחקו ועשויות לשקף את הרגלי הגלישה שלך. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">שם החברה</translation>
+<translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7481312909269577407">קדימה</translation>
 <translation id="750493650310597496">0 נבחרו</translation>
 <translation id="7514365320538308">הורדה</translation>
@@ -517,7 +516,6 @@
 <translation id="7781829728241885113">אתמול</translation>
 <translation id="778855399387580014">‏חיפוש בכרטיסיית Chrome חדשה.</translation>
 <translation id="7791543448312431591">הוספה</translation>
-<translation id="780301667611848630">לא תודה</translation>
 <translation id="7840771868269352570">הפריטים שבחרת יוסרו.</translation>
 <translation id="7856733331829174190">ההורדה נכשלה</translation>
 <translation id="7859704718976024901">היסטוריית הגלישה</translation>
@@ -587,6 +585,7 @@
 <translation id="8870413625673593573">נסגרו לאחרונה</translation>
 <translation id="8881801611828450202">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">שיתוף…</translation>
+<translation id="8917490105272468696">כן, מקובל עלי.</translation>
 <translation id="895541991026785598">דיווח על בעיה</translation>
 <translation id="8976382372951310360">עזרה</translation>
 <translation id="8981454092730389528">‏בחירת הפעילויות ב-Google</translation>

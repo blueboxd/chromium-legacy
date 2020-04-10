@@ -54,9 +54,8 @@ SmsFetcher* SmsFetcher::Get(BrowserContext* context,
 void SmsFetcherImpl::Subscribe(const url::Origin& origin,
                                SmsQueue::Subscriber* subscriber) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (subscribers_.HasSubscriber(origin, subscriber))
-    return;
+  // Should not be called multiple times for the same subscriber and origin.
+  DCHECK(!subscribers_.HasSubscriber(origin, subscriber));
 
   subscribers_.Push(origin, subscriber);
 
@@ -73,6 +72,8 @@ void SmsFetcherImpl::Subscribe(const url::Origin& origin,
 
 void SmsFetcherImpl::Unsubscribe(const url::Origin& origin,
                                  SmsQueue::Subscriber* subscriber) {
+  // Unsubscribe does not make a call to the provider because currently there
+  // is no mechanism to cancel a subscription.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   subscribers_.Remove(origin, subscriber);
 }
@@ -80,13 +81,13 @@ void SmsFetcherImpl::Unsubscribe(const url::Origin& origin,
 bool SmsFetcherImpl::Notify(const url::Origin& origin,
                             const std::string& one_time_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // The received OTP is returned to the first subscriber for the origin.
   auto* subscriber = subscribers_.Pop(origin);
 
   if (!subscriber)
     return false;
 
   subscriber->OnReceive(one_time_code);
-
   return true;
 }
 

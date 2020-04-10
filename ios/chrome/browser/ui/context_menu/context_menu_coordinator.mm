@@ -32,6 +32,7 @@
   if (self) {
     _alertCoordinator = [[ActionSheetCoordinator alloc]
         initWithBaseViewController:viewController
+                           browser:browser
                              title:title
                            message:nil
                               rect:CGRectMake(location.x, location.y, 1.0, 1.0)

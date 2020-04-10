@@ -11,6 +11,7 @@ js_type_check("closure_compile") {
   deps = [
     ":collapse_radio_button",
     ":cookies_page",
+    ":disable_safebrowsing_dialog",
     ":do_not_track_toggle",
     ":passwords_leak_detection_toggle",
     ":personalization_options",
@@ -48,6 +49,10 @@ js_library("cookies_page") {
     "//ui/webui/resources/js:web_ui_listener_behavior",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
+}
+
+js_library("disable_safebrowsing_dialog") {
+  deps = [ "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog" ]
 }
 
 js_library("do_not_track_toggle") {
@@ -198,6 +203,7 @@ js_library("security_keys_bio_enroll_dialog") {
 
 js_library("security_page") {
   deps = [
+    ":disable_safebrowsing_dialog",
     ":privacy_page_browser_proxy",
     ":safe_browsing_browser_proxy",
     "..:metrics_browser_proxy",
@@ -217,6 +223,7 @@ js_type_check("closure_compile_module") {
   deps = [
     ":collapse_radio_button.m",
     ":cookies_page.m",
+    ":disable_safebrowsing_dialog.m",
     ":do_not_track_toggle.m",
     ":passwords_leak_detection_toggle.m",
     ":personalization_options.m",
@@ -281,6 +288,15 @@ js_library("secure_dns_input.m") {
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   extra_deps = [ ":secure_dns_input_module" ]
+}
+
+js_library("disable_safebrowsing_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/disable_safebrowsing_dialog.m.js" ]
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+  ]
+  extra_deps = [ ":disable_safebrowsing_dialog_module" ]
 }
 
 js_library("do_not_track_toggle.m") {
@@ -358,7 +374,8 @@ js_library("safe_browsing_browser_proxy.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/safe_browsing_browser_proxy.m.js" ]
   deps = [
     "../site_settings:site_settings_prefs_browser_proxy.m",
-  "//ui/webui/resources/js:cr.m" ]
+    "//ui/webui/resources/js:cr.m",
+  ]
   extra_deps = [ ":modulize" ]
 }
 
@@ -440,6 +457,7 @@ js_library("security_keys_subpage.m") {
 js_library("security_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/security_page.m.js" ]
   deps = [
+    ":disable_safebrowsing_dialog.m",
     ":privacy_page_browser_proxy.m",
     ":safe_browsing_browser_proxy.m",
     "..:i18n_setup.m",
@@ -459,6 +477,7 @@ group("polymer3_elements") {
   public_deps = [
     ":collapse_radio_button_module",
     ":cookies_page_module",
+    ":disable_safebrowsing_dialog_module",
     ":do_not_track_toggle_module",
     ":modulize",
     ":passwords_leak_detection_toggle_module",
@@ -500,6 +519,14 @@ polymer_modulizer("collapse_radio_button") {
                    "ui/webui/resources/cr_elements/policy/cr_policy_indicator_behavior.html|CrPolicyIndicatorType",
                    "ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button_behavior.html|CrRadioButtonBehavior",
                  ]
+}
+
+polymer_modulizer("disable_safebrowsing_dialog") {
+  js_file = "disable_safebrowsing_dialog.js"
+  html_file = "disable_safebrowsing_dialog.html"
+  html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports
 }
 
 polymer_modulizer("secure_dns") {
@@ -560,7 +587,7 @@ polymer_modulizer("privacy_page") {
   auto_imports = settings_auto_imports + [
                    "ui/webui/resources/html/assert.html|assert",
                    "chrome/browser/resources/settings/route.html|routes",
-                   "chrome/browser/resources/settings/metrics_browser_proxy.html|PrivacyElementInteractions,MetricsBrowserProxyImpl",
+                   "chrome/browser/resources/settings/metrics_browser_proxy.html|PrivacyElementInteractions,MetricsBrowserProxy,MetricsBrowserProxyImpl",
                    "chrome/browser/resources/settings/privacy_page/privacy_page_browser_proxy.html|PrivacyPageBrowserProxy,PrivacyPageBrowserProxyImpl",
                    "chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.html|SiteSettingsPrefsBrowserProxyImpl",
                    "chrome/browser/resources/settings/site_settings/constants.html|ContentSettingsTypes,CookieControlsMode,ChooserType",

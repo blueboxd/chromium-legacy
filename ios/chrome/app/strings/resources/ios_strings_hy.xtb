@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">Ընտրվել է 1 էջանիշ</translation>
 <translation id="2421044535038393232">Շարունակել խմբագրումը</translation>
 <translation id="2435457462613246316">Ցույց տալ գաղտնաբառը</translation>
-<translation id="2481538920734869610">ԱՎԵԼԱՑՆԵԼ ՀԱՇԻՎ</translation>
 <translation id="2497852260688568942">Ձեր ադմինիստրատորն անջատել է համաժամացումը</translation>
 <translation id="2500374554657206846">Գաղտնաբառը պահելու տարբերակներ</translation>
 <translation id="2523363575747517183">Այս կայքը բազմիցս փորձում է բացել մեկ այլ հավելված։</translation>
@@ -480,7 +479,6 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="7203585745079012652">Կարդալ պատասխանները</translation>
 <translation id="7265758999917665941">Երբեք չպահել այս կայքի համար</translation>
 <translation id="7272437679830969316">Չհաջողվեց հաստատել ձեր ինքնությունը: Գաղտնաբառը չի պատճենվել:</translation>
-<translation id="7285236536143823449">ԱՅՈ, ԸՆԴՈՒՆՈՒՄ ԵՄ</translation>
 <translation id="7291368939935408496">Արտահանման նախապատրաստում…</translation>
 <translation id="7293171162284876153">Սկսելու համար միացրեք «Համաժամացնել Chrome-ի տվյալները» կարգավորումը:</translation>
 <translation id="7336264872878993241">Ներբեռնվել է <ph name="PERCENT" /> տոկոսը</translation>
@@ -496,6 +494,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="7460314822154045102">Օգտագործել տեսախցիկը</translation>
 <translation id="7464701184726199289">Համաժամացված տվյալները կհեռացվեն բոլոր սարքերից: Պահված կայքերի կարգավորումները չեն ջնջվի և կարող են արտացոլել համացանցում դիտարկման ձեր սովորությունները: <ph name="BEGIN_LINK" />Մանրամասն<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Ընկերության անունը</translation>
+<translation id="7473891865547856676">Ոչ</translation>
 <translation id="7481312909269577407">Forward</translation>
 <translation id="750493650310597496">Ընտրվել է 0 էջանիշ</translation>
 <translation id="7514365320538308">Ներբեռնել</translation>
@@ -517,7 +516,6 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="7781829728241885113">Երեկ</translation>
 <translation id="778855399387580014">Սկսեք որոնել Chrome-ի նոր ներդիրում:</translation>
 <translation id="7791543448312431591">Ավելացնել</translation>
-<translation id="780301667611848630">Ոչ</translation>
 <translation id="7840771868269352570">Ընտրված տարրերը կջնջվեն:</translation>
 <translation id="7856733331829174190">Չհաջողվեց ներբեռնել</translation>
 <translation id="7859704718976024901">Այցելությունների պատմություն</translation>
@@ -587,6 +585,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="8870413625673593573">Վերջին փակվածները</translation>
 <translation id="8881801611828450202">Որոնել այս պատկերը <ph name="SEARCH_ENGINE" />-ում</translation>
 <translation id="8909135823018751308">Կիսվել…</translation>
+<translation id="8917490105272468696">Եղավ</translation>
 <translation id="895541991026785598">Հաղորդել խնդրի մասին</translation>
 <translation id="8976382372951310360">Օգնություն</translation>
 <translation id="8981454092730389528">Google-ի գործունեության կառավարներ</translation>

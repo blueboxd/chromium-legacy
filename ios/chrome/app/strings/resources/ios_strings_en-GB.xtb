@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 selected</translation>
 <translation id="2421044535038393232">Keep editing</translation>
 <translation id="2435457462613246316">Show password</translation>
-<translation id="2481538920734869610">ADD ACCOUNT</translation>
 <translation id="2497852260688568942">Sync is disabled by your administrator</translation>
 <translation id="2500374554657206846">Options to save password</translation>
 <translation id="2523363575747517183">This website is repeatedly trying to open another application.</translation>
@@ -480,7 +479,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7203585745079012652">Speak Answers Back</translation>
 <translation id="7265758999917665941">Never for this site</translation>
 <translation id="7272437679830969316">Can't verify your identity. Password not copied.</translation>
-<translation id="7285236536143823449">YES, I'M IN</translation>
 <translation id="7291368939935408496">Preparing Passwords…</translation>
 <translation id="7293171162284876153">To start sync, turn on 'Sync your Chrome data'.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> percent downloaded</translation>
@@ -496,6 +494,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7460314822154045102">Use camera</translation>
 <translation id="7464701184726199289">This clears synced data from all devices. Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Company Name</translation>
+<translation id="7473891865547856676">No, thanks</translation>
 <translation id="7481312909269577407">Forward</translation>
 <translation id="750493650310597496">0 selected</translation>
 <translation id="7514365320538308">Download</translation>
@@ -517,7 +516,6 @@ Because your account is managed by <ph name="HOSTED_DOMAIN" />, your Chrome data
 <translation id="7781829728241885113">Yesterday</translation>
 <translation id="778855399387580014">Start a search in a new Chrome tab.</translation>
 <translation id="7791543448312431591">Add</translation>
-<translation id="780301667611848630">No, thanks</translation>
 <translation id="7840771868269352570">The items that you selected will be removed.</translation>
 <translation id="7856733331829174190">Couldn't download</translation>
 <translation id="7859704718976024901">Browsing history</translation>
@@ -587,6 +585,7 @@ Because your account is managed by <ph name="HOSTED_DOMAIN" />, your Chrome data
 <translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8881801611828450202">Search <ph name="SEARCH_ENGINE" /> for This Image</translation>
 <translation id="8909135823018751308">Share…</translation>
+<translation id="8917490105272468696">Yes, I'm In</translation>
 <translation id="895541991026785598">Report an Issue</translation>
 <translation id="8976382372951310360">Help</translation>
 <translation id="8981454092730389528">Google Activity Controls</translation>

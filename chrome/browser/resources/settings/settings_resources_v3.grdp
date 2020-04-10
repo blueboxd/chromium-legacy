@@ -504,6 +504,10 @@
            use_base_dir="false"
            preprocess="true"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_DISABLE_SAFEBROWSING_DIALOG_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/disable_safebrowsing_dialog.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_BIO_ENROLL_DIALOG_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_bio_enroll_dialog.m.js"
            use_base_dir="false"

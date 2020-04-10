@@ -23,35 +23,47 @@ import jinja2
 
 class GenerateSchemaOrgCodeTest(unittest.TestCase):
     def test_get_template_vars(self):
-        file_content = """
-    {
-      "@graph": [
-        {
-          "@id": "http://schema.org/MediaObject",
-          "@type": "rdfs:Class"
-        },
-        {
-          "@id": "http://schema.org/propertyName",
-          "@type": "rdf:Property"
+        schema = {
+            "@graph": [{
+                "@id": "http://schema.org/MediaObject",
+                "@type": "rdfs:Class"
+            },
+                       {
+                           "@id": "http://schema.org/propertyName",
+                           "@type": "rdf:Property"
+                       }]
         }
-      ]
-    }
-    """
-        with mock.patch('__builtin__.open',
-                        mock.mock_open(read_data=file_content)) as m_open:
-            self.assertEqual(
-                generate_schema_org_code.get_template_vars(m_open, m_open), {
-                    'entities': ['MediaObject'],
-                    'properties': [{
-                        'name': 'propertyName',
-                        'thing_types': [],
-                        'enum_types': []
-                    }],
-                    'enums': [],
-                    'entity_parent_lookup': {
-                        'MediaObject': ['MediaObject']
-                    }
-                })
+
+        names = {
+            "http://schema.org/MediaObject": 1234,
+            "MediaObject": 1235,
+            "http://schema.org/propertyName": 2345,
+            "propertyName": 2346
+        }
+
+        self.assertEqual(
+            generate_schema_org_code.get_template_vars(schema, names), {
+                'entities': [{
+                    'name': 'MediaObject',
+                    'name_hash': 1235
+                }],
+                'properties': [{
+                    'name': 'propertyName',
+                    'name_hash': 2346,
+                    'thing_types': [],
+                    'enum_types': []
+                }],
+                'enums': [],
+                'entity_parent_lookup':
+                [{
+                    'name': 'MediaObject',
+                    'name_hash': 1235,
+                    'parents': [{
+                        'name': 'MediaObject',
+                        'name_hash': 1235
+                    }]
+                }]
+            })
 
     def test_lookup_parents(self):
         thing = {'@id': schema_org_id('Thing')}
@@ -65,9 +77,9 @@ class GenerateSchemaOrgCodeTest(unittest.TestCase):
         }
         brand = {'@id': schema_org_id('Brand'), 'rdfs:subClassOf': intangible}
         schema = {'@graph': [thing, intangible, structured_value, brand]}
-        self.assertListEqual(
+        self.assertSetEqual(
             generate_schema_org_code.lookup_parents(brand, schema, {}),
-            ['Thing', 'Intangible', 'Brand'])
+            set(['Thing', 'Intangible', 'Brand']))
 
     def test_get_root_type_thing(self):
         thing = {'@id': schema_org_id('Thing')}
@@ -146,9 +158,13 @@ class GenerateSchemaOrgCodeTest(unittest.TestCase):
             ]
         }
 
+        names = {"http://schema.org/Identifier": 1234, "Identifier": 1235}
+
         self.assertEqual(
-            generate_schema_org_code.parse_property(identifier, schema), {
+            generate_schema_org_code.parse_property(identifier, schema, names),
+            {
                 'name': 'Identifier',
+                'name_hash': 1235,
                 'has_number': True,
                 'thing_types': [property_value['@id']],
                 'enum_types': []

@@ -932,6 +932,12 @@
                  file="privacy_page/security_page.js"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_SETTINGS_DISABLE_SAFEBROWSING_DIALOG_HTML"
+                 file="privacy_page/disable_safebrowsing_dialog.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_DISABLE_SAFEBROWSING_DIALOG_JS"
+                 file="privacy_page/disable_safebrowsing_dialog.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PRIVACY_PAGE_HTML"
                  file="privacy_page/privacy_page.html"
                  preprocess="true"

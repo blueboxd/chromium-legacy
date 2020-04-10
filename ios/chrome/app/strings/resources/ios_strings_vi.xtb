@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">Đã chọn 1</translation>
 <translation id="2421044535038393232">Tiếp tục chỉnh sửa</translation>
 <translation id="2435457462613246316">Hiển thị mật khẩu</translation>
-<translation id="2481538920734869610">THÊM TÀI KHOẢN</translation>
 <translation id="2497852260688568942">Đồng bộ hóa bị quản trị viên của bạn tắt</translation>
 <translation id="2500374554657206846">Các tùy chọn lưu mật khẩu</translation>
 <translation id="2523363575747517183">Trang web này đang liên tục tìm cách mở một ứng dụng khác.</translation>
@@ -480,7 +479,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7203585745079012652">Trả lời bằng giọng nói</translation>
 <translation id="7265758999917665941">Không bao giờ đối với trang web này</translation>
 <translation id="7272437679830969316">Không thể xác minh danh tính của bạn. Chưa sao chép mật khẩu.</translation>
-<translation id="7285236536143823449">CÓ, TÔI ĐỒNG Ý</translation>
 <translation id="7291368939935408496">Đang chuẩn bị mật khẩu...</translation>
 <translation id="7293171162284876153">Để bắt đầu đồng bộ hóa, hãy bật tùy chọn "Đồng bộ hóa dữ liệu của bạn trên Chrome".</translation>
 <translation id="7336264872878993241">Đã tải xuống <ph name="PERCENT" /> phần trăm</translation>
@@ -496,6 +494,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7460314822154045102">Sử dụng máy ảnh</translation>
 <translation id="7464701184726199289">Thao tác này sẽ xóa dữ liệu được đồng bộ hóa khỏi tất cả thiết bị. Cài đặt trang web đã lưu sẽ không bị xóa và có thể phản ánh thói quen duyệt web của bạn. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Tên công ty</translation>
+<translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
 <translation id="750493650310597496">Đã chọn 0</translation>
 <translation id="7514365320538308">Tải xuống</translation>
@@ -517,7 +516,6 @@ Vì tài khoản của bạn do <ph name="HOSTED_DOMAIN" /> quản lý, nên d�
 <translation id="7781829728241885113">Hôm qua</translation>
 <translation id="778855399387580014">Bắt đầu tìm kiếm trong tab Chrome mới.</translation>
 <translation id="7791543448312431591">Thêm</translation>
-<translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7840771868269352570">Mục đã chọn sẽ bị xóa.</translation>
 <translation id="7856733331829174190">Không thể tải xuống</translation>
 <translation id="7859704718976024901">Lịch sử duyệt web</translation>
@@ -587,6 +585,7 @@ Vì tài khoản của bạn do <ph name="HOSTED_DOMAIN" /> quản lý, nên d�
 <translation id="8870413625673593573">Các tab đã Đóng gần đây</translation>
 <translation id="8881801611828450202">Tìm hình ảnh này trên <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Chia sẻ...</translation>
+<translation id="8917490105272468696">Có, tôi đồng ý</translation>
 <translation id="895541991026785598">Báo cáo sự cố</translation>
 <translation id="8976382372951310360">Trợ giúp</translation>
 <translation id="8981454092730389528">Kiểm soát hoạt động trên Google</translation>

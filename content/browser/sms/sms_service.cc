@@ -35,7 +35,9 @@ SmsService::SmsService(
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver)
     : FrameServiceBase(host, std::move(receiver)),
       fetcher_(fetcher),
-      origin_(origin) {}
+      origin_(origin) {
+  DCHECK(fetcher_);
+}
 
 SmsService::SmsService(
     SmsFetcher* fetcher,
@@ -49,6 +51,7 @@ SmsService::SmsService(
 SmsService::~SmsService() {
   if (callback_)
     Process(SmsStatus::kTimeout, base::nullopt);
+  DCHECK(!callback_);
 }
 
 // static

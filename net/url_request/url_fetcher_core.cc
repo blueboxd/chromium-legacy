@@ -406,6 +406,7 @@ void URLFetcherCore::OnReceivedRedirect(URLRequest* request,
     stopped_on_redirect_ = true;
     url_ = redirect_info.new_url;
     response_code_ = request_->GetResponseCode();
+    response_headers_ = request_->response_headers();
     proxy_server_ = request_->proxy_server();
     was_cached_ = request_->was_cached();
     total_received_bytes_ += request_->GetTotalReceivedBytes();

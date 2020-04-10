@@ -20,43 +20,45 @@
 
 namespace extensions {
 
-// Used to simulate a click on the first element named 'Options'.
-static const char kScriptClickOptionButton[] =
-    "(function() { "
-    "  var button = document.querySelector('.options-link');"
-    "  button.click();"
-    "})();";
-
 // Test that an extension with an options page makes an 'Options' button appear
 // on chrome://extensions, and that clicking the button opens a new tab with the
 // extension's options page.
-// Disabled because of flakiness. See http://crbug.com/174934.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
-  size_t installed_extensions = registry->enabled_extensions().size();
-  // Install an extension with an options page.
-  const Extension* extension =
-      InstallExtension(test_data_dir_.AppendASCII("options.crx"), 1);
-  ASSERT_TRUE(extension);
-  EXPECT_EQ(installed_extensions + 1, registry->enabled_extensions().size());
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OptionsPage) {
+  TestExtensionDir extension_dir;
+  extension_dir.WriteFile(FILE_PATH_LITERAL("options.html"),
+                          "<html><body><div>Options Here</div></body></html>");
 
-  // Go to the Extension Settings page and click the Options button.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));
+  extension_dir.WriteManifest(DictionaryBuilder()
+                                  .Set("manifest_version", 2)
+                                  .Set("name", "Options Test")
+                                  .Set("options_page", "options.html")
+                                  .Set("version", "1")
+                                  .ToJSON());
+
+  scoped_refptr<const Extension> extension =
+      InstallExtension(extension_dir.Pack(), 1);
+  ASSERT_TRUE(extension.get());
+
+  // Go to the Extension Settings page and click the button.
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("chrome://extensions?id=" + extension->id()));
   TabStripModel* tab_strip = browser()->tab_strip_model();
   ui_test_utils::TabAddedWaiter tab_add(browser());
-  // NOTE: Currently the above script needs to execute in an iframe. The
-  // selector for that iframe may break if the layout of the extensions
-  // page changes.
-  content::RenderFrameHost* frame = content::FrameMatchingPredicate(
-      tab_strip->GetActiveWebContents(),
-      base::Bind(&content::FrameHasSourceUrl,
-                 GURL(chrome::kChromeUIExtensionsURL)));
-  EXPECT_TRUE(content::ExecuteScript(
-      frame,
-      kScriptClickOptionButton));
-  tab_add.Wait();
-  EXPECT_EQ(2, tab_strip->count());
 
+  // Used to simulate a click on the 'Extension options' link.
+  // NOTE: This relies on the layout of the chrome://extensions page, and may
+  // need to be updated if that layout changes.
+  static constexpr char kScriptClickOptionButton[] = R"(
+    (function() {
+      var button = document.querySelector('extensions-manager').
+                    $$('extensions-detail-view').$$('#extensions-options');
+      button.click();
+    })();)";
+
+  EXPECT_TRUE(content::ExecuteScript(tab_strip->GetActiveWebContents(),
+                                     kScriptClickOptionButton));
+  tab_add.Wait();
+  ASSERT_EQ(2, tab_strip->count());
   EXPECT_EQ(extension->GetResourceURL("options.html"),
             tab_strip->GetWebContentsAt(1)->GetURL());
 }

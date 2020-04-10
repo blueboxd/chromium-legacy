@@ -9,6 +9,7 @@
 #include <lib/fidl/cpp/interface_handle.h>
 #include <lib/sys/cpp/component_context.h>
 
+#include "base/files/file_enumerator.h"
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/filtered_service_directory.h"
 #include "base/fuchsia/fuchsia_logging.h"
@@ -16,7 +17,8 @@
 
 namespace base {
 
-TestComponentContextForProcess::TestComponentContextForProcess() {
+TestComponentContextForProcess::TestComponentContextForProcess(
+    InitialState initial_state) {
   // TODO(https://crbug.com/1038786): Migrate to sys::ComponentContextProvider
   // once it provides access to an sys::OutgoingDirectory or PseudoDir through
   // which to publish additional_services().
@@ -25,6 +27,15 @@ TestComponentContextForProcess::TestComponentContextForProcess() {
   // default ComponentContext to fetch services from.
   context_services_ = std::make_unique<fuchsia::FilteredServiceDirectory>(
       base::fuchsia::ComponentContextForCurrentProcess()->svc().get());
+
+  // Push all services from /svc to the test context if requested.
+  if (initial_state == InitialState::kCloneAll) {
+    base::FileEnumerator file_enum(base::FilePath("/svc"), false,
+                                   base::FileEnumerator::FILES);
+    for (auto file = file_enum.Next(); !file.empty(); file = file_enum.Next()) {
+      AddService(file.BaseName().value());
+    }
+  }
 
   // Create a ServiceDirectory backed by the contents of |incoming_directory|.
   fidl::InterfaceHandle<::fuchsia::io::Directory> incoming_directory;
@@ -60,10 +71,15 @@ sys::OutgoingDirectory* TestComponentContextForProcess::additional_services() {
   return context_services_->outgoing_directory();
 }
 
+void TestComponentContextForProcess::AddService(
+    const base::StringPiece service) {
+  context_services_->AddService(service);
+}
+
 void TestComponentContextForProcess::AddServices(
     base::span<const base::StringPiece> services) {
   for (auto service : services)
-    context_services_->AddService(service);
+    AddService(service);
 }
 
 }  // namespace base

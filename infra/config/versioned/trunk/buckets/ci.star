@@ -29,10 +29,37 @@ luci.gitiles_poller(
     refs = [vars.ref],
 )
 
+ci.main_console_view(
+    name = vars.main_console_name,
+    header = '//consoles/chromium-header.textpb',
+    repo = 'https://chromium.googlesource.com/chromium/src',
+    refs = [vars.ref],
+    title = vars.main_console_title,
+    top_level_ordering = [
+        'chromium',
+        'chromium.win',
+        'chromium.mac',
+        'chromium.linux',
+        'chromium.chromiumos',
+        'chromium.android',
+        'chrome',
+        'chromium.memory',
+        'chromium.dawn',
+        'chromium.gpu',
+        'chromium.fyi',
+        'chromium.android.fyi',
+        'chromium.clang',
+        'chromium.fuzz',
+        'chromium.gpu.fyi',
+        'chromium.swangle',
+    ],
+)
+
 
 ci.defaults.add_to_console_view.set(vars.is_master)
 ci.defaults.bucket.set(vars.ci_bucket)
 ci.defaults.bucketed_triggers.set(True)
+ci.defaults.main_console_view.set(vars.main_console_name)
 ci.defaults.triggered_by.set([vars.ci_poller])
 
 

@@ -481,6 +481,15 @@ void FeedStream::ReportSliceViewed(const std::string& slice_id) {
     metrics_reporter_->ContentSliceViewed(index);
 }
 
+void FeedStream::ReportSendFeedbackAction() {
+  metrics_reporter_->SendFeedbackAction();
+}
+void FeedStream::ReportLearnMoreAction() {
+  metrics_reporter_->LearnMoreAction();
+}
+void FeedStream::ReportDownloadAction() {
+  metrics_reporter_->DownloadAction();
+}
 void FeedStream::ReportNavigationStarted() {
   metrics_reporter_->NavigationStarted();
 }

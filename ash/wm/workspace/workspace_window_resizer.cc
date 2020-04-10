@@ -53,141 +53,13 @@ namespace {
 constexpr double kMinHorizVelocityForWindowSwipe = 1100;
 constexpr double kMinVertVelocityForWindowMinimize = 1000;
 
-// Returns true if |window| can be dragged from the top of the screen in tablet
-// mode.
-std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
-    aura::Window* window,
-    const gfx::PointF& point_in_parent,
-    int window_component,
-    ::wm::WindowMoveSource source) {
-  // Window dragging from top and tab dragging are disabled if "WebUITabStrip"
-  // feature is enabled. "WebUITabStrip" will be enabled on 81 for Krane and on
-  // 82 for all other boards.
-  if (features::IsWebUITabStripEnabled())
-    return nullptr;
+// Snap region when dragging close to the edges. That is, as the window gets
+// this close to an edge of the screen it snaps to the edge.
+constexpr int kScreenEdgeInset = 8;
 
-  WindowState* window_state = WindowState::Get(window);
-  // Only maximized/fullscreen/snapped window can be dragged from the top of
-  // the screen.
-  if (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
-      !window_state->IsSnapped()) {
-    return nullptr;
-  }
-
-  AppType app_type =
-      static_cast<AppType>(window->GetProperty(aura::client::kAppType));
-  // App windows can be dragged from the client area (see
-  // ToplevelWindowEventHandler).
-  if (app_type != AppType::BROWSER && window_component == HTCLIENT) {
-    DCHECK_EQ(source, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
-    window_state->CreateDragDetails(point_in_parent, HTCLIENT,
-                                    ::wm::WINDOW_MOVE_SOURCE_TOUCH);
-    std::unique_ptr<WindowResizer> window_resizer =
-        std::make_unique<TabletModeWindowResizer>(
-            window_state, std::make_unique<TabletModeWindowDragDelegate>());
-    return std::make_unique<DragWindowResizer>(std::move(window_resizer),
-                                               window_state);
-  }
-
-  // Only allow drag that happens on caption or top area. Note: for a maxmized
-  // or fullscreen window, the window component here is always HTCAPTION, but
-  // for a snapped window, the window component here can either be HTCAPTION or
-  // HTTOP.
-  if (window_component != HTCAPTION && window_component != HTTOP)
-    return nullptr;
-
-  // Note: only browser windows and chrome app windows are included here.
-  // For browser windows, this piece of codes will be called no matter the
-  // drag happens on the tab(s) or on the non-tabstrip caption or top area.
-  // But for app window, this piece of codes will only be called if the chrome
-  // app window has its customized caption area and can't be hidden in tablet
-  // mode (and thus the drag for this type of chrome app window always happens
-  // on caption or top area). The case where the caption area of the chrome app
-  // window can be hidden is handled above.
-  if (app_type != AppType::BROWSER && app_type != AppType::CHROME_APP)
-    return nullptr;
-
-  window_state->CreateDragDetails(point_in_parent, window_component, source);
-  std::unique_ptr<WindowResizer> window_resizer =
-      std::make_unique<TabletModeWindowResizer>(
-          window_state,
-          std::make_unique<TabletModeBrowserWindowDragDelegate>());
-  return std::make_unique<DragWindowResizer>(std::move(window_resizer),
-                                             window_state);
-}
-
-}  // namespace
-
-std::unique_ptr<WindowResizer> CreateWindowResizer(
-    aura::Window* window,
-    const gfx::PointF& point_in_parent,
-    int window_component,
-    ::wm::WindowMoveSource source) {
-  DCHECK(window);
-
-  WindowState* window_state = WindowState::Get(window);
-
-  // A resizer already exists; don't create a new one.
-  if (window_state->drag_details())
-    return nullptr;
-
-  // When running in single app mode, we should not create window resizer.
-  if (Shell::Get()->session_controller()->IsRunningInAppMode())
-    return nullptr;
-
-  if (window_state->IsPip()) {
-    window_state->CreateDragDetails(point_in_parent, window_component, source);
-    return std::make_unique<PipWindowResizer>(window_state);
-  }
-
-  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
-    return CreateWindowResizerForTabletMode(window, point_in_parent,
-                                            window_component, source);
-  }
-
-  // No need to return a resizer when the window cannot get resized.
-  if (!window_state->CanResize() && window_component != HTCAPTION)
-    return nullptr;
-
-  if (!window_state->IsNormalOrSnapped())
-    return nullptr;
-
-  int bounds_change =
-      WindowResizer::GetBoundsChangeForWindowComponent(window_component);
-  if (bounds_change == WindowResizer::kBoundsChangeDirection_None)
-    return nullptr;
-
-  window_state->CreateDragDetails(point_in_parent, window_component, source);
-
-  // TODO(varkha): The chaining of window resizers causes some of the logic
-  // to be repeated and the logic flow difficult to control. With some windows
-  // classes using reparenting during drag operations it becomes challenging to
-  // implement proper transition from one resizer to another during or at the
-  // end of the drag. This also causes http://crbug.com/247085.
-  // We should have a better way of doing this, perhaps by having a way of
-  // observing drags or having a generic drag window wrapper which informs a
-  // layout manager that a drag has started or stopped. It may be possible to
-  // refactor and eliminate chaining.
-  std::unique_ptr<WindowResizer> window_resizer;
-  const auto* parent = window->parent();
-  if (parent &&
-      // TODO(afakhry): Maybe use switchable containers?
-      (desks_util::IsDeskContainer(parent) ||
-       parent->id() == kShellWindowId_AlwaysOnTopContainer)) {
-    window_resizer.reset(WorkspaceWindowResizer::Create(
-        window_state, std::vector<aura::Window*>()));
-  } else {
-    window_resizer.reset(DefaultWindowResizer::Create(window_state));
-  }
-  return std::make_unique<DragWindowResizer>(std::move(window_resizer),
-                                             window_state);
-}
-
-namespace {
-
-// Snapping distance used instead of WorkspaceWindowResizer::kScreenEdgeInset
-// when resizing a window using touchscreen.
-const int kScreenEdgeInsetForTouchDrag = 32;
+// Snapping distance used instead of kScreenEdgeInset when resizing a window
+// using touchscreen.
+constexpr int kScreenEdgeInsetForTouchDrag = 32;
 
 // If an edge of the work area is at an edge of the display, then you can snap a
 // window by dragging to a point within this far inward from that edge. This
@@ -196,10 +68,15 @@ const int kScreenEdgeInsetForTouchDrag = 32;
 // neighboring display. For touch dragging, you may be able to drag out of the
 // display because the physical device has a border around the display. Either
 // case makes it difficult to drag to the edge without this tolerance.
-const int kScreenEdgeInsetForSnapping = 32;
+constexpr int kScreenEdgeInsetForSnapping = 32;
+
+// When dragging an attached window this is the min size we'll make sure is
+// visible. In the vertical direction we take the max of this and that from
+// the delegate.
+constexpr int kMinOnscreenSize = 20;
 
 // Current instance for use by the WorkspaceWindowResizerTest.
-WorkspaceWindowResizer* instance = NULL;
+WorkspaceWindowResizer* instance = nullptr;
 
 // Returns true if the window should stick to the edge.
 bool ShouldStickToEdge(int distance_from_edge, int sticky_size) {
@@ -336,16 +213,134 @@ uint32_t WindowComponentToMagneticEdge(int window_component) {
   return 0;
 }
 
+// Returns a WindowResizer if dragging |window| is allowed in tablet mode.
+std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
+    aura::Window* window,
+    const gfx::PointF& point_in_parent,
+    int window_component,
+    ::wm::WindowMoveSource source) {
+  // Window dragging from top and tab dragging are disabled if "WebUITabStrip"
+  // feature is enabled. "WebUITabStrip" will be enabled on 81 for Krane and on
+  // 82 for all other boards.
+  if (features::IsWebUITabStripEnabled())
+    return nullptr;
+
+  WindowState* window_state = WindowState::Get(window);
+  // Only maximized/fullscreen/snapped window can be dragged from the top of
+  // the screen.
+  if (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
+      !window_state->IsSnapped()) {
+    return nullptr;
+  }
+
+  AppType app_type =
+      static_cast<AppType>(window->GetProperty(aura::client::kAppType));
+  // App windows can be dragged from the client area (see
+  // ToplevelWindowEventHandler).
+  if (app_type != AppType::BROWSER && window_component == HTCLIENT) {
+    DCHECK_EQ(source, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+    window_state->CreateDragDetails(point_in_parent, HTCLIENT,
+                                    ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+    std::unique_ptr<WindowResizer> window_resizer =
+        std::make_unique<TabletModeWindowResizer>(
+            window_state, std::make_unique<TabletModeWindowDragDelegate>());
+    return std::make_unique<DragWindowResizer>(std::move(window_resizer),
+                                               window_state);
+  }
+
+  // Only allow drag that happens on caption or top area. Note: for a maxmized
+  // or fullscreen window, the window component here is always HTCAPTION, but
+  // for a snapped window, the window component here can either be HTCAPTION or
+  // HTTOP.
+  if (window_component != HTCAPTION && window_component != HTTOP)
+    return nullptr;
+
+  // Note: only browser windows and chrome app windows are included here.
+  // For browser windows, this piece of codes will be called no matter the
+  // drag happens on the tab(s) or on the non-tabstrip caption or top area.
+  // But for app window, this piece of codes will only be called if the chrome
+  // app window has its customized caption area and can't be hidden in tablet
+  // mode (and thus the drag for this type of chrome app window always happens
+  // on caption or top area). The case where the caption area of the chrome app
+  // window can be hidden is handled above.
+  if (app_type != AppType::BROWSER && app_type != AppType::CHROME_APP)
+    return nullptr;
+
+  window_state->CreateDragDetails(point_in_parent, window_component, source);
+  std::unique_ptr<WindowResizer> window_resizer =
+      std::make_unique<TabletModeWindowResizer>(
+          window_state,
+          std::make_unique<TabletModeBrowserWindowDragDelegate>());
+  return std::make_unique<DragWindowResizer>(std::move(window_resizer),
+                                             window_state);
+}
+
 }  // namespace
 
-// static
-const int WorkspaceWindowResizer::kMinOnscreenSize = 20;
+std::unique_ptr<WindowResizer> CreateWindowResizer(
+    aura::Window* window,
+    const gfx::PointF& point_in_parent,
+    int window_component,
+    ::wm::WindowMoveSource source) {
+  DCHECK(window);
 
-// static
-const int WorkspaceWindowResizer::kMinOnscreenHeight = 32;
+  WindowState* window_state = WindowState::Get(window);
 
-// static
-const int WorkspaceWindowResizer::kScreenEdgeInset = 8;
+  // A resizer already exists; don't create a new one.
+  if (window_state->drag_details())
+    return nullptr;
+
+  // When running in single app mode, we should not create window resizer.
+  if (Shell::Get()->session_controller()->IsRunningInAppMode())
+    return nullptr;
+
+  if (window_state->IsPip()) {
+    window_state->CreateDragDetails(point_in_parent, window_component, source);
+    return std::make_unique<PipWindowResizer>(window_state);
+  }
+
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    return CreateWindowResizerForTabletMode(window, point_in_parent,
+                                            window_component, source);
+  }
+
+  // No need to return a resizer when the window cannot get resized.
+  if (!window_state->CanResize() && window_component != HTCAPTION)
+    return nullptr;
+
+  if (!window_state->IsNormalOrSnapped())
+    return nullptr;
+
+  int bounds_change =
+      WindowResizer::GetBoundsChangeForWindowComponent(window_component);
+  if (bounds_change == WindowResizer::kBoundsChangeDirection_None)
+    return nullptr;
+
+  window_state->CreateDragDetails(point_in_parent, window_component, source);
+
+  // TODO(varkha): The chaining of window resizers causes some of the logic
+  // to be repeated and the logic flow difficult to control. With some windows
+  // classes using reparenting during drag operations it becomes challenging to
+  // implement proper transition from one resizer to another during or at the
+  // end of the drag. This also causes http://crbug.com/247085.
+  // We should have a better way of doing this, perhaps by having a way of
+  // observing drags or having a generic drag window wrapper which informs a
+  // layout manager that a drag has started or stopped. It may be possible to
+  // refactor and eliminate chaining.
+  std::unique_ptr<WindowResizer> window_resizer;
+  const auto* parent = window->parent();
+  if (parent &&
+      // TODO(afakhry): Maybe use switchable containers?
+      (desks_util::IsDeskContainer(parent) ||
+       parent->id() == kShellWindowId_AlwaysOnTopContainer)) {
+    window_resizer.reset(WorkspaceWindowResizer::Create(
+        window_state, std::vector<aura::Window*>()));
+  } else {
+    window_resizer.reset(DefaultWindowResizer::Create(window_state));
+  }
+  return std::make_unique<DragWindowResizer>(std::move(window_resizer),
+                                             window_state);
+}
 
 WorkspaceWindowResizer* WorkspaceWindowResizer::GetInstanceForTest() {
   return instance;
@@ -405,12 +400,14 @@ class WindowSize {
   int max_;
 };
 
+constexpr int WorkspaceWindowResizer::kMinOnscreenHeight;
+
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   if (did_lock_cursor_)
     Shell::Get()->cursor_manager()->UnlockCursor();
 
   if (instance == this)
-    instance = NULL;
+    instance = nullptr;
 }
 
 // static
@@ -620,14 +617,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
     const std::vector<aura::Window*>& attached_windows)
     : WindowResizer(window_state),
       attached_windows_(attached_windows),
-      did_lock_cursor_(false),
-      did_move_or_resize_(false),
-      initial_bounds_changed_by_user_(window_state_->bounds_changed_by_user()),
-      total_min_(0),
-      total_initial_size_(0),
-      snap_type_(SNAP_NONE),
-      num_mouse_moves_since_bounds_change_(0),
-      magnetism_window_(nullptr) {
+      initial_bounds_changed_by_user_(window_state_->bounds_changed_by_user()) {
   DCHECK(details().is_resizable);
 
   // A mousemove should still show the cursor even if the window is

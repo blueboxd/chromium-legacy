@@ -116,7 +116,7 @@ class UtilityProcessSandboxBrowserTest
       case SandboxType::kIme:
 #endif
       case SandboxType::kNetwork:
-      case SandboxType::kSoda: {
+      case SandboxType::kSpeechRecognition: {
         constexpr int kExpectedPartialSandboxFlags =
             SandboxLinux::kSeccompBPF | SandboxLinux::kYama |
             SandboxLinux::kSeccompTSYNC;

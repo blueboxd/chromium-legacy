@@ -21,6 +21,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/page_type.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -272,15 +273,8 @@ void TakeHistoryForActivation(WebContentsImpl* activated_contents,
   NavigationControllerImpl& predecessor_controller =
       predecessor_contents->GetController();
 
-  DCHECK(predecessor_controller.GetLastCommittedEntry());
   // Activation would have discarded any pending entry in the host contents.
   DCHECK(!predecessor_controller.GetPendingEntry());
-
-  // TODO(mcnee): Determine how to deal with a transient entry.
-  if (predecessor_controller.GetTransientEntry() ||
-      activated_controller.GetTransientEntry()) {
-    return;
-  }
 
   // TODO(mcnee): Once we enforce that a portal contents does not build up its
   // own history, make this DCHECK that we only have a single committed entry,
@@ -318,14 +312,35 @@ void Portal::Activate(blink::TransferableMessage data,
       << "The binding should have been closed when the portal's outer "
          "FrameTreeNode was deleted due to swap out.";
 
+  DCHECK(portal_contents_);
+  NavigationControllerImpl& portal_controller =
+      portal_contents_->GetController();
+  NavigationControllerImpl& predecessor_controller =
+      outer_contents->GetController();
+
   // If no navigation has yet committed in the portal, it cannot be activated as
   // this would lead to an empty tab contents (without even an about:blank).
-  DCHECK(portal_contents_);
-  if (portal_contents_->GetController().GetLastCommittedEntryIndex() < 0) {
+  if (portal_controller.GetLastCommittedEntryIndex() < 0) {
     std::move(callback).Run(
         blink::mojom::PortalActivateResult::kRejectedDueToPortalNotReady);
     return;
   }
+  DCHECK(predecessor_controller.GetLastCommittedEntry());
+
+  // Error pages and interstitials may not host portals due to the HTTP(S)
+  // restriction.
+  DCHECK_EQ(PAGE_TYPE_NORMAL,
+            predecessor_controller.GetLastCommittedEntry()->GetPageType());
+  DCHECK(!predecessor_controller.GetTransientEntry());
+
+  // If the portal is showing an error page, reject activation.
+  if (portal_controller.GetLastCommittedEntry()->GetPageType() !=
+      PAGE_TYPE_NORMAL) {
+    std::move(callback).Run(
+        blink::mojom::PortalActivateResult::kRejectedDueToErrorInPortal);
+    return;
+  }
+  DCHECK(!portal_controller.GetTransientEntry());
 
   // If a navigation in the main frame is occurring, stop it if possible and
   // reject the activation if it's too late or if an ongoing navigation takes

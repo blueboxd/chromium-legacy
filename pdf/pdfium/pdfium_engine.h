@@ -162,6 +162,11 @@ class PDFiumEngine : public PDFEngine,
   FPDF_DOCUMENT doc() const;
   FPDF_FORMHANDLE form() const;
 
+  // State transition when tabbing forward:
+  // None -> Document -> Page -> None (when focusable annotations on all pages
+  // are done).
+  enum class FocusElementType { kNone, kDocument, kPage };
+
  private:
   // This helper class is used to detect the difference in selection between
   // construction and destruction.  At destruction, it invalidates all the
@@ -209,6 +214,7 @@ class PDFiumEngine : public PDFEngine,
   };
 
   friend class FormFillerTest;
+  friend class PDFiumEngineTabbingTest;
   friend class PDFiumFormFiller;
   friend class PDFiumTestBase;
   friend class SelectionChangeInvalidator;
@@ -580,6 +586,15 @@ class PDFiumEngine : public PDFEngine,
   // Retrieves the version of the PDF (e.g. 1.4 or 2.0) as an enum.
   PdfVersion GetDocumentVersion() const;
 
+  // This is a layer between OnKeyDown() and actual tab handling to facilitate
+  // testing.
+  bool HandleTabEvent(uint32_t modifiers);
+
+  // Helper functions to handle tab events.
+  bool HandleTabEventWithModifiers(uint32_t modifiers);
+  bool HandleTabForward(uint32_t modifiers);
+  bool HandleTabBackward(uint32_t modifiers);
+
   PDFEngine::Client* const client_;
 
   // The current document layout.
@@ -681,8 +696,12 @@ class PDFiumEngine : public PDFEngine,
   // Timer for touch long press detection.
   base::OneShotTimer touch_timer_;
 
-  // Holds the zero-based page index of the last page that the mouse clicked on.
-  int last_page_mouse_down_ = -1;
+  // The focus item type for the currently focused object.
+  FocusElementType focus_item_type_ = FocusElementType::kNone;
+
+  // Holds the zero-based page index of the last page that had the focused
+  // object.
+  int last_focused_page_ = -1;
 
   // Holds the zero-based page index of the most visible page; refreshed by
   // calling CalculateVisiblePages()

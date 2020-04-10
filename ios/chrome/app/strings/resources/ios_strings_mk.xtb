@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 избрано</translation>
 <translation id="2421044535038393232">Продолжи со изменување</translation>
 <translation id="2435457462613246316">Прикажи ја лозинката</translation>
-<translation id="2481538920734869610">ДОДАЈ СМЕТКА</translation>
 <translation id="2497852260688568942">Администраторот ја оневозможил синхронизацијата</translation>
 <translation id="2500374554657206846">Опции за зачувување лозинка</translation>
 <translation id="2523363575747517183">Веб-сајтов постојано се обидува да отвори друга апликација.</translation>
@@ -480,7 +479,6 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="7203585745079012652">Изговарај ги одговорите</translation>
 <translation id="7265758999917665941">Никогаш за овој сајт</translation>
 <translation id="7272437679830969316">Не може да се потврди вашиот идентитет. Лозинката не е копирана.</translation>
-<translation id="7285236536143823449">ДА, МОЖЕ</translation>
 <translation id="7291368939935408496">Се подготвуваат лозинките…</translation>
 <translation id="7293171162284876153">За да започне синхронизацијата, вклучете „Синхронизирајте ги податоците од Chrome“.</translation>
 <translation id="7336264872878993241">Преземено <ph name="PERCENT" /> проценти</translation>
@@ -496,6 +494,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="7460314822154045102">Користи ја камерата</translation>
 <translation id="7464701184726199289">Ова ги чисти синхронизираните податоци од сите уреди. Поставките на зачуваните сајтови нема да се избришат и може да ги отсликуваат вашите навики за прелистување. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Име на компанија</translation>
+<translation id="7473891865547856676">Не, фала</translation>
 <translation id="7481312909269577407">Напред</translation>
 <translation id="750493650310597496">0 избрани</translation>
 <translation id="7514365320538308">Преземи</translation>
@@ -517,7 +516,6 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="778855399387580014">Започнете пребарување во нова картичка на Chrome.</translation>
 <translation id="7791543448312431591">Додај</translation>
-<translation id="780301667611848630">Не, фала</translation>
 <translation id="7840771868269352570">Ставките ќе се отстранат.</translation>
 <translation id="7856733331829174190">Не можеше да се преземе</translation>
 <translation id="7859704718976024901">Историја на прелистувањето</translation>
@@ -587,6 +585,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="8870413625673593573">Неодамна затворено</translation>
 <translation id="8881801611828450202">Пребарај <ph name="SEARCH_ENGINE" /> за сликава</translation>
 <translation id="8909135823018751308">Сподели…</translation>
+<translation id="8917490105272468696">Да, прифаќам</translation>
 <translation id="895541991026785598">Пријави проблем</translation>
 <translation id="8976382372951310360">Помош</translation>
 <translation id="8981454092730389528">Контроли на активност на Google</translation>

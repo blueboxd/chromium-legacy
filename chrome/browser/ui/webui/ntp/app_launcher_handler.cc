@@ -921,29 +921,39 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
 }
 
 void AppLauncherHandler::HandleCreateAppShortcut(const base::ListValue* args) {
-  std::string extension_id;
-  CHECK(args->GetString(0, &extension_id));
+  std::string app_id;
+  CHECK(args->GetString(0, &app_id));
 
-  if (DesktopPWAsWithoutExtensions() &&
-      web_app_provider_->registrar().IsInstalled(extension_id)) {
-    NOTIMPLEMENTED();
+  if (web_app_provider_->registrar().IsInstalled(app_id)) {
+    Browser* browser =
+        chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
+    chrome::ShowCreateChromeAppShortcutsDialog(
+        browser->window()->GetNativeWindow(), browser->profile(), app_id,
+        base::BindRepeating([](bool success) {
+          LOCAL_HISTOGRAM_BOOLEAN(
+              "Apps.AppInfoDialog.CreateWebAppShortcutSuccess", success);
+        }));
     return;
   }
 
   const Extension* extension =
       extensions::ExtensionRegistry::Get(extension_service_->profile())
-          ->GetExtensionById(extension_id,
+          ->GetExtensionById(app_id,
                              extensions::ExtensionRegistry::ENABLED |
                                  extensions::ExtensionRegistry::DISABLED |
                                  extensions::ExtensionRegistry::TERMINATED);
   if (!extension)
     return;
+  DCHECK(!extension->from_bookmark());
 
   Browser* browser = chrome::FindBrowserWithWebContents(
         web_ui()->GetWebContents());
   chrome::ShowCreateChromeAppShortcutsDialog(
       browser->window()->GetNativeWindow(), browser->profile(), extension,
-      base::Callback<void(bool)>());
+      base::BindRepeating([](bool success) {
+        LOCAL_HISTOGRAM_BOOLEAN(
+            "Apps.AppInfoDialog.CreateExtensionShortcutSuccess", success);
+      }));
 }
 
 void AppLauncherHandler::HandleInstallAppLocally(const base::ListValue* args) {

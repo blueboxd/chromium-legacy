@@ -6,11 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_ORIENTATION_LOCK_DELEGATE_H_
 
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/screen_orientation.mojom-blink.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 
 namespace blink {
@@ -134,7 +134,9 @@ class MediaControlsOrientationLockDelegate final : public NativeEventListener {
 
   TaskHandle lock_to_any_task_;
 
-  mojo::Remote<device::mojom::blink::ScreenOrientationListener> monitor_;
+  HeapMojoRemote<device::mojom::blink::ScreenOrientationListener,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      monitor_;
 
   base::Optional<bool> is_auto_rotate_enabled_by_user_override_for_testing_;
 

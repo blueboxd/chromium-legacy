@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 photo sélectionnée</translation>
 <translation id="2421044535038393232">Poursuivre les modifications</translation>
 <translation id="2435457462613246316">Afficher le mot de passe</translation>
-<translation id="2481538920734869610">AJOUTER UN COMPTE</translation>
 <translation id="2497852260688568942">Votre administrateur a désactivé la synchronisation</translation>
 <translation id="2500374554657206846">Options d'enregistrement des mots de passe</translation>
 <translation id="2523363575747517183">Ce site Web a tenté à plusieurs reprises d'ouvrir une autre application.</translation>
@@ -480,7 +479,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7203585745079012652">Énoncer les réponses</translation>
 <translation id="7265758999917665941">Jamais pour ce site</translation>
 <translation id="7272437679830969316">Impossible de confirmer votre identité. Mot de passe non copié.</translation>
-<translation id="7285236536143823449">OUI, J'ACCEPTE</translation>
 <translation id="7291368939935408496">Préparation des mots de passe…</translation>
 <translation id="7293171162284876153">Pour lancer la synchronisation, activez l'option "Synchroniser vos données Chrome".</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> % téléchargés</translation>
@@ -496,6 +494,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7460314822154045102">Utiliser la caméra</translation>
 <translation id="7464701184726199289">Les données synchronisées seront effacées de tous les appareils. Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Nom de la société</translation>
+<translation id="7473891865547856676">Non, merci</translation>
 <translation id="7481312909269577407">Avancer</translation>
 <translation id="750493650310597496">Aucun favori sélectionné.</translation>
 <translation id="7514365320538308">Télécharger</translation>
@@ -517,7 +516,6 @@ Votre compte étant géré par <ph name="HOSTED_DOMAIN" />, vos données Chrome 
 <translation id="7781829728241885113">Hier</translation>
 <translation id="778855399387580014">Lancer une recherche dans un nouvel onglet Chrome.</translation>
 <translation id="7791543448312431591">Ajouter</translation>
-<translation id="780301667611848630">Non merci</translation>
 <translation id="7840771868269352570">Les éléments sélectionnés seront supprimés.</translation>
 <translation id="7856733331829174190">Téléchargement impossible</translation>
 <translation id="7859704718976024901">Historique de navigation</translation>
@@ -587,6 +585,7 @@ Votre compte étant géré par <ph name="HOSTED_DOMAIN" />, vos données Chrome 
 <translation id="8870413625673593573">Récemment fermés</translation>
 <translation id="8881801611828450202">Chercher cette image sur <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Partager…</translation>
+<translation id="8917490105272468696">J'accepte</translation>
 <translation id="895541991026785598">Signaler un problème</translation>
 <translation id="8976382372951310360">Aide</translation>
 <translation id="8981454092730389528">Commandes Google relatives à l'activité</translation>

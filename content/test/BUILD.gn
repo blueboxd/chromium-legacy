@@ -11,7 +11,6 @@ import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//build/nocompile.gni")
 import("//content/common/features.gni")
-import("//device/vr/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//net/features.gni")
@@ -589,13 +588,6 @@ jumbo_static_library("test_support") {
 
   if (is_linux) {
     deps += [ "//ui/platform_window/common" ]
-  }
-
-  if (enable_vr) {
-    sources += [
-      "../public/test/xr_test_utils.cc",
-      "../public/test/xr_test_utils.h",
-    ]
   }
 }
 
@@ -1919,7 +1911,6 @@ test("content_unittests") {
     "../browser/worker_host/shared_worker_service_impl_unittest.cc",
     "../browser/worker_host/worker_script_fetch_initiator_unittest.cc",
     "../browser/worker_host/worker_script_loader_factory_unittest.cc",
-    "../browser/xr/metrics/session_tracker_unittest.cc",
     "../child/blink_platform_impl_unittest.cc",
     "../child/dwrite_font_proxy/dwrite_font_proxy_win_unittest.cc",
     "../child/dwrite_font_proxy/font_fallback_win_unittest.cc",
@@ -2357,11 +2348,6 @@ test("content_unittests") {
   if (is_linux) {
     sources += [ "../../services/service_manager/embedder/set_process_title_linux_unittest.cc" ]
     deps += [ "//services/service_manager/embedder:set_process_title_linux" ]
-  }
-
-  if (enable_vr) {
-    sources += [ "../browser/xr/service/xr_runtime_manager_unittest.cc" ]
-    deps += [ "//device/vr:vr_fakes" ]
   }
 }
 

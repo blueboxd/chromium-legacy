@@ -292,6 +292,7 @@ const char kNTPHelpURL[] =
                                 atPoint:(CGPoint)touchLocation
                             atIndexPath:(NSIndexPath*)indexPath
                         readLaterAction:(BOOL)readLaterAction {
+  DCHECK(_browser);
   // Unfocus the omnibox as the omnibox can disappear when choosing some
   // options. See crbug.com/928237.
   [self.dispatcher cancelOmniboxEdit];
@@ -312,7 +313,8 @@ const char kNTPHelpURL[] =
                                 atPoint:touchLocation
                             atIndexPath:indexPath
                         readLaterAction:readLaterAction
-                         commandHandler:self];
+                         commandHandler:self
+                                browser:self.browser];
 
   [self.alertCoordinator start];
 }
@@ -320,6 +322,7 @@ const char kNTPHelpURL[] =
 - (void)displayContextMenuForMostVisitedItem:(CollectionViewItem*)item
                                      atPoint:(CGPoint)touchLocation
                                  atIndexPath:(NSIndexPath*)indexPath {
+  DCHECK(_browser);
   // No context menu for action buttons.
   if ([item isKindOfClass:[ContentSuggestionsMostVisitedActionItem class]]) {
     return;
@@ -334,6 +337,7 @@ const char kNTPHelpURL[] =
   self.alertCoordinator = [ContentSuggestionsAlertFactory
       alertCoordinatorForMostVisitedItem:mostVisitedItem
                         onViewController:self.suggestionsViewController
+                             withBrowser:self.browser
                                  atPoint:touchLocation
                              atIndexPath:indexPath
                           commandHandler:self];

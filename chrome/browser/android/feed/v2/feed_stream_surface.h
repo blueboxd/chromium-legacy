@@ -58,35 +58,34 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
 
   // Event reporting functions. These have no side-effect beyond recording
   // metrics. See FeedStreamApi for definitions.
-
   void ReportSliceViewed(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          const base::android::JavaParamRef<jstring>& slice_id);
-
+  void ReportSendFeedbackAction(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void ReportLearnMoreAction(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj);
+  void ReportDownloadAction(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj);
   void ReportNavigationStarted(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj,
                                const base::android::JavaParamRef<jstring>& url,
                                jboolean in_new_tab);
-
   void ReportNavigationDone(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj,
                             const base::android::JavaParamRef<jstring>& url,
                             jboolean in_new_tab);
-
   void ReportRemoveAction(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
-
   void ReportNotInterestedInAction(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-
   void ReportManageInterestsAction(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-
   void ReportContextMenuOpened(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
-
   void ReportStreamScrolled(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj,
                             int distance_dp);

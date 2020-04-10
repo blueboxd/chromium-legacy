@@ -456,6 +456,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   _alertCoordinator =
       [[ActionSheetCoordinator alloc] initWithBaseViewController:self
+                                                         browser:_browser
                                                            title:nil
                                                          message:alertMessage
                                                             rect:itemView.frame
@@ -502,6 +503,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   _alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:self
+                                                   browser:_browser
                                                      title:title
                                                    message:message];
 

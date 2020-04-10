@@ -95,7 +95,7 @@ class UtilitySandboxedProcessLauncherDelegate
 #if !defined(OS_MACOSX)
         sandbox_type_ == service_manager::SandboxType::kSharingService ||
 #endif
-        sandbox_type_ == service_manager::SandboxType::kSoda;
+        sandbox_type_ == service_manager::SandboxType::kSpeechRecognition;
     DCHECK(supported_sandbox_type);
 #endif  // DCHECK_IS_ON()
   }
@@ -210,7 +210,7 @@ class UtilitySandboxedProcessLauncherDelegate
         sandbox_type_ == service_manager::SandboxType::kIme ||
 #endif  // OS_CHROMEOS
         sandbox_type_ == service_manager::SandboxType::kAudio ||
-        sandbox_type_ == service_manager::SandboxType::kSoda) {
+        sandbox_type_ == service_manager::SandboxType::kSpeechRecognition) {
       return service_manager::GetUnsandboxedZygote();
     }
 

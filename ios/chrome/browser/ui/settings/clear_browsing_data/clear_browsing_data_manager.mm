@@ -31,6 +31,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -281,6 +282,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
         (BrowsingDataRemoveMask)dataTypeMaskToRemove
                              baseViewController:
                                  (UIViewController*)baseViewController
+                                        browser:(Browser*)browser
                             sourceBarButtonItem:
                                 (UIBarButtonItem*)sourceBarButtonItem {
   if (dataTypeMaskToRemove == BrowsingDataRemoveMask::REMOVE_NOTHING) {
@@ -291,6 +293,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
   ActionSheetCoordinator* actionCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:baseViewController
+                         browser:browser
                            title:l10n_util::GetNSString(
                                      IDS_IOS_CONFIRM_CLEAR_BUTTON_TITLE)
                          message:nil

@@ -6,7 +6,7 @@
 // Do not edit.
 
 #include "components/schema_org/{{ header_file }}.h"
-#include "base/containers/flat_set.h"
+#include "base/hash/hash.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 
@@ -14,37 +14,41 @@ namespace schema_org {
 namespace entity {
 
 {% for entity in entities %}
-const char k{{entity[0]|upper}}{{entity[1:]}}[] = "{{entity}}";
+const char k{{entity.name[0]|upper}}{{entity.name[1:]}}[] = "{{entity.name}}";
 {% endfor %}
 
 bool IsValidEntityName(const std::string& entity_name) {
-  static const base::NoDestructor<base::flat_set<base::StringPiece>>
-    kValidEntityNames(base::flat_set<base::StringPiece>({
-      {%for entity in entities %}
-      k{{entity[0]|upper}}{{entity[1:]}},
-      {% endfor %}
-  }));
-  return kValidEntityNames->find(entity_name) != kValidEntityNames->end();
+  switch (base::PersistentHash(entity_name)) {
+    {%for entity in entities %}
+      case {{entity.name_hash}}:
+        // {{ entity.name }}
+        return true;
+    {% endfor %}
+  };
+
+  return false;
 }
 
 bool IsDescendedFrom(const std::string& possible_parent,
                      const std::string& possible_child) {
-  static const base::NoDestructor<std::map<std::string, std::vector<std::string>>>
-    kParentEntities(std::map<std::string, std::vector<std::string>>({
-      {%for key in entity_parent_lookup %}
-      { "{{key}}", {
-        {% for parent in entity_parent_lookup[key] %}
-          "{{parent}}",
-        {% endfor %}
+  const auto possible_parent_hash = base::PersistentHash(possible_parent);
+
+  switch (base::PersistentHash(possible_child)) {
+    {%for entity in entity_parent_lookup %}
+      case {{entity.name_hash}}:
+        // {{ entity.name }}
+        switch (possible_parent_hash) {
+          {%for parent in entity.parents %}
+            case {{parent.name_hash}}:
+              // {{ parent.name }}
+              return true;
+          {% endfor %}
         }
-      },
-      {% endfor %}
-    }));
-  auto parents = kParentEntities->find(possible_child);
-  if (parents == kParentEntities->end())
-    return false;
-  auto it = std::find_if(parents->second.begin(), parents->second.end(), [&possible_parent](const std::string& parent) { return parent == possible_parent; });
-  return it != parents->second.end();
+        break;
+    {% endfor %}
+  };
+
+  return false;
 }
 
 

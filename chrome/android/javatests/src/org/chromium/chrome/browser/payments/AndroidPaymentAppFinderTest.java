@@ -220,7 +220,7 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertTrue("No apps should still match the query", mPaymentApps.isEmpty());
+        assertPaymentAppsHaveIdentifiers(/*no identifier*/);
     }
 
     /**
@@ -587,24 +587,14 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("2 apps should match the query", 2, mPaymentApps.size());
-        Set<String> appIdentifiers = new HashSet<>();
-        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
-        Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
-        Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
+        assertPaymentAppsHaveIdentifiers("com.bobpay", "com.alicepay");
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
 
         findApps(methods);
 
-        Assert.assertEquals("2 apps should still match the query", 2, mPaymentApps.size());
-        appIdentifiers.clear();
-        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
-        Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
-        Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
+        assertPaymentAppsHaveIdentifiers("com.bobpay", "com.alicepay");
     }
 
     /**
@@ -787,14 +777,7 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("3 apps should still match the query", 3, mPaymentApps.size());
-        appIdentifiers.clear();
-        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
-        appIdentifiers.add(mPaymentApps.get(2).getIdentifier());
-        Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
-        Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
-        Assert.assertTrue(appIdentifiers.contains("com.charliepay"));
+        assertPaymentAppsHaveIdentifiers("com.alicepay", "com.bobpay", "com.charliepay");
     }
 
     /**
@@ -877,8 +860,7 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getIdentifier());
+        assertPaymentAppsHaveIdentifiers("com.alicepay");
     }
 
     /**
@@ -980,12 +962,7 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("2 apps should still match the query", 2, mPaymentApps.size());
-        appIdentifiers.clear();
-        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
-        Assert.assertTrue(appIdentifiers.contains("com.henrypay"));
-        Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
+        assertPaymentAppsHaveIdentifiers("com.henrypay", "com.bobpay");
     }
 
     /**
@@ -1051,24 +1028,14 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("2 apps should match the query", 2, mPaymentApps.size());
-        Set<String> appIdentifiers = new HashSet<>();
-        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
-        Assert.assertTrue(appIdentifiers.contains("com.ikepay"));
-        Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
+        assertPaymentAppsHaveIdentifiers("com.ikepay", "com.alicepay");
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
 
         findApps(methods);
 
-        Assert.assertEquals("2 apps should still match the query", 2, mPaymentApps.size());
-        appIdentifiers.clear();
-        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
-        Assert.assertTrue(appIdentifiers.contains("com.ikepay"));
-        Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
+        assertPaymentAppsHaveIdentifiers("com.ikepay", "com.alicepay");
     }
 
     /**
@@ -1096,8 +1063,7 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.henrypay", mPaymentApps.get(0).getIdentifier());
+        assertPaymentAppsHaveIdentifiers("com.henrypay");
     }
 
     /**
@@ -1117,8 +1083,42 @@ public class AndroidPaymentAppFinderTest
         mockTwaAndItsInstaller("com.merchant.twa", "com.android.vending");
         findApps(methods);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.merchant.twa", mPaymentApps.get(0).getIdentifier());
+        assertPaymentAppsHaveIdentifiers("com.merchant.twa");
+    }
+
+    /**
+     * For finding app store billing app, test scenario where no payment app has been installed. The
+     * test setting intentionally omits the app installations.
+     */
+    @Test
+    @Feature({"Payments"})
+    public void testFindAppStoreBillingAppNoAppAvailable() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("https://play.google.com/billing");
+
+        mockTwaAndItsInstaller("com.merchant.twa", "com.android.vending");
+        findApps(methods);
+
+        assertPaymentAppsHaveIdentifiers(/*no identifiers*/);
+    }
+
+    /**
+     * For finding app store billing app, test scenario where the app's meta data is null. The test
+     * setting intentionally set the payment app's meta data to null.
+     */
+    @Test
+    @Feature({"Payments"})
+    public void testFindAppStoreBillingAppNullMetaData() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("https://play.google.com/billing");
+
+        mPackageManager.installPaymentApp(
+                "MerchantTwaApp", "com.merchant.twa", null, /*signature=*/"01020304050607080900");
+
+        mockTwaAndItsInstaller("com.merchant.twa", "com.android.vending");
+        findApps(methods);
+
+        assertPaymentAppsHaveIdentifiers(/*no identifiers*/);
     }
 
     /**
@@ -1137,8 +1137,7 @@ public class AndroidPaymentAppFinderTest
         mockTwaAndItsInstaller("com.merchant.twa", "com.android.vending");
         findApps(methods);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.merchant.twa", mPaymentApps.get(0).getIdentifier());
+        assertPaymentAppsHaveIdentifiers("com.merchant.twa");
     }
 
     /**
@@ -1159,8 +1158,7 @@ public class AndroidPaymentAppFinderTest
         mockTwaAndItsInstaller("com.merchant.twa", "com.android.vending");
         findApps(methods);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.merchant.twa", mPaymentApps.get(0).getIdentifier());
+        assertPaymentAppsHaveIdentifiers("com.merchant.twa");
     }
 
     /**
@@ -1186,8 +1184,7 @@ public class AndroidPaymentAppFinderTest
         mockTwaAndItsInstaller("com.merchant.twa", "com.another.appstore");
         findApps(methods);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
+        assertPaymentAppsHaveIdentifiers("com.bobpay");
     }
 
     /**
@@ -1212,8 +1209,7 @@ public class AndroidPaymentAppFinderTest
         mockTwaAndItsInstaller("com.merchant.twa", "com.another.appstore");
         findApps(methods);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
+        assertPaymentAppsHaveIdentifiers("com.bobpay");
     }
 
     /**
@@ -1238,8 +1234,7 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
+        assertPaymentAppsHaveIdentifiers("com.bobpay");
     }
 
     /**
@@ -1265,8 +1260,7 @@ public class AndroidPaymentAppFinderTest
         mockTwaAndItsInstaller("com.merchant.twa", "com.android.vending");
         findApps(noRequestedMethod);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
+        assertPaymentAppsHaveIdentifiers("com.bobpay");
     }
 
     /**
@@ -1320,8 +1314,7 @@ public class AndroidPaymentAppFinderTest
         mockTwaAndItsInstaller("com.merchant.twa", "com.android.vending");
         findApps(methods);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
+        assertPaymentAppsHaveIdentifiers("com.bobpay");
     }
 
     /**
@@ -1344,24 +1337,14 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("2 apps should match the query", 2, mPaymentApps.size());
-        Set<String> appIdentifiers = new HashSet<>();
-        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
-        Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
-        Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
+        assertPaymentAppsHaveIdentifiers("com.alicepay", "com.bobpay");
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
 
         findApps(methods);
 
-        Assert.assertEquals("2 apps should still match the query", 2, mPaymentApps.size());
-        appIdentifiers.clear();
-        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
-        Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
-        Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
+        assertPaymentAppsHaveIdentifiers("com.alicepay", "com.bobpay");
     }
 
     /**
@@ -1402,8 +1385,7 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getIdentifier());
+        assertPaymentAppsHaveIdentifiers("com.alicepay");
         Assert.assertEquals(5, mPaymentApps.get(0).getInstrumentMethodNames().size());
         Assert.assertTrue(mPaymentApps.get(0).getInstrumentMethodNames().contains("basic-card"));
         Assert.assertTrue(mPaymentApps.get(0).getInstrumentMethodNames().contains("interledger"));

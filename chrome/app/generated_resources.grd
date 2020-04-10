@@ -10467,9 +10467,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Learn more
     </message>
 
-    <!-- Speech On-Device API -->
-    <message name="IDS_UTILITY_PROCESS_SODA_SERVICE_NAME" desc="The name of the service process used to interface with the Speech On-Demand API.">
-      SODA Service
+    <!-- Speech Recognition -->
+    <message name="IDS_UTILITY_PROCESS_SPEECH_RECOGNITION_SERVICE_NAME" desc="The name of the service process used to interface with the Speech On-Demand API.">
+      Speech recognition service
     </message>
 
     <!-- App pause prompt -->

@@ -57,8 +57,8 @@ int main(int argc, char** argv) {
   WebContentRunner::GetContextParamsCallback get_context_params_callback =
       base::BindRepeating(&GetContextParams);
 
-  WebContentRunner runner(
-      std::move(get_context_params_callback),
+  WebContentRunner runner(std::move(get_context_params_callback));
+  runner.PublishRunnerService(
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get());
 
   base::fuchsia::ComponentContextForCurrentProcess()

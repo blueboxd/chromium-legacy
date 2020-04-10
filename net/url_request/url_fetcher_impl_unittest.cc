@@ -1185,6 +1185,9 @@ TEST_F(URLFetcherTest, StopOnRedirect) {
             delegate.fetcher()->GetStatus().status());
   EXPECT_THAT(delegate.fetcher()->GetStatus().error(), IsError(ERR_ABORTED));
   EXPECT_EQ(301, delegate.fetcher()->GetResponseCode());
+  ASSERT_TRUE(delegate.fetcher()->GetResponseHeaders());
+  EXPECT_TRUE(delegate.fetcher()->GetResponseHeaders()->HasHeaderValue(
+      "Location", std::string(kRedirectTarget)));
 }
 
 TEST_F(URLFetcherTest, ThrottleOnRepeatedFetches) {

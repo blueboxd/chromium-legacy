@@ -307,7 +307,8 @@ gfx::Size OverviewItemView::GetPreviewViewSize() const {
       preview_pref_size.width() / preview_pref_size.height();
   gfx::SizeF target_size(GetContentAreaBounds().size());
   OverviewGridWindowFillMode fill_mode =
-      overview_item_->GetWindowDimensionsType();
+      overview_item_ ? overview_item_->GetWindowDimensionsType()
+                     : OverviewGridWindowFillMode::kNormal;
   switch (fill_mode) {
     case OverviewGridWindowFillMode::kNormal:
       break;

@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">1 ədəd seçildi</translation>
 <translation id="2421044535038393232">Redaktəyə Davam Edin</translation>
 <translation id="2435457462613246316">Parolu göstərin</translation>
-<translation id="2481538920734869610">HESAB ƏLAVƏ EDİN</translation>
 <translation id="2497852260688568942">Sinxronizasiya administratorunuz tərəfindən deaktiv edilib</translation>
 <translation id="2500374554657206846">Parolu Yadda Saxlamaq üçün Seçimlər</translation>
 <translation id="2523363575747517183">Bu veb sayt davamlı olaraq digər tətbiqi açmağa çalışır.</translation>
@@ -480,7 +479,6 @@ Datanız <ph name="TIME" /> tarixində sinxronizasiya parol sözü ilə şifrəl
 <translation id="7203585745079012652">Geri Cavab</translation>
 <translation id="7265758999917665941">Bu sayt üçün heç vaxt yadda saxlamayın</translation>
 <translation id="7272437679830969316">Kimliyinizi doğrulamaq mümkün deyil. Parol kopyalanmayıb.</translation>
-<translation id="7285236536143823449">BƏLİ, RAZIYAM</translation>
 <translation id="7291368939935408496">Parollar Hazırlanır...</translation>
 <translation id="7293171162284876153">Sinxronizasiyanı başlatmaq üçün "Chrome datasını sinxronizasiya edin" seçimini aktiv edin.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> faiz endirilib</translation>
@@ -496,6 +494,7 @@ Datanız <ph name="TIME" /> tarixində sinxronizasiya parol sözü ilə şifrəl
 <translation id="7460314822154045102">Kameradan istifadə edin</translation>
 <translation id="7464701184726199289">Bu, bütün cihazlardan sinxronizasiya olunmuş datanı silir. Yadda saxlanmış sayt ayarları silinməyəcək və axtarış təcrübənizə təsir edə bilər. <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Şirkətin Adı</translation>
+<translation id="7473891865547856676">Yox</translation>
 <translation id="7481312909269577407">İrəli</translation>
 <translation id="750493650310597496">1 ədəd seçilib</translation>
 <translation id="7514365320538308">Endirmə</translation>
@@ -517,7 +516,6 @@ Hesabınız <ph name="HOSTED_DOMAIN" /> tərəfindən idarə edildiyinə görə,
 <translation id="7781829728241885113">Dünən</translation>
 <translation id="778855399387580014">Yeni Chrome tabında axtarışa başlayın.</translation>
 <translation id="7791543448312431591">Əlavə etmək</translation>
-<translation id="780301667611848630">Yox, çox sağ olun</translation>
 <translation id="7840771868269352570">Seçdiyiniz elementlər silinəcək.</translation>
 <translation id="7856733331829174190">Yüklənmədi</translation>
 <translation id="7859704718976024901">Brauzer Tarixçəsi</translation>
@@ -587,6 +585,7 @@ Hesabınız <ph name="HOSTED_DOMAIN" /> tərəfindən idarə edildiyinə görə,
 <translation id="8870413625673593573">Son Qapadılan</translation>
 <translation id="8881801611828450202">Bu Şəkil üçün <ph name="SEARCH_ENGINE" /> Axtarışı Edin</translation>
 <translation id="8909135823018751308">Paylaşın...</translation>
+<translation id="8917490105272468696">Bəli, razıyam</translation>
 <translation id="895541991026785598">Problemi Xəbər verin</translation>
 <translation id="8976382372951310360">Yardım</translation>
 <translation id="8981454092730389528">Google Fəaliyyət Nəzarəti</translation>

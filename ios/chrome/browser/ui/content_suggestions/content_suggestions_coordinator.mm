@@ -127,6 +127,7 @@
                    logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
                                   self.browser, self.webState)
       voiceSearchAvailability:&_voiceSearchAvailability];
+  self.NTPMediator.browser = self.browser;
 
   self.headerController = [[ContentSuggestionsHeaderViewController alloc] init];
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol

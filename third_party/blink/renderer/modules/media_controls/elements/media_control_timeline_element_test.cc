@@ -189,8 +189,7 @@ TEST_F(MediaControlTimelineElementTest, ChangeResumesPlayback) {
 
   Timeline()->DispatchEvent(
       *TouchEvent::Create("touchstart", GetValidTouchEventInit()));
-  Timeline()->DispatchEvent(
-      *TouchEvent::Create("change", GetValidTouchEventInit()));
+  Timeline()->DispatchEvent(*Event::Create("change", GetValidTouchEventInit()));
   EXPECT_FALSE(Video()->paused());
 }
 
@@ -244,8 +243,7 @@ TEST_F(MediaControlTimelineElementTest, ChangeAfterPointerDoesNotResume) {
 
   Timeline()->DispatchEvent(
       *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
-  Timeline()->DispatchEvent(
-      *TouchEvent::Create("change", GetValidTouchEventInit()));
+  Timeline()->DispatchEvent(*Event::Create("change", GetValidTouchEventInit()));
   EXPECT_TRUE(Video()->paused());
 }
 

@@ -14,7 +14,8 @@ namespace blink {
 
 namespace {
 
-WGPUTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc) {
+WGPUTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc,
+                                 GPUDevice* device) {
   DCHECK(webgpu_desc);
 
   WGPUTextureDescriptor dawn_desc = {};
@@ -23,7 +24,17 @@ WGPUTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc) {
   dawn_desc.dimension =
       AsDawnEnum<WGPUTextureDimension>(webgpu_desc->dimension());
   dawn_desc.size = AsDawnType(&webgpu_desc->size());
-  dawn_desc.arrayLayerCount = webgpu_desc->arrayLayerCount();
+
+  if (webgpu_desc->hasArrayLayerCount()) {
+    device->AddConsoleWarning("arrayLayerCount is deprecated: use size.depth");
+    dawn_desc.arrayLayerCount = webgpu_desc->arrayLayerCount();
+  } else {
+    if (dawn_desc.dimension == WGPUTextureDimension_2D) {
+      dawn_desc.arrayLayerCount = dawn_desc.size.depth;
+      dawn_desc.size.depth = 1;
+    }
+  }
+
   dawn_desc.format = AsDawnEnum<WGPUTextureFormat>(webgpu_desc->format());
   dawn_desc.mipLevelCount = webgpu_desc->mipLevelCount();
   dawn_desc.sampleCount = webgpu_desc->sampleCount();
@@ -72,7 +83,7 @@ GPUTexture* GPUTexture::Create(GPUDevice* device,
     return nullptr;
   }
 
-  WGPUTextureDescriptor dawn_desc = AsDawnType(webgpu_desc);
+  WGPUTextureDescriptor dawn_desc = AsDawnType(webgpu_desc, device);
 
   return MakeGarbageCollected<GPUTexture>(
       device,

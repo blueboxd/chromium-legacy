@@ -383,8 +383,7 @@ TEST_F(SnapshotManagerTest, PurgeInvalidAndOldSnapshotsKeepsMaxValidSnapshots) {
 
   int max_number_of_snapshots = 3;
   SnapshotManager snapshot_manager(user_data_dir());
-  snapshot_manager.PurgeInvalidAndOldSnapshots(max_number_of_snapshots,
-                                               base::nullopt);
+  snapshot_manager.PurgeInvalidAndOldSnapshots(max_number_of_snapshots);
 
   const base::FilePath deletion_directory =
       user_data_dir()
@@ -419,38 +418,12 @@ TEST_F(SnapshotManagerTest, PurgeInvalidAndOldSnapshotsKeepsValidSnapshots) {
                base::File::FLAG_CREATE | base::File::FLAG_WRITE);
   }
 
-  int max_number_of_snapshots = 3;
+  size_t max_number_of_snapshots = 3;
   SnapshotManager snapshot_manager(user_data_dir());
-  snapshot_manager.PurgeInvalidAndOldSnapshots(max_number_of_snapshots,
-                                               base::nullopt);
+  snapshot_manager.PurgeInvalidAndOldSnapshots(max_number_of_snapshots);
 
   for (const auto& path : valid_snapshot_paths)
     EXPECT_TRUE(base::PathExists(path));
-}
-
-TEST_F(SnapshotManagerTest,
-       PurgeInvalidAndOldSnapshotsKeepsValidSnapshotsPerMilestone) {
-  std::vector<base::FilePath> valid_snapshot_paths{
-      user_data_dir().Append(kSnapshotsDir).AppendASCII("19.0.0"),
-      user_data_dir().Append(kSnapshotsDir).AppendASCII("20.0.0"),
-      user_data_dir().Append(kSnapshotsDir).AppendASCII("20.0.1"),
-      user_data_dir().Append(kSnapshotsDir).AppendASCII("21.0.1"),
-  };
-
-  for (const auto& path : valid_snapshot_paths) {
-    ASSERT_TRUE(base::CreateDirectory(path));
-    base::File(path.Append(kDowngradeLastVersionFile),
-               base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-  }
-
-  int max_number_of_snapshots = 1;
-  SnapshotManager snapshot_manager(user_data_dir());
-  snapshot_manager.PurgeInvalidAndOldSnapshots(max_number_of_snapshots, 20);
-
-  EXPECT_TRUE(base::PathExists(valid_snapshot_paths[0]));
-  EXPECT_FALSE(base::PathExists(valid_snapshot_paths[1]));
-  EXPECT_TRUE(base::PathExists(valid_snapshot_paths[2]));
-  EXPECT_TRUE(base::PathExists(valid_snapshot_paths[3]));
 }
 
 }  // namespace downgrade

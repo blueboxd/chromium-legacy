@@ -14,7 +14,7 @@ namespace schema_org {
 namespace entity {
 
 {% for entity in entities %}
-extern const char k{{entity[0]|upper}}{{entity[1:]}}[];
+extern const char k{{entity.name[0]|upper}}{{entity.name[1:]}}[];
 {% endfor %}
 
 bool IsValidEntityName(const std::string& entity_name);

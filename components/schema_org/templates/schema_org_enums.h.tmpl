@@ -19,7 +19,7 @@ namespace enums {
 {% for enum in enums %}
   enum class {{enum.name}} {
     {% for option in enum.options %}
-      k{{option}} = {{ loop.index }},
+      k{{option.name}} = {{ loop.index }},
     {% endfor %}
   };
 {% endfor %}

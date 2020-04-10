@@ -11,7 +11,7 @@
 @class BookmarkEditViewController;
 @class BookmarkFolderViewController;
 @protocol BrowserCommands;
-class ChromeBrowserState;
+class Browser;
 
 namespace bookmarks {
 class BookmarkNode;
@@ -52,9 +52,7 @@ class BookmarkNode;
 // |bookmark|: mustn't be NULL at initialization time. It also mustn't be a
 //             folder.
 - (instancetype)initWithBookmark:(const bookmarks::BookmarkNode*)bookmark
-                    browserState:(ChromeBrowserState*)browserState
-                      dispatcher:(id<BrowserCommands>)dispatcher
-    NS_DESIGNATED_INITIALIZER;
+                         browser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 // Closes the edit view as if close button was pressed.

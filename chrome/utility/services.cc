@@ -36,10 +36,10 @@
 #include "chrome/services/qrcode_generator/qrcode_generator_service_impl.h"  // nogncheck
 #include "chrome/services/sharing/public/mojom/sharing.mojom.h"
 #include "chrome/services/sharing/sharing_impl.h"
-#include "chrome/services/soda/soda_service_impl.h"
+#include "chrome/services/speech/speech_recognition_service_impl.h"
 #include "chrome/utility/importer/profile_import_impl.h"
 #include "components/mirroring/service/mirroring_service.h"
-#include "media/mojo/mojom/soda_service.mojom.h"
+#include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"  // nogncheck
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #endif  // !defined(OS_ANDROID)
@@ -139,8 +139,10 @@ auto RunSharing(mojo::PendingReceiver<sharing::mojom::Sharing> receiver) {
   return std::make_unique<sharing::SharingImpl>(std::move(receiver));
 }
 
-auto RunSodaService(mojo::PendingReceiver<media::mojom::SodaService> receiver) {
-  return std::make_unique<soda::SodaServiceImpl>(std::move(receiver));
+auto RunSpeechRecognitionService(
+    mojo::PendingReceiver<media::mojom::SpeechRecognitionService> receiver) {
+  return std::make_unique<speech::SpeechRecognitionServiceImpl>(
+      std::move(receiver));
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -242,7 +244,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
     RunQRCodeGeneratorService,
     RunMirroringService,
     RunSharing,
-    RunSodaService,
+    RunSpeechRecognitionService,
 #endif
 
 #if defined(OS_WIN)

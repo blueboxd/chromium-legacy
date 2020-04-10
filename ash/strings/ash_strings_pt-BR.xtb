@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Clique para ver mais opções</translation>
 <translation id="1570871743947603115">Alternar Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">acessar todas as suas atividades nesta sessão;</translation>
-<translation id="1632985212731562677">O "acesso com interruptor" pode ser desativado em "Config. &gt; Acessibilidade".</translation>
+<translation id="1632985212731562677">O "acesso com interruptor" pode ser desativado em Configurações &gt; Acessibilidade.</translation>
 <translation id="1654477262762802994">Iniciar uma consulta por voz</translation>
 <translation id="1658406695958299976">Ainda não foi possível confirmar sua senha. Observação: se você alterou sua senha recentemente, a nova senha será aplicada depois que você sair da conta. Use a senha antiga aqui.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
@@ -105,7 +105,7 @@
 <translation id="2268813581635650749">Desconectar todos</translation>
 <translation id="2277103315734023688">Avançar</translation>
 <translation id="2292698582925480719">Escala de exibição</translation>
-<translation id="2295777434187870477">O microfone está ativado. Alterná-lo silenciará a entrada.</translation>
+<translation id="2295777434187870477">O microfone está ativado. Desativá-lo silenciará a entrada.</translation>
 <translation id="2298170939937364391">Lupa de tela cheia ativada. Pressione Ctrl+Pesquisa+M novamente para desativá-la.</translation>
 <translation id="2302092602801625023">Esta conta é gerenciada pelo Family Link</translation>
 <translation id="2303600792989757991">Visão geral da janela de alternância</translation>
@@ -299,7 +299,7 @@
 <translation id="4665114317261903604">Alternar "Não perturbe". <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Desbloquear dispositivo usando o código de pai/mãe</translation>
 <translation id="4702647871202761252">A tela de privacidade está desativada</translation>
-<translation id="4705716602320768426">Feedback do arquivo</translation>
+<translation id="4705716602320768426">Enviar feedback</translation>
 <translation id="4710243778082831592">Configurações do IME</translation>
 <translation id="4731797938093519117">Acesso de pai/mãe</translation>
 <translation id="4734965478015604180">Horizontal</translation>

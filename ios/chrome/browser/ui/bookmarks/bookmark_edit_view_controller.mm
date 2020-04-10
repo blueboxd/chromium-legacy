@@ -18,6 +18,7 @@
 #include "components/url_formatter/url_fixer.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
@@ -105,6 +106,8 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 // Redefined to be readwrite.
 @property(nonatomic, strong) BookmarkFolderViewController* folderViewController;
 
+@property(nonatomic, assign) Browser* browser;
+
 @property(nonatomic, assign) ChromeBrowserState* browserState;
 
 // Dispatcher for sending commands.
@@ -169,6 +172,7 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 @synthesize displayingValidURL = _displayingValidURL;
 @synthesize folder = _folder;
 @synthesize folderViewController = _folderViewController;
+@synthesize browser = _browser;
 @synthesize browserState = _browserState;
 @synthesize cancelItem = _cancelItem;
 @synthesize doneItem = _doneItem;
@@ -179,17 +183,16 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 #pragma mark - Lifecycle
 
 - (instancetype)initWithBookmark:(const BookmarkNode*)bookmark
-                    browserState:(ChromeBrowserState*)browserState
-                      dispatcher:(id<BrowserCommands>)dispatcher {
+                         browser:(Browser*)browser {
   DCHECK(bookmark);
-  DCHECK(browserState);
+  DCHECK(browser);
   self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     DCHECK(!bookmark->is_folder());
-    DCHECK(!browserState->IsOffTheRecord());
+    DCHECK(!browser->GetBrowserState()->IsOffTheRecord());
     _bookmark = bookmark;
-    _bookmarkModel =
-        ios::BookmarkModelFactory::GetForBrowserState(browserState);
+    _bookmarkModel = ios::BookmarkModelFactory::GetForBrowserState(
+        browser->GetBrowserState());
 
     _folder = bookmark->parent();
 
@@ -197,8 +200,12 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
     _modelBridge.reset(
         new bookmarks::BookmarkModelBridge(self, _bookmarkModel));
 
-    _browserState = browserState;
-    _dispatcher = dispatcher;
+    _browser = browser;
+    _browserState = browser->GetBrowserState()->GetOriginalChromeBrowserState();
+    // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+    // clean up.
+    _dispatcher =
+        static_cast<id<BrowserCommands>>(browser->GetCommandDispatcher());
   }
   return self;
 }
@@ -638,6 +645,7 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
     (UIPresentationController*)presentationController {
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self
+                         browser:_browser
                            title:nil
                          message:nil
                    barButtonItem:self.cancelItem];

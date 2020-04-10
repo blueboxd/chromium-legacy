@@ -7,7 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "net/http/structured_headers.h"
-#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
 
 namespace blink {
@@ -41,22 +40,30 @@ net::structured_headers::Item PolicyValueToItem(const PolicyValue& value) {
 // static
 base::Optional<std::string> DocumentPolicy::Serialize(
     const FeatureState& policy) {
+  return DocumentPolicy::SerializeInternal(policy,
+                                           GetDocumentPolicyFeatureInfoMap());
+}
+
+// static
+base::Optional<std::string> DocumentPolicy::SerializeInternal(
+    const FeatureState& policy,
+    const DocumentPolicyFeatureInfoMap& feature_info_map) {
   net::structured_headers::List root;
   root.reserve(policy.size());
 
   std::vector<std::pair<mojom::DocumentPolicyFeature, PolicyValue>>
       sorted_policy(policy.begin(), policy.end());
   std::sort(sorted_policy.begin(), sorted_policy.end(),
-            [](const auto& a, const auto& b) {
-              const auto& m = GetDocumentPolicyFeatureInfoMap();
-              const std::string& feature_a = m.at(a.first).feature_name;
-              const std::string& feature_b = m.at(b.first).feature_name;
+            [&](const auto& a, const auto& b) {
+              const std::string& feature_a =
+                  feature_info_map.at(a.first).feature_name;
+              const std::string& feature_b =
+                  feature_info_map.at(b.first).feature_name;
               return feature_a < feature_b;
             });
 
   for (const auto& policy_entry : sorted_policy) {
-    const auto& info =
-        GetDocumentPolicyFeatureInfoMap().at(policy_entry.first /* feature */);
+    const auto& info = feature_info_map.at(policy_entry.first /* feature */);
 
     const PolicyValue& value = policy_entry.second;
     if (value.Type() == mojom::PolicyValueType::kBool) {
@@ -79,7 +86,6 @@ base::Optional<std::string> DocumentPolicy::Serialize(
 
   return net::structured_headers::SerializeList(root);
 }
-
 
 // static
 DocumentPolicy::FeatureState DocumentPolicy::MergeFeatureState(

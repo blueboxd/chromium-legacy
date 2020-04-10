@@ -1,3 +1,0 @@
-per-file soda_sandbox_hook_linux.*=file://sandbox/linux/OWNERS
-
-# COMPONENT: Internals>Sandbox

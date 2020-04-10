@@ -12,6 +12,7 @@
 
 // Init with the parameters for anchoring the popover to a UIView.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
                                      title:(NSString*)title
                                    message:(NSString*)message
                                       rect:(CGRect)rect
@@ -20,19 +21,16 @@
 
 // Init with the parameters for anchoring the popover to a UIBarButtonItem.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
                                      title:(NSString*)title
                                    message:(NSString*)message
                              barButtonItem:(UIBarButtonItem*)barButtonItem
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
                                      title:(NSString*)title
                                    message:(NSString*)message NS_UNAVAILABLE;
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                     title:(NSString*)title
-                                   message:(NSString*)message
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
 
 // Configures the underlying UIAlertController's popover arrow direction.
 // Default is UIPopoverArrowDirectionAny.

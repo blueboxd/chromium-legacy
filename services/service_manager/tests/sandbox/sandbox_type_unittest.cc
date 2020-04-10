@@ -85,8 +85,10 @@ TEST(SandboxTypeTest, Utility) {
   EXPECT_EQ(SandboxType::kAudio, SandboxTypeFromCommandLine(command_line8));
 
   base::CommandLine command_line9(command_line);
-  SetCommandLineFlagsForSandboxType(&command_line9, SandboxType::kSoda);
-  EXPECT_EQ(SandboxType::kSoda, SandboxTypeFromCommandLine(command_line9));
+  SetCommandLineFlagsForSandboxType(&command_line9,
+                                    SandboxType::kSpeechRecognition);
+  EXPECT_EQ(SandboxType::kSpeechRecognition,
+            SandboxTypeFromCommandLine(command_line9));
 
 #if defined(OS_WIN)
   base::CommandLine command_line10(command_line);

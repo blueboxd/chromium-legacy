@@ -6,7 +6,8 @@
 
 dictionary GPUTextureDescriptor : GPUObjectDescriptorBase {
     required GPUExtent3D size;
-    unsigned long arrayLayerCount = 1;
+    // TODO(crbug.com/1069302): arrayLayerCount is deprecated; remove it.
+    unsigned long arrayLayerCount;
     unsigned long mipLevelCount = 1;
     unsigned long sampleCount = 1;
     GPUTextureDimension dimension = "2d";

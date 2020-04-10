@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL First contentful paint fires due to pseudo-element image. assert_equals: Expected first contentful paint not found.  expected 1 but got 0
-Harness: the test ran to completion.
-

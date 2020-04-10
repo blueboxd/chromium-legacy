@@ -12,6 +12,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/stl_util.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
 #import "ios/chrome/browser/ui/reading_list/empty_reading_list_message_util.h"
@@ -92,6 +93,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 @synthesize delegate = _delegate;
 @synthesize audience = _audience;
 @synthesize dataSource = _dataSource;
+@synthesize browser = _browser;
 @dynamic tableViewModel;
 @synthesize dataSourceModifiedWhileEditing = _dataSourceModifiedWhileEditing;
 @synthesize toolbarManager = _toolbarManager;
@@ -524,8 +526,9 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 
 // Creates a confirmation action sheet for the "Mark" toolbar button item.
 - (void)initializeMarkConfirmationSheet {
-  self.markConfirmationSheet =
-      [self.toolbarManager markButtonConfirmationWithBaseViewController:self];
+  self.markConfirmationSheet = [self.toolbarManager
+      markButtonConfirmationWithBaseViewController:self
+                                           browser:_browser];
 
   [self.markConfirmationSheet
       addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_CANCEL)

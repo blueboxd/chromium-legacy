@@ -115,7 +115,6 @@
 <translation id="2386793615875593361">Wybrano: 1</translation>
 <translation id="2421044535038393232">Edytuj dalej</translation>
 <translation id="2435457462613246316">Pokaż hasło</translation>
-<translation id="2481538920734869610">DODAJ KONTO</translation>
 <translation id="2497852260688568942">Synchronizację wyłączył administrator</translation>
 <translation id="2500374554657206846">Opcje zapisania hasła</translation>
 <translation id="2523363575747517183">Ta strona internetowa wielokrotnie próbuje otworzyć inną aplikację.</translation>
@@ -480,7 +479,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7203585745079012652">Odczytuj odpowiedzi</translation>
 <translation id="7265758999917665941">Nigdy dla tej witryny</translation>
 <translation id="7272437679830969316">Nie można zweryfikować Twojej tożsamości. Hasło nie zostało skopiowane.</translation>
-<translation id="7285236536143823449">ZGADZAM SIĘ</translation>
 <translation id="7291368939935408496">Przygotowuję hasła…</translation>
 <translation id="7293171162284876153">Aby rozpocząć synchronizację, włącz „Synchronizuj dane Chrome”.</translation>
 <translation id="7336264872878993241">Pobrano <ph name="PERCENT" /> procent</translation>
@@ -496,6 +494,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7460314822154045102">Użyj aparatu</translation>
 <translation id="7464701184726199289">Spowoduje to usunięcie zsynchronizowanych danych ze wszystkich urządzeń. Zapisane ustawienia witryn nie zostaną usunięte i mogą zawierać informacje o Twoim korzystaniu z przeglądarki. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Nazwa firmy</translation>
+<translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7481312909269577407">Dalej</translation>
 <translation id="750493650310597496">Nic nie wybrałeś</translation>
 <translation id="7514365320538308">Pobierz</translation>
@@ -517,7 +516,6 @@ Ponieważ Twoim kontem zarządza <ph name="HOSTED_DOMAIN" />, Twoje dane Chrome 
 <translation id="7781829728241885113">Wczoraj</translation>
 <translation id="778855399387580014">Rozpocznij wyszukiwanie na nowej karcie Chrome.</translation>
 <translation id="7791543448312431591">Dodaj</translation>
-<translation id="780301667611848630">Nie, dziękuję</translation>
 <translation id="7840771868269352570">Wybrane elementy zostaną usunięte.</translation>
 <translation id="7856733331829174190">Nie udało się pobrać pliku</translation>
 <translation id="7859704718976024901">Historia przeglądania</translation>
@@ -587,6 +585,7 @@ Ponieważ Twoim kontem zarządza <ph name="HOSTED_DOMAIN" />, Twoje dane Chrome 
 <translation id="8870413625673593573">Ostatnio zamknięte</translation>
 <translation id="8881801611828450202">Szukaj tego obrazu w: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8909135823018751308">Udostępnij…</translation>
+<translation id="8917490105272468696">Tak, zgadzam się</translation>
 <translation id="895541991026785598">Zgłaszanie problemu</translation>
 <translation id="8976382372951310360">Pomoc</translation>
 <translation id="8981454092730389528">Zarządzanie aktywnością w Google</translation>

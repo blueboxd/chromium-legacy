@@ -466,6 +466,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 
   _installDriveAlertCoordinator = [[AlertCoordinator alloc]
       initWithBaseViewController:self.baseViewController
+                         browser:self.browser
                            title:title
                          message:message];
 

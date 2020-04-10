@@ -7,7 +7,7 @@
 
 #include "base/files/file_path.h"
 
-namespace soda {
+namespace speech {
 
 // Location of the SODA component relative to components directory.
 extern const base::FilePath::CharType kSodaInstallationRelativePath[];
@@ -37,6 +37,6 @@ const base::FilePath GetSodaBinaryPath();
 // an empty path if SODA is not installed.
 const base::FilePath GetSodaConfigPath();
 
-}  // namespace soda
+}  // namespace speech
 
 #endif  // COMPONENTS_SODA_CONSTANTS_H_

@@ -11,6 +11,7 @@
 #import "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
@@ -56,6 +57,8 @@ const int kNoActiveCopy = 0;
 @interface ImageCopier ()
 // Base view controller for the alerts.
 @property(nonatomic, weak) UIViewController* baseViewController;
+// The browser.
+@property(nonatomic, assign) Browser* browser;
 // Alert coordinator to give feedback to the user.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 // A counter which generates one ID for each call on
@@ -74,14 +77,16 @@ const int kNoActiveCopy = 0;
 @synthesize baseViewController = _baseViewController;
 @synthesize idGenerator = _idGenerator;
 @synthesize activeID = _activeID;
+@synthesize browser = _browser;
 
-- (instancetype)initWithBaseViewController:
-    (UIViewController*)baseViewController {
+- (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
+                                   browser:(Browser*)browser {
   self = [super init];
   if (self) {
     self.idGenerator = 1;
     self.activeID = kNoActiveCopy;
     self.baseViewController = baseViewController;
+    self.browser = browser;
   }
   return self;
 }
@@ -133,6 +138,7 @@ const int kNoActiveCopy = 0;
   [self.alertCoordinator stop];
   self.alertCoordinator = [[AlertCoordinator alloc]
       initWithBaseViewController:self.baseViewController
+                         browser:self.browser
                            title:l10n_util::GetNSStringWithFixup(
                                      IDS_IOS_CONTENT_COPYIMAGE_ALERT_COPYING)
                          message:nil];

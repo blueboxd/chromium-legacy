@@ -1031,6 +1031,9 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_ICON_WARNING_ARIA_LABEL" desc="Accessibility text for a safety check child icon, that indicates a warning for the child check.">
     Warning
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_REVIEW" desc="Text for a button that allows users to review safety check findings, such as compromised passwords or blocklisted extensions.">
+    Review
+  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL" desc="'Updates' is an element in safety check that shows the update status of Chrome.">
     Updates
   </message>
@@ -1040,10 +1043,8 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PRIMARY_LABEL" desc="'Passwords' is an element in safety check that allows users to check for their passwords being compromised.">
     Passwords
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_BUTTON" desc="This button allows users to change their compromised passwords.">
-    {NUM_PASSWORDS, plural,
-     =1 {Change password}
-     other {Change passwords}}
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_BUTTON_ARIA_LABEL" desc="Accessibility text for the button that allows users to review their passwords.">
+    Review passwords
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENABLED" desc="This text points out that Safe Browsing is enabled and that the user is protected.">
     Safe Browsing is on and protecting you from harmful sites and downloads
@@ -1080,9 +1081,6 @@
     {NUM_EXTENSIONS, plural,
      =1 {Your administrator turned 1 potentially harmful extension back on}
      other {Your administrator turned {NUM_EXTENSIONS} potentially harmful extensions back on}}
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON" desc="This button allows users to review their extensions settings.">
-    Review
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON_ARIA_LABEL" desc="Accessibility text for the button that allows users to review their extensions settings.">
     Review extensions

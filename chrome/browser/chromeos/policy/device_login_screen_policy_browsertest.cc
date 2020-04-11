@@ -204,13 +204,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLoginScreenPolicyBrowsertest,
 // Tests that enabling/disabling public accounts correctly reflects in the login
 // UI.
 IN_PROC_BROWSER_TEST_F(DeviceLoginScreenPolicyBrowsertest, DeviceLocalAccount) {
-  chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
-
-  // Wait for Gaia dialog to be open.
-  chromeos::test::TestPredicateWaiter(base::BindRepeating([]() {
-    return ash::LoginScreenTestApi::IsOobeDialogVisible();
-  })).Wait();
-
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   auto* account = proto.mutable_device_local_accounts()->add_account();
   account->set_account_id("test");
@@ -222,6 +216,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLoginScreenPolicyBrowsertest, DeviceLocalAccount) {
   chromeos::test::TestPredicateWaiter(base::BindRepeating([]() {
     return !ash::LoginScreenTestApi::IsOobeDialogVisible();
   })).Wait();
+  EXPECT_EQ(ash::LoginScreenTestApi::GetUsersCount(), 1);
 
   proto.clear_device_local_accounts();
   RefreshDevicePolicy();

@@ -129,8 +129,8 @@
           <div class="separator"></div>
           <cr-button id="safetyCheckPasswordsButton" class="action-button"
               on-click="onPasswordsButtonClick_" no-search
-              aria-label="$i18n{safetyCheckExtensionsButton}">
-            $i18n{safetyCheckExtensionsButton}
+              aria-label="$i18n{safetyCheckPasswordsButtonAriaLabel}">
+            $i18n{safetyCheckReview}
           </cr-button>
         </template>
       </div>
@@ -184,7 +184,7 @@
               class$="[[getExtensionsButtonClass_(extensionsStatus_)]]"
               on-click="onSafetyCheckExtensionsButtonClick_" no-search
               aria-label="$i18n{safetyCheckExtensionsButtonAriaLabel}">
-            $i18n{safetyCheckExtensionsButton}
+            $i18n{safetyCheckReview}
           </cr-button>
         </template>
         <template is="dom-if"

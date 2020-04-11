@@ -16,10 +16,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "components/url_pattern_index/url_pattern_index.h"
 #include "components/web_cache/browser/web_cache_manager.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
@@ -66,10 +64,6 @@ int GetIndexedRulesetFormatVersion() {
 std::string GetVersionHeader() {
   return base::StringPrintf("---------Version=%d",
                             GetIndexedRulesetFormatVersion());
-}
-
-void ClearRendererCacheOnUI() {
-  web_cache::WebCacheManager::GetInstance()->ClearCacheOnNavigation();
 }
 
 }  // namespace
@@ -157,14 +151,9 @@ bool PersistIndexedRuleset(const base::FilePath& path,
   return true;
 }
 
-// Helper to clear each renderer's in-memory cache the next time it navigates.
 void ClearRendererCacheOnNavigation() {
-  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    ClearRendererCacheOnUI();
-  } else {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&ClearRendererCacheOnUI));
-  }
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  web_cache::WebCacheManager::GetInstance()->ClearCacheOnNavigation();
 }
 
 void LogReadDynamicRulesStatus(ReadJSONRulesResult::Status status) {

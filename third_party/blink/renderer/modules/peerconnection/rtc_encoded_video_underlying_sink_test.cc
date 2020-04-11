@@ -27,11 +27,34 @@ namespace blink {
 
 namespace {
 
+const uint32_t kSSRC = 1;
+
 class MockWebRtcTransformedFrameCallback
     : public webrtc::TransformedFrameCallback {
  public:
   MOCK_METHOD1(OnTransformedFrame,
                void(std::unique_ptr<webrtc::TransformableFrameInterface>));
+};
+
+class FakeVideoFrame : public webrtc::TransformableVideoFrameInterface {
+ public:
+  explicit FakeVideoFrame(uint32_t ssrc) : ssrc_(ssrc) {}
+
+  rtc::ArrayView<const uint8_t> GetData() const override {
+    return rtc::ArrayView<const uint8_t>();
+  }
+
+  // Copies |data| into the owned frame payload data.
+  void SetData(rtc::ArrayView<const uint8_t> data) override {}
+  uint32_t GetTimestamp() const override { return 0; }
+  uint32_t GetSsrc() const override { return ssrc_; }
+  bool IsKeyFrame() const override { return true; }
+  std::vector<uint8_t> GetAdditionalData() const override {
+    return std::vector<uint8_t>();
+  }
+
+ private:
+  uint32_t ssrc_;
 };
 
 }  // namespace
@@ -46,15 +69,15 @@ class RTCEncodedVideoUnderlyingSinkTest : public testing::Test {
         transformer_(main_task_runner_) {}
 
   void SetUp() override {
-    EXPECT_FALSE(transformer_.HasTransformedFrameCallback());
-    transformer_.RegisterTransformedFrameCallback(webrtc_callback_);
-    EXPECT_TRUE(transformer_.HasTransformedFrameCallback());
+    EXPECT_FALSE(transformer_.HasTransformedFrameSinkCallback(kSSRC));
+    transformer_.RegisterTransformedFrameSinkCallback(webrtc_callback_, kSSRC);
+    EXPECT_TRUE(transformer_.HasTransformedFrameSinkCallback(kSSRC));
   }
 
   void TearDown() override {
     platform_->RunUntilIdle();
-    transformer_.UnregisterTransformedFrameCallback();
-    EXPECT_FALSE(transformer_.HasTransformedFrameCallback());
+    transformer_.UnregisterTransformedFrameSinkCallback(kSSRC);
+    EXPECT_FALSE(transformer_.HasTransformedFrameSinkCallback(kSSRC));
   }
 
   RTCEncodedVideoUnderlyingSink* CreateSink(ScriptState* script_state) {
@@ -68,7 +91,7 @@ class RTCEncodedVideoUnderlyingSinkTest : public testing::Test {
 
   ScriptValue CreateEncodedVideoFrameChunk(ScriptState* script_state) {
     RTCEncodedVideoFrame* frame = MakeGarbageCollected<RTCEncodedVideoFrame>(
-        std::unique_ptr<webrtc::TransformableVideoFrameInterface>());
+        std::make_unique<FakeVideoFrame>(kSSRC));
     return ScriptValue(script_state->GetIsolate(),
                        ToV8(frame, script_state->GetContext()->Global(),
                             script_state->GetIsolate()));

@@ -11,8 +11,10 @@
 // TODO(sandersd): Specify a tune() implementation for changing decoder
 // parameters (separate from stream parameters). This is more important for
 // encoders.
-[RuntimeEnabled=WebCodecs]
-interface VideoDecoder {
+[
+    Exposed=Window,
+    RuntimeEnabled=WebCodecs
+] interface VideoDecoder {
   // |init| includes an |output| callback for emitting VideoFrames and an
   // |error| callback for emitting decode errors.
   //

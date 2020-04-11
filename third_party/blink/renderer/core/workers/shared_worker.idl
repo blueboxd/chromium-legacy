@@ -33,7 +33,8 @@
 
 [
     ActiveScriptWrappable,
-    // TODO(foolip): Exposed=(Window,Worker),
+    // TODO(foolip): Exposed=(Window, Worker),
+    Exposed=Window,
     RuntimeEnabled=SharedWorker
 ] interface SharedWorker : EventTarget {
     [CallWith=ExecutionContext, RaisesException] constructor(ScriptURLString scriptURL, optional (DOMString or WorkerOptions) options = {});

@@ -5,6 +5,7 @@
 // https://gpuweb.github.io/gpuweb/
 
 [
+    Exposed=Window,
     RuntimeEnabled=WebGPU
 ] interface GPUDeviceLostInfo {
     readonly attribute DOMString message;

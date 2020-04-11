@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 // https://github.com/WICG/ScrollToTextFragment
-[RuntimeEnabled=TextFragmentIdentifiers]
-interface FragmentDirective {
+[
+    Exposed=Window,
+    RuntimeEnabled=TextFragmentIdentifiers
+] interface FragmentDirective {
 };

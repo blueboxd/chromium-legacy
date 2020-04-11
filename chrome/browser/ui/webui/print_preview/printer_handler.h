@@ -54,10 +54,6 @@ class PrinterHandler {
       base::OnceCallback<void(const std::string& license)>;
 #endif
 
-  // Creates an instance of a PrinterHandler for cloud printers.
-  // Note: Implementation currently empty, see https://crbug.com/829414
-  static std::unique_ptr<PrinterHandler> CreateForCloudPrinters();
-
   // Creates an instance of a PrinterHandler for extension printers.
   static std::unique_ptr<PrinterHandler> CreateForExtensionPrinters(
       Profile* profile);

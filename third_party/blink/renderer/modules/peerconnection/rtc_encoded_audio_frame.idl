@@ -6,8 +6,10 @@
 // TODO(crbug.com/1052765): Add link to standard when available.
 
 // TODO(crbug.com/1052765): Align with WebCodecs definition once it is stable.
-[RuntimeEnabled=RTCInsertableStreams]
-interface RTCEncodedAudioFrame {
+[
+    Exposed=Window,
+    RuntimeEnabled=RTCInsertableStreams
+] interface RTCEncodedAudioFrame {
     readonly attribute unsigned long long timestamp;  // microseconds
     attribute ArrayBuffer data;
     // TODO(crbug.com/1052765): Replace the following fields with a dictionary

@@ -5,6 +5,7 @@
 // Explainer at https://goo.gl/mJUNB5
 
 [
+    Exposed=Window,
     RuntimeEnabled=InvisibleDOM
 ] interface ActivateInvisibleEvent : Event {
     readonly attribute Element? activatedElement;

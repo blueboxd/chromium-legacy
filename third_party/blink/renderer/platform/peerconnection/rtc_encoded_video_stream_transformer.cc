@@ -36,22 +36,45 @@ class RTCEncodedVideoStreamTransformerDelegate
   }
 
   // webrtc::FrameTransformerInterface
+  // TODO(crbug.com/1065838): Remove the non-ssrc version of the registration
+  // and unregistration methods once WebRTC uses the ssrc version in all cases.
   void RegisterTransformedFrameCallback(
       rtc::scoped_refptr<webrtc::TransformedFrameCallback>
           send_frame_to_sink_callback) override {
     PostCrossThreadTask(
         *main_task_runner_, FROM_HERE,
-        CrossThreadBindOnce(
-            &RTCEncodedVideoStreamTransformer::RegisterTransformedFrameCallback,
-            transformer_, std::move(send_frame_to_sink_callback)));
+        CrossThreadBindOnce(&RTCEncodedVideoStreamTransformer::
+                                RegisterTransformedFrameSinkCallback,
+                            transformer_,
+                            std::move(send_frame_to_sink_callback), 0));
   }
 
   void UnregisterTransformedFrameCallback() override {
     PostCrossThreadTask(
         *main_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&RTCEncodedVideoStreamTransformer::
-                                UnregisterTransformedFrameCallback,
-                            transformer_));
+                                UnregisterTransformedFrameSinkCallback,
+                            transformer_, 0));
+  }
+
+  void RegisterTransformedFrameSinkCallback(
+      rtc::scoped_refptr<webrtc::TransformedFrameCallback>
+          send_frame_to_sink_callback,
+      uint32_t ssrc) override {
+    PostCrossThreadTask(
+        *main_task_runner_, FROM_HERE,
+        CrossThreadBindOnce(&RTCEncodedVideoStreamTransformer::
+                                RegisterTransformedFrameSinkCallback,
+                            transformer_,
+                            std::move(send_frame_to_sink_callback), ssrc));
+  }
+
+  void UnregisterTransformedFrameSinkCallback(uint32_t ssrc) override {
+    PostCrossThreadTask(
+        *main_task_runner_, FROM_HERE,
+        CrossThreadBindOnce(&RTCEncodedVideoStreamTransformer::
+                                UnregisterTransformedFrameSinkCallback,
+                            transformer_, ssrc));
   }
 
   void Transform(
@@ -80,15 +103,28 @@ RTCEncodedVideoStreamTransformer::RTCEncodedVideoStreamTransformer(
           weak_factory_.GetWeakPtr(), std::move(main_task_runner));
 }
 
-void RTCEncodedVideoStreamTransformer::RegisterTransformedFrameCallback(
-    rtc::scoped_refptr<webrtc::TransformedFrameCallback> callback) {
+void RTCEncodedVideoStreamTransformer::RegisterTransformedFrameSinkCallback(
+    rtc::scoped_refptr<webrtc::TransformedFrameCallback> callback,
+    uint32_t ssrc) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  send_frame_to_sink_cb_ = callback;
+  for (auto& sink_callback : send_frame_to_sink_callbacks_) {
+    if (sink_callback.first == ssrc) {
+      sink_callback.second = std::move(callback);
+      return;
+    }
+  }
+  send_frame_to_sink_callbacks_.push_back(std::make_pair(ssrc, callback));
 }
 
-void RTCEncodedVideoStreamTransformer::UnregisterTransformedFrameCallback() {
+void RTCEncodedVideoStreamTransformer::UnregisterTransformedFrameSinkCallback(
+    uint32_t ssrc) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  send_frame_to_sink_cb_ = nullptr;
+  for (wtf_size_t i = 0; i < send_frame_to_sink_callbacks_.size(); ++i) {
+    if (send_frame_to_sink_callbacks_[i].first == ssrc) {
+      send_frame_to_sink_callbacks_.EraseAt(i);
+      return;
+    }
+  }
 }
 
 void RTCEncodedVideoStreamTransformer::TransformFrame(
@@ -104,8 +140,20 @@ void RTCEncodedVideoStreamTransformer::TransformFrame(
 void RTCEncodedVideoStreamTransformer::SendFrameToSink(
     std::unique_ptr<webrtc::TransformableVideoFrameInterface> frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (send_frame_to_sink_cb_)
-    send_frame_to_sink_cb_->OnTransformedFrame(std::move(frame));
+  // TODO(crbug.com/1069275): Remove this section once WebRTC reports ssrc in
+  // all sink callback registrations.
+  if (send_frame_to_sink_callbacks_.size() == 1 &&
+      send_frame_to_sink_callbacks_[0].first == 0) {
+    send_frame_to_sink_callbacks_[0].second->OnTransformedFrame(
+        std::move(frame));
+    return;
+  }
+  for (const auto& sink_callback : send_frame_to_sink_callbacks_) {
+    if (sink_callback.first == frame->GetSsrc()) {
+      sink_callback.second->OnTransformedFrame(std::move(frame));
+      return;
+    }
+  }
 }
 
 void RTCEncodedVideoStreamTransformer::SetTransformerCallback(
@@ -124,9 +172,14 @@ bool RTCEncodedVideoStreamTransformer::HasTransformerCallback() const {
   return !transformer_callback_.is_null();
 }
 
-bool RTCEncodedVideoStreamTransformer::HasTransformedFrameCallback() const {
+bool RTCEncodedVideoStreamTransformer::HasTransformedFrameSinkCallback(
+    uint32_t ssrc) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return !!send_frame_to_sink_cb_;
+  for (const auto& sink_callbacks : send_frame_to_sink_callbacks_) {
+    if (sink_callbacks.first == ssrc)
+      return true;
+  }
+  return false;
 }
 
 rtc::scoped_refptr<webrtc::FrameTransformerInterface>

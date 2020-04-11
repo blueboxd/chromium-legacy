@@ -2535,6 +2535,11 @@ void RenderWidgetHostImpl::RequestMouseLock(
     return;
   }
 
+  if (!view_ || !view_->HasFocus()) {
+    std::move(response).Run(blink::mojom::PointerLockResult::kWrongDocument);
+    return;
+  }
+
   request_mouse_callback_ = std::move(response);
 
   pending_mouse_lock_request_ = true;
@@ -2860,8 +2865,8 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(
   }
 
   std::move(request_mouse_callback_)
-      .Run(blink::mojom::PointerLockResult::kSuccess);
-  return true;
+      .Run(blink::mojom::PointerLockResult::kWrongDocument);
+  return false;
 }
 
 void RenderWidgetHostImpl::GotResponseToKeyboardLockRequest(bool allowed) {

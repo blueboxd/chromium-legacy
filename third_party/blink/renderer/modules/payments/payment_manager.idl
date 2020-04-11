@@ -12,6 +12,7 @@ enum PaymentDelegation {
 };
 
 [
+    Exposed=Window,
     RuntimeEnabled=PaymentApp,
     ConstructorCallWith=ExecutionContext
 ] interface PaymentManager {

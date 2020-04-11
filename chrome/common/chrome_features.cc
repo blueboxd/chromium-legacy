@@ -561,15 +561,6 @@ const base::Feature kFlashDeprecationWarning{"FlashDeprecationWarning",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// If enabled, Print Preview will use the CloudPrinterHandler instead of the
-// cloud print interface to communicate with the cloud print server. This
-// prevents Print Preview from making direct network requests. See
-// https://crbug.com/829414.
-const base::Feature kCloudPrinterHandler{"CloudPrinterHandler",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 // Enables or disables push subscriptions keeping Chrome running in the
 // background when closed.
 const base::Feature kPushMessagingBackgroundMode{

@@ -7,6 +7,7 @@
 // TODO(840383): Accodring to the specification |effects| is optional and
 // defaults to null. Match that here.
 [
+    Exposed=Window,
     RuntimeEnabled=AnimationWorklet
 ] interface WorkletAnimation {
   [CallWith=ScriptState, RaisesException, MeasureAs=WorkletAnimationConstructor]

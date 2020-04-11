@@ -5,6 +5,9 @@
 // TODO(crbug.com/829689): Add link to spec once complete.
 // Explainer: https://github.com/WICG/file-handling/blob/master/explainer.md
 
-[RuntimeEnabled=FileHandling] interface LaunchParams {
+[
+    Exposed=Window,
+    RuntimeEnabled=FileHandling
+] interface LaunchParams {
   readonly attribute FrozenArray<FileSystemHandle> files;
 };

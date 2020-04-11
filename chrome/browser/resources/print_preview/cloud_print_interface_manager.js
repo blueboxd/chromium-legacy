@@ -5,7 +5,6 @@
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {CloudPrintInterface} from './cloud_print_interface.js';
 import {CloudPrintInterfaceJS} from './cloud_print_interface_js.js';
-import {CloudPrintInterfaceNative} from './cloud_print_interface_native.js';
 import {NativeLayer} from './native_layer.js';
 
 /** @type {?CloudPrintInterface} */
@@ -24,12 +23,8 @@ let instance = null;
 export function getCloudPrintInterface(
     baseUrl, nativeLayer, isInAppKioskMode, uiLocale) {
   if (instance === null) {
-    if (loadTimeData.getBoolean('cloudPrinterHandlerEnabled')) {
-      instance = new CloudPrintInterfaceNative();
-    } else {
-      instance = new CloudPrintInterfaceJS(
-          baseUrl, nativeLayer, isInAppKioskMode, uiLocale);
-    }
+    instance = new CloudPrintInterfaceJS(
+        baseUrl, nativeLayer, isInAppKioskMode, uiLocale);
   }
   return instance;
 }

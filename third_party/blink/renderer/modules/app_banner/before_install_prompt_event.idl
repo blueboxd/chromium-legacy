@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 [
-    ActiveScriptWrappable
+    ActiveScriptWrappable,
+    Exposed=Window
 ] interface BeforeInstallPromptEvent : Event {
     [CallWith=ExecutionContext] constructor(DOMString type, optional BeforeInstallPromptEventInit eventInitDict = {});
     readonly attribute FrozenArray<DOMString> platforms;

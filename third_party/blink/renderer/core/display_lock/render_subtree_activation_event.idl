@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 [
+    Exposed=Window,
     RuntimeEnabled=CSSSubtreeVisibilityActivationEvent
 ] interface RenderSubtreeActivationEvent : Event {
     readonly attribute Element activatedElement;

@@ -31,7 +31,9 @@
 // https://www.w3.org/Bugs/Public/show_bug.cgi?id=12958
 // https://github.com/w3c/uievents/commit/1a2aa02b474fd4feaf43fdced06e6fd7214196a4
 
-interface TextEvent : UIEvent {
+[
+    Exposed=Window
+] interface TextEvent : UIEvent {
 
     [Measure] readonly attribute DOMString data;
 

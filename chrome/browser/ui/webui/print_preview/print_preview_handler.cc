@@ -50,7 +50,6 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "chrome/common/buildflags.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/crash_keys.h"
@@ -1137,8 +1136,7 @@ void PrintPreviewHandler::SendInitialSettings(
   if (!policies.DictEmpty())
     initial_settings.SetKey(kPolicies, std::move(policies));
 
-  if (IsCloudPrintEnabled() &&
-      !base::FeatureList::IsEnabled(features::kCloudPrinterHandler)) {
+  if (IsCloudPrintEnabled()) {
     initial_settings.SetStringKey(
         kCloudPrintURL, GURL(cloud_devices::GetCloudPrintURL()).spec());
   }
@@ -1418,14 +1416,6 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
           preview_web_contents(), Profile::FromWebUI(web_ui()));
     }
     return local_printer_handler_.get();
-  }
-  if (printer_type == PrinterType::kCloudPrinter) {
-    // This printer handler is currently experimental. Ensure it is never
-    // created unless the flag is enabled.
-    CHECK(base::FeatureList::IsEnabled(features::kCloudPrinterHandler));
-    if (!cloud_printer_handler_)
-      cloud_printer_handler_ = PrinterHandler::CreateForCloudPrinters();
-    return cloud_printer_handler_.get();
   }
   NOTREACHED();
   return nullptr;

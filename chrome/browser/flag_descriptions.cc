@@ -306,12 +306,6 @@ const char kClickToOpenPDFDescription[] =
     "When the PDF plugin is unavailable, show a click-to-open placeholder for "
     "embedded PDFs.";
 
-const char kCloudPrinterHandlerName[] = "Enable Cloud Printer Handler";
-const char kCloudPrinterHandlerDescription[] =
-    "Use the new cloud printer handler for communicating with the cloud "
-    "print server, instead of the cloud print interface in the Print "
-    "Preview WebUI.";
-
 const char kDecodeJpeg420ImagesToYUVName[] = "YUV decoding for JPEG";
 const char kDecodeJpeg420ImagesToYUVDescription[] =
     "Decode and render 4:2:0 formatted jpeg images from YUV instead of RGB."

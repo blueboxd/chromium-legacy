@@ -890,17 +890,9 @@ export class DestinationStore extends EventTarget {
       PrinterType.LOCAL_PRINTER,
     ];
 
-    // If the cloud printer handler is enabled, request cloud printers from
-    // the handler instead of trying to directly communicate with the cloud
-    // print server. See https://crbug.com/829414.
-    if (loadTimeData.getBoolean('cloudPrinterHandlerEnabled')) {
-      // Add cloud printer to the map.
-      this.destinationSearchStatus_.set(
-          PrinterType.CLOUD_PRINTER, DestinationStorePrinterSearchStatus.START);
-      types.push(PrinterType.CLOUD_PRINTER);
-    } else {
-      this.startLoadCloudDestinations();
-    }
+    // Cloud destinations are pulled from the cloud print server instead of the
+    // NativeLayer/PrintPreviewHandler.
+    this.startLoadCloudDestinations();
 
     for (const printerType of types) {
       this.startLoadDestinations_(printerType);

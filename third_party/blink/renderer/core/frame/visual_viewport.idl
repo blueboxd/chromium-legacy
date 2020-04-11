@@ -27,6 +27,7 @@
  // WICG proposal: https://github.com/WICG/ViewportAPI
 
 [
+    Exposed=Window,
     ImplementedAs=DOMVisualViewport
 ] interface VisualViewport : EventTarget {
     [HighEntropy, Measure] readonly attribute double offsetLeft;

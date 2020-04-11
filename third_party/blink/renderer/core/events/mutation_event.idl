@@ -19,7 +19,9 @@
 
 // https://w3c.github.io/uievents/#interface-MutationEvent
 
-interface MutationEvent : Event {
+[
+    Exposed=Window
+] interface MutationEvent : Event {
     // attrChangeType
     const unsigned short MODIFICATION = 1;
     const unsigned short ADDITION     = 2;

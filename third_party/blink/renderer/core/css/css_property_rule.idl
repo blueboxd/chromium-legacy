@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 [
+    Exposed=Window,
     RuntimeEnabled=CSSVariables2AtProperty
 ] interface CSSPropertyRule : CSSRule {
     readonly attribute CSSStyleDeclaration style;

@@ -5,6 +5,7 @@
 // See spec in developement at https://github.com/WICG/web-codecs/blob/master/index.bs
 // and https://github.com/WICG/web-codecs/blob/master/explainer.md.
 [
+    Exposed=Window,
     RuntimeEnabled=WebCodecs
 ] interface VideoTrackWriter {
   [CallWith=ScriptState, RaisesException]

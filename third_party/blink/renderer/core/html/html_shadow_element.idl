@@ -30,6 +30,8 @@
 
 // https://w3c.github.io/webcomponents/spec/shadow/#the-shadow-element
 
-interface HTMLShadowElement : HTMLElement {
+[
+    Exposed=Window
+] interface HTMLShadowElement : HTMLElement {
     NodeList getDistributedNodes();
 };

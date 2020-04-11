@@ -5,6 +5,7 @@
 // TODO(sahel): Add link to w3c. https://crbugs.com/907601
 
 [
+    Exposed=Window,
     RuntimeEnabled=OverscrollCustomization
 ] interface OverscrollEvent : Event {
     constructor(DOMString type, boolean bubbles, optional OverscrollEventInit eventInitDict = {});

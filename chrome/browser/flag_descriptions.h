@@ -185,9 +185,6 @@ extern const char kOmniboxContextMenuShowFullUrlsDescription[];
 extern const char kClickToOpenPDFName[];
 extern const char kClickToOpenPDFDescription[];
 
-extern const char kCloudPrinterHandlerName[];
-extern const char kCloudPrinterHandlerDescription[];
-
 extern const char kDecodeJpeg420ImagesToYUVName[];
 extern const char kDecodeJpeg420ImagesToYUVDescription[];
 

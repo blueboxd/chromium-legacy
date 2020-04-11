@@ -4,8 +4,10 @@
 
 // https://github.com/WICG/web-codecs
 
-[RuntimeEnabled=WebCodecs]
-interface VideoEncoder {
+[
+    Exposed=Window,
+    RuntimeEnabled=WebCodecs
+] interface VideoEncoder {
     [CallWith=ScriptState, RaisesException]
     constructor(VideoEncoderInit init);
 

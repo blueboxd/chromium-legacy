@@ -83,21 +83,22 @@ class MockPointerLockRenderWidgetHostView : public RenderWidgetHostViewAura {
     event_handler()->mouse_locked_unadjusted_movement_.reset();
   }
 
-  bool IsMouseLocked() override { return event_handler()->mouse_locked(); }
-
-  bool HasFocus() override { return true; }
+  bool GetIsMouseLockedUnadjustedMovementForTesting() override {
+    return IsMouseLocked() &&
+           event_handler()->mouse_locked_unadjusted_movement_;
+  }
 
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override {
     // Ignore window focus events.
   }
 
-  bool GetIsMouseLockedUnadjustedMovementForTesting() override {
-    return IsMouseLocked() &&
-           event_handler()->mouse_locked_unadjusted_movement_;
-  }
+  bool IsMouseLocked() override { return event_handler()->mouse_locked(); }
+
+  bool HasFocus() override { return has_focus_; }
 
   RenderWidgetHostImpl* host_;
+  bool has_focus_ = true;
 };
 
 void InstallCreateHooksForPointerLockBrowserTests() {
@@ -650,6 +651,37 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWidgetHidden) {
   EXPECT_FALSE(child_view->IsMouseLocked());
   EXPECT_EQ(nullptr, web_contents()->GetMouseLockWidget());
 }
+
+#ifdef USE_AURA
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockOutOfFocus) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  MockPointerLockRenderWidgetHostView* root_view =
+      static_cast<MockPointerLockRenderWidgetHostView*>(
+          root->current_frame_host()->GetView());
+
+  root_view->has_focus_ = false;
+  // Request a pointer lock on the root frame's body.
+  ASSERT_TRUE(ExecJs(root, "document.body.requestPointerLock()"));
+
+  // setup promise structure to ensure request finishes.
+  EXPECT_TRUE(ExecJs(root, R"(
+        var advertisementreceivedPromise = new Promise(resolve => {
+          document.addEventListener('pointerlockerror',
+              event => {
+                resolve(true);
+              });
+        });
+      )"));
+
+  // Root frame should not have been granted pointer lock.
+  EXPECT_EQ(false,
+            EvalJs(root, "document.pointerLockElement == document.body"));
+}
+#endif
 
 // Flaky. https://crbug.com/1014324
 IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,

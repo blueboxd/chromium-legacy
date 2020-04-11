@@ -1230,11 +1230,6 @@
     "expiry_milestone": 79
   },
   {
-    "name": "enable-cloud-printer-handler",
-    "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "enable-command-line-on-non-rooted-devices",
     "owners": [ "chrome-android-app" ],
     // This flag is used for debugging on Android; it causes Android Chromium

@@ -6,6 +6,7 @@
 // https://docs.google.com/document/d/1rnQ1gU0iwPXbO7OvKS6KO9gyfpSdSQvKhK9_OkzUuKE
 
 [
+    Exposed=Window,
     RuntimeEnabled=GamepadButtonAxisEvents
 ] interface GamepadAxisEvent : GamepadEvent {
     constructor(DOMString type, optional GamepadAxisEventInit eventInitDict = {});

@@ -152,9 +152,6 @@
                  file="cloud_print_interface_js.js"
                  type="chrome_html"
                  preprocess="true" />
-      <structure name="IDR_PRINT_PREVIEW_CLOUD_PRINT_INTERFACE_NATIVE_JS"
-                 file="cloud_print_interface_native.js"
-                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_CLOUD_PRINT_INTERFACE_MANAGER_JS"
                  file="cloud_print_interface_manager.js"
                  type="chrome_html" />

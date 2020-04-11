@@ -30,6 +30,7 @@
 // https://drafts.csswg.org/css-conditional/#the-css-interface
 
 [
+    Exposed=Window,
     ImplementedAs=DOMWindowCSS
 ] interface CSS {
     [CallWith=ExecutionContext] static boolean supports(DOMString property, DOMString value);

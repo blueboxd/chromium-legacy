@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 
 #include "build/buildflag.h"
-#include "chrome/browser/ui/webui/print_preview/cloud_printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/extension_printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/pdf_printer_handler.h"
 #include "chrome/common/buildflags.h"
@@ -21,11 +20,6 @@
 #endif
 
 namespace printing {
-
-// static
-std::unique_ptr<PrinterHandler> PrinterHandler::CreateForCloudPrinters() {
-  return std::make_unique<CloudPrinterHandler>();
-}
 
 // static
 std::unique_ptr<PrinterHandler> PrinterHandler::CreateForExtensionPrinters(

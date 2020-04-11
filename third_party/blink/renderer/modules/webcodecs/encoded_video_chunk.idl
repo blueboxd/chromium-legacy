@@ -8,7 +8,8 @@ enum EncodedVideoChunkType {
 };
 
 [
-   RuntimeEnabled=WebCodecs
+    Exposed=Window,
+    RuntimeEnabled=WebCodecs
 ] interface EncodedVideoChunk {
   constructor(EncodedVideoChunkType type, unsigned long long timestamp, BufferSource data);
   constructor(EncodedVideoChunkType type, unsigned long long timestamp, unsigned long long duration, BufferSource data);

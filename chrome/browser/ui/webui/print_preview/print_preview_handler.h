@@ -265,7 +265,8 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
                         const std::string& printer_name,
                         base::Value settings_info);
 
-  // Send the PDF data to the cloud to print.
+  // Send the PDF data to Print Preview so that it can be sent to the cloud
+  // print server to print.
   void SendCloudPrintJob(const std::string& callback_id,
                          const base::RefCountedMemory* data);
 
@@ -332,10 +333,6 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Pointer to the identity manager service so that print preview can listen
   // for GAIA cookie changes.
   signin::IdentityManager* identity_manager_ = nullptr;
-
-  // Handles requests for cloud printers. Created lazily by calling
-  // GetPrinterHandler().
-  std::unique_ptr<PrinterHandler> cloud_printer_handler_;
 
   // Handles requests for extension printers. Created lazily by calling
   // GetPrinterHandler().

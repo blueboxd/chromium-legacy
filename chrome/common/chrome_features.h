@@ -345,11 +345,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kFlashDeprecationWarning;
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kCloudPrinterHandler;
-#endif
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPushMessagingBackgroundMode;
 

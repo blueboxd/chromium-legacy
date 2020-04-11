@@ -30,6 +30,7 @@
 
 // https://w3c.github.io/ServiceWorker/#serviceworkercontainer-interface
 [
+    Exposed=Window,
     SecureContext
 ] interface ServiceWorkerContainer : EventTarget {
     readonly attribute ServiceWorker? controller;

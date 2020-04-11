@@ -29,7 +29,9 @@
 // https://dom.spec.whatwg.org/#domerror
 
 // FIXME: DOMError has been removed from the spec. crbug.com/460725
-interface DOMError {
+[
+    Exposed=Window
+] interface DOMError {
     [Measure] constructor(DOMString name, optional DOMString message);
     [Measure] readonly attribute DOMString name;
     [Measure] readonly attribute DOMString message;

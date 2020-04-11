@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/id_map.h"
-#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
@@ -34,7 +33,6 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -54,7 +52,6 @@
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -330,11 +327,6 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
   enterprise_managed = base::IsMachineExternallyManaged();
 #endif
   source->AddBoolean("isEnterpriseManaged", enterprise_managed);
-
-  bool cloud_printer_handler_enabled =
-      base::FeatureList::IsEnabled(features::kCloudPrinterHandler);
-  source->AddBoolean("cloudPrinterHandlerEnabled",
-                     cloud_printer_handler_enabled);
 }
 
 void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {

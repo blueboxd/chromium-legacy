@@ -11,7 +11,9 @@
 
 // https://wicg.github.io/InputDeviceCapabilities/#the-inputdevicecapabilities-interface
 
-interface InputDeviceCapabilities {
+[
+    Exposed=Window
+] interface InputDeviceCapabilities {
     constructor(optional InputDeviceCapabilitiesInit deviceInitDict = {});
 
     // Whether this device dispatches touch events for movement.  This is used to detect

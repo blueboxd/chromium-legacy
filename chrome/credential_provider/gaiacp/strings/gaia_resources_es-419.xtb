@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">No se pudo sincronizar la contraseña de la cuenta de trabajo con el perfil de Windows porque la organización restringió las actualizaciones de contraseña para el dispositivo. Comunícate con el administrador para obtener más ayuda.</translation>
 <translation id="5186761973554910131">En el intento para cambiar la contraseña, se proporcionó un nombre de computadora no válido. Comunícate con tu administrador.</translation>
 <translation id="5265714013989877288">No puedes continuar porque se produjo un error al cambiar la contraseña de Windows. Comunícate con el administrador.</translation>
+<translation id="5581861273642234526">Este dispositivo ya tiene asociada otra cuenta de trabajo. Accede con tu cuenta de Windows.</translation>
 <translation id="6033715878377252112">Proveedor de credenciales de Google para el asistente de Windows</translation>
 <translation id="6149399665202317746">Proveedor de credenciales de Google para Windows</translation>
 <translation id="6243062314475217481">La contraseña de la cuenta de trabajo no cumple con los requisitos de complejidad de Windows. Comunícate con el administrador para obtener más ayuda.</translation>

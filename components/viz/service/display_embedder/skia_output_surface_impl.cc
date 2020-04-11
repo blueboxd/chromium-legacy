@@ -372,7 +372,7 @@ gpu::SyncToken SkiaOutputSurfaceImpl::ReleaseImageContexts(
       base::BindOnce(&SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts,
                      base::Unretained(impl_on_gpu_.get()),
                      std::move(image_contexts), sync_fence_release_);
-  gpu_task_scheduler_->ScheduleGpuTask(std::move(callback), {});
+  gpu_task_scheduler_->ScheduleOrRetainGpuTask(std::move(callback), {});
   return sync_token;
 }
 

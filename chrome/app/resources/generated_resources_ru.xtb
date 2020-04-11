@@ -94,6 +94,7 @@
 <translation id="1122960773616686544">Название закладки</translation>
 <translation id="1124772482545689468">Пользователь</translation>
 <translation id="1125550662859510761">Выглядит как <ph name="WIDTH" /> x <ph name="HEIGHT" /> (аппаратное разрешение)</translation>
+<translation id="1126809382673880764">Не защищает вас от сайтов, расширений и скачанных файлов, которые могут представлять опасность. Безопасный просмотр по-прежнему будет работать в других сервисах Google, например в Gmail и Поиске.</translation>
 <translation id="1128109161498068552">Запретить сайтам доступ к устройствам MIDI с помощью системных сообщений</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Изменить поисковую систему</translation>
@@ -185,6 +186,7 @@
 <translation id="1235458158152011030">Сохраненные сети</translation>
 <translation id="123578888592755962">Недостаточно места на диске</translation>
 <translation id="1238191093934674082">OpenVPN</translation>
+<translation id="1239439601391236986">Показывать при вводе текста подсказки с личной информацией</translation>
 <translation id="1239594683407221485">Чтобы посмотреть контент, хранящийся на устройстве, откройте приложение "Файлы".</translation>
 <translation id="124116460088058876">Другие языки</translation>
 <translation id="1241753985463165747">Просмотр и изменение всех ваших данных на текущем сайте</translation>
@@ -301,6 +303,7 @@
 <translation id="140723521119632973">Активация мобильной сети</translation>
 <translation id="1407489512183974736">Кадрировать и выровнять по центру</translation>
 <translation id="1408504635543854729">Чтобы просмотреть контент, хранящийся на устройстве, перейдите в приложение "Файлы". Администратор запретил изменять этот контент.</translation>
+<translation id="1408980562518920698">Управление личной информацией</translation>
 <translation id="1410197035576869800">Значок приложения</translation>
 <translation id="1410616244180625362">Разрешить <ph name="HOST" /> доступ к камере</translation>
 <translation id="1414648216875402825">Вы устанавливаете нестабильную версию <ph name="PRODUCT_NAME" />, которая содержит разрабатываемые в настоящий момент функции. Будьте осторожны: возможны сбои и неизвестные ошибки.</translation>
@@ -433,6 +436,7 @@
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1587275751631642843">Консоль &amp;JavaScript</translation>
 <translation id="1587907146729660231">Приложите палец к кнопке питания</translation>
+<translation id="1588200577109872591">Умный ввод</translation>
 <translation id="1588438908519853928">Обычный</translation>
 <translation id="158849752021629804">Необходима домашняя сеть</translation>
 <translation id="1588870296199743671">Открыть ссылку с помощью...</translation>
@@ -668,6 +672,7 @@
 <translation id="1879000426787380528">Войти как</translation>
 <translation id="1880905663253319515">Удалить сертификат <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="1884013283844450420">Сеть <ph name="NETWORK_INDEX" /> из <ph name="NETWORK_COUNT" />, название – "<ph name="NETWORK_NAME" />", подключение</translation>
+<translation id="1884705339276589024">Изменение размера диска Linux</translation>
 <translation id="1886996562706621347">Разрешить запросы на установку обработчиков протоколов (рекомендуется)</translation>
 <translation id="1887442540531652736">Ошибка входа</translation>
 <translation id="1887597546629269384">Скажите "Эй, Google" ещё раз</translation>
@@ -737,6 +742,7 @@
 <translation id="1979280758666859181">Вы переходите на канал обновления с более ранней версией <ph name="PRODUCT_NAME" />. Чтобы изменения вступили в силу, версия канала и текущая версия на вашем устройстве должны совпадать.</translation>
 <translation id="197989455406964291">Центр распространения ключей (KDC) не поддерживает такой тип шифрования.</translation>
 <translation id="1982354452682152483">Описание недоступно.</translation>
+<translation id="1984417487208496350">Защита отключена (не рекомендуется)</translation>
 <translation id="1987317783729300807">Аккаунты</translation>
 <translation id="1989112275319619282">Выбрать</translation>
 <translation id="1990512225220753005">Не показывать ярлыки на этой странице</translation>
@@ -806,6 +812,7 @@
 <translation id="2090165459409185032">Чтобы восстановить данные аккаунта, перейдите на страницу google.com/accounts/recovery</translation>
 <translation id="2090876986345970080">Настройка безопасности системы</translation>
 <translation id="2091887806945687916">Звук</translation>
+<translation id="2096478741073211388">Вы можете быстрее вводить такие данные, как ваше имя, адрес или номер телефона благодаря персонализированным подсказкам с личной информацией. Они появляются, когда вы набираете текст, и видны только вам.</translation>
 <translation id="2096715839409389970">Удалить сторонние файлы cookie</translation>
 <translation id="2097372108957554726">Войдите в Chrome, чтобы зарегистрировать новое устройство</translation>
 <translation id="2099172618127234427">Вы включаете функции отладки Chrome OS. Будет настроен SSHD-демон и разрешена загрузка с USB-дисков.</translation>
@@ -822,6 +829,7 @@
 <translation id="2114326799768592691">Перезагрузить &amp;фрейм</translation>
 <translation id="2114896190328250491">Фото: <ph name="NAME" /></translation>
 <translation id="2119349053129246860">Открыть в приложении "<ph name="APP" />"</translation>
+<translation id="2119461801241504254">Безопасный просмотр включен. Он защищает вас от вредоносных сайтов и файлов.</translation>
 <translation id="2120297377148151361">Действия в браузере</translation>
 <translation id="2120639962942052471">Отключено разрешение "<ph name="PERMISSION" />"</translation>
 <translation id="2121055421682309734">{COUNT,plural, =0{Файлы cookie заблокированы.}=1{Файлы cookie заблокированы (есть 1 исключение).}one{Файлы cookie заблокированы (есть {COUNT} исключение).}few{Файлы cookie заблокированы (есть {COUNT} исключения).}many{Файлы cookie заблокированы (есть {COUNT} исключений).}other{Файлы cookie заблокированы (есть {COUNT} исключения).}}</translation>
@@ -1002,7 +1010,6 @@
 <translation id="2342740338116612727">Закладки добавлены</translation>
 <translation id="2343747224442182863">Переключиться на эту вкладку</translation>
 <translation id="2345723121311404059">Печать 1 страницы на принтере <ph name="PRINTER_NAME" /></translation>
-<translation id="2346953515226895098">Сервис SODA</translation>
 <translation id="2347644257713614136">Использование Hangouts и Cast for Education регулируется Политикой конфиденциальности Google.</translation>
 <translation id="2348176352564285430">Приложение: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="234889437187286781">При загрузке данных произошла ошибка.</translation>
@@ -1787,7 +1794,7 @@
 <translation id="3396800784455899911">Нажимая кнопку "Принять условия и продолжить", вы соглашаетесь с Условиями использования сервисов Google, описанными выше.</translation>
 <translation id="3399432415385675819">Уведомления будут отключены</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Гц) – чересстрочная развертка</translation>
-<translation id="3402585168444815892">Регистрация для использования демонстрационного режима.</translation>
+<translation id="3402585168444815892">Регистрация для использования демонстрационного режима</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="3404065873681873169">Для этого сайта нет сохраненных паролей</translation>
 <translation id="3405664148539009465">Настроить шрифты</translation>
@@ -1889,6 +1896,7 @@
 <translation id="3515983984924808886">Чтобы подтвердить сброс, нажмите кнопку на электронном ключе ещё раз. Все данные, сохраненные на нем, включая PIN-код, будут удалены.</translation>
 <translation id="3518985090088779359">Продолжить</translation>
 <translation id="351952459507671940">Добавить в новую группу</translation>
+<translation id="3521606918211282604">Изменить размер диска</translation>
 <translation id="3523642406908660543">Предупреждать, что сайт пытается использовать плагин для доступа к компьютеру (рекомендуется)</translation>
 <translation id="3524965460886318643">Экспортировать журнал активности</translation>
 <translation id="3526034519184079374">Невозможно прочитать или изменить данные сайта</translation>
@@ -1976,6 +1984,7 @@
 <translation id="3629631988386925734">Чтобы включить Smart Lock, введите пароль. После этого вы сможете разблокировать устройство <ph name="DEVICE_TYPE" /> с помощью телефона. Выключить Smart Lock можно в настройках.</translation>
 <translation id="3630132874740063857">Телефон</translation>
 <translation id="3630995161997703415">Добавьте этот сайт на панель запуска, чтобы он всегда был у вас под рукой.</translation>
+<translation id="3633309367764744750">Предварительно загружать данные со страниц, в том числе тех, которые вы ещё не посещали. Загружаемые данные могут включать файлы cookie, если вы их разрешили.</translation>
 <translation id="3634507049637220048">Сеть <ph name="NETWORK_INDEX" /> из <ph name="NETWORK_COUNT" />, название – "<ph name="NETWORK_NAME" />", статус подключения – "<ph name="CONNECTION_STATUS" />", под управлением администратора, подробная информация</translation>
 <translation id="3635241501480133979">Эти данные нарушают правила безопасности организации, поэтому их нельзя перетащить.</translation>
 <translation id="3635353578505343390">Отправка отзыва в Google</translation>
@@ -2274,7 +2283,6 @@
 <translation id="3971764089670057203">Цифровые отпечатки на этом электронном ключе</translation>
 <translation id="3973660817924297510">Проверка паролей (<ph name="CHECKED_PASSWORDS" /> из <ph name="TOTAL_PASSWORDS" />)…</translation>
 <translation id="3975565978598857337">Не удалось связаться с областью сервера.</translation>
-<translation id="3975884715086515476"><ph name="IDS_SHORT_PRODUCT_NAME" /> не может проверить пароли. Повторите попытку позже.</translation>
 <translation id="3976108569178263973">Нет доступных принтеров.</translation>
 <translation id="397703832102027365">Завершение…</translation>
 <translation id="3977886311744775419">Скачать обновления в вашей сети можно только вручную.</translation>
@@ -2575,7 +2583,6 @@
 <translation id="4421932782753506458">Пушистик</translation>
 <translation id="4423376891418188461">Восстановить настройки</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, администратор просит вас сменить пароль.</translation>
-<translation id="4426209360861763174"><ph name="IDS_SHORT_PRODUCT_NAME" /> не может проверить пароли. Повторите попытку через 24 часа.</translation>
 <translation id="4429030830601238961">Эти данные нарушают правила безопасности организации, поэтому их нельзя вставить.</translation>
 <translation id="4430019312045809116">Объем</translation>
 <translation id="4430369329743628066">Закладка добавлена</translation>
@@ -2588,7 +2595,6 @@
 <translation id="4441124369922430666">Автоматически запускать это приложение при включении устройства?</translation>
 <translation id="4441147046941420429">Чтобы продолжить, извлеките электронный ключ и снова вставьте его в устройство. Затем нажмите кнопку на электронном ключе.</translation>
 <translation id="444134486829715816">Развернуть...</translation>
-<translation id="4442329324652245220"><ph name="IDS_SHORT_PRODUCT_NAME" /> сможет проверить ваши пароли, когда вы войдете в аккаунт Google.</translation>
 <translation id="4442424173763614572">Произошла ошибка при поиске сервера DNS</translation>
 <translation id="4443536555189480885">&amp;Справка</translation>
 <translation id="4444304522807523469">Доступ к сканерам, подключенным через USB-порт или локальную сеть</translation>
@@ -2615,7 +2621,6 @@
 <translation id="4476659815936224889">Этот код можно сканировать с помощью специального приложения или камеры на телефоне (если такая возможность поддерживается)</translation>
 <translation id="4477015793815781985">Комбинация должна начинаться с Ctrl, Alt или ⌘</translation>
 <translation id="4478664379124702289">Сохранить ссылку как...</translation>
-<translation id="4478777936860197922">Сохраненных паролей нет. Чтобы браузер <ph name="IDS_SHORT_PRODUCT_NAME" /> мог проверять пароли, сохраните их.</translation>
 <translation id="4479424953165245642">Настроить киоск-приложения</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479877282574735775">Идет настройка виртуальной машины. Это может занять несколько минут.</translation>
@@ -2861,7 +2866,6 @@
 <translation id="4849517651082200438">Не устанавливать</translation>
 <translation id="4850669014075537160">Прокрутка</translation>
 <translation id="4850886885716139402">Посмотреть</translation>
-<translation id="485197095346966382">Вы получите уведомление от <ph name="IDS_SHORT_PRODUCT_NAME" />, если войдете в аккаунт с паролем, который был раскрыт.</translation>
 <translation id="4853020600495124913">Открыть в &amp;новом окне</translation>
 <translation id="4854317507773910281">Выберите родителя, который должен одобрить расширение:</translation>
 <translation id="485480310608090163">Дополнительные настройки и разрешения</translation>
@@ -3935,6 +3939,7 @@
 <translation id="6298962879096096191">Использование Google Play для установки приложений Android</translation>
 <translation id="630065524203833229">В&amp;ыход</translation>
 <translation id="6300718114348072351">Не удалось автоматически настроить принтер "<ph name="PRINTER_NAME" />". Задайте дополнительные параметры. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
+<translation id="630292539633944562">Подсказки с личной информацией</translation>
 <translation id="6305607932814307878">Общая политика:</translation>
 <translation id="6307990684951724544">Система перегружена</translation>
 <translation id="6308493641021088955">Вход через расширение "<ph name="EXTENSION_NAME" />"</translation>
@@ -4013,6 +4018,7 @@
 <translation id="641081527798843608">Совпадение тем</translation>
 <translation id="6412673304250309937">Сверяет URL со списком небезопасных сайтов в Chrome. Кроме того, если вы скачаете вредоносный файл или сайт попытается похитить ваш пароль, Chrome может отправить URL с образцами контента на проверку с помощью Безопасного просмотра.</translation>
 <translation id="6412931879992742813">Новое окно в режиме инкогнито</translation>
+<translation id="6413591858632097328">Будут удалены все данные и файлы cookie, которые сохранены сайтом <ph name="ORIGIN_NAME" /> и установленными им приложениями.</translation>
 <translation id="641469293210305670">Установка обновлений и приложений</translation>
 <translation id="6414888972213066896">Запрос на просмотр сайта отправлен вашему родителю</translation>
 <translation id="6415900369006735853">Подключайтесь к Интернету через телефон.</translation>
@@ -4823,7 +4829,6 @@
 <translation id="7530016656428373557">Скорость разрядки в ваттах</translation>
 <translation id="7531779363494549572">Откройте настройки устройства и выберите "Приложения и уведомления &gt; Уведомления".</translation>
 <translation id="7532009420053991888">Приложение "<ph name="LINUX_APP_NAME" />" не отвечает. Чтобы выйти из него, нажмите "Закрыть принудительно".</translation>
-<translation id="7536333565791380193">Расширенные настройки безопасности</translation>
 <translation id="7537451260744431038">Сайты не могут использовать файлы cookie, чтобы сделать работу в браузере более удобной, например запоминая товары в корзине или информацию о том, что вы вошли в аккаунт</translation>
 <translation id="7539856059004947393">Электронный Bluetooth-ключ</translation>
 <translation id="7540972813190816353">При проверке обновлений произошла ошибка: <ph name="ERROR" /></translation>
@@ -5064,7 +5069,6 @@
     <ph name="BEGIN_BOLD" />Примечание.<ph name="END_BOLD" /> Система перезагрузится во время этого процесса.</translation>
 <translation id="7828731929332799387">Все сторонние файлы cookie и данные сайтов будут удалены. Продолжить?</translation>
 <translation id="7829298379596169484">Доступ к аудиовходу</translation>
-<translation id="7829528495815477379"><ph name="IDS_SHORT_PRODUCT_NAME" /> не может проверить пароли. Убедитесь, что устройство подключено к Интернету.</translation>
 <translation id="7829877209233347340">Попросите родителя войти в систему, чтобы дать вам разрешение на добавление учебного аккаунта.</translation>
 <translation id="7830594666202422257">Подключить к Linux</translation>
 <translation id="7831491651892296503">Ошибка при настройке сети</translation>
@@ -5938,7 +5942,6 @@
 <translation id="8966870118594285808">Если вы случайно закрыли вкладку, откройте ее снова</translation>
 <translation id="8967866634928501045">Чтобы показать, нажмите Alt + Shift + A</translation>
 <translation id="8968766641738584599">Сохранить карту</translation>
-<translation id="8971800409073702505"><ph name="IDS_SHORT_PRODUCT_NAME" /> не может проверить пароли. Повторите попытку через 24 часа или <ph name="BEGIN_LINK" />проверьте пароли в аккаунте Google<ph name="END_LINK" />.</translation>
 <translation id="89720367119469899">Отключить</translation>
 <translation id="8972513834460200407">Уточните у администратора сети, не блокирует ли брандмауэр скачивание файлов с серверов Google.</translation>
 <translation id="8973557916016709913">Сбросить масштаб</translation>

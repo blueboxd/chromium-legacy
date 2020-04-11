@@ -147,6 +147,11 @@ class ExtensionSystem : public KeyedService {
                              bool install_immediately,
                              InstallUpdateCallback install_update_callback) = 0;
 
+  // Perform various actions depending on the Omaga attributes on the extension.
+  virtual void PerformActionBasedOnOmahaAttributes(
+      const std::string& extension_id,
+      const base::Value& attributes) = 0;
+
   // Attempts finishing installation of an update for an extension with the
   // specified id, when installation of that extension was previously delayed.
   // |install_immediately| - Install the extension should be installed if it is

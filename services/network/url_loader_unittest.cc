@@ -4741,11 +4741,10 @@ TEST_F(URLLoaderTest, CrossOriginEmbedderPolicyValue) {
     auto headers =
         base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK\n");
     if (testcase.coep_header) {
-      headers->AddHeader("cross-origin-embedder-policy: " +
-                         *testcase.coep_header);
+      headers->SetHeader("cross-origin-embedder-policy", *testcase.coep_header);
     }
     if (testcase.coep_report_only_header) {
-      headers->AddHeader("cross-origin-embedder-policy-report-only: " +
+      headers->SetHeader("cross-origin-embedder-policy-report-only",
                          *testcase.coep_report_only_header);
     }
     const auto coep =

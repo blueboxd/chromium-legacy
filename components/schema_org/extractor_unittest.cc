@@ -312,6 +312,22 @@ TEST_F(SchemaOrgExtractorTest, StringValueRepresentingEnum) {
   EXPECT_EQ(expected, extracted);
 }
 
+// The extractor should accept a string value for a property that has an
+// expected entity type. https://schema.org/docs/gs.html#schemaorg_expected
+TEST_F(SchemaOrgExtractorTest, StringValueForThingType) {
+  EntityPtr extracted = Extract(
+      "{\"@type\": \"VideoObject\",\"author\": \"Google Chrome Developers\"}");
+
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+  expected->properties.push_back(
+      CreateStringProperty("author", "Google Chrome Developers"));
+
+  EXPECT_EQ(expected, extracted);
+}
+
 TEST_F(SchemaOrgExtractorTest, UrlValue) {
   EntityPtr extracted = Extract(
       "{\"@type\": \"VideoObject\", "

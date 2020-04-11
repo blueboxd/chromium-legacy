@@ -14,7 +14,6 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/host/drm_device_connector.h"

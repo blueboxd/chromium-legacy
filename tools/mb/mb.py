@@ -1403,7 +1403,8 @@ class MetaBuildWrapper(object):
 
       # Skip a few existing violations that need to be cleaned up. Each of
       # these will lead to incorrect incremental builds if their directory
-      # contents change. Do not add to this list.
+      # contents change. Do not add to this list, except for mac bundles until
+      # crbug.com/1000667 is fixed.
       # TODO(https://crbug.com/912946): Remove this if statement.
       if ((is_msan and f == 'instrumented_libraries_prebuilt/')
           or f == 'mr_extension/' or  # https://crbug.com/997947
@@ -1436,6 +1437,8 @@ class MetaBuildWrapper(object):
               'Google Chrome Helper.app/',
               'Google Chrome.app/',
               'GoogleUpdater.app/',
+              'UpdaterTestApp Framework.framework/',
+              'UpdaterTestApp.app/',
               'blink_deprecated_test_plugin.plugin/',
               'blink_test_plugin.plugin/',
               'corb_test_plugin.plugin/',

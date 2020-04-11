@@ -357,7 +357,6 @@
 <translation id="1523774894176285446">要啟動的替代瀏覽器 (適用於已設定的網站)。</translation>
 <translation id="152657506688053119">預設搜尋的替代網址清單</translation>
 <translation id="1530812829012954197">一律在瀏覽器中算繪以下網址模式</translation>
-<translation id="1541170838458414064">限制列印頁面大小</translation>
 <translation id="1553532014072799546">個別應用程式時間限制許可清單</translation>
 <translation id="1553684822621013552">如果將這項政策設為 true，系統會為使用者啟用 ARC
       (需經過額外政策設定檢查 - 如果目前的
@@ -384,6 +383,7 @@
 <translation id="1561424797596341174">針對遠端存取主機的偵錯版本覆寫政策</translation>
 <translation id="1561967320164410511">用於個人認證的 U2F 和擴充功能</translation>
 <translation id="1583248206450240930">根據預設使用 <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="1588240398285670601">瀏覽器設定</translation>
 <translation id="1599424828227887013">在 Android 裝置上為指定來源啟用網站隔離</translation>
 <translation id="1608755754295374538">系統會直接授權存取音訊擷取裝置而不需提示的網址</translation>
 <translation id="1615221548356595305">即使在用戶端憑證已有人使用的情況下，仍允許這些主機合併 HTTP/2 連線</translation>
@@ -837,17 +837,6 @@
       這項政策也適用於元件擴充功能，例如 Hangout Services 擴充功能。</translation>
 <translation id="2223598546285729819">預設通知設定</translation>
 <translation id="2231817271680715693">第一次執行時從預設瀏覽器匯入瀏覽記錄</translation>
-<translation id="2234855698900783408">在新版 <ph name="CORS" /> 模式中啟用 <ph name="CORS" /> 檢查安全防護措施，讓擴充功能保持相容行為，並允許 <ph name="PRODUCT_NAME" /> 不需經過 <ph name="CORS" /> 檢查即可傳送指定標頭。
-
-      如果將這份清單設為空白，<ph name="PRODUCT_NAME" /> 會嘗試以相容方式執行擴充功能，且不會採用 <ph name="PRODUCT_NAME" /> 第 79 版的 <ph name="API" /> 變更，詳情請參閱 <ph name="WEB_REQUEST_API_MANUAL" />。
-
-      如果將這份清單設為具有 <ph name="HTTP" /> 要求標頭名稱，則 <ph name="CORS" /> 檢查將忽略此處列出的標頭，並啟用擴充功能的安全防護措施。
-
-      如果未設定這份清單，則不會套用上述兩種安全防護措施。
-
-      如要進一步瞭解 <ph name="CORS" />，請前往：<ph name="CORS_HELP_URL" />。
-
-      請注意，這項政策將在 <ph name="PRODUCT_NAME" />第 82 版中移除。</translation>
 <translation id="2236488539271255289">不允許任何網站設定本機資料</translation>
 <translation id="2240879329269430151">允許你設定是否要讓網站顯示彈出式視窗。你可以允許或禁止所有網站顯示彈出式視窗。如果未設定這項政策，系統會使用「BlockPopups」，不過使用者可以變更設定。</translation>
 <translation id="2241498944622759244">此功能從未推出，因此這項政策目前已淘汰。如果將這項政策設為 True 或不設定，<ph name="PRODUCT_NAME" /> 會提供與目前網頁相關的網頁建議。
@@ -1338,6 +1327,7 @@
 <translation id="2872961005593481000">關閉</translation>
 <translation id="2873651257716068683">覆寫預設列印頁面大小。如果設定的頁面大小不適用，系統會忽略這項政策。</translation>
 <translation id="2874209944580848064">支援 Android 裝置的 <ph name="PRODUCT_OS_NAME" />裝置注意事項：</translation>
+<translation id="2874901846804525128">禁止使用者使用來源不受信任的 Android 應用程式。</translation>
 <translation id="2875192972412983412">指定系統尋找伺服器印表機時，要查詢符合何種條件的列印伺服器。
 
       如果使用這項政策，使用者只能使用 ID 符合本政策值的伺服器印表機。
@@ -2920,6 +2910,7 @@
           如果設為 True 或不予設定，這位使用者即可建立並管理受監督的使用者。</translation>
 <translation id="5369937289900051171">僅限彩色列印</translation>
 <translation id="5370279767682621504">在非預設通訊埠啟用 HTTP/0.9 支援功能</translation>
+<translation id="5377606826822211923">控管使用者是否可使用來源不受信任的 Android 應用程式</translation>
 <translation id="5378985487213287085">允許你設定是否要讓網站顯示桌面通知。你可以將網站預設為允許或禁止顯示桌面通知，也可以設為每次網站要顯示桌面通知時再詢問使用者。如果未設定這項政策，系統會使用「AskNotifications」，但使用者可以變更這項設定。</translation>
 <translation id="5380329473151894945">設定大型游標無障礙功能在登入畫面中的預設狀態。
 
@@ -3622,17 +3613,6 @@
 <translation id="6467613372414922590">允許使用者層級的內建訊息傳遞主機 (在無管理員權限的情況下安裝)。</translation>
 <translation id="6468980648680553776">這項政策已遭到淘汰，請改用 RemoteAccessHostClientDomainList。</translation>
 <translation id="6473623140202114570">設定安全瀏覽功能在哪些網域中不會觸發警告。</translation>
-<translation id="6487780893361255867">使用舊版 <ph name="CORS" /> 模式，而不使用新版 <ph name="CORS" />。
-
-     如果將這項政策設為 True，系統會使用舊版模式，該模式應與先前的版本相容。
-
-      如果將這項政策設為 False 或不予設定，系統會使用新版模式，這可能會導致企業特定的相容性問題。
-
-      這項政策將在日後的版本中移除。
-
-      如要進一步瞭解 <ph name="CORS" />，請前往：<ph name="CORS_HELP_URL" />。
-
-      請注意，這項政策將在 <ph name="PRODUCT_NAME" />第 82 版中移除。</translation>
 <translation id="6488627892044759800">設定 <ph name="PRODUCT_NAME" /> 的預設首頁類型，並禁止使用者變更首頁偏好設定。首頁可以設為你指定的網址，也可以設為「新分頁」。
 
           啟用此設定時，系統一律會將「新分頁」當做首頁，並忽略指定的首頁網址位置。
@@ -3708,6 +3688,7 @@
       如果啟用這項設定，<ph name="PRODUCT_NAME" /> 一律不會使用清單中指定的外掛程式，並且會在「about:plugins」中將這些外掛程式標示為已停用，使用者將無法予以啟用。請注意，EnabledPlugins 和 DisabledPluginsExceptions 可覆寫這項政策。
 
       如果不設定這項政策，使用者可以使用系統上安裝的任何外掛程式 (不含與硬式編碼不相容、過舊或危險的外掛程式)。</translation>
+<translation id="6571871508154591774">設定要停用的攝影機、瀏覽器設定和 OS 設定功能</translation>
 <translation id="6573305661369899995">設定外部網址來源限制</translation>
 <translation id="6583851521569686409">設定印表機清單。
 
@@ -3783,6 +3764,7 @@
 <translation id="6731757988219967594">針對成人內容篩選頂層網站 (但不篩選嵌入的 iframe)</translation>
 <translation id="6734521799274931721">控管是否允許在 Chrome 作業系統使用網路檔案共用功能</translation>
 <translation id="6735701345096330595">強制執行拼字檢查的語言</translation>
+<translation id="6737677282967014160">允許使用者使用來源不受信任的 Android 應用程式。</translation>
 <translation id="6757613329154374267">已啟用備份與還原功能</translation>
 <translation id="6758659208493449452">這項政策可控管已加入進階保護計畫的使用者是否可以享有額外的防護。部分功能可能涉及與 Google 共用資料 (例如，進階保護計畫的使用者可將下載內容傳送至 Google 進行惡意軟體掃描)。如果設為 True 或不予設定，已加入計畫的使用者將能享有額外的防護。如果設為 False，進階保護計畫的使用者只能享有標準的消費者功能。</translation>
 <translation id="6762235610019366960">讓你控制 <ph name="PRODUCT_NAME" /> 能否以完整分頁顯示宣傳和/或教學內容。
@@ -4205,7 +4187,6 @@
       </translation>
 <translation id="7372831798009983116">啟用自動點擊無障礙功能</translation>
 <translation id="7373200034079131670">在 Android 或 VM 已啟動的前提下，於使用者登出時重新啟動。</translation>
-<translation id="737655323154569539">限制列印頁面大小。未設定這項政策或將設定留空，系統會視為未設限制。</translation>
 <translation id="7382191643394429934">不論是否使用背景圖形一律允許列印</translation>
 <translation id="7389872682701720082">如果啟用這項設定，系統會一律執行未過期的外掛程式。
 
@@ -4309,6 +4290,13 @@
       網址模式的格式必須符合 https://www.chromium.org/administrators/url-blacklist-filter-format 中的「URLBlacklist」政策規定。
       </translation>
 <translation id="7566878661979235378">SAML 登入驗證類型</translation>
+<translation id="7567373982693549834">這項政策可控管每位使用者是否能使用來源不受信任 (並非來自 Google Play 商店) 的 Android 應用程式。
+
+      如果不設定這項政策的值，系統會視為禁止使用這項功能。
+
+      如果是受管理的使用者裝置，這項功能的可用性會根據對應的裝置政策而定。
+
+      如果是未受到管理的使用者裝置，這項功能的可用性會根據使用者是否為裝置擁有者而定。</translation>
 <translation id="757395965347379751">啟用這項設定時，只要 SHA-1 簽署憑證成功通過驗證並鏈結至本機安裝的 CA 憑證，即可在 <ph name="PRODUCT_NAME" /> 中使用。
 
       請注意，這項政策取決於允許 SHA-1 簽名的作業系統憑證驗證堆疊。如果作業系統更新變更了作業系統的 SHA-1 憑證處理方式，這項政策可能就會失效。此外，這項政策是暫時性的解決方案，目的是讓使用 SHA-1 憑證的企業有更多時間尋找其他解決方案。我們將於 2019 年 1 月 1 日左右移除這項政策。
@@ -4491,6 +4479,7 @@
 
           注意：如果指定 <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" />，這項政策會遭到覆寫。</translation>
 <translation id="7846952520291088817">會在 WebRTC ICE 候選項目中顯示本機 IP 的網址</translation>
+<translation id="7848641140449742406">OS 設定</translation>
 <translation id="7858404742201086014">如果啟用這項設定，系統會將舊版外掛程式視為一般外掛程式執行。
 
       如果停用這項設定，則系統不會使用舊版外掛程式，也不會徵求使用者許可來執行這些外掛程式。

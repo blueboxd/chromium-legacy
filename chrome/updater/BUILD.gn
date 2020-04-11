@@ -204,6 +204,7 @@ if (is_win || is_mac) {
       "//base",
       "//base/test:test_support",
       "//chrome/common:constants",
+      "//chrome/updater/test/test_app",
       "//components/prefs:test_support",
       "//components/update_client",
       "//testing/gtest",

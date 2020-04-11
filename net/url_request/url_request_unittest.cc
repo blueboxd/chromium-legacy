@@ -2688,8 +2688,7 @@ int FixedDateNetworkDelegate::OnHeadersReceived(
   HttpResponseHeaders* new_response_headers =
       new HttpResponseHeaders(original_response_headers->raw_headers());
 
-  new_response_headers->RemoveHeader("Date");
-  new_response_headers->AddHeader("Date: " + fixed_date_);
+  new_response_headers->SetHeader("Date", fixed_date_);
 
   *override_response_headers = new_response_headers;
   return TestNetworkDelegate::OnHeadersReceived(

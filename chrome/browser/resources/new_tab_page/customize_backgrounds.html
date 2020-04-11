@@ -37,15 +37,13 @@
   .selected {
     background-color: var(--ntp-selected-background-color);
     border-radius: 4px;
-    padding: 16px;
     position: relative;
   }
 
   .selected .image {
     box-shadow: 0 1px 3px 0 rgba(var(--google-grey-800-rgb), .3),
         0 4px 8px 3px rgba(var(--google-grey-800-rgb), .15);
-    height: 144px;
-    width: 144px;
+    transform: scale(.8);
   }
 
   .selected-circle {
@@ -101,70 +99,13 @@
     background: var(--ntp-background-override-color);
     border: 1px solid var(--ntp-border-color);
   }
-
-  .mini-page {
-    margin: auto;
-    padding-top: 32px;
-    width: fit-content;
-  }
-
-  .mini-header {
-    background-image: url(icons/colored_header.svg);
-    background-repeat: no-repeat;
-    background-size: 100%;
-    height: 48px;
-    width: 156px;
-  }
-
-  .mini-shortcuts {
-    -webkit-mask-image: url(icons/shortcut_circles.svg);
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: 100%;
-    background: var(--google-grey-refresh-300);
-    height: 50px;
-    margin-inline-start: 8px;
-    margin-top: 14px;
-    width: 140px;
-  }
-
-  .selected .mini-page {
-    padding-top: 26px;
-  }
-
-  .selected .mini-header {
-    height: 40px;
-    width: 130px;
-  }
-
-  .selected .mini-shortcuts {
-    height: 42px;
-    margin-inline-start: 7px;
-    margin-top: 12px;
-    width: 116px;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .mini-header {
-      -webkit-mask-image: url(icons/header.svg);
-      -webkit-mask-repeat: no-repeat;
-      -webkit-mask-size: 100%;
-      background: white;
-    }
-
-    .mini-shortcuts {
-      background: white;
-    }
-  }
 </style>
 <ntp-grid id="collections" columns="3" hidden="[[selectedCollection]]">
   <div id="noBackground" class="tile" role="button" on-click="onDefaultClick_">
     <div
         class$="[[getNoBackgroundClass_(theme, backgroundSelection)]]">
       <div class="image">
-        <div class="mini-page">
-          <div class="mini-header"></div>
-          <div class="mini-shortcuts"></div>
-        </div>
+        <ntp-mini-page></ntp-mini-page>
       </div>
       <div class="selected-circle"></div>
       <div class="selected-check"></div>
@@ -191,11 +132,11 @@
               [[getImageSelectedClass_(index, theme, backgroundSelection)]]"
           tabindex="0" title="[[item.attribution1]]" role="button"
           on-click="onImageClick_">
-        <div class="selected-circle"></div>
-        <div class="selected-check"></div>
         <ntp-untrusted-iframe class="image"
             path="background_image?[[item.previewImageUrl.url]]">
         </ntp-untrusted-iframe>
+        <div class="selected-circle"></div>
+        <div class="selected-check"></div>
       </div>
     </template>
   </dom-repeat>

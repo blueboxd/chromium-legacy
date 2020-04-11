@@ -132,6 +132,27 @@ const char* const kMigratedExtensionIds[] = {
     "dliochdbjfkdbacpmhlcpmleaejidimm"   // Google Cast (Beta)
 };
 
+void ReportExtensionDisabledRemotely(bool is_currently_enabled,
+                                     ExtensionUpdateCheckDataKey reason) {
+  // Report that the extension is newly disabled due to malware.
+  if (is_currently_enabled)
+    base::UmaHistogramEnumeration("Extensions.ExtensionDisabledRemotely",
+                                  reason);
+
+  // Report that the extension has added a new disable reason.
+  base::UmaHistogramEnumeration("Extensions.ExtensionAddDisabledRemotelyReason",
+                                reason);
+}
+
+void ReportNoUpdateCheckKeys() {
+  base::UmaHistogramEnumeration("Extensions.ExtensionDisabledRemotely",
+                                ExtensionUpdateCheckDataKey::kNoKey);
+}
+
+void ReportReenableExtensionFromMalware() {
+  base::UmaHistogramCounts100("Extensions.ExtensionReenabledRemotely", 1);
+}
+
 }  // namespace
 
 // ExtensionService.
@@ -779,6 +800,48 @@ void ExtensionService::UninstallExtensionOnFileThread(
 bool ExtensionService::IsExtensionEnabled(
     const std::string& extension_id) const {
   return extension_registrar_.IsExtensionEnabled(extension_id);
+}
+
+void ExtensionService::PerformActionBasedOnOmahaAttributes(
+    const std::string& extension_id,
+    const base::Value& attributes) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const base::Value* malware_value = attributes.FindKey("_malware");
+  if (malware_value == nullptr || !malware_value->GetBool()) {
+    ReportNoUpdateCheckKeys();
+    // Omaha attributes may have previously have the "_malware" key.
+    MaybeEnableRemotelyDisabledExtension(extension_id);
+    return;
+  }
+
+  if (extension_prefs_->HasDisableReason(
+          extension_id, disable_reason::DISABLE_REMOTELY_FOR_MALWARE)) {
+    // The extension is already disabled. No work needs to be done.
+    return;
+  }
+
+  ReportExtensionDisabledRemotely(
+      extension_registrar_.IsExtensionEnabled(extension_id),
+      ExtensionUpdateCheckDataKey::kMalware);
+
+  DisableExtension(extension_id, disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
+}
+
+void ExtensionService::MaybeEnableRemotelyDisabledExtension(
+    const std::string& extension_id) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  int disable_reasons = extension_prefs_->GetDisableReasons(extension_id);
+  if ((disable_reasons & disable_reason::DISABLE_REMOTELY_FOR_MALWARE) == 0)
+    return;
+
+  bool only_disabled_for_malware =
+      disable_reasons == disable_reason::DISABLE_REMOTELY_FOR_MALWARE;
+  extension_prefs_->RemoveDisableReason(
+      extension_id, disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
+  if (only_disabled_for_malware) {
+    ReportReenableExtensionFromMalware();
+    extension_registrar_.EnableExtension(extension_id);
+  }
 }
 
 void ExtensionService::EnableExtension(const std::string& extension_id) {

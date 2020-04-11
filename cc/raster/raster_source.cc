@@ -16,11 +16,11 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/viz/common/traced_value.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
+
 RasterSource::RasterSource(const RecordingSource* other)
     : display_list_(other->display_list_),
       painter_reported_memory_usage_(other->painter_reported_memory_usage_),
@@ -33,6 +33,7 @@ RasterSource::RasterSource(const RecordingSource* other)
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       recording_scale_factor_(other->recording_scale_factor_) {}
+
 RasterSource::~RasterSource() = default;
 
 void RasterSource::ClearForOpaqueRaster(
@@ -144,19 +145,6 @@ void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
   int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
   for (int i = 0; i < repeat_count; ++i)
     display_list_->Raster(raster_canvas, image_provider);
-}
-
-sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {
-  TRACE_EVENT0("cc", "RasterSource::GetFlattenedPicture");
-
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(size_.width(), size_.height());
-  if (!size_.IsEmpty()) {
-    canvas->clear(SK_ColorTRANSPARENT);
-    PlaybackToCanvas(canvas, nullptr);
-  }
-
-  return recorder.finishRecordingAsPicture();
 }
 
 size_t RasterSource::GetMemoryUsage() const {

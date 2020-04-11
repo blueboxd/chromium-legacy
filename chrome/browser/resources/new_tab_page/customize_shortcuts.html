@@ -59,11 +59,11 @@
   }
 
   ntp-mini-page {
-    --mini-page-shortcut-color: var(--google-grey-refresh-500);
+    --ntp-mini-page-shortcut-color: var(--google-grey-refresh-500);
   }
 
   .selected ntp-mini-page {
-    --mini-page-shortcut-color: var(--ntp-selected-border-color);
+    --ntp-mini-page-shortcut-color: var(--ntp-selected-border-color);
   }
 
   .option-icon {
@@ -237,7 +237,7 @@
         title="$i18n{myShortcuts}" on-click="onCustomLinksClick_">
       <div class="option-icon"></div>
       <div class="option-mini">
-        <ntp-mini-page></ntp-mini-page>
+        <ntp-mini-page single-colored-logo></ntp-mini-page>
       </div>
       <div class="selected-circle"></div>
       <div class="selected-check"></div>
@@ -254,7 +254,7 @@
         title="$i18n{mostVisited}" on-click="onMostVisitedClick_">
       <div class="option-icon"></div>
       <div class="option-mini">
-        <ntp-mini-page></ntp-mini-page>
+        <ntp-mini-page single-colored-logo></ntp-mini-page>
       </div>
       <div class="selected-circle"></div>
       <div class="selected-check"></div>

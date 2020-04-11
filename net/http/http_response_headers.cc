@@ -169,13 +169,13 @@ HttpResponseHeaders::HttpResponseHeaders(const std::string& raw_input)
   // that would actually create a double call between the original
   // HttpResponseHeader that was serialized, and initialization of the
   // new object from that pickle.
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.HttpResponseCode",
-                                   HttpUtil::MapStatusCodeForHistogram(
-                                       response_code_),
-                                   // Note the third argument is only
-                                   // evaluated once, see macro
-                                   // definition for details.
-                                   HttpUtil::GetStatusCodesForHistogram());
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+      "Net.HttpResponseCode",
+      HttpUtil::MapStatusCodeForHistogram(response_code_),
+      // Note the third argument is only
+      // evaluated once, see macro
+      // definition for details.
+      HttpUtil::GetStatusCodesForHistogram());
 }
 
 HttpResponseHeaders::HttpResponseHeaders(base::PickleIterator* iter)
@@ -399,8 +399,33 @@ void HttpResponseHeaders::AddHeader(const std::string& header) {
   Parse(new_raw_headers);
 }
 
+void HttpResponseHeaders::AddHeader(base::StringPiece name,
+                                    base::StringPiece value) {
+  DCHECK(HttpUtil::IsValidHeaderName(name));
+  DCHECK(HttpUtil::IsValidHeaderValue(value));
+
+  // Don't copy the last null.
+  std::string new_raw_headers(raw_headers_, 0, raw_headers_.size() - 1);
+  new_raw_headers.append(name.begin(), name.end());
+  new_raw_headers.append(": ");
+  new_raw_headers.append(value.begin(), value.end());
+  new_raw_headers.push_back('\0');
+  new_raw_headers.push_back('\0');
+
+  // Make this object hold the new data.
+  raw_headers_.clear();
+  parsed_.clear();
+  Parse(new_raw_headers);
+}
+
+void HttpResponseHeaders::SetHeader(base::StringPiece name,
+                                    base::StringPiece value) {
+  RemoveHeader(name.as_string());
+  AddHeader(name, value);
+}
+
 void HttpResponseHeaders::AddCookie(const std::string& cookie_string) {
-  AddHeader("Set-Cookie: " + cookie_string);
+  AddHeader("Set-Cookie", cookie_string);
 }
 
 void HttpResponseHeaders::ReplaceStatusLine(const std::string& new_status) {
@@ -433,9 +458,10 @@ void HttpResponseHeaders::UpdateWithNewRange(const HttpByteRange& byte_range,
   if (replace_status_line)
     ReplaceStatusLine("HTTP/1.1 206 Partial Content");
 
-  AddHeader(base::StringPrintf("%s: bytes %" PRId64 "-%" PRId64 "/%" PRId64,
-                               kRangeHeader, start, end, resource_size));
-  AddHeader(base::StringPrintf("%s: %" PRId64, kLengthHeader, range_len));
+  AddHeader(kRangeHeader,
+            base::StringPrintf("bytes %" PRId64 "-%" PRId64 "/%" PRId64, start,
+                               end, resource_size));
+  AddHeader(kLengthHeader, base::StringPrintf("%" PRId64, range_len));
 }
 
 void HttpResponseHeaders::Parse(const std::string& raw_input) {
@@ -447,9 +473,9 @@ void HttpResponseHeaders::Parse(const std::string& raw_input) {
       std::find(line_begin, raw_input.end(), '\0');
   // has_headers = true, if there is any data following the status line.
   // Used by ParseStatusLine() to decide if a HTTP/0.9 is really a HTTP/1.0.
-  bool has_headers = (line_end != raw_input.end() &&
-                      (line_end + 1) != raw_input.end() &&
-                      *(line_end + 1) != '\0');
+  bool has_headers =
+      (line_end != raw_input.end() && (line_end + 1) != raw_input.end() &&
+       *(line_end + 1) != '\0');
   ParseStatusLine(line_begin, line_end, has_headers);
   raw_headers_.push_back('\0');  // Terminate status line with a null.
 
@@ -481,9 +507,7 @@ void HttpResponseHeaders::Parse(const std::string& raw_input) {
   HttpUtil::HeadersIterator headers(line_end + 1, raw_headers_.end(),
                                     std::string(1, '\0'));
   while (headers.GetNext()) {
-    AddHeader(headers.name_begin(),
-              headers.name_end(),
-              headers.values_begin(),
+    AddHeader(headers.name_begin(), headers.name_end(), headers.values_begin(),
               headers.values_end());
   }
 
@@ -818,7 +842,7 @@ void HttpResponseHeaders::AddNonCacheableHeaders(HeaderSet* result) const {
       continue;
     }
     // if it doesn't end with a quote, then treat as malformed
-    if (value[value.size()-1] != '\"')
+    if (value[value.size() - 1] != '\"')
       continue;
 
     // process the value as a comma-separated list of items. Each
@@ -937,11 +961,8 @@ bool HttpResponseHeaders::IsRedirect(std::string* location) const {
 bool HttpResponseHeaders::IsRedirectResponseCode(int response_code) {
   // Users probably want to see 300 (multiple choice) pages, so we don't count
   // them as redirects that need to be followed.
-  return (response_code == 301 ||
-          response_code == 302 ||
-          response_code == 303 ||
-          response_code == 307 ||
-          response_code == 308);
+  return (response_code == 301 || response_code == 302 ||
+          response_code == 303 || response_code == 307 || response_code == 308);
 }
 
 // From RFC 2616 section 13.2.4:
@@ -1240,8 +1261,8 @@ bool HttpResponseHeaders::IsKeepAlive() const {
   // NOTE: It is perhaps risky to assume that a Proxy-Connection header is
   // meaningful when we don't know that this response was from a proxy, but
   // Mozilla also does this, so we'll do the same.
-  static const char* const kConnectionHeaders[] = {
-    "connection", "proxy-connection"};
+  static const char* const kConnectionHeaders[] = {"connection",
+                                                   "proxy-connection"};
   struct KeepAliveToken {
     const char* const token;
     bool keep_alive;
@@ -1272,10 +1293,8 @@ bool HttpResponseHeaders::HasStrongValidators() const {
   EnumerateHeader(nullptr, "Last-Modified", &last_modified_header);
   std::string date_header;
   EnumerateHeader(nullptr, "Date", &date_header);
-  return HttpUtil::HasStrongValidators(GetHttpVersion(),
-                                       etag_header,
-                                       last_modified_header,
-                                       date_header);
+  return HttpUtil::HasStrongValidators(GetHttpVersion(), etag_header,
+                                       last_modified_header, date_header);
 }
 
 bool HttpResponseHeaders::HasValidators() const {
@@ -1350,7 +1369,7 @@ base::Value HttpResponseHeaders::NetLogParams(
 bool HttpResponseHeaders::IsChunkEncoded() const {
   // Ignore spurious chunked responses from HTTP/1.0 servers and proxies.
   return GetHttpVersion() >= HttpVersion(1, 1) &&
-      HasHeaderValue("Transfer-Encoding", "chunked");
+         HasHeaderValue("Transfer-Encoding", "chunked");
 }
 
 bool HttpResponseHeaders::IsCookieResponseHeader(StringPiece name) {

@@ -8,4 +8,6 @@ vars = struct(
     try_bucket = 'try-m83',
     cq_group = 'cq-m83',
     cq_ref_regexp = 'refs/branch-heads/4103',
+    main_list_view_name = 'try-m83',
+    main_list_view_title = 'Chromium M83 CQ console',
 )

@@ -52,6 +52,7 @@
 <translation id="2309047409763057870">‏یہ Google Chrome کا ثانوی انسٹالیشن ہے اور اسے آپ کا ڈیفالٹ براؤزر نہیں بنایا جا سکتا ہے۔</translation>
 <translation id="2341767445688917208">‏Chrome OS آپ کے پاس ورڈز کی مطابقت پذیری نہیں کر سکا۔ ابھی درست کریں۔</translation>
 <translation id="2348335408836342058">‏Chrome کو اس سائٹ کیلئے آپ کے کیمرے اور مائیکروفون تک رسائی کی اجازت درکار ہے</translation>
+<translation id="234869673307233423">‏Chrome آپ کے پاس ورڈز چیک نہیں کر سکتا ہے۔ بعد میں دوبارہ کوشش کریں۔</translation>
 <translation id="2429317896000329049">‏Google Chrome کلاؤڈ آپ کے ڈیٹا کی مطابقت پذیری نہیں کر سکا کیونکہ مطابقت پذیری آپ کے ڈومین کیلئے فعال نہیں ہے۔</translation>
 <translation id="2467438592969358367">‏Google Chrome آپ کے پاس ورڈز برآمد کرنا چاہتا ہے۔ اس کی اجازت دینے کیلئے، اپنا Windows پاس ورڈ ٹائپ کریں۔</translation>
 <translation id="2485422356828889247">ان انسٹال کریں</translation>
@@ -66,6 +67,7 @@
 <translation id="2689103672227170538">‏آپ کی جانب سے Chrome شروع کرنے پر دکھائی دینے والے صفحہ کو اس ایکسٹینشن نے تبدیل کر دیا ہے۔</translation>
 <translation id="2765403129283291972">‏Chrome کو اس سائٹ کیلئے آپ کے مائیکروفون تک رسائی کی اجازت درکار ہے</translation>
 <translation id="2770231113462710648">ڈیفالٹ براؤزر کو اس میں تبدیل کریں:</translation>
+<translation id="2775140325783767197">‏Chrome آپ کے پاس ورڈز چیک نہیں کر سکتا ہے۔ اپنا انٹرنیٹ کنکشن چیک کرنے کی کوشش کریں۔</translation>
 <translation id="2799223571221894425">دوبارہ شروع کریں</translation>
 <translation id="2847461019998147611">‏Google Chrome کو اس زبان میں ڈسپلے کریں</translation>
 <translation id="2857540653560290388">‏Chrome شروع ہو رہا ہے…</translation>
@@ -84,10 +86,12 @@
 <translation id="3395323229510056640">‏Chromium OS کے بارے میں مدد حاصل کریں</translation>
 <translation id="3396977131400919238">‏انسٹالیشن کے دوران آپریٹنگ سسٹم کی ایک خرابی پیش آ گئی۔ براہ کرم Google Chrome دوبارہ ڈاؤن لوڈ کریں۔</translation>
 <translation id="3398288718845740432">‏Chrome مینو میں مخفی کریں</translation>
+<translation id="3434246496373299699">‏جب آپ اپنے Google اکاؤنٹ سے سائن ان ہوتے ہیں تو Chrome آپ کے پاس ورڈز کو چیک کر سکتا ہے</translation>
 <translation id="3451115285585441894">‏Chrome میں شامل کیا جا رہا ہے…</translation>
 <translation id="345171907106878721">‏خود کو Chrome میں شامل کریں</translation>
 <translation id="34857402635545079">‏Chrome کا ڈیٹا بھی صاف کریں (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">‏Chrome کو اس سائٹ کے ساتھ آپ کے مقام کا اشتراک کرنے کیلئے آپ کے مقام تک رسائی درکار ہے</translation>
+<translation id="3533694711092285624">‏کوئی محفوظ کردہ پاس ورڈز نہیں۔ جب آپ پاس ورڈز کو محفوظ کرتے ہیں تو Chrome انہیں چیک کر سکتا ہے۔</translation>
 <translation id="3576528680708590453">‏آپ کے سسٹم کے منتظم نے <ph name="TARGET_URL_HOSTNAME" /> تک رسائی حاصل کرنے کے لیے Google Chrome کو ایک متبادل براؤزر کھولنے کے لیے کنفیگر کیا ہے۔</translation>
 <translation id="3582972582564653026">‏اپنے آلات پر Chrome کو مطابقت پذیر اور ذاتی نوعیت کا بنائیں</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{‏آپ کے منتظم کا مطالبہ ہے کہ آپ اپ ڈیٹ کو لاگو کرنے کیلئے Chrome کو بند کر کے دوبارہ چلائیں}=1{‏آپ کے منتظم کا مطالبہ ہے کہ آپ اپ ڈیٹ کو لاگو کرنے کیلئے Chrome کو بند کر کے دوبارہ چلائیں۔ آپ کی پوشیدگی ونڈو دوبارہ نہیں کھلے گی۔}other{‏آپ کے منتظم کا مطالبہ ہے کہ آپ اپ ڈیٹ کو لاگو کرنے کیلئے Chrome کو بند کر کے دوبارہ چلائیں۔ آپ کی # پوشیدگی ونڈوز دوبارہ نہیں کھلیں گی۔}}</translation>
@@ -238,6 +242,7 @@ Google Chrome آپ کی ترتیبات کو بازیافت کرنے سے قاص�
 <translation id="8556340503434111824">‏Google Chrome کا ایک نیا ورژن دستیاب ہے اور پہلے سے کہیں زیادہ تیز ہے۔</translation>
 <translation id="8614913330719544658">‏Google Chrome جواب نہیں دے رہا ہے۔ ابھی دوبارہ شروع کریں؟</translation>
 <translation id="8625237574518804553">{0,plural, =1{‏1 منٹ میں Chrome دوبارہ لانچ ہوگا}other{‏# منٹ میں Chrome دوبارہ لانچ ہوگا}}</translation>
+<translation id="8641606876632989680">‏جب آپ کسی متاثرہ پاس ورڈ سے سائن ان کریں گے تو Chrome آپ کو مطلع کرے گا</translation>
 <translation id="8669527147644353129">‏Google Chrome مدد کنندہ</translation>
 <translation id="8679801911857917785">‏یہ آپ کی جانب سے Chrome شروع کیے جانے پر دکھائی دینے والے صفحہ کو بھی کنٹرول کرتا ہے۔</translation>
 <translation id="870251953148363156">‏‎&amp;Google Chrome اپ ڈیٹ کریں</translation>

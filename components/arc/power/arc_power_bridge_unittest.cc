@@ -15,7 +15,6 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_power_instance.h"
-#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"

@@ -42,7 +42,7 @@ static void TestFrameAncestorsCSPParser(const std::string& header,
                                         const ExpectedResult* expected_result) {
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-  headers->AddHeader("Content-Security-Policy: frame-ancestors " + header);
+  headers->SetHeader("Content-Security-Policy", "frame-ancestors " + header);
   std::vector<mojom::ContentSecurityPolicyPtr> policies;
   AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                       &policies);
@@ -238,9 +238,9 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
   {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-    headers->AddHeader(
-        "Content-Security-Policy: frame-ancestors example.com; other_directive "
-        "value; frame-ancestors example.org");
+    headers->SetHeader("Content-Security-Policy",
+                       "frame-ancestors example.com; other_directive "
+                       "value; frame-ancestors example.org");
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
@@ -260,9 +260,9 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
   {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-    headers->AddHeader(
-        "Content-Security-Policy: other_directive value; frame-ancestors "
-        "example.org");
+    headers->SetHeader("Content-Security-Policy",
+                       "other_directive value; frame-ancestors "
+                       "example.org");
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
@@ -284,8 +284,10 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
   {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-    headers->AddHeader("Content-Security-Policy: frame-ancestors example.com");
-    headers->AddHeader("Content-Security-Policy: frame-ancestors example.org");
+    headers->AddHeader("Content-Security-Policy",
+                       "frame-ancestors example.com");
+    headers->AddHeader("Content-Security-Policy",
+                       "frame-ancestors example.org");
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
@@ -320,9 +322,8 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
   {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-    headers->AddHeader(
-        "Content-Security-Policy: other_directive value, frame-ancestors "
-        "example.org");
+    headers->SetHeader("Content-Security-Policy",
+                       "other_directive value, frame-ancestors example.org");
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
@@ -346,9 +347,9 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
   {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-    headers->AddHeader(
-        "Content-Security-Policy: frame-ancestors example.com, frame-ancestors "
-        "example.org");
+    headers->SetHeader(
+        "Content-Security-Policy",
+        "frame-ancestors example.com, frame-ancestors example.org");
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
@@ -383,9 +384,9 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
   {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-    headers->AddHeader(
-        "Content-Security-Policy: report-to http://example.com/report; "
-        "frame-ancestors example.com");
+    headers->SetHeader(
+        "Content-Security-Policy",
+        "report-to http://example.com/report; frame-ancestors example.com");
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
@@ -414,8 +415,8 @@ TEST(ContentSecurityPolicy, ParseReportEndpoint) {
   {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-    headers->AddHeader(
-        "Content-Security-Policy: report-uri http://example.com/report");
+    headers->SetHeader("Content-Security-Policy",
+                       "report-uri http://example.com/report");
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
@@ -430,8 +431,8 @@ TEST(ContentSecurityPolicy, ParseReportEndpoint) {
   {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-    headers->AddHeader(
-        "Content-Security-Policy: report-to http://example.com/report");
+    headers->SetHeader("Content-Security-Policy",
+                       "report-to http://example.com/report");
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
@@ -446,10 +447,10 @@ TEST(ContentSecurityPolicy, ParseReportEndpoint) {
   {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-    headers->AddHeader(
-        "Content-Security-Policy: report-uri http://example.com/report1; "
-        "report-uri http://example.com/report2; report-to "
-        "http://example.com/report3");
+    headers->SetHeader("Content-Security-Policy",
+                       "report-uri http://example.com/report1; "
+                       "report-uri http://example.com/report2; "
+                       "report-to http://example.com/report3");
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
@@ -462,10 +463,10 @@ TEST(ContentSecurityPolicy, ParseReportEndpoint) {
   {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-    headers->AddHeader(
-        "Content-Security-Policy: report-to http://example.com/report1");
-    headers->AddHeader(
-        "Content-Security-Policy: report-uri http://example.com/report2");
+    headers->AddHeader("Content-Security-Policy",
+                       "report-to http://example.com/report1");
+    headers->AddHeader("Content-Security-Policy",
+                       "report-uri http://example.com/report2");
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);

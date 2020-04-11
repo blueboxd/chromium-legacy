@@ -21,7 +21,6 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "extensions/browser/api/feedback_private/log_source_access_manager.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/connector.h"
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;

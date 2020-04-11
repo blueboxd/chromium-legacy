@@ -283,4 +283,10 @@ interface MediaFeedsStore {
 
   // Gets the items for the media feed.
   GetItemsForMediaFeed(int64 feed_id) => (array<MediaFeedItem> items);
+
+  // Fetch the details of a previously-discovered media feed and store them in
+  // media history. The feed ID and URL both come from the media history store.
+  // The feed ID is the unique ID for the feed and the URL is the location where
+  // the feed was discovered.
+  FetchMediaFeed(int64 feed_id, url.mojom.Url url) => ();
 };

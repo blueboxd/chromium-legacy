@@ -1739,7 +1739,8 @@ struct HostResolverManager::JobKey {
   ResolveContext* resolve_context;
 };
 
-// Aggregates all Requests for the same Key. Dispatched via PriorityDispatch.
+// Aggregates all Requests for the same Key. Dispatched via
+// PrioritizedDispatcher.
 class HostResolverManager::Job : public PrioritizedDispatcher::Job,
                                  public HostResolverManager::DnsTask::Delegate {
  public:
@@ -2114,7 +2115,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       handle_ = dispatcher_->ChangePriority(handle_, priority());
   }
 
-  // PriorityDispatch::Job:
+  // PrioritizedDispatcher::Job:
   void Start() override {
     handle_.Reset();
     ++num_occupied_job_slots_;

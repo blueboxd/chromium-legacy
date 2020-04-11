@@ -5,12 +5,14 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -1056,12 +1058,33 @@ ChromePasswordProtectionService::GetPlaceholdersForSavedPasswordWarningText()
   const std::list<std::string>& spoofed_domains = common_spoofed_domains();
 
   // Show most commonly spoofed domains first.
+  // This looks through the top priority spoofed domains and then checks to see
+  // if it's in the matching domains.
   std::vector<base::string16> placeholders;
   for (auto priority_domain_iter = spoofed_domains.begin();
        priority_domain_iter != spoofed_domains.end(); ++priority_domain_iter) {
-    if (std::find(matching_domains.begin(), matching_domains.end(),
-                  *priority_domain_iter) != matching_domains.end()) {
-      placeholders.push_back(base::UTF8ToUTF16(*priority_domain_iter));
+    std::string matching_domain = "";
+
+    // Check if any of the matching domains is equal or a suffix to the current
+    // priority domain.
+    if (std::find_if(matching_domains.begin(), matching_domains.end(),
+                     [priority_domain_iter,
+                      &matching_domain](const std::string& domain) {
+                       // Assigns the matching_domain to add into the priority
+                       // placeholders. This value is only used if the return
+                       // value of this function is true.
+                       matching_domain = domain;
+                       const base::StringPiece domainStringPiece(domain);
+                       // Checks for two cases:
+                       // 1. if the matching domain is equal to the current
+                       // priority domain or
+                       // 2. if "," + the current priority is a suffix of the
+                       // matching domain The second case covers eTLD+1.
+                       return (domain == *priority_domain_iter) ||
+                              domainStringPiece.ends_with(
+                                  "." + *priority_domain_iter);
+                     }) != matching_domains.end()) {
+      placeholders.push_back(base::UTF8ToUTF16(matching_domain));
     }
   }
 

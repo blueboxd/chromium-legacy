@@ -83,7 +83,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   unsigned needs_collect_slots_ : 1;
   unsigned needs_assignment_recalc_ : 1;
   unsigned slot_count_ : 30;
-  // TODO: (crbug.com/1067157) Ensure references inside the map are GCed.
+  // TODO: (1067157) Ensure references inside the map are GCed.
   HeapHashMap<Member<Node>, Member<HTMLSlotElement>>
       candidate_assigned_slot_map_;
 };

@@ -1008,7 +1008,6 @@
 <translation id="2342740338116612727">පිටුසන් එක් කළා</translation>
 <translation id="2343747224442182863">මෙම පටිත්තට අවධානය යොමු කරන්න</translation>
 <translation id="2345723121311404059"><ph name="PRINTER_NAME" /> වෙත පිටු 1ක්</translation>
-<translation id="2346953515226895098">SODA සේවය</translation>
 <translation id="2347644257713614136">අධ්‍යාපනය සඳහා Hangouts සහ Cast භාවිතය Google රහස්‍යතා ප්‍රතිපත්තිය මගින් පාලනය වේ.</translation>
 <translation id="2348176352564285430">යෙදුම: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="234889437187286781">දත්ත පූරණය කිරීමේ දෝෂයකි</translation>
@@ -2284,7 +2283,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="3971764089670057203">මෙම ආරක්‍ෂක යතුරේ ඇඟිලි සලකුණු</translation>
 <translation id="3973660817924297510">මුරපද පරීක්‍ෂා කෙරේ (<ph name="TOTAL_PASSWORDS" /> න් <ph name="CHECKED_PASSWORDS" />)…</translation>
 <translation id="3975565978598857337">ක්‍ෂේත්‍රය සඳහා සේවාදායකය සම්බන්ධ කිරීම අසාර්ථක විය</translation>
-<translation id="3975884715086515476"><ph name="IDS_SHORT_PRODUCT_NAME" /> හට ඔබේ මුරපද පරීක්‍ෂා කළ නොහැක. පසුව නැවත උත්සාහ කරන්න.</translation>
 <translation id="3976108569178263973">ලද හැකි මුද්‍රක නැත.</translation>
 <translation id="397703832102027365">අවසන්කරමින්...</translation>
 <translation id="3977886311744775419">ස්වයංක්‍රීය යාවත්කාලීන මෙම ජාල වර්ගයේ බාගන්නා නැති නමුත්, ඔබට යාවත්කාලීන සඳහා හස්තීයව පරීක්‍ෂා කළ හැක.</translation>
@@ -2585,7 +2583,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4421932782753506458">Fluffy</translation>
 <translation id="4423376891418188461">සැකසීම් ප්‍රතිසාධනය කරන්න</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, ඔබේ පරිපාලකට ඔබ ඔබේ මුරපදය වෙනස් කිරීමට අවශ්‍යයි.</translation>
-<translation id="4426209360861763174"><ph name="IDS_SHORT_PRODUCT_NAME" /> හට ඔබේ මුරපද පරීක්‍ෂා කළ නොහැක. පැය 24-කට පසුව නැවත උත්සාහ කරන්න.</translation>
 <translation id="4429030830601238961">මෙම දත්ත ඔබේ ආයතනයේ ආරක්‍ෂක ප්‍රතිපත්ති උල්ලංඝන කරන අතර, මෙය ඇලවිය නොහැක.</translation>
 <translation id="4430019312045809116">ශබ්ද තීව්‍රතාවය</translation>
 <translation id="4430369329743628066">පිටුසන එක් කරන ලදී</translation>
@@ -2598,7 +2595,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4441124369922430666">ඔබට පරිගණකය ආරම්භ වන විට ස්වයංක්‍රීයව මෙම යෙදුම ආරම්භ කිරීමට අවශ්‍යද?</translation>
 <translation id="4441147046941420429">ඉදිරියට යාමට, ඔබේ උපාංගයෙන් ඔබේ ආරක්‍ෂක යතුර ඉවත් කරන්න, පසුව යළි ඇතුළත් කර එය ස්පර්ශ කරන්න</translation>
 <translation id="444134486829715816">පුළුල් කරන්න...</translation>
-<translation id="4442329324652245220"><ph name="IDS_SHORT_PRODUCT_NAME" /> හට ඔබ ඔබේ Google ගිණුම මඟින් පුරන විට ඔබේ මුරපද පරීක්‍ෂා කළ හැක</translation>
 <translation id="4442424173763614572">DNS සෙවුම අසාර්ථකයි</translation>
 <translation id="4443536555189480885">&amp;උපකාර</translation>
 <translation id="4444304522807523469">ඔස්සේ සම්බන්ධ කර ඇති හෝ USB පෙදෙසි ජාලයේ ඇති ලේඛන පරිලෝකන යන්ත්‍ර ප්‍රවේශ කරන්න</translation>
@@ -2625,7 +2621,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4476659815936224889">මෙම කේතය ස්කෑන් කිරීමට, ඔබට ඔබේ දුරකථනය මත QR ස්කෑනර් යෙදුමක්, හෝ යම් කැමරා යෙදුම් භාවිත කළ හැක.</translation>
 <translation id="4477015793815781985">Ctrl, Alt, හෝ ⌘ ඇතුළත් කරන්න</translation>
 <translation id="4478664379124702289">ලින්ක් ලෙස සුරකින්න... (&amp;k)</translation>
-<translation id="4478777936860197922">සුරැකි මුරපද නැත. <ph name="IDS_SHORT_PRODUCT_NAME" /> හට ඔබ ඔබේ මුරපද පරීක්‍ෂා කරන විට ඒවා පරීක්‍ෂා කළ හැක.</translation>
 <translation id="4479424953165245642">kiosk යෙදුම් කළමනාකරණය</translation>
 <translation id="4479639480957787382">ඊදර්නෙට්</translation>
 <translation id="4479877282574735775">අතථ්‍ය යන්ත්‍රය වින්‍යාස කිරීම. මෙයට විනාඩි කිහිපයක් ගත විය හැක.</translation>
@@ -2871,7 +2866,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4849517651082200438">ස්ථාපනය නොකරන්න</translation>
 <translation id="4850669014075537160">අනුචලනය</translation>
 <translation id="4850886885716139402">දසුන</translation>
-<translation id="485197095346966382"><ph name="IDS_SHORT_PRODUCT_NAME" /> ඔබ සමථයට පත් වූ මුරපදයක් සමඟ පුරන විට ඔබට දැනුම් දෙයි</translation>
 <translation id="4853020600495124913">&amp;නව කවුළුවක විවෘත කරන්න</translation>
 <translation id="4854317507773910281">අනුමැතිය සඳහා මාපිය ගිණුම තෝරන්න</translation>
 <translation id="485480310608090163">තවත් සැකසීම් සහ අවසර</translation>
@@ -4834,7 +4828,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="7530016656428373557">විසර්ජන අනුපාතය වොට් මගින්</translation>
 <translation id="7531779363494549572">සැකසීම් &gt; යෙදුම් සහ දැනුම්දීම් &gt; දැනුම්දීම් වෙත යන්න.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> ප්‍රතිචාර නොදක්වයි. යෙදුම වැසීමට "බලෙන් වසන්න" තෝරන්න.</translation>
-<translation id="7536333565791380193">උසස් ආරක්‍ෂාව</translation>
 <translation id="7537451260744431038">වෙබ් අඩවි ඔබේ බ්‍රවුස කිරීමේ අත්දැකීම වැඩිදියුණු කිරීමට, උදාහරණයක් වශයෙන්, ඔබව පුරනය කර තබා ගැනීමට හෝ ඔබේ සාප්පු සවාරි කරත්තයේ අයිතම මතක තබා ගැනීමට කුකී භාවිත නොකළ හැක</translation>
 <translation id="7539856059004947393">බ්ලූටූත් ආරක්ෂක යතුර</translation>
 <translation id="7540972813190816353">යාවත්කාලීන සඳහා පරීක්ෂා කරන අතරේ දෝෂයක් ඇති විය: <ph name="ERROR" /></translation>
@@ -5074,7 +5067,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
     <ph name="BEGIN_BOLD" />සටහන:<ph name="END_BOLD" />  ක්‍රියාවලිය අතරතුරේදී පද්ධතිය නැවත ආරම්භ වනු ඇත.</translation>
 <translation id="7828731929332799387">මෙය තෙවන පාර්ශ්ව සන්දර්භ තුළ තිබෙන සියලුම කුකී සහ වෙබ් අඩවි දත්ත මකා දමයි. ඔබට ඉදිරියට යාමට අවශ්‍යද?</translation>
 <translation id="7829298379596169484">ශ්‍රව්‍ය ආදානයට ප්‍රවේශ වෙමින්</translation>
-<translation id="7829528495815477379"><ph name="IDS_SHORT_PRODUCT_NAME" /> හට ඔබේ මුරපද පරීක්‍ෂා කළ නොහැක. ඔබේ අන්තර්ජාල සම්බන්ධතාව පරීක්‍ෂා කිරීමට උත්සාහ කරන්න.</translation>
 <translation id="7829877209233347340">පාසල් ගිණුමක් එක් කිරීමට අවසර දීමට මාපියෙකුට පුරන්නට කියන්න</translation>
 <translation id="7830594666202422257">ලිනක්ස් වෙත සම්බන්ධ කරන්න</translation>
 <translation id="7831491651892296503">ජාලය වින්‍යාස කිරීමේ දෝෂයකි</translation>
@@ -5948,7 +5940,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="8966870118594285808">ඔබ එය අහම්බෙන් වසා දැමුවේ නම්, පටිත්ත නැවත විවෘත කරන්න</translation>
 <translation id="8967866634928501045">පෙන්වීමට Alt Shift A ඔබන්න</translation>
 <translation id="8968766641738584599">කාඩ්පත සුරකින්න</translation>
-<translation id="8971800409073702505"><ph name="IDS_SHORT_PRODUCT_NAME" /> හට ඔබේ මුරපද පරීක්‍ෂා කළ නොහැක. පැය 24-කට පසු නැවත උත්සාහ කරන්න, නැති නම් <ph name="BEGIN_LINK" />ඔබේ Google ගිණුම තුළ මුරපද පරීක්‍ෂා කරන්න<ph name="END_LINK" />.</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">ඔබේ ගිණිපවුර විසින් Google සේවාදායක වෙතින් බාගැනීම බාධා කර නොමැතිදැයි ජාල පරිපාලකගෙන් විමසන්න.</translation>
 <translation id="8973557916016709913">විශාලන මට්ටම ඉවත් කරන්න</translation>

@@ -24,7 +24,6 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace heap_profiling {
 

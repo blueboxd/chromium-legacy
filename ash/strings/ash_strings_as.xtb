@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">অধিক বিকল্পৰ বাবে ক্লিক কৰক</translation>
 <translation id="1570871743947603115">ব্লুটুথ ট’গল কৰক। <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">এই ছেশ্বনত আপোনাৰ সকলো কার্যকলাপ এক্সেছ কৰে</translation>
-<translation id="1632985212731562677">ছুইচৰ দ্বাৰা এক্সেছ ছেটিংসমূহ &gt; সাধ্য সুবিধাত অক্ষম কৰিব পৰা যায়।</translation>
+<translation id="1632985212731562677">ছুইচৰ দ্বাৰা এক্সেছ ছেটিংসমূহ ইয়াত অক্ষম কৰিব পৰা যায় &gt; সাধ্য সুবিধা।</translation>
 <translation id="1654477262762802994">কণ্ঠধ্বনিৰদ্বাৰা সন্ধান আৰম্ভ কৰক</translation>
 <translation id="1658406695958299976">দুঃখিত, আপোনাৰ পাছৱৰ্ডটো এতিয়াও সত্যাপন কৰিব পৰা নগ‘ল। টোকা: যদি আপুনি অলপতে আপোনাৰ পাছৱৰ্ডটো সলনি কৰিছিল তেন্তে আপুনি ছাইন আউট কৰাৰ পিছত নতুন পাছৱৰ্ডটো প্ৰযোজ্য হ‘ব। ইয়াত অনুগ্ৰহ কৰি পুৰণা পাছৱৰ্ডটো ব্যৱহাৰ কৰক।</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> বাকী</translation>
@@ -412,6 +412,7 @@
 <translation id="6267036997247669271"><ph name="NAME" />: সক্ৰিয় কৰি থকা হৈছে…</translation>
 <translation id="6283712521836204486">অসুবিধা নিদিব অফ কৰা আছে।</translation>
 <translation id="6284232397434400372">ৰিজ'লিউশ্বন সলনি হ'ল</translation>
+<translation id="6288235558961782912">এজন অভিভাৱকৰ অনুমতি লৈ <ph name="USER_EMAIL_ADDRESS" /> পাছত পুনৰ যোগ কৰিব পৰা যায়।</translation>
 <translation id="6297287540776456956">কোনো অংশ বাছনি কৰিবলৈ ষ্টাইলাছ ব্যৱহাৰ কৰক</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ক <ph name="ROTATION" />লৈ ঘূৰোৱা হৈছিল</translation>
 <translation id="6376931439017688372">ব্লুটুথ অন কৰা আছে</translation>

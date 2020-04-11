@@ -380,10 +380,8 @@ void LocalDOMWindow::CountPotentialFeaturePolicyViolation(
 void LocalDOMWindow::ReportFeaturePolicyViolation(
     mojom::blink::FeaturePolicyFeature feature,
     mojom::blink::PolicyDisposition disposition,
-    const String& message,
-    const String& source_file) const {
-  document()->ReportFeaturePolicyViolation(feature, disposition, message,
-                                           source_file);
+    const String& message) const {
+  document()->ReportFeaturePolicyViolation(feature, disposition, message);
 }
 
 void LocalDOMWindow::ReportDocumentPolicyViolation(

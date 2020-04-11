@@ -358,10 +358,10 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseIsUnusable) {
   auto response_head = mojom::URLResponseHead::New();
   response_head->headers =
       net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
-  response_head->headers->AddHeader(base::StringPrintf(
-      "%s: %s", kTrustTokensSecTrustTokenHeader,
+  response_head->headers->SetHeader(
+      kTrustTokensSecTrustTokenHeader,
       "response from issuer (this value will be ignored, since "
-      "Cryptographer::ConfirmResponse is mocked out)"));
+      "Cryptographer::ConfirmResponse is mocked out)");
   EXPECT_EQ(helper.Finalize(response_head.get()),
             mojom::TrustTokenOperationStatus::kBadResponse);
 
@@ -405,10 +405,10 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, Success) {
   auto response_head = mojom::URLResponseHead::New();
   response_head->headers =
       net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
-  response_head->headers->AddHeader(base::StringPrintf(
-      "%s: %s", kTrustTokensSecTrustTokenHeader,
+  response_head->headers->SetHeader(
+      kTrustTokensSecTrustTokenHeader,
       "response from issuer (this value will be ignored, since "
-      "Cryptographer::ConfirmResponse is mocked out)"));
+      "Cryptographer::ConfirmResponse is mocked out)");
   EXPECT_EQ(helper.Finalize(response_head.get()),
             mojom::TrustTokenOperationStatus::kOk);
 
@@ -495,10 +495,10 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, StoresObtainedTokens) {
   auto response_head = mojom::URLResponseHead::New();
   response_head->headers =
       net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
-  response_head->headers->AddHeader(base::StringPrintf(
-      "%s: %s", kTrustTokensSecTrustTokenHeader,
+  response_head->headers->SetHeader(
+      kTrustTokensSecTrustTokenHeader,
       "response from issuer (this value will be ignored, since "
-      "Cryptographer::ConfirmResponse is mocked out)"));
+      "Cryptographer::ConfirmResponse is mocked out)");
   EXPECT_EQ(helper.Finalize(response_head.get()),
             mojom::TrustTokenOperationStatus::kOk);
 

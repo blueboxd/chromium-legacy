@@ -108,10 +108,6 @@ QUIC_FLAG(
 // If true, enable experiment for testing PCC congestion-control.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc3, false)
 
-// When true, ensure BBR allows at least one MSS to be sent in response to an
-// ACK in packet conservation.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_one_mss_conservation, false)
-
 // When true and the BBR9 connection option is present, BBR only considers
 // bandwidth samples app-limited if they're not filling the pipe.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_flexible_app_limited, false)
@@ -299,25 +295,9 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_spdy_enable_granular_decompress_errors,
           true)
 
-// If true, only do minimum validation of coalesced packets (only validate
-// connection ID).
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_minimum_validation_of_coalesced_packets,
-    true)
-
 // If true, arm the 1st PTO with earliest in flight sent time.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_arm_pto_with_earliest_sent_time,
-          true)
-
-// If true, QuicSession::WritevData() will support writing data at a specified
-// encryption level.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_writevdata_at_level, true)
-
-// If true, use standard deviation when calculating PTO timeout.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_standard_deviation_for_pto,
           true)
 
 // If true, QUIC BBRv2 to avoid unnecessary PROBE_RTTs after quiescence.
@@ -402,3 +382,6 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_default_exit_startup_on_loss,
           false)
+
+// If true, server push will be allowed in QUIC versions using HTTP/3.
+QUIC_FLAG(bool, FLAGS_quic_enable_http3_server_push, false)

@@ -3221,7 +3221,7 @@ TEST_P(PaintFilterSerializationTest, Basic) {
           SkMatrixConvolutionImageFilter::kClampToBlack_TileMode, true,
           nullptr)},
       sk_sp<PaintFilter>{new MorphologyPaintFilter(
-          MorphologyPaintFilter::MorphType::kErode, 15, 30, nullptr)},
+          MorphologyPaintFilter::MorphType::kErode, 15.5f, 30.2f, nullptr)},
       sk_sp<PaintFilter>{new OffsetPaintFilter(-1.f, -2.f, nullptr)},
       sk_sp<PaintFilter>{new TilePaintFilter(
           SkRect::MakeXYWH(1, 2, 3, 4), SkRect::MakeXYWH(4, 3, 2, 1), nullptr)},

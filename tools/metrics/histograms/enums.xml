@@ -20617,6 +20617,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="32768" label="CUSTODIAN_APPROVAL_REQUIRED"/>
   <int value="65536" label="BLOCKED_BY_POLICY"/>
   <int value="131072" label="DEPRECATED_BLOCKED_MATURE"/>
+  <int value="262144" label="DISABLE_REMOTELY_FOR_MALWARE"/>
 </enum>
 
 <enum name="ExtensionEvents">
@@ -23280,6 +23281,11 @@ Called by update_extension_histograms.py.-->
   <int value="33" label="CRX_HASH_VERIFICATION_FAILED"/>
   <int value="34" label="CRX_FILE_IS_DELTA_UPDATE"/>
   <int value="35" label="CRX_EXPECTED_HASH_INVALID"/>
+</enum>
+
+<enum name="ExtensionUpdateCheckDataKey">
+  <int value="0" label="No update check keys (no action taken)"/>
+  <int value="1" label="Malware"/>
 </enum>
 
 <enum name="ExtensionUpdaterUpdateResult">

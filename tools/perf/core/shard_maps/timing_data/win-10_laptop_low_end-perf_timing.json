@@ -612,10 +612,6 @@
         "name": "blink_perf.events/hit-test-lots-of-layers.html"
     },
     {
-        "duration": "20.0",
-        "name": "blink_perf.events/is-input-pending-all-events.html"
-    },
-    {
         "duration": "22.0",
         "name": "blink_perf.events/is-input-pending-default-events.html"
     },

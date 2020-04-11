@@ -173,6 +173,12 @@ void ShellExtensionSystem::InstallUpdate(
   base::DeleteFileRecursively(temp_dir);
 }
 
+void ShellExtensionSystem::PerformActionBasedOnOmahaAttributes(
+    const std::string& extension_id,
+    const base::Value& attributes) {
+  NOTREACHED();
+}
+
 bool ShellExtensionSystem::FinishDelayedInstallationIfReady(
     const std::string& extension_id,
     bool install_immediately) {

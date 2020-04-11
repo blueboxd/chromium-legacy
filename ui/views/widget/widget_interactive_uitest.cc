@@ -1659,22 +1659,12 @@ class WidgetCaptureTest : public ViewsInteractiveUITestBase {
   void TestCapture(bool use_desktop_native_widget) {
     CaptureLostState capture_state1;
     CaptureLostTrackingWidget widget1(&capture_state1);
-    Widget::InitParams params1 =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    params1.native_widget =
-        CreateNativeWidget(params1, use_desktop_native_widget, &widget1);
-    params1.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget1.Init(std::move(params1));
+    InitPlatformWidget(&widget1, use_desktop_native_widget);
     widget1.Show();
 
     CaptureLostState capture_state2;
     CaptureLostTrackingWidget widget2(&capture_state2);
-    Widget::InitParams params2 =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    params2.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params2.native_widget =
-        CreateNativeWidget(params2, use_desktop_native_widget, &widget2);
-    widget2.Init(std::move(params2));
+    InitPlatformWidget(&widget2, use_desktop_native_widget);
     widget2.Show();
 
     // Set capture to widget2 and verity it gets it.
@@ -1699,13 +1689,16 @@ class WidgetCaptureTest : public ViewsInteractiveUITestBase {
     EXPECT_FALSE(capture_state2.GetAndClearGotCaptureLost());
   }
 
-  NativeWidget* CreateNativeWidget(const Widget::InitParams& params,
-                                   bool create_desktop_native_widget,
-                                   Widget* widget) {
+  void InitPlatformWidget(Widget* widget, bool use_desktop_native_widget) {
+    Widget::InitParams params =
+        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
     // The test base class by default returns DesktopNativeWidgetAura.
-    if (create_desktop_native_widget)
-      return nullptr;
-    return CreatePlatformNativeWidgetImpl(params, widget, kDefault, nullptr);
+    params.native_widget =
+        use_desktop_native_widget
+            ? nullptr
+            : CreatePlatformNativeWidgetImpl(widget, kDefault, nullptr);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    widget->Init(std::move(params));
   }
 
  private:

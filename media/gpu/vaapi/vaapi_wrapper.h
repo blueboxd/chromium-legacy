@@ -203,6 +203,12 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Returns the list of VAImageFormats supported by the driver.
   static const std::vector<VAImageFormat>& GetSupportedImageFormatsForTesting();
 
+  // Returns the list of supported profiles and entrypoints for a given |mode|.
+  static std::map<VAProfile, std::vector<VAEntrypoint>>
+  GetSupportedConfigurationsForCodecModeForTesting(CodecMode mode);
+
+  static VAEntrypoint GetDefaultVaEntryPoint(CodecMode mode, VAProfile profile);
+
   static uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt);
 
   // Creates |num_surfaces| VASurfaceIDs of |va_format|, |size| and

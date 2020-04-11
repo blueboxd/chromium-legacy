@@ -29,6 +29,7 @@ import contextlib
 import json
 import logging
 import os
+import shutil
 import sys
 
 import common
@@ -200,6 +201,24 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     # Avoid having a dangling reference to the temp directory
     # which was deleted
     self._metadata_dir = None
+
+  def do_post_test_run_tasks(self):
+    # Move json results into layout-test-results directory
+    results_dir = os.path.dirname(self.options.isolated_script_test_output)
+    layout_test_results = os.path.join(results_dir, 'layout-test-results')
+    os.mkdir(layout_test_results)
+    shutil.copyfile(self.options.isolated_script_test_output,
+                    os.path.join(layout_test_results, 'full_results.json'))
+    # create full_results_jsonp.js file which is used to
+    # load results into the results viewer
+    with open(self.options.isolated_script_test_output, 'r') as full_results, \
+         open(os.path.join(
+             layout_test_results, 'full_results_jsonp.js'), 'w') as json_js:
+      json_js.write('ADD_FULL_RESULTS(%s);' % full_results.read())
+    # copy layout test results viewer to layout-test-results directory
+    shutil.copyfile(
+        os.path.join(WEB_TESTS_DIR, 'fast', 'harness', 'results.html'),
+        os.path.join(layout_test_results, 'results.html'))
 
   def add_extra_arguments(self, parser):
     # TODO: |pass_through_args| are broke and need to be supplied by way of

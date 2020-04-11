@@ -21,7 +21,6 @@ _ANDROID_TEST_NOOP_JOBS = [scheduler_pb.Job(
     )],
     noop = scheduler_pb.NoopTask(),
 ) for builder in _ANDROID_NON_BRANCHED_TESTERS for bucket in (
-    'ci-m80',
     'ci-m81',
     'ci-m83',
 )]

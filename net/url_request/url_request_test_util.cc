@@ -485,8 +485,8 @@ int TestNetworkDelegate::OnHeadersReceived(
         new HttpResponseHeaders(original_response_headers->raw_headers());
     (*override_response_headers)->ReplaceStatusLine("HTTP/1.1 302 Found");
     (*override_response_headers)->RemoveHeader("Location");
-    (*override_response_headers)->AddHeader(
-        "Location: " + redirect_on_headers_received_url_.spec());
+    (*override_response_headers)
+        ->AddHeader("Location", redirect_on_headers_received_url_.spec());
 
     redirect_on_headers_received_url_ = GURL();
 
@@ -496,7 +496,7 @@ int TestNetworkDelegate::OnHeadersReceived(
     *override_response_headers =
         new HttpResponseHeaders(original_response_headers->raw_headers());
     (*override_response_headers)
-        ->AddHeader("X-Network-Delegate: Greetings, planet");
+        ->AddHeader("X-Network-Delegate", "Greetings, planet");
   }
 
   headers_received_count_++;

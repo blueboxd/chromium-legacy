@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">仕事用アカウントのパスワードを Windows プロファイルに同期することはできません。お使いのデバイスでは組織によってパスワードの更新が制限されています。詳しくは管理者にお問い合わせください。</translation>
 <translation id="5186761973554910131">パスワードの変更中に無効なコンピュータ名が指定されました。管理者にお問い合わせください。</translation>
 <translation id="5265714013989877288">Windows のパスワードの変更中にエラーが発生したため続行できません。管理者にお問い合わせください。</translation>
+<translation id="5581861273642234526">別の仕事用アカウントがこのデバイスにすでに関連付けられています。Windows アカウントでログインしてください。</translation>
 <translation id="6033715878377252112">Windows 用 Google 認証情報プロバイダ ヘルパー</translation>
 <translation id="6149399665202317746">Windows 用 Google 認証情報プロバイダ</translation>
 <translation id="6243062314475217481">仕事用アカウントのパスワードは Windows の複雑さの要件を満たしていません。詳しくは管理者にお問い合わせください。</translation>

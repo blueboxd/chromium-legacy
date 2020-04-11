@@ -29,7 +29,6 @@
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/audio/public/mojom/testing_api.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

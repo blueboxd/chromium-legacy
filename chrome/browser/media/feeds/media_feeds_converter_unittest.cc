@@ -13,6 +13,7 @@
 #include "components/schema_org/schema_org_entity_names.h"
 #include "components/schema_org/schema_org_property_names.h"
 #include "services/network/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -43,6 +44,7 @@ class MediaFeedsConverterTest : public testing::Test {
   PropertyPtr CreateTimeProperty(const std::string& name, int hours);
   PropertyPtr CreateDateTimeProperty(const std::string& name,
                                      const std::string& value);
+  PropertyPtr CreateDoubleProperty(const std::string& name, double value);
   PropertyPtr CreateEntityProperty(const std::string& name, EntityPtr value);
   EntityPtr ConvertJSONToEntityPtr(const std::string& json);
   EntityPtr ValidWatchAction();
@@ -50,6 +52,8 @@ class MediaFeedsConverterTest : public testing::Test {
   EntityPtr ValidMediaFeedItem();
   mojom::MediaFeedItemPtr ExpectedFeedItem();
   EntityPtr AddItemToFeed(EntityPtr feed, EntityPtr item);
+  base::Optional<std::vector<mojom::MediaFeedItemPtr>> GetResults(
+      const schema_org::improved::mojom::EntityPtr& schema_org_entity);
 
  private:
   schema_org::Extractor extractor_;
@@ -122,6 +126,16 @@ PropertyPtr MediaFeedsConverterTest::CreateEntityProperty(
   property->name = name;
   property->values = Values::New();
   property->values->entity_values.push_back(std::move(value));
+  return property;
+}
+
+PropertyPtr MediaFeedsConverterTest::CreateDoubleProperty(
+    const std::string& name,
+    double value) {
+  PropertyPtr property = Property::New();
+  property->name = name;
+  property->values = Values::New();
+  property->values->double_values.push_back(std::move(value));
   return property;
 }
 
@@ -213,21 +227,35 @@ EntityPtr MediaFeedsConverterTest::AddItemToFeed(EntityPtr feed,
   return feed;
 }
 
+base::Optional<std::vector<mojom::MediaFeedItemPtr>>
+MediaFeedsConverterTest::GetResults(
+    const schema_org::improved::mojom::EntityPtr& schema_org_entity) {
+  std::vector<media_session::MediaImage> images;
+  std::string name;
+  return GetMediaFeeds(std::move(schema_org_entity), &images, &name);
+}
+
 TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeed) {
-  std::vector<MediaFeedItemPtr> items;
+  std::vector<media_session::MediaImage> logos;
+  std::string display_name;
 
   EntityPtr entity = ValidMediaFeed();
 
-  auto result = GetMediaFeeds(std::move(entity));
+  media_session::MediaImage expected_image;
+  expected_image.src = GURL("https://www.example.org/logo.jpg");
+
+  auto result = GetMediaFeeds(std::move(entity), &logos, &display_name);
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
+  EXPECT_THAT(logos, testing::UnorderedElementsAre(expected_image));
+  EXPECT_EQ(display_name, "Media Site");
 }
 
 TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeedWithItem) {
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), ValidMediaFeedItem());
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   ASSERT_EQ(result.value().size(), 1u);
@@ -238,7 +266,7 @@ TEST_F(MediaFeedsConverterTest, FailsWrongType) {
   EntityPtr entity = Entity::New();
   entity->type = "something else";
 
-  EXPECT_FALSE(GetMediaFeeds(std::move(entity)).has_value());
+  EXPECT_FALSE(GetResults(std::move(entity)).has_value());
 }
 
 TEST_F(MediaFeedsConverterTest, FailsInvalidProviderOrganizationName) {
@@ -252,7 +280,7 @@ TEST_F(MediaFeedsConverterTest, FailsInvalidProviderOrganizationName) {
 
   organization_name->values->string_values = {""};
 
-  EXPECT_FALSE(GetMediaFeeds(std::move(entity)).has_value());
+  EXPECT_FALSE(GetResults(std::move(entity)).has_value());
 }
 
 TEST_F(MediaFeedsConverterTest, FailsInvalidProviderOrganizationLogo) {
@@ -266,7 +294,7 @@ TEST_F(MediaFeedsConverterTest, FailsInvalidProviderOrganizationLogo) {
 
   organization_name->values->url_values = {GURL("")};
 
-  EXPECT_FALSE(GetMediaFeeds(std::move(entity)).has_value());
+  EXPECT_FALSE(GetResults(std::move(entity)).has_value());
 }
 
 // Fails because the media feed item name is empty.
@@ -277,7 +305,7 @@ TEST_F(MediaFeedsConverterTest, FailsOnInvalidMediaFeedItemName) {
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
@@ -295,7 +323,7 @@ TEST_F(MediaFeedsConverterTest, FailsInvalidDatePublished) {
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
@@ -312,7 +340,7 @@ TEST_F(MediaFeedsConverterTest, FailsInvalidIsFamilyFriendly) {
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
@@ -329,7 +357,7 @@ TEST_F(MediaFeedsConverterTest, FailsInvalidPotentialAction) {
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
@@ -360,7 +388,7 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithAuthorAndDuration) {
   expected_item->author->url = GURL("https://www.google.com");
   expected_item->duration = base::TimeDelta::FromHours(1);
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   ASSERT_EQ(result.value().size(), 1u);
@@ -384,7 +412,7 @@ TEST_F(MediaFeedsConverterTest, FailsInvalidAuthor) {
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
@@ -399,7 +427,7 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithInteractionStatistic) {
       CreateStringProperty(schema_org::property::kInteractionType,
                            "https://schema.org/WatchAction"));
   interaction_statistic->properties.push_back(
-      CreateStringProperty(schema_org::property::kUserInteractionCount, "1"));
+      CreateDoubleProperty(schema_org::property::kUserInteractionCount, 1.0));
   item->properties.push_back(
       CreateEntityProperty(schema_org::property::kInteractionStatistic,
                            std::move(interaction_statistic)));
@@ -410,7 +438,7 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithInteractionStatistic) {
   expected_item->interaction_counters = {
       {mojom::InteractionCounterType::kWatch, 1}};
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   ASSERT_EQ(result.value().size(), 1u);
@@ -452,7 +480,7 @@ TEST_F(MediaFeedsConverterTest, FailsInvalidInteractionStatistic) {
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
@@ -480,7 +508,7 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithRating) {
   rating->value = "G";
   expected_item->content_ratings.push_back(std::move(rating));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   ASSERT_EQ(result.value().size(), 1u);
@@ -502,7 +530,7 @@ TEST_F(MediaFeedsConverterTest, FailsInvalidRating) {
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
@@ -519,7 +547,7 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithGenre) {
   mojom::MediaFeedItemPtr expected_item = ExpectedFeedItem();
   expected_item->genre.push_back("Action");
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   ASSERT_EQ(result.value().size(), 1u);
@@ -534,7 +562,7 @@ TEST_F(MediaFeedsConverterTest, FailsItemWithInvalidGenre) {
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
@@ -563,7 +591,7 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithLiveDetails) {
   expected_item->live->start_time = start_time;
   expected_item->live->end_time = end_time;
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   ASSERT_EQ(result.value().size(), 1u);
@@ -585,7 +613,7 @@ TEST_F(MediaFeedsConverterTest, FailsItemWithInvalidLiveDetails) {
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
@@ -613,7 +641,7 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithIdentifier) {
   identifier->value = "1";
   expected_item->identifiers.push_back(std::move(identifier));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   ASSERT_EQ(result.value().size(), 1u);
@@ -636,7 +664,7 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithInvalidIdentifier) {
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
@@ -689,7 +717,7 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithTVEpisode) {
   identifier->value = "1";
   expected_item->tv_episode->identifiers.push_back(std::move(identifier));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   ASSERT_EQ(result.value().size(), 1u);
@@ -718,7 +746,7 @@ TEST_F(MediaFeedsConverterTest, FailsItemWithInvalidTVEpisode) {
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
@@ -750,7 +778,7 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithTVSeason) {
   expected_item->tv_episode = mojom::TVEpisode::New();
   expected_item->tv_episode->season_number = 1;
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   ASSERT_EQ(result.value().size(), 1u);
@@ -778,7 +806,7 @@ TEST_F(MediaFeedsConverterTest, FailsItemWithInvalidTVSeason) {
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
-  auto result = GetMediaFeeds(std::move(entity));
+  auto result = GetResults(std::move(entity));
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());

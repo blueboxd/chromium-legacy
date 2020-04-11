@@ -16,8 +16,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 
 TabletModePageBehavior::TabletModePageBehavior() {

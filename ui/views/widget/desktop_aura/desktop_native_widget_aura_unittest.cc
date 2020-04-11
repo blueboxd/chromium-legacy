@@ -286,8 +286,8 @@ std::unique_ptr<Widget> CreateAndShowControlWidget(aura::Window* parent) {
   Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = parent;
-  params.native_widget = CreatePlatformNativeWidgetImpl(params, widget.get(),
-                                                        kStubCapture, nullptr);
+  params.native_widget =
+      CreatePlatformNativeWidgetImpl(widget.get(), kStubCapture, nullptr);
   widget->Init(std::move(params));
   widget->Show();
   return widget;

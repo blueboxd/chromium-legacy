@@ -111,7 +111,7 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('logos.push_back(logo2);');
     GEN('service->StoreMediaFeedFetchResult(');
     GEN('  1, std::move(items), media_feeds::mojom::FetchResult::kSuccess,');
-    GEN('  false, logos, "Test Feed");');
+    GEN('  false, logos, "Test Feed", base::DoNothing());');
     GEN('base::RunLoop run_loop;');
     GEN('service->PostTaskToDBForTest(run_loop.QuitClosure());');
     GEN('run_loop.Run();');
@@ -159,7 +159,8 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
         'https://www.example.org/logo1.pnghttps://www.example.org/logo2.png',
         feedsContents.childNodes[12].textContent.trim());
     assertEquals(
-        'Show Contents', feedsContents.childNodes[13].textContent.trim());
+        'Show ContentsFetch Feed',
+        feedsContents.childNodes[13].textContent.trim());
 
     // Click on the show contents button.
     feedsContents.childNodes[13].firstChild.click();

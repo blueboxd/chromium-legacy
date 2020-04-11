@@ -250,12 +250,15 @@ void MediaHistoryKeyedService::StoreMediaFeedFetchResult(
     const media_feeds::mojom::FetchResult result,
     const bool was_fetched_from_cache,
     const std::vector<media_session::MediaImage>& logos,
-    const std::string& display_name) {
+    const std::string& display_name,
+    base::OnceClosure callback) {
   if (auto* store = store_->GetForWrite()) {
-    store->db_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&MediaHistoryStore::StoreMediaFeedFetchResult,
-                                  store, feed_id, std::move(items), result,
-                                  was_fetched_from_cache, logos, display_name));
+    store->db_task_runner_->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&MediaHistoryStore::StoreMediaFeedFetchResult, store,
+                       feed_id, std::move(items), result,
+                       was_fetched_from_cache, logos, display_name),
+        std::move(callback));
   }
 }
 

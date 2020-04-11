@@ -23,6 +23,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/mock_extension_system.h"
@@ -91,6 +93,12 @@ class FakeUpdateClient : public update_client::UpdateClient {
       const std::string& id,
       update_client::CrxUpdateItem* update_item) const override {
     update_item->next_version = base::Version("2.0");
+    if (is_malware_update_item_) {
+      std::map<std::string, std::string> custom_attributes = {
+          {"_malware", "true"},
+      };
+      update_item->custom_updatecheck_data = custom_attributes;
+    }
     return true;
   }
   bool IsUpdating(const std::string& id) const override { return false; }
@@ -109,6 +117,8 @@ class FakeUpdateClient : public update_client::UpdateClient {
 
   void set_delay_update() { delay_update_ = true; }
 
+  void set_is_malware_update_item() { is_malware_update_item_ = true; }
+
   bool delay_update() const { return delay_update_; }
 
   UpdateRequest& update_request(int index) { return delayed_requests_[index]; }
@@ -116,10 +126,12 @@ class FakeUpdateClient : public update_client::UpdateClient {
     return static_cast<int>(delayed_requests_.size());
   }
 
-  void RunDelayedUpdate(int index) {
+  void RunDelayedUpdate(
+      int index,
+      Observer::Events event = Observer::Events::COMPONENT_UPDATED) {
     UpdateRequest& request = update_request(index);
     for (const std::string& id : request.extension_ids)
-      FireEvent(Observer::Events::COMPONENT_UPDATED, id);
+      FireEvent(event, id);
     std::move(request.callback).Run(update_client::Error::NONE);
   }
 
@@ -132,6 +144,7 @@ class FakeUpdateClient : public update_client::UpdateClient {
   std::vector<Observer*> observers_;
 
   bool delay_update_;
+  bool is_malware_update_item_ = false;
   std::vector<UpdateRequest> delayed_requests_;
 
  private:
@@ -250,6 +263,19 @@ class FakeExtensionSystem : public MockExtensionSystem {
       std::move(next_install_callback_).Run();
     }
     std::move(install_update_callback).Run(base::nullopt);
+  }
+
+  void PerformActionBasedOnOmahaAttributes(
+      const std::string& extension_id,
+      const base::Value& attributes) override {
+    ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
+    scoped_refptr<const Extension> extension1 =
+        ExtensionBuilder("1").SetVersion("1.2").SetID(extension_id).Build();
+    const base::Value* malware_value = attributes.FindKey("_malware");
+    if (malware_value && malware_value->GetBool())
+      registry->AddDisabled(extension1);
+    else
+      registry->AddEnabled(extension1);
   }
 
  private:
@@ -463,6 +489,65 @@ TEST_F(UpdateServiceTest, UninstallPings) {
 
     pings.clear();
   }
+}
+
+TEST_F(UpdateServiceTest, CheckOmahaAttributes) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kDisableMalwareExtensionsRemotely);
+  std::string extension_id = "lpcaedmchfhocbbapmcbpinfpgnhiddi";
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
+  scoped_refptr<const Extension> extension1 =
+      ExtensionBuilder("1").SetVersion("1.2").SetID(extension_id).Build();
+  EXPECT_TRUE(registry->AddEnabled(extension1));
+
+  update_client()->set_is_malware_update_item();
+  update_client()->set_delay_update();
+
+  ExtensionUpdateCheckParams update_check_params;
+  update_check_params.update_info[extension_id] = ExtensionUpdateData();
+
+  bool executed = false;
+  update_service()->StartUpdateCheck(
+      update_check_params,
+      base::BindOnce([](bool* executed) { *executed = true; }, &executed));
+  EXPECT_FALSE(executed);
+
+  const auto& request = update_client()->update_request(0);
+  EXPECT_THAT(request.extension_ids, testing::ElementsAre(extension_id));
+
+  update_client()->RunDelayedUpdate(0,
+                                    UpdateClientEvents::COMPONENT_NOT_UPDATED);
+  EXPECT_TRUE(registry->disabled_extensions().GetByID(extension_id));
+}
+
+TEST_F(UpdateServiceTest, CheckNoOmahaAttributes) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kDisableMalwareExtensionsRemotely);
+  std::string extension_id = "lpcaedmchfhocbbapmcbpinfpgnhiddi";
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
+  scoped_refptr<const Extension> extension1 =
+      ExtensionBuilder("1").SetVersion("1.2").SetID(extension_id).Build();
+  EXPECT_TRUE(registry->AddDisabled(extension1));
+
+  update_client()->set_delay_update();
+
+  ExtensionUpdateCheckParams update_check_params;
+  update_check_params.update_info[extension_id] = ExtensionUpdateData();
+
+  bool executed = false;
+  update_service()->StartUpdateCheck(
+      update_check_params,
+      base::BindOnce([](bool* executed) { *executed = true; }, &executed));
+  EXPECT_FALSE(executed);
+
+  const auto& request = update_client()->update_request(0);
+  EXPECT_THAT(request.extension_ids, testing::ElementsAre(extension_id));
+
+  update_client()->RunDelayedUpdate(0,
+                                    UpdateClientEvents::COMPONENT_NOT_UPDATED);
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(extension_id));
 }
 
 TEST_F(UpdateServiceTest, UpdateFoundNotification) {

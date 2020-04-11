@@ -367,7 +367,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="1523774894176285446">구성된 웹사이트를 실행하기 위한 대체 브라우저입니다.</translation>
 <translation id="152657506688053119">기본 검색 공급자의 대체 URL 목록</translation>
 <translation id="1530812829012954197">호스트 브라우저에서 다음 URL 패턴을 항상 렌더링</translation>
-<translation id="1541170838458414064">인쇄 페이지 크기 제한</translation>
 <translation id="1553532014072799546">앱별 시간 제한 허용 목록</translation>
 <translation id="1553684822621013552">이 정책이 true로 설정된 경우 사용자에게 ARC가 사용 설정됩니다
       (추가 정책 설정 선택에 따라 다름 - 현재 사용자 세션에 임시 모드나
@@ -394,6 +393,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="1561424797596341174">정책은 원격 액세스 호스트의 디버그 빌드를 무시합니다.</translation>
 <translation id="1561967320164410511">개별 인증을 위한 U2F 및 확장 프로그램</translation>
 <translation id="1583248206450240930">기본으로 <ph name="PRODUCT_FRAME_NAME" /> 사용</translation>
+<translation id="1588240398285670601">브라우저 설정</translation>
 <translation id="1599424828227887013">Android 기기에서 지정된 출처의 사이트 격리 사용 설정</translation>
 <translation id="1608755754295374538">별도 메시지를 표시하지 않고 오디오 캡처 기기에 대한 액세스 권한이 부여되는 URL입니다.</translation>
 <translation id="1615221548356595305">클라이언트 인증서가 사용되는 경우에도 이러한 호스트에 HTTP/2 연결 병합 허용</translation>
@@ -855,17 +855,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책은 행아웃 서비스 확장 프로그램과 같은 구성요소 확장 프로그램에도 적용됩니다.</translation>
 <translation id="2223598546285729819">기본 알림 설정</translation>
 <translation id="2231817271680715693">처음 실행 시 기본 브라우저에서 인터넷 사용기록 가져오기</translation>
-<translation id="2234855698900783408">새로운 <ph name="CORS" /> 구현에서 <ph name="CORS" /> 확인 완화를 사용 설정하여 확장 프로그램이 호환되는 동작을 유지하도록 허용하고 <ph name="PRODUCT_NAME" />에서 <ph name="CORS" /> 확인 없이 지정된 헤더를 전송하도록 허용합니다.
-
-      목록이 빈 상태로 설정되어 있으면 <ph name="PRODUCT_NAME" />은(는) 호환되는 방식으로 확장 프로그램을 실행하도록 시도하고 <ph name="WEB_REQUEST_API_MANUAL" />에 설명된 것처럼 <ph name="PRODUCT_NAME" /> 79의 <ph name="API" /> 변경사항을 적용하지 않습니다.
-
-      목록이 <ph name="HTTP" /> 요청 헤더 이름을 가지도록 설정되어 있으면 <ph name="CORS" /> 검사에서 등록된 헤더를 무시하고 확장 프로그램의 완화를 사용 설정합니다.
-
-      목록이 설정되지 않으면 위에서 설명된 완화가 모두 적용되지 않습니다.
-
-      <ph name="CORS" />의 세부사항을 확인하려면 <ph name="CORS_HELP_URL" /> 페이지를 참조하세요.
-
-      이 정책은 <ph name="PRODUCT_NAME" /> 버전 82에서 삭제될 예정입니다.</translation>
 <translation id="2236488539271255289">모든 사이트에서 로컬 데이터 설정 허용 안함</translation>
 <translation id="2240879329269430151">웹사이트에서 팝업을 표시하도록 허용할지 여부를 설정할 수 있습니다. 팝업 표시는 모든 사이트에서 허용 또는 거부하도록 할 수 있습니다.
 
@@ -1372,6 +1361,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="2872961005593481000">종료</translation>
 <translation id="2873651257716068683">기본 인쇄 페이지 크기를 덮어씁니다. 페이지 크기를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
 <translation id="2874209944580848064">Android 앱을 지원하는 <ph name="PRODUCT_OS_NAME" /> 기기 관련 주의사항:</translation>
+<translation id="2874901846804525128">사용자가 신뢰할 수 없는 출처의 Android 앱을 사용하는 것을 방지</translation>
 <translation id="2875192972412983412">서버 프린터를 검색할 프린트 서버의 하위 집합을 지정합니다.
 
       이 정책을 사용하면 이 정책의 값과 ID가 일치하는 서버 프린터만 사용자에게 제공됩니다.
@@ -3012,6 +3002,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           true로 설정하거나 설정하지 않으면 이 사용자가 관리 대상 사용자를 생성하고 관리할 수 있습니다.</translation>
 <translation id="5369937289900051171">컬러 인쇄만</translation>
 <translation id="5370279767682621504">기본 포트가 아닌 포트에서 HTTP/0.9 지원 사용</translation>
+<translation id="5377606826822211923">사용자를 위해 신뢰할 수 없는 출처의 Android 앱 사용 제어</translation>
 <translation id="5378985487213287085">웹사이트에서 데스크톱 알림을 표시하도록 허용할지 여부를 설정할 수 있습니다. 데스크톱 알림 표시는 기본적으로 허용 또는 거부하거나 웹사이트에서 데스크톱 알림을 표시할 때마다 사용자에게 확인하도록 할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'AskNotifications' 정책이 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
@@ -3748,17 +3739,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="6467613372414922590">관리자 권한 없이 설치된 사용자 수준의 기본 메시지 호스트를 허용합니다.</translation>
 <translation id="6468980648680553776">이 정책은 지원이 중단되었습니다. 대신 RemoteAccessHostClientDomainList를 사용하세요.</translation>
 <translation id="6473623140202114570">세이프 브라우징에서 경고를 표시하지 않는 도메인의 목록을 설정합니다.</translation>
-<translation id="6487780893361255867">새 <ph name="CORS" /> 대신 기존 <ph name="CORS" /> 구현을 사용합니다.
-
-      설정이 True로 설정되어 있으면 이전 버전과 호환되어야 하는 기존 구현이 사용됩니다.
-
-      설정이 False로 설정되어 있거나 설정되어 있지 않으면 엔터프라이즈별 호환성 문제를 일으킬 수 있는 새 구현이 사용됩니다.
-
-      이 정책은 몇 번의 기능 출시를 거치고 나면 삭제됩니다.
-
-      <ph name="CORS" />의 세부사항을 확인하려면 <ph name="CORS_HELP_URL" /> 페이지를 참조하세요.
-
-      이 정책은 <ph name="PRODUCT_NAME" /> 버전 82에서 삭제될 예정입니다.</translation>
 <translation id="6488627892044759800"><ph name="PRODUCT_NAME" />의 기본 홈페이지 유형을 구성하고 사용자가 홈페이지 환경설정을 변경하지 못하게 차단합니다. 홈페이지는 지정한 URL로 설정할 수도 있고 새 탭 페이지로 설정할 수도 있습니다.
 
           이 설정이 사용되면 홈페이지에 항상 새 탭 페이지가 사용되며 홈페이지 URL 위치는 무시됩니다.
@@ -3837,6 +3817,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 정책은 EnabledPlugins 및 DisabledPluginsExceptions에 의해 재정의될 수 있습니다.
 
       아 정책을 설정하지 않으면 사용자가 시스템에 설치된 플러그인 중 하드 코딩되었으며 호환되지 않거나, 오래되었거나, 위험한 플러인을 제외한 모든 플러그인을 사용할 수 있습니다.</translation>
+<translation id="6571871508154591774">카메라, 브라우저 설정 및 OS 설정 기능을 사용 중지로 구성</translation>
 <translation id="6573305661369899995">URL 제한의 외부 소스 설정</translation>
 <translation id="6583851521569686409">프린터 목록을 설정합니다.
 
@@ -3913,6 +3894,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="6731757988219967594">최상위 사이트(삽입된 iframe 제외)에 성인용 콘텐츠 필터링을 적용함</translation>
 <translation id="6734521799274931721">Chrome OS의 네트워크 파일 공유 가능 여부를 제어합니다.</translation>
 <translation id="6735701345096330595">언어 맞춤법 검사 강제 사용</translation>
+<translation id="6737677282967014160">사용자가 신뢰할 수 없는 출처의 Android 앱을 사용하도록 허용</translation>
 <translation id="6757613329154374267">백업 및 복원 사용 설정됨</translation>
 <translation id="6758659208493449452">이 정책은 고급 보호 프로그램에 등록한 사용자에게 추가 보호를 제공할지 결정합니다. 추가 기능 중 일부를 사용하려면 Google과 데이터를 공유해야 합니다. 예를 들어, 고급 보호 사용자가 멀웨어 검사를 위해 다운로드 항목을 Google에 전송할 수 있습니다. 정책을 True로 설정하거나 설정하지 않으면 등록된 사용자에게 추가 보호가 제공됩니다. False로 설정하면 고급 보호 사용자에게 표준 소비자 기능만 제공됩니다.</translation>
 <translation id="6762235610019366960"><ph name="PRODUCT_NAME" />에서의 전체 탭 프로모션 및/또는 교육용 콘텐츠 표시를 제어할 수 있습니다.
@@ -4351,7 +4333,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       </translation>
 <translation id="7372831798009983116">자동 클릭 접근성 기능 사용</translation>
 <translation id="7373200034079131670">Android 또는 VM이 시작되었을 때 사용자가 로그아웃하면 재부팅합니다.</translation>
-<translation id="737655323154569539">인쇄 페이지 크기를 제한합니다. 정책이 설정되어 있지 않거나 비어 있으면 제한이 없는 것으로 간주됩니다.</translation>
 <translation id="7382191643394429934">배경 그래픽이 있을 때와 없을 때 모두 인쇄를 허용합니다.</translation>
 <translation id="7389872682701720082">이 설정을 사용하면 항상 최신 플러그인이 실행됩니다.
 
@@ -4455,6 +4436,13 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       URL 패턴의 형식은 https://www.chromium.org/administrators/url-blacklist-filter-format에 설명되어 있는 'URLBlacklist' 정책과 동일합니다.
       </translation>
 <translation id="7566878661979235378">SAML 로그인 인증 유형</translation>
+<translation id="7567373982693549834">이 정책은 Google Play 스토어 외의 신뢰할 수 없는 출처에서 다운로드한 Android 앱의 사용을 사용자별로 제어합니다.
+
+      이 정책의 값을 설정하지 않으면 기능이 허용되지 않는 것으로 간주됩니다.
+
+      사용자의 기기가 관리된다면 이 기능의 사용 가능 여부는 상응하는 기기 정책에 따라 추가로 달라집니다.
+
+      사용자의 기기가 관리되지 않는다면 이 기능의 사용 가능 여부는 사용자가 기기 소유자인지에 따라 추가로 달라집니다.</translation>
 <translation id="757395965347379751">이 설정이 사용 설정되었다면 <ph name="PRODUCT_NAME" />은(는) 로컬에 설치된 CA 인증서를 성공적으로 확인하고 체인을 구축하는 한 SHA-1 서명 인증서를 허용합니다.
 
       이 정책은 SHA-1 서명을 허용하는 운영체제 인증서 확인 스택에 따라 다릅니다. OS 업데이트가 SHA-1 인증서의 OS 처리를 변경하는 경우 이 정책은 더 이상 유효하지 않을 수 있습니다. 또한 이 정책은 기업에게 SHA-1에서 전환할 시간을 부여하는 임시 해결 방법으로 활용됩니다. 이 정책은 2019년 1월 1일쯤 삭제될 예정입니다.
@@ -4648,6 +4636,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
           참고: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" />이(가) 지정된 경우 이 정책을 재정의합니다.</translation>
 <translation id="7846952520291088817">WebRTC ICE 후보에 노출된 로컬 IP의 URL</translation>
+<translation id="7848641140449742406">OS 설정</translation>
 <translation id="7858404742201086014">이 설정을 사용하면 오래된 플러그인이 표준 플러그인으로 사용됩니다.
 
       이 설정을 사용 중지하면 오래된 플러그인은 사용할 수 없으며 사용자에게 실행 권한을 요청하는 메시지가 표시되지 않습니다

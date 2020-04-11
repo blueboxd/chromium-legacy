@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,21 @@ public class FeedListContentManagerTest implements ListContentManagerObserver {
     public void setUp() {
         mManager = new FeedListContentManager(null, null);
         mManager.addObserver(this);
+    }
+
+    @Test
+    @SmallTest
+    public void testFindContentPositionByKey() {
+        FeedListContentManager.FeedContent c1 = createExternalViewContent("a");
+        FeedListContentManager.FeedContent c2 = createExternalViewContent("b");
+        FeedListContentManager.FeedContent c3 = createExternalViewContent("c");
+
+        addContents(0, ImmutableList.of(c1, c2, c3));
+        assertEquals(3, mManager.getItemCount());
+
+        assertEquals(0, mManager.findContentPositionByKey("a"));
+        assertEquals(1, mManager.findContentPositionByKey("b"));
+        assertEquals(2, mManager.findContentPositionByKey("c"));
     }
 
     @Test
@@ -215,6 +230,6 @@ public class FeedListContentManagerTest implements ListContentManagerObserver {
     }
 
     private FeedListContentManager.FeedContent createExternalViewContent(String s) {
-        return new FeedListContentManager.ExternalViewContent(s.getBytes());
+        return new FeedListContentManager.ExternalViewContent(s, s.getBytes());
     }
 }

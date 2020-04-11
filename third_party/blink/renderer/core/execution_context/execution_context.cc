@@ -395,24 +395,21 @@ void ExecutionContext::FeaturePolicyPotentialBehaviourChangeObserved(
 bool ExecutionContext::IsFeatureEnabled(
     mojom::blink::FeaturePolicyFeature feature,
     ReportOptions report_on_failure,
-    const String& message,
-    const String& source_file) const {
+    const String& message) const {
   PolicyValue threshold_value =
       PolicyValue::CreateMaxPolicyValue(GetSecurityContext()
                                             .GetFeaturePolicy()
                                             ->GetFeatureList()
                                             .at(feature)
                                             .second);
-  return IsFeatureEnabled(feature, threshold_value, report_on_failure, message,
-                          source_file);
+  return IsFeatureEnabled(feature, threshold_value, report_on_failure, message);
 }
 
 bool ExecutionContext::IsFeatureEnabled(
     mojom::blink::FeaturePolicyFeature feature,
     PolicyValue threshold_value,
     ReportOptions report_on_failure,
-    const String& message,
-    const String& source_file) const {
+    const String& message) const {
   if (report_on_failure == ReportOptions::kReportOnFailure) {
     // We are expecting a violation report in case the feature is disabled in
     // the context. Therefore, this qualifies as a potential violation (i.e.,
@@ -443,7 +440,7 @@ bool ExecutionContext::IsFeatureEnabled(
     mojom::blink::PolicyDisposition disposition =
         enabled ? mojom::blink::PolicyDisposition::kReport
                 : mojom::blink::PolicyDisposition::kEnforce;
-    ReportFeaturePolicyViolation(feature, disposition, message, source_file);
+    ReportFeaturePolicyViolation(feature, disposition, message);
   }
   return enabled;
 }

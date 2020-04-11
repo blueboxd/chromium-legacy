@@ -68,25 +68,58 @@ media::VideoPixelFormat AvifToVideoPixelFormat(avifPixelFormat fmt, int depth) {
   }
 }
 
-// TODO(wtc): Combine all these very-similar conversion functions into a single
-// function that uses some mechanism (such as template parameters) to handle the
-// actual conversion and output bits.
-void YUVAToBGRA8888(const avifImage* image,
-                    const avifPixelFormatInfo* format_info,
-                    const gfx::ColorTransform* transform,
-                    uint32_t* rgba_dest) {
-  DCHECK_EQ(image->depth, 8u);
+inline void WritePixel(float max_channel,
+                       const gfx::Point3F& pixel,
+                       int alpha,
+                       uint32_t* rgba_dest) {
+  *rgba_dest = SkPackARGB32NoCheck(
+      alpha,
+      gfx::ToRoundedInt(base::ClampToRange(pixel.x(), 0.0f, 1.0f) *
+                        max_channel),
+      gfx::ToRoundedInt(base::ClampToRange(pixel.y(), 0.0f, 1.0f) *
+                        max_channel),
+      gfx::ToRoundedInt(base::ClampToRange(pixel.z(), 0.0f, 1.0f) *
+                        max_channel));
+}
+
+inline void WritePixel(float max_channel,
+                       const gfx::Point3F& pixel,
+                       int alpha,
+                       uint64_t* rgba_dest) {
+  float rgba_pixels[4];
+  rgba_pixels[0] = pixel.x();
+  rgba_pixels[1] = pixel.y();
+  rgba_pixels[2] = pixel.z();
+  rgba_pixels[3] = alpha / max_channel;
+
+  gfx::FloatToHalfFloat(rgba_pixels, reinterpret_cast<uint16_t*>(rgba_dest),
+                        base::size(rgba_pixels));
+}
+
+enum class ColorType { kMono, kColor };
+
+template <ColorType color_type, typename InputType, typename OutputType>
+void YUVAToRGBA(const avifImage* image,
+                const avifPixelFormatInfo* format_info,
+                const gfx::ColorTransform* transform,
+                OutputType* rgba_dest) {
   gfx::Point3F pixel;
-  const float max_channel = float{(1 << image->depth) - 1};
+  const int max_channel_i = (1 << image->depth) - 1;
+  const float max_channel = float{max_channel_i};
   for (uint32_t j = 0; j < image->height; ++j) {
     const int uv_j = j >> format_info->chromaShiftY;
 
-    const uint8_t* y_ptr = reinterpret_cast<uint8_t*>(
+    const InputType* y_ptr = reinterpret_cast<InputType*>(
         &image->yuvPlanes[AVIF_CHAN_Y][j * image->yuvRowBytes[AVIF_CHAN_Y]]);
-    const uint8_t* u_ptr = reinterpret_cast<uint8_t*>(
+    const InputType* u_ptr = reinterpret_cast<InputType*>(
         &image->yuvPlanes[AVIF_CHAN_U][uv_j * image->yuvRowBytes[AVIF_CHAN_U]]);
-    const uint8_t* v_ptr = reinterpret_cast<uint8_t*>(
+    const InputType* v_ptr = reinterpret_cast<InputType*>(
         &image->yuvPlanes[AVIF_CHAN_V][uv_j * image->yuvRowBytes[AVIF_CHAN_V]]);
+    const InputType* a_ptr = nullptr;
+    if (image->alphaPlane) {
+      a_ptr = reinterpret_cast<InputType*>(
+          &image->alphaPlane[j * image->alphaRowBytes]);
+    }
 
     for (uint32_t i = 0; i < image->width; ++i) {
       const int uv_i = i >> format_info->chromaShiftX;
@@ -94,185 +127,35 @@ void YUVAToBGRA8888(const avifImage* image,
       // and checking whether the image supports alpha in the inner loop.
       if (image->yuvRange == AVIF_RANGE_LIMITED) {
         pixel.set_x(avifLimitedToFullY(image->depth, y_ptr[i]) / max_channel);
-        pixel.set_y(avifLimitedToFullUV(image->depth, u_ptr[uv_i]) /
-                    max_channel);
-        pixel.set_z(avifLimitedToFullUV(image->depth, v_ptr[uv_i]) /
-                    max_channel);
+        if (color_type == ColorType::kColor) {
+          pixel.set_y(avifLimitedToFullUV(image->depth, u_ptr[uv_i]) /
+                      max_channel);
+          pixel.set_z(avifLimitedToFullUV(image->depth, v_ptr[uv_i]) /
+                      max_channel);
+        }
       } else {
         pixel.set_x(y_ptr[i] / max_channel);
-        pixel.set_y(u_ptr[uv_i] / max_channel);
-        pixel.set_z(v_ptr[uv_i] / max_channel);
+        if (color_type == ColorType::kColor) {
+          pixel.set_y(u_ptr[uv_i] / max_channel);
+          pixel.set_z(v_ptr[uv_i] / max_channel);
+        }
+      }
+      if (color_type == ColorType::kMono) {
+        pixel.set_y(0.5f);
+        pixel.set_z(0.5f);
       }
 
       transform->Transform(&pixel, 1);
 
-      uint16_t alpha = (1 << image->depth) - 1;
-      if (image->alphaPlane) {
-        alpha = image->alphaPlane[i + j * image->alphaRowBytes];
+      int alpha = max_channel_i;
+      if (a_ptr) {
+        alpha = a_ptr[i];
         if (image->alphaRange == AVIF_RANGE_LIMITED)
           alpha = avifLimitedToFullY(image->depth, alpha);
-        if (alpha != (1 << image->depth) - 1)
-          pixel.Scale(alpha / max_channel);
       }
 
-      *rgba_dest++ = SkPackARGB32NoCheck(
-          alpha,
-          gfx::ToRoundedInt(base::ClampToRange(pixel.x(), 0.0f, 1.0f) *
-                            max_channel),
-          gfx::ToRoundedInt(base::ClampToRange(pixel.y(), 0.0f, 1.0f) *
-                            max_channel),
-          gfx::ToRoundedInt(base::ClampToRange(pixel.z(), 0.0f, 1.0f) *
-                            max_channel));
-    }
-  }
-}
-
-void YAToMono8888(const avifImage* image,
-                  const avifPixelFormatInfo* format_info,
-                  const gfx::ColorTransform* transform,
-                  uint32_t* rgba_dest) {
-  DCHECK_EQ(image->depth, 8u);
-  gfx::Point3F pixel;
-  const float max_channel = float{(1 << image->depth) - 1};
-  for (uint32_t j = 0; j < image->height; ++j) {
-    const uint8_t* y_ptr = reinterpret_cast<uint8_t*>(
-        &image->yuvPlanes[AVIF_CHAN_Y][j * image->yuvRowBytes[AVIF_CHAN_Y]]);
-
-    for (uint32_t i = 0; i < image->width; ++i) {
-      pixel.set_y(0.5f);
-      pixel.set_z(0.5f);
-
-      if (image->yuvRange == AVIF_RANGE_LIMITED) {
-        pixel.set_x(avifLimitedToFullY(image->depth, y_ptr[i]) / max_channel);
-      } else {
-        pixel.set_x(y_ptr[i] / max_channel);
-      }
-
-      transform->Transform(&pixel, 1);
-
-      uint16_t alpha = (1 << image->depth) - 1;
-      if (image->alphaPlane) {
-        alpha = image->alphaPlane[i + j * image->alphaRowBytes];
-        if (image->alphaRange == AVIF_RANGE_LIMITED)
-          alpha = avifLimitedToFullY(image->depth, alpha);
-        if (alpha != (1 << image->depth) - 1)
-          pixel.Scale(alpha / max_channel);
-      }
-
-      *rgba_dest++ = SkPackARGB32NoCheck(
-          alpha,
-          gfx::ToRoundedInt(base::ClampToRange(pixel.x(), 0.0f, 1.0f) *
-                            max_channel),
-          gfx::ToRoundedInt(base::ClampToRange(pixel.y(), 0.0f, 1.0f) *
-                            max_channel),
-          gfx::ToRoundedInt(base::ClampToRange(pixel.z(), 0.0f, 1.0f) *
-                            max_channel));
-    }
-  }
-}
-
-void YUVAToRGBAHalfFloat(const avifImage* image,
-                         const avifPixelFormatInfo* format_info,
-                         const gfx::ColorTransform* transform,
-                         uint16_t* rgba_dest) {
-  DCHECK_GT(image->depth, 8u);
-  float rgba_pixels[] = {0, 0, 0, 1};
-  gfx::Point3F pixel;
-  const float max_channel = float{(1 << image->depth) - 1};
-  const uint16_t* a_ptr = nullptr;
-  uint32_t a_stride = 0;
-  if (image->alphaPlane) {
-    a_ptr = reinterpret_cast<uint16_t*>(image->alphaPlane);
-    a_stride = image->alphaRowBytes >> 1;
-  }
-  for (uint32_t j = 0; j < image->height; ++j) {
-    const int uv_j = j >> format_info->chromaShiftY;
-
-    const uint16_t* y_ptr = reinterpret_cast<uint16_t*>(
-        &image->yuvPlanes[AVIF_CHAN_Y][j * image->yuvRowBytes[AVIF_CHAN_Y]]);
-    const uint16_t* u_ptr = reinterpret_cast<uint16_t*>(
-        &image->yuvPlanes[AVIF_CHAN_U][uv_j * image->yuvRowBytes[AVIF_CHAN_U]]);
-    const uint16_t* v_ptr = reinterpret_cast<uint16_t*>(
-        &image->yuvPlanes[AVIF_CHAN_V][uv_j * image->yuvRowBytes[AVIF_CHAN_V]]);
-
-    for (uint32_t i = 0; i < image->width; ++i) {
-      const int uv_i = i >> format_info->chromaShiftX;
-      if (image->yuvRange == AVIF_RANGE_LIMITED) {
-        pixel.set_x(avifLimitedToFullY(image->depth, y_ptr[i]) / max_channel);
-        pixel.set_y(avifLimitedToFullUV(image->depth, u_ptr[uv_i]) /
-                    max_channel);
-        pixel.set_z(avifLimitedToFullUV(image->depth, v_ptr[uv_i]) /
-                    max_channel);
-      } else {
-        pixel.set_x(y_ptr[i] / max_channel);
-        pixel.set_y(u_ptr[uv_i] / max_channel);
-        pixel.set_z(v_ptr[uv_i] / max_channel);
-      }
-
-      transform->Transform(&pixel, 1);
-
-      rgba_pixels[0] = pixel.x();
-      rgba_pixels[1] = pixel.y();
-      rgba_pixels[2] = pixel.z();
-      if (image->alphaPlane) {
-        if (image->alphaRange == AVIF_RANGE_LIMITED) {
-          rgba_pixels[3] =
-              avifLimitedToFullY(image->depth, a_ptr[i]) / max_channel;
-        } else {
-          rgba_pixels[3] = a_ptr[i] / max_channel;
-        }
-        a_ptr += a_stride;
-      }
-
-      gfx::FloatToHalfFloat(rgba_pixels, rgba_dest, base::size(rgba_pixels));
-      rgba_dest += 4;
-    }
-  }
-}
-
-void YAToMonoHalfFloat(const avifImage* image,
-                       const avifPixelFormatInfo* format_info,
-                       const gfx::ColorTransform* transform,
-                       uint16_t* rgba_dest) {
-  DCHECK_GT(image->depth, 8u);
-  float rgba_pixels[] = {0, 0, 0, 1};
-  gfx::Point3F pixel;
-  const float max_channel = float{(1 << image->depth) - 1};
-  const uint16_t* a_ptr = nullptr;
-  uint32_t a_stride = 0;
-  if (image->alphaPlane) {
-    a_ptr = reinterpret_cast<uint16_t*>(image->alphaPlane);
-    a_stride = image->alphaRowBytes >> 1;
-  }
-  for (uint32_t j = 0; j < image->height; ++j) {
-    const uint16_t* y_ptr = reinterpret_cast<uint16_t*>(
-        &image->yuvPlanes[AVIF_CHAN_Y][j * image->yuvRowBytes[AVIF_CHAN_Y]]);
-
-    for (uint32_t i = 0; i < image->width; ++i) {
-      pixel.set_y(0.5f);
-      pixel.set_z(0.5f);
-
-      if (image->yuvRange == AVIF_RANGE_LIMITED) {
-        pixel.set_x(avifLimitedToFullY(image->depth, y_ptr[i]) / max_channel);
-      } else {
-        pixel.set_x(y_ptr[i] / max_channel);
-      }
-
-      transform->Transform(&pixel, 1);
-
-      rgba_pixels[0] = rgba_pixels[1] = rgba_pixels[2] = pixel.x();
-      if (image->alphaPlane) {
-        if (image->alphaRange == AVIF_RANGE_LIMITED) {
-          rgba_pixels[3] =
-              avifLimitedToFullY(image->depth, a_ptr[i]) / max_channel;
-        } else {
-          rgba_pixels[3] = a_ptr[i] / max_channel;
-        }
-        a_ptr += a_stride;
-      }
-
-      gfx::FloatToHalfFloat(rgba_pixels, rgba_dest, base::size(rgba_pixels));
-      rgba_dest += 4;
+      WritePixel(max_channel, pixel, alpha, rgba_dest);
+      rgba_dest++;
     }
   }
 }
@@ -487,17 +370,16 @@ void AVIFImageDecoder::Decode(size_t index) {
         return;
       }
 
-      uint16_t* rgba_hhhh =
-          reinterpret_cast<uint16_t*>(buffer.GetAddrF16(0, 0));
+      uint64_t* rgba_hhhh = buffer.GetAddrF16(0, 0);
 
       // Color and format convert from YUV HBD -> RGBA half float.
       if (is_mono) {
-        YAToMonoHalfFloat(image, format_info_.get(), color_transform_.get(),
-                          rgba_hhhh);
+        YUVAToRGBA<ColorType::kMono, uint16_t>(
+            image, format_info_.get(), color_transform_.get(), rgba_hhhh);
       } else {
         // TODO: Add fast path for 10bit 4:2:0 using libyuv.
-        YUVAToRGBAHalfFloat(image, format_info_.get(), color_transform_.get(),
-                            rgba_hhhh);
+        YUVAToRGBA<ColorType::kColor, uint16_t>(
+            image, format_info_.get(), color_transform_.get(), rgba_hhhh);
       }
     } else {
       uint32_t* rgba_8888 = buffer.GetAddr(0, 0);
@@ -553,11 +435,11 @@ void AVIFImageDecoder::Decode(size_t index) {
           return;
         }
         if (is_mono) {
-          YAToMono8888(image, format_info_.get(), color_transform_.get(),
-                       rgba_8888);
+          YUVAToRGBA<ColorType::kMono, uint8_t>(
+              image, format_info_.get(), color_transform_.get(), rgba_8888);
         } else {
-          YUVAToBGRA8888(image, format_info_.get(), color_transform_.get(),
-                         rgba_8888);
+          YUVAToRGBA<ColorType::kColor, uint8_t>(
+              image, format_info_.get(), color_transform_.get(), rgba_8888);
         }
       }
     }

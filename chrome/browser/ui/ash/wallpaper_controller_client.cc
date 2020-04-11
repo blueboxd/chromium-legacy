@@ -27,10 +27,8 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/types/display_constants.h"
 
 namespace {

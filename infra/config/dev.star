@@ -2,6 +2,11 @@
 # See https://chromium.googlesource.com/infra/luci/luci-go/+/HEAD/lucicfg/doc/README.md
 # for information on starlark/lucicfg
 
+lucicfg.check_version(
+    min = '1.13.1',
+    message = 'Update depot_tools',
+)
+
 # Tell lucicfg what files it is allowed to touch
 lucicfg.config(
     config_dir = 'generated',

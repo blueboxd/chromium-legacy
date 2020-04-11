@@ -20,7 +20,6 @@
 #include "components/services/unzip/content/unzip_service.h"
 #include "components/services/unzip/in_process_unzipper.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -155,6 +154,10 @@ void TestExtensionSystem::InstallUpdate(
     InstallUpdateCallback install_update_callback) {
   NOTREACHED();
 }
+
+void TestExtensionSystem::PerformActionBasedOnOmahaAttributes(
+    const std::string& extension_id,
+    const base::Value& attributes) {}
 
 bool TestExtensionSystem::FinishDelayedInstallationIfReady(
     const std::string& extension_id,

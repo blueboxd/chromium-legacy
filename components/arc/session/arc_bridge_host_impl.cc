@@ -63,7 +63,6 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/mojo_channel.h"
 #include "content/public/browser/system_connector.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace arc {
 

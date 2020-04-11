@@ -1996,8 +1996,7 @@ class ResponseAnalyzerTest : public testing::Test,
 
     std::string charset;
     bool had_charset = false;
-    response_headers->AddHeader(std::string("Content-Type: ") +
-                                response_content_type);
+    response_headers->SetHeader("Content-Type", response_content_type);
     net::HttpUtil::ParseContentType(response_content_type, &response->mime_type,
                                     &charset, &had_charset, nullptr);
     EXPECT_FALSE(response->mime_type.empty())

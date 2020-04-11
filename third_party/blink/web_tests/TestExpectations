@@ -95,6 +95,14 @@ crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.
 
 crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag.https.html [ Timeout ]
 
+# Tests temporarily disabled until the video.requestAnimationFrame =>
+# video.requestVideoFrameCallback rename is completed. See crbug.com/1012063.
+
+external/wpt/video-raf/video-request-animation-frame.html [ Failure ]
+external/wpt/video-raf/video-request-animation-frame-parallel.html [ Failure ]
+external/wpt/video-raf/video-request-animation-frame-repeating.html [ Failure ]
+external/wpt/video-raf/idlharness.window.html [ Failure ]
+
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
 # TODO(lukasza, alexmos): Burn down this list.
 crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
@@ -690,7 +698,6 @@ crbug.com/881057 [ Mac ] virtual/layout_ng_fieldset/external/wpt/css/vendor-impo
 crbug.com/881057 [ Mac ] virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-004.html [ Failure ]
 crbug.com/881057 [ Mac ] virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-005.html [ Failure ]
 crbug.com/880802 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-ignored-cases-ruby-stacking-and-clipping-001.html [ Failure ]
-crbug.com/965491 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-fieldset-002.html [ Failure ]
 
 # [css-align]
 
@@ -939,7 +946,7 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/flowthread-with-floa
 
 ### With LayoutNGBlockFragmentation enabled:
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-with-overflow.html [ Failure ]
-crbug.com/1028595 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Crash Failure ]
+crbug.com/1028595 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/floats-and-text-narrow-and-short-dynamic.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/line-after-unbreakable-float-after-padding.html [ Failure ]
 crbug.com/967329 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/columnfill-auto-max-height-002.html [ Failure ]
@@ -1575,7 +1582,6 @@ crbug.com/762679 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/gap-010
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/css-contain/contain-size-breaks-001.html [ Crash Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/css-contain/contain-size-monolithic-001.html [ Crash Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/css-contain/contain-size-multicol-001.html [ Failure ]
-crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-001.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-002.html [ Crash Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-003.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-multicol.html [ Crash Failure ]

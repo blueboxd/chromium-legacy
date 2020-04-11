@@ -97,6 +97,9 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
+#if defined(OS_ANDROID)
+  WideColorGamutHeuristic GetWideColorGamutHeuristic() override;
+#endif  // OS_ANDROID
 
   void CreateFeatureListAndFieldTrials();
 

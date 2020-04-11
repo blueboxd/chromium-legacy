@@ -180,9 +180,9 @@ void MostVisitedIframeSource::SendJSWithOrigin(
     return;
   }
 
-  base::StringPiece template_js =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
-  std::string response(template_js.as_string());
+  std::string response =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          resource_id);
   base::ReplaceFirstSubstringAfterOffset(&response, 0, "{{ORIGIN}}", origin);
   std::move(callback).Run(base::RefCountedString::TakeString(&response));
 }

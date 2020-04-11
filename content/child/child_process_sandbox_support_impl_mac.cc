@@ -15,7 +15,6 @@
 #include "content/public/child/child_thread.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/system/buffer.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 

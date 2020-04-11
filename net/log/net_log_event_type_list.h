@@ -111,12 +111,12 @@ EVENT_TYPE(HOST_RESOLVER_IMPL_CREATE_JOB)
 EVENT_TYPE(HOST_RESOLVER_IMPL_JOB)
 
 // This event is created when a HostResolverImpl::Job is evicted from
-// PriorityDispatch before it can start, because the limit on number of queued
-// Jobs was reached.
+// PrioritizedDispatcher before it can start, because the limit on number of
+// queued Jobs was reached.
 EVENT_TYPE(HOST_RESOLVER_IMPL_JOB_EVICTED)
 
 // This event is created when a HostResolverImpl::Job is started by
-// PriorityDispatch.
+// PrioritizedDispatcher.
 EVENT_TYPE(HOST_RESOLVER_IMPL_JOB_STARTED)
 
 // This event is created when HostResolverImpl::ProcJob is about to start a new

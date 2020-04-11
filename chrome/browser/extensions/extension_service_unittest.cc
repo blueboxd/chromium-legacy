@@ -4654,6 +4654,49 @@ TEST_F(ExtensionServiceTest, DisableExtension) {
   EXPECT_EQ(0u, registry()->blacklisted_extensions().size());
 }
 
+// Tests performing actions on extension Omaha attributes.
+TEST_F(ExtensionServiceTest, PerformActionBasedOnOmahaAttributes) {
+  InitializeEmptyExtensionService();
+
+  InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
+
+  base::Value attributes(base::Value::Type::DICTIONARY);
+  attributes.SetKey("_malware", base::Value(true));
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  service()->PerformActionBasedOnOmahaAttributes(good_crx, attributes);
+  EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
+  EXPECT_EQ(disable_reason::DISABLE_REMOTELY_FOR_MALWARE,
+            prefs->GetDisableReasons(good_crx));
+
+  attributes.SetKey("_malware", base::Value(false));
+  service()->PerformActionBasedOnOmahaAttributes(good_crx, attributes);
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
+  EXPECT_EQ(0, prefs->GetDisableReasons(good_crx));
+}
+
+// Tests not re-enabling previously remotely disabled extension if it's not the
+// only reason but the disable reasons should be gone.
+TEST_F(ExtensionServiceTest, NoEnableRemotelyDisabledExtension) {
+  InitializeEmptyExtensionService();
+
+  InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
+
+  service()->DisableExtension(good_crx,
+                              disable_reason::DISABLE_REMOTELY_FOR_MALWARE |
+                                  disable_reason::DISABLE_USER_ACTION);
+  EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
+
+  base::Value empty_attr(base::Value::Type::DICTIONARY);
+  service()->PerformActionBasedOnOmahaAttributes(good_crx, empty_attr);
+  EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
+  EXPECT_FALSE(ExtensionPrefs::Get(profile())->GetDisableReasons(good_crx) &
+               disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
+}
+
 TEST_F(ExtensionServiceTest, TerminateExtension) {
   InitializeEmptyExtensionService();
 

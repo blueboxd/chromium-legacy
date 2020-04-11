@@ -327,10 +327,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void ReportFeaturePolicyViolation(
       mojom::blink::FeaturePolicyFeature,
       mojom::blink::PolicyDisposition,
-      const String& message = g_empty_string,
-      // If source_file is set to empty string,
-      // current JS file would be used as source_file instead.
-      const String& source_file = g_empty_string) const;
+      const String& message = g_empty_string) const;
   void ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature,
       mojom::blink::PolicyDisposition disposition,
@@ -404,8 +401,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsFeatureEnabled(
       mojom::blink::FeaturePolicyFeature,
       ReportOptions report_on_failure = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string,
-      const String& source_file = g_empty_string) const;
+      const String& message = g_empty_string) const;
   bool IsFeatureEnabled(
       mojom::blink::FeaturePolicyFeature,
       PolicyValue threshold_value,

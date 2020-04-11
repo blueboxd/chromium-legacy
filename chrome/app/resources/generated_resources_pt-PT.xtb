@@ -1011,7 +1011,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2342740338116612727">Marcadores adicionados</translation>
 <translation id="2343747224442182863">Focar este separador</translation>
 <translation id="2345723121311404059">1 página para <ph name="PRINTER_NAME" /></translation>
-<translation id="2346953515226895098">Serviço SODA</translation>
 <translation id="2347644257713614136">A utilização do Hangouts e do Cast for Education é regida pela Política de Privacidade da Google.</translation>
 <translation id="2348176352564285430">Aplicação: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="234889437187286781">Ocorreu um erro ao carregar os dados.</translation>
@@ -2286,7 +2285,6 @@ Pretende pará-lo?</translation>
 <translation id="3971764089670057203">Impressões digitais nesta chave de segurança</translation>
 <translation id="3973660817924297510">A verificar palavras-passe (<ph name="CHECKED_PASSWORDS" /> de <ph name="TOTAL_PASSWORDS" />)…</translation>
 <translation id="3975565978598857337">Falha ao contactar o servidor do domínio.</translation>
-<translation id="3975884715086515476">O <ph name="IDS_SHORT_PRODUCT_NAME" /> não consegue verificar as suas palavras-passe. Tente novamente mais tarde.</translation>
 <translation id="3976108569178263973">Não existem impressoras disponíveis.</translation>
 <translation id="397703832102027365">A finalizar...</translation>
 <translation id="3977886311744775419">As atualizações automáticas não são transferidas neste tipo de rede, mas pode verificar se existem atualizações manualmente.</translation>
@@ -2587,7 +2585,6 @@ Pretende pará-lo?</translation>
 <translation id="4421932782753506458">Fofo</translation>
 <translation id="4423376891418188461">Restaurar definições</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, o seu gestor requer que altere a sua palavra-passe.</translation>
-<translation id="4426209360861763174">O <ph name="IDS_SHORT_PRODUCT_NAME" /> não consegue verificar as suas palavras-passe. Tente novamente após 24 horas.</translation>
 <translation id="4429030830601238961">Estes dados violam as políticas de segurança da sua entidade e não é possível colá-los.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4430369329743628066">Marcador adicionado</translation>
@@ -2600,7 +2597,6 @@ Pretende pará-lo?</translation>
 <translation id="4441124369922430666">Pretende iniciar automaticamente esta aplicação quando o computador é ligado?</translation>
 <translation id="4441147046941420429">Para continuar, remova a sua chave de segurança do dispositivo e, em seguida, reinsira-a e toque na mesma.</translation>
 <translation id="444134486829715816">Expandir...</translation>
-<translation id="4442329324652245220">O <ph name="IDS_SHORT_PRODUCT_NAME" /> pode verificar as suas palavras-passe quando inicia sessão com a sua Conta Google.</translation>
 <translation id="4442424173763614572">A procura de DNS falhou</translation>
 <translation id="4443536555189480885">&amp;Ajuda</translation>
 <translation id="4444304522807523469">Aceder a scanners de documentos anexados através de USB ou na rede local</translation>
@@ -2627,7 +2623,6 @@ Pretende pará-lo?</translation>
 <translation id="4476659815936224889">Para ler este código, pode utilizar uma aplicação de leitura de códigos QR no telemóvel ou algumas aplicações de câmara.</translation>
 <translation id="4477015793815781985">Inclua Ctrl, Alt ou ⌘.</translation>
 <translation id="4478664379124702289">Guardar Lin&amp;k Como...</translation>
-<translation id="4478777936860197922">Não existem palavras-passe guardadas. O <ph name="IDS_SHORT_PRODUCT_NAME" /> consegue verificar as suas palavras-passe quando as guarda.</translation>
 <translation id="4479424953165245642">Gerir aplicações de quiosque</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479877282574735775">A configurar a máquina virtual… Esta ação pode demorar alguns minutos.</translation>
@@ -2873,7 +2868,6 @@ Pretende pará-lo?</translation>
 <translation id="4849517651082200438">Não instalar</translation>
 <translation id="4850669014075537160">Deslocamento</translation>
 <translation id="4850886885716139402">Ver</translation>
-<translation id="485197095346966382">O <ph name="IDS_SHORT_PRODUCT_NAME" /> envia-lhe uma notificação quando iniciar sessão com uma palavra-passe comprometida.</translation>
 <translation id="4853020600495124913">Abrir numa &amp;nova janela</translation>
 <translation id="4854317507773910281">Escolhe a conta parental para aprovação</translation>
 <translation id="485480310608090163">Mais definições e autorizações</translation>
@@ -4838,7 +4832,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7530016656428373557">Taxa de descarga em Watts</translation>
 <translation id="7531779363494549572">Aceda a Definições &gt; Aplicações e notificações &gt; Notificações.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> não está a responder. Selecione "Forçar fecho" para fechar a aplicação.</translation>
-<translation id="7536333565791380193">Segurança avançada</translation>
 <translation id="7537451260744431038">Os sites não podem utilizar cookies para melhorar a experiência de navegação, por exemplo, para manter a sua sessão iniciada ou memorizar os artigos no seu carrinho de compras.</translation>
 <translation id="7539856059004947393">Chave de segurança de Bluetooth</translation>
 <translation id="7540972813190816353">Ocorreu um erro durante a verificação de atualizações: <ph name="ERROR" /></translation>
@@ -5079,7 +5072,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
     <ph name="BEGIN_BOLD" />Nota:<ph name="END_BOLD" /> o sistema será reiniciado durante o processo.</translation>
 <translation id="7828731929332799387">Esta ação eliminará todos os cookies e dados de sites disponíveis em contextos de terceiros. Pretende continuar?</translation>
 <translation id="7829298379596169484">A aceder à entrada de áudio</translation>
-<translation id="7829528495815477379">O <ph name="IDS_SHORT_PRODUCT_NAME" /> não consegue verificar as suas palavras-passe. Experimente verificar a sua ligação à Internet.</translation>
 <translation id="7829877209233347340">Peça a um dos seus pais para lhe conceder autorização para adicionar uma conta escolar.</translation>
 <translation id="7830594666202422257">Ligar ao Linux</translation>
 <translation id="7831491651892296503">Ocorreu um erro ao configurar a rede.</translation>
@@ -5953,7 +5945,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8966870118594285808">Reabra um separador caso o feche acidentalmente.</translation>
 <translation id="8967866634928501045">Prima Alt + Shift + A para mostrar.</translation>
 <translation id="8968766641738584599">Guardar cartão</translation>
-<translation id="8971800409073702505">O <ph name="IDS_SHORT_PRODUCT_NAME" /> não consegue verificar as suas palavras-passe. Tente novamente após 24 horas ou <ph name="BEGIN_LINK" />verifique as palavras-passe na sua Conta Google<ph name="END_LINK" />.</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Consulte o seu gestor de rede para ter a certeza de que a firewall não está a bloquear as transferências dos servidores da Google.</translation>
 <translation id="8973557916016709913">Remover nível de zoom</translation>

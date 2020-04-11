@@ -1766,6 +1766,66 @@ TEST(HttpResponseHeadersTest, GetNormalizedHeaderWithCommas) {
   EXPECT_FALSE(parsed->GetNormalizedHeader("f", &value));
 }
 
+// Tests the two-argument version of AddHeader.
+TEST(HttpResponseHeadersTest, AddHeaderTwoArgs) {
+  scoped_refptr<HttpResponseHeaders> headers = HttpResponseHeaders::TryToCreate(
+      "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Cache-control: max-age=10000\n");
+  ASSERT_TRUE(headers);
+
+  headers->AddHeader("Content-Length", "450");
+  EXPECT_EQ(
+      "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Cache-control: max-age=10000\n"
+      "Content-Length: 450\n",
+      ToSimpleString(headers));
+
+  // Add a second Content-Length header with extra spaces in the value. It
+  // should be added to the end, and the extra spaces removed.
+  headers->AddHeader("Content-Length", "   42    ");
+  EXPECT_EQ(
+      "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Cache-control: max-age=10000\n"
+      "Content-Length: 450\n"
+      "Content-Length: 42\n",
+      ToSimpleString(headers));
+}
+
+TEST(HttpResponseHeadersTest, SetHeader) {
+  scoped_refptr<HttpResponseHeaders> headers = HttpResponseHeaders::TryToCreate(
+      "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Cache-control: max-age=10000\n");
+  ASSERT_TRUE(headers);
+
+  headers->SetHeader("Content-Length", "450");
+  EXPECT_EQ(
+      "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Cache-control: max-age=10000\n"
+      "Content-Length: 450\n",
+      ToSimpleString(headers));
+
+  headers->SetHeader("Content-Length", "   42    ");
+  EXPECT_EQ(
+      "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Cache-control: max-age=10000\n"
+      "Content-Length: 42\n",
+      ToSimpleString(headers));
+
+  headers->SetHeader("connection", "close");
+  EXPECT_EQ(
+      "HTTP/1.1 200 OK\n"
+      "Cache-control: max-age=10000\n"
+      "Content-Length: 42\n"
+      "connection: close\n",
+      ToSimpleString(headers));
+}
+
 struct AddHeaderTestData {
   const char* orig_headers;
   const char* new_header;

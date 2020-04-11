@@ -143,9 +143,8 @@ void URLRequestTestJobBackedByFile::GetResponseInfo(HttpResponseInfo* info) {
     return;
   auto headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-  headers->AddHeader(base::StringPrintf("%s: %s",
-                                        net::HttpRequestHeaders::kContentType,
-                                        meta_info_.mime_type.c_str()));
+  headers->AddHeader(net::HttpRequestHeaders::kContentType,
+                     meta_info_.mime_type);
   info->headers = headers;
 }
 

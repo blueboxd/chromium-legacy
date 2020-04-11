@@ -113,7 +113,7 @@ _idl_imports = [
   "//third_party/blink/renderer/modules/srcobject/idls.gni",
   "//third_party/blink/renderer/modules/storage/idls.gni",
   "//third_party/blink/renderer/modules/vibration/idls.gni",
-  "//third_party/blink/renderer/modules/video_raf/idls.gni",
+  "//third_party/blink/renderer/modules/video_rvfc/idls.gni",
   "//third_party/blink/renderer/modules/wake_lock/idls.gni",
   "//third_party/blink/renderer/modules/webaudio/idls.gni",
   "//third_party/blink/renderer/modules/webcodecs/idls.gni",

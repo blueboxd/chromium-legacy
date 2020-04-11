@@ -12,10 +12,6 @@ const oneGoogleBarHeightInPixels = 64;
  *        no overlays are open, 'deactivate' is sent to ntp-app so the NTP
  *        content can be on top. The top bar of the OneGoogleBar is always on
  *        top.
- *
- * TODO(crbug.com/1039913): add support for light/dark theme. add support for
- *     forwarding touch events when OneGoogleBar is active.
- *
  * @param {string} messageType
  */
 function postMessage(messageType) {
@@ -66,6 +62,15 @@ function trackOverlayState() {
   observer.observe(
       document, {attributes: true, childList: true, subtree: true});
 }
+
+window.addEventListener('message', ({data}) => {
+  if (data.type === 'enableDarkTheme') {
+    if (!window.gbar) {
+      return;
+    }
+    window.gbar.a.bf().then(ogb => ogb.pc.call(ogb, data.enabled ? 1 : 0));
+  }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   // TODO(crbug.com/1039913): remove after OneGoogleBar links are updated.

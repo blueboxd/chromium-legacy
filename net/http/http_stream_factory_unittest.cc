@@ -3441,7 +3441,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcClear) {
 
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));
-  headers->AddHeader("alt-svc: clear");
+  headers->AddHeader("alt-svc", "clear");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_.get(), network_isolation_key, headers.get(), origin);
@@ -3471,7 +3471,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuic) {
 
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));
-  headers->AddHeader("alt-svc: quic=\":443\"; v=\"99,50,49,48,47,46,43,39\"");
+  headers->AddHeader("alt-svc", "quic=\":443\"; v=\"99,50,49,48,47,46,43,39\"");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_.get(), network_isolation_key, headers.get(), origin);
@@ -3507,7 +3507,7 @@ TEST_F(ProcessAlternativeServicesTest, AltSvcQuicDoesNotSupportTLSHandshake) {
   // Alt-Svc header only refers to PROTOCOL_QUIC_CRYPTO handshake.
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));
-  headers->AddHeader("alt-svc: quic=\":443\"; v=\"50,49\"");
+  headers->AddHeader("alt-svc", "quic=\":443\"; v=\"50,49\"");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_.get(), network_isolation_key, headers.get(), origin);
@@ -3539,16 +3539,15 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
 
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));
-  headers->AddHeader(
-      "alt-svc: "
-      "h3-27=\":443\","
-      "h3-25=\":443\","
-      "h3-Q050=\":443\","
-      "h3-Q049=\":443\","
-      "h3-Q048=\":443\","
-      "h3-Q047=\":443\","
-      "h3-Q043=\":443\","
-      "h3-Q039=\":443\"");
+  headers->AddHeader("alt-svc",
+                     "h3-27=\":443\","
+                     "h3-25=\":443\","
+                     "h3-Q050=\":443\","
+                     "h3-Q049=\":443\","
+                     "h3-Q048=\":443\","
+                     "h3-Q047=\":443\","
+                     "h3-Q043=\":443\","
+                     "h3-Q039=\":443\"");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_.get(), network_isolation_key, headers.get(), origin);
@@ -3586,7 +3585,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcHttp2) {
 
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));
-  headers->AddHeader("alt-svc: h2=\"other.example.com:443\"");
+  headers->AddHeader("alt-svc", "h2=\"other.example.com:443\"");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_.get(), network_isolation_key, headers.get(), origin);

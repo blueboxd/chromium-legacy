@@ -15,6 +15,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/transform_node.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -158,33 +159,18 @@ bool PictureLayer::Update() {
 }
 
 sk_sp<SkPicture> PictureLayer::GetPicture() const {
-  // We could either flatten the RecordingSource into a single SkPicture, or
-  // paint a fresh one depending on what we intend to do with it.  For now we
-  // just paint a fresh one to get consistent results.
-  if (!DrawsContent())
+  if (!DrawsContent() || bounds().IsEmpty())
     return nullptr;
 
-  gfx::Size layer_size = bounds();
-  RecordingSource recording_source;
-  Region recording_invalidation;
-
-  gfx::Rect new_recorded_viewport =
-      picture_layer_inputs_.client->PaintableRegion();
   scoped_refptr<DisplayItemList> display_list =
       picture_layer_inputs_.client->PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
-  size_t painter_reported_memory_usage =
-      picture_layer_inputs_.client->GetApproximateUnsharedMemoryUsage();
-
-  recording_source.UpdateAndExpandInvalidation(
-      &recording_invalidation, layer_size, new_recorded_viewport);
-  recording_source.UpdateDisplayItemList(
-      display_list, painter_reported_memory_usage,
-      layer_tree_host()->recording_scale_factor());
-
-  scoped_refptr<RasterSource> raster_source =
-      recording_source.CreateRasterSource();
-  return raster_source->GetFlattenedPicture();
+  SkPictureRecorder recorder;
+  SkCanvas* canvas =
+      recorder.beginRecording(bounds().width(), bounds().height());
+  canvas->clear(SK_ColorTRANSPARENT);
+  display_list->Raster(canvas);
+  return recorder.finishRecordingAsPicture();
 }
 
 void PictureLayer::ClearClient() {

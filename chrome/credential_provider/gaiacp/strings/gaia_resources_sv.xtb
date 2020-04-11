@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">Det gick inte att synkronisera lösenordet för jobbkontot till Windows-profilen eftersom lösenordsuppdateringar på enheten är begränsade till organisationen. Kontakta administratören om du behöver hjälp.</translation>
 <translation id="5186761973554910131">Ogiltigt datornamn angavs under försöket att byta lösenord. Kontakta administratören.</translation>
 <translation id="5265714013989877288">Det gick inte att fortsätta eftersom ett fel uppstod medan lösenordet för Windows ändrades. Kontakta administratören.</translation>
+<translation id="5581861273642234526">Ett annat jobbkonto har redan kopplats till den här enheten. Logga in med ditt Windows-konto.</translation>
 <translation id="6033715878377252112">Hjälpprogram för Googles autentiseringsprovider för Windows</translation>
 <translation id="6149399665202317746">Googles autentiseringsprovider för Windows</translation>
 <translation id="6243062314475217481">Lösenordet för jobbkontot uppfyller inte komplexitetskraven för Windows. Kontakta administratören om du behöver hjälp.</translation>

@@ -283,7 +283,8 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ProvideBluetoothLogs) {
 }
 #endif  // if defined(CHROME_OS)
 
-IN_PROC_BROWSER_TEST_F(FeedbackTest, GetTargetTabUrl) {
+// Disabled due to flake: https://crbug.com/1069870
+IN_PROC_BROWSER_TEST_F(FeedbackTest, DISABLED_GetTargetTabUrl) {
   const std::pair<std::string, std::string> test_cases[] = {
       {"https://www.google.com/", "https://www.google.com/"},
       {"about://version/", chrome::kChromeUIVersionURL},

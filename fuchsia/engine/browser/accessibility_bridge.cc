@@ -162,9 +162,11 @@ void AccessibilityBridge::OnAccessibilityActionRequested(
     OnAccessibilityActionRequestedCallback callback) {
   ui::AXActionData action_data = ui::AXActionData();
 
-  // TODO(fxb/16501): Add more actions when they become available on the
-  // SemanticsManager side.
-  action_data.action = ax::mojom::Action::kDoDefault;
+  if (!ConvertAction(action, &action_data.action)) {
+    callback(false);
+    return;
+  }
+
   action_data.target_node_id = node_id;
   pending_accessibility_action_callbacks_[node_id] = std::move(callback);
 

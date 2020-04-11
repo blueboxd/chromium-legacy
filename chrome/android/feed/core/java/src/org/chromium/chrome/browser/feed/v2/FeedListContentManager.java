@@ -26,20 +26,35 @@ public class FeedListContentManager implements ListContentManager {
     /**
      * Encapsulates the content of an item stored and managed by ListContentManager.
      */
-    public interface FeedContent {
+    public abstract static class FeedContent {
+        private final String mKey;
+
+        FeedContent(String key) {
+            assert key != null && !key.isEmpty();
+            mKey = key;
+        }
+
         /**
          * Returns true if the content is supported by the native view.
          */
-        boolean isNativeView();
+        public abstract boolean isNativeView();
+
+        /**
+         * Returns the key which should uniquely identify the content in the list.
+         */
+        public String getKey() {
+            return mKey;
+        }
     }
 
     /**
      * For the content that is supported by external surface controlled view.
      */
-    public static class ExternalViewContent implements FeedContent {
+    public static class ExternalViewContent extends FeedContent {
         private final byte[] mData;
 
-        public ExternalViewContent(byte[] data) {
+        public ExternalViewContent(String key, byte[] data) {
+            super(key);
             mData = data;
         }
 
@@ -60,10 +75,11 @@ public class FeedListContentManager implements ListContentManager {
     /**
      * For the content that is supported by the native view.
      */
-    public static class NativeViewContent implements FeedContent {
+    public static class NativeViewContent extends FeedContent {
         private final View mNativeView;
 
-        public NativeViewContent(View nativeView) {
+        public NativeViewContent(String key, View nativeView) {
+            super(key);
             mNativeView = nativeView;
         }
 
@@ -101,6 +117,21 @@ public class FeedListContentManager implements ListContentManager {
      */
     public FeedContent getContent(int index) {
         return mFeedContentList.get(index);
+    }
+
+    /**
+     * Finds the position of the content with the specified key in the list.
+     *
+     * @param key The key of the content to search for.
+     * @return The position if found, -1 otherwise.
+     */
+    public int findContentPositionByKey(String key) {
+        for (int i = 0; i < mFeedContentList.size(); ++i) {
+            if (mFeedContentList.get(i).getKey().equals(key)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**

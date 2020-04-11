@@ -28,7 +28,7 @@ Widget* WidgetTest::CreateTopLevelPlatformWidget() {
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.native_widget =
-      CreatePlatformNativeWidgetImpl(params, widget, kStubCapture, nullptr);
+      CreatePlatformNativeWidgetImpl(widget, kStubCapture, nullptr);
   widget->Init(std::move(params));
   return widget;
 }
@@ -38,7 +38,7 @@ Widget* WidgetTest::CreateTopLevelFramelessPlatformWidget() {
   Widget::InitParams params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.native_widget =
-      CreatePlatformNativeWidgetImpl(params, widget, kStubCapture, nullptr);
+      CreatePlatformNativeWidgetImpl(widget, kStubCapture, nullptr);
   widget->Init(std::move(params));
   return widget;
 }
@@ -49,7 +49,7 @@ Widget* WidgetTest::CreateChildPlatformWidget(
   params.parent = parent_native_view;
   Widget* child = new Widget;
   params.native_widget =
-      CreatePlatformNativeWidgetImpl(params, child, kStubCapture, nullptr);
+      CreatePlatformNativeWidgetImpl(child, kStubCapture, nullptr);
   child->Init(std::move(params));
   child->SetContentsView(new View);
   return child;
@@ -69,10 +69,6 @@ Widget* WidgetTest::CreateChildNativeWidgetWithParent(Widget* parent) {
   child->Init(std::move(params));
   child->SetContentsView(new View);
   return child;
-}
-
-Widget* WidgetTest::CreateChildNativeWidget() {
-  return CreateChildNativeWidgetWithParent(nullptr);
 }
 
 View* WidgetTest::GetMousePressedHandler(internal::RootView* root_view) {

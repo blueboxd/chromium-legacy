@@ -46,7 +46,7 @@
 #include "third_party/blink/renderer/core/html/media/media_custom_controls_fullscreen_detector.h"
 #include "third_party/blink/renderer/core/html/media/media_remoting_interstitial.h"
 #include "third_party/blink/renderer/core/html/media/picture_in_picture_interstitial.h"
-#include "third_party/blink/renderer/core/html/media/video_request_animation_frame.h"
+#include "third_party/blink/renderer/core/html/media/video_frame_callback_requester.h"
 #include "third_party/blink/renderer/core/html/media/video_wake_lock.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -809,9 +809,9 @@ void HTMLVideoElement::OnIntersectionChangedForLazyLoad(
 }
 
 void HTMLVideoElement::OnWebMediaPlayerCreated() {
-  if (RuntimeEnabledFeatures::VideoRequestAnimationFrameEnabled()) {
-    if (auto* video_raf = VideoRequestAnimationFrame::From(*this))
-      video_raf->OnWebMediaPlayerCreated();
+  if (RuntimeEnabledFeatures::RequestVideoFrameCallbackEnabled()) {
+    if (auto* vfc_requester = VideoFrameCallbackRequester::From(*this))
+      vfc_requester->OnWebMediaPlayerCreated();
   }
 }
 
@@ -822,9 +822,9 @@ void HTMLVideoElement::AttributeChanged(
     UpdatePictureInPictureAvailability();
 }
 
-void HTMLVideoElement::OnRequestAnimationFrame() {
-  DCHECK(RuntimeEnabledFeatures::VideoRequestAnimationFrameEnabled());
-  VideoRequestAnimationFrame::From(*this)->OnRequestAnimationFrame();
+void HTMLVideoElement::OnRequestVideoFrameCallback() {
+  DCHECK(RuntimeEnabledFeatures::RequestVideoFrameCallbackEnabled());
+  VideoFrameCallbackRequester::From(*this)->OnRequestVideoFrameCallback();
 }
 
 }  // namespace blink

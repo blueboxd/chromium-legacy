@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -25,6 +27,7 @@
 #include "extensions/browser/updater/extension_update_data.h"
 #include "extensions/browser/updater/update_data_provider.h"
 #include "extensions/browser/updater/update_service_factory.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_url_handlers.h"
 
@@ -36,6 +39,9 @@ UpdateService* update_service_override = nullptr;
 
 // 98% of update checks have 22 or less extensions.
 constexpr size_t kMaxExtensionsPerUpdate = 22;
+
+// This set contains all Omaha attributes that is associated with extensions.
+constexpr const char* kOmahaAttributes[] = {"_malware"};
 
 void SendUninstallPingCompleteCallback(update_client::Error error) {}
 
@@ -117,6 +123,7 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
 
   bool complete_event = false;
   bool finish_delayed_installation = false;
+  bool should_perform_action_on_omaha_attributes = false;
   switch (event) {
     case Events::COMPONENT_UPDATED:
       complete_event = true;
@@ -127,9 +134,16 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
       break;
     case Events::COMPONENT_NOT_UPDATED:
       complete_event = true;
+      // Attributes is currently only added when no_update is true in the update
+      // client config.
+      should_perform_action_on_omaha_attributes = true;
       finish_delayed_installation = true;
       break;
     case Events::COMPONENT_UPDATE_FOUND:
+      // This flag is set since it makes sense to update attributes when an
+      // update is found even though the server currently doesn not serve
+      // attributes for an extension with an update.
+      should_perform_action_on_omaha_attributes = true;
       HandleComponentUpdateFoundEvent(extension_id);
       break;
     case Events::COMPONENT_CHECKING_FOR_UPDATES:
@@ -138,6 +152,15 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
     case Events::COMPONENT_UPDATE_DOWNLOADING:
       break;
   }
+
+  base::Value attributes(base::Value::Type::DICTIONARY);
+  if (should_perform_action_on_omaha_attributes &&
+      base::FeatureList::IsEnabled(
+          extensions_features::kDisableMalwareExtensionsRemotely)) {
+    attributes = GetExtensionOmahaAttributes(extension_id);
+  }
+  ExtensionSystem::Get(browser_context_)
+      ->PerformActionBasedOnOmahaAttributes(extension_id, attributes);
 
   if (complete_event) {
     // The update check for |extension_id| has completed, thus it can be
@@ -308,4 +331,23 @@ void UpdateService::HandleComponentUpdateFoundEvent(
       content::Details<UpdateDetails>(&update_info));
 }
 
+base::Value UpdateService::GetExtensionOmahaAttributes(
+    const std::string& extension_id) {
+  DCHECK(base::FeatureList::IsEnabled(
+      extensions_features::kDisableMalwareExtensionsRemotely));
+
+  update_client::CrxUpdateItem update_item;
+  base::Value attributes(base::Value::Type::DICTIONARY);
+  if (!update_client_->GetCrxUpdateState(extension_id, &update_item))
+    return attributes;
+
+  for (const char* key : kOmahaAttributes) {
+    auto iter = update_item.custom_updatecheck_data.find(key);
+    // This is assuming that the values of the keys are "true", "false",
+    // or does not exist.
+    if (iter != update_item.custom_updatecheck_data.end())
+      attributes.SetKey(key, base::Value(iter->second == "true"));
+  }
+  return attributes;
+}
 }  // namespace extensions

@@ -70,8 +70,6 @@
           file="icons/colorize.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_SHORTCUT_CIRCLES_SVG"
           file="icons/shortcut_circles.svg" type="BINDATA" compress="gzip" />
-      <include name="IDR_NEW_TAB_PAGE_HEADER_SVG"
-          file="icons/header.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_GOOGLE_MIC_SVG"
           file="icons/googlemic_clr_24px.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_MIC_SVG"

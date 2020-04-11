@@ -22,7 +22,6 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
-#include "gpu/ipc/scheduler_sequence.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gl/trace_util.h"
 
@@ -36,19 +35,6 @@ namespace {
 base::AtomicSequenceNumber g_next_display_resource_provider_tracing_id;
 
 }  // namespace
-
-class ScopedAllowGpuAccessForDisplayResourceProvider {
- public:
-  ~ScopedAllowGpuAccessForDisplayResourceProvider() = default;
-
-  explicit ScopedAllowGpuAccessForDisplayResourceProvider(
-      DisplayResourceProvider* provider) {
-    DCHECK(provider->can_access_gpu_thread_);
-  }
-
- private:
-  gpu::ScopedAllowScheduleGpuTask allow_gpu_;
-};
 
 class ScopedSetActiveTexture {
  public:
@@ -636,11 +622,8 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   if (unused.empty() && !child_info->marked_for_deletion)
     return;
 
-  // Store unused resources while batching is enabled or we can't access gpu
-  // thread right now.
-  // TODO(vasilyt): Technically we need to delay only resources with
-  // |image_context|.
-  if (batch_return_resources_lock_count_ > 0 || !can_access_gpu_thread_) {
+  // Store unused resources while batching is enabled.
+  if (batch_return_resources_lock_count_ > 0) {
     int child_id = child_it->first;
     // Ensure that we have an entry in |batched_returning_resources_| for child
     // even if |unused| is empty, in case child is marked for deletion.
@@ -746,7 +729,6 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 
   if (external_use_client_) {
     if (!image_contexts_to_return.empty()) {
-      ScopedAllowGpuAccessForDisplayResourceProvider allow_gpu(this);
       gpu::SyncToken sync_token = external_use_client_->ReleaseImageContexts(
           std::move(image_contexts_to_return));
       for (auto* resource : external_used_resources) {
@@ -800,27 +782,6 @@ void DisplayResourceProvider::DestroyChildInternal(ChildMap::iterator it,
   DeleteAndReturnUnusedResourcesToChild(it, style, resources_for_child);
 }
 
-void DisplayResourceProvider::TryFlushBatchedResources() {
-  if (batch_return_resources_lock_count_ == 0 && can_access_gpu_thread_) {
-    for (auto& child_resources_kv : batched_returning_resources_) {
-      auto child_it = children_.find(child_resources_kv.first);
-
-      // Remove duplicates from child's unused resources.  Duplicates are
-      // possible when batching is enabled because resources are saved in
-      // |batched_returning_resources_| for removal, and not removed from the
-      // child's |child_to_parent_map|, so the same set of resources can be
-      // saved again using DeclareUsedResourcesForChild() or DestroyChild().
-      auto& unused_resources = child_resources_kv.second;
-      std::sort(unused_resources.begin(), unused_resources.end());
-      auto last = std::unique(unused_resources.begin(), unused_resources.end());
-      unused_resources.erase(last, unused_resources.end());
-
-      DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL, unused_resources);
-    }
-    batched_returning_resources_.clear();
-  }
-}
-
 void DisplayResourceProvider::SetBatchReturnResources(bool batch) {
   if (batch) {
     DCHECK_GE(batch_return_resources_lock_count_, 0);
@@ -835,15 +796,25 @@ void DisplayResourceProvider::SetBatchReturnResources(bool batch) {
     if (batch_return_resources_lock_count_ == 0) {
       DCHECK(scoped_batch_read_access_);
       scoped_batch_read_access_.reset();
-      TryFlushBatchedResources();
-    }
-  }
-}
+      for (auto& child_resources_kv : batched_returning_resources_) {
+        auto child_it = children_.find(child_resources_kv.first);
 
-void DisplayResourceProvider::SetAllowAccessToGPUThread(bool allow) {
-  can_access_gpu_thread_ = allow;
-  if (allow) {
-    TryFlushBatchedResources();
+        // Remove duplicates from child's unused resources.  Duplicates are
+        // possible when batching is enabled because resources are saved in
+        // |batched_returning_resources_| for removal, and not removed from the
+        // child's |child_to_parent_map|, so the same set of resources can be
+        // saved again using DeclareUsedResourcesForChild() or DestroyChild().
+        auto& unused_resources = child_resources_kv.second;
+        std::sort(unused_resources.begin(), unused_resources.end());
+        auto last =
+            std::unique(unused_resources.begin(), unused_resources.end());
+        unused_resources.erase(last, unused_resources.end());
+
+        DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL,
+                                              unused_resources);
+      }
+      batched_returning_resources_.clear();
+    }
   }
 }
 
@@ -1142,18 +1113,6 @@ DisplayResourceProvider::ScopedBatchReadAccess::ScopedBatchReadAccess(
 DisplayResourceProvider::ScopedBatchReadAccess::~ScopedBatchReadAccess() {
   if (gl_)
     gl_->EndBatchReadAccessSharedImageCHROMIUM();
-}
-
-DisplayResourceProvider::ScopedAllowGPUThreadAccess::ScopedAllowGPUThreadAccess(
-    DisplayResourceProvider* resource_provider)
-    : resource_provider_(resource_provider),
-      was_allowed_(resource_provider->can_access_gpu_thread_) {
-  resource_provider_->SetAllowAccessToGPUThread(true);
-}
-
-DisplayResourceProvider::ScopedAllowGPUThreadAccess::
-    ~ScopedAllowGPUThreadAccess() {
-  resource_provider_->SetAllowAccessToGPUThread(was_allowed_);
 }
 
 }  // namespace viz

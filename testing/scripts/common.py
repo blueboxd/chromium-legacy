@@ -319,6 +319,9 @@ class BaseIsolatedScriptArgsAdapter(object):
   def clean_up_after_test_run(self):
     pass
 
+  def do_post_test_run_tasks(self):
+    pass
+
   def run_test(self):
     self.parse_args()
     cmd = self.generate_isolated_script_cmd()
@@ -339,6 +342,7 @@ class BaseIsolatedScriptArgsAdapter(object):
       else:
         exit_code = test_env.run_command(cmd, env=env)
       print 'Command returned exit code %d' % exit_code
+      self.do_post_test_run_tasks()
       return exit_code
     except Exception:
       traceback.print_exc()

@@ -22,9 +22,9 @@ plugins::PluginPlaceholder*
 NonLoadablePluginPlaceholder::CreateNotSupportedPlugin(
     content::RenderFrame* render_frame,
     const blink::WebPluginParams& params) {
-  const base::StringPiece template_html(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_BLOCKED_PLUGIN_HTML));
+  std::string template_html =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          IDR_BLOCKED_PLUGIN_HTML);
 
   base::DictionaryValue values;
   values.SetString("name", "");
@@ -46,9 +46,9 @@ plugins::PluginPlaceholder* NonLoadablePluginPlaceholder::CreateErrorPlugin(
   values.SetString("message",
                    l10n_util::GetStringUTF8(IDS_PLUGIN_INITIALIZATION_ERROR));
 
-  const base::StringPiece template_html(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_BLOCKED_PLUGIN_HTML));
+  std::string template_html =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          IDR_BLOCKED_PLUGIN_HTML);
   std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
 
   blink::WebPluginParams params;

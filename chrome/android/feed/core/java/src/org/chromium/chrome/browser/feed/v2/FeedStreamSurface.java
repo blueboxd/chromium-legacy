@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
+import android.view.View;
+
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -13,11 +18,15 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
+import org.chromium.components.feed.proto.FeedUiProto.Slice;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
+import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -27,8 +36,10 @@ import java.util.List;
  */
 @JNINamespace("feed")
 public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHandler {
+    private static final String TAG = "FeedStreamSurface";
     private final long mNativeFeedStreamSurface;
     private final ChromeActivity mActivity;
+    private final FeedListContentManager mContentManager;
 
     /**
      * Creates a {@link FeedStreamSurface} for creating native side bridge to access native feed
@@ -38,10 +49,15 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         mNativeFeedStreamSurface = FeedStreamSurfaceJni.get().init(FeedStreamSurface.this);
         mActivity = activity;
 
-        FeedListContentManager manager = new FeedListContentManager(this, this);
+        mContentManager = new FeedListContentManager(this, this);
 
         // TODO(jianli): Get HybridListRender in order to bind FeedListContentManager to it.
         // Then add the returned RecyclerView to NTP layout.
+    }
+
+    @VisibleForTesting
+    FeedListContentManager getFeedListContentManagerForTesting() {
+        return mContentManager;
     }
 
     /**
@@ -49,10 +65,81 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      */
     @CalledByNative
     void onStreamUpdated(byte[] data) {
+        StreamUpdate streamUpdate;
         try {
-            StreamUpdate streamUpdate = StreamUpdate.parseFrom(data);
+            streamUpdate = StreamUpdate.parseFrom(data);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            // Consume exception for now, ignoring unparsable events.
+            Log.wtf(TAG, "Unable to parse StreamUpdate proto data", e);
+            return;
+        }
+
+        // 1) Builds the hash map of existing content list for fast look up by slice id.
+        HashMap<String, FeedListContentManager.FeedContent> existingContentMap =
+                new HashMap<String, FeedListContentManager.FeedContent>();
+        for (int i = 0; i < mContentManager.getItemCount(); ++i) {
+            FeedListContentManager.FeedContent content = mContentManager.getContent(i);
+            existingContentMap.put(content.getKey(), content);
+        }
+
+        // 2) Builds the new list containing both new and existing contents.
+        ArrayList<FeedListContentManager.FeedContent> newContentList =
+                new ArrayList<FeedListContentManager.FeedContent>();
+        HashSet<String> existingIdsInNewContentList = new HashSet<String>();
+        for (SliceUpdate sliceUpdate : streamUpdate.getUpdatedSlicesList()) {
+            if (sliceUpdate.hasSlice()) {
+                newContentList.add(createContentFromSlice(sliceUpdate.getSlice()));
+            } else {
+                String existingSliceId = sliceUpdate.getSliceId();
+                FeedListContentManager.FeedContent content =
+                        existingContentMap.get(existingSliceId);
+                if (content != null) {
+                    newContentList.add(content);
+                    existingIdsInNewContentList.add(existingSliceId);
+                }
+            }
+        }
+
+        // 3) Removes those contents that do not appear in the new list.
+        for (int i = mContentManager.getItemCount() - 1; i >= 0; --i) {
+            String id = mContentManager.getContent(i).getKey();
+            if (!existingIdsInNewContentList.contains(id)) {
+                mContentManager.removeContents(i, 1);
+            }
+        }
+
+        // 4) Iterates through the new list to add the new content or move the existing content
+        //    if needed.
+        int i = 0;
+        while (i < newContentList.size()) {
+            FeedListContentManager.FeedContent content = newContentList.get(i);
+
+            // If this is an existing content, moves it to new position.
+            if (existingContentMap.containsKey(content.getKey())) {
+                mContentManager.moveContent(
+                        mContentManager.findContentPositionByKey(content.getKey()), i);
+                ++i;
+                continue;
+            }
+
+            // Otherwise, this is new content. Add it together with all adjacent new contents.
+            int startIndex = i++;
+            while (i < newContentList.size()
+                    && !existingContentMap.containsKey(newContentList.get(i).getKey())) {
+                ++i;
+            }
+            mContentManager.addContents(startIndex, newContentList.subList(startIndex, i));
+        }
+    }
+
+    private FeedListContentManager.FeedContent createContentFromSlice(Slice slice) {
+        String sliceId = slice.getSliceId();
+        if (slice.hasXsurfaceSlice()) {
+            return new FeedListContentManager.ExternalViewContent(
+                    sliceId, slice.getXsurfaceSlice().getXsurfaceFrame().toByteArray());
+        } else {
+            // TODO(jianli): Create native view for ZeroStateSlice.
+            View view = null;
+            return new FeedListContentManager.NativeViewContent(sliceId, view);
         }
     }
 

@@ -62,7 +62,6 @@ class WidgetTest : public ViewsTestBase {
   // still provide one.
   Widget* CreateTopLevelNativeWidget();
   Widget* CreateChildNativeWidgetWithParent(Widget* parent);
-  Widget* CreateChildNativeWidget();
 
   View* GetMousePressedHandler(internal::RootView* root_view);
 

@@ -1,7 +1,6 @@
 include_rules = [
   "+chromecast/common/mojom",
   "+content/public/browser/browser_thread.h",
-  "+content/public/common/service_manager_connection.h",
   "+content/public/test/browser_task_environment.h",
   "+content/public/test/test_browser_thread.h",
   "+content/public/test/test_utils.h",

@@ -2140,7 +2140,7 @@ TEST_F(DnsTransactionTest, SuccessfulTransactionStartedBeforeUnavailable) {
 }
 
 void MakeResponseWithCookie(URLRequest* request, HttpResponseInfo* info) {
-  info->headers->AddHeader("Set-Cookie: test-cookie=you-fail");
+  info->headers->AddHeader("Set-Cookie", "test-cookie=you-fail");
 }
 
 class CookieCallback {
@@ -2247,7 +2247,7 @@ TEST_F(DnsTransactionTest, HttpsPostWithBadRequestResponse) {
 
 void MakeResponseWrongType(URLRequest* request, HttpResponseInfo* info) {
   info->headers->RemoveHeader("Content-Type");
-  info->headers->AddHeader("Content-Type: text/html");
+  info->headers->AddHeader("Content-Type", "text/html");
 }
 
 TEST_F(DnsTransactionTest, HttpsPostWithWrongType) {
@@ -2265,8 +2265,8 @@ TEST_F(DnsTransactionTest, HttpsPostWithWrongType) {
 void MakeResponseRedirect(URLRequest* request, HttpResponseInfo* info) {
   if (request->url_chain().size() < 2) {
     info->headers->ReplaceStatusLine("HTTP/1.1 302 Found");
-    info->headers->AddHeader("Location: /redirect-destination?" +
-                             request->url().query());
+    info->headers->AddHeader("Location",
+                             "/redirect-destination?" + request->url().query());
   }
 }
 

@@ -26,7 +26,7 @@ async_test(t => {
     function drawFirstFrame() {
       video.removeEventListener("canplaythrough", drawFirstFrame, true);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      video.requestAnimationFrame(t.step_func(processFirstFrame));
+      video.requestVideoFrameCallback(t.step_func(processFirstFrame));
       video.play();
     }
 
@@ -35,7 +35,7 @@ async_test(t => {
     function processFirstFrame() {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       referenceImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      video.requestAnimationFrame(t.step_func_done(processSecondFrame));
+      video.requestVideoFrameCallback(t.step_func_done(processSecondFrame));
     }
 
     function processSecondFrame() {

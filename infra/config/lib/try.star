@@ -12,6 +12,8 @@ The `defaults` struct provides module-level defaults for the arguments to
 corresponding attribute on `defaults` that is a `lucicfg.var` that can be used
 to set the default value. Can also be accessed through `try_.defaults`.
 """
+load('@stdlib//internal/graph.star', 'graph')
+load('@stdlib//internal/luci/common.star', 'keys')
 
 load('./builders.star', 'builders')
 load('./args.star', 'args')
@@ -19,8 +21,49 @@ load('./args.star', 'args')
 
 defaults = args.defaults(
     extends=builders.defaults,
+    add_to_list_view = False,
     cq_group = None,
+    list_view = args.COMPUTE,
+    main_list_view = None,
 )
+
+
+def _sorted_list_view_graph_key(console_name):
+  return graph.key('@chromium', '', 'sorted_list_view', console_name)
+
+
+def _sorted_list_view_impl(ctx, *, console_name):
+  key = _sorted_list_view_graph_key(console_name)
+  graph.add_node(key)
+  graph.add_edge(keys.project(), key)
+  return graph.keyset(key)
+
+_sorted_list_view = lucicfg.rule(impl=_sorted_list_view_impl)
+
+
+def _sort_consoles(ctx):
+  milo = ctx.output['luci-milo.cfg']
+  for console in milo.consoles:
+    graph_key = _sorted_list_view_graph_key(console.id)
+    node = graph.node(graph_key)
+    if node:
+      console.builders = sorted(console.builders, lambda b: list(b.name))
+  milo.consoles = sorted(milo.consoles, lambda c: c.id)
+
+lucicfg.generator(_sort_consoles)
+
+
+def list_view(*, name, **kwargs):
+  ret = luci.list_view(
+      name = name,
+      **kwargs
+  )
+
+  _sorted_list_view(
+      console_name = name,
+  )
+
+  return ret
 
 
 def tryjob(
@@ -47,14 +90,34 @@ def tryjob(
   )
 
 
-def try_builder(*, name, cq_group=args.DEFAULT, tryjob=None, **kwargs):
+def try_builder(
+    *,
+    name,
+    add_to_list_view=args.DEFAULT,
+    cq_group=args.DEFAULT,
+    list_view=args.DEFAULT,
+    main_list_view = args.DEFAULT,
+    tryjob=None,
+    **kwargs):
   """Define a try builder.
 
   Arguments:
-    * name - name of the builder, will show up in UIs and logs. Required.
-    * cq_group - The CQ group to add the builder to. If tryjob is None, it will
+    name - name of the builder, will show up in UIs and logs. Required.
+    add_to_list_view - A bool indicating whether an entry should be
+      created for the builder in the console identified by
+      `list_view`. Supports a module-level default that defaults to
+      False.
+    cq_group - The CQ group to add the builder to. If tryjob is None, it will
       be added as includable_only.
-    * tryjob - A struct containing the details of the tryjob verifier for the
+    list_view - A string identifying the ID of the list view to
+      add an entry to. Supports a module-level default that defaults to
+      the mastername of the builder, if provided. An entry will be added
+      only if `add_to_list_view` is True.
+    main_console_view - A string identifying the ID of the main list
+      view to add an entry to. Supports a module-level default that
+      defaults to None. Note that `add_to_list_view` has no effect on
+      creating an entry to the main list view.
+    tryjob - A struct containing the details of the tryjob verifier for the
       builder, obtained by calling the `tryjob` function.
   """
   # Define the builder first so that any validation of luci.builder arguments
@@ -65,10 +128,11 @@ def try_builder(*, name, cq_group=args.DEFAULT, tryjob=None, **kwargs):
   )
 
   bucket = defaults.get_value_from_kwargs('bucket', kwargs)
+  builder = '{}/{}'.format(bucket, name)
   cq_group = defaults.get_value('cq_group', cq_group)
   if tryjob != None:
     luci.cq_tryjob_verifier(
-        builder = '{}/{}'.format(bucket, name),
+        builder = builder,
         cq_group = cq_group,
         disable_reuse = tryjob.disable_reuse,
         experiment_percentage = tryjob.experiment_percentage,
@@ -78,9 +142,31 @@ def try_builder(*, name, cq_group=args.DEFAULT, tryjob=None, **kwargs):
   else:
     # Allow CQ to trigger this builder if user opts in via CQ-Include-Trybots.
     luci.cq_tryjob_verifier(
-        builder = '{}/{}'.format(bucket, name),
+        builder = builder,
         cq_group = cq_group,
         includable_only = True,
+    )
+
+  add_to_list_view = defaults.get_value('add_to_list_view', add_to_list_view)
+  if add_to_list_view:
+    list_view = defaults.get_value('list_view', list_view)
+    if list_view == args.COMPUTE:
+      list_view = defaults.get_value_from_kwargs('mastername', kwargs)
+
+    if list_view:
+      add_to_list_view = defaults.get_value(
+          'add_to_list_view', add_to_list_view)
+
+      luci.list_view_entry(
+          builder = builder,
+          list_view = list_view,
+      )
+
+  main_list_view = defaults.get_value('main_list_view', main_list_view)
+  if main_list_view:
+    luci.list_view_entry(
+        builder = builder,
+        list_view = main_list_view,
     )
 
   return ret
@@ -309,6 +395,7 @@ try_ = struct(
     defaults = defaults,
     builder = try_builder,
     job = tryjob,
+    list_view = list_view,
 
     blink_builder = blink_builder,
     blink_mac_builder = blink_mac_builder,

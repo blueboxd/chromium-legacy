@@ -589,6 +589,17 @@ CA_NAME="req_ca_dn" \
     -out ../certificates/900_days_after_2019_07_01.pem \
     -config ca.cnf
 
+## Certificates for testing EV display (DN set with different variations)
+SUBJECT_NAME="req_ev_dn" \
+  openssl req -x509 -days ${CERT_LIFETIME} \
+    --config ../scripts/ee.cnf -newkey rsa:2048 -text \
+    -out ../certificates/ev_test.pem
+
+SUBJECT_NAME="req_ev_state_only_dn" \
+  openssl req -x509 -days ${CERT_LIFETIME} \
+    --config ../scripts/ee.cnf -newkey rsa:2048 -text \
+    -out ../certificates/ev_test_state_only.pem
+
 # Regenerate CRLSets
 ## Block a leaf cert directly by SPKI
 python crlsetutil.py -o ../certificates/crlset_by_leaf_spki.raw \

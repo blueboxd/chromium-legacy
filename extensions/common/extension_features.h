@@ -9,6 +9,9 @@
 
 namespace extensions_features {
 
+extern const base::Feature kDisableMalwareExtensionsRemotely;
+
+// Extension check up related features.
 extern const base::Feature kExtensionsCheckup;
 extern const char kExtensionsCheckupEntryPointParameter[];
 extern const char kExtensionsCheckupBannerMessageParameter[];

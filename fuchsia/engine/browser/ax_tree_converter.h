@@ -18,4 +18,10 @@
 WEB_ENGINE_EXPORT fuchsia::accessibility::semantics::Node
 AXNodeDataToSemanticNode(const ui::AXNodeData& node);
 
+// Converts Fuchsia action of type |fuchsia_action| to an ax::mojom action of
+// type |mojom_action|. Function will return true if |fuchsia_action| is
+// supported in Chromium.
+bool ConvertAction(fuchsia::accessibility::semantics::Action fuchsia_action,
+                   ax::mojom::Action* mojom_action);
+
 #endif  // FUCHSIA_ENGINE_BROWSER_AX_TREE_CONVERTER_H_

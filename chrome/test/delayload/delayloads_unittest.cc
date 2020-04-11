@@ -130,7 +130,13 @@ TEST_F(DelayloadsTest, ChromeDllDelayloadsCheck) {
   }
 }
 
-TEST_F(DelayloadsTest, ChromeDllLoadSanityTest) {
+// Flaking on ASAN: https://crbug.com/1047723
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ChromeDllLoadSanityTest DISABLED_ChromeDllLoadSanityTest
+#else
+#define MAYBE_ChromeDllLoadSanityTest ChromeDllLoadSanityTest
+#endif
+TEST_F(DelayloadsTest, MAYBE_ChromeDllLoadSanityTest) {
   // As a precaution to avoid affecting other tests, we need to ensure this is
   // executed in its own test process. This "test" will re-launch with custom
   // parameters to accomplish that.

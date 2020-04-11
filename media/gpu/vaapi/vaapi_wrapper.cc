@@ -525,24 +525,6 @@ VAStatus VADisplayState::Deinitialize() {
   return va_res;
 }
 
-VAEntrypoint GetDefaultVaEntryPoint(VaapiWrapper::CodecMode mode,
-                                    VAProfile profile) {
-  switch (mode) {
-    case VaapiWrapper::kDecode:
-      return VAEntrypointVLD;
-    case VaapiWrapper::kEncode:
-      if (profile == VAProfileJPEGBaseline)
-        return VAEntrypointEncPicture;
-      else
-        return VAEntrypointEncSlice;
-    case VaapiWrapper::kVideoProcess:
-      return VAEntrypointVideoProc;
-    case VaapiWrapper::kCodecModeMax:
-      NOTREACHED();
-      return VAEntrypointVLD;
-  }
-}
-
 std::vector<VAEntrypoint> GetEntryPointsForProfile(const base::Lock* va_lock,
                                                    VADisplay va_display,
                                                    VaapiWrapper::CodecMode mode,
@@ -569,18 +551,19 @@ std::vector<VAEntrypoint> GetEntryPointsForProfile(const base::Lock* va_lock,
   supported_entrypoints.resize(num_supported_entrypoints);
 
   // Filter out VAEntrypoints that are not used in Chrome.
-  constexpr VAEntrypoint kSupportedEntryPoints[] = {
-      VAEntrypointVLD,         // for video/jpeg decoding.
-      VAEntrypointEncSlice,    // for encoding.
-      VAEntrypointEncPicture,  // for JPEG encoding.
-      VAEntrypointEncSliceLP,  // for Low Power encoding.
-      VAEntrypointVideoProc,   // for pre/post-processing.
-  };
+  std::vector<VAEntrypoint>
+      whitelisted_entrypoints[VaapiWrapper::CodecMode::kCodecModeMax] = {
+          {VAEntrypointVLD},  // For kDecode.
+          {VAEntrypointEncSlice, VAEntrypointEncPicture,
+           VAEntrypointEncSliceLP},  // For kEncode.
+          {VAEntrypointVideoProc}    // For kVideoProcess.
+      };
   std::vector<VAEntrypoint> entrypoints;
   std::copy_if(supported_entrypoints.begin(), supported_entrypoints.end(),
                std::back_inserter(entrypoints),
-               [&kSupportedEntryPoints](VAEntrypoint entry_point) {
-                 return base::Contains(kSupportedEntryPoints, entry_point);
+               [&whitelisted_entrypoints, mode](VAEntrypoint entrypoint) {
+                 return base::Contains(whitelisted_entrypoints[mode],
+                                       entrypoint);
                });
   return entrypoints;
 }
@@ -1445,6 +1428,37 @@ bool VaapiWrapper::IsImageFormatSupported(const VAImageFormat& format) {
 const std::vector<VAImageFormat>&
 VaapiWrapper::GetSupportedImageFormatsForTesting() {
   return VASupportedImageFormats::Get().GetSupportedImageFormats();
+}
+
+// static
+std::map<VAProfile, std::vector<VAEntrypoint>>
+VaapiWrapper::GetSupportedConfigurationsForCodecModeForTesting(CodecMode mode) {
+  const std::vector<VASupportedProfiles::ProfileInfo>& profile_infos =
+      VASupportedProfiles::Get().GetSupportedProfileInfosForCodecMode(mode);
+  std::map<VAProfile, std::vector<VAEntrypoint>> configurations;
+  for (const auto& info : profile_infos) {
+    configurations[info.va_profile].push_back(info.va_entrypoint);
+  }
+  return configurations;
+}
+
+// static
+VAEntrypoint VaapiWrapper::GetDefaultVaEntryPoint(CodecMode mode,
+                                                  VAProfile profile) {
+  switch (mode) {
+    case VaapiWrapper::kDecode:
+      return VAEntrypointVLD;
+    case VaapiWrapper::kEncode:
+      if (profile == VAProfileJPEGBaseline)
+        return VAEntrypointEncPicture;
+      else
+        return VAEntrypointEncSlice;
+    case VaapiWrapper::kVideoProcess:
+      return VAEntrypointVideoProc;
+    case VaapiWrapper::kCodecModeMax:
+      NOTREACHED();
+      return VAEntrypointVLD;
+  }
 }
 
 // static

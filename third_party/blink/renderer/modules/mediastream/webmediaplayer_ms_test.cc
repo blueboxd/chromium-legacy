@@ -635,7 +635,7 @@ class WebMediaPlayerMSTest
   MOCK_METHOD1(CheckSizeChanged, void(gfx::Size));
   MOCK_CONST_METHOD0(DisplayType, WebMediaPlayer::DisplayType());
   MOCK_CONST_METHOD0(CouldPlayIfEnoughData, bool());
-  MOCK_METHOD0(OnRequestAnimationFrame, void());
+  MOCK_METHOD0(OnRequestVideoFrameCallback, void());
 
   std::unique_ptr<WebSurfaceLayerBridge> CreateMockSurfaceLayerBridge(
       WebSurfaceLayerBridgeObserver*,
@@ -1374,7 +1374,7 @@ TEST_P(WebMediaPlayerMSTest, HiddenPlayerTests) {
 }
 #endif
 
-TEST_P(WebMediaPlayerMSTest, RequestAnimationFrame) {
+TEST_P(WebMediaPlayerMSTest, RequestVideoFrameCallback) {
   InitializeWebMediaPlayerMS();
 
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
@@ -1385,8 +1385,8 @@ TEST_P(WebMediaPlayerMSTest, RequestAnimationFrame) {
   provider->QueueFrames(timestamps);
 
   // Verify a basic call to RAF.
-  player_->RequestAnimationFrame();
-  EXPECT_CALL(*this, OnRequestAnimationFrame()).Times(1);
+  player_->RequestVideoFrameCallback();
+  EXPECT_CALL(*this, OnRequestVideoFrameCallback()).Times(1);
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
 
@@ -1397,11 +1397,11 @@ TEST_P(WebMediaPlayerMSTest, RequestAnimationFrame) {
   testing::Mock::VerifyAndClearExpectations(this);
 
   // Make sure multiple calls to RAF only result in one call per frame to OnRAF.
-  player_->RequestAnimationFrame();
-  player_->RequestAnimationFrame();
-  player_->RequestAnimationFrame();
+  player_->RequestVideoFrameCallback();
+  player_->RequestVideoFrameCallback();
+  player_->RequestVideoFrameCallback();
 
-  EXPECT_CALL(*this, OnRequestAnimationFrame()).Times(1);
+  EXPECT_CALL(*this, OnRequestVideoFrameCallback()).Times(1);
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
   testing::Mock::VerifyAndClearExpectations(this);
@@ -1419,18 +1419,18 @@ TEST_P(WebMediaPlayerMSTest, GetVideoFramePresentationMetadata) {
 
   // Chain calls to video.rAF.
   int num_frames = 3;
-  player_->RequestAnimationFrame();
+  player_->RequestVideoFrameCallback();
 
   // Verify that the presentation frame counter is monotonically increasing.
   // Queue up a rAF call immediately after each frame.
   int last_frame_counter = -1;
-  EXPECT_CALL(*this, OnRequestAnimationFrame())
+  EXPECT_CALL(*this, OnRequestVideoFrameCallback())
       .Times(num_frames)
       .WillRepeatedly([&]() {
         auto metadata = player_->GetVideoFramePresentationMetadata();
         EXPECT_GT((int)metadata->presented_frames, last_frame_counter);
         last_frame_counter = metadata->presented_frames;
-        player_->RequestAnimationFrame();
+        player_->RequestVideoFrameCallback();
       });
 
   // Wait for each of the frame/kTestBreak pairs.

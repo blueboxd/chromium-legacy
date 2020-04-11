@@ -117,7 +117,7 @@ class PrioritizedDispatcherTest : public testing::Test {
       dispatcher_->OnJobFinished();
     }
 
-    // PriorityDispatch::Job interface
+    // PrioritizedDispatcher::Job interface
     void Start() override {
       EXPECT_FALSE(running_);
       handle_ = PrioritizedDispatcher::Handle();

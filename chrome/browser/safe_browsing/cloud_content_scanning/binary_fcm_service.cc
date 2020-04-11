@@ -74,10 +74,6 @@ BinaryFCMService::BinaryFCMService()
 BinaryFCMService::~BinaryFCMService() {
   if (gcm_driver_ != nullptr)
     gcm_driver_->RemoveAppHandler(kBinaryFCMServiceAppId);
-  for (const auto& token_to_callback : message_token_map_) {
-    const std::string& token = token_to_callback.first;
-    UnregisterInstanceID(token, base::DoNothing());
-  }
 }
 
 void BinaryFCMService::GetInstanceID(GetInstanceIDCallback callback) {

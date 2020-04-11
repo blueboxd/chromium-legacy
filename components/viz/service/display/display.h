@@ -115,10 +115,6 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void SetVisible(bool visible);
   void Resize(const gfx::Size& new_size);
 
-  // This disallows resource provider to access GPU thread to unlock resources
-  // outside of Initialize, DrawAndSwap and dtor.
-  void DisableGPUAccessByDefault();
-
   // Stop drawing until Resize() is called with a new size. If the display
   // hasn't drawn a frame at the current size *and* it's possible to immediately
   // draw then this will run DrawAndSwap() first.

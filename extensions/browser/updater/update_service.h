@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/update_client/update_client.h"
 
@@ -106,6 +107,9 @@ class UpdateService : public KeyedService,
       update_client::UpdateClient::Observer* observer);
   void HandleComponentUpdateErrorEvent(const std::string& extension_id) const;
   void HandleComponentUpdateFoundEvent(const std::string& extension_id) const;
+
+  // Get the extension Omaha attributes sent from update config.
+  base::Value GetExtensionOmahaAttributes(const std::string& extension_id);
 
  private:
   content::BrowserContext* browser_context_;

@@ -26,8 +26,6 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_names.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 LoginScreenClient* g_login_screen_client_instance = nullptr;

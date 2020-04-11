@@ -180,9 +180,9 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   virtual void OnPictureInPictureStateChange() = 0;
 
   // Called when a video frame has been presented to the compositor, after a
-  // request was initiated via WebMediaPlayer::RequestAnimationFrame().
+  // request was initiated via WebMediaPlayer::RequestVideoFrameCallback().
   // See https://wicg.github.io/video-raf/.
-  virtual void OnRequestAnimationFrame() {}
+  virtual void OnRequestVideoFrameCallback() {}
 
   struct Features {
     WebString id;

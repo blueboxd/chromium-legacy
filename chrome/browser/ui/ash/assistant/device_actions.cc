@@ -23,7 +23,6 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/types/display_constants.h"
 
 using chromeos::NetworkHandler;

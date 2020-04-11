@@ -25,6 +25,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -2577,6 +2578,7 @@ const char* BrowserView::GetClassName() const {
 }
 
 void BrowserView::Layout() {
+  TRACE_EVENT0("ui", "BrowserView::Layout");
   if (!initialized_ || in_process_fullscreen_)
     return;
 
@@ -2804,6 +2806,7 @@ void BrowserView::InfoBarContainerStateChanged(bool is_animating) {
 
 void BrowserView::MaybeInitializeWebUITabStrip() {
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  TRACE_EVENT0("ui", "BrowserView::MaybeInitializeWebUITabStrip");
   if (browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) &&
       WebUITabStripContainerView::UseTouchableTabStrip()) {
     if (!webui_tab_strip_) {

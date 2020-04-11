@@ -376,6 +376,13 @@
           'expiration': 18000,
           'hard_timeout': 14400,
         },
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'results_handler': 'layout tests',
       },
     },
 
@@ -3507,6 +3514,13 @@
           'expiration': 18000,
           'hard_timeout': 14400,
         },
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'results_handler': 'layout tests',
       },
     },
 
@@ -3561,6 +3575,13 @@
           'expiration': 18000,
           'hard_timeout': 14400,
         },
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'results_handler': 'layout tests',
       },
     },
 

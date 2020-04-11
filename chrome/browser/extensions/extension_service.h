@@ -76,6 +76,18 @@ class SharedModuleService;
 class UpdateObserver;
 enum class UnloadedExtensionReason;
 
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "ExtensionUpdateCheckDataKey" in src/tools/metrics/histograms/enums.xml.
+enum class ExtensionUpdateCheckDataKey {
+  // No update check data keys were found so no action was taken.
+  kNoKey = 0,
+  // The update check daya keys had a "_malware" key resulting in the extension
+  // being disabled.
+  kMalware = 1,
+  kMaxValue = kMalware
+};
+
 // This is an interface class to encapsulate the dependencies that
 // various classes have on ExtensionService. This allows easy mocking.
 class ExtensionServiceInterface
@@ -245,9 +257,13 @@ class ExtensionService : public ExtensionServiceInterface,
                           UninstallReason reason,
                           base::string16* error);
 
-  // Enables the extension.  If the extension is already enabled, does
+  // Enables the extension. If the extension is already enabled, does
   // nothing.
   void EnableExtension(const std::string& extension_id);
+
+  // Performs action based on Omaha attributes for the extension.
+  void PerformActionBasedOnOmahaAttributes(const std::string& extension_id,
+                                           const base::Value& attributes);
 
   // Disables the extension. If the extension is already disabled, just adds
   // the |disable_reasons| (a bitmask of disable_reason::DisableReason - there
@@ -517,6 +533,9 @@ class ExtensionService : public ExtensionServiceInterface,
 
   // Helper method to determine if an extension can be blocked.
   bool CanBlockExtension(const Extension* extension) const;
+
+  // Enables an extension that was only previously disabled remotely.
+  void MaybeEnableRemotelyDisabledExtension(const std::string& extension_id);
 
   // Helper to determine if installing an extensions should proceed immediately,
   // or if we should delay the install until further notice, or if the install

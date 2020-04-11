@@ -1205,6 +1205,8 @@ bool NGBlockNode::IsAtomicInlineLevel() const {
 }
 
 bool NGBlockNode::HasAspectRatio() const {
+  if (Style().AspectRatio().has_value())
+    return true;
   LayoutBox* layout_object = GetLayoutBox();
   if (!layout_object->IsImage() && !IsA<LayoutVideo>(layout_object) &&
       !layout_object->IsCanvas() && !layout_object->IsSVGRoot()) {
@@ -1217,6 +1219,15 @@ bool NGBlockNode::HasAspectRatio() const {
 }
 
 LogicalSize NGBlockNode::GetAspectRatio() const {
+  // The CSS parser will ensure that this will only be set if the feature
+  // is enabled.
+  const base::Optional<IntSize>& ratio = Style().AspectRatio();
+  if (ratio.has_value()) {
+    PhysicalSize physical_ratio(LayoutUnit(ratio->Width()),
+                                LayoutUnit(ratio->Height()));
+    return physical_ratio.ConvertToLogical(Style().GetWritingMode());
+  }
+
   base::Optional<LayoutUnit> computed_inline_size;
   base::Optional<LayoutUnit> computed_block_size;
   GetOverrideIntrinsicSize(&computed_inline_size, &computed_block_size);

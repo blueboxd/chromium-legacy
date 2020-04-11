@@ -1041,6 +1041,8 @@ jumbo_component("platform") {
     "graphics/paint/graphics_layer_display_item.h",
     "graphics/paint/hit_test_data.cc",
     "graphics/paint/hit_test_data.h",
+    "graphics/paint/ignore_paint_timing_scope.cc",
+    "graphics/paint/ignore_paint_timing_scope.h",
     "graphics/paint/paint_artifact.cc",
     "graphics/paint/paint_artifact.h",
     "graphics/paint/paint_canvas.h",

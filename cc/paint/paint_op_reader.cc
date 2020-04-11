@@ -1103,8 +1103,8 @@ void PaintOpReader::ReadMorphologyPaintFilter(
     sk_sp<PaintFilter>* filter,
     const base::Optional<PaintFilter::CropRect>& crop_rect) {
   uint32_t morph_type_int = 0;
-  int radius_x = 0;
-  int radius_y = 0;
+  float radius_x = 0;
+  float radius_y = 0;
   sk_sp<PaintFilter> input;
   Read(&morph_type_int);
   Read(&radius_x);

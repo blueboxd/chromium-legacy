@@ -58,7 +58,7 @@ TEST_F(NativeWidgetAuraTest, NonActiveWindowRequestImeFocus) {
   Widget::InitParams params1(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params1.context = GetContext();
   params1.native_widget =
-      CreatePlatformNativeWidgetImpl(params1, widget1, kDefault, nullptr);
+      CreatePlatformNativeWidgetImpl(widget1, kDefault, nullptr);
   params1.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget1->Init(std::move(params1));
   Textfield* textfield1 = new Textfield;
@@ -68,7 +68,7 @@ TEST_F(NativeWidgetAuraTest, NonActiveWindowRequestImeFocus) {
   Widget::InitParams params2(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params2.context = GetContext();
   params2.native_widget =
-      CreatePlatformNativeWidgetImpl(params2, widget2, kDefault, nullptr);
+      CreatePlatformNativeWidgetImpl(widget2, kDefault, nullptr);
   params2.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget2->Init(std::move(params2));
   Textfield* textfield2a = new Textfield;

@@ -63,8 +63,6 @@ bool IsBackgroundImageContentful(const LayoutObject& object,
 
 }  // namespace
 
-bool IgnorePaintTimingScope::should_ignore_ = false;
-
 PaintTimingDetector::PaintTimingDetector(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       text_paint_timing_detector_(

@@ -19,6 +19,7 @@
         --cr-toolbar-field-width: 480px;
         --cr-toolbar-icon-container-size: 32px;
         --cr-toolbar-icon-margin: 6px 12px;
+        --separator-height: 8px;
         display: flex;
         flex-basis: var(--cr-toolbar-field-width);
         flex-direction: row;
@@ -39,7 +40,6 @@
         --cr-toolbar-search-field-border-radius: 20px;
         --cr-toolbar-search-field-paper-spinner-margin: 0 12px;
         --cr-toolbar-search-field-prompt-margin-inline-start: 140px;
-        transition: height 150ms;
       }
 
       :host(:focus-within) cr-toolbar-search-field {
@@ -48,8 +48,8 @@
 
       :host(:focus-within[should-show-dropdown_]) cr-toolbar-search-field {
         --cr-toolbar-search-field-border-radius: 20px 20px 0 0;
-        border-bottom: var(--cr-separator-line);
-        height: 48px;
+        height: 56px;
+        margin-top: var(--separator-height);
       }
 
       :host(:focus-within:not([narrow])) cr-toolbar-search-field {
@@ -66,7 +66,7 @@
         border-radius: 0 0 20px 20px;
         box-shadow: var(--cr-menu-shadow);
         display: table;
-        padding: 8px 0 12px 0;
+        padding-bottom: 16px;
       }
 
       :host([narrow]) iron-dropdown [slot='dropdown-content'] {
@@ -74,11 +74,38 @@
       }
 
       :host(:not([narrow])) iron-dropdown [slot='dropdown-content'] {
-        width: var(--cr-toolbar-field-width, 680px);
+        width: var(--cr-toolbar-field-width);
       }
 
       :host([narrow]) os-search-result-row {
         --cr-toolbar-icon-margin: 6px 12px 6px 18px;
+      }
+
+      #noSearchResultsContainer {
+        height: 24px;
+        margin-top: var(--separator-height);
+      }
+
+      :host(:not([narrow])) #noSearchResultsContainer {
+        margin-inline-start: 56px;
+      }
+
+      :host([narrow]) #noSearchResultsContainer {
+        margin-inline-start: 62px;
+      }
+
+      /* The separator covers the top box shadow of the dropdown so that
+       * var(--cr-menu-shadow) can be used instead of custom values. */
+      .separator {
+        background-color: var(--cr-menu-background-color);
+        border-bottom: none;
+        border-inline-end: none;
+        border-inline-start: none;
+        border-top: 2px solid var(--cr-separator-color);
+        height: var(--separator-height);
+        margin-inline-end: 0;
+        margin-inline-start: 0;
+        margin-top: calc(-1*var(--separator-height));
       }
     </style>
     <cr-toolbar-search-field id="search" narrow="[[narrow]]"
@@ -91,6 +118,7 @@
             hidden until iron-dropdown's opened attribute is set true, or when
             iron-dropdown's open() is called on the JS side. -->
       <div slot="dropdown-content">
+        <div class="separator"></div>
         <iron-list id="searchResultList" selection-enabled
             items="[[searchResults_]]" selected-item="{{selectedItem_}}"
             on-selected-item-changed="onSelectedItemChanged_">
@@ -109,6 +137,9 @@
             </os-search-result-row>
           </template>
         </iron-list>
+        <div id="noSearchResultsContainer" hidden="[[searchResultsExist_]]">
+          $i18n{searchNoResults}
+        </div>
       </div>
     </iron-dropdown>
   </template>

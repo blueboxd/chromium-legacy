@@ -594,4 +594,13 @@ void ContentBrowserClientImpl::AppendExtraCommandLineSwitches(
   }
 }
 
+#if defined(OS_ANDROID)
+content::ContentBrowserClient::WideColorGamutHeuristic
+ContentBrowserClientImpl::GetWideColorGamutHeuristic() {
+  // Always match window since a mismatch can cause inefficiency in surface
+  // flinger.
+  return WideColorGamutHeuristic::kUseWindow;
+}
+#endif  // OS_ANDROID
+
 }  // namespace weblayer

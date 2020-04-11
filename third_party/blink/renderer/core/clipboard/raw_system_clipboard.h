@@ -5,10 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_RAW_SYSTEM_CLIPBOARD_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_RAW_SYSTEM_CLIPBOARD_H_
 
-#include "mojo/public/cpp/bindings/remote.h"  // For mojo::Remote<T>
 #include "third_party/blink/public/mojom/clipboard/raw_clipboard.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 // RawSystemClipboard:
 // - is a singleton.
@@ -30,10 +31,12 @@ class CORE_EXPORT RawSystemClipboard final
 
   void Write(const String& type, mojo_base::BigBuffer data);
   void CommitWrite();
-  void Trace(Visitor*) {}
+  void Trace(Visitor*);
 
  private:
-  mojo::Remote<mojom::blink::RawClipboardHost> clipboard_;
+  HeapMojoRemote<mojom::blink::RawClipboardHost,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      clipboard_;
 };
 
 }  // namespace blink

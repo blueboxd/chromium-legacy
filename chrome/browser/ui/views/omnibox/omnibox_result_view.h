@@ -27,6 +27,7 @@
 
 class OmniboxMatchCellView;
 class OmniboxPopupContentsView;
+class OmniboxSuggestionButtonRowView;
 class OmniboxTabSwitchButton;
 enum class OmniboxPart;
 enum class OmniboxPartState;
@@ -38,7 +39,6 @@ class Image;
 namespace views {
 class Button;
 class FocusRing;
-class MdTextButton;
 }  // namespace views
 
 class OmniboxResultView : public views::View,
@@ -168,14 +168,8 @@ class OmniboxResultView : public views::View,
   OmniboxTabSwitchButton* suggestion_tab_switch_button_;
 
   // The row of buttons, only assigned and used if OmniboxSuggestionButtonRow
-  // feature is enabled.
-  views::View* button_row_ = nullptr;
-  views::MdTextButton* keyword_button_ = nullptr;
-  views::MdTextButton* pedal_button_ = nullptr;
-  views::MdTextButton* tab_switch_button_ = nullptr;
-  std::unique_ptr<views::FocusRing> keyword_button_focus_ring_;
-  std::unique_ptr<views::FocusRing> pedal_button_focus_ring_;
-  std::unique_ptr<views::FocusRing> tab_switch_button_focus_ring_;
+  // feature is enabled. It is owned by the base view, not this raw pointer.
+  OmniboxSuggestionButtonRowView* button_row_ = nullptr;
 
   // The "X" button at the end of the match cell, used to remove suggestions.
   views::ImageButton* remove_suggestion_button_;

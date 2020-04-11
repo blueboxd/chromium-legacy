@@ -22,7 +22,6 @@
 #include "components/webrtc_logging/browser/text_log_list.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "content/public/browser/child_process_security_policy.h"

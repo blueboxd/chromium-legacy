@@ -345,15 +345,15 @@ void MobileSetupUIHTMLSource::StartDataRequest(
   // webui is used for activation flow.
   std::string full_html;
   if (network->activation_state() == shill::kActivationStateActivated) {
-    static const base::StringPiece html_for_activated(
-        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+    static const base::NoDestructor<std::string> html_string(
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
             IDR_MOBILE_SETUP_PORTAL_PAGE_HTML));
-    full_html = webui::GetI18nTemplateHtml(html_for_activated, &strings);
+    full_html = webui::GetI18nTemplateHtml(*html_string, &strings);
   } else {
-    static const base::StringPiece html_for_non_activated(
-        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+    static const base::NoDestructor<std::string> html_string(
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
             IDR_MOBILE_SETUP_PAGE_HTML));
-    full_html = webui::GetI18nTemplateHtml(html_for_non_activated, &strings);
+    full_html = webui::GetI18nTemplateHtml(*html_string, &strings);
   }
 
   std::move(callback).Run(base::RefCountedString::TakeString(&full_html));

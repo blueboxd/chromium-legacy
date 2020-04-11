@@ -11,6 +11,11 @@ namespace extensions_features {
 // (performance focused, privacy focused or neutral) to show.
 const base::Feature kExtensionsCheckup{"ExtensionsCheckup",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether we disable extensions for malware.
+const base::Feature kDisableMalwareExtensionsRemotely{
+    "DisableMalwareExtensionsRemotely", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Parameters for ExtensionsCheckup feature.
 const char kExtensionsCheckupEntryPointParameter[] = "entry_point";
 const char kExtensionsCheckupBannerMessageParameter[] = "banner_message_type";

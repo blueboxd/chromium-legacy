@@ -208,6 +208,11 @@ unit tests.
     verification, regardless of the order in which the intermediate/root CA
     certificates are provided.
 
+- ev_test.pem
+- ev_test_state_only.pem
+     Certificates for testing EV display (including regression test for
+     https://crbug.com/1069113).
+
 ===== From net/data/ssl/scripts/generate-weak-test-chains.sh
 - 2048-rsa-root.pem
 - {768-rsa,1024-rsa,2048-rsa,prime256v1-ecdsa}-intermediate.pem

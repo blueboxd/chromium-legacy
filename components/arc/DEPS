@@ -32,7 +32,6 @@ include_rules = [
 specific_include_rules = {
   "arc_bridge_host_impl.cc": [
     "+ash/public",
-    "+content/public/common/service_manager_connection.h",
     "+services/service_manager/public",
   ],
   "arc_util.cc": [

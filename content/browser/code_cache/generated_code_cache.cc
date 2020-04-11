@@ -4,7 +4,9 @@
 
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/common/url_constants.h"
@@ -93,6 +95,20 @@ constexpr size_t kSmallDataLimit = 4096;
 // the hash, enabling a two stage lookup.
 constexpr size_t kLargeDataLimit = 64 * 1024;
 
+// crbug.com/936107: This is a study to determine a good size threshold to
+// deduplicate JS and WebAssembly cache entries.
+// TODO(bbudge): Remove this after the study finishes.
+constexpr base::Feature kCodeCacheDeduplicationStudy{
+    "CodeCacheDeduplicationStudy", base::FEATURE_DISABLED_BY_DEFAULT};
+constexpr base::FeatureParam<int> kCodeCacheDeduplicationThreshold{
+    &kCodeCacheDeduplicationStudy, "size", kLargeDataLimit};
+
+size_t GetLargeDataLimit() {
+  // The large data limit should be greater than or equal to kSmallDataLimit.
+  return std::max(kSmallDataLimit, base::saturated_cast<size_t>(
+                                       kCodeCacheDeduplicationThreshold.Get()));
+}
+
 // Checks that the header data in the small buffer is valid. We may read cache
 // entries that were written by a previous version of Chrome which use obsolete
 // formats. These reads should fail and be doomed as soon as possible.
@@ -105,7 +121,7 @@ bool IsValidHeader(scoped_refptr<net::IOBufferWithSize> small_buffer) {
          kDataSizeInBytes);
   if (data_size <= kSmallDataLimit)
     return buffer_size == kHeaderSizeInBytes + data_size;
-  if (data_size <= kLargeDataLimit)
+  if (data_size <= GetLargeDataLimit())
     return buffer_size == kHeaderSizeInBytes;
   return buffer_size == kHeaderSizeInBytes + kSHAKeySizeInBytes;
 }
@@ -353,7 +369,7 @@ void GeneratedCodeCache::WriteEntry(const GURL& url,
     memcpy(small_buffer->data() + kHeaderSizeInBytes, data.data(), data.size());
     // Write 0 bytes and truncate stream 1 to clear any stale data.
     large_buffer = base::MakeRefCounted<BigIOBuffer>(mojo_base::BigBuffer());
-  } else if (data_size <= kLargeDataLimit) {
+  } else if (data_size <= GetLargeDataLimit()) {
     // 2. Large
     // [stream0] response time, size
     // [stream1] data
@@ -737,7 +753,7 @@ void GeneratedCodeCache::ReadComplete(PendingOperation* op) {
         memcpy(data.data(), op->small_buffer()->data() + kHeaderSizeInBytes,
                data_size);
         op->TakeReadCallback().Run(response_time, std::move(data));
-      } else if (data_size <= kLargeDataLimit) {
+      } else if (data_size <= GetLargeDataLimit()) {
         // Large data below the merging threshold. Return the large buffer.
         op->TakeReadCallback().Run(response_time,
                                    op->large_buffer()->TakeBuffer());

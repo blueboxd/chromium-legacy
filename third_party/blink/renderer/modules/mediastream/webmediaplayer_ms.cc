@@ -398,9 +398,9 @@ WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
   // We can receive a call to RequestAnimationFrame() before |compositor_| is
   // created. In that case, we suspend the request, and wait until now to
   // reiniate it.
-  if (pending_raf_request_) {
-    RequestAnimationFrame();
-    pending_raf_request_ = false;
+  if (pending_rvfc_request_) {
+    RequestVideoFrameCallback();
+    pending_rvfc_request_ = false;
   }
 
   SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
@@ -1301,7 +1301,7 @@ void WebMediaPlayerMS::OnDisplayTypeChanged(
 
 void WebMediaPlayerMS::OnNewFramePresentedCallback() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->OnRequestAnimationFrame();
+  client_->OnRequestVideoFrameCallback();
 }
 
 void WebMediaPlayerMS::SendLogMessage(const WTF::String& message) const {
@@ -1318,13 +1318,13 @@ WebMediaPlayerMS::GetVideoFramePresentationMetadata() {
   return compositor_->GetLastPresentedFrameMetadata();
 }
 
-void WebMediaPlayerMS::RequestAnimationFrame() {
-  DCHECK(RuntimeEnabledFeatures::VideoRequestAnimationFrameEnabled());
+void WebMediaPlayerMS::RequestVideoFrameCallback() {
+  DCHECK(RuntimeEnabledFeatures::RequestVideoFrameCallbackEnabled());
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!compositor_) {
     // Reissue the request after |compositor_| is created, in Load().
-    pending_raf_request_ = true;
+    pending_rvfc_request_ = true;
     return;
   }
 

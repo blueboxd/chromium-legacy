@@ -94,7 +94,7 @@
 <translation id="1122960773616686544">書籤名稱</translation>
 <translation id="1124772482545689468">使用者</translation>
 <translation id="1125550662859510761">解像度：<ph name="WIDTH" /> x <ph name="HEIGHT" /> (原廠設定)</translation>
-<translation id="1126809382673880764">無法防範危險網站、下載檔案和擴充程式。您仍可在其他 Google 服務 (例如 Gmail 和「搜尋」) 中使用「安全瀏覽」功能 (如有)。</translation>
+<translation id="1126809382673880764">無法防範危險網站、下載檔案和擴充程式。您仍可在其他 Google 服務 (例如 Gmail 和搜尋) 中使用「安全瀏覽」功能 (如有)。</translation>
 <translation id="1128109161498068552">禁止任何網站使用系統專用訊息存取 MIDI 裝置</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">編輯搜尋引擎</translation>
@@ -1011,7 +1011,6 @@
 <translation id="2342740338116612727">加咗書籤</translation>
 <translation id="2343747224442182863">將焦點移至此分頁</translation>
 <translation id="2345723121311404059">將 1 頁傳送至「<ph name="PRINTER_NAME" />」列印</translation>
-<translation id="2346953515226895098">SODA 服務</translation>
 <translation id="2347644257713614136">Hangouts 和 Cast for Education 的使用受《Google 私隱權政策》管限。</translation>
 <translation id="2348176352564285430">應用程式：<ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="234889437187286781">載入資料時發生錯誤</translation>
@@ -2284,7 +2283,6 @@
 <translation id="3971764089670057203">此安全金鑰上的指紋</translation>
 <translation id="3973660817924297510">正在檢查密碼 (已檢查 <ph name="CHECKED_PASSWORDS" /> 個，共 <ph name="TOTAL_PASSWORDS" /> 個)…</translation>
 <translation id="3975565978598857337">無法連線至指定的伺服器領域</translation>
-<translation id="3975884715086515476"><ph name="IDS_SHORT_PRODUCT_NAME" /> 無法檢查密碼，請稍後再試。</translation>
 <translation id="3976108569178263973">沒有可用的打印機。</translation>
 <translation id="397703832102027365">即將完成…</translation>
 <translation id="3977886311744775419">此網絡類型無法下載自動更新，但您可以手動檢查更新。</translation>
@@ -2585,7 +2583,6 @@
 <translation id="4421932782753506458">長毛貓</translation>
 <translation id="4423376891418188461">還原設定</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />，管理員要求您變更密碼。</translation>
-<translation id="4426209360861763174"><ph name="IDS_SHORT_PRODUCT_NAME" /> 無法檢查密碼，請於 24 小時後再試一次。</translation>
 <translation id="4429030830601238961">此資料違反機構的安全性政策，因此無法貼上。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4430369329743628066">已新增書籤</translation>
@@ -2598,7 +2595,6 @@
 <translation id="4441124369922430666">您要在裝置開機時自動啟動這個應用程式嗎？</translation>
 <translation id="4441147046941420429">如要繼續，請從裝置上移除安全密鑰，然後重新插入並輕觸密鑰</translation>
 <translation id="444134486829715816">展開…</translation>
-<translation id="4442329324652245220"><ph name="IDS_SHORT_PRODUCT_NAME" /> 可在您使用 Google 帳戶登入時檢查密碼</translation>
 <translation id="4442424173763614572">DNS 查詢失敗</translation>
 <translation id="4443536555189480885">說明(&amp;H)</translation>
 <translation id="4444304522807523469">存取透過 USB 外接或區域網絡上的文件掃描器</translation>
@@ -2625,7 +2621,6 @@
 <translation id="4476659815936224889">如要掃瞄此條碼，您可使用手機上的二維條碼掃瞄器或部分相機應用程式。</translation>
 <translation id="4477015793815781985">必須以 Ctrl、Alt 或 ⌘ 鍵開頭</translation>
 <translation id="4478664379124702289">另存連結(&amp;K)…</translation>
-<translation id="4478777936860197922">沒有已儲存的密碼。儲存密碼時，<ph name="IDS_SHORT_PRODUCT_NAME" /> 可檢查您的密碼。</translation>
 <translation id="4479424953165245642">管理 Kiosk 應用程式</translation>
 <translation id="4479639480957787382">以太網絡</translation>
 <translation id="4479877282574735775">正在設定虛擬機器。這項操作可能需時數分鐘。</translation>
@@ -2871,7 +2866,6 @@
 <translation id="4849517651082200438">不要安裝</translation>
 <translation id="4850669014075537160">捲動</translation>
 <translation id="4850886885716139402">檢視</translation>
-<translation id="485197095346966382">如果您使用被盜用的密碼登入帳戶，<ph name="IDS_SHORT_PRODUCT_NAME" /> 會通知您</translation>
 <translation id="4853020600495124913">在新視窗中開啟(&amp;N)</translation>
 <translation id="4854317507773910281">選擇執行審核的家長帳戶</translation>
 <translation id="485480310608090163">更多設定和權限</translation>
@@ -4835,7 +4829,6 @@
 <translation id="7530016656428373557">放電速率 (瓦特)</translation>
 <translation id="7531779363494549572">前往 [設定] &gt; [應用程式和通知] &gt; [通知]。</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> 沒有回應。選取「強制關閉」即可關閉應用程式。</translation>
-<translation id="7536333565791380193">進階安全性</translation>
 <translation id="7537451260744431038">網站不可使用 Cookie 來改善瀏覽體驗，例如讓您保持登入狀態或記住購物車中的商品</translation>
 <translation id="7539856059004947393">藍牙安全密鑰</translation>
 <translation id="7540972813190816353">檢查更新時發生錯誤：<ph name="ERROR" /></translation>
@@ -5076,7 +5069,6 @@
     <ph name="BEGIN_BOLD" />注意：<ph name="END_BOLD" />系統會在程序中途重新開機。</translation>
 <translation id="7828731929332799387">系統會刪除第三方內容中使用的所有 Cookie 和網站資料。要繼續嗎？</translation>
 <translation id="7829298379596169484">正在存取音訊輸入</translation>
-<translation id="7829528495815477379"><ph name="IDS_SHORT_PRODUCT_NAME" /> 無法檢查密碼，請檢查互聯網連線。</translation>
 <translation id="7829877209233347340">請要求家長登入，授予新增學校帳戶的權限</translation>
 <translation id="7830594666202422257">連結至 Linux</translation>
 <translation id="7831491651892296503">設定網絡時發生錯誤</translation>
@@ -5950,7 +5942,6 @@
 <translation id="8966870118594285808">當您意外關閉標籤時重新開啟標籤</translation>
 <translation id="8967866634928501045">㩒住 Alt、Shift 同 A 鍵就會顯示</translation>
 <translation id="8968766641738584599">儲存付款卡</translation>
-<translation id="8971800409073702505"><ph name="IDS_SHORT_PRODUCT_NAME" /> 無法檢查密碼，請於 24 小時後再試一次，或<ph name="BEGIN_LINK" />檢查 Google 帳戶中的密碼<ph name="END_LINK" />。</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">請與網絡管理員聯絡，確保防火牆並未封鎖從 Google 伺服器下載的內容。</translation>
 <translation id="8973557916016709913">移除縮放級別</translation>

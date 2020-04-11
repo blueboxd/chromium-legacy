@@ -457,8 +457,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseIsUnusable) {
   auto response_head = mojom::URLResponseHead::New();
   response_head->headers =
       net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
-  response_head->headers->AddHeader(
-      base::StringPrintf("%s: %s", kTrustTokensSecTrustTokenHeader, ""));
+  response_head->headers->SetHeader(kTrustTokensSecTrustTokenHeader, "");
 
   // Since the cryptographer rejected the response header by returning nullopt
   // on ConfirmRedemption, expect to fail with kBadResponse.
@@ -522,8 +521,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, Success) {
   auto response_head = mojom::URLResponseHead::New();
   response_head->headers =
       net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
-  response_head->headers->AddHeader(
-      base::StringPrintf("%s: %s", kTrustTokensSecTrustTokenHeader, ""));
+  response_head->headers->SetHeader(kTrustTokensSecTrustTokenHeader, "");
 
   // After a successfully constructed request, when the response is well-formed
   // and the delegate accepts the response, Finalize should succeed.
@@ -635,8 +633,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, StoresObtainedRedemptionRecord) {
   auto response_head = mojom::URLResponseHead::New();
   response_head->headers =
       net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
-  response_head->headers->AddHeader(
-      base::StringPrintf("%s: %s", kTrustTokensSecTrustTokenHeader, ""));
+  response_head->headers->SetHeader(kTrustTokensSecTrustTokenHeader, "");
   EXPECT_EQ(helper.Finalize(response_head.get()),
             mojom::TrustTokenOperationStatus::kOk);
 
@@ -765,8 +762,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   auto response_head = mojom::URLResponseHead::New();
   response_head->headers =
       net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
-  response_head->headers->AddHeader(
-      base::StringPrintf("%s: %s", kTrustTokensSecTrustTokenHeader, ""));
+  response_head->headers->SetHeader(kTrustTokensSecTrustTokenHeader, "");
   EXPECT_EQ(helper.Finalize(response_head.get()),
             mojom::TrustTokenOperationStatus::kOk);
 

@@ -184,8 +184,20 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutChildren() {
       LayoutUnit content_consumed_block_size =
           content_break_token ? content_break_token->ConsumedBlockSize()
                               : LayoutUnit();
+
+      // Calculate the amount of the border block-end that was consumed in
+      // previous fragments.
+      DCHECK_NE(border_box_size_.block_size, kIndefiniteSize);
+      LayoutUnit consumed_border_block_end =
+          std::max(consumed_block_size_ -
+                       (border_box_size_.block_size - borders_.block_end),
+                   LayoutUnit());
+
       LayoutUnit legend_block_size =
-          consumed_block_size_ - content_consumed_block_size;
+          consumed_block_size_ - content_consumed_block_size -
+          consumed_border_block_start_ - consumed_border_block_end;
+      DCHECK_GE(legend_block_size, LayoutUnit());
+
       adjusted_padding_box_size.block_size =
           std::max(padding_.BlockSum(),
                    adjusted_padding_box_size.block_size - legend_block_size);

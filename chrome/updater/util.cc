@@ -5,7 +5,6 @@
 #include "chrome/updater/util.h"
 
 #include "base/base_paths.h"
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -38,6 +37,22 @@ bool GetProductDirectory(base::FilePath* path) {
 
   *path = product_data_dir;
   return true;
+}
+
+// The log file is created in DIR_LOCAL_APP_DATA or DIR_APP_DATA.
+void InitLogging(const base::FilePath::StringType& filename) {
+  logging::LoggingSettings settings;
+  base::FilePath log_dir;
+  GetProductDirectory(&log_dir);
+  const base::FilePath log_file = log_dir.Append(filename);
+  settings.log_file_path = log_file.value().c_str();
+  settings.logging_dest = logging::LOG_TO_ALL;
+  logging::InitLogging(settings);
+  logging::SetLogItems(/*enable_process_id=*/true,
+                       /*enable_thread_id=*/true,
+                       /*enable_timestamp=*/true,
+                       /*enable_tickcount=*/false);
+  VLOG(1) << "Log file: " << settings.log_file_path;
 }
 
 }  // namespace updater

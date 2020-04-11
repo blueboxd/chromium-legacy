@@ -203,7 +203,7 @@
 <translation id="1259152067760398571">Անվտանգության ստուգումը երեկ է արվել</translation>
 <translation id="1260451001046713751">Միշտ թույլ տալ ելնող պատուհաններն ու վերահասցեավորումը <ph name="HOST" /> կայքում</translation>
 <translation id="126156426083987769">Դեմո ռեժիմում աշխատող սարքերի արտոնագրերի հետ խնդիր է առաջացել։</translation>
-<translation id="1263490604593716556">Հաշվի կառավարիչներ՝ <ph name="FIRST_PARENT_EMAIL" /> և <ph name="SECOND_PARENT_EMAIL" />։ Այս սարքում հիմնական հաշվից դուրս գրվելու համար սեղմեք ժամի վրա ձեր էկրանին։ Բացվող ընտրացանկում սեղմեք «Դուրս գալ»։</translation>
+<translation id="1263490604593716556">Հաշվի կառավարիչներ՝ <ph name="FIRST_PARENT_EMAIL" /> և <ph name="SECOND_PARENT_EMAIL" />։ Այս սարքում հիմնական հաշվից դուրս գալու համար սեղմեք ժամի վրա ձեր էկրանին։ Բացվող ընտրացանկում սեղմեք «Դուրս գալ»։</translation>
 <translation id="126710816202626562">Թարգմանության լեզուն՝</translation>
 <translation id="126768002343224824">16x</translation>
 <translation id="1272079795634619415">Դադարեցնել</translation>
@@ -880,7 +880,7 @@
 <translation id="2172784515318616985">Շարունակել</translation>
 <translation id="2173302385160625112">Ստուգեք կապը</translation>
 <translation id="2173801458090845390">Ավելացնել սարքին հայտի ID-ն</translation>
-<translation id="2174948148799307353">Հաշվի կառավարիչ՝ <ph name="PARENT_EMAIL" />։ Այս սարքում հիմնական հաշվից դուրս գրվելու համար սեղմեք ժամի վրա ձեր էկրանին։ Բացվող ընտրացանկում սեղմեք «Դուրս գալ»։</translation>
+<translation id="2174948148799307353">Հաշվի կառավարիչ՝ <ph name="PARENT_EMAIL" />։ Այս սարքում հիմնական հաշվից դուրս գալու համար սեղմեք ժամի վրա ձեր էկրանին։ Բացվող ընտրացանկում սեղմեք «Դուրս գալ»։</translation>
 <translation id="2175607476662778685">Արագ գործարկման գոտի</translation>
 <translation id="217576141146192373">Չհաջողվեց ավելացնել տպիչը: Ստուգեք դրա կարգավորումները և նորից փորձեք:</translation>
 <translation id="2177950615300672361">Ինկոգնիտո ներդիր` <ph name="TAB_NAME" /></translation>
@@ -1011,7 +1011,6 @@
 <translation id="2342740338116612727">Էջանիշներն ավելացվեցին</translation>
 <translation id="2343747224442182863">Ֆոկուսավորել այս ներդիրը</translation>
 <translation id="2345723121311404059">1 էջ <ph name="PRINTER_NAME" /> տպիչով</translation>
-<translation id="2346953515226895098">SODA ծառայություն</translation>
 <translation id="2347644257713614136">Hangouts-ի և Cast for Education-ի օգտագործումը կարգավորվում է Google-ի գաղտնիության քաղաքականությամբ:</translation>
 <translation id="2348176352564285430">Հավելված՝ <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="234889437187286781">Տվյալների բեռնման սխալ</translation>
@@ -2286,7 +2285,6 @@
 <translation id="3971764089670057203">Այս անվտանգության բանալու մատնահետքերը</translation>
 <translation id="3973660817924297510">Գաղտնաբառերը ստուգվում են (<ph name="CHECKED_PASSWORDS" />/<ph name="TOTAL_PASSWORDS" />)…</translation>
 <translation id="3975565978598857337">Չհաջողվեց կապվել սերվերի հետ այս տիրույթի համար</translation>
-<translation id="3975884715086515476"><ph name="IDS_SHORT_PRODUCT_NAME" />-ը չի կարող ստուգել ձեր գաղտնաբառերը։ Փորձեք ավելի ուշ։</translation>
 <translation id="3976108569178263973">Հասանելի տպիչներ չկան</translation>
 <translation id="397703832102027365">Ավարտվում է…</translation>
 <translation id="3977886311744775419">Ավտոմատ թարմացումները այս տեսակի ցանցում չեն ներբեռնվում, սակայն դուք կարող եք ձեռքով ստուգել թարմացումների առկայությունը:</translation>
@@ -2587,7 +2585,6 @@
 <translation id="4421932782753506458">Փափկամազիկ</translation>
 <translation id="4423376891418188461">Վերականգնել կարգավորումները</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, ձեր ադմինիստրատորը պահանջում է, որ փոխեք ձեր գաղտնաբառը:</translation>
-<translation id="4426209360861763174"><ph name="IDS_SHORT_PRODUCT_NAME" />-ը չի կարող ստուգել ձեր գաղտնաբառերը։ 24 ժամ հետո նորից փորձեք։</translation>
 <translation id="4429030830601238961">Այս տվյալները չեն տեղադրվի, քանի որ խախտում են կազմակերպության անվտանգության կանոնները։</translation>
 <translation id="4430019312045809116">Ձայնի ուժգնություն</translation>
 <translation id="4430369329743628066">Էջանիշն ավելացվեց</translation>
@@ -2600,7 +2597,6 @@
 <translation id="4441124369922430666">Ուզո՞ւմ եք, որ այս հավելվածն ավտոմատ մեկնարկվի համակարգիչը միացնելիս:</translation>
 <translation id="4441147046941420429">Շարունակելու համար հանեք անվտանգության բանալին սարքից, ապա նորից տեղադրեք ու հպեք դրան:</translation>
 <translation id="444134486829715816">Ընդարձակել…</translation>
-<translation id="4442329324652245220"><ph name="IDS_SHORT_PRODUCT_NAME" />-ը կարող է ստուգել ձեր գաղտնաբառերը, երբ մտնեք Google հաշիվ։</translation>
 <translation id="4442424173763614572">DNS սերվերը որոնելիս սխալ տեղի ունեցավ</translation>
 <translation id="4443536555189480885">&amp;Օգնություն</translation>
 <translation id="4444304522807523469">Մուտք գործել փաստաթղթի տեսածրիչներ, որոնց կցված են USB-ի կամ տեղային ցանցի միջոցով</translation>
@@ -2627,7 +2623,6 @@
 <translation id="4476659815936224889">Դուք կարող եք սկանավորել այս կոդը հեռախոսի QR սկաների կամ տեսախցիկի որոշ հավելվածների միջոցով:</translation>
 <translation id="4477015793815781985">Սկզբում սեղմեք Ctrl, Alt կամ ⌘</translation>
 <translation id="4478664379124702289">Պահել հղում&amp;ը որպես…</translation>
-<translation id="4478777936860197922">Պահված գաղտնաբառեր չկան։ <ph name="IDS_SHORT_PRODUCT_NAME" />-ը կարող է ստուգել ձեր գաղտնաբառերը, երբ պահում եք դրանք։</translation>
 <translation id="4479424953165245642">Կարգավորել կրպակ-հավելվածները</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479877282574735775">Վիրտուալ մեքենան կարգավորվում է: Սա կարող է մի քանի րոպե տևել։</translation>
@@ -2873,7 +2868,6 @@
 <translation id="4849517651082200438">Չտեղադրել</translation>
 <translation id="4850669014075537160">Ոլորում</translation>
 <translation id="4850886885716139402">Տեսք</translation>
-<translation id="485197095346966382"><ph name="IDS_SHORT_PRODUCT_NAME" />-ը կտեղեկացնի ձեզ, երբ կոտրված գաղտնաբառ օգտագործեք։</translation>
 <translation id="4853020600495124913">Բացել &amp;նոր պատուհանում</translation>
 <translation id="4854317507773910281">Հաստատման համար ընտրեք ծնողի հաշիվը</translation>
 <translation id="485480310608090163">Այլ կարգավորումներ և թույլտվություններ</translation>
@@ -4840,7 +4834,6 @@
 <translation id="7530016656428373557">Լիցքաթափման արագությունը վատտերով</translation>
 <translation id="7531779363494549572">Անցեք Կարգավորումներ &gt; Հավելվածներ և ծանուցումներ &gt; Ծանուցումներ։</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> հավելվածը չի արձագանքում: Ընտրեք «Ստիպողաբար փակել» տարբերակը:</translation>
-<translation id="7536333565791380193">Լրացուցիչ անվտանգություն</translation>
 <translation id="7537451260744431038">Ձեր աշխատանքը բարելավելու նպատակով կայքերը չեն կարող օգտագործել քուքիներ, օրինակ, որպեսզի պահեն ձեր ընտրած ապրանքները զամբյուղում կամ հիշեն ձեր մուտքը հաշիվ։</translation>
 <translation id="7539856059004947393">Bluetooth անվտանգության բանալի</translation>
 <translation id="7540972813190816353">Թարմացումներն ստուգելիս սխալ տեղի ունեցավ` <ph name="ERROR" /></translation>
@@ -4979,7 +4972,7 @@
 <translation id="7716781361494605745">Netscape-ի հավաստագրման կենտրոնի քաղաքականության URL</translation>
 <translation id="7717014941119698257">Ներբեռնում` <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Ստուգել թարմացումները</translation>
-<translation id="7719070594859855691">Հասանելի դարձնել տեսախցիկը</translation>
+<translation id="7719070594859855691">Տեսախցիկն օգտագործելու թույլտվություն տալ</translation>
 <translation id="7719367874908701697">Էջի մասշտաբավորում</translation>
 <translation id="7721179060400456005">Թույլատրել պատուհանի ցուցադրումը տարբեր սարքերում</translation>
 <translation id="7722040605881499779">Թարմացման համար հարկավոր է <ph name="NECESSARY_SPACE" /></translation>
@@ -5080,7 +5073,6 @@
     <ph name="BEGIN_BOLD" />Ուշադրություն.<ph name="END_BOLD" /> գործողության ժամանակ համակարգը կվերաբեռնվի:</translation>
 <translation id="7828731929332799387">Երրորդ կողմի բոլոր քուքիներն ու կայքերի տվյալները կջնջվեն։ Շարունակե՞լ։</translation>
 <translation id="7829298379596169484">Ձայնային մուտքի մատչում</translation>
-<translation id="7829528495815477379"><ph name="IDS_SHORT_PRODUCT_NAME" />-ը չի կարող ստուգել ձեր գաղտնաբառերը։ Ստուգեք ինտերնետ կապը։</translation>
 <translation id="7829877209233347340">Խնդրեք ծնողին մուտք գործել հաշիվ և ուսումնական հաշիվ ավելացնելու թույլտվություն տալ</translation>
 <translation id="7830594666202422257">Միացնել Լինուքսին</translation>
 <translation id="7831491651892296503">Չհաջողվեց կազմաձևել ցանցը</translation>
@@ -5954,7 +5946,6 @@
 <translation id="8966870118594285808">Նորից բացեք ներդիրը, եթե այն պատահաբար փակել եք</translation>
 <translation id="8967866634928501045">Ցուցադրելու համար սեղմեք Alt + Shift + A ստեղները</translation>
 <translation id="8968766641738584599">Պահել քարտը</translation>
-<translation id="8971800409073702505"><ph name="IDS_SHORT_PRODUCT_NAME" />-ը չի կարող ստուգել ձեր գաղտնաբառերը։ 24 ժամ հետո նորից փորձեք կամ <ph name="BEGIN_LINK" />ստուգեք ձեր Google հաշվի գաղտնաբառերը<ph name="END_LINK" />։</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Ճշտեք ձեր ցանցի ադմինիստրատորից՝ արդյոք հրապատը չի արգելափակում ներբեռնումները Google սերվերներից:</translation>
 <translation id="8973557916016709913">Չեղարկել մասշտաբավորումը</translation>

@@ -2,6 +2,11 @@
 # See https://chromium.googlesource.com/infra/luci/luci-go/+/HEAD/lucicfg/doc/README.md
 # for information on starlark/lucicfg
 
+lucicfg.check_version(
+    min = '1.13.1',
+    message = 'Update depot_tools',
+)
+
 # Tell lucicfg what files it is allowed to touch
 lucicfg.config(
     config_dir = 'generated',
@@ -103,7 +108,6 @@ exec('//buckets/webrtc.star')
 exec('//buckets/webrtc.fyi.star')
 
 exec('//consoles/android.packager.star')
-exec('//consoles/angle.try.star')
 exec('//consoles/chromium.goma.star')
 exec('//consoles/chromium.goma.fyi.star')
 exec('//consoles/chromium.goma.migration.star')
@@ -114,17 +118,6 @@ exec('//consoles/goma.latest.star')
 exec('//consoles/luci.chromium.goma.star')
 exec('//consoles/luci.chromium.try.star')
 exec('//consoles/sheriff.ios.star')
-exec('//consoles/try-m80.star')
-exec('//consoles/try-m81.star')
-exec('//consoles/try-m83.star')
-exec('//consoles/tryserver.blink.star')
-exec('//consoles/tryserver.chromium.android.star')
-exec('//consoles/tryserver.chromium.chromiumos.star')
-exec('//consoles/tryserver.chromium.dawn.star')
-exec('//consoles/tryserver.chromium.linux.star')
-exec('//consoles/tryserver.chromium.mac.star')
-exec('//consoles/tryserver.chromium.swangle.star')
-exec('//consoles/tryserver.chromium.win.star')
 
 exec('//notifiers.star')
 

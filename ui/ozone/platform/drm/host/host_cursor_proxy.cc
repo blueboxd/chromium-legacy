@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/threading/thread_task_runner_handle.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
 namespace ui {

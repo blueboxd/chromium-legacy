@@ -22,7 +22,7 @@ that needs to be maintained in sync.
 
 ```c++
 interface TeleporterFactory {
-  Create(Location start, Location end) => (Teleporter);
+  Create(Location start, Location end) => (pending_remote<Teleporter>);
 };
 
 interface Teleporter {

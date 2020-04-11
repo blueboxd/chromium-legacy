@@ -41,14 +41,20 @@ class MediaFeedsTableDelegate {
       td.appendChild(a);
 
       a.addEventListener('click', () => {
-        store.getItemsForMediaFeed(dataRow.id).then(response => {
-          feedItemsTable.setData(response.items);
+        showFeedContents(dataRow);
+      });
 
-          // Show the feed items section.
-          $('current-feed').textContent = dataRow.url.url;
-          $('feed-content').style.display = 'block';
+      td.appendChild(document.createElement('br'));
 
-          mediaFeedItemsPageIsPopulatedResolver.resolve();
+      const fetchFeed = document.createElement('a');
+      fetchFeed.href = '#feed-content';
+      fetchFeed.textContent = 'Fetch Feed';
+      td.appendChild(fetchFeed);
+
+      fetchFeed.addEventListener('click', () => {
+        store.fetchMediaFeed(dataRow.id, dataRow.url).then(response => {
+          updateFeedsTable();
+          showFeedContents(dataRow);
         });
       });
     }
@@ -368,6 +374,22 @@ function updateFeedsTable() {
   store.getMediaFeeds().then(response => {
     feedsTable.setData(response.feeds);
     mediaFeedsPageIsPopulatedResolver.resolve();
+  });
+}
+
+/**
+ * Retrieve feed items and render the feed contents table.
+ * @param {Object} dataRow
+ */
+function showFeedContents(dataRow) {
+  store.getItemsForMediaFeed(dataRow.id).then(response => {
+    feedItemsTable.setData(response.items);
+
+    // Show the feed items section.
+    $('current-feed').textContent = dataRow.url.url;
+    $('feed-content').style.display = 'block';
+
+    mediaFeedItemsPageIsPopulatedResolver.resolve();
   });
 }
 

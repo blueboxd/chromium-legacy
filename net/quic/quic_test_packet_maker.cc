@@ -1353,8 +1353,6 @@ void QuicTestPacketMaker::MaybeAddHttp3SettingsFrames() {
   std::string data = type + settings_data + grease_data + max_push_id_data;
 
   AddQuicStreamFrame(stream_id, false, data);
-  AddQuicStreamFrame(stream_id + 4, false, "\x03");
-  AddQuicStreamFrame(stream_id + 8, false, "\x02");
 }
 
 }  // namespace test

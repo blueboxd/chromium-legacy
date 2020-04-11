@@ -139,9 +139,9 @@ void RecommendAppsScreenHandler::LoadAppListInUI(const base::Value& app_list) {
   RecordUmaScreenState(RecommendAppsScreenState::SHOW);
   const ui::ResourceBundle& resource_bundle =
       ui::ResourceBundle::GetSharedInstance();
-  base::StringPiece app_list_webview = resource_bundle.GetRawDataResource(
+  std::string app_list_webview = resource_bundle.LoadDataResourceString(
       IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML);
-  CallJS("login.RecommendAppsScreen.setWebview", app_list_webview.as_string());
+  CallJS("login.RecommendAppsScreen.setWebview", app_list_webview);
   CallJS("login.RecommendAppsScreen.loadAppList", app_list);
 }
 

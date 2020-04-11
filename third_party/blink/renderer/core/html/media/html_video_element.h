@@ -179,7 +179,7 @@ class CORE_EXPORT HTMLVideoElement final
 
   // WebMediaPlayerClient implementation.
   void OnBecamePersistentVideo(bool) final;
-  void OnRequestAnimationFrame() final;
+  void OnRequestVideoFrameCallback() final;
 
   bool IsPersistent() const;
 

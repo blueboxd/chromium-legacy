@@ -83,10 +83,10 @@ void ScriptedAnimationController::DispatchEventsAndCallbacksForPrinting() {
   CallMediaQueryListListeners();
 }
 
-void ScriptedAnimationController::ScheduleVideoRafExecution(
-    VideoRafExecutionCallback video_raf_callback) {
-  DCHECK(RuntimeEnabledFeatures::VideoRequestAnimationFrameEnabled());
-  video_raf_queue_.push_back(std::move(video_raf_callback));
+void ScriptedAnimationController::ScheduleVideoFrameCallbacksExecution(
+    ExecuteVfcCallback execute_vfc_callback) {
+  DCHECK(RuntimeEnabledFeatures::RequestVideoFrameCallbackEnabled());
+  vfc_execution_queue_.push_back(std::move(execute_vfc_callback));
   ScheduleAnimationIfNeeded();
 }
 
@@ -103,7 +103,8 @@ void ScriptedAnimationController::CancelFrameCallback(CallbackId id) {
 }
 
 bool ScriptedAnimationController::HasFrameCallback() const {
-  return callback_collection_.HasFrameCallback() || !video_raf_queue_.IsEmpty();
+  return callback_collection_.HasFrameCallback() ||
+         !vfc_execution_queue_.IsEmpty();
 }
 
 ScriptedAnimationController::CallbackId
@@ -159,14 +160,14 @@ void ScriptedAnimationController::DispatchEvents(
   }
 }
 
-void ScriptedAnimationController::ExecuteVideoRafCallbacks() {
+void ScriptedAnimationController::ExecuteVideoFrameCallbacks() {
   // dispatchEvents() runs script which can cause the context to be destroyed.
   if (!GetExecutionContext())
     return;
 
-  Vector<VideoRafExecutionCallback> video_raf_callbacks;
-  video_raf_queue_.swap(video_raf_callbacks);
-  for (auto& callback : video_raf_callbacks)
+  Vector<ExecuteVfcCallback> execute_vfc_callbacks;
+  vfc_execution_queue_.swap(execute_vfc_callbacks);
+  for (auto& callback : execute_vfc_callbacks)
     std::move(callback).Run(current_frame_time_ms_);
 }
 
@@ -192,7 +193,7 @@ bool ScriptedAnimationController::HasScheduledFrameTasks() const {
   return callback_collection_.HasFrameCallback() || !task_queue_.IsEmpty() ||
          !event_queue_.IsEmpty() || !media_query_list_listeners_.IsEmpty() ||
          GetWindow()->document()->HasAutofocusCandidates() ||
-         !video_raf_queue_.IsEmpty();
+         !vfc_execution_queue_.IsEmpty();
 }
 
 void ScriptedAnimationController::ServiceScriptedAnimations(
@@ -242,10 +243,10 @@ void ScriptedAnimationController::ServiceScriptedAnimations(
   // steps for that Document, passing in now as the timestamp.
   RunTasks();
 
-  if (RuntimeEnabledFeatures::VideoRequestAnimationFrameEnabled()) {
-    // Run the HTMLVideoELement.requestAnimationFrame() callbacks.
+  if (RuntimeEnabledFeatures::RequestVideoFrameCallbackEnabled()) {
+    // Run the fulfilled HTMLVideoELement.requestVideoFrameCallback() callbacks.
     // See https://wicg.github.io/video-raf/.
-    ExecuteVideoRafCallbacks();
+    ExecuteVideoFrameCallbacks();
   }
 
   // 10.11. For each fully active Document in docs, run the animation

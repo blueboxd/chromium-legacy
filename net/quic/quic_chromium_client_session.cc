@@ -114,22 +114,22 @@ void RecordConnectionCloseErrorCode(const quic::QuicConnectionCloseFrame& frame,
     histogram += "Server";
     // When receiving a CONNECTION_CLOSE frame, record error code received on
     // the wire.
+    error = frame.wire_error_code;
+    // TODO: Always record the quic_error_code in the histogram and also
+    // record the transport or application error codes separately when received.
     switch (frame.close_type) {
       case quic::GOOGLE_QUIC_CONNECTION_CLOSE:
-        error = frame.quic_error_code;
         break;
       case quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE:
-        error = frame.transport_error_code;
         histogram += "IetfTransport";
         break;
       case quic::IETF_QUIC_APPLICATION_CONNECTION_CLOSE:
-        error = frame.application_error_code;
         histogram += "IetfApplication";
     }
   } else {
     // When sending a CONNECTION_CLOSE frame, record QuicErrorCode.
     histogram += "Client";
-    error = frame.extracted_error_code;
+    error = frame.quic_error_code;
   }
 
   base::UmaHistogramSparse(histogram, error);
@@ -1607,7 +1607,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
   RecordConnectionCloseErrorCode(frame, source, session_key_.host(),
                                  OneRttKeysAvailable());
 
-  const quic::QuicErrorCode error = frame.extracted_error_code;
+  const quic::QuicErrorCode error = frame.quic_error_code;
   const std::string& error_details = frame.error_details;
 
   if (source == quic::ConnectionCloseSource::FROM_PEER) {

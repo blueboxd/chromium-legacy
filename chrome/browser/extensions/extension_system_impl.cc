@@ -463,6 +463,13 @@ void ExtensionSystemImpl::InstallUpdate(
                                             unpacked_dir);
 }
 
+void ExtensionSystemImpl::PerformActionBasedOnOmahaAttributes(
+    const std::string& extension_id,
+    const base::Value& attributes) {
+  extension_service()->PerformActionBasedOnOmahaAttributes(extension_id,
+                                                           attributes);
+}
+
 bool ExtensionSystemImpl::FinishDelayedInstallationIfReady(
     const std::string& extension_id,
     bool install_immediately) {

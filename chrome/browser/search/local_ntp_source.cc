@@ -1090,7 +1090,8 @@ void LocalNtpSource::StartDataRequest(
         use_google_g_icon ? kGoogleGIconResourceName : kSearchIconResourceName;
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    base::StringPiece html = bundle.GetRawDataResource(IDR_LOCAL_NTP_HTML);
+    std::string html_string = bundle.LoadDataResourceString(IDR_LOCAL_NTP_HTML);
+    base::StringPiece html(html_string);
     std::string replaced = ui::ReplaceTemplateExpressions(html, replacements);
     std::move(callback).Run(base::RefCountedString::TakeString(&replaced));
     return;

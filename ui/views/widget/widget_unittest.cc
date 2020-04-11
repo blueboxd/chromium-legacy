@@ -351,7 +351,7 @@ TEST_F(WidgetOwnershipTest, Ownership_PlatformNativeWidgetOwnsWidget) {
   Widget* widget = new OwnershipTestWidget(&state);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget = CreatePlatformNativeWidgetImpl(
-      params, widget, kStubCapture, &state.native_widget_deleted);
+      widget, kStubCapture, &state.native_widget_deleted);
   widget->Init(std::move(params));
 
   // Now destroy the native widget.
@@ -371,7 +371,7 @@ TEST_F(WidgetOwnershipTest, Ownership_ViewsNativeWidgetOwnsWidget) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.parent = toplevel->GetNativeView();
   params.native_widget = CreatePlatformNativeWidgetImpl(
-      params, widget, kStubCapture, &state.native_widget_deleted);
+      widget, kStubCapture, &state.native_widget_deleted);
   widget->Init(std::move(params));
 
   // Now destroy the native widget. This is achieved by closing the toplevel.
@@ -394,7 +394,7 @@ TEST_F(WidgetOwnershipTest,
   Widget* widget = new OwnershipTestWidget(&state);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget = CreatePlatformNativeWidgetImpl(
-      params, widget, kStubCapture, &state.native_widget_deleted);
+      widget, kStubCapture, &state.native_widget_deleted);
   widget->Init(std::move(params));
 
   // Now simulate a destroy of the platform native widget from the OS:
@@ -416,7 +416,7 @@ TEST_F(WidgetOwnershipTest,
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.parent = toplevel->GetNativeView();
   params.native_widget = CreatePlatformNativeWidgetImpl(
-      params, widget, kStubCapture, &state.native_widget_deleted);
+      widget, kStubCapture, &state.native_widget_deleted);
   widget->Init(std::move(params));
 
   // Destroy the widget (achieved by closing the toplevel).
@@ -441,7 +441,7 @@ TEST_F(WidgetOwnershipTest, Ownership_ViewsNativeWidgetOwnsWidget_Close) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.parent = toplevel->GetNativeView();
   params.native_widget = CreatePlatformNativeWidgetImpl(
-      params, widget, kStubCapture, &state.native_widget_deleted);
+      widget, kStubCapture, &state.native_widget_deleted);
   widget->Init(std::move(params));
 
   // Destroy the widget.
@@ -479,7 +479,7 @@ TEST_F(WidgetOwnsNativeWidgetTest, Ownership) {
   auto widget = std::make_unique<OwnershipTestWidget>(state());
   Widget::InitParams params = CreateParamsForTestWidget();
   params.native_widget = CreatePlatformNativeWidgetImpl(
-      params, widget.get(), kStubCapture, &state()->native_widget_deleted);
+      widget.get(), kStubCapture, &state()->native_widget_deleted);
   widget->Init(std::move(params));
 
   // Now delete the Widget, which should delete the NativeWidget.
@@ -497,7 +497,7 @@ TEST_F(WidgetOwnsNativeWidgetTest, DestroyParentView) {
   Widget::InitParams params = CreateParamsForTestWidget();
   params.parent = toplevel->GetNativeView();
   params.native_widget = CreatePlatformNativeWidgetImpl(
-      params, widget.get(), kStubCapture, &state()->native_widget_deleted);
+      widget.get(), kStubCapture, &state()->native_widget_deleted);
   widget->Init(std::move(params));
 
   // Now close the toplevel, which deletes the view hierarchy.
@@ -516,7 +516,7 @@ TEST_F(WidgetOwnsNativeWidgetTest, WidgetDelegateView) {
   auto widget = std::make_unique<OwnershipTestWidget>(state());
   Widget::InitParams params = CreateParamsForTestWidget();
   params.native_widget = CreatePlatformNativeWidgetImpl(
-      params, widget.get(), kStubCapture, &state()->native_widget_deleted);
+      widget.get(), kStubCapture, &state()->native_widget_deleted);
   params.delegate = new WidgetDelegateView();
   widget->Init(std::move(params));
 
@@ -1962,8 +1962,8 @@ class WidgetWindowTitleTest : public DesktopWidgetTest {
         CreateParams(Widget::InitParams::TYPE_WINDOW);
 
     if (!desktop_native_widget) {
-      init_params.native_widget = CreatePlatformNativeWidgetImpl(
-          init_params, widget.get(), kStubCapture, nullptr);
+      init_params.native_widget =
+          CreatePlatformNativeWidgetImpl(widget.get(), kStubCapture, nullptr);
     }
     widget->Init(std::move(init_params));
 
@@ -2074,8 +2074,8 @@ bool RunGetNativeThemeFromDestructor(Widget::InitParams params,
   // Deletes itself when the Widget is destroyed.
   params.delegate = new GetNativeThemeFromDestructorView;
   if (!is_first_run) {
-    params.native_widget = CreatePlatformNativeWidgetImpl(
-        params, widget.get(), kStubCapture, nullptr);
+    params.native_widget =
+        CreatePlatformNativeWidgetImpl(widget.get(), kStubCapture, nullptr);
     needs_second_run = true;
   }
   widget->Init(std::move(params));
@@ -2984,8 +2984,8 @@ class WidgetChildDestructionTest : public DesktopWidgetTest {
     Widget::InitParams params =
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
     if (!top_level_has_desktop_native_widget_aura) {
-      params.native_widget = CreatePlatformNativeWidgetImpl(
-          params, top_level, kStubCapture, nullptr);
+      params.native_widget =
+          CreatePlatformNativeWidgetImpl(top_level, kStubCapture, nullptr);
     }
     top_level->Init(std::move(params));
     top_level->GetRootView()->AddChildView(
@@ -2997,8 +2997,8 @@ class WidgetChildDestructionTest : public DesktopWidgetTest {
         CreateParams(views::Widget::InitParams::TYPE_POPUP);
     child_params.parent = top_level->GetNativeView();
     if (!child_has_desktop_native_widget_aura) {
-      child_params.native_widget = CreatePlatformNativeWidgetImpl(
-          child_params, child, kStubCapture, nullptr);
+      child_params.native_widget =
+          CreatePlatformNativeWidgetImpl(child, kStubCapture, nullptr);
     }
     child->Init(std::move(child_params));
     child->GetRootView()->AddChildView(

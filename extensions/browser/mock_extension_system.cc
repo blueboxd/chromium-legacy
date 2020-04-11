@@ -87,6 +87,10 @@ void MockExtensionSystem::InstallUpdate(
   NOTREACHED();
 }
 
+void MockExtensionSystem::PerformActionBasedOnOmahaAttributes(
+    const std::string& extension_id,
+    const base::Value& attributes) {}
+
 bool MockExtensionSystem::FinishDelayedInstallationIfReady(
     const std::string& extension_id,
     bool install_immediately) {

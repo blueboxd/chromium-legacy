@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/feeds/media_feeds_converter.h"
 
+#include <cmath>
 #include <numeric>
 #include <vector>
 
@@ -94,15 +95,13 @@ bool IsUrl(const Property& property) {
                          });
 }
 
-// Checks that the property contains at least positive integer and that all
-// numbers it contains are positive integers.
+// Checks that the property is a positive integer.
 bool IsPositiveInteger(const Property& property) {
-  return !property.values->long_values.empty() &&
-         std::accumulate(property.values->long_values.begin(),
-                         property.values->long_values.end(), true,
-                         [](auto& accumulation, auto& long_value) {
-                           return accumulation && long_value > 0;
-                         });
+  if (!property.values->long_values.empty())
+    return property.values->long_values[0] > 0;
+  if (!property.values->double_values.empty())
+    return property.values->double_values[0] > 0;
+  return false;
 }
 
 // Checks that the property contains at least one non-empty string and that all
@@ -139,18 +138,12 @@ bool IsDateOrDateTime(const Property& property) {
   return !property.values->date_time_values.empty();
 }
 
-// Gets a number from the property which may be stored either as a long or a
-// string.
+// Gets a number from the property which may be stored as a long or double.
 base::Optional<uint64_t> GetNumber(const Property& property) {
   if (!property.values->long_values.empty())
     return property.values->long_values[0];
-  if (!property.values->string_values.empty()) {
-    uint64_t number;
-    bool parsed_number =
-        base::StringToUint64(property.values->string_values[0], &number);
-    if (parsed_number)
-      return number;
-  }
+  if (!property.values->double_values.empty())
+    return lround(property.values->double_values[0]);
   return base::nullopt;
 }
 
@@ -662,15 +655,6 @@ void GetDataFeedItems(
       continue;
     converted_item->images = converted_images.value();
 
-    bool has_embedded_action =
-        item->type == schema_org::entity::kTVSeries &&
-        GetProperty(item.get(), schema_org::property::kEpisode);
-    if (!convert_property.Run(schema_org::property::kPotentialAction,
-                              !has_embedded_action,
-                              base::BindOnce(&GetActionAndStatus))) {
-      continue;
-    }
-
     if (!convert_property.Run(schema_org::property::kInteractionStatistic,
                               false,
                               base::BindOnce(&GetInteractionStatistics))) {
@@ -735,20 +719,29 @@ void GetDataFeedItems(
       }
     }
 
+    bool has_embedded_action =
+        item->type == schema_org::entity::kTVSeries && converted_item->action;
+    if (!convert_property.Run(schema_org::property::kPotentialAction,
+                              !has_embedded_action,
+                              base::BindOnce(&GetActionAndStatus))) {
+      continue;
+    }
+
     converted_feed_items->push_back(std::move(converted_item));
   }
 }
 
 // static
 base::Optional<std::vector<mojom::MediaFeedItemPtr>> GetMediaFeeds(
-    EntityPtr entity) {
-  if (entity->type != "CompleteDataFeed")
+    const EntityPtr& entity,
+    std::vector<media_session::MediaImage>* logos,
+    std::string* display_name) {
+  if (entity->type != schema_org::entity::kCompleteDataFeed)
     return base::nullopt;
 
+  DCHECK(logos && display_name);
   auto* provider = GetProperty(entity.get(), schema_org::property::kProvider);
-  std::string display_name;
-  std::vector<media_session::MediaImage> logos;
-  if (!ValidateProvider(*provider, &display_name, &logos))
+  if (!ValidateProvider(*provider, display_name, logos))
     return base::nullopt;
 
   std::vector<mojom::MediaFeedItemPtr> media_feed_items;

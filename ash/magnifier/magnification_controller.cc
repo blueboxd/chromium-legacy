@@ -831,9 +831,25 @@ bool MagnificationController::ProcessGestures() {
       if (!consume_touch_event_)
         cancel_pressed_touches = true;
     } else if (gesture->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
+      // The scroll offsets are apparently in pixels and does not take into
+      // account the display rotation. Convert back to dip by applying the
+      // inverse transform of the rotation (these are offsets, so we don't care
+      // about scale or translation. We'll take care of the scale below).
+      // https://crbug.com/867537.
+      const auto display =
+          display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
+      gfx::Transform rotation_transform;
+      rotation_transform.Rotate(display.PanelRotationAsDegree());
+      gfx::Transform rotation_inverse_transform;
+      const bool result =
+          rotation_transform.GetInverse(&rotation_inverse_transform);
+      DCHECK(result);
+      gfx::PointF scroll(details.scroll_x(), details.scroll_y());
+      rotation_inverse_transform.TransformPoint(&scroll);
+
       // Divide by scale to keep scroll speed same at any scale.
-      float new_x = origin_.x() + (-1.0f * details.scroll_x() / scale_);
-      float new_y = origin_.y() + (-1.0f * details.scroll_y() / scale_);
+      float new_x = origin_.x() + (-scroll.x() / scale_);
+      float new_y = origin_.y() + (-scroll.y() / scale_);
 
       RedrawDIP(gfx::PointF(new_x, new_y), scale_, 0,
                 kDefaultAnimationTweenType);

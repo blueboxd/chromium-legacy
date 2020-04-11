@@ -303,14 +303,12 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   bool IsFeatureEnabled(
       mojom::blink::FeaturePolicyFeature,
       ReportOptions report_on_failure = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string,
-      const String& source_file = g_empty_string) const;
+      const String& message = g_empty_string) const;
   bool IsFeatureEnabled(
       mojom::blink::FeaturePolicyFeature,
       PolicyValue threshold_value,
       ReportOptions report_on_failure = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string,
-      const String& source_file = g_empty_string) const;
+      const String& message = g_empty_string) const;
   bool IsFeatureEnabled(
       mojom::blink::DocumentPolicyFeature,
       ReportOptions report_option = ReportOptions::kDoNotReport,
@@ -332,8 +330,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   virtual void ReportFeaturePolicyViolation(
       mojom::blink::FeaturePolicyFeature,
       mojom::blink::PolicyDisposition,
-      const String& message = g_empty_string,
-      const String& source_file = g_empty_string) const {}
+      const String& message = g_empty_string) const {}
   virtual void ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature,
       mojom::blink::PolicyDisposition,

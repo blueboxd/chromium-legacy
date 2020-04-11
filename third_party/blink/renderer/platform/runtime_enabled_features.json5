@@ -1450,6 +1450,11 @@
       status: {"Android": "stable", "default": ""},
     },
     {
+      // See https://crbug.com/1012063
+      name: "RequestVideoFrameCallback",
+      status: "experimental",
+    },
+    {
       name: "ResizeObserverUpdates",
       status: "stable",
     },
@@ -1798,11 +1803,6 @@
     {
       name: "VideoPlaybackQuality",
       status: "stable",
-    },
-    {
-      // See https://crbug.com/1012063
-      name: "VideoRequestAnimationFrame",
-      status: "experimental",
     },
     {
       name: "VideoRotateToFullscreen",

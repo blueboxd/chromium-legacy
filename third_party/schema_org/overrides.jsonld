@@ -26,6 +26,19 @@
       ],
       "rdfs:comment": "Indicates a target EntryPoint for an Action.",
       "rdfs:label": "target"
+    },
+    {
+      "@id": "http://schema.org/interactionType",
+      "@type": "rdf:Property",
+      "http://schema.org/domainIncludes": {
+        "@id": "http://schema.org/InteractionCounter"
+      },
+      "http://schema.org/rangeIncludes": [
+        {"@id": "http://schema.org/Action"},
+        {"@id": "http://schema.org/Text"}
+      ],
+      "rdfs:comment": "The Action representing the type of interaction. For up votes, +1s, etc. use <a class=\"localLink\" href=\"http://schema.org/LikeAction\">LikeAction</a>. For down votes use <a class=\"localLink\" href=\"http://schema.org/DislikeAction\">DislikeAction</a>. Otherwise, use the most specific Action.",
+      "rdfs:label": "interactionType"
     }
   ]
 }

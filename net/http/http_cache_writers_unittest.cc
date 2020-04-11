@@ -120,7 +120,7 @@ class WritersTest : public TestWithTaskEnvironment {
     base::RunLoop().RunUntilIdle();
     response_info_ = *(network_transaction->GetResponseInfo());
     if (content_encoding_present)
-      response_info_.headers->AddHeader("Content-Encoding: gzip");
+      response_info_.headers->AddHeader("Content-Encoding", "gzip");
 
     // Create a mock cache transaction.
     std::unique_ptr<TestHttpCacheTransaction> transaction =

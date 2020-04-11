@@ -286,6 +286,12 @@ void CastExtensionSystem::InstallUpdate(
   NOTREACHED();
 }
 
+void CastExtensionSystem::PerformActionBasedOnOmahaAttributes(
+    const std::string& extension_id,
+    const base::Value& attributes) {
+  NOTREACHED();
+}
+
 bool CastExtensionSystem::FinishDelayedInstallationIfReady(
     const std::string& extension_id,
     bool install_immediately) {

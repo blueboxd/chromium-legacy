@@ -117,15 +117,21 @@ Polymer({
      */
     searchResults_: {
       type: Array,
-      observer: 'selectFirstRow_',
+      observer: 'onSearchResultsChanged_',
     },
 
     /** @private */
     shouldShowDropdown_: {
       type: Boolean,
       value: false,
-      computed: 'computeShouldShowDropdown_(searchResults_)',
       reflectToAttribute: true,
+    },
+
+    /** @private */
+    searchResultsExist_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeSearchResultsExist_(searchResults_)',
     },
 
     /**
@@ -177,16 +183,24 @@ Polymer({
   },
 
   /**
+   * @return {string} The current input string.
+   * @private
+   */
+  getCurrentQuery_() {
+    return this.$.search.getSearchInput().value;
+  },
+
+  /**
    * @return {boolean}
    * @private
    */
-  computeShouldShowDropdown_() {
+  computeSearchResultsExist_() {
     return this.searchResults_.length !== 0;
   },
 
   /** @private */
   fetchSearchResults_() {
-    const query = this.$.search.getSearchInput().value;
+    const query = this.getCurrentQuery_();
     if (query === '') {
       this.searchResults_ = [];
       return;
@@ -218,7 +232,7 @@ Polymer({
    * @private
    */
   onSearchResultsReceived_(query, results) {
-    if (query !== this.$.search.getSearchInput().value) {
+    if (query !== this.getCurrentQuery_()) {
       // Received search results are invalid as the query has since changed.
       return;
     }
@@ -232,7 +246,7 @@ Polymer({
   /** @private */
   onNavigatedtoResultRowRoute_() {
     // Settings has navigated to another page; close search results dropdown.
-    this.$.searchResults.close();
+    this.shouldShowDropdown_ = false;
 
     // Blur search input to prevent blinking caret.
     this.$.search.blur();
@@ -245,18 +259,17 @@ Polymer({
   onBlur_(e) {
     e.stopPropagation();
 
-    // The user has clicked a region outside the search box or the input has
-    // been blurred; close the dropdown regardless if there are searchResults_.
-    this.$.searchResults.close();
+    // Close the dropdown because  a region outside the search box was clicked.
+    this.shouldShowDropdown_ = false;
   },
 
   /** @private */
   onSearchInputFocused_() {
     this.lastFocused_ = null;
 
-    if (this.shouldShowDropdown_) {
+    if (this.searchResultsExist_) {
       // Restore previous results instead of re-fetching.
-      this.$.searchResults.open();
+      this.shouldShowDropdown_ = true;
       return;
     }
 
@@ -287,11 +300,16 @@ Polymer({
   },
 
   /** @private */
-  selectFirstRow_() {
-    if (!this.shouldShowDropdown_) {
+  onSearchResultsChanged_() {
+    // Only show dropdown if focus is on search field with a non empty query.
+    this.shouldShowDropdown_ =
+        this.$.search.isSearchFocused() && !!this.getCurrentQuery_();
+
+    if (!this.searchResultsExist_) {
       return;
     }
 
+    // Select the first search result.
     this.selectedItem_ = this.searchResults_[0];
   },
 
@@ -348,7 +366,7 @@ Polymer({
    * @private
    */
   onKeyDown_(e) {
-    if (!this.shouldShowDropdown_) {
+    if (!this.searchResultsExist_) {
       // No action should be taken if there are no search results.
       return;
     }

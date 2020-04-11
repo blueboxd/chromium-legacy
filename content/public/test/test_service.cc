@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 

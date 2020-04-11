@@ -32,9 +32,20 @@ class AppElement extends PolymerElement {
   static get properties() {
     return {
       /** @private */
+      darkMode_: Boolean,
+
+      /** @private */
       oneGoogleBarLoaded_: {
         type: Boolean,
         value: false,
+      },
+
+      /** @private */
+      oneGoogleBarDarkThemeEnabled_: {
+        type: Boolean,
+        computed: `computeOneGoogleBarDarkThemeEnabled_(oneGoogleBarLoaded_,
+            theme_, backgroundSelection_, darkMode_)`,
+        observer: 'onOneGoogleBarDarkThemeEnabledChange_',
       },
 
       /** @private */
@@ -149,6 +160,53 @@ class AppElement extends PolymerElement {
     super.disconnectedCallback();
     this.callbackRouter_.removeListener(assert(this.setThemeListenerId_));
     this.eventTracker_.removeAll();
+    this.mediaListenerDarkMode_.removeListener(
+        assert(this.boundOnDarkModeChange_));
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+    const {matchMedia} = BrowserProxy.getInstance();
+    /** @private {!Function} */
+    this.boundOnDarkModeChange_ = () => {
+      this.darkMode_ = this.mediaListenerDarkMode_.matches;
+    };
+    /** @private {!MediaQueryList} */
+    this.mediaListenerDarkMode_ = matchMedia('(prefers-color-scheme: dark)');
+    this.mediaListenerDarkMode_.addListener(this.boundOnDarkModeChange_);
+    this.boundOnDarkModeChange_();
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeOneGoogleBarDarkThemeEnabled_() {
+    if (!this.theme_ || !this.oneGoogleBarLoaded_) {
+      return false;
+    }
+    switch (this.backgroundSelection_.type) {
+      case BackgroundSelectionType.NO_SELECTION:
+        return this.theme_.isDark;
+      case BackgroundSelectionType.IMAGE:
+        return true;
+      case BackgroundSelectionType.NO_BACKGROUND:
+      case BackgroundSelectionType.DAILY_REFRESH:
+      default:
+        return this.darkMode_;
+    }
+  }
+
+  /** @private */
+  onOneGoogleBarDarkThemeEnabledChange_() {
+    if (!this.oneGoogleBarLoaded_) {
+      return;
+    }
+    this.$.oneGoogleBar.postMessage({
+      type: 'enableDarkTheme',
+      enabled: this.oneGoogleBarDarkThemeEnabled_,
+    });
   }
 
   /**

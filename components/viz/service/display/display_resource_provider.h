@@ -45,7 +45,6 @@ class GLES2Interface;
 namespace viz {
 
 class ContextProvider;
-class ScopedAllowGpuAccessForDisplayResourceProvider;
 class SharedBitmapManager;
 
 // This class provides abstractions for receiving and using resources from other
@@ -280,17 +279,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     DisplayResourceProvider* const resource_provider_;
   };
 
-  class VIZ_SERVICE_EXPORT ScopedAllowGPUThreadAccess {
-   public:
-    explicit ScopedAllowGPUThreadAccess(
-        DisplayResourceProvider* resource_provider);
-    ~ScopedAllowGPUThreadAccess();
-
-   private:
-    DisplayResourceProvider* const resource_provider_;
-    const bool was_allowed_;
-  };
-
   class VIZ_SERVICE_EXPORT SynchronousFence : public ResourceFence {
    public:
     explicit SynchronousFence(gpu::gles2::GLES2Interface* gl);
@@ -353,12 +341,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   // Returns the mailbox corresponding to a resource id.
   gpu::Mailbox GetMailbox(int resource_id);
 
-  // Sets if the GPU thread is available (it always is for Chrome, but for
-  // WebView it happens only when Android calls us on RenderThread.
-  void SetAllowAccessToGPUThread(bool allow);
-
  private:
-  friend class ScopedAllowGpuAccessForDisplayResourceProvider;
   enum DeleteStyle {
     NORMAL,
     FOR_SHUTDOWN,
@@ -550,7 +533,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   void DestroyChildInternal(ChildMap::iterator it, DeleteStyle style);
 
   void SetBatchReturnResources(bool aggregate);
-  void TryFlushBatchedResources();
 
   THREAD_CHECKER(thread_checker_);
   const Mode mode_;
@@ -587,11 +569,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 
   bool enable_shared_images_;
   std::unique_ptr<ScopedBatchReadAccess> scoped_batch_read_access_;
-
-  // Indicates that gpu thread is available and calls like
-  // ReleaseImageContexts() are expected to finish in finite time. It's always
-  // true for Chrome, but on WebView we need to have access to RenderThread.
-  bool can_access_gpu_thread_ = true;
 };
 
 }  // namespace viz

@@ -16,6 +16,7 @@
 #include "base/numerics/ranges.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -258,6 +259,7 @@ WebUITabStripContainerView::WebUITabStripContainerView(
                      base::Unretained(this)))),
       drag_to_open_handler_(
           std::make_unique<DragToOpenHandler>(this, drag_handle)) {
+  TRACE_EVENT0("ui", "WebUITabStripContainerView.Init");
   DCHECK(UseTouchableTabStrip());
   animation_.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
 

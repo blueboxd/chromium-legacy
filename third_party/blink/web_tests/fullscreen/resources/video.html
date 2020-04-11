@@ -7,7 +7,7 @@ function canplaythrough() {
 
 function fullscreenChanged() {
     parent.postMessage("SUCCEED - entered full screen!", "*");
-    video.requestAnimationFrame(framePainted);
+    video.requestVideoFrameCallback(framePainted);
 }
 
 function framePainted() {

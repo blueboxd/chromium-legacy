@@ -509,6 +509,11 @@ def fyi_builder(
       execution_timeout = execution_timeout,
       goma_backend = goma_backend,
       mastername = 'chromium.fyi',
+      # TODO(crbug.com/1027762): Move this kwarg to ci.builder(), after this is
+      # shown to work as expected for fyi builders.
+      resultdb_settings = resultdb.settings(
+          enable = True,
+      ),
       **kwargs
   )
 

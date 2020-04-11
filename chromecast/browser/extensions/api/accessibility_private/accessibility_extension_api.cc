@@ -9,9 +9,7 @@
 #include "chromecast/common/extensions_api/accessibility_private.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/common/image_util.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace {

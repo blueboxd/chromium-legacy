@@ -43,10 +43,6 @@ namespace download {
 class InProgressDownloadManager;
 }
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace storage {
 class ExternalMountPoints;
 }
@@ -92,7 +88,6 @@ class PermissionController;
 class PermissionControllerDelegate;
 class PushMessagingService;
 class ResourceContext;
-class ServiceManagerConnection;
 class SharedCorsOriginAccessList;
 class SiteInstance;
 class StorageNotificationService;
@@ -235,14 +230,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // no BrowserContext exists for that |instance_group|.
   static BrowserContext* GetBrowserContextForServiceInstanceGroup(
       const base::Token& instance_group);
-
-  // Returns a Connector associated with this BrowserContext, which can be used
-  // to connect to service instances bound as this user.
-  static service_manager::Connector* GetConnectorFor(
-      BrowserContext* browser_context);
-
-  static ServiceManagerConnection* GetServiceManagerConnectionFor(
-      BrowserContext* browser_context);
 
   BrowserContext();
 

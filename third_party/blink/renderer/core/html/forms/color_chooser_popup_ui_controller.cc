@@ -29,6 +29,7 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/chooser_resource_loader.h"
@@ -55,7 +56,8 @@ ColorChooserPopupUIController::ColorChooserPopupUIController(
     : ColorChooserUIController(frame, client),
       chrome_client_(chrome_client),
       popup_(nullptr),
-      locale_(Locale::DefaultLocale()) {}
+      locale_(Locale::DefaultLocale()),
+      eye_dropper_chooser_(frame->DomWindow()) {}
 
 ColorChooserPopupUIController::~ColorChooserPopupUIController() {
   DCHECK(!popup_);
@@ -63,6 +65,7 @@ ColorChooserPopupUIController::~ColorChooserPopupUIController() {
 
 void ColorChooserPopupUIController::Trace(Visitor* visitor) {
   visitor->Trace(chrome_client_);
+  visitor->Trace(eye_dropper_chooser_);
   ColorChooserUIController::Trace(visitor);
 }
 
@@ -236,7 +239,8 @@ void ColorChooserPopupUIController::EyeDropperResponseHandler(bool success,
 
 void ColorChooserPopupUIController::OpenEyeDropper() {
   frame_->GetBrowserInterfaceBroker().GetInterface(
-      eye_dropper_chooser_.BindNewPipeAndPassReceiver());
+      eye_dropper_chooser_.BindNewPipeAndPassReceiver(
+          frame_->GetTaskRunner(TaskType::kUserInteraction)));
   eye_dropper_chooser_.set_disconnect_handler(WTF::Bind(
       &ColorChooserPopupUIController::EndChooser, WrapWeakPersistent(this)));
   eye_dropper_chooser_->Choose(

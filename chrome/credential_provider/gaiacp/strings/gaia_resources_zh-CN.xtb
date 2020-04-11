@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">无法将您的工作帐号密码同步到您的 Windows 个人资料，因为贵组织不允许用户更新设备上的密码。请联系您的管理员以获得帮助。</translation>
 <translation id="5186761973554910131">您在尝试更改密码期间提供的计算机名称无效。请与管理员联系。</translation>
 <translation id="5265714013989877288">无法继续，因为更改您的 Windows 密码时出错。请联系您的管理员。</translation>
+<translation id="5581861273642234526">另一个工作帐号已与此设备相关联。请使用您的 Windows 帐号登录。</translation>
 <translation id="6033715878377252112">Windows 版 Google 凭据提供程序助手</translation>
 <translation id="6149399665202317746">Windows 版 Google 凭据提供程序</translation>
 <translation id="6243062314475217481">您的工作帐号密码不符合 Windows 的密码复杂度要求。请联系您的管理员以获得帮助。</translation>

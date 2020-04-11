@@ -18,7 +18,6 @@ namespace views {
 namespace test {
 
 NativeWidget* CreatePlatformNativeWidgetImpl(
-    const Widget::InitParams& init_params,
     Widget* widget,
     uint32_t type,
     bool* destroyed) {

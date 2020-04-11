@@ -10,6 +10,9 @@
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/timer/hi_res_timer_manager.h"
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
 #include "build/build_config.h"
 #include "components/nacl/loader/nacl_listener.h"
 #include "components/nacl/loader/nacl_main_platform_delegate.h"
@@ -37,6 +40,13 @@ int NaClMain(const content::MainFunctionParams& parameters) {
   NaClMainPlatformDelegate platform;
   bool no_sandbox =
       parsed_command_line.HasSwitch(service_manager::switches::kNoSandbox);
+
+#if defined(OS_WIN)
+  // NaCl processes exit differently from other Chromium processes (see NaClExit
+  // in native_client/src/shared/platform/win/nacl_exit.c) and so do not want
+  // default Chromium process exit behavior.
+  base::win::SetShouldCrashOnProcessDetach(false);
+#endif
 
 #if defined(OS_POSIX)
   // The number of cores must be obtained before the invocation of

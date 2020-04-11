@@ -3383,13 +3383,13 @@ base::Optional<viz::SurfaceId> WebMediaPlayerImpl::GetSurfaceId() {
   return bridge_->GetSurfaceId();
 }
 
-void WebMediaPlayerImpl::RequestAnimationFrame() {
+void WebMediaPlayerImpl::RequestVideoFrameCallback() {
   compositor_->SetOnFramePresentedCallback(BindToCurrentLoop(base::BindOnce(
       &WebMediaPlayerImpl::OnNewFramePresentedCallback, weak_this_)));
 }
 
 void WebMediaPlayerImpl::OnNewFramePresentedCallback() {
-  client_->OnRequestAnimationFrame();
+  client_->OnRequestVideoFrameCallback();
 }
 
 std::unique_ptr<blink::WebMediaPlayer::VideoFramePresentationMetadata>

@@ -8,9 +8,7 @@
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/common/constants.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/views/widget/widget.h"
 
 namespace {

@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/ignore_paint_timing_scope.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
@@ -794,15 +795,18 @@ void PaintController::CheckUnderInvalidation() {
 }
 
 void PaintController::SetFirstPainted() {
-  frame_first_paints_.back().first_painted = true;
+  if (!IgnorePaintTimingScope::ShouldIgnore())
+    frame_first_paints_.back().first_painted = true;
 }
 
 void PaintController::SetTextPainted() {
-  frame_first_paints_.back().text_painted = true;
+  if (!IgnorePaintTimingScope::ShouldIgnore())
+    frame_first_paints_.back().text_painted = true;
 }
 
 void PaintController::SetImagePainted() {
-  frame_first_paints_.back().image_painted = true;
+  if (!IgnorePaintTimingScope::ShouldIgnore())
+    frame_first_paints_.back().image_painted = true;
 }
 
 void PaintController::BeginFrame(const void* frame) {

@@ -44,7 +44,7 @@ void SlotAssignment::DidAddSlot(HTMLSlotElement& slot) {
   needs_collect_slots_ = true;
 
   if (owner_->IsManualSlotting()) {
-    SetNeedsAssignmentRecalc();
+    // Adding a new slot should not require assignment recalc.
     return;
   }
 
@@ -67,7 +67,12 @@ void SlotAssignment::DidRemoveSlot(HTMLSlotElement& slot) {
   needs_collect_slots_ = true;
 
   if (owner_->IsManualSlotting()) {
-    SetNeedsAssignmentRecalc();
+    auto& candidates = slot.AssignedNodesCandidates();
+    if (candidates.size()) {
+      ClearCandidateNodes(candidates);
+      slot.ClearAssignedNodesCandidates();
+      SetNeedsAssignmentRecalc();
+    }
     return;
   }
 
@@ -391,12 +396,9 @@ HTMLSlotElement* SlotAssignment::GetCachedFirstSlotWithoutAccessingNodeTree(
 void SlotAssignment::UpdateCandidateNodeAssignedSlot(Node& node,
                                                      HTMLSlotElement& slot) {
   auto* prev_slot = candidate_assigned_slot_map_.at(&node);
-  if (prev_slot && prev_slot != &slot) {
-    auto candidates = prev_slot->AssignedNodesCandidates();
-    auto it = candidates.find(&node);
-    if (it != candidates.end())
-      candidates.erase(it);
-  }
+  if (prev_slot && prev_slot != &slot)
+    prev_slot->RemoveAssignedNodeCandidate(node);
+
   candidate_assigned_slot_map_.Set(&node, &slot);
 }
 

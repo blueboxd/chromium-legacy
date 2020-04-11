@@ -373,27 +373,24 @@ void PartialData::FixResponseHeaders(HttpResponseHeaders* headers,
     return;
   }
 
-  headers->RemoveHeader(kLengthHeader);
-  headers->RemoveHeader(kRangeHeader);
-
   if (byte_range_.IsValid()) {
     headers->ReplaceStatusLine("HTTP/1.1 416 Requested Range Not Satisfiable");
-    headers->AddHeader(base::StringPrintf("%s: bytes 0-0/%" PRId64,
-                                          kRangeHeader, resource_size_));
-    headers->AddHeader(base::StringPrintf("%s: 0", kLengthHeader));
+    headers->SetHeader(
+        kRangeHeader, base::StringPrintf("bytes 0-0/%" PRId64, resource_size_));
+    headers->SetHeader(kLengthHeader, "0");
   } else {
     // TODO(rvargas): Is it safe to change the protocol version?
     headers->ReplaceStatusLine("HTTP/1.1 200 OK");
     DCHECK_NE(resource_size_, 0);
-    headers->AddHeader(base::StringPrintf("%s: %" PRId64, kLengthHeader,
-                                          resource_size_));
+    headers->RemoveHeader(kRangeHeader);
+    headers->SetHeader(kLengthHeader,
+                       base::StringPrintf("%" PRId64, resource_size_));
   }
 }
 
 void PartialData::FixContentLength(HttpResponseHeaders* headers) {
-  headers->RemoveHeader(kLengthHeader);
-  headers->AddHeader(base::StringPrintf("%s: %" PRId64, kLengthHeader,
-                                        resource_size_));
+  headers->SetHeader(kLengthHeader,
+                     base::StringPrintf("%" PRId64, resource_size_));
 }
 
 int PartialData::CacheRead(disk_cache::Entry* entry,

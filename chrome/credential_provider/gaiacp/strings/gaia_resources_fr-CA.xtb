@@ -18,6 +18,7 @@
 <translation id="4744575902940448763">Le mot de passe de votre compte professionnel n'a pas pu être synchronisé avec votre profil Windows parce que votre organisation restreint la mise à jour des mots de passe. Pour obtenir de l'aide, communiquez avec votre administrateur.</translation>
 <translation id="5186761973554910131">Un nom d'ordinateur incorrect a été fourni lors du changement de mot de passe. Veuillez communiquer avec votre administrateur.</translation>
 <translation id="5265714013989877288">Impossible de continuer parce qu'une erreur s'est produite durant la modification de votre mot de passe Windows. Veuillez communiquer avec votre administrateur.</translation>
+<translation id="5581861273642234526">Un autre compte professionnel est déjà associé à cet appareil. Connectez-vous à l'aide de votre compte Windows.</translation>
 <translation id="6033715878377252112">Aide du fournisseur d'authentifiants Google pour Windows</translation>
 <translation id="6149399665202317746">Fournisseur d'authentifiants Google pour Windows</translation>
 <translation id="6243062314475217481">Le mot de passe de votre compte professionnel ne répond pas aux exigences de complexité pour Windows. Pour obtenir de l'aide, communiquez avec votre administrateur.</translation>

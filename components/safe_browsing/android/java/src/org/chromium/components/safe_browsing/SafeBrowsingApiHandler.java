@@ -56,7 +56,10 @@ public interface SafeBrowsingApiHandler {
      *
      * @return whether Safe Browsing is supported for this installation.
      */
-    public boolean init(Observer result, boolean enableLocalBlacklists);
+    // TODO(crbug.com/1054179): Remove this interface once upstream implementation is removed.
+    public default boolean init(Observer result, boolean enableLocalBlacklists) {
+        return init(result);
+    }
 
     /**
      * Returns the Safety Net ID of the device. Checks to make sure that the feature to report

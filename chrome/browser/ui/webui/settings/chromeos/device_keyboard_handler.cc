@@ -11,8 +11,6 @@
 #include "base/values.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
 

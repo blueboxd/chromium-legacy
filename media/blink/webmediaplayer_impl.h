@@ -292,7 +292,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   int GetDelegateId() override;
   base::Optional<viz::SurfaceId> GetSurfaceId() override;
   GURL GetSrcAfterRedirects() override;
-  void RequestAnimationFrame() override;
+  void RequestVideoFrameCallback() override;
   std::unique_ptr<blink::WebMediaPlayer::VideoFramePresentationMetadata>
   GetVideoFramePresentationMetadata() override;
 

@@ -613,10 +613,6 @@
     },
     {
         "duration": "18.0",
-        "name": "blink_perf.events/is-input-pending-all-events.html"
-    },
-    {
-        "duration": "18.0",
         "name": "blink_perf.events/is-input-pending-default-events.html"
     },
     {

@@ -115,6 +115,8 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   const HeapLinkedHashSet<Member<Node>>& AssignedNodesCandidates() const {
     return assigned_nodes_candidates_;
   }
+  void ClearAssignedNodesCandidates();
+  void RemoveAssignedNodeCandidate(Node&);
 
   void Trace(Visitor*) override;
 

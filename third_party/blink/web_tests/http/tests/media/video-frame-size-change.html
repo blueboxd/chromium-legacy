@@ -50,10 +50,10 @@
     response = await fetch('/media/resources/media-source/webm/test-v-128k-640x480-30fps-10kfr.webm');
     let videoData480p = await response.arrayBuffer();
 
-    // Queue a requestAnimationFrame() before appending buffers in order not to
+    // Queue a requestVideoFrameCallback() before appending buffers in order not to
     // miss any frames.
     let singleSizeVideo = document.getElementById('single_size');
-    singleSizeVideo.requestAnimationFrame(waitForRender);
+    singleSizeVideo.requestVideoFrameCallback(waitForRender);
 
     // Set up the first video with content of a single size.
     let ss_sourceBuffer = await setupMse(singleSizeVideo, 'video/webm; codecs="vp8"');
@@ -62,8 +62,8 @@
 
     // Wait for a frame of the first size to be painted. Then seek beyond the first size.
     let mixedSizeVideo = document.getElementById('mixed_size');
-    mixedSizeVideo.requestAnimationFrame(_=> {
-      mixedSizeVideo.requestAnimationFrame(waitForRender);
+    mixedSizeVideo.requestVideoFrameCallback(_=> {
+      mixedSizeVideo.requestVideoFrameCallback(waitForRender);
       mixedSizeVideo.currentTime = 2;
     });
 

@@ -255,6 +255,10 @@ public class TabGridIphTest {
         enterTabSwitcher(cta);
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        // Scroll to the position of the IPH entrance so that it is completely showing for Espresso
+        // click.
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+                .perform(RecyclerViewActions.scrollToPosition(1));
         onView(allOf(withId(R.id.action_button), withParent(withId(R.id.tab_grid_message_item))))
                 .perform(click());
         verifyIphDialogShowing(cta);

@@ -102,7 +102,8 @@ class MediaHistoryKeyedService : public KeyedService,
       const media_feeds::mojom::FetchResult result,
       const bool was_fetched_from_cache,
       const std::vector<media_session::MediaImage>& logos,
-      const std::string& display_name);
+      const std::string& display_name,
+      base::OnceClosure callback);
 
   void GetURLsInTableForTest(const std::string& table,
                              base::OnceCallback<void(std::set<GURL>)> callback);

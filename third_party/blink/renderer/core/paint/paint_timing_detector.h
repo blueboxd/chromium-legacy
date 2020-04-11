@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_visualizer.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/graphics/paint/ignore_paint_timing_scope.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
@@ -271,22 +272,6 @@ class ScopedPaintTimingDetectorBlockPaintHook {
   static ScopedPaintTimingDetectorBlockPaintHook* top_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedPaintTimingDetectorBlockPaintHook);
-};
-
-// Creates a scope to ignore paint timing, e.g. when we are painting contents
-// under opacity:0.
-class IgnorePaintTimingScope {
-  STACK_ALLOCATED();
-
- public:
-  IgnorePaintTimingScope() : auto_reset_(&should_ignore_, true) {}
-  ~IgnorePaintTimingScope() = default;
-
-  static bool ShouldIgnore() { return should_ignore_; }
-
- private:
-  base::AutoReset<bool> auto_reset_;
-  static bool should_ignore_;
 };
 
 // static

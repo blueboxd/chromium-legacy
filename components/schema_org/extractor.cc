@@ -75,14 +75,6 @@ bool ParseStringValue(const std::string& property_type,
 
   schema_org::property::PropertyConfiguration prop_config =
       schema_org::property::GetPropertyConfiguration(property_type);
-  if (prop_config.text) {
-    values->string_values.push_back(value.as_string());
-    return true;
-  }
-  if (prop_config.url) {
-    values->url_values.push_back(GURL(value));
-    return true;
-  }
   if (prop_config.number) {
     double d;
     bool parsed_double = base::StringToDouble(value, &d);
@@ -133,11 +125,17 @@ bool ParseStringValue(const std::string& property_type,
       return true;
     }
   }
-  if (!prop_config.enum_types.empty()) {
+  if (!prop_config.thing_types.empty() || !prop_config.enum_types.empty() ||
+      prop_config.url) {
     auto url = GURL(value);
-    if (!url.is_valid())
-      return false;
-    values->url_values.push_back(url);
+    if (url.is_valid()) {
+      values->url_values.push_back(url);
+      return true;
+    }
+  }
+  if (!prop_config.thing_types.empty() || !prop_config.enum_types.empty() ||
+      prop_config.text) {
+    values->string_values.push_back(value.as_string());
     return true;
   }
   return false;

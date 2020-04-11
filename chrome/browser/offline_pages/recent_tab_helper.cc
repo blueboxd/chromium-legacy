@@ -489,6 +489,7 @@ void RecentTabHelper::SavePageCallback(SnapshotProgressInfo* snapshot_info,
                                        int64_t offline_id) {
   DCHECK((snapshot_info->IsForLastN() &&
           snapshot_info->request_id == OfflinePageModel::kInvalidOfflineId) ||
+         result != SavePageResult::SUCCESS ||
          snapshot_info->request_id == offline_id)
       << "SnapshotProgressInfo(client_id=" << snapshot_info->client_id
       << ", request_id=" << snapshot_info->request_id

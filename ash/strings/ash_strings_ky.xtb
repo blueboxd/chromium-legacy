@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">Көбүрөөк опциялар үчүн чыкылдатыңыз</translation>
 <translation id="1570871743947603115">Bluetooth'ду өчүрүү/күйгүзүү. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Бул сеанста аткарган иш-аракеттериңизди көрөт</translation>
-<translation id="1632985212731562677">Switch Access функциясын Жөндөөлөр &gt; Атайын мүмкүнчүлүктөр бөлүмүнөн өчүрүп коюуга болот.</translation>
+<translation id="1632985212731562677">Switch Access функциясын Жөндөөлөр &gt; Атайын мүмкүнчүлүктөр бөлүмүнөн өчүрүүгө болот.</translation>
 <translation id="1654477262762802994">Айтып издеп баштоо</translation>
 <translation id="1658406695958299976">Кечиресиз, сырсөзүңүздү текшерүү дагы эле мүмкүн болбой жатат. Эскертүү: эгер сырсөзүңүздү жакында өзгөрткөн болсоңуз, жаңы сырсөзүңүз чыгып кайра киргениңизден кийин гана колдонулат, андыктан бул жерде эски сырсөздү колдонуңуз.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> калды</translation>
@@ -412,6 +412,7 @@
 <translation id="6267036997247669271"><ph name="NAME" />: Жандырылууда…</translation>
 <translation id="6283712521836204486">"Тынчымды алба" режими өчүк.</translation>
 <translation id="6284232397434400372">Дааналыгы өзгөртүлдү</translation>
+<translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> ата-эненин уруксаты менен кайра кошууга болот.</translation>
 <translation id="6297287540776456956">Тандалган бөлүктө стилусту колдонуу</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> буга <ph name="ROTATION" /> айланды</translation>
 <translation id="6376931439017688372">Bluetooth күйүк</translation>

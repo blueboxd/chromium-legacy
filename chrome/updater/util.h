@@ -5,14 +5,15 @@
 #ifndef CHROME_UPDATER_UTIL_H_
 #define CHROME_UPDATER_UTIL_H_
 
-namespace base {
-class FilePath;
-}
+#include "base/files/file_path.h"
 
 namespace updater {
 
 // Returns a directory where updater files or its data is stored.
 bool GetProductDirectory(base::FilePath* path);
+
+// Initializes logging for an executable.
+void InitLogging(const base::FilePath::StringType& filename);
 
 }  // namespace updater
 

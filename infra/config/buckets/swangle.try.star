@@ -1,6 +1,7 @@
 load('//lib/builders.star', 'builder', 'cpu', 'defaults', 'goma', 'os')
 load('//lib/try.star', 'try_')
 
+try_.defaults.add_to_list_view.set(True)
 try_.defaults.bucket.set('try')
 try_.defaults.build_numbers.set(True)
 try_.defaults.configure_kitchen.set(True)
@@ -102,4 +103,3 @@ try_.chromium_swangle_windows_builder(
     name = 'win-swangle-try-x86',
     pool = 'luci.chromium.swangle.deps.win.x86.try',
 )
-

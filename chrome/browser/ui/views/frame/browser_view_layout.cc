@@ -8,6 +8,7 @@
 
 #include "base/observer_list.h"
 #include "base/stl_util.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -283,6 +284,7 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
 // BrowserViewLayout, views::LayoutManager implementation:
 
 void BrowserViewLayout::Layout(views::View* browser_view) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::Layout");
   vertical_layout_rect_ = browser_view->GetLocalBounds();
   int top_inset = delegate_->GetTopInsetInBrowserView();
   int top = LayoutTabStripRegion(top_inset);
@@ -348,6 +350,7 @@ gfx::Size BrowserViewLayout::GetPreferredSize(const views::View* host) const {
 // BrowserViewLayout, private:
 
 int BrowserViewLayout::LayoutTabStripRegion(int top) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::LayoutTabStripRegion");
   if (!delegate_->IsTabStripVisible()) {
     SetViewVisibility(tab_strip_region_view_, false);
     tab_strip_region_view_->SetBounds(0, 0, 0, 0);
@@ -366,6 +369,7 @@ int BrowserViewLayout::LayoutTabStripRegion(int top) {
 }
 
 int BrowserViewLayout::LayoutWebUITabStrip(int top) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::LayoutWebUITabStrip");
   if (!webui_tab_strip_)
     return top;
   if (!webui_tab_strip_->GetVisible()) {
@@ -379,6 +383,7 @@ int BrowserViewLayout::LayoutWebUITabStrip(int top) {
 }
 
 int BrowserViewLayout::LayoutToolbar(int top) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::LayoutToolbar");
   int browser_view_width = vertical_layout_rect_.width();
   bool toolbar_visible = delegate_->IsToolbarVisible();
   int height = toolbar_visible ? toolbar_->GetPreferredSize().height() : 0;
@@ -389,6 +394,7 @@ int BrowserViewLayout::LayoutToolbar(int top) {
 }
 
 int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::LayoutBookmarkAndInfoBars");
   web_contents_modal_dialog_top_y_ =
       top + browser_view_y - kConstrainedWindowOverlap;
 
@@ -459,6 +465,7 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
 }
 
 void BrowserViewLayout::LayoutContentsContainerView(int top, int bottom) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::LayoutContentsContainerView");
   // |contents_container_| contains web page contents and devtools.
   // See browser_view.h for details.
   gfx::Rect contents_container_bounds(vertical_layout_rect_.x(),
@@ -512,6 +519,7 @@ void BrowserViewLayout::UpdateTopContainerBounds() {
 }
 
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::LayoutDownloadShelf");
   if (delegate_->DownloadShelfNeedsLayout()) {
     bool visible =
         delegate_->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF);

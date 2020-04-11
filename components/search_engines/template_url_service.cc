@@ -23,6 +23,7 @@
 #include "components/search_engines/template_url_service_client.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/search_engines/util.h"
+#include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
@@ -971,30 +972,32 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
   for (auto iter = change_list.begin(); iter != change_list.end(); ++iter) {
     DCHECK_EQ(syncer::SEARCH_ENGINES, iter->sync_data().GetDataType());
 
-    std::string guid =
-        iter->sync_data().GetSpecifics().search_engine().sync_guid();
-    TemplateURL* existing_turl = GetTemplateURLForGUID(guid);
-    std::unique_ptr<TemplateURL> turl(
+    TemplateURL* existing_turl = GetTemplateURLForGUID(
+        iter->sync_data().GetSpecifics().search_engine().sync_guid());
+    std::unique_ptr<TemplateURL> turl =
         CreateTemplateURLFromTemplateURLAndSyncData(
             client_.get(), prefs_, search_terms_data(), existing_turl,
-            iter->sync_data(), &new_changes));
+            iter->sync_data(), &new_changes);
     if (!turl)
       continue;
 
-    // Explicitly don't check for conflicts against extension keywords; in this
-    // case the functions which modify the keyword map know how to handle the
-    // conflicts.
-    // TODO(mpcomplete): If we allow editing extension keywords, then those will
-    // need to undergo conflict resolution.
-    TemplateURL* existing_keyword_turl =
-        FindNonExtensionTemplateURLForKeyword(turl->keyword());
+    const std::string error_msg =
+        "ProcessSyncChanges failed on ChangeType " +
+        syncer::SyncChange::ChangeTypeToString(iter->change_type());
+    if (iter->change_type() == syncer::SyncChange::ACTION_INVALID) {
+      error = sync_error_factory_->CreateAndUploadError(FROM_HERE, error_msg);
+      continue;
+    }
+
+    // Can't add an already-existing URL, or update/delete a non-existent one.
+    if ((iter->change_type() == syncer::SyncChange::ACTION_ADD)
+            ? !!existing_turl
+            : !existing_turl) {
+      error = sync_error_factory_->CreateAndUploadError(FROM_HERE, error_msg);
+      continue;
+    }
+
     if (iter->change_type() == syncer::SyncChange::ACTION_DELETE) {
-      if (!existing_turl) {
-        error = sync_error_factory_->CreateAndUploadError(
-            FROM_HERE,
-            "ProcessSyncChanges failed on ChangeType ACTION_DELETE");
-        continue;
-      }
       if (existing_turl == GetDefaultSearchProvider()) {
         // The only way Sync can attempt to delete the default search provider
         // is if we had changed the kSyncedDefaultSearchProviderGUID
@@ -1022,54 +1025,44 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
                                                  sync_data));
         // Ignore the delete attempt. This means we never end up resetting the
         // default search provider due to an ACTION_DELETE from sync.
-        continue;
+      } else {
+        Remove(existing_turl);
       }
+      continue;
+    }
 
-      Remove(existing_turl);
-    } else if (iter->change_type() == syncer::SyncChange::ACTION_ADD) {
-      if (existing_turl) {
-        error = sync_error_factory_->CreateAndUploadError(
-            FROM_HERE,
-            "ProcessSyncChanges failed on ChangeType ACTION_ADD");
-        continue;
-      }
-      const std::string guid = turl->sync_guid();
-      if (existing_keyword_turl) {
-        // Resolve any conflicts so we can safely add the new entry.
-        ResolveSyncKeywordConflict(turl.get(), existing_keyword_turl,
-                                   &new_changes);
-      }
+    // Explicitly don't check for conflicts against extension keywords; in this
+    // case the functions which modify the keyword map know how to handle the
+    // conflicts.
+    // TODO(mpcomplete): If we allow editing extension keywords, then those will
+    // need to undergo conflict resolution.
+    TemplateURL* existing_keyword_turl =
+        FindNonExtensionTemplateURLForKeyword(turl->keyword());
+    const bool has_conflict =
+        existing_keyword_turl && (existing_keyword_turl != existing_turl);
+    if (has_conflict) {
+      // Resolve any conflicts with other entries so we can safely update the
+      // keyword.
+      ResolveSyncKeywordConflict(turl.get(), existing_keyword_turl,
+                                 &new_changes);
+    }
+
+    if (iter->change_type() == syncer::SyncChange::ACTION_ADD) {
       base::AutoReset<DefaultSearchChangeOrigin> change_origin(
           &dsp_change_origin_, DSP_CHANGE_SYNC_ADD);
       // Force the local ID to kInvalidTemplateURLID so we can add it.
       TemplateURLData data(turl->data());
       data.id = kInvalidTemplateURLID;
-      std::unique_ptr<TemplateURL> added_ptr =
-          std::make_unique<TemplateURL>(data);
+      auto added_ptr = std::make_unique<TemplateURL>(data);
       TemplateURL* added = added_ptr.get();
       if (Add(std::move(added_ptr)))
         MaybeUpdateDSEViaPrefs(added);
-    } else if (iter->change_type() == syncer::SyncChange::ACTION_UPDATE) {
-      if (!existing_turl) {
-        error = sync_error_factory_->CreateAndUploadError(
-            FROM_HERE,
-            "ProcessSyncChanges failed on ChangeType ACTION_UPDATE");
-        continue;
-      }
-      if (existing_keyword_turl && (existing_keyword_turl != existing_turl)) {
-        // Resolve any conflicts with other entries so we can safely update the
-        // keyword.
-        ResolveSyncKeywordConflict(turl.get(), existing_keyword_turl,
-                                   &new_changes);
-      }
-      if (Update(existing_turl, *turl))
-        MaybeUpdateDSEViaPrefs(existing_turl);
-    } else {
-      // We've unexpectedly received an ACTION_INVALID.
-      error = sync_error_factory_->CreateAndUploadError(
-          FROM_HERE,
-          "ProcessSyncChanges received an ACTION_INVALID");
+      continue;
     }
+
+    DCHECK_EQ(syncer::SyncChange::ACTION_UPDATE, iter->change_type());
+    if (Update(existing_turl, *turl))
+      MaybeUpdateDSEViaPrefs(existing_turl);
   }
 
 
@@ -1944,6 +1937,9 @@ TemplateURL* TemplateURLService::Add(std::unique_ptr<TemplateURL> template_url,
   // If |template_url| is not created by an extension, its keyword must not
   // conflict with any already in the model.
   if (!IsCreatedByExtension(template_url.get())) {
+    TemplateURL* existing_turl =
+        FindNonExtensionTemplateURLForKeyword(template_url->keyword());
+
     // Note that we can reach here during the loading phase while processing the
     // template URLs from the web data service.  In this case,
     // GetTemplateURLForKeyword() will look not only at what's already in the
@@ -1952,9 +1948,6 @@ TemplateURL* TemplateURLService::Add(std::unique_ptr<TemplateURL> template_url,
     // that any "pre-existing" entries we find are actually coming from
     // |template_urls_|, lest we detect a "conflict" between the
     // |initial_default_search_provider_| and the web data version of itself.
-    TemplateURL* existing_turl =
-        FindNonExtensionTemplateURLForKeyword(template_url->keyword());
-
     if (existing_turl && Contains(&template_urls_, existing_turl)) {
       DCHECK_NE(existing_turl, template_url.get());
       if (CanReplace(existing_turl)) {

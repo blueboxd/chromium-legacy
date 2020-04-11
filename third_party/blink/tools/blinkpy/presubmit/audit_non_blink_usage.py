@@ -704,7 +704,7 @@ _CONFIG = [
             'third_party/blink/renderer/modules/encryptedmedia/',
             'third_party/blink/renderer/modules/media/',
             'third_party/blink/renderer/modules/media_capabilities/',
-            'third_party/blink/renderer/modules/video_raf/',
+            'third_party/blink/renderer/modules/video_rvfc/',
         ],
         'allowed': [
             'media::.+',

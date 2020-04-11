@@ -83,12 +83,10 @@ public class PartnerHomepageUnitTest {
 
     /**
      * Everything is enabled for using partner homepage, except that there is no flag file.
-     * Flaky: crbug.com/836700
      */
     @Test
     @SmallTest
     @Feature({"Homepage"})
-    @DisabledTest(message = "crbug.com/836700")
     public void testProviderNotFromSystemPackage() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
         mHomepageManager.setHomepagePreferences(false, true, TEST_CUSTOM_HOMEPAGE_URI);
@@ -115,12 +113,10 @@ public class PartnerHomepageUnitTest {
 
     /**
      * Everything is enabled for using partner homepage, except that there is no actual provider.
-     * Flaky : http://crbug.com/836110
      */
     @Test
     @SmallTest
     @Feature({"Homepage"})
-    @DisabledTest(message = "crbug.com/836110")
     public void testNoProvider() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
         mHomepageManager.setHomepagePreferences(false, true, TEST_CUSTOM_HOMEPAGE_URI);
@@ -148,7 +144,6 @@ public class PartnerHomepageUnitTest {
     @Test
     @SmallTest
     @Feature({"Homepage"})
-    @RetryOnFailure
     public void testHomepageDisabled() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(false);
         mHomepageManager.setHomepagePreferences(false, true, TEST_CUSTOM_HOMEPAGE_URI);

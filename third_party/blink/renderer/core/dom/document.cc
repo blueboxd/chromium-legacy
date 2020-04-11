@@ -1100,11 +1100,9 @@ void Document::SetSecureContextModeForTesting(SecureContextMode mode) {
 
 bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
                                 ReportOptions report_on_failure,
-                                const String& message,
-                                const String& source_file) const {
-  return GetExecutionContext() &&
-         GetExecutionContext()->IsFeatureEnabled(feature, report_on_failure,
-                                                 message, source_file);
+                                const String& message) const {
+  return GetExecutionContext() && GetExecutionContext()->IsFeatureEnabled(
+                                      feature, report_on_failure, message);
 }
 
 bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
@@ -1113,8 +1111,8 @@ bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
                                 const String& message,
                                 const String& source_file) const {
   return GetExecutionContext() &&
-         GetExecutionContext()->IsFeatureEnabled(
-             feature, threshold_value, report_on_failure, message, source_file);
+         GetExecutionContext()->IsFeatureEnabled(feature, threshold_value,
+                                                 report_on_failure, message);
 }
 
 bool Document::IsFeatureEnabled(mojom::blink::DocumentPolicyFeature feature,
@@ -8470,8 +8468,7 @@ void Document::CountPotentialFeaturePolicyViolation(
 void Document::ReportFeaturePolicyViolation(
     mojom::blink::FeaturePolicyFeature feature,
     mojom::blink::PolicyDisposition disposition,
-    const String& message,
-    const String& source_file) const {
+    const String& message) const {
   if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled(this))
     return;
   LocalFrame* frame = GetFrame();
@@ -8485,8 +8482,8 @@ void Document::ReportFeaturePolicyViolation(
                                                                : "enforce");
 
   FeaturePolicyViolationReportBody* body =
-      MakeGarbageCollected<FeaturePolicyViolationReportBody>(
-          feature_name, message, disp_str, source_file);
+      MakeGarbageCollected<FeaturePolicyViolationReportBody>(feature_name,
+                                                             message, disp_str);
 
   Report* report = MakeGarbageCollected<Report>(
       ReportType::kFeaturePolicyViolation, Url().GetString(), body);

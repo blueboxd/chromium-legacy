@@ -89,9 +89,9 @@ ChromePluginPlaceholder::BindPluginRenderer() {
 ChromePluginPlaceholder* ChromePluginPlaceholder::CreateLoadableMissingPlugin(
     content::RenderFrame* render_frame,
     const blink::WebPluginParams& params) {
-  const base::StringPiece template_html(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_BLOCKED_PLUGIN_HTML));
+  std::string template_html =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          IDR_BLOCKED_PLUGIN_HTML);
 
   base::DictionaryValue values;
   values.SetString("name", "");
@@ -148,8 +148,9 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
     }
   }
 
-  const base::StringPiece template_html(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(template_id));
+  std::string template_html =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          template_id);
 
   DCHECK(!template_html.empty()) << "unable to load template. ID: "
                                  << template_id;

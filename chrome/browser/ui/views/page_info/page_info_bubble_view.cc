@@ -338,8 +338,8 @@ void BubbleHeaderView::AddPasswordReuseButtons(bool is_saved_password) {
   int kSpacingBetweenButtons = 8;
   int change_password_button_size =
       change_password_button
-          ? 0
-          : change_password_button->CalculatePreferredSize().width();
+          ? change_password_button->CalculatePreferredSize().width()
+          : 0;
 
   // If these two buttons cannot fit into a single line, stack them vertically.
   bool can_fit_in_one_line =
@@ -820,10 +820,8 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
               PageInfo::SITE_IDENTITY_STATUS_EV_CERT &&
           identity_info.connection_status ==
               PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED) {
-        // An EV cert is required to have an organization name, a city
-        // (localityName), and country, but state is "if any".
+        // An EV cert is required to have an organization name and a country.
         if (!certificate_->subject().organization_names.empty() &&
-            !certificate_->subject().locality_name.empty() &&
             !certificate_->subject().country_name.empty()) {
           subtitle_text = l10n_util::GetStringFUTF16(
               IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_VERIFIED,

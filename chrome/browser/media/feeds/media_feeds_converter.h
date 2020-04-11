@@ -17,7 +17,9 @@ namespace media_feeds {
 // its feed items are not, GetMediaFeeds excludes the invalid feed items from
 // the returned result.
 base::Optional<std::vector<mojom::MediaFeedItemPtr>> GetMediaFeeds(
-    schema_org::improved::mojom::EntityPtr schema_org_entity);
+    const schema_org::improved::mojom::EntityPtr& schema_org_entity,
+    std::vector<media_session::MediaImage>* logos,
+    std::string* display_name);
 
 }  // namespace media_feeds
 

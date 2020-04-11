@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "content/public/browser/browser_child_process_observer.h"
-#include "content/public/common/service_manager_connection.h"
 
 namespace performance_manager {
 

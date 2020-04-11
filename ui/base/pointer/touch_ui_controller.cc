@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
@@ -78,8 +79,10 @@ TouchUiController::~TouchUiController() = default;
 void TouchUiController::OnTabletModeToggled(bool enabled) {
   const bool was_touch_ui = touch_ui();
   tablet_mode_ = enabled;
-  if (touch_ui() != was_touch_ui)
+  if (touch_ui() != was_touch_ui) {
+    TRACE_EVENT0("ui", "TouchUiController.NotifyListeners");
     callback_list_.Notify();
+  }
 }
 
 std::unique_ptr<TouchUiController::Subscription>
@@ -91,8 +94,10 @@ TouchUiController::TouchUiState TouchUiController::SetTouchUiState(
     TouchUiState touch_ui_state) {
   const bool was_touch_ui = touch_ui();
   const TouchUiState old_state = std::exchange(touch_ui_state_, touch_ui_state);
-  if (touch_ui() != was_touch_ui)
+  if (touch_ui() != was_touch_ui) {
+    TRACE_EVENT0("ui", "TouchUiController.NotifyListeners");
     callback_list_.Notify();
+  }
   return old_state;
 }
 

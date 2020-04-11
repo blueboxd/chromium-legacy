@@ -26,6 +26,9 @@ suite('OSSettingsSearchBox', () => {
   /** @type {?chromeos.settings.mojom.UserActionRecorderInterface} */
   let userActionRecorder;
 
+  /** @type {?HTMLElement} */
+  let noResultsSection;
+
   /** @param {string} term */
   async function simulateSearch(term) {
     field.$.searchInput.value = term;
@@ -68,6 +71,8 @@ suite('OSSettingsSearchBox', () => {
     assertTrue(!!dropDown);
     resultList = searchBox.$$('iron-list');
     assertTrue(!!resultList);
+    noResultsSection = searchBox.$$('#noSearchResultsContainer');
+    assertTrue(!!noResultsSection);
 
     settingsSearchHandler = new settings.FakeSettingsSearchHandler();
     settings.setSearchHandlerForTesting(settingsSearchHandler);
@@ -93,17 +98,21 @@ suite('OSSettingsSearchBox', () => {
   });
 
   test('Dropdown opens correctly when results are fetched', async () => {
-    // Closed dropdown if no results are returned.
+    // Show no results in dropdown if no results are returned.
     settingsSearchHandler.setFakeResults([]);
     assertFalse(dropDown.opened);
     await simulateSearch('query 1');
-    assertFalse(dropDown.opened);
+    assertTrue(dropDown.opened);
+    assertEquals(searchBox.searchResults_.length, 0);
+    assertFalse(noResultsSection.hidden);
+
     assertEquals(userActionRecorder.searchCount, 1);
 
-    // Open dropdown if results are returned.
+    // Show result list if results are returned, and hide no results div.
     settingsSearchHandler.setFakeResults([fakeResult('result')]);
     await simulateSearch('query 2');
-    assertTrue(dropDown.opened);
+    assertNotEquals(searchBox.searchResults_.length, 0);
+    assertTrue(noResultsSection.hidden);
   });
 
   test('Restore previous existing search results', async () => {

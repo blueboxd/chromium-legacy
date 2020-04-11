@@ -160,7 +160,7 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD0(RequestEnterPictureInPicture, void());
   MOCK_METHOD0(RequestExitPictureInPicture, void());
   MOCK_METHOD0(GetFeatures, Features(void));
-  MOCK_METHOD0(OnRequestAnimationFrame, void());
+  MOCK_METHOD0(OnRequestVideoFrameCallback, void());
 
   void set_was_always_muted(bool value) { was_always_muted_ = value; }
 
@@ -666,7 +666,7 @@ class WebMediaPlayerImplTest
                                    size, base::TimeDelta());
   }
 
-  void RequestAnimationFrame() { wmpi_->RequestAnimationFrame(); }
+  void RequestVideoFrameCallback() { wmpi_->RequestVideoFrameCallback(); }
   void GetVideoFramePresentationMetadata() {
     wmpi_->GetVideoFramePresentationMetadata();
   }
@@ -1179,11 +1179,11 @@ TEST_F(WebMediaPlayerImplTest, DidLoadingProgressTriggersResume) {
   EXPECT_FALSE(IsSuspended());
 }
 
-TEST_F(WebMediaPlayerImplTest, RequestAnimationFrame) {
+TEST_F(WebMediaPlayerImplTest, RequestVideoFrameCallback) {
   InitializeWebMediaPlayerImpl();
 
   EXPECT_CALL(*compositor_, SetOnFramePresentedCallback(_));
-  RequestAnimationFrame();
+  RequestVideoFrameCallback();
 }
 
 TEST_F(WebMediaPlayerImplTest, GetVideoFramePresentationMetadata) {
@@ -1195,7 +1195,7 @@ TEST_F(WebMediaPlayerImplTest, GetVideoFramePresentationMetadata) {
 
 TEST_F(WebMediaPlayerImplTest, OnNewFramePresentedCallback) {
   InitializeWebMediaPlayerImpl();
-  EXPECT_CALL(client_, OnRequestAnimationFrame());
+  EXPECT_CALL(client_, OnRequestVideoFrameCallback());
 
   OnNewFramePresentedCallback();
 }

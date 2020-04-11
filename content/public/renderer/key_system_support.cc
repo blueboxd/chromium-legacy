@@ -9,7 +9,6 @@
 #include "content/public/renderer/render_thread.h"
 #include "media/mojo/mojom/key_system_support.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 

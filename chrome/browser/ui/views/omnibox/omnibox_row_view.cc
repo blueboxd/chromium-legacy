@@ -17,19 +17,21 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
-class OmniboxRowView::HeaderView : public views::Label,
+class OmniboxRowView::HeaderView : public views::View,
                                    public views::ButtonListener {
  public:
   HeaderView() {
-    SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kHorizontal));
+    views::BoxLayout* layout =
+        SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kHorizontal));
 
     header_text_ = AddChildView(std::make_unique<views::Label>());
+    header_text_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+    layout->SetFlexForView(header_text_, 1);
 
     // TODO(tommycli): Add a focus ring.
     hide_button_ = AddChildView(views::CreateVectorToggleImageButton(this));
     views::InstallCircleHighlightPathGenerator(hide_button_);
-    hide_button_->SetVisible(false);
   }
 
   void SetHeader(int suggestion_group_id, const base::string16& header_text) {
@@ -48,26 +50,8 @@ class OmniboxRowView::HeaderView : public views::Label,
   void OnThemeChanged() override {
     views::View::OnThemeChanged();
 
-    // Since the hide button is only visible when the part is hovered, base the
-    // icon color on the hover state.
-    SkColor color =
-        GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_ICON,
-                        OmniboxPartState::HOVERED);
-    hide_button_->set_ink_drop_base_color(color);
-
-    int dip_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
-    const gfx::ImageSkia arrow_down =
-        gfx::CreateVectorIcon(omnibox::kChevronIcon, dip_size, color);
-    const gfx::ImageSkia arrow_up =
-        gfx::ImageSkiaOperations::CreateRotatedImage(
-            arrow_down, SkBitmapOperations::ROTATION_180_CW);
-
-    // The "untoggled" button state corresponds with the group being shown.
-    // The "toggled" button state corresponds with the group being hidden.
-    hide_button_->SetImage(views::Button::STATE_NORMAL, arrow_up);
-    hide_button_->SetToggledImage(views::Button::STATE_NORMAL, &arrow_down);
-
-    // When the theme is updated, also refresh the hover-specific UI.
+    // When the theme is updated, also refresh the hover-specific UI, which is
+    // all of the UI.
     UpdateUIForHoverState();
   }
 
@@ -81,11 +65,23 @@ class OmniboxRowView::HeaderView : public views::Label,
  private:
   // Some UI changes on-hover, and this function effects those changes.
   void UpdateUIForHoverState() {
-    bool is_hovered = IsMouseHovered();
-    hide_button_->SetVisible(is_hovered);
-
     OmniboxPartState part_state =
-        is_hovered ? OmniboxPartState::HOVERED : OmniboxPartState::NORMAL;
+        IsMouseHovered() ? OmniboxPartState::HOVERED : OmniboxPartState::NORMAL;
+    SkColor icon_color = GetOmniboxColor(GetThemeProvider(),
+                                         OmniboxPart::RESULTS_ICON, part_state);
+    hide_button_->set_ink_drop_base_color(icon_color);
+
+    int dip_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
+    const gfx::ImageSkia arrow_down =
+        gfx::CreateVectorIcon(omnibox::kChevronIcon, dip_size, icon_color);
+    const gfx::ImageSkia arrow_up =
+        gfx::ImageSkiaOperations::CreateRotatedImage(
+            arrow_down, SkBitmapOperations::ROTATION_180_CW);
+
+    // The "untoggled" button state corresponds with the group being shown.
+    // The "toggled" button state corresponds with the group being hidden.
+    hide_button_->SetImage(views::Button::STATE_NORMAL, arrow_up);
+    hide_button_->SetToggledImage(views::Button::STATE_NORMAL, &arrow_down);
 
     // It's a little hokey that we're stealing the logic for the background
     // color from OmniboxResultView. If we start doing this is more than just

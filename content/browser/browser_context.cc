@@ -581,24 +581,6 @@ BrowserContext* BrowserContext::GetBrowserContextForServiceInstanceGroup(
   return it != GetTokenToContextMap().end() ? it->second : nullptr;
 }
 
-// static
-service_manager::Connector* BrowserContext::GetConnectorFor(
-    BrowserContext* browser_context) {
-  ServiceManagerConnection* connection =
-      GetServiceManagerConnectionFor(browser_context);
-  return connection ? connection->GetConnector() : nullptr;
-}
-
-// static
-ServiceManagerConnection* BrowserContext::GetServiceManagerConnectionFor(
-    BrowserContext* browser_context) {
-  BrowserContextServiceManagerConnectionHolder* connection_holder =
-      static_cast<BrowserContextServiceManagerConnectionHolder*>(
-          browser_context->GetUserData(kServiceManagerConnection));
-  return connection_holder ? connection_holder->service_manager_connection()
-                           : nullptr;
-}
-
 BrowserContext::BrowserContext()
     : unique_id_(base::UnguessableToken::Create().ToString()) {}
 

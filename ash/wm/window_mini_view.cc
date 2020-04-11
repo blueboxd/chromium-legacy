@@ -168,7 +168,6 @@ void WindowMiniView::UpdateIconView() {
   }
 
   icon_view_->SetImage(ModifyIcon(icon));
-  icon_view_->SetSize(kIconSize);
 }
 
 gfx::Rect WindowMiniView::GetContentAreaBounds() const {

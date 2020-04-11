@@ -688,14 +688,13 @@ IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, IncognitoBasic) {
 }
 
 IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, IncognitoUpdate) {
-  // TODO(crbug.com/1015136): Investigate flakiness WRT Service Workers and
-  // incognito mode.
-  if ((GetParam() & kUseServiceWorker) != 0)
-    return;
   ASSERT_TRUE(embedded_test_server()->Start());
+  ExtensionTestMessageListener incognito_not_allowed_listener(
+      "incognito not allowed", false);
   const Extension* extension = LoadExtensionWithParamFlags(
       test_data_dir_.AppendASCII("browser_action/update"));
   ASSERT_TRUE(extension) << message_;
+  ASSERT_TRUE(incognito_not_allowed_listener.WaitUntilSatisfied());
   // Test that there is a browser action in the toolbar.
   ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
 
@@ -707,21 +706,27 @@ IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, IncognitoUpdate) {
                    ->NumberOfBrowserActions());
 
   // Set up a listener so we can reply for the extension to do the update.
-  ExtensionTestMessageListener incognito_ready_listener("incognito ready",
-                                                        true);
+  // This listener also adds a sequence point between the browser and the
+  // renderer for the transition between incognito mode not being allowed
+  // and it's being allowed. This ensures the browser ignores the renderer's
+  // execution until the transition is completed, since the script will
+  // start and stop multiple times during the initial load of the extension
+  // and the enabling of incognito mode.
+  ExtensionTestMessageListener incognito_allowed_listener("incognito allowed",
+                                                          true);
   // Now enable the extension in incognito mode, and test that the browser
-  // action shows up.
-  // SetIsIncognitoEnabled() requires a reload of the extension, so we have to
-  // wait for it.
+  // action shows up. SetIsIncognitoEnabled() requires a reload of the
+  // extension, so we have to wait for it to finish.
   TestExtensionRegistryObserver registry_observer(
       ExtensionRegistry::Get(profile()), extension->id());
   extensions::util::SetIsIncognitoEnabled(extension->id(), browser()->profile(),
                                           true);
   extension = registry_observer.WaitForExtensionLoaded();
+  ASSERT_TRUE(extension);
   ASSERT_EQ(1, ExtensionActionTestHelper::Create(incognito_browser)
                    ->NumberOfBrowserActions());
 
-  ASSERT_TRUE(incognito_ready_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(incognito_allowed_listener.WaitUntilSatisfied());
   ExtensionAction* action = GetBrowserAction(incognito_browser, *extension);
   EXPECT_EQ("This is the default title.",
             action->GetTitle(ExtensionAction::kDefaultTabId));
@@ -732,7 +737,7 @@ IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, IncognitoUpdate) {
   // Tell the extension to update the browser action state and then
   // catch the result.
   ResultCatcher incognito_catcher;
-  incognito_ready_listener.Reply("incognito update");
+  incognito_allowed_listener.Reply("incognito update");
   ASSERT_TRUE(incognito_catcher.GetNextResult());
 
   // Test that we received the changes.

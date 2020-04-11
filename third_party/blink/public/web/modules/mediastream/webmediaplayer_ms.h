@@ -238,7 +238,7 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
 
   void OnDisplayTypeChanged(WebMediaPlayer::DisplayType) override;
 
-  void RequestAnimationFrame() override;
+  void RequestVideoFrameCallback() override;
   std::unique_ptr<WebMediaPlayer::VideoFramePresentationMetadata>
   GetVideoFramePresentationMetadata() override;
 
@@ -314,9 +314,10 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   scoped_refptr<WebMediaStreamAudioRenderer> audio_renderer_;  // Weak
   media::PaintCanvasVideoRenderer video_renderer_;
 
-  // Indicated whether an outstanding rAF request needs to be forwarded to
-  // |compositor_|. Set when RequestAnimationFrame() is called before Load().
-  bool pending_raf_request_ = false;
+  // Indicated whether an outstanding VideoFrameCallback request needs to be
+  // forwarded to |compositor_|. Set when RequestVideoFrameCallback() is called
+  // before Load().
+  bool pending_rvfc_request_ = false;
 
   bool paused_;
   media::VideoTransformation video_transformation_;

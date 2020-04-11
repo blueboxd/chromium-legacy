@@ -1884,7 +1884,6 @@ class FormatToggler extends HTMLElement {
     this.addEventListener('click', this.onClick_);
     this.addEventListener('keydown', this.onKeyDown_);
     this.addEventListener('mousedown', (event) => event.preventDefault());
-    this.addEventListener('touchstart', (event) => event.preventDefault());
   }
 
   /**

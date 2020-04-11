@@ -164,13 +164,13 @@ links {
 links {
   name: "Branch Consoles"
   links {
-    text: "m81"
-    url: "/p/chromium/g/main-m81/console"
+    text: "m83"
+    url: "/p/chromium/g/main-m83/console"
     alt: "Beta branch console"
   }
   links {
-    text: "m80"
-    url: "/p/chromium/g/main-m80/console"
+    text: "m81"
+    url: "/p/chromium/g/main-m81/console"
     alt: "Stable branch console"
   }
   links {
@@ -188,7 +188,7 @@ links {
   }
   links {
     text: "angle"
-    url: "/p/chromium/g/angle.try/builders"
+    url: "/p/chromium/g/tryserver.chromium.angle/builders"
     alt: "Angle"
   }
   links {

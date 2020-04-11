@@ -109,7 +109,21 @@ class NET_EXPORT HttpResponseHeaders
   // If a header with the same name is already stored, the two headers are not
   // merged together by this method; the one provided is simply put at the
   // end of the list.
+  //
+  // TODO(https://crbug.com/1068194): If this isn't needed in production code,
+  // remove it, in favor of the next method.
   void AddHeader(const std::string& header);
+
+  // Adds the specified response header. If a header with the same name is
+  // already stored, the two headers are not merged together by this method; the
+  // one provided is simply put at the end of the list.
+  void AddHeader(base::StringPiece name, base::StringPiece value);
+
+  // Sets the specified response header, removing any matching old one if
+  // present. The new header is added to the end of the header list, rather than
+  // replacing the old one. This is the same as calling RemoveHeader() followed
+  // be SetHeader().
+  void SetHeader(base::StringPiece name, base::StringPiece value);
 
   // Adds a cookie header. |cookie_string| should be the header value without
   // the header name (Set-Cookie).

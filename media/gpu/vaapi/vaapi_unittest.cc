@@ -194,6 +194,25 @@ TEST_F(VaapiTest, VaapiProfiles) {
       VaapiWrapper::IsJpegEncodeSupported(),
       base::Contains(va_info[VAProfileJPEGBaseline], VAEntrypointEncPicture));
 }
+
+TEST_F(VaapiTest, DefaultEntrypointIsSupported) {
+  for (size_t i = 0; i < VaapiWrapper::kCodecModeMax; ++i) {
+    const VaapiWrapper::CodecMode mode =
+        static_cast<VaapiWrapper::CodecMode>(i);
+    std::map<VAProfile, std::vector<VAEntrypoint>> configurations =
+        VaapiWrapper::GetSupportedConfigurationsForCodecModeForTesting(mode);
+    for (const auto& profile_and_entrypoints : configurations) {
+      const VAEntrypoint default_entrypoint =
+          VaapiWrapper::GetDefaultVaEntryPoint(mode,
+                                               profile_and_entrypoints.first);
+      const auto& supported_entrypoints = profile_and_entrypoints.second;
+      EXPECT_TRUE(base::Contains(supported_entrypoints, default_entrypoint))
+          << "Default VAEntrypoint " << default_entrypoint
+          << " (mode = " << mode << ") is not supported for VAProfile = "
+          << profile_and_entrypoints.first;
+    }
+  }
+}
 }  // namespace media
 
 int main(int argc, char** argv) {

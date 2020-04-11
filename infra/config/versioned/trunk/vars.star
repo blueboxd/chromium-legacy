@@ -9,6 +9,8 @@ vars = struct(
     try_bucket = 'try',
     cq_group = 'cq',
     cq_ref_regexp = 'refs/heads/.+',
+    main_list_view_name = 'try',
+    main_list_view_title = 'Chromium CQ console',
     # Delete this line for branches
     tree_status_host = 'chromium-status.appspot.com/',
 )

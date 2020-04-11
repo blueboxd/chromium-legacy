@@ -302,6 +302,10 @@ class AccessibilityBridgeTest : public cr_fuchsia::WebEngineBrowserTest {
     semantics_manager_.WaitUntilViewRegistered();
     ASSERT_TRUE(semantics_manager_.is_view_registered());
     ASSERT_TRUE(semantics_manager_.is_listener_valid());
+
+    frame_ptr_->GetNavigationController(navigation_controller_.NewRequest());
+    ASSERT_TRUE(embedded_test_server()->Start());
+    semantics_manager_.SetSemanticsModeEnabled(true);
   }
 
  protected:
@@ -310,6 +314,7 @@ class AccessibilityBridgeTest : public cr_fuchsia::WebEngineBrowserTest {
   FakeSemanticsManager semantics_manager_;
   fidl::Binding<SemanticsManager> semantics_manager_binding_;
   cr_fuchsia::TestNavigationListener navigation_listener_;
+  fuchsia::web::NavigationControllerPtr navigation_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityBridgeTest);
 };
@@ -331,15 +336,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, RegisterViewRef) {
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, CorrectDataSent) {
-  fuchsia::web::NavigationControllerPtr controller;
-  frame_ptr_->GetNavigationController(controller.NewRequest());
-  ASSERT_TRUE(embedded_test_server()->Start());
-  semantics_manager_.SetSemanticsModeEnabled(true);
-
-  GURL page_url1(embedded_test_server()->GetURL(kPage1Path));
+  GURL page_url(embedded_test_server()->GetURL(kPage1Path));
   ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      controller.get(), fuchsia::web::LoadUrlParams(), page_url1.spec()));
-  navigation_listener_.RunUntilUrlAndTitleEquals(page_url1, kPage1Title);
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      page_url.spec()));
+  navigation_listener_.RunUntilUrlAndTitleEquals(page_url, kPage1Title);
 
   // Check that the data values are correct in the FakeSemanticTree.
   // TODO(fxb/18796): Test more fields once Chrome to Fuchsia conversions are
@@ -357,15 +358,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, CorrectDataSent) {
 // maximum, as set on the Fuchsia side. Check that all nodes are received by the
 // Semantic Tree when batching is performed.
 IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, DataSentWithBatching) {
-  fuchsia::web::NavigationControllerPtr controller;
-  frame_ptr_->GetNavigationController(controller.NewRequest());
-  ASSERT_TRUE(embedded_test_server()->Start());
-  semantics_manager_.SetSemanticsModeEnabled(true);
-
-  GURL page_url2(embedded_test_server()->GetURL(kPage2Path));
+  GURL page_url(embedded_test_server()->GetURL(kPage2Path));
   ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      controller.get(), fuchsia::web::LoadUrlParams(), page_url2.spec()));
-  navigation_listener_.RunUntilUrlAndTitleEquals(page_url2, kPage2Title);
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      page_url.spec()));
+  navigation_listener_.RunUntilUrlAndTitleEquals(page_url, kPage2Title);
 
   // Run until we expect more than a batch's worth of nodes to be present.
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage2NodeCount);
@@ -375,14 +372,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, DataSentWithBatching) {
 // Check that semantics information is correctly sent when navigating from page
 // to page.
 IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TestNavigation) {
-  fuchsia::web::NavigationControllerPtr controller;
-  frame_ptr_->GetNavigationController(controller.NewRequest());
-  ASSERT_TRUE(embedded_test_server()->Start());
-  semantics_manager_.SetSemanticsModeEnabled(true);
-
   GURL page_url1(embedded_test_server()->GetURL(kPage1Path));
   ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      controller.get(), fuchsia::web::LoadUrlParams(), page_url1.spec()));
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      page_url1.spec()));
   navigation_listener_.RunUntilUrlAndTitleEquals(page_url1, kPage1Title);
 
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
@@ -395,7 +388,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TestNavigation) {
 
   GURL page_url2(embedded_test_server()->GetURL(kPage2Path));
   ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      controller.get(), fuchsia::web::LoadUrlParams(), page_url2.spec()));
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      page_url2.spec()));
 
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage2NodeCount);
   EXPECT_TRUE(
@@ -412,16 +406,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TestNavigation) {
 // Checks that the correct node ID is returned when performing hit testing.
 // TODO(https://crbug.com/1050049): Re-enable once flake is fixed.
 IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, DISABLED_HitTest) {
-  fuchsia::web::NavigationControllerPtr controller;
-  frame_ptr_->GetNavigationController(controller.NewRequest());
-  ASSERT_TRUE(embedded_test_server()->Start());
-  semantics_manager_.SetSemanticsModeEnabled(true);
-
-  GURL page_url1(embedded_test_server()->GetURL(kPage1Path));
+  GURL page_url(embedded_test_server()->GetURL(kPage1Path));
   ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      controller.get(), fuchsia::web::LoadUrlParams(), page_url1.spec()));
-  navigation_listener_.RunUntilUrlAndTitleEquals(page_url1, kPage1Title);
-  semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      page_url.spec()));
+  navigation_listener_.RunUntilUrlAndTitleEquals(page_url, kPage1Title);
 
   Node* hit_test_node =
       semantics_manager_.semantic_tree()->GetNodeFromLabel(kParagraphName);
@@ -444,15 +433,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, DISABLED_HitTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, PerformDefaultAction) {
-  fuchsia::web::NavigationControllerPtr controller;
-  frame_ptr_->GetNavigationController(controller.NewRequest());
-  ASSERT_TRUE(embedded_test_server()->Start());
-  semantics_manager_.SetSemanticsModeEnabled(true);
-
-  GURL page_url1(embedded_test_server()->GetURL(kPage1Path));
+  GURL page_url(embedded_test_server()->GetURL(kPage1Path));
   ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      controller.get(), fuchsia::web::LoadUrlParams(), page_url1.spec()));
-  navigation_listener_.RunUntilUrlAndTitleEquals(page_url1, kPage1Title);
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      page_url.spec()));
+  navigation_listener_.RunUntilUrlAndTitleEquals(page_url, kPage1Title);
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
 
   Node* button1 =
@@ -480,5 +465,32 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, PerformDefaultAction) {
   frame_ptr_.Unbind();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, semantics_manager_.num_actions_handled());
+  EXPECT_EQ(1, semantics_manager_.num_actions_unhandled());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, PerformUnsupportedAction) {
+  GURL page_url(embedded_test_server()->GetURL(kPage1Path));
+  ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      page_url.spec()));
+  navigation_listener_.RunUntilUrlAndTitleEquals(page_url, kPage1Title);
+  semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
+
+  Node* button1 =
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kButtonName1);
+  EXPECT_TRUE(button1);
+  Node* button2 =
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kButtonName2);
+  EXPECT_TRUE(button2);
+
+  // Perform one supported action (DEFAULT) and one non-supported action
+  // (SET_VALUE);
+  semantics_manager_.RequestAccessibilityAction(button1->node_id(),
+                                                Action::DEFAULT);
+  semantics_manager_.RequestAccessibilityAction(button2->node_id(),
+                                                Action::SET_VALUE);
+  semantics_manager_.RunUntilNumActionsHandledEquals(2);
+
+  EXPECT_EQ(1, semantics_manager_.num_actions_handled());
   EXPECT_EQ(1, semantics_manager_.num_actions_unhandled());
 }

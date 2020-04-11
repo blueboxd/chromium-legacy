@@ -124,7 +124,6 @@ HardwareRendererViz::OnViz::OnViz(
                        output_surface_provider->enable_shared_image());
 
   display_->SetVisible(true);
-  display_->DisableGPUAccessByDefault();
 }
 
 HardwareRendererViz::OnViz::~OnViz() {

@@ -4951,7 +4951,7 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
                            OnHeadersReceivedCallback callback) override {
       auto new_headers =
           base::MakeRefCounted<net::HttpResponseHeaders>(headers);
-      new_headers->AddHeader("baz: qux");
+      new_headers->SetHeader("baz", "qux");
       std::move(callback).Run(on_headers_received_result_,
                               new_headers->raw_headers(), GURL());
     }
@@ -5165,7 +5165,7 @@ class HangingTestURLLoaderHeaderClient
     void CallOnHeadersReceivedCallback() {
       auto new_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
           saved_received_headers_);
-      new_headers->AddHeader("baz: qux");
+      new_headers->SetHeader("baz", "qux");
       std::move(saved_on_headers_received_callback_)
           .Run(net::OK, new_headers->raw_headers(), GURL());
     }

@@ -171,6 +171,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
                         const action::InteractionInfo& interaction) override;
   void OnVerifyAndroidApp(const std::vector<action::AndroidAppInfo>& apps_info,
                           const action::InteractionInfo& interaction) override;
+  void OnModifyDeviceSetting(
+      const ::assistant::api::client_op::ModifySettingArgs& args) override;
+  void OnGetDeviceSettings(
+      int interaction_id,
+      const ::assistant::api::client_op::GetDeviceSettingsArgs& args) override;
 
   // AssistantEventObserver overrides:
   void OnSpeechLevelUpdated(float speech_level) override;
@@ -186,8 +191,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void OnRespondingStarted(bool is_error_response) override;
 
   // AssistantManagerDelegate overrides:
-  assistant_client::ActionModule::Result HandleModifySettingClientOp(
-      const std::string& modify_setting_args_proto) override;
   bool IsSettingSupported(const std::string& setting_id) override;
   bool SupportsModifySettings() override;
   void OnConversationTurnStartedInternal(
@@ -292,6 +295,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       const std::string& query);
 
   std::string ConsumeLastTriggerSource();
+
+  void SendVoicelessInteraction(const std::string& interaction,
+                                const std::string& description,
+                                bool is_user_initiated);
 
   ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller();
   ash::mojom::AssistantNotificationController*

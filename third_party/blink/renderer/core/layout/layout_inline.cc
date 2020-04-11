@@ -1643,9 +1643,9 @@ PhysicalOffset LayoutInline::OffsetForInFlowPositionedInline(
   // but LayoutNG has fixed the issue. This function seems to always return
   // zero in LayoutNG. We should probably remove this function for LayoutNG.
 
-  DCHECK(IsInFlowPositioned() || StyleRef().HasFilter() ||
+  DCHECK(IsInFlowPositioned() || StyleRef().HasNonInitialFilter() ||
          StyleRef().HasBackdropFilter());
-  if (!IsInFlowPositioned() && !StyleRef().HasFilter() &&
+  if (!IsInFlowPositioned() && !StyleRef().HasNonInitialFilter() &&
       !StyleRef().HasBackdropFilter()) {
     DCHECK(CreatesGroup())
         << "Inlines with filters or backdrop-filters should create a group";

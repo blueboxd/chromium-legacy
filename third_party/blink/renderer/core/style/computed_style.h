@@ -1476,6 +1476,10 @@ class ComputedStyle : public ComputedStyleBase,
     return WillChangeProperties().Contains(CSSPropertyID::kOpacity);
   }
   bool HasWillChangeTransformHint() const;
+  bool HasWillChangeFilterHint() const {
+    return WillChangeProperties().Contains(CSSPropertyID::kFilter) ||
+           WillChangeProperties().Contains(CSSPropertyID::kAliasWebkitFilter);
+  }
 
   // Hyphen utility functions.
   Hyphenation* GetHyphenation() const;
@@ -2335,7 +2339,13 @@ class ComputedStyle : public ComputedStyleBase,
   // Returns |true| if any property that renders using filter operations is
   // used (including, but not limited to, 'filter' and 'box-reflect').
   bool HasFilterInducingProperty() const {
-    return HasFilter() || HasBoxReflect();
+    return HasNonInitialFilter() || HasBoxReflect();
+  }
+
+  // Returns |true| if filter should be considered to have non-initial value
+  // for the purposes of containing blocks.
+  bool HasNonInitialFilter() const {
+    return HasFilter() || HasWillChangeFilterHint();
   }
 
   // Returns |true| if opacity should be considered to have non-initial value
@@ -2414,6 +2424,8 @@ class ComputedStyle : public ComputedStyleBase,
   bool CanContainAbsolutePositionObjects() const {
     return GetPosition() != EPosition::kStatic;
   }
+  // TODO(pdr): Should this function be unified with
+  // LayoutObject::ComputeIsFixedContainer?
   bool CanContainFixedPositionObjects(bool is_document_element) const {
     return HasTransformRelatedProperty() ||
            // Filter establishes containing block for non-document elements:
@@ -2421,7 +2433,8 @@ class ComputedStyle : public ComputedStyleBase,
            // Backdrop-filter creates a containing block for fixed and absolute
            // positioned elements:
            // https://drafts.fxtf.org/filter-effects-2/#backdrop-filter-operation
-           (!is_document_element && (HasFilter() || HasBackdropFilter()));
+           (!is_document_element &&
+            (HasNonInitialFilter() || HasBackdropFilter()));
   }
 
   // Whitespace utility functions.

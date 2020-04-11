@@ -583,7 +583,9 @@ void Scheduler::FinishImplFrame() {
   // ensures that the acks are sent in order.
   if (!state_machine_.did_submit_in_last_frame()) {
     SendDidNotProduceFrame(begin_impl_frame_tracker_.Current(),
-                           FrameSkippedReason::kWaitingOnMain);
+                           state_machine_.draw_succeeded_in_last_frame()
+                               ? FrameSkippedReason::kNoDamage
+                               : FrameSkippedReason::kWaitingOnMain);
   }
 
   begin_impl_frame_tracker_.Finish();

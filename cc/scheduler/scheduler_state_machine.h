@@ -323,6 +323,9 @@ class CC_EXPORT SchedulerStateMachine {
   bool video_needs_begin_frames() const { return video_needs_begin_frames_; }
 
   bool did_submit_in_last_frame() const { return did_submit_in_last_frame_; }
+  bool draw_succeeded_in_last_frame() const {
+    return draw_succeeded_in_last_frame_;
+  }
 
   bool needs_impl_side_invalidation() const {
     return needs_impl_side_invalidation_;
@@ -450,7 +453,8 @@ class CC_EXPORT SchedulerStateMachine {
   bool video_needs_begin_frames_ = false;
   bool last_commit_had_no_updates_ = false;
   bool active_tree_is_ready_to_draw_ = true;
-  bool did_draw_in_last_frame_ = false;
+  bool did_attempt_draw_in_last_frame_ = false;
+  bool draw_succeeded_in_last_frame_ = false;
   bool did_submit_in_last_frame_ = false;
   bool needs_impl_side_invalidation_ = false;
   bool next_invalidation_needs_first_draw_on_activation_ = false;

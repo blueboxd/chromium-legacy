@@ -1619,22 +1619,20 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
 }
 
 bool SkiaOutputSurfaceImplOnGpu::MakeCurrent(bool need_fbo0) {
-  if (context_state_->context_lost())
+  // need_fbo0 implies need_gl too.
+  bool need_gl = need_fbo0;
+  // Only make current with |gl_surface_|, if following operations will use
+  // fbo0.
+  auto* gl_surface = need_fbo0 ? gl_surface_.get() : nullptr;
+  if (!context_state_->MakeCurrent(gl_surface, need_gl)) {
+    LOG(ERROR) << "Failed to make current.";
+    dependency_->DidLoseContext(
+        gpu::error::kMakeCurrentFailed,
+        GURL("chrome://gpu/SkiaOutputSurfaceImplOnGpu::MakeCurrent"));
+    MarkContextLost(CONTEXT_LOST_MAKECURRENT_FAILED);
     return false;
-
-  if (gpu_preferences_.gr_context_type == gpu::GrContextType::kGL) {
-    // Only make current with |gl_surface_|, if following operations will use
-    // fbo0.
-    if (!context_state_->MakeCurrent(need_fbo0 ? gl_surface_.get() : nullptr)) {
-      LOG(ERROR) << "Failed to make current.";
-      dependency_->DidLoseContext(
-          gpu::error::kMakeCurrentFailed,
-          GURL("chrome://gpu/SkiaOutputSurfaceImplOnGpu::MakeCurrent"));
-      MarkContextLost(CONTEXT_LOST_MAKECURRENT_FAILED);
-      return false;
-    }
-    context_state_->set_need_context_state_reset(true);
   }
+  context_state_->set_need_context_state_reset(true);
   return true;
 }
 

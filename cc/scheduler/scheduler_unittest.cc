@@ -60,6 +60,7 @@ class FakeSchedulerClient : public SchedulerClient,
     num_draws_ = 0;
     last_begin_main_frame_args_ = viz::BeginFrameArgs();
     last_begin_frame_ack_ = viz::BeginFrameAck();
+    last_frame_skipped_reason_.reset();
   }
 
   void set_scheduler(TestScheduler* scheduler) { scheduler_ = scheduler; }
@@ -130,6 +131,7 @@ class FakeSchedulerClient : public SchedulerClient,
     EXPECT_FALSE(inside_action_);
     base::AutoReset<bool> mark_inside(&inside_action_, true);
     last_begin_frame_ack_ = ack;
+    last_frame_skipped_reason_ = reason;
   }
 
   void WillNotReceiveBeginFrame() override {}
@@ -153,23 +155,26 @@ class FakeSchedulerClient : public SchedulerClient,
     return last_begin_frame_ack_;
   }
 
+  FrameSkippedReason last_frame_skipped_reason() const {
+    return last_frame_skipped_reason_.value();
+  }
+
   DrawResult ScheduledActionDrawIfPossible() override {
     EXPECT_FALSE(inside_action_);
     base::AutoReset<bool> mark_inside(&inside_action_, true);
     PushAction("ScheduledActionDrawIfPossible");
     num_draws_++;
-    DrawResult result =
-        draw_will_happen_ ? DRAW_SUCCESS : DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
-    bool swap_will_happen =
-        draw_will_happen_ && swap_will_happen_if_draw_happens_;
-    if (swap_will_happen) {
+    if (!draw_will_happen_)
+      return DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
+
+    if (swap_will_happen_if_draw_happens_) {
       last_begin_frame_ack_ = scheduler_->CurrentBeginFrameAckForActiveTree();
       scheduler_->DidSubmitCompositorFrame(0, EventMetricsSet());
 
       if (automatic_ack_)
         scheduler_->DidReceiveCompositorFrameAck();
     }
-    return result;
+    return DRAW_SUCCESS;
   }
   DrawResult ScheduledActionDrawForced() override {
     EXPECT_FALSE(inside_action_);
@@ -283,6 +288,7 @@ class FakeSchedulerClient : public SchedulerClient,
   std::vector<const char*> actions_;
   TestScheduler* scheduler_ = nullptr;
   base::TimeDelta frame_interval_;
+  base::Optional<FrameSkippedReason> last_frame_skipped_reason_;
 };
 
 enum BeginFrameSourceType {
@@ -1813,6 +1819,8 @@ void SchedulerTest::ImplFrameSkippedAfterLateAck(
     EXPECT_NO_ACTION();
     EXPECT_FALSE(client_->IsInsideBeginImplFrame());
     EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
+    EXPECT_EQ(FrameSkippedReason::kRecoverLatency,
+              client_->last_frame_skipped_reason());
 
     // Verify that we do not perform any actions after we are no longer
     // swap throttled.
@@ -1939,6 +1947,8 @@ TEST_F(SchedulerTest,
     EXPECT_NO_ACTION();
     EXPECT_FALSE(client_->IsInsideBeginImplFrame());
     EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
+    EXPECT_EQ(FrameSkippedReason::kRecoverLatency,
+              client_->last_frame_skipped_reason());
 
     // Verify that we do not perform any actions after we are no longer
     // swap throttled.
@@ -3850,7 +3860,26 @@ TEST_F(SchedulerTest, BeginFrameAckForFinishedImplFrame) {
   has_damage = false;
   EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
             client_->last_begin_frame_ack());
+  EXPECT_EQ(FrameSkippedReason::kWaitingOnMain,
+            client_->last_frame_skipped_reason());
   client_->Reset();
+
+  // Draw succeeds, but 'swap' does not happen (i.e. no frame is submitted).
+  args = SendNextBeginFrame();
+  EXPECT_ACTIONS("WillBeginImplFrame");
+  EXPECT_TRUE(client_->IsInsideBeginImplFrame());
+  EXPECT_TRUE(scheduler_->begin_frames_expected());
+  client_->Reset();
+  client_->SetDrawWillHappen(true);
+  client_->SetSwapWillHappenIfDrawHappens(false);
+  task_runner_->RunPendingTasks();  // Run posted deadline.
+
+  // Draw with no damage.
+  has_damage = false;
+  EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
+            client_->last_begin_frame_ack());
+  EXPECT_EQ(FrameSkippedReason::kNoDamage,
+            client_->last_frame_skipped_reason());
 }
 
 TEST_F(SchedulerTest, BeginFrameAckForSkippedImplFrame) {

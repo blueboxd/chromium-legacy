@@ -1132,7 +1132,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Not calling style()->hasFilterInducingProperty because some objects force
   // to ignore reflection style (e.g. LayoutInline).
   bool HasFilterInducingProperty() const {
-    return StyleRef().HasFilter() || HasReflection();
+    return StyleRef().HasNonInitialFilter() || HasReflection();
   }
 
   bool HasShapeOutside() const { return StyleRef().ShapeOutside(); }
@@ -1313,6 +1313,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Returns true if style would make this object a fixed container.
   // This value gets cached by bitfields_.can_contain_fixed_position_objects_.
+  // TODO(pdr): Should this function be unified with
+  // ComputedStyle::CanContainFixedPositionObjects?
   bool ComputeIsFixedContainer(const ComputedStyle* style) const;
 
   virtual LayoutObject* HoverAncestor() const { return Parent(); }

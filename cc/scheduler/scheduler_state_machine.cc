@@ -266,7 +266,7 @@ void SchedulerStateMachine::AsProtozeroInto(
   minor_state->set_video_needs_begin_frames(video_needs_begin_frames_);
   minor_state->set_defer_begin_main_frame(defer_begin_main_frame_);
   minor_state->set_last_commit_had_no_updates(last_commit_had_no_updates_);
-  minor_state->set_did_draw_in_last_frame(did_draw_in_last_frame_);
+  minor_state->set_did_draw_in_last_frame(did_attempt_draw_in_last_frame_);
   minor_state->set_did_submit_in_last_frame(did_submit_in_last_frame_);
   minor_state->set_needs_impl_side_invalidation(needs_impl_side_invalidation_);
   minor_state->set_current_pending_tree_is_impl_side(
@@ -981,10 +981,11 @@ void SchedulerStateMachine::WillDraw() {
   // Set this to true to proactively request a new BeginFrame. We can't set this
   // in WillDrawInternal because AbortDraw calls WillDrawInternal but shouldn't
   // request another frame.
-  did_draw_in_last_frame_ = true;
+  did_attempt_draw_in_last_frame_ = true;
 }
 
 void SchedulerStateMachine::DidDraw(DrawResult draw_result) {
+  draw_succeeded_in_last_frame_ = draw_result == DRAW_SUCCESS;
   DidDrawInternal(draw_result);
 }
 
@@ -1126,7 +1127,7 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   // frame soon. This helps avoid negative glitches in our SetNeedsBeginFrame
   // requests, which may propagate to the BeginImplFrame provider and get
   // sampled at an inopportune time, delaying the next BeginImplFrame.
-  if (did_draw_in_last_frame_)
+  if (did_attempt_draw_in_last_frame_)
     return true;
 
   // If the last commit was aborted because of early out (no updates), we should
@@ -1154,7 +1155,8 @@ void SchedulerStateMachine::OnBeginImplFrame(const viz::BeginFrameId& frame_id,
   last_frame_events_.did_commit_during_frame = did_commit_during_frame_;
 
   last_commit_had_no_updates_ = false;
-  did_draw_in_last_frame_ = false;
+  did_attempt_draw_in_last_frame_ = false;
+  draw_succeeded_in_last_frame_ = false;
   did_submit_in_last_frame_ = false;
   needs_one_begin_impl_frame_ = false;
 

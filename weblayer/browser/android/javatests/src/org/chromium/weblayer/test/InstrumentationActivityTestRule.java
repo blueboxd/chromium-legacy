@@ -9,6 +9,7 @@ import android.app.Instrumentation.ActivityMonitor;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
@@ -29,6 +30,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.EmbeddedTestServerRule;
+import org.chromium.weblayer.CookieManager;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.WebLayer;
@@ -283,5 +285,31 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     public Fragment getFragment() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(() -> getActivity().getFragment());
+    }
+
+    public boolean setCookie(CookieManager cookieManager, Uri uri, String value) throws Exception {
+        Boolean[] resultHolder = new Boolean[1];
+        CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            cookieManager.setCookie(uri, value, (Boolean result) -> {
+                resultHolder[0] = result;
+                callbackHelper.notifyCalled();
+            });
+        });
+        callbackHelper.waitForFirst();
+        return resultHolder[0];
+    }
+
+    public String getCookie(CookieManager cookieManager, Uri uri) throws Exception {
+        String[] resultHolder = new String[1];
+        CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            cookieManager.getCookie(uri, (String result) -> {
+                resultHolder[0] = result;
+                callbackHelper.notifyCalled();
+            });
+        });
+        callbackHelper.waitForFirst();
+        return resultHolder[0];
     }
 }

@@ -158,29 +158,11 @@ public class CookieManagerTest {
     }
 
     private boolean setCookie(String value) throws Exception {
-        Boolean[] resultHolder = new Boolean[1];
-        CallbackHelper callbackHelper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mCookieManager.setCookie(mBaseUri, value, (Boolean result) -> {
-                resultHolder[0] = result;
-                callbackHelper.notifyCalled();
-            });
-        });
-        callbackHelper.waitForFirst();
-        return resultHolder[0];
+        return mActivityTestRule.setCookie(mCookieManager, mBaseUri, value);
     }
 
     private String getCookie() throws Exception {
-        String[] resultHolder = new String[1];
-        CallbackHelper callbackHelper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mCookieManager.getCookie(mBaseUri, (String result) -> {
-                resultHolder[0] = result;
-                callbackHelper.notifyCalled();
-            });
-        });
-        callbackHelper.waitForFirst();
-        return resultHolder[0];
+        return mActivityTestRule.getCookie(mCookieManager, mBaseUri);
     }
 
     private static class CookieChangedCallbackHelper extends CookieChangedCallback {

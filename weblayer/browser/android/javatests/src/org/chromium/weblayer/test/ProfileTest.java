@@ -4,7 +4,9 @@
 
 package org.chromium.weblayer.test;
 
+import android.net.Uri;
 import android.support.test.filters.SmallTest;
+import android.webkit.ValueCallback;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -16,6 +18,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Callback;
+import org.chromium.weblayer.CookieManager;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
@@ -141,6 +144,88 @@ public class ProfileTest {
         callbackHelper.waitForFirst();
 
         Assert.assertFalse(Arrays.asList(enumerateAllProfileNames(weblayer)).contains(profileName));
+    }
+
+    private Profile launchAndDestroyActivity(
+            String profileName, ValueCallback<InstrumentationActivity> callback) {
+        final InstrumentationActivity activity = mActivityTestRule.launchWithProfile(profileName);
+        final Profile profile = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> activity.getBrowser().getProfile());
+
+        callback.onReceiveValue(activity);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> activity.finish());
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return activity.isDestroyed();
+            }
+        });
+        return profile;
+    }
+
+    private void destroyAndDeleteDataFromDisk(Profile profile) throws Exception {
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> profile.destroyAndDeleteDataFromDisk(callbackHelper::notifyCalled));
+        callbackHelper.waitForFirst();
+    }
+
+    @Test
+    @SmallTest
+    public void testReuseProfile() throws Exception {
+        final String profileName = "ReusedProfile";
+        final Uri uri = Uri.parse("https://foo.bar");
+        final String expectedCookie = "foo=bar";
+        {
+            // Create profile and activity and set a cookie.
+            launchAndDestroyActivity(profileName, (InstrumentationActivity activity) -> {
+                CookieManager cookieManager = TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> { return activity.getBrowser().getProfile().getCookieManager(); });
+                try {
+                    boolean result =
+                            mActivityTestRule.setCookie(cookieManager, uri, expectedCookie);
+                    Assert.assertTrue(result);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+
+        {
+            // Without deleting proifle data, create profile and activity again, and check the
+            // cookie is there.
+            Profile profile =
+                    launchAndDestroyActivity(profileName, (InstrumentationActivity activity) -> {
+                        CookieManager cookieManager =
+                                TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+                                    return activity.getBrowser().getProfile().getCookieManager();
+                                });
+                        try {
+                            String cookie = mActivityTestRule.getCookie(cookieManager, uri);
+                            Assert.assertEquals(expectedCookie, cookie);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+
+            destroyAndDeleteDataFromDisk(profile);
+        }
+
+        {
+            // After deleting profile data, create profile and activity again, and check the cookie
+            // is deleted as well.
+            launchAndDestroyActivity(profileName, (InstrumentationActivity activity) -> {
+                CookieManager cookieManager = TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> { return activity.getBrowser().getProfile().getCookieManager(); });
+                try {
+                    String cookie = mActivityTestRule.getCookie(cookieManager, uri);
+                    Assert.assertEquals("", cookie);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
     }
 
     private static String[] enumerateAllProfileNames(final WebLayer weblayer) throws Exception {

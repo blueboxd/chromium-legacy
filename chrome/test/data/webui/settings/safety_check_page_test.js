@@ -273,7 +273,7 @@ suite('SafetyCheckUiTests', function() {
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
   });
 
-  test('safeBrowsingCheckingUiTest', function() {
+  test('safeBrowsingEnabledUiTest', function() {
     fireSafetyCheckSafeBrowsingEvent(
         settings.SafetyCheckSafeBrowsingStatus.ENABLED);
     Polymer.dom.flush();
@@ -281,7 +281,7 @@ suite('SafetyCheckUiTests', function() {
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
   });
 
-  test('safeBrowsingCheckingUiTest', async function() {
+  test('safeBrowsingDisabledUiTest', async function() {
     fireSafetyCheckSafeBrowsingEvent(
         settings.SafetyCheckSafeBrowsingStatus.DISABLED);
     Polymer.dom.flush();
@@ -304,7 +304,7 @@ suite('SafetyCheckUiTests', function() {
         settings.Router.getInstance().getCurrentRoute());
   });
 
-  test('safeBrowsingCheckingUiTest', function() {
+  test('safeBrowsingDisabledByAdminUiTest', function() {
     fireSafetyCheckSafeBrowsingEvent(
         settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_ADMIN);
     Polymer.dom.flush();
@@ -312,27 +312,12 @@ suite('SafetyCheckUiTests', function() {
     assertTrue(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
   });
 
-  test('safeBrowsingCheckingUiTest', function() {
+  test('safeBrowsingDisabledByExtensionUiTest', function() {
     fireSafetyCheckSafeBrowsingEvent(
         settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_EXTENSION);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertTrue(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
-  });
-
-  test('extensionsCheckingUiTest', function() {
-    fireSafetyCheckExtensionsEvent(
-        settings.SafetyCheckExtensionsStatus.CHECKING);
-    Polymer.dom.flush();
-    assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
-    assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
-  });
-
-  test('extensionsErrorUiTest', function() {
-    fireSafetyCheckExtensionsEvent(settings.SafetyCheckExtensionsStatus.ERROR);
-    Polymer.dom.flush();
-    assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
-    assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
   test('extensionsCheckingUiTest', function() {

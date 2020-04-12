@@ -99,6 +99,8 @@ class ProfileImpl : public Profile {
  private:
   class DataClearer;
 
+  static void OnProfileMarked(std::unique_ptr<ProfileImpl> profile,
+                              base::OnceClosure done_callback);
   static void NukeDataAfterRemovingData(std::unique_ptr<ProfileImpl> profile,
                                         base::OnceClosure done_callback);
   static void DoNukeData(std::unique_ptr<ProfileImpl> profile,

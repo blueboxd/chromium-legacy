@@ -182,3 +182,20 @@ test("weblayer_browsertests") {
     ]
   }
 }
+
+source_set("run_all_unittests") {
+  testonly = true
+  sources = [ "run_all_unittests.cc" ]
+  public_deps = [
+    "//base/test:test_support",
+    "//content/test:test_support",
+  ]
+}
+
+test("weblayer_unittests") {
+  deps = [
+    ":run_all_unittests",
+    "//weblayer:weblayer_lib_base",
+  ]
+  sources = [ "../browser/profile_disk_operations_unittests.cc" ]
+}

@@ -49,8 +49,18 @@ namespace weblayer {
 
 namespace {
 
-#if defined(OS_ANDROID)
+bool g_first_profile_created = false;
 
+// TaskRunner used by MarkProfileAsDeleted and NukeProfilesMarkedForDeletion to
+// esnure that Nuke happens before any Mark in this process.
+base::SequencedTaskRunner* GetBackgroundDiskOperationTaskRunner() {
+  static const base::NoDestructor<scoped_refptr<base::SequencedTaskRunner>>
+      task_runner(base::ThreadPool::CreateSingleThreadTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
+  return task_runner.get()->get();
+}
+
+#if defined(OS_ANDROID)
 void PassFilePathsToJavaCallback(
     const base::android::ScopedJavaGlobalRef<jobject>& callback,
     const std::vector<std::string>& file_paths) {
@@ -104,6 +114,13 @@ ProfileImpl::ProfileImpl(const std::string& name)
     base::ScopedAllowBlocking allow_blocking;
     info_ = CreateProfileInfo(name);
   }
+
+  if (!g_first_profile_created) {
+    g_first_profile_created = true;
+    GetBackgroundDiskOperationTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&NukeProfilesMarkedForDeletion));
+  }
+
   // Ensure WebCacheManager is created so that it starts observing
   // OnRenderProcessHostCreated events.
   web_cache::WebCacheManager::GetInstance();
@@ -198,13 +215,10 @@ void ProfileImpl::NukeDataAfterRemovingData(
 void ProfileImpl::DoNukeData(std::unique_ptr<ProfileImpl> profile,
                              base::OnceClosure done_callback) {
   ProfileInfo info = profile->info_;
-
   profile.reset();
-  base::ThreadPool::PostTaskAndReply(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&NukeProfileFromDisk, info), std::move(done_callback));
+  GetBackgroundDiskOperationTaskRunner()->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(&TryNukeProfileFromDisk, info),
+      std::move(done_callback));
 }
 
 void ProfileImpl::ClearRendererCache() {
@@ -254,6 +268,16 @@ std::unique_ptr<ProfileImpl> ProfileImpl::DestroyAndDeleteDataFromDisk(
   if (profile->num_browser_impl_ > 0)
     return profile;
 
+  GetBackgroundDiskOperationTaskRunner()->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(&MarkProfileAsDeleted, profile->info_),
+      base::BindOnce(&ProfileImpl::OnProfileMarked, std::move(profile),
+                     std::move(done_callback)));
+  return nullptr;
+}
+
+// static
+void ProfileImpl::OnProfileMarked(std::unique_ptr<ProfileImpl> profile,
+                                  base::OnceClosure done_callback) {
   // Try to finish all writes and remove all data before nuking the profile.
   static_cast<BrowserContextImpl*>(profile->GetBrowserContext())
       ->pref_service()
@@ -267,7 +291,6 @@ std::unique_ptr<ProfileImpl> ProfileImpl::DestroyAndDeleteDataFromDisk(
                      std::move(profile), std::move(done_callback)));
   int remove_all_mask = 0x8fffffff;
   clearer->ClearData(remove_all_mask, base::Time::Min(), base::Time::Max());
-  return nullptr;
 }
 
 #if defined(OS_ANDROID)

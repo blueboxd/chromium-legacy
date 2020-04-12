@@ -4,12 +4,12 @@
 
 # Build targets for constructing CIPD packages.
 #
-# Prepares a CIPD archive and generates a manifest file.
+# Prepares a CIPD package and generates a package definition.
 #
 # TODO(crbug.com/1042819): Add support for including directories.
 #
 # Parameters:
-#   package_definition_yaml: CIPD package definition filename. "cipd.yaml"
+#   package_definition_name: CIPD package definition filename. "cipd.yaml"
 #                            if unspecified.
 #   package: The path where the package will be located inside the CIPD
 #            repository.
@@ -47,27 +47,33 @@ template("cipd_package_definition") {
   assert(_install_mode == "copy" || _install_mode == "symlink",
          "\"install_mode\" arg should be either \"copy\" or \"symlink\".")
 
-  _cipd_definition_yaml = "cipd.yaml"
-  if (defined(invoker.package_definition_yaml)) {
-    _cipd_definition_yaml = invoker.package_definition_yaml
+  _package_definition_name = "cipd.yaml"
+  if (defined(invoker.package_definition_name)) {
+    _package_definition_name = invoker.package_definition_name
   }
 
-  _package_staging_dir = "${target_gen_dir}/${target_name}"
+  _package_root = "${target_gen_dir}/${target_name}"
 
-  _yaml_contents = [
-    "package: ${invoker.package}",
-    "description: ${invoker.description}",
-    "root: \${outdir}/" + rebase_path(_package_staging_dir, root_build_dir),
-    "install_mode: ${_install_mode}",
-    "data:",
-  ]
-  foreach(source, sources) {
-    _yaml_contents += [ "  - file: " + get_path_info(source, "file") ]
-  }
+  action(target_name) {
+    script = "//build/cipd/prepare_cipd_package_definition.py"
+    depfile = "$target_gen_dir/$target_name.d"
+    _definition_path = "${_package_root}/${_package_definition_name}"
+    outputs = [ _definition_path ]
 
-  write_file("${_package_staging_dir}/${_cipd_definition_yaml}", _yaml_contents)
-
-  copy(target_name) {
-    outputs = [ "${_package_staging_dir}/{{source_file_part}}" ]
+    args = [
+      "--pkg-name",
+      invoker.package,
+      "--description",
+      invoker.description,
+      "--pkg-root",
+      rebase_path(_package_root, root_build_dir),
+      "--install-mode",
+      _install_mode,
+      "--pkg-def",
+      rebase_path(_definition_path, root_build_dir),
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+    ]
+    args += [ "--copy-files" ] + rebase_path(sources, root_build_dir)
   }
 }

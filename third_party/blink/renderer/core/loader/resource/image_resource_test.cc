@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/loader/resource/mock_image_resource_observer.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
@@ -113,10 +114,13 @@ constexpr size_t kJpegImageSubrangeWithDimensionsLength =
     sizeof(kJpegImage) - 1;
 constexpr size_t kJpegImageSubrangeWithoutDimensionsLength = 3;
 
+class ImageResourceTest : public testing::Test,
+                          private ScopedMockOverlayScrollbars {};
+
 // Ensure that the image decoder can determine the dimensions of kJpegImage from
 // just the first kJpegImageSubrangeWithDimensionsLength bytes. If this test
 // fails, then the test data here probably needs to be updated.
-TEST(ImageResourceTest, DimensionsDecodableFromPartialTestImage) {
+TEST_F(ImageResourceTest, DimensionsDecodableFromPartialTestImage) {
   scoped_refptr<Image> image = BitmapImage::Create();
   EXPECT_EQ(
       Image::kSizeAvailable,
@@ -211,7 +215,7 @@ ResourceFetcher* CreateFetcher() {
       MakeGarbageCollected<TestLoaderFactory>()));
 }
 
-TEST(ImageResourceTest, MultipartImage) {
+TEST_F(ImageResourceTest, MultipartImage) {
   ResourceFetcher* fetcher = CreateFetcher();
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
@@ -298,7 +302,7 @@ TEST(ImageResourceTest, MultipartImage) {
   EXPECT_TRUE(observer2->ImageNotifyFinishedCalled());
 }
 
-TEST(ImageResourceTest, BitmapMultipartImage) {
+TEST_F(ImageResourceTest, BitmapMultipartImage) {
   ResourceFetcher* fetcher = CreateFetcher();
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
@@ -335,7 +339,7 @@ TEST(ImageResourceTest, BitmapMultipartImage) {
                   .is_multipart());
 }
 
-TEST(ImageResourceTest, CancelOnRemoveObserver) {
+TEST_F(ImageResourceTest, CancelOnRemoveObserver) {
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
 
@@ -383,7 +387,7 @@ class MockFinishObserver : public ResourceFinishObserver {
   MockFinishObserver() = default;
 };
 
-TEST(ImageResourceTest, CancelWithImageAndFinishObserver) {
+TEST_F(ImageResourceTest, CancelWithImageAndFinishObserver) {
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
 
@@ -420,7 +424,7 @@ TEST(ImageResourceTest, CancelWithImageAndFinishObserver) {
   blink::test::RunPendingTasks();
 }
 
-TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
+TEST_F(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
   ImageResource* image_resource = ImageResource::CreateForTest(NullURL());
   image_resource->NotifyStartLoad();
 
@@ -462,7 +466,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
   // data.
 }
 
-TEST(ImageResourceTest, UpdateBitmapImages) {
+TEST_F(ImageResourceTest, UpdateBitmapImages) {
   ImageResource* image_resource = ImageResource::CreateForTest(NullURL());
   image_resource->NotifyStartLoad();
 
@@ -486,7 +490,7 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
   EXPECT_TRUE(IsA<BitmapImage>(image_resource->GetContent()->GetImage()));
 }
 
-TEST(ImageResourceTest, SVGImage) {
+TEST_F(ImageResourceTest, SVGImage) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
   auto observer =
@@ -503,7 +507,7 @@ TEST(ImageResourceTest, SVGImage) {
   EXPECT_FALSE(IsA<BitmapImage>(image_resource->GetContent()->GetImage()));
 }
 
-TEST(ImageResourceTest, SVGImageWithSubresource) {
+TEST_F(ImageResourceTest, SVGImageWithSubresource) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
   auto observer =
@@ -548,7 +552,7 @@ TEST(ImageResourceTest, SVGImageWithSubresource) {
   GetMemoryCache()->EvictResources();
 }
 
-TEST(ImageResourceTest, SuccessfulRevalidationJpeg) {
+TEST_F(ImageResourceTest, SuccessfulRevalidationJpeg) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
   auto observer =
@@ -585,7 +589,7 @@ TEST(ImageResourceTest, SuccessfulRevalidationJpeg) {
             image_resource->GetContent()->GetImage()->height());
 }
 
-TEST(ImageResourceTest, SuccessfulRevalidationSvg) {
+TEST_F(ImageResourceTest, SuccessfulRevalidationSvg) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
   auto observer =
@@ -618,7 +622,7 @@ TEST(ImageResourceTest, SuccessfulRevalidationSvg) {
   EXPECT_EQ(200, image_resource->GetContent()->GetImage()->height());
 }
 
-TEST(ImageResourceTest, FailedRevalidationJpegToJpeg) {
+TEST_F(ImageResourceTest, FailedRevalidationJpegToJpeg) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
   auto observer =
@@ -653,7 +657,7 @@ TEST(ImageResourceTest, FailedRevalidationJpegToJpeg) {
   EXPECT_EQ(50, image_resource->GetContent()->GetImage()->height());
 }
 
-TEST(ImageResourceTest, FailedRevalidationJpegToSvg) {
+TEST_F(ImageResourceTest, FailedRevalidationJpegToSvg) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
   auto observer =
@@ -687,7 +691,7 @@ TEST(ImageResourceTest, FailedRevalidationJpegToSvg) {
   EXPECT_EQ(200, image_resource->GetContent()->GetImage()->height());
 }
 
-TEST(ImageResourceTest, FailedRevalidationSvgToJpeg) {
+TEST_F(ImageResourceTest, FailedRevalidationSvgToJpeg) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
   auto observer =
@@ -721,7 +725,7 @@ TEST(ImageResourceTest, FailedRevalidationSvgToJpeg) {
             image_resource->GetContent()->GetImage()->height());
 }
 
-TEST(ImageResourceTest, FailedRevalidationSvgToSvg) {
+TEST_F(ImageResourceTest, FailedRevalidationSvgToSvg) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
   auto observer =
@@ -755,7 +759,7 @@ TEST(ImageResourceTest, FailedRevalidationSvgToSvg) {
 
 // Tests for pruning.
 
-TEST(ImageResourceTest, Prune) {
+TEST_F(ImageResourceTest, Prune) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
 
@@ -784,7 +788,7 @@ TEST(ImageResourceTest, Prune) {
             image_resource->GetContent()->GetImage()->height());
 }
 
-TEST(ImageResourceTest, CancelOnDecodeError) {
+TEST_F(ImageResourceTest, CancelOnDecodeError) {
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
 
@@ -812,7 +816,7 @@ TEST(ImageResourceTest, CancelOnDecodeError) {
   EXPECT_FALSE(image_resource->IsLoading());
 }
 
-TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
+TEST_F(ImageResourceTest, DecodeErrorWithEmptyBody) {
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
 
@@ -843,7 +847,7 @@ TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
 
 // Testing DecodeError that occurs in didFinishLoading().
 // This is similar to DecodeErrorWithEmptyBody, but with non-empty body.
-TEST(ImageResourceTest, PartialContentWithoutDimensions) {
+TEST_F(ImageResourceTest, PartialContentWithoutDimensions) {
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
 
@@ -888,7 +892,7 @@ TEST(ImageResourceTest, PartialContentWithoutDimensions) {
   EXPECT_FALSE(image_resource->IsLoading());
 }
 
-TEST(ImageResourceTest, PeriodicFlushTest) {
+TEST_F(ImageResourceTest, PeriodicFlushTest) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
 
@@ -999,7 +1003,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   EXPECT_EQ(50, image_resource->GetContent()->GetImage()->height());
 }
 
-TEST(ImageResourceTest, DeferredInvalidation) {
+TEST_F(ImageResourceTest, DeferredInvalidation) {
   ImageResource* image_resource = ImageResource::CreateForTest(NullURL());
   std::unique_ptr<MockImageResourceObserver> obs =
       std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
@@ -1048,7 +1052,7 @@ constexpr unsigned char kExtendedWebPImage[] = {
     0xC8, 0x70, 0x88, 0x0B, 0x6C, 0x54, 0x7A, 0xFB, 0xCA, 0x1D, 0x89, 0x90,
     0xDD, 0x27, 0xEA, 0x7F, 0x28, 0x00, 0x00, 0x00};
 
-TEST(ImageResourceTest, WebPSniffing) {
+TEST_F(ImageResourceTest, WebPSniffing) {
   KURL test_url(kTestURL);
 
   // Test lossy WebP image.

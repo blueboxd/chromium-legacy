@@ -105,6 +105,7 @@ void ImageDocumentTest::CreateDocumentWithoutLoadingImage(int view_width,
   FillWithEmptyClients(page_clients);
   chrome_client_ = MakeGarbageCollected<WindowToViewportScalingChromeClient>();
   page_clients.chrome_client = chrome_client_;
+  dummy_page_holder_ = nullptr;
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(
       IntSize(view_width, view_height), &page_clients);
 
@@ -253,13 +254,8 @@ TEST_F(ImageDocumentTest, MAYBE(ImageCenteredAtDeviceScaleFactor)) {
   GetDocument().ImageClicked(15, 27);
   ScrollOffset offset =
       GetDocument().GetFrame()->View()->LayoutViewport()->GetScrollOffset();
-  if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
-    EXPECT_EQ(22.5f, offset.Width());
-    EXPECT_EQ(42, offset.Height());
-  } else {
-    EXPECT_EQ(22, offset.Width());
-    EXPECT_EQ(42, offset.Height());
-  }
+  EXPECT_EQ(20, offset.Width());
+  EXPECT_EQ(20, offset.Height());
 
   GetDocument().ImageClicked(20, 20);
 
@@ -268,10 +264,10 @@ TEST_F(ImageDocumentTest, MAYBE(ImageCenteredAtDeviceScaleFactor)) {
       GetDocument().GetFrame()->View()->LayoutViewport()->GetScrollOffset();
   if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
     EXPECT_EQ(11.25f, offset.Width());
-    EXPECT_EQ(22.5f, offset.Height());
+    EXPECT_EQ(20, offset.Height());
   } else {
     EXPECT_EQ(11, offset.Width());
-    EXPECT_EQ(22, offset.Height());
+    EXPECT_EQ(20, offset.Height());
   }
 }
 

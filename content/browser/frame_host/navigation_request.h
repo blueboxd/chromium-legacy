@@ -903,7 +903,9 @@ class CONTENT_EXPORT NavigationRequest
   // be set in CreatedNavigationRequest.
   // Note: |browser_initiated_| and |common_params_| may be mutated by
   // ContentBrowserClient::OverrideNavigationParams at StartNavigation time
-  // (i.e. before we actually kick off the navigation).
+  // (i.e. before we actually kick off the navigation). |browser_initiated|
+  // will always be true for history navigations, even if they began in the
+  // renderer using the history API.
   mojom::CommonNavigationParamsPtr common_params_;
   mojom::BeginNavigationParamsPtr begin_params_;
   mojom::CommitNavigationParamsPtr commit_params_;

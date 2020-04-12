@@ -1776,7 +1776,7 @@ TEST_F(CompositedLayerMappingTest,
   EXPECT_FALSE(mapping->NeedsRepaint(*vertical_scrollbar_layer));
 
   GetDocument().getElementById("child")->setAttribute(html_names::kStyleAttr,
-                                                      "height: 300px");
+                                                      "height: 50px");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kTest);
   EXPECT_TRUE(mapping->NeedsRepaint(*vertical_scrollbar_layer));

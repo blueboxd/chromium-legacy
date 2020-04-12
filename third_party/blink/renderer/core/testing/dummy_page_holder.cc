@@ -64,7 +64,8 @@ DummyPageHolder::DummyPageHolder(
     Page::PageClients* page_clients_argument,
     LocalFrameClient* local_frame_client,
     base::OnceCallback<void(Settings&)> setting_overrider,
-    const base::TickClock* clock) {
+    const base::TickClock* clock)
+    : enable_mock_scrollbars_(true) {
   Page::PageClients page_clients;
   if (!page_clients_argument)
     FillWithEmptyClients(page_clients);

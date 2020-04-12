@@ -61,12 +61,25 @@ bool ParseTextDirective(const String& fragment,
 bool CheckSecurityRestrictions(LocalFrame& frame,
                                bool same_document_navigation) {
   // This algorithm checks the security restrictions detailed in
-  // https://wicg.github.io/ScrollToTextFragment/#should-allow-text-fragment
+  // https://wicg.github.io/ScrollToTextFragment/#should-allow-a-text-fragment
+  // TODO(bokan): These are really only relevant for observable actions like
+  // scrolling. We should consider allowing highlighting regardless of these
+  // conditions. See the TODO in the relevant spec section:
+  // https://wicg.github.io/ScrollToTextFragment/#restricting-the-text-fragment
 
-  // We only allow text fragment anchors for user or browser initiated
-  // navigations, i.e. no script navigations.
-  if (!(frame.Loader().GetDocumentLoader()->HadTransientActivation() ||
-        frame.Loader().GetDocumentLoader()->IsBrowserInitiated())) {
+  // History navigation is special because it's considered to be browser
+  // initiated even if the navigation originated via use of the history API
+  // within the renderer. We avoid creating a text fragment for history
+  // navigations since history scroll restoration should take precedence but
+  // it'd be bad if we ever got here for a history navigation since the check
+  // below would pass even if the user took no action.
+  SECURITY_CHECK(frame.Loader().GetDocumentLoader()->GetNavigationType() !=
+                 kWebNavigationTypeBackForward);
+
+  // We only allow text fragment anchors for user navigations, e.g. link
+  // clicks, omnibox navigations, no script navigations.
+  if (!frame.Loader().GetDocumentLoader()->HadTransientActivation() &&
+      !frame.Loader().GetDocumentLoader()->IsBrowserInitiated()) {
     return false;
   }
 
@@ -103,6 +116,17 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
 
   if (!frame.GetDocument()->GetFragmentDirective())
     return nullptr;
+
+  // Avoid invoking the text fragment for history or reload navigations as
+  // they'll be clobbered by scroll restoration; this prevents a transient
+  // scroll as well as user gesture issues; see https://crbug.com/1042986 for
+  // details.
+  auto navigation_type =
+      frame.Loader().GetDocumentLoader()->GetNavigationType();
+  if (navigation_type == kWebNavigationTypeBackForward ||
+      navigation_type == kWebNavigationTypeReload) {
+    return nullptr;
+  }
 
   if (!CheckSecurityRestrictions(frame, same_document_navigation))
     return nullptr;

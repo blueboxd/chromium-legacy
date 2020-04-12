@@ -5,6 +5,7 @@
 #ifndef CHROME_UPDATER_CONSTANTS_H_
 #define CHROME_UPDATER_CONSTANTS_H_
 
+#include "build/build_config.h"
 #include "components/update_client/update_client_errors.h"
 
 namespace updater {
@@ -54,6 +55,14 @@ extern const char kCrashHandlerSwitch[];
 
 // Installs the updater.
 extern const char kInstallSwitch[];
+
+#if defined(OS_WIN)
+// A debug switch to indicate that --install is running from the `out` directory
+// of the build. When this switch is present, the setup picks up the run time
+// dependencies of the updater from the `out` directory instead of using the
+// metainstaller uncompressed archive.
+extern const char kInstallFromOutDir[];
+#endif  // OS_WIN
 
 // Uninstalls the updater.
 extern const char kUninstallSwitch[];

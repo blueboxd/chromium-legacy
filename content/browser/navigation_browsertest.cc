@@ -2023,7 +2023,8 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledOnUserNavigation) {
   WaitForPageLoad(main_contents);
   frame_observer.WaitForScrollOffsetAtTop(
       /*expected_scroll_offset_at_top=*/false);
-  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+  RunUntilInputProcessed(GetWidgetHost());
+  EXPECT_EQ(true, EvalJs(main_contents, "did_scroll;"));
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
@@ -2039,7 +2040,8 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   WaitForPageLoad(main_contents);
   frame_observer.WaitForScrollOffsetAtTop(
       /*expected_scroll_offset_at_top=*/false);
-  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+  RunUntilInputProcessed(GetWidgetHost());
+  EXPECT_EQ(true, EvalJs(main_contents, "did_scroll;"));
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
@@ -2064,7 +2066,8 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   WaitForPageLoad(main_contents);
   frame_observer.WaitForScrollOffsetAtTop(
       /*expected_scroll_offset_at_top=*/false);
-  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+  RunUntilInputProcessed(GetWidgetHost());
+  EXPECT_EQ(true, EvalJs(main_contents, "did_scroll;"));
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
@@ -2091,7 +2094,7 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
   RunUntilInputProcessed(GetWidgetHost());
-  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+  EXPECT_EQ(false, EvalJs(main_contents, "did_scroll;"));
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
@@ -2127,7 +2130,13 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
   RunUntilInputProcessed(GetWidgetHost());
-  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+
+  // Note: we use a scroll handler in the page to check whether any scrolls
+  // happened at all, rather than checking the current scroll offset. This is
+  // to ensure that if the offset is reset back to the top for other reasons
+  // (e.g. history restoration) we still fail this test. See
+  // https://crbug.com/1042986 for why this matters.
+  EXPECT_EQ(false, EvalJs(main_contents, "did_scroll;"));
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
@@ -2142,11 +2151,13 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
 
   WaitForPageLoad(main_contents);
   frame_observer.WaitForScrollOffsetAtTop(false);
-  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
 
-  // Scroll the page back to top.
+  // Scroll the page back to top. Make sure we reset the |did_scroll| variable
+  // we'll use below to ensure the same-document navigation invokes the text
+  // fragment.
   EXPECT_TRUE(ExecuteScript(main_contents, "window.scrollTo(0, 0)"));
   frame_observer.WaitForScrollOffsetAtTop(true);
+  EXPECT_TRUE(ExecJs(main_contents, "did_scroll = false;"));
 
   // Perform a same-document browser initiated navigation
   GURL same_doc_url(embedded_test_server()->GetURL(
@@ -2156,7 +2167,8 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   WaitForPageLoad(main_contents);
   frame_observer.WaitForScrollOffsetAtTop(
       /*expected_scroll_offset_at_top=*/false);
-  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+  RunUntilInputProcessed(GetWidgetHost());
+  EXPECT_EQ(true, EvalJs(main_contents, "did_scroll;"));
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
@@ -2184,7 +2196,7 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
   RunUntilInputProcessed(GetWidgetHost());
-  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+  EXPECT_EQ(false, EvalJs(main_contents, "did_scroll;"));
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledByDocumentPolicy) {
@@ -2211,6 +2223,12 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledByDocumentPolicy) {
       "Content-Type: text/html; charset=utf-8\r\n"
       "Document-Policy: no-force-load-at-top\r\n"
       "\r\n"
+      "<script>"
+      "  let did_scroll = false;"
+      "  window.addEventListener('scroll', () => {"
+      "    did_scroll = true;"
+      "  });"
+      "</script>"
       "<p style='position: absolute; top: 10000px;'>Some text</p>");
   response.Done();
 
@@ -2221,7 +2239,8 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledByDocumentPolicy) {
   WaitForPageLoad(main_contents);
   frame_observer.WaitForScrollOffsetAtTop(
       /*expected_scroll_offset_at_top=*/false);
-  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+  RunUntilInputProcessed(GetWidgetHost());
+  EXPECT_EQ(true, EvalJs(main_contents, "did_scroll;"));
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
@@ -2248,6 +2267,12 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
       "Content-Type: text/html; charset=utf-8\r\n"
       "Document-Policy: force-load-at-top\r\n"
       "\r\n"
+      "<script>"
+      "  let did_scroll = false;"
+      "  window.addEventListener('scroll', () => {"
+      "    did_scroll = true;"
+      "  });"
+      "</script>"
       "<p style='position: absolute; top: 10000px;'>Some text</p>");
   response.Done();
 
@@ -2262,7 +2287,7 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
   RunUntilInputProcessed(GetWidgetHost());
-  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+  EXPECT_EQ(false, EvalJs(main_contents, "did_scroll;"));
 }
 
 // Regression test for https://crbug.com/996044

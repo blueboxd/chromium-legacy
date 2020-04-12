@@ -1951,4 +1951,22 @@ TEST_F(WorkspaceWindowResizerTest, DoesNotWorkInAppMode) {
   EXPECT_FALSE(CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
 }
 
+TEST_F(WorkspaceWindowResizerTest, DoNotCreateResizerIfNotActiveSession) {
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::OOBE);
+  EXPECT_FALSE(CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
+
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+  EXPECT_FALSE(CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
+
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
+  EXPECT_FALSE(CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
+
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  EXPECT_TRUE(CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
+}
+
 }  // namespace ash

@@ -121,6 +121,7 @@ class FrameFetchContextTest : public testing::Test {
 
   void RecreateFetchContext(const KURL& url = KURL(),
                             const String& feature_policy_header = String()) {
+    dummy_page_holder = nullptr;
     dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
     if (url.IsValid()) {

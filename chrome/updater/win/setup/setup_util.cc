@@ -4,14 +4,22 @@
 
 #include "chrome/updater/win/setup/setup_util.h"
 
+#include <string>
+
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
-#include "chrome/updater/win/task_scheduler.h"
 #include "chrome/updater/server/win/updater_idl.h"
+#include "chrome/updater/util.h"
+#include "chrome/updater/win/task_scheduler.h"
 
 namespace updater {
 
@@ -64,6 +72,28 @@ base::string16 GetComIidRegistryPath(REFIID iid) {
 base::string16 GetComTypeLibRegistryPath(REFIID iid) {
   return base::StrCat(
       {L"Software\\Classes\\TypeLib\\", base::win::String16FromGUID(iid)});
+}
+
+std::vector<base::FilePath> ParseFilesFromDeps(const base::FilePath& deps) {
+  constexpr size_t kDepsFileSizeMax = 0x2000;  // 8KB.
+  std::string contents;
+  if (!base::ReadFileToStringWithMaxSize(deps, &contents, kDepsFileSizeMax))
+    return {};
+  const base::flat_set<const base::char16*,
+                       CaseInsensitiveASCIICompare<base::string16>>
+      exclude_extensions = {L".pdb", L".js"};
+  std::vector<base::FilePath> result;
+  for (const auto& line :
+       base::SplitString(contents, "\r\n", base::TRIM_WHITESPACE,
+                         base::SPLIT_WANT_NONEMPTY)) {
+    const auto filename =
+        base::FilePath(base::ASCIIToUTF16(line)).NormalizePathSeparators();
+    if (!base::Contains(exclude_extensions,
+                        filename.FinalExtension().c_str())) {
+      result.push_back(filename);
+    }
+  }
+  return result;
 }
 
 }  // namespace updater

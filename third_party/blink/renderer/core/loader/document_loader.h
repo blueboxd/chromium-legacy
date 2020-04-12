@@ -294,6 +294,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   bool HadTransientActivation() const { return had_transient_activation_; }
 
+  // Whether the navigation originated from the browser process. Note: history
+  // navigation is always considered to be browser initiated, even if the
+  // navigation was started using the history API in the renderer.
   bool IsBrowserInitiated() const { return is_browser_initiated_; }
 
   bool IsSameOriginNavigation() const { return is_same_origin_navigation_; }

@@ -27,6 +27,10 @@ const char kLoggingModuleSwitch[] = "vmodule";
 const char kSingleProcessSwitch[] = "single-process";
 const char kAppIdSwitch[] = "appid";
 
+#if defined(OS_WIN)
+const char kInstallFromOutDir[] = "install-from-out-dir";
+#endif  // OS_WIN
+
 // URLs.
 const char kUpdaterJSONDefaultUrl[] =
     "https://update.googleapis.com/service/update2/json";

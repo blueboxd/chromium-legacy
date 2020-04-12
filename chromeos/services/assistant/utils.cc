@@ -113,15 +113,6 @@ std::string CreateLibAssistantConfig(
   // Enable logging.
   internal.SetBoolKey("enable_logging", true);
 
-  // This only enables logging to local disk combined with the flag above. When
-  // user choose to file a Feedback report, user can examine the log and choose
-  // to upload the log with the report or not.
-  internal.SetBoolKey("logging_opt_in", true);
-
-  // Allows libassistant to automatically toggle signed-out mode depending on
-  // whether it has auth_tokens.
-  internal.SetBoolKey("enable_signed_out_mode", true);
-
   config.SetKey("internal", std::move(internal));
 
   Value audio_input(Type::DICTIONARY);

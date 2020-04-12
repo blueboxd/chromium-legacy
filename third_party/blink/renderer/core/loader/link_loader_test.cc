@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -86,7 +87,8 @@ class NetworkHintsMock : public WebPrescientNetworking {
   mutable bool allow_credentials_ = false;
 };
 
-class LinkLoaderPreloadTestBase : public testing::Test {
+class LinkLoaderPreloadTestBase : public testing::Test,
+                                  private ScopedMockOverlayScrollbars {
  public:
   struct Expectations {
     ResourceLoadPriority priority;
@@ -468,7 +470,8 @@ constexpr ModulePreloadTestParams kModulePreloadTestParams[] = {
      true, network::mojom::CredentialsMode::kSameOrigin}};
 
 class LinkLoaderModulePreloadTest
-    : public testing::TestWithParam<ModulePreloadTestParams> {};
+    : public testing::TestWithParam<ModulePreloadTestParams>,
+      private ScopedMockOverlayScrollbars {};
 
 class ModulePreloadTestModulator final : public DummyModulator {
  public:
@@ -529,7 +532,8 @@ INSTANTIATE_TEST_SUITE_P(LinkLoaderModulePreloadTest,
 
 class LinkLoaderTestPrefetchPrivacyChanges
     : public testing::Test,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<bool>,
+      private ScopedMockOverlayScrollbars {
  public:
   LinkLoaderTestPrefetchPrivacyChanges()
       : privacy_changes_enabled_(GetParam()) {}
@@ -593,7 +597,8 @@ TEST_P(LinkLoaderTestPrefetchPrivacyChanges, PrefetchPrivacyChanges) {
   platform_->GetURLLoaderMockFactory()->UnregisterAllURLsAndClearMemoryCache();
 }
 
-class LinkLoaderTest : public testing::Test {
+class LinkLoaderTest : public testing::Test,
+                       private ScopedMockOverlayScrollbars {
  protected:
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };

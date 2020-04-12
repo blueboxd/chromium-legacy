@@ -78,6 +78,7 @@ class WindowPerformanceTest : public testing::Test {
   }
 
   void ResetPerformance() {
+    page_holder_ = nullptr;
     page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
     page_holder_->GetDocument().SetURL(KURL("https://example.com"));
 

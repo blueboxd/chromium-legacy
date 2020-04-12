@@ -97,6 +97,9 @@ constexpr float kUnifiedMenuBackgroundBlur = 30.f;
 // Threshold to ignore update on the slider value.
 constexpr float kAudioSliderIgnoreUpdateThreshold = 0.01;
 
+// Duration for the collapse / expand animation in ms.
+constexpr int kSystemMenuCollapseExpandAnimationDurationMs = 500;
+
 constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);
 constexpr gfx::Insets kUnifiedSystemInfoViewPadding(0, 16, 16, 16);
 constexpr gfx::Insets kUnifiedManagedDeviceViewPadding(4, 19, 4, 16);

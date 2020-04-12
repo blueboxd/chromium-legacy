@@ -454,9 +454,12 @@ void AssistantManagerServiceImpl::StartWarmerWelcomeInteraction(
 
 void AssistantManagerServiceImpl::StartEditReminderInteraction(
     const std::string& client_id) {
-  SendVoicelessInteraction(CreateEditReminderInteraction(client_id),
-                           /*description=*/std::string(),
-                           /*is_user_initiated=*/true);
+  const std::string interaction = CreateEditReminderInteraction(client_id);
+  assistant_client::VoicelessOptions voiceless_options;
+
+  voiceless_options.is_user_initiated = true;
+  assistant_manager_internal_->SendVoicelessInteraction(
+      interaction, std::string(), voiceless_options, [](auto) {});
 }
 
 void AssistantManagerServiceImpl::StartScreenContextInteraction(
@@ -525,9 +528,11 @@ void AssistantManagerServiceImpl::RetrieveNotification(
       SerializeNotificationRequestInteraction(
           notification_id, consistency_token, opaque_token, action_index);
 
-  SendVoicelessInteraction(request_interaction,
-                           /*description=*/"RequestNotification",
-                           /*is_user_initiated=*/true);
+  assistant_client::VoicelessOptions options;
+  options.is_user_initiated = true;
+
+  assistant_manager_internal_->SendVoicelessInteraction(
+      request_interaction, "RequestNotification", options, [](auto) {});
 }
 
 void AssistantManagerServiceImpl::DismissNotification(
@@ -550,8 +555,7 @@ void AssistantManagerServiceImpl::DismissNotification(
   options.obfuscated_gaia_id = notification->obfuscated_gaia_id;
 
   assistant_manager_internal_->SendVoicelessInteraction(
-      dismissed_interaction, /*description=*/"DismissNotification", options,
-      [](auto) {});
+      dismissed_interaction, "DismissNotification", options, [](auto) {});
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnStartedInternal(
@@ -641,10 +645,6 @@ void AssistantManagerServiceImpl::OnConversationTurnFinished(
         it->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kMultiDeviceHotwordLoss);
       }
-      break;
-    // This is only applicable in longform barge-in mode, which we do not use.
-    case Resolution::LONGFORM_KEEP_MIC_OPEN:
-      NOTREACHED();
       break;
   }
 }
@@ -1041,10 +1041,10 @@ void HandleSliderChange(api::client_op::ModifySettingArgs modify_setting_args,
   LogUnsupportedChange(modify_setting_args);
 }
 
-void AssistantManagerServiceImpl::OnModifyDeviceSetting(
-    const api::client_op::ModifySettingArgs& modify_setting_args) {
-  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnModifyDeviceSetting,
-                     modify_setting_args);
+void AssistantManagerServiceImpl::OnModifySettingsAction(
+    const std::string& modify_setting_args_proto) {
+  api::client_op::ModifySettingArgs modify_setting_args;
+  modify_setting_args.ParseFromString(modify_setting_args_proto);
   DCHECK(IsSettingSupported(modify_setting_args.setting_id()));
   receive_modify_settings_proto_response_ = true;
 
@@ -1109,18 +1109,14 @@ void AssistantManagerServiceImpl::OnModifyDeviceSetting(
   }
 }
 
-void AssistantManagerServiceImpl::OnGetDeviceSettings(
-    int interaction_id,
-    const api::client_op::GetDeviceSettingsArgs& args) {
-  // Collect the required information.
-  std::vector<DeviceSetting> result;
-  for (const std::string& setting_id : args.setting_ids())
-    result.emplace_back(setting_id, IsSettingSupported(setting_id));
-
-  SendVoicelessInteraction(
-      CreateGetDeviceSettingInteraction(interaction_id, result),
-      /*description=*/"get_settings_result",
-      /*is_user_initiated=*/true);
+ActionModule::Result AssistantManagerServiceImpl::HandleModifySettingClientOp(
+    const std::string& modify_setting_args_proto) {
+  DVLOG(2) << "HandleModifySettingClientOp=" << modify_setting_args_proto;
+  main_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AssistantManagerServiceImpl::OnModifySettingsAction,
+                     weak_factory_.GetWeakPtr(), modify_setting_args_proto));
+  return ActionModule::Result::Ok();
 }
 
 bool AssistantManagerServiceImpl::IsSettingSupported(
@@ -1188,8 +1184,6 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
 
   UpdateInternalOptions(new_assistant_manager_internal_);
 
-  new_assistant_manager_internal_->SetLocaleOverride(
-      GetLocaleOrDefault(assistant_state()->locale().value()));
   new_assistant_manager_internal_->SetDisplayConnection(
       new_display_connection_.get());
   new_assistant_manager_internal_->RegisterActionModule(action_module_.get());
@@ -1265,8 +1259,7 @@ void AssistantManagerServiceImpl::HandleOpenAndroidAppResponse(
   options.obfuscated_gaia_id = interaction.user_id;
 
   assistant_manager_internal_->SendVoicelessInteraction(
-      interaction_proto, /*description=*/"open_provider_response", options,
-      [](auto) {});
+      interaction_proto, "open_provider_response", options, [](auto) {});
 }
 
 void AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse(
@@ -1288,8 +1281,7 @@ void AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse(
   options.is_user_initiated = true;
 
   assistant_manager_internal_->SendVoicelessInteraction(
-      interaction_proto, /*description=*/"verify_provider_response", options,
-      [](auto) {});
+      interaction_proto, "verify_provider_response", options, [](auto) {});
 }
 
 // This method runs on the LibAssistant thread.
@@ -1356,6 +1348,15 @@ void AssistantManagerServiceImpl::UpdateInternalOptions(
 
   internal_options->SetClientControlEnabled(
       assistant::features::IsRoutinesEnabled());
+
+  // TODO(meilinw): remove this logic and instead use the new config flag
+  // once we uprev.
+  if (chromeos::features::IsAmbientModeEnabled() ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableGaiaServices)) {
+    internal_options->SetUserCredentialMode(
+        assistant_client::InternalOptions::UserCredentialMode::SIGNED_OUT);
+  }
 
   if (!features::IsVoiceMatchDisabled())
     internal_options->EnableRequireVoiceMatchVerification();
@@ -1492,18 +1493,6 @@ std::string AssistantManagerServiceImpl::ConsumeLastTriggerSource() {
   return trigger_source;
 }
 
-void AssistantManagerServiceImpl::SendVoicelessInteraction(
-    const std::string& interaction,
-    const std::string& description,
-    bool is_user_initiated) {
-  assistant_client::VoicelessOptions voiceless_options;
-
-  voiceless_options.is_user_initiated = is_user_initiated;
-
-  assistant_manager_internal_->SendVoicelessInteraction(
-      interaction, description, voiceless_options, [](auto) {});
-}
-
 std::string AssistantManagerServiceImpl::GetLastSearchSource() {
   return ConsumeLastTriggerSource();
 }
@@ -1552,10 +1541,13 @@ void AssistantManagerServiceImpl::SendAssistantFeedback(
   const std::string interaction = CreateSendFeedbackInteraction(
       assistant_feedback->assistant_debug_info_allowed,
       assistant_feedback->description, assistant_feedback->screenshot_png);
+  assistant_client::VoicelessOptions voiceless_options;
 
-  SendVoicelessInteraction(interaction,
-                           /*description=*/"send feedback with details",
-                           /*is_user_initiated=*/false);
+  voiceless_options.is_user_initiated = false;
+
+  assistant_manager_internal_->SendVoicelessInteraction(
+      interaction, "send feedback with details", voiceless_options,
+      [](auto) {});
 }
 
 void AssistantManagerServiceImpl::UpdateMediaState() {

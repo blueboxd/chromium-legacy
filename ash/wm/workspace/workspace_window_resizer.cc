@@ -290,9 +290,15 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   if (window_state->drag_details())
     return nullptr;
 
-  // When running in single app mode, we should not create window resizer.
-  if (Shell::Get()->session_controller()->IsRunningInAppMode())
+  // When running in single app mode or not in an active user session, we
+  // should not create window resizer.
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
+  if (session_controller->IsRunningInAppMode() ||
+      session_controller->GetSessionState() !=
+          session_manager::SessionState::ACTIVE) {
     return nullptr;
+  }
 
   if (window_state->IsPip()) {
     window_state->CreateDragDetails(point_in_parent, window_component, source);

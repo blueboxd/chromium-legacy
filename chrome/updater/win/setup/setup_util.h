@@ -7,12 +7,15 @@
 
 #include <guiddef.h>
 
-namespace base {
-class CommandLine;
-}  // namespace base
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "base/win/windows_types.h"
+
+namespace base {
+class CommandLine;
+class FilePath;
+}  // namespace base
 
 namespace updater {
 
@@ -25,6 +28,12 @@ base::string16 GetComServiceClsidRegistryPath();
 base::string16 GetComServiceAppidRegistryPath();
 base::string16 GetComIidRegistryPath(REFIID iid);
 base::string16 GetComTypeLibRegistryPath(REFIID iid);
+
+// Parses the run time dependency file which contains all dependencies of
+// the `updater` target. This file is a text file, where each line of
+// text represents a single dependency. Some dependencies are not needed for
+// updater to run, and are filtered out from the return value of this function.
+std::vector<base::FilePath> ParseFilesFromDeps(const base::FilePath& deps);
 
 }  // namespace updater
 

@@ -3151,6 +3151,8 @@ crbug.com/947951 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-in
 crbug.com/1067277 external/wpt/css/css-content/element-replacement-on-replaced-element.tentative.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win10 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-normal-015a.xht [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-normal-015a.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-normal-015a.xht [ Failure ]

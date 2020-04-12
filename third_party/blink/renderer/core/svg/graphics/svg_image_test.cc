@@ -38,7 +38,7 @@ const float kEpsilon = 0.00001;
 
 }  // namespace
 
-class SVGImageTest : public testing::Test {
+class SVGImageTest : public testing::Test, private ScopedMockOverlayScrollbars {
  public:
   SVGImage& GetImage() { return *image_; }
 
@@ -330,7 +330,7 @@ TEST_F(SVGImageTest, DarkModeClassification) {
   EXPECT_NEAR(0.11f, features.background_ratio, kEpsilon);
 }
 
-class SVGImageSimTest : public SimTest {};
+class SVGImageSimTest : public SimTest, private ScopedMockOverlayScrollbars {};
 
 TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   SimRequest main_resource("https://example.com/", "text/html");

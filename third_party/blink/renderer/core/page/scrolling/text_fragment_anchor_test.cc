@@ -1611,7 +1611,11 @@ TEST_F(TextFragmentAnchorTest, TextDirectiveInSvg) {
 }
 
 // Ensure we restore the text highlight on page reload
-TEST_F(TextFragmentAnchorTest, HighlightOnReload) {
+// TODO(bokan): This test is disabled as this functionality was suppressed in
+// https://crrev.com/c/2135407; it would be better addressed by providing a
+// highlight-only function. See the TODO in
+// https://wicg.github.io/ScrollToTextFragment/#restricting-the-text-fragment
+TEST_F(TextFragmentAnchorTest, DISABLED_HighlightOnReload) {
   SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
   LoadURL("https://example.com/test.html#:~:text=test");
   const String& html = R"HTML(

@@ -39,6 +39,7 @@
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -84,6 +85,11 @@ class DummyPageHolder {
 
  private:
   Persistent<Page> page_;
+
+  // Unit tests need to run with a mock theme enabled. This is necessitated
+  // particularly by Android on which unit tests run without a platform theme
+  // engine.
+  ScopedMockOverlayScrollbars enable_mock_scrollbars_;
 
   // The LocalFrame is accessed from worker threads by unit tests
   // (ThreadableLoaderTest), hence we need to allow cross-thread

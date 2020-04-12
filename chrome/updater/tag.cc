@@ -4,6 +4,9 @@
 
 #include "chrome/updater/tag.h"
 
+#include <map>
+#include <utility>
+
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
@@ -11,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/updater/lib_util.h"
+#include "chrome/updater/util.h"
 
 namespace updater {
 namespace tagging {
@@ -104,15 +108,8 @@ base::Optional<bool> ParseBool(base::StringPiece str) {
   return base::nullopt;
 }
 
-// Functor for case-insensitive ASCII comparisons with StringPiece for std::map.
-//
-// See base::CaseInsensitiveCompareASCII for usage with unicode.
-struct CaseInsensitiveCompareASCII {
- public:
-  bool operator()(base::StringPiece x, base::StringPiece y) const {
-    return CompareCaseInsensitiveASCII(x, y) > 0;
-  }
-};
+// A custom comparator functor class for the parse tables.
+using ParseTableCompare = CaseInsensitiveASCIICompare<std::string>;
 
 namespace global_attributes {
 
@@ -217,9 +214,8 @@ ErrorCode ParseAppId(base::StringPiece value, TagArgs* args) {
 using ParseGlobalAttributeFunPtr = ErrorCode (*)(base::StringPiece value,
                                                  TagArgs* args);
 
-using GlobalParseTable = std::map<base::StringPiece,
-                                  ParseGlobalAttributeFunPtr,
-                                  CaseInsensitiveCompareASCII>;
+using GlobalParseTable =
+    std::map<base::StringPiece, ParseGlobalAttributeFunPtr, ParseTableCompare>;
 
 const GlobalParseTable& GetTable() {
   static const base::NoDestructor<GlobalParseTable> instance{{
@@ -289,9 +285,8 @@ ErrorCode ParseUntrustedData(base::StringPiece value, AppArgs* args) {
 using ParseAppAttributeFunPtr = ErrorCode (*)(base::StringPiece value,
                                               AppArgs* args);
 
-using AppParseTable = std::map<base::StringPiece,
-                               ParseAppAttributeFunPtr,
-                               CaseInsensitiveCompareASCII>;
+using AppParseTable =
+    std::map<base::StringPiece, ParseAppAttributeFunPtr, ParseTableCompare>;
 
 const AppParseTable& GetTable() {
   static const base::NoDestructor<AppParseTable> instance{{
@@ -355,7 +350,7 @@ using ParseInstallerDataAttributeFunPtr =
 
 using InstallerDataParseTable = std::map<base::StringPiece,
                                          ParseInstallerDataAttributeFunPtr,
-                                         CaseInsensitiveCompareASCII>;
+                                         ParseTableCompare>;
 
 const InstallerDataParseTable& GetTable() {
   static const base::NoDestructor<InstallerDataParseTable> instance{{

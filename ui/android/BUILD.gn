@@ -399,6 +399,7 @@ junit_binary("ui_junit_tests") {
     "junit/src/org/chromium/ui/modelutil/PropertyListModelTest.java",
     "junit/src/org/chromium/ui/modelutil/PropertyModelTest.java",
     "junit/src/org/chromium/ui/modelutil/SimpleListObservableTest.java",
+    "junit/src/org/chromium/ui/modelutil/SimpleRecyclerViewAdapterTest.java",
     "junit/src/org/chromium/ui/resources/dynamics/BitmapDynamicResourceTest.java",
     "junit/src/org/chromium/ui/resources/dynamics/ViewResourceAdapterTest.java",
     "junit/src/org/chromium/ui/shadows/ShadowAnimatedStateListDrawable.java",

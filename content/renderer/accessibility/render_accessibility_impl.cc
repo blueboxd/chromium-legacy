@@ -807,8 +807,11 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     // nearest ancestor that is (ParentObject() will do this for us).
     // Otherwise this can lead to the serializer doing extra work because
     // the object won't be in |already_serialized_ids|.
-    if (!obj.AccessibilityIsIncludedInTree())
+    if (!obj.AccessibilityIsIncludedInTree()) {
       obj = obj.ParentObject();
+      if (obj.IsDetached())
+        continue;
+    }
 
     if (already_serialized_ids.find(obj.AxID()) != already_serialized_ids.end())
       continue;

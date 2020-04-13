@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/external_install_error.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/version_info/version_info.h"
@@ -226,10 +227,17 @@ void ExternalInstallManager::OnExtensionInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     bool is_update) {
+  ExtensionManagement* settings =
+      ExtensionManagementFactory::GetForBrowserContext(
+          Profile::FromBrowserContext(browser_context_));
+  bool is_recommended_by_policy = settings->GetInstallationMode(extension) ==
+                                  ExtensionManagement::INSTALLATION_RECOMMENDED;
   // Certain extension locations are specific enough that we can
   // auto-acknowledge any extension that came from one of them.
+  // Extensions recommended by policy can also be auto-acknowledged.
   if (Manifest::IsPolicyLocation(extension->location()) ||
-      extension->location() == Manifest::EXTERNAL_COMPONENT) {
+      extension->location() == Manifest::EXTERNAL_COMPONENT ||
+      is_recommended_by_policy) {
     AcknowledgeExternalExtension(extension->id());
     return;
   }

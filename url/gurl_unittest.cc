@@ -5,9 +5,11 @@
 #include <stddef.h>
 
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 #include "url/url_canon.h"
 #include "url/url_test_utils.h"
 
@@ -223,16 +225,17 @@ TEST(GURLTest, CopyFileSystem) {
 
 TEST(GURLTest, IsValid) {
   const char* valid_cases[] = {
-    "http://google.com",
-    "unknown://google.com",
-    "http://user:pass@google.com",
-    "http://google.com:12345",
-    "http://google.com/path",
-    "http://google.com//path",
-    "http://google.com?k=v#fragment",
-    "http://user:pass@google.com:12345/path?k=v#fragment",
-    "http:/path",
-    "http:path",
+      "http://google.com",
+      "unknown://google.com",
+      "http://user:pass@google.com",
+      "http://google.com:12345",
+      "http://google.com:0",  // 0 is a valid port
+      "http://google.com/path",
+      "http://google.com//path",
+      "http://google.com?k=v#fragment",
+      "http://user:pass@google.com:12345/path?k=v#fragment",
+      "http:/path",
+      "http:path",
   };
   for (size_t i = 0; i < base::size(valid_cases); i++) {
     EXPECT_TRUE(GURL(valid_cases[i]).is_valid())
@@ -240,12 +243,14 @@ TEST(GURLTest, IsValid) {
   }
 
   const char* invalid_cases[] = {
-    "http://?k=v",
-    "http:://google.com",
-    "http//google.com",
-    "http://google.com:12three45",
-    "://google.com",
-    "path",
+      "http://?k=v",
+      "http:://google.com",
+      "http//google.com",
+      "http://google.com:12three45",
+      "file://server:123",  // file: URLs cannot have a port
+      "file://server:0",
+      "://google.com",
+      "path",
   };
   for (size_t i = 0; i < base::size(invalid_cases); i++) {
     EXPECT_FALSE(GURL(invalid_cases[i]).is_valid())
@@ -977,6 +982,45 @@ TEST(GURLTest, DebugAlias) {
   GURL url("https://foo.com/bar");
   DEBUG_ALIAS_FOR_GURL(url_debug_alias, url);
   EXPECT_STREQ("https://foo.com/bar", url_debug_alias);
+}
+
+TEST(GURLTest, PortZero) {
+  GURL port_zero_url("http://127.0.0.1:0/blah");
+
+  // https://url.spec.whatwg.org/#port-state says that the port 1) consists of
+  // ASCII digits (this excludes negative numbers) and 2) cannot be greater than
+  // 2^16-1.  This means that port=0 should be valid.
+  EXPECT_TRUE(port_zero_url.is_valid());
+  EXPECT_EQ("0", port_zero_url.port());
+  EXPECT_EQ("127.0.0.1", port_zero_url.host());
+  EXPECT_EQ("http", port_zero_url.scheme());
+
+  // https://crbug.com/1065532: SchemeHostPort would previously incorrectly
+  // consider port=0 to be invalid.
+  SchemeHostPort scheme_host_port(port_zero_url);
+  EXPECT_TRUE(scheme_host_port.IsValid());
+  EXPECT_EQ(port_zero_url.scheme(), scheme_host_port.scheme());
+  EXPECT_EQ(port_zero_url.host(), scheme_host_port.host());
+  EXPECT_EQ(port_zero_url.port(),
+            base::NumberToString(scheme_host_port.port()));
+
+  // https://crbug.com/1065532: The SchemeHostPort problem above would lead to
+  // bizarre results below - resolved origin would incorrectly be returned as an
+  // opaque origin derived from |another_origin|.
+  url::Origin another_origin = url::Origin::Create(GURL("http://other.com"));
+  url::Origin resolved_origin =
+      url::Origin::Resolve(port_zero_url, another_origin);
+  EXPECT_FALSE(resolved_origin.opaque());
+  EXPECT_EQ(port_zero_url.scheme(), resolved_origin.scheme());
+  EXPECT_EQ(port_zero_url.host(), resolved_origin.host());
+  EXPECT_EQ(port_zero_url.port(), base::NumberToString(resolved_origin.port()));
+
+  // port=0 and default HTTP port are different.
+  GURL default_port("http://127.0.0.1/foo");
+  EXPECT_EQ(0, SchemeHostPort(port_zero_url).port());
+  EXPECT_EQ(80, SchemeHostPort(default_port).port());
+  url::Origin default_port_origin = url::Origin::Create(default_port);
+  EXPECT_FALSE(default_port_origin.IsSameOriginWith(resolved_origin));
 }
 
 }  // namespace url

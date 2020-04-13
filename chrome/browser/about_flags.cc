@@ -5316,6 +5316,14 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
     return true;
   }
 
+  // enable-unsafe-webgpu is only available on Dev/Canary channels.
+  if (!strcmp("enable-unsafe-webgpu", entry.internal_name) &&
+      channel != version_info::Channel::DEV &&
+      channel != version_info::Channel::CANARY &&
+      channel != version_info::Channel::UNKNOWN) {
+    return true;
+  }
+
 #if defined(OS_WIN)
   // HDR mode works, but displays everything horribly wrong prior to windows 10.
   if (!strcmp("enable-hdr", entry.internal_name) &&

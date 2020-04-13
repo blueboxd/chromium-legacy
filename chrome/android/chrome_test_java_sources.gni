@@ -150,6 +150,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/document/LauncherActivityTest.java",
   "javatests/src/org/chromium/chrome/browser/dom_distiller/DistillabilityServiceTest.java",
   "javatests/src/org/chromium/chrome/browser/dom_distiller/DistilledPagePrefsTest.java",
+  "javatests/src/org/chromium/chrome/browser/dom_distiller/ReaderModeTest.java",
   "javatests/src/org/chromium/chrome/browser/download/ChromeDownloadDelegateTest.java",
   "javatests/src/org/chromium/chrome/browser/download/DownloadForegroundServiceManagerTest.java",
   "javatests/src/org/chromium/chrome/browser/download/DownloadForegroundServiceTest.java",

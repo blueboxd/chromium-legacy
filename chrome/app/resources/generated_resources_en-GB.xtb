@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">Print server</translation>
 <translation id="1805967612549112634">Confirm PIN</translation>
 <translation id="1806335016774576568">Switch to another open app</translation>
+<translation id="1809483812148634490">Apps that you’ve downloaded from Google Play will be deleted from this Chromebook.
+    <ph name="LINE_BREAKS1" />
+    Content that you’ve purchased such as movies, TV shows, music, books or other in-app purchases may also be deleted.
+    <ph name="LINE_BREAKS2" />
+    This doesn’t affect apps or content on other devices.</translation>
 <translation id="1809734401532861917">Add my bookmarks, history, passwords and other settings to <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">Services</translation>
 <translation id="18139523105317219">EDI Party Name</translation>
@@ -1393,6 +1398,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2825848369316359348">Find the name printed on the back of your security key</translation>
 <translation id="2828650939514476812">Connect to Wi-Fi network</translation>
 <translation id="2835294513443818940">This file can't be downloaded securely.</translation>
+<translation id="2835547721736623118">Speech recognition service</translation>
 <translation id="2836269494620652131">Crash</translation>
 <translation id="2836635946302913370">Signing in with this username has been disabled by your administrator.</translation>
 <translation id="283669119850230892">To use the network <ph name="NETWORK_ID" />, first complete your connection to the Internet below.</translation>
@@ -1537,6 +1543,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3019285239893817657">Subpage button</translation>
 <translation id="3020183492814296499">Shortcuts</translation>
 <translation id="3020990233660977256">Serial Number: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">While on battery</translation>
 <translation id="3021066826692793094">Butterfly</translation>
 <translation id="3021678814754966447">&amp;View Frame Source</translation>
 <translation id="3022978424994383087">Didn't get that.</translation>
@@ -2733,6 +2740,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4633757335284074492">Back up to Google Drive. Easily restore data or switch device at any time. This backup includes app data. Backups are uploaded to Google and encrypted using your child's Google Account password.</translation>
 <translation id="4634771451598206121">Sign in again...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> is not available to Guest users.</translation>
+<translation id="4635444580397524003">Linux backup has been successfully restored.</translation>
 <translation id="4636930964841734540">Info</translation>
 <translation id="4637083375689622795">More actions, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Enable ADB debugging</translation>
@@ -2908,6 +2916,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4890773143211625964">Show advanced printer options</translation>
 <translation id="4891089016822695758">Beta forum</translation>
 <translation id="4892229439761351791">Site can use Bluetooth</translation>
+<translation id="489258173289528622">Idle action while on battery</translation>
 <translation id="4893336867552636863">This will permanently delete your browsing data from this device.</translation>
 <translation id="4893522937062257019">On the lock screen</translation>
 <translation id="489454699928748701">Allow sites to use motion sensors</translation>
@@ -3614,6 +3623,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5863445608433396414">Enable debugging features</translation>
 <translation id="5864195618110239517">Use metered connection</translation>
 <translation id="5864471791310927901">DHCP look-up failed</translation>
+<translation id="5864754048328252126">Idle action while charging</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> will pause soon</translation>
 <translation id="586567932979200359">You're running <ph name="PRODUCT_NAME" /> from its disk image. Installing it on your computer lets you run it without the disk image and ensures that it will be kept up to date.</translation>
 <translation id="5865733239029070421">Automatically sends usage statistics and crash reports to Google</translation>
@@ -3813,6 +3823,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6120205520491252677">Pin this page to Start screen...</translation>
 <translation id="6122081475643980456">Your Internet connection is being controlled</translation>
 <translation id="6122095009389448667">Continue blocking this site from seeing the clipboard</translation>
+<translation id="6122831415929794347">Turn off Safe Browsing?</translation>
 <translation id="6122875415561139701">Write operation is not permitted on: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">The following extensions depend on this extension:</translation>
 <translation id="6124698108608891449">This site needs more permissions.</translation>
@@ -4016,6 +4027,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6408118934673775994">Read and change your data on <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> and <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Image Files</translation>
 <translation id="6410328738210026208">Change channel and Powerwash</translation>
+<translation id="6410390304316730527">Safe Browsing protects you against attackers who may trick you into doing something dangerous, like installing malicious software or revealing personal information such as passwords, phone numbers or credit cards. If you turn it off, be careful when browsing unfamiliar or unreputable sites.</translation>
 <translation id="6410668567036790476">Add search engine</translation>
 <translation id="641081527798843608">Subject match</translation>
 <translation id="6412673304250309937">Checks URLs with a list of unsafe sites stored in Chrome. If a site tries to steal your password, or when you download a harmful file, Chrome may also send URLs, including bits of page content, to Safe Browsing.</translation>
@@ -5936,6 +5948,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8951256747718668828">Restoring couldn't be completed due to an error</translation>
 <translation id="8951465597020890363">Exit guest mode anyway?</translation>
 <translation id="8952831374766033534">Configuration option not supported: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">While charging</translation>
 <translation id="895347679606913382">Starting...</translation>
 <translation id="8957762313041272117">Live Caption</translation>
 <translation id="895944840846194039">JavaScript Memory</translation>

@@ -476,8 +476,6 @@ ProfileImpl::ProfileImpl(
   LoadPrefsForNormalStartup(async_prefs);
 #endif
 
-  content::BrowserContext::Initialize(this, path_);
-
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
 

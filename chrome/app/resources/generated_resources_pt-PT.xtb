@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">Servidor de impressão</translation>
 <translation id="1805967612549112634">Confirmar PIN</translation>
 <translation id="1806335016774576568">Mudar para outra app aberta</translation>
+<translation id="1809483812148634490">As apps que transferiu do Google Play serão eliminadas deste Chromebook.
+      <ph name="LINE_BREAKS1" />
+      O conteúdo que comprou, como filmes, programas de TV, música, livros ou outras compras na app, também pode ser eliminado.
+      <ph name="LINE_BREAKS2" />
+      Isto não afeta as apps ou o conteúdo noutros dispositivos.</translation>
 <translation id="1809734401532861917">Adicionar os marcadores, o histórico, as palavras-passe e outras definições a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">Serviços</translation>
 <translation id="18139523105317219">Nome da parte EDI</translation>
@@ -1392,6 +1397,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2825848369316359348">Procure o nome impresso na parte posterior da chave de segurança.</translation>
 <translation id="2828650939514476812">Estabelecer ligação à rede Wi-Fi</translation>
 <translation id="2835294513443818940">Não é possível transferir este ficheiro em segurança.</translation>
+<translation id="2835547721736623118">Serviço de reconhecimento de voz</translation>
 <translation id="2836269494620652131">Falha</translation>
 <translation id="2836635946302913370">O início de sessão com este nome de utilizador foi desativado pelo seu gestor.</translation>
 <translation id="283669119850230892">Para utilizar a rede <ph name="NETWORK_ID" />, conclua primeiro a sua ligação à internet abaixo.</translation>
@@ -1537,6 +1543,7 @@ Pretende pará-lo?</translation>
 <translation id="3019285239893817657">Botão da subpágina</translation>
 <translation id="3020183492814296499">Atalhos</translation>
 <translation id="3020990233660977256">Número de série: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Enquanto estiver com bateria</translation>
 <translation id="3021066826692793094">Borboleta</translation>
 <translation id="3021678814754966447">&amp;Ver Origem da Moldura</translation>
 <translation id="3022978424994383087">Não entendido.</translation>
@@ -2733,6 +2740,7 @@ Pretende pará-lo?</translation>
 <translation id="4633757335284074492">Faça uma cópia de segurança para o Google Drive. Restaure facilmente os dados ou troque de dispositivo em qualquer altura. Esta cópia de segurança inclui dados de apps. As cópias de segurança são carregadas para a Google e encriptadas com a palavra-passe da Conta Google da criança.</translation>
 <translation id="4634771451598206121">Iniciar sessão novamente...</translation>
 <translation id="4635398712689569051">A página <ph name="PAGE_NAME" /> não está disponível para os utilizadores convidados.</translation>
+<translation id="4635444580397524003">A cópia de segurança do Linux foi restaurada com êxito.</translation>
 <translation id="4636930964841734540">Informações</translation>
 <translation id="4637083375689622795">Mais ações, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Ativar a depuração do adb</translation>
@@ -2908,6 +2916,7 @@ Pretende pará-lo?</translation>
 <translation id="4890773143211625964">Mostrar opções avançadas da impressora</translation>
 <translation id="4891089016822695758">Fórum da versão beta</translation>
 <translation id="4892229439761351791">O site pode utilizar Bluetooth.</translation>
+<translation id="489258173289528622">Ação de inatividade enquanto estiver com bateria</translation>
 <translation id="4893336867552636863">Esta ação elimina permanentemente os dados de navegação deste dispositivo.</translation>
 <translation id="4893522937062257019">No ecrã de bloqueio</translation>
 <translation id="489454699928748701">Permitir que os sites utilizem os sensores de movimentos</translation>
@@ -3615,6 +3624,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5863445608433396414">Ativar funcionalidades de depuração</translation>
 <translation id="5864195618110239517">Utilizar ligação com acesso limitado</translation>
 <translation id="5864471791310927901">A procura DHCP falhou</translation>
+<translation id="5864754048328252126">Ação de inatividade ao carregar</translation>
 <translation id="5865508026715185451">A app <ph name="APP_NAME" /> será colocada em pausa em breve</translation>
 <translation id="586567932979200359">Está a executar o <ph name="PRODUCT_NAME" /> a partir da respectiva imagem de disco. Instalá-lo no computador permite executá-lo sem a imagem de disco e assegura que o mesmo é mantido atualizado.</translation>
 <translation id="5865733239029070421">Envia automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
@@ -3814,6 +3824,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6120205520491252677">Fixar esta página ao ecrã Inicial...</translation>
 <translation id="6122081475643980456">A sua ligação à Internet está a ser controlada</translation>
 <translation id="6122095009389448667">Continuar a impedir este site de ver a área de transferência</translation>
+<translation id="6122831415929794347">Pretende desativar a Navegação segura?</translation>
 <translation id="6122875415561139701">A operação de escrita não é permitida em: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">As seguintes extensões dependem desta extensão:</translation>
 <translation id="6124698108608891449">Este site precisa de mais autorizações.</translation>
@@ -4017,6 +4028,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6408118934673775994">Ler e alterar os seus dados em <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Ficheiros de imagem</translation>
 <translation id="6410328738210026208">Alterar canal e Powerwash</translation>
+<translation id="6410390304316730527">A Navegação segura permite-lhe proteger-se contra os atacantes que o podem enganar no sentido de fazer algo perigoso, como instalar software malicioso, ou revelar informações pessoais, como palavras-passe, números de telefone ou cartões de crédito. Se a desativar, tenha cuidado ao navegar em sites desconhecidos ou pouco credíveis.</translation>
 <translation id="6410668567036790476">Adicionar motor de pesquisa</translation>
 <translation id="641081527798843608">Correspondência de assunto</translation>
 <translation id="6412673304250309937">Verifica os URLs com listas de sites inseguros armazenados no Chrome. Se um site tentar roubar a sua palavra-passe, ou quando transferir um ficheiro prejudicial, o Chrome também pode enviar URLs, incluindo bits de conteúdo das páginas, para a Navegação segura.</translation>
@@ -5268,7 +5280,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8076835018653442223">O acesso a ficheiros locais no seu dispositivo foi desativado pelo seu administrador.</translation>
 <translation id="808089508890593134">Google</translation>
 <translation id="8081989000209387414">Pretende desativar a depuração do adb?</translation>
-<translation id="8082106343289440791">Pretende sincronizar com o dispositivo "<ph name="DEVICE_NAME" />"?</translation>
+<translation id="8082106343289440791">Sincronizar com o dispositivo "<ph name="DEVICE_NAME" />"?</translation>
 <translation id="8082390128630131497">A desativação da depuração do adb vai repor as definições de fábrica deste <ph name="DEVICE_TYPE" />. Todos os dados locais e contas de utilizador serão apagados.</translation>
 <translation id="8084114998886531721">Palavra-passe guardada</translation>
 <translation id="8086015605808120405">A configurar <ph name="PRINTER_NAME" />…</translation>
@@ -5936,6 +5948,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8951256747718668828">Não foi possível concluir o restauro devido a um erro.</translation>
 <translation id="8951465597020890363">Pretende sair do modo convidado mesmo assim?</translation>
 <translation id="8952831374766033534">Opção de configuração não suportada: <ph name="ERROR_LINE" />.</translation>
+<translation id="8953476467359856141">Ao carregar</translation>
 <translation id="895347679606913382">A iniciar...</translation>
 <translation id="8957762313041272117">Legendas instantâneas</translation>
 <translation id="895944840846194039">Memória JavaScript</translation>

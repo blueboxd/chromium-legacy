@@ -53,15 +53,15 @@ void Screen::SetDisplayForNewWindows(int64_t display_id) {
   display_id_for_new_windows_ = display_id;
 }
 
-gfx::Rect Screen::ScreenToDIPRectInWindow(gfx::NativeView view,
+gfx::Rect Screen::ScreenToDIPRectInWindow(gfx::NativeWindow window,
                                           const gfx::Rect& screen_rect) const {
-  float scale = GetDisplayNearestView(view).device_scale_factor();
+  float scale = GetDisplayNearestWindow(window).device_scale_factor();
   return ScaleToEnclosingRect(screen_rect, 1.0f / scale);
 }
 
-gfx::Rect Screen::DIPToScreenRectInWindow(gfx::NativeView view,
+gfx::Rect Screen::DIPToScreenRectInWindow(gfx::NativeWindow window,
                                           const gfx::Rect& dip_rect) const {
-  float scale = GetDisplayNearestView(view).device_scale_factor();
+  float scale = GetDisplayNearestWindow(window).device_scale_factor();
   return ScaleToEnclosingRect(dip_rect, scale);
 }
 

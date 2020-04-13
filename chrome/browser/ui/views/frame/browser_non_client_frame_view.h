@@ -69,7 +69,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Updates the top UI state to be hidden or shown in fullscreen according to
   // the preference's state. Currently only used on Mac.
-  virtual void UpdateFullscreenTopUI(bool needs_check_tab_fullscreen);
+  virtual void UpdateFullscreenTopUI();
 
   // Returns whether the top UI should hide.
   virtual bool ShouldHideTopUIForFullscreen() const;

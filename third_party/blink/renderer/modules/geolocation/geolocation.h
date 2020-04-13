@@ -27,7 +27,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_H_
 
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/geolocation.mojom-blink.h"
 #include "third_party/blink/public/mojom/geolocation/geolocation_service.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -43,6 +42,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
@@ -221,8 +221,8 @@ class MODULES_EXPORT Geolocation final
   HeapVector<Member<GeoNotifier>> watchers_being_invoked_;
   Member<Geoposition> last_position_;
 
-  mojo::Remote<device::mojom::blink::Geolocation> geolocation_;
-  mojo::Remote<mojom::blink::GeolocationService> geolocation_service_;
+  HeapMojoRemote<device::mojom::blink::Geolocation> geolocation_;
+  HeapMojoRemote<mojom::blink::GeolocationService> geolocation_service_;
   bool enable_high_accuracy_ = false;
 
   // Whether a GeoNotifier is waiting for a position update.

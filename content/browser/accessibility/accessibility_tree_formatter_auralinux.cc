@@ -141,7 +141,6 @@ std::unique_ptr<base::DictionaryValue>
 AccessibilityTreeFormatterAuraLinux::BuildAccessibilityTree(
     BrowserAccessibility* root) {
   DCHECK(root);
-  DCHECK(root->instance_active());
 
   BrowserAccessibilityAuraLinux* platform_root =
       ToBrowserAccessibilityAuraLinux(root);

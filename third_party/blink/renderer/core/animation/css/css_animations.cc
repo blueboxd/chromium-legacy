@@ -1459,6 +1459,11 @@ bool CSSAnimations::IsAnimatingCustomProperties(
              IsCustomPropertyHandle);
 }
 
+bool CSSAnimations::IsAnimatingRevert(
+    const ElementAnimations* element_animations) {
+  return element_animations && element_animations->GetEffectStack().HasRevert();
+}
+
 void CSSAnimations::Trace(Visitor* visitor) {
   visitor->Trace(transitions_);
   visitor->Trace(pending_update_);

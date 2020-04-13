@@ -335,8 +335,11 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
         group = group_iter->value.Get();
       }
 
-      group->AppendKeyframe(keyframe->CreatePropertySpecificKeyframe(
-          property, composite_, computed_offset));
+      Keyframe::PropertySpecificKeyframe* property_specific_keyframe =
+          keyframe->CreatePropertySpecificKeyframe(property, composite_,
+                                                   computed_offset);
+      has_revert_ |= property_specific_keyframe->IsRevert();
+      group->AppendKeyframe(property_specific_keyframe);
     }
   }
 

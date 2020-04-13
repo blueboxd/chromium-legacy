@@ -58,7 +58,7 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
   show_fullscreen_toolbar_.Init(
       prefs::kShowFullscreenToolbar, browser_view->GetProfile()->GetPrefs(),
       base::BindRepeating(&BrowserNonClientFrameViewMac::UpdateFullscreenTopUI,
-                          base::Unretained(this), true));
+                          base::Unretained(this)));
   if (!base::FeatureList::IsEnabled(features::kImmersiveFullscreen)) {
     fullscreen_toolbar_controller_.reset(
         [[FullscreenToolbarController alloc] initWithBrowserView:browser_view]);
@@ -104,7 +104,7 @@ void BrowserNonClientFrameViewMac::OnFullscreenStateChanged() {
     // Exiting tab fullscreen requires updating Top UI.
     // Called from here so we can capture exiting tab fullscreen both by
     // pressing 'ESC' key and by clicking green traffic light button.
-    UpdateFullscreenTopUI(false);
+    UpdateFullscreenTopUI();
     [fullscreen_toolbar_controller_ exitFullscreenMode];
   }
   browser_view()->Layout();
@@ -186,8 +186,7 @@ int BrowserNonClientFrameViewMac::GetThemeBackgroundXInset() const {
   return 0;
 }
 
-void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI(
-    bool needs_check_tab_fullscreen) {
+void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI() {
   if (base::FeatureList::IsEnabled(features::kImmersiveFullscreen))
     return;
 
@@ -199,14 +198,14 @@ void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI(
   FullscreenController* controller =
       browser_view()->GetExclusiveAccessManager()->fullscreen_controller();
   if ((controller->IsWindowFullscreenForTabOrPending() ||
-       controller->IsExtensionFullscreenOrPending()) &&
-      needs_check_tab_fullscreen) {
+       controller->IsExtensionFullscreenOrPending())) {
+    browser_view()->HideDownloadShelf();
     new_style = FullscreenToolbarStyle::TOOLBAR_NONE;
   } else {
     new_style = GetUserPreferredToolbarStyle(*show_fullscreen_toolbar_);
+    browser_view()->UnhideDownloadShelf();
   }
   [fullscreen_toolbar_controller_ setToolbarStyle:new_style];
-
   if (![fullscreen_toolbar_controller_ isInFullscreen] ||
       old_style == new_style)
     return;

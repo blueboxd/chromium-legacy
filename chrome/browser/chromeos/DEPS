@@ -22,11 +22,6 @@ include_rules = [
   "+services/network",
   "+services/tracing/public",
   "+services/viz/public/mojom",
-
-  # keyboard::KeyboardController only exists in ash and should not be accessed
-  # directly from src/chrome. Use ChromeKeyboardControllerClient instead.
-  "-ui/keyboard/keyboard_controller.h",
-  "-ui/keyboard/keyboard_util.h",
 ]
 
 specific_include_rules = {
@@ -58,11 +53,6 @@ specific_include_rules = {
   "file_manager_browsertest_base.cc": [
     "+chrome/browser/ui/views/extensions/extension_dialog.h",
     "+chrome/browser/ui/views/select_file_dialog_extension.h",
-  ],
-  "input_method_manager_impl\.cc": [
-    # For GetInputMethodKeyboardController. TODO(stevenjb/shuchen): Fix this
-    # for Mash. https://crbug.com/756059
-    "+ui/keyboard/keyboard_controller.h",
   ],
   "server_printers_fetcher\.cc": [
     # IPP protocol; it is needed for communication with print servers.

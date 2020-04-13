@@ -77,7 +77,6 @@ void CastBrowserContext::InitWhileIOAllowed() {
   // shared in a single location as defined here.
   CHECK(base::PathService::Get(DIR_CAST_HOME, &path_));
 #endif  // defined(OS_ANDROID)
-  BrowserContext::Initialize(this, path_);
 }
 
 #if !defined(OS_ANDROID)

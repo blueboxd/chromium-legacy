@@ -156,7 +156,6 @@ void HeadlessBrowserContextImpl::InitWhileIOAllowed() {
   } else {
     base::PathService::Get(base::DIR_EXE, &path_);
   }
-  BrowserContext::Initialize(this, path_);
 }
 
 std::unique_ptr<content::ZoomLevelDelegate>

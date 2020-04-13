@@ -69,7 +69,7 @@ template <typename... Ts>
     case mojom::CursorType::kPointer:
       return LoadFontCursor("left_ptr", XC_left_ptr);
     case mojom::CursorType::kMove:
-      return LoadFontCursor("move", XC_fleur);
+      return LoadFontCursor("all-scroll", XC_fleur);
     case mojom::CursorType::kCross:
       return LoadFontCursor("crosshair", XC_cross);
     case mojom::CursorType::kHand:

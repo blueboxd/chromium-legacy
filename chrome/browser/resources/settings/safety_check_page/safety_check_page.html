@@ -84,6 +84,7 @@
         opened="[[shouldShowChildren_(parentStatus_)]]">
       <div class="settings-box two-line">
         <iron-icon icon="[[getUpdatesIcon_(updatesStatus_)]]"
+            id="updatesIcon"
             role="img"
             aria-label="[[getUpdatesIconAriaLabel_(updatesStatus_)]]"
             src="[[getUpdatesIconSrc_(updatesStatus_)]]"
@@ -113,6 +114,7 @@
       </div>
       <div class="settings-box two-line">
         <iron-icon icon="[[getPasswordsIcon_(passwordsStatus_)]]"
+            id="passwordsIcon"
             src="[[getPasswordsIconSrc_(passwordsStatus_)]]"
             class$="[[getPasswordsIconClass_(passwordsStatus_)]]"
             role="img"
@@ -136,6 +138,7 @@
       </div>
       <div class="settings-box two-line">
         <iron-icon icon="[[getSafeBrowsingIcon_(safeBrowsingStatus_)]]"
+            id="safeBrowsingIcon"
             src="[[getSafeBrowsingIconSrc_(safeBrowsingStatus_)]]"
             class$="[[getSafeBrowsingIconClass_(safeBrowsingStatus_)]]"
             role="img"
@@ -166,6 +169,7 @@
       </div>
       <div class="settings-box two-line">
         <iron-icon icon="[[getExtensionsIcon_(extensionsStatus_)]]"
+            id="extensionsIcon"
             src="[[getExtensionsIconSrc_(extensionsStatus_)]]"
             class$="[[getExtensionsIconClass_(extensionsStatus_)]]"
             role="img"

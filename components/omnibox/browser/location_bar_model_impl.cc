@@ -70,6 +70,16 @@ base::string16 LocationBarModelImpl::GetURLForDisplay() const {
   if (base::FeatureList::IsEnabled(omnibox::kHideFileUrlScheme))
     format_types |= url_formatter::kFormatUrlOmitFileScheme;
 
+  if (dom_distiller::url_utils::IsDistilledPage(GetURL())) {
+    // We explicitly elide the scheme here to ensure that HTTPS and HTTP will
+    // be removed for display: Reader mode pages should not display a scheme,
+    // and should only run on HTTP/HTTPS pages.
+    // Users will be able to see the scheme when the URL is focused or being
+    // edited in the omnibox.
+    format_types |= url_formatter::kFormatUrlOmitHTTP;
+    format_types |= url_formatter::kFormatUrlOmitHTTPS;
+  }
+
   return GetFormattedURL(format_types);
 }
 
@@ -87,10 +97,10 @@ base::string16 LocationBarModelImpl::GetFormattedURL(
 
   GURL url(GetURL());
   // Special handling for dom-distiller:. Instead of showing internal reader
-  // mode URLs, show the original article URL without a http or https scheme.
-  // Note that this does not disallow the user from copy-pasting the reader
-  // mode URL, or from seeing it in the view-source url. Note that this also
-  // impacts GetFormattedFullURL which uses GetFormattedURL as a helper.
+  // mode URLs, show the original article URL in the omnibox.
+  // Note that this does not disallow the user from seeing the distilled page
+  // URL in the view-source url or devtools. Note that this also impacts
+  // GetFormattedFullURL which uses GetFormattedURL as a helper.
   // Virtual URLs were not a good solution for Reader Mode URLs because some
   // security UI is based off of the virtual URL rather than the original URL,
   // and Reader Mode has its own security chip. In addition virtual URLs would
@@ -98,13 +108,8 @@ base::string16 LocationBarModelImpl::GetFormattedURL(
   // Reader Mode pages.
   // Note: if the URL begins with dom-distiller:// but is invalid we display it
   // as-is because it cannot be transformed into an article URL.
-  if (dom_distiller::url_utils::IsDistilledPage(url)) {
-    // Ensure that HTTPS and HTTP will be removed. Reader mode should not
-    // display a scheme, and should only run on HTTP/HTTPS pages.
-    format_types |= url_formatter::kFormatUrlOmitHTTP;
-    format_types |= url_formatter::kFormatUrlOmitHTTPS;
+  if (dom_distiller::url_utils::IsDistilledPage(url))
     url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(url);
-  }
 
   // Note that we can't unescape spaces here, because if the user copies this
   // and pastes it into another program, that program may think the URL ends at

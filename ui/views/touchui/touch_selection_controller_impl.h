@@ -21,10 +21,6 @@
 namespace views {
 class WidgetDelegateView;
 
-namespace test {
-class WidgetTestInteractive;
-}
-
 // Touch specific implementation of TouchEditingControllerDeprecated.
 // Responsible for displaying selection handles and menu elements relevant in a
 // touch interface.
@@ -45,9 +41,10 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   bool IsHandleDragInProgress() override;
   void HideHandles(bool quick) override;
 
+  void ShowQuickMenuImmediatelyForTesting();
+
  private:
   friend class TouchSelectionControllerImplTest;
-  friend class test::WidgetTestInteractive;
 
   void SetDraggingHandle(EditingHandleView* handle);
 

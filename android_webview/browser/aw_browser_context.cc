@@ -158,8 +158,6 @@ AwBrowserContext::AwBrowserContext()
   g_browser_context = this;
   SimpleKeyMap::GetInstance()->Associate(this, &simple_factory_key_);
 
-  BrowserContext::Initialize(this, context_storage_path_);
-
   CreateUserPrefService();
 
   visitedlink_writer_.reset(

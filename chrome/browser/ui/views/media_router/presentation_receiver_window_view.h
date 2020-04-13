@@ -97,8 +97,6 @@ class PresentationReceiverWindowView final
       bool force_update) final;
   void OnExclusiveAccessUserInput() final;
   content::WebContents* GetActiveWebContents() final;
-  void UnhideDownloadShelf() final;
-  void HideDownloadShelf() final;
   bool CanUserExitFullscreen() const final;
 
   // ExclusiveAccessBubbleViewsContext overrides.

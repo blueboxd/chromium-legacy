@@ -85,7 +85,7 @@
 <translation id="1114202307280046356">معيّن</translation>
 <translation id="1114335938027186412">‏يحتوي الكمبيوتر على جهاز أمان الوحدة النمطية للنظام الأساسي الموثوق به (TPM)، والذي يستخدم لتنفيذ العديد من ميزات الأمان المهمة في نظام التشغيل Chrome. ويُمكنك الانتقال إلى مركز مساعدة Chromebook للتعرف على مزيد من المعلومات: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1116639326869298217">تعذُّر إثبات هويتك</translation>
-<translation id="1116694919640316211">لمحة عامة</translation>
+<translation id="1116694919640316211">لمحة</translation>
 <translation id="1116779635164066733">تم فرض هذا الإعداد بواسطة الإضافة "<ph name="NAME" />".</translation>
 <translation id="1118738876271697201">تعذَّر على النظام تحديد طراز الجهاز أو رقمه التسلسلي.</translation>
 <translation id="1119447706177454957">خطأ داخلي</translation>
@@ -94,7 +94,7 @@
 <translation id="1122960773616686544">اسم الإشارة</translation>
 <translation id="1124772482545689468">المستخدم</translation>
 <translation id="1125550662859510761">‏تبدو كـ <ph name="WIDTH" /> x <ph name="HEIGHT" /> (أصلية)</translation>
-<translation id="1126809382673880764">‏لا يوفّر لك هذا الوضع حماية من الإضافات أو عمليات التنزيل أو المواقع الإلكترونية الضارة. وستظل تستفيد من ميزة "التصفّح الآمن" متى أمكن في خدمات Google الأخرى، مثل Gmail و"بحث Google".</translation>
+<translation id="1126809382673880764">‏لا يوفّر لك هذا الوضع حماية من الإضافات أو عمليات التنزيل أو المواقع الإلكترونية الضارة. وستظل تستفيد من ميزة "التصفّح الآمن" عند توفّرها في خدمات Google الأخرى، مثل Gmail و"بحث Google".</translation>
 <translation id="1128109161498068552">‏عدم السماح لأي موقع ويب باستخدام الرسائل الحصرية في النظام للدخول إلى أجهزة MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">تعديل محرّك البحث</translation>
@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">خادم الطباعة</translation>
 <translation id="1805967612549112634">تأكيد رقم التعريف الشخصي</translation>
 <translation id="1806335016774576568">التبديل إلى تطبيق آخر مفتوح</translation>
+<translation id="1809483812148634490">‏سيتم حذف التطبيقات التي نزّلتها من Google Play من جهاز Chromebook هذا.
+      <ph name="LINE_BREAKS1" />
+      قد يتم أيضًا حذف المحتوى الذي اشتريته، مثل الأفلام أو البرامج التلفزيونية أو الموسيقى أو الكتب أو عمليات الشراء الأخرى داخل التطبيق.
+      <ph name="LINE_BREAKS2" />
+      لن يؤثر هذا الحذف في التطبيقات أو المحتوى على الأجهزة الأخرى.</translation>
 <translation id="1809734401532861917">إضافة الإشارات المرجعية، والسّجل، وكلمات المرور، والإعدادات الأخرى إلى <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">الخدمات</translation>
 <translation id="18139523105317219">‏اسم جهة تبادل البيانات الإلكتروني (EDI)</translation>
@@ -772,7 +777,7 @@
 <translation id="2025891858974379949">محتوى غير آمن</translation>
 <translation id="202918510990975568">يُرجى إدخال كلمة المرور لضبط قفل الشاشة وتسجيل الدخول</translation>
 <translation id="2034346955588403444">‏إضافة شبكة WiFi أخرى</translation>
-<translation id="203574396658008164">تفعيل تدوين الملاحظات من شاشة التأمين</translation>
+<translation id="203574396658008164">تفعيل تدوين الملاحظات من شاشة القفل</translation>
 <translation id="2037445849770872822">‏تم إعداد الإشراف من أجل حساب Google هذا. ولإعداد المزيد من أدوات الرقابة الأبوية، يُرجى اختيار "مواصلة".
 
 وبخلاف ذلك، يمكنك تسجيل الخروج الآن حتى تنعكس التغييرات التي يتم إجراؤها على هذا الحساب على هذا الجهاز.
@@ -830,7 +835,7 @@
 <translation id="2114326799768592691">تحديث الإطار</translation>
 <translation id="2114896190328250491">صورة <ph name="NAME" /></translation>
 <translation id="2119349053129246860">فتح في <ph name="APP" /></translation>
-<translation id="2119461801241504254">تم تفعيل "التصفّح الآمن" وحمايتك من عمليات التنزيل والمواقع الإلكترونية الضارة.</translation>
+<translation id="2119461801241504254">تم تفعيل "التصفّح الآمن" وهو يحميك من عمليات التنزيل والمواقع الإلكترونية الضارة.</translation>
 <translation id="2120297377148151361">النشاط والتفاعلات</translation>
 <translation id="2120639962942052471">تم حظر إذن <ph name="PERMISSION" />.</translation>
 <translation id="2121055421682309734">{COUNT,plural, =0{تم حظر ملفات تعريف الارتباط.}=1{تم حظر ملفات تعريف الارتباط باستثناء ملف واحد.}two{تم حظر ملفات تعريف الارتباط باستثناء ملفَّين ({COUNT}).}few{تم حظر ملفات تعريف الارتباط باستثناء {COUNT} ملفات.}many{تم حظر ملفات تعريف الارتباط باستثناء {COUNT} ملفًا.}other{تم حظر ملفات تعريف الارتباط باستثناء {COUNT} ملف.}}</translation>
@@ -1021,7 +1026,7 @@
 <translation id="2351266942280602854">اللغة والإدخال</translation>
 <translation id="2352495879228166246">{NUM_ITEMS,plural, =1{عنصر واحد}zero{{NUM_ITEMS} عنصر}two{عنصران ({NUM_ITEMS})}few{{NUM_ITEMS} عناصر}many{{NUM_ITEMS} عنصرًا}other{{NUM_ITEMS} عنصر}}</translation>
 <translation id="2352662711729498748">&lt; 1 ميغابايت</translation>
-<translation id="2352810082280059586">يتم حفظ ملاحظات شاشة التأمين تلقائيًا إلى <ph name="LOCK_SCREEN_APP_NAME" />. ستظل أحدث ملاحظة في شاشة التأمين.</translation>
+<translation id="2352810082280059586">يتم حفظ ملاحظات شاشة القفل تلقائيًا إلى <ph name="LOCK_SCREEN_APP_NAME" />. ستظل أحدث ملاحظة في شاشة القفل.</translation>
 <translation id="2353297238722298836">تم السماح باستخدام الكاميرا والميكروفون</translation>
 <translation id="2356070529366658676">طلب</translation>
 <translation id="2357330829548294574">إزالة <ph name="USER_NAME" /></translation>
@@ -1393,6 +1398,7 @@
 <translation id="2825848369316359348">العثور على الاسم المطبوع على الجزء الخلفي من مفتاح الأمان</translation>
 <translation id="2828650939514476812">‏الاتصال بشبكة Wi-Fi</translation>
 <translation id="2835294513443818940">لا يمكن تنزيل هذا الملف بشكل آمن.</translation>
+<translation id="2835547721736623118">خدمة "التعرُّف على الكلام"</translation>
 <translation id="2836269494620652131">تعطل</translation>
 <translation id="2836635946302913370">تم إيقاف تسجيل الدخول باستخدام اسم المستخدم هذا بواسطة المشرف.</translation>
 <translation id="283669119850230892">لاستخدام الشبكة <ph name="NETWORK_ID" />، أكمل أولاً اتصالك بالإنترنت أدناه.</translation>
@@ -1537,6 +1543,7 @@
 <translation id="3019285239893817657">زر صفحة فرعية</translation>
 <translation id="3020183492814296499">الاختصارات</translation>
 <translation id="3020990233660977256">الرقم التسلسلي: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">أثناء التشغيل على البطارية</translation>
 <translation id="3021066826692793094">فراشة</translation>
 <translation id="3021678814754966447">عرض م&amp;صدر الإطار</translation>
 <translation id="3022978424994383087">لم يتم استيعاب هذا.</translation>
@@ -2730,6 +2737,7 @@
 <translation id="4633757335284074492">‏يمكنك الاحتفاظ بنسخة احتياطية في Google Drive. ويمكنك استعادة البيانات أو تبديل الجهاز بسهولة وفي أي وقت. تتضمّن هذه النسخة الاحتياطية بيانات التطبيق. ويتم تحميل النسخ الاحتياطية إلى Google وترميزها باستخدام كلمة مرور حسابك الفرعي على Google.</translation>
 <translation id="4634771451598206121">تسجيل الدخول مرة أخرى...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> غير متاحة للمستخدمين الضيوف.</translation>
+<translation id="4635444580397524003">‏تمت استعادة نسخة احتياطية من Linux بنجاح.</translation>
 <translation id="4636930964841734540">معلومات</translation>
 <translation id="4637083375689622795">مزيد من الإجراءات، <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">‏تفعيل خيار "تصحيح الأخطاء عبر ADB"</translation>
@@ -2780,7 +2788,7 @@
 <translation id="4701025263201366865">تسجيل دخول أحد الوالدَين</translation>
 <translation id="4707302005824653064">‏يمكن للمدير مراجعة الاستخدام والسجل (<ph name="CUSTODIAN_EMAIL" />) على chrome.com.</translation>
 <translation id="4707579418881001319">‏L2TP/IPSec + شهادة المستخدم</translation>
-<translation id="4708794300267213770">عرض شاشة التأمين عند التنبيه من وضع السكون</translation>
+<translation id="4708794300267213770">عرض شاشة القفل عند التنبيه من وضع السكون</translation>
 <translation id="4708849949179781599">إنهاء <ph name="PRODUCT_NAME" /></translation>
 <translation id="4711638718396952945">استعادة الإعدادات</translation>
 <translation id="4716483597559580346">‏Powerwash لمزيد من الأمان</translation>
@@ -2905,8 +2913,9 @@
 <translation id="4890773143211625964">عرض خيارات الطابعة المتقدمة</translation>
 <translation id="4891089016822695758">منتدى الإصدار التجريبي</translation>
 <translation id="4892229439761351791">يمكن لموقع الويب استخدام البلوتوث.</translation>
+<translation id="489258173289528622">إجراء الخمول أثناء التشغيل على البطارية</translation>
 <translation id="4893336867552636863">سيؤدي هذا إلى حذف بيانات التصفح من هذا الجهاز نهائيًا.</translation>
-<translation id="4893522937062257019">على شاشة التأمين</translation>
+<translation id="4893522937062257019">على شاشة القفل</translation>
 <translation id="489454699928748701">السماح لمواقع الويب باستخدام مستشعرات الحركة</translation>
 <translation id="4898011734382862273">تمثل الشهادة "<ph name="CERTIFICATE_NAME" />" مرجعًا مصدقًا</translation>
 <translation id="489985760463306091">لإنهاء إزالة البرامج الضارة، أعد تشغيل الكمبيوتر</translation>
@@ -3307,7 +3316,7 @@
 <translation id="5457459357461771897">التعرّف على الصور، والموسيقى، والوسائط الأخرى من الكمبيوتر وحذفها</translation>
 <translation id="5457599981699367932">تصفَّح كزائر</translation>
 <translation id="5457991019809708398">مفعَّل، بلا تجوال</translation>
-<translation id="5458998536542739734">ملاحظات شاشة التأمين</translation>
+<translation id="5458998536542739734">ملاحظات شاشة القفل</translation>
 <translation id="546322474339998983">‏يتم استخدام محرك البحث من قِبَل متصفح Chrome ومشغّل التطبيقات للجهاز <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5463231940765244860">إدخال</translation>
 <translation id="5463275305984126951">فهرس المجلد <ph name="LOCATION" /></translation>
@@ -3612,6 +3621,7 @@
 <translation id="5863445608433396414">تفعيل ميزات تصحيح الأخطاء</translation>
 <translation id="5864195618110239517">استخدام اتصال يفرض تكلفة استخدام</translation>
 <translation id="5864471791310927901">‏تعذّر بحث DHCP</translation>
+<translation id="5864754048328252126">إجراء الخمول أثناء الشحن</translation>
 <translation id="5865508026715185451">سيتم إيقاف تطبيق <ph name="APP_NAME" /> مؤقتًا بعد قليل.</translation>
 <translation id="586567932979200359">أنت تشغّل <ph name="PRODUCT_NAME" /> من صورته على القرص. ويسمح لك تثبيته على الكمبيوتر بتشغيله بدون الحاجة إلى صورة القرص، كما يضمن ذلك الحفاظ على تحديثه بشكل مستمر.</translation>
 <translation id="5865733239029070421">‏يُرسِل إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
@@ -3656,7 +3666,7 @@
 <translation id="5924047253200400718">الحصول على مساعدة<ph name="SCANNING_STATUS" /></translation>
 <translation id="5924527146239595929">‏يمكنك التقاط صورة جديدة أو اختيار رمز أو صورة حالية.
     <ph name="LINE_BREAK" />
-    ستظهر هذه الصورة على شاشة التأمين وشاشة تسجيل الدخول في جهاز Chromebook.</translation>
+    ستظهر هذه الصورة على شاشة القفل وشاشة تسجيل الدخول في جهاز Chromebook.</translation>
 <translation id="5925147183566400388">مؤشر بيان تطبيق الشهادة</translation>
 <translation id="592880897588170157">‏تنزيل ملفات PDF بدلاً من فتحها تلقائيًا في Chrome</translation>
 <translation id="5931146425219109062">قراءة جميع بياناتك وتغييرها على مواقع الويب التي تزورها</translation>
@@ -3811,6 +3821,7 @@
 <translation id="6120205520491252677">جارٍ إضافة هذه الصفحة إلى شاشة البدء...</translation>
 <translation id="6122081475643980456">يتم التحكم في اتصال الإنترنت التابع لك</translation>
 <translation id="6122095009389448667">مواصلة حظر موقع الويب هذا من الاطلاع على الحافظة</translation>
+<translation id="6122831415929794347">هل تريد إيقاف "التصفُّح الآمن"؟</translation>
 <translation id="6122875415561139701">لا يُسمح بعملية الكتابة على: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">تعتمد الإضافات التالية على هذه الإضافة:</translation>
 <translation id="6124698108608891449">يحتاج هذا الموقع الإلكتروني إلى مزيد من الأذونات.</translation>
@@ -3891,7 +3902,7 @@
 <translation id="6237816943013845465">تسمح لك بضبط دقة الشاشة</translation>
 <translation id="6238624845858322552">الاتصال بجهاز البلوتوث</translation>
 <translation id="6238767809035845642">‏النص الذي تمت مشاركته من Other Device (جهاز آخر)</translation>
-<translation id="6238923052227198598">إبقاء آخر ملاحظة على شاشة التأمين</translation>
+<translation id="6238923052227198598">إبقاء آخر ملاحظة على شاشة القفل</translation>
 <translation id="6239558157302047471">تحديث الإطار</translation>
 <translation id="6241530762627360640">الوصول إلى معلومات حول أجهزة البلوتوث المقترنة بنظامك واكتشاف أجهزة البلوتوث القريبة.</translation>
 <translation id="6241844896329831164">لا حاجة للوصول</translation>
@@ -4015,6 +4026,7 @@
 <translation id="6408118934673775994">قراءة بياناتك وتغييرها في <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" /> و <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">ملفات الصور</translation>
 <translation id="6410328738210026208">‏تغيير القناة وPowerwash</translation>
+<translation id="6410390304316730527">يحميك "التصفُّح الآمن" من المهاجمين الذين قد يحاولون خداعك لاتّخاذ إجراءات خطيرة، مثل تثبيت البرامج الضارة أو الكشف عن معلومات شخصية، مثل كلمات المرور أو أرقام الهواتف أو بطاقات الائتمان. وفي حال إيقاف "التصفُّح الآمن"، ننصحك بتوخّي الحذر عند تصفُّح مواقع إلكترونية غير مألوفة أو غير معروفة.</translation>
 <translation id="6410668567036790476">إضافة محرّك بحث</translation>
 <translation id="641081527798843608">مطابقة الموضوع</translation>
 <translation id="6412673304250309937">‏يعمل على التحقّق من عناوين URL التي تحتوي على قائمة بمواقع إلكترونية غير آمنة مُخزّنة في Chrome. وإذا حاول موقع إلكتروني سرقة كلمة المرور أو إذا نزّلت ملفًا ضارًا، قد يرسل متصفّح Chrome أيضًا عناوين URL تتضمّن أجزاء من محتوى الصفحة إلى "التصفّح الآمن".</translation>
@@ -4485,7 +4497,7 @@
 <translation id="7063957500469387217">‏إعداد الطابعات أو إدارتها في الطباعة السحابية من Google.</translation>
 <translation id="7064734931812204395">‏جارٍ إعداد حاوية نظام التشغيل Linux. قد تستغرق عملية الإعداد ما يصل إلى 30 دقيقة.</translation>
 <translation id="7065223852455347715">تم قفل هذا الجهاز في وضع يمنع التسجيل في المؤسسة.  إذا كنت ترغب في تسجيل الجهاز، ينبغي تنفيذ إجراءات استرداد الجهاز أولاً.</translation>
-<translation id="7065534935986314333">لمحة عامة عن النظام</translation>
+<translation id="7065534935986314333">لمحة عن النظام</translation>
 <translation id="706626672220389329">حدث خطأ في تحميل المشاركة. تم تحميل المشاركة المُحدّدة من قبل.</translation>
 <translation id="7066944511817949584">تعذّر الاتصال بـ "<ph name="DEVICE_NAME" />".</translation>
 <translation id="7067396782363924830">الألوان المحيطة</translation>
@@ -5001,7 +5013,7 @@
 <translation id="7770651108375708429">‏قطع الاتصال بشبكة Wi-Fi</translation>
 <translation id="7771452384635174008">تخطيط</translation>
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
-<translation id="7772127298218883077">لمحة عامة عن <ph name="PRODUCT_NAME" /></translation>
+<translation id="7772127298218883077">لمحة عن <ph name="PRODUCT_NAME" /></translation>
 <translation id="7772773261844472235">‏التحقق من حالة جهاز Chromebook</translation>
 <translation id="7773726648746946405">مساحة تخزين الجلسة</translation>
 <translation id="7774365994322694683">طائر</translation>
@@ -5829,7 +5841,7 @@
 <translation id="8818152010000655963">الخلفية</translation>
 <translation id="8818958672113348984">التحقُّق عبر الهاتف</translation>
 <translation id="8820817407110198400">الإشارات المرجعية</translation>
-<translation id="8821045908425223359">‏تهيئة عنوان IP تلقائيًا</translation>
+<translation id="8821045908425223359">‏ضبط عنوان IP تلقائيًا</translation>
 <translation id="882204272221080310">يمكنك تحديث البرامج الثابتة لمزيد من الأمان.</translation>
 <translation id="8823514049557262177">نسخ &amp;نص الرابط</translation>
 <translation id="8823559166155093873">حظر ملفات تعريف الارتباط</translation>
@@ -5935,6 +5947,7 @@
 <translation id="8951256747718668828">تعذَّر إكمال الاستعادة بسبب حدوث خطأ</translation>
 <translation id="8951465597020890363">هل تريد الخروج من وضع الضيف على أي حال؟</translation>
 <translation id="8952831374766033534">خيار الضبط غير متاح: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">أثناء الشحن</translation>
 <translation id="895347679606913382">بدء التحميل...</translation>
 <translation id="8957762313041272117">النسخ النصي التلقائي</translation>
 <translation id="895944840846194039">‏ذاكرة JavaScript</translation>

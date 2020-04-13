@@ -35,7 +35,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/native_widget_factory.h"
-#include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "ui/views/widget/root_view.h"
@@ -291,39 +290,6 @@ class WidgetTestInteractive : public WidgetTest {
     SetUpForInteractiveTests();
     WidgetTest::SetUp();
   }
-
- protected:
-#if defined(USE_AURA)
-  static void ShowQuickMenuImmediately(
-      TouchSelectionControllerImpl* controller) {
-    DCHECK(controller);
-    if (controller->quick_menu_timer_.IsRunning()) {
-      controller->quick_menu_timer_.Stop();
-      controller->QuickMenuTimerFired();
-    }
-  }
-#endif  // defined (USE_AURA)
-};
-
-class DesktopWidgetTestInteractive : public WidgetTestInteractive {
- public:
-  DesktopWidgetTestInteractive() = default;
-  ~DesktopWidgetTestInteractive() override = default;
-
-  // WidgetTestInteractive:
-  void SetUp() override {
-    set_native_widget_type(NativeWidgetType::kDesktop);
-    WidgetTestInteractive::SetUp();
-  }
-
- protected:
-  Widget* CreateWidget() {
-    Widget* widget = CreateTopLevelNativeWidget();
-    widget->SetBounds(gfx::Rect(0, 0, 200, 200));
-    return widget;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopWidgetTestInteractive);
 };
 
 #if defined(OS_WIN)
@@ -341,7 +307,7 @@ TEST_F(DesktopWidgetTestInteractive,
   // Create widget 1 and expect the active window to be its window.
   View* focusable_view1 = new View;
   focusable_view1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  Widget* widget1 = CreateWidget();
+  Widget* widget1 = CreateTopLevelNativeWidget();
   widget1->GetContentsView()->AddChildView(focusable_view1);
   widget1->Show();
   aura::Window* root_window1 = GetRootWindow(widget1);
@@ -355,7 +321,7 @@ TEST_F(DesktopWidgetTestInteractive,
 
   // Create widget 2 and expect the active window to be its window.
   View* focusable_view2 = new View;
-  Widget* widget2 = CreateWidget();
+  Widget* widget2 = CreateTopLevelNativeWidget();
   widget1->GetContentsView()->AddChildView(focusable_view2);
   widget2->Show();
   aura::Window* root_window2 = GetRootWindow(widget2);
@@ -383,7 +349,7 @@ TEST_F(DesktopWidgetTestInteractive,
 
 // Verifies bubbles result in a focus lost when shown.
 TEST_F(DesktopWidgetTestInteractive, FocusChangesOnBubble) {
-  Widget* widget = CreateWidget();
+  Widget* widget = CreateTopLevelNativeWidget();
   View* focusable_view =
       widget->GetContentsView()->AddChildView(std::make_unique<View>());
   focusable_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
@@ -467,7 +433,7 @@ TEST_F(DesktopWidgetTestInteractive, DISABLED_TouchNoActivateWindow) {
 
   View* focusable_view = new View;
   focusable_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  Widget* widget = CreateWidget();
+  Widget* widget = CreateTopLevelNativeWidget();
   widget->GetContentsView()->AddChildView(focusable_view);
   widget->Show();
 
@@ -1205,7 +1171,8 @@ TEST_F(DesktopWidgetTestInteractive, CanActivateFlagIsHonored) {
 // Test that touch selection quick menu is not activated when opened.
 TEST_F(DesktopWidgetTestInteractive,
        MAYBE_TouchSelectionQuickMenuIsNotActivated) {
-  Widget* widget = CreateWidget();
+  Widget* widget = CreateTopLevelNativeWidget();
+  widget->SetBounds(gfx::Rect(0, 0, 200, 200));
 
   Textfield* textfield = new Textfield;
   textfield->SetBounds(0, 0, 200, 20);
@@ -1222,8 +1189,9 @@ TEST_F(DesktopWidgetTestInteractive,
   ui::test::EventGenerator generator(GetRootWindow(widget));
   generator.GestureTapAt(textfield->GetBoundsInScreen().origin() +
                          gfx::Vector2d(10, 10));
-  ShowQuickMenuImmediately(static_cast<TouchSelectionControllerImpl*>(
-      textfield_test_api.touch_selection_controller()));
+  static_cast<TouchSelectionControllerImpl*>(
+      textfield_test_api.touch_selection_controller())
+      ->ShowQuickMenuImmediatelyForTesting();
 
   EXPECT_TRUE(textfield->HasFocus());
   EXPECT_TRUE(widget->IsActive());
@@ -1446,7 +1414,7 @@ TEST_F(WidgetTestInteractive, InitialFocus) {
 }
 
 TEST_F(DesktopWidgetTestInteractive, RestoreAfterMinimize) {
-  Widget* widget = CreateWidget();
+  Widget* widget = CreateTopLevelNativeWidget();
   ShowSync(widget);
   ASSERT_FALSE(widget->IsMinimized());
 
@@ -1471,7 +1439,7 @@ TEST_F(DesktopWidgetTestInteractive, RestoreAfterMinimize) {
 // Tests that root window visibility toggles correctly when the desktop widget
 // is minimized and maximized on Windows, and the Widget remains visible.
 TEST_F(DesktopWidgetTestInteractive, RestoreAndMinimizeVisibility) {
-  Widget* widget = CreateWidget();
+  Widget* widget = CreateTopLevelNativeWidget();
   aura::Window* root_window = GetRootWindow(widget);
   ShowSync(widget);
   ASSERT_FALSE(widget->IsMinimized());
@@ -1498,7 +1466,7 @@ TEST_F(DesktopWidgetTestInteractive, RestoreAndMinimizeVisibility) {
 // Test that focus is restored to the widget after a minimized window
 // is activated.
 TEST_F(DesktopWidgetTestInteractive, MinimizeAndActivateFocus) {
-  Widget* widget = CreateWidget();
+  Widget* widget = CreateTopLevelNativeWidget();
   aura::Window* root_window = GetRootWindow(widget);
   auto* widget_window = widget->GetNativeWindow();
   ShowSync(widget);
@@ -1536,7 +1504,7 @@ TEST_F(DesktopWidgetTestInteractive, MinimizeAndActivateFocus) {
 // Tests that minimizing a widget causes the gesture_handler
 // to be cleared when the widget is minimized.
 TEST_F(DesktopWidgetTestInteractive, EventHandlersClearedOnWidgetMinimize) {
-  Widget* widget = CreateWidget();
+  Widget* widget = CreateTopLevelNativeWidget();
   ShowSync(widget);
   ASSERT_FALSE(widget->IsMinimized());
   View mouse_handler_view;
@@ -1561,11 +1529,11 @@ TEST_F(DesktopWidgetTestInteractive, EventHandlersClearedOnWidgetMinimize) {
 TEST_F(DesktopWidgetTestInteractive,
        DesktopNativeWidgetWithModalTransientChild) {
   // Create a desktop native Widget for Widget::Deactivate().
-  Widget* deactivate_widget = CreateWidget();
+  Widget* deactivate_widget = CreateTopLevelNativeWidget();
   ShowSync(deactivate_widget);
 
   // Create a top level desktop native widget.
-  Widget* top_level = CreateWidget();
+  Widget* top_level = CreateTopLevelNativeWidget();
 
   Textfield* textfield = new Textfield;
   textfield->SetBounds(0, 0, 200, 20);
@@ -1649,7 +1617,7 @@ class CaptureLostTrackingWidget : public Widget {
 
 }  // namespace
 
-class WidgetCaptureTest : public ViewsInteractiveUITestBase {
+class WidgetCaptureTest : public DesktopWidgetTestInteractive {
  public:
   WidgetCaptureTest() = default;
   ~WidgetCaptureTest() override = default;
@@ -1692,7 +1660,7 @@ class WidgetCaptureTest : public ViewsInteractiveUITestBase {
   void InitPlatformWidget(Widget* widget, bool use_desktop_native_widget) {
     Widget::InitParams params =
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    // The test base class by default returns DesktopNativeWidgetAura.
+    // The test class by default returns DesktopNativeWidgetAura.
     params.native_widget =
         use_desktop_native_widget
             ? nullptr
@@ -1979,7 +1947,7 @@ class WidgetInputMethodInteractiveTest : public DesktopWidgetTestInteractive {
     // On Windows, Widget::Deactivate() works by activating the next topmost
     // window on the z-order stack. This only works if there is at least one
     // other window, so make sure that is the case.
-    deactivate_widget_ = CreateWidget();
+    deactivate_widget_ = CreateTopLevelNativeWidget();
     deactivate_widget_->Show();
 #endif
   }
@@ -2003,7 +1971,7 @@ class WidgetInputMethodInteractiveTest : public DesktopWidgetTestInteractive {
 #endif
 // Test input method focus changes affected by top window activaction.
 TEST_F(WidgetInputMethodInteractiveTest, MAYBE_Activation) {
-  Widget* widget = CreateWidget();
+  Widget* widget = CreateTopLevelNativeWidget();
   Textfield* textfield = new Textfield;
   widget->GetRootView()->AddChildView(textfield);
   textfield->RequestFocus();
@@ -2022,7 +1990,7 @@ TEST_F(WidgetInputMethodInteractiveTest, MAYBE_Activation) {
 
 // Test input method focus changes affected by focus changes within 1 window.
 TEST_F(WidgetInputMethodInteractiveTest, OneWindow) {
-  Widget* widget = CreateWidget();
+  Widget* widget = CreateTopLevelNativeWidget();
   Textfield* textfield1 = new Textfield;
   Textfield* textfield2 = new Textfield;
   textfield2->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
@@ -2064,7 +2032,7 @@ TEST_F(WidgetInputMethodInteractiveTest, OneWindow) {
 // Test input method focus changes affected by focus changes cross 2 windows
 // which shares the same top window.
 TEST_F(WidgetInputMethodInteractiveTest, TwoWindows) {
-  Widget* parent = CreateWidget();
+  Widget* parent = CreateTopLevelNativeWidget();
   parent->SetBounds(gfx::Rect(100, 100, 100, 100));
 
   Widget* child = CreateChildNativeWidgetWithParent(parent);
@@ -2115,7 +2083,7 @@ TEST_F(WidgetInputMethodInteractiveTest, TwoWindows) {
 
 // Test input method focus changes affected by textfield's state changes.
 TEST_F(WidgetInputMethodInteractiveTest, TextField) {
-  Widget* widget = CreateWidget();
+  Widget* widget = CreateTopLevelNativeWidget();
   Textfield* textfield = new Textfield;
   widget->GetRootView()->AddChildView(textfield);
   ShowSync(widget);
@@ -2142,7 +2110,7 @@ TEST_F(WidgetInputMethodInteractiveTest, TextField) {
 
 // Test input method should not work for accelerator.
 TEST_F(WidgetInputMethodInteractiveTest, AcceleratorInTextfield) {
-  Widget* widget = CreateWidget();
+  Widget* widget = CreateTopLevelNativeWidget();
   Textfield* textfield = new Textfield;
   widget->GetRootView()->AddChildView(textfield);
   ShowSync(widget);

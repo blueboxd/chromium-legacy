@@ -108,6 +108,19 @@ class FakeHostResolverNetworkContext : public network::TestNetworkContext {
   std::unique_ptr<FakeHostResolver> google_config_resolver_;
 };
 
+class HangingHostResolverNetworkContext : public network::TestNetworkContext {
+ public:
+  HangingHostResolverNetworkContext();
+  ~HangingHostResolverNetworkContext() override;
+
+  void CreateHostResolver(
+      const base::Optional<net::DnsConfigOverrides>& config_overrides,
+      mojo::PendingReceiver<network::mojom::HostResolver> receiver) override;
+
+ private:
+  std::unique_ptr<HangingHostResolver> resolver_;
+};
+
 class FakeDnsConfigChangeManager
     : public network::mojom::DnsConfigChangeManager {
  public:

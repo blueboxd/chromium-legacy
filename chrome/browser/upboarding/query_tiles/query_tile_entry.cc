@@ -26,7 +26,7 @@ void DeepCopyTiles(const QueryTileEntry* input, QueryTileEntry* out) {
   }
 }
 
-bool AreTreesIdentical(const QueryTileEntry* lhs, const QueryTileEntry* rhs) {
+bool AreTilesIdentical(const QueryTileEntry* lhs, const QueryTileEntry* rhs) {
   if (!lhs && !rhs)
     return true;
   if (!lhs || !rhs || lhs->id != rhs->id ||
@@ -45,7 +45,7 @@ bool AreTreesIdentical(const QueryTileEntry* lhs, const QueryTileEntry* rhs) {
       return false;
   }
 
-  for (auto& it : lhs->sub_tiles) {
+  for (const auto& it : lhs->sub_tiles) {
     auto* target = it.get();
     auto found =
         std::find_if(rhs->sub_tiles.begin(), rhs->sub_tiles.end(),
@@ -53,7 +53,7 @@ bool AreTreesIdentical(const QueryTileEntry* lhs, const QueryTileEntry* rhs) {
                        return entry->id == target->id;
                      });
     if (found == rhs->sub_tiles.end() ||
-        !AreTreesIdentical(target, found->get()))
+        !AreTilesIdentical(target, found->get()))
       return false;
   }
   return true;
@@ -92,7 +92,7 @@ QueryTileEntry::QueryTileEntry(QueryTileEntry&& other) {
 }
 
 bool QueryTileEntry::operator==(const QueryTileEntry& other) const {
-  return AreTreesIdentical(this, &other);
+  return AreTilesIdentical(this, &other);
 }
 bool QueryTileEntry::operator!=(const QueryTileEntry& other) const {
   return !(*this == other);

@@ -49807,6 +49807,31 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="OverviewDragAction">
+  <summary>
+    The words clamshell and tablet here refer to the mode at the end of the drag
+    (as you can switch between those modes while dragging).
+  </summary>
+  <int value="0" label="ToGridSameDisplayClamshellMouse"/>
+  <int value="1" label="ToGridSameDisplayClamshellTouch"/>
+  <int value="2" label="ToDeskSameDisplayClamshellMouse"/>
+  <int value="3" label="ToDeskSameDisplayClamshellTouch"/>
+  <int value="4" label="ToSnapSameDisplayClamshellMouse"/>
+  <int value="5" label="ToSnapSameDisplayClamshellTouch"/>
+  <int value="6" label="SwipeToCloseSuccessfulClamshellTouch"/>
+  <int value="7" label="SwipeToCloseCanceledClamshellTouch"/>
+  <int value="8" label="FlingToCloseClamshellTouch"/>
+  <int value="9" label="ToGridOtherDisplayClamshellMouse"/>
+  <int value="10" label="ToDeskOtherDisplayClamshellMouse"/>
+  <int value="11" label="ToSnapOtherDisplayClamshellMouse"/>
+  <int value="12" label="ToGridSameDisplayTabletTouch"/>
+  <int value="13" label="ToDeskSameDisplayTabletTouch"/>
+  <int value="14" label="ToSnapSameDisplayTabletTouch"/>
+  <int value="15" label="SwipeToCloseSuccessfulTabletTouch"/>
+  <int value="16" label="SwipeToCloseCanceledTabletTouch"/>
+  <int value="17" label="FlingToCloseTabletTouch"/>
+</enum>
+
 <enum name="P2PLookupResult">
   <int value="0" label="Found"/>
   <int value="1" label="Not Found"/>

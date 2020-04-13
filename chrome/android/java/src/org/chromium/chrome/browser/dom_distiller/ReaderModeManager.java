@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.dom_distiller;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -24,11 +25,12 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.infobar.ReaderModeInfoBar;
+import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
@@ -83,8 +85,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
 
     // Hold on to the InterceptNavigationDelegate that the custom tab uses.
     InterceptNavigationDelegate mCustomTabNavigationDelegate;
-
-    private TabModelSelectorTabModelObserver mTabModelSelectorObserver;
 
     public ReaderModeManager(TabModelSelector selector, ChromeActivity activity) {
         super(selector);
@@ -431,79 +431,86 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
         ReaderModeInfoBar.showReaderModeInfoBar(mTabModelSelector.getCurrentTab());
     }
 
-    public void activateReaderMode() {
+    public void activateReaderMode(Tab tab) {
         RecordHistogram.recordBooleanHistogram("DomDistiller.InfoBarUsage", true);
 
         if (DomDistillerTabUtils.isCctMode() && !SysUtils.isLowEndDevice()) {
-            distillInCustomTab();
+            distillInCustomTab(tab);
         } else {
-            navigateToReaderMode();
+            navigateToReaderMode(tab);
         }
     }
 
     /**
      * Navigate the current tab to a Reader Mode URL.
      */
-    private void navigateToReaderMode() {
-        WebContents baseWebContents = getBasePageWebContents();
-        if (baseWebContents == null || mChromeActivity == null || mTabModelSelector == null) return;
+    private void navigateToReaderMode(Tab tab) {
+        WebContents webContents = tab.getWebContents();
+        if (webContents == null) return;
 
-        String url = baseWebContents.getLastCommittedUrl();
+        String url = webContents.getLastCommittedUrl();
         if (url == null) return;
 
-        ReaderModeTabInfo info = mTabStatusMap.get(mTabModelSelector.getCurrentTabId());
+        ReaderModeTabInfo info = mTabStatusMap.get(tab.getId());
         if (info != null) info.onStartedReaderMode();
 
         // Make sure to exit fullscreen mode before navigating.
-        Tab currentTab = mTabModelSelector.getCurrentTab();
-        mChromeActivity.getFullscreenManager().onExitFullscreen(currentTab);
+        getFullscreenManager(tab).onExitFullscreen(tab);
 
         // RenderWidgetHostViewAndroid hides the controls after transitioning to reader mode.
         // See the long history of the issue in https://crbug.com/825765, https://crbug.com/853686,
         // https://crbug.com/861618, https://crbug.com/922388.
         // TODO(pshmakov): find a proper solution instead of this workaround.
-        showControlsTransient(currentTab);
+        getFullscreenManager(tab).getBrowserVisibilityDelegate().showControlsTransient();
 
-        DomDistillerTabUtils.distillCurrentPageAndView(getBasePageWebContents());
+        DomDistillerTabUtils.distillCurrentPageAndView(webContents);
     }
 
-    private void showControlsTransient(Tab tab) {
-        assert mChromeActivity != null;
-        ChromeFullscreenManager fullscreenManager = mChromeActivity.getFullscreenManager();
-        fullscreenManager.getBrowserVisibilityDelegate().showControlsTransient();
+    private ChromeFullscreenManager getFullscreenManager(Tab tab) {
+        // TODO(1069815): Remove this ChromeActivity cast once NightModeStateProvider is
+        //                accessible via another mechanism.
+        ChromeActivity activity = (ChromeActivity) TabUtils.getActivity(tab);
+        return activity.getFullscreenManager();
     }
 
-    private void distillInCustomTab() {
-        WebContents baseWebContents = getBasePageWebContents();
-        if (baseWebContents == null || mChromeActivity == null || mTabModelSelector == null) return;
+    private NightModeStateProvider getNightModeStateProvider(Tab tab) {
+        // TODO(1069815): Remove this ChromeActivity cast once ChromeFullscreenManager is
+        //                accessible via another mechanism.
+        ChromeActivity activity = (ChromeActivity) TabUtils.getActivity(tab);
+        return activity.getNightModeStateProvider();
+    }
 
-        String url = baseWebContents.getLastCommittedUrl();
+    private void distillInCustomTab(Tab tab) {
+        Activity activity = TabUtils.getActivity(tab);
+        WebContents webContents = tab.getWebContents();
+        if (webContents == null) return;
+
+        String url = webContents.getLastCommittedUrl();
         if (url == null) return;
 
-        ReaderModeTabInfo info = mTabStatusMap.get(mTabModelSelector.getCurrentTabId());
+        ReaderModeTabInfo info = mTabStatusMap.get(tab.getId());
         if (info != null) info.onStartedReaderMode();
 
-        DomDistillerTabUtils.distillCurrentPage(baseWebContents);
+        DomDistillerTabUtils.distillCurrentPage(webContents);
 
         String distillerUrl = DomDistillerUrlUtils.getDistillerViewUrlFromUrl(
-                DOM_DISTILLER_SCHEME, url, baseWebContents.getTitle());
+                DOM_DISTILLER_SCHEME, url, webContents.getTitle());
 
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
         builder.setShowTitle(true);
-        builder.setColorScheme(mChromeActivity.getNightModeStateProvider().isInNightMode()
+        builder.setColorScheme(getNightModeStateProvider(tab).isInNightMode()
                         ? CustomTabsIntent.COLOR_SCHEME_DARK
                         : CustomTabsIntent.COLOR_SCHEME_LIGHT);
         CustomTabsIntent customTabsIntent = builder.build();
-        customTabsIntent.intent.setClassName(mChromeActivity, CustomTabActivity.class.getName());
+        customTabsIntent.intent.setClassName(activity, CustomTabActivity.class.getName());
 
         // Customize items on menu as Reader Mode UI to show 'Find in page' and 'Preference' only.
         CustomTabIntentDataProvider.addReaderModeUIExtras(customTabsIntent.intent);
 
         // Add the parent ID as an intent extra for back button functionality.
-        customTabsIntent.intent.putExtra(
-                EXTRA_READER_MODE_PARENT, mTabModelSelector.getCurrentTabId());
+        customTabsIntent.intent.putExtra(EXTRA_READER_MODE_PARENT, tab.getId());
 
-        customTabsIntent.launchUrl(mChromeActivity, Uri.parse(distillerUrl));
+        customTabsIntent.launchUrl(activity, Uri.parse(distillerUrl));
     }
 
     /**

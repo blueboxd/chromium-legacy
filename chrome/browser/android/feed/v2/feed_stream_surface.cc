@@ -40,8 +40,6 @@ FeedStreamSurface::FeedStreamSurface(const JavaRef<jobject>& j_this)
 
   feed_stream_api_ =
       FeedServiceFactory::GetForBrowserContext(profile)->GetStream();
-  if (feed_stream_api_)
-    feed_stream_api_->AttachSurface(this);
 }
 
 FeedStreamSurface::~FeedStreamSurface() {
@@ -86,10 +84,20 @@ void FeedStreamSurface::DiscardEphemeralChange(JNIEnv* env,
                                                int change_id) {}
 
 void FeedStreamSurface::SurfaceOpened(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj) {}
+                                      const JavaParamRef<jobject>& obj) {
+  if (feed_stream_api_ && !attached_) {
+    attached_ = true;
+    feed_stream_api_->AttachSurface(this);
+  }
+}
 
 void FeedStreamSurface::SurfaceClosed(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj) {}
+                                      const JavaParamRef<jobject>& obj) {
+  if (feed_stream_api_ && attached_) {
+    attached_ = false;
+    feed_stream_api_->DetachSurface(this);
+  }
+}
 
 void FeedStreamSurface::ReportOpenAction(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {

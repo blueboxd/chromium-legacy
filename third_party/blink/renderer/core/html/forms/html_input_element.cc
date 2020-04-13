@@ -1989,8 +1989,7 @@ void HTMLInputElement::SetShouldRevealPassword(bool value) {
 }
 
 bool HTMLInputElement::IsInteractiveContent() const {
-  return input_type_->IsInteractiveContent() ||
-         HTMLElement::IsInteractiveContent();
+  return input_type_->IsInteractiveContent();
 }
 
 scoped_refptr<ComputedStyle> HTMLInputElement::CustomStyleForLayoutObject() {

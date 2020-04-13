@@ -635,7 +635,7 @@ void ScreenWin::SetHDREnabled(bool hdr_enabled) {
   }
 }
 
-HWND ScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
+HWND ScreenWin::GetHWNDFromNativeWindow(gfx::NativeWindow window) const {
   NOTREACHED();
   return nullptr;
 }
@@ -678,7 +678,7 @@ const std::vector<Display>& ScreenWin::GetAllDisplays() const {
 }
 
 Display ScreenWin::GetDisplayNearestWindow(gfx::NativeWindow window) const {
-  const HWND window_hwnd = window ? GetHWNDFromNativeView(window) : nullptr;
+  const HWND window_hwnd = window ? GetHWNDFromNativeWindow(window) : nullptr;
   // When |window| isn't rooted to a display, we should just return the default
   // display so we get some correct display information like the scaling factor.
   return window_hwnd ? GetScreenWinDisplayNearestHWND(window_hwnd).display()
@@ -707,15 +707,15 @@ void ScreenWin::RemoveObserver(DisplayObserver* observer) {
 }
 
 gfx::Rect ScreenWin::ScreenToDIPRectInWindow(
-    gfx::NativeView view,
+    gfx::NativeWindow window,
     const gfx::Rect& screen_rect) const {
-  const HWND hwnd = view ? GetHWNDFromNativeView(view) : nullptr;
+  const HWND hwnd = window ? GetHWNDFromNativeWindow(window) : nullptr;
   return ScreenToDIPRect(hwnd, screen_rect);
 }
 
-gfx::Rect ScreenWin::DIPToScreenRectInWindow(gfx::NativeView view,
+gfx::Rect ScreenWin::DIPToScreenRectInWindow(gfx::NativeWindow window,
                                              const gfx::Rect& dip_rect) const {
-  const HWND hwnd = view ? GetHWNDFromNativeView(view) : nullptr;
+  const HWND hwnd = window ? GetHWNDFromNativeWindow(window) : nullptr;
   return DIPToScreenRect(hwnd, dip_rect);
 }
 

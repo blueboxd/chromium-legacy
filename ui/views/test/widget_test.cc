@@ -91,6 +91,14 @@ void DesktopWidgetTest::SetUp() {
   WidgetTest::SetUp();
 }
 
+DesktopWidgetTestInteractive::DesktopWidgetTestInteractive() = default;
+DesktopWidgetTestInteractive::~DesktopWidgetTestInteractive() = default;
+
+void DesktopWidgetTestInteractive::SetUp() {
+  SetUpForInteractiveTests();
+  DesktopWidgetTest::SetUp();
+}
+
 TestDesktopWidgetDelegate::TestDesktopWidgetDelegate() : widget_(new Widget) {}
 
 TestDesktopWidgetDelegate::TestDesktopWidgetDelegate(Widget* widget)

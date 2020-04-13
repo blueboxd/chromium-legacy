@@ -18,7 +18,7 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_path.h"
-#include "ui/views/test/views_interactive_ui_test_base.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/widget.h"
@@ -86,11 +86,23 @@ class StackingClientListWaiter : public X11PropertyChangeWaiter {
 
 }  // namespace
 
-class X11TopmostWindowFinderTest : public ViewsInteractiveUITestBase {
+class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
  public:
   X11TopmostWindowFinderTest() = default;
-
   ~X11TopmostWindowFinderTest() override = default;
+
+  // DesktopWidgetTestInteractive
+  void SetUp() override {
+    // Make X11 synchronous for our display connection. This does not force the
+    // window manager to behave synchronously.
+    XSynchronize(xdisplay(), x11::True);
+    DesktopWidgetTestInteractive::SetUp();
+  }
+
+  void TearDown() override {
+    XSynchronize(xdisplay(), x11::False);
+    DesktopWidgetTestInteractive::TearDown();
+  }
 
   // Creates and shows a Widget with |bounds|. The caller takes ownership of
   // the returned widget.
@@ -159,20 +171,6 @@ class X11TopmostWindowFinderTest : public ViewsInteractiveUITestBase {
     X11TopmostWindowFinder finder;
     return finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y),
                                            ignore);
-  }
-
-  // ViewsInteractiveUITestBase:
-  void SetUp() override {
-    ViewsInteractiveUITestBase::SetUp();
-
-    // Make X11 synchronous for our display connection. This does not force the
-    // window manager to behave synchronously.
-    XSynchronize(xdisplay(), x11::True);
-  }
-
-  void TearDown() override {
-    XSynchronize(xdisplay(), x11::False);
-    ViewsInteractiveUITestBase::TearDown();
   }
 
  private:

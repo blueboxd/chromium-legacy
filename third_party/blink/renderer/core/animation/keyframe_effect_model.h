@@ -148,6 +148,11 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
     return keyframe_groups_->Contains(property);
   }
 
+  bool HasRevert() const {
+    EnsureKeyframeGroups();
+    return has_revert_;
+  }
+
   bool IsTransformRelatedEffect() const override;
 
   virtual KeyframeEffectModelBase* Clone() = 0;
@@ -164,7 +169,8 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
         composite_(composite),
         default_keyframe_easing_(std::move(default_keyframe_easing)),
         has_synthetic_keyframes_(false),
-        needs_compositor_keyframes_snapshot_(true) {}
+        needs_compositor_keyframes_snapshot_(true),
+        has_revert_(false) {}
 
   // Lazily computes the groups of property-specific keyframes.
   void EnsureKeyframeGroups() const;
@@ -207,6 +213,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
 
   mutable bool has_synthetic_keyframes_;
   mutable bool needs_compositor_keyframes_snapshot_;
+  mutable bool has_revert_;
 
   friend class KeyframeEffectModelTest;
 };

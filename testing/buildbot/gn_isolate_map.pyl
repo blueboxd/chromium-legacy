@@ -724,8 +724,8 @@
     "label": "//crypto:crypto_unittests",
     "type": "console_test_launcher",
   },
-  "dawn_end2end_tests": {
-    "label": "//third_party/dawn:dawn_end2end_tests",
+  "dawn_end2end_tests_tmp": {
+    "label": "//third_party/dawn/src/tests:dawn_end2end_tests_tmp",
     "type": "raw",
   },
   "dawn_perf_tests": {

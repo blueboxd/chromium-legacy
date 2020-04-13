@@ -1893,7 +1893,7 @@
           '--no-use-spvc',
           '--no-use-spvc-parser',
         ],
-        'test': 'dawn_end2end_tests',
+        'test': 'dawn_end2end_tests_tmp',
       },
       'dawn_end2end_skip_validation_tests': {
         'desktop_args': [
@@ -1902,7 +1902,7 @@
           '--test-launcher-retry-limit=0',
           '--skip-validation',
         ],
-        'test': 'dawn_end2end_tests',
+        'test': 'dawn_end2end_tests_tmp',
       },
       'dawn_end2end_tests': {
         'desktop_args': [
@@ -1910,6 +1910,7 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
         ],
+        'test': 'dawn_end2end_tests_tmp',
       },
       'dawn_end2end_use_spvc_parser_tests': {
         'desktop_args': [
@@ -1919,7 +1920,7 @@
           '--use-spvc',
           '--use-spvc-parser',
         ],
-        'test': 'dawn_end2end_tests',
+        'test': 'dawn_end2end_tests_tmp',
       },
       'dawn_end2end_use_spvc_tests': {
         'desktop_args': [
@@ -1929,7 +1930,7 @@
           '--use-spvc',
           '--no-use-spvc-parser',
         ],
-        'test': 'dawn_end2end_tests',
+        'test': 'dawn_end2end_tests_tmp',
       },
       'dawn_end2end_validation_layers_tests': {
         'desktop_args': [
@@ -1938,7 +1939,7 @@
           '--test-launcher-retry-limit=0',
           '--enable-backend-validation',
         ],
-        'test': 'dawn_end2end_tests',
+        'test': 'dawn_end2end_tests_tmp',
       },
       'dawn_end2end_wire_tests': {
         'desktop_args': [
@@ -1947,7 +1948,7 @@
           '--test-launcher-retry-limit=0',
           '--use-wire',
         ],
-        'test': 'dawn_end2end_tests',
+        'test': 'dawn_end2end_tests_tmp',
       },
     },
 
@@ -1962,7 +1963,7 @@
           '--no-use-spvc',
           '--no-use-spvc-parser',
         ],
-        'test': 'dawn_end2end_tests',
+        'test': 'dawn_end2end_tests_tmp',
       },
       'dawn_end2end_skip_validation_tests': {
         'desktop_args': [
@@ -1971,7 +1972,7 @@
           '--test-launcher-retry-limit=0',
           '--skip-validation',
         ],
-        'test': 'dawn_end2end_tests',
+        'test': 'dawn_end2end_tests_tmp',
       },
       'dawn_end2end_tests': {
         'desktop_args': [
@@ -1979,6 +1980,7 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
         ],
+        'test': 'dawn_end2end_tests_tmp',
       },
       'dawn_end2end_use_spvc_parser_tests': {
         'desktop_args': [
@@ -1988,7 +1990,7 @@
           '--use-spvc',
           '--use-spvc-parser',
         ],
-        'test': 'dawn_end2end_tests',
+        'test': 'dawn_end2end_tests_tmp',
       },
       'dawn_end2end_use_spvc_tests': {
         'desktop_args': [
@@ -1998,7 +2000,7 @@
           '--use-spvc',
           '--no-use-spvc-parser',
         ],
-        'test': 'dawn_end2end_tests',
+        'test': 'dawn_end2end_tests_tmp',
       },
       'dawn_end2end_validation_layers_tests': {
         'desktop_args': [
@@ -2007,7 +2009,7 @@
           '--test-launcher-retry-limit=0',
           '--enable-backend-validation',
         ],
-        'test': 'dawn_end2end_tests',
+        'test': 'dawn_end2end_tests_tmp',
       },
       'dawn_end2end_wire_tests': {
         'desktop_args': [
@@ -2016,7 +2018,7 @@
           '--test-launcher-retry-limit=0',
           '--use-wire',
         ],
-        'test': 'dawn_end2end_tests',
+        'test': 'dawn_end2end_tests_tmp',
       },
       'gl_tests': {
         'desktop_args': [

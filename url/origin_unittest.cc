@@ -483,7 +483,8 @@ TEST_F(OriginTest, UnsafelyCreate) {
       {"http", "example.com", 123},
       {"https", "example.com", 443},
       {"https", "example.com", 123},
-      {"file", "", 0},
+      {"http", "example.com", 0},  // 0 is a valid port for http.
+      {"file", "", 0},             // 0 indicates "no port" for file: scheme.
       {"file", "example.com", 0},
   };
 
@@ -539,12 +540,10 @@ TEST_F(OriginTest, UnsafelyCreateUniqueOnInvalidInput) {
                {"http", "example.com\rnot-example.com"},
                {"http", "example.com\n"},
                {"http", "example.com\r"},
-               {"http", "example.com", 0},
                {"unknown-scheme", "example.com"},
                {"host-only", "\r", 0},
                {"host-only", "example.com", 22},
-               {"host-port-only", "example.com", 0},
-               {"file", ""}};
+               {"file", "", 123}};  // file: shouldn't have a port.
 
   for (const auto& test : cases) {
     SCOPED_TRACE(testing::Message()

@@ -80,7 +80,8 @@ cr.define('settings', function() {
     validateCustomDnsEntry(entry) {}
 
     /**
-     * Returns whether a test query to the secure DNS template succeeded.
+     * Returns True if a test query to the secure DNS template succeeded
+     * or was cancelled.
      * @param {string} template
      * @return {!Promise<boolean>}
      */

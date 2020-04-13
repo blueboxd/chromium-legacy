@@ -956,10 +956,9 @@ _capture ended_.
   * (per-profile) Chrome extensions (ex: [chrome.proxy](https://developer.chrome.com/extensions/proxy))
   * (per-network) System proxy settings
 
-* Was proxy autodetect (WPAD) specified? In this case the final URL probed will
-  be reflected by the difference between the "Effective" and "Original"
-  settings. A known issue with auto-detect is that DHCP based auto-detect is only
-  supported by Chrome running on Windows and Chrome OS.
+* Was [proxy autodetect (WPAD)](#Web-Proxy-Auto_Discovery-WPAD) specified? In
+  this case the final URL probed will be reflected by the difference between
+  the "Effective" and "Original" settings.
 
 * Internally, proxy settings are per-NetworkContext. The proxy
   overview tab shows settings for a *particular* NetworkContext, namely the

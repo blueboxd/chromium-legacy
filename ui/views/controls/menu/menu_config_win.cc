@@ -20,7 +20,6 @@ using ui::NativeTheme;
 namespace views {
 
 void MenuConfig::Init() {
-  arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
   font_list =
       gfx::FontList(gfx::win::GetSystemFont(gfx::win::SystemFont::kMenu));
 

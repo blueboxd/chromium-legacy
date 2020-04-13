@@ -9,7 +9,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
-#include "ui/views/test/views_interactive_ui_test_base.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/window_event_filter_linux.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -180,7 +180,8 @@ class TestDesktopWindowTreeHostLinux : public DesktopWindowTreeHostLinux {
 
 }  // namespace
 
-class DesktopWindowTreeHostLinuxTest : public ViewsInteractiveUITestBase {
+class DesktopWindowTreeHostLinuxTest
+    : public test::DesktopWidgetTestInteractive {
  public:
   DesktopWindowTreeHostLinuxTest() = default;
   ~DesktopWindowTreeHostLinuxTest() override = default;

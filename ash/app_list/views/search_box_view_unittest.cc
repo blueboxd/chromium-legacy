@@ -368,6 +368,7 @@ TEST_F(SearchBoxViewTest, ChangeSelectionWhileResultsAreChanging) {
 TEST_F(SearchBoxViewTest, ChangeSelectionWhileResultsAreBeingRemoved) {
   SetSearchBoxActive(true, ui::ET_UNKNOWN);
   view()->search_box()->SetText(base::ASCIIToUTF16("test"));
+  view()->set_search_box_has_query_for_test(true);
   CreateSearchResult(ash::SearchResultDisplayType::kList, 0.7,
                      base::ASCIIToUTF16("tester"), base::string16());
   CreateSearchResult(ash::SearchResultDisplayType::kList, 0.5,
@@ -754,6 +755,7 @@ TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAutocompletesNotHandledForIME) {
 
   // Simulate uncomposited text. The autocomplete should be handled.
   view()->search_box()->SetText(base::ASCIIToUTF16("he"));
+  view()->set_search_box_has_query_for_test(true);
   view()->set_highlight_range_for_test(gfx::Range(2, 2));
   view()->ProcessAutocomplete();
 

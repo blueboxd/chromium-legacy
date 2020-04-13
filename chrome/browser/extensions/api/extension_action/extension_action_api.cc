@@ -112,10 +112,9 @@ void ExtensionActionAPI::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool ExtensionActionAPI::ShowExtensionActionPopup(
+bool ExtensionActionAPI::ShowExtensionActionPopupForAPICall(
     const Extension* extension,
-    Browser* browser,
-    bool grant_active_tab_permissions) {
+    Browser* browser) {
   ExtensionAction* extension_action =
       ExtensionActionManager::Get(browser_context_)->GetExtensionAction(
           *extension);
@@ -131,8 +130,8 @@ bool ExtensionActionAPI::ShowExtensionActionPopup(
   // The ExtensionsContainer could be null if, e.g., this is a popup window with
   // no toolbar.
   return extensions_container &&
-         extensions_container->ShowToolbarActionPopup(
-             extension->id(), grant_active_tab_permissions);
+         extensions_container->ShowToolbarActionPopupForAPICall(
+             extension->id());
 }
 
 void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
@@ -530,8 +529,8 @@ ExtensionFunction::ResponseAction BrowserActionOpenPopupFunction::Run() {
   // fixed.
   if (!browser || !browser->window()->IsActive() ||
       !browser->window()->IsToolbarVisible() ||
-      !ExtensionActionAPI::Get(profile)->ShowExtensionActionPopup(
-          extension_.get(), browser, false)) {
+      !ExtensionActionAPI::Get(profile)->ShowExtensionActionPopupForAPICall(
+          extension_.get(), browser)) {
     return RespondNow(Error(kOpenPopupError));
   }
 

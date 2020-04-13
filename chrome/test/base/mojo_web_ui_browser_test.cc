@@ -23,7 +23,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/binder_map.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -129,12 +128,16 @@ void MojoWebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   if (use_mojo_lite_bindings_) {
+    std::string test_mojo_lite_js =
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+            IDR_WEB_UI_TEST_MOJO_LITE_JS);
     web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-        l10n_util::GetStringUTF16(IDR_WEB_UI_TEST_MOJO_LITE_JS),
-        base::NullCallback());
+        base::UTF8ToUTF16(test_mojo_lite_js), base::NullCallback());
   } else {
+    std::string test_mojo_js =
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+            IDR_WEB_UI_TEST_MOJO_JS);
     web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-        l10n_util::GetStringUTF16(IDR_WEB_UI_TEST_MOJO_JS),
-        base::NullCallback());
+        base::UTF8ToUTF16(test_mojo_js), base::NullCallback());
   }
 }

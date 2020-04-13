@@ -134,7 +134,6 @@ void ShellBrowserContext::InitWhileIOAllowed() {
 }
 
 void ShellBrowserContext::FinishInitWhileIOAllowed() {
-  BrowserContext::Initialize(this, path_);
   key_ = std::make_unique<SimpleFactoryKey>(path_, off_the_record_);
   SimpleKeyMap::GetInstance()->Associate(this, key_.get());
 }

@@ -32,7 +32,7 @@
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
-#include "ash/system/accessibility/switch_access_bubble_controller.h"
+#include "ash/system/accessibility/switch_access_menu_bubble_controller.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
@@ -1841,7 +1841,7 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
         return;
       } else {
         switch_access_bubble_controller_ =
-            std::make_unique<SwitchAccessBubbleController>();
+            std::make_unique<SwitchAccessMenuBubbleController>();
         MaybeCreateSwitchAccessEventHandler();
         ShowAccessibilityNotification(
             A11yNotificationType::kSwitchAccessEnabled);

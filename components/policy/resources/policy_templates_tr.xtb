@@ -351,6 +351,7 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
           "EnableMediaRouter" politikası yanlış (false) değerine ayarlanırsa bu politikanın değerinin herhangi bir etkisi olmaz.</translation>
 <translation id="1509692106376861764">Bu politika, <ph name="PRODUCT_NAME" /> Sürüm 29 itibariyle kullanımdan kaldırılmıştır.</translation>
 <translation id="1514888685242892912"><ph name="PRODUCT_NAME" /> ürününü etkinleştirin</translation>
+<translation id="1515230621229117540">Kayan erişilebilirlik menüsünü etkinleştirir</translation>
 <translation id="1515824657887788963">Sayfa kapatma işlemi sırasında bir sayfanın eş zamanlı XHR istekleri gerçekleştirmesine izin verir.</translation>
 <translation id="1522425503138261032">Sitelerin, kullanıcıların fiziksel konumlarını izlemesine izin ver</translation>
 <translation id="1523774894176285446">Yapılandırılan web siteleri için başlatılacak alternatif tarayıcı.</translation>
@@ -3350,6 +3351,17 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
           Herhangi bir ayar sağlanmazsa <ph name="PRODUCT_NAME" />, yedek seçenek olarak varsayılan bir kitaplık adını kullanır.</translation>
 <translation id="5783009211970309878">Üst Bilgileri ve Alt Bilgileri yazdır</translation>
+<translation id="5783576706065107606">Yeni <ph name="CORS" /> uygulamasındaki çözümlerin <ph name="CORS" /> tarafından kontrol edilmesini sağlayarak Uzantıların uyumlu davranışı sürdürmesine ve belirtilen üstbilgilerin <ph name="PRODUCT_NAME" /> tarafından <ph name="CORS" /> kontrolleri olmadan gönderilmesine olanak tanıyın.
+
+      Bu liste boş değere ayarlanırsa <ph name="PRODUCT_NAME" />, Uzantıları uyumlu şekillerde çalıştırmayı dener ve <ph name="WEB_REQUEST_API_MANUAL" /> içinde açıklanan <ph name="PRODUCT_NAME" /> 79 için <ph name="API" /> değişikliklerini uygulamaz.
+
+      Bu liste <ph name="HTTP" /> istek üst bilgi adlarına sahip olacak şekilde ayarlanırsa <ph name="CORS" /> incelemesi, Uzantılar için çözüm sağlamaya ek olarak listelenen üst bilgileri de yoksayar.
+
+      Bu liste ayarlanmazsa yukarıda açıklanan çözümlerin ikisi de uygulanmaz.
+
+      <ph name="CORS" /> ile ilgili ayrıntılar için şu adresi ziyaret edin: <ph name="CORS_HELP_URL" />.
+
+      Bu politikanın <ph name="PRODUCT_NAME" /> sürüm 82'de kaldırılacağı duyurulmuştu, ancak planlardaki değişiklik nedeniyle sürüm 84'de kaldırılacağını belirtmek isteriz.</translation>
 <translation id="5790763087505467169">Yönetilen misafir oturumu otomatik başlatma bildirimlerini azaltma</translation>
 <translation id="5806128552675651249">Yalnızca arka plan grafikleri olmadan yazdırmaya izin ver</translation>
 <translation id="5809210507920527553">Linux kapsayıcı (Crostini) ile ilgili ayarları kontrol eder.</translation>
@@ -3413,6 +3425,17 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
           Bu ayar devre dışı bırakılır veya ayarlanmazsa, tüm ana makineler için varsayılan TalkGadget alan adı ('chromoting-host.talkgadget.google.com') kullanılır.
 
           Uzaktan erişim istemcileri bu politika ayarından etkilenmez. Bunlar, TalkGadget'a erişmek için her zaman 'chromoting-client.talkgadget.google.com' alan adını kullanır.</translation>
+<translation id="5888171512889380367">Yeni <ph name="CORS" /> yerine eski <ph name="CORS" /> uygulamasını kullan.
+
+      Bu ayar True (Doğru) değerine ayarlanırsa önceki sürümlerle uyumlu olması gereken eski uygulama kullanılır.
+
+      Bu ayar False (Yanlış) değerine ayarlanır veya hiç ayarlanmazsa kuruma özel uyumluluk sorunlarına yol açabilecek yeni uygulama kullanılır.
+
+      Bu politika, birkaç aşamadan sonra kaldırılacaktır.
+
+      <ph name="CORS" /> ile ilgili ayrıntılar için şu adresi ziyaret edin: <ph name="CORS_HELP_URL" />.
+
+      Bu politikanın <ph name="PRODUCT_NAME" /> sürüm 82'de kaldırılacağı duyurulmuştu, ancak planlardaki değişiklik nedeniyle sürüm 84'de kaldırılacağını belirtmek isteriz.</translation>
 <translation id="5893553533827140852">Bu ayar etkinleştirilirse gnubby kimlik doğrulama isteklerinde uzaktan ana bilgisayar bağlantısı üzerinden proxy kullanılır.
 
           Bu ayar devre dışı bırakılır veya yapılandırılmazsa gnubby kimlik doğrulama isteklerinde proxy kullanılmaz.</translation>
@@ -3685,6 +3708,11 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
           Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
 <translation id="6417265370957905582">Google Asistan</translation>
+<translation id="6422575351619065453">Kiosk modunda, kayan erişilebilirlik menüsünün gösterilip gösterilmeyeceğini kontrol eder.
+
+      Bu politika etkin olarak ayarlanırsa kayan erişilebilirlik menüsü her zaman gösterilir.
+
+      Bu politika devre dışı olarak ayarlanırsa veya ayarlanmadan bırakılırsa kayan erişilebilirlik menüsü asla gösterilmez.</translation>
 <translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">Android uygulamalarını proxy kullanmaya zorlayamazsınız. Proxy ayarlarının bir alt kümesi Android uygulamalarının kullanımına sunuldu. Bu uygulamalar, söz konusu proxy ayarını kendi tercihleriyle kullanmayı seçebilir:
 

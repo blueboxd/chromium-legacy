@@ -22,16 +22,13 @@ using InitStatus = leveldb_proto::Enums::InitStatus;
 namespace upboarding {
 namespace {
 
-const char kGuid[] = "test_guid";
-const char kTestDisplayText[] = "test_display_text";
-
 class QueryTileStoreTest : public testing::Test {
  public:
-  using QueryTileEntryProto = query_tiles::proto::QueryTileEntry;
-  using EntriesMap = std::map<std::string, std::unique_ptr<QueryTileEntry>>;
-  using ProtoMap = std::map<std::string, QueryTileEntryProto>;
-  using KeysAndEntries = std::map<std::string, QueryTileEntry>;
-  using TestEntries = std::vector<QueryTileEntry>;
+  using TileGroupProto = query_tiles::proto::QueryTileGroup;
+  using EntriesMap = std::map<std::string, std::unique_ptr<TileGroup>>;
+  using ProtoMap = std::map<std::string, TileGroupProto>;
+  using KeysAndEntries = std::map<std::string, TileGroup>;
+  using TestEntries = std::vector<TileGroup>;
 
   QueryTileStoreTest() : load_result_(false), db_(nullptr) {}
   ~QueryTileStoreTest() override = default;
@@ -42,8 +39,7 @@ class QueryTileStoreTest : public testing::Test {
  protected:
   void Init(TestEntries input, InitStatus status) {
     CreateTestDbEntries(std::move(input));
-    auto db = std::make_unique<FakeDB<QueryTileEntryProto, QueryTileEntry>>(
-        &db_entries_);
+    auto db = std::make_unique<FakeDB<TileGroupProto, TileGroup>>(&db_entries_);
     db_ = db.get();
     store_ = std::make_unique<QueryTileStore>(std::move(db));
     store_->InitAndLoad(base::BindOnce(&QueryTileStoreTest::OnEntriesLoaded,
@@ -58,8 +54,8 @@ class QueryTileStoreTest : public testing::Test {
 
   void CreateTestDbEntries(TestEntries input) {
     for (auto& entry : input) {
-      QueryTileEntryProto proto;
-      upboarding::QueryTileEntryToProto(&entry, &proto);
+      TileGroupProto proto;
+      upboarding::TileGroupToProto(&entry, &proto);
       db_entries_.emplace(entry.id, proto);
     }
   }
@@ -80,26 +76,26 @@ class QueryTileStoreTest : public testing::Test {
     DCHECK(loaded_entries);
     for (auto it = loaded_entries->begin(); it != loaded_entries->end(); it++) {
       EXPECT_NE(expected->count(it->first), 0u);
-      auto& actual_loaded_tree = it->second;
-      auto& expected_tree = expected->at(it->first);
-      EXPECT_EQ(actual_loaded_tree, expected_tree)
-          << "\n Actual: " << test::DebugString(&actual_loaded_tree)
-          << "\n Expected: " << test::DebugString(&expected_tree);
+      auto& actual_loaded_group = it->second;
+      auto& expected_group = expected->at(it->first);
+      EXPECT_EQ(actual_loaded_group, expected_group)
+          << "\n Actual: " << test::DebugString(&actual_loaded_group)
+          << "\n Expected: " << test::DebugString(&expected_group);
     }
   }
 
   bool load_result() const { return load_result_; }
   const EntriesMap& in_memory_entries() const { return in_memory_entries_; }
-  FakeDB<QueryTileEntryProto, QueryTileEntry>* db() { return db_; }
-  Store<QueryTileEntry>* store() { return store_.get(); }
+  FakeDB<TileGroupProto, TileGroup>* db() { return db_; }
+  Store<TileGroup>* store() { return store_.get(); }
 
  private:
   base::test::TaskEnvironment task_environment_;
   bool load_result_;
   EntriesMap in_memory_entries_;
   ProtoMap db_entries_;
-  FakeDB<QueryTileEntryProto, QueryTileEntry>* db_;
-  std::unique_ptr<Store<QueryTileEntry>> store_;
+  FakeDB<TileGroupProto, TileGroup>* db_;
+  std::unique_ptr<Store<TileGroup>> store_;
 };
 
 // Test Initializing and loading an empty database .
@@ -114,24 +110,26 @@ TEST_F(QueryTileStoreTest, InitSuccessEmptyDb) {
 // Test Initializing and loading a non-empty database.
 TEST_F(QueryTileStoreTest, InitSuccessWithData) {
   auto test_data = TestEntries();
-  QueryTileEntry test_entry;
-  test_entry.id = kGuid;
-  test_data.emplace_back(std::move(test_entry));
+  TileGroup test_group;
+  test::ResetTestGroup(&test_group);
+  std::string id = test_group.id;
+  test_data.emplace_back(std::move(test_group));
   Init(std::move(test_data), InitStatus::kOK);
   db()->LoadCallback(true);
   EXPECT_EQ(load_result(), true);
   EXPECT_EQ(in_memory_entries().size(), 1u);
   auto actual = in_memory_entries().begin();
-  EXPECT_EQ(actual->first, kGuid);
-  EXPECT_EQ(actual->second.get()->id, kGuid);
+  EXPECT_EQ(actual->first, id);
+  EXPECT_EQ(actual->second.get()->id, id);
 }
 
 // Test Initializing and loading a non-empty database failed.
 TEST_F(QueryTileStoreTest, InitFailedWithData) {
   auto test_data = TestEntries();
-  QueryTileEntry test_entry;
-  test_entry.id = kGuid;
-  test_data.emplace_back(std::move(test_entry));
+  TileGroup test_group;
+  test::ResetTestGroup(&test_group);
+  std::string id = test_group.id;
+  test_data.emplace_back(std::move(test_group));
   Init(std::move(test_data), InitStatus::kOK);
   db()->LoadCallback(false);
   EXPECT_EQ(load_result(), false);
@@ -147,10 +145,13 @@ TEST_F(QueryTileStoreTest, AddAndUpdateDataFailed) {
   EXPECT_TRUE(in_memory_entries().empty());
 
   // Add an entry failed.
-  QueryTileEntry test_entry_1;
-  test_entry_1.id = "test_entry_id_1";
-  test_entry_1.display_text = "test_entry_test_display_text";
-  store()->Update(test_entry_1.id, test_entry_1,
+  TileGroup test_group;
+  test_group.id = "test_group_id";
+  auto test_entry_1 = std::make_unique<QueryTileEntry>();
+  test_entry_1->id = "test_entry_id_1";
+  test_entry_1->display_text = "test_entry_test_display_text";
+  test_group.tiles.emplace_back(std::move(test_entry_1));
+  store()->Update(test_group.id, test_group,
                   base::BindOnce([](bool success) { EXPECT_FALSE(success); }));
   db()->UpdateCallback(false);
 }
@@ -162,41 +163,33 @@ TEST_F(QueryTileStoreTest, AddAndUpdateDataSuccess) {
   EXPECT_EQ(load_result(), true);
   EXPECT_TRUE(in_memory_entries().empty());
 
-  // Add an entry successfully.
-  QueryTileEntry test_entry_1;
-  test_entry_1.id = "test_entry_id_1";
-  test_entry_1.display_text = kTestDisplayText;
-  auto test_entry_2 = std::make_unique<QueryTileEntry>();
-  test_entry_2->id = "test_entry_id_2";
-  test_entry_1.sub_tiles.emplace_back(std::move(test_entry_2));
-  store()->Update(test_entry_1.id, test_entry_1,
+  // Add a group successfully.
+  TileGroup test_group;
+  test::ResetTestGroup(&test_group);
+  store()->Update(test_group.id, test_group,
                   base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
   db()->UpdateCallback(true);
 
   auto expected = std::make_unique<KeysAndEntries>();
-  expected->emplace(test_entry_1.id, std::move(test_entry_1));
+  expected->emplace(test_group.id, std::move(test_group));
   VerifyDataInDb(std::move(expected));
 }
 
 // Test deleting from db.
 TEST_F(QueryTileStoreTest, DeleteSuccess) {
   auto test_data = TestEntries();
-  QueryTileEntry test_entry_1;
-  test_entry_1.id = kGuid;
-  test_entry_1.display_text = kTestDisplayText;
-  auto test_entry_2 = std::make_unique<QueryTileEntry>();
-  test_entry_2->id = "test_entry_id_2";
-  test_entry_1.sub_tiles.emplace_back(std::move(test_entry_2));
-  test_data.emplace_back(std::move(test_entry_1));
+  TileGroup test_group;
+  test::ResetTestGroup(&test_group);
+  std::string id = test_group.id;
+  test_data.emplace_back(std::move(test_group));
   Init(std::move(test_data), InitStatus::kOK);
   db()->LoadCallback(true);
   EXPECT_EQ(load_result(), true);
   EXPECT_EQ(in_memory_entries().size(), 1u);
   auto actual = in_memory_entries().begin();
-  EXPECT_EQ(actual->first, kGuid);
-  EXPECT_EQ(actual->second.get()->id, kGuid);
-
-  store()->Delete(kGuid,
+  EXPECT_EQ(actual->first, id);
+  EXPECT_EQ(actual->second.get()->id, id);
+  store()->Delete(id,
                   base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
   db()->UpdateCallback(true);
   // No entry is expected in db.

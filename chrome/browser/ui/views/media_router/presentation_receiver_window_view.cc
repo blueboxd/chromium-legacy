@@ -349,10 +349,6 @@ content::WebContents* PresentationReceiverWindowView::GetActiveWebContents() {
   return delegate_->web_contents();
 }
 
-void PresentationReceiverWindowView::UnhideDownloadShelf() {}
-
-void PresentationReceiverWindowView::HideDownloadShelf() {}
-
 bool PresentationReceiverWindowView::CanUserExitFullscreen() const {
   return true;
 }

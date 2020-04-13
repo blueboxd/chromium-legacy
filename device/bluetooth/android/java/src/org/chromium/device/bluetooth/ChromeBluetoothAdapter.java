@@ -296,7 +296,8 @@ final class ChromeBluetoothAdapter extends BroadcastReceiver {
                         result.getDevice().getAddress(), result.getDevice(),
                         result.getScanRecord_getDeviceName(), result.getRssi(), uuid_strings,
                         result.getScanRecord_getTxPowerLevel(), serviceDataKeys, serviceDataValues,
-                        manufacturerDataKeys, manufacturerDataValues);
+                        manufacturerDataKeys, manufacturerDataValues,
+                        result.getScanRecord_getAdvertiseFlags());
             }
         }
 
@@ -360,7 +361,7 @@ final class ChromeBluetoothAdapter extends BroadcastReceiver {
                 Wrappers.BluetoothDeviceWrapper deviceWrapper, String localName, int rssi,
                 String[] advertisedUuids, int txPower, String[] serviceDataKeys,
                 Object[] serviceDataValues, int[] manufacturerDataKeys,
-                Object[] manufacturerDataValues);
+                Object[] manufacturerDataValues, int advertiseFlags);
 
         // Binds to BluetoothAdapterAndroid::nativeOnAdapterStateChanged
         void onAdapterStateChanged(

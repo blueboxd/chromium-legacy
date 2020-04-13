@@ -41,9 +41,6 @@ void BrowserAccessibilityWin::UpdatePlatformAttributes() {
 }
 
 ui::AXPlatformNode* BrowserAccessibilityWin::GetAXPlatformNode() const {
-  if (!instance_active())
-    return nullptr;
-
   return GetCOM();
 }
 

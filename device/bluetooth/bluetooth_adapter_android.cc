@@ -178,8 +178,8 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     const JavaParamRef<jobjectArray>& service_data_values,  // Java Type: byte[]
     const JavaParamRef<jintArray>& manufacturer_data_keys,  // Java Type: int[]
     const JavaParamRef<jobjectArray>&
-        manufacturer_data_values  // Java Type: byte[]
-) {
+        manufacturer_data_values,  // Java Type: byte[]
+    int32_t advertisement_flags) {
   std::string device_address = ConvertJavaStringToUTF8(env, address);
   auto iter = devices_.find(device_address);
 
@@ -235,7 +235,11 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
   int8_t clamped_tx_power = BluetoothDevice::ClampPower(tx_power);
 
   device_android->UpdateAdvertisementData(
-      BluetoothDevice::ClampPower(rssi), base::nullopt /* flags */,
+      BluetoothDevice::ClampPower(rssi),
+      // Android uses -1 to indicate no advertising flags.
+      // https://developer.android.com/reference/android/bluetooth/le/ScanRecord.html#getAdvertiseFlags()
+      advertisement_flags == -1 ? base::nullopt
+                                : base::make_optional(advertisement_flags),
       advertised_bluetooth_uuids,
       // Android uses INT32_MIN to indicate no Advertised Tx Power.
       // https://developer.android.com/reference/android/bluetooth/le/ScanRecord.html#getTxPowerLevel()

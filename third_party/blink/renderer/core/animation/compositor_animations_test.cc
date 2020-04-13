@@ -349,6 +349,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
             compositor_keyframe_value_(
                 MakeGarbageCollected<CompositorKeyframeDouble>(offset)) {}
       bool IsNeutral() const final { return true; }
+      bool IsRevert() const final { return false; }
       PropertySpecificKeyframe* CloneWithOffset(double) const final {
         NOTREACHED();
         return nullptr;

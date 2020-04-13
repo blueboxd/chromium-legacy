@@ -181,8 +181,8 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, DISABLED_ShowPageActionPopup) {
 
   {
     ResultCatcher catcher;
-    ExtensionActionAPI::Get(browser()->profile())->ShowExtensionActionPopup(
-        extension, browser(), true);
+    ExtensionActionAPI::Get(browser()->profile())
+        ->ShowExtensionActionPopupForAPICall(extension, browser());
     ASSERT_TRUE(catcher.GetNextResult());
   }
 }

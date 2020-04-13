@@ -16,11 +16,12 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
 import org.chromium.components.browser_ui.widget.text.AccessibleTextView;
 
@@ -39,7 +40,7 @@ public class ReaderModeInfoBar extends InfoBar {
         @Override
         public void onClick(View v) {
             if (getReaderModeManager() == null || mIsHiding) return;
-            getReaderModeManager().activateReaderMode();
+            getReaderModeManager().activateReaderMode(getTab());
         }
     };
 
@@ -101,15 +102,23 @@ public class ReaderModeInfoBar extends InfoBar {
         ReaderModeInfoBarJni.get().create(tab);
     }
 
+    /** @return The tab that this infobar is showing for. */
+    private Tab getTab() {
+        return ReaderModeInfoBarJni.get().getTab(getNativeInfoBarPtr(), ReaderModeInfoBar.this);
+    }
+
     /**
      * @return The {@link ReaderModeManager} for this infobar.
      */
     private ReaderModeManager getReaderModeManager() {
         if (getNativeInfoBarPtr() == 0) return null;
-        Tab tab = ReaderModeInfoBarJni.get().getTab(getNativeInfoBarPtr(), ReaderModeInfoBar.this);
 
-        if (tab == null || ((TabImpl) tab).getActivity() == null) return null;
-        return ((TabImpl) tab).getActivity().getReaderModeManager();
+        // TODO(1069815): Once ReaderModeManager is a tab helper, replace this cast and pull from
+        //                tab directly and remove any use of the activity.
+        ChromeActivity activity = (ChromeActivity) TabUtils.getActivity(getTab());
+
+        if (activity == null) return null;
+        return activity.getReaderModeManager();
     }
 
     /**

@@ -96,8 +96,6 @@ std::unique_ptr<ash::UserSession> UserToUserSession(const User& user) {
   session->user_info.has_gaia_account = user.has_gaia_account();
   session->user_info.should_display_managed_ui =
       profile && chrome::ShouldDisplayManagedUi(profile);
-  session->user_info.service_instance_group =
-      content::BrowserContext::GetServiceInstanceGroupFor(profile);
   session->user_info.is_new_profile = profile->IsNewProfile();
 
   session->user_info.avatar.image = user.GetImage();

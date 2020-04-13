@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_navigation_observer.h"
 #include "chrome/browser/chromeos/login/test/scoped_policy_update.h"
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
@@ -411,6 +412,28 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
   EXPECT_FALSE(IsErrorPageBeingShownInWebContents(web_contents1));
   EXPECT_TRUE(IsErrorPageBeingShownInWebContents(web_contents2));
   EXPECT_TRUE(IsErrorPageBeingShownInWebContents(web_contents3));
+}
+
+IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest, WebContentTitleSet) {
+  GURL url = embedded_test_server()->GetURL(kExampleHost,
+                                            "/supervised_user/simple.html");
+  NavigateParams params(browser(), url,
+                        ui::PageTransition::PAGE_TRANSITION_LINK);
+  // Navigates and waits for loading to finish.
+  ui_test_utils::NavigateToURL(&params);
+  auto* web_contents = params.navigated_or_inserted_contents;
+  auto* navigation_observer =
+      chromeos::app_time::WebTimeNavigationObserver::FromWebContents(
+          web_contents);
+  base::string16 title = web_contents->GetTitle();
+  EXPECT_EQ(title, navigation_observer->previous_title());
+
+  LoadFinishedWaiter waiter(web_contents, url);
+  BlockWeb();
+  waiter.Wait();
+
+  EXPECT_TRUE(IsErrorPageBeingShownInWebContents(web_contents));
+  EXPECT_EQ(web_contents->GetTitle(), title);
 }
 
 // TODO(yilkal): Add WhitelistedSchemeNotBlocked test for  chrome://settings

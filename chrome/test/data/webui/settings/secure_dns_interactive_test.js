@@ -398,8 +398,7 @@ suite('SettingsSecureDnsInteractive', function() {
 
     // Make the template valid, but don't change the radio button yet.
     secureDnsInput.focus();
-    secureDnsInput.value =
-        `${validEntry} ${invalidEntry} https://dns.ex.another/dns-query`;
+    secureDnsInput.value = `${validEntry} https://dns.ex.another/dns-query`;
     testBrowserProxy.setValidEntry(validEntry);
     testBrowserProxy.setProbeSuccess(true);
     secureDnsInput.blur();
@@ -433,7 +432,7 @@ suite('SettingsSecureDnsInteractive', function() {
         settings.SecureDnsMode.SECURE,
         testElement.prefs.dns_over_https.mode.value);
     assertEquals(
-        `${validEntry} ${invalidEntry} https://dns.ex.another/dns-query`,
+        `${validEntry} https://dns.ex.another/dns-query`,
         testElement.prefs.dns_over_https.templates.value);
 
     // Make sure the input field updates with a change in the underlying

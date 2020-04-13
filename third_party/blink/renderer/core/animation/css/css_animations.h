@@ -61,6 +61,7 @@ class CORE_EXPORT CSSAnimations final {
   static bool IsAnimationAffectingProperty(const CSSProperty&);
   static bool IsAffectedByKeyframesFromScope(const Element&, const TreeScope&);
   static bool IsAnimatingCustomProperties(const ElementAnimations*);
+  static bool IsAnimatingRevert(const ElementAnimations*);
   static void CalculateAnimationUpdate(CSSAnimationUpdate&,
                                        const Element* animating_element,
                                        Element&,

@@ -122,6 +122,17 @@ class ContentTranslateDriver : public TranslateDriver,
       const translate::LanguageDetectionDetails& details,
       bool page_needs_translation) override;
 
+ protected:
+  const base::ObserverList<Observer, true>::Unchecked& observer_list() const {
+    return observer_list_;
+  }
+
+  TranslateManager* translate_manager() const { return translate_manager_; }
+
+  language::UrlLanguageHistogram* language_histogram() const {
+    return language_histogram_;
+  }
+
  private:
   void OnPageAway(int page_seq_no);
 

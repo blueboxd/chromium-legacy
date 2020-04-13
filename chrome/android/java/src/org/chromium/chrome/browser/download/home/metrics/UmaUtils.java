@@ -179,13 +179,6 @@ public class UmaUtils {
             @Filters.FilterType
             int filterType = Filters.fromOfflineItem(item);
 
-            if (filterType == Filters.FilterType.OTHER) {
-                RecordHistogram.recordEnumeratedHistogram(
-                        "Android.DownloadManager.OtherExtensions.Share",
-                        FileExtensions.getExtension(item.filePath),
-                        FileExtensions.Type.NUM_ENTRIES);
-            }
-
             RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Share.FileTypes",
                     filterType, Filters.FilterType.NUM_ENTRIES);
         }

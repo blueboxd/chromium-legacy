@@ -246,7 +246,6 @@ void BrowserAccessibilityManager::FireFocusEventsIfNeeded() {
   if (!focus)
     return;
 
-  DCHECK(focus->instance_active());
   // Don't fire focus events if the window itself doesn't have focus.
   // Bypass this check for some tests.
   if (!never_suppress_or_delay_events_for_testing_ &&
@@ -876,13 +875,13 @@ void BrowserAccessibilityManager::ClearAccessibilityFocus(
   delegate_->AccessibilityPerformAction(action_data);
 }
 
-void BrowserAccessibilityManager::HitTest(const gfx::Point& page_point) const {
+void BrowserAccessibilityManager::HitTest(const gfx::Point& frame_point) const {
   if (!delegate_)
     return;
 
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kHitTest;
-  action_data.target_point = page_point;
+  action_data.target_point = frame_point;
   action_data.hit_test_event_to_fire = ax::mojom::Event::kHover;
   delegate_->AccessibilityPerformAction(action_data);
 }
@@ -1388,12 +1387,8 @@ ui::AXNode* BrowserAccessibilityManager::GetParentNodeFromParentTreeAsAXNode()
 BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager()
     const {
   BrowserAccessibility* parent = GetParentNodeFromParentTree();
-  if (parent) {
-    DCHECK(parent->instance_active())
-        << "The BrowserAccessibility object in the parent tree that is hosting "
-           "this tree should not have been destroyed before its child tree.";
+  if (parent)
     return parent->manager() ? parent->manager()->GetRootManager() : nullptr;
-  }
 
   if (IsRootTree())
     return const_cast<BrowserAccessibilityManager*>(this);
@@ -1479,6 +1474,7 @@ BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
   if (delegate_) {
     // This triggers an asynchronous request to compute the true object that's
     // under the point.
+    // TODO(crbug.com/2140198): this should take page scale factor into account
     HitTest(blink_screen_point - screen_view_bounds.OffsetFromOrigin());
 
     // Unfortunately we still have to return an answer synchronously because

@@ -80,8 +80,8 @@ class COMPONENT_EXPORT(URL) SchemeHostPort {
 
   // Creates a (scheme, host, port) tuple. |host| must be a canonicalized
   // A-label (that is, '☃.net' must be provided as 'xn--n3h.net'). |scheme|
-  // must be a standard scheme. |port| must not be 0, unless |scheme| does not
-  // support ports (e.g. 'file'). In that case, |port| must be 0.
+  // must be a standard scheme. |port| must be 0 if |scheme| does not support
+  // ports (e.g. 'file').
   //
   // Copies the data in |scheme| and |host|.
   SchemeHostPort(base::StringPiece scheme,

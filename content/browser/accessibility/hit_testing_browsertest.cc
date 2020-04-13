@@ -23,14 +23,50 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 #include "ui/display/display_switches.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace content {
 
+// First parameter of the tuple = device scale factor
+// Second parameter = whether use-zoom-for-dsf is enabled
+using AccessibilityZoomTestParam = std::tuple<double, bool>;
+
 class AccessibilityHitTestingBrowserTest
-    : public AccessibilityContentBrowserTest {
+    : public AccessibilityContentBrowserTest,
+      public ::testing::WithParamInterface<AccessibilityZoomTestParam> {
  public:
   AccessibilityHitTestingBrowserTest() = default;
   ~AccessibilityHitTestingBrowserTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    double device_scale_factor;
+    bool use_zoom_for_dsf;
+    std::tie(device_scale_factor, use_zoom_for_dsf) = GetParam();
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor,
+        base::StringPrintf("%.2f", device_scale_factor));
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kEnableUseZoomForDSF, use_zoom_for_dsf ? "true" : "false");
+  }
+
+  struct TestPassToString {
+    std::string operator()(
+        const ::testing::TestParamInfo<AccessibilityZoomTestParam>& info)
+        const {
+      double device_scale_factor;
+      bool use_zoom_for_dsf;
+      std::tie(device_scale_factor, use_zoom_for_dsf) = info.param;
+      std::string name = base::StringPrintf("ZoomFactor%g_UseZoomForDSF%s",
+                                            device_scale_factor,
+                                            use_zoom_for_dsf ? "On" : "Off");
+
+      // The test harness only allows alphanumeric characters and underscores
+      // in param names.
+      std::string sanitized_name;
+      base::ReplaceChars(name, ".", "_", &sanitized_name);
+      return sanitized_name;
+    }
+  };
 
   BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() {
     WebContentsImpl* web_contents =
@@ -52,22 +88,25 @@ class AccessibilityHitTestingBrowserTest
   // CSS to page pixels, i.e. before view offset.
   // if UseZoomForDSF is disabled, device scale factor gets applied going from
   // screen to physical pixels, i.e. after view offset.
-  gfx::Point CSSToPagePoint(gfx::Point css_point) {
+  gfx::Point CSSToFramePoint(gfx::Point css_point) {
     gfx::Point page_point;
     if (IsUseZoomForDSFEnabled())
       page_point = ScaleToRoundedPoint(css_point, GetDeviceScaleFactor());
     else
       page_point = css_point;
 
-    return page_point;
+    gfx::Point frame_point = page_point - scroll_offset_;
+    return frame_point;
   }
 
   gfx::Point CSSToPhysicalPixelPoint(gfx::Point css_point) {
-    gfx::Point page_point = CSSToPagePoint(css_point);
+    gfx::Point frame_point = CSSToFramePoint(css_point);
+    gfx::Point viewport_point =
+        gfx::ScaleToRoundedPoint(frame_point, page_scale_);
 
     gfx::Rect screen_view_bounds = GetViewBoundsInScreenCoordinates();
     gfx::Point screen_point =
-        page_point + screen_view_bounds.OffsetFromOrigin();
+        viewport_point + screen_view_bounds.OffsetFromOrigin();
 
     gfx::Point physical_pixel_point;
     if (IsUseZoomForDSFEnabled()) {
@@ -89,7 +128,7 @@ class AccessibilityHitTestingBrowserTest
         shell()->web_contents(), ui::kAXModeComplete, event_to_fire);
     ui::AXActionData action_data;
     action_data.action = ax::mojom::Action::kHitTest;
-    action_data.target_point = CSSToPagePoint(point);
+    action_data.target_point = CSSToFramePoint(point);
     action_data.hit_test_event_to_fire = event_to_fire;
     manager->delegate()->AccessibilityPerformAction(action_data);
     event_waiter.WaitForNotification();
@@ -138,7 +177,7 @@ class AccessibilityHitTestingBrowserTest
     return result;
   }
 
-  ui::AXPlatformNodeBase* CallNearestLeafNode(const gfx::Point& page_point) {
+  BrowserAccessibility* CallNearestLeafNode(const gfx::Point& page_point) {
     gfx::Point screen_point = CSSToPhysicalPixelPoint(page_point);
     BrowserAccessibilityManager* manager =
         static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -149,14 +188,18 @@ class AccessibilityHitTestingBrowserTest
     // will call CachingAsyncHitTest.
     AccessibilityNotificationWaiter hover_waiter(
         shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kHover);
-    ui::AXPlatformNodeBase* result = nullptr;
+    ui::AXPlatformNodeBase* platform_node = nullptr;
     if (manager->GetRoot()->GetAXPlatformNode()) {
-      result = static_cast<ui::AXPlatformNodeBase*>(
-                   manager->GetRoot()->GetAXPlatformNode())
-                   ->NearestLeafToPoint(screen_point);
+      platform_node = static_cast<ui::AXPlatformNodeBase*>(
+                          manager->GetRoot()->GetAXPlatformNode())
+                          ->NearestLeafToPoint(screen_point);
     }
     hover_waiter.WaitForNotification();
-    return result;
+    if (platform_node) {
+      return BrowserAccessibility::FromAXPlatformNodeDelegate(
+          platform_node->GetDelegate());
+    }
+    return nullptr;
   }
 
   RenderWidgetHostImpl* GetRenderWidgetHost() {
@@ -170,6 +213,38 @@ class AccessibilityHitTestingBrowserTest
     MainThreadFrameObserver observer(GetRenderWidgetHost());
     observer.Wait();
   }
+
+  void SimulatePinchZoom(float desired_page_scale) {
+    RenderFrameSubmissionObserver observer(shell()->web_contents());
+    AccessibilityNotificationWaiter accessibility_waiter(
+        shell()->web_contents(), ui::AXMode(), ax::mojom::Event::kNone);
+
+    const gfx::Rect contents_rect =
+        shell()->web_contents()->GetContainerBounds();
+    const gfx::Point pinch_position(contents_rect.x(), contents_rect.y());
+    SimulateGesturePinchSequence(shell()->web_contents(), pinch_position,
+                                 desired_page_scale,
+                                 blink::WebGestureDevice::kTouchscreen);
+
+    // Wait for the gesture to be reflected, then make a note of the new scale
+    // factor and any scroll offset that may have been introduced.
+    observer.WaitForPageScaleFactor(desired_page_scale, 0);
+    const cc::RenderFrameMetadata& render_frame_metadata =
+        observer.LastRenderFrameMetadata();
+    DCHECK(render_frame_metadata.page_scale_factor == desired_page_scale);
+    page_scale_ = render_frame_metadata.page_scale_factor;
+    if (render_frame_metadata.root_scroll_offset)
+      scroll_offset_ = gfx::ToRoundedVector2d(
+          render_frame_metadata.root_scroll_offset.value());
+    else
+      scroll_offset_ = gfx::Vector2d();
+
+    // Ensure we get an accessibility update reflecting the new scale factor.
+    accessibility_waiter.WaitForNotification();
+  }
+
+  float page_scale_ = 1.0f;
+  gfx::Vector2d scroll_offset_;
 };
 
 class AccessibilityHitTestingCrossProcessBrowserTest
@@ -180,6 +255,7 @@ class AccessibilityHitTestingCrossProcessBrowserTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IsolateAllSitesForTesting(command_line);
+    AccessibilityHitTestingBrowserTest::SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
@@ -189,47 +265,19 @@ class AccessibilityHitTestingCrossProcessBrowserTest
   }
 };
 
-using AccessibilityZoomTestParam = std::tuple<double, bool>;
-
-class AccessibilityHitTestingZoomBrowserTest
-    : public AccessibilityHitTestingBrowserTest,
-      public ::testing::WithParamInterface<AccessibilityZoomTestParam> {
- public:
-  AccessibilityHitTestingZoomBrowserTest() = default;
-  ~AccessibilityHitTestingZoomBrowserTest() override = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    double device_scale_factor;
-    bool use_zoom_for_dsf;
-    std::tie(device_scale_factor, use_zoom_for_dsf) = GetParam();
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kForceDeviceScaleFactor,
-        base::StringPrintf("%.2f", device_scale_factor));
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableUseZoomForDSF, use_zoom_for_dsf ? "true" : "false");
-  }
-
-  struct TestPassToString {
-    std::string operator()(
-        const ::testing::TestParamInfo<AccessibilityZoomTestParam>& info)
-        const {
-      double device_scale_factor;
-      bool use_zoom_for_dsf;
-      std::tie(device_scale_factor, use_zoom_for_dsf) = info.param;
-      return base::StringPrintf("ZoomFactor%g_UseZoomForDSF%s",
-                                device_scale_factor,
-                                use_zoom_for_dsf ? "On" : "Off");
-    }
-  };
-};
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    AccessibilityHitTestingBrowserTest,
+    ::testing::Combine(::testing::Values(1, 2), ::testing::Bool()),
+    AccessibilityHitTestingBrowserTest::TestPassToString());
 
 INSTANTIATE_TEST_SUITE_P(
     All,
-    AccessibilityHitTestingZoomBrowserTest,
+    AccessibilityHitTestingCrossProcessBrowserTest,
     ::testing::Combine(::testing::Values(1, 2), ::testing::Bool()),
-    AccessibilityHitTestingZoomBrowserTest::TestPassToString());
+    AccessibilityHitTestingBrowserTest::TestPassToString());
 
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingZoomBrowserTest,
+IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
                        CachingAsyncHitTest) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -247,32 +295,37 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingZoomBrowserTest,
                                                 "rectA");
 
   // Test a hit on a rect in the main frame.
-  gfx::Point rect2_point(49, 20);
-  BrowserAccessibility* hit_node = CallCachingAsyncHitTest(rect2_point);
-  BrowserAccessibility* expected_node =
-      FindNode(ax::mojom::Role::kGenericContainer, "rect2");
+  {
+    gfx::Point rect_2_point(49, 20);
+    BrowserAccessibility* hit_node = CallCachingAsyncHitTest(rect_2_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rect2");
 
-  // Compare several properties so that we generate rich log output if the test
-  // fails.
-  EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-  EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-  EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-            hit_node->GetClippedScreenBoundsRect());
+    // Compare several properties so that we generate rich log output if the
+    // test fails.
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
+  }
 
   // Test a hit on a rect in the iframe.
-  gfx::Point rectB_point(79, 79);
-  hit_node = CallCachingAsyncHitTest(rectB_point);
-  expected_node = FindNode(ax::mojom::Role::kGenericContainer, "rectB");
+  {
+    gfx::Point rect_b_point(79, 79);
+    BrowserAccessibility* hit_node = CallCachingAsyncHitTest(rect_b_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rectB");
 
-  // Compare several properties so that we generate rich log output if the test
-  // fails.
-  EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-  EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-  EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-            hit_node->GetClippedScreenBoundsRect());
+    // Compare several properties so that we generate rich log output if the
+    // test fails.
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
+  }
 }
 
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingZoomBrowserTest, HitTest) {
+IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest, HitTest) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
@@ -289,32 +342,48 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingZoomBrowserTest, HitTest) {
                                                 "rectA");
 
   // Test a hit on a rect in the main frame.
-  gfx::Point rect2_point(49, 20);
-  BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect2_point);
-  BrowserAccessibility* expected_node =
-      FindNode(ax::mojom::Role::kGenericContainer, "rect2");
+  {
+    gfx::Point rect_2_point(49, 20);
+    BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect_2_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rect2");
 
-  // Compare several properties so that we generate rich log output if the test
-  // fails.
-  EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-  EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-  EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-            hit_node->GetClippedScreenBoundsRect());
+    // Compare several properties so that we generate rich log output if the
+    // test fails.
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
+  }
 
   // Test a hit on a rect in the iframe.
-  gfx::Point rectB_point(79, 79);
-  hit_node = HitTestAndWaitForResult(rectB_point);
-  expected_node = FindNode(ax::mojom::Role::kGenericContainer, "rectB");
+  {
+    gfx::Point rect_b_point(79, 79);
+    BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect_b_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rectB");
 
-  // Compare several properties so that we generate rich log output if the test
-  // fails.
-  EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-  EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-  EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-            hit_node->GetClippedScreenBoundsRect());
+    // Compare several properties so that we generate rich log output if the
+    // test fails.
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
+
+    // Test with a different event.
+    hit_node = HitTestAndWaitForResultWithEvent(rect_b_point,
+                                                ax::mojom::Event::kAlert);
+
+    // Compare several properties so that we generate rich log output if the
+    // test fails.
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
+IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
                        HitTestOutsideDocumentBoundsReturnsRoot) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
@@ -340,84 +409,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   ASSERT_EQ(ax::mojom::Role::kRootWebArea, hit_node->GetRole());
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
-                       HitTestingInIframes) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
-
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-  GURL url(embedded_test_server()->GetURL(
-      "/accessibility/html/iframe-coordinates.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-  waiter.WaitForNotification();
-
-  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
-                                                "Ordinary Button");
-  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
-                                                "Scrolled Button");
-
-  // Send a series of hit test requests, and for each one
-  // wait for the hover event in response, verifying we hit the
-  // correct object.
-
-  // (26, 26) -> "Button"
-  BrowserAccessibility* hit_node;
-  hit_node = HitTestAndWaitForResult(gfx::Point(26, 26));
-  ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  ASSERT_EQ("Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (50, 50) -> "Button"
-  hit_node = HitTestAndWaitForResult(gfx::Point(50, 50));
-  ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  ASSERT_EQ("Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (50, 305) -> div in first iframe
-  hit_node = HitTestAndWaitForResult(gfx::Point(50, 305));
-  ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
-
-  // (50, 350) -> "Ordinary Button"
-  hit_node = HitTestAndWaitForResult(gfx::Point(50, 350));
-  ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  ASSERT_EQ("Ordinary Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (50, 455) -> "Scrolled Button"
-  hit_node = HitTestAndWaitForResult(gfx::Point(50, 455));
-  ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  ASSERT_EQ("Scrolled Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (50, 505) -> div in second iframe
-  hit_node = HitTestAndWaitForResult(gfx::Point(50, 505));
-  ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
-
-  // (50, 505) -> div in second iframe
-  // but with a different event
-  hit_node = HitTestAndWaitForResultWithEvent(gfx::Point(50, 505),
-                                              ax::mojom::Event::kAlert);
-  ASSERT_NE(hit_node, nullptr);
-  ASSERT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
-}
-
-IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingCrossProcessBrowserTest,
-                       HitTestingInCrossProcessIframes) {
+IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingCrossProcessBrowserTest,
+                       HitTestingInCrossProcessIframeWithScrolling) {
   GURL url_a(embedded_test_server()->GetURL(
-      "a.com", "/accessibility/hit_testing/hit_testing_a.html"));
+      "a.com", "/accessibility/hit_testing/simple_rectangles.html"));
   GURL url_b(embedded_test_server()->GetURL(
-      "b.com", "/accessibility/hit_testing/hit_testing_b.html"));
-  GURL url_c(embedded_test_server()->GetURL(
-      "c.com", "/accessibility/hit_testing/hit_testing_c.html"));
+      "b.com",
+      "/accessibility/hit_testing/simple_rectangles_scrolling_iframe.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
@@ -427,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingCrossProcessBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   waiter.WaitForNotification();
   WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
-                                                "Button A");
+                                                "rectA");
 
   auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
@@ -437,97 +435,29 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingCrossProcessBrowserTest,
   NavigateFrameToURL(child, url_b);
   EXPECT_EQ(url_b, child->current_url());
   WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
-                                                "Button B");
-  ASSERT_EQ(1U, child->child_count());
-
-  FrameTreeNode* grand_child = child->child_at(0);
-  NavigateFrameToURL(grand_child, url_c);
-  EXPECT_EQ(url_c, grand_child->current_url());
-  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
-                                                "Button C");
+                                                "rectF");
 
   FrameTreeVisualizer visualizer;
   EXPECT_EQ(
-      " Site A ------------ proxies for B C\n"
-      "   +--Site B ------- proxies for A C\n"
-      "        +--Site C -- proxies for A B\n"
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
       "Where A = http://a.com/\n"
-      "      B = http://b.com/\n"
-      "      C = http://c.com/",
+      "      B = http://b.com/",
       visualizer.DepictFrameTree(root));
-
-  {
-    // (26, 26) -> "Button A"
-    BrowserAccessibility* hit_node;
-    hit_node = HitTestAndWaitForResult(gfx::Point(26, 26));
-    ASSERT_TRUE(hit_node != nullptr);
-    ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-    ASSERT_EQ("Button A",
-              hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-  }
-
-  {
-    // (26, 176) -> "Button B"
-    // 176 = height of div in parent (150), plus button offset (26).
-    BrowserAccessibility* hit_node;
-    hit_node = HitTestAndWaitForResult(gfx::Point(26, 176));
-    ASSERT_TRUE(hit_node != nullptr);
-    ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-    ASSERT_EQ("Button B",
-              hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-  }
-
-  {
-    // (26, 326) -> "Button C"
-    // 326 = 2x height of div in ancestors (300), plus button offset (26).
-    BrowserAccessibility* hit_node;
-    hit_node = HitTestAndWaitForResult(gfx::Point(26, 326));
-    ASSERT_TRUE(hit_node != nullptr);
-    ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-    ASSERT_EQ("Button C",
-              hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingCrossProcessBrowserTest,
-                       HitTestingInScrolledCrossProcessIframe) {
-  GURL url_a(embedded_test_server()->GetURL(
-      "a.com", "/accessibility/hit_testing/hit_testing_a.html"));
-  GURL url_b(embedded_test_server()->GetURL(
-      "b.com", "/accessibility/hit_testing/hit_testing_b_tall.html"));
-
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-
-  EXPECT_TRUE(NavigateToURL(shell(), url_a));
-  waiter.WaitForNotification();
-  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
-                                                "Button A");
-
-  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
-  ASSERT_EQ(1U, root->child_count());
-
-  FrameTreeNode* child = root->child_at(0);
-  NavigateFrameToURL(child, url_b);
-  EXPECT_EQ(url_b, child->current_url());
-  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
-                                                "Button B");
-  ASSERT_EQ(1U, child->child_count());
 
   // Before scrolling.
   {
-    // (26, 476) -> "Button B"
-    // 476 = height of div in parent (150), plus the placeholder div height
-    // (300), plus button offset (26).
-    BrowserAccessibility* hit_node;
-    hit_node = HitTestAndWaitForResult(gfx::Point(26, 476));
-    ASSERT_TRUE(hit_node != nullptr);
-    ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-    ASSERT_EQ("Button B",
-              hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+    gfx::Point rect_b_point(79, 79);
+    BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect_b_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rectB");
+
+    // Compare several properties so that we generate rich log output if the
+    // test fails.
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
   }
 
   // Scroll div up 100px.
@@ -543,19 +473,21 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingCrossProcessBrowserTest,
 
   // After scrolling.
   {
-    // (26, 376) -> "Button B"
-    // 376 = height of div in parent (150), plus the placeholder div height
-    // (300), plus button offset (26), less the scroll delta.
-    BrowserAccessibility* hit_node;
-    hit_node = HitTestAndWaitForResult(gfx::Point(26, 476 - scroll_delta));
-    ASSERT_TRUE(hit_node != nullptr);
-    ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-    ASSERT_EQ("Button B",
-              hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+    gfx::Point rect_g_point(79, 89);
+    BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect_g_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rectG");
+
+    // Compare several properties so that we generate rich log output if the
+    // test fails.
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
   }
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
+IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
                        CachingAsyncHitTestingInIframes) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -565,14 +497,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kLoadComplete);
   GURL url(embedded_test_server()->GetURL(
-      "/accessibility/hit_testing/hit_testing.html"));
+      "/accessibility/hit_testing/simple_rectangles_with_curtain.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
-                                                "Ordinary Button");
-  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
-                                                "Scrolled Button");
+                                                "rectA");
 
   // For each point we try, the first time we call CachingAsyncHitTest it
   // should FAIL and return the wrong object, because this test page has
@@ -581,150 +511,44 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   // return the correct result (since CallCachingAsyncHitTest waits for the
   // HOVER event to be received).
 
-  // (50, 50) -> "Button"
-  BrowserAccessibility* hit_node;
-  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 50));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
-  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 50));
-  EXPECT_EQ("Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+  // Test a hit on a rect in the main frame.
+  {
+    // First call should land on the wrong element.
+    gfx::Point rect_2_point(49, 20);
+    BrowserAccessibility* hit_node = CallCachingAsyncHitTest(rect_2_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rect2");
+    EXPECT_NE(expected_node->GetName(), hit_node->GetName());
 
-  // (50, 305) -> div in first iframe
-  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 305));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_NE(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
-  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 305));
-  EXPECT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
+    // Call again and we should get the correct element.
+    hit_node = CallCachingAsyncHitTest(rect_2_point);
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
+  }
 
-  // (50, 350) -> "Ordinary Button"
-  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 350));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
-  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 350));
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  EXPECT_EQ("Ordinary Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+  // Test a hit on a rect in the iframe.
+  {
+    // First call should land on the wrong element.
+    gfx::Point rect_b_point(79, 79);
+    BrowserAccessibility* hit_node = CallCachingAsyncHitTest(rect_b_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rectB");
+    EXPECT_NE(expected_node->GetName(), hit_node->GetName());
 
-  // (50, 455) -> "Scrolled Button"
-  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 455));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
-  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 455));
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  EXPECT_EQ("Scrolled Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (50, 505) -> div in second iframe
-  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_NE(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
-  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
-  EXPECT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
+    // Call again and we should get the correct element.
+    hit_node = CallCachingAsyncHitTest(rect_b_point);
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
+  }
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_MACOSX)
-// Disabled due to flake: https://crbug.com/1069850
-IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
-                       DISABLED_HitTestingWithPinchZoom) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
-
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-
-  const char url_str[] =
-      "data:text/html,"
-      "<!doctype html>"
-      "<html>"
-      "<head><title>Accessibility Test</title>"
-      "<style>body {margin: 0px;}"
-      "button {display: block; height: 50px; width: 50px}</style>"
-      "</head>"
-      "<body>"
-      "<button>Button 1</button>"
-      "<button>Button 2</button>"
-      "</body></html>";
-
-  GURL url(url_str);
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-  SynchronizeThreads();
-  waiter.WaitForNotification();
-
-  BrowserAccessibility* hit_node;
-
-  // Use a tap event instead of a hittest to make sure that we are using
-  // px as input, rather than dips.
-
-  // (10, 10) -> "Button 1"
-  hit_node = TapAndWaitForResult(gfx::Point(10, 10));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  EXPECT_EQ("Button 1",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (60, 60) -> No button there, hits the ignored <body> node
-  hit_node = TapAndWaitForResult(gfx::Point(60, 60));
-  EXPECT_NE(nullptr, hit_node);
-  EXPECT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
-  EXPECT_TRUE(hit_node->HasState(ax::mojom::State::kIgnored));
-  EXPECT_EQ("body",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag));
-
-  // (10, 60) -> "Button 2"
-  hit_node = TapAndWaitForResult(gfx::Point(10, 60));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  EXPECT_EQ("Button 2",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  content::TestPageScaleObserver scale_observer(shell()->web_contents());
-  const gfx::Rect contents_rect = shell()->web_contents()->GetContainerBounds();
-  const gfx::Point pinch_position(contents_rect.x(), contents_rect.y());
-  SimulateGesturePinchSequence(shell()->web_contents(), pinch_position, 2.0f,
-                               blink::WebGestureDevice::kTouchscreen);
-  scale_observer.WaitForPageScaleUpdate();
-
-  // (10, 10) -> "Button 1"
-  hit_node = TapAndWaitForResult(gfx::Point(10, 10));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  EXPECT_EQ("Button 1",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (60, 60) -> "Button 1"
-  hit_node = TapAndWaitForResult(gfx::Point(60, 60));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  EXPECT_EQ("Button 1",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (10, 60) -> "Button 1"
-  hit_node = TapAndWaitForResult(gfx::Point(10, 60));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  EXPECT_EQ("Button 1",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (10, 110) -> "Button 2"
-  hit_node = TapAndWaitForResult(gfx::Point(10, 110));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  EXPECT_EQ("Button 2",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (190, 190) -> "Button 2"
-  hit_node = TapAndWaitForResult(gfx::Point(90, 190));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  EXPECT_EQ("Button 2",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-}
-
-IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
-                       HitTestingWithPinchZoomAndIframes) {
+IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
+                       CachingAsyncHitTestWithPinchZoom) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
@@ -734,51 +558,99 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                                          ax::mojom::Event::kLoadComplete);
 
   GURL url(embedded_test_server()->GetURL(
-      "/accessibility/html/iframe-coordinates.html"));
+      "/accessibility/hit_testing/simple_rectangles.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
   SynchronizeThreads();
   waiter.WaitForNotification();
 
   WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
-                                                "Ordinary Button");
+                                                "rectA");
+
+  // Apply pinch zoom.
+  SimulatePinchZoom(1.25f);
+
+  // Test a hit on a rect in the main frame.
+  {
+    gfx::Point rect_2_point(49, 20);
+    BrowserAccessibility* hit_node = CallCachingAsyncHitTest(rect_2_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rect2");
+
+    // Compare several properties so that we generate rich log output if the
+    // test fails.
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
+  }
+
+  // Test a hit on a rect in the iframe.
+  {
+    gfx::Point rect_b_point(79, 79);
+    BrowserAccessibility* hit_node = CallCachingAsyncHitTest(rect_b_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rectB");
+
+    // Compare several properties so that we generate rich log output if the
+    // test fails.
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
+                       HitTestWithPinchZoom) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+
+  GURL url(embedded_test_server()->GetURL(
+      "/accessibility/hit_testing/simple_rectangles.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  SynchronizeThreads();
+  waiter.WaitForNotification();
+
   WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
-                                                "Scrolled Button");
+                                                "rectA");
 
-  content::TestPageScaleObserver scale_observer(shell()->web_contents());
-  const gfx::Rect contents_rect = shell()->web_contents()->GetContainerBounds();
-  const gfx::Point pinch_position(contents_rect.x(), contents_rect.y());
+  // Apply pinch zoom.
+  SimulatePinchZoom(1.25f);
 
-  SimulateGesturePinchSequence(shell()->web_contents(), pinch_position, 1.25f,
-                               blink::WebGestureDevice::kTouchscreen);
-  scale_observer.WaitForPageScaleUpdate();
+  // Test a hit on a rect in the main frame.
+  {
+    gfx::Point rect_2_point(49, 20);
+    BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect_2_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rect2");
 
-  BrowserAccessibility* hit_node;
+    // Compare several properties so that we generate rich log output if the
+    // test fails.
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
+  }
 
-  // (26, 26) -> No button because of pinch.
-  hit_node = TapAndWaitForResult(gfx::Point(26, 26));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
+  // Test a hit on a rect in the iframe.
+  {
+    gfx::Point rect_b_point(79, 79);
+    BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect_b_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rectB");
 
-  // (63, 63) -> "Button"
-  hit_node = TapAndWaitForResult(gfx::Point(63, 63));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  EXPECT_EQ("Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (63, 438) -> "Ordinary Button"
-  hit_node = TapAndWaitForResult(gfx::Point(63, 438));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  EXPECT_EQ("Ordinary Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (63, 569) -> "Scrolled Button"
-  hit_node = TapAndWaitForResult(gfx::Point(63, 569));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  EXPECT_EQ("Scrolled Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+    // Compare several properties so that we generate rich log output if the
+    // test fails.
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
+  }
 }
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_MACOSX)
@@ -787,7 +659,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
 // Chrome OS or Chromecast)
 #if defined(OS_WIN) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_CHROMECAST))
-IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
+IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
                        NearestLeafInIframes) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -797,77 +669,42 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kLoadComplete);
   GURL url(embedded_test_server()->GetURL(
-      "/accessibility/hit_testing/hit_testing.html"));
+      "/accessibility/hit_testing/text_ranges.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
-                                                "Ordinary Button");
-  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
-                                                "Scrolled Button");
+                                                "rectA");
 
-  // For each point we try, the first time we call CachingAsyncHitTest it
-  // should FAIL and return the wrong object, because this test page has
-  // been designed to confound local synchronous hit testing using
-  // z-indexes. However, calling CachingAsyncHitTest a second time should
-  // return the correct result (since CallCachingAsyncHitTest waits for the
-  // HOVER event to be received). CachingAsyncHitTest is called by
-  // GetNearestLeaf
+  // Test a hit on text in the main frame.
+  {
+    gfx::Point rect_2_point(70, 20);
+    BrowserAccessibility* hit_node = CallNearestLeafNode(rect_2_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kStaticText, "2");
 
-  // (50, 50) -> "Button"
-  ui::AXPlatformNodeBase* hit_node;
-  hit_node = CallNearestLeafNode(gfx::Point(50, 50));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetData().role);
-  hit_node = CallNearestLeafNode(gfx::Point(50, 50));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ("Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+    // Compare several properties so that we generate rich log output if the
+    // test fails.
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
+  }
 
-  // (280, 50) -> "Button" is still the closest node to the cursor.
-  hit_node = CallNearestLeafNode(gfx::Point(280, 50));
-  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetData().role);
-  hit_node = CallNearestLeafNode(gfx::Point(280, 50));
-  EXPECT_EQ("Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+  // Test a hit on text in the iframe.
+  {
+    gfx::Point rect_b_point(100, 100);
+    BrowserAccessibility* hit_node = CallNearestLeafNode(rect_b_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kStaticText, "B");
 
-  // (50, 305) -> "Ordinary Button" is the closest leaf node.
-  hit_node = CallNearestLeafNode(gfx::Point(50, 305));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetData().role);
-  hit_node = CallNearestLeafNode(gfx::Point(50, 305));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetData().role);
-  EXPECT_EQ("Ordinary Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (50, 350) -> "Ordinary Button". As we are still within the previous cached
-  // hit test's bounds, the subsequent call correctly gets the descendant.
-  hit_node = CallNearestLeafNode(gfx::Point(50, 350));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetData().role);
-  EXPECT_EQ("Ordinary Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (50, 455) -> "Scrolled Button"
-  hit_node = CallNearestLeafNode(gfx::Point(50, 455));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetData().role);
-  hit_node = CallNearestLeafNode(gfx::Point(50, 455));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetData().role);
-  EXPECT_EQ("Scrolled Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
-
-  // (50, 505) -> "Scrolled Button"
-  hit_node = CallNearestLeafNode(gfx::Point(50, 505));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetData().role);
-  hit_node = CallNearestLeafNode(gfx::Point(50, 505));
-  ASSERT_TRUE(hit_node != nullptr);
-  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetData().role);
-  EXPECT_EQ("Scrolled Button",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+    // Compare several properties so that we generate rich log output if the
+    // test fails.
+    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
+    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
+    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
+              hit_node->GetClippedScreenBoundsRect());
+  }
 }
 #endif
 }  // namespace content

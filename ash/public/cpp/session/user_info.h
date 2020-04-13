@@ -40,7 +40,6 @@ struct ASH_PUBLIC_EXPORT UserInfo {
 
   user_manager::UserType type = user_manager::USER_TYPE_REGULAR;
   AccountId account_id;
-  base::Optional<base::Token> service_instance_group;
   std::string display_name;
   std::string display_email;
   UserAvatar avatar;

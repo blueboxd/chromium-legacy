@@ -10,14 +10,14 @@
 
 namespace leveldb_proto {
 
-void DataToProto(upboarding::QueryTileEntry* data,
-                 upboarding::query_tiles::proto::QueryTileEntry* proto) {
-  QueryTileEntryToProto(data, proto);
+void DataToProto(upboarding::TileGroup* data,
+                 upboarding::query_tiles::proto::QueryTileGroup* proto) {
+  TileGroupToProto(data, proto);
 }
 
-void ProtoToData(upboarding::query_tiles::proto::QueryTileEntry* proto,
-                 upboarding::QueryTileEntry* data) {
-  QueryTileEntryFromProto(proto, data);
+void ProtoToData(upboarding::query_tiles::proto::QueryTileGroup* proto,
+                 upboarding::TileGroup* data) {
+  TileGroupFromProto(proto, data);
 }
 
 }  // namespace leveldb_proto
@@ -35,10 +35,10 @@ void QueryTileStore::InitAndLoad(LoadCallback callback) {
 }
 
 void QueryTileStore::Update(const std::string& key,
-                            const QueryTileEntry& entry,
+                            const TileGroup& group,
                             UpdateCallback callback) {
   auto entries_to_save = std::make_unique<KeyEntryVector>();
-  QueryTileEntry entry_to_save = entry;
+  TileGroup entry_to_save = group;
   entries_to_save->emplace_back(key, std::move(entry_to_save));
   db_->UpdateEntries(std::move(entries_to_save),
                      std::make_unique<KeyVector>() /*keys_to_remove*/,
@@ -67,8 +67,7 @@ void QueryTileStore::OnDbInitialized(LoadCallback callback,
 void QueryTileStore::OnDataLoaded(
     LoadCallback callback,
     bool success,
-    std::unique_ptr<std::map<std::string, QueryTileEntry>>
-        loaded_keys_and_entries) {
+    std::unique_ptr<std::map<std::string, TileGroup>> loaded_keys_and_entries) {
   if (!success || !loaded_keys_and_entries) {
     std::move(callback).Run(success, KeysAndEntries());
     return;
@@ -76,9 +75,9 @@ void QueryTileStore::OnDataLoaded(
 
   KeysAndEntries keys_and_entries;
   for (auto& it : *loaded_keys_and_entries) {
-    std::unique_ptr<QueryTileEntry> entry =
-        std::make_unique<QueryTileEntry>(std::move(it.second));
-    keys_and_entries.emplace(it.first, std::move(entry));
+    std::unique_ptr<TileGroup> group =
+        std::make_unique<TileGroup>(std::move(it.second));
+    keys_and_entries.emplace(it.first, std::move(group));
   }
 
   std::move(callback).Run(true, std::move(keys_and_entries));

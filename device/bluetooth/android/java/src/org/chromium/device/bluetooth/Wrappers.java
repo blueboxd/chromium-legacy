@@ -314,6 +314,10 @@ class Wrappers {
         public String getScanRecord_getDeviceName() {
             return mScanResult.getScanRecord().getDeviceName();
         }
+
+        public int getScanRecord_getAdvertiseFlags() {
+            return mScanResult.getScanRecord().getAdvertiseFlags();
+        }
     }
 
     /**

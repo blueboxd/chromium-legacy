@@ -280,8 +280,6 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
   // Exclusive access interface:
   Profile* GetProfile() override;
   content::WebContents* GetActiveWebContents() override;
-  void HideDownloadShelf() override {}
-  void UnhideDownloadShelf() override {}
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
       ExclusiveAccessBubbleType bubble_type,

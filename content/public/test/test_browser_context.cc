@@ -31,7 +31,6 @@ TestBrowserContext::TestBrowserContext(
   } else {
     EXPECT_TRUE(browser_context_dir_.Set(browser_context_dir_path));
   }
-  BrowserContext::Initialize(this, browser_context_dir_.GetPath());
 }
 
 TestBrowserContext::~TestBrowserContext() {

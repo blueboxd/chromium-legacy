@@ -98,6 +98,7 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   FeedStreamApi* feed_stream_api_;
+  bool attached_ = false;
 };
 
 }  // namespace feed

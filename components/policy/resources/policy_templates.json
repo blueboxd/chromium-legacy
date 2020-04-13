@@ -15871,13 +15871,13 @@
       },
       'example_value': ['https://mydomain.com/login.html', 'https://login.mydomain.com'],
       'id': 423,
-      'caption': '''Configure the list of enterprise login URLs where password protection service should capture fingerprint of password.''',
+      'caption': '''Configure the list of enterprise login URLs where password protection service should capture salted hashes of passwords.''',
       'tags': [],
-      'desc': '''Configure the list of enterprise login URLs (HTTP and HTTPS schemes only). Fingerprint of password will be captured on these URLs and used for password reuse detection.
-      In order for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to correctly capture password fingerprints, please make sure your login pages follow the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+      'desc': '''Configure the list of enterprise login URLs (HTTP and HTTPS schemes only). Password protection service will capture salted hashes of passwords on these URLs and use them for password reuse detection.
+      In order for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to correctly capture password salted hashes, please make sure your login pages follow the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
-      If this setting is enabled, then password protection service will capture fingerprint of password on these URLs for password reuse detection purpose.
-      If this setting is disabled or not set, then password protection service will only capture password fingerprint on https://accounts.google.com.
+      If this setting is enabled, then password protection service will capture salted hashes of password on these URLs for password reuse detection purpose.
+      If this setting is disabled or not set, then password protection service will only capture password salted hashes on https://accounts.google.com.
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management.''',
     },
     {
@@ -15895,7 +15895,7 @@
       'caption': '''Configure the change password URL.''',
       'tags': [],
       'desc': '''Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their password after seeing a warning in the browser.
-      In order for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to correctly capture the new password fingerprint on this change password page, please make sure your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+      In order for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to correctly capture the salted hash of the new password on this change password page, please make sure your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       If this setting is enabled, then password protection service will send users to this URL to change their password after seeing a warning in the browser.
       If this setting is disabled or not set, then password protection service will send users to https://myaccount.google.com to change their password.

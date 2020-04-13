@@ -58,7 +58,6 @@ WebEngineBrowserContext::WebEngineBrowserContext(bool force_incognito)
   simple_factory_key_ =
       std::make_unique<SimpleFactoryKey>(GetPath(), IsOffTheRecord());
   SimpleKeyMap::GetInstance()->Associate(this, simple_factory_key_.get());
-  BrowserContext::Initialize(this, data_dir_path_);
 }
 
 WebEngineBrowserContext::~WebEngineBrowserContext() {

@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">Servidor de impressão</translation>
 <translation id="1805967612549112634">Confirmar PIN</translation>
 <translation id="1806335016774576568">Alternar para outro app aberto</translation>
+<translation id="1809483812148634490">Os apps transferidos por download do Google Play serão excluídos deste Chromebook.
+    <ph name="LINE_BREAKS1" />
+    O conteúdo comprado, como filmes, programas de TV, músicas, livros ou outras compras em aplicativos, também poderá ser excluído.
+    <ph name="LINE_BREAKS2" />
+    Isso não afetará apps ou conteúdo em outros dispositivos.</translation>
 <translation id="1809734401532861917">Adicionar meus favoritos, histórico, senhas e outras configurações a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">Serviços</translation>
 <translation id="18139523105317219">Nome da Parte EDI</translation>
@@ -1393,6 +1398,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2825848369316359348">Localize o nome impresso na parte de trás da sua chave de segurança</translation>
 <translation id="2828650939514476812">Conectar à rede Wi-Fi</translation>
 <translation id="2835294513443818940">Não foi possível fazer o download do arquivo por motivos de segurança.</translation>
+<translation id="2835547721736623118">Serviço de reconhecimento de fala</translation>
 <translation id="2836269494620652131">Falha</translation>
 <translation id="2836635946302913370">O login com este nome foi desativado pelo administrador.</translation>
 <translation id="283669119850230892">Para usar a rede <ph name="NETWORK_ID" />, conclua primeiro sua conexão com a Internet abaixo.</translation>
@@ -1537,6 +1543,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3019285239893817657">Botão de subpágina</translation>
 <translation id="3020183492814296499">Atalhos</translation>
 <translation id="3020990233660977256">Número de série: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Enquanto estiver na bateria</translation>
 <translation id="3021066826692793094">Borboleta</translation>
 <translation id="3021678814754966447">&amp;Exibir código fonte do frame</translation>
 <translation id="3022978424994383087">Não entendi.</translation>
@@ -2733,6 +2740,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4633757335284074492">Fazer backup no Google Drive Restaure dados ou troque de dispositivo a qualquer momento com facilidade. O backup inclui dados do app. Os backups são enviados ao Google e criptografados usando a senha da Conta do Google da criança.</translation>
 <translation id="4634771451598206121">Fazer login novamente...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> não está disponível para usuários visitantes.</translation>
+<translation id="4635444580397524003">O backup do Linux foi restaurado.</translation>
 <translation id="4636930964841734540">Informações</translation>
 <translation id="4637083375689622795">Mais ações, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Ativar depuração do adb</translation>
@@ -2908,6 +2916,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4890773143211625964">Mostrar opções avançadas de impressora</translation>
 <translation id="4891089016822695758">Fórum do Beta</translation>
 <translation id="4892229439761351791">O site pode usar o Bluetooth</translation>
+<translation id="489258173289528622">Ação de inatividade enquanto estiver na bateria</translation>
 <translation id="4893336867552636863">Isso excluirá permanentemente os dados de navegação deste dispositivo.</translation>
 <translation id="4893522937062257019">Na tela de bloqueio</translation>
 <translation id="489454699928748701">Permitir que sites usem os sensores de movimento</translation>
@@ -3615,6 +3624,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5863445608433396414">Ativar recursos de depuração</translation>
 <translation id="5864195618110239517">Usar conexão limitada</translation>
 <translation id="5864471791310927901">Falha ao procurar DHCP</translation>
+<translation id="5864754048328252126">Ação de inatividade ao carregar</translation>
 <translation id="5865508026715185451">O app <ph name="APP_NAME" /> será pausado em breve</translation>
 <translation id="586567932979200359">Você está executando o <ph name="PRODUCT_NAME" /> a partir de uma imagem de disco. Instalá-lo no computador permite executá-lo sem a imagem de disco e garante que ele se manterá atualizado.</translation>
 <translation id="5865733239029070421">Envia estatísticas de uso e relatórios de erros automaticamente para o Google</translation>
@@ -3814,6 +3824,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6120205520491252677">Fixar esta página na tela inicial...</translation>
 <translation id="6122081475643980456">Sua conexão com a Internet está sendo controlada</translation>
 <translation id="6122095009389448667">Continuar impedindo que esse site veja a área de transferência</translation>
+<translation id="6122831415929794347">Desativar "Navegação segura"?</translation>
 <translation id="6122875415561139701">A operação de escrita não é permitida em: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">As extensões a seguir dependem desta extensão:</translation>
 <translation id="6124698108608891449">Este site precisa de outras permissões.</translation>
@@ -4018,6 +4029,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6408118934673775994">Ler e alterar seus dados em <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Arquivos de imagem</translation>
 <translation id="6410328738210026208">Mudar de canal e executar PowerWash</translation>
+<translation id="6410390304316730527">O "Navegação segura" protege contra invasores que podem levar você a fazer algo perigoso, como instalar um software malicioso ou revelar informações pessoais como senhas, números de telefone ou cartões de crédito. Se desativá-lo, tenha cuidado ao navegar em sites desconhecidos ou com má reputação.</translation>
 <translation id="6410668567036790476">Adicionar mecanismo de pesquisa</translation>
 <translation id="641081527798843608">Correspondência de assunto</translation>
 <translation id="6412673304250309937">Verifica se os URLs estão em uma lista de sites não seguros armazenada no Chrome. Se um site tentar roubar sua senha ou se você fizer o download de um arquivo nocivo, o Chrome também poderá enviar URLs, incluindo partes do conteúdo da página, para o "Navegação segura".</translation>
@@ -5938,6 +5950,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8951256747718668828">Ocorreu um erro e não foi possível concluir a restauração</translation>
 <translation id="8951465597020890363">Sair do modo visitante mesmo assim?</translation>
 <translation id="8952831374766033534">Opção de configuração indisponível: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">Ao carregar</translation>
 <translation id="895347679606913382">Iniciando...</translation>
 <translation id="8957762313041272117">Legendas em tempo real</translation>
 <translation id="895944840846194039">Memória JavaScript</translation>

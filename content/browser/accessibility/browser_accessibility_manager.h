@@ -235,9 +235,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void DoDefaultAction(const BrowserAccessibility& node);
   void GetImageData(const BrowserAccessibility& node,
                     const gfx::Size& max_size);
-  // See third_party/blink/renderer/core/layout/hit_test_location.h for
-  // information on hit test coordinates expected by Blink.
-  void HitTest(const gfx::Point& page_point) const;
+  // Per third_party/blink/renderer/core/layout/hit_test_location.h, Blink
+  // expects hit test points in page coordinates. However, WebAXObject::HitTest
+  // applies the visual viewport offset, so we want to pass that function a
+  // point in frame coordinates.
+  void HitTest(const gfx::Point& frame_point) const;
   void Increment(const BrowserAccessibility& node);
   void LoadInlineTextBoxes(const BrowserAccessibility& node);
   void ScrollToMakeVisible(

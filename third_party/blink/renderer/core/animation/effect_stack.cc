@@ -124,6 +124,14 @@ bool EffectStack::AffectsProperties(PropertyHandleFilter filter) const {
   return false;
 }
 
+bool EffectStack::HasRevert() const {
+  for (const auto& sampled_effect : sampled_effects_) {
+    if (sampled_effect->Effect() && sampled_effect->Effect()->HasRevert())
+      return true;
+  }
+  return false;
+}
+
 ActiveInterpolationsMap EffectStack::ActiveInterpolations(
     EffectStack* effect_stack,
     const HeapVector<Member<const InertEffect>>* new_animations,

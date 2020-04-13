@@ -54,8 +54,6 @@ public class OfflineItemStartupLogger implements OfflineItemFilterObserver {
 
         Map<Integer /* Filters.FilterType */, Integer /* Count */> counts = new HashMap<>();
         Map<Integer /* Filters.FilterType */, Integer /* Count */> viewedCounts = new HashMap<>();
-        Map<Integer /* Filters.FilterType */, Integer /* Count */> otherExtensions =
-                new HashMap<>();
 
         // Prepopulate all Filter counts with 0.  That way we properly get the metrics that show us
         // which types have no entries at all.  This also is assumed behavior by the rest of the
@@ -74,26 +72,10 @@ public class OfflineItemStartupLogger implements OfflineItemFilterObserver {
             if (item.lastAccessedTimeMs > item.completionTimeMs) {
                 viewedCounts.put(type, viewedCounts.get(type) + 1);
             }
-
-            if (type == Filters.FilterType.OTHER) {
-                @FileExtensions.Type
-                int extension = FileExtensions.getExtension(item.filePath);
-                if (!otherExtensions.containsKey(extension)) otherExtensions.put(extension, 0);
-                otherExtensions.put(extension, otherExtensions.get(extension) + 1);
-            }
         }
 
         RecordHistogram.recordCountHistogram(
                 "Android.DownloadManager.InitialCount.Total", mSource.getItems().size());
-
-        for (Entry<Integer /* FileExtensions.Type */, Integer /* Count */> count :
-                otherExtensions.entrySet()) {
-            for (int i = 0; i < count.getValue(); i++) {
-                RecordHistogram.recordEnumeratedHistogram(
-                        "Android.DownloadManager.OtherExtensions.InitialCount", count.getKey(),
-                        FileExtensions.Type.NUM_ENTRIES);
-            }
-        }
 
         for (Entry<Integer /* Filters.FilterType */, Integer /* Count */> count :
                 counts.entrySet()) {

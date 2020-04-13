@@ -610,6 +610,11 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1805888043020974594">Bosma server</translation>
 <translation id="1805967612549112634">PIN kodni tasdiqlang</translation>
 <translation id="1806335016774576568">Boshqa ochiq ilovaga oʻtish</translation>
+<translation id="1809483812148634490">Siz yuklab olgan Google Play ilovalari ushbu Chromebook qurilmasidan o‘chirib yuboriladi.
+      <ph name="LINE_BREAKS1" />
+      Siz xarid qilgan kinolar, TV seriallar, musiqa, kitoblar yoki boshqa ichki ilova xaridlari o‘chib ketishi mumkin.
+      <ph name="LINE_BREAKS2" />
+      Bu amal boshqa qurilmadagi ilova yoki ma’lumotlaringizga ta’sir qilmaydi.</translation>
 <translation id="1809734401532861917">Xatcho‘plar, tarix, parollar va boshqa sozlamalarim <ph name="USER_EMAIL_ADDRESS" /> hisobida saqlansin.</translation>
 <translation id="1813278315230285598">Xizmatlar</translation>
 <translation id="18139523105317219">EDI tarafi nomi</translation>
@@ -1391,6 +1396,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2825848369316359348">Elektron kalitning orqasidagi printer nomini toping</translation>
 <translation id="2828650939514476812">Wi-Fi tarmog‘iga ulanish</translation>
 <translation id="2835294513443818940">Bu faylni xavfsiz yuklab olish imkonsiz.</translation>
+<translation id="2835547721736623118">Nutqni aniqlash xizmati</translation>
 <translation id="2836269494620652131">Nosozlik</translation>
 <translation id="2836635946302913370">Administrator ushbu foydalanuvchi nomidan tizimga kirishini taqiqlab qo‘ygan.</translation>
 <translation id="283669119850230892"><ph name="NETWORK_ID" /> tarmog‘idan foydalanish uchun, avval Internetga ulaning.</translation>
@@ -1535,6 +1541,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3019285239893817657">Quyi sahifa tugmasi</translation>
 <translation id="3020183492814296499">Yorliqlar</translation>
 <translation id="3020990233660977256">Seriya raqami: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Batareya quvvatida ishlayotganda</translation>
 <translation id="3021066826692793094">Kapalak</translation>
 <translation id="3021678814754966447">Freym kodini ko‘rish</translation>
 <translation id="3022978424994383087">Yana bir marta qaytaring</translation>
@@ -2731,6 +2738,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4633757335284074492">Google Drive omboriga zaxiralash. Axborotlaringizni osongina tiklashingiz yoki qurilmangizni xohlagan vaqtda almashtirishingiz mumkin. Zaxira ichida ilova maʼlumotlari ham bor. Zaxiralar Google serverlariga yuklanadi va farzandingizning Google hisobingiz paroli bilan shifrlanadi.</translation>
 <translation id="4634771451598206121">Qaytadan kirish...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> sahifasi mehmon foydalanuvchilarga ko‘rinmaydi.</translation>
+<translation id="4635444580397524003">Linux zaxirasi tiklandi.</translation>
 <translation id="4636930964841734540">Ma’lumot</translation>
 <translation id="4637083375689622795">Boshqa amallar, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">ADB tuzatish vositasini yoqish</translation>
@@ -2906,6 +2914,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4890773143211625964">Qo‘shimcha printer sozlamalarini ko‘rsatish</translation>
 <translation id="4891089016822695758">Beta forum</translation>
 <translation id="4892229439761351791">Sayt Bluetooth ishlatishi mumkin</translation>
+<translation id="489258173289528622">Batareya quvvatidan ishlayotganda kutish amali</translation>
 <translation id="4893336867552636863">Ushbu qurilmadagi brauzer faoliyati haqidagi ma’lumotlar butunlay o‘chiriladi.</translation>
 <translation id="4893522937062257019">Qulflangan ekranda</translation>
 <translation id="489454699928748701">Saytlarga harakat sensorlaridan foydalanish uchun ruxsat berish</translation>
@@ -3612,6 +3621,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5863445608433396414">Nosozliklarni ko‘rib chiqish funksiyalarini yoqish</translation>
 <translation id="5864195618110239517">Trafik hisoblanadigan ulanishdan foydalanish</translation>
 <translation id="5864471791310927901">DHCP topilmadi</translation>
+<translation id="5864754048328252126">Quvvatlanayotganda kutish amali</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> tez orada pauza qilinadi</translation>
 <translation id="586567932979200359"><ph name="PRODUCT_NAME" /> tizimini diskdagi tasviridan ishga tushirgansiz. Uni kompyuteringizga o‘rnatsangiz, disk tasviri kerak bo‘lmaydi hamda tizim muntazam yangilanib turadi.</translation>
 <translation id="5865733239029070421">Foydalanish statistikasi va ishdan chiqish hisobotlari avtomatik tarzda Google serverlariga yuborilsin</translation>
@@ -3811,6 +3821,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6120205520491252677">Ushbu sahifani bosh ekranga qadab qo‘yish...</translation>
 <translation id="6122081475643980456">Internet aloqangiz nazorat qilinmoqda</translation>
 <translation id="6122095009389448667">Saytning klipbordga ruxsati taqiqlanaversin</translation>
+<translation id="6122831415929794347">Saytlarni xavfsiz kezish faolsizlantirilsinmi?</translation>
 <translation id="6122875415561139701">“<ph name="DEVICE_NAME" />” qurilmasida ma’lumot yozish taqiqlangan.</translation>
 <translation id="6124650939968185064">Bu kengaytma quyidagi kengaytmalar bilan bog‘liq:</translation>
 <translation id="6124698108608891449">Bu saytga yana boshqa ruxsatlar kerak.</translation>
@@ -4014,6 +4025,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> va <ph name="WEBSITE_3" /> saytlaridan ma’lumotlarni ko‘rish va o‘zgartirish</translation>
 <translation id="6410257289063177456">Tasvir fayllar</translation>
 <translation id="6410328738210026208">Boshqa kanal tanlash va Powerwash amalini ishga tushirish</translation>
+<translation id="6410390304316730527">Saytlarni xavfsiz kezish parollar, telefon raqamlari yoki kredit kartalari kabi shaxsiy maʼlumotlaringizni oʻgʻirlash yoki zararli dasturlarni oʻrnatish orqali xavfli ishlarni amalga oshirishga undovchi shubhali kimsalardan himoyalaydi. Agar bu funksiyani faolsizlantirsangiz, notanish va shubhali saytlarga kirishda ehtiyot boʻling.</translation>
 <translation id="6410668567036790476">Qidiruv tizimi qo‘shish</translation>
 <translation id="641081527798843608">Mavzu mosligi</translation>
 <translation id="6412673304250309937">URL manzillar Chrome bilgan zararli saytlar roʻyxati orqali tekshiriladi. Agar sayt parolingizni oʻgirlashga urinsa yoki zararli fayl yuklab olsangiz, Chrome ham URL manzillar kabi sahifa elementlarini Saytlarni xavfsiz kezish tizimiga yuborishi mumkin.</translation>
@@ -5932,6 +5944,7 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="8951256747718668828">Xato tufayli tiklanmadi</translation>
 <translation id="8951465597020890363">Mehmon rejimidan baribir chiqilsinmi?</translation>
 <translation id="8952831374766033534">Ishlamadigan konfiguratsiya: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">Quvvat olayotganda</translation>
 <translation id="895347679606913382">Boshlanmoqda...</translation>
 <translation id="8957762313041272117">Jonli izoh</translation>
 <translation id="895944840846194039">JavaScript xotirasi</translation>

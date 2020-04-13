@@ -10474,4 +10474,95 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
   EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
 }
 
+// Test for a navigation that is
+// 1) initiated by a cross-site frame
+// 2) same-document
+// 3) to a http URL with port 0.
+// This is the scenario behind https://crbug.com/1065532.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       SameDocumentNavigationToHttpPortZero) {
+  GURL page_url(embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+
+  // Inject a HTTP subframe.
+  const char kSubframeScriptTemplate[] = R"(
+      var iframe = document.createElement('iframe');
+      iframe.src = $1;
+      document.body.appendChild(iframe);
+  )";
+  GURL subframe_initial_url =
+      embedded_test_server()->GetURL("another-site.com", "/title2.html");
+  {
+    TestNavigationObserver subframe_injection_observer(shell()->web_contents(),
+                                                       1);
+    ASSERT_TRUE(ExecJs(
+        shell(), JsReplace(kSubframeScriptTemplate, subframe_initial_url)));
+    subframe_injection_observer.WaitForNavigationFinished();
+    ASSERT_TRUE(subframe_injection_observer.last_navigation_succeeded());
+  }
+
+  // From the main page initiate a navigation of the cross-site subframe to a
+  // http URL that has port=0.  Note that this is valid port according to the
+  // URL spec (https://url.spec.whatwg.org/#port-state).
+  //
+  // Before the fix for SchemeHostPort's handling of port=0 the 2nd iteration
+  // below would produce a browser process CHECK/crash:
+  // - Iteration #1: The navigation will error out (because nothing is listening
+  //   on port zero in the test case).  Since
+  //   RenderFrameHostImpl::FailedNavigation doesn't call
+  //   GetOriginForURLLoaderFactory, this iteration wouldn't trigger a crash.
+  // - Iteration #2: The navigation will be treated as a same-document
+  //   navigation, because |old_url| and |new_url| will be considered the same
+  //   when inspected by GetNavigationType in navigation_controller_impl.cc.
+  //   This will trigger a call to GetOriginForURLLoaderFactory which will
+  //   crash if port=0 confuses url::Origin::Resolve.  It is unclear if treating
+  //   the 2nd iteration as same-document should be considered a bug (see also
+  //   https://crbug.com/1065532#c4).
+  //
+  // After the fix for SchemeHostPort's handling of port=0, both iterations
+  // would trigger a CANNOT_COMMIT_ORIGIN kill (see below).
+  GURL::Replacements replace_port_and_ref;
+  replace_port_and_ref.SetPortStr("0");
+  replace_port_and_ref.SetRefStr("someRef");
+  GURL subframe_ref_url =
+      subframe_initial_url.ReplaceComponents(replace_port_and_ref);
+  // Doing 2 iterations, to test the same-document navigation case as outlined
+  // in the big comment above.  This test coverage will be important if we ever
+  // fix the renderer kill that started happening after fixing SchemeHostPort's
+  // handling of port=0..
+  for (int i = 0; i < 2; i++) {
+    SCOPED_TRACE(::testing::Message() << "Navigation #" << i);
+
+    // TODO(lukasza): https://crbug.com/1065532: blink::KURL and
+    // blink::SecurityOrigin treat port=0 as an invalid port, which leads to
+    // committing an origin with port=80 rather than port=0 which leads to a
+    // CANNOT_COMMIT_ORIGIN renderer kill.  This is bad, but not as bad as a
+    // browser crash from the bug, so let's keep things this way going forward.
+    ASSERT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+    RenderProcessHostBadIpcMessageWaiter bad_ipc_waiter(
+        shell()->web_contents()->GetAllFrames()[1]->GetProcess());
+
+    TestNavigationObserver subframe_ref_observer(shell()->web_contents(), 1);
+    ASSERT_TRUE(
+        ExecJs(shell(), JsReplace("document.querySelector('iframe').src = $1;",
+                                  subframe_ref_url)));
+
+#if 1
+    // TODO(lukasza): https://crbug.com/1065532: blink::KURL and
+    // blink::SecurityOrigin treat port=0 as an invalid port [...]
+    // (see the same comment above).
+    EXPECT_EQ(bad_message::RFH_INVALID_ORIGIN_ON_COMMIT, bad_ipc_waiter.Wait());
+    if (!AreAllSitesIsolatedForTesting()) {
+      // Without site-per-process the main frame and the subframe are hosted in
+      // the same (killed) renderer process, which makes it difficult to
+      // continue the test after the first kill.
+      return;
+    }
+#else
+    subframe_ref_url.WaitForNavigationFinished();
+#endif
+  }
+}
+
 }  // namespace content

@@ -783,6 +783,11 @@ static const ComputedStyle* CachedAnimationBaseComputedStyle(
     return nullptr;
   }
 
+  if (CSSAnimations::IsAnimatingRevert(element_animations)) {
+    state.SetIsAnimatingRevert(true);
+    return nullptr;
+  }
+
   return element_animations->BaseComputedStyle();
 }
 
@@ -793,7 +798,7 @@ static void UpdateAnimationBaseComputedStyle(StyleResolverState& state) {
   ElementAnimations* element_animations =
       state.GetAnimatingElement()->GetElementAnimations();
   if (element_animations) {
-    if (state.IsAnimatingCustomProperties()) {
+    if (state.IsAnimatingCustomProperties() || state.IsAnimatingRevert()) {
       element_animations->ClearBaseComputedStyle();
     } else {
       element_animations->UpdateBaseComputedStyle(state.Style());

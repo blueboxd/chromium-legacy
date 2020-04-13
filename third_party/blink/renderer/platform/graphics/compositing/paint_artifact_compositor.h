@@ -261,6 +261,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
     FloatRect VisualRectForOverlapTesting() const;
 
+    bool MayDrawContent(const PaintArtifact&) const;
+
     // The rects are in the space of property_tree_state.
     FloatRect bounds;
     FloatRect rect_known_to_be_opaque;
@@ -303,7 +305,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
                      const EffectPaintPropertyNode&,
                      Vector<PaintChunk>::const_iterator& chunk_cursor);
   static bool MightOverlap(const PendingLayer&, const PendingLayer&);
-  bool DecompositeEffect(const EffectPaintPropertyNode& unaliased_parent_effect,
+  bool DecompositeEffect(const PaintArtifact&,
+                         const EffectPaintPropertyNode& unaliased_parent_effect,
                          wtf_size_t first_layer_in_parent_group_index,
                          const EffectPaintPropertyNode& unaliased_effect,
                          wtf_size_t layer_index);

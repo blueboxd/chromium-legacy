@@ -575,11 +575,16 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     // No client hints for 3p origins.
     return;
   }
-  // Persisted client hints preferences should be read for only the first
-  // party origins.
-  if (is_1p_origin && GetContentSettingsClient()) {
-    GetContentSettingsClient()->GetAllowedClientHintsFromSource(request.Url(),
-                                                                &enabled_hints);
+  // Persisted client hints preferences should be read for the top-frame's
+  // origin.
+  if (GetContentSettingsClient() &&
+      !GetResourceFetcherProperties().IsDetached()) {
+    const SecurityOrigin* top_security_origin =
+        GetFrame()->Tree().Top().GetSecurityContext()->GetSecurityOrigin();
+    if (!top_security_origin->IsOpaque()) {
+      GetContentSettingsClient()->GetAllowedClientHintsFromSource(
+          KURL(top_security_origin->ToString()), &enabled_hints);
+    }
   }
 
   // The next 4 hints should be enabled if we're allowing legacy hints to third

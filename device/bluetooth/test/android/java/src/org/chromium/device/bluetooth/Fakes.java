@@ -152,7 +152,7 @@ class Fakes {
                     mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(new FakeBluetoothDevice(this, "01:00:00:90:1E:BE",
                                                        "FakeBluetoothDevice"),
-                                    "FakeBluetoothDevice", TestRSSI.LOWEST, uuids,
+                                    "FakeBluetoothDevice", TestRSSI.LOWEST, 4, uuids,
                                     TestTxPower.LOWEST, serviceData, manufacturerData));
                     break;
                 }
@@ -173,8 +173,8 @@ class Fakes {
                     mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(new FakeBluetoothDevice(this, "01:00:00:90:1E:BE",
                                                        "FakeBluetoothDevice"),
-                                    "Local Device Name", TestRSSI.LOWER, uuids, TestTxPower.LOWER,
-                                    serviceData, manufacturerData));
+                                    "Local Device Name", TestRSSI.LOWER, 5, uuids,
+                                    TestTxPower.LOWER, serviceData, manufacturerData));
                     break;
                 }
                 case 3: {
@@ -182,7 +182,7 @@ class Fakes {
                     mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(
                                     new FakeBluetoothDevice(this, "01:00:00:90:1E:BE", ""),
-                                    "Local Device Name", TestRSSI.LOW, uuids, NO_TX_POWER, null,
+                                    "Local Device Name", TestRSSI.LOW, -1, uuids, NO_TX_POWER, null,
                                     null));
 
                     break;
@@ -192,8 +192,8 @@ class Fakes {
                     mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(
                                     new FakeBluetoothDevice(this, "02:00:00:8B:74:63", ""),
-                                    "Local Device Name", TestRSSI.MEDIUM, uuids, NO_TX_POWER, null,
-                                    null));
+                                    "Local Device Name", TestRSSI.MEDIUM, -1, uuids, NO_TX_POWER,
+                                    null, null));
 
                     break;
                 }
@@ -202,8 +202,8 @@ class Fakes {
                     mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(
                                     new FakeBluetoothDevice(this, "01:00:00:90:1E:BE", null),
-                                    "Local Device Name", TestRSSI.HIGH, uuids, NO_TX_POWER, null,
-                                    null));
+                                    "Local Device Name", TestRSSI.HIGH, -1, uuids, NO_TX_POWER,
+                                    null, null));
                     break;
                 }
                 case 6: {
@@ -211,8 +211,8 @@ class Fakes {
                     mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(
                                     new FakeBluetoothDevice(this, "02:00:00:8B:74:63", null),
-                                    "Local Device Name", TestRSSI.LOWEST, uuids, NO_TX_POWER, null,
-                                    null));
+                                    "Local Device Name", TestRSSI.LOWEST, -1, uuids, NO_TX_POWER,
+                                    null, null));
                     break;
                 }
                 case 7: {
@@ -226,7 +226,7 @@ class Fakes {
                     mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(new FakeBluetoothDevice(
                                                        this, "01:00:00:90:1E:BE", "U2F FakeDevice"),
-                                    "Local Device Name", TestRSSI.LOWEST, uuids, NO_TX_POWER,
+                                    "Local Device Name", TestRSSI.LOWEST, -1, uuids, NO_TX_POWER,
                                     serviceData, null));
                     break;
                 }
@@ -370,17 +370,19 @@ class Fakes {
         private final String mLocalName;
         private final int mRssi;
         private final int mTxPower;
+        private final int mAdvertisementFlags;
         private final ArrayList<ParcelUuid> mUuids;
         private final Map<ParcelUuid, byte[]> mServiceData;
         private final SparseArray<byte[]> mManufacturerData;
 
         FakeScanResult(FakeBluetoothDevice device, String localName, int rssi,
-                ArrayList<ParcelUuid> uuids, int txPower, Map<ParcelUuid, byte[]> serviceData,
-                SparseArray<byte[]> manufacturerData) {
+                int advertisementFlags, ArrayList<ParcelUuid> uuids, int txPower,
+                Map<ParcelUuid, byte[]> serviceData, SparseArray<byte[]> manufacturerData) {
             super(null);
             mDevice = device;
             mLocalName = localName;
             mRssi = rssi;
+            mAdvertisementFlags = advertisementFlags;
             mUuids = uuids;
             mTxPower = txPower;
             mServiceData = serviceData;
@@ -420,6 +422,11 @@ class Fakes {
         @Override
         public String getScanRecord_getDeviceName() {
             return mLocalName;
+        }
+
+        @Override
+        public int getScanRecord_getAdvertiseFlags() {
+            return mAdvertisementFlags;
         }
     }
 

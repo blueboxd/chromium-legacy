@@ -469,6 +469,7 @@ specific_include_rules = {
     "+ui/message_center/message_center.h",
   ],
   "input_method_manager_impl.cc": [
+    # For GetInputMethodKeyboardController.
     "+ash/keyboard/ui/keyboard_ui_controller.h",
   ],
   "chrome_browsing_data_remover_delegate_unittest.cc": [

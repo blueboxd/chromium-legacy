@@ -382,10 +382,6 @@ ChromeNativeAppWindowViewsAuraAsh::GetActiveWebContents() {
   return web_view()->web_contents();
 }
 
-void ChromeNativeAppWindowViewsAuraAsh::UnhideDownloadShelf() {}
-
-void ChromeNativeAppWindowViewsAuraAsh::HideDownloadShelf() {}
-
 bool ChromeNativeAppWindowViewsAuraAsh::CanUserExitFullscreen() const {
   return true;
 }

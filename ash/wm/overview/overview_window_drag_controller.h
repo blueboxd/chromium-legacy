@@ -20,6 +20,31 @@ class OverviewItem;
 class OverviewSession;
 class PresentationTimeRecorder;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Workflows of dragging windows from overview (not from the top or shelf).
+enum class OverviewDragAction {
+  kToGridSameDisplayClamshellMouse = 0,
+  kToGridSameDisplayClamshellTouch = 1,
+  kToDeskSameDisplayClamshellMouse = 2,
+  kToDeskSameDisplayClamshellTouch = 3,
+  kToSnapSameDisplayClamshellMouse = 4,
+  kToSnapSameDisplayClamshellTouch = 5,
+  kSwipeToCloseSuccessfulClamshellTouch = 6,
+  kSwipeToCloseCanceledClamshellTouch = 7,
+  kFlingToCloseClamshellTouch = 8,
+  kToGridOtherDisplayClamshellMouse = 9,
+  kToDeskOtherDisplayClamshellMouse = 10,
+  kToSnapOtherDisplayClamshellMouse = 11,
+  kToGridSameDisplayTabletTouch = 12,
+  kToDeskSameDisplayTabletTouch = 13,
+  kToSnapSameDisplayTabletTouch = 14,
+  kSwipeToCloseSuccessfulTabletTouch = 15,
+  kSwipeToCloseCanceledTabletTouch = 16,
+  kFlingToCloseTabletTouch = 17,
+  kMaxValue = kFlingToCloseTabletTouch,
+};
+
 // The drag controller for an overview window item in overview mode. It updates
 // the position of the corresponding window item using transform while dragging.
 // It also updates the split view drag indicators, which handles showing
@@ -91,6 +116,19 @@ class ASH_EXPORT OverviewWindowDragController {
   bool is_touch_dragging() const { return is_touch_dragging_; }
 
  private:
+  enum NormalDragAction {
+    kToGrid = 0,
+    kToDesk = 1,
+    kToSnap = 2,
+    kNormalDragActionEnumSize = 3,
+  };
+  enum DragToCloseAction {
+    kSwipeToCloseSuccessful = 0,
+    kSwipeToCloseCanceled = 1,
+    kFlingToClose = 2,
+    kDragToCloseActionEnumSize = 3,
+  };
+
   void StartDragToCloseMode();
 
   // Methods to continue and complete the drag when the drag mode is
@@ -121,6 +159,11 @@ class ASH_EXPORT OverviewWindowDragController {
   // Returns the item's overview grid, or the grid in which the item is being
   // dragged if the multi display overview and split view feature is enabled.
   OverviewGrid* GetCurrentGrid() const;
+
+  // Records the histogram Ash.Overview.WindowDrag.Workflow.
+  void RecordNormalDrag(NormalDragAction action,
+                        bool is_dragged_to_other_display) const;
+  void RecordDragToClose(DragToCloseAction action) const;
 
   OverviewSession* overview_session_;
 

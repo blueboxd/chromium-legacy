@@ -50,9 +50,6 @@ void BrowserAccessibilityAuraLinux::OnDataChanged() {
 }
 
 ui::AXPlatformNode* BrowserAccessibilityAuraLinux::GetAXPlatformNode() const {
-  if (!instance_active())
-    return nullptr;
-
   return GetNode();
 }
 

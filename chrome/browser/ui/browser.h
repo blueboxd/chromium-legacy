@@ -471,9 +471,7 @@ class Browser : public TabStripModelObserver,
 
   // External state change handling ////////////////////////////////////////////
 
-  // WindowFullscreenStateWillChange is invoked at the beginning of a fullscreen
-  // transition, and WindowFullscreenStateChanged is at the end.
-  void WindowFullscreenStateWillChange();
+  // Invoked at the end of a fullscreen transition.
   void WindowFullscreenStateChanged();
 
   // Only used on Mac. Called when the top ui style has been changed since this

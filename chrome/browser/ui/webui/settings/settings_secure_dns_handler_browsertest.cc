@@ -606,4 +606,57 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeFailure) {
   histograms.ExpectBucketCount("Net.DNS.UI.ProbeAttemptSuccess", true, 0);
 }
 
+IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeDebounce) {
+  auto network_context_hang =
+      std::make_unique<chrome_browser_net::HangingHostResolverNetworkContext>();
+  auto network_context_fail =
+      std::make_unique<chrome_browser_net::FakeHostResolverNetworkContext>(
+          std::vector<chrome_browser_net::FakeHostResolver::SingleResult>(
+              {chrome_browser_net::FakeHostResolver::SingleResult(
+                  net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_DNS_MALFORMED_RESPONSE),
+                  chrome_browser_net::FakeHostResolver::
+                      kNoResponse)}) /* current_config_result_list */,
+          std::vector<chrome_browser_net::FakeHostResolver::
+                          SingleResult>() /* google_config_result_list */);
+  base::HistogramTester histograms;
+  base::ListValue args_valid;
+  args_valid.AppendString(kWebUiFunctionName);
+  args_valid.AppendString("https://example.template/dns-query");
+  // Request a probe that will hang.
+  handler_->SetNetworkContextForTesting(network_context_hang.get());
+  web_ui_.HandleReceivedMessage(kProbeCustomDnsTemplate, &args_valid);
+  size_t responses = web_ui_.call_data().size();
+  base::RunLoop().RunUntilIdle();
+  // No response yet from the hanging probe.
+  EXPECT_EQ(responses, web_ui_.call_data().size());
+
+  // Request a probe that will fail.
+  handler_->SetNetworkContextForTesting(network_context_fail.get());
+  web_ui_.HandleReceivedMessage(kProbeCustomDnsTemplate, &args_valid);
+  // The hanging response should now have arrived.
+  EXPECT_EQ(responses + 1, web_ui_.call_data().size());
+  const content::TestWebUI::CallData& first_response =
+      *web_ui_.call_data().back();
+  ASSERT_EQ("cr.webUIResponse", first_response.function_name());
+  ASSERT_EQ(kWebUiFunctionName, first_response.arg1()->GetString());
+  // The cancelled probe should indicate no error.
+  ASSERT_TRUE(first_response.arg2()->GetBool());
+  EXPECT_TRUE(first_response.arg3()->GetBool());
+
+  // Wait for the second response.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(responses + 2, web_ui_.call_data().size());
+  const content::TestWebUI::CallData& second_response =
+      *web_ui_.call_data().back();
+  ASSERT_EQ("cr.webUIResponse", second_response.function_name());
+  ASSERT_EQ(kWebUiFunctionName, second_response.arg1()->GetString());
+  // The second request should have resolved with a failure indication.
+  ASSERT_TRUE(second_response.arg2()->GetBool());
+  EXPECT_FALSE(second_response.arg3()->GetBool());
+  // Only the second response should be counted in the histograms.
+  histograms.ExpectBucketCount("Net.DNS.UI.ProbeAttemptSuccess", false, 1);
+  histograms.ExpectBucketCount("Net.DNS.UI.ProbeAttemptSuccess", true, 0);
+}
+
 }  // namespace settings

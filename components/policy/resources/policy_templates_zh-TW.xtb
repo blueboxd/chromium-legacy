@@ -352,6 +352,7 @@
           如果將「EnableMediaRouter」政策設為 False，則這項政策的值不會有任何效果。</translation>
 <translation id="1509692106376861764">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 中移除這項政策。</translation>
 <translation id="1514888685242892912">啟用 <ph name="PRODUCT_NAME" /></translation>
+<translation id="1515230621229117540">啟用浮動式無障礙選單</translation>
 <translation id="1515824657887788963">允許頁面在關閉時執行同步 XHR 要求。</translation>
 <translation id="1522425503138261032">允許網站追蹤使用者的實際位置</translation>
 <translation id="1523774894176285446">要啟動的替代瀏覽器 (適用於已設定的網站)。</translation>
@@ -3258,6 +3259,17 @@
 
            如未設定這項政策，<ph name="PRODUCT_NAME" /> 會改用預設程式庫名稱。</translation>
 <translation id="5783009211970309878">列印頁首和頁尾</translation>
+<translation id="5783576706065107606">在新版 <ph name="CORS" /> 模式中啟用 <ph name="CORS" /> 檢查安全防護措施，讓擴充功能保持相容行為，並允許 <ph name="PRODUCT_NAME" /> 不需經過 <ph name="CORS" /> 檢查即可傳送指定標頭。
+
+      如果將這份清單設為空白，<ph name="PRODUCT_NAME" /> 會嘗試以相容方式執行擴充功能，且不會採用 <ph name="PRODUCT_NAME" /> 第 79 版的 <ph name="API" /> 變更，詳情請參閱 <ph name="WEB_REQUEST_API_MANUAL" />。
+
+      如果將這份清單設為具有 <ph name="HTTP" /> 要求標頭名稱，則 <ph name="CORS" /> 檢查將忽略此處列出的標頭，並啟用擴充功能的安全防護措施。
+
+      如果未設定這份清單，則不會套用上述兩種安全防護措施。
+
+      如要進一步瞭解 <ph name="CORS" />，請前往：<ph name="CORS_HELP_URL" />。
+
+      請注意，我們之前宣布將在 <ph name="PRODUCT_NAME" /> 第 82 版中移除這項政策，但計畫有所變更，改為在第 84 版中移除。</translation>
 <translation id="5790763087505467169">減少顯示受管理訪客工作階段的自動啟動通知</translation>
 <translation id="5806128552675651249">只允許不使用背景圖形的列印模式</translation>
 <translation id="5809210507920527553">控管 Linux 容器 (Crostini) 的設定。</translation>
@@ -3321,6 +3333,17 @@
           如果你停用這項設定或並未進行設置，則所有主機都會使用 TalkGadget 預設網域名稱 (「chromoting-host.talkgadget.google.com」)。
 
           遠端存取用戶端不受這項政策設定所影響，而會一律採用「chromoting-client.talkgadget.google.com」來存取 TalkGadget。</translation>
+<translation id="5888171512889380367">使用舊版 <ph name="CORS" /> 模式，而不使用新版 <ph name="CORS" />。
+
+     如果將這項政策設為 True，系統會使用舊版模式，該模式應與先前的版本相容。
+
+      如果將這項政策設為 False 或不予設定，系統會使用新版模式，這可能會導致企業特定的相容性問題。
+
+      這項政策將在日後的版本中移除。
+
+      如要進一步瞭解 <ph name="CORS" />，請前往：<ph name="CORS_HELP_URL" />。
+
+      請注意，我們之前宣布將在 <ph name="PRODUCT_NAME" /> 第 82 版中移除這項政策，但計畫有所變更，改為在第 84 版中移除。</translation>
 <translation id="5893553533827140852">啟用這項設定時，系統將透過遠端主機連線以 Proxy 處理 gnubby 驗證要求。
 
           如果停用或不設定這項設定，系統將不會以 Proxy 處理 gnubby 驗證要求。</translation>
@@ -3593,6 +3616,11 @@
 
           這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="6417265370957905582">Google 助理</translation>
+<translation id="6422575351619065453">這項政策可控管是否在 Kiosk 模式中顯示浮動式無障礙選單。
+
+      如果將這項政策設為啟用，系統會一律顯示浮動式無障礙選單。
+
+      如果將這項政策設為停用或不予設定，系統一律不會顯示浮動式無障礙選單。</translation>
 <translation id="6424485010103067949"><ph name="OMA_URI" />：</translation>
 <translation id="6426205278746959912">你無法強制 Android 應用程式使用 Proxy。有一部分 Proxy 設定可供 Android 應用程式使用，Android 應用程式可以選擇是否使用：
 

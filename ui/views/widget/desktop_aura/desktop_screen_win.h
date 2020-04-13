@@ -20,7 +20,7 @@ class VIEWS_EXPORT DesktopScreenWin : public display::win::ScreenWin {
   // Overridden from display::win::ScreenWin:
   display::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const override;
-  HWND GetHWNDFromNativeView(gfx::NativeView window) const override;
+  HWND GetHWNDFromNativeWindow(gfx::NativeWindow window) const override;
   gfx::NativeWindow GetNativeWindowFromHWND(HWND hwnd) const override;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopScreenWin);

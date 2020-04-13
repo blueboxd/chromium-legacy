@@ -1374,7 +1374,7 @@ LabelsNodeList* HTMLElement::labels() {
 }
 
 bool HTMLElement::IsInteractiveContent() const {
-  return FastHasAttribute(html_names::kTabindexAttr);
+  return false;
 }
 
 void HTMLElement::DefaultEventHandler(Event& event) {

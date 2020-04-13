@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">Pelayan cetak</translation>
 <translation id="1805967612549112634">Sahkan PIN</translation>
 <translation id="1806335016774576568">Tukar kepada apl terbuka yang lain</translation>
+<translation id="1809483812148634490">Apl yang telah anda muat turun daripada Google Play akan dipadamkan daripada Chromebook ini.
+    <ph name="LINE_BREAKS1" />
+    Kandungan yang telah anda beli, seperti filem, rancangan TV, muzik, buku atau pembelian dalam apl lain juga mungkin akan dipadamkan.
+    <ph name="LINE_BREAKS2" />
+    Hal ini tidak melibatkan apl atau kandungan pada peranti lain.</translation>
 <translation id="1809734401532861917">Tambahkan penanda halaman, sejarah, kata laluan dan tetapan saya yang lain pada <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="1813278315230285598">Perkhidmatan</translation>
 <translation id="18139523105317219">Nama Pihak EDI</translation>
@@ -1393,6 +1398,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2825848369316359348">Cari nama yang dicetak pada bahagian belakang kunci keselamatan anda</translation>
 <translation id="2828650939514476812">Sambung ke rangkaian Wi-Fi</translation>
 <translation id="2835294513443818940">Fail ini tidak dapat dimuat turun dengan selamat.</translation>
+<translation id="2835547721736623118">Perkhidmatan pengecaman pertuturan</translation>
 <translation id="2836269494620652131">Ranap</translation>
 <translation id="2836635946302913370">Log masuk dengan nama pengguna ini telah dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="283669119850230892">Untuk menggunakan rangkaian <ph name="NETWORK_ID" />, mula-mula lengkapkan sambungan anda ke Internet di bawah.</translation>
@@ -1537,6 +1543,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3019285239893817657">Butang subhalaman</translation>
 <translation id="3020183492814296499">Pintasan</translation>
 <translation id="3020990233660977256">Nombor Siri: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Semasa menggunakan bateri</translation>
 <translation id="3021066826692793094">Rama-rama</translation>
 <translation id="3021678814754966447">&amp;Lihat Sumber Bingkai</translation>
 <translation id="3022978424994383087">Tidak faham.</translation>
@@ -2733,6 +2740,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4633757335284074492">Sandarkan pada Google Drive. Pulihkan data atau tukar peranti dengan mudah pada bila-bila masa. Sandaran ini merangkumi data apl. Sandaran dimuat naik pada Google dan disulitkan dengan menggunakan kata laluan Akaun Google anak anda.</translation>
 <translation id="4634771451598206121">Log masuk semula...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> tidak tersedia untuk pengguna Tetamu.</translation>
+<translation id="4635444580397524003">Sandaran Linux telah berjaya dipulihkan.</translation>
 <translation id="4636930964841734540">Maklumat</translation>
 <translation id="4637083375689622795">Lagi tindakan, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Dayakan penyahpepijatan ADB</translation>
@@ -2908,6 +2916,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4890773143211625964">Tunjukkan pilihan terperinci pencetak</translation>
 <translation id="4891089016822695758">Forum beta</translation>
 <translation id="4892229439761351791">Tapak boleh menggunakan Bluetooth</translation>
+<translation id="489258173289528622">Tindakan melahu semasa menggunakan bateri</translation>
 <translation id="4893336867552636863">Tindakan ini akan memadamkan data penyemakan imbas anda daripada peranti ini selama-lamanya.</translation>
 <translation id="4893522937062257019">Pada skrin kunci</translation>
 <translation id="489454699928748701">Benarkan tapak menggunakan penderia gerakan</translation>
@@ -3614,6 +3623,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5863445608433396414">Dayakan ciri penyahpepijatan</translation>
 <translation id="5864195618110239517">Gunakan sambungan bermeter</translation>
 <translation id="5864471791310927901">Carian DHCP gagal</translation>
+<translation id="5864754048328252126">Tindakan melahu semasa mengecas</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> akan dijeda tidak lama lagi</translation>
 <translation id="586567932979200359">Anda menjalankan <ph name="PRODUCT_NAME" /> daripada imej cakeranya. Pemasangannya pada komputer anda membolehkan anda menjalankannya tanpa imej cakera, dan memastikannya adalah yang terkini.</translation>
 <translation id="5865733239029070421">Menghantar perangkaan penggunaan dan laporan ranap sistem secara automatik kepada Google</translation>
@@ -3813,6 +3823,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="6120205520491252677">Pin halaman ini pada skrin Mula...</translation>
 <translation id="6122081475643980456">Sambungan Internet anda sedang dikawal</translation>
 <translation id="6122095009389448667">Teruskan menyekat tapak ini daripada melihat papan keratan</translation>
+<translation id="6122831415929794347">Matikan Penyemakan Imbas Selamat?</translation>
 <translation id="6122875415561139701">Pengendalian tulis tidak dibenarkan pada: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">Sambungan berikut bergantung kepada sambungan ini:</translation>
 <translation id="6124698108608891449">Tapak ini memerlukan kebenaran lagi.</translation>
@@ -4016,6 +4027,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="6408118934673775994">Baca dan tukar data anda di <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dan <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Fail Imej</translation>
 <translation id="6410328738210026208">Tukar saluran dan Powerwash</translation>
+<translation id="6410390304316730527">Penyemakan Imbas Selamat melindungi anda daripada penyerang yang mungkin memperdaya anda agar melakukan sesuatu yang berbahaya seperti memasang perisian hasad atau mendedahkan maklumat peribadi, seperti kata laluan, nombor telefon atau kad kredit. Jika anda mematikan ciri ini, sila berhati-hati semasa menyemak imbas tapak web yang tidak biasa dilawati atau tidak bereputasi baik.</translation>
 <translation id="6410668567036790476">Tambah enjin carian</translation>
 <translation id="641081527798843608">Padanan subjek</translation>
 <translation id="6412673304250309937">Semak URL melalui perbandingan dengan senarai tapak tidak selamat yang disimpan dalam Chrome. Jika tapak cuba mencuri kata laluan anda atau apabila anda memuat turun fail yang berbahaya, Chrome juga mungkin menghantar URL, termasuk sedikit kandungan halaman, kepada Penyemakan Imbas Selamat.</translation>
@@ -5937,6 +5949,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8951256747718668828">Pemulihan tidak dapat diselesaikan kerana berlaku ralat</translation>
 <translation id="8951465597020890363">Keluar daripada mod tetamu juga?</translation>
 <translation id="8952831374766033534">Pilihan konfigurasi tidak disokong: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">Semasa mengecas</translation>
 <translation id="895347679606913382">Memulakan...</translation>
 <translation id="8957762313041272117">Sari kata langsung</translation>
 <translation id="895944840846194039">Memori JavaScript</translation>

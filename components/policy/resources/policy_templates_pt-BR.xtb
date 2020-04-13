@@ -356,6 +356,7 @@ Se você desativar a política, essa rolagem será desativada.</translation>
           Se a política EnableMediaRouter estiver definida como falsa, o valor desta política não terá nenhum efeito.</translation>
 <translation id="1509692106376861764">Esta política teve o uso suspenso a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Ativar <ph name="PRODUCT_NAME" /></translation>
+<translation id="1515230621229117540">Ativa o menu de acessibilidade flutuante</translation>
 <translation id="1515824657887788963">Permite que uma página execute solicitações XHR síncronas durante a dispensa de páginas.</translation>
 <translation id="1522425503138261032">Permitir que os sites rastreiem a localização física dos usuários</translation>
 <translation id="1523774894176285446">Navegador alternativo que será iniciado com sites configurados.</translation>
@@ -693,7 +694,7 @@ Se esta configuração for deixada sem definição, os usuários poderão optar 
       Se a plataforma for compatível com notificações sobre políticas, o atraso de atualização será configurado para 24 horas (ignorando todos os padrões e o valor da política), pois espera-se que as notificações sobre políticas forcem uma atualização automaticamente sempre que a política for alterada, tornando as atualizações mais frequentes desnecessárias.</translation>
 <translation id="2024476116966025075">Configurar o nome de domínio obrigatório para clientes de acesso remoto</translation>
 <translation id="2030905906517501646">Palavra-chave do provedor de pesquisa padrão</translation>
-<translation id="203096360153626918">Esta política não tem nenhum efeito sobre os apps Android. Eles poderão entrar no modo de tela cheia mesmo se a política estiver definida como <ph name="FALSE" />.</translation>
+<translation id="203096360153626918">Esta política não tem nenhum efeito sobre os apps Android. Eles poderão entrar no modo tela cheia mesmo se a política estiver definida como <ph name="FALSE" />.</translation>
 <translation id="2043749682619281558">Ativa o destaque de cursor na tela de login</translation>
 <translation id="2043770014371753404">Impressoras empresariais desativadas</translation>
 <translation id="2050629715135525072">Controla a habilidade de um usuário de transferir arquivos entre o cliente e o host quando ele está conectado a um host de acesso remoto. Isso não se aplica a conexões de assistência remota, que não são compatíveis com transferência de arquivos.
@@ -2565,7 +2566,7 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4856471929724652373">Informar detalhes sobre a atualização do SO, por exemplo, o status da atualização, a versão da plataforma, a última verificação de atualização e a última reinicialização.
 
       Se a política for definida como falsa ou se não for definida, os detalhes sobre atualização do SO não serão informados. Se for definida como verdadeira, os detalhes sobre atualização do SO serão informados.</translation>
-<translation id="4858735034935305895">Permitir modo de tela cheia</translation>
+<translation id="4858735034935305895">Permitir modo tela cheia</translation>
 <translation id="4861767323695239729">Configurar os métodos de entrada permitidos em uma sessão de usuário</translation>
 <translation id="4869603341164509842">Os padrões dessa lista serão comparados com a origem de segurança do URL solicitante.  Se uma correspondência for encontrada, o acesso aos dispositivos de captura de vídeo será concedido sem solicitação.
 
@@ -3100,13 +3101,13 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
       Se esta política for definida como falsa ou não definida, os avisos aparecerão nesses computadores e sistemas operacionais incompatíveis.</translation>
 <translation id="5565178130821694365">É necessário digitar a senha a cada dois dias (48 horas)</translation>
 <translation id="5566210228171064229">Permitir impressão com e sem PIN</translation>
-<translation id="556865034069957245">Esta política controla a disponibilidade do modo de tela cheia, em que toda a IU do <ph name="PRODUCT_NAME" /> fica oculta enquanto apenas o conteúdo da Web se encontra visível.
+<translation id="556865034069957245">Esta política controla a disponibilidade do modo tela cheia, em que toda a IU do <ph name="PRODUCT_NAME" /> fica oculta enquanto apenas o conteúdo da Web se encontra visível.
 
-      Se esta política for definida como verdadeira ou não for configurada, o usuário, os apps e as extensões com as permissões apropriadas poderão entrar no modo de tela cheia.
+      Se esta política for definida como verdadeira ou não for configurada, o usuário, os apps e as extensões com as permissões apropriadas poderão entrar no modo tela cheia.
 
-      Se esta política for definida como falsa, nem o usuário, nem qualquer app ou extensão poderá ativar o modo de tela cheia.
+      Se esta política for definida como falsa, nem o usuário, nem qualquer app ou extensão poderá ativar o modo tela cheia.
 
-      Em todas as plataformas que não sejam o <ph name="PRODUCT_OS_NAME" />, o modo quiosque ficará indisponível quando o modo de tela cheia estiver desativado.</translation>
+      Em todas as plataformas que não sejam o <ph name="PRODUCT_OS_NAME" />, o modo quiosque ficará indisponível quando o modo tela cheia estiver desativado.</translation>
 <translation id="556941986578702361">Controla a ocultação automática da estante do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política estiver definida como "AlwaysAutoHideShelf", a estante sempre será ocultada automaticamente.
@@ -3263,6 +3264,17 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
           Se nenhuma configuração for fornecida, o <ph name="PRODUCT_NAME" /> voltará a utilizar um nome de biblioteca padrão.</translation>
 <translation id="5783009211970309878">Imprimir cabeçalhos e rodapés</translation>
+<translation id="5783576706065107606">Ative as mitigações de verificação de <ph name="CORS" /> na nova implementação de <ph name="CORS" />, permitindo que as extensões mantenham um comportamento compatível e permitindo que o <ph name="PRODUCT_NAME" /> envie cabeçalhos especificados sem verificações de <ph name="CORS" />.
+
+      Se esta lista for definida como vazia, o <ph name="PRODUCT_NAME" /> tentará executar extensões de maneiras compatíveis e não introduzirá mudanças de <ph name="API" /> para o <ph name="PRODUCT_NAME" /> 79, conforme explicado em <ph name="WEB_REQUEST_API_MANUAL" />.
+
+      Se esta lista for definida para ter nomes de cabeçalho de solicitação <ph name="HTTP" />, a inspeção <ph name="CORS" /> ignorará os cabeçalhos listados e ativará a mitigação para extensões.
+
+      Se esta lista não for definida, nenhuma das mitigações explicadas acima será aplicada.
+
+      Para ver detalhes sobre <ph name="CORS" />, acesse: <ph name="CORS_HELP_URL" />.
+
+      Esta política seria removida na versão 82 do <ph name="PRODUCT_NAME" />, mas houve uma mudança de planos e a remoção ocorrerá na versão 84.</translation>
 <translation id="5790763087505467169">Reduzir notificações de lançamento automático para sessões de visitante gerenciadas</translation>
 <translation id="5806128552675651249">Permitir impressão apenas sem gráficos de segundo plano</translation>
 <translation id="5809210507920527553">Controla configurações do contêiner Linux (Crostini).</translation>
@@ -3326,6 +3338,17 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
           Se esta configuração for desativada ou não for definida, o nome de domínio padrão do TalkGadget ('chromoting host.talkgadget.google.com') será usado para todos os hosts.
 
           Clientes de acesso remoto não são afetados pela definição desta política. Eles sempre usam "chromoting-client.talkgadget.google.com" para acessar o TalkGadget.</translation>
+<translation id="5888171512889380367">Use a implementação legada de <ph name="CORS" /> em vez do novo <ph name="CORS" />.
+
+      Se esta configuração for definida como "verdadeira", a implementação legada será usada e precisará ser compatível com versões anteriores.
+
+      Se esta configuração for definida como "falsa" ou não for definida, a nova implementação será usada e poderá causar possíveis problemas de compatibilidade específicos da empresa.
+
+      Esta política será removida depois de alguns marcos.
+
+      Para ver detalhes sobre <ph name="CORS" />, acesse: <ph name="CORS_HELP_URL" />.
+
+      Esta política seria removida na versão 82 do <ph name="PRODUCT_NAME" />, mas houve uma mudança de planos e a remoção ocorrerá na versão 84.</translation>
 <translation id="5893553533827140852">Quando essa configuração está ativada, as solicitações de autenticação gnubby são transmitidas por proxy por meio de uma conexão de host remoto.
 
            Se essa configuração não está ativada ou configurada, as solicitações de autenticação gnubby não são transmitidas por proxy.</translation>
@@ -3609,6 +3632,11 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
           Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="6417265370957905582">Google Assistente</translation>
+<translation id="6422575351619065453">No modo quiosque, controla a exibição do menu de acessibilidade flutuante.
+
+      Se esta política for definida como ativada, o menu de acessibilidade flutuante sempre será exibido.
+
+      Se esta política for definida como desativada ou não for definida, o menu de acessibilidade flutuante nunca será exibido.</translation>
 <translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">Não é possível forçar apps Android a usar um proxy. Um subconjunto de configurações de proxy é disponibilizado para apps Android, o qual eles podem optar por respeitar voluntariamente:
 

@@ -43,10 +43,16 @@ def submit(path, config):
     if config.notary_asc_provider is not None:
         command.extend(['--asc-provider', config.notary_asc_provider])
     output = commands.run_command_output(command)
-    plist = plistlib.loads(output)
-    uuid = plist['notarization-upload']['RequestUUID']
-    logger.info('Submitted %s for notarization, request UUID: %s.', path, uuid)
-    return uuid
+    try:
+        plist = plistlib.loads(output)
+        uuid = plist['notarization-upload']['RequestUUID']
+        logger.info('Submitted %s for notarization, request UUID: %s.', path,
+                    uuid)
+        return uuid
+    except:
+        raise NotarizationError(
+            'xcrun altool returned output that could not be parsed: {}'.format(
+                output))
 
 
 def wait_for_results(uuids, config):

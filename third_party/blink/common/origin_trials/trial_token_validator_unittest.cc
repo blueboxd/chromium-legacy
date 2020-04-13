@@ -341,15 +341,14 @@ TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledTokens) {
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateRequestInsecure) {
-  response_headers_->AddHeader(std::string("Origin-Trial: ") +
-                               kInsecureOriginToken);
+  response_headers_->AddHeader("Origin-Trial", kInsecureOriginToken);
   EXPECT_FALSE(validator_.RequestEnablesFeature(
       GURL(kInsecureOrigin), response_headers_.get(), kAppropriateFeatureName,
       Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateRequestValidToken) {
-  response_headers_->AddHeader(std::string("Origin-Trial: ") + kSampleToken);
+  response_headers_->AddHeader("Origin-Trial", kSampleToken);
   EXPECT_TRUE(validator_.RequestEnablesFeature(GURL(kAppropriateOrigin),
                                                response_headers_.get(),
                                                kAppropriateFeatureName, Now()));
@@ -362,8 +361,8 @@ TEST_F(TrialTokenValidatorTest, ValidateRequestNoTokens) {
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaders) {
-  response_headers_->AddHeader(std::string("Origin-Trial: ") + kSampleToken);
-  response_headers_->AddHeader(std::string("Origin-Trial: ") + kExpiredToken);
+  response_headers_->AddHeader("Origin-Trial", kSampleToken);
+  response_headers_->AddHeader("Origin-Trial", kExpiredToken);
   EXPECT_TRUE(validator_.RequestEnablesFeature(GURL(kAppropriateOrigin),
                                                response_headers_.get(),
                                                kAppropriateFeatureName, Now()));
@@ -376,8 +375,8 @@ TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaders) {
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaderValues) {
-  response_headers_->AddHeader(std::string("Origin-Trial: ") + kExpiredToken +
-                               ", " + kSampleToken);
+  response_headers_->AddHeader(
+      "Origin-Trial", std::string(kExpiredToken) + ", " + kSampleToken);
   EXPECT_TRUE(validator_.RequestEnablesFeature(GURL(kAppropriateOrigin),
                                                response_headers_.get(),
                                                kAppropriateFeatureName, Now()));

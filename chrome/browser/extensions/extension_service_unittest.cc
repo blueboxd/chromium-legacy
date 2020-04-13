@@ -7642,6 +7642,45 @@ TEST_F(ExtensionServiceTest,
   EXPECT_FALSE(policy->UserMayModifySettings(extension, nullptr));
 }
 
+TEST_F(ExtensionServiceTest, InstallingUnacknowledgedExternalExtension) {
+  InitializeEmptyExtensionServiceWithTestingPrefs();
+  {
+    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
+    // Mark good.crx for recommended installation.
+    pref.SetIndividualExtensionAutoInstalled(
+        good_crx, "http://example.com/update_url", false);
+  }
+
+  base::FilePath path = data_dir().AppendASCII("good.crx");
+  std::string version_str = "1.0.0.0";
+  // Install an external extension.
+  std::unique_ptr<ExternalInstallInfoFile> info = CreateExternalExtension(
+      good_crx, version_str, path, Manifest::EXTERNAL_PREF_DOWNLOAD,
+      Extension::NO_FLAGS);
+  MockExternalProvider* provider =
+      AddMockExternalProvider(Manifest::EXTERNAL_PREF_DOWNLOAD);
+  provider->UpdateOrAddExtension(std::move(info));
+  WaitForExternalExtensionInstalled();
+
+  const Extension* extension =
+      registry()->enabled_extensions().GetByID(good_crx);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(good_crx, extension->id());
+  EXPECT_EQ(Manifest::EXTERNAL_PREF_DOWNLOAD, extension->location());
+  EXPECT_EQ(version_str, extension->VersionString());
+
+  ExtensionManagement::InstallationMode installation_mode =
+      ExtensionManagementFactory::GetForBrowserContext(profile())
+          ->GetInstallationMode(extension);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  EXPECT_EQ(ExtensionManagement::INSTALLATION_RECOMMENDED, installation_mode);
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(good_crx));
+  EXPECT_TRUE(prefs->IsExternalExtensionAcknowledged(extension->id()));
+  EXPECT_EQ(disable_reason::DISABLE_NONE, prefs->GetDisableReasons(good_crx));
+  EXPECT_FALSE(prefs->IsExtensionDisabled(good_crx));
+}
+
 // Regression test for crbug.com/460699. Ensure PluginManager doesn't crash even
 // if OnExtensionUnloaded is invoked twice in succession.
 TEST_F(ExtensionServiceTest, PluginManagerCrash) {

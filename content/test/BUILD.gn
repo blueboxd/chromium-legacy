@@ -169,6 +169,8 @@ jumbo_static_library("test_support") {
     "../public/test/render_view_test.h",
     "../public/test/scoped_overscroll_modes.cc",
     "../public/test/scoped_overscroll_modes.h",
+    "../public/test/screenshot_test_utils.cc",
+    "../public/test/screenshot_test_utils.h",
     "../public/test/service_worker_host_interceptor.cc",
     "../public/test/service_worker_host_interceptor.h",
     "../public/test/service_worker_test_helpers.cc",

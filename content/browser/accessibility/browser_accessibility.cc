@@ -157,8 +157,6 @@ bool BrowserAccessibility::PlatformIsLeafIncludingIgnored() const {
 }
 
 bool BrowserAccessibility::CanFireEvents() const {
-  if (!instance_active())
-    return false;
   // Allow events unless this object would be trimmed away.
   return !PlatformIsChildOfLeafIncludingIgnored();
 }
@@ -180,9 +178,6 @@ uint32_t BrowserAccessibility::PlatformChildCount() const {
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetParent() const {
-  if (!instance_active())
-    return nullptr;
-
   ui::AXNode* parent = node_->GetUnignoredParent();
   if (parent)
     return manager_->GetFromAXNode(parent);
@@ -393,15 +388,11 @@ BrowserAccessibility* BrowserAccessibility::InternalDeepestLastChild() const {
 }
 
 uint32_t BrowserAccessibility::InternalChildCount() const {
-  if (!instance_active())
-    return 0;
   return node_->GetUnignoredChildCount();
 }
 
 BrowserAccessibility* BrowserAccessibility::InternalGetChild(
     uint32_t child_index) const {
-  if (!node_ || !manager_)
-    return nullptr;
   ui::AXNode* child_node = node_->GetUnignoredChildAtIndex(child_index);
   if (!child_node)
     return nullptr;
@@ -410,8 +401,6 @@ BrowserAccessibility* BrowserAccessibility::InternalGetChild(
 }
 
 BrowserAccessibility* BrowserAccessibility::InternalGetParent() const {
-  if (!node_ || !manager_)
-    return nullptr;
   ui::AXNode* child_node = node_->GetUnignoredParent();
   if (!child_node)
     return nullptr;
@@ -976,9 +965,6 @@ bool BrowserAccessibility::GetFloatAttribute(
 
 bool BrowserAccessibility::HasInheritedStringAttribute(
     ax::mojom::StringAttribute attribute) const {
-  if (!instance_active())
-    return false;
-
   if (GetData().HasStringAttribute(attribute))
     return true;
   return PlatformGetParent() &&
@@ -1154,8 +1140,6 @@ std::string BrowserAccessibility::GetLiveRegionText() const {
 }
 
 std::vector<int> BrowserAccessibility::GetLineStartOffsets() const {
-  if (!instance_active())
-    return std::vector<int>();
   return node()->GetOrComputeLineStartOffsets();
 }
 
@@ -1337,9 +1321,6 @@ ui::AXPlatformNode* BrowserAccessibility::GetTargetNodeForRelation(
     ax::mojom::IntAttribute attr) {
   DCHECK(ui::IsNodeIdIntAttribute(attr));
 
-  if (!node_)
-    return nullptr;
-
   int target_id;
   if (!GetData().GetIntAttribute(attr, &target_id))
     return nullptr;
@@ -1504,9 +1485,6 @@ gfx::NativeViewAccessible BrowserAccessibility::GetNSWindow() {
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::GetParent() {
-  if (!instance_active())
-    return nullptr;
-
   BrowserAccessibility* parent = PlatformGetParent();
   if (parent)
     return parent->GetNativeViewAccessible();
@@ -1588,7 +1566,7 @@ BrowserAccessibility::PlatformChildIterator::PlatformChildIterator(
     const BrowserAccessibility* parent,
     BrowserAccessibility* child)
     : parent_(parent), platform_iterator(parent, child) {
-  DCHECK(parent && parent->instance_active());
+  DCHECK(parent);
 }
 
 BrowserAccessibility::PlatformChildIterator::~PlatformChildIterator() = default;
@@ -1604,27 +1582,22 @@ bool BrowserAccessibility::PlatformChildIterator::operator!=(
 }
 
 void BrowserAccessibility::PlatformChildIterator::operator++() {
-  DCHECK(parent_->instance_active());
   ++platform_iterator;
 }
 
 void BrowserAccessibility::PlatformChildIterator::operator++(int) {
-  DCHECK(parent_->instance_active());
   ++platform_iterator;
 }
 
 void BrowserAccessibility::PlatformChildIterator::operator--() {
-  DCHECK(parent_->instance_active());
   --platform_iterator;
 }
 
 void BrowserAccessibility::PlatformChildIterator::operator--(int) {
-  DCHECK(parent_->instance_active());
   --platform_iterator;
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformChildIterator::get() const {
-  DCHECK(parent_->instance_active());
   return platform_iterator.get();
 }
 
@@ -1634,7 +1607,6 @@ BrowserAccessibility::PlatformChildIterator::GetNativeViewAccessible() const {
 }
 
 int BrowserAccessibility::PlatformChildIterator::GetIndexInParent() const {
-  DCHECK(parent_->instance_active());
   if (platform_iterator == parent_->PlatformChildrenEnd().platform_iterator)
     return parent_->PlatformChildCount();
 
@@ -1664,8 +1636,6 @@ BrowserAccessibility::ChildrenEnd() {
 gfx::NativeViewAccessible BrowserAccessibility::HitTestSync(
     int physical_pixel_x,
     int physical_pixel_y) const {
-  if (!instance_active())
-    return nullptr;
   BrowserAccessibility* accessible = manager_->CachingAsyncHitTest(
       gfx::Point(physical_pixel_x, physical_pixel_y));
   if (!accessible)

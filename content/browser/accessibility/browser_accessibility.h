@@ -293,7 +293,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   //
 
   BrowserAccessibilityManager* manager() const { return manager_; }
-  bool instance_active() const { return node_ && manager_; }
   ui::AXNode* node() const { return node_; }
 
   // These access the internal unignored accessibility tree, which doesn't

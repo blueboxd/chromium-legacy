@@ -20,6 +20,8 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_metrics.h"
+#include "ash/shelf/test/overview_animation_waiter.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -42,6 +44,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -1872,18 +1875,31 @@ TEST_P(TabletModeWindowManagerWithClamshellSplitViewTest,
   // Clamshell -> Tablet mode transition. If overview is active, it will remain
   // in overview.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
+  OverviewAnimationWaiter start_overview_waiter;
   EXPECT_TRUE(overview_controller->StartOverview());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   TabletModeWindowManager* manager = CreateTabletModeWindowManager();
   EXPECT_TRUE(manager);
   EXPECT_TRUE(overview_controller->InOverviewSession());
+  start_overview_waiter.Wait();
 
   aura::Window* home_screen_window =
       Shell::Get()->app_list_controller()->GetHomeScreenWindow();
   EXPECT_FALSE(home_screen_window->TargetVisibility());
 
-  // Simulate tapping on the home button to go to home launcher.
-  Shell::Get()->home_screen_controller()->GoHome(GetPrimaryDisplay().id());
+  base::HistogramTester tester;
+  tester.ExpectBucketCount(
+      kHotseatGestureHistogramName,
+      InAppShelfGestures::kHotseatHiddenDueToInteractionOutsideOfShelf, 0);
+
+  // Tap at window to leave the overview mode.
+  OverviewAnimationWaiter end_overview_waiter;
+  GetEventGenerator()->GestureTapAt(window->GetBoundsInScreen().CenterPoint());
+  end_overview_waiter.Wait();
+  tester.ExpectBucketCount(
+      kHotseatGestureHistogramName,
+      InAppShelfGestures::kHotseatHiddenDueToInteractionOutsideOfShelf, 1);
+
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_TRUE(home_screen_window->TargetVisibility());
 }

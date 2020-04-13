@@ -287,9 +287,7 @@ void SimpleMenuModel::RemoveItemAt(int index) {
 }
 
 void SimpleMenuModel::SetIcon(int index, const ui::ImageModel& icon) {
-  Item* item = &items_[ValidateItemIndex(index)];
-  DCHECK(item->icon.IsEmpty());
-  item->icon = icon;
+  items_[ValidateItemIndex(index)].icon = icon;
   MenuItemsChanged();
 }
 

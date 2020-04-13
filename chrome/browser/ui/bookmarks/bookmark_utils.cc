@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +17,8 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/dom_distiller/core/url_constants.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/url_formatter/url_formatter.h"
@@ -79,15 +82,30 @@ gfx::ImageSkia GetFolderIcon(const gfx::VectorIcon& icon, SkColor text_color) {
 
 GURL GetURLToBookmark(content::WebContents* web_contents) {
   DCHECK(web_contents);
-  return search::IsInstantNTP(web_contents) ? GURL(kChromeUINewTabURL)
-                                            : web_contents->GetURL();
+  if (search::IsInstantNTP(web_contents))
+    return GURL(kChromeUINewTabURL);
+  // Users cannot bookmark Reader Mode pages directly, so the bookmark
+  // interaction is as if it were with the original page.
+  if (dom_distiller::url_utils::IsDistilledPage(web_contents->GetURL())) {
+    return dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
+        web_contents->GetURL());
+  }
+  return web_contents->GetURL();
 }
 
 void GetURLAndTitleToBookmark(content::WebContents* web_contents,
                               GURL* url,
                               base::string16* title) {
   *url = GetURLToBookmark(web_contents);
-  *title = web_contents->GetTitle();
+  if (dom_distiller::url_utils::IsDistilledPage(web_contents->GetURL())) {
+    // Users cannot bookmark Reader Mode pages directly. Instead, a bookmark
+    // is added for the original page and original title.
+    *title =
+        base::UTF8ToUTF16(dom_distiller::url_utils::GetTitleFromDistillerUrl(
+            web_contents->GetURL()));
+  } else {
+    *title = web_contents->GetTitle();
+  }
 }
 
 void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context) {

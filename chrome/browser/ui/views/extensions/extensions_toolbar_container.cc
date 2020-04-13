@@ -325,15 +325,17 @@ void ExtensionsToolbarContainer::PopOutAction(
   animating_layout_manager()->PostOrQueueAction(closure);
 }
 
-bool ExtensionsToolbarContainer::ShowToolbarActionPopup(
-    const std::string& action_id,
-    bool grant_active_tab) {
+bool ExtensionsToolbarContainer::ShowToolbarActionPopupForAPICall(
+    const std::string& action_id) {
   // Don't override another popup, and only show in the active window.
   if (popped_out_action_ || !browser_->window()->IsActive())
     return false;
 
   ToolbarActionViewController* action = GetActionForId(action_id);
-  return action && action->ExecuteAction(grant_active_tab);
+  // Since this was triggered by an API call, we never want to grant activeTab
+  // to the extension.
+  constexpr bool kGrantActiveTab = false;
+  return action && action->ExecuteAction(kGrantActiveTab);
 }
 
 void ExtensionsToolbarContainer::ShowToolbarActionBubble(

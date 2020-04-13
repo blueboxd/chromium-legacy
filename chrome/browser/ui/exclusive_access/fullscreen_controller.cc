@@ -140,8 +140,7 @@ void FullscreenController::EnterFullscreenModeForTab(WebContents* web_contents,
       exclusive_access_manager()->context();
   // This is needed on Mac as entering into Tab Fullscreen might change the top
   // UI style.
-  exclusive_access_context->UpdateUIForTabFullscreen(
-      ExclusiveAccessContext::STATE_ENTER_TAB_FULLSCREEN);
+  exclusive_access_context->UpdateUIForTabFullscreen();
 
   if (!exclusive_access_context->IsFullscreen()) {
     // Normal -> Tab Fullscreen.
@@ -190,21 +189,16 @@ void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
   }
 
   // Tab Fullscreen -> Browser Fullscreen.
-  // Exiting tab fullscreen mode requires updating top UI.
+  // Exiting tab fullscreen mode may require updating top UI.
   // All exiting tab fullscreen to non-fullscreen mode cases are handled in
   // BrowserNonClientFrameView::OnFullscreenStateChanged(); but exiting tab
   // fullscreen to browser fullscreen should be handled here.
-  if (state_prior_to_tab_fullscreen_ == STATE_BROWSER_FULLSCREEN) {
-    exclusive_access_context->UpdateUIForTabFullscreen(
-        ExclusiveAccessContext::STATE_EXIT_TAB_FULLSCREEN);
-  }
+  bool should_update_ui =
+      state_prior_to_tab_fullscreen_ == STATE_BROWSER_FULLSCREEN;
 
-  // If currently there is a tab in "tab fullscreen" mode and fullscreen
-  // was not caused by it (i.e., previously it was in "browser fullscreen"
-  // mode), we need to switch back to "browser fullscreen" mode. In this
-  // case, all we have to do is notifying the tab that it has exited "tab
-  // fullscreen" mode.
   NotifyTabExclusiveAccessLost();
+  if (should_update_ui)
+    exclusive_access_context->UpdateUIForTabFullscreen();
 
   // This is only a change between Browser and Tab fullscreen. We generate
   // a fullscreen notification now because there is no window change.
@@ -256,16 +250,6 @@ void FullscreenController::OnTabClosing(WebContents* web_contents) {
         /* will_cause_resize */ IsFullscreenCausedByTab());
   else
     ExclusiveAccessControllerBase::OnTabClosing(web_contents);
-}
-
-void FullscreenController::WindowFullscreenStateWillChange() {
-  ExclusiveAccessContext* exclusive_access_context =
-      exclusive_access_manager()->context();
-  if (exclusive_access_context->IsFullscreen()) {
-    exclusive_access_context->HideDownloadShelf();
-  } else {
-    exclusive_access_context->UnhideDownloadShelf();
-  }
 }
 
 void FullscreenController::WindowFullscreenStateChanged() {

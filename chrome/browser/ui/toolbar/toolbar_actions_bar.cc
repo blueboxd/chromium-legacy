@@ -383,14 +383,17 @@ void ToolbarActionsBar::Update() {
   ReorderActions();  // Also triggers a draw.
 }
 
-bool ToolbarActionsBar::ShowToolbarActionPopup(const std::string& action_id,
-                                               bool grant_active_tab) {
+bool ToolbarActionsBar::ShowToolbarActionPopupForAPICall(
+    const std::string& action_id) {
   // Don't override another popup, and only show in the active window.
   if (popup_owner() || !browser_->window()->IsActive())
     return false;
 
   ToolbarActionViewController* action = GetActionForId(action_id);
-  return action && action->ExecuteAction(grant_active_tab);
+  // Since this was triggered by an API call, we never want to grant activeTab
+  // to the extension.
+  constexpr bool kGrantActiveTab = false;
+  return action && action->ExecuteAction(kGrantActiveTab);
 }
 
 void ToolbarActionsBar::SetOverflowRowWidth(int width) {

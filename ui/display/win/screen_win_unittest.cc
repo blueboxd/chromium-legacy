@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+﻿// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,9 +43,9 @@ class TestScreenWin : public ScreenWin {
 
  protected:
   // win::ScreenWin:
-  HWND GetHWNDFromNativeView(gfx::NativeView window) const override {
-    // NativeView is only used as an identifier in these tests, so interchange
-    // a NativeView for an HWND for convenience.
+  HWND GetHWNDFromNativeWindow(gfx::NativeWindow window) const override {
+    // NativeWindow is only used as an identifier in these tests, so interchange
+    // a NativeWindow for an HWND for convenience.
     return reinterpret_cast<HWND>(window);
   }
 

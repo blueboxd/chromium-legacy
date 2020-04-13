@@ -128,6 +128,8 @@ class CORE_EXPORT StyleResolverState {
   void SetIsAnimatingCustomProperties(bool value) {
     is_animating_custom_properties_ = value;
   }
+  bool IsAnimatingRevert() const { return is_animating_revert_; }
+  void SetIsAnimatingRevert(bool value) { is_animating_revert_ = value; }
 
   // Normally, we apply all active animation effects on top of the style created
   // by regular CSS declarations. However, !important declarations have a
@@ -248,6 +250,10 @@ class CORE_EXPORT StyleResolverState {
   CSSAnimationUpdate animation_update_;
   bool is_animation_interpolation_map_ready_;
   bool is_animating_custom_properties_;
+  // We can't use the base computed style optimization when 'revert' appears
+  // in a keyframe. (We need to build the cascade to know what to revert to).
+  // TODO(crbug.com/1068515): Refactor caching to remove these flags.
+  bool is_animating_revert_ = false;
   bool has_important_overrides_ = false;
   bool has_font_affecting_animation_ = false;
 

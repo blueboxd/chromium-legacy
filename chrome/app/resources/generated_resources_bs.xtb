@@ -612,6 +612,11 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="1805888043020974594">Server za štampanje</translation>
 <translation id="1805967612549112634">Potvrda PIN-a</translation>
 <translation id="1806335016774576568">Prebaci na drugu otvorenu aplikaciju</translation>
+<translation id="1809483812148634490">Aplikacije koje ste preuzeli s Google Playa će se izbrisati s ovog Chromebooka.
+    <ph name="LINE_BREAKS1" />
+    Moguće je da će sadržaj koji ste kupili, kao što su filmovi, TV emisije, muzika, knjige ili druge kupovine unutar aplikacija, također biti izbrisan.
+    <ph name="LINE_BREAKS2" />
+    To neće uticati na aplikacije ili sadržaj na drugim uređajima.</translation>
 <translation id="1809734401532861917">Dodaj moje oznake, historiju, lozinke i druge postavke na <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">Usluge</translation>
 <translation id="18139523105317219">Naziv strane u EDI komunikaciji</translation>
@@ -813,7 +818,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2090165459409185032">Za oporavak podataka o računu otvorite: google.com/accounts/recovery</translation>
 <translation id="2090876986345970080">Postavke sigurnosnog sistema</translation>
 <translation id="2091887806945687916">Zvuk</translation>
-<translation id="2096478741073211388">Pomoću prijedloga ličnih informacija brže pišete uz predlaganje vašeg imena, adrese ili broja telefona kada pišete neke određene riječi. Samo vi možete vidjeti privatne, personalizirane prijedloge za svoj račun.</translation>
+<translation id="2096478741073211388">Prijedlozi ličnih informacija vam pomažu da brže pišete predlaganjem vašeg imena, adrese ili broja telefona kada pišete neke određene riječi. Samo vi možete vidjeti privatne, personalizirane prijedloge za svoj račun.</translation>
 <translation id="2096715839409389970">Izbriši kolačiće trećih strana</translation>
 <translation id="2097372108957554726">Morate se prijaviti na Chrome da registrirate nove uređaje</translation>
 <translation id="2099172618127234427">Omogućujete funkcije za otklanjanje grešaka na Chrome OS-u kojim će se postaviti sshd daemon i omogućiti pokretanje sistema s USB uređaja.</translation>
@@ -1393,6 +1398,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2825848369316359348">Potražite ime odštampano na poleđini sigurnosnog ključa.</translation>
 <translation id="2828650939514476812">Povežite se na WiFi mrežu</translation>
 <translation id="2835294513443818940">Nije moguće sigurno preuzeti fajl.</translation>
+<translation id="2835547721736623118">Usluga prepoznavanja govora</translation>
 <translation id="2836269494620652131">Pad aplikacije</translation>
 <translation id="2836635946302913370">Administrator je onemogućio prijavu s ovim korisničkim imenom.</translation>
 <translation id="283669119850230892">Da koristite mrežu <ph name="NETWORK_ID" />, najprije se povežite na internet prema uputama u nastavku.</translation>
@@ -1537,6 +1543,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3019285239893817657">Dugme za podstranicu</translation>
 <translation id="3020183492814296499">Prečice</translation>
 <translation id="3020990233660977256">Serijski broj: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Tokom rada na bateriji</translation>
 <translation id="3021066826692793094">Leptir</translation>
 <translation id="3021678814754966447">&amp;Prikaži izvor okvira</translation>
 <translation id="3022978424994383087">Nisam shvatio.</translation>
@@ -2733,6 +2740,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4633757335284074492">Izradite sigurnosne kopije na Google disku. Jednostavno u svakom trenutku vratite podatke ili promijenite uređaj. Ova sigurnosna kopija obuhvata podatke aplikacija. Sigurnosne kopije se otpremaju na Google i šifriraju pomoću lozinke Google računa vašeg djeteta.</translation>
 <translation id="4634771451598206121">Prijavite se ponovo...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> nije dostupan gostima.</translation>
+<translation id="4635444580397524003">Sigurnosna kopija Linuxa je uspješno vraćena.</translation>
 <translation id="4636930964841734540">Informacije</translation>
 <translation id="4637083375689622795">Više radnji, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Omogući otklanjanje grešaka putem ADB-a</translation>
@@ -2908,6 +2916,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4890773143211625964">Prikaži napredne opcije pisača</translation>
 <translation id="4891089016822695758">Forum za beta verziju</translation>
 <translation id="4892229439761351791">Web lokacija može koristiti Bluetooth</translation>
+<translation id="489258173289528622">Radnja u slučaju neaktivnosti tokom rada na bateriji</translation>
 <translation id="4893336867552636863">Ovo će trajno izbrisati vaše podatke o pregledanju s ovog uređaja.</translation>
 <translation id="4893522937062257019">Na zaključanom zaslonu</translation>
 <translation id="489454699928748701">Dozvoli web lokacijama korištenje senzora pokreta</translation>
@@ -3614,6 +3623,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5863445608433396414">Omogući funkcije za otklanjanje grešaka</translation>
 <translation id="5864195618110239517">Koristi vezu s naplatom</translation>
 <translation id="5864471791310927901">Traženje DHCP-a nije uspjelo</translation>
+<translation id="5864754048328252126">Radnja u slučaju neaktivnosti tokom punjenja</translation>
 <translation id="5865508026715185451">Aplikacija <ph name="APP_NAME" /> će se uskoro pauzirati</translation>
 <translation id="586567932979200359">Pokrećete <ph name="PRODUCT_NAME" /> sa slike diska. Ako ga instalirate na računaru, moći ćete ga pokrenuti bez slike diska i uvijek će biti ažuriran.</translation>
 <translation id="5865733239029070421">Automatski šalje Googleu statistiku korištenja i izvještaje o padovima aplikacije</translation>
@@ -3813,6 +3823,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6120205520491252677">Zakači ovu stranicu za Početni ekran…</translation>
 <translation id="6122081475643980456">Vašom internetskom vezom se upravlja</translation>
 <translation id="6122095009389448667">Nastavi blokirati uvid u međumemoriju ovoj web lokaciji</translation>
+<translation id="6122831415929794347">Isključiti Sigurno pregledanje?</translation>
 <translation id="6122875415561139701">Pisanje nije dozvoljeno na uređaju: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">Sljedeće ekstenzije ovise o ovoj ekstenziji:</translation>
 <translation id="6124698108608891449">Ovoj web lokaciji je potrebno više odobrenja.</translation>
@@ -4016,6 +4027,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6408118934673775994">Pregled i izmjena podataka na web lokacijama <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Fajlovi slike</translation>
 <translation id="6410328738210026208">Promijeni kanal i pokreni Powerwash</translation>
+<translation id="6410390304316730527">Sigurno pregledanje vas štiti od napadača koji vas mogu prevarom navesti da uradite nešto opasno, naprimjer, da instalirate zlonamjerni softver ili otkrijete lične informacije kao što su lozinke i brojevi telefona ili kreditnih kartica. Ako ga isključite, budite oprezni prilikom pregledanja nepoznatih ili sumnjivih web lokacija.</translation>
 <translation id="6410668567036790476">Dodajte pretraživač</translation>
 <translation id="641081527798843608">Podudaranje predmeta</translation>
 <translation id="6412673304250309937">Provjerava URL-ove s listom nesigurnih web lokacija pohranjenih u Chromeu. Ako web lokacija pokuša ukrasti vašu lozinku, ili kada preuzimate štetan fajl, Chrome može slati i URL-ove, uključujući dijelove sadržaja stranice, u Sigurno pregledanje.</translation>
@@ -5936,6 +5948,7 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8951256747718668828">Vraćanje nije uspjelo zbog greške</translation>
 <translation id="8951465597020890363">Ipak napustiti način rada za gosta?</translation>
 <translation id="8952831374766033534">Opcija za konfiguraciju nije podržana: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">Tokom punjenja</translation>
 <translation id="895347679606913382">Pokretanje…</translation>
 <translation id="8957762313041272117">Automatski titlovi</translation>
 <translation id="895944840846194039">JavaScript memorija</translation>

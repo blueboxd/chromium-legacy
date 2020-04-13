@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">Utskriftsserver</translation>
 <translation id="1805967612549112634">Bekräfta pinkod</translation>
 <translation id="1806335016774576568">Byt till en annan öppen app</translation>
+<translation id="1809483812148634490">Appar som du har laddat ned från Google Play raderas från Chromebook.
+    <ph name="LINE_BREAKS1" />
+    Innehåll du har köpt, t.ex. filmer, tv-program, musik, böcker eller andra köp i appar, kanske också raderas.
+    <ph name="LINE_BREAKS2" />
+    Detta påverkar inte appar eller innehåll på andra enheter.</translation>
 <translation id="1809734401532861917">Lägg till bokmärken, historik, lösenord och andra inställningar i <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">Tjänster</translation>
 <translation id="18139523105317219">EDI-partsnamn</translation>
@@ -1393,6 +1398,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2825848369316359348">Leta reda på namnet som står på säkerhetsnyckelns baksida</translation>
 <translation id="2828650939514476812">Anslut till ett Wi-Fi-nätverk</translation>
 <translation id="2835294513443818940">Det går inte att ladda ned den här filen på ett säkert sätt.</translation>
+<translation id="2835547721736623118">Tjänst för taligenkänning</translation>
 <translation id="2836269494620652131">Krasch</translation>
 <translation id="2836635946302913370">Inloggningar med detta användarnamn har inaktiverats av administratören.</translation>
 <translation id="283669119850230892">För att kunna använda nätverket <ph name="NETWORK_ID" /> måste du först ansluta till Internet nedan.</translation>
@@ -1537,6 +1543,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3019285239893817657">Knapp till undersida</translation>
 <translation id="3020183492814296499">Genvägar</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Vid batteridrift</translation>
 <translation id="3021066826692793094">Fjäril</translation>
 <translation id="3021678814754966447">&amp;Visa ramkälla</translation>
 <translation id="3022978424994383087">Jag hörde inte.</translation>
@@ -2733,6 +2740,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4633757335284074492">Säkerhetskopiera på Google Drive. Återställ data eller byt enkelt enhet när du vill. Säkerhetskopian innehåller appdata. Säkerhetskopiorna krypteras med hjälp av lösenordet till barnets Google-konto och laddas upp på Google.</translation>
 <translation id="4634771451598206121">Logga in igen ...</translation>
 <translation id="4635398712689569051">Sidan <ph name="PAGE_NAME" /> är inte tillgänglig för gästanvändare.</translation>
+<translation id="4635444580397524003">Linux-säkerhetskopian har återställts.</translation>
 <translation id="4636930964841734540">Info</translation>
 <translation id="4637083375689622795">Fler åtgärder, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Aktivera felsökning med ADB</translation>
@@ -2908,6 +2916,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4890773143211625964">Visa avancerade utskriftsalternativ</translation>
 <translation id="4891089016822695758">Forum för betaversionen</translation>
 <translation id="4892229439761351791">Webbplatsen kan använda Bluetooth</translation>
+<translation id="489258173289528622">Inaktivitetsåtgärd vid batteridrift</translation>
 <translation id="4893336867552636863">All webbinformation raderas permanent från den här enheten.</translation>
 <translation id="4893522937062257019">På låsskärmen</translation>
 <translation id="489454699928748701">Tillåt webbplatser att använda enhetens rörelsesensorer</translation>
@@ -3614,6 +3623,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5863445608433396414">Aktivera felsökningsfunktioner</translation>
 <translation id="5864195618110239517">Använd anslutning med datapriser</translation>
 <translation id="5864471791310927901">DHCP-förfrågan misslyckades</translation>
+<translation id="5864754048328252126">Inaktivitetsåtgärd vid laddning</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> pausas snart</translation>
 <translation id="586567932979200359">Du kör <ph name="PRODUCT_NAME" /> från diskavbildningen. Om du installerar programmet på din dator kan du köra det utan diskavbildningen och du kan vara säker på att det alltid är uppdaterat.</translation>
 <translation id="5865733239029070421">Skickar användningsstatistik och felrapporter till Google automatiskt</translation>
@@ -3813,6 +3823,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6120205520491252677">Fäst den här sidan på startskärmen ...</translation>
 <translation id="6122081475643980456">Din internetanslutning kontrolleras</translation>
 <translation id="6122095009389448667">Fortsätt blockera tillgången till Urklipp för den här webbplatsen</translation>
+<translation id="6122831415929794347">Vill du inaktivera Säker webbsökning?</translation>
 <translation id="6122875415561139701">Skrivbehörigheten för åtgärden saknas på: <ph name="DEVICE_NAME" />.</translation>
 <translation id="6124650939968185064">Följande tillägg är beroende av detta tillägg:</translation>
 <translation id="6124698108608891449">Fler behörigheter behövs för webbplatsen.</translation>
@@ -4016,6 +4027,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6408118934673775994">Läs och ändra dina uppgifter på <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> och <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Bildfiler</translation>
 <translation id="6410328738210026208">Byt kanal och Powerwash</translation>
+<translation id="6410390304316730527">Säker webbsökning skyddar dig mot angripare som kan försöka lura dig att göra något riskfyllt, till exempel installera skadlig programvara eller avslöja personliga uppgifter som lösenord, telefonnummer eller kreditkortsuppgifter. Om du inaktiverar detta bör du vara försiktig när du besöker okända webbplatser.</translation>
 <translation id="6410668567036790476">Lägg till sökmotor</translation>
 <translation id="641081527798843608">Ämnesmatchning</translation>
 <translation id="6412673304250309937">Kontrollera webbadresser mot en lista över osäkra webbplatser i Chrome. Om du utsätts för försök att kapa ditt lösenord på en webbplats eller om du laddar ned en skadlig fil kan webbadresserna skickas från Chrome till Säker webbsökning tillsammans med delar av sidinnehållet.</translation>
@@ -5936,6 +5948,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8951256747718668828">Det gick inte att slutföra återställningen på grund av ett fel</translation>
 <translation id="8951465597020890363">Vill du avsluta gästläget ändå?</translation>
 <translation id="8952831374766033534">Konfigurationsalternativet stöds inte: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">Vid laddning</translation>
 <translation id="895347679606913382">Startar...</translation>
 <translation id="8957762313041272117">Live Caption</translation>
 <translation id="895944840846194039">JavaScript-minne</translation>

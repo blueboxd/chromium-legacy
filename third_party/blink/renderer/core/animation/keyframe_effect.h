@@ -97,6 +97,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   void SetKeyframes(StringKeyframeVector keyframes);
 
   bool Affects(const PropertyHandle&) const;
+  bool HasRevert() const;
   const KeyframeEffectModelBase* Model() const { return model_.Get(); }
   KeyframeEffectModelBase* Model() { return model_.Get(); }
   void SetModel(KeyframeEffectModelBase* model) {

@@ -36,7 +36,6 @@ class GURL;
 
 namespace base {
 class FilePath;
-class Token;
 }  // namespace base
 
 namespace download {
@@ -213,23 +212,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static void SetPermissionControllerForTesting(
       BrowserContext* browser_context,
       std::unique_ptr<PermissionController> permission_controller);
-
-  // Makes the Service Manager aware of this BrowserContext, and assigns a
-  // instance group ID to it. Should be called for each BrowserContext created.
-  static void Initialize(BrowserContext* browser_context,
-                         const base::FilePath& path);
-
-  // Returns a Service instance group ID associated with this BrowserContext.
-  // This ID is not persistent across runs. See
-  // services/service_manager/public/mojom/connector.mojom. By default,
-  // group ID is randomly generated when Initialize() is called.
-  static const base::Token& GetServiceInstanceGroupFor(
-      BrowserContext* browser_context);
-
-  // Returns the BrowserContext associated with |instance_group|, or nullptr if
-  // no BrowserContext exists for that |instance_group|.
-  static BrowserContext* GetBrowserContextForServiceInstanceGroup(
-      const base::Token& instance_group);
 
   BrowserContext();
 

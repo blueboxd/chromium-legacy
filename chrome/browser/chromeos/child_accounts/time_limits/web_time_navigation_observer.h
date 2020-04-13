@@ -7,6 +7,7 @@
 
 #include "base/observer_list_types.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -15,6 +16,7 @@
 namespace content {
 class WebContents;
 class NavigationHandle;
+class NavigationEntry;
 }  // namespace content
 
 class GURL;
@@ -63,9 +65,14 @@ class WebTimeNavigationObserver
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
+  void TitleWasSet(content::NavigationEntry* entry) override;
 
   const base::Optional<NavigationInfo>& last_navigation_info() const {
     return last_navigation_info_;
+  }
+
+  const base::Optional<base::string16>& previous_title() const {
+    return previous_title_;
   }
 
  private:
@@ -79,6 +86,8 @@ class WebTimeNavigationObserver
   base::ObserverList<EventListener> listeners_;
 
   base::Optional<NavigationInfo> last_navigation_info_ = base::nullopt;
+
+  base::Optional<base::string16> previous_title_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

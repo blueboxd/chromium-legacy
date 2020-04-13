@@ -30,7 +30,7 @@
 <translation id="1289185460362160437">يمكنك العودة يوم <ph name="COME_BACK_DAY_OF_WEEK" /> في <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">إشارة ضعيفة</translation>
 <translation id="1293264513303784526">‏جهاز USB-C (المنفذ الأيسر)</translation>
-<translation id="1294929383540927798">تغيير إعدادات الإشعارات لشاشة التأمين</translation>
+<translation id="1294929383540927798">تغيير إعدادات الإشعارات لشاشة القفل</translation>
 <translation id="1301069673413256657">‏بروتوكول GSM</translation>
 <translation id="1302880136325416935">عرض إعدادات البلوتوث. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">قوة الإشارة <ph name="SIGNAL_STRENGTH" /></translation>
@@ -55,7 +55,7 @@
 <translation id="1550523713251050646">انقر للحصول على المزيد من الخيارات</translation>
 <translation id="1570871743947603115">تبديل البلوتوث. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">الوصول إلى جميع أنشطتك في جلسة واحدة</translation>
-<translation id="1632985212731562677">يمكن إيقاف ميزة "الوصول عبر مفتاح التحويل" في "الإعدادات" &gt; "إمكانية الوصول".</translation>
+<translation id="1632985212731562677">يمكن إيقاف ميزة "الوصول عبر مفتاح التحويل" في "الإعدادات" &gt; "أدوات تمكين الوصول".</translation>
 <translation id="1654477262762802994">بدء طلب بحث صوتي</translation>
 <translation id="1658406695958299976">عذرًا، لا يمكن التحقق من كلمة المرور حتى الآن. ملاحظة: في حال تغيير كلمة المرور مؤخرًا، سيتم تطبيق كلمة المرور الجديدة بعد تسجيل الخروج، يُرجى استخدام كلمة المرور القديمة هنا.</translation>
 <translation id="1677472565718498478">الوقت المتبقي <ph name="TIME" /></translation>
@@ -254,7 +254,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{الإشعارات متوقفة لتطبيق واحد}zero{الإشعارات متوقفة لـ # تطبيق}two{الإشعارات متوقفة لتطبيقَين (#)}few{الإشعارات متوقفة لـ # تطبيقات}many{الإشعارات متوقفة لـ # تطبيقًا}other{الإشعارات متوقفة لـ # تطبيق}}</translation>
 <translation id="4072264167173457037">إشارة متوسطة</translation>
 <translation id="4112140312785995938">الانتقال إلى الخلف</translation>
-<translation id="4129129681837227511">للاطِّلاع على الإشعارات على شاشة التأمين، يمكنك فتح القفل لتغيير الإعداد</translation>
+<translation id="4129129681837227511">للاطِّلاع على الإشعارات على شاشة القفل، يمكنك فتح القفل لتغيير الإعداد</translation>
 <translation id="4144413954005649103">‏يمكنك النقر بزر الماوس الأيمن أو الضغط مع الاستمرار حتّى يعرض "مساعد Google" معلومات ذات صلة بالعنصر الذي تختاره على الشاشة.</translation>
 <translation id="4146833061457621061">تشغيل الموسيقى</translation>
 <translation id="4149156641122542261">إدارة جهاز <ph name="DEVICE_TYPE" /> عن طريق <ph name="DOMAIN" /></translation>

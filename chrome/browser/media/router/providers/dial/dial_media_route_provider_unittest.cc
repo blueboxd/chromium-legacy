@@ -256,7 +256,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     app_instance_url_ = GURL(app_launch_url.spec() + "/run");
     auto response_head = network::mojom::URLResponseHead::New();
     response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-    response_head->headers->AddHeader("LOCATION: " + app_instance_url_.spec());
+    response_head->headers->AddHeader("LOCATION", app_instance_url_.spec());
     loader_factory_.AddResponse(app_launch_url, std::move(response_head), "",
                                 network::URLLoaderCompletionStatus());
     std::vector<MediaRoute> routes;

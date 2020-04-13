@@ -29,7 +29,7 @@ display::Display DesktopScreenWin::GetDisplayMatching(
   return GetDisplayNearestPoint(match_rect.CenterPoint());
 }
 
-HWND DesktopScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
+HWND DesktopScreenWin::GetHWNDFromNativeWindow(gfx::NativeWindow window) const {
   aura::WindowTreeHost* host = window->GetHost();
   return host ? host->GetAcceleratedWidget() : nullptr;
 }

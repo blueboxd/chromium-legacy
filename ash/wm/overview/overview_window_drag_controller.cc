@@ -25,8 +25,10 @@
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_utils.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/ranges.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -99,6 +101,10 @@ float GetManhattanDistanceX(float point_x, const gfx::RectF& rect) {
 
 float GetManhattanDistanceY(float point_y, const gfx::RectF& rect) {
   return std::max(rect.y() - point_y, point_y - rect.bottom());
+}
+
+void RecordDrag(OverviewDragAction action) {
+  base::UmaHistogramEnumeration("Ash.Overview.WindowDrag.Workflow", action);
 }
 
 // Runs the given |callback| when this object goes out of scope.
@@ -351,6 +357,7 @@ OverviewWindowDragController::DragResult OverviewWindowDragController::Fling(
       item_ = nullptr;
       current_drag_behavior_ = DragBehavior::kNoDrag;
       UnpauseOcclusionTracker();
+      RecordDragToClose(kFlingToClose);
       return DragResult::kSuccessfulDragToClose;
     }
   }
@@ -474,11 +481,13 @@ OverviewWindowDragController::CompleteDragToClose(
   const float y_distance = (location_in_screen - initial_event_location_).y();
   if (std::abs(y_distance) > kDragToCloseDistanceThresholdDp) {
     item_->AnimateAndCloseWindow(/*up=*/y_distance < 0);
+    RecordDragToClose(kSwipeToCloseSuccessful);
     return DragResult::kSuccessfulDragToClose;
   }
 
   item_->SetOpacity(original_opacity_);
   overview_session_->PositionWindows(/*animate=*/true);
+  RecordDragToClose(kSwipeToCloseCanceled);
   return DragResult::kCanceledDragToClose;
 }
 
@@ -623,6 +632,10 @@ OverviewWindowDragController::CompleteNormalDrag(
       grid->MaybeUpdateDesksWidgetBounds();
   })};
 
+  aura::Window* target_root = GetRootWindowBeingDraggedIn();
+  const bool is_dragged_to_other_display =
+      AreMultiDisplayOverviewAndSplitViewEnabled() &&
+      target_root != item_->root_window();
   if (virtual_desks_bar_enabled_) {
     item_->SetOpacity(original_opacity_);
 
@@ -633,22 +646,22 @@ OverviewWindowDragController::CompleteNormalDrag(
       // removed from the grid. It may never be accessed after this.
       item_ = nullptr;
       overview_session_->PositionWindows(/*animate=*/true);
+      RecordNormalDrag(kToDesk, is_dragged_to_other_display);
       return DragResult::kDragToDesk;
     }
   }
 
   // Snap a window if appropriate.
-  aura::Window* target_root = GetRootWindowBeingDraggedIn();
   if (should_allow_split_view_ && snap_position_ != SplitViewController::NONE) {
     SnapWindow(SplitViewController::Get(target_root), snap_position_);
     overview_session_->PositionWindows(/*animate=*/true);
+    RecordNormalDrag(kToSnap, is_dragged_to_other_display);
     return DragResult::kSnap;
   }
 
   // Drop a window into overview because we have not done anything else with it.
   DCHECK(item_);
-  if (are_multi_display_overview_and_splitview_enabled_ &&
-      target_root != item_->root_window()) {
+  if (is_dragged_to_other_display) {
     // Get the window and bounds from |item_| before removing it from its grid.
     aura::Window* window = item_->GetWindow();
     const gfx::RectF target_item_bounds = item_->target_bounds();
@@ -670,6 +683,7 @@ OverviewWindowDragController::CompleteNormalDrag(
     item_->set_should_restack_on_animation_end(true);
     overview_session_->PositionWindows(/*animate=*/true);
   }
+  RecordNormalDrag(kToGrid, is_dragged_to_other_display);
   return DragResult::kDropIntoOverview;
 }
 
@@ -759,6 +773,56 @@ OverviewGrid* OverviewWindowDragController::GetCurrentGrid() const {
              ? overview_session_->GetGridWithRootWindow(
                    GetRootWindowBeingDraggedIn())
              : item_->overview_grid();
+}
+
+void OverviewWindowDragController::RecordNormalDrag(
+    NormalDragAction action,
+    bool is_dragged_to_other_display) const {
+  const bool is_tablet = Shell::Get()->tablet_mode_controller()->InTabletMode();
+  if (is_dragged_to_other_display) {
+    DCHECK(!is_touch_dragging_);
+    if (!is_tablet) {
+      constexpr OverviewDragAction kDrag[kNormalDragActionEnumSize] = {
+          OverviewDragAction::kToGridOtherDisplayClamshellMouse,
+          OverviewDragAction::kToDeskOtherDisplayClamshellMouse,
+          OverviewDragAction::kToSnapOtherDisplayClamshellMouse};
+      RecordDrag(kDrag[action]);
+    }
+  } else if (is_tablet) {
+    if (is_touch_dragging_) {
+      constexpr OverviewDragAction kDrag[kNormalDragActionEnumSize] = {
+          OverviewDragAction::kToGridSameDisplayTabletTouch,
+          OverviewDragAction::kToDeskSameDisplayTabletTouch,
+          OverviewDragAction::kToSnapSameDisplayTabletTouch};
+      RecordDrag(kDrag[action]);
+    }
+  } else {
+    constexpr OverviewDragAction kMouseDrag[kNormalDragActionEnumSize] = {
+        OverviewDragAction::kToGridSameDisplayClamshellMouse,
+        OverviewDragAction::kToDeskSameDisplayClamshellMouse,
+        OverviewDragAction::kToSnapSameDisplayClamshellMouse};
+    constexpr OverviewDragAction kTouchDrag[kNormalDragActionEnumSize] = {
+        OverviewDragAction::kToGridSameDisplayClamshellTouch,
+        OverviewDragAction::kToDeskSameDisplayClamshellTouch,
+        OverviewDragAction::kToSnapSameDisplayClamshellTouch};
+    RecordDrag(is_touch_dragging_ ? kTouchDrag[action] : kMouseDrag[action]);
+  }
+}
+
+void OverviewWindowDragController::RecordDragToClose(
+    DragToCloseAction action) const {
+  DCHECK(is_touch_dragging_);
+  constexpr OverviewDragAction kClamshellDrag[kDragToCloseActionEnumSize] = {
+      OverviewDragAction::kSwipeToCloseSuccessfulClamshellTouch,
+      OverviewDragAction::kSwipeToCloseCanceledClamshellTouch,
+      OverviewDragAction::kFlingToCloseClamshellTouch};
+  constexpr OverviewDragAction kTabletDrag[kDragToCloseActionEnumSize] = {
+      OverviewDragAction::kSwipeToCloseSuccessfulTabletTouch,
+      OverviewDragAction::kSwipeToCloseCanceledTabletTouch,
+      OverviewDragAction::kFlingToCloseTabletTouch};
+  RecordDrag(Shell::Get()->tablet_mode_controller()->InTabletMode()
+                 ? kTabletDrag[action]
+                 : kClamshellDrag[action]);
 }
 
 }  // namespace ash

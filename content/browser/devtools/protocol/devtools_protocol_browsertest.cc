@@ -2392,15 +2392,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DefaultDownloadHeadless) {
   ASSERT_EQ(download::DownloadItem::CANCELLED, download->GetState());
 }
 
-// Flakly on ChromeOS https://crbug.com/860312
-#if defined(OS_CHROMEOS)
-#define MAYBE_MultiDownload DISABLED_MultiDownload
-#else
-#define MAYBE_MultiDownload MultiDownload
-#endif
+// Flaky on ChromeOS https://crbug.com/860312
+// Also flaky on Wndows and other platforms: http://crbug.com/1070302
 // Check that downloading multiple (in this case, 2) files does not result in
 // corrupted files.
-IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, MAYBE_MultiDownload) {
+IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DISABLED_MultiDownload) {
   base::ThreadRestrictions::SetIOAllowed(true);
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

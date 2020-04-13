@@ -1202,6 +1202,10 @@ class CONTENT_EXPORT NavigationRequest
   // one. Implement the behavior.
   bool require_coop_browsing_instance_swap_ = false;
 
+#if DCHECK_IS_ON()
+  bool is_safe_to_delete_ = true;
+#endif
+
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NavigationRequest);

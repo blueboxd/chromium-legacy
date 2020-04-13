@@ -920,8 +920,6 @@ jumbo_source_set("test_support") {
     "test/test_views_delegate.h",
     "test/test_widget_observer.cc",
     "test/test_widget_observer.h",
-    "test/views_interactive_ui_test_base.cc",
-    "test/views_interactive_ui_test_base.h",
     "test/views_test_base.cc",
     "test/views_test_base.h",
     "test/views_test_helper.cc",

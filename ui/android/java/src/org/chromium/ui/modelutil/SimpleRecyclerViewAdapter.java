@@ -73,7 +73,7 @@ public class SimpleRecyclerViewAdapter
         mListObserver = new ListObserver<Void>() {
             @Override
             public void onItemRangeInserted(ListObservable source, int index, int count) {
-                notifyItemInserted(index);
+                notifyItemRangeInserted(index, count);
             }
 
             @Override
@@ -84,7 +84,7 @@ public class SimpleRecyclerViewAdapter
             @Override
             public void onItemRangeChanged(
                     ListObservable<Void> source, int index, int count, @Nullable Void payload) {
-                notifyItemChanged(index);
+                notifyItemRangeChanged(index, count);
             }
 
             @Override

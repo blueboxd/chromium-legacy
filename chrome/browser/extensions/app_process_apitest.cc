@@ -602,13 +602,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcessWithJavaScript) {
 
 // Similar to the previous test, but ensure that popup blocking bypass
 // isn't granted to the iframe.  See crbug.com/117446.
-#if defined(OS_CHROMEOS)
-// http://crbug.com/153513
-#define MAYBE_OpenAppFromIframe DISABLED_OpenAppFromIframe
-#else
-#define MAYBE_OpenAppFromIframe OpenAppFromIframe
-#endif
-IN_PROC_BROWSER_TEST_F(BlockedAppApiTest, MAYBE_OpenAppFromIframe) {
+IN_PROC_BROWSER_TEST_F(BlockedAppApiTest, OpenAppFromIframe) {
   // Load app and start URL (not in the app).
   const Extension* app =
       LoadExtension(test_data_dir_.AppendASCII("app_process"));

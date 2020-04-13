@@ -128,6 +128,18 @@ class DesktopWidgetTest : public WidgetTest {
   DISALLOW_COPY_AND_ASSIGN(DesktopWidgetTest);
 };
 
+class DesktopWidgetTestInteractive : public DesktopWidgetTest {
+ public:
+  DesktopWidgetTestInteractive();
+  ~DesktopWidgetTestInteractive() override;
+
+  // DesktopWidgetTest
+  void SetUp() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DesktopWidgetTestInteractive);
+};
+
 // A helper WidgetDelegate for tests that require hooks into WidgetDelegate
 // calls, and removes some of the boilerplate for initializing a Widget. Calls
 // Widget::CloseNow() when destroyed if it hasn't already been done.

@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_error_page/web_time_limit_error_page.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_navigation_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -179,9 +180,15 @@ ThrottleCheckResult WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest(
     if (domain.empty())
       domain = url.has_host() ? url.host() : url.spec();
 
+    app_time::WebTimeNavigationObserver* observer =
+        app_time::WebTimeNavigationObserver::FromWebContents(web_contents);
+    const base::Optional<base::string16>& prev_title =
+        observer ? observer->previous_title() : base::nullopt;
+
     return NavigationThrottle::ThrottleCheckResult(
         CANCEL, net::ERR_BLOCKED_BY_CLIENT,
-        GetWebTimeLimitChromeErrorPage(domain, time_limit, app_locale));
+        GetWebTimeLimitChromeErrorPage(domain, prev_title, time_limit,
+                                       app_locale));
   }
 
   // Don't throttle windowed applications. We show a notification and close

@@ -20,7 +20,6 @@ UserInfo::~UserInfo() = default;
 
 ASH_PUBLIC_EXPORT bool operator==(const UserInfo& a, const UserInfo& b) {
   return a.type == b.type && a.account_id == b.account_id &&
-         a.service_instance_group == b.service_instance_group &&
          a.display_name == b.display_name &&
          a.display_email == b.display_email && a.avatar == b.avatar &&
          a.is_new_profile == b.is_new_profile &&

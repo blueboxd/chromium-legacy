@@ -402,8 +402,6 @@ void TestingProfile::Init() {
     key_ = std::make_unique<TestingProfileKey>(this, profile_path_);
   }
 
-  BrowserContext::Initialize(this, profile_path_);
-
 #if defined(OS_ANDROID)
   signin::DisableInteractionWithSystemAccounts();
 #endif

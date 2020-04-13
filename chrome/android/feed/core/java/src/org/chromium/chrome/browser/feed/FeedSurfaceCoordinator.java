@@ -298,8 +298,10 @@ public class FeedSurfaceCoordinator {
 
         // Native should already have been loaded because of FeedSurfaceMediator.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
-            // TODO(iwells): Temporary. This should probably move to FeedSurfaceMediator.
+            // TODO(jianli): Temporary: simulate opening the feed V2 surface. This should probably
+            // move to FeedSurfaceMediator.
             mFeedStreamSurface = new FeedStreamSurface(mActivity);
+            mFeedStreamSurface.surfaceOpened();
         }
     }
 

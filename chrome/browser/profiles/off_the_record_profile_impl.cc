@@ -128,9 +128,6 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(
       start_time_(base::Time::Now()),
       key_(std::make_unique<ProfileKey>(profile_->GetPath(),
                                         profile_->GetProfileKey())) {
-  // Must happen before we ask for prefs as prefs needs the connection to the
-  // service manager, which is set up in Initialize.
-  BrowserContext::Initialize(this, profile_->GetPath());
   prefs_ = CreateIncognitoPrefServiceSyncable(
       PrefServiceSyncableFromProfile(profile_),
       CreateExtensionPrefStore(profile_, true));

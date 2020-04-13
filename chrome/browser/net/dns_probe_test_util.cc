@@ -139,6 +139,17 @@ void FakeHostResolverNetworkContext::CreateHostResolver(
   }
 }
 
+HangingHostResolverNetworkContext::HangingHostResolverNetworkContext() =
+    default;
+HangingHostResolverNetworkContext::~HangingHostResolverNetworkContext() =
+    default;
+
+void HangingHostResolverNetworkContext::CreateHostResolver(
+    const base::Optional<net::DnsConfigOverrides>& config_overrides,
+    mojo::PendingReceiver<network::mojom::HostResolver> receiver) {
+  resolver_ = std::make_unique<HangingHostResolver>(std::move(receiver));
+}
+
 FakeDnsConfigChangeManager::FakeDnsConfigChangeManager(
     mojo::PendingReceiver<network::mojom::DnsConfigChangeManager> receiver)
     : receiver_(this, std::move(receiver)) {}

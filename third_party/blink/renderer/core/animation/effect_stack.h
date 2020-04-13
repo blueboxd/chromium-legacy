@@ -64,6 +64,7 @@ class CORE_EXPORT EffectStack {
 
   using PropertyHandleFilter = bool (*)(const PropertyHandle&);
   bool AffectsProperties(PropertyHandleFilter) const;
+  bool HasRevert() const;
 
   // Produces a map of properties to active effects.
   // |effect_stack| contains the sequence of sample effects for an element.

@@ -278,6 +278,49 @@ CommandHandler.onCommand = function(command) {
       break;
     default:
       break;
+    case 'toggleKeyboardHelp':
+      (new PanelCommand(PanelCommandType.OPEN_MENUS)).send();
+      return false;
+    case 'showPanelMenuMostRecent':
+      (new PanelCommand(PanelCommandType.OPEN_MENUS_MOST_RECENT)).send();
+      return false;
+    case 'nextGranularity':
+    case 'previousGranularity': {
+      const backwards = command == 'previousGranularity';
+      let gran = GestureCommandHandler.granularity;
+      const next = backwards ?
+          (--gran >= 0 ? gran : GestureGranularity.COUNT - 1) :
+          ++gran % GestureGranularity.COUNT;
+      GestureCommandHandler.granularity =
+          /** @type {GestureGranularity} */ (next);
+
+      let announce = '';
+      switch (GestureCommandHandler.granularity) {
+        case GestureGranularity.CHARACTER:
+          announce = Msgs.getMsg('character_granularity');
+          break;
+        case GestureGranularity.WORD:
+          announce = Msgs.getMsg('word_granularity');
+          break;
+        case GestureGranularity.LINE:
+          announce = Msgs.getMsg('line_granularity');
+          break;
+      }
+      ChromeVox.tts.speak(announce, QueueMode.FLUSH);
+    }
+      return false;
+    case 'announceBatteryDescription':
+      chrome.accessibilityPrivate.getBatteryDescription(function(
+          batteryDescription) {
+        new Output()
+            .withString(batteryDescription)
+            .withQueueMode(QueueMode.FLUSH)
+            .go();
+      });
+      break;
+    case 'resetTextToSpeechSettings':
+      ChromeVox.tts.resetTextToSpeechSettings();
+      return false;
   }
 
   // Require a current range.
@@ -667,12 +710,6 @@ CommandHandler.onCommand = function(command) {
         return false;
       }
       break;
-    case 'toggleKeyboardHelp':
-      (new PanelCommand(PanelCommandType.OPEN_MENUS)).send();
-      return false;
-    case 'showPanelMenuMostRecent':
-      (new PanelCommand(PanelCommandType.OPEN_MENUS_MOST_RECENT)).send();
-      return false;
     case 'showHeadingsList':
       (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_heading')).send();
       return false;
@@ -915,40 +952,6 @@ CommandHandler.onCommand = function(command) {
       }
       CommandHandler.onCommand(command);
       return false;
-    case 'nextGranularity':
-    case 'previousGranularity': {
-      const backwards = command == 'previousGranularity';
-      let gran = GestureCommandHandler.granularity;
-      const next = backwards ?
-          (--gran >= 0 ? gran : GestureGranularity.COUNT - 1) :
-          ++gran % GestureGranularity.COUNT;
-      GestureCommandHandler.granularity =
-          /** @type {GestureGranularity} */ (next);
-
-      let announce = '';
-      switch (GestureCommandHandler.granularity) {
-        case GestureGranularity.CHARACTER:
-          announce = Msgs.getMsg('character_granularity');
-          break;
-        case GestureGranularity.WORD:
-          announce = Msgs.getMsg('word_granularity');
-          break;
-        case GestureGranularity.LINE:
-          announce = Msgs.getMsg('line_granularity');
-          break;
-      }
-      ChromeVox.tts.speak(announce, QueueMode.FLUSH);
-    }
-      return false;
-    case 'announceBatteryDescription':
-      chrome.accessibilityPrivate.getBatteryDescription(function(
-          batteryDescription) {
-        new Output()
-            .withString(batteryDescription)
-            .withQueueMode(QueueMode.FLUSH)
-            .go();
-      });
-      break;
     case 'announceRichTextDescription': {
       const node = ChromeVoxState.instance.currentRange.start.node;
       const optSubs = [];
@@ -1049,9 +1052,6 @@ CommandHandler.onCommand = function(command) {
           .withQueueMode(QueueMode.CATEGORY_FLUSH)
           .go();
     }
-      return false;
-    case 'resetTextToSpeechSettings':
-      ChromeVox.tts.resetTextToSpeechSettings();
       return false;
     case 'toggleAnnotationsWidget': {
       if (!UserAnnotationHandler.instance.enabled) {

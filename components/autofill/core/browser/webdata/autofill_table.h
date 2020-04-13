@@ -177,6 +177,9 @@ struct PaymentsCustomerData;
 //   exp_year           Four-digit year: 2017
 //   bank_name          Issuer bank name of the credit card.
 //   nickname           The card's nickname, if it exists. Added in version 84.
+//   card_issuer        Issuer for the card. An integer representing the
+//                      CardIssuer.Issuer enum from the Chrome Sync response.
+//                      For example, GOOGLE or ISSUER_UNKNOWN.
 //
 // unmasked_credit_cards
 //                      When a masked credit credit card is unmasked and the
@@ -554,6 +557,7 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion81CleanUpWrongModelTypeData();
   bool MigrateToVersion83RemoveServerCardTypeColumn();
   bool MigrateToVersion84AddNicknameColumn();
+  bool MigrateToVersion85AddCardIssuerColumnToMaskedCreditCard();
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
   // Copied to components/autofill/ios/browser/resources/autofill_controller.js.

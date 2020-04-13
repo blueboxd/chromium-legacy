@@ -1175,6 +1175,45 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
       shelf_view_->GetMirroredXInView(center_point.x()), center_point.y())));
 }
 
+// Test that by moving the mouse cursor off the button onto the bubble it closes
+// the bubble.
+TEST_P(HotseatShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
+  ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
+  tooltip_manager->set_timer_delay_for_test(0);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  // Move the mouse off any item and check that no tooltip is shown.
+  generator->MoveMouseTo(gfx::Point(0, 0));
+  EXPECT_FALSE(tooltip_manager->IsVisible());
+
+  // Move the mouse over the button and check that it is visible.
+  views::View* button = shelf_view_->first_visible_button_for_testing();
+  gfx::Rect bounds = button->GetBoundsInScreen();
+  generator->MoveMouseTo(bounds.CenterPoint());
+  // Wait for the timer to go off.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(tooltip_manager->IsVisible());
+
+  // Move the mouse cursor slightly to the right of the item. The tooltip should
+  // now close.
+  generator->MoveMouseBy(bounds.width() / 2 + 5, 0);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(tooltip_manager->IsVisible());
+
+  // Move back - it should appear again.
+  generator->MoveMouseBy(-(bounds.width() / 2 + 5), 0);
+  // Make sure there is no delayed close.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(tooltip_manager->IsVisible());
+
+  // Now move the mouse cursor slightly above the item - so that it is over the
+  // tooltip bubble. Now it should disappear.
+  generator->MoveMouseBy(0, -(bounds.height() / 2 + 5));
+  // Wait until the delayed close kicked in.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(tooltip_manager->IsVisible());
+}
+
 // Checks the rip an item off from left aligned shelf in secondary monitor.
 TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   UpdateDisplay("800x600,800x600");

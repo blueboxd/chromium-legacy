@@ -14,8 +14,10 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case_app_interface.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#import "ios/web/public/test/earl_grey/web_app_interface.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "net/test/embedded_test_server/default_handlers.h"
+#include "url/url_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -139,6 +141,16 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 // Starts the HTTP server. Should only be called when the server is stopped.
 + (void)startHTTPServer;
 
+// Resets the scheme registry to use for the test case.
++ (void)setSchemeRegistry:
+    (std::unique_ptr<url::ScopedSchemeRegistryForTests>)registry;
+
+// Registers the URL schemes from the ChromeWebClient.
++ (void)registerURLSchemes;
+
+// Unregisters the URL schemes from the ChromeWebClient.
++ (void)unregisterURLSchemes;
+
 // Returns a NSArray of test names in this class that contain the prefix
 // "FLAKY_".
 + (NSArray*)flakyTestNames;
@@ -205,6 +217,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 + (void)tearDown {
   [[self class] disableMockAuthentication];
   [[self class] stopHTTPServer];
+  [[self class] unregisterURLSchemes];
   [super tearDown];
   gExecutedSetUpForTestCase = false;
 }
@@ -348,6 +361,41 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   server.StartOrDie(base::FilePath(base::SysNSStringToUTF8(bundlePath)));
 }
 
++ (void)setSchemeRegistry:
+    (std::unique_ptr<url::ScopedSchemeRegistryForTests>)registry {
+  static std::unique_ptr<url::ScopedSchemeRegistryForTests>
+      testCaseSchemeRegistry;
+  testCaseSchemeRegistry = std::move(registry);
+}
+
++ (void)registerURLSchemes {
+  // Create a new scoped registry for the test case class.
+  std::unique_ptr<url::ScopedSchemeRegistryForTests> schemeRegistry =
+      std::make_unique<url::ScopedSchemeRegistryForTests>();
+  [[self class] setSchemeRegistry:std::move(schemeRegistry)];
+  url::ClearSchemesForTests();
+
+  // Add the additional schemes from the WebAppInterface.
+  for (NSString* scheme in [WebAppInterface additionalStandardSchemes]) {
+    url::AddStandardScheme(base::SysNSStringToUTF8(scheme).c_str(),
+                           url::SCHEME_WITH_HOST);
+  }
+  for (NSString* scheme in [WebAppInterface additionalSecureSchemes]) {
+    url::AddSecureScheme(base::SysNSStringToUTF8(scheme).c_str());
+  }
+
+  // Prevent future modification of the schemes lists. This is to prevent
+  // accidental creation of data races in the program. Add*Scheme aren't
+  // threadsafe so must be called when GURL isn't used on any other thread. This
+  // is really easy to mess up, so we say that all calls to Add*Scheme in Chrome
+  // must be inside this function.
+  url::LockSchemeRegistries();
+}
+
++ (void)unregisterURLSchemes {
+  [[self class] setSchemeRegistry:nullptr];
+}
+
 + (NSArray*)flakyTestNames {
   const char kFlakyTestPrefix[] = "FLAKY";
   unsigned int count = 0;
@@ -397,6 +445,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 
   [[self class] startHTTPServer];
   [[self class] enableMockAuthentication];
+  [[self class] registerURLSchemes];
 
   // Sometimes on start up there can be infobars (e.g. restore session), so
   // ensure the UI is in a clean state.

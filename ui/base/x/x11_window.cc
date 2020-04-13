@@ -146,7 +146,6 @@ XWindow::XWindow()
 }
 
 XWindow::~XWindow() {
-  CHECK(!resize_weak_factory_.HasWeakPtrs());
   DCHECK_EQ(xwindow_, x11::None) << "XWindow destructed without calling "
                                     "Close() to release allocated resources.";
 }
@@ -1418,12 +1417,13 @@ void XWindow::DelayedResize(const gfx::Rect& bounds_in_pixels) {
   }
   NotifyBoundsChanged(bounds_in_pixels);
 
-  // TODO(crbug.com/1021490): Crashes during window re-attaching while dragging
-  // a tab points out to the XWindow instance being destroyed in the middle of
-  // DelayedResize closure execution. This + CHECK'ing weak references in dtor
-  // helps better identify such unexpected scenario.
+  // Bounds change propagation above may spin a window move loop, which might
+  // end up closing and destroying this instance (e.g: when a chrome window is
+  // snapped into a tab strip). So we must handle this possible scenario before
+  // trying to access any class variable/function. See crbug.com/1068755.
   if (!alive)
     return;
+
   CancelResize();
 }
 

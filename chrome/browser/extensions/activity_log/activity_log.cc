@@ -615,7 +615,7 @@ void ActivityLog::RemoveObserver(ActivityLog::Observer* observer) {
 // static
 void ActivityLog::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kWatchdogExtensionActive, false);
+  registry->RegisterIntegerPref(prefs::kWatchdogExtensionActive, 0);
 }
 
 // LOG ACTIONS. ----------------------------------------------------------------

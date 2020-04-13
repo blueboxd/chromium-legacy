@@ -80,6 +80,31 @@ suite('SafetyCheckUiTests', function() {
     cr.webUIListenerCallback(
         settings.SafetyCheckCallbackConstants.EXTENSIONS_CHANGED, event);
   }
+
+  function assertIconStatusRunning(icon) {
+    assertTrue(icon.classList.contains('icon-blue'));
+    assertFalse(icon.classList.contains('icon-red'));
+    assertEquals('Running', icon.getAttribute('aria-label'));
+  }
+
+  function assertIconStatusSafe(icon) {
+    assertTrue(icon.classList.contains('icon-blue'));
+    assertFalse(icon.classList.contains('icon-red'));
+    assertEquals('Passed', icon.getAttribute('aria-label'));
+  }
+
+  function assertIconStatusInfo(icon) {
+    assertFalse(icon.classList.contains('icon-blue'));
+    assertFalse(icon.classList.contains('icon-red'));
+    assertEquals('Info', icon.getAttribute('aria-label'));
+  }
+
+  function assertIconStatusWarning(icon) {
+    assertFalse(icon.classList.contains('icon-blue'));
+    assertTrue(icon.classList.contains('icon-red'));
+    assertEquals('Warning', icon.getAttribute('aria-label'));
+  }
+
   /**
    * @return {!Promise}
    */
@@ -161,6 +186,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+    assertIconStatusRunning(page.$$('#updatesIcon'));
   });
 
   test('updatesUpdatedUiTest', function() {
@@ -168,6 +194,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+    assertIconStatusSafe(page.$$('#updatesIcon'));
   });
 
   test('updatesUpdatingUiTest', function() {
@@ -175,6 +202,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+    assertIconStatusRunning(page.$$('#updatesIcon'));
   });
 
   test('updatesRelaunchUiTest', async function() {
@@ -182,6 +210,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+    assertIconStatusInfo(page.$$('#updatesIcon'));
 
     // User clicks the relaunch button.
     page.$$('#safetyCheckUpdatesButton').click();
@@ -203,6 +232,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertTrue(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+    assertIconStatusInfo(page.$$('#updatesIcon'));
   });
 
   test('updatesFailedOfflineUiTest', function() {
@@ -211,6 +241,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+    assertIconStatusInfo(page.$$('#updatesIcon'));
   });
 
   test('updatesFailedUiTest', function() {
@@ -218,9 +249,10 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+    assertIconStatusWarning(page.$$('#updatesIcon'));
   });
 
-  test('passwordsButtonVisibilityUiTest', function() {
+  test('passwordsUiTest', function() {
     // Iterate over all states
     for (const state of Object.values(settings.SafetyCheckPasswordsStatus)) {
       fireSafetyCheckPasswordsEvent(state);
@@ -230,6 +262,28 @@ suite('SafetyCheckUiTests', function() {
       assertEquals(
           state === settings.SafetyCheckPasswordsStatus.COMPROMISED,
           !!page.$$('#safetyCheckPasswordsButton'));
+
+      // Check that icon status is the correct one for this password status.
+      switch (state) {
+        case settings.SafetyCheckPasswordsStatus.CHECKING:
+          assertIconStatusRunning(page.$$('#passwordsIcon'));
+          break;
+        case settings.SafetyCheckPasswordsStatus.SAFE:
+          assertIconStatusSafe(page.$$('#passwordsIcon'));
+          break;
+        case settings.SafetyCheckPasswordsStatus.COMPROMISED:
+          assertIconStatusWarning(page.$$('#passwordsIcon'));
+          break;
+        case settings.SafetyCheckPasswordsStatus.OFFLINE:
+        case settings.SafetyCheckPasswordsStatus.NO_PASSWORDS:
+        case settings.SafetyCheckPasswordsStatus.SIGNED_OUT:
+        case settings.SafetyCheckPasswordsStatus.QUOTA_LIMIT:
+        case settings.SafetyCheckPasswordsStatus.ERROR:
+          assertIconStatusInfo(page.$$('#passwordsIcon'));
+          break;
+        default:
+          assertNotReached();
+      }
     }
   });
 
@@ -242,6 +296,7 @@ suite('SafetyCheckUiTests', function() {
         settings.SafetyCheckPasswordsStatus.COMPROMISED);
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckPasswordsButton'));
+    assertIconStatusWarning(page.$$('#passwordsIcon'));
 
     // User clicks the manage passwords button.
     page.$$('#safetyCheckPasswordsButton').click();
@@ -271,6 +326,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
+    assertIconStatusRunning(page.$$('#safeBrowsingIcon'));
   });
 
   test('safeBrowsingEnabledUiTest', function() {
@@ -279,6 +335,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
+    assertIconStatusSafe(page.$$('#safeBrowsingIcon'));
   });
 
   test('safeBrowsingDisabledUiTest', async function() {
@@ -287,6 +344,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
+    assertIconStatusInfo(page.$$('#safeBrowsingIcon'));
 
     // User clicks the manage safe browsing button.
     page.$$('#safetyCheckSafeBrowsingButton').click();
@@ -310,6 +368,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertTrue(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
+    assertIconStatusInfo(page.$$('#safeBrowsingIcon'));
   });
 
   test('safeBrowsingDisabledByExtensionUiTest', function() {
@@ -318,6 +377,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertTrue(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
+    assertIconStatusInfo(page.$$('#safeBrowsingIcon'));
   });
 
   test('extensionsCheckingUiTest', function() {
@@ -326,6 +386,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+    assertIconStatusRunning(page.$$('#extensionsIcon'));
   });
 
   test('extensionsErrorUiTest', function() {
@@ -333,6 +394,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+    assertIconStatusInfo(page.$$('#extensionsIcon'));
   });
 
   test('extensionsSafeUiTest', function() {
@@ -341,6 +403,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+    assertIconStatusSafe(page.$$('#extensionsIcon'));
   });
 
   test('extensionsBlocklistedOffUiTest', function() {
@@ -349,6 +412,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+    assertIconStatusSafe(page.$$('#extensionsIcon'));
 
     return expectExtensionsButtonClickActions();
   });
@@ -359,6 +423,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+    assertIconStatusWarning(page.$$('#extensionsIcon'));
 
     return expectExtensionsButtonClickActions();
   });
@@ -369,6 +434,7 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+    assertIconStatusWarning(page.$$('#extensionsIcon'));
 
     return expectExtensionsButtonClickActions();
   });
@@ -379,5 +445,6 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertTrue(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+    assertIconStatusInfo(page.$$('#extensionsIcon'));
   });
 });

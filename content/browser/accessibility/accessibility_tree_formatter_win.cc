@@ -277,7 +277,6 @@ std::unique_ptr<base::DictionaryValue>
 AccessibilityTreeFormatterWin::BuildAccessibilityTree(
     BrowserAccessibility* start_node) {
   DCHECK(start_node);
-  DCHECK(start_node->instance_active());
   BrowserAccessibilityManager* root_manager =
       start_node->manager()->GetRootManager();
   DCHECK(root_manager);

@@ -21,10 +21,6 @@ class WebContents;
 // context.
 class ExclusiveAccessContext {
  public:
-  enum TabFullscreenState {
-    STATE_ENTER_TAB_FULLSCREEN,
-    STATE_EXIT_TAB_FULLSCREEN,
-  };
 
   virtual ~ExclusiveAccessContext() = default;
 
@@ -38,7 +34,7 @@ class ExclusiveAccessContext {
   // Called when we transition between tab and browser fullscreen. This method
   // updates the UI by showing/hiding the tab strip, toolbar and bookmark bar
   // in the browser fullscreen. Currently only supported on Mac.
-  virtual void UpdateUIForTabFullscreen(TabFullscreenState state) {}
+  virtual void UpdateUIForTabFullscreen() {}
 
   // Updates the toolbar state to be hidden or shown in fullscreen according to
   // the preference's state. Only supported on Mac.
@@ -65,16 +61,6 @@ class ExclusiveAccessContext {
 
   // Returns the currently active WebContents, or nullptr if there is none.
   virtual content::WebContents* GetActiveWebContents() = 0;
-
-  // TODO(sriramsr): This is abstraction violation as the following two function
-  // does not apply to a platform app window. Ideally, the BrowserView should
-  // hide/unhide its download shelf widget when it is instructed to enter/exit
-  // fullscreen mode.
-  // Displays the download shelf associated with currently active window.
-  virtual void UnhideDownloadShelf() = 0;
-
-  // Hides download shelf associated with currently active window.
-  virtual void HideDownloadShelf() = 0;
 
   // There are special modes where the user isn't allowed to exit fullscreen on
   // their own, and this function allows us to check for that.

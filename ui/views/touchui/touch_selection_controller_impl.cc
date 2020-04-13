@@ -520,6 +520,13 @@ void TouchSelectionControllerImpl::HideHandles(bool quick) {
   cursor_handle_->SetWidgetVisible(false, quick);
 }
 
+void TouchSelectionControllerImpl::ShowQuickMenuImmediatelyForTesting() {
+  if (quick_menu_timer_.IsRunning()) {
+    quick_menu_timer_.Stop();
+    QuickMenuTimerFired();
+  }
+}
+
 void TouchSelectionControllerImpl::SetDraggingHandle(
     EditingHandleView* handle) {
   dragging_handle_ = handle;

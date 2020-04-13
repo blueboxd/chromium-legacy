@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">Drukbediener</translation>
 <translation id="1805967612549112634">Bevestig PIN</translation>
 <translation id="1806335016774576568">Skakel oor na 'n ander oop program</translation>
+<translation id="1809483812148634490">Programme wat jy van Google Play afgelaai het, sal van hierdie Chromebook af uitgevee word.
+    <ph name="LINE_BREAKS1" />
+    Inhoud wat jy gekoop het soos flieks, TV-programme, musiek, boeke of ander inprogram-aankope kan dalk ook uitgevee word.
+    <ph name="LINE_BREAKS2" />
+    Dit raak nie programme of inhoud op ander toestelle nie.</translation>
 <translation id="1809734401532861917">Voeg my boekmerke, geskiedenis, wagwoorde en ander instellings by <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">Dienste</translation>
 <translation id="18139523105317219">EDI-partynaam</translation>
@@ -1393,6 +1398,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2825848369316359348">Kry die naam wat agterop jou sekuriteitsleutel gedruk is</translation>
 <translation id="2828650939514476812">Koppel aan Wi-Fi-netwerk</translation>
 <translation id="2835294513443818940">Hierdie lêer kan nie veilig afgelaai word nie.</translation>
+<translation id="2835547721736623118">Spraakherkenningdiens</translation>
 <translation id="2836269494620652131">Omval</translation>
 <translation id="2836635946302913370">Aanmelding met hierdie gebruikersnaam is deur jou administrateur gedeaktiveer.</translation>
 <translation id="283669119850230892">Om die netwerk <ph name="NETWORK_ID" /> te gebruik, moet jy eers klaar aan die internet koppel hieronder.</translation>
@@ -1537,6 +1543,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3019285239893817657">Subbladsy-knoppie</translation>
 <translation id="3020183492814296499">Kortpaaie</translation>
 <translation id="3020990233660977256">Reeksnommer: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Terwyl dit battery gebruik</translation>
 <translation id="3021066826692793094">Skoenlapper</translation>
 <translation id="3021678814754966447">Bekyk raambron</translation>
 <translation id="3022978424994383087">Kon dit nie hoor nie.</translation>
@@ -2733,6 +2740,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4633757335284074492">Rugsteun in Google Drive. Laai data maklik terug of wissel enige tyd jou toestel. Hierdie rugsteun sluit programdata in. Rugsteune word na Google toe opgelaai en met jou kind se Google-rekeningwagwoord geënkripteer.</translation>
 <translation id="4634771451598206121">Meld weer aan …</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> is nie vir gasgebruikers beskikbaar nie.</translation>
+<translation id="4635444580397524003">Linux-rugsteun is suksesvol teruggestel.</translation>
 <translation id="4636930964841734540">Inligting</translation>
 <translation id="4637083375689622795">Nog handelinge, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Aktiveer ADB-ontfouting.</translation>
@@ -2908,6 +2916,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4890773143211625964">Wys gevorderde drukkeropsies</translation>
 <translation id="4891089016822695758">Beta-forum</translation>
 <translation id="4892229439761351791">Werf kan Bluetooth gebruik</translation>
+<translation id="489258173289528622">Rushandeling terwyl dit battery gebruik</translation>
 <translation id="4893336867552636863">Dit sal jou blaaidata permanent van hierdie toestel af uitvee.</translation>
 <translation id="4893522937062257019">Op die sluitskerm</translation>
 <translation id="489454699928748701">Laat werwe toe om bewegingsensors te gebruik</translation>
@@ -3615,6 +3624,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5863445608433396414">Aktiveer ontfoutingkenmerke</translation>
 <translation id="5864195618110239517">Gebruik betaalde verbinding</translation>
 <translation id="5864471791310927901">DHCP-opsoek het misluk</translation>
+<translation id="5864754048328252126">Rushandeling terwyl dit laai</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> sal binnekort onderbreek word</translation>
 <translation id="586567932979200359">Jy laat loop <ph name="PRODUCT_NAME" /> tans van sy skyfafbeelding af. As jy dit op jou rekenaar installeer, kan jy dit sonder die skyfafbeelding laat loop, en verseker dat dit op datum gehou word.</translation>
 <translation id="5865733239029070421">Stuur gebruikstatistieke en omvalverslae outomaties na Google</translation>
@@ -3814,6 +3824,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6120205520491252677">Speld hierdie bladsy aan beginskerm vas …</translation>
 <translation id="6122081475643980456">Jou internetverbinding word beheer</translation>
 <translation id="6122095009389448667">Hou aan om hierdie werf te blokkeer om die knipbord te sien</translation>
+<translation id="6122831415929794347">Skakel Veiligblaai af?</translation>
 <translation id="6122875415561139701">Skryftaak word nie toegelaat nie op: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">Die volgende uitbreidings is afhanklik van hierdie uitbreiding:</translation>
 <translation id="6124698108608891449">Hierdie werf benodig nog toestemmings.</translation>
@@ -4017,6 +4028,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6408118934673775994">Lees en verander jou data op <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Prentlêers</translation>
 <translation id="6410328738210026208">Verander kanaal en Kragwas</translation>
+<translation id="6410390304316730527">Veiligblaai beskerm jou teen aanvallers wat jou dalk kan mislei om iets gevaarlik te doen, soos om kwaadwillige sagteware te installeer of jou persoonlike inligting, soos wagwoorde, foonnommers of kredietkaartinligting, bekend te maak. As jy dit afskakel, moet jy versigtig wees wanneer jy op onbekende of nie-fatsoenlike werwe blaai.</translation>
 <translation id="6410668567036790476">Voeg soekenjin by</translation>
 <translation id="641081527798843608">Voorwerppassing</translation>
 <translation id="6412673304250309937">Vergelyk URL'e met 'n lys onveilige werwe wat in Chrome geberg word. As 'n werf probeer om jou wagwoord te steel, of wanneer jy 'n skadelike lêer aflaai, sal Chrome dalk ook URL'e, insluitend stukkies bladsyinhoud, na Veiligblaai toe stuur.</translation>
@@ -5936,6 +5948,7 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8951256747718668828">Terugstelling kon weens 'n probleem nie voltooi word nie</translation>
 <translation id="8951465597020890363">Verlaat besoekermodus in elk geval?</translation>
 <translation id="8952831374766033534">Opstellingopsie word nie gesteun nie: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">Terwyl dit laai</translation>
 <translation id="895347679606913382">Begin tans …</translation>
 <translation id="8957762313041272117">Intydse Onderskrif</translation>
 <translation id="895944840846194039">JavaScript-geheue</translation>

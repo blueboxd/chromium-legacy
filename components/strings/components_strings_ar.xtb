@@ -52,7 +52,7 @@
 <translation id="1197088940767939838">برتقالي</translation>
 <translation id="1201402288615127009">التالي</translation>
 <translation id="1201895884277373915">المزيد من هذا الموقع</translation>
-<translation id="1205963431094182634">‏يُرجى تسجيل الدخول لاستخدام كلمة المرور المُخزّنة في حسابك على Google.</translation>
+<translation id="1205963431094182634">‏يُرجى تسجيل الدخول لاستخدام كلمات المرور المُخزّنة في حسابك على Google.</translation>
 <translation id="1206967143813997005">توقيع أوَّلي سيئ</translation>
 <translation id="1209206284964581585">إخفاء الآن</translation>
 <translation id="121201262018556460">لقد حاولت الوصول إلى <ph name="DOMAIN" />، ولكن الخادم قدّم شهادة تحتوي على مفتاح ضعيف. ربما قام أحد المهاجمين باختراق المفتاح الخاص، ولا يكون الخادم هو الخادم الذي تتوقعه (قد تكون على اتصال بأحد المهاجمين).</translation>
@@ -943,7 +943,7 @@
 <translation id="5029568752722684782">محو النسخة</translation>
 <translation id="5030338702439866405">جهة الإصدار</translation>
 <translation id="503069730517007720">يلزم شهادة جذر لـ "<ph name="SOFTWARE_NAME" />" ولكن لم يتم تثبيتها. ينبغي على مشرف تقنية المعلومات أن يلقي نظرة على تعليمات التهيئة لـ "<ph name="SOFTWARE_NAME" />" لإصلاح تلك المشكلة. <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="5031870354684148875">‏لمحة عامة عن "ترجمة Google"</translation>
+<translation id="5031870354684148875">‏لمحة عن "ترجمة Google"</translation>
 <translation id="503498442187459473">يريد <ph name="HOST" /> استخدام الكاميرا والميكروفون.</translation>
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5040262127954254034">الخصوصية</translation>

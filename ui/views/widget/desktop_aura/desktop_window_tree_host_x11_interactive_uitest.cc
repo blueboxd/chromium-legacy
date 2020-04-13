@@ -19,7 +19,7 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/test/views_interactive_ui_test_base.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
@@ -108,23 +108,22 @@ void DispatchMouseMotionEvent(DesktopWindowTreeHostX11* desktop_host,
 
 }  // namespace
 
-class DesktopWindowTreeHostX11Test : public ViewsInteractiveUITestBase {
+class DesktopWindowTreeHostX11Test : public test::DesktopWidgetTestInteractive {
  public:
   DesktopWindowTreeHostX11Test() = default;
   ~DesktopWindowTreeHostX11Test() override = default;
 
-  // testing::Test
+  // DesktopWidgetTestInteractive
   void SetUp() override {
-    ViewsInteractiveUITestBase::SetUp();
-
     // Make X11 synchronous for our display connection. This does not force the
     // window manager to behave synchronously.
     XSynchronize(gfx::GetXDisplay(), x11::True);
+    DesktopWidgetTestInteractive::SetUp();
   }
 
   void TearDown() override {
     XSynchronize(gfx::GetXDisplay(), x11::False);
-    ViewsInteractiveUITestBase::TearDown();
+    DesktopWidgetTestInteractive::TearDown();
   }
 
  private:

@@ -224,16 +224,17 @@ public class OfflinePageArchivePublisherBridge {
 
     private static boolean updateContentResolver(ContentResolver contentResolver, Uri uri,
             ContentValues contentValues, String errorMessage) {
-        /* Even though ContentResolver.update documentation doesn't mention it, an
-         * IllegalStateException may be thrown by it. This is the case, for instance, when there is
-         * a long enough sequence of similarly named files and Android code refuses to generate a
-         *  new unique filename (see https://crbug.com/1010916).
+        /* Even though the documentation for ContentResolver.update doesn't mention it, an
+         * IllegalStateException (and other RuntimeException's) may be thrown in some situations.
+         * This is the case, for instance, when there is a long enough sequence of similarly named
+         * files and Android code refuses to generate a new unique filename. See
+         * https://crbug.com/1010916 for more details.
          */
         try {
             if (contentResolver.update(uri, contentValues, null, null) == 1) return true;
             Log.i(TAG, errorMessage);
-        } catch (IllegalStateException e) {
-            Log.i(TAG, errorMessage, e);
+        } catch (RuntimeException e) {
+            Log.e(TAG, errorMessage, e);
         }
         return false;
     }

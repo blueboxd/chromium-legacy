@@ -703,9 +703,14 @@ void ShelfLayoutManager::ProcessGestureEventOfInAppHotseat(
     return;
 
   base::AutoReset<bool> hide_hotseat(&should_hide_hotseat_, true);
-  UMA_HISTOGRAM_ENUMERATION(
-      kHotseatGestureHistogramName,
-      InAppShelfGestures::kHotseatHiddenDueToInteractionOutsideOfShelf);
+
+  // Record gesture metrics only for ET_GESTURE_BEGIN to avoid over counting.
+  if (event->type() == ui::ET_GESTURE_BEGIN) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kHotseatGestureHistogramName,
+        InAppShelfGestures::kHotseatHiddenDueToInteractionOutsideOfShelf);
+  }
+
   UpdateVisibilityState();
 }
 

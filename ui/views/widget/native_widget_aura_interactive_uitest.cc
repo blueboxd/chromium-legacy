@@ -7,7 +7,6 @@
 #include "ui/aura/window.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/native_widget_factory.h"
-#include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/focus_controller.h"
@@ -41,7 +40,7 @@ class TestFocusRules : public wm::BaseFocusRules {
 
 }  // namespace
 
-using NativeWidgetAuraTest = ViewsInteractiveUITestBase;
+using NativeWidgetAuraTest = DesktopWidgetTestInteractive;
 
 // When requesting view focus from a non-active top level widget, focus is not
 // instantly given. Instead, the view is firstly stored and then it is attempted

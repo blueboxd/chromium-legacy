@@ -358,6 +358,7 @@ Wenn diese Richtlinie nicht festgelegt und die Funktion "CastAllowAllIPs" deakti
 Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert dieser Richtlinie keine Wirkung.</translation>
 <translation id="1509692106376861764">Diese Richtlinie wird ab <ph name="PRODUCT_NAME" />-Version 29 nicht mehr verwendet.</translation>
 <translation id="1514888685242892912"><ph name="PRODUCT_NAME" /> aktivieren</translation>
+<translation id="1515230621229117540">Aktiviert das unverankerte Menü für Bedienungshilfen</translation>
 <translation id="1515824657887788963">Einer Seite erlauben, während des Schließens synchrone XHR-Anfragen auszuführen.</translation>
 <translation id="1522425503138261032">Ermittlung des physischen Standorts des Nutzers durch Websites zulassen</translation>
 <translation id="1523774894176285446">Für konfigurierte Websites soll ein alternativer Browser geöffnet werden.</translation>
@@ -3289,6 +3290,17 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
           Wenn diese Einstellung nicht festgelegt ist, verwendet <ph name="PRODUCT_NAME" /> einen Standardnamen für die Bibliothek.</translation>
 <translation id="5783009211970309878">Kopf- und Fußzeilen drucken</translation>
+<translation id="5783576706065107606">Einschränkungen von <ph name="CORS" />-Prüfungen in der neuen <ph name="CORS" />-Implementierung erlauben, wodurch Erweiterungen kompatibles Verhalten beibehalten können und <ph name="PRODUCT_NAME" /> angegebene Header ohne <ph name="CORS" />-Prüfungen senden kann.
+
+      Wird diese Liste leergelassen, versucht <ph name="PRODUCT_NAME" />, Erweiterungen auf kompatible Weise auszuführen und setzt keine <ph name="API" />-Änderungen für Version 79 von <ph name="PRODUCT_NAME" /> um, wie unter <ph name="WEB_REQUEST_API_MANUAL" /> erläutert.
+
+      Wenn diese Liste die <ph name="HTTP" />-Headernamen von Anfragen enthält, werden diese bei der <ph name="CORS" />-Prüfung ignoriert und die Einschränkung von Prüfungen für Erweiterungen aktiviert.
+
+      Ist die Liste nicht konfiguriert, wird keine der beiden zuvor beschriebenen Einschränkungen angewendet.
+
+      Details zu <ph name="CORS" /> erhalten Sie unter <ph name="CORS_HELP_URL" />.
+
+      Hinweis: Diese Richtlinie sollte ursprünglich planmäßig in <ph name="PRODUCT_NAME" />-Version 82 entfernt werden, wird jetzt aber erst in Version 84 entfernt.</translation>
 <translation id="5790763087505467169">Benachrichtigungen zum automatischen Start bei verwalteten Gastsitzungen reduzieren</translation>
 <translation id="5806128552675651249">Drucken nur ohne Hintergrundgrafiken zulassen</translation>
 <translation id="5809210507920527553">Legt die Einstellungen für den Linux-Container (Crostini) fest.</translation>
@@ -3352,6 +3364,17 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
           Ist die Einstellung deaktiviert oder nicht festgelegt, wird der Standard-Domainname für das TalkGadget ("chromoting-host.talkgadget.google.com") für alle Hosts verwendet.
 
           Clients für den Remotezugriff sind von dieser Richtlinieneinstellung nicht betroffen. Diese verwenden immer "chromoting-client.talkgadget.google.com" für den Zugriff auf das TalkGadget.</translation>
+<translation id="5888171512889380367">Alte <ph name="CORS" />-Implementierung statt des neuen <ph name="CORS" /> verwenden.
+
+      Wenn diese Einstellung auf "true" festgelegt ist, wird die alte Implementierung verwendet, die kompatibel mit vorherigen Versionen sein sollte.
+
+      Wird die Einstellung auf "false" gesetzt oder nicht konfiguriert, kommt die neue Implementierung zum Einsatz, die bei Enterprise-Nutzern Kompatibilitätsprobleme verursachen kann.
+
+      Die Richtlinie wird nach einigen Meilensteinen entfernt.
+
+      Details zu <ph name="CORS" /> erhalten Sie unter <ph name="CORS_HELP_URL" />.
+
+      Hinweis: Diese Richtlinie sollte ursprünglich planmäßig in <ph name="PRODUCT_NAME" />-Version 82 entfernt werden, wird jetzt aber erst in Version 84 entfernt.</translation>
 <translation id="5893553533827140852">Wenn diese Einstellung aktiviert ist, wird für Anfragen zur Gnubby-Authentifizierung ein Proxy über eine Remote-Host-Verbindung verwendet.
 
 Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy für Anfragen zur Gnubby-Authentifizierung verwendet.</translation>
@@ -3625,6 +3648,11 @@ Durch Festlegen dieser Richtlinie bestimmen Sie, ob sich ein Nutzer in <ph name=
 
           Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
+<translation id="6422575351619065453">Im Kioskmodus legt diese Einstellung fest, ob das unverankerte Menü für Bedienungshilfen angezeigt wird.
+
+      Ist diese Richtlinie aktiviert, wird das unverankerte Menü für Bedienungshilfen immer angezeigt.
+
+      Ist diese Richtlinie deaktiviert oder nicht konfiguriert, wird das unverankerte Menü für Bedienungshilfen nie angezeigt.</translation>
 <translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">Android-Apps können nicht zur Verwendung eines Proxys gezwungen werden. 
 Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf freiwilliger Basis übernommen werden:

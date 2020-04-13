@@ -28,7 +28,7 @@ const char kControlPortConnectMessage[] = "cast.master.connect";
 BindingsManagerCast::BindingsManagerCast() : cast_web_contents_(nullptr) {
   // NamedMessagePortConnector binding will be injected into page first.
   AddBinding(kNamedMessagePortConnectorBindingsId,
-             ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+             ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
                  IDR_PORT_CONNECTOR_JS));
 }
 

@@ -37,7 +37,6 @@ void SwitchAccessBackButtonView::ButtonPressed(views::Button* sender,
   // This code should not be called presently, as the button is never shown.
   // TODO(crbug/973719): Transition to using new back button and menu which
   //                     will be implemented using views/.
-  LOG(WARNING) << "Implementation of back button pressed not finished.";
 }
 
 const char* SwitchAccessBackButtonView::GetClassName() const {

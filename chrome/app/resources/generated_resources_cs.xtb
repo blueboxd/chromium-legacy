@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">Tiskový server</translation>
 <translation id="1805967612549112634">Potvrdit kód PIN</translation>
 <translation id="1806335016774576568">Přepnout na jinou otevřenou aplikaci</translation>
+<translation id="1809483812148634490">Z tohoto Chromebooku budou smazány aplikace, které jste stáhli z Google Play.
+    <ph name="LINE_BREAKS1" />
+Může být smazán i váš zakoupený obsah, jako jsou například filmy, televizní pořady, hudba, knihy a další nákupy v aplikacích.
+    <ph name="LINE_BREAKS2" />
+Na aplikace a obsah v jiných zařízeních tato akce nemá vliv.</translation>
 <translation id="1809734401532861917">Přidejte mé záložky, historii, hesla a další nastavení do účtu <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">Služby</translation>
 <translation id="18139523105317219">Název strany EDI</translation>
@@ -1392,6 +1397,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2825848369316359348">Vyhledejte název uvedený na zadní části bezpečnostního klíče</translation>
 <translation id="2828650939514476812">Připojit k síti Wi-Fi</translation>
 <translation id="2835294513443818940">Tento soubor nelze bezpečně stáhnout.</translation>
+<translation id="2835547721736623118">Služba rozpoznávání řeči</translation>
 <translation id="2836269494620652131">Selhání</translation>
 <translation id="2836635946302913370">Přihlášení pomocí tohoto uživatelského jména bylo správcem zakázáno.</translation>
 <translation id="283669119850230892">Chcete-li používat sít <ph name="NETWORK_ID" />, dokončete nejdříve připojení k internetu níže.</translation>
@@ -1536,6 +1542,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3019285239893817657">Tlačítko podstránky</translation>
 <translation id="3020183492814296499">Zkratky</translation>
 <translation id="3020990233660977256">Sériové číslo: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Při provozu na baterii</translation>
 <translation id="3021066826692793094">Motýl</translation>
 <translation id="3021678814754966447">Zobrazit zdrojo&amp;vý kód rámce</translation>
 <translation id="3022978424994383087">Nerozumím.</translation>
@@ -2731,6 +2738,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4633757335284074492">Zálohování na Disk Google. Snadno obnovte data nebo kdykoliv přejděte na jiné zařízení. Tato záloha obsahuje data aplikací. Zálohy se nahrávají do Googlu a šifrují pomocí hesla účtu Google dítěte.</translation>
 <translation id="4634771451598206121">Znovu přihlásit...</translation>
 <translation id="4635398712689569051">Stránka <ph name="PAGE_NAME" /> hostům není k dispozici.</translation>
+<translation id="4635444580397524003">Záloha Linuxu byla úspěšně obnovena.</translation>
 <translation id="4636930964841734540">Informace</translation>
 <translation id="4637083375689622795">Další akce, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Zapnout ladění ADB</translation>
@@ -2906,6 +2914,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4890773143211625964">Zobrazit rozšířené možnosti tiskárny</translation>
 <translation id="4891089016822695758">Fórum beta</translation>
 <translation id="4892229439761351791">Web může používat Bluetooth</translation>
+<translation id="489258173289528622">Akce nečinnosti při provozu na baterii</translation>
 <translation id="4893336867552636863">Tímto z tohoto zařízení trvale smažete své údaje o prohlížení.</translation>
 <translation id="4893522937062257019">Na obrazovce uzamčení</translation>
 <translation id="489454699928748701">Povolit webům používání senzorů pohybu</translation>
@@ -3612,6 +3621,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5863445608433396414">Aktivovat funkce ladění</translation>
 <translation id="5864195618110239517">Použít měřené připojení</translation>
 <translation id="5864471791310927901">Vyhledávání serveru DHCP selhalo.</translation>
+<translation id="5864754048328252126">Akce nečinnosti při nabíjení</translation>
 <translation id="5865508026715185451">Aplikace <ph name="APP_NAME" /> se brzy pozastaví</translation>
 <translation id="586567932979200359">Aplikaci <ph name="PRODUCT_NAME" /> spouštíte z bitové kopie disku. Pokud ji nainstalujte do svého počítače, můžete ji spouštět bez bitové kopie disku a umožníte její aktualizace.</translation>
 <translation id="5865733239029070421">Automaticky odesílá statistiky o využívání a zprávy o selhání do Googlu</translation>
@@ -3811,6 +3821,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6120205520491252677">Připnout tuto stránku na úvodní obrazovku...</translation>
 <translation id="6122081475643980456">Vaše připojení k internetu je ovládáno</translation>
 <translation id="6122095009389448667">Tomuto webu přístup ke schránce i nadále blokovat</translation>
+<translation id="6122831415929794347">Vypnout Bezpečné prohlížení?</translation>
 <translation id="6122875415561139701">Operace zápisu v zařízení <ph name="DEVICE_NAME" /> není povolena.</translation>
 <translation id="6124650939968185064">Na tomto rozšíření závisejí následující rozšíření:</translation>
 <translation id="6124698108608891449">Web potřebuje další oprávnění.</translation>
@@ -4014,6 +4025,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6408118934673775994">Čtení a úprava dat na webu <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> a <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Obrázkové soubory</translation>
 <translation id="6410328738210026208">Změnit kanál a použít funkci Powerwash</translation>
+<translation id="6410390304316730527">Bezpečné prohlížení vás chrání před útočníky, kteří se vás snaží přimět k nebezpečné akci, jako je instalace škodlivého softwaru nebo vyzrazení osobních údajů (například hesel, telefonních čísel nebo platebních karet). Pokud ji vypnete, budete si muset dávat pozor na neznámé a podezřelé weby.</translation>
 <translation id="6410668567036790476">Přidat vyhledávač</translation>
 <translation id="641081527798843608">Shoda předmětu</translation>
 <translation id="6412673304250309937">Kontroluje adresy URL oproti seznamu nebezpečných webů uloženému v Chromu. Pokud se web pokusí odcizit vám heslo nebo když stáhnete škodlivý soubor, může Chrome Bezpečnému prohlížení odeslat také adresy URL, včetně částí obsahu stránky.</translation>
@@ -5933,6 +5945,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8951256747718668828">Obnovení se kvůli chybě nepodařilo dokončit</translation>
 <translation id="8951465597020890363">Přesto režim hosta ukončit?</translation>
 <translation id="8952831374766033534">Konfigurační možnost není podporována: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">Při nabíjení</translation>
 <translation id="895347679606913382">Spouštění...</translation>
 <translation id="8957762313041272117">Živý přepis</translation>
 <translation id="895944840846194039">Paměť JavaScriptu</translation>

@@ -1355,7 +1355,18 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
   bool is_layout_grid = layout_object && layout_object->IsLayoutGrid();
 
   // Handle the 'none' case.
-  if (track_sizes.IsEmpty() && auto_repeat_track_sizes.IsEmpty())
+  bool track_list_is_empty =
+      track_sizes.IsEmpty() && auto_repeat_track_sizes.IsEmpty();
+  if (is_layout_grid && track_list_is_empty) {
+    // For grids we should consider every listed track, whether implicitly or
+    // explicitly created. Empty grids have a sole grid line per axis.
+    auto& positions = is_row_axis
+                          ? ToLayoutGrid(layout_object)->ColumnPositions()
+                          : ToLayoutGrid(layout_object)->RowPositions();
+    track_list_is_empty = positions.size() == 1;
+  }
+
+  if (track_list_is_empty)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();

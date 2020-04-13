@@ -3053,7 +3053,6 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     immersive_mode_controller_->SetEnabled(fullscreen);
   }
 
-  browser_->WindowFullscreenStateWillChange();
   browser_->WindowFullscreenStateChanged();
 
   if (fullscreen && !chrome::IsRunningInAppMode()) {
@@ -3332,9 +3331,8 @@ Profile* BrowserView::GetProfile() {
   return browser_->profile();
 }
 
-void BrowserView::UpdateUIForTabFullscreen(TabFullscreenState state) {
-  frame()->GetFrameView()->UpdateFullscreenTopUI(
-      state == ExclusiveAccessContext::STATE_ENTER_TAB_FULLSCREEN);
+void BrowserView::UpdateUIForTabFullscreen() {
+  frame()->GetFrameView()->UpdateFullscreenTopUI();
 }
 
 WebContents* BrowserView::GetActiveWebContents() {

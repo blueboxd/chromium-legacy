@@ -149,13 +149,16 @@ TEST_F(LocationBarModelImplTest, FormatsReaderModeUrls) {
   EXPECT_EQ(originalDisplayUrl, model()->GetURLForDisplay());
   EXPECT_EQ(originalFormattedFullUrl, model()->GetFormattedFullURL());
 
-  // Similarly, https scheme should also be hidden.
+  // Similarly, https scheme should also be hidden, except from
+  // GetFormattedFullURL, because kFormatUrlOmitDefaults does not omit https.
   const GURL https_url("https://www.example.com/article.html");
   distilled = dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
       dom_distiller::kDomDistillerScheme, https_url, "title");
   delegate()->SetURL(distilled);
   EXPECT_EQ(originalDisplayUrl, model()->GetURLForDisplay());
-  EXPECT_EQ(originalFormattedFullUrl, model()->GetFormattedFullURL());
+  EXPECT_EQ(
+      base::ASCIIToUTF16("https://www.example.com/article.html/TestSuffix"),
+      model()->GetFormattedFullURL());
 
   // Invalid dom-distiller:// URLs should be shown, because they do not
   // correspond to any article.

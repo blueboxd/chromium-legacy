@@ -132,6 +132,7 @@ class CORE_EXPORT Keyframe : public GarbageCollected<Keyframe> {
       return composite_ == EffectModel::kCompositeReplace ? 0 : 1;
     }
     virtual bool IsNeutral() const = 0;
+    virtual bool IsRevert() const = 0;
     virtual PropertySpecificKeyframe* CloneWithOffset(double offset) const = 0;
 
     // FIXME: Remove this once CompositorAnimations no longer depends on

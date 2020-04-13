@@ -427,6 +427,8 @@ class BrowserView : public BrowserWindow,
           callback) override;
   std::string GetWorkspace() const override;
   bool IsVisibleOnAllWorkspaces() const override;
+  void HideDownloadShelf();
+  void UnhideDownloadShelf();
 
   void ShowEmojiPanel() override;
 
@@ -512,10 +514,8 @@ class BrowserView : public BrowserWindow,
 
   // ExclusiveAccessContext:
   Profile* GetProfile() override;
-  void UpdateUIForTabFullscreen(TabFullscreenState state) override;
+  void UpdateUIForTabFullscreen() override;
   content::WebContents* GetActiveWebContents() override;
-  void HideDownloadShelf() override;
-  void UnhideDownloadShelf() override;
   bool CanUserExitFullscreen() const override;
 
   // ExclusiveAccessBubbleViewsContext:

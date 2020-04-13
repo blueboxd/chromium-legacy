@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">列印伺服器</translation>
 <translation id="1805967612549112634">確認 PIN 碼</translation>
 <translation id="1806335016774576568">切換至其他已開啟的應用程式</translation>
+<translation id="1809483812148634490">你透過 Google Play 下載的應用程式將會從這部 Chromebook 中刪除。
+    <ph name="LINE_BREAKS1" />
+    你所購買的內容 (例如電影、電視節目、音樂、書籍或其他應用程式內購項目) 可能也會一併遭到刪除。
+    <ph name="LINE_BREAKS2" />
+    這項操作不會影響其他裝置上的應用程式或內容。</translation>
 <translation id="1809734401532861917">將我的書籤、歷史記錄、密碼和其他設定新增至 <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">服務</translation>
 <translation id="18139523105317219">EDI 合作對象名稱</translation>
@@ -1392,6 +1397,7 @@
 <translation id="2825848369316359348">找出印在安全金鑰背面的名稱</translation>
 <translation id="2828650939514476812">連線至 Wi-Fi 網路</translation>
 <translation id="2835294513443818940">無法安全下載這個檔案。</translation>
+<translation id="2835547721736623118">語音辨識服務</translation>
 <translation id="2836269494620652131">當機</translation>
 <translation id="2836635946302913370">管理員已禁止使用這個使用者名稱登入。</translation>
 <translation id="283669119850230892">如要使用 <ph name="NETWORK_ID" /> 網路，請先在下方連線至網際網路。</translation>
@@ -1536,6 +1542,7 @@
 <translation id="3019285239893817657">子頁面按鈕</translation>
 <translation id="3020183492814296499">快速鍵</translation>
 <translation id="3020990233660977256">序號：<ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">使用電池時</translation>
 <translation id="3021066826692793094">蝴蝶</translation>
 <translation id="3021678814754966447">檢視頁框原始碼(&amp;V)</translation>
 <translation id="3022978424994383087">無法辨識語音內容。</translation>
@@ -2731,6 +2738,7 @@
 <translation id="4633757335284074492">使用 Google 雲端硬碟備份你的資料。你隨時可以輕鬆還原資料或切換裝置。這個備份項目包含應用程式資料。備份內容會上傳到 Google，並使用貴子女的 Google 帳戶密碼加密。</translation>
 <translation id="4634771451598206121">重新登入...</translation>
 <translation id="4635398712689569051">訪客使用者無法使用<ph name="PAGE_NAME" />。</translation>
+<translation id="4635444580397524003">已成功復原 Linux 備份資料。</translation>
 <translation id="4636930964841734540">資訊</translation>
 <translation id="4637083375689622795">更多動作 (<ph name="EMAIL" />)</translation>
 <translation id="4638930039313743000">啟用 ADB 偵錯</translation>
@@ -2906,6 +2914,7 @@
 <translation id="4890773143211625964">顯示進階印表機選項</translation>
 <translation id="4891089016822695758">測試版論壇</translation>
 <translation id="4892229439761351791">網站可以使用藍牙</translation>
+<translation id="489258173289528622">使用電池時的閒置動作</translation>
 <translation id="4893336867552636863">這會將您的瀏覽資料從這個裝置上永久刪除。</translation>
 <translation id="4893522937062257019">螢幕鎖定時</translation>
 <translation id="489454699928748701">允許網站使用動作感應器</translation>
@@ -3612,6 +3621,7 @@
 <translation id="5863445608433396414">啟用偵錯功能</translation>
 <translation id="5864195618110239517">使用計量付費連線</translation>
 <translation id="5864471791310927901">DHCP 查閱失敗</translation>
+<translation id="5864754048328252126">充電時的閒置動作</translation>
 <translation id="5865508026715185451">「<ph name="APP_NAME" />」即將暫停</translation>
 <translation id="586567932979200359">你正在透過磁碟映像執行 <ph name="PRODUCT_NAME" />。你可以直接在電腦上安裝程式，往後無需透過磁碟映像即可直接執行，而且能隨時使用最新的版本。</translation>
 <translation id="5865733239029070421">自動將使用統計資料和當機報告傳送給 Google</translation>
@@ -3811,6 +3821,7 @@
 <translation id="6120205520491252677">將這個網頁固定到開始畫面...</translation>
 <translation id="6122081475643980456">你的網際網路連線目前受到控制</translation>
 <translation id="6122095009389448667">繼續禁止這個網站讀取剪貼簿</translation>
+<translation id="6122831415929794347">要停用安全瀏覽功能嗎？</translation>
 <translation id="6122875415561139701">無法在以下裝置上執行寫入作業：「<ph name="DEVICE_NAME" />」。</translation>
 <translation id="6124650939968185064">下列擴充功能與這個擴充功能之間有相依關係：</translation>
 <translation id="6124698108608891449">這個網站需要更多權限。</translation>
@@ -4014,6 +4025,7 @@
 <translation id="6408118934673775994">讀取及變更你在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 網站上的資料</translation>
 <translation id="6410257289063177456">圖片檔</translation>
 <translation id="6410328738210026208">變更版本並執行 Powerwash</translation>
+<translation id="6410390304316730527">安全瀏覽功能可保護你不受到攻擊，攻擊者可能會誘騙你從事一些危險行為，例如安裝惡意軟體或洩漏個人資訊 (例如密碼、電話號碼或信用卡資訊)。如果你停用這項功能，瀏覽不熟悉或風評不佳的網站時，請提高警覺。</translation>
 <translation id="6410668567036790476">新增搜尋引擎</translation>
 <translation id="641081527798843608">主題比對</translation>
 <translation id="6412673304250309937">可使用儲存在 Chrome 中的不安全網站清單檢查網址。如果有網站試圖竊取你的密碼，或當你下載有害檔案時，Chrome 可能也會將網址 (包括部分網頁內容) 傳送至安全瀏覽功能。</translation>
@@ -5933,6 +5945,7 @@
 <translation id="8951256747718668828">發生錯誤，因此無法完成還原程序</translation>
 <translation id="8951465597020890363">仍然要結束訪客模式嗎？</translation>
 <translation id="8952831374766033534">不支援的設定選項：<ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">充電時</translation>
 <translation id="895347679606913382">啟動中...</translation>
 <translation id="8957762313041272117">即時字幕</translation>
 <translation id="895944840846194039">JavaScript 記憶體使用量</translation>

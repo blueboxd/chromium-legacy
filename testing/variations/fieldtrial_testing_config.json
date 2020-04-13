@@ -1128,11 +1128,10 @@
             ]
         }
     ],
-    "BlinkSchedulerVeryHighPriorityForCompositingExperiments": [
+    "BlinkSchedulerPrioritizeRenderingUntilBeginMainFrame": [
         {
             "platforms": [
                 "android",
-                "android_weblayer",
                 "chromeos",
                 "linux",
                 "mac",
@@ -1140,17 +1139,9 @@
             ],
             "experiments": [
                 {
-                    "name": "VeryHighPriorityForCompositingAfterDelay100",
-                    "params": {
-                        "CompositingDelayLength": "100"
-                    },
+                    "name": "Enabled",
                     "enable_features": [
-                        "BlinkSchedulerVeryHighPriorityForCompositingAfterDelay"
-                    ],
-                    "disable_features": [
-                        "BlinkSchedulerPrioritizeCompositingUntilBeginMainFrame",
-                        "BlinkSchedulerVeryHighPriorityForCompositingAlternating",
-                        "PrioritizeCompositingAndLoadingDuringEarlyLoading"
+                        "BlinkSchedulerPrioritizeCompositingUntilBeginMainFrame"
                     ]
                 }
             ]

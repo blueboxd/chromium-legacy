@@ -9,12 +9,16 @@
 #include <map>
 #include <memory>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 namespace upboarding {
 namespace test {
 
 namespace {
+
+const char kTimeStr[] = "03/18/20 01:00:00 AM";
+
 void SerializeEntry(const QueryTileEntry* entry, std::stringstream& out) {
   if (!entry)
     return;
@@ -60,6 +64,63 @@ const std::string DebugString(const QueryTileEntry* root) {
     out << line;
   }
   return out.str();
+}
+
+const std::string DebugString(const TileGroup* group) {
+  if (!group)
+    return std::string();
+  std::stringstream out;
+  out << "Group detail: \n";
+  out << "id: " << group->id << "locale: " << group->locale
+      << " last_updated_ts: " << group->last_updated_ts << " \n";
+  for (const auto& tile : group->tiles) {
+    out << DebugString(tile.get());
+  }
+  return out.str();
+}
+
+void ResetTestEntry(QueryTileEntry* entry) {
+  entry->id = "test-guid";
+  entry->query_text = "test query str";
+  entry->display_text = "test display text";
+  entry->accessibility_text = "read this test display text";
+  entry->image_metadatas.clear();
+  entry->image_metadatas.emplace_back("image-test-id-1",
+                                      GURL("http://www.example.com"));
+  entry->image_metadatas.emplace_back("image-test-id-2",
+                                      GURL("http://www.fakeurl.com"));
+
+  auto entry1 = std::make_unique<QueryTileEntry>();
+  entry1->id = "test-guid-001";
+  auto entry2 = std::make_unique<QueryTileEntry>();
+  entry2->id = "test-guid-002";
+  auto entry3 = std::make_unique<QueryTileEntry>();
+  entry3->id = "test-guid-003";
+  entry1->sub_tiles.clear();
+  entry1->sub_tiles.emplace_back(std::move(entry3));
+  entry->sub_tiles.clear();
+  entry->sub_tiles.emplace_back(std::move(entry1));
+  entry->sub_tiles.emplace_back(std::move(entry2));
+}
+
+void ResetTestGroup(TileGroup* group) {
+  group->id = "group_guid";
+  group->locale = "en-US";
+  DCHECK(base::Time::FromString(kTimeStr, &group->last_updated_ts));
+  group->tiles.clear();
+  auto test_entry_1 = std::make_unique<QueryTileEntry>();
+  ResetTestEntry(test_entry_1.get());
+  auto test_entry_2 = std::make_unique<QueryTileEntry>();
+  test_entry_2->id = "test_entry_id_2";
+  auto test_entry_3 = std::make_unique<QueryTileEntry>();
+  ResetTestEntry(test_entry_3.get());
+  test_entry_3->id = "test_entry_id_3";
+  auto test_entry_4 = std::make_unique<QueryTileEntry>();
+  test_entry_4->id = "test_entry_id_4";
+  test_entry_1->sub_tiles.emplace_back(std::move(test_entry_2));
+  test_entry_1->sub_tiles.emplace_back(std::move(test_entry_3));
+  group->tiles.emplace_back(std::move(test_entry_1));
+  group->tiles.emplace_back(std::move(test_entry_4));
 }
 
 }  // namespace test

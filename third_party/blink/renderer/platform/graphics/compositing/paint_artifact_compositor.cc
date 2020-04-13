@@ -692,6 +692,12 @@ bool PaintArtifactCompositor::PendingLayer::CanMerge(
   return true;
 }
 
+bool PaintArtifactCompositor::PendingLayer::MayDrawContent(
+    const PaintArtifact& paint_artifact) const {
+  return paint_chunk_indices.size() > 1 ||
+         FirstPaintChunk(paint_artifact).size() > 0;
+}
+
 // Returns nullptr if 'ancestor' is not a strict ancestor of 'node'.
 // Otherwise, return the child of 'ancestor' that is an ancestor of 'node' or
 // 'node' itself.
@@ -715,6 +721,7 @@ bool PaintArtifactCompositor::MightOverlap(const PendingLayer& layer_a,
 }
 
 bool PaintArtifactCompositor::DecompositeEffect(
+    const PaintArtifact& paint_artifact,
     const EffectPaintPropertyNode& unaliased_parent_effect,
     wtf_size_t first_layer_in_parent_group_index,
     const EffectPaintPropertyNode& unaliased_effect,
@@ -747,15 +754,22 @@ bool PaintArtifactCompositor::DecompositeEffect(
 
   // Exotic blending layer can be decomposited only if its parent group
   // (which defines the scope of the blending) has zero or one layer before it,
-  // and it can be merged into that layer.
+  // and it can be merged into that layer. However, a layer not drawing content
+  // at the beginning of the parent group doesn't count, as the blending mode
+  // doesn't apply to it.
   if (unaliased_effect.BlendMode() != SkBlendMode::kSrcOver) {
     auto num_previous_siblings =
         layer_index - first_layer_in_parent_group_index;
     if (num_previous_siblings) {
-      if (num_previous_siblings > 1)
+      if (num_previous_siblings > 2)
         return false;
-      if (!pending_layers_[first_layer_in_parent_group_index].CanMerge(
-              layer, *upcast_state))
+      if (num_previous_siblings == 2 &&
+          pending_layers_[first_layer_in_parent_group_index].MayDrawContent(
+              paint_artifact))
+        return false;
+      const auto& previous_sibling = pending_layers_[layer_index - 1];
+      if (previous_sibling.MayDrawContent(paint_artifact) &&
+          !previous_sibling.CanMerge(layer, *upcast_state))
         return false;
     }
   }
@@ -899,8 +913,9 @@ void PaintArtifactCompositor::LayerizeGroup(
       // the previous layers.
       if (first_layer_in_subgroup != pending_layers_.size() - 1)
         continue;
-      if (!DecompositeEffect(unaliased_group, first_layer_in_current_group,
-                             *unaliased_subgroup, first_layer_in_subgroup))
+      if (!DecompositeEffect(paint_artifact, unaliased_group,
+                             first_layer_in_current_group, *unaliased_subgroup,
+                             first_layer_in_subgroup))
         continue;
     }
     // At this point pending_layers_.back() is the either a layer from a

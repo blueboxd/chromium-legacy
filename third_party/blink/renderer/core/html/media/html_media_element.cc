@@ -3998,8 +3998,7 @@ void HTMLMediaElement::MediaSourceOpened(WebMediaSource* web_media_source) {
 }
 
 bool HTMLMediaElement::IsInteractiveContent() const {
-  return FastHasAttribute(html_names::kControlsAttr) ||
-         HTMLElement::IsInteractiveContent();
+  return FastHasAttribute(html_names::kControlsAttr);
 }
 
 void HTMLMediaElement::Trace(Visitor* visitor) {

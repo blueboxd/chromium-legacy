@@ -609,6 +609,11 @@
 <translation id="1805888043020974594">මුද්‍රණ සේවාදායකය</translation>
 <translation id="1805967612549112634">රහස් අංකය තහවුරු කරන්න</translation>
 <translation id="1806335016774576568">වෙනත් විවෘත යෙදුමකට මාරු වන්න</translation>
+<translation id="1809483812148634490">ඔබ Google Play වෙතින් බාගෙන ඇති අන්තර්ගතය මෙම Chromebook වෙතින් මකනු ලැබේ.
+      <ph name="LINE_BREAKS1" />
+      ඔබ මිලදී ගත් චිත්‍රපට, TV දර්ශන, සංගීතය, පොත්, හෝ වෙනත් යෙදුම-තුළ මිලදී ගැනීම් යනාදී අන්තර්ගතයද මැකීමට හැකිය.
+      <ph name="LINE_BREAKS2" />
+      මෙය වෙනත් උපාංග මත යෙදුම් හෝ අන්තර්ගතය කෙරෙහි බලනොපායි.</translation>
 <translation id="1809734401532861917">මගේ පිටුසන්, ඉතිහාසය, මුරපද සහ වෙනත් සැකසීම් <ph name="USER_EMAIL_ADDRESS" /> වෙත එක් කරන්න</translation>
 <translation id="1813278315230285598">සේවා</translation>
 <translation id="18139523105317219">EDI සාද නාමය</translation>
@@ -1390,6 +1395,7 @@
 <translation id="2825848369316359348">ඔබේ ආරක්‍ෂක යතුරේ පිටුපස මුද්‍රණ කර ඇති නම සොයා ගන්න</translation>
 <translation id="2828650939514476812">Wi-Fi ජාලයකට සම්බන්ධ වන්න</translation>
 <translation id="2835294513443818940">මෙම ගොනුව සුරක්‍ෂිතව බාගත නොහැක.</translation>
+<translation id="2835547721736623118">කථන හඳුනා ගැනීමේ සේවය</translation>
 <translation id="2836269494620652131">බිඳවැටීම</translation>
 <translation id="2836635946302913370">මෙම භාවිතනම සමඟ එවීම ඔබේ පරිපාලක විසින් අක්‍රිය කරන ලදි.</translation>
 <translation id="283669119850230892"><ph name="NETWORK_ID" /> ජාලය භාවිතා කිරීම සඳහා, ඔබේ අන්තර්ජාල සම්බන්ධතාවය පහතින් සම්පූර්ණ කරන්න.</translation>
@@ -1534,6 +1540,7 @@
 <translation id="3019285239893817657">උප පිටු බොත්තම</translation>
 <translation id="3020183492814296499">කෙටි මං</translation>
 <translation id="3020990233660977256">කාණ්ඩ අංකය: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">බැටරිය මත සිටින විට</translation>
 <translation id="3021066826692793094">සමනළයා</translation>
 <translation id="3021678814754966447">රාමු මූලය දර්ශනය (&amp;V)</translation>
 <translation id="3022978424994383087">එය ලබා ගත්තේ නැත.</translation>
@@ -2731,6 +2738,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4633757335284074492">Google Drive වෙත උපස්ථ කරන්න. ඕනෑම වේලාවක දත්ත පහසුවෙන් නැවත සකසන්න හෝ උපාංග අතර මාරු වන්න. මෙම උපස්ථයට යෙදුම් දත්ත ඇතුළුයි. උපස්ථ Google වෙත උඩුගත කෙරෙන අතර ඔබේ දරුවාගේ Google ගිණුමේ මුරපදය භාවිත කර සංකේතන කෙරේ.</translation>
 <translation id="4634771451598206121">නැවත පිවිසෙන්න...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> ආගන්තුක පරිශීලකයින්ට නොමැත.</translation>
+<translation id="4635444580397524003">ලිනක්ස් උපස්ථය සාර්ථකව ප්‍රතිසාධන කර ඇත.</translation>
 <translation id="4636930964841734540">තතු</translation>
 <translation id="4637083375689622795">තවත් ක්‍රියා, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">ADB නිදොස් කිරීම සබල කරන්න</translation>
@@ -2906,6 +2914,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4890773143211625964">උසස් මුද්‍රක විකල්ප පෙන්වන්න</translation>
 <translation id="4891089016822695758">බීටා සංසදය</translation>
 <translation id="4892229439761351791">වෙබ් අඩවියට බ්ලූටූත් භාවිත කළ හැක</translation>
+<translation id="489258173289528622">බැටරිය මත සිටින විට අකර්මණ්‍ය ක්‍රියාව</translation>
 <translation id="4893336867552636863">මෙය මෙම උපාංගය වෙතින් ඔබේ බ්‍රවුස් කිරීමේ දත්ත ස්ථිරව මකනු ඇත.</translation>
 <translation id="4893522937062257019">අගුලු තිරය මත</translation>
 <translation id="489454699928748701">වෙබ් අඩවිවලට චලන සංවේදක භාවිත කිරීමට ඉඩ දෙන්න</translation>
@@ -3613,6 +3622,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5863445608433396414">දෝශ නිරාකරණ විශේෂාංග සක්‍රීය</translation>
 <translation id="5864195618110239517">මනුගත සම්බන්ධතාව භාවිත කරන්න</translation>
 <translation id="5864471791310927901">DHCP විමසුම අසාර්ථක විය</translation>
+<translation id="5864754048328252126">ආරෝපණය අතුරතුර අකර්මණ්‍ය ක්‍රියාව</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> ඉක්මනින් විරාම වෙයි</translation>
 <translation id="586567932979200359">ඔබ <ph name="PRODUCT_NAME" /> ක්‍රියාත්මක කරන්නේ එහි තැටි අනුරූපයෙනි. එය ඔබේ පරිගණකය තුළ ස්ථාපිත කිරීම තැටි අනුරුවක් නොමැතිව ක්‍රියාකරවීමට ඉඩදෙයි, තවද එය යාවත්කාලීන බව තහවුරු කරයි.</translation>
 <translation id="5865733239029070421">භාවිතා සංඛ්‍යාල්ඛන සහ සහ බිඳ වැටීම් වාර්තා ස්වයංක්‍රියව Google වෙත යවයි</translation>
@@ -3812,6 +3822,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6120205520491252677">මෙම පිටුව ආරම්භක තිරයට අමුණන්න...</translation>
 <translation id="6122081475643980456">ඔබගේ අන්තර්ජාල සබැඳුම පාලනය කෙරෙමින් ඇත</translation>
 <translation id="6122095009389448667">පසුරු පුවරුව දැකීමෙන් මෙම අඩවිය දිගටම අවහිර කරන්න</translation>
+<translation id="6122831415929794347">ආරක්‍ෂිත බ්‍රවුස් කිරීම අක්‍රිය කරන්නේද?</translation>
 <translation id="6122875415561139701">මෙය මත ලිවීම් මෙහෙයුමට අවසර නොදේ: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">පහත දිගු මෙම දිගුව මත රඳා පවතී:</translation>
 <translation id="6124698108608891449">මෙම වෙබ් අඩවියට තවත් අවසර අවශ්‍යයි.</translation>
@@ -4015,6 +4026,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, සහ <ph name="WEBSITE_3" /> හි ඔබගේ දත්ත කියවා වෙනස් කරන්න</translation>
 <translation id="6410257289063177456">පින්තූර ගොනු</translation>
 <translation id="6410328738210026208">නාලිකාව සහ පවර්වොෂ් වෙනස් කරන්න</translation>
+<translation id="6410390304316730527">ආරක්ෂිත බ්‍රවුස් කිරීම දුෂ්ට මෘදුකාංග ස්ථාපිත කිරීම හෝ මුරපද, දුරකථන අංක, හෝ ණය කාඩ්පත් අංක වැනි පුද්ගලික තොරතුරු හෙළි කිරීම වැනි යම් අනතුරුදායක දේ කිරීමට ඔබට උපාය කළ හැකි ප්‍රහාරකයින්ට එරෙහිව ඔබව ආරක්‍ෂා කරයි. ඔබ එය අක්‍රිය කරන්නේ නම්, නුපුරුදු හෝ අසම්භාවනීය වෙබ් අඩවි බ්‍රවුස් කරන විට පරීක්‍ෂාකාරී වන්න.</translation>
 <translation id="6410668567036790476">සෙවීම් යාන්ත්‍රණය එක් කරන්න</translation>
 <translation id="641081527798843608">විෂය ගැළපුම</translation>
 <translation id="6412673304250309937">Chrome තුළ ගබඩා කර ඇති අනාරක්‍ෂිත වෙබ් අඩවි ලැයිස්තුවක් සමඟ URL පරීක්‍ෂා කරයි. වෙබ් අඩවියක් ඔබේ මුරපදය සොරා ගැනීමට උත්සාහ කරන්නේ නම්, හෝ ඔබ හානිකර ගොනුවක් බාගන්නා විට, Chrome පිටු අන්තර්ගතයේ කැබැලි ඇතුළුව ආරක්‍ෂිත බ්‍රවුස් කිරීම වෙත URL යැවීමටද හැකිය.</translation>
@@ -5931,6 +5943,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="8951256747718668828">දෝෂයක් හේතුවෙන් ප්‍රතිසාධනය සම්පූර්ණ කළ නොහැකි විය</translation>
 <translation id="8951465597020890363">කෙසේ වූවත් ආගන්තුක ප්‍රකාරයෙන් පිට වන්නේද?</translation>
 <translation id="8952831374766033534">වින්‍යාස විකල්පයට සහය නොදැක්වේ: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">ආරෝපණය වන අතරතුර</translation>
 <translation id="895347679606913382">ආරම්භ කරමින්...</translation>
 <translation id="8957762313041272117">සජීවී සිරස්තලය</translation>
 <translation id="895944840846194039">JavaScript මතකය</translation>

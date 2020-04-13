@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">Servidor d'impressió</translation>
 <translation id="1805967612549112634">Confirma el PIN</translation>
 <translation id="1806335016774576568">Canvia a una altra aplicació oberta</translation>
+<translation id="1809483812148634490">Les aplicacions que hagis baixat de Google Play se suprimiran d'aquest Chromebook.
+      <ph name="LINE_BREAKS1" />
+      També pot ser que se suprimeixi el contingut que hagis comprat, com ara pel·lícules, sèries de televisió, música, llibres o altres compres fetes des de les aplicacions.
+      <ph name="LINE_BREAKS2" />
+      Això no afecta les aplicacions ni el contingut d'altres dispositius.</translation>
 <translation id="1809734401532861917">Afegeix les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">Serveis</translation>
 <translation id="18139523105317219">Nom de la part EDI</translation>
@@ -1392,6 +1397,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2825848369316359348">Cerca el nom imprès a la part posterior de la clau de seguretat</translation>
 <translation id="2828650939514476812">Connectar a una xarxa Wi-Fi</translation>
 <translation id="2835294513443818940">Aquest fitxer no es pot baixar de manera segura.</translation>
+<translation id="2835547721736623118">Servei de reconeixement de parla</translation>
 <translation id="2836269494620652131">Bloqueig</translation>
 <translation id="2836635946302913370">L'administrador ha desactivat l'inici de sessió amb aquest nom d'usuari.</translation>
 <translation id="283669119850230892">Per fer servir la xarxa <ph name="NETWORK_ID" />, primer cal establir la connexió a Internet a continuació.</translation>
@@ -1536,6 +1542,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3019285239893817657">Botó de subpàgina</translation>
 <translation id="3020183492814296499">Dreceres</translation>
 <translation id="3020990233660977256">Número de sèrie: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Mentre s'utilitza la bateria</translation>
 <translation id="3021066826692793094">Papallona</translation>
 <translation id="3021678814754966447">&amp;Visualitza l'origen del marc</translation>
 <translation id="3022978424994383087">No t'he entès.</translation>
@@ -2067,7 +2074,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="3726137731714254362">Si se suprimeixen carpetes des d'aquí, es deixen de compartir, però no se'n suprimeixen els fitxers.</translation>
 <translation id="3727148787322499904">Els canvis en aquesta opció de configuració afectaran totes les xarxes compartides</translation>
 <translation id="3727187387656390258">Inspecciona l'element emergent</translation>
-<translation id="372722114124766626">Només un cop</translation>
+<translation id="372722114124766626">Només una vegada</translation>
 <translation id="3729303374699765035">Pregunta'm quan un lloc web vulgui descobrir dispositius Bluetooth propers</translation>
 <translation id="3729506734996624908">Llocs web permesos</translation>
 <translation id="3731997362820527097">Selecciona la teva clau de seguretat</translation>
@@ -2730,6 +2737,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4633757335284074492">Crea còpies de seguretat a Google Drive. Canvia de dispositiu o restaura'n les dades fàcilment en qualsevol moment. Aquesta còpia de seguretat inclou dades d'aplicacions. Les còpies de seguretat es pengen a Google i s'encripten amb la contrasenya del Compte de Google del teu fill.</translation>
 <translation id="4634771451598206121">Torna a iniciar la sessió...</translation>
 <translation id="4635398712689569051">La pàgina <ph name="PAGE_NAME" /> no està disponible per als usuaris convidats.</translation>
+<translation id="4635444580397524003">La còpia de seguretat de Linux s'ha restaurat correctament.</translation>
 <translation id="4636930964841734540">Informació</translation>
 <translation id="4637083375689622795">Més accions, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Activa la depuració d'ADB</translation>
@@ -2905,6 +2913,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4890773143211625964">Mostra les opcions avançades de la impressora</translation>
 <translation id="4891089016822695758">Fòrum per a la versió beta</translation>
 <translation id="4892229439761351791">El lloc web pot fer servir Bluetooth</translation>
+<translation id="489258173289528622">Acció d'inactivitat mentre s'utilitza la bateria</translation>
 <translation id="4893336867552636863">Amb aquesta acció, se suprimiran les vostres dades de navegació d'aquest dispositiu permanentment.</translation>
 <translation id="4893522937062257019">A la pantalla de bloqueig</translation>
 <translation id="489454699928748701">Permet que els llocs web utilitzin els sensors de moviment</translation>
@@ -3613,6 +3622,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5863445608433396414">Activa les funcions de depuració</translation>
 <translation id="5864195618110239517">Fes servir la connexió d'ús mesurat</translation>
 <translation id="5864471791310927901">Error en la cerca de DHCP</translation>
+<translation id="5864754048328252126">Acció d'inactivitat mentre es carrega</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> aviat es posarà en pausa</translation>
 <translation id="586567932979200359">Esteu executant <ph name="PRODUCT_NAME" /> des de la imatge de disc. Si instal·leu l'aplicació a l'equip, podreu executar-la sense la imatge de disc i es mantindrà actualitzada.</translation>
 <translation id="5865733239029070421">Envia automàticament a Google estadístiques d'ús i informes d'error</translation>
@@ -3812,6 +3822,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6120205520491252677">Fixa aquesta pàgina a la pantalla d'inici...</translation>
 <translation id="6122081475643980456">La vostra connexió a Internet s'està controlant</translation>
 <translation id="6122095009389448667">Continua impedint que aquest lloc web vegi el porta-retalls</translation>
+<translation id="6122831415929794347">Vols desactivar Navegació segura?</translation>
 <translation id="6122875415561139701">L'operació d'escriptura no es permet a <ph name="DEVICE_NAME" />.</translation>
 <translation id="6124650939968185064">D'aquesta extensió en depenen les extensions següents:</translation>
 <translation id="6124698108608891449">Aquest lloc web necessita més permisos.</translation>
@@ -4015,6 +4026,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6408118934673775994">Llegir i modificar les dades dels llocs web <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Fitxers d'imatge </translation>
 <translation id="6410328738210026208">Canvia el canal i fes Powerwash</translation>
+<translation id="6410390304316730527">Navegació segura et protegeix contra els atacants que et poden enganyar perquè facis alguna acció perillosa, com ara instal·lar programari maliciós o revelar informació personal (per exemple, contrasenyes, números de telèfon o targetes de crèdit). Si la desactives, ves amb compte quan naveguis per llocs web desconeguts o amb mala reputació.</translation>
 <translation id="6410668567036790476">Afegeix un motor de cerca</translation>
 <translation id="641081527798843608">Coincidència d'assumpte</translation>
 <translation id="6412673304250309937">Compara els URL amb una llista de llocs web no segurs emmagatzemada a Chrome. Si un lloc web prova de robar-te la contrasenya o si baixes un fitxer maliciós, és possible que Chrome també n'enviï els URL, inclosos fragments de contingut de les pàgines, a Navegació segura.</translation>
@@ -5935,6 +5947,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8951256747718668828">La restauració no s'ha pogut completar a causa d'un error</translation>
 <translation id="8951465597020890363">Vols sortir del mode de convidat de totes maneres?</translation>
 <translation id="8952831374766033534">Opció de configuració no admesa: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">Mentre es carrega</translation>
 <translation id="895347679606913382">S'està iniciant...</translation>
 <translation id="8957762313041272117">Subtítols instantanis</translation>
 <translation id="895944840846194039">Memòria de JavaScript</translation>

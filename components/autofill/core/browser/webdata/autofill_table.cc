@@ -493,6 +493,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 84:
       *update_compatible_version = false;
       return MigrateToVersion84AddNicknameColumn();
+    case 85:
+      *update_compatible_version = false;
+      return MigrateToVersion85AddCardIssuerColumnToMaskedCreditCard();
   }
   return true;
 }
@@ -2783,6 +2786,16 @@ bool AutofillTable::MigrateToVersion84AddNicknameColumn() {
              "ALTER TABLE masked_credit_cards ADD COLUMN nickname VARCHAR");
 }
 
+bool AutofillTable::MigrateToVersion85AddCardIssuerColumnToMaskedCreditCard() {
+  // Add the new card_issuer column to the masked_credit_cards table and set the
+  // default value to ISSUER_UNKNOWN.
+  return db_->DoesColumnExist("masked_credit_cards", "card_issuer") ||
+         db_->Execute(
+             "ALTER TABLE masked_credit_cards "
+             "ADD COLUMN card_issuer INTEGER "
+             "DEFAULT 0");
+}
+
 bool AutofillTable::AddFormFieldValuesTime(
     const std::vector<FormFieldData>& elements,
     std::vector<AutofillChange>* changes,
@@ -3138,7 +3151,8 @@ bool AutofillTable::InitMaskedCreditCardsTable() {
                       "exp_month INTEGER DEFAULT 0,"
                       "exp_year INTEGER DEFAULT 0, "
                       "bank_name VARCHAR, "
-                      "nickname VARCHAR)")) {
+                      "nickname VARCHAR, "
+                      "card_issuer INTEGER DEFAULT 0)")) {
       NOTREACHED();
       return false;
     }

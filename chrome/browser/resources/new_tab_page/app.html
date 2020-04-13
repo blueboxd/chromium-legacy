@@ -23,7 +23,8 @@
     width: 100%;
   }
 
-  #background > * {
+  #background > *,
+  #oneGoogleBar {
     height: 100%;
     position: absolute;
     top: 0;
@@ -39,13 +40,17 @@
     background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
   }
 
+  #contentContainer {
+    overflow: auto;
+  }
+
   #content {
     align-items: center;
     display: flex;
     flex-direction: column;
-    height: calc(100% - var(--ntp-one-google-bar-height));
-    top: var(--ntp-one-google-bar-height);
-    z-index: 1;
+    min-height: calc(100% - var(--ntp-one-google-bar-height));
+    padding-top: var(--ntp-one-google-bar-height);
+    position: relative;
   }
 
   #logo {
@@ -75,7 +80,7 @@
     background-color: var(--ntp-background-override-color);
     border-radius: calc(0.5 * var(--cr-button-height));
     bottom: 16px;
-    position: absolute;
+    position: fixed;
   }
 
   :host-context([dir='ltr']) #customizeButtonContainer {
@@ -110,7 +115,7 @@
     line-height: 20px;
     max-width: 50vw;
     padding: 8px;
-    position: absolute;
+    position: fixed;
     text-shadow: var(--ntp-theme-text-shadow);
   }
 
@@ -166,54 +171,57 @@
   <ntp-untrusted-iframe id="backgroundImage" hidden="[[!showBackgroundImage_]]">
   </ntp-untrusted-iframe>
   <div id="backgroundGradient" hidden="[[!showBackgroundImage_]]"></div>
-  <div id="content">
-    <ntp-logo id="logo" doodle-allowed$="[[doodleAllowed_]]"
-        single-colored$="[[singleColoredLogo_]]">
-    </ntp-logo>
-    <ntp-fakebox id="fakebox" on-open-voice-search="onVoiceSearchClick_">
-    </ntp-fakebox>
-    <ntp-most-visited id="mostVisited" dark$="[[theme_.isDark]]">
-    </ntp-most-visited>
-    <dom-if if="[[showCustomizeDialog_]]" restamp>
-      <template>
-        <ntp-customize-dialog on-close="onCustomizeDialogClose_"
-            theme="[[theme_]]" background-selection="{{backgroundSelection_}}">
-        </ntp-customize-dialog>
-      </template>
-    </dom-if>
-    <dom-if if="[[showVoiceSearchOverlay_]]" restamp>
-      <template>
-        <ntp-voice-search-overlay on-close="onVoiceSearchOverlayClose_">
-        </ntp-voice-search-overlay>
-      </template>
-    </dom-if>
-    <ntp-untrusted-iframe id="promo" path="promo" hidden$="[[!promoLoaded_]]">
-    </ntp-untrusted-iframe>
-    <!-- cr-button is transparent on hover. This leads to incorrect results when
-         a custom background is set. Therefore, wrap customize button in
-         container to enfore solid background color. -->
-    <div id="customizeButtonContainer">
-      <cr-button id="customizeButton" on-click="onCustomizeClick_">
-        <div id="customizeIcon"></div>
-        $i18n{customizeButton}
-      </cr-button>
-    </div>
-    <a id="backgroundImageAttribution"
-        href="[[backgroundImageAttributionUrl_]]"
-        hidden="[[!backgroundImageAttribution1_]]">
-      <div id="backgroundImageAttribution1Container">
-        <div id="linkIcon"></div>
-        <div id="backgroundImageAttribution1">
-          [[backgroundImageAttribution1_]]
+  <div id="contentContainer">
+    <div id="content">
+      <ntp-untrusted-iframe id="oneGoogleBar" path="one-google-bar"
+          hidden$="[[!oneGoogleBarLoaded_]]">
+      </ntp-untrusted-iframe>
+      <ntp-logo id="logo" doodle-allowed$="[[doodleAllowed_]]"
+          single-colored$="[[singleColoredLogo_]]">
+      </ntp-logo>
+      <ntp-fakebox id="fakebox" on-open-voice-search="onVoiceSearchClick_">
+      </ntp-fakebox>
+      <ntp-most-visited id="mostVisited" dark$="[[theme_.isDark]]">
+      </ntp-most-visited>
+      <dom-if if="[[showCustomizeDialog_]]" restamp>
+        <template>
+          <ntp-customize-dialog on-close="onCustomizeDialogClose_"
+              theme="[[theme_]]"
+              background-selection="{{backgroundSelection_}}">
+          </ntp-customize-dialog>
+        </template>
+      </dom-if>
+      <dom-if if="[[showVoiceSearchOverlay_]]" restamp>
+        <template>
+          <ntp-voice-search-overlay on-close="onVoiceSearchOverlayClose_">
+          </ntp-voice-search-overlay>
+        </template>
+      </dom-if>
+      <ntp-untrusted-iframe id="promo" path="promo" hidden$="[[!promoLoaded_]]">
+      </ntp-untrusted-iframe>
+      <!-- cr-button is transparent on hover. This leads to incorrect results
+           when a custom background is set. Therefore, wrap customize button in
+           container to enfore solid background color. -->
+      <div id="customizeButtonContainer">
+        <cr-button id="customizeButton" on-click="onCustomizeClick_">
+          <div id="customizeIcon"></div>
+          $i18n{customizeButton}
+        </cr-button>
+      </div>
+      <a id="backgroundImageAttribution"
+          href="[[backgroundImageAttributionUrl_]]"
+          hidden="[[!backgroundImageAttribution1_]]">
+        <div id="backgroundImageAttribution1Container">
+          <div id="linkIcon"></div>
+          <div id="backgroundImageAttribution1">
+            [[backgroundImageAttribution1_]]
+          </div>
         </div>
-      </div>
-      <div id="backgroundImageAttribution2"
-          hidden="[[!backgroundImageAttribution2_]]">
-        [[backgroundImageAttribution2_]]
-      </div>
-    </a>
+        <div id="backgroundImageAttribution2"
+            hidden="[[!backgroundImageAttribution2_]]">
+          [[backgroundImageAttribution2_]]
+        </div>
+      </a>
+    </div>
   </div>
-  <ntp-untrusted-iframe id="oneGoogleBar" path="one-google-bar"
-      hidden$="[[!oneGoogleBarLoaded_]]">
-  </ntp-untrusted-iframe>
 </div>

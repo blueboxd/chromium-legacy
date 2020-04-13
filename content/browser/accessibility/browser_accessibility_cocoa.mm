@@ -340,11 +340,6 @@ AXPlatformRange CreateRangeFromTextMarkerRange(id marker_range) {
 BrowserAccessibilityPositionInstance CreateTreePosition(
     const BrowserAccessibility& object,
     int offset) {
-  // A tree position is one for which the |offset| argument refers to a child
-  // index instead of a character offset inside a text object.
-  if (!object.instance_active())
-    return BrowserAccessibilityPosition::CreateNullPosition();
-
   const BrowserAccessibilityManager* manager = object.manager();
   DCHECK(manager);
   return BrowserAccessibilityPosition::CreateTreePosition(
@@ -355,12 +350,6 @@ BrowserAccessibilityPositionInstance CreateTextPosition(
     const BrowserAccessibility& object,
     int offset,
     ax::mojom::TextAffinity affinity) {
-  // A text position is one for which the |offset| argument refers to a
-  // character offset inside a text object. As such, text positions are only
-  // valid on platform leaf objects, e.g. static text nodes and text fields.
-  if (!object.instance_active())
-    return BrowserAccessibilityPosition::CreateNullPosition();
-
   const BrowserAccessibilityManager* manager = object.manager();
   DCHECK(manager);
   return BrowserAccessibilityPosition::CreateTextPosition(
@@ -1836,7 +1825,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 }
 
 - (BOOL)instanceActive {
-  return _owner && _owner->instance_active();
+  return _owner != nullptr;
 }
 
 // internal

@@ -260,6 +260,10 @@ bool StringKeyframe::CSSPropertySpecificKeyframe::
   return true;
 }
 
+bool StringKeyframe::CSSPropertySpecificKeyframe::IsRevert() const {
+  return value_ && value_->IsRevertValue();
+}
+
 Keyframe::PropertySpecificKeyframe*
 StringKeyframe::CSSPropertySpecificKeyframe::NeutralKeyframe(
     double offset,

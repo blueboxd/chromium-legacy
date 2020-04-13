@@ -223,8 +223,15 @@ void SecureDnsHandler::HandleValidateCustomDnsEntry(
 void SecureDnsHandler::HandleProbeCustomDnsTemplate(
     const base::ListValue* args) {
   AllowJavascript();
-  receiver_.reset();
-  host_resolver_.reset();
+
+  if (!probe_callback_id_.empty()) {
+    // Cancel the pending probe and report a non-error response to avoid
+    // leaking the callback.
+    receiver_.reset();
+    host_resolver_.reset();
+    ResolveJavascriptCallback(base::Value(probe_callback_id_),
+                              base::Value(true));
+  }
 
   std::string server_template;
   CHECK(args->GetString(0, &probe_callback_id_));
@@ -299,6 +306,7 @@ void SecureDnsHandler::OnComplete(
   UMA_HISTOGRAM_BOOLEAN("Net.DNS.UI.ProbeAttemptSuccess", (result == 0));
   ResolveJavascriptCallback(base::Value(probe_callback_id_),
                             base::Value(result == 0));
+  probe_callback_id_.clear();
 }
 
 void SecureDnsHandler::OnMojoConnectionError() {

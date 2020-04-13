@@ -43,9 +43,6 @@ struct VIEWS_EXPORT MenuConfig {
   // Font list used by menus.
   gfx::FontList font_list;
 
-  // Color for the arrow to scroll bookmarks.
-  SkColor arrow_color = SK_ColorBLACK;
-
   // Menu border sizes. The vertical border size does not apply to menus with
   // rounded corners - those menus always use the corner radius as the vertical
   // border size.

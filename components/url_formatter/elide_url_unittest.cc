@@ -636,7 +636,7 @@ TEST(TextEliderTest, FormatOriginForSecurityDisplay) {
        L"file://", L"file://", L"file://"},
       {"Invalid scheme 1", "twelve://www.cyber.org/wow.php", L"", L"", L""},
       {"Invalid scheme 2", "://www.cyber.org/wow.php", L"", L"", L""},
-      {"Invalid port 1", "https://173.194.65.103:000", L"", L"", L""},
+      {"Invalid port 1", "https://173.194.65.103:99999", L"", L"", L""},
       {"Invalid port 2", "https://173.194.65.103:gruffle", L"", L"", L""},
       {"Blob URL",
        "blob:http://www.html5rocks.com/4d4ff040-6d61-4446-86d3-13ca07ec9ab9",

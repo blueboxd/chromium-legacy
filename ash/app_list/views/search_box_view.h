@@ -115,6 +115,10 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
     highlight_range_ = range;
   }
 
+  void set_search_box_has_query_for_test(bool value) {
+    search_box_has_query_ = value;
+  }
+
  private:
   // Notifies SearchBoxViewDelegate that the autocomplete text is valid.
   void AcceptAutocompleteText();
@@ -179,6 +183,9 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
 
   // True if app list search autocomplete is enabled.
   const bool is_app_list_search_autocomplete_enabled_;
+
+  // True if search_box() has user typed query in it.
+  bool search_box_has_query_ = false;
 
   base::WeakPtrFactory<SearchBoxView> weak_ptr_factory_{this};
 

@@ -2569,6 +2569,46 @@ TEST_P(PaintArtifactCompositorTest, DecompositeExoticBlendModeWithoutBackdrop) {
   EXPECT_FALSE(effect->HasRenderSurface());
 }
 
+TEST_P(PaintArtifactCompositorTest,
+       DecompositeExoticBlendModeWithNonDrawingLayer) {
+  auto parent_effect = CreateOpacityEffect(
+      e0(), 1.0, CompositingReason::kIsolateCompositedDescendants);
+  EffectPaintPropertyNode::State blend_state1;
+  blend_state1.local_transform_space = &t0();
+  blend_state1.blend_mode = SkBlendMode::kScreen;
+  auto blend_effect1 =
+      EffectPaintPropertyNode::Create(*parent_effect, std::move(blend_state1));
+  EffectPaintPropertyNode::State blend_state2;
+  blend_state2.local_transform_space = &t0();
+  blend_state2.blend_mode = SkBlendMode::kScreen;
+  auto blend_effect2 =
+      EffectPaintPropertyNode::Create(*parent_effect, std::move(blend_state2));
+  auto transform = CreateAnimatingTransform(t0());
+
+  Update(TestPaintArtifact()
+             .Chunk(*transform, c0(), *parent_effect)
+             .Bounds(IntRect(0, 0, 33, 44))
+             .Chunk(t0(), c0(), *blend_effect1)
+             .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray)
+             .Chunk(t0(), c0(), *blend_effect2)
+             .RectDrawing(IntRect(200, 200, 200, 200), Color::kBlack)
+             .Build());
+
+  ASSERT_EQ(2u, LayerCount());
+  // This is the empty layer forced by |transform|.
+  EXPECT_EQ(gfx::Size(33, 44), LayerAt(0)->bounds());
+  EXPECT_FALSE(LayerAt(0)->DrawsContent());
+  // This is the layer containing the paint chunks with |blend_effect1| and
+  // |blend_effect2| decomposited.
+  EXPECT_EQ(gfx::Size(300, 300), LayerAt(1)->bounds());
+  const auto* effect =
+      GetPropertyTrees().effect_tree.Node(LayerAt(1)->effect_tree_index());
+  EXPECT_EQ(1.0f, effect->opacity);
+  EXPECT_EQ(SkBlendMode::kSrcOver, effect->blend_mode);
+  // Don't need a render surface because all blend effects are decomposited.
+  EXPECT_FALSE(effect->HasRenderSurface());
+}
+
 TEST_P(PaintArtifactCompositorTest, UpdateProducesNewSequenceNumber) {
   // A 90 degree clockwise rotation about (100, 100).
   auto transform = CreateTransform(t0(), TransformationMatrix().Rotate(90),

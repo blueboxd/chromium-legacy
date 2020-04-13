@@ -611,6 +611,11 @@
 <translation id="1805888043020974594">प्रिंट सर्व्हर</translation>
 <translation id="1805967612549112634">पिन निश्चित करा</translation>
 <translation id="1806335016774576568">दुसर्‍या उघड्या अ‍ॅपवर स्विच करा</translation>
+<translation id="1809483812148634490">तुम्ही Google Play वरून डाउनलोड केलेली अ‍ॅप्स या Chromebook वरून हटवली जातील.
+    <ph name="LINE_BREAKS1" />
+    चित्रपट, टीव्ही शो, संगीत, पुस्तके यांसारखा तुम्ही खरेदी केलेला आशय किंवा इतर अ‍ॅपमधील खरेदीदेखील हटवली जाऊ शकते.
+    <ph name="LINE_BREAKS2" />
+    यामुळे इतर डिव्हाइसवरील अ‍ॅप्स किंवा आशयावर परिणाम होत नाही.</translation>
 <translation id="1809734401532861917">माझे बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज <ph name="USER_EMAIL_ADDRESS" /> मध्ये जोडा</translation>
 <translation id="1813278315230285598">सेवा</translation>
 <translation id="18139523105317219">EDI पार्टी नाव</translation>
@@ -1392,6 +1397,7 @@
 <translation id="2825848369316359348">तुमच्या सिक्युरिटी कीच्या मागील बाजूस प्रिंट केलेले नाव पाहा</translation>
 <translation id="2828650939514476812">वाय-फाय नेटवर्कवर कनेक्ट करा</translation>
 <translation id="2835294513443818940">ही फाइल सुरक्षितपणे डाउनलोड केली जाऊ शकत नाही.</translation>
+<translation id="2835547721736623118">स्पीच रेकग्निशन सेवा</translation>
 <translation id="2836269494620652131">क्रॅश</translation>
 <translation id="2836635946302913370">या वापरकर्तानावासह साइन इन करणे तुमच्या ॲडमिनिस्ट्रेटरद्वारे अक्षम केले गेले आहे.</translation>
 <translation id="283669119850230892">नेटवर्क <ph name="NETWORK_ID" /> वापरण्‍यासाठी, प्रथम खालील इंटरनेटचे तुमचे कनेक्शन पूर्ण करा.</translation>
@@ -1536,6 +1542,7 @@
 <translation id="3019285239893817657">सबपेज बटण</translation>
 <translation id="3020183492814296499">शॉर्टकट</translation>
 <translation id="3020990233660977256">सिरिअल नंबर: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">बॅटरीवर असताना</translation>
 <translation id="3021066826692793094">फुलपाखरू</translation>
 <translation id="3021678814754966447">फ्रेम स्रोत &amp;पहा</translation>
 <translation id="3022978424994383087">ते समजू शकले नाही.</translation>
@@ -2730,6 +2737,7 @@
 <translation id="4633757335284074492">Google Drive वर बॅकअप घ्या. डेटा कधीही सहजपणे रिस्टोअर करा किंवा डिव्हाइस स्विच करा. या बॅकअपमध्ये अ‍ॅप डेटा समाविष्ट आहे. बॅकअप Google वर अपलोड केले जातात आणि तुमच्या मुलाचा Google खाते पासवर्ड वापरून एंक्रिप्ट केले जातात.</translation>
 <translation id="4634771451598206121">पुन्हा साइन इन करा...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> हे अतिथी वापरकर्त्यांसाठी उपलब्ध नाही.</translation>
+<translation id="4635444580397524003">Linux बॅकअप यशस्वीरीत्या रिस्टोअर केला गेला.</translation>
 <translation id="4636930964841734540">माहिती</translation>
 <translation id="4637083375689622795"><ph name="EMAIL" /> मधील आणखी क्रिया</translation>
 <translation id="4638930039313743000">ADB डीबगिंग सुरू करा</translation>
@@ -2905,6 +2913,7 @@
 <translation id="4890773143211625964">प्रगत प्रिंटर पर्याय दर्शवा</translation>
 <translation id="4891089016822695758">बीटा फोरम</translation>
 <translation id="4892229439761351791">साइट ब्लूटूथ वापरू शकते</translation>
+<translation id="489258173289528622">बॅटरीवर असताना निष्क्रिय कृती</translation>
 <translation id="4893336867552636863">हे या डिव्‍हाइस वरून तुमचा ब्राउझिंग डेटा कायमचा हटवेल.</translation>
 <translation id="4893522937062257019">लॉक स्क्रीनवर</translation>
 <translation id="489454699928748701">साइटना तुमचे मोशन सेन्सर वापरण्याची अनुमती द्या</translation>
@@ -3611,6 +3620,7 @@
 <translation id="5863445608433396414">डीबगिंग वैशिष्ट्ये सुरू करा</translation>
 <translation id="5864195618110239517">मर्यादित कनेक्शन वापरा</translation>
 <translation id="5864471791310927901">DHCP लुकअप अयशस्वी</translation>
+<translation id="5864754048328252126">चार्ज होत असताना निष्क्रिय कृती</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> लवकरच थांबेल</translation>
 <translation id="586567932979200359">तुम्ही <ph name="PRODUCT_NAME" /> त्याच्या डिस्क प्रतिमेवरून चालवत आहात. तुमच्या कॉंप्युटरवर ते इंस्टॉल केल्यामुळे तुम्हाला ते डिस्क प्रतिमेशिवाय चालवू देते आणि ते अपडेट ठेवले जाईल हे निश्चित करते.</translation>
 <translation id="5865733239029070421">Google ला वापर आकडेवारी आणि क्रॅश अहवाल आपोआप पाठवते</translation>
@@ -3811,6 +3821,7 @@
 <translation id="6120205520491252677">या पृष्‍ठास प्रारंभ स्‍क्रीनवर पिन करा...</translation>
 <translation id="6122081475643980456">तुमचे इंटरनेट कनेक्शन नियंत्रित केले जात आहे</translation>
 <translation id="6122095009389448667">क्लिपबोर्ड पाहण्यापासून या साइटला ब्लॉक करणे सुरू ठेवा</translation>
+<translation id="6122831415929794347">सुरक्षित ब्राउझिंग बंद करायचे का?</translation>
 <translation id="6122875415561139701">लिहा ऑपरेशनला यावर परवानगी नाही: " <ph name="DEVICE_NAME" /> ".</translation>
 <translation id="6124650939968185064">या एक्स्टेंशनवर अवलंबून असलेले खालील एक्स्टेंशन:</translation>
 <translation id="6124698108608891449">या साइटला आणखी परवानग्यांची आवश्यकता आहे.</translation>
@@ -4014,6 +4025,7 @@
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, आणि <ph name="WEBSITE_3" /> वर तुमचा डेटा वाचा आणि बदला</translation>
 <translation id="6410257289063177456">इमेज फायली</translation>
 <translation id="6410328738210026208">चॅनेल बदला आणि Powerwash करा</translation>
+<translation id="6410390304316730527">तुम्हाला फसवून द्वेषयुक्त सॉफ्टवेअर इंस्टॉल करणे किंवा पासवर्ड, फोन नंबर किंवा क्रेडिट कार्डसारखी वैयक्तिक माहिती उघड करणे यांसारखी एखादी धोकादायक गोष्ट करायला लावणार्‍या हल्लेखोरांपासून सुरक्षित ब्राउझिंग तुमचे संरक्षण करते. तुम्ही ते बंद केल्यास, अनोळखी किंवा अप्रतिष्ठित साइट ब्राउझ करताना सावध रहा.</translation>
 <translation id="6410668567036790476">शोध इंजिन जोडा</translation>
 <translation id="641081527798843608">जुळणारा विषय</translation>
 <translation id="6412673304250309937">Chrome मध्ये स्टोअर केलेल्या असुरक्षित साइटच्या सूचीमध्ये URL तपासतो. साइटने तुमचा पासवर्ड चोरण्याचा प्रयत्न केल्यास किंवा तुम्ही हानीकारक फाइल डाउनलोड केल्यावर, Chrome, पेज आशयाच्या भागांसह, URL सुरक्षित ब्राउझिंग कडे पाठवू शकतो.</translation>
@@ -5933,6 +5945,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8951256747718668828">एररमुळे रिस्टोअर करणे पूर्ण करता आले नाही</translation>
 <translation id="8951465597020890363">अतिथी मोडमधून बाहेर पडायचे आहे का?</translation>
 <translation id="8952831374766033534">कॉन्फिगरेशन पर्याय सपोर्ट करत नाही: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">चार्ज होत असताना</translation>
 <translation id="895347679606913382">प्रारंभ करीत आहे...</translation>
 <translation id="8957762313041272117">लाइव्ह कॅप्शन</translation>
 <translation id="895944840846194039">JavaScript मेमरी</translation>

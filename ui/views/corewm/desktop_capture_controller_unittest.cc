@@ -13,7 +13,7 @@
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/native_widget_factory.h"
-#include "ui/views/test/views_interactive_ui_test_base.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
@@ -26,7 +26,7 @@
 
 namespace views {
 
-using DesktopCaptureControllerTest = ViewsInteractiveUITestBase;
+using DesktopCaptureControllerTest = test::DesktopWidgetTestInteractive;
 
 // This class provides functionality to verify whether the View instance
 // received the gesture event.

@@ -365,7 +365,7 @@ TEST_F(BluetoothTest, MAYBE_GetServiceDataUUIDs_GetServiceDataForUUID) {
   // Receive Advertisement with service data.
   BluetoothDevice* device2 = SimulateLowEnergyDevice(1);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   EXPECT_TRUE(device2->GetAdvertisingDataFlags().has_value());
   EXPECT_EQ(0x04, device2->GetAdvertisingDataFlags().value());
 #endif
@@ -405,7 +405,7 @@ TEST_F(BluetoothTest, MAYBE_GetServiceDataUUIDs_GetServiceDataForUUID) {
   // Receive Advertisement with new service data and empty manufacturer data.
   SimulateLowEnergyDevice(2);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   EXPECT_TRUE(device2->GetAdvertisingDataFlags().has_value());
   EXPECT_EQ(0x05, device2->GetAdvertisingDataFlags().value());
 #endif
@@ -476,7 +476,7 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_Discovery) {
   EXPECT_EQ(0, observer.device_changed_count());
 
   EXPECT_EQ(ToInt8(TestRSSI::LOWEST), device->GetInquiryRSSI().value());
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   EXPECT_TRUE(device->GetAdvertisingDataFlags().has_value());
   EXPECT_EQ(0x04, device->GetAdvertisingDataFlags().value());
 #endif
@@ -517,7 +517,7 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_Discovery) {
   EXPECT_EQ(2, observer.device_changed_count());
 
   EXPECT_EQ(ToInt8(TestRSSI::LOWER), device->GetInquiryRSSI().value());
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   EXPECT_TRUE(device->GetAdvertisingDataFlags().has_value());
   EXPECT_EQ(0x05, device->GetAdvertisingDataFlags().value());
 #endif
@@ -570,7 +570,7 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_Discovery) {
   EXPECT_EQ(4, observer.device_changed_count());
 
   EXPECT_EQ(ToInt8(TestRSSI::LOWEST), device->GetInquiryRSSI().value());
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   EXPECT_TRUE(device->GetAdvertisingDataFlags().has_value());
   EXPECT_EQ(0x04, device->GetAdvertisingDataFlags().value());
 #endif
@@ -870,7 +870,7 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_DiscoveryDuringConnection) {
   EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDGenericAccess),
                      BluetoothUUID(kTestUUIDGenericAttribute)}),
             device->GetUUIDs());
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   EXPECT_TRUE(device->GetAdvertisingDataFlags().has_value());
   EXPECT_EQ(0x04, device->GetAdvertisingDataFlags().value());
 #endif
@@ -902,7 +902,7 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_DiscoveryDuringConnection) {
 
   EXPECT_EQ(3, observer.device_changed_count());
   EXPECT_EQ(ToInt8(TestRSSI::LOWER), device->GetInquiryRSSI().value());
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   EXPECT_TRUE(device->GetAdvertisingDataFlags().has_value());
   EXPECT_EQ(0x05, device->GetAdvertisingDataFlags().value());
 #endif
@@ -987,7 +987,7 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_ConnectionDuringDiscovery) {
 
   EXPECT_EQ(0, observer.device_changed_count());
   EXPECT_EQ(ToInt8(TestRSSI::LOWEST), device->GetInquiryRSSI().value());
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   EXPECT_TRUE(device->GetAdvertisingDataFlags().has_value());
   EXPECT_EQ(0x04, device->GetAdvertisingDataFlags().value());
 #endif
@@ -1018,7 +1018,7 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_ConnectionDuringDiscovery) {
 
   EXPECT_EQ(1, observer.device_changed_count());
   EXPECT_EQ(ToInt8(TestRSSI::LOWER), device->GetInquiryRSSI().value());
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   EXPECT_TRUE(device->GetAdvertisingDataFlags().has_value());
   EXPECT_EQ(0x05, device->GetAdvertisingDataFlags().value());
 #endif
@@ -1058,7 +1058,7 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_ConnectionDuringDiscovery) {
 
   EXPECT_EQ(3, observer.device_changed_count());
   EXPECT_EQ(ToInt8(TestRSSI::LOWER), device->GetInquiryRSSI().value());
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   EXPECT_TRUE(device->GetAdvertisingDataFlags().has_value());
   EXPECT_EQ(0x05, device->GetAdvertisingDataFlags().value());
 #endif
@@ -1082,7 +1082,7 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_ConnectionDuringDiscovery) {
 
   EXPECT_EQ(4, observer.device_changed_count());
   EXPECT_EQ(ToInt8(TestRSSI::LOWEST), device->GetInquiryRSSI().value());
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   EXPECT_TRUE(device->GetAdvertisingDataFlags().has_value());
   EXPECT_EQ(0x04, device->GetAdvertisingDataFlags().value());
 #endif

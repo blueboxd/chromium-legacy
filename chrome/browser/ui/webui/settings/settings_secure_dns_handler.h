@@ -78,6 +78,8 @@ class SecureDnsHandler : public SettingsPageUIHandler,
   network::mojom::NetworkContext* network_context_for_testing_ = nullptr;
   mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
   mojo::Remote<network::mojom::HostResolver> host_resolver_;
+  // ID of the Javascript callback for the current pending probe, or "" if
+  // there is no probe currently in progress.
   std::string probe_callback_id_;
   PrefChangeRegistrar pref_registrar_;
 

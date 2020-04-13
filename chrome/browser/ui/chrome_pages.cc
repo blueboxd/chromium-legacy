@@ -386,14 +386,9 @@ void ShowSettingsSubPage(Browser* browser, const std::string& sub_page) {
 void ShowSettingsSubPageForProfile(Profile* profile,
                                    const std::string& sub_page) {
 #if defined(OS_CHROMEOS)
-  SettingsWindowManager* settings = SettingsWindowManager::GetInstance();
-  // TODO(jamescook): When SplitSettings is close to shipping, change this to
-  // a DCHECK that the |sub_page| is not an OS-specific setting.
-  if (chrome::IsOSSettingsSubPage(sub_page)) {
-    settings->ShowOSSettings(profile, sub_page);
-    return;
-  }
-  // Fall through and open browser settings in a tab.
+  // OS settings sub-pages are handled else where and should never be
+  // encountered here.
+  DCHECK(!chrome::IsOSSettingsSubPage(sub_page)) << sub_page;
 #endif
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   if (!browser)

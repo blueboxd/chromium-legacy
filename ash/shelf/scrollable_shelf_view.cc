@@ -1160,7 +1160,20 @@ bool ScrollableShelfView::ShouldShowTooltipForView(
 
 bool ScrollableShelfView::ShouldHideTooltip(
     const gfx::Point& cursor_location) const {
-  return !visible_space_.Contains(cursor_location);
+  if ((ShouldShowLeftArrow() &&
+       left_arrow_->GetMirroredBounds().Contains(cursor_location)) ||
+      (ShouldShowRightArrow() &&
+       right_arrow_->GetMirroredBounds().Contains(cursor_location))) {
+    return false;
+  }
+
+  // Should hide the tooltip if |cursor_location| is not in |visible_space_|.
+  if (!visible_space_.Contains(cursor_location))
+    return true;
+
+  gfx::Point location_in_shelf_view = cursor_location;
+  views::View::ConvertPointToTarget(this, shelf_view_, &location_in_shelf_view);
+  return shelf_view_->ShouldHideTooltip(location_in_shelf_view);
 }
 
 const std::vector<aura::Window*> ScrollableShelfView::GetOpenWindowsForView(

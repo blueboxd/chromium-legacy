@@ -611,6 +611,11 @@
 <translation id="1805888043020974594">Servidor de impresión</translation>
 <translation id="1805967612549112634">Confirmar PIN</translation>
 <translation id="1806335016774576568">Cambiar a outra aplicación aberta</translation>
+<translation id="1809483812148634490">As aplicacións que descargases desde Google Play eliminaranse deste Chromebook.
+    <ph name="LINE_BREAKS1" />
+    Tamén se pode eliminar o contido que comprases, como as películas, os programas de televisión, a música, os libros ou outras compras integradas nas aplicacións.
+    <ph name="LINE_BREAKS2" />
+    Isto non afecta ás aplicacións nin ao contido doutros dispositivos.</translation>
 <translation id="1809734401532861917">Engade os meus marcadores, o historial, os contrasinais e outras opcións de configuración a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">Servizos</translation>
 <translation id="18139523105317219">Nome da parte EDI</translation>
@@ -1392,6 +1397,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2825848369316359348">O nome está impreso na parte traseira da chave de seguranza</translation>
 <translation id="2828650939514476812">Conectarse a unha rede wifi</translation>
 <translation id="2835294513443818940">Este ficheiro non se pode descargar de forma segura.</translation>
+<translation id="2835547721736623118">Servizo de recoñecemento de voz</translation>
 <translation id="2836269494620652131">Erro</translation>
 <translation id="2836635946302913370">O administrador desactivou o inicio de sesión con este nome de usuario.</translation>
 <translation id="283669119850230892">Para utilizar a rede <ph name="NETWORK_ID" />, primeiro completa a túa conexión a Internet a continuación.</translation>
@@ -1536,6 +1542,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3019285239893817657">Botón de subpáxina</translation>
 <translation id="3020183492814296499">Atallos</translation>
 <translation id="3020990233660977256">Número de serie: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Durante o uso da batería</translation>
 <translation id="3021066826692793094">Bolboreta</translation>
 <translation id="3021678814754966447">&amp;Ver fonte do marco</translation>
 <translation id="3022978424994383087">Non se entendeu a mensaxe.</translation>
@@ -2732,6 +2739,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4633757335284074492">Facer copia de seguranza en Drive. Restaura os datos facilmente ou cambia de dispositivo en calquera momento. Esta copia de seguranza inclúe os datos das aplicacións. As copias de seguranza cárganse en Google e encríptanse co contrasinal da Conta de Google do teu fillo.</translation>
 <translation id="4634771451598206121">Inicia sesión de novo...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> non está dispoñible para usuarios invitados.</translation>
+<translation id="4635444580397524003">Restaurouse correctamente a copia de seguranza de Linux.</translation>
 <translation id="4636930964841734540">Información</translation>
 <translation id="4637083375689622795">Máis accións, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Activar depuración de ADB</translation>
@@ -2907,6 +2915,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4890773143211625964">Mostrar opcións avanzadas da impresora</translation>
 <translation id="4891089016822695758">Foro de Chrome Beta</translation>
 <translation id="4892229439761351791">O sitio pode usar o Bluetooth</translation>
+<translation id="489258173289528622">Acción de inactividade durante o uso da batería</translation>
 <translation id="4893336867552636863">Esta acción eliminará permanentemente os teus datos de navegación deste dispositivo.</translation>
 <translation id="4893522937062257019">Na pantalla de bloqueo</translation>
 <translation id="489454699928748701">Permitir que os sitios utilicen os sensores de movemento</translation>
@@ -3613,6 +3622,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5863445608433396414">Activar funcións de depuración</translation>
 <translation id="5864195618110239517">Usar conexión de pago por consumo</translation>
 <translation id="5864471791310927901">Produciuse un erro na busca de DHCP</translation>
+<translation id="5864754048328252126">Acción de inactividade durante a carga</translation>
 <translation id="5865508026715185451">A aplicación <ph name="APP_NAME" /> porase en pausa en breve</translation>
 <translation id="586567932979200359">Estás executando <ph name="PRODUCT_NAME" /> desde a imaxe de disco. Se o instalas no ordenador, poderás executalo sen a imaxe de disco e aseguraraste de mantelo actualizado.</translation>
 <translation id="5865733239029070421">Envía estatísticas de uso e informes de erros automaticamente a Google</translation>
@@ -3812,6 +3822,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6120205520491252677">Fixar esta páxina á pantalla de inicio...</translation>
 <translation id="6122081475643980456">Estase controlando a túa conexión a Internet</translation>
 <translation id="6122095009389448667">Seguir impedindo que este sitio vexa o contido do portapapeis</translation>
+<translation id="6122831415929794347">Queres desactivar a función Navegación segura?</translation>
 <translation id="6122875415561139701">Non se permite a operación de escritura no dispositivo "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">As seguintes extensións dependen desta extensión:</translation>
 <translation id="6124698108608891449">Este sitio necesita máis permisos.</translation>
@@ -4015,6 +4026,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6408118934673775994">Ler e cambiar os teus datos en <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Ficheiros de imaxe</translation>
 <translation id="6410328738210026208">Cambiar canle e Powerwash</translation>
+<translation id="6410390304316730527">A función Navegación segura protéxete contra os piratas informáticos que poden enganarte para que realices accións perigosas, como instalar un software malicioso ou revelar información persoal (por exemplo, contrasinais, números de teléfono ou tarxetas de crédito). Se a desactivas, ten coidado ao consultar sitios descoñecidos ou con mala reputación.</translation>
 <translation id="6410668567036790476">Engadir motor de busca</translation>
 <translation id="641081527798843608">Coincidencia do asunto</translation>
 <translation id="6412673304250309937">Comproba enderezos URL cunha lista de sitios non seguros almacenada en Chrome. Se un sitio tenta roubarche o contrasinal ou se descargas un ficheiro daniño, Chrome tamén pode comprobar os enderezos URL, entre os que se inclúen fragmentos de contido das páxinas, a través da función Navegación segura.</translation>
@@ -5934,6 +5946,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8951256747718668828">Non se puido completar a restauración debido a un erro</translation>
 <translation id="8951465597020890363">Queres saír do modo de invitado de todas formas?</translation>
 <translation id="8952831374766033534">Non se admite a opción de configuración: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">Durante a carga</translation>
 <translation id="895347679606913382">Iniciando...</translation>
 <translation id="8957762313041272117">Subtítulos instantáneos</translation>
 <translation id="895944840846194039">Memoria JavaScript</translation>

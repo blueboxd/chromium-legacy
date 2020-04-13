@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">Afdrukserver</translation>
 <translation id="1805967612549112634">Pincode bevestigen</translation>
 <translation id="1806335016774576568">Overschakelen naar een andere geopende app</translation>
+<translation id="1809483812148634490">Apps die je hebt gedownload via Google Play, worden van deze Chromebook verwijderd.
+    <ph name="LINE_BREAKS1" />
+    De content die je hebt gekocht, zoals films, tv-programma's, muziek, boeken of andere in-app-aankopen, worden mogelijk ook verwijderd.
+    <ph name="LINE_BREAKS2" />
+    Dit is niet van invloed op apps of content op andere apparaten.</translation>
 <translation id="1809734401532861917">Mijn bladwijzers, geschiedenis, wachtwoorden en andere instellingen toevoegen aan <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">Services</translation>
 <translation id="18139523105317219">EDI Partynaam</translation>
@@ -1393,6 +1398,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2825848369316359348">Je vindt de naam op de achterkant van je beveiligingssleutel</translation>
 <translation id="2828650939514476812">Verbinding maken met een wifi-netwerk</translation>
 <translation id="2835294513443818940">Dit bestand kan niet beveiligd worden gedownload.</translation>
+<translation id="2835547721736623118">Spraakherkenningsservice</translation>
 <translation id="2836269494620652131">Crash</translation>
 <translation id="2836635946302913370">Inloggen met deze gebruikersnaam is uitgeschakeld door je beheerder.</translation>
 <translation id="283669119850230892">Als je het netwerk <ph name="NETWORK_ID" /> wilt gebruiken, moet je eerst hieronder verbinding maken met internet.</translation>
@@ -1537,6 +1543,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3019285239893817657">Knop voor subpagina</translation>
 <translation id="3020183492814296499">Snelkoppelingen</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Op batterij</translation>
 <translation id="3021066826692793094">Vlinder</translation>
 <translation id="3021678814754966447">&amp;Framebron weergeven</translation>
 <translation id="3022978424994383087">Dat heb ik niet verstaan.</translation>
@@ -2339,7 +2346,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4056908315660577142">Je hebt de tijdslimiet bereikt die je ouder heeft ingesteld voor de <ph name="APP_NAME" />-app voor Chrome. Je kunt de app morgen <ph name="TIME_LIMIT" /> gebruiken.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Bekijken in de Web Store</translation>
-<translation id="4058647953897694817">Verifiëren via Bluetooth</translation>
+<translation id="4058647953897694817">Verifiëren via bluetooth</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Controleer document nu</translation>
 <translation id="406070391919917862">Achtergrondapplicaties</translation>
@@ -2733,6 +2740,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4633757335284074492">Maak een back-up op Google Drive. Zet gegevens eenvoudig terug of schakel wanneer je wilt tussen apparaten. Deze back-up omvat app-gegevens. Back-ups worden geüpload naar Google en versleuteld met het wachtwoord van het Google-account van je kind.</translation>
 <translation id="4634771451598206121">Opnieuw inloggen...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> is niet beschikbaar voor gastgebruikers.</translation>
+<translation id="4635444580397524003">Back-up voor Linux is hersteld.</translation>
 <translation id="4636930964841734540">Info</translation>
 <translation id="4637083375689622795">Meer acties, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">ADB-foutopsporing inschakelen</translation>
@@ -2908,6 +2916,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4890773143211625964">Geavanceerde printeropties weergeven</translation>
 <translation id="4891089016822695758">Bètaforum</translation>
 <translation id="4892229439761351791">Site kan Bluetooth gebruiken</translation>
+<translation id="489258173289528622">Inactieve actie op batterij</translation>
 <translation id="4893336867552636863">Hiermee worden je browsegegevens op dit apparaat definitief verwijderd.</translation>
 <translation id="4893522937062257019">Op het vergrendelingsscherm</translation>
 <translation id="489454699928748701">Toestaan dat sites bewegingssensoren gebruiken</translation>
@@ -3614,6 +3623,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5863445608433396414">Foutopsporingsfuncties inschakelen</translation>
 <translation id="5864195618110239517">Verbinding met datalimiet gebruiken</translation>
 <translation id="5864471791310927901">Opzoeken van DHCP mislukt</translation>
+<translation id="5864754048328252126">Inactieve actie tijdens opladen</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> wordt straks onderbroken</translation>
 <translation id="586567932979200359">Je voert <ph name="PRODUCT_NAME" /> uit via de schijfkopie. Als je dit programma installeert op je computer, kun je dit uitvoeren zonder de schijfkopie te gebruiken en blijft het programma bijgewerkt.</translation>
 <translation id="5865733239029070421">Hiermee worden automatisch gebruiksstatistieken en crashrapporten naar Google verzonden</translation>
@@ -3813,6 +3823,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6120205520491252677">Deze pagina vastzetten op het startscherm...</translation>
 <translation id="6122081475643980456">Je internetverbinding wordt beheerd</translation>
 <translation id="6122095009389448667">Bekijken van het klembord door deze site blijven blokkeren</translation>
+<translation id="6122831415929794347">Safe Browsing uitschakelen?</translation>
 <translation id="6122875415561139701">Schrijfbewerking is niet toegestaan op: <ph name="DEVICE_NAME" />.</translation>
 <translation id="6124650939968185064">De volgende extensies zijn afhankelijk van deze extensie:</translation>
 <translation id="6124698108608891449">Deze site heeft meer rechten nodig.</translation>
@@ -4016,6 +4027,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6408118934673775994">Je gegevens lezen en wijzigen op <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Afbeeldingsbestanden</translation>
 <translation id="6410328738210026208">Kanaal wijzigen en Powerwash uitvoeren</translation>
+<translation id="6410390304316730527">Safe Browsing beschermt je tegen aanvallers die je proberen te misleiden zodat je iets gevaarlijks doet, zoals schadelijke software installeren of persoonlijke informatie zoals wachtwoorden, telefoonnummers of creditcards openbaar maken. Als je deze functie uitschakelt, moet je voorzichtig zijn als je op onbekende of onbetrouwbare sites browst.</translation>
 <translation id="6410668567036790476">Zoekmachine toevoegen</translation>
 <translation id="641081527798843608">Overeenkomst van onderwerp</translation>
 <translation id="6412673304250309937">Controleert URL's aan de hand van een lijst met onveilige sites die is opgeslagen in Chrome. Als een site je wachtwoord probeert te stelen of als je een schadelijk bestand downloadt, kan Chrome ook URL's, inclusief delen van de paginacontent, naar Safe Browsing sturen.</translation>
@@ -5936,6 +5948,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8951256747718668828">De herstelactie kan niet worden voltooid door een fout</translation>
 <translation id="8951465597020890363">Gastmodus toch sluiten?</translation>
 <translation id="8952831374766033534">Configuratie-optie niet ondersteund: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">Tijdens het opladen</translation>
 <translation id="895347679606913382">Starten...</translation>
 <translation id="8957762313041272117">Live ondertiteling</translation>
 <translation id="895944840846194039">JavaScript-geheugen</translation>

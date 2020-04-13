@@ -7,6 +7,7 @@ include_rules = [
     "+base/bit_cast.h",
     "+base/callback.h",
     "+base/callback_forward.h",
+    "+base/callback_helpers.h",
     "+base/compiler_specific.h",
     "+base/containers/adapters.h",
     "+base/containers/span.h",

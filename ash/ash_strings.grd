@@ -679,6 +679,15 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SWITCH_ACCESS_BACK_BUTTON_DESCRIPTION" desc="The tooltip text for the Switch Access back button. The back button allows users to exit the feature's current focus area.">
         Back button
       </message>
+      <message name="IDS_ASH_SWITCH_ACCESS_SCROLL_DOWN" desc="The label for the Switch Access menu option to scroll the selected view down.">
+        Scroll Down
+      </message>
+      <message name="IDS_ASH_SWITCH_ACCESS_SELECT" desc="The label for the Switch Access menu option to select the focused element.">
+        Select
+      </message>
+      <message name="IDS_ASH_SWITCH_ACCESS_SETTINGS" desc="The label for the Switch Access menu option to open the settings page.">
+        Settings
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
         On-screen keyboard
       </message>

@@ -70,8 +70,7 @@ class DialActivityManagerTest : public testing::Test {
     if (app_instance_url) {
       response_head->headers =
           base::MakeRefCounted<net::HttpResponseHeaders>("");
-      response_head->headers->AddHeader("LOCATION: " +
-                                        app_instance_url->spec());
+      response_head->headers->AddHeader("LOCATION", app_instance_url->spec());
     }
     loader_factory_.AddResponse(activity.launch_info.app_launch_url,
                                 std::move(response_head), "",

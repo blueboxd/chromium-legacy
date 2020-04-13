@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/debug/alias.h"
@@ -1116,6 +1117,16 @@ NavigationRequest::NavigationRequest(
 }
 
 NavigationRequest::~NavigationRequest() {
+#if DCHECK_IS_ON()
+  // If |is_safe_to_delete_| is false, it means |this| is being deleted at an
+  // unexpected time, more specifically a time that is likely to lead to
+  // crashing when the stack unwinds (use after free). The typical scenario for
+  // this is calling to the delegate when the delegate is not expected to make
+  // any sort of state change. For example, when the delegate is informed that a
+  // navigation has started the delegate is not expected to call Stop().
+  DCHECK(is_safe_to_delete_);
+#endif
+
   // Close the last child event. Tracing no longer outputs the end event name,
   // so we can simply pass an empty string here.
   TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "", this);
@@ -1374,6 +1385,10 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
     EnterChildTraceEvent("Same document", this);
   }
 
+#if DCHECK_IS_ON()
+  DCHECK(is_safe_to_delete_);
+  base::AutoReset<bool> resetter(&is_safe_to_delete_, false);
+#endif
   GetDelegate()->DidStartNavigation(this);
 
   // The previous call to DidStartNavigation could have cancelled this request
@@ -3181,8 +3196,13 @@ void NavigationRequest::OnWillRedirectRequestProcessed(
   processing_navigation_throttle_ = false;
   if (result.action() == NavigationThrottle::PROCEED) {
     // Notify the delegate that a redirect was encountered and will be followed.
-    if (GetDelegate())
+    if (GetDelegate()) {
+#if DCHECK_IS_ON()
+      DCHECK(is_safe_to_delete_);
+      base::AutoReset<bool> resetter(&is_safe_to_delete_, false);
+#endif
       GetDelegate()->DidRedirectNavigation(this);
+    }
   } else {
     state_ = CANCELING;
   }
@@ -3609,8 +3629,13 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
 
   SetExpectedProcess(render_frame_host_->GetProcess());
 
-  if (!IsSameDocument())
+  if (!IsSameDocument()) {
+#if DCHECK_IS_ON()
+    DCHECK(is_safe_to_delete_);
+    base::AutoReset<bool> resetter(&is_safe_to_delete_, false);
+#endif
     GetDelegate()->ReadyToCommitNavigation(this);
+  }
 }
 
 std::unique_ptr<AppCacheNavigationHandle>

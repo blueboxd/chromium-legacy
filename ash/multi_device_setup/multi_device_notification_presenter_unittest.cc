@@ -36,9 +36,6 @@ const char kTestHostDeviceName[] = "Test Device";
 // This is the expected return value from GetChromeOSDeviceName() in tests.
 const char kTestDeviceType[] = "Chrome device";
 
-const base::Token kTestServiceInstanceGroup{0x0123456789abcdefull,
-                                            0xfedcba9876543210ull};
-
 class TestMessageCenter : public message_center::FakeMessageCenter {
  public:
   TestMessageCenter() = default;
@@ -125,7 +122,7 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
     test_session_client->AddUserSession(
         kTestUserEmail, user_manager::USER_TYPE_REGULAR,
         true /* enable_settings */, true /* provide_pref_service */,
-        false /* is_new_profile */, kTestServiceInstanceGroup);
+        false /* is_new_profile */);
     test_session_client->SetSessionState(session_manager::SessionState::ACTIVE);
     test_session_client->SwitchActiveUser(
         AccountId::FromUserEmail(kTestUserEmail));

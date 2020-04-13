@@ -90,16 +90,18 @@ class DISPLAY_EXPORT Screen {
   virtual void AddObserver(DisplayObserver* observer) = 0;
   virtual void RemoveObserver(DisplayObserver* observer) = 0;
 
-  // Converts |screen_rect| to DIP coordinates in the context of |view| clamping
-  // to the enclosing rect if the coordinates do not fall on pixel boundaries.
-  // If |view| is null, the primary display is used as the context.
-  virtual gfx::Rect ScreenToDIPRectInWindow(gfx::NativeView view,
+  // Converts |screen_rect| to DIP coordinates in the context of |window|
+  // clamping to the enclosing rect if the coordinates do not fall on pixel
+  // boundaries. If |window| is null, the primary display is used as the
+  // context.
+  virtual gfx::Rect ScreenToDIPRectInWindow(gfx::NativeWindow window,
                                             const gfx::Rect& screen_rect) const;
 
-  // Converts |dip_rect| to screen coordinates in the context of |view| clamping
-  // to the enclosing rect if the coordinates do not fall on pixel boundaries.
-  // If |view| is null, the primary display is used as the context.
-  virtual gfx::Rect DIPToScreenRectInWindow(gfx::NativeView view,
+  // Converts |dip_rect| to screen coordinates in the context of |window|
+  // clamping to the enclosing rect if the coordinates do not fall on pixel
+  // boundaries. If |window| is null, the primary display is used as the
+  // context.
+  virtual gfx::Rect DIPToScreenRectInWindow(gfx::NativeWindow window,
                                             const gfx::Rect& dip_rect) const;
 
   // Returns true if the display with |display_id| is found and returns that

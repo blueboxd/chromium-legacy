@@ -107,7 +107,9 @@ Geolocation* Geolocation::Create(ExecutionContext* context) {
 Geolocation::Geolocation(ExecutionContext* context)
     : ExecutionContextLifecycleObserver(context),
       PageVisibilityObserver(GetDocument()->GetPage()),
-      watchers_(MakeGarbageCollected<GeolocationWatchers>()) {}
+      watchers_(MakeGarbageCollected<GeolocationWatchers>()),
+      geolocation_(context),
+      geolocation_service_(context) {}
 
 Geolocation::~Geolocation() = default;
 
@@ -117,6 +119,8 @@ void Geolocation::Trace(Visitor* visitor) {
   visitor->Trace(one_shots_being_invoked_);
   visitor->Trace(watchers_being_invoked_);
   visitor->Trace(last_position_);
+  visitor->Trace(geolocation_);
+  visitor->Trace(geolocation_service_);
   ScriptWrappable::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
@@ -138,8 +142,6 @@ void Geolocation::ContextDestroyed() {
   StopUpdating();
 
   last_position_ = nullptr;
-  geolocation_.reset();
-  geolocation_service_.reset();
 }
 
 void Geolocation::RecordOriginTypeAccess() const {
@@ -431,7 +433,7 @@ void Geolocation::StartUpdating(GeoNotifier* notifier) {
   updating_ = true;
   if (notifier->Options()->enableHighAccuracy() && !enable_high_accuracy_) {
     enable_high_accuracy_ = true;
-    if (geolocation_)
+    if (geolocation_.is_bound())
       geolocation_->SetHighAccuracy(true);
   }
   UpdateGeolocationConnection(notifier);
@@ -451,7 +453,7 @@ void Geolocation::UpdateGeolocationConnection(GeoNotifier* notifier) {
     disconnected_geolocation_ = true;
     return;
   }
-  if (geolocation_) {
+  if (geolocation_.is_bound()) {
     if (notifier)
       notifier->StartTimer();
     return;

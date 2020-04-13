@@ -694,16 +694,8 @@ DevToolsBackgroundServicesContext* GetDevTools(BrowserContext* browser_context,
              : nullptr;
 }
 
-DevToolsBackgroundServicesContext* GetDevToolsForInstanceGroup(
-    const base::Token& instance_group,
-    const url::Origin& sw_origin) {
-  BrowserContext* browser_context =
-      BrowserContext::GetBrowserContextForServiceInstanceGroup(instance_group);
-  return browser_context ? GetDevTools(browser_context, sw_origin) : nullptr;
-}
-
 void OnResponseForCanMakePaymentOnUiThread(
-    const base::Token& instance_group,
+    BrowserContext* browser_context,
     int64_t registration_id,
     const url::Origin& sw_origin,
     const std::string& payment_request_id,
@@ -719,7 +711,7 @@ void OnResponseForCanMakePaymentOnUiThread(
         CanMakePaymentEventResponseType::INVALID_ACCOUNT_BALANCE_VALUE);
   }
 
-  auto* dev_tools = GetDevToolsForInstanceGroup(instance_group, sw_origin);
+  auto* dev_tools = GetDevTools(browser_context, sw_origin);
   if (dev_tools) {
     std::stringstream response_type;
     response_type << response->response_type;
@@ -742,13 +734,13 @@ void OnResponseForCanMakePaymentOnUiThread(
 }
 
 void OnResponseForAbortPaymentOnUiThread(
-    const base::Token& instance_group,
+    BrowserContext* browser_context,
     int64_t registration_id,
     const url::Origin& sw_origin,
     const std::string& payment_request_id,
     PaymentAppProvider::AbortCallback callback,
     bool payment_aborted) {
-  auto* dev_tools = GetDevToolsForInstanceGroup(instance_group, sw_origin);
+  auto* dev_tools = GetDevTools(browser_context, sw_origin);
   if (dev_tools) {
     dev_tools->LogBackgroundServiceEvent(
         registration_id, sw_origin, DevToolsBackgroundService::kPaymentHandler,
@@ -761,13 +753,13 @@ void OnResponseForAbortPaymentOnUiThread(
 }
 
 void OnResponseForPaymentRequestOnUiThread(
-    const base::Token& instance_group,
+    BrowserContext* browser_context,
     int64_t registration_id,
     const url::Origin& sw_origin,
     const std::string& payment_request_id,
     PaymentAppProvider::InvokePaymentAppCallback callback,
     PaymentHandlerResponsePtr response) {
-  auto* dev_tools = GetDevToolsForInstanceGroup(instance_group, sw_origin);
+  auto* dev_tools = GetDevTools(browser_context, sw_origin);
   if (dev_tools) {
     std::stringstream response_type;
     response_type << response->response_type;
@@ -845,11 +837,9 @@ void PaymentAppProviderImpl::InvokePaymentApp(
       browser_context, registration_id,
       base::BindOnce(
           &DispatchPaymentRequestEvent, browser_context, std::move(event_data),
-          base::BindOnce(
-              &OnResponseForPaymentRequestOnUiThread,
-              BrowserContext::GetServiceInstanceGroupFor(browser_context),
-              registration_id, sw_origin, event_data->payment_request_id,
-              std::move(callback))));
+          base::BindOnce(&OnResponseForPaymentRequestOnUiThread,
+                         browser_context, registration_id, sw_origin,
+                         event_data->payment_request_id, std::move(callback))));
 }
 
 void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
@@ -927,13 +917,11 @@ void PaymentAppProviderImpl::CanMakePayment(
 
   StartServiceWorkerForDispatch(
       browser_context, registration_id,
-      base::BindOnce(
-          &DispatchCanMakePaymentEvent, browser_context, std::move(event_data),
-          base::BindOnce(
-              &OnResponseForCanMakePaymentOnUiThread,
-              BrowserContext::GetServiceInstanceGroupFor(browser_context),
-              registration_id, sw_origin, payment_request_id,
-              std::move(callback))));
+      base::BindOnce(&DispatchCanMakePaymentEvent, browser_context,
+                     std::move(event_data),
+                     base::BindOnce(&OnResponseForCanMakePaymentOnUiThread,
+                                    browser_context, registration_id, sw_origin,
+                                    payment_request_id, std::move(callback))));
 }
 
 void PaymentAppProviderImpl::AbortPayment(BrowserContext* browser_context,
@@ -955,9 +943,7 @@ void PaymentAppProviderImpl::AbortPayment(BrowserContext* browser_context,
       browser_context, registration_id,
       base::BindOnce(&DispatchAbortPaymentEvent, browser_context,
                      base::BindOnce(&OnResponseForAbortPaymentOnUiThread,
-                                    BrowserContext::GetServiceInstanceGroupFor(
-                                        browser_context),
-                                    registration_id, sw_origin,
+                                    browser_context, registration_id, sw_origin,
                                     payment_request_id, std::move(callback))));
 }
 

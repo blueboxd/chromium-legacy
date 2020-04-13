@@ -71,8 +71,12 @@ bool BrowserNonClientFrameView::CaptionButtonsOnLeadingEdge() const {
   return false;
 }
 
-void BrowserNonClientFrameView::UpdateFullscreenTopUI(
-    bool needs_check_tab_fullscreen) {}
+void BrowserNonClientFrameView::UpdateFullscreenTopUI() {
+  if (frame_->IsFullscreen())
+    browser_view_->HideDownloadShelf();
+  else
+    browser_view_->UnhideDownloadShelf();
+}
 
 bool BrowserNonClientFrameView::ShouldHideTopUIForFullscreen() const {
   return frame_->IsFullscreen();

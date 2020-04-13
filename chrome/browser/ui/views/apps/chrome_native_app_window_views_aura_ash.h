@@ -102,8 +102,6 @@ class ChromeNativeAppWindowViewsAuraAsh
       bool force_update) override;
   void OnExclusiveAccessUserInput() override;
   content::WebContents* GetActiveWebContents() override;
-  void UnhideDownloadShelf() override;
-  void HideDownloadShelf() override;
   bool CanUserExitFullscreen() const override;
 
   // ExclusiveAccessBubbleViewsContext:

@@ -43,7 +43,6 @@ const char kRangeLenDictAttr[] = "len";
 
 std::unique_ptr<base::DictionaryValue> PopulatePosition(
     const BrowserAccessibility& node) {
-  DCHECK(node.instance_active());
   BrowserAccessibilityManager* root_manager = node.manager()->GetRootManager();
   DCHECK(root_manager);
 
@@ -283,7 +282,6 @@ std::unique_ptr<base::DictionaryValue>
 AccessibilityTreeFormatterMac::BuildAccessibilityTree(
     BrowserAccessibility* root) {
   DCHECK(root);
-  DCHECK(root->instance_active());
 
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   BrowserAccessibilityCocoa* cocoa_root = ToBrowserAccessibilityCocoa(root);

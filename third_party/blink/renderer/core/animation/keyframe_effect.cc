@@ -290,6 +290,10 @@ bool KeyframeEffect::Affects(const PropertyHandle& property) const {
   return model_->Affects(property);
 }
 
+bool KeyframeEffect::HasRevert() const {
+  return model_->HasRevert();
+}
+
 void KeyframeEffect::NotifySampledEffectRemovedFromEffectStack() {
   sampled_effect_ = nullptr;
 }

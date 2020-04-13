@@ -609,6 +609,11 @@
 <translation id="1805888043020974594">Utskriftstjener</translation>
 <translation id="1805967612549112634">Bekreft PIN-koden</translation>
 <translation id="1806335016774576568">Bytt til en annen åpen app</translation>
+<translation id="1809483812148634490">Apper du har lastet ned fra Google Play, blir slettet fra denne Chromebooken.
+    <ph name="LINE_BREAKS1" />
+    Det kan hende at innhold du har kjøpt (for eksempel filmer, TV-serier, musikk, bøker eller andre kjøp i apper), også slettes.
+    <ph name="LINE_BREAKS2" />
+    Dette har ikke innvirkning på apper eller innhold på andre enheter.</translation>
 <translation id="1809734401532861917">Legg til bokmerker, loggen, passord og andre innstillinger i <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">Tjenester</translation>
 <translation id="18139523105317219">Navn på EDI-enhet</translation>
@@ -810,7 +815,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2090165459409185032">For å gjenopprette kontoinformasjonen din, gå til: google.com/accounts/recovery</translation>
 <translation id="2090876986345970080">Systemets sikkerhetsinnstillinger</translation>
 <translation id="2091887806945687916">Lyd</translation>
-<translation id="2096478741073211388">Forslag til personopplysninger hjelper deg å skrive raskere ved å foreslå navnet ditt, adressen din eller telefonnummeret ditt når du skriver inn visse spesifikke ord. Det er bare du som kan se dine egne private, personlige forslag for kontoen din.</translation>
+<translation id="2096478741073211388">Forslag til personopplysninger hjelper deg med å skrive raskere ved å foreslå navnet ditt, adressen din eller telefonnummeret ditt når du skriver inn visse spesifikke ord. Det er bare du som kan se dine egne private, personlige forslag for kontoen din.</translation>
 <translation id="2096715839409389970">Slett informasjonskapsler fra tredjeparter</translation>
 <translation id="2097372108957554726">Du må logge på Chrome for å registrere nye enheter</translation>
 <translation id="2099172618127234427">Du er i ferd med å slå på Chrome OS-feilsøkingsfunksjoner som kommer til å konfigurere sshd daemon og muliggjøre oppstart fra USB-stasjoner.</translation>
@@ -1390,6 +1395,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2825848369316359348">Finn navnet som er trykket på baksiden av sikkerhetsnøkkelen din</translation>
 <translation id="2828650939514476812">Koble til Wi-Fi-nettverk</translation>
 <translation id="2835294513443818940">Denne filen kan ikke lastes ned sikkert.</translation>
+<translation id="2835547721736623118">Tjeneste for talegjenkjenning</translation>
 <translation id="2836269494620652131">Programstopp</translation>
 <translation id="2836635946302913370">Pålogging med dette brukernavnet er deaktivert av administratoren din.</translation>
 <translation id="283669119850230892">Fullfør tilkoblingen til Internett nedenfor for å bruke nettverket <ph name="NETWORK_ID" />.</translation>
@@ -1534,6 +1540,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3019285239893817657">knapp til underordnet side</translation>
 <translation id="3020183492814296499">Snarveier</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Ved batteridrift</translation>
 <translation id="3021066826692793094">Sommerfugl</translation>
 <translation id="3021678814754966447">&amp;Vis rammekilde</translation>
 <translation id="3022978424994383087">Det skjønte jeg ikke.</translation>
@@ -2728,6 +2735,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4633757335284074492">Sikkerhetskopiér til Google Disk. Gjenopprett data enkelt eller bytt enhet når som helst. Denne sikkerhetskopien inkluderer appdata. Sikkerhetskopier lastes opp til Google og krypteres med passordet for Google-kontoen til barnet ditt.</translation>
 <translation id="4634771451598206121">Logg på igjen</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> er ikke tilgjengelig for gjestebrukere.</translation>
+<translation id="4635444580397524003">Linux-sikkerhetskopien er gjenopprettet.</translation>
 <translation id="4636930964841734540">Info</translation>
 <translation id="4637083375689622795">Flere handlinger, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Slå på ADB-feilsøking</translation>
@@ -2903,6 +2911,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4890773143211625964">Vis avanserte skriveralternativer</translation>
 <translation id="4891089016822695758">Forumet for betaversjoner</translation>
 <translation id="4892229439761351791">Nettstedet kan bruke Bluetooth</translation>
+<translation id="489258173289528622">Inaktivitetshandling ved batteridrift</translation>
 <translation id="4893336867552636863">Dette sletter nettlesingsdataene dine permanent fra denne enheten.</translation>
 <translation id="4893522937062257019">På låseskjermen</translation>
 <translation id="489454699928748701">Gi nettsteder tilgang til bevegelsessensorer</translation>
@@ -3609,6 +3618,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5863445608433396414">Slå på feilsøkingsfunksjoner</translation>
 <translation id="5864195618110239517">Bruk tilkobling med datamåling</translation>
 <translation id="5864471791310927901">DHCP-oppslag mislyktes</translation>
+<translation id="5864754048328252126">Inaktivitetshandling når enheten lades</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> settes snart på pause</translation>
 <translation id="586567932979200359">Du kjører <ph name="PRODUCT_NAME" /> fra diskavbildningen. Hvis du installer produktet på datamaskinen, kan du kjøre det uten diskavbildningen og sikre at det holdes oppdatert.</translation>
 <translation id="5865733239029070421">Sender automatisk brukerstatistikk og programstopprapporter til Google</translation>
@@ -3808,6 +3818,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6120205520491252677">Fest denne siden til startsiden</translation>
 <translation id="6122081475643980456">Internett-tilkoblingen din kontrolleres</translation>
 <translation id="6122095009389448667">Fortsett å blokkere dette nettstedet fra å se utklippstavlen</translation>
+<translation id="6122831415929794347">Vil du slå av Safe Browsing?</translation>
 <translation id="6122875415561139701">Skriveoperasjonen er ikke tillatt på: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="6124650939968185064">Disse utvidelsene er avhengige av denne utvidelsen:</translation>
 <translation id="6124698108608891449">Dette nettstedet trenger flere tillatelser.</translation>
@@ -4011,6 +4022,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6408118934673775994">lese og endre opplysningene dine på <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Bildefiler</translation>
 <translation id="6410328738210026208">Bytt kanal og bruk Powerwash</translation>
+<translation id="6410390304316730527">Safe Browsing beskytter deg mot angripere som kan prøve å lure deg til å gjøre farlige ting, som å installere skadelig programvare eller avsløre personopplysninger, for eksempel passord, telefonnumre eller kredittkortinformasjon. Hvis du slår det av, må du være forsiktig når du surfer på ukjente eller useriøse nettsteder.</translation>
 <translation id="6410668567036790476">Legg til søkemotor</translation>
 <translation id="641081527798843608">Emnetreff</translation>
 <translation id="6412673304250309937">Kontrollerer nettadresser opp mot en liste i Chrome over utrygge nettsteder. Hvis nettsteder prøver å stjele passordet ditt, eller når du laster ned skadelige filer, kan Chrome også sende nettadresser, inkludert deler av sideinnholdet, til Safe Browsing.</translation>
@@ -5931,6 +5943,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8951256747718668828">Kunne ikke fullføre gjenopprettingen på grunn av en feil</translation>
 <translation id="8951465597020890363">Vil du avslutte gjestemodus likevel?</translation>
 <translation id="8952831374766033534">Konfigurasjonsalternativet støttes ikke: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">Når enheten lades</translation>
 <translation id="895347679606913382">Starter...</translation>
 <translation id="8957762313041272117">Direkteteksting</translation>
 <translation id="895944840846194039">JavaScript-minne</translation>

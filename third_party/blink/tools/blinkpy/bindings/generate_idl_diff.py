@@ -2,7 +2,6 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """generate_idl_diff.py is a script that generates a diff of two given IDL files.
 Usage: generate_idl_diff.py old_file.json new_file.json diff_file.json
     old_file.json: An input json file including idl data of old Chrome version
@@ -55,8 +54,9 @@ and 'Operations'. Each item in them are called a "member".
     }
 """
 
-
-EXTATTRIBUTES_AND_MEMBER_TYPES = ['ExtAttributes', 'Consts', 'Attributes', 'Operations']
+EXTATTRIBUTES_AND_MEMBER_TYPES = [
+    'ExtAttributes', 'Consts', 'Attributes', 'Operations'
+]
 DIFF_INSENSITIVE_FIELDS = ['Name']
 DIFF_TAG = 'diff_tag'
 DIFF_TAG_ADDED = 'added'
@@ -139,7 +139,8 @@ def interfaces_diff(old_interfaces, new_interfaces):
     annotated = {}
     for interface_name, interface in new_interfaces.items():
         if interface_name in old_interfaces:
-            annotated_interface, is_changed = members_diff(old_interfaces[interface_name], interface)
+            annotated_interface, is_changed = members_diff(
+                old_interfaces[interface_name], interface)
             if is_changed:
                 annotated[interface_name] = annotated_interface
             del old_interfaces[interface_name]
@@ -166,9 +167,8 @@ def write_diff(diff, filepath):
 
 def main(argv):
     if len(argv) != 3:
-        sys.stdout.write(
-            'Usage: make_diff.py <old_file.json> <new_file.json> '
-            '<diff_file.json>\n')
+        sys.stdout.write('Usage: make_diff.py <old_file.json> <new_file.json> '
+                         '<diff_file.json>\n')
         exit(1)
     old_json_file = argv[0]
     new_json_file = argv[1]

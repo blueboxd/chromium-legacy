@@ -73,11 +73,18 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
   // storage be part of the subclass.
   wtf_size_t i = 0;
   for (auto& child : builder->children_) {
-    buffer[i].fragment = child.fragment.get();
-    buffer[i].fragment->AddRef();
     buffer[i].offset = child.offset.ConvertToPhysical(
         block_or_line_writing_mode, builder->Direction(), size,
         child.fragment->Size());
+    // Call the move constructor to move without |AddRef|. Fragments in
+    // |builder| are not used after |this| was constructed.
+    static_assert(
+        sizeof(buffer[0].fragment) ==
+            sizeof(scoped_refptr<const NGPhysicalFragment>),
+        "scoped_refptr must be the size of a pointer for this to work");
+    new (&buffer[i].fragment)
+        scoped_refptr<const NGPhysicalFragment>(std::move(child.fragment));
+    DCHECK(!child.fragment);  // Ensure it was moved.
     ++i;
   }
 }

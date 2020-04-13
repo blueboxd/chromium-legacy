@@ -30,7 +30,6 @@ import urllib2
 
 
 class MockWeb(object):
-
     def __init__(self, urls=None, responses=None):
         self.urls = urls or {}
         self.urls_fetched = []
@@ -49,7 +48,6 @@ class MockWeb(object):
 
 
 class MockResponse(object):
-
     def __init__(self, values):
         self.status_code = values['status_code']
         self.url = ''
@@ -75,10 +73,12 @@ class MockResponse(object):
 
 
 class MockInfo(object):
-
     def __init__(self, headers):
         # The name of the headers (keys) are case-insensitive, and values are stripped.
-        self._headers = {key.lower(): value.strip() for key, value in headers.iteritems()}
+        self._headers = {
+            key.lower(): value.strip()
+            for key, value in headers.iteritems()
+        }
 
     def getheader(self, header):
         return self._headers.get(header.lower(), None)

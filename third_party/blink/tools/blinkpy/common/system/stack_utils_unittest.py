@@ -38,7 +38,6 @@ def current_thread_id():
 
 
 class StackUtilsTest(unittest.TestCase):
-
     def test_find_thread_stack_found(self):
         thread_id = current_thread_id()
         found_stack = stack_utils._find_thread_stack(thread_id)

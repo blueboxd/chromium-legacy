@@ -6,8 +6,8 @@ import hashlib
 
 
 class MockChromiumCommit(object):
-
-    def __init__(self, host,
+    def __init__(self,
+                 host,
                  position='refs/heads/master@{#123}',
                  change_id='Iba5eba11',
                  author='Fake author',

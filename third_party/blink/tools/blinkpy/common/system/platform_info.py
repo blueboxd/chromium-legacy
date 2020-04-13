@@ -43,7 +43,8 @@ class PlatformInfo(object):
     newer than one known to the code.
     """
 
-    def __init__(self, sys_module, platform_module, filesystem_module, executive):
+    def __init__(self, sys_module, platform_module, filesystem_module,
+                 executive):
         self._executive = executive
         self._filesystem = filesystem_module
         self._platform_module = platform_module
@@ -53,9 +54,11 @@ class PlatformInfo(object):
         if self.os_name == 'freebsd':
             self.os_version = platform_module.release()
         if self.os_name.startswith('mac'):
-            self.os_version = self._determine_mac_version(platform_module.mac_ver()[0])
+            self.os_version = self._determine_mac_version(
+                platform_module.mac_ver()[0])
         if self.os_name.startswith('win'):
-            self.os_version = self._determine_win_version(self._win_version_tuple(sys_module))
+            self.os_version = self._determine_win_version(
+                self._win_version_tuple(sys_module))
         assert sys.platform != 'cygwin', 'Cygwin is not supported.'
 
     def is_mac(self):
@@ -72,9 +75,11 @@ class PlatformInfo(object):
 
     def is_highdpi(self):
         if self.is_mac():
-            output = self._executive.run_command(['system_profiler', 'SPDisplaysDataType'],
-                                                 error_handler=self._executive.ignore_error)
-            if output and re.search(r'Resolution:.*Retina$', output, re.MULTILINE):
+            output = self._executive.run_command(
+                ['system_profiler', 'SPDisplaysDataType'],
+                error_handler=self._executive.ignore_error)
+            if output and re.search(r'Resolution:.*Retina$', output,
+                                    re.MULTILINE):
                 return True
         return False
 
@@ -90,7 +95,8 @@ class PlatformInfo(object):
 
     def total_bytes_memory(self):
         if self.is_mac():
-            return long(self._executive.run_command(['sysctl', '-n', 'hw.memsize']))
+            return long(
+                self._executive.run_command(['sysctl', '-n', 'hw.memsize']))
         return None
 
     def terminal_width(self):
@@ -100,10 +106,13 @@ class PlatformInfo(object):
                 # From http://code.activestate.com/recipes/440694-determine-size-of-console-window-on-windows/
                 from ctypes import windll, create_string_buffer
                 handle = windll.kernel32.GetStdHandle(-12)  # -12 == stderr
-                console_screen_buffer_info = create_string_buffer(22)  # 22 == sizeof(console_screen_buffer_info)
-                if windll.kernel32.GetConsoleScreenBufferInfo(handle, console_screen_buffer_info):
+                # 22 == sizeof(console_screen_buffer_info)
+                console_screen_buffer_info = create_string_buffer(22)
+                if windll.kernel32.GetConsoleScreenBufferInfo(
+                        handle, console_screen_buffer_info):
                     import struct
-                    _, _, _, _, _, left, _, right, _, _, _ = struct.unpack('hhhhHhhhhhh', console_screen_buffer_info.raw)
+                    _, _, _, _, _, left, _, right, _, _, _ = struct.unpack(
+                        'hhhhHhhhhhh', console_screen_buffer_info.raw)
                     # Note that we return 1 less than the width since writing into the rightmost column
                     # automatically performs a line feed.
                     return right - left
@@ -112,7 +121,8 @@ class PlatformInfo(object):
                 import fcntl
                 import struct
                 import termios
-                packed = fcntl.ioctl(sys.stderr.fileno(), termios.TIOCGWINSZ, '\0' * 8)
+                packed = fcntl.ioctl(sys.stderr.fileno(), termios.TIOCGWINSZ,
+                                     '\0' * 8)
                 _, columns, _, _ = struct.unpack('HHHH', packed)
                 return columns
         except Exception:  # pylint: disable=broad-except
@@ -143,7 +153,8 @@ class PlatformInfo(object):
             return 'win'
         if sys_platform.startswith('freebsd'):
             return 'freebsd'
-        raise AssertionError('unrecognized platform string "%s"' % sys_platform)
+        raise AssertionError(
+            'unrecognized platform string "%s"' % sys_platform)
 
     def _determine_mac_version(self, mac_version_string):
         minor_release = int(mac_version_string.split('.')[1])
@@ -168,10 +179,10 @@ class PlatformInfo(object):
             return 'vista'
         if win_version_tuple[:2] == (5, 1):
             return 'xp'
-        assert (
-            win_version_tuple[0] > 10 or
-            win_version_tuple[0] == 10 and win_version_tuple[1] > 0), (
-                'Unrecognized Windows version tuple: "%s"' % (win_version_tuple,))
+        assert (win_version_tuple[0] > 10
+                or win_version_tuple[0] == 10 and win_version_tuple[1] > 0), (
+                    'Unrecognized Windows version tuple: "%s"' %
+                    (win_version_tuple, ))
         return 'future'
 
     def _win_version_tuple(self, sys_module):
@@ -181,7 +192,9 @@ class PlatformInfo(object):
 
     def _win_version_tuple_from_cmd(self):
         # Note that this should only ever be called on windows, so this should always work.
-        ver_output = self._executive.run_command(['cmd', '/c', 'ver'], decode_output=False)
-        match_object = re.search(r'(?P<major>\d+)\.(?P<minor>\d)\.(?P<build>\d+)', ver_output)
+        ver_output = self._executive.run_command(['cmd', '/c', 'ver'],
+                                                 decode_output=False)
+        match_object = re.search(
+            r'(?P<major>\d+)\.(?P<minor>\d)\.(?P<build>\d+)', ver_output)
         assert match_object, 'cmd returned an unexpected version string: ' + ver_output
         return tuple(map(int, match_object.groups()))

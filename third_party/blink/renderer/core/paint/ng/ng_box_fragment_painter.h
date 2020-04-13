@@ -154,9 +154,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                      const PaintInfo&,
                      const PhysicalOffset& paint_offset,
                      const PhysicalOffset& parent_offset);
-  MoveTo PaintLineBoxItem(const NGFragmentItem& item,
-                          const PaintInfo& paint_info,
-                          const PhysicalOffset& paint_offset);
   void PaintBoxItem(const NGFragmentItem& item,
                     const NGPhysicalBoxFragment& child_fragment,
                     const NGInlineCursor& cursor,

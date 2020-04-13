@@ -28,8 +28,7 @@ void NGInlineCursor::SetRoot(const NGFragmentItems& fragment_items,
   DCHECK(!HasRoot());
   fragment_items_ = &fragment_items;
   items_ = items;
-  DCHECK(items_.empty() || (items_.data() >= fragment_items_->Items().data() &&
-                            items_.data() < fragment_items_->Items().end()));
+  DCHECK(fragment_items_->IsSubSpan(items_));
   MoveToItem(items_.begin());
 }
 
@@ -872,8 +871,8 @@ void NGInlineCursor::MoveTo(const NGInlineCursorPosition& position) {
 
 inline unsigned NGInlineCursor::SpanIndexFromItemIndex(unsigned index) const {
   DCHECK(IsItemCursor());
-  DCHECK_GE(items_.data(), fragment_items_->Items().data());
-  DCHECK_LT(items_.data(), fragment_items_->Items().end());
+  DCHECK(!items_.empty());
+  DCHECK(fragment_items_->IsSubSpan(items_));
   if (items_.data() == fragment_items_->Items().data())
     return index;
   unsigned span_index = fragment_items_->Items().data() - items_.data() + index;

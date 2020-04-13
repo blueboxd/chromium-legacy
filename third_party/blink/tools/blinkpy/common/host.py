@@ -36,12 +36,10 @@ from blinkpy.common.system.system_host import SystemHost
 from blinkpy.web_tests.builder_list import BuilderList
 from blinkpy.web_tests.port.factory import PortFactory
 
-
 _log = logging.getLogger(__name__)
 
 
 class Host(SystemHost):
-
     def __init__(self):
         SystemHost.__init__(self)
         self.web = web.Web()
@@ -61,7 +59,14 @@ class Host(SystemHost):
 
     def git(self, path=None):
         if path:
-            return Git(cwd=path, executive=self.executive, filesystem=self.filesystem, platform=self.platform)
+            return Git(
+                cwd=path,
+                executive=self.executive,
+                filesystem=self.filesystem,
+                platform=self.platform)
         if not self._git:
-            self._git = Git(filesystem=self.filesystem, executive=self.executive, platform=self.platform)
+            self._git = Git(
+                filesystem=self.filesystem,
+                executive=self.executive,
+                platform=self.platform)
         return self._git

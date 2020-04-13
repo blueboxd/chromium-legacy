@@ -1,7 +1,6 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """WPTManifest is responsible for handling MANIFEST.json.
 
 The MANIFEST.json file contains metadata about files in web-platform-tests,
@@ -228,29 +227,37 @@ class WPTManifest(object):
 
         # TODO(crbug.com/853815): perhaps also cache the manifest for wpt_internal.
         if 'external' in path:
-            base_manifest_path = fs.join(port.web_tests_dir(), 'external', BASE_MANIFEST_NAME)
+            base_manifest_path = fs.join(port.web_tests_dir(), 'external',
+                                         BASE_MANIFEST_NAME)
             if fs.exists(base_manifest_path):
                 fs.copyfile(base_manifest_path, manifest_path)
             else:
-                _log.error('Manifest base not found at "%s".', base_manifest_path)
+                _log.error('Manifest base not found at "%s".',
+                           base_manifest_path)
 
         WPTManifest.generate_manifest(port.host, wpt_path)
 
         if fs.isfile(manifest_path):
             _log.debug('Manifest generation completed.')
         else:
-            _log.error('Manifest generation failed; creating an empty MANIFEST.json...')
+            _log.error(
+                'Manifest generation failed; creating an empty MANIFEST.json...'
+            )
             fs.write_text_file(manifest_path, '{}')
 
     @staticmethod
     def generate_manifest(host, dest_path):
         """Generates MANIFEST.json on the specified directory."""
         finder = PathFinder(host.filesystem)
-        wpt_exec_path = finder.path_from_blink_tools('blinkpy', 'third_party', 'wpt', 'wpt', 'wpt')
-        cmd = ['python', wpt_exec_path, 'manifest', '--no-download', '--tests-root', dest_path]
+        wpt_exec_path = finder.path_from_blink_tools('blinkpy', 'third_party',
+                                                     'wpt', 'wpt', 'wpt')
+        cmd = [
+            'python', wpt_exec_path, 'manifest', '--no-download',
+            '--tests-root', dest_path
+        ]
 
         # ScriptError will be raised if the command fails.
         host.executive.run_command(
             cmd,
-            return_stderr=True  # This will also include stderr in the exception message.
-        )
+            # This will also include stderr in the exception message.
+            return_stderr=True)

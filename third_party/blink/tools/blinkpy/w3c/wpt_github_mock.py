@@ -10,7 +10,11 @@ class MockWPTGitHub(object):
     # Some unused arguments may be included to match the real class's API.
     # pylint: disable=unused-argument
 
-    def __init__(self, pull_requests, unsuccessful_merge_index=-1, create_pr_fail_index=-1, merged_index=-1):
+    def __init__(self,
+                 pull_requests,
+                 unsuccessful_merge_index=-1,
+                 create_pr_fail_index=-1,
+                 merged_index=-1):
         """Initializes a mock WPTGitHub.
 
         Args:
@@ -60,8 +64,8 @@ class MockWPTGitHub(object):
         self.calls.append('create_pr')
 
         if self.create_pr_fail_index != self.create_pr_index:
-            self.pull_requests_created.append(
-                (remote_branch_name, desc_title, body))
+            self.pull_requests_created.append((remote_branch_name, desc_title,
+                                               body))
 
         self.create_pr_index += 1
         return 5678

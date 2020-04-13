@@ -26,6 +26,10 @@ to fit the size of flexitem according to flex values.">
 <body onload="checkLayout('.flexbox')">
 <div id=log></div>
 
+<!-- Blink's behavior here is incorrect, see https://crbug.com/721123.
+     When that bug is fixed, please delete this test, as this is correctly
+     tested by external/wpt/css/css-flexbox/flexitem-stretch-image.html -->
+
 <div class="flexbox">
   <img data-expected-display="block" data-expected-width="345" style="flex: 1 0 auto;" src="../../images/resources/blue-100.png">
   <img data-expected-display="block" data-expected-width="255" data-expected-height="100" style="flex: 1 0 auto;" src="../../images/resources/green-10.png">

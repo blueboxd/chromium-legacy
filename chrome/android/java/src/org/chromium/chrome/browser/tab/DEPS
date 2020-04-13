@@ -26,6 +26,10 @@ include_rules = [
 ]
 
 specific_include_rules = {
+  'InterceptNavigationDelegateClientImpl\.java': [
+    "+chrome/android/java/src/org/chromium/chrome/browser/ChromeActivity.java",
+    "+chrome/android/java/src/org/chromium/chrome/browser/tabmodel/TabModelSelector.java",
+  ],
   'RedirectHandlerTabHelper\.java': [
     "+chrome/android/java/src/org/chromium/chrome/browser/LaunchIntentDispatcher.java",
     "+chrome/android/java/src/org/chromium/chrome/browser/customtabs/CustomTabIntentDataProvider.java",

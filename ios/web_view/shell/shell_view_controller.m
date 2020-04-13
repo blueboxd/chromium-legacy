@@ -454,6 +454,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
 
   CWVSyncController* syncController = _webView.configuration.syncController;
   CWVIdentity* currentIdentity = syncController.currentIdentity;
+  __weak ShellViewController* weakSelf = self;
   if (currentIdentity) {
     NSString* title = [NSString
         stringWithFormat:@"Stop syncing for %@", currentIdentity.email];
@@ -465,7 +466,6 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
                                 [syncController stopSyncAndClearIdentity];
                               }]];
 
-    __weak ShellViewController* weakSelf = self;
     if (syncController.passphraseNeeded) {
       [alertController
           addAction:[UIAlertAction
@@ -475,24 +475,6 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
                                   [weakSelf showPassphraseUnlockAlert];
                                 }]];
     } else {
-      [alertController
-          addAction:[UIAlertAction actionWithTitle:@"Show autofill data"
-                                             style:UIAlertActionStyleDefault
-                                           handler:^(UIAlertAction* action) {
-                                             [weakSelf showAddressData];
-                                           }]];
-      [alertController
-          addAction:[UIAlertAction actionWithTitle:@"Show credit card data"
-                                             style:UIAlertActionStyleDefault
-                                           handler:^(UIAlertAction* action) {
-                                             [weakSelf showCreditCardData];
-                                           }]];
-      [alertController
-          addAction:[UIAlertAction actionWithTitle:@"Show password data"
-                                             style:UIAlertActionStyleDefault
-                                           handler:^(UIAlertAction* action) {
-                                             [weakSelf showPasswordData];
-                                           }]];
     }
   } else {
     for (CWVIdentity* identity in [_authService identities]) {
@@ -519,7 +501,24 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
                                                .usesSyncAndWalletSandbox ^= YES;
                                          }]];
   }
-
+  [alertController
+      addAction:[UIAlertAction actionWithTitle:@"Show autofill data"
+                                         style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction* action) {
+                                         [weakSelf showAddressData];
+                                       }]];
+  [alertController
+      addAction:[UIAlertAction actionWithTitle:@"Show credit card data"
+                                         style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction* action) {
+                                         [weakSelf showCreditCardData];
+                                       }]];
+  [alertController
+      addAction:[UIAlertAction actionWithTitle:@"Show password data"
+                                         style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction* action) {
+                                         [weakSelf showPasswordData];
+                                       }]];
   [alertController
       addAction:[UIAlertAction actionWithTitle:@"Cancel"
                                          style:UIAlertActionStyleCancel

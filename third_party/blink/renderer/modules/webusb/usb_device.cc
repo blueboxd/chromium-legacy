@@ -186,11 +186,13 @@ USBDevice::USBDevice(UsbDeviceInfoPtr device_info,
                      ExecutionContext* context)
     : ExecutionContextLifecycleObserver(context),
       device_info_(std::move(device_info)),
-      device_(std::move(device)),
+      device_(context),
       opened_(false),
       device_state_change_in_progress_(false),
       configuration_index_(kNotFound) {
-  if (device_) {
+  device_.Bind(std::move(device),
+               context->GetTaskRunner(TaskType::kMiscPlatformAPI));
+  if (device_.is_bound()) {
     device_.set_disconnect_handler(
         WTF::Bind(&USBDevice::OnConnectionError, WrapWeakPersistent(this)));
   }
@@ -591,11 +593,11 @@ ScriptPromise USBDevice::reset(ScriptState* script_state) {
 }
 
 void USBDevice::ContextDestroyed() {
-  device_.reset();
   device_requests_.clear();
 }
 
 void USBDevice::Trace(Visitor* visitor) {
+  visitor->Trace(device_);
   visitor->Trace(device_requests_);
   ScriptWrappable::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
@@ -676,7 +678,7 @@ bool USBDevice::IsProtectedInterfaceClass(wtf_size_t interface_index) const {
 
 bool USBDevice::EnsureNoDeviceChangeInProgress(
     ScriptPromiseResolver* resolver) const {
-  if (!device_) {
+  if (!device_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, kDeviceDisconnected));
     return false;

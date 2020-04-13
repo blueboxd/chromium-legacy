@@ -4,6 +4,8 @@
 
 package org.chromium.components.external_intents;
 
+import android.app.Activity;
+
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -11,5 +13,40 @@ import org.chromium.content_public.browser.WebContents;
  * InterceptNavigationDelegateImpl needs.
  */
 public interface InterceptNavigationDelegateClient {
+    /* Returns the WebContents in the context of which this InterceptNavigationDelegateImpl instance
+     * is operating. */
     WebContents getWebContents();
+
+    /* Creates an ExternalNavigationHandler instance that is configured for this client. */
+    ExternalNavigationHandler createExternalNavigationHandler();
+
+    /* Returns the time of the user's last interaction with the app. */
+    long getLastUserInteractionTime();
+
+    /* Gets a RedirectHandlerImpl instance that is associated with this client, creating it if
+     * necessary. */
+    RedirectHandlerImpl getOrCreateRedirectHandler();
+
+    /* Creates an AuthenticatorNavigationInterceptor instance that is configured for this client.
+     */
+    AuthenticatorNavigationInterceptor createAuthenticatorNavigationInterceptor();
+
+    /* Returns whether whether the tab associated with this client is incognito. */
+    boolean isIncognito();
+
+    /* Returns whether whether the tab associated with this client is currently hidden. */
+    boolean isHidden();
+
+    /* Returns the Activity associated with this client. */
+    Activity getActivity();
+
+    /* Returns true if the tab associated with this client was launched from an external app. */
+    boolean wasTabLaunchedFromExternalApp();
+
+    /* Returns true if the tab associated with this client was launched from a long press in the
+     * background. */
+    boolean wasTabLaunchedFromLongPressInBackground();
+
+    /* Invoked when the tab associated with this client should be closed. */
+    void closeTab();
 }

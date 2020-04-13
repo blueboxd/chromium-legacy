@@ -8,7 +8,6 @@ import unittest
 from blinkpy.common.system.system_host_mock import MockSystemHost
 from blinkpy.formatter.main import main
 
-
 ACTUAL_INPUT = '''
 def foo():
     """triple-quoted docstring"""
@@ -19,7 +18,6 @@ def foo():
     except Exception, error:
         pass
 '''
-
 
 EXPECTED_BLINK_OUTPUT = '''
 def foo():
@@ -34,7 +32,6 @@ def foo():
     except Exception as error:
         pass
 '''
-
 
 EXPECTED_CHROMIUM_OUTPUT = '''
 def foo():
@@ -69,32 +66,33 @@ class TestMain(unittest.TestCase):
 
     def test_files_blink(self):
         host = MockSystemHost()
-        host.filesystem.files = {
-            'test.py': ACTUAL_INPUT}
+        host.filesystem.files = {'test.py': ACTUAL_INPUT}
         main(host, ['test.py'])
         self.assertEqual(host.filesystem.files, {
             'test.py': EXPECTED_BLINK_OUTPUT,
-            'test.py.bak': ACTUAL_INPUT})
+            'test.py.bak': ACTUAL_INPUT
+        })
 
     def test_files_blink_no_backup(self):
         host = MockSystemHost()
-        host.filesystem.files = {
-            'test.py': ACTUAL_INPUT}
+        host.filesystem.files = {'test.py': ACTUAL_INPUT}
         main(host, ['--no-backups', 'test.py'])
-        self.assertEqual(host.filesystem.files, {
-            'test.py': EXPECTED_BLINK_OUTPUT})
+        self.assertEqual(host.filesystem.files,
+                         {'test.py': EXPECTED_BLINK_OUTPUT})
 
     def test_stdin_blink(self):
         host = MockSystemHost()
         host.stdin = StringIO.StringIO(ACTUAL_INPUT)
         main(host, ['-'])
-        self.assertMultiLineEqual(host.stdout.getvalue(), EXPECTED_BLINK_OUTPUT)
+        self.assertMultiLineEqual(host.stdout.getvalue(),
+                                  EXPECTED_BLINK_OUTPUT)
 
     def test_stdin_chromium(self):
         host = MockSystemHost()
         host.stdin = StringIO.StringIO(ACTUAL_INPUT)
         main(host, ['--chromium', '-'])
-        self.assertMultiLineEqual(host.stdout.getvalue(), EXPECTED_CHROMIUM_OUTPUT)
+        self.assertMultiLineEqual(host.stdout.getvalue(),
+                                  EXPECTED_CHROMIUM_OUTPUT)
 
     def test_stdin_no_changes(self):
         host = MockSystemHost()
@@ -106,7 +104,8 @@ class TestMain(unittest.TestCase):
         host = MockSystemHost()
         host.stdin = StringIO.StringIO(ACTUAL_INPUT)
         main(host, ['--no-autopep8', '--double-quote-strings', '-'])
-        self.assertMultiLineEqual(host.stdout.getvalue(), EXPECTED_ONLY_DOUBLE_QUOTED_OUTPUT)
+        self.assertMultiLineEqual(host.stdout.getvalue(),
+                                  EXPECTED_ONLY_DOUBLE_QUOTED_OUTPUT)
 
     def test_format_docstrings(self):
         host = MockSystemHost()
@@ -123,7 +122,8 @@ def f():
     return x
 ''')
         main(host, ['-'])
-        self.assertMultiLineEqual(host.stdout.getvalue(), '''
+        self.assertMultiLineEqual(
+            host.stdout.getvalue(), '''
 def f():
     """triple-quoted docstring
     with multiple lines
@@ -144,7 +144,8 @@ def f():
      """
 ''')
         main(host, ['-'])
-        self.assertMultiLineEqual(host.stdout.getvalue(), '''
+        self.assertMultiLineEqual(
+            host.stdout.getvalue(), '''
 def f():
     """This is a docstring
        With extra indentation on this line.

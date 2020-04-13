@@ -22,7 +22,9 @@ namespace blink {
 
 SyncManager::SyncManager(ServiceWorkerRegistration* registration,
                          scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : registration_(registration), task_runner_(std::move(task_runner)) {
+    : registration_(registration),
+      task_runner_(std::move(task_runner)),
+      background_sync_service_(registration->GetExecutionContext()) {
   DCHECK(registration);
 }
 
@@ -63,7 +65,8 @@ ScriptPromise SyncManager::getTags(ScriptState* script_state) {
   return promise;
 }
 
-const mojo::Remote<mojom::blink::OneShotBackgroundSyncService>&
+const HeapMojoRemote<mojom::blink::OneShotBackgroundSyncService,
+                     HeapMojoWrapperMode::kWithoutContextObserver>&
 SyncManager::GetBackgroundSyncServiceRemote() {
   if (!background_sync_service_.is_bound()) {
     Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
@@ -152,6 +155,7 @@ void SyncManager::GetRegistrationsCallback(
 
 void SyncManager::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
+  visitor->Trace(background_sync_service_);
   ScriptWrappable::Trace(visitor);
 }
 

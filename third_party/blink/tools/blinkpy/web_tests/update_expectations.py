@@ -1,7 +1,6 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Updates TestExpectations based on results in builder bots.
 
 Scans the TestExpectations file and uses results from actual builder bots runs
@@ -42,40 +41,49 @@ _log = logging.getLogger(__name__)
 
 CHROMIUM_BUG_PREFIX = 'crbug.com/'
 
+
 def main(host, bot_test_expectations_factory, argv):
     parser = argparse.ArgumentParser(
         epilog=__doc__, formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('--type',
-                        choices=['flake', 'fail', 'all'],
-                        default='all',
-                        help='type of expectations to update (default: %(default)s)')
-    parser.add_argument('--verbose', '-v',
-                        action='store_true',
-                        default=False,
-                        help='enable more verbose logging')
-    parser.add_argument('--remove-missing',
-                        action='store_true',
-                        default=False,
-                        help='also remove lines if there were no results, '
-                             'e.g. Android-only expectations for tests '
-                             'that are not in SmokeTests')
-    parser.add_argument('--show-results', '-s',
-                        action='store_true',
-                        default=False,
-                        help='Open results dashboard for all removed lines')
+    parser.add_argument(
+        '--type',
+        choices=['flake', 'fail', 'all'],
+        default='all',
+        help='type of expectations to update (default: %(default)s)')
+    parser.add_argument(
+        '--verbose',
+        '-v',
+        action='store_true',
+        default=False,
+        help='enable more verbose logging')
+    parser.add_argument(
+        '--remove-missing',
+        action='store_true',
+        default=False,
+        help='also remove lines if there were no results, '
+        'e.g. Android-only expectations for tests '
+        'that are not in SmokeTests')
+    parser.add_argument(
+        '--show-results',
+        '-s',
+        action='store_true',
+        default=False,
+        help='Open results dashboard for all removed lines')
     args = parser.parse_args(argv)
 
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format='%(levelname)s: %(message)s')
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format='%(levelname)s: %(message)s')
 
     port = host.port_factory.get()
     expectations_file = port.path_to_generic_test_expectations_file()
     if not host.filesystem.isfile(expectations_file):
-        _log.warning("Didn't find generic expectations file at: " + expectations_file)
+        _log.warning("Didn't find generic expectations file at: " +
+                     expectations_file)
         return 1
 
-    remover = ExpectationsRemover(
-        host, port, bot_test_expectations_factory, webbrowser,
-        args.type, args.remove_missing)
+    remover = ExpectationsRemover(host, port, bot_test_expectations_factory,
+                                  webbrowser, args.type, args.remove_missing)
 
     test_expectations = remover.get_updated_test_expectations()
     if args.show_results:
@@ -87,9 +95,13 @@ def main(host, bot_test_expectations_factory, argv):
 
 
 class ExpectationsRemover(object):
-
-    def __init__(self, host, port, bot_test_expectations_factory, browser,
-                 type_flag='all', remove_missing=False):
+    def __init__(self,
+                 host,
+                 port,
+                 bot_test_expectations_factory,
+                 browser,
+                 type_flag='all',
+                 remove_missing=False):
         self._host = host
         self._port = port
         self._expectations_factory = bot_test_expectations_factory
@@ -142,7 +154,8 @@ class ExpectationsRemover(object):
 
         # Initialize OS version to OS dictionary.
         if not self._version_to_os:
-            for os, os_versions in self._port.configuration_specifier_macros().items():
+            for os, os_versions in \
+                self._port.configuration_specifier_macros().items():
                 for version in os_versions:
                     self._version_to_os[version.lower()] = os.lower()
 
@@ -153,10 +166,15 @@ class ExpectationsRemover(object):
         configurations = []
         for config in self._port.all_test_configurations():
             if set(expectation.tags).issubset(
-                  set([self._version_to_os[config.version.lower()], config.version.lower(), config.build_type.lower()])):
+                    set([
+                        self._version_to_os[config.version.lower()],
+                        config.version.lower(),
+                        config.build_type.lower()
+                    ])):
                 configurations.append(config)
         for config in configurations:
-            builder_name = self._host.builders.builder_name_for_specifiers(config.version, config.build_type)
+            builder_name = self._host.builders.builder_name_for_specifiers(
+                config.version, config.build_type)
             if not builder_name:
                 _log.debug('No builder with config %s', config)
                 # For many configurations, there is no matching builder in
@@ -168,7 +186,8 @@ class ExpectationsRemover(object):
             builders_checked.append(builder_name)
 
             if builder_name not in self._builder_results_by_path.keys():
-                _log.error('Failed to find results for builder "%s"', builder_name)
+                _log.error('Failed to find results for builder "%s"',
+                           builder_name)
                 return False
 
             results_by_path = self._builder_results_by_path[builder_name]
@@ -181,10 +200,12 @@ class ExpectationsRemover(object):
 
             results_for_single_test = set(results_by_path[expectation.test])
             expectations_met = expected_results & results_for_single_test
-            if expectations_met != set([ResultType.Pass]) and expectations_met != set([]):
+            if (expectations_met != set([ResultType.Pass])
+                    and expectations_met != set([])):
                 return False
         if builders_checked:
-            _log.debug('Checked builders:\n  %s', '\n  '.join(builders_checked))
+            _log.debug('Checked builders:\n  %s',
+                       '\n  '.join(builders_checked))
         else:
             _log.warning('No matching builders for line, deleting line.')
         return True
@@ -208,20 +229,20 @@ class ExpectationsRemover(object):
         """
         builder_results_by_path = {}
         for builder_name in self._host.builders.all_continuous_builder_names():
-            expectations_for_builder = (
-                self._expectations_factory.expectations_for_builder(builder_name)
-            )
+            expectations_for_builder = (self._expectations_factory.
+                                        expectations_for_builder(builder_name))
 
             if not expectations_for_builder:
                 # This is not fatal since we may not need to check these
                 # results. If we do need these results we'll log an error later
                 # when trying to check against them.
-                _log.warning('Downloaded results are missing results for builder "%s"', builder_name)
+                _log.warning(
+                    'Downloaded results are missing results for builder "%s"',
+                    builder_name)
                 continue
 
             builder_results_by_path[builder_name] = (
-                expectations_for_builder.all_results_by_path()
-            )
+                expectations_for_builder.all_results_by_path())
         return builder_results_by_path
 
     def get_updated_test_expectations(self):
@@ -235,9 +256,11 @@ class ExpectationsRemover(object):
             A TestExpectations object with the passing lines filtered out.
         """
         generic_exp_path = self._port.path_to_generic_test_expectations_file()
-        raw_test_expectations = self._host.filesystem.read_text_file(generic_exp_path)
+        raw_test_expectations = self._host.filesystem.read_text_file(
+            generic_exp_path)
         expectations_dict = {generic_exp_path: raw_test_expectations}
-        test_expectations = TestExpectations(port=self._port, expectations_dict=expectations_dict)
+        test_expectations = TestExpectations(
+            port=self._port, expectations_dict=expectations_dict)
         removed_exps = []
         lines = []
 
@@ -246,19 +269,25 @@ class ExpectationsRemover(object):
             if not exp.test or exp.is_glob:
                 continue
 
-            if  self._can_delete_line(exp):
+            if self._can_delete_line(exp):
                 reason = exp.reason or ''
-                self._bug_numbers.update(
-                    [reason[len(CHROMIUM_BUG_PREFIX):] for reason in reason.split()
-                     if reason.startswith(CHROMIUM_BUG_PREFIX)])
+                self._bug_numbers.update([
+                    reason[len(CHROMIUM_BUG_PREFIX):]
+                    for reason in reason.split()
+                    if reason.startswith(CHROMIUM_BUG_PREFIX)
+                ])
                 self._removed_test_names.add(exp.test)
                 removed_exps.append(exp)
                 _log.info('Deleting line "%s"' % exp.to_string().strip())
 
         if removed_exps:
-            test_expectations.remove_expectations(generic_exp_path, removed_exps)
+            test_expectations.remove_expectations(generic_exp_path,
+                                                  removed_exps)
 
-        return '\n'.join([e.to_string() for e in test_expectations.get_updated_lines(generic_exp_path)])
+        return '\n'.join([
+            e.to_string()
+            for e in test_expectations.get_updated_lines(generic_exp_path)
+        ])
 
     def show_removed_results(self):
         """Opens a browser showing the removed lines in the results dashboard.
@@ -279,13 +308,13 @@ class ExpectationsRemover(object):
             expectation_type = self._type + ' '
         dashboard_url = self._flakiness_dashboard_url()
         bugs = ', '.join(sorted(self._bug_numbers))
-        message = ('Remove %sTestExpectations which are not failing in the specified way.\n\n'
-                   'This change was made by the update_expectations.py script.\n\n'
-                   'Recent test results history:\n%s\n\n'
-                   'Bug: %s') % (expectation_type, dashboard_url, bugs)
+        message = (
+            'Remove %sTestExpectations which are not failing in the specified way.\n\n'
+            'This change was made by the update_expectations.py script.\n\n'
+            'Recent test results history:\n%s\n\n'
+            'Bug: %s') % (expectation_type, dashboard_url, bugs)
         _log.info('Suggested commit description:\n' + message)
 
     def _flakiness_dashboard_url(self):
         removed_test_names = ','.join(sorted(self._removed_test_names))
         return FlakyTests.FLAKINESS_DASHBOARD_URL % removed_test_names
-

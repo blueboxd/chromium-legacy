@@ -29,5 +29,7 @@
 import sys
 
 if sys.version < '2.7' or sys.version >= '2.8':
-    sys.stderr.write("Unsupported Python version: blinkpy requires 2.7.x, and you're running %s.\n" % sys.version.split()[0])
+    sys.stderr.write(
+        "Unsupported Python version: blinkpy requires 2.7.x, and you're running %s.\n"
+        % sys.version.split()[0])
     sys.exit(1)

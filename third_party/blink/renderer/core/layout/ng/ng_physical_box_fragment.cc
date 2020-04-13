@@ -56,8 +56,8 @@ scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
                      sizeof(NGLink) * builder->children_.size() +
                      (borders.IsZero() ? 0 : sizeof(borders)) +
                      (padding.IsZero() ? 0 : sizeof(padding));
-  if (builder->ItemsBuilder())
-    byte_size += sizeof(NGFragmentItems);
+  if (const NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder())
+    byte_size += NGFragmentItems::ByteSizeFor(items_builder->Size());
   // We store the children list inline in the fragment as a flexible
   // array. Therefore, we need to make sure to allocate enough space for
   // that array here, which requires a manual allocation + placement new.

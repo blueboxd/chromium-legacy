@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '6dfc554546710dcd1b52db60fe23031cf8499893',
+  'skia_revision': '4b4efe4d6f1f6de7b9a5e3167991ddcdc20a8df9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '3f138576af56d43cda9fb08336fbd67aac37c297',
+  'devtools_frontend_revision': '828ceef7d7ffbbe88a4256b47db64e335978c4aa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -856,7 +856,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '8ef1e6c0d872d47236fd96565ede45379ce978d9',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '97d7f070200a8a25cda75289a4f20d28b9fd00b5',
       'condition': 'checkout_linux',
   },
 
@@ -937,7 +937,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + '638ef84819f8b3cd614dcf63378fe4814aa4cb2a',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'fd593d5f08343b44302c3a018a8bb734f550be9e',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '46572440189ead394654b0d06d5d689012ebdd00',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1313,7 +1313,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'e-tS4uMBlsgvKWGSNFqpxxPNCoeRRmSFZ5gyRLGq1KcC'
+              'version': 'kg4AQWldlUbrSINRvDKudP1qBfdVvASJyoJwgrRpf-8C'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1540,7 +1540,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fd5072e45780d9bf4d9e7c2ad2466045d973df05',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6034567f9d0a5eaab6fa95a555f4eca951ea90cf',
     'condition': 'checkout_src_internal',
   },
 

@@ -1,12 +1,5 @@
 'use strict';
 
-const MOTION_ROTATION_EPSILON = 1e-8;
-
-function assertTestRunner() {
-  assert_true(window.testRunner instanceof Object,
-    "This test can not be run without the window.testRunner.");
-}
-
 function generateMotionData(accelerationX, accelerationY, accelerationZ,
                             accelerationIncludingGravityX,
                             accelerationIncludingGravityY,
@@ -68,44 +61,9 @@ function setMockOrientationData(sensorProvider, orientationData) {
   ]);
 }
 
-function checkMotion(event, expectedMotionData) {
-  assert_equals(event.acceleration.x, expectedMotionData.accelerationX, "acceleration.x");
-  assert_equals(event.acceleration.y, expectedMotionData.accelerationY, "acceleration.y");
-  assert_equals(event.acceleration.z, expectedMotionData.accelerationZ, "acceleration.z");
-
-  assert_equals(event.accelerationIncludingGravity.x, expectedMotionData.accelerationIncludingGravityX, "accelerationIncludingGravity.x");
-  assert_equals(event.accelerationIncludingGravity.y, expectedMotionData.accelerationIncludingGravityY, "accelerationIncludingGravity.y");
-  assert_equals(event.accelerationIncludingGravity.z, expectedMotionData.accelerationIncludingGravityZ, "accelerationIncludingGravity.z");
-
-  assert_approx_equals(event.rotationRate.alpha, expectedMotionData.rotationRateAlpha, MOTION_ROTATION_EPSILON, "rotationRate.alpha");
-  assert_approx_equals(event.rotationRate.beta, expectedMotionData.rotationRateBeta, MOTION_ROTATION_EPSILON, "rotationRate.beta");
-  assert_approx_equals(event.rotationRate.gamma, expectedMotionData.rotationRateGamma, MOTION_ROTATION_EPSILON, "rotationRate.gamma");
-
-  assert_equals(event.interval, expectedMotionData.interval, "interval");
-}
-
-function checkOrientation(event, expectedOrientationData) {
-  assert_equals(event.alpha, expectedOrientationData.alpha, "alpha");
-  assert_equals(event.beta, expectedOrientationData.beta, "beta");
-  assert_equals(event.gamma, expectedOrientationData.gamma, "gamma");
-
-  assert_equals(event.absolute, expectedOrientationData.absolute, "absolute");
-}
-
 function waitForOrientation(expectedOrientationData, targetWindow = window) {
   return waitForEvent(
       new DeviceOrientationEvent('deviceorientation', {
-        alpha: expectedOrientationData.alpha,
-        beta: expectedOrientationData.beta,
-        gamma: expectedOrientationData.gamma,
-        absolute: expectedOrientationData.absolute,
-      }),
-      targetWindow);
-}
-
-function waitForAbsoluteOrientation(expectedOrientationData, targetWindow = window) {
-  return waitForEvent(
-      new DeviceOrientationEvent('deviceorientationabsolute', {
         alpha: expectedOrientationData.alpha,
         beta: expectedOrientationData.beta,
         gamma: expectedOrientationData.gamma,

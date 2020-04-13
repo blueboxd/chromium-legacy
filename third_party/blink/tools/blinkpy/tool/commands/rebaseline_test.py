@@ -36,10 +36,12 @@ class RebaselineTest(AbstractRebaseliningCommand):
             results_url = 'file://' + options.results_directory
         else:
             results_url = self._tool.results_fetcher.results_url(
-                options.builder, build_number=options.build_number,
+                options.builder,
+                build_number=options.build_number,
                 step_name=options.step_name)
 
-        port_name = options.port_name or self._tool.builders.port_name_for_builder_name(options.builder)
+        port_name = options.port_name or self._tool.builders.port_name_for_builder_name(
+            options.builder)
         test_name = options.test
         for suffix in self._baseline_suffix_list:
             self._rebaseline_test(port_name, test_name, suffix, results_url)
@@ -59,22 +61,30 @@ class RebaselineTest(AbstractRebaseliningCommand):
 
         baseline_directory = port.baseline_version_dir()
 
-        source_baseline = '%s/%s' % (results_url, self._file_name_for_actual_result(test_name, suffix))
-        target_baseline = self._tool.filesystem.join(baseline_directory, self._file_name_for_expected_result(test_name, suffix))
+        source_baseline = '%s/%s' % (
+            results_url, self._file_name_for_actual_result(test_name, suffix))
+        target_baseline = self._tool.filesystem.join(
+            baseline_directory,
+            self._file_name_for_expected_result(test_name, suffix))
 
         if suffix == 'png' and port.reference_files(test_name):
-            _log.warning('Cannot rebaseline image result for reftest: %s', test_name)
+            _log.warning('Cannot rebaseline image result for reftest: %s',
+                         test_name)
             data = ''
             # Still continue in case we can remove extra -expected.png.
         else:
-            _log.debug('Retrieving source %s for target %s.', source_baseline, target_baseline)
-            data = self._tool.web.get_binary(source_baseline, return_none_on_404=True)
+            _log.debug('Retrieving source %s for target %s.', source_baseline,
+                       target_baseline)
+            data = self._tool.web.get_binary(
+                source_baseline, return_none_on_404=True)
 
         if not data:
             # We don't just remove the file because the test may create empty
             # result on this platform but non-empty on other platforms.
             # Create an empty file, and let optimization deal with it.
-            _log.debug('Writing empty result %s which may be removed during optimization.', target_baseline)
+            _log.debug(
+                'Writing empty result %s which may be removed during optimization.',
+                target_baseline)
             data = ''
 
         filesystem = self._tool.filesystem

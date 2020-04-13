@@ -44,8 +44,7 @@ from compute_interfaces_info_individual import InterfaceInfoCollector
 from compute_interfaces_info_overall import (compute_interfaces_info_overall,
                                              interfaces_info)
 from generate_origin_trial_features import generate_origin_trial_features
-from idl_compiler import (generate_bindings,
-                          generate_union_type_containers,
+from idl_compiler import (generate_bindings, generate_union_type_containers,
                           generate_dictionary_impl,
                           generate_callback_function_impl)
 from json5_generator import Json5File
@@ -54,7 +53,6 @@ from utilities import ComponentInfoProviderModules
 from utilities import get_file_contents
 from utilities import get_first_interface_name_from_idl
 from utilities import to_snake_case
-
 
 PASS_MESSAGE = 'All tests PASS!'
 FAIL_MESSAGE = """Some tests FAIL!
@@ -114,8 +112,9 @@ def generate_interface_dependencies(runtime_enabled_features):
         # http://bugs.python.org/issue11406
         idl_paths = []
         for dirpath, _, files in os.walk(directory):
-            idl_paths.extend(os.path.join(dirpath, filename)
-                             for filename in fnmatch.filter(files, '*.idl'))
+            idl_paths.extend(
+                os.path.join(dirpath, filename)
+                for filename in fnmatch.filter(files, '*.idl'))
         return idl_paths
 
     def collect_blink_idl_paths():
@@ -139,7 +138,8 @@ def generate_interface_dependencies(runtime_enabled_features):
         # To avoid this issue, we need to clear relative_dir here.
         for value in info['interfaces_info'].itervalues():
             value['relative_dir'] = ''
-        component_info = info_collector.get_component_info_as_dict(runtime_enabled_features)
+        component_info = info_collector.get_component_info_as_dict(
+            runtime_enabled_features)
         return info, component_info
 
     # We compute interfaces info for *all* IDL files, not just test IDL
@@ -165,15 +165,18 @@ def generate_interface_dependencies(runtime_enabled_features):
     # includes are invalid), but that's brittle (would need to update this file
     # for each new component) and doesn't test the code generator any better
     # than using a single component.
-    non_test_interfaces_info, non_test_component_info = collect_interfaces_info(non_test_idl_paths)
+    non_test_interfaces_info, non_test_component_info = collect_interfaces_info(
+        non_test_idl_paths)
     test_interfaces_info = {}
     test_component_info = {}
     for component, paths in test_idl_paths.iteritems():
-        test_interfaces_info[component], test_component_info[component] = collect_interfaces_info(paths)
+        test_interfaces_info[component], test_component_info[component] = \
+            collect_interfaces_info(paths)
     # In order to allow test IDL files to override the production IDL files if
     # they have the same interface name, process the test IDL files after the
     # non-test IDL files.
-    info_individuals = [non_test_interfaces_info] + test_interfaces_info.values()
+    info_individuals = [non_test_interfaces_info] + \
+        test_interfaces_info.values()
     compute_interfaces_info_overall(info_individuals)
     # Add typedefs which are specified in the actual IDL files to the testing
     # component info.
@@ -187,8 +190,8 @@ def generate_interface_dependencies(runtime_enabled_features):
 
 
 class IdlCompilerOptions(object):
-    def __init__(self, output_directory, cache_directory, impl_output_directory,
-                 target_component):
+    def __init__(self, output_directory, cache_directory,
+                 impl_output_directory, target_component):
         self.output_directory = output_directory
         self.cache_directory = cache_directory
         self.impl_output_directory = impl_output_directory
@@ -225,8 +228,10 @@ def bindings_tests(output_directory, verbose, suppress_diff):
 
     def delete_cache_files():
         # FIXME: Instead of deleting cache files, don't generate them.
-        cache_files = [path for path in list_files(output_directory)
-                       if is_cache_file(os.path.basename(path))]
+        cache_files = [
+            path for path in list_files(output_directory)
+            if is_cache_file(os.path.basename(path))
+        ]
         for cache_file in cache_files:
             os.remove(cache_file)
 
@@ -253,15 +258,20 @@ def bindings_tests(output_directory, verbose, suppress_diff):
         return True
 
     def identical_output_files(output_files):
-        reference_files = [os.path.join(REFERENCE_DIRECTORY,
-                                        os.path.relpath(path, output_directory))
-                           for path in output_files]
-        return all([identical_file(reference_filename, output_filename)
-                    for (reference_filename, output_filename) in zip(reference_files, output_files)])
+        reference_files = [
+            os.path.join(REFERENCE_DIRECTORY,
+                         os.path.relpath(path, output_directory))
+            for path in output_files
+        ]
+        return all([
+            identical_file(reference_filename, output_filename)
+            for (reference_filename,
+                 output_filename) in zip(reference_files, output_files)
+        ])
 
     def no_excess_files(output_files):
-        generated_files = set([os.path.relpath(path, output_directory)
-                               for path in output_files])
+        generated_files = set(
+            [os.path.relpath(path, output_directory) for path in output_files])
         excess_files = []
         for path in list_files(REFERENCE_DIRECTORY):
             relpath = os.path.relpath(path, REFERENCE_DIRECTORY)
@@ -271,14 +281,15 @@ def bindings_tests(output_directory, verbose, suppress_diff):
             if relpath not in generated_files:
                 excess_files.append(relpath)
         if excess_files:
-            print ('Excess reference files! '
-                   '(probably cruft from renaming or deleting):\n' +
-                   '\n'.join(excess_files))
+            print('Excess reference files! '
+                  '(probably cruft from renaming or deleting):\n' +
+                  '\n'.join(excess_files))
             return False
         return True
 
     def make_runtime_features_dict():
-        input_filename = os.path.join(TEST_INPUT_DIRECTORY, 'runtime_enabled_features.json5')
+        input_filename = os.path.join(TEST_INPUT_DIRECTORY,
+                                      'runtime_enabled_features.json5')
         json5_file = Json5File.load_from_files([input_filename])
         features_map = {}
         for feature in json5_file.name_dictionaries:
@@ -301,8 +312,8 @@ def bindings_tests(output_directory, verbose, suppress_diff):
                 target_component=component)
 
             if component == 'core':
-                partial_interface_output_dir = os.path.join(output_directory,
-                                                            'modules')
+                partial_interface_output_dir = \
+                    os.path.join(output_directory, 'modules')
                 if not os.path.exists(partial_interface_output_dir):
                     os.makedirs(partial_interface_output_dir)
                 partial_interface_options = IdlCompilerOptions(
@@ -325,8 +336,10 @@ def bindings_tests(output_directory, verbose, suppress_diff):
                     idl_filenames.append(idl_path)
                     idl_basename = os.path.basename(idl_path)
                     name_from_basename, _ = os.path.splitext(idl_basename)
-                    definition_name = get_first_interface_name_from_idl(get_file_contents(idl_path))
-                    is_partial_interface_idl = to_snake_case(definition_name) != name_from_basename
+                    definition_name = get_first_interface_name_from_idl(
+                        get_file_contents(idl_path))
+                    is_partial_interface_idl = to_snake_case(
+                        definition_name) != name_from_basename
                     if not is_partial_interface_idl:
                         interface_info = interfaces_info[definition_name]
                         if interface_info['is_dictionary']:
@@ -336,32 +349,25 @@ def bindings_tests(output_directory, verbose, suppress_diff):
                             partial_interface_filenames.append(idl_path)
 
             info_provider = component_info_providers[component]
-            partial_interface_info_provider = component_info_providers['modules']
+            partial_interface_info_provider = \
+                component_info_providers['modules']
 
             generate_union_type_containers(CodeGeneratorUnionType,
                                            info_provider, options)
             generate_callback_function_impl(CodeGeneratorCallbackFunction,
                                             info_provider, options)
-            generate_bindings(
-                CodeGeneratorV8,
-                info_provider,
-                options,
-                idl_filenames)
-            generate_bindings(
-                CodeGeneratorV8,
-                partial_interface_info_provider,
-                partial_interface_options,
-                partial_interface_filenames)
-            generate_dictionary_impl(
-                CodeGeneratorDictionaryImpl,
-                info_provider,
-                options,
-                dictionary_impl_filenames)
-            generate_origin_trial_features(
-                info_provider,
-                options,
-                [filename for filename in idl_filenames
-                 if filename not in dictionary_impl_filenames])
+            generate_bindings(CodeGeneratorV8, info_provider, options,
+                              idl_filenames)
+            generate_bindings(CodeGeneratorV8, partial_interface_info_provider,
+                              partial_interface_options,
+                              partial_interface_filenames)
+            generate_dictionary_impl(CodeGeneratorDictionaryImpl,
+                                     info_provider, options,
+                                     dictionary_impl_filenames)
+            generate_origin_trial_features(info_provider, options, [
+                filename for filename in idl_filenames
+                if filename not in dictionary_impl_filenames
+            ])
 
     finally:
         delete_cache_files()
@@ -390,6 +396,8 @@ def run_bindings_tests(reset_results, verbose, suppress_diff):
     with TemporaryDirectory() as temp_dir:
         # TODO(peria): Remove this hack.
         # Some internal algorithms depend on the path of output directory.
-        temp_source_path = os.path.join(temp_dir, 'third_party', 'blink', 'renderer')
-        temp_output_path = os.path.join(temp_source_path, 'bindings', 'tests', 'results')
+        temp_source_path = os.path.join(temp_dir, 'third_party', 'blink',
+                                        'renderer')
+        temp_output_path = os.path.join(temp_source_path, 'bindings', 'tests',
+                                        'results')
         return bindings_tests(temp_output_path, verbose, suppress_diff)

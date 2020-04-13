@@ -2,7 +2,6 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Usage: collect_idls_into_json.py path_file.txt json_file.json
 This script collects and organizes interface information and that information dumps into json file.
 """
@@ -16,7 +15,6 @@ path_finder.add_bindings_scripts_dir_to_sys_path()
 
 import utilities
 from blink_idl_parser import parse_file, BlinkIDLParser
-
 
 _INTERFACE = 'Interface'
 _IMPLEMENT = 'Implements'
@@ -89,7 +87,8 @@ def is_partial(definition):
     Return:
       True if |definition| is 'partial interface' class, otherwise False.
     """
-    return definition.GetClass() == _INTERFACE and definition.GetProperty(_PARTIAL)
+    return definition.GetClass() == _INTERFACE and definition.GetProperty(
+        _PARTIAL)
 
 
 def get_filepath(interface_node):
@@ -149,10 +148,16 @@ def const_node_to_dict(const_node):
       dictionary of const's information
     """
     return {
-        _NAME: const_node.GetName(),
-        _TYPE: get_const_type(const_node),
-        _VALUE: get_const_value(const_node),
-        _EXTATTRIBUTES: [extattr_node_to_dict(extattr) for extattr in get_extattribute_node_list(const_node)],
+        _NAME:
+        const_node.GetName(),
+        _TYPE:
+        get_const_type(const_node),
+        _VALUE:
+        get_const_value(const_node),
+        _EXTATTRIBUTES: [
+            extattr_node_to_dict(extattr)
+            for extattr in get_extattribute_node_list(const_node)
+        ],
     }
 
 
@@ -182,7 +187,8 @@ def get_attribute_type(attribute_node):
                 if type_component.GetClass() == _ARRAY:
                     type_list[-1] += '[]'
                 elif type_component.GetClass() == _SEQUENCE:
-                    for seq_type in type_component.GetOneOf(_TYPE).GetChildren():
+                    for seq_type in type_component.GetOneOf(
+                            _TYPE).GetChildren():
                         type_list.append('<' + seq_type.GetName() + '>')
                 else:
                     type_list.append(type_component.GetName())
@@ -190,16 +196,20 @@ def get_attribute_type(attribute_node):
     elif attr_type.GetClass() == _SEQUENCE:
         union_member_types = []
         if attr_type.GetOneOf(_TYPE).GetChildren()[0].GetClass() == _UNIONTYPE:
-            for union_member in attr_type.GetOneOf(_TYPE).GetOneOf(_UNIONTYPE).GetListOf(_TYPE):
+            for union_member in attr_type.GetOneOf(_TYPE).GetOneOf(
+                    _UNIONTYPE).GetListOf(_TYPE):
                 if len(union_member.GetChildren()) != 1:
-                    raise Exception('Complex type in a union in a sequence is not yet supported')
+                    raise Exception(
+                        'Complex type in a union in a sequence is not yet supported'
+                    )
                 type_component = union_member.GetChildren()[0]
                 union_member_types.append(type_component.GetName())
             return '<' + str(union_member_types) + '>'
         else:
             for type_component in attr_type.GetOneOf(_TYPE).GetChildren():
                 if type_component.GetClass() == _SEQUENCE:
-                    raise Exception('Sequence in another sequence is not yet supported')
+                    raise Exception(
+                        'Sequence in another sequence is not yet supported')
                 else:
                     if type_component.GetClass() == _ARRAY:
                         type_list[-1] += []
@@ -229,11 +239,18 @@ def attribute_node_to_dict(attribute_node):
       dictionary of attribute's information
     """
     return {
-        _NAME: attribute_node.GetName(),
-        _TYPE: get_attribute_type(attribute_node),
-        _EXTATTRIBUTES: [extattr_node_to_dict(extattr) for extattr in get_extattribute_node_list(attribute_node)],
-        _READONLY: attribute_node.GetProperty(_PROP_READONLY, default=False),
-        _STATIC: attribute_node.GetProperty(_PROP_STATIC, default=False),
+        _NAME:
+        attribute_node.GetName(),
+        _TYPE:
+        get_attribute_type(attribute_node),
+        _EXTATTRIBUTES: [
+            extattr_node_to_dict(extattr)
+            for extattr in get_extattribute_node_list(attribute_node)
+        ],
+        _READONLY:
+        attribute_node.GetProperty(_PROP_READONLY, default=False),
+        _STATIC:
+        attribute_node.GetProperty(_PROP_STATIC, default=False),
     }
 
 
@@ -295,12 +312,21 @@ def operation_node_to_dict(operation_node):
       dictionary of operation's informantion
     """
     return {
-        _NAME: get_operation_name(operation_node),
-        _ARGUMENTS: [argument_node_to_dict(argument) for argument in get_argument_node_list(operation_node)
-                     if argument_node_to_dict(argument)],
-        _TYPE: get_operation_type(operation_node),
-        _EXTATTRIBUTES: [extattr_node_to_dict(extattr) for extattr in get_extattribute_node_list(operation_node)],
-        _STATIC: operation_node.GetProperty(_PROP_STATIC, default=False),
+        _NAME:
+        get_operation_name(operation_node),
+        _ARGUMENTS: [
+            argument_node_to_dict(argument)
+            for argument in get_argument_node_list(operation_node)
+            if argument_node_to_dict(argument)
+        ],
+        _TYPE:
+        get_operation_type(operation_node),
+        _EXTATTRIBUTES: [
+            extattr_node_to_dict(extattr)
+            for extattr in get_extattribute_node_list(operation_node)
+        ],
+        _STATIC:
+        operation_node.GetProperty(_PROP_STATIC, default=False),
     }
 
 
@@ -351,13 +377,29 @@ def interface_node_to_dict(interface_node):
       A dictionary of the interface information.
     """
     return {
-        _NAME: interface_node.GetName(),
-        _FILEPATH: get_filepath(interface_node),
-        _CONSTS: [const_node_to_dict(const) for const in get_const_node_list(interface_node)],
-        _ATTRIBUTES: [attribute_node_to_dict(attr) for attr in get_attribute_node_list(interface_node) if attr],
-        _OPERATIONS: [operation_node_to_dict(operation) for operation in get_operation_node_list(interface_node) if operation],
-        _EXTATTRIBUTES: [extattr_node_to_dict(extattr) for extattr in get_extattribute_node_list(interface_node)],
-        _INHERIT: inherit_node_to_dict(interface_node)
+        _NAME:
+        interface_node.GetName(),
+        _FILEPATH:
+        get_filepath(interface_node),
+        _CONSTS: [
+            const_node_to_dict(const)
+            for const in get_const_node_list(interface_node)
+        ],
+        _ATTRIBUTES: [
+            attribute_node_to_dict(attr)
+            for attr in get_attribute_node_list(interface_node) if attr
+        ],
+        _OPERATIONS: [
+            operation_node_to_dict(operation)
+            for operation in get_operation_node_list(interface_node)
+            if operation
+        ],
+        _EXTATTRIBUTES: [
+            extattr_node_to_dict(extattr)
+            for extattr in get_extattribute_node_list(interface_node)
+        ],
+        _INHERIT:
+        inherit_node_to_dict(interface_node)
     }
 
 
@@ -372,10 +414,13 @@ def merge_partial_dicts(interfaces_dict, partials_dict):
     for interface_name, partial in partials_dict.iteritems():
         interface = interfaces_dict.get(interface_name)
         if not interface:
-            raise Exception('There is a partial interface, but the corresponding non-partial interface was not found.')
+            raise Exception(
+                'There is a partial interface, but the corresponding non-partial interface was not found.'
+            )
         for member in _MEMBERS:
             interface[member].extend(partial.get(member))
-            interface.setdefault(_PARTIAL_FILEPATH, []).append(partial[_FILEPATH])
+            interface.setdefault(_PARTIAL_FILEPATH,
+                                 []).append(partial[_FILEPATH])
     return interfaces_dict
 
 
@@ -390,10 +435,13 @@ def merge_implement_nodes(interfaces_dict, implement_node_list):
     for implement in implement_node_list:
         reference = implement.GetProperty(_PROP_REFERENCE)
         implement = implement.GetName()
-        if reference not in interfaces_dict.keys() or implement not in interfaces_dict.keys():
-            raise Exception('There is not corresponding implement or reference interface.')
+        if (reference not in interfaces_dict.keys()
+                or implement not in interfaces_dict.keys()):
+            raise Exception(
+                'There is not corresponding implement or reference interface.')
         for member in _MEMBERS:
-            interfaces_dict[implement][member].extend(interfaces_dict[reference].get(member))
+            interfaces_dict[implement][member].extend(
+                interfaces_dict[reference].get(member))
     return interfaces_dict
 
 
@@ -408,7 +456,9 @@ def export_to_jsonfile(dictionary, json_file):
 
 
 def usage():
-    sys.stdout.write('Usage: collect_idls_into_json.py <path_file.txt> <output_file.json>\n')
+    sys.stdout.write(
+        'Usage: collect_idls_into_json.py <path_file.txt> <output_file.json>\n'
+    )
 
 
 def main(args):
@@ -418,17 +468,22 @@ def main(args):
     path_file = args[0]
     json_file = args[1]
     path_list = utilities.read_file_to_list(path_file)
-    implement_node_list = [definition
-                           for definition in get_definitions(path_list)
-                           if is_implements(definition)]
-    interfaces_dict = {definition.GetName(): interface_node_to_dict(definition)
-                       for definition in get_definitions(path_list)
-                       if not is_partial(definition)}
-    partials_dict = {definition.GetName(): interface_node_to_dict(definition)
-                     for definition in get_definitions(path_list)
-                     if is_partial(definition)}
+    implement_node_list = [
+        definition for definition in get_definitions(path_list)
+        if is_implements(definition)
+    ]
+    interfaces_dict = {
+        definition.GetName(): interface_node_to_dict(definition)
+        for definition in get_definitions(path_list)
+        if not is_partial(definition)
+    }
+    partials_dict = {
+        definition.GetName(): interface_node_to_dict(definition)
+        for definition in get_definitions(path_list) if is_partial(definition)
+    }
     dictionary = merge_partial_dicts(interfaces_dict, partials_dict)
-    interfaces_dict = merge_implement_nodes(interfaces_dict, implement_node_list)
+    interfaces_dict = merge_implement_nodes(interfaces_dict,
+                                            implement_node_list)
     export_to_jsonfile(dictionary, json_file)
 
 

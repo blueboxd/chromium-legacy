@@ -32,8 +32,7 @@ from blinkpy.common.net.network_transaction import NetworkTransaction
 
 
 class Web(object):
-
-    class _HTTPRedirectHandler2(urllib2.HTTPRedirectHandler):   # pylint:disable=no-init
+    class _HTTPRedirectHandler2(urllib2.HTTPRedirectHandler):  # pylint:disable=no-init
         """A subclass of HTTPRedirectHandler to support 308 Permanent Redirect."""
 
         def http_error_308(self, req, fp, code, msg, headers):  # pylint:disable=unused-argument

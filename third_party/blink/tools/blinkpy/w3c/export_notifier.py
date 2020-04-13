@@ -1,7 +1,6 @@
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Sends notifications after automatic exports.
 
 Automatically comments on a Gerrit CL when its corresponding PR fails the Taskcluster check. In
@@ -22,7 +21,6 @@ _log = logging.getLogger(__name__)
 
 
 class ExportNotifier(object):
-
     def __init__(self, host, wpt_github, gerrit, dry_run=True):
         self.host = host
         self.wpt_github = wpt_github
@@ -38,13 +36,13 @@ class ExportNotifier(object):
             prs = self.wpt_github.recent_failing_chromium_exports()
         except GitHubError as e:
             _log.info(
-                'Surfacing Taskcluster failures cannot be completed due to the following error:')
+                'Surfacing Taskcluster failures cannot be completed due to the following error:'
+            )
             _log.error(str(e))
             return True
 
         if len(prs) > 100:
-            _log.error(
-                'Too many open failing PRs: %s; abort.', len(prs))
+            _log.error('Too many open failing PRs: %s; abort.', len(prs))
             return True
 
         _log.info('Found %d failing PRs.', len(prs))
@@ -61,15 +59,14 @@ class ExportNotifier(object):
             gerrit_id = self.wpt_github.extract_metadata(
                 'Change-Id: ', pr.body)
             if not gerrit_id:
-                _log.error(
-                    'Can not retrieve Change-Id for %s.', pr.number)
+                _log.error('Can not retrieve Change-Id for %s.', pr.number)
                 continue
 
-            gerrit_sha = self.wpt_github.extract_metadata(WPT_REVISION_FOOTER, pr.body)
+            gerrit_sha = self.wpt_github.extract_metadata(
+                WPT_REVISION_FOOTER, pr.body)
             gerrit_dict[gerrit_id] = PRStatusInfo(
                 taskcluster_status['node_id'],
-                taskcluster_status['target_url'],
-                gerrit_sha)
+                taskcluster_status['target_url'], gerrit_sha)
 
         self.process_failing_prs(gerrit_dict)
         return False
@@ -109,19 +106,19 @@ class ExportNotifier(object):
                     cl_comment = pr_status_info.to_gerrit_comment()
 
                 if self.dry_run:
-                    _log.info(
-                        '[dry_run] Would have commented on CL %s\n', change_id)
-                    _log.debug(
-                        'Comments are:\n %s\n', cl_comment)
+                    _log.info('[dry_run] Would have commented on CL %s\n',
+                              change_id)
+                    _log.debug('Comments are:\n %s\n', cl_comment)
                 else:
                     _log.info('Commenting on CL %s\n', change_id)
                     cl.post_comment(cl_comment)
             except GerritError as e:
-                _log.error(
-                    'Could not process Gerrit CL %s: %s', change_id, str(e))
+                _log.error('Could not process Gerrit CL %s: %s', change_id,
+                           str(e))
                 continue
 
-    def has_latest_taskcluster_status_commented(self, messages, pr_status_info):
+    def has_latest_taskcluster_status_commented(self, messages,
+                                                pr_status_info):
         """Determines if the Taskcluster status has already been commented on the messages of a CL.
 
         Args:
@@ -206,9 +203,10 @@ class PRStatusInfo(object):
 
     @staticmethod
     def from_gerrit_comment(comment):
-        tags = [PRStatusInfo.NODE_ID_TAG,
-                PRStatusInfo.LINK_TAG,
-                PRStatusInfo.CL_SHA_TAG]
+        tags = [
+            PRStatusInfo.NODE_ID_TAG, PRStatusInfo.LINK_TAG,
+            PRStatusInfo.CL_SHA_TAG
+        ]
         values = ['', '', '']
 
         for line in comment.splitlines():
@@ -223,12 +221,13 @@ class PRStatusInfo(object):
         return PRStatusInfo(*values)
 
     def to_gerrit_comment(self, patchset=None):
-        status_line = ('The exported PR for the current patch failed Taskcluster check(s) '
-                       'on GitHub, which could indict cross-broswer failures on the '
-                       'exportable changes. Please contact ecosystem-infra@ team for '
-                       'more information.')
-        node_id_line = ('\n\n{}{}').format(
-            PRStatusInfo.NODE_ID_TAG, self.node_id)
+        status_line = (
+            'The exported PR for the current patch failed Taskcluster check(s) '
+            'on GitHub, which could indict cross-broswer failures on the '
+            'exportable changes. Please contact ecosystem-infra@ team for '
+            'more information.')
+        node_id_line = ('\n\n{}{}').format(PRStatusInfo.NODE_ID_TAG,
+                                           self.node_id)
         link_line = ('\n{}{}').format(PRStatusInfo.LINK_TAG, self.link)
         sha_line = ('\n{}{}').format(PRStatusInfo.CL_SHA_TAG, self.gerrit_sha)
 

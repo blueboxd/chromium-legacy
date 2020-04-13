@@ -25,7 +25,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Checks WebKit style for test_expectations files."""
 
 import logging
@@ -51,7 +50,8 @@ class TestExpectationsChecker(object):
         self._port_obj = host.port_factory.get()
 
         # Suppress error messages of test_expectations module since they will be reported later.
-        log = logging.getLogger('blinkpy.web_tests.layout_package.test_expectations')
+        log = logging.getLogger(
+            'blinkpy.web_tests.layout_package.test_expectations')
         log.setLevel(logging.CRITICAL)
 
     def check_test_expectations(self, expectations_str, tests=None):
@@ -66,7 +66,8 @@ class TestExpectationsChecker(object):
     def check(self, lines):
         expectations = '\n'.join(lines)
         if self._port_obj:
-            self.check_test_expectations(expectations_str=expectations, tests=None)
+            self.check_test_expectations(
+                expectations_str=expectations, tests=None)
 
         # Warn tabs in lines as well
         self.check_tabs(lines)

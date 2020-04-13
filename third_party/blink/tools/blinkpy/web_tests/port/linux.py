@@ -34,17 +34,17 @@ from blinkpy.web_tests.breakpad.dump_reader_multipart import DumpReaderLinux
 from blinkpy.web_tests.port import base
 from blinkpy.web_tests.port import win
 
-
 _log = logging.getLogger(__name__)
 
 
 class LinuxPort(base.Port):
     port_name = 'linux'
 
-    SUPPORTED_VERSIONS = ('trusty',)
+    SUPPORTED_VERSIONS = ('trusty', )
 
     FALLBACK_PATHS = {}
-    FALLBACK_PATHS['trusty'] = ['linux'] + win.WinPort.latest_platform_fallback_path()
+    FALLBACK_PATHS['trusty'] = (
+        ['linux'] + win.WinPort.latest_platform_fallback_path())
 
     BUILD_REQUIREMENTS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/docs/linux/build_instructions.md'
 
@@ -75,7 +75,11 @@ class LinuxPort(base.Port):
     def additional_driver_flags(self):
         flags = super(LinuxPort, self).additional_driver_flags()
         if not self.get_option('disable_breakpad'):
-            flags += ['--enable-crash-reporter', '--crash-dumps-dir=%s' % self._dump_reader.crash_dumps_directory()]
+            flags += [
+                '--enable-crash-reporter',
+                '--crash-dumps-dir=%s' %
+                self._dump_reader.crash_dumps_directory()
+            ]
         return flags
 
     def check_build(self, needs_http, printer):
@@ -84,13 +88,16 @@ class LinuxPort(base.Port):
         if result:
             _log.error('For complete Linux build requirements, please see:')
             _log.error('')
-            _log.error('    https://chromium.googlesource.com/chromium/src/+/master/docs/linux/build_instructions.md')
+            _log.error(
+                '    https://chromium.googlesource.com/chromium/src/+/master/docs/linux/build_instructions.md'
+            )
         return result
 
     def look_for_new_crash_logs(self, crashed_processes, start_time):
         if self.get_option('disable_breakpad'):
             return None
-        return self._dump_reader.look_for_new_crash_logs(crashed_processes, start_time)
+        return self._dump_reader.look_for_new_crash_logs(
+            crashed_processes, start_time)
 
     def clobber_old_port_specific_results(self):
         if not self.get_option('disable_breakpad'):
@@ -174,15 +181,21 @@ class LinuxPort(base.Port):
         # See: https://crbug.com/715848
         env = self.host.environ.copy()
         if env.get('TMPDIR') and env['TMPDIR'] != '/tmp':
-            _log.info('Overriding TMPDIR to "/tmp" for Xvfb, was: %s', env['TMPDIR'])
+            _log.info('Overriding TMPDIR to "/tmp" for Xvfb, was: %s',
+                      env['TMPDIR'])
             env['TMPDIR'] = '/tmp'
 
         _log.debug('Starting Xvfb with display "%s".', display)
         self._xvfb_stdout = tempfile.NamedTemporaryFile(delete=False)
         self._xvfb_stderr = tempfile.NamedTemporaryFile(delete=False)
         self._xvfb_process = self.host.executive.popen(
-            ['Xvfb', display, '-screen', '0', '1280x800x24', '-ac', '-dpi', '96'],
-            stdout=self._xvfb_stdout, stderr=self._xvfb_stderr, env=env)
+            [
+                'Xvfb', display, '-screen', '0', '1280x800x24', '-ac', '-dpi',
+                '96'
+            ],
+            stdout=self._xvfb_stdout,
+            stderr=self._xvfb_stderr,
+            env=env)
 
         # By setting DISPLAY here, the individual worker processes will
         # get the right DISPLAY. Note, if this environment could be passed
@@ -199,17 +212,22 @@ class LinuxPort(base.Port):
                 break
             # We don't explicitly set the display, as we want to check the
             # environment value.
-            exit_code = self.host.executive.run_command(
-                ['xdpyinfo'], return_exit_code=True)
+            exit_code = self.host.executive.run_command(['xdpyinfo'],
+                                                        return_exit_code=True)
             if exit_code == 0:
-                _log.debug('Successfully started Xvfb with display "%s".', display)
+                _log.debug('Successfully started Xvfb with display "%s".',
+                           display)
                 return True
-            _log.warn('xdpyinfo check failed with exit code %s while starting Xvfb on "%s".', exit_code, display)
+            _log.warn(
+                'xdpyinfo check failed with exit code %s while starting Xvfb on "%s".',
+                exit_code, display)
             self.host.sleep(0.1)
 
         retcode = self._xvfb_process.poll()
         self._stop_xvfb(save_logs=True)
-        _log.critical('Failed to start Xvfb on display "%s" (xvfb retcode: %r).', display, retcode)
+        _log.critical(
+            'Failed to start Xvfb on display "%s" (xvfb retcode: %r).',
+            display, retcode)
         return False
 
     def _find_display(self):
@@ -237,19 +255,25 @@ class LinuxPort(base.Port):
             start_time = self.host.time()
             while self.host.time() - start_time < self.XVFB_START_STOP_TIMEOUT:
                 if self._xvfb_process.poll() is not None:
-                    _log.debug('Xvfb exited with code %d.', self._xvfb_process.poll())
+                    _log.debug('Xvfb exited with code %d.',
+                               self._xvfb_process.poll())
                     break
                 self.host.sleep(0.1)
             else:
-                _log.debug('Killing Xvfb process pid %d.', self._xvfb_process.pid)
+                _log.debug('Killing Xvfb process pid %d.',
+                           self._xvfb_process.pid)
                 self._xvfb_process.kill()
                 self._xvfb_process.wait()
-        if save_logs and self._xvfb_stdout and self.host.filesystem.exists(self._xvfb_stdout.name):
-            for line in self.host.filesystem.read_text_file(self._xvfb_stdout.name).splitlines():
+        if save_logs and self._xvfb_stdout and self.host.filesystem.exists(
+                self._xvfb_stdout.name):
+            for line in self.host.filesystem.read_text_file(
+                    self._xvfb_stdout.name).splitlines():
                 _log.warn('Xvfb stdout:  %s', line)
             self.host.filesystem.remove(self._xvfb_stdout.name)
-        if save_logs and self._xvfb_stderr and self.host.filesystem.exists(self._xvfb_stderr.name):
-            for line in self.host.filesystem.read_text_file(self._xvfb_stderr.name).splitlines():
+        if save_logs and self._xvfb_stderr and self.host.filesystem.exists(
+                self._xvfb_stderr.name):
+            for line in self.host.filesystem.read_text_file(
+                    self._xvfb_stderr.name).splitlines():
                 _log.warn('Xvfb stderr:  %s', line)
             self.host.filesystem.remove(self._xvfb_stderr.name)
         self._xvfb_stdout = self._xvfb_stderr = self._xvfb_process = None

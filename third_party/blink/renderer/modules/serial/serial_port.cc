@@ -161,8 +161,8 @@ class AbortCloseFunction : public ScriptFunction {
 SerialPort::SerialPort(Serial* parent, mojom::blink::SerialPortInfoPtr info)
     : info_(std::move(info)),
       parent_(parent),
-      port_(GetExecutionContext()),
-      client_receiver_(this, GetExecutionContext()) {}
+      port_(parent->GetExecutionContext()),
+      client_receiver_(this, parent->GetExecutionContext()) {}
 
 SerialPort::~SerialPort() = default;
 

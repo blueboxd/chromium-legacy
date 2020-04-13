@@ -203,9 +203,10 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
     return;
   }
 
-  picture_in_picture_session_ =
-      mojo::Remote<mojom::blink::PictureInPictureSession>(
-          std::move(session_remote));
+  picture_in_picture_session_.reset();
+  picture_in_picture_session_.Bind(
+      std::move(session_remote),
+      element->GetDocument().GetTaskRunner(TaskType::kMediaElementEvent));
 
   if (IsElementAllowed(*element, /*report_failure=*/true) != Status::kEnabled) {
     if (resolver) {
@@ -379,11 +380,6 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
   }
 }
 
-void PictureInPictureControllerImpl::ContextDestroyed() {
-  picture_in_picture_service_.reset();
-  session_observer_receiver_.reset();
-}
-
 void PictureInPictureControllerImpl::OnPictureInPictureStateChange() {
   DCHECK(picture_in_picture_element_);
   DCHECK(picture_in_picture_element_->GetWebMediaPlayer());
@@ -409,20 +405,25 @@ void PictureInPictureControllerImpl::Trace(Visitor* visitor) {
   visitor->Trace(picture_in_picture_element_);
   visitor->Trace(auto_picture_in_picture_elements_);
   visitor->Trace(picture_in_picture_window_);
+  visitor->Trace(session_observer_receiver_);
+  visitor->Trace(picture_in_picture_service_);
+  visitor->Trace(picture_in_picture_session_);
   PictureInPictureController::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
-  ExecutionContextLifecycleObserver::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 PictureInPictureControllerImpl::PictureInPictureControllerImpl(
     Document& document)
     : PictureInPictureController(document),
       PageVisibilityObserver(document.GetPage()),
-      ExecutionContextLifecycleObserver(&document),
-      session_observer_receiver_(this) {}
+      ExecutionContextClient(document.ToExecutionContext()),
+      session_observer_receiver_(this, document.ToExecutionContext()),
+      picture_in_picture_service_(document.ToExecutionContext()),
+      picture_in_picture_session_(document.ToExecutionContext()) {}
 
 bool PictureInPictureControllerImpl::EnsureService() {
-  if (picture_in_picture_service_)
+  if (picture_in_picture_service_.is_bound())
     return true;
 
   if (!GetSupplementable()->GetFrame())

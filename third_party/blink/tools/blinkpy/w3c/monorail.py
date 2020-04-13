@@ -19,7 +19,8 @@ class MonorailIssue(object):
     _ALLOWED_FIELDS = _STRING_LIST_FIELDS | _STRING_FIELDS
 
     # Again, the list is non-exhaustive.
-    _VALID_STATUSES = frozenset(['Unconfirmed', 'Untriaged', 'Available', 'Assigned', 'Started'])
+    _VALID_STATUSES = frozenset(
+        ['Unconfirmed', 'Untriaged', 'Available', 'Assigned', 'Started'])
 
     def __init__(self, project_id, **kwargs):
         self.project_id = project_id
@@ -40,17 +41,20 @@ class MonorailIssue(object):
                 self._body[field] = list(self._body[field])
         # We expect a KeyError to be raised if 'status' is missing.
         self._body['status'] = self._body['status'].capitalize()
-        assert self._body['status'] in self._VALID_STATUSES, 'Unknown status %s.' % self._body['status']
+        assert self._body['status'] in self._VALID_STATUSES, \
+            'Unknown status %s.' % self._body['status']
         assert self._body['summary'], 'summary cannot be empty.'
 
     def __unicode__(self):
         result = (u'Monorail issue in project {}\n'
                   'Summary: {}\n'
-                  'Status: {}\n').format(self.project_id, self.body['summary'], self.body['status'])
+                  'Status: {}\n').format(self.project_id, self.body['summary'],
+                                         self.body['status'])
         if 'cc' in self.body:
             result += u'CC: {}\n'.format(', '.join(self.body['cc']))
         if 'components' in self.body:
-            result += u'Components: {}\n'.format(', '.join(self.body['components']))
+            result += u'Components: {}\n'.format(', '.join(
+                self.body['components']))
         if 'labels' in self.body:
             result += u'Labels: {}\n'.format(', '.join(self.body['labels']))
         if 'description' in self.body:
@@ -77,8 +81,7 @@ class MonorailIssue(object):
             description=description,
             cc=cc or [],
             components=components or [],
-            status='Untriaged'
-        )
+            status='Untriaged')
 
     @staticmethod
     def crbug_link(issue_id):
@@ -116,17 +119,22 @@ class MonorailAPI(object):
 
         # TODO(robertma): Deprecate the JSON key support once BuildBot is gone.
         if service_account_key_json:
-            credentials = self._oauth2_client.GoogleCredentials.from_stream(service_account_key_json)
+            credentials = self._oauth2_client.GoogleCredentials.from_stream(
+                service_account_key_json)
         elif access_token:
             credentials = self._oauth2_client.AccessTokenCredentials(
-                access_token=access_token,
-                user_agent='blinkpy/1.0')
+                access_token=access_token, user_agent='blinkpy/1.0')
         else:
-            credentials = self._oauth2_client.GoogleCredentials.get_application_default()
+            credentials = self._oauth2_client.GoogleCredentials.get_application_default(
+            )
 
         # cache_discovery needs to be disabled because of https://github.com/google/google-api-python-client/issues/299
         self.api = self._api_discovery.build(
-            'monorail', 'v1', discoveryServiceUrl=self._DISCOVERY_URL, credentials=credentials, cache_discovery=False)
+            'monorail',
+            'v1',
+            discoveryServiceUrl=self._DISCOVERY_URL,
+            credentials=credentials,
+            cache_discovery=False)
 
     @staticmethod
     def _fix_cc_in_body(body):
@@ -139,4 +147,5 @@ class MonorailAPI(object):
 
     def insert_issue(self, issue):
         body = self._fix_cc_in_body(issue.body)
-        return self.api.issues().insert(projectId=issue.project_id, body=body).execute()
+        return self.api.issues().insert(
+            projectId=issue.project_id, body=body).execute()

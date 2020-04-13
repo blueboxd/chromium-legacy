@@ -33,7 +33,6 @@ from blinkpy.web_tests.layout_package import json_results_generator
 
 
 class WebTestResult(object):
-
     def __init__(self, test_name, result_dict):
         self._test_name = test_name
         self._result_dict = result_dict
@@ -98,21 +97,21 @@ class WebTestResult(object):
         previously all-PASS testharness test starts to fail)."""
         actual_results = self.actual_results().split(' ')
         artifact_names = self._result_dict.get('artifacts', {}).keys()
-        return ('FAIL' in actual_results and
-                any(artifact_name.startswith('actual')
-                    for artifact_name in artifact_names) and
-                'reference_file_mismatch' not in artifact_names and
-                'reference_file_match' not in artifact_names)
+        return ('FAIL' in actual_results and any(
+            artifact_name.startswith('actual')
+            for artifact_name in artifact_names)
+                and 'reference_file_mismatch' not in artifact_names
+                and 'reference_file_match' not in artifact_names)
 
     def is_missing_baseline(self):
-        return self.is_missing_image() or self.is_missing_text() or self.is_missing_audio()
+        return (self.is_missing_image() or self.is_missing_text()
+                or self.is_missing_audio())
 
 
 # FIXME: This should be unified with ResultsSummary or other NRWT web tests code
 # in the web_tests package.
 # This doesn't belong in common.net, but we don't have a better place for it yet.
 class WebTestResults(object):
-
     @classmethod
     def results_from_string(cls, string):
         """Creates a WebTestResults object from a test result JSON string.

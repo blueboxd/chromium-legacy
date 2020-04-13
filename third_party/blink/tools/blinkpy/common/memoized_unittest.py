@@ -32,7 +32,6 @@ from blinkpy.common.memoized import memoized
 
 
 class _TestObject(object):
-
     def __init__(self):
         self.call_count = 0
 
@@ -43,7 +42,6 @@ class _TestObject(object):
 
 
 class MemoizedTest(unittest.TestCase):
-
     def test_multiple_identical_calls(self):
         # When a function is called multiple times with identical arguments,
         # the call count doesn't increase past 1.

@@ -15,20 +15,51 @@ from blinkpy.third_party import autopep8
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--chromium', action='store_const', dest='style', const='chromium', default='blink',
-                        help="Format according to Chromium's Python coding styles instead of Blink's.")
-    parser.add_argument('--no-backups', action='store_false', default=True, dest='backup',
-                        help='Do not back up files before overwriting them.')
-    parser.add_argument('-j', '--jobs', metavar='n', type=int, default=0,
-                        help='Number of parallel jobs; match CPU count if less than 1.')
-    parser.add_argument('files', nargs='*', default=['-'],
-                        help="files to format or '-' for standard in")
-    parser.add_argument('--double-quote-strings', action='store_const', dest='quoting', const='double', default='single',
-                        help='Rewrite string literals to use double quotes instead of single quotes.')
-    parser.add_argument('--no-autopep8', action='store_true',
-                        help='Skip the autopep8 code-formatting step.')
-    parser.add_argument('--leave-strings-alone', action='store_true',
-                        help='Do not reformat string literals to use a consistent quote style.')
+    parser.add_argument(
+        '--chromium',
+        action='store_const',
+        dest='style',
+        const='chromium',
+        default='blink',
+        help=
+        "Format according to Chromium's Python coding styles instead of Blink's."
+    )
+    parser.add_argument(
+        '--no-backups',
+        action='store_false',
+        default=True,
+        dest='backup',
+        help='Do not back up files before overwriting them.')
+    parser.add_argument(
+        '-j',
+        '--jobs',
+        metavar='n',
+        type=int,
+        default=0,
+        help='Number of parallel jobs; match CPU count if less than 1.')
+    parser.add_argument(
+        'files',
+        nargs='*',
+        default=['-'],
+        help="files to format or '-' for standard in")
+    parser.add_argument(
+        '--double-quote-strings',
+        action='store_const',
+        dest='quoting',
+        const='double',
+        default='single',
+        help=
+        'Rewrite string literals to use double quotes instead of single quotes.'
+    )
+    parser.add_argument(
+        '--no-autopep8',
+        action='store_true',
+        help='Skip the autopep8 code-formatting step.')
+    parser.add_argument(
+        '--leave-strings-alone',
+        action='store_true',
+        help='Do not reformat string literals to use a consistent quote style.'
+    )
     return parser.parse_args(args=args)
 
 
@@ -46,13 +77,17 @@ def main(host=None, args=None):
 
     if options.files == ['-']:
         host = host or SystemHost()
-        host.print_(reformat_source(host.stdin.read(), autopep8_options, fixers, '<stdin>'), end='')
+        host.print_(
+            reformat_source(host.stdin.read(), autopep8_options, fixers,
+                            '<stdin>'),
+            end='')
         return
 
     # We create the arglist before checking if we need to create a Host, because a
     # real host is non-picklable and can't be passed to host.executive.map().
 
-    arglist = [(host, name, autopep8_options, fixers, options.backup) for name in options.files]
+    arglist = [(host, name, autopep8_options, fixers, options.backup)
+               for name in options.files]
     host = host or SystemHost()
 
     host.executive.map(_reformat_thunk, arglist, processes=options.jobs)
@@ -61,18 +96,24 @@ def main(host=None, args=None):
 def _autopep8_options_for_style(style):
     return {
         None: [],
-        'blink': autopep8.parse_args([
+        'blink':
+        autopep8.parse_args([
             '--aggressive',
-            '--max-line-length', '132',
+            '--max-line-length',
+            '132',
             '--ignore=E309',
-            '--indent-size', '4',
+            '--indent-size',
+            '4',
             '',
         ]),
-        'chromium': autopep8.parse_args([
+        'chromium':
+        autopep8.parse_args([
             '--aggressive',
-            '--max-line-length', '80',
+            '--max-line-length',
+            '80',
             '--ignore=E309',
-            '--indent-size', '2',
+            '--indent-size',
+            '2',
             '',
         ]),
     }.get(style)
@@ -107,8 +148,8 @@ def reformat_source(source, autopep8_options, fixers, name):
         tmp_str = autopep8.fix_code(tmp_str, autopep8_options)
 
     if fixers:
-        tool = lib2to3.refactor.RefactoringTool(fixer_names=fixers,
-                                                explicit=fixers)
+        tool = lib2to3.refactor.RefactoringTool(
+            fixer_names=fixers, explicit=fixers)
         tmp_str = unicode(tool.refactor_string(tmp_str, name=name))
 
     return tmp_str

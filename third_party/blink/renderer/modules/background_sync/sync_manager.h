@@ -5,10 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_SYNC_SYNC_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_SYNC_SYNC_MANAGER_H_
 
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -40,7 +41,8 @@ class SyncManager final : public ScriptWrappable {
   // mojo::Remote<mojom::blink::OneShotBackgroundSyncService>. A connection with
   // the browser's OneShotBackgroundSyncService is created the first time this
   // method is called.
-  const mojo::Remote<mojom::blink::OneShotBackgroundSyncService>&
+  const HeapMojoRemote<mojom::blink::OneShotBackgroundSyncService,
+                       HeapMojoWrapperMode::kWithoutContextObserver>&
   GetBackgroundSyncServiceRemote();
 
   // Callbacks
@@ -54,7 +56,8 @@ class SyncManager final : public ScriptWrappable {
 
   Member<ServiceWorkerRegistration> registration_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  mojo::Remote<mojom::blink::OneShotBackgroundSyncService>
+  HeapMojoRemote<mojom::blink::OneShotBackgroundSyncService,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
       background_sync_service_;
 };
 

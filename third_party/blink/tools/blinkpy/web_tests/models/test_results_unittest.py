@@ -34,7 +34,6 @@ from blinkpy.web_tests.models import test_failures
 
 
 class TestResultsTest(unittest.TestCase):
-
     def test_defaults(self):
         result = TestResult('foo')
         self.assertEqual(result.test_name, 'foo')
@@ -42,9 +41,7 @@ class TestResultsTest(unittest.TestCase):
         self.assertEqual(result.test_run_time, 0)
 
     def test_loads(self):
-        result = TestResult(test_name='foo',
-                            failures=[],
-                            test_run_time=1.1)
+        result = TestResult(test_name='foo', failures=[], test_run_time=1.1)
         s = result.dumps()
         new_result = TestResult.loads(s)
         self.assertIsInstance(new_result, TestResult)

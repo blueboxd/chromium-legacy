@@ -255,15 +255,33 @@ v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(
         v8::SideEffectType::kHasSideEffect);
     v8::Local<v8::FunctionTemplate> interface_template =
         wrapper_type_info->DomTemplate(isolate, world);
-    function_template->SetPrototypeProviderTemplate(interface_template);
-    function_template->ReadOnlyPrototype();
+    function_template->Inherit(interface_template);
     function_template->SetClassName(V8AtomicString(isolate, func_name));
     function_template->InstanceTemplate()->SetInternalFieldCount(
         kV8DefaultWrapperInternalFieldCount);
     per_isolate_data->SetInterfaceTemplate(world, callback_key,
                                            function_template);
   }
-  return function_template->GetFunction(script_state->GetContext());
+
+  v8::Local<v8::Context> context = script_state->GetContext();
+  V8PerContextData* per_context_data = V8PerContextData::From(context);
+  v8::Local<v8::Function> function;
+  if (!function_template->GetFunction(context).ToLocal(&function)) {
+    return v8::MaybeLocal<v8::Function>();
+  }
+  v8::Local<v8::Object> prototype_object =
+      per_context_data->PrototypeForType(wrapper_type_info);
+  bool did_define;
+  if (!function
+           ->DefineOwnProperty(
+               context, V8AtomicString(isolate, "prototype"), prototype_object,
+               static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum |
+                                                  v8::DontDelete))
+           .To(&did_define)) {
+    return v8::MaybeLocal<v8::Function>();
+  }
+  CHECK(did_define);
+  return function;
 }
 
 void InstallUnscopablePropertyNames(

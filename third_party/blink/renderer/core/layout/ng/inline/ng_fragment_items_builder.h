@@ -25,6 +25,8 @@ class CORE_EXPORT NGFragmentItemsBuilder {
  public:
   NGFragmentItemsBuilder(NGBoxFragmentBuilder* box_builder) {}
 
+  wtf_size_t Size() const { return items_.size(); }
+
   // Returns true if we have any floating descendants which need to be
   // traversed during the float paint phase.
   bool HasFloatingDescendantsForPaint() const {
@@ -65,6 +67,26 @@ class CORE_EXPORT NGFragmentItemsBuilder {
                 TextDirection direction,
                 const PhysicalSize& container_size);
 
+  struct ItemWithOffset {
+    DISALLOW_NEW();
+
+   public:
+    ItemWithOffset(scoped_refptr<const NGFragmentItem> item,
+                   const LogicalOffset& offset)
+        : item(std::move(item)), offset(offset) {}
+    explicit ItemWithOffset(const LogicalOffset& offset) : offset(offset) {}
+
+    const NGFragmentItem& operator*() const { return *item; }
+    const NGFragmentItem* operator->() const { return item.get(); }
+
+    scoped_refptr<const NGFragmentItem> item;
+    LogicalOffset offset;
+  };
+
+  // Give an inline size, the allocation of this vector is hot. "128" is
+  // heuristic. Usually 10-40, some wikipedia pages have >64 items.
+  using ItemWithOffsetList = Vector<ItemWithOffset, 128>;
+
   // Find |LogicalOffset| of the first |NGFragmentItem| for |LayoutObject|.
   base::Optional<LogicalOffset> LogicalOffsetFor(const LayoutObject&) const;
 
@@ -73,8 +95,9 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   // containing block geometry for OOF-positioned nodes.
   //
   // Once this method has been called, new items cannot be added.
-  const Vector<scoped_refptr<const NGFragmentItem>>&
-  Items(WritingMode, TextDirection, const PhysicalSize& outer_size);
+  const ItemWithOffsetList& Items(WritingMode,
+                                  TextDirection,
+                                  const PhysicalSize& outer_size);
 
   // Build a |NGFragmentItems|. The builder cannot build twice because data set
   // to this builder may be cleared.
@@ -90,8 +113,7 @@ class CORE_EXPORT NGFragmentItemsBuilder {
                          TextDirection direction,
                          const PhysicalSize& outer_size);
 
-  Vector<scoped_refptr<const NGFragmentItem>> items_;
-  Vector<LogicalOffset> offsets_;
+  ItemWithOffsetList items_;
   String text_content_;
   String first_line_text_content_;
 

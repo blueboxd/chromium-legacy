@@ -18,7 +18,6 @@ from blinkpy.tool.commands.flaky_tests import FlakyTests
 
 
 class FakeBotTestExpectations(object):
-
     def __init__(self, results_by_path):
         self._results = {}
 
@@ -31,7 +30,6 @@ class FakeBotTestExpectations(object):
 
 
 class FakeBotTestExpectationsFactory(object):
-
     def __init__(self):
         """The distinct results seen in at least one run of the test.
 
@@ -54,7 +52,6 @@ class FakeBotTestExpectationsFactory(object):
 
 
 class FakePortFactory(PortFactory):
-
     def __init__(self, host, all_build_types=None, all_systems=None):
         super(FakePortFactory, self).__init__(host)
         self._all_build_types = all_build_types or ()
@@ -78,7 +75,6 @@ class FakePortFactory(PortFactory):
 
 
 class MockWebBrowser(object):
-
     def __init__(self):
         self.opened_url = None
 
@@ -107,25 +103,20 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         super(UpdateTestExpectationsTest, self).tearDown()
 
     def _write_tests_into_filesystem(self, filesystem):
-        test_list = ['test/a.html',
-                     'test/b.html',
-                     'test/c.html',
-                     'test/d.html',
-                     'test/e.html',
-                     'test/f.html',
-                     'test/g.html']
+        test_list = [
+            'test/a.html', 'test/b.html', 'test/c.html', 'test/d.html',
+            'test/e.html', 'test/f.html', 'test/g.html'
+        ]
         for test in test_list:
             path = filesystem.join(WEB_TEST_DIR, test)
             filesystem.write_binary_file(path, '')
 
-    def _create_expectations_remover(self, type_flag='all', remove_missing=False):
+    def _create_expectations_remover(self,
+                                     type_flag='all',
+                                     remove_missing=False):
         return ExpectationsRemover(
-            self._host,
-            self._port,
-            self._expectation_factory,
-            self._mock_web_browser,
-            type_flag,
-            remove_missing)
+            self._host, self._port, self._expectation_factory,
+            self._mock_web_browser, type_flag, remove_missing)
 
     def _parse_expectations(self, expectations):
         path = self._port.path_to_generic_test_expectations_file()
@@ -154,16 +145,16 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             test/b.html [ Timeout ]
             test/c.html [ Failure Timeout ]""")
 
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FLAKE_TYPE))
+        self._expectations_remover = (self._create_expectations_remover(
+            self.FLAKE_TYPE))
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -178,8 +169,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         }
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(
-            updated_expectations, test_expectations_before)
+        self.assertEquals(updated_expectations, test_expectations_before)
 
     def test_fail_mode_doesnt_remove_non_fails(self):
         """Tests that lines that aren't failing are not touched.
@@ -187,8 +177,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         Lines are failing if they contain only 'Failure', 'Timeout', or
         'Crash' results.
         """
-        test_expectations_before = _strip_multiline_string_spaces(
-            """
+        test_expectations_before = _strip_multiline_string_spaces("""
             # results: [ Pass Failure Timeout ]
             # Even though the results show all passing, none of the
             # expectations are failing so we shouldn't remove any.
@@ -202,8 +191,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -216,17 +205,15 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/f.html': ['PASS', 'PASS'],
             }
         }
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FAIL_TYPE))
+        self._expectations_remover = (self._create_expectations_remover(
+            self.FAIL_TYPE))
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(
-            updated_expectations, test_expectations_before)
+        self.assertEquals(updated_expectations, test_expectations_before)
 
     def test_dont_remove_directory_flake(self):
         """Tests that flake lines with directories are untouched."""
-        test_expectations_before = _strip_multiline_string_spaces(
-            """
+        test_expectations_before = _strip_multiline_string_spaces("""
             # results: [ Failure Pass ]
             # This expectation is for a whole directory.
             test/* [ Failure Pass ]""")
@@ -237,8 +224,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -251,17 +238,15 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/f.html': ['PASS', 'PASS'],
             }
         }
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FLAKE_TYPE))
+        self._expectations_remover = (self._create_expectations_remover(
+            self.FLAKE_TYPE))
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(
-            updated_expectations, test_expectations_before)
+        self.assertEquals(updated_expectations, test_expectations_before)
 
     def test_dont_remove_directory_fail(self):
         """Tests that fail lines with directories are untouched."""
-        test_expectations_before = _strip_multiline_string_spaces(
-            """
+        test_expectations_before = _strip_multiline_string_spaces("""
             # results: [ Failure ]
             # This expectation is for a whole directory.
             test/* [ Failure ]""")
@@ -272,8 +257,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -286,12 +271,11 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/f.html': ['PASS', 'PASS'],
             }
         }
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FAIL_TYPE))
+        self._expectations_remover = (self._create_expectations_remover(
+            self.FAIL_TYPE))
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(
-            updated_expectations, test_expectations_before)
+        self.assertEquals(updated_expectations, test_expectations_before)
 
     def test_dont_remove_skip(self):
         """Tests that lines with Skip are untouched.
@@ -300,8 +284,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         which is indistinguishable from "All Passing" so don't remove since we
         don't know what the results actually are.
         """
-        test_expectations_before = _strip_multiline_string_spaces(
-            """
+        test_expectations_before = _strip_multiline_string_spaces("""
             # results: [ Skip ]
             # Skip expectations should never be removed.
             test/a.html [ Skip ]
@@ -314,8 +297,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -327,8 +310,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(
-            updated_expectations, test_expectations_before)
+        self.assertEquals(updated_expectations, test_expectations_before)
 
     def test_all_failure_result_types(self):
         """Tests that all failure types are treated as failure."""
@@ -349,8 +331,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -366,8 +348,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, _strip_multiline_string_spaces(
-            """# results: [ Failure Pass ]
+        self.assertEquals(
+            updated_expectations,
+            _strip_multiline_string_spaces("""# results: [ Failure Pass ]
             test/a.html [ Failure Pass ]
             test/b.html [ Failure Pass ]
             test/c.html [ Failure Pass ]
@@ -391,8 +374,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -402,8 +385,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/c.html': ['PASS', 'PASS'],
             }
         }
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FAIL_TYPE))
+        self._expectations_remover = (self._create_expectations_remover(
+            self.FAIL_TYPE))
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
         # The line with test/d.html is not removed since
@@ -412,7 +395,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self.assertEquals(
             updated_expectations,
             _strip_multiline_string_spaces(
-            """# results: [ Timeout Crash Failure ]
+                """# results: [ Timeout Crash Failure ]
             test/d.html [ Failure ]"""))
 
     def test_basic_one_builder(self):
@@ -440,8 +423,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -456,8 +439,10 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, _strip_multiline_string_spaces(
-            """# results: [ Failure Pass Crash Timeout ]
+        self.assertEquals(
+            updated_expectations,
+            _strip_multiline_string_spaces(
+                """# results: [ Failure Pass Crash Timeout ]
             # Keep since we have both crashes and passes.
             test/e.html [ Crash Pass ]"""))
 
@@ -474,8 +459,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -483,12 +468,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/a.html': ['FAIL', 'FAIL', 'FAIL'],
             }
         }
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FLAKE_TYPE))
+        self._expectations_remover = (self._create_expectations_remover(
+            self.FLAKE_TYPE))
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, _strip_multiline_string_spaces(
-            """# results: [ Failure Pass ]
+        self.assertEquals(
+            updated_expectations,
+            _strip_multiline_string_spaces("""# results: [ Failure Pass ]
             # Keep since it's all failures.
             test/a.html [ Failure Pass ]"""))
 
@@ -498,8 +484,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         Expectations that are failing in a different way than specified should
         be removed, even if there is no passing result.
         """
-        test_expectations_before = (
-            """# results: [ Failure Pass ]
+        test_expectations_before = ("""# results: [ Failure Pass ]
             # Remove all since CRASH and TIMEOUT aren't considered Failure.
             test/a.html [ Failure Pass ]
             test/b.html [ Failure Pass ]
@@ -512,8 +497,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -527,7 +512,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, ('# results: [ Failure Pass ]'))
+        self.assertEquals(updated_expectations,
+                          ('# results: [ Failure Pass ]'))
 
     def test_empty_test_expectations(self):
         """Running on an empty TestExpectations file outputs an empty file."""
@@ -539,8 +525,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -578,9 +564,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             },
         })
 
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('mac10.10', 'x86'),
-                                  ('trusty', 'x86_64'))
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('mac10.10', 'x86'), ('trusty', 'x86_64'))
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -604,8 +589,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, _strip_multiline_string_spaces(
-            """# results: [ Failure Pass ]
+        self.assertEquals(
+            updated_expectations,
+            _strip_multiline_string_spaces("""# results: [ Failure Pass ]
             # Keep these two since they're failing on the Mac builder.
             test/c.html [ Failure Pass ]
             test/d.html [ Failure ]
@@ -653,7 +639,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Win7', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
+        self._port.all_build_types = ('release', )
         self._port.all_systems = (
             ('mac10.10', 'x86'),
             ('mac10.11', 'x86'),
@@ -707,7 +693,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, _strip_multiline_string_spaces("""
+        self.assertEquals(
+            updated_expectations,
+            _strip_multiline_string_spaces("""
             # tags: [ Linux Mac Win Mac ]
             # results: [ Failure Pass ]
             # Keep these two since they're failing in the Mac10.10 results.
@@ -758,8 +746,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             },
         })
         self._port.all_build_types = ('release', 'debug')
-        self._port.all_systems = (('win7', 'x86'),
-                                  ('trusty', 'x86_64'))
+        self._port.all_systems = (('win7', 'x86'), ('trusty', 'x86_64'))
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -815,8 +802,10 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, _strip_multiline_string_spaces(
-            """# Keep these two since they fail in debug.
+        self.assertEquals(
+            updated_expectations,
+            _strip_multiline_string_spaces(
+                """# Keep these two since they fail in debug.
             # tags: [ Linux ]
             # tags: [ Debug Release ]
             # results: [ Failure Pass ]
@@ -852,8 +841,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -868,7 +857,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, (_strip_multiline_string_spaces("""
+        self.assertEquals(updated_expectations,
+                          (_strip_multiline_string_spaces("""
             # results: [ Failure Pass ]
             # Comment A - Keep since these aren't part of any test.
             # Comment B - Keep since these aren't part of any test.
@@ -907,8 +897,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -942,8 +932,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -953,7 +943,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             remove_missing=True)
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, _strip_multiline_string_spaces("""
+        self.assertEquals(
+            updated_expectations,
+            _strip_multiline_string_spaces("""
             # results: [ Failure Timeout Pass Crash Skip ]
             # A Skip expectation probably won't have any results but we
             # shouldn't consider those passing so this line should remain.
@@ -1031,7 +1023,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
         self.assertEquals(
-            updated_expectations, _strip_multiline_string_spaces("""
+            updated_expectations,
+            _strip_multiline_string_spaces("""
             # tags: [ Win Linux ]
             # tags: [ Release ]
             # results: [ Failure Pass ]
@@ -1092,8 +1085,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         # (3) The first line needs and is missing results for Linux (dbg).
         # (4) The third line needs and is missing results for Win Release.
         self._port.all_build_types = ('release', 'debug')
-        self._port.all_systems = (('win7', 'x86'),
-                                  ('trusty', 'x86_64'))
+        self._port.all_systems = (('win7', 'x86'), ('trusty', 'x86_64'))
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -1144,7 +1136,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         host.port_factory = FakePortFactory(
             host,
             all_build_types=('release', 'debug'),
-            all_systems=(('trusty', 'x86_64'),))
+            all_systems=(('trusty', 'x86_64'), ))
 
         # Write out a fake TestExpectations file.
         test_expectation_path = (
@@ -1161,9 +1153,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             test/c.html [ Failure ]
             # Keep since there's a failure on debug bot.
             [ Linux ] test/d.html [ Failure ]""")
-        files = {
-            test_expectation_path: test_expectations
-        }
+        files = {test_expectation_path: test_expectations}
         host.filesystem = MockFileSystem(files)
         self._write_tests_into_filesystem(host.filesystem)
 
@@ -1186,7 +1176,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
         main(host, expectation_factory, [])
         self.assertEqual(
-            host.filesystem.files[test_expectation_path], _strip_multiline_string_spaces("""
+            host.filesystem.files[test_expectation_path],
+            _strip_multiline_string_spaces("""
             # tags: [ Linux ]
             # tags: [ Release ]
             # results: [ Failure Pass ]
@@ -1223,7 +1214,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self.assertEqual(return_code, 1)
 
         self.assertLog([
-            "WARNING: Didn't find generic expectations file at: %s\n" % test_expectation_path
+            "WARNING: Didn't find generic expectations file at: %s\n" %
+            test_expectation_path
         ])
         self.assertFalse(host.filesystem.isfile(test_expectation_path))
 
@@ -1249,7 +1241,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         host.port_factory = FakePortFactory(
             host,
             all_build_types=('release', 'debug'),
-            all_systems=(('trusty', 'x86_64'),))
+            all_systems=(('trusty', 'x86_64'), ))
 
         # Write out a fake TestExpectations file.
         test_expectation_path = (
@@ -1260,9 +1252,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             # results: [ Failure Pass ]
             [ Linux ] test/a.html [ Failure Pass ]"""
 
-        files = {
-            test_expectation_path: test_expectations
-        }
+        files = {test_expectation_path: test_expectations}
         host.filesystem = MockFileSystem(files)
         self._write_tests_into_filesystem(host.filesystem)
 
@@ -1280,7 +1270,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         main(host, expectation_factory, [])
 
         self.assertTrue(host.filesystem.isfile(test_expectation_path))
-        self.assertEqual(host.filesystem.files[test_expectation_path], """
+        self.assertEqual(
+            host.filesystem.files[test_expectation_path], """
             # Remove since passing on both bots.
             # tags: [ Linux ]
             # results: [ Failure Pass ]""")
@@ -1309,8 +1300,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -1325,8 +1316,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover.get_updated_test_expectations()
         self._expectations_remover.show_removed_results()
         self.assertEqual(
-            FlakyTests.FLAKINESS_DASHBOARD_URL
-                % 'test/a.html,test/b.html,test/d.html',
+            FlakyTests.FLAKINESS_DASHBOARD_URL %
+            'test/a.html,test/b.html,test/d.html',
             self._mock_web_browser.opened_url)
 
     def test_flake_mode_suggested_commit_description(self):
@@ -1347,8 +1338,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -1358,8 +1349,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/c.html': ['PASS', 'PASS', 'PASS'],
             }
         }
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FLAKE_TYPE))
+        self._expectations_remover = (self._create_expectations_remover(
+            self.FLAKE_TYPE))
         self._expectations_remover.get_updated_test_expectations()
         self._expectations_remover.print_suggested_commit_description()
         self.assertLog([
@@ -1377,8 +1368,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
     def test_fail_mode_suggested_commit_description(self):
         """Tests display of the suggested commit message.
         """
-        test_expectations_before = (
-            """# Keep since it's not a fail.
+        test_expectations_before = ("""# Keep since it's not a fail.
             # results: [ Failure Pass ]
             crbug.com/1111 test/a.html [ Failure Pass ]
             # Remove since it's passing all runs.
@@ -1390,8 +1380,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'specifiers': ['Trusty', 'Release']
             },
         })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -1400,8 +1390,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/b.html': ['PASS', 'PASS', 'PASS'],
             }
         }
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FAIL_TYPE))
+        self._expectations_remover = (self._create_expectations_remover(
+            self.FAIL_TYPE))
         self._expectations_remover.get_updated_test_expectations()
         self._expectations_remover.print_suggested_commit_description()
         self.assertLog([
@@ -1418,8 +1408,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
     def test_suggested_commit_description(self):
         """Tests display of the suggested commit message.
         """
-        test_expectations_before = (
-            """
+        test_expectations_before = ("""
             # results: [ Failure Pass Crash Timeout ]
             # Remove this since it's passing all runs.
             crbug.com/1111 test/a.html [ Failure Pass ]
@@ -1437,8 +1426,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             },
         })
 
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
+        self._port.all_build_types = ('release', )
+        self._port.all_systems = (('trusty', 'x86_64'), )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {

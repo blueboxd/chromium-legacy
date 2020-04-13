@@ -1,7 +1,6 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Triggers and processes results from flag try jobs.
 
 For more information, see: http://bit.ly/flag-try-jobs
@@ -15,7 +14,6 @@ from blinkpy.common.net.git_cl import GitCL
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.web_tests.models.test_configuration import TestConfiguration
 from blinkpy.web_tests.models.typ_types import Expectation, TestExpectations, ResultType
-
 
 # TODO(skobes): use blinkpy/config/builders.json instead of hardcoding these.
 BUILDER_CONFIGS = {
@@ -32,7 +30,6 @@ FLAG_FILE = 'additional-driver-flag.setting'
 
 
 class TryFlag(object):
-
     def __init__(self, argv, host, git_cl):
         self._args = parse_args(argv)
         self._host = host
@@ -66,26 +63,35 @@ class TryFlag(object):
         content = self._filesystem.read_text_file(path)
         test_expectations = TestExpectations()
         test_expectations.parse_tagged_list(content)
-        return {test_name for test_name in test_expectations.individual_exps.keys()}
+        return {
+            test_name
+            for test_name in test_expectations.individual_exps.keys()
+        }
 
     def trigger(self):
         self._force_flag_for_test_runner()
         if self._args.regenerate:
             self._clear_expectations()
-        self._git_cl.run(['upload', '--bypass-hooks', '-f',
-                          '-m', 'Flag try job for %s.' % self._args.flag])
+        self._git_cl.run([
+            'upload', '--bypass-hooks', '-f', '-m',
+            'Flag try job for %s.' % self._args.flag
+        ])
         for builder in sorted(BUILDER_BUCKETS):
             bucket = BUILDER_BUCKETS[builder]
             self._git_cl.trigger_try_jobs([builder], bucket)
 
     def _create_expectation_line(self, result, test_configuration):
-        expected_results = set([res for res in result.actual_results().split()])
+        expected_results = set(
+            [res for res in result.actual_results().split()])
         tag = test_configuration.version
         reason = ''
         if self._args.bug:
             reason = 'crbug.com/' + self._args.bug
         return Expectation(
-            test=result.test_name(), results=expected_results, tags=set([tag]), reason=reason)
+            test=result.test_name(),
+            results=expected_results,
+            tags=set([tag]),
+            reason=reason)
 
     def _process_result(self, build, result):
         if not result.did_run_as_expected():
@@ -96,12 +102,14 @@ class TryFlag(object):
     def update(self):
         self._host.print_('Fetching results...')
         # TODO: Get jobs from the _tryflag branch. Current branch for now.
-        jobs = self._git_cl.latest_try_jobs(builder_names=BUILDER_CONFIGS.keys())
+        jobs = self._git_cl.latest_try_jobs(
+            builder_names=BUILDER_CONFIGS.keys())
         results_fetcher = self._host.results_fetcher
         for build in sorted(jobs):
-            self._host.print_('-- %s: %s/results.html' % (
-                BUILDER_CONFIGS[build.builder_name].version,
-                results_fetcher.results_url(build.builder_name, build.build_number)))
+            self._host.print_('-- %s: %s/results.html' %
+                              (BUILDER_CONFIGS[build.builder_name].version,
+                               results_fetcher.results_url(
+                                   build.builder_name, build.build_number)))
             results = results_fetcher.fetch_results(build, True)
             results.for_each_test(
                 lambda result, b=build: self._process_result(b, result))
@@ -143,10 +151,14 @@ def parse_args(argv):
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('action', help='"trigger" or "update"')
     parser.add_argument('--bug', help='crbug number for expectation lines')
-    parser.add_argument('--flag', required=True,
-                        help='flag to force-enable in run_web_tests.py')
-    parser.add_argument('--regenerate', action='store_true',
-                        help='clear the flag expectations before triggering')
+    parser.add_argument(
+        '--flag',
+        required=True,
+        help='flag to force-enable in run_web_tests.py')
+    parser.add_argument(
+        '--regenerate',
+        action='store_true',
+        help='clear the flag expectations before triggering')
     return parser.parse_args(argv)
 
 

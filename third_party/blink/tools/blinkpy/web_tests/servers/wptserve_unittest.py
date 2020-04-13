@@ -12,15 +12,13 @@ from blinkpy.web_tests.servers.wptserve import WPTServe
 
 
 class TestWPTServe(LoggingTestCase):
-
     def setUp(self):
         super(TestWPTServe, self).setUp()
         self.host = MockHost()
         self.port = test.TestPort(self.host)
         self.host.filesystem.write_text_file(
             '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt.config.json',
-            '{"ports": {}, "aliases": []}'
-        )
+            '{"ports": {}, "aliases": []}')
 
     # pylint: disable=protected-access
 
@@ -56,21 +54,23 @@ class TestWPTServe(LoggingTestCase):
 
     def test_init_env(self):
         server = WPTServe(self.port, '/foo')
-        self.assertEqual(server._env, {
-            'MOCK_ENVIRON_COPY': '1',
-            'PATH': '/bin:/mock/bin',
-            'PYTHONPATH': '/mock-checkout/third_party/pywebsocket3/src'
-        })
+        self.assertEqual(
+            server._env, {
+                'MOCK_ENVIRON_COPY': '1',
+                'PATH': '/bin:/mock/bin',
+                'PYTHONPATH': '/mock-checkout/third_party/pywebsocket3/src'
+            })
 
     def test_prepare_config(self):
         server = WPTServe(self.port, '/foo')
         server._prepare_config()
-        config = json.loads(self.port._filesystem.read_text_file(server._config_file))
+        config = json.loads(
+            self.port._filesystem.read_text_file(server._config_file))
         self.assertEqual(len(config['aliases']), 1)
-        self.assertDictEqual(
-            config['aliases'][0],
-            {'url-path': '/gen/', 'local-dir': '/mock-checkout/out/Release/gen'}
-        )
+        self.assertDictEqual(config['aliases'][0], {
+            'url-path': '/gen/',
+            'local-dir': '/mock-checkout/out/Release/gen'
+        })
 
     def test_start_with_stale_pid(self):
         # Allow asserting about debug logs.
@@ -98,7 +98,8 @@ class TestWPTServe(LoggingTestCase):
             'DEBUG: pid 7 is not running\n',
         ])
         self.assertTrue(logs[-2].startswith('DEBUG: Starting wptserve server'))
-        self.assertEqual(logs[-1], 'DEBUG: wptserve successfully started (pid = 42)\n')
+        self.assertEqual(logs[-1],
+                         'DEBUG: wptserve successfully started (pid = 42)\n')
 
     def test_start_with_unkillable_zombie_process(self):
         # Allow asserting about debug logs.
@@ -123,14 +124,13 @@ class TestWPTServe(LoggingTestCase):
         # then give up and just try to start a new process anyway.
         logs = self.logMessages()
         self.assertEqual(len(logs), 44)
-        self.assertEqual(
-            logs[:2],
-            [
-                'DEBUG: stale wptserve pid file, pid 7\n',
-                'DEBUG: pid 7 is running, killing it\n'
-            ])
+        self.assertEqual(logs[:2], [
+            'DEBUG: stale wptserve pid file, pid 7\n',
+            'DEBUG: pid 7 is running, killing it\n'
+        ])
         self.assertTrue(logs[-2].startswith('DEBUG: Starting wptserve server'))
-        self.assertEqual(logs[-1], 'DEBUG: wptserve successfully started (pid = 42)\n')
+        self.assertEqual(logs[-1],
+                         'DEBUG: wptserve successfully started (pid = 42)\n')
 
     def test_stop_running_server_removes_temp_files(self):
         server = WPTServe(self.port, '/foo')

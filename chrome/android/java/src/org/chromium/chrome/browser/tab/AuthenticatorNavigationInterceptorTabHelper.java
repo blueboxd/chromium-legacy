@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tab;
 
+import org.chromium.components.external_intents.AuthenticatorNavigationInterceptor;
+
 /**
  * Temporary wrapper to isolate downstream from the exact API surfaces used to get an
  * AuthenticatorNavigationInterceptor instance from a Tab while those API surfaces are being

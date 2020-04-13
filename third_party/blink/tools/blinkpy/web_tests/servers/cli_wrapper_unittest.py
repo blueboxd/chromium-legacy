@@ -8,7 +8,6 @@ from blinkpy.web_tests.servers import cli_wrapper
 
 
 class MockServer(object):
-
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -23,7 +22,6 @@ class MockServer(object):
 
 
 class CliWrapperTest(unittest.TestCase):
-
     def setUp(self):
         self.server = None
 

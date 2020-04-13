@@ -56,9 +56,14 @@ class WPTMetadataBuilder(object):
     def run(self, args=None):
         """Main entry point to parse flags and execute the script."""
         parser = argparse.ArgumentParser(description=__doc__)
-        parser.add_argument("--metadata-output-dir",
-                            help="The directory to output the metadata files into.")
-        parser.add_argument('-v', '--verbose', action='store_true', help='More verbose logging.')
+        parser.add_argument(
+            "--metadata-output-dir",
+            help="The directory to output the metadata files into.")
+        parser.add_argument(
+            '-v',
+            '--verbose',
+            action='store_true',
+            help='More verbose logging.')
         args = parser.parse_args(args)
 
         log_level = logging.DEBUG if args.verbose else logging.INFO
@@ -110,7 +115,8 @@ class WPTMetadataBuilder(object):
         tests_for_metadata = self.get_tests_needing_metadata()
         _log.info("Found %d tests requiring metadata", len(tests_for_metadata))
         for test_name, test_status_bitmap in tests_for_metadata.items():
-            filename, file_contents = self.get_metadata_filename_and_contents(test_name, test_status_bitmap)
+            filename, file_contents = self.get_metadata_filename_and_contents(
+                test_name, test_status_bitmap)
             if not filename or not file_contents:
                 continue
             self._write_to_file(filename, file_contents)
@@ -147,7 +153,8 @@ class WPTMetadataBuilder(object):
             # First check for expectations. If a test is skipped then we do not
             # look for more statuses
             expectation_line = self.expectations.get_expectations(test_name)
-            self._handle_test_with_expectation(test_name, expectation_line, tests_needing_metadata)
+            self._handle_test_with_expectation(test_name, expectation_line,
+                                               tests_needing_metadata)
             if self._test_was_skipped(test_name, tests_needing_metadata):
                 # Do not consider other statuses if a test is skipped
                 continue
@@ -156,10 +163,12 @@ class WPTMetadataBuilder(object):
             test_baseline = self.port.expected_text(test_name)
             if not test_baseline:
                 continue
-            self._handle_test_with_baseline(test_name, test_baseline, tests_needing_metadata)
+            self._handle_test_with_baseline(test_name, test_baseline,
+                                            tests_needing_metadata)
         return tests_needing_metadata
 
-    def _handle_test_with_expectation(self, test_name, expectation_line, status_dict):
+    def _handle_test_with_expectation(self, test_name, expectation_line,
+                                      status_dict):
         """Handles a single test expectation and updates |status_dict|."""
         test_statuses = expectation_line.results
         annotations = expectation_line.trailing_comments
@@ -170,7 +179,8 @@ class WPTMetadataBuilder(object):
 
         # Guard against the only test_status being Pass (without any
         # annotations), we don't want to create metadata for such a test.
-        if (len(test_statuses) == 1 and ResultType.Pass in test_statuses and not annotations):
+        if (len(test_statuses) == 1 and ResultType.Pass in test_statuses
+                and not annotations):
             return
 
         status_bitmap = 0
@@ -192,9 +202,11 @@ class WPTMetadataBuilder(object):
 
     def _test_was_skipped(self, test_name, status_dict):
         """Returns whether |test_name| is marked as skipped in |status_dict|."""
-        return test_name in status_dict and (status_dict[test_name] & SKIP_TEST)
+        return test_name in status_dict and (
+            status_dict[test_name] & SKIP_TEST)
 
-    def _handle_test_with_baseline(self, test_name, test_baseline, status_dict):
+    def _handle_test_with_baseline(self, test_name, test_baseline,
+                                   status_dict):
         """Handles a single test baseline and updates |status_dict|."""
         status_bitmap = 0
         if re.search(r"^(FAIL|NOTRUN|TIMEOUT)", test_baseline, re.MULTILINE):
@@ -221,7 +233,8 @@ class WPTMetadataBuilder(object):
         """
         assert "?" not in wpt_test_file
         test_file_parts = wpt_test_file.split("/")
-        return os.path.join(self.metadata_output_dir, *test_file_parts) + ".ini"
+        return os.path.join(self.metadata_output_dir,
+                            *test_file_parts) + ".ini"
 
     def _metadata_inline_test_name_from_test_name(self, wpt_test_name):
         """Returns the test name to use *inside* of a metadata file.
@@ -249,7 +262,9 @@ class WPTMetadataBuilder(object):
         variant = "?" + variant_split[1] if len(variant_split) == 2 else ""
         return test_name_part + variant
 
-    def get_metadata_filename_and_contents(self, chromium_test_name, test_status_bitmap=0):
+    def get_metadata_filename_and_contents(self,
+                                           chromium_test_name,
+                                           test_status_bitmap=0):
         """Determines the metadata filename and contents for the specified test.
 
         The metadata filename is derived from the test name but will differ if
@@ -269,7 +284,8 @@ class WPTMetadataBuilder(object):
             test does not need a metadata file.
         """
         # Ignore expectations for non-WPT tests
-        if not chromium_test_name or not chromium_test_name.startswith('external/wpt'):
+        if (not chromium_test_name
+                or not chromium_test_name.startswith('external/wpt')):
             return None, None
 
         # Split the test name by directory. We omit the first 2 entries because
@@ -296,15 +312,21 @@ class WPTMetadataBuilder(object):
         else:
             # For individual tests, we create one file per test, with the name
             # of the test in the file as well.
-            test_file_path = self.wpt_manifest.file_path_for_test_url(wpt_test_name)
+            test_file_path = self.wpt_manifest.file_path_for_test_url(
+                wpt_test_name)
             if not test_file_path:
-                _log.info("Could not find file for test %s, skipping" % wpt_test_name)
+                _log.info("Could not find file for test %s, skipping" %
+                          wpt_test_name)
                 return None, None
 
-            metadata_filename = self._metadata_filename_from_test_file(test_file_path)
-            _log.debug("Creating a test ini file %s with status_bitmap %s", metadata_filename, test_status_bitmap)
-            inline_test_name = self._metadata_inline_test_name_from_test_name(wpt_test_name)
-            metadata_file_contents = self._get_test_failed_string(inline_test_name, test_status_bitmap)
+            metadata_filename = self._metadata_filename_from_test_file(
+                test_file_path)
+            _log.debug("Creating a test ini file %s with status_bitmap %s",
+                       metadata_filename, test_status_bitmap)
+            inline_test_name = self._metadata_inline_test_name_from_test_name(
+                wpt_test_name)
+            metadata_file_contents = self._get_test_failed_string(
+                inline_test_name, test_status_bitmap)
 
         return metadata_filename, metadata_file_contents
 

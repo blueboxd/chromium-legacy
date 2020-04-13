@@ -32,7 +32,6 @@ from blinkpy.common.net.results_fetcher import TestResultsFetcher
 # TODO(qyearsley): To be consistent with other fake ("mock") classes, this
 # could be changed so it's not a subclass of TestResultsFetcher.
 class MockTestResultsFetcher(TestResultsFetcher):
-
     def __init__(self):
         super(MockTestResultsFetcher, self).__init__()
         self._canned_results = {}

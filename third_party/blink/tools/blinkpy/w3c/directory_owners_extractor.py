@@ -1,7 +1,6 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """A limited finder & parser for Chromium OWNERS files.
 
 This module is intended to be used within web_tests/external and is
@@ -16,7 +15,6 @@ from blinkpy.common.memoized import memoized
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.filesystem import FileSystem
 
-
 # Format of OWNERS files can be found at //src/third_party/depot_tools/owners.py
 # In our use case (under external/wpt), we only process the first enclosing
 # OWNERS file for any given path (i.e. always assuming "set noparent"), and we
@@ -29,7 +27,6 @@ COMPONENT_REGEXP = r'^# *COMPONENT: *(.+)$'
 
 
 class DirectoryOwnersExtractor(object):
-
     def __init__(self, filesystem=None):
         self.filesystem = filesystem or FileSystem()
         self.finder = PathFinder(filesystem)
@@ -46,7 +43,8 @@ class DirectoryOwnersExtractor(object):
             owned directories (paths relative to the root of web tests).
         """
         email_map = collections.defaultdict(set)
-        external_root_owners = self.finder.path_from_web_tests('external', 'OWNERS')
+        external_root_owners = self.finder.path_from_web_tests(
+            'external', 'OWNERS')
         for relpath in changed_files:
             # Try to find the first *non-empty* OWNERS file.
             absolute_path = self.finder.path_from_chromium_base(relpath)
@@ -57,16 +55,21 @@ class DirectoryOwnersExtractor(object):
                 if owners:
                     break
                 # Found an empty OWNERS file. Try again from the parent directory.
-                absolute_path = self.filesystem.dirname(self.filesystem.dirname(owners_file))
+                absolute_path = self.filesystem.dirname(
+                    self.filesystem.dirname(owners_file))
                 owners_file = self.find_owners_file(absolute_path)
             # Skip web_tests/external/OWNERS.
             if not owners or owners_file == external_root_owners:
                 continue
 
             owned_directory = self.filesystem.dirname(owners_file)
-            owned_directory_relpath = self.filesystem.relpath(owned_directory, self.finder.web_tests_dir())
+            owned_directory_relpath = self.filesystem.relpath(
+                owned_directory, self.finder.web_tests_dir())
             email_map[tuple(owners)].add(owned_directory_relpath)
-        return {owners: sorted(owned_directories) for owners, owned_directories in email_map.iteritems()}
+        return {
+            owners: sorted(owned_directories)
+            for owners, owned_directories in email_map.iteritems()
+        }
 
     def find_owners_file(self, start_path):
         """Finds the first enclosing OWNERS file for a given path.
@@ -82,8 +85,8 @@ class DirectoryOwnersExtractor(object):
             The absolute path to the first OWNERS file found; None if not found
             or if start_path is outside of web_tests/external.
         """
-        abs_start_path = (start_path if self.filesystem.isabs(start_path)
-                          else self.finder.path_from_chromium_base(start_path))
+        abs_start_path = (start_path if self.filesystem.isabs(start_path) else
+                          self.finder.path_from_chromium_base(start_path))
         directory = (abs_start_path if self.filesystem.isdir(abs_start_path)
                      else self.filesystem.dirname(abs_start_path))
         external_root = self.finder.path_from_web_tests('external')
@@ -92,7 +95,8 @@ class DirectoryOwnersExtractor(object):
         # Stop at web_tests, which is the parent of external_root.
         while directory != self.finder.web_tests_dir():
             owners_file = self.filesystem.join(directory, 'OWNERS')
-            if self.filesystem.isfile(self.finder.path_from_chromium_base(owners_file)):
+            if self.filesystem.isfile(
+                    self.finder.path_from_chromium_base(owners_file)):
                 return owners_file
             directory = self.filesystem.dirname(directory)
         return None

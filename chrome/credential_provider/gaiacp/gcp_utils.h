@@ -95,7 +95,8 @@ class GoogleRegistrationDataForTesting {
 // Class used in tests to set gem device details for testing.
 class GemDeviceDetailsForTesting {
  public:
-  explicit GemDeviceDetailsForTesting(std::vector<std::string>& mac_addresses);
+  explicit GemDeviceDetailsForTesting(std::vector<std::string>& mac_addresses,
+                                      std::string os_version);
   ~GemDeviceDetailsForTesting();
 };
 
@@ -342,6 +343,10 @@ base::string16 GetSerialNumber();
 
 // Gets the mac addresses of the windows device.
 std::vector<std::string> GetMacAddresses();
+
+// Gets the OS version installed on the device. The format is
+// "major.minor.build".
+void GetOsVersion(std::string* version);
 
 // Gets the obfuscated device_id that is a combination of multiple device
 // identifiers.

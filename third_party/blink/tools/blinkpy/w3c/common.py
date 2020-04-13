@@ -1,7 +1,6 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Utility functions used both when importing and exporting."""
 
 import json
@@ -9,12 +8,12 @@ import logging
 
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 
-
 WPT_GH_ORG = 'web-platform-tests'
 WPT_GH_REPO_NAME = 'wpt'
 WPT_GH_URL = 'https://github.com/%s/%s/' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
 WPT_MIRROR_URL = 'https://chromium.googlesource.com/external/github.com/web-platform-tests/wpt.git'
-WPT_GH_SSH_URL_TEMPLATE = 'https://{}@github.com/%s/%s.git' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
+WPT_GH_SSH_URL_TEMPLATE = 'https://{}@github.com/%s/%s.git' % \
+    (WPT_GH_ORG, WPT_GH_REPO_NAME)
 WPT_REVISION_FOOTER = 'WPT-Export-Revision: '
 CHANGE_ID_FOOTER = 'Change-Id: '
 EXPORT_PR_LABEL = 'chromium-export'
@@ -48,7 +47,8 @@ def read_credentials(host, credentials_json):
     if not credentials_json:
         return env_credentials
     if not host.filesystem.exists(credentials_json):
-        _log.warning('Credentials JSON file not found at %s.', credentials_json)
+        _log.warning('Credentials JSON file not found at %s.',
+                     credentials_json)
         return {}
     credentials = {}
     contents = json.loads(host.filesystem.read_text_file(credentials_json))
@@ -75,12 +75,11 @@ def is_basename_skipped(basename):
     """
     assert '/' not in basename
     blacklist = [
-        'MANIFEST.json',    # MANIFEST.json is automatically regenerated.
-        'OWNERS',           # https://crbug.com/584660 https://crbug.com/702283
-        'reftest.list',     # https://crbug.com/582838
+        'MANIFEST.json',  # MANIFEST.json is automatically regenerated.
+        'OWNERS',  # https://crbug.com/584660 https://crbug.com/702283
+        'reftest.list',  # https://crbug.com/582838
     ]
-    return (basename in blacklist
-            or is_testharness_baseline(basename)
+    return (basename in blacklist or is_testharness_baseline(basename)
             or basename.startswith('.'))
 
 

@@ -12,9 +12,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.components.external_intents.AuthenticatorNavigationInterceptor;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
@@ -60,7 +58,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
     InterceptNavigationDelegateImpl(Tab tab, InterceptNavigationDelegateClient client) {
         mTab = (TabImpl) tab;
         mClient = client;
-        mAuthenticatorHelper = AppHooks.get().createAuthenticatorNavigationInterceptor(mTab);
+        mAuthenticatorHelper = mClient.createAuthenticatorNavigationInterceptor();
         mDelegateObserver = new EmptyTabObserver() {
             @Override
             public void onContentChanged(Tab tab) {
@@ -70,8 +68,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             @Override
             public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
                 if (window != null) {
-                    setExternalNavigationHandler(
-                            mTab.getDelegateFactory().createExternalNavigationHandler(tab));
+                    setExternalNavigationHandler(mClient.createExternalNavigationHandler());
                 }
             }
 
@@ -106,8 +103,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
 
         // Lazily initialize the external navigation handler.
         if (mExternalNavHandler == null) {
-            setExternalNavigationHandler(
-                    mTab.getDelegateFactory().createExternalNavigationHandler(mTab));
+            setExternalNavigationHandler(mClient.createExternalNavigationHandler());
         }
         InterceptNavigationDelegateImplJni.get().associateWithWebContents(this, mWebContents);
     }
@@ -133,9 +129,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
     @Override
     public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
         String url = navigationParams.url;
-        ChromeActivity associatedActivity = mTab.getActivity();
-        long lastUserInteractionTime =
-                (associatedActivity == null) ? -1 : associatedActivity.getLastUserInteractionTime();
+        long lastUserInteractionTime = mClient.getLastUserInteractionTime();
 
         if (mAuthenticatorHelper != null && mAuthenticatorHelper.handleAuthenticatorUrl(url)) {
             return true;
@@ -143,7 +137,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
 
         RedirectHandlerImpl redirectHandler = null;
         if (navigationParams.isMainFrame) {
-            redirectHandler = RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab);
+            redirectHandler = mClient.getOrCreateRedirectHandler();
         } else if (navigationParams.isExternalProtocol) {
             // Only external protocol navigations are intercepted for iframe navigations.  Since
             // we do not see all previous navigations for the iframe, we can not build a complete
@@ -208,16 +202,16 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             NavigationParams navigationParams, RedirectHandlerImpl redirectHandler,
             boolean shouldCloseTab) {
         boolean isInitialTabLaunchInBackground =
-                mTab.getLaunchType() == TabLaunchType.FROM_LONGPRESS_BACKGROUND && shouldCloseTab;
+                mClient.wasTabLaunchedFromLongPressInBackground() && shouldCloseTab;
         // http://crbug.com/448977: If a new tab is closed by this overriding, we should open an
         // Intent in a new tab when Chrome receives it again.
         return new ExternalNavigationParams
-                .Builder(navigationParams.url, mTab.isIncognito(), navigationParams.referrer,
+                .Builder(navigationParams.url, mClient.isIncognito(), navigationParams.referrer,
                         navigationParams.pageTransitionType, navigationParams.isRedirect)
                 .setApplicationMustBeInForeground(true)
                 .setRedirectHandler(redirectHandler)
                 .setOpenInNewTab(shouldCloseTab)
-                .setIsBackgroundTabNavigation(mTab.isHidden() && !isInitialTabLaunchInBackground)
+                .setIsBackgroundTabNavigation(mClient.isHidden() && !isInitialTabLaunchInBackground)
                 .setIsMainFrame(navigationParams.isMainFrame)
                 .setHasUserGesture(navigationParams.hasUserGesture)
                 .setShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(
@@ -240,7 +234,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             NavigationController navigationController =
                     webContents.getNavigationController();
             int indexBeforeRedirection =
-                    RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab)
+                    mClient.getOrCreateRedirectHandler()
                             .getLastCommittedEntryIndexBeforeStartingNavigation();
             int lastCommittedEntryIndex = getLastCommittedEntryIndex();
             for (int i = lastCommittedEntryIndex - 1; i > indexBeforeRedirection; --i) {
@@ -270,8 +264,8 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         // navigation is invalid, it means that this navigation is the first one since this tab was
         // created.
         // In such case, we would like to close this tab.
-        if (RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab).isOnNavigation()) {
-            return RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab)
+        if (mClient.getOrCreateRedirectHandler().isOnNavigation()) {
+            return mClient.getOrCreateRedirectHandler()
                            .getLastCommittedEntryIndexBeforeStartingNavigation()
                     == RedirectHandlerImpl.INVALID_ENTRY_INDEX;
         }
@@ -291,23 +285,23 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         // url, we would like to close it as we will load this url in a
         // different Activity.
         if (shouldCloseTab) {
-            if (mTab.getLaunchType() == TabLaunchType.FROM_EXTERNAL_APP) {
+            if (mClient.wasTabLaunchedFromExternalApp()) {
                 // Moving task back before closing the tab allows back button to function better
                 // when Chrome was an intermediate link redirector between two apps.
                 // crbug.com/487938.
-                mTab.getActivity().moveTaskToBack(false);
+                mClient.getActivity().moveTaskToBack(false);
             }
             // Defer closing a tab (and the associated WebContents) till the navigation
             // request and the throttle finishes the job with it.
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
-                    TabModelSelector.from(mTab).closeTab(mTab);
+                    mClient.closeTab();
                 }
             });
-        } else if (RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab).isOnNavigation()) {
+        } else if (mClient.getOrCreateRedirectHandler().isOnNavigation()) {
             int lastCommittedEntryIndexBeforeNavigation =
-                    RedirectHandlerTabHelper.getOrCreateHandlerFor(mTab)
+                    mClient.getOrCreateRedirectHandler()
                             .getLastCommittedEntryIndexBeforeStartingNavigation();
             if (getLastCommittedEntryIndex() > lastCommittedEntryIndexBeforeNavigation) {
                 // http://crbug/426679 : we want to go back to the last committed entry index which

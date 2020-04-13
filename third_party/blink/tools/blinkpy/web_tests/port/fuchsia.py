@@ -43,12 +43,12 @@ from blinkpy.web_tests.port import factory
 from blinkpy.web_tests.port import linux
 from blinkpy.web_tests.port import server_process
 
-
 # Modules loaded dynamically in _import_fuchsia_runner().
 # pylint: disable=invalid-name
 fuchsia_target = None
 qemu_target = None
 symbolizer = None
+
 # pylint: enable=invalid-name
 
 
@@ -94,7 +94,6 @@ MAX_WORKERS = CPU_CORES
 
 PROCESS_START_TIMEOUT = 20
 
-
 _log = logging.getLogger(__name__)
 
 
@@ -113,8 +112,7 @@ class SubprocessOutputLogger(object):
     def __init__(self, process, prefix):
         self._process = process
         self._thread = threading.Thread(
-            target=_subprocess_log_thread,
-            args=(process.stdout, prefix))
+            target=_subprocess_log_thread, args=(process.stdout, prefix))
         self._thread.daemon = True
         self._thread.start()
 
@@ -123,6 +121,7 @@ class SubprocessOutputLogger(object):
 
     def close(self):
         self._process.kill()
+
 
 class _TargetHost(object):
     def __init__(self, build_path, build_ids_path, ports_to_forward,
@@ -158,9 +157,10 @@ class _TargetHost(object):
         # Tell SSH to forward all server ports from the Fuchsia device to
         # the host.
         forwarding_flags = [
-          '-O', 'forward',  # Send SSH mux control signal.
-          '-N',  # Don't execute command
-          '-T'  # Don't allocate terminal.
+            '-O',
+            'forward',  # Send SSH mux control signal.
+            '-N',  # Don't execute command
+            '-T'  # Don't allocate terminal.
         ]
         for port in ports_to_forward:
             forwarding_flags += ['-R', '%d:localhost:%d' % (port, port)]
@@ -173,10 +173,9 @@ class _TargetHost(object):
                                                       stderr=subprocess.STDOUT)
 
         listener_log_path = os.path.join(results_directory, 'system.log')
-        listener_log = open(listener_log_path,'w')
-        self.symbolizer = symbolizer.RunSymbolizer(self._listener.stdout,
-                                                   listener_log,
-                                                   [build_ids_path])
+        listener_log = open(listener_log_path, 'w')
+        self.symbolizer = symbolizer.RunSymbolizer(
+            self._listener.stdout, listener_log, [build_ids_path])
 
         package_path = os.path.join(build_path, CONTENT_SHELL_PACKAGE_PATH)
         self._target.InstallPackage([package_path])
@@ -189,7 +188,9 @@ class _TargetHost(object):
 
     def run_command(self, command):
         return self.target_command_runner.RunCommandPiped(
-            command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
 
     def cleanup(self):
@@ -204,9 +205,12 @@ class _TargetHost(object):
 class FuchsiaPort(base.Port):
     port_name = 'fuchsia'
 
-    SUPPORTED_VERSIONS = ('fuchsia',)
+    SUPPORTED_VERSIONS = ('fuchsia', )
 
-    FALLBACK_PATHS = {'fuchsia': ['fuchsia'] + linux.LinuxPort.latest_platform_fallback_path()}
+    FALLBACK_PATHS = {
+        'fuchsia':
+        ['fuchsia'] + linux.LinuxPort.latest_platform_fallback_path()
+    }
 
     def __init__(self, host, port_name, **kwargs):
         super(FuchsiaPort, self).__init__(host, port_name, **kwargs)
@@ -240,15 +244,15 @@ class FuchsiaPort(base.Port):
     def setup_test_run(self):
         super(FuchsiaPort, self).setup_test_run()
         try:
-            self._target_host = _TargetHost(
-                self._build_path(), self.get_build_ids_path(),
-                self.SERVER_PORTS, self._target_device,
-                self.results_directory())
+            self._target_host = _TargetHost(self._build_path(),
+                                            self.get_build_ids_path(),
+                                            self.SERVER_PORTS,
+                                            self._target_device,
+                                            self.results_directory())
 
             if self.get_option('zircon_logging'):
                 self._zircon_logger = SubprocessOutputLogger(
-                    self._target_host.run_command(['dlog', '-f']),
-                    'Zircon')
+                    self._target_host.run_command(['dlog', '-f']), 'Zircon')
 
             # Save fuchsia_target in _options, so it can be shared with other
             # workers.
@@ -285,8 +289,8 @@ class FuchsiaPort(base.Port):
         additional_dirs['/gen'] = self.generated_sources_directory()
         additional_dirs['/third_party/blink'] = \
             self._path_from_chromium_base('third_party', 'blink')
-        super(FuchsiaPort, self).start_http_server(
-            additional_dirs, number_of_drivers)
+        super(FuchsiaPort, self).start_http_server(additional_dirs,
+                                                   number_of_drivers)
 
     def path_to_apache(self):
         return self._host_port.path_to_apache()
@@ -307,26 +311,27 @@ class FuchsiaPort(base.Port):
 
 class ChromiumFuchsiaDriver(driver.Driver):
     def __init__(self, port, worker_number, no_timeout=False):
-        super(ChromiumFuchsiaDriver, self).__init__(
-            port, worker_number, no_timeout)
+        super(ChromiumFuchsiaDriver, self).__init__(port, worker_number,
+                                                    no_timeout)
 
     def _base_cmd_line(self):
-        cmd = ['run', 'fuchsia-pkg://fuchsia.com/content_shell#meta/content_shell.cmx']
+        cmd = [
+            'run',
+            'fuchsia-pkg://fuchsia.com/content_shell#meta/content_shell.cmx'
+        ]
         if self._port._target_device == 'qemu':
             cmd.append('--ozone-platform=headless')
         # Use Scenic on AEMU
         elif self._port._target_device == 'aemu':
             cmd.extend([
-                '--ozone-platform=scenic',
-                '--enable-oop-rasterization',
-                '--use-gl=stub',
-                '--enable-features=UseSkiaRenderer,Vulkan'
+                '--ozone-platform=scenic', '--enable-oop-rasterization',
+                '--use-gl=stub', '--enable-features=UseSkiaRenderer,Vulkan'
             ])
         return cmd
 
     def _command_from_driver_input(self, driver_input):
-        command = super(ChromiumFuchsiaDriver, self)._command_from_driver_input(
-            driver_input)
+        command = super(ChromiumFuchsiaDriver,
+                        self)._command_from_driver_input(driver_input)
         if command.startswith('/'):
             relative_test_filename = \
                 os.path.relpath(command, self._port.web_tests_dir())
@@ -337,8 +342,13 @@ class ChromiumFuchsiaDriver(driver.Driver):
 
 # Custom version of ServerProcess that runs processes on a remote device.
 class FuchsiaServerProcess(server_process.ServerProcess):
-    def __init__(self, port_obj, name, cmd, env=None,
-                 treat_no_data_as_crash=False, more_logging=False):
+    def __init__(self,
+                 port_obj,
+                 name,
+                 cmd,
+                 env=None,
+                 treat_no_data_as_crash=False,
+                 more_logging=False):
         super(FuchsiaServerProcess, self).__init__(
             port_obj, name, cmd, env, treat_no_data_as_crash, more_logging)
         self._symbolizer_proc = None
@@ -384,13 +394,14 @@ class FuchsiaServerProcess(server_process.ServerProcess):
         proc.stdin = stdin_pipe
         # Run symbolizer to filter the stderr stream.
         self._symbolizer_proc = symbolizer.RunSymbolizer(
-            proc.stderr, subprocess.PIPE, [self._port.get_build_ids_path()]);
+            proc.stderr, subprocess.PIPE, [self._port.get_build_ids_path()])
         proc.stderr = self._symbolizer_proc.stdout
 
         self._set_proc(proc)
 
     def stop(self, timeout_secs=0.0, kill_tree=False):
-        result = super(FuchsiaServerProcess, self).stop(timeout_secs, kill_tree)
+        result = super(FuchsiaServerProcess, self).stop(
+            timeout_secs, kill_tree)
         if self._symbolizer_proc:
             self._symbolizer_proc.kill()
         return result

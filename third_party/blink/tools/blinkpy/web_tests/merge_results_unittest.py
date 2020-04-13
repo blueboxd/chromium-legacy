@@ -18,10 +18,8 @@ from blinkpy.web_tests import merge_results
 
 
 class JSONMergerTests(unittest.TestCase):
-
     def test_type_match(self):
-        self.assertTrue(
-            merge_results.TypeMatch(types.DictType)(dict()))
+        self.assertTrue(merge_results.TypeMatch(types.DictType)(dict()))
         self.assertFalse(
             merge_results.TypeMatch(types.ListType, types.TupleType)(dict()))
         self.assertTrue(
@@ -43,18 +41,14 @@ class JSONMergerTests(unittest.TestCase):
         ]
 
         for expected, (inputa, inputb) in tests:
-            self.assertListEqual(
-                expected, m.merge_listlike([inputa, inputb]))
-            self.assertListEqual(
-                expected, m.merge([inputa, inputb]))
+            self.assertListEqual(expected, m.merge_listlike([inputa, inputb]))
+            self.assertListEqual(expected, m.merge([inputa, inputb]))
             self.assertSequenceEqual(
-                expected,
-                m.merge_listlike([tuple(inputa), tuple(inputb)]),
-                types.TupleType)
-            self.assertSequenceEqual(
-                expected,
-                m.merge([tuple(inputa), tuple(inputb)]),
-                types.TupleType)
+                expected, m.merge_listlike([tuple(inputa),
+                                            tuple(inputb)]), types.TupleType)
+            self.assertSequenceEqual(expected,
+                                     m.merge([tuple(inputa),
+                                              tuple(inputb)]), types.TupleType)
 
     def test_merge_simple_dict(self):
         m = merge_results.JSONMerger()
@@ -62,16 +56,73 @@ class JSONMergerTests(unittest.TestCase):
 
         tests = [
             # expected, (inputa, inputb)
-            ({'a': 1}, ({'a': 1}, {'a': 1})),
-
-            ({'a': 1, 'b': 2}, ({'a': 1, 'b': 2}, {})),
-            ({'a': 1, 'b': 2}, ({}, {'a': 1, 'b': 2})),
-            ({'a': 1, 'b': 2}, ({'a': 1}, {'b': 2})),
-
-            ({'a': 1, 'b': 2, 'c': 3}, ({'a': 1, 'b': 2, 'c': 3}, {})),
-            ({'a': 1, 'b': 2, 'c': 3}, ({'a': 1, 'b': 2}, {'c': 3})),
-            ({'a': 1, 'b': 2, 'c': 3}, ({'a': 1}, {'b': 2, 'c': 3})),
-            ({'a': 1, 'b': 2, 'c': 3}, ({}, {'a': 1, 'b': 2, 'c': 3})),
+            ({
+                'a': 1
+            }, ({
+                'a': 1
+            }, {
+                'a': 1
+            })),
+            ({
+                'a': 1,
+                'b': 2
+            }, ({
+                'a': 1,
+                'b': 2
+            }, {})),
+            ({
+                'a': 1,
+                'b': 2
+            }, ({}, {
+                'a': 1,
+                'b': 2
+            })),
+            ({
+                'a': 1,
+                'b': 2
+            }, ({
+                'a': 1
+            }, {
+                'b': 2
+            })),
+            ({
+                'a': 1,
+                'b': 2,
+                'c': 3
+            }, ({
+                'a': 1,
+                'b': 2,
+                'c': 3
+            }, {})),
+            ({
+                'a': 1,
+                'b': 2,
+                'c': 3
+            }, ({
+                'a': 1,
+                'b': 2
+            }, {
+                'c': 3
+            })),
+            ({
+                'a': 1,
+                'b': 2,
+                'c': 3
+            }, ({
+                'a': 1
+            }, {
+                'b': 2,
+                'c': 3
+            })),
+            ({
+                'a': 1,
+                'b': 2,
+                'c': 3
+            }, ({}, {
+                'a': 1,
+                'b': 2,
+                'c': 3
+            })),
         ]
 
         for expected, (inputa, inputb) in tests:
@@ -85,10 +136,42 @@ class JSONMergerTests(unittest.TestCase):
 
         tests = [
             # expected, (inputa, inputb)
-            ({'a': [1, 2]}, ({'a': [1]}, {'a': [2]})),
-            ({'a': [1, 'c', 3]}, ({'a': [1]}, {'a': ['c', 3]})),
-            ({'a': [1], 'b': [2]}, ({'a': [1]}, {'b': [2]})),
-            ({'a': {'b': 1, 'c': 2}}, ({'a': {'b': 1}}, {'a': {'c': 2}})),
+            ({
+                'a': [1, 2]
+            }, ({
+                'a': [1]
+            }, {
+                'a': [2]
+            })),
+            ({
+                'a': [1, 'c', 3]
+            }, ({
+                'a': [1]
+            }, {
+                'a': ['c', 3]
+            })),
+            ({
+                'a': [1],
+                'b': [2]
+            }, ({
+                'a': [1]
+            }, {
+                'b': [2]
+            })),
+            ({
+                'a': {
+                    'b': 1,
+                    'c': 2
+                }
+            }, ({
+                'a': {
+                    'b': 1
+                }
+            }, {
+                'a': {
+                    'c': 2
+                }
+            })),
         ]
         for expected, (inputa, inputb) in tests:
             self.assertDictEqual(expected, m.merge_dictlike([inputa, inputb]))
@@ -100,46 +183,247 @@ class JSONMergerTests(unittest.TestCase):
         tests = [
             # expected, (inputa, inputb)
             (None, (None, None)),
-            ({'a': 1}, ({'a': 1}, None)),
-            ({'b': 2}, (None, {'b': 2})),
-
-            ({'a': 1}, ({'a': 1}, {'a': 1})),
+            ({
+                'a': 1
+            }, ({
+                'a': 1
+            }, None)),
+            ({
+                'b': 2
+            }, (None, {
+                'b': 2
+            })),
+            ({
+                'a': 1
+            }, ({
+                'a': 1
+            }, {
+                'a': 1
+            })),
 
             # "Left side" value is None
-            ({'a': None, 'b': 2}, ({'a': None, 'b': 2}, {})),
-            ({'a': None, 'b': 2}, ({}, {'a': None, 'b': 2})),
-            ({'a': None, 'b': 2}, ({'a': None}, {'b': 2})),
-
-            ({'a': None, 'b': 2, 'c': 3}, ({'a': None, 'b': 2, 'c': 3}, {})),
-            ({'a': None, 'b': 2, 'c': 3}, ({'a': None, 'b': 2}, {'c': 3})),
-            ({'a': None, 'b': 2, 'c': 3}, ({'a': None}, {'b': 2, 'c': 3})),
-            ({'a': None, 'b': 2, 'c': 3}, ({}, {'a': None, 'b': 2, 'c': 3})),
+            ({
+                'a': None,
+                'b': 2
+            }, ({
+                'a': None,
+                'b': 2
+            }, {})),
+            ({
+                'a': None,
+                'b': 2
+            }, ({}, {
+                'a': None,
+                'b': 2
+            })),
+            ({
+                'a': None,
+                'b': 2
+            }, ({
+                'a': None
+            }, {
+                'b': 2
+            })),
+            ({
+                'a': None,
+                'b': 2,
+                'c': 3
+            }, ({
+                'a': None,
+                'b': 2,
+                'c': 3
+            }, {})),
+            ({
+                'a': None,
+                'b': 2,
+                'c': 3
+            }, ({
+                'a': None,
+                'b': 2
+            }, {
+                'c': 3
+            })),
+            ({
+                'a': None,
+                'b': 2,
+                'c': 3
+            }, ({
+                'a': None
+            }, {
+                'b': 2,
+                'c': 3
+            })),
+            ({
+                'a': None,
+                'b': 2,
+                'c': 3
+            }, ({}, {
+                'a': None,
+                'b': 2,
+                'c': 3
+            })),
 
             # "Right side" value is None
-            ({'a': 1, 'b': None}, ({'a': 1, 'b': None}, {})),
-            ({'a': 1, 'b': None}, ({}, {'a': 1, 'b': None})),
-            ({'a': 1, 'b': None}, ({'a': 1}, {'b': None})),
-
-            ({'a': 1, 'b': None, 'c': 3}, ({'a': 1, 'b': None, 'c': 3}, {})),
-            ({'a': 1, 'b': None, 'c': 3}, ({'a': 1, 'b': None}, {'c': 3})),
-            ({'a': 1, 'b': None, 'c': 3}, ({'a': 1}, {'b': None, 'c': 3})),
-            ({'a': 1, 'b': None, 'c': 3}, ({}, {'a': 1, 'b': None, 'c': 3})),
+            ({
+                'a': 1,
+                'b': None
+            }, ({
+                'a': 1,
+                'b': None
+            }, {})),
+            ({
+                'a': 1,
+                'b': None
+            }, ({}, {
+                'a': 1,
+                'b': None
+            })),
+            ({
+                'a': 1,
+                'b': None
+            }, ({
+                'a': 1
+            }, {
+                'b': None
+            })),
+            ({
+                'a': 1,
+                'b': None,
+                'c': 3
+            }, ({
+                'a': 1,
+                'b': None,
+                'c': 3
+            }, {})),
+            ({
+                'a': 1,
+                'b': None,
+                'c': 3
+            }, ({
+                'a': 1,
+                'b': None
+            }, {
+                'c': 3
+            })),
+            ({
+                'a': 1,
+                'b': None,
+                'c': 3
+            }, ({
+                'a': 1
+            }, {
+                'b': None,
+                'c': 3
+            })),
+            ({
+                'a': 1,
+                'b': None,
+                'c': 3
+            }, ({}, {
+                'a': 1,
+                'b': None,
+                'c': 3
+            })),
 
             # Both values non-None
-            ({'a': 1, 'b': 2}, ({'a': 1, 'b': 2}, {})),
-            ({'a': 1, 'b': 2}, ({}, {'a': 1, 'b': 2})),
-            ({'a': 1, 'b': 2}, ({'a': 1}, {'b': 2})),
-
-            ({'a': 1, 'b': 2, 'c': 3}, ({'a': 1, 'b': 2, 'c': 3}, {})),
-            ({'a': 1, 'b': 2, 'c': 3}, ({'a': 1, 'b': 2}, {'c': 3})),
-            ({'a': 1, 'b': 2, 'c': 3}, ({'a': 1}, {'b': 2, 'c': 3})),
-            ({'a': 1, 'b': 2, 'c': 3}, ({}, {'a': 1, 'b': 2, 'c': 3})),
+            ({
+                'a': 1,
+                'b': 2
+            }, ({
+                'a': 1,
+                'b': 2
+            }, {})),
+            ({
+                'a': 1,
+                'b': 2
+            }, ({}, {
+                'a': 1,
+                'b': 2
+            })),
+            ({
+                'a': 1,
+                'b': 2
+            }, ({
+                'a': 1
+            }, {
+                'b': 2
+            })),
+            ({
+                'a': 1,
+                'b': 2,
+                'c': 3
+            }, ({
+                'a': 1,
+                'b': 2,
+                'c': 3
+            }, {})),
+            ({
+                'a': 1,
+                'b': 2,
+                'c': 3
+            }, ({
+                'a': 1,
+                'b': 2
+            }, {
+                'c': 3
+            })),
+            ({
+                'a': 1,
+                'b': 2,
+                'c': 3
+            }, ({
+                'a': 1
+            }, {
+                'b': 2,
+                'c': 3
+            })),
+            ({
+                'a': 1,
+                'b': 2,
+                'c': 3
+            }, ({}, {
+                'a': 1,
+                'b': 2,
+                'c': 3
+            })),
 
             # Complex values
-            ({'a': [1, 2]}, ({'a': [1]}, {'a': [2]})),
-            ({'a': [1, 'c', 3]}, ({'a': [1]}, {'a': ['c', 3]})),
-            ({'a': [1], 'b': [2]}, ({'a': [1]}, {'b': [2]})),
-            ({'a': {'b': 1, 'c': 2}}, ({'a': {'b': 1}}, {'a': {'c': 2}})),
+            ({
+                'a': [1, 2]
+            }, ({
+                'a': [1]
+            }, {
+                'a': [2]
+            })),
+            ({
+                'a': [1, 'c', 3]
+            }, ({
+                'a': [1]
+            }, {
+                'a': ['c', 3]
+            })),
+            ({
+                'a': [1],
+                'b': [2]
+            }, ({
+                'a': [1]
+            }, {
+                'b': [2]
+            })),
+            ({
+                'a': {
+                    'b': 1,
+                    'c': 2
+                }
+            }, ({
+                'a': {
+                    'b': 1
+                }
+            }, {
+                'a': {
+                    'c': 2
+                }
+            })),
         ]
 
         for expected, (inputa, inputb) in tests:
@@ -171,8 +455,7 @@ class JSONMergerTests(unittest.TestCase):
     def test_custom_match_on_name(self):
         m = merge_results.JSONMerger()
         m.add_helper(
-            merge_results.NameRegexMatch('a'),
-            lambda o, name=None: sum(o))
+            merge_results.NameRegexMatch('a'), lambda o, name=None: sum(o))
 
         self.assertDictEqual({'a': 3}, m.merge([{'a': 1}, {'a': 2}]))
         with self.assertRaises(merge_results.MergeFailure):
@@ -180,8 +463,7 @@ class JSONMergerTests(unittest.TestCase):
 
         # Test that helpers that are added later have precedence.
         m.add_helper(
-            merge_results.NameRegexMatch('b'),
-            lambda o, name=None: sum(o))
+            merge_results.NameRegexMatch('b'), lambda o, name=None: sum(o))
         m.add_helper(
             merge_results.NameRegexMatch('b'),
             lambda o, name=None: o[0] - o[1])
@@ -189,17 +471,13 @@ class JSONMergerTests(unittest.TestCase):
 
     def test_custom_match_on_obj_type(self):
         m = merge_results.JSONMerger()
-        m.add_helper(
-            merge_results.TypeMatch(int),
-            lambda o, name=None: sum(o))
+        m.add_helper(merge_results.TypeMatch(int), lambda o, name=None: sum(o))
         self.assertDictEqual({'a': 3}, m.merge([{'a': 1}, {'a': 2}]))
         self.assertDictEqual({'b': 3}, m.merge([{'b': 1}, {'b': 2}]))
 
     def test_custom_match_on_obj_value(self):
         m = merge_results.JSONMerger()
-        m.add_helper(
-            merge_results.ValueMatch(3),
-            lambda o, name=None: sum(o))
+        m.add_helper(merge_results.ValueMatch(3), lambda o, name=None: sum(o))
         self.assertDictEqual({'a': 6}, m.merge([{'a': 3}, {'a': 3}]))
         self.assertDictEqual({'a': 5}, m.merge([{'a': 2}, {'a': 3}]))
         self.assertDictEqual({'a': 7}, m.merge([{'a': 3}, {'a': 4}]))
@@ -209,7 +487,11 @@ class JSONMergerTests(unittest.TestCase):
 
 class MergeFilesOneTests(FileSystemTestCase):
     def test(self):
-        mock_filesystem = MockFileSystem({'/s/file1': '1', '/s/file2': '2'}, dirs=['/output'])
+        mock_filesystem = MockFileSystem({
+            '/s/file1': '1',
+            '/s/file2': '2'
+        },
+                                         dirs=['/output'])
 
         merger = merge_results.MergeFilesOne(mock_filesystem)
 
@@ -222,7 +504,12 @@ class MergeFilesOneTests(FileSystemTestCase):
 
 class MergeFilesMatchingContentsTests(FileSystemTestCase):
     def test(self):
-        mock_filesystem = MockFileSystem({'/s/file1': '1', '/s/file2': '2', '/s/file3': '1'}, dirs=['/output'])
+        mock_filesystem = MockFileSystem({
+            '/s/file1': '1',
+            '/s/file2': '2',
+            '/s/file3': '1'
+        },
+                                         dirs=['/output'])
 
         merger = merge_results.MergeFilesMatchingContents(mock_filesystem)
 
@@ -241,63 +528,95 @@ class MergeFilesMatchingContentsTests(FileSystemTestCase):
 
 class MergeFilesLinesSortedTests(FileSystemTestCase):
     def test(self):
-        mock_filesystem = MockFileSystem({'/s/file1': 'A\nC\n', '/s/file2': 'B\n', '/s/file3': 'A\nB\n'}, dirs=['/output'])
+        mock_filesystem = MockFileSystem({
+            '/s/file1': 'A\nC\n',
+            '/s/file2': 'B\n',
+            '/s/file3': 'A\nB\n'
+        },
+                                         dirs=['/output'])
 
         merger = merge_results.MergeFilesLinesSorted(mock_filesystem)
 
-        with self.assertFilesAdded(mock_filesystem, {'/output/out1': 'A\nC\n'}):
+        with self.assertFilesAdded(mock_filesystem,
+                                   {'/output/out1': 'A\nC\n'}):
             merger('/output/out1', ['/s/file1'])
 
         with self.assertFilesAdded(mock_filesystem, {'/output/out2': 'B\n'}):
             merger('/output/out2', ['/s/file2'])
 
-        with self.assertFilesAdded(mock_filesystem, {'/output/out3': 'A\nB\nC\n'}):
+        with self.assertFilesAdded(mock_filesystem,
+                                   {'/output/out3': 'A\nB\nC\n'}):
             merger('/output/out3', ['/s/file1', '/s/file2'])
 
-        with self.assertFilesAdded(mock_filesystem, {'/output/out4': 'A\nB\nB\n'}):
+        with self.assertFilesAdded(mock_filesystem,
+                                   {'/output/out4': 'A\nB\nB\n'}):
             merger('/output/out4', ['/s/file2', '/s/file3'])
 
 
 class MergeFilesKeepFilesTests(FileSystemTestCase):
-
     def test(self):
-        mock_filesystem = MockFileSystem({'/s1/file1': 'a', '/s2/file1': 'b', '/s3/file1': 'c'}, dirs=['/output'])
+        mock_filesystem = MockFileSystem({
+            '/s1/file1': 'a',
+            '/s2/file1': 'b',
+            '/s3/file1': 'c'
+        },
+                                         dirs=['/output'])
 
         merger = merge_results.MergeFilesKeepFiles(mock_filesystem)
 
-        with self.assertFilesAdded(mock_filesystem, {'/output/out_0': 'a', '/output/out_1': 'b', '/output/out_2': 'c'}):
+        with self.assertFilesAdded(mock_filesystem, {
+                '/output/out_0': 'a',
+                '/output/out_1': 'b',
+                '/output/out_2': 'c'
+        }):
             merger('/output/out', ['/s1/file1', '/s2/file1', '/s3/file1'])
 
 
 class DirMergerTests(FileSystemTestCase):
-
     def test_success_no_overlapping_files(self):
-        mock_filesystem = MockFileSystem({'/shard0/file1': '1', '/shard1/file2': '2'})
+        mock_filesystem = MockFileSystem({
+            '/shard0/file1': '1',
+            '/shard1/file2': '2'
+        })
         d = merge_results.DirMerger(mock_filesystem)
-        with self.assertFilesAdded(mock_filesystem, {'/output/file1': '1', '/output/file2': '2'}):
+        with self.assertFilesAdded(mock_filesystem, {
+                '/output/file1': '1',
+                '/output/file2': '2'
+        }):
             d.merge('/output', ['/shard0', '/shard1'])
 
     def test_success_no_overlapping_files_but_matching_contents(self):
-        mock_filesystem = MockFileSystem({'/shard0/file1': '1', '/shard1/file2': '1'})
+        mock_filesystem = MockFileSystem({
+            '/shard0/file1': '1',
+            '/shard1/file2': '1'
+        })
         d = merge_results.DirMerger(mock_filesystem)
-        with self.assertFilesAdded(mock_filesystem, {'/output/file1': '1', '/output/file2': '1'}):
+        with self.assertFilesAdded(mock_filesystem, {
+                '/output/file1': '1',
+                '/output/file2': '1'
+        }):
             d.merge('/output', ['/shard0', '/shard1'])
 
     def test_success_same_file_but_matching_contents(self):
-        mock_filesystem = MockFileSystem({'/shard0/file1': '1', '/shard1/file1': '1'})
+        mock_filesystem = MockFileSystem({
+            '/shard0/file1': '1',
+            '/shard1/file1': '1'
+        })
         d = merge_results.DirMerger(mock_filesystem)
         with self.assertFilesAdded(mock_filesystem, {'/output/file1': '1'}):
             d.merge('/output', ['/shard0', '/shard1'])
 
     def test_failure_same_file_but_contents_differ(self):
-        mock_filesystem = MockFileSystem({'/shard0/file1': '1', '/shard1/file1': '2'})
+        mock_filesystem = MockFileSystem({
+            '/shard0/file1': '1',
+            '/shard1/file1': '2'
+        })
         d = merge_results.DirMerger(mock_filesystem)
         with self.assertRaises(merge_results.MergeFailure):
             d.merge('/output', ['/shard0', '/shard1'])
 
 
 class MergeFilesJSONPTests(FileSystemTestCase):
-
     def assertLoad(self, fd, expected_before, expected_json, expected_after):
         before, json_data, after = merge_results.MergeFilesJSONP.load_jsonp(fd)
         self.assertEqual(expected_before, before)
@@ -314,7 +633,8 @@ class MergeFilesJSONPTests(FileSystemTestCase):
         self.assertLoad(fdcls('{"a": 1}'), '', {'a': 1}, '')
         self.assertLoad(fdcls('f({"a": 1});'), 'f(', {'a': 1}, ');')
         self.assertLoad(fdcls('var o = {"a": 1}'), 'var o = ', {'a': 1}, '')
-        self.assertLoad(fdcls('while(1); // {"a": 1}'), 'while(1); // ', {'a': 1}, '')
+        self.assertLoad(
+            fdcls('while(1); // {"a": 1}'), 'while(1); // ', {'a': 1}, '')
         self.assertLoad(fdcls('/* {"a": 1} */'), '/* ', {'a': 1}, ' */')
 
     def test_dump(self):
@@ -328,7 +648,11 @@ class MergeFilesJSONPTests(FileSystemTestCase):
 {
   "a": 1
 }""")
-        self.assertDump('', {'a': [1, 'c', 3], 'b': 2}, '', """\
+        self.assertDump(
+            '', {
+                'a': [1, 'c', 3],
+                'b': 2
+            }, '', """\
 {
   "a": [
     1,
@@ -338,49 +662,56 @@ class MergeFilesJSONPTests(FileSystemTestCase):
   "b": 2
 }""")
 
-    def assertMergeResults(self, mock_filesystem_contents, inputargs, filesystem_contains, json_data_merger=None):
-        mock_filesystem = MockFileSystem(mock_filesystem_contents, dirs=['/output'])
+    def assertMergeResults(self,
+                           mock_filesystem_contents,
+                           inputargs,
+                           filesystem_contains,
+                           json_data_merger=None):
+        mock_filesystem = MockFileSystem(
+            mock_filesystem_contents, dirs=['/output'])
 
-        file_merger = merge_results.MergeFilesJSONP(mock_filesystem, json_data_merger)
+        file_merger = merge_results.MergeFilesJSONP(mock_filesystem,
+                                                    json_data_merger)
         with self.assertFilesAdded(mock_filesystem, filesystem_contains):
             file_merger(*inputargs)
 
     def assertMergeRaises(self, mock_filesystem_contents, inputargs):
-        mock_filesystem = MockFileSystem(mock_filesystem_contents, dirs=['/output'])
+        mock_filesystem = MockFileSystem(
+            mock_filesystem_contents, dirs=['/output'])
 
         file_merger = merge_results.MergeFilesJSONP(mock_filesystem)
         with self.assertRaises(merge_results.MergeFailure):
             file_merger(*inputargs)
 
     def test_single_file(self):
-        self.assertMergeResults(
-            {'/s/filea': '{"a": 1}'},
-            ('/output/out1', ['/s/filea']),
-            {'/output/out1': """\
+        self.assertMergeResults({
+            '/s/filea': '{"a": 1}'
+        }, ('/output/out1', ['/s/filea']),
+                                {'/output/out1': """\
 {
   "a": 1
 }"""})
 
-        self.assertMergeResults(
-            {'/s/filef1a': 'f1({"a": 1})'},
-            ('/output/outf1', ['/s/filef1a']),
-            {'/output/outf1': """\
+        self.assertMergeResults({
+            '/s/filef1a': 'f1({"a": 1})'
+        }, ('/output/outf1', ['/s/filef1a']),
+                                {'/output/outf1': """\
 f1({
   "a": 1
 })"""})
 
-        self.assertMergeResults(
-            {'/s/fileb1': '{"b": 2}'},
-            ('/output/out2', ['/s/fileb1']),
-            {'/output/out2': """\
+        self.assertMergeResults({
+            '/s/fileb1': '{"b": 2}'
+        }, ('/output/out2', ['/s/fileb1']),
+                                {'/output/out2': """\
 {
   "b": 2
 }"""})
 
-        self.assertMergeResults(
-            {'/s/filef1b1': 'f1({"b": 2})'},
-            ('/output/outf2', ['/s/filef1b1']),
-            {'/output/outf2': """\
+        self.assertMergeResults({
+            '/s/filef1b1': 'f1({"b": 2})'
+        }, ('/output/outf2', ['/s/filef1b1']),
+                                {'/output/outf2': """\
 f1({
   "b": 2
 })"""})
@@ -390,10 +721,8 @@ f1({
             {
                 '/s/filea': '{"a": 1}',
                 '/s/fileb1': '{"b": 2}',
-            },
-            ('/output/out3', ['/s/filea', '/s/fileb1']),
-            {
-                '/output/out3': """\
+            }, ('/output/out3', ['/s/filea', '/s/fileb1']),
+            {'/output/out3': """\
 {
   "a": 1,
   "b": 2
@@ -403,142 +732,175 @@ f1({
             {
                 '/s/filef1a': 'f1({"a": 1})',
                 '/s/filef1b1': 'f1({"b": 2})',
-            },
-            ('/output/outf3', ['/s/filef1a', '/s/filef1b1']),
-            {
-                '/output/outf3': """\
+            }, ('/output/outf3', ['/s/filef1a', '/s/filef1b1']),
+            {'/output/outf3': """\
 f1({
   "a": 1,
   "b": 2
 })"""})
 
     def test_two_files_identical_values_fails_by_default(self):
-        self.assertMergeRaises(
-            {
-                '/s/fileb1': '{"b": 2}',
-                '/s/fileb2': '{"b": 2}',
-            },
-            ('/output/out4', ['/s/fileb1', '/s/fileb2']))
+        self.assertMergeRaises({
+            '/s/fileb1': '{"b": 2}',
+            '/s/fileb2': '{"b": 2}',
+        }, ('/output/out4', ['/s/fileb1', '/s/fileb2']))
 
-        self.assertMergeRaises(
-            {
-                '/s/filef1b1': 'f1({"b": 2})',
-                '/s/filef1b2': 'f1({"b": 2})',
-            },
-            ('/output/outf4', ['/s/filef1b1', '/s/filef1b2']))
+        self.assertMergeRaises({
+            '/s/filef1b1': 'f1({"b": 2})',
+            '/s/filef1b2': 'f1({"b": 2})',
+        }, ('/output/outf4', ['/s/filef1b1', '/s/filef1b2']))
 
     def test_two_files_identical_values_works_with_custom_merger(self):
         json_data_merger = merge_results.JSONMerger()
         json_data_merger.fallback_matcher = json_data_merger.merge_equal
 
-        self.assertMergeResults(
-            {
-                '/s/fileb1': '{"b": 2}',
-                '/s/fileb2': '{"b": 2}',
-            },
-            ('/output/out4', ['/s/fileb1', '/s/fileb2']),
-            {
-                '/output/out4': """\
+        self.assertMergeResults({
+            '/s/fileb1': '{"b": 2}',
+            '/s/fileb2': '{"b": 2}',
+        }, ('/output/out4', ['/s/fileb1', '/s/fileb2']),
+                                {'/output/out4': """\
 {
   "b": 2
 }"""},
-            json_data_merger=json_data_merger)
+                                json_data_merger=json_data_merger)
 
-        self.assertMergeResults(
-            {
-                '/s/filef1b1': 'f1({"b": 2})',
-                '/s/filef1b2': 'f1({"b": 2})',
-            },
-            ('/output/outf4', ['/s/filef1b1', '/s/filef1b2']),
-            {
-                '/output/outf4': """\
+        self.assertMergeResults({
+            '/s/filef1b1': 'f1({"b": 2})',
+            '/s/filef1b2': 'f1({"b": 2})',
+        }, ('/output/outf4', ['/s/filef1b1', '/s/filef1b2']),
+                                {'/output/outf4': """\
 f1({
   "b": 2
 })"""},
-            json_data_merger=json_data_merger)
+                                json_data_merger=json_data_merger)
 
     def test_two_files_conflicting_values(self):
-        self.assertMergeRaises(
-            {
-                '/s/fileb1': '{"b": 2}',
-                '/s/fileb3': '{"b": 3}',
-            },
-            ('/output/outff1', ['/s/fileb1', '/s/fileb3']))
-        self.assertMergeRaises(
-            {
-                '/s/filef1b1': 'f1({"b": 2})',
-                '/s/filef1b3': 'f1({"b": 3})',
-            },
-            ('/output/outff2', ['/s/filef1b1', '/s/filef1b3']))
+        self.assertMergeRaises({
+            '/s/fileb1': '{"b": 2}',
+            '/s/fileb3': '{"b": 3}',
+        }, ('/output/outff1', ['/s/fileb1', '/s/fileb3']))
+        self.assertMergeRaises({
+            '/s/filef1b1': 'f1({"b": 2})',
+            '/s/filef1b3': 'f1({"b": 3})',
+        }, ('/output/outff2', ['/s/filef1b1', '/s/filef1b3']))
 
     def test_two_files_conflicting_function_names(self):
-        self.assertMergeRaises(
-            {
-                '/s/filef1a': 'f1({"a": 1})',
-                '/s/filef2a': 'f2({"a": 1})',
-            },
-            ('/output/outff3', ['/s/filef1a', '/s/filef2a']))
+        self.assertMergeRaises({
+            '/s/filef1a': 'f1({"a": 1})',
+            '/s/filef2a': 'f2({"a": 1})',
+        }, ('/output/outff3', ['/s/filef1a', '/s/filef2a']))
 
     def test_two_files_mixed_json_and_jsonp(self):
-        self.assertMergeRaises(
-            {
-                '/s/filea': '{"a": 1}',
-                '/s/filef1a': 'f1({"a": 1})',
-            },
-            ('/output/outff4', ['/s/filea', '/s/filef1a']))
+        self.assertMergeRaises({
+            '/s/filea': '{"a": 1}',
+            '/s/filef1a': 'f1({"a": 1})',
+        }, ('/output/outff4', ['/s/filea', '/s/filef1a']))
 
 
 class JSONTestResultsMerger(unittest.TestCase):
-
     def test_allow_unknown_if_matching(self):
-        merger = merge_results.JSONTestResultsMerger(allow_unknown_if_matching=False)
-        self.assertEqual(
-            {'version': 3.0},
-            merger.merge([{'version': 3.0}, {'version': 3.0}]))
+        merger = merge_results.JSONTestResultsMerger(
+            allow_unknown_if_matching=False)
+        self.assertEqual({
+            'version': 3.0
+        }, merger.merge([{
+            'version': 3.0
+        }, {
+            'version': 3.0
+        }]))
 
         with self.assertRaises(merge_results.MergeFailure):
             merger.merge([{'random': 'hello'}, {'random': 'hello'}])
 
-        merger = merge_results.JSONTestResultsMerger(allow_unknown_if_matching=True)
-        self.assertEqual(
-            {'random': 'hello'},
-            merger.merge([{'random': 'hello'}, {'random': 'hello'}]))
+        merger = merge_results.JSONTestResultsMerger(
+            allow_unknown_if_matching=True)
+        self.assertEqual({
+            'random': 'hello'
+        }, merger.merge([{
+            'random': 'hello'
+        }, {
+            'random': 'hello'
+        }]))
 
     def test_summable(self):
         merger = merge_results.JSONTestResultsMerger()
-        self.assertEqual(
-            {'fixable': 5},
-            merger.merge([{'fixable': 2}, {'fixable': 3}]))
-        self.assertEqual(
-            {'num_failures_by_type': {'A': 4, 'B': 3, 'C': 2}},
-            merger.merge([
-                {'num_failures_by_type': {'A': 3, 'B': 1}},
-                {'num_failures_by_type': {'A': 1, 'B': 2, 'C': 2}},
-            ]))
+        self.assertEqual({
+            'fixable': 5
+        }, merger.merge([{
+            'fixable': 2
+        }, {
+            'fixable': 3
+        }]))
+        self.assertEqual({
+            'num_failures_by_type': {
+                'A': 4,
+                'B': 3,
+                'C': 2
+            }
+        },
+                         merger.merge([
+                             {
+                                 'num_failures_by_type': {
+                                     'A': 3,
+                                     'B': 1
+                                 }
+                             },
+                             {
+                                 'num_failures_by_type': {
+                                     'A': 1,
+                                     'B': 2,
+                                     'C': 2
+                                 }
+                             },
+                         ]))
 
     def test_interrupted(self):
         merger = merge_results.JSONTestResultsMerger()
-        self.assertEqual(
-            {'interrupted': False},
-            merger.merge([{'interrupted': False}, {'interrupted': False}]))
-        self.assertEqual(
-            {'interrupted': True},
-            merger.merge([{'interrupted': True}, {'interrupted': False}]))
-        self.assertEqual(
-            {'interrupted': True},
-            merger.merge([{'interrupted': False}, {'interrupted': True}]))
+        self.assertEqual({
+            'interrupted': False
+        }, merger.merge([{
+            'interrupted': False
+        }, {
+            'interrupted': False
+        }]))
+        self.assertEqual({
+            'interrupted': True
+        }, merger.merge([{
+            'interrupted': True
+        }, {
+            'interrupted': False
+        }]))
+        self.assertEqual({
+            'interrupted': True
+        }, merger.merge([{
+            'interrupted': False
+        }, {
+            'interrupted': True
+        }]))
 
     def test_seconds_since_epoch(self):
         merger = merge_results.JSONTestResultsMerger()
-        self.assertEqual(
-            {'seconds_since_epoch': 2},
-            merger.merge([{'seconds_since_epoch': 3}, {'seconds_since_epoch': 2}]))
-        self.assertEqual(
-            {'seconds_since_epoch': 2},
-            merger.merge([{'seconds_since_epoch': 2}, {'seconds_since_epoch': 3}]))
-        self.assertEqual(
-            {'seconds_since_epoch': 12},
-            merger.merge([{'seconds_since_epoch': 12}, {}]))
+        self.assertEqual({
+            'seconds_since_epoch': 2
+        },
+                         merger.merge([{
+                             'seconds_since_epoch': 3
+                         }, {
+                             'seconds_since_epoch': 2
+                         }]))
+        self.assertEqual({
+            'seconds_since_epoch': 2
+        },
+                         merger.merge([{
+                             'seconds_since_epoch': 2
+                         }, {
+                             'seconds_since_epoch': 3
+                         }]))
+        self.assertEqual({
+            'seconds_since_epoch': 12
+        }, merger.merge([{
+            'seconds_since_epoch': 12
+        }, {}]))
 
 
 class WebTestDirMergerTests(unittest.TestCase):
@@ -774,48 +1136,89 @@ ADD_RESULTS({
 
     web_test_filesystem = {
         # Files for shard0
-        '/shards/0/layout-test-results/access_log.txt': shard0_access_log,
-        '/shards/0/layout-test-results/archived_results.json': shard0_archived_results_json,
-        '/shards/0/layout-test-results/error_log.txt': shard0_error_log,
-        '/shards/0/layout-test-results/failing_results.json': "ADD_RESULTS(" + shard0_output_json + ");",
-        '/shards/0/layout-test-results/full_results.json': shard0_output_json,
-        '/shards/0/layout-test-results/stats.json': shard0_stats_json,
-        '/shards/0/layout-test-results/testdir1/test1-actual.png': '1ap',
-        '/shards/0/layout-test-results/testdir1/test1-diff.png': '1dp',
-        '/shards/0/layout-test-results/testdir1/test1-diffs.html': '1dh',
-        '/shards/0/layout-test-results/testdir1/test1-expected-stderr.txt': '1est',
-        '/shards/0/layout-test-results/testdir1/test1-expected.png': '1ep',
-        '/shards/0/layout-test-results/testdir1/test2-actual.png': '2ap',
-        '/shards/0/layout-test-results/testdir1/test2-diff.png': '2dp',
-        '/shards/0/layout-test-results/testdir1/test2-diffs.html': '2dh',
-        '/shards/0/layout-test-results/testdir1/test2-expected-stderr.txt': '2est',
-        '/shards/0/layout-test-results/testdir1/test2-expected.png': '2ep',
-        '/shards/0/layout-test-results/testdir2/testdir2.1/test3-actual.png': '3ap',
-        '/shards/0/layout-test-results/testdir2/testdir2.1/test3-diff.png': '3dp',
-        '/shards/0/layout-test-results/testdir2/testdir2.1/test3-diffs.html': '3dh',
-        '/shards/0/layout-test-results/testdir2/testdir2.1/test3-expected-stderr.txt': '3est',
-        '/shards/0/layout-test-results/testdir2/testdir2.1/test3-expected.png': '3ep',
-        '/shards/0/layout-test-results/times_ms.json': shard0_times_ms_json,
-        '/shards/0/output.json': shard0_output_json,
+        '/shards/0/layout-test-results/access_log.txt':
+        shard0_access_log,
+        '/shards/0/layout-test-results/archived_results.json':
+        shard0_archived_results_json,
+        '/shards/0/layout-test-results/error_log.txt':
+        shard0_error_log,
+        '/shards/0/layout-test-results/failing_results.json':
+        "ADD_RESULTS(" + shard0_output_json + ");",
+        '/shards/0/layout-test-results/full_results.json':
+        shard0_output_json,
+        '/shards/0/layout-test-results/stats.json':
+        shard0_stats_json,
+        '/shards/0/layout-test-results/testdir1/test1-actual.png':
+        '1ap',
+        '/shards/0/layout-test-results/testdir1/test1-diff.png':
+        '1dp',
+        '/shards/0/layout-test-results/testdir1/test1-diffs.html':
+        '1dh',
+        '/shards/0/layout-test-results/testdir1/test1-expected-stderr.txt':
+        '1est',
+        '/shards/0/layout-test-results/testdir1/test1-expected.png':
+        '1ep',
+        '/shards/0/layout-test-results/testdir1/test2-actual.png':
+        '2ap',
+        '/shards/0/layout-test-results/testdir1/test2-diff.png':
+        '2dp',
+        '/shards/0/layout-test-results/testdir1/test2-diffs.html':
+        '2dh',
+        '/shards/0/layout-test-results/testdir1/test2-expected-stderr.txt':
+        '2est',
+        '/shards/0/layout-test-results/testdir1/test2-expected.png':
+        '2ep',
+        '/shards/0/layout-test-results/testdir2/testdir2.1/test3-actual.png':
+        '3ap',
+        '/shards/0/layout-test-results/testdir2/testdir2.1/test3-diff.png':
+        '3dp',
+        '/shards/0/layout-test-results/testdir2/testdir2.1/test3-diffs.html':
+        '3dh',
+        '/shards/0/layout-test-results/testdir2/testdir2.1/test3-expected-stderr.txt':
+        '3est',
+        '/shards/0/layout-test-results/testdir2/testdir2.1/test3-expected.png':
+        '3ep',
+        '/shards/0/layout-test-results/times_ms.json':
+        shard0_times_ms_json,
+        '/shards/0/output.json':
+        shard0_output_json,
         # Files for shard1
-        '/shards/1/layout-test-results/access_log.txt': shard1_access_log,
-        '/shards/1/layout-test-results/archived_results.json': shard1_archived_results_json,
-        '/shards/1/layout-test-results/error_log.txt': shard1_error_log,
-        '/shards/1/layout-test-results/failing_results.json': "ADD_RESULTS(" + shard1_output_json + ");",
-        '/shards/1/layout-test-results/full_results.json': shard1_output_json,
-        '/shards/1/layout-test-results/stats.json': shard1_stats_json,
-        '/shards/1/layout-test-results/testdir2/testdir2.1/test4-actual.png': '4ap',
-        '/shards/1/layout-test-results/testdir2/testdir2.1/test4-diff.png': '4dp',
-        '/shards/1/layout-test-results/testdir2/testdir2.1/test4-diffs.html': '4dh',
-        '/shards/1/layout-test-results/testdir2/testdir2.1/test4-expected-stderr.txt': '4est',
-        '/shards/1/layout-test-results/testdir2/testdir2.1/test4-expected.png': '4ep',
-        '/shards/1/layout-test-results/testdir3/test5-actual.png': '5ap',
-        '/shards/1/layout-test-results/testdir3/test5-diff.png': '5dp',
-        '/shards/1/layout-test-results/testdir3/test5-diffs.html': '5dh',
-        '/shards/1/layout-test-results/testdir3/test5-expected-stderr.txt': '5est',
-        '/shards/1/layout-test-results/testdir3/test5-expected.png': '5ep',
-        '/shards/1/layout-test-results/times_ms.json': shard1_times_ms_json,
-        '/shards/1/output.json': shard1_output_json,
+        '/shards/1/layout-test-results/access_log.txt':
+        shard1_access_log,
+        '/shards/1/layout-test-results/archived_results.json':
+        shard1_archived_results_json,
+        '/shards/1/layout-test-results/error_log.txt':
+        shard1_error_log,
+        '/shards/1/layout-test-results/failing_results.json':
+        "ADD_RESULTS(" + shard1_output_json + ");",
+        '/shards/1/layout-test-results/full_results.json':
+        shard1_output_json,
+        '/shards/1/layout-test-results/stats.json':
+        shard1_stats_json,
+        '/shards/1/layout-test-results/testdir2/testdir2.1/test4-actual.png':
+        '4ap',
+        '/shards/1/layout-test-results/testdir2/testdir2.1/test4-diff.png':
+        '4dp',
+        '/shards/1/layout-test-results/testdir2/testdir2.1/test4-diffs.html':
+        '4dh',
+        '/shards/1/layout-test-results/testdir2/testdir2.1/test4-expected-stderr.txt':
+        '4est',
+        '/shards/1/layout-test-results/testdir2/testdir2.1/test4-expected.png':
+        '4ep',
+        '/shards/1/layout-test-results/testdir3/test5-actual.png':
+        '5ap',
+        '/shards/1/layout-test-results/testdir3/test5-diff.png':
+        '5dp',
+        '/shards/1/layout-test-results/testdir3/test5-diffs.html':
+        '5dh',
+        '/shards/1/layout-test-results/testdir3/test5-expected-stderr.txt':
+        '5est',
+        '/shards/1/layout-test-results/testdir3/test5-expected.png':
+        '5ep',
+        '/shards/1/layout-test-results/times_ms.json':
+        shard1_times_ms_json,
+        '/shards/1/output.json':
+        shard1_output_json,
     }
 
     # Combined JSON files
@@ -1009,40 +1412,69 @@ ADD_RESULTS({
 """
 
     web_test_output_filesystem = {
-        '/out/layout-test-results/access_log.txt': output_access_log,
-        '/out/layout-test-results/archived_results.json': output_archived_results_json,
-        '/out/layout-test-results/error_log.txt': output_error_log,
-        '/out/layout-test-results/failing_results.json': "ADD_RESULTS(" + output_output_json + ");",
-        '/out/layout-test-results/full_results.json': output_output_json,
-        '/out/layout-test-results/stats.json': output_stats_json,
-        '/out/layout-test-results/testdir1/test1-actual.png': '1ap',
-        '/out/layout-test-results/testdir1/test1-diff.png': '1dp',
-        '/out/layout-test-results/testdir1/test1-diffs.html': '1dh',
-        '/out/layout-test-results/testdir1/test1-expected-stderr.txt': '1est',
-        '/out/layout-test-results/testdir1/test1-expected.png': '1ep',
-        '/out/layout-test-results/testdir2/testdir2.1/test3-actual.png': '3ap',
-        '/out/layout-test-results/testdir2/testdir2.1/test3-diff.png': '3dp',
-        '/out/layout-test-results/testdir2/testdir2.1/test3-diffs.html': '3dh',
-        '/out/layout-test-results/testdir2/testdir2.1/test3-expected-stderr.txt': '3est',
-        '/out/layout-test-results/testdir2/testdir2.1/test3-expected.png': '3ep',
-        '/out/layout-test-results/testdir2/testdir2.1/test4-actual.png': '4ap',
-        '/out/layout-test-results/testdir2/testdir2.1/test4-diff.png': '4dp',
-        '/out/layout-test-results/testdir2/testdir2.1/test4-diffs.html': '4dh',
-        '/out/layout-test-results/testdir2/testdir2.1/test4-expected-stderr.txt': '4est',
-        '/out/layout-test-results/testdir2/testdir2.1/test4-expected.png': '4ep',
-        '/out/layout-test-results/testdir3/test5-actual.png': '5ap',
-        '/out/layout-test-results/testdir3/test5-diff.png': '5dp',
-        '/out/layout-test-results/testdir3/test5-diffs.html': '5dh',
-        '/out/layout-test-results/testdir3/test5-expected-stderr.txt': '5est',
-        '/out/layout-test-results/testdir3/test5-expected.png': '5ep',
-        '/out/layout-test-results/times_ms.json': output_times_ms_json,
-        '/out/output.json': output_output_json,
+        '/out/layout-test-results/access_log.txt':
+        output_access_log,
+        '/out/layout-test-results/archived_results.json':
+        output_archived_results_json,
+        '/out/layout-test-results/error_log.txt':
+        output_error_log,
+        '/out/layout-test-results/failing_results.json':
+        "ADD_RESULTS(" + output_output_json + ");",
+        '/out/layout-test-results/full_results.json':
+        output_output_json,
+        '/out/layout-test-results/stats.json':
+        output_stats_json,
+        '/out/layout-test-results/testdir1/test1-actual.png':
+        '1ap',
+        '/out/layout-test-results/testdir1/test1-diff.png':
+        '1dp',
+        '/out/layout-test-results/testdir1/test1-diffs.html':
+        '1dh',
+        '/out/layout-test-results/testdir1/test1-expected-stderr.txt':
+        '1est',
+        '/out/layout-test-results/testdir1/test1-expected.png':
+        '1ep',
+        '/out/layout-test-results/testdir2/testdir2.1/test3-actual.png':
+        '3ap',
+        '/out/layout-test-results/testdir2/testdir2.1/test3-diff.png':
+        '3dp',
+        '/out/layout-test-results/testdir2/testdir2.1/test3-diffs.html':
+        '3dh',
+        '/out/layout-test-results/testdir2/testdir2.1/test3-expected-stderr.txt':
+        '3est',
+        '/out/layout-test-results/testdir2/testdir2.1/test3-expected.png':
+        '3ep',
+        '/out/layout-test-results/testdir2/testdir2.1/test4-actual.png':
+        '4ap',
+        '/out/layout-test-results/testdir2/testdir2.1/test4-diff.png':
+        '4dp',
+        '/out/layout-test-results/testdir2/testdir2.1/test4-diffs.html':
+        '4dh',
+        '/out/layout-test-results/testdir2/testdir2.1/test4-expected-stderr.txt':
+        '4est',
+        '/out/layout-test-results/testdir2/testdir2.1/test4-expected.png':
+        '4ep',
+        '/out/layout-test-results/testdir3/test5-actual.png':
+        '5ap',
+        '/out/layout-test-results/testdir3/test5-diff.png':
+        '5dp',
+        '/out/layout-test-results/testdir3/test5-diffs.html':
+        '5dh',
+        '/out/layout-test-results/testdir3/test5-expected-stderr.txt':
+        '5est',
+        '/out/layout-test-results/testdir3/test5-expected.png':
+        '5ep',
+        '/out/layout-test-results/times_ms.json':
+        output_times_ms_json,
+        '/out/output.json':
+        output_output_json,
     }
 
     def test(self):
         fs = MockFileSystem(self.web_test_filesystem)
 
-        merger = merge_results.WebTestDirMerger(fs, results_json_value_overrides={'layout_tests_dir': 'src'})
+        merger = merge_results.WebTestDirMerger(
+            fs, results_json_value_overrides={'layout_tests_dir': 'src'})
         merger.merge('/out', ['/shards/0', '/shards/1'])
 
         for fname, contents in self.web_test_output_filesystem.items():

@@ -244,6 +244,10 @@ class PLATFORM_EXPORT Font {
   FontFallbackList* EnsureFontFallbackList() const {
     if (!font_fallback_list_)
       font_fallback_list_ = FontFallbackList::Create(nullptr);
+    if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
+      if (!font_fallback_list_->IsValid())
+        font_fallback_list_->Invalidate();
+    }
     return font_fallback_list_.get();
   }
 

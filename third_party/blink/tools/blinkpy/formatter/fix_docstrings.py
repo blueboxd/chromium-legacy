@@ -1,7 +1,6 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """A 2to3 fixer that reformats docstrings.
 
 This should transform docstrings to be closer to the conventions in pep-0257;
@@ -33,9 +32,8 @@ class FixDocstrings(BaseFix):
         """
         # Pylint incorrectly warns that there's no member simple_stmt on python_symbols
         # because the attribute is set dynamically.  pylint: disable=no-member
-        return (node.value.startswith('"""') and
-                node.prev_sibling is None and
-                node.parent.type == python_symbols.simple_stmt)
+        return (node.value.startswith('"""') and node.prev_sibling is None
+                and node.parent.type == python_symbols.simple_stmt)
 
     def transform(self, node, results):
         # First, strip whitespace at the beginning and end.

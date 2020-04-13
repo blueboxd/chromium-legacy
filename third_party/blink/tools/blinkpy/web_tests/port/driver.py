@@ -35,9 +35,7 @@ import time
 from blinkpy.common.system import path
 from blinkpy.common.system.profiler import ProfilerFactory
 
-
 _log = logging.getLogger(__name__)
-
 
 DRIVER_START_TIMEOUT_SECS = 30
 
@@ -100,7 +98,6 @@ def coalesce_repeated_switches(cmd):
 
 
 class DriverInput(object):
-
     def __init__(self, test_name, timeout, image_hash, args):
         self.test_name = test_name
         self.timeout = timeout  # in ms
@@ -113,9 +110,23 @@ class DriverOutput(object):
     and post-processing of data.
     """
 
-    def __init__(self, text, image, image_hash, audio, crash=False,
-                 test_time=0, measurements=None, timeout=False, error='', crashed_process_name='??',
-                 crashed_pid=None, crash_log=None, crash_site=None, leak=False, leak_log=None, pid=None):
+    def __init__(self,
+                 text,
+                 image,
+                 image_hash,
+                 audio,
+                 crash=False,
+                 test_time=0,
+                 measurements=None,
+                 timeout=False,
+                 error='',
+                 crashed_process_name='??',
+                 crashed_pid=None,
+                 crash_log=None,
+                 crash_site=None,
+                 leak=False,
+                 leak_log=None,
+                 pid=None):
         # FIXME: Args could be renamed to better clarify what they do.
         self.text = text
         self.image = image  # May be empty-string if the test crashes.
@@ -222,8 +233,10 @@ class Driver(object):
         deadline = test_begin_time + int(driver_input.timeout) / 1000.0
 
         self._server_process.write(command)
-        text, audio = self._read_first_block(deadline)  # First block is either text or audio
-        image, actual_image_hash = self._read_optional_image_block(deadline)  # The second (optional) block is image data.
+        # First block is either text or audio
+        text, audio = self._read_first_block(deadline)
+        # The second (optional) block is image data.
+        image, actual_image_hash = self._read_optional_image_block(deadline)
 
         crashed = self.has_crashed()
         timed_out = self._server_process.timed_out
@@ -231,7 +244,8 @@ class Driver(object):
         leaked = self._leaked
 
         if not crashed:
-            sanitizer = self._port.output_contains_sanitizer_messages(self.error_from_test)
+            sanitizer = self._port.output_contains_sanitizer_messages(
+                self.error_from_test)
             if sanitizer:
                 self.error_from_test = 'OUTPUT CONTAINS "' + sanitizer + \
                     '", so we are treating this test as if it crashed, even though it did not.\n\n' + self.error_from_test
@@ -243,7 +257,8 @@ class Driver(object):
             # We call stop() even if we crashed or timed out in order to get any remaining stdout/stderr output.
             # In the timeout case, we kill the hung process as well.
             # Add a delay to allow process to finish post-run hooks, such as dumping code coverage data.
-            out, err = self._server_process.stop(self._port.get_option('driver_kill_timeout_secs'))
+            out, err = self._server_process.stop(
+                self._port.get_option('driver_kill_timeout_secs'))
             if out:
                 text += out
             if err:
@@ -253,31 +268,47 @@ class Driver(object):
         crash_log = None
         crash_site = None
         if crashed:
-            self.error_from_test, crash_log, crash_site = self._get_crash_log(text, self.error_from_test, newer_than=start_time)
+            self.error_from_test, crash_log, crash_site = self._get_crash_log(
+                text, self.error_from_test, newer_than=start_time)
 
             # If we don't find a crash log use a placeholder error message instead.
             if not crash_log:
-                pid_str = str(self._crashed_pid) if self._crashed_pid else 'unknown pid'
-                crash_log = 'No crash log found for %s:%s.\n' % (self._crashed_process_name, pid_str)
+                pid_str = str(
+                    self._crashed_pid) if self._crashed_pid else 'unknown pid'
+                crash_log = 'No crash log found for %s:%s.\n' % (
+                    self._crashed_process_name, pid_str)
                 # If we were unresponsive append a message informing there may not have been a crash.
                 if self._subprocess_was_unresponsive:
                     crash_log += 'Process failed to become responsive before timing out.\n'
 
                 # Print stdout and stderr to the placeholder crash log; we want as much context as possible.
                 if self.error_from_test:
-                    crash_log += '\nstdout:\n%s\nstderr:\n%s\n' % (text, self.error_from_test)
+                    crash_log += '\nstdout:\n%s\nstderr:\n%s\n' % (
+                        text, self.error_from_test)
 
-        return DriverOutput(text, image, actual_image_hash, audio,
-                            crash=crashed, test_time=time.time() - test_begin_time, measurements=self._measurements,
-                            timeout=timed_out, error=self.error_from_test,
-                            crashed_process_name=self._crashed_process_name,
-                            crashed_pid=self._crashed_pid, crash_log=crash_log, crash_site=crash_site,
-                            leak=leaked, leak_log=self._leak_log,
-                            pid=pid)
+        return DriverOutput(
+            text,
+            image,
+            actual_image_hash,
+            audio,
+            crash=crashed,
+            test_time=time.time() - test_begin_time,
+            measurements=self._measurements,
+            timeout=timed_out,
+            error=self.error_from_test,
+            crashed_process_name=self._crashed_process_name,
+            crashed_pid=self._crashed_pid,
+            crash_log=crash_log,
+            crash_site=crash_site,
+            leak=leaked,
+            leak_log=self._leak_log,
+            pid=pid)
 
     def _get_crash_log(self, stdout, stderr, newer_than):
         # pylint: disable=protected-access
-        return self._port._get_crash_log(self._crashed_process_name, self._crashed_pid, stdout, stderr, newer_than)
+        return self._port._get_crash_log(self._crashed_process_name,
+                                         self._crashed_pid, stdout, stderr,
+                                         newer_than)
 
     # FIXME: Seems this could just be inlined into callers.
     @classmethod
@@ -295,7 +326,8 @@ class Driver(object):
     WPT_HOST_AND_PORTS = ('web-platform.test', 8001, 8444)
 
     def is_http_test(self, test_name):
-        return test_name.startswith(self.HTTP_DIR) and not test_name.startswith(self.HTTP_LOCAL_DIR)
+        return (test_name.startswith(self.HTTP_DIR)
+                and not test_name.startswith(self.HTTP_LOCAL_DIR))
 
     def test_to_uri(self, test_name):
         """Convert a test name to a URI.
@@ -310,7 +342,8 @@ class Driver(object):
         using_wptserve = self._port.should_use_wptserve(test_name)
 
         if not self.is_http_test(test_name) and not using_wptserve:
-            return path.abspath_to_uri(self._port.host.platform, self._port.abspath_for_test(test_name))
+            return path.abspath_to_uri(self._port.host.platform,
+                                       self._port.abspath_for_test(test_name))
 
         if using_wptserve:
             for wpt_path, url_prefix in self.WPT_DIRS.items():
@@ -334,13 +367,17 @@ class Driver(object):
         relative_path = test_name[len(test_dir_prefix):]
 
         if '/https/' in test_name or '.https.' in test_name or '.serviceworker.' in test_name:
-            return 'https://%s:%d%s%s' % (hostname, secure_port, test_url_prefix, relative_path)
-        return 'http://%s:%d%s%s' % (hostname, insecure_port, test_url_prefix, relative_path)
+            return 'https://%s:%d%s%s' % (hostname, secure_port,
+                                          test_url_prefix, relative_path)
+        return 'http://%s:%d%s%s' % (hostname, insecure_port, test_url_prefix,
+                                     relative_path)
 
     def _get_uri_prefixes(self, hostname, insecure_port, secure_port):
         """Returns the HTTP and HTTPS URI prefix for a hostname."""
-        return ['http://%s:%d/' % (hostname, insecure_port),
-                'https://%s:%d/' % (hostname, secure_port)]
+        return [
+            'http://%s:%d/' % (hostname, insecure_port),
+            'https://%s:%d/' % (hostname, secure_port)
+        ]
 
     def uri_to_test(self, uri):
         """Return the base web test name for a given URI.
@@ -351,7 +388,8 @@ class Driver(object):
         """
 
         if uri.startswith('file:///'):
-            prefix = path.abspath_to_uri(self._port.host.platform, self._port.web_tests_dir())
+            prefix = path.abspath_to_uri(self._port.host.platform,
+                                         self._port.web_tests_dir())
             if not prefix.endswith('/'):
                 prefix += '/'
             return uri[len(prefix):]
@@ -391,7 +429,8 @@ class Driver(object):
 
     def _start(self, per_test_args, wait_for_ready=True):
         self.stop()
-        self._driver_tempdir = self._port.host.filesystem.mkdtemp(prefix='%s-' % self._port.driver_name())
+        self._driver_tempdir = self._port.host.filesystem.mkdtemp(
+            prefix='%s-' % self._port.driver_name())
         server_name = self._port.driver_name()
         environment = self._port.setup_environ_for_server()
         environment = self._setup_environ_for_driver(environment)
@@ -400,29 +439,38 @@ class Driver(object):
         self._leaked = False
         cmd_line = self.cmd_line(per_test_args)
         self._server_process = self._port.server_process_constructor(
-            self._port, server_name, cmd_line, environment, more_logging=self._port.get_option('driver_logging'))
+            self._port,
+            server_name,
+            cmd_line,
+            environment,
+            more_logging=self._port.get_option('driver_logging'))
         self._server_process.start()
         self._current_cmd_line = cmd_line
 
         if wait_for_ready:
             deadline = time.time() + DRIVER_START_TIMEOUT_SECS
-            if not self._wait_for_server_process_output(self._server_process, deadline, '#READY'):
+            if not self._wait_for_server_process_output(
+                    self._server_process, deadline, '#READY'):
                 _log.error('content_shell took too long to startup.')
 
     def _wait_for_server_process_output(self, server_process, deadline, text):
         output = ''
         line = server_process.read_stdout_line(deadline)
         output += server_process.pop_all_buffered_stderr()
-        while not server_process.timed_out and not server_process.has_crashed() and not text in line.rstrip():
+        while (not server_process.timed_out
+               and not server_process.has_crashed()
+               and not text in line.rstrip()):
             output += line
             line = server_process.read_stdout_line(deadline)
             output += server_process.pop_all_buffered_stderr()
 
         if server_process.timed_out:
-            _log.error('Timed out while waiting for the %s process: \n"%s"', server_process.name(), output)
+            _log.error('Timed out while waiting for the %s process: \n"%s"',
+                       server_process.name(), output)
             return False
         if server_process.has_crashed():
-            _log.error('The %s process crashed while starting: \n"%s"', server_process.name(), output)
+            _log.error('The %s process crashed while starting: \n"%s"',
+                       server_process.name(), output)
             return False
 
         return True
@@ -469,7 +517,9 @@ class Driver(object):
         # By appending the features to --enable-features, they will be enabled if
         # they are not also explicitly disabled (as base::FeatureList disables a
         # feature that appears in both --disable-features and --enable-features).
-        cmd.append('--enable-features=SameSiteByDefaultCookies,CookiesWithoutSameSiteMustBeSecure')
+        cmd.append(
+            '--enable-features=SameSiteByDefaultCookies,CookiesWithoutSameSiteMustBeSecure'
+        )
 
         cmd.extend(per_test_args)
         cmd = coalesce_repeated_switches(cmd)
@@ -485,16 +535,20 @@ class Driver(object):
         elif (error_line.startswith('#CRASHED - ')
               or error_line.startswith('#PROCESS UNRESPONSIVE - ')):
             # WebKitTestRunner uses this to report that the WebProcess subprocess crashed.
-            match = re.match(r'#(?:CRASHED|PROCESS UNRESPONSIVE) - (\S+)', error_line)
-            self._crashed_process_name = match.group(1) if match else 'WebProcess'
+            match = re.match(r'#(?:CRASHED|PROCESS UNRESPONSIVE) - (\S+)',
+                             error_line)
+            self._crashed_process_name = (match.group(1)
+                                          if match else 'WebProcess')
             match = re.search(r'pid (\d+)', error_line)
             pid = int(match.group(1)) if match else None
             self._crashed_pid = pid
             # FIXME: delete this after we're sure this code is working :)
-            _log.debug('%s crash, pid = %s, error_line = %s', self._crashed_process_name, str(pid), error_line)
+            _log.debug('%s crash, pid = %s, error_line = %s',
+                       self._crashed_process_name, str(pid), error_line)
             if error_line.startswith('#PROCESS UNRESPONSIVE - '):
                 self._subprocess_was_unresponsive = True
-                self._port.sample_process(self._crashed_process_name, self._crashed_pid)
+                self._port.sample_process(self._crashed_process_name,
+                                          self._crashed_pid)
                 # We want to show this since it's not a regular crash and probably we don't have a crash log.
                 self.error_from_test += error_line
             return True
@@ -509,10 +563,12 @@ class Driver(object):
 
     def _command_from_driver_input(self, driver_input):
         # FIXME: performance tests pass in full URLs instead of test names.
-        if driver_input.test_name.startswith(
-                'http://') or driver_input.test_name.startswith('https://') or driver_input.test_name == ('about:blank'):
+        if (driver_input.test_name.startswith('http://')
+                or driver_input.test_name.startswith('https://')
+                or driver_input.test_name == ('about:blank')):
             command = driver_input.test_name
-        elif self.is_http_test(driver_input.test_name) or self._port.should_use_wptserve(driver_input.test_name):
+        elif (self.is_http_test(driver_input.test_name)
+              or self._port.should_use_wptserve(driver_input.test_name)):
             command = self.test_to_uri(driver_input.test_name)
         else:
             command = self._port.abspath_for_test(driver_input.test_name)
@@ -542,8 +598,14 @@ class Driver(object):
             return (block.decoded_content, block.content_hash)
         return (None, block.content_hash)
 
-    def _read_header(self, block, line, header_text, header_attr, header_filter=None):
-        if line.startswith(header_text) and getattr(block, header_attr) is None:
+    def _read_header(self,
+                     block,
+                     line,
+                     header_text,
+                     header_attr,
+                     header_filter=None):
+        if (line.startswith(header_text)
+                and getattr(block, header_attr) is None):
             value = line.split()[1]
             if header_filter:
                 value = header_filter(value)
@@ -553,9 +615,11 @@ class Driver(object):
 
     def _process_stdout_line(self, block, line):
         if (self._read_header(block, line, 'Content-Type: ', 'content_type')
-                or self._read_header(block, line, 'Content-Transfer-Encoding: ', 'encoding')
-                or self._read_header(block, line, 'Content-Length: ', '_content_length', int)
-                or self._read_header(block, line, 'ActualHash: ', 'content_hash')
+                or self._read_header(block, line,
+                                     'Content-Transfer-Encoding: ', 'encoding')
+                or self._read_header(block, line, 'Content-Length: ',
+                                     '_content_length', int) or
+                self._read_header(block, line, 'ActualHash: ', 'content_hash')
                 or self._read_header(block, line, 'DumpMalloc: ', 'malloc')
                 or self._read_header(block, line, 'DumpJSHeap: ', 'js_heap')
                 or self._read_header(block, line, 'StdinPath', 'stdin_path')):
@@ -587,7 +651,8 @@ class Driver(object):
                 out_line = None
                 err_line = self._server_process.read_stderr_line(deadline)
             else:
-                out_line, err_line = self._server_process.read_either_stdout_or_stderr_line(deadline)
+                out_line, err_line = self._server_process.read_either_stdout_or_stderr_line(
+                    deadline)
 
             if self._server_process.timed_out or self.has_crashed():
                 break
@@ -602,7 +667,8 @@ class Driver(object):
             if out_line:
                 if out_line[-1] != '\n':
                     _log.error(
-                        'Last character read from DRT stdout line was not a newline!  This indicates either a NRWT or DRT bug.')
+                        'Last character read from DRT stdout line was not a newline!  This indicates either a NRWT or DRT bug.'
+                    )
                 # pylint: disable=protected-access
                 content_length_before_header_check = block._content_length
                 self._process_stdout_line(block, out_line)
@@ -610,10 +676,12 @@ class Driver(object):
                 # Don't wait until we're done with headers, just read the binary blob right now.
                 if content_length_before_header_check != block._content_length:
                     if block._content_length > 0:
-                        block.content = self._server_process.read_stdout(deadline, block._content_length)
+                        block.content = self._server_process.read_stdout(
+                            deadline, block._content_length)
                     else:
-                        _log.error('Received content of type %s with Content-Length of 0!  This indicates a bug in %s.',
-                                   block.content_type, self._server_process.name())
+                        _log.error(
+                            'Received content of type %s with Content-Length of 0!  This indicates a bug in %s.',
+                            block.content_type, self._server_process.name())
 
             if err_line:
                 if self._check_for_driver_crash(err_line):
@@ -627,14 +695,14 @@ class Driver(object):
 
 
 class ContentBlock(object):
-
     def __init__(self):
         self.content_type = None
         self.encoding = None
         self.content_hash = None
         self._content_length = None
         # Content is treated as binary data even though the text output is usually UTF-8.
-        self.content = str()  # FIXME: Should be bytearray() once we require Python 2.6.
+        # FIXME: Should be bytearray() once we require Python 2.6.
+        self.content = str()
         self.decoded_content = None
         self.malloc = None
         self.js_heap = None

@@ -847,7 +847,7 @@ ScriptPromise PaymentRequest::Retry(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (!payment_provider_) {
+  if (!payment_provider_.is_bound()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Payment request terminated");
     return ScriptPromise();
@@ -941,7 +941,7 @@ ScriptPromise PaymentRequest::Complete(ScriptState* script_state,
   }
 
   // User has cancelled the transaction while the website was processing it.
-  if (!payment_provider_) {
+  if (!payment_provider_.is_bound()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
                                       "Request cancelled");
     return ScriptPromise();
@@ -960,7 +960,7 @@ ScriptPromise PaymentRequest::Complete(ScriptState* script_state,
 void PaymentRequest::OnUpdatePaymentDetails(
     const ScriptValue& details_script_value) {
   ScriptPromiseResolver* resolver = GetPendingAcceptPromiseResolver();
-  if (!resolver || !payment_provider_ ||
+  if (!resolver || !payment_provider_.is_bound() ||
       !update_payment_details_timer_.IsActive()) {
     return;
   }
@@ -1011,7 +1011,7 @@ void PaymentRequest::OnUpdatePaymentDetails(
 }
 
 void PaymentRequest::OnUpdatePaymentDetailsFailure(const String& error) {
-  if (!payment_provider_)
+  if (!payment_provider_.is_bound())
     return;
   if (update_payment_details_timer_.IsActive())
     update_payment_details_timer_.Stop();
@@ -1041,6 +1041,8 @@ void PaymentRequest::Trace(Visitor* visitor) {
   visitor->Trace(abort_resolver_);
   visitor->Trace(can_make_payment_resolver_);
   visitor->Trace(has_enrolled_instrument_resolver_);
+  visitor->Trace(payment_provider_);
+  visitor->Trace(client_receiver_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
@@ -1069,6 +1071,8 @@ PaymentRequest::PaymentRequest(
     ExceptionState& exception_state)
     : ExecutionContextLifecycleObserver(execution_context),
       options_(options),
+      payment_provider_(execution_context),
+      client_receiver_(this, execution_context),
       complete_timer_(
           execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,

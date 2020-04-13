@@ -361,7 +361,7 @@
       'filepath': 'content/browser/device_sensors/' \
                   '|content/test/data/device_sensors/' \
                   '|third_party/blink/renderer/modules/device_orientation/' \
-                  '|third_party/blink/web_tests/device_orientation/' \
+                  '|third_party/blink/web_tests/external/wpt/orientation-event/' \
                   '|third_party/blink/renderer/core/frame/platform_event_(controller|dispatcher)' \
                   '|third_party/blink/renderer/core/frame/device_single_window_event_controller'
     },

@@ -159,9 +159,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   const NGPhysicalBoxStrut* ComputeBordersAddress() const {
     DCHECK(has_borders_ || has_padding_);
     const NGFragmentItems* items = ComputeItemsAddress();
-    if (has_fragment_items_)
-      ++items;
-    return reinterpret_cast<const NGPhysicalBoxStrut*>(items);
+    if (!has_fragment_items_)
+      return reinterpret_cast<const NGPhysicalBoxStrut*>(items);
+    return reinterpret_cast<const NGPhysicalBoxStrut*>(
+        reinterpret_cast<const uint8_t*>(items) + items->ByteSize());
   }
 
   const NGPhysicalBoxStrut* ComputePaddingAddress() const {

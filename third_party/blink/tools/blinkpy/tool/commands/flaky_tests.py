@@ -86,30 +86,40 @@ class FlakyTests(Command):
             # TODO(ojan): We should also skip bots that haven't uploaded recently,
             # e.g. if they're >24h stale.
             if not expectations:
-                _log.error("Can't load flakiness data for builder: %s", builder_name)
+                _log.error("Can't load flakiness data for builder: %s",
+                           builder_name)
                 continue
 
-            for line in expectations.expectation_lines(only_ignore_very_flaky=True):
+            for line in expectations.expectation_lines(
+                    only_ignore_very_flaky=True):
                 # TODO(ojan): Find a way to merge specifiers instead of removing build types.
                 # We can't just union because some specifiers will change the meaning of others.
                 # For example, it's not clear how to merge [ Mac Release ] with [ Linux Debug ].
                 # But, in theory we should be able to merge [ Mac Release ] and [ Mac Debug ].
                 tags = self._filter_build_type_specifiers(line.tags)
-                exps.append(Expectation(tags=tags, results=line.results, test=line.test))
+                exps.append(
+                    Expectation(
+                        tags=tags, results=line.results, test=line.test))
         return exps
 
     def execute(self, options, args, tool):
         factory = self.expectations_factory(tool.builders)
-        lines = self._collect_expectation_lines(tool.builders.all_continuous_builder_names(), factory)
+        lines = self._collect_expectation_lines(
+            tool.builders.all_continuous_builder_names(), factory)
         lines.sort(key=lambda line: line.test)
 
         port = tool.port_factory.get()
         # Skip any tests which are mentioned in the dashboard but not in our checkout:
         fs = tool.filesystem
-        lines = [line for line in lines if fs.exists(fs.join(port.web_tests_dir(), line.test))]
+        lines = [
+            line for line in lines
+            if fs.exists(fs.join(port.web_tests_dir(), line.test))
+        ]
 
         test_names = [line.test for line in lines]
-        flakiness_dashboard_url = self.FLAKINESS_DASHBOARD_URL % ','.join(test_names)
+        flakiness_dashboard_url = self.FLAKINESS_DASHBOARD_URL % \
+            ','.join(test_names)
         expectations_string = '\n'.join(line.to_string() for line in lines)
 
-        print self.OUTPUT % (self.HEADER, expectations_string, flakiness_dashboard_url)
+        print self.OUTPUT % (self.HEADER, expectations_string,
+                             flakiness_dashboard_url)

@@ -8,9 +8,11 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
+#import "ios/chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
@@ -1170,8 +1172,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (BOOL)allowsNewFolder {
   // When the current root node has been removed remotely (becomes NULL),
   // or when displaying search results, creating new folder is forbidden.
+  // The root folder displayed by the table view must also be editable to allow
+  // creation of new folders. Note that Bookmarks Bar, Mobile Bookmarks, and
+  // Other Bookmarks return as "editable" since the user can edit the contents
+  // of those folders.
   return self.sharedState.tableViewDisplayedRootNode != NULL &&
-         !self.sharedState.currentlyShowingSearchResults;
+         !self.sharedState.currentlyShowingSearchResults &&
+         [self
+             isNodeEditableByUser:self.sharedState.tableViewDisplayedRootNode];
 }
 
 - (int)topMostVisibleIndexPathRow {
@@ -1211,6 +1219,19 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (BOOL)isUrlOrFolder:(const BookmarkNode*)node {
   return node->type() == BookmarkNode::URL ||
          node->type() == BookmarkNode::FOLDER;
+}
+
+// Returns YES if the given node can be edited by user.
+- (BOOL)isNodeEditableByUser:(const BookmarkNode*)node {
+  // Note that CanBeEditedByUser() below returns true for Bookmarks Bar, Mobile
+  // Bookmarks, and Other Bookmarks since the user can add, delete, and edit
+  // items within those folders. CanBeEditedByUser() returns false for the
+  // managed_node and all nodes that are descendants of managed_node.
+  bookmarks::ManagedBookmarkService* managedBookmarkService =
+      ManagedBookmarkServiceFactory::GetForBrowserState(self.browserState);
+  return managedBookmarkService
+             ? managedBookmarkService->CanBeEditedByUser(node)
+             : YES;
 }
 
 // Returns the bookmark node associated with |indexPath|.
@@ -1512,7 +1533,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                                       target:self
                                       action:@selector(trailingButtonClicked)];
   editButton.accessibilityIdentifier = kBookmarkHomeTrailingButtonIdentifier;
-  editButton.enabled = [self hasBookmarksOrFolders];
+  // The edit button is only enabled if the displayed root folder is editable
+  // and has items. Note that Bookmarks Bar, Mobile Bookmarks, and Other
+  // Bookmarks return as "editable" since their contents can be edited.
+  editButton.enabled =
+      [self hasBookmarksOrFolders] &&
+      [self isNodeEditableByUser:self.sharedState.tableViewDisplayedRootNode];
 
   [self setToolbarItems:@[ newFolderButton, spaceButton, editButton ]
                animated:NO];
@@ -1731,8 +1757,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
   const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
   // Disable the long press gesture if it is a permanent node (not an URL or
-  // Folder).
-  if (!node || ![self isUrlOrFolder:node]) {
+  // Folder) or if the node is not editable.
+  if (!node || ![self isUrlOrFolder:node] ||
+      ![self isNodeEditableByUser:node]) {
     return;
   }
 
@@ -1873,12 +1900,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return NO;
   }
 
-  // Enable the swipe-to-delete gesture and reordering control for nodes of
-  // type URL or Folder, but not the permanent ones.
+  // Enable the swipe-to-delete gesture and reordering control for editable
+  // nodes of type URL or Folder, but not the permanent ones.
   BookmarkHomeNodeItem* nodeItem =
       base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
   const BookmarkNode* node = nodeItem.bookmarkNode;
-  return [self isUrlOrFolder:node];
+  return [self isUrlOrFolder:node] && [self isNodeEditableByUser:node];
 }
 
 - (void)tableView:(UITableView*)tableView

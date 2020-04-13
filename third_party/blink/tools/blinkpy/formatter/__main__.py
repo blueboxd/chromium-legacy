@@ -6,6 +6,5 @@ import sys
 
 from blinkpy.formatter.main import main
 
-
 if __name__ == '__main__':
     sys.exit(main())

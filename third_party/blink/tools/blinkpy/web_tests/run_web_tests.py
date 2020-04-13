@@ -101,22 +101,23 @@ def deprecate(option, opt_str, _, parser):
 def parse_args(args):
     option_group_definitions = []
 
-    option_group_definitions.append(
-        ('Platform options', platform_options()))
+    option_group_definitions.append(('Platform options', platform_options()))
 
-    option_group_definitions.append(
-        ('Configuration options', configuration_options()))
+    option_group_definitions.append(('Configuration options',
+                                     configuration_options()))
 
-    option_group_definitions.append(
-        ('Printing Options', printing.print_options()))
+    option_group_definitions.append(('Printing Options',
+                                     printing.print_options()))
 
-    option_group_definitions.append(
-        ('web-platform-tests (WPT) Options', wpt_options()))
+    option_group_definitions.append(('web-platform-tests (WPT) Options',
+                                     wpt_options()))
 
-    option_group_definitions.append(('Python Server Options', python_server_options()))
+    option_group_definitions.append(('Python Server Options',
+                                     python_server_options()))
 
-    option_group_definitions.append(
-        ('Android-specific Options', [
+    option_group_definitions.append((
+        'Android-specific Options',
+        [
             optparse.make_option(
                 '--adb-device',
                 action='append',
@@ -134,72 +135,80 @@ def parse_args(args):
                       'is to log as part of --debug-rwt-logging)')),
         ]))
 
-    option_group_definitions.append(
-        ('Fuchsia-specific Options', [
-            optparse.make_option(
-                '--zircon-logging',
-                dest='zircon_logging',
-                action='store_true',
-                default=True,
-                help=('Log Zircon debug messages (enabled by default).')),
-            optparse.make_option(
-                '--no-zircon-logging',
-                dest='zircon_logging',
-                action='store_false',
-                default=True,
-                help=('Do not log Zircon debug messages.')),
-            optparse.make_option(
-                '--device',
-                choices=['aemu','qemu'],
-                default='qemu',
-                help=('Choose device to launch Fuchsia with.')),
-        ]))
+    option_group_definitions.append(('Fuchsia-specific Options', [
+        optparse.make_option(
+            '--zircon-logging',
+            dest='zircon_logging',
+            action='store_true',
+            default=True,
+            help=('Log Zircon debug messages (enabled by default).')),
+        optparse.make_option(
+            '--no-zircon-logging',
+            dest='zircon_logging',
+            action='store_false',
+            default=True,
+            help=('Do not log Zircon debug messages.')),
+        optparse.make_option(
+            '--device',
+            choices=['aemu', 'qemu'],
+            default='qemu',
+            help=('Choose device to launch Fuchsia with.')),
+    ]))
 
-    option_group_definitions.append(
-        ('Results Options', [
+    option_group_definitions.append((
+        'Results Options',
+        [
             optparse.make_option(
                 '--additional-driver-flag',
                 '--additional-drt-flag',
                 dest='additional_driver_flag',
                 action='append',
                 default=[],
-                help=('Additional command line flag to pass to the driver. Specify multiple '
-                      'times to add multiple flags.')),
+                help=
+                ('Additional command line flag to pass to the driver. Specify multiple '
+                 'times to add multiple flags.')),
             optparse.make_option(
                 '--flag-specific',
                 dest='flag_specific',
                 action='store',
                 default=None,
-                help=('Name of a flag-specific configuration defined in FlagSpecificConfig, '
-                      ' as a shortcut of --additional-driver-flag options.')),
+                help=
+                ('Name of a flag-specific configuration defined in FlagSpecificConfig, '
+                 ' as a shortcut of --additional-driver-flag options.')),
             optparse.make_option(
                 '--additional-expectations',
                 action='append',
                 default=[],
-                help=('Path to a test_expectations file that will override previous '
-                      'expectations. Specify multiple times for multiple sets of overrides.')),
+                help=
+                ('Path to a test_expectations file that will override previous '
+                 'expectations. Specify multiple times for multiple sets of overrides.'
+                 )),
             optparse.make_option(
                 '--ignore-default-expectations',
                 action='store_true',
-                help=('Do not use the default set of TestExpectations files.')),
+                help=(
+                    'Do not use the default set of TestExpectations files.')),
             optparse.make_option(
                 '--no-expectations',
                 action='store_true',
-                help=('Do not use TestExpectations, only run the tests without '
-                      'reporting any results. Useful for generating code '
-                      'coverage reports.')),
+                help=(
+                    'Do not use TestExpectations, only run the tests without '
+                    'reporting any results. Useful for generating code '
+                    'coverage reports.')),
             optparse.make_option(
                 '--additional-platform-directory',
                 action='append',
                 default=[],
-                help=('Additional directory where to look for test baselines (will take '
-                      'precedence over platform baselines). Specify multiple times to add '
-                      'multiple search path entries.')),
+                help=
+                ('Additional directory where to look for test baselines (will take '
+                 'precedence over platform baselines). Specify multiple times to add '
+                 'multiple search path entries.')),
             optparse.make_option(
                 '--build-directory',
                 default='out',
-                help=('Path to the directory where build files are kept, not including '
-                      'configuration. In general this will be "out".')),
+                help=
+                ('Path to the directory where build files are kept, not including '
+                 'configuration. In general this will be "out".')),
             optparse.make_option(
                 '--clobber-old-results',
                 action='store_true',
@@ -214,43 +223,49 @@ def parse_args(args):
                 '--copy-baselines',
                 action='store_true',
                 default=False,
-                help=('If the actual result is different from the current baseline, '
-                      'copy the current baseline into the *most-specific-platform* '
-                      'directory, or the flag-specific generic-platform directory if '
-                      '--additional-driver-flag is specified. See --reset-results.')),
+                help=
+                ('If the actual result is different from the current baseline, '
+                 'copy the current baseline into the *most-specific-platform* '
+                 'directory, or the flag-specific generic-platform directory if '
+                 '--additional-driver-flag is specified. See --reset-results.'
+                 )),
             optparse.make_option(
                 '--driver-name',
                 type='string',
                 help='Alternative driver binary to use'),
             optparse.make_option(
-                '--json-test-results',              # New name from json_results_generator
-                '--write-full-results-to',          # Old argument name
-                '--isolated-script-test-output',    # Isolated API
+                '--json-test-results',  # New name from json_results_generator
+                '--write-full-results-to',  # Old argument name
+                '--isolated-script-test-output',  # Isolated API
                 help='Path to write the JSON test results for *all* tests.'),
             # FIXME(tansell): Remove this option if nobody is found who needs it.
             optparse.make_option(
                 '--json-failing-test-results',
-                help='Path to write the JSON test results for only *failing* tests.'),
+                help=
+                'Path to write the JSON test results for only *failing* tests.'
+            ),
             optparse.make_option(
                 '--no-show-results',
                 dest='show_results',
                 action='store_false',
                 default=True,
-                help="Don't launch a browser with results after the tests are done"),
+                help=
+                "Don't launch a browser with results after the tests are done"
+            ),
             optparse.make_option(
                 '--reset-results',
                 action='store_true',
                 default=False,
-                help=('Reset baselines to the generated results in their existing location or the default '
-                      'location if no baseline exists. For virtual tests, reset the virtual baselines. '
-                      'If --additional-driver-flag is specified, reset the flag-specific baselines. '
-                      'If --copy-baselines is specified, the copied baselines will be reset.')),
+                help=
+                ('Reset baselines to the generated results in their existing location or the default '
+                 'location if no baseline exists. For virtual tests, reset the virtual baselines. '
+                 'If --additional-driver-flag is specified, reset the flag-specific baselines. '
+                 'If --copy-baselines is specified, the copied baselines will be reset.'
+                 )),
             optparse.make_option(
-                '--results-directory',
-                help='Location of test results'),
+                '--results-directory', help='Location of test results'),
             optparse.make_option(
-                '--smoke',
-                action='store_true',
+                '--smoke', action='store_true',
                 help='Run just the SmokeTests'),
             optparse.make_option(
                 '--no-smoke',
@@ -259,8 +274,9 @@ def parse_args(args):
                 help='Do not run just the SmokeTests'),
         ]))
 
-    option_group_definitions.append(
-        ('Testing Options', [
+    option_group_definitions.append((
+        'Testing Options',
+        [
             optparse.make_option(
                 '--additional-env-var',
                 type='string',
@@ -280,7 +296,9 @@ def parse_args(args):
                 action='store_false',
                 help="Don't check to see if the build is up to date."),
             optparse.make_option(
-                '--child-processes', '--jobs', '-j',
+                '--child-processes',
+                '--jobs',
+                '-j',
                 help='Number of drivers to run in parallel.'),
             optparse.make_option(
                 '--disable-breakpad',
@@ -302,32 +320,39 @@ def parse_args(args):
                 '--exit-after-n-crashes-or-timeouts',
                 type='int',
                 default=None,
-                help='Exit after the first N crashes instead of running all tests'),
+                help=
+                'Exit after the first N crashes instead of running all tests'),
             optparse.make_option(
                 '--exit-after-n-failures',
                 type='int',
                 default=None,
-                help='Exit after the first N failures instead of running all tests'),
+                help=
+                'Exit after the first N failures instead of running all tests'
+            ),
             optparse.make_option(
                 '--fuzzy-diff',
                 action='store_true',
                 default=False,
-                help=('When running tests on an actual GPU, variance in pixel '
-                      'output can leads image differences causing failed expectations. '
-                      'Instead a fuzzy diff is used to account for this variance. '
-                      'See tools/imagediff/image_diff.cc')),
+                help=
+                ('When running tests on an actual GPU, variance in pixel '
+                 'output can leads image differences causing failed expectations. '
+                 'Instead a fuzzy diff is used to account for this variance. '
+                 'See tools/imagediff/image_diff.cc')),
             optparse.make_option(
                 '--ignore-builder-category',
                 action='store',
-                help=('The category of builders to use with the --ignore-flaky-tests option '
-                      "('layout' or 'deps').")),
+                help=
+                ('The category of builders to use with the --ignore-flaky-tests option '
+                 "('layout' or 'deps').")),
             optparse.make_option(
                 '--ignore-flaky-tests',
                 action='store',
-                help=('Control whether tests that are flaky on the bots get ignored. '
-                      "'very-flaky' == Ignore any tests that flaked more than once on the bot. "
-                      "'maybe-flaky' == Ignore any tests that flaked once on the bot. "
-                      "'unexpected' == Ignore any tests that had unexpected results on the bot.")),
+                help=
+                ('Control whether tests that are flaky on the bots get ignored. '
+                 "'very-flaky' == Ignore any tests that flaked more than once on the bot. "
+                 "'maybe-flaky' == Ignore any tests that flaked once on the bot. "
+                 "'unexpected' == Ignore any tests that had unexpected results on the bot."
+                 )),
             optparse.make_option(
                 '--iterations',
                 '--isolated-script-test-repeat',
@@ -335,7 +360,8 @@ def parse_args(args):
                 '--gtest_repeat',
                 type='int',
                 default=1,
-                help='Number of times to run the set of tests (e.g. ABCABCABC)'),
+                help='Number of times to run the set of tests (e.g. ABCABCABC)'
+            ),
             optparse.make_option(
                 '--layout-tests-directory',
                 help=('Path to a custom web tests directory')),
@@ -353,12 +379,13 @@ def parse_args(args):
                 '--order',
                 action='store',
                 default='random',
-                help=('Determine the order in which the test cases will be run. '
-                      "'none' == use the order in which the tests were listed "
-                      'either in arguments or test list, '
-                      "'random' == pseudo-random order (default). Seed can be specified "
-                      'via --seed, otherwise it will default to the current unix timestamp. '
-                      "'natural' == use the natural order")),
+                help=
+                ('Determine the order in which the test cases will be run. '
+                 "'none' == use the order in which the tests were listed "
+                 'either in arguments or test list, '
+                 "'random' == pseudo-random order (default). Seed can be specified "
+                 'via --seed, otherwise it will default to the current unix timestamp. '
+                 "'natural' == use the natural order")),
             optparse.make_option(
                 '--profile',
                 action='store_true',
@@ -366,21 +393,27 @@ def parse_args(args):
             optparse.make_option(
                 '--profiler',
                 action='store',
-                help='Output per-test profile information, using the specified profiler.'),
+                help=
+                'Output per-test profile information, using the specified profiler.'
+            ),
             optparse.make_option(
                 '--restart-shell-between-tests',
                 type='choice',
                 action='store',
-                choices=['always', 'never', 'on_retry',],
+                choices=[
+                    'always',
+                    'never',
+                    'on_retry',
+                ],
                 default='on_retry',
-                help=(
-                    'Restarting the shell between tests produces more '
-                    'consistent results, as it prevents state from carrying over '
-                    'from previous tests. It also increases test run time by at '
-                    'least 2X. By default, the shell is restarted when tests get '
-                    'retried, since leaking state between retries can sometimes '
-                    'mask underlying flakiness, and the whole point of retries is '
-                    'to look for flakiness.')),
+                help=
+                ('Restarting the shell between tests produces more '
+                 'consistent results, as it prevents state from carrying over '
+                 'from previous tests. It also increases test run time by at '
+                 'least 2X. By default, the shell is restarted when tests get '
+                 'retried, since leaking state between retries can sometimes '
+                 'mask underlying flakiness, and the whole point of retries is '
+                 'to look for flakiness.')),
             optparse.make_option(
                 '--repeat-each',
                 type='int',
@@ -402,7 +435,8 @@ def parse_args(args):
                 dest='num_retries',
                 action='store_const',
                 const=0,
-                help="Don't retry any failures (equivalent to --num-retries=0)."),
+                help="Don't retry any failures (equivalent to --num-retries=0)."
+            ),
             optparse.make_option(
                 '--total-shards',
                 type=int,
@@ -424,11 +458,13 @@ def parse_args(args):
                 '--skipped',
                 action='store',
                 default=None,
-                help=('Control how tests marked SKIP are run. '
-                      '"default" == Skip tests unless explicitly listed on the command line, '
-                      '"ignore" == Run them anyway, '
-                      '"only" == only run the SKIP tests, '
-                      '"always" == always skip, even if listed on the command line.')),
+                help=
+                ('Control how tests marked SKIP are run. '
+                 '"default" == Skip tests unless explicitly listed on the command line, '
+                 '"ignore" == Run them anyway, '
+                 '"only" == only run the SKIP tests, '
+                 '"always" == always skip, even if listed on the command line.'
+                 )),
             optparse.make_option(
                 '--isolated-script-test-also-run-disabled-tests',
                 # TODO(crbug.com/893235): Remove the gtest alias when FindIt no longer uses it.
@@ -441,69 +477,84 @@ def parse_args(args):
                 '--skip-failing-tests',
                 action='store_true',
                 default=False,
-                help=('Skip tests that are expected to fail. Note: When using this option, '
-                      'you might miss new crashes in these tests.')),
+                help=
+                ('Skip tests that are expected to fail. Note: When using this option, '
+                 'you might miss new crashes in these tests.')),
             optparse.make_option(
                 '--skip-timeouts',
                 action='store_true',
                 default=False,
-                help=('Skip tests marked TIMEOUT. Use it to speed up running the entire '
-                      'test suite.')),
+                help=
+                ('Skip tests marked TIMEOUT. Use it to speed up running the entire '
+                 'test suite.')),
             optparse.make_option(
                 '--fastest',
                 action='store',
                 type='float',
-                help='Run the N% fastest tests as well as any tests listed on the command line'),
+                help=
+                'Run the N% fastest tests as well as any tests listed on the command line'
+            ),
             optparse.make_option(
                 '--test-list',
                 action='append',
                 metavar='FILE',
-                help='read list of tests to run from file, as if they were specified on the command line'),
+                help=
+                'read list of tests to run from file, as if they were specified on the command line'
+            ),
             optparse.make_option(
                 '--isolated-script-test-filter',
                 action='append',
                 type='string',
-                help='A list of test globs to run or skip, separated by TWO colons, e.g. fast::css/test.html; '
-                     'prefix the glob with "-" to skip it'),
+                help=
+                'A list of test globs to run or skip, separated by TWO colons, e.g. fast::css/test.html; '
+                'prefix the glob with "-" to skip it'),
             # TODO(crbug.com/893235): Remove gtest_filter when FindIt no longer uses it.
             optparse.make_option(
                 '--gtest_filter',
                 type='string',
                 help='A colon-separated list of tests to run. Wildcards are '
-                     'NOT supported. It is the same as listing the tests as '
-                     'positional arguments.'),
+                'NOT supported. It is the same as listing the tests as '
+                'positional arguments.'),
             optparse.make_option(
-                '--time-out-ms',
-                help='Set the timeout for each test'),
+                '--time-out-ms', help='Set the timeout for each test'),
             optparse.make_option(
                 '--wrapper',
-                help=('wrapper command to insert before invocations of the driver; option '
-                      'is split on whitespace before running. (Example: --wrapper="valgrind '
-                      '--smc-check=all")')),
+                help=
+                ('wrapper command to insert before invocations of the driver; option '
+                 'is split on whitespace before running. (Example: --wrapper="valgrind '
+                 '--smc-check=all")')),
             # FIXME: Display the default number of child processes that will run.
             optparse.make_option(
-                '-f', '--fully-parallel',
+                '-f',
+                '--fully-parallel',
                 action='store_true',
                 help='run all tests in parallel'),
             optparse.make_option(
                 '--virtual-parallel',
                 action='store_true',
-                help='When running in parallel, include virtual tests. Useful for running a single '
-                     'virtual test suite, but will be slower in other cases.'),
+                help=
+                'When running in parallel, include virtual tests. Useful for running a single '
+                'virtual test suite, but will be slower in other cases.'),
             optparse.make_option(
-                '-i', '--ignore-tests',
+                '-i',
+                '--ignore-tests',
                 action='append',
                 default=[],
-                help='directories or test to ignore (may specify multiple times)'),
+                help=
+                'directories or test to ignore (may specify multiple times)'),
             optparse.make_option(
-                '-n', '--dry-run',
+                '-n',
+                '--dry-run',
                 action='store_true',
                 default=False,
-                help='Do everything but actually run the tests or upload results.'),
+                help=
+                'Do everything but actually run the tests or upload results.'),
             optparse.make_option(
-                '-w', '--watch',
+                '-w',
+                '--watch',
                 action='store_true',
-                help='Re-run tests quickly (e.g. avoid restarting the server)'),
+                help='Re-run tests quickly (e.g. avoid restarting the server)'
+            ),
             optparse.make_option(
                 '--zero-tests-executed-ok',
                 action='store_true',
@@ -513,15 +564,18 @@ def parse_args(args):
                 '--driver-kill-timeout-secs',
                 type=float,
                 default=1.0,
-                help=('Number of seconds to wait before killing a driver, and the main '
-                      'use case is to leave enough time to allow the process to '
-                      'finish post-run hooks, such as dumping code coverage data. '
-                      'Default is 1 second, can be overriden for specific use cases.'))
+                help=
+                ('Number of seconds to wait before killing a driver, and the main '
+                 'use case is to leave enough time to allow the process to '
+                 'finish post-run hooks, such as dumping code coverage data. '
+                 'Default is 1 second, can be overriden for specific use cases.'
+                 ))
         ]))
 
     # FIXME: Move these into json_results_generator.py.
-    option_group_definitions.append(
-        ('Result JSON Options', [
+    option_group_definitions.append((
+        'Result JSON Options',
+        [
             # TODO(qyearsley): --build-name is unused and should be removed.
             optparse.make_option('--build-name', help=optparse.SUPPRESS_HELP),
             optparse.make_option(
@@ -536,7 +590,7 @@ def parse_args(args):
                 '--builder-name',
                 default='',
                 help='The name of the builder shown on the waterfall running '
-                     'this script, e.g. "Mac10.13 Tests".'),
+                'this script, e.g. "Mac10.13 Tests".'),
             # TODO(qyearsley): This is not actually a Buildbot master since
             # Buildbot is gone; all instances of the term "master" in this
             # code-base should be removed after test-results.appspot.com is
@@ -546,13 +600,14 @@ def parse_args(args):
                 '--test-results-server',
                 default='',
                 help='If specified, upload results JSON files to this '
-                     'App Engine server.'),
+                'App Engine server.'),
         ]))
 
     option_parser = optparse.OptionParser(
         prog='run_web_tests.py',
         usage='%prog [options] [tests]',
-        description='Runs Blink web tests as described in docs/testing/web_tests.md')
+        description=
+        'Runs Blink web tests as described in docs/testing/web_tests.md')
 
     for group_name, group_options in option_group_definitions:
         option_group = optparse.OptionGroup(option_parser, group_name)
@@ -589,8 +644,9 @@ def _set_up_derived_options(port, options, args):
         options.child_processes = port.host.environ.get(
             'WEBKIT_TEST_CHILD_PROCESSES', str(port.default_child_processes()))
     if not options.max_locked_shards:
-        options.max_locked_shards = int(port.host.environ.get(
-            'WEBKIT_TEST_MAX_LOCKED_SHARDS', str(port.default_max_locked_shards())))
+        options.max_locked_shards = int(
+            port.host.environ.get('WEBKIT_TEST_MAX_LOCKED_SHARDS',
+                                  str(port.default_max_locked_shards())))
 
     if not options.configuration:
         options.configuration = port.default_configuration()
@@ -603,7 +659,8 @@ def _set_up_derived_options(port, options, args):
     if options.additional_platform_directory:
         additional_platform_directories = []
         for path in options.additional_platform_directory:
-            additional_platform_directories.append(port.host.filesystem.abspath(path))
+            additional_platform_directories.append(
+                port.host.filesystem.abspath(path))
         options.additional_platform_directory = additional_platform_directories
 
     if not args and not options.test_list and options.smoke is None:
@@ -617,7 +674,8 @@ def _set_up_derived_options(port, options, args):
 
         if not options.test_list:
             options.test_list = []
-        options.test_list.append(port.host.filesystem.join(port.web_tests_dir(), 'SmokeTests'))
+        options.test_list.append(
+            port.host.filesystem.join(port.web_tests_dir(), 'SmokeTests'))
         if not options.skipped:
             options.skipped = 'always'
 

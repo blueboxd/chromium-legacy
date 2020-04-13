@@ -50,12 +50,14 @@ class WinPortTest(port_testcase.PortTestCase):
         self.assertEqual(orig_environ['PATH'], port.host.environ.get('PATH'))
 
     def assert_name(self, port_name, os_version_string, expected):
-        port = self.make_port(port_name=port_name, os_version=os_version_string)
+        port = self.make_port(
+            port_name=port_name, os_version=os_version_string)
         self.assertEqual(expected, port.name())
 
     def test_get_platform_tags(self):
         port = self.make_port()
-        self.assertEqual(port.get_platform_tags(), {'win', 'win7', 'x86', 'release'})
+        self.assertEqual(port.get_platform_tags(),
+                         {'win', 'win7', 'x86', 'release'})
 
     def test_versions(self):
         port = self.make_port()
@@ -93,9 +95,8 @@ class WinPortTest(port_testcase.PortTestCase):
 
     def assert_baseline_paths(self, port_name, *expected_paths):
         port = self.make_port(port_name=port_name)
-        self.assertEqual(
-            port.baseline_version_dir(),
-            port._absolute_baseline_path(expected_paths[0]))  # pylint: disable=protected-access
+        self.assertEqual(port.baseline_version_dir(),
+                         port._absolute_baseline_path(expected_paths[0]))  # pylint: disable=protected-access
         self.assertEqual(len(port.baseline_search_path()), len(expected_paths))
         for i, path in enumerate(expected_paths):
             self.assertTrue(port.baseline_search_path()[i].endswith(path))
@@ -108,14 +109,20 @@ class WinPortTest(port_testcase.PortTestCase):
         self.assertEqual('win', self.make_port().operating_system())
 
     def test_driver_name_option(self):
-        self.assertTrue(self.make_port()._path_to_driver().endswith('content_shell.exe'))
         self.assertTrue(
-            self.make_port(options=optparse.Values({'driver_name': 'OtherDriver'}))._path_to_driver().endswith('OtherDriver.exe'))
+            self.make_port()._path_to_driver().endswith('content_shell.exe'))
+        self.assertTrue(
+            self.make_port(
+                options=optparse.Values({
+                    'driver_name': 'OtherDriver'
+                }))._path_to_driver().endswith('OtherDriver.exe'))
 
     def test_path_to_image_diff(self):
-        self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/out/Release/image_diff.exe')
+        self.assertEqual(self.make_port()._path_to_image_diff(),
+                         '/mock-checkout/out/Release/image_diff.exe')
 
     def test_path_to_apache_config_file(self):
         self.assertEqual(
             self.make_port().path_to_apache_config_file(),
-            '/mock-checkout/third_party/blink/tools/apache_config/win-httpd.conf')
+            '/mock-checkout/third_party/blink/tools/apache_config/win-httpd.conf'
+        )

@@ -30,7 +30,6 @@ void NGFragmentItemsBuilder::SetCurrentLine(
 
 void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
                                      const LogicalOffset& offset) {
-  DCHECK_EQ(items_.size(), offsets_.size());
   DCHECK(!is_converted_to_physical_);
 #if DCHECK_IS_ON()
   DCHECK_EQ(current_line_fragment_, &line);
@@ -40,18 +39,17 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
   const wtf_size_t size_before = items_.size();
   const wtf_size_t capacity = size_before + current_line_.size() + 1;
   items_.ReserveCapacity(capacity);
-  offsets_.ReserveCapacity(capacity);
 
   // Add an empty item so that the start of the line can be set later.
   const wtf_size_t line_start_index = items_.size();
-  items_.Grow(line_start_index + 1);
-  offsets_.push_back(offset);
+  items_.emplace_back(offset);
 
   AddItems(current_line_.begin(), current_line_.end());
 
   // All children are added. Create an item for the start of the line.
   const wtf_size_t item_count = items_.size() - line_start_index;
-  items_[line_start_index] =
+  DCHECK(!items_[line_start_index].item);
+  items_[line_start_index].item =
       base::MakeRefCounted<NGFragmentItem>(line, item_count);
 
   // Keep children's offsets relative to |line|. They will be adjusted later in
@@ -62,19 +60,17 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
   current_line_fragment_ = nullptr;
 #endif
 
-  DCHECK_EQ(items_.size(), offsets_.size());
   DCHECK_LE(items_.size(), capacity);
 }
 
 void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
-  DCHECK_EQ(items_.size(), offsets_.size());
   DCHECK(!is_converted_to_physical_);
 
   for (Child* child_iter = child_begin; child_iter != child_end;) {
     Child& child = *child_iter;
     if (const NGPhysicalTextFragment* text = child.fragment.get()) {
-      items_.push_back(base::MakeRefCounted<NGFragmentItem>(*text));
-      offsets_.push_back(child.rect.offset);
+      items_.emplace_back(base::MakeRefCounted<NGFragmentItem>(*text),
+                          child.rect.offset);
       ++child_iter;
       continue;
     }
@@ -97,8 +93,7 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
 
       // Take the fast path when we know |child| does not have child items.
       if (child.children_count <= 1) {
-        items_.push_back(std::move(item));
-        offsets_.push_back(child.rect.offset);
+        items_.emplace_back(std::move(item), child.rect.offset);
         ++child_iter;
         continue;
       }
@@ -109,8 +104,7 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
       //
       // Add an empty item so that the start of the box can be set later.
       wtf_size_t box_start_index = items_.size();
-      items_.Grow(box_start_index + 1);
-      offsets_.push_back(child.rect.offset);
+      items_.emplace_back(child.rect.offset);
 
       // Add all children, including their desendants, skipping this item.
       CHECK_GE(child.children_count, 1u);  // 0 will loop infinitely.
@@ -125,7 +119,8 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
 
       // Create an item for the start of the box.
       item->SetDescendantsCount(item_count);
-      items_[box_start_index] = std::move(item);
+      DCHECK(!items_[box_start_index].item);
+      items_[box_start_index].item = std::move(item);
       continue;
     }
 
@@ -144,9 +139,9 @@ void NGFragmentItemsBuilder::AddListMarker(
   // Resolved direction matters only for inline items, and outside list markers
   // are not inline.
   const TextDirection resolved_direction = TextDirection::kLtr;
-  items_.push_back(base::MakeRefCounted<NGFragmentItem>(marker_fragment,
-                                                        resolved_direction));
-  offsets_.push_back(offset);
+  items_.emplace_back(
+      base::MakeRefCounted<NGFragmentItem>(marker_fragment, resolved_direction),
+      offset);
 }
 
 void NGFragmentItemsBuilder::AddItems(const NGFragmentItems& items,
@@ -154,27 +149,29 @@ void NGFragmentItemsBuilder::AddItems(const NGFragmentItems& items,
                                       TextDirection direction,
                                       const PhysicalSize& container_size) {
   DCHECK(items_.IsEmpty());
-  items_.AppendVector(items.Items());
+  const NGFragmentItems::Span source_items = items.Items();
+  const wtf_size_t estimated_size = source_items.size();
+  items_.ReserveCapacity(estimated_size);
 
   // Convert offsets to logical. The logic is opposite to |ConvertToPhysical|.
   // This is needed because the container size may be different, in that case,
   // the physical offsets are different when `writing-mode: vertial-rl`.
   DCHECK(!is_converted_to_physical_);
-  DCHECK(offsets_.IsEmpty());
-  offsets_.ReserveCapacity(items.Items().size());
   const WritingMode line_writing_mode = ToLineWritingMode(writing_mode);
   for (NGInlineCursor cursor(items); cursor;) {
     DCHECK(cursor.Current().Item());
     const NGFragmentItem& item = *cursor.Current().Item();
-    offsets_.push_back(item.OffsetInContainerBlock().ConvertToLogical(
-        writing_mode, direction, container_size, item.Size()));
+    items_.emplace_back(
+        &item, item.OffsetInContainerBlock().ConvertToLogical(
+                   writing_mode, direction, container_size, item.Size()));
 
     if (item.Type() == NGFragmentItem::kLine) {
       const PhysicalRect line_box_bounds = item.RectInContainerBlock();
       for (NGInlineCursor line_children = cursor.CursorForDescendants();
            line_children; line_children.MoveToNext()) {
         const NGFragmentItem& line_child = *line_children.Current().Item();
-        offsets_.push_back(
+        items_.emplace_back(
+            &line_child,
             (line_child.OffsetInContainerBlock() - line_box_bounds.offset)
                 .ConvertToLogical(line_writing_mode, TextDirection::kLtr,
                                   line_box_bounds.size, line_child.Size()));
@@ -185,16 +182,17 @@ void NGFragmentItemsBuilder::AddItems(const NGFragmentItems& items,
 
     cursor.MoveToNext();
   }
+  DCHECK_LE(items_.size(), estimated_size);
 
   DCHECK(!text_content_);
   text_content_ = items.Text(false);
   first_line_text_content_ = items.Text(true);
 }
 
-const Vector<scoped_refptr<const NGFragmentItem>>&
-NGFragmentItemsBuilder::Items(WritingMode writing_mode,
-                              TextDirection direction,
-                              const PhysicalSize& outer_size) {
+const NGFragmentItemsBuilder::ItemWithOffsetList& NGFragmentItemsBuilder::Items(
+    WritingMode writing_mode,
+    TextDirection direction,
+    const PhysicalSize& outer_size) {
   ConvertToPhysical(writing_mode, direction, outer_size);
   return items_;
 }
@@ -204,7 +202,6 @@ NGFragmentItemsBuilder::Items(WritingMode writing_mode,
 void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
                                                TextDirection direction,
                                                const PhysicalSize& outer_size) {
-  CHECK_EQ(items_.size(), offsets_.size());
   if (is_converted_to_physical_)
     return;
 
@@ -212,13 +209,10 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
   // convert their logical offsets.
   const WritingMode line_writing_mode = ToLineWritingMode(writing_mode);
 
-  scoped_refptr<const NGFragmentItem>* item_iter = items_.begin();
-  const LogicalOffset* offset = offsets_.begin();
-  for (; item_iter != items_.end(); ++item_iter, ++offset) {
-    DCHECK_NE(offset, offsets_.end());
-    const NGFragmentItem* item = item_iter->get();
-    const_cast<NGFragmentItem*>(item)->SetOffset(offset->ConvertToPhysical(
-        writing_mode, direction, outer_size, item->Size()));
+  for (ItemWithOffset* iter = items_.begin(); iter != items_.end(); ++iter) {
+    NGFragmentItem* item = const_cast<NGFragmentItem*>(iter->item.get());
+    item->SetOffset(iter->offset.ConvertToPhysical(writing_mode, direction,
+                                                   outer_size, item->Size()));
 
     // Transform children of lines separately from children of the block,
     // because they may have different directions from the block. To do
@@ -229,17 +223,15 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
       if (descendants_count) {
         const PhysicalRect line_box_bounds = item->RectInContainerBlock();
         while (--descendants_count) {
-          ++offset;
-          ++item_iter;
-          DCHECK_NE(offset, offsets_.end());
-          DCHECK_NE(item_iter, items_.end());
-          item = item_iter->get();
+          ++iter;
+          DCHECK_NE(iter, items_.end());
+          item = const_cast<NGFragmentItem*>(iter->item.get());
           // Use `kLtr` because inline items are after bidi-reoder, and that
           // their offset is visual, not logical.
-          const_cast<NGFragmentItem*>(item)->SetOffset(
-              offset->ConvertToPhysical(line_writing_mode, TextDirection::kLtr,
-                                        line_box_bounds.size, item->Size()) +
-              line_box_bounds.offset);
+          item->SetOffset(iter->offset.ConvertToPhysical(
+                              line_writing_mode, TextDirection::kLtr,
+                              line_box_bounds.size, item->Size()) +
+                          line_box_bounds.offset);
         }
       }
     }
@@ -250,10 +242,9 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
 
 base::Optional<LogicalOffset> NGFragmentItemsBuilder::LogicalOffsetFor(
     const LayoutObject& layout_object) const {
-  DCHECK_EQ(items_.size(), offsets_.size());
-  for (const scoped_refptr<const NGFragmentItem>& item : items_) {
+  for (const ItemWithOffset& item : items_) {
     if (item->GetLayoutObject() == &layout_object)
-      return offsets_[&item - items_.begin()];
+      return item.offset;
   }
   return base::nullopt;
 }

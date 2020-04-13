@@ -44,7 +44,11 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
     def __init__(self):
         super(AnalyzeBaselines, self).__init__(options=[
             self.suffixes_option,
-            optparse.make_option('--missing', action='store_true', default=False, help='Show missing baselines as well.'),
+            optparse.make_option(
+                '--missing',
+                action='store_true',
+                default=False,
+                help='Show missing baselines as well.'),
         ] + self.platform_options)
         self._optimizer_class = BaselineOptimizer  # overridable for testing
         self._baseline_optimizer = None
@@ -58,11 +62,14 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
         # TODO(robertma): Investigate changing the CLI to take extensions with leading '.'.
         for suffix in self._baseline_suffix_list:
             extension = '.' + suffix
-            name = self._port.output_filename(test_name, self._port.BASELINE_SUFFIX, extension)
-            results_by_directory = self._baseline_optimizer.read_results_by_directory(name)
+            name = self._port.output_filename(
+                test_name, self._port.BASELINE_SUFFIX, extension)
+            results_by_directory = self._baseline_optimizer.read_results_by_directory(
+                name)
             if results_by_directory:
                 self._write('%s:' % name)
-                self._baseline_optimizer.write_by_directory(results_by_directory, self._write, '  ')
+                self._baseline_optimizer.write_by_directory(
+                    results_by_directory, self._write, '  ')
             elif options.missing:
                 self._write('%s: (no baselines found)' % name)
 
@@ -74,6 +81,7 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
             _log.error("No port names match '%s'", options.platform)
             return
         self._port = tool.port_factory.get(port_names[0])
-        self._baseline_optimizer = self._optimizer_class(tool, self._port, port_names)
+        self._baseline_optimizer = self._optimizer_class(
+            tool, self._port, port_names)
         for test_name in self._port.tests(args):
             self._analyze_baseline(options, test_name)

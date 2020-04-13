@@ -5038,7 +5038,7 @@ crbug.com/1022816 virtual/omt-worker-fetch/external/wpt/resource-timing/crossori
 crbug.com/778467 [ Fuchsia ] mhtml/mhtml_in_iframe.html [ Failure ]
 
 # These tests load resources from file:///gen/... .
-crbug.com/919639 [ Fuchsia ] device_orientation/motion/add-listener-from-callback.html [ Failure ]
+crbug.com/919639 [ Fuchsia ] external/wpt/orientation-event/motion/add-listener-from-callback.https.html [ Failure ]
 crbug.com/919639 [ Fuchsia ] fast/speech/scripted/speechrecognition-re-restart.html [ Failure ]
 crbug.com/919639 [ Fuchsia ] presentation/presentationconnectionavailableevent-ctor-mock.html [ Failure ]
 crbug.com/919639 [ Fuchsia ] webmidi/permission.html [ Failure ]

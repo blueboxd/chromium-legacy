@@ -10,7 +10,10 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/titled_url_match.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
+#import "ios/chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_consumer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_shared_state.h"
@@ -179,6 +182,21 @@ const int kMaxBookmarksSearchResults = 50;
     [self.sharedState.tableViewModel
                         addItem:otherItem
         toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
+  }
+
+  if (IsManagedBookmarksEnabled()) {
+    // Add "Managed Bookmarks" to the table if it exists.
+    bookmarks::ManagedBookmarkService* managedBookmarkService =
+        ManagedBookmarkServiceFactory::GetForBrowserState(self.browserState);
+    const BookmarkNode* managedNode = managedBookmarkService->managed_node();
+    if (managedNode && managedNode->IsVisible()) {
+      BookmarkHomeNodeItem* managedItem = [[BookmarkHomeNodeItem alloc]
+          initWithType:BookmarkHomeItemTypeBookmark
+          bookmarkNode:managedNode];
+      [self.sharedState.tableViewModel
+                          addItem:managedItem
+          toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
+    }
   }
 }
 

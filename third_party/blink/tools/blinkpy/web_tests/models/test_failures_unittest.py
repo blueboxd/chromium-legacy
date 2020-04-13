@@ -30,15 +30,15 @@ import unittest
 from blinkpy.web_tests.port.driver import DriverOutput
 
 from blinkpy.web_tests.models.test_failures import (
-    ALL_FAILURE_CLASSES, FailureCrash, FailureTimeout, TestFailure
-)
+    ALL_FAILURE_CLASSES, FailureCrash, FailureTimeout, TestFailure)
 
 
 class TestFailuresTest(unittest.TestCase):
-
     def setUp(self):
-        self._actual_output = DriverOutput(text=None, image=None, image_hash=None, audio=None)
-        self._expected_output = DriverOutput(text=None, image=None, image_hash=None, audio=None)
+        self._actual_output = DriverOutput(
+            text=None, image=None, image_hash=None, audio=None)
+        self._expected_output = DriverOutput(
+            text=None, image=None, image_hash=None, audio=None)
 
     def assert_loads(self, cls):
         failure_obj = cls(self._actual_output, self._expected_output)
@@ -61,23 +61,31 @@ class TestFailuresTest(unittest.TestCase):
             self.assert_loads(c)
 
     def test_equals(self):
-        self.assertEqual(FailureCrash(self._actual_output, self._expected_output),
-                         FailureCrash(self._actual_output, self._expected_output))
-        self.assertNotEqual(FailureCrash(self._actual_output, self._expected_output),
-                            FailureTimeout(self._actual_output, self._expected_output))
-        crash_set = set([FailureCrash(self._actual_output, self._expected_output),
-                         FailureCrash(self._actual_output, self._expected_output)])
+        self.assertEqual(
+            FailureCrash(self._actual_output, self._expected_output),
+            FailureCrash(self._actual_output, self._expected_output))
+        self.assertNotEqual(
+            FailureCrash(self._actual_output, self._expected_output),
+            FailureTimeout(self._actual_output, self._expected_output))
+        crash_set = set([
+            FailureCrash(self._actual_output, self._expected_output),
+            FailureCrash(self._actual_output, self._expected_output)
+        ])
         self.assertEqual(len(crash_set), 1)
         # The hash happens to be the name of the class, but sets still work:
-        crash_set = set([FailureCrash(self._actual_output, self._expected_output),
-                         'FailureCrash'])
+        crash_set = set([
+            FailureCrash(self._actual_output, self._expected_output),
+            'FailureCrash'
+        ])
         self.assertEqual(len(crash_set), 2)
 
     def test_crashes(self):
         self.assertEqual(
             FailureCrash(self._actual_output, self._expected_output).message(),
-                         'content_shell crashed')
+            'content_shell crashed')
         self.assertEqual(
-            FailureCrash(self._actual_output, self._expected_output,
-                         process_name='foo', pid=1234).message(),
-                         'foo crashed [pid=1234]')
+            FailureCrash(
+                self._actual_output,
+                self._expected_output,
+                process_name='foo',
+                pid=1234).message(), 'foo crashed [pid=1234]')

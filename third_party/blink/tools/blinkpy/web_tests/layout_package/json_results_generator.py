@@ -43,7 +43,8 @@ def has_json_wrapper(string):
 def strip_json_wrapper(json_content):
     # FIXME: Kill this code once the server returns json instead of jsonp.
     if has_json_wrapper(json_content):
-        return json_content[len(_JSON_PREFIX):len(json_content) - len(_JSON_SUFFIX)]
+        return json_content[len(_JSON_PREFIX):len(json_content) -
+                            len(_JSON_SUFFIX)]
     return json_content
 
 

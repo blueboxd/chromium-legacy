@@ -33,7 +33,6 @@ import functools
 
 
 class memoized(object):
-
     def __init__(self, function):
         self._function = function
         self._results_cache = {}

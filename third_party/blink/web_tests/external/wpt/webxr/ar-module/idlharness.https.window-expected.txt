@@ -7,5 +7,7 @@ PASS Partial interface XRSession[2]: original interface defined
 PASS Partial interface XRSession[2]: member names are unique
 PASS XRSession interface: attribute environmentBlendMode
 FAIL XRSession interface: attribute interactionMode assert_true: The prototype object must have a property "interactionMode" expected true got false
+PASS XRSession interface: xrSession must inherit property "environmentBlendMode" with the proper type
+FAIL XRSession interface: xrSession must inherit property "interactionMode" with the proper type assert_inherits: property "interactionMode" not found in prototype chain
 Harness: the test ran to completion.
 

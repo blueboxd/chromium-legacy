@@ -63,19 +63,39 @@ class PrintExpectations(Command):
 
     def __init__(self):
         options = [
-            make_option('--all', action='store_true', default=False,
-                        help='display the expectations for *all* tests'),
-            make_option('-x', '--exclude-keyword', action='append', default=[],
-                        help='limit to tests not matching the given keyword (for example, '
-                             '"skip", "slow", or "crash". May specify multiple times'),
-            make_option('-i', '--include-keyword', action='append', default=[],
-                        help='limit to tests with the given keyword (for example, "skip", '
-                             '"slow", or "crash". May specify multiple times'),
-            make_option('--csv', action='store_true', default=False,
-                        help='Print a CSV-style report that includes the port name, bugs, '
-                             'specifiers, tests, and expectations'),
-            make_option('--paths', action='store_true', default=False,
-                        help='display the paths for all applicable expectation files'),
+            make_option(
+                '--all',
+                action='store_true',
+                default=False,
+                help='display the expectations for *all* tests'),
+            make_option(
+                '-x',
+                '--exclude-keyword',
+                action='append',
+                default=[],
+                help=
+                'limit to tests not matching the given keyword (for example, '
+                '"skip", "slow", or "crash". May specify multiple times'),
+            make_option(
+                '-i',
+                '--include-keyword',
+                action='append',
+                default=[],
+                help=
+                'limit to tests with the given keyword (for example, "skip", '
+                '"slow", or "crash". May specify multiple times'),
+            make_option(
+                '--csv',
+                action='store_true',
+                default=False,
+                help=
+                'Print a CSV-style report that includes the port name, bugs, '
+                'specifiers, tests, and expectations'),
+            make_option(
+                '--paths',
+                action='store_true',
+                default=False,
+                help='display the paths for all applicable expectation files'),
         ] + platform_options(use_globs=True)
 
         super(PrintExpectations, self).__init__(options=options)
@@ -87,7 +107,8 @@ class PrintExpectations(Command):
             return
 
         if options.platform:
-            port_names = fnmatch.filter(tool.port_factory.all_port_names(), options.platform)
+            port_names = fnmatch.filter(tool.port_factory.all_port_names(),
+                                        options.platform)
             if not port_names:
                 default_port = tool.port_factory.get(options.platform)
                 if default_port:
@@ -106,7 +127,8 @@ class PrintExpectations(Command):
             web_tests_dir = default_port.web_tests_dir()
             for file in files:
                 if file.startswith(web_tests_dir):
-                    file = file.replace(web_tests_dir, WEB_TESTS_LAST_COMPONENT)
+                    file = file.replace(web_tests_dir,
+                                        WEB_TESTS_LAST_COMPONENT)
                 print file
             return
 
@@ -114,8 +136,12 @@ class PrintExpectations(Command):
         for port_name in port_names:
             port = tool.port_factory.get(port_name, options)
             test_expectations = TestExpectations(port)
-            tests_to_print = self._filter_tests(options, test_expectations, tests)
-            lines = [test_expectations.get_expectations(test) for test in sorted(tests_to_print)]
+            tests_to_print = self._filter_tests(options, test_expectations,
+                                                tests)
+            lines = [
+                test_expectations.get_expectations(test)
+                for test in sorted(tests_to_print)
+            ]
             if port_name != port_names[0]:
                 print
             print '\n'.join(self._format_lines(options, port_name, lines))
@@ -124,7 +150,8 @@ class PrintExpectations(Command):
     def _test_set_for_keyword(keyword, test_expectations, tests):
         filtered_tests = []
         for test in tests:
-            if keyword == 'SLOW' and test_expectations.get_expectations(test).is_slow_test:
+            if (keyword == 'SLOW'
+                    and test_expectations.get_expectations(test).is_slow_test):
                 filtered_tests.append(test)
             elif keyword in test_expectations.get_expectations(test).results:
                 filtered_tests.append(test)
@@ -134,18 +161,22 @@ class PrintExpectations(Command):
         filtered_tests = set()
         if options.include_keyword:
             for keyword in options.include_keyword:
-                filtered_tests.update(self._test_set_for_keyword(keyword.upper(), test_expectations, tests))
+                filtered_tests.update(
+                    self._test_set_for_keyword(keyword.upper(),
+                                               test_expectations, tests))
         else:
             filtered_tests = tests
 
         for keyword in options.exclude_keyword:
-            filtered_tests.difference_update(self._test_set_for_keyword(keyword.upper(), test_expectations, tests))
+            filtered_tests.difference_update(
+                self._test_set_for_keyword(keyword.upper(), test_expectations,
+                                           tests))
         return filtered_tests
 
     @staticmethod
     def _to_csv(expectation):
-        return '%s,%s,%s,%s' % (
-            expectation.test, expectation.reason, ' '.join(expectation.tags), ' '.join(expectation.results))
+        return '%s,%s,%s,%s' % (expectation.test, expectation.reason, ' '.join(
+            expectation.tags), ' '.join(expectation.results))
 
     def _format_lines(self, options, port_name, lines):
         output = []
@@ -166,13 +197,23 @@ class PrintBaselines(Command):
 
     def __init__(self):
         options = [
-            make_option('--all', action='store_true', default=False,
-                        help='display the baselines for *all* tests'),
-            make_option('--csv', action='store_true', default=False,
-                        help='Print a CSV-style report that includes the port name, test_name, '
-                             'test platform, baseline type, baseline location, and baseline platform'),
-            make_option('--include-virtual-tests', action='store_true',
-                        help='Include virtual tests'),
+            make_option(
+                '--all',
+                action='store_true',
+                default=False,
+                help='display the baselines for *all* tests'),
+            make_option(
+                '--csv',
+                action='store_true',
+                default=False,
+                help=
+                'Print a CSV-style report that includes the port name, test_name, '
+                'test platform, baseline type, baseline location, and baseline platform'
+            ),
+            make_option(
+                '--include-virtual-tests',
+                action='store_true',
+                help='Include virtual tests'),
         ] + platform_options(use_globs=True)
         super(PrintBaselines, self).__init__(options=options)
         self._platform_regexp = re.compile(r'platform/([^\/]+)/(.+)')
@@ -184,7 +225,8 @@ class PrintBaselines(Command):
 
         default_port = tool.port_factory.get()
         if options.platform:
-            port_names = fnmatch.filter(tool.port_factory.all_port_names(), options.platform)
+            port_names = fnmatch.filter(tool.port_factory.all_port_names(),
+                                        options.platform)
             if not port_names:
                 print "No port names match '%s'" % options.platform
         else:
@@ -202,15 +244,20 @@ class PrintBaselines(Command):
                 print '// For %s' % port_name
             port = tool.port_factory.get(port_name)
             for test_name in tests:
-                self._print_baselines(options, port_name, test_name, port.expected_baselines_by_extension(test_name))
+                self._print_baselines(
+                    options, port_name, test_name,
+                    port.expected_baselines_by_extension(test_name))
 
     def _print_baselines(self, options, port_name, test_name, baselines):
         for extension in sorted(baselines.keys()):
             baseline_location = baselines[extension]
             if baseline_location:
                 if options.csv:
-                    print '%s,%s,%s,%s,%s,%s' % (port_name, test_name, self._platform_for_path(test_name),
-                                                 extension[1:], baseline_location, self._platform_for_path(baseline_location))
+                    print '%s,%s,%s,%s,%s,%s' % (
+                        port_name, test_name,
+                        self._platform_for_path(test_name), extension[1:],
+                        baseline_location,
+                        self._platform_for_path(baseline_location))
                 else:
                     print baseline_location
 

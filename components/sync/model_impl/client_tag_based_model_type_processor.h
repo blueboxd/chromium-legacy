@@ -210,9 +210,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void MergeDataWithMetadataForDebugging(AllNodesCallback callback,
                                          std::unique_ptr<DataBatch> batch);
 
-  // Initialize the cache_guid for old clients that didn't persist it.
-  void InitializeCacheGuidForOldClients();
-
   // Checks for valid cache GUID and data type id. Resets state if metadata is
   // invalid.
   void CheckForInvalidPersistedMetadata();

@@ -35,7 +35,6 @@ from blinkpy.common.system.user_mock import MockUser
 
 
 class MockSystemHost(object):
-
     def __init__(self,
                  log_executive=False,
                  os_name=None,
@@ -56,10 +55,7 @@ class MockSystemHost(object):
         self.stdin = StringIO()
         self.stdout = StringIO()
         self.stderr = StringIO()
-        self.environ = {
-            'MOCK_ENVIRON_COPY': '1',
-            'PATH': '/bin:/mock/bin'
-        }
+        self.environ = {'MOCK_ENVIRON_COPY': '1', 'PATH': '/bin:/mock/bin'}
         self.time_return_val = time_return_val
 
     def time(self):

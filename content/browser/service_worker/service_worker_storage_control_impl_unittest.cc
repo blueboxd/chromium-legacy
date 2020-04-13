@@ -247,6 +247,52 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     return return_value;
   }
 
+  void GetUserData(int64_t registration_id,
+                   const std::vector<std::string>& keys,
+                   DatabaseStatus& out_status,
+                   std::vector<std::string>& out_values) {
+    base::RunLoop loop;
+    storage()->GetUserData(
+        registration_id, keys,
+        base::BindLambdaForTesting(
+            [&](DatabaseStatus status, const std::vector<std::string>& values) {
+              out_status = status;
+              out_values = values;
+              loop.Quit();
+            }));
+    loop.Run();
+  }
+
+  DatabaseStatus StoreUserData(
+      int64_t registration_id,
+      const GURL& origin,
+      std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data) {
+    DatabaseStatus return_value;
+    base::RunLoop loop;
+    storage()->StoreUserData(
+        registration_id, origin, std::move(user_data),
+        base::BindLambdaForTesting([&](DatabaseStatus status) {
+          return_value = status;
+          loop.Quit();
+        }));
+    loop.Run();
+    return return_value;
+  }
+
+  DatabaseStatus ClearUserData(int64_t registration_id,
+                               const std::vector<std::string>& keys) {
+    DatabaseStatus return_value;
+    base::RunLoop loop;
+    storage()->ClearUserData(
+        registration_id, keys,
+        base::BindLambdaForTesting([&](DatabaseStatus status) {
+          return_value = status;
+          loop.Quit();
+        }));
+    loop.Run();
+    return return_value;
+  }
+
   // Create a registration with a single resource and stores the registration.
   DatabaseStatus CreateAndStoreRegistration(int64_t registration_id,
                                             const GURL& scope,
@@ -542,6 +588,99 @@ TEST_F(ServiceWorkerStorageControlImplTest, WriteAndReadResource) {
     EXPECT_EQ(
         memcmp(response_metadata->data(), kMetadata.data(), kMetadata.size()),
         0);
+  }
+}
+
+// Tests that storing/getting user data works.
+TEST_F(ServiceWorkerStorageControlImplTest, StoreAndGetUserData) {
+  const GURL kScope("https://www.example.com/");
+  const GURL kScriptUrl("https://www.example.com/sw.js");
+  const int64_t kScriptSize = 10;
+
+  LazyInitializeForTest();
+
+  const int64_t registration_id = GetNewRegistrationId();
+  DatabaseStatus status;
+  status = CreateAndStoreRegistration(registration_id, kScope, kScriptUrl,
+                                      kScriptSize);
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+
+  // Store user data with two entries.
+  {
+    std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data;
+    user_data.push_back(
+        storage::mojom::ServiceWorkerUserData::New("key1", "value1"));
+    user_data.push_back(
+        storage::mojom::ServiceWorkerUserData::New("key2", "value2"));
+
+    status = StoreUserData(registration_id, kScope.GetOrigin(),
+                           std::move(user_data));
+    ASSERT_EQ(status, DatabaseStatus::kOk);
+  }
+
+  // Get user data.
+  {
+    std::vector<std::string> keys = {"key1", "key2"};
+    std::vector<std::string> values;
+    GetUserData(registration_id, keys, status, values);
+    ASSERT_EQ(status, DatabaseStatus::kOk);
+    EXPECT_EQ(values.size(), 2UL);
+    EXPECT_EQ("value1", values[0]);
+    EXPECT_EQ("value2", values[1]);
+  }
+
+  // Try to get user data with an unknown key should fail.
+  {
+    std::vector<std::string> keys = {"key1", "key2", "key3"};
+    std::vector<std::string> values;
+    GetUserData(registration_id, keys, status, values);
+    ASSERT_EQ(status, DatabaseStatus::kErrorNotFound);
+    EXPECT_EQ(values.size(), 0UL);
+  }
+
+  // Clear the first entry.
+  {
+    std::vector<std::string> keys = {"key1"};
+    status = ClearUserData(registration_id, keys);
+    ASSERT_EQ(status, DatabaseStatus::kOk);
+
+    std::vector<std::string> values;
+    GetUserData(registration_id, keys, status, values);
+    ASSERT_EQ(status, DatabaseStatus::kErrorNotFound);
+    EXPECT_EQ(values.size(), 0UL);
+  }
+
+  // Getting the second entry should succeed.
+  {
+    std::vector<std::string> keys = {"key2"};
+    std::vector<std::string> values;
+    GetUserData(registration_id, keys, status, values);
+    ASSERT_EQ(status, DatabaseStatus::kOk);
+    EXPECT_EQ(values.size(), 1UL);
+    EXPECT_EQ("value2", values[0]);
+  }
+
+  // Delete the registration and store a new registration for the same
+  // scope.
+  const int64_t new_registration_id = GetNewRegistrationId();
+  {
+    storage::mojom::ServiceWorkerStorageOriginState origin_state;
+    DeleteRegistration(registration_id, kScope.GetOrigin(), status,
+                       origin_state);
+    ASSERT_EQ(status, DatabaseStatus::kOk);
+
+    status = CreateAndStoreRegistration(new_registration_id, kScope, kScriptUrl,
+                                        kScriptSize);
+    ASSERT_EQ(status, DatabaseStatus::kOk);
+  }
+
+  // Try to get user data stored for the previous registration should fail.
+  {
+    std::vector<std::string> keys = {"key2"};
+    std::vector<std::string> values;
+    GetUserData(new_registration_id, keys, status, values);
+    ASSERT_EQ(status, DatabaseStatus::kErrorNotFound);
+    EXPECT_EQ(values.size(), 0UL);
   }
 }
 

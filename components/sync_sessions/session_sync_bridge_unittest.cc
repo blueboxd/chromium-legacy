@@ -226,6 +226,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
 
     sync_pb::ModelTypeState state;
     state.set_initial_sync_done(true);
+    state.set_cache_guid(request.cache_guid);
     state.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(syncer::SESSIONS));
     state.set_authenticated_account_id("SomeAccountId");

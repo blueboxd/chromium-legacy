@@ -1,7 +1,6 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Start and stop the WPTserve servers as they're used by the web tests."""
 
 import datetime
@@ -11,12 +10,10 @@ import logging
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.web_tests.servers import server_base
 
-
 _log = logging.getLogger(__name__)
 
 
 class WPTServe(server_base.ServerBase):
-
     def __init__(self, port_obj, output_dir):
         super(WPTServe, self).__init__(port_obj, output_dir)
         # These ports must match wpt_support/wpt.config.json
@@ -24,11 +21,24 @@ class WPTServe(server_base.ServerBase):
         ws_port, wss_port = (9001, 9444)
         self._name = 'wptserve'
         self._log_prefixes = ('wptserve_stderr', )
-        self._mappings = [{'port': http_port, 'scheme': 'http'},
-                          {'port': http_alt_port, 'scheme': 'http'},
-                          {'port': https_port, 'scheme': 'https', 'sslcert': True},
-                          {'port': ws_port, 'scheme': 'ws'},
-                          {'port': wss_port, 'scheme': 'wss', 'sslcert': True}]
+        self._mappings = [{
+            'port': http_port,
+            'scheme': 'http'
+        }, {
+            'port': http_alt_port,
+            'scheme': 'http'
+        }, {
+            'port': https_port,
+            'scheme': 'https',
+            'sslcert': True
+        }, {
+            'port': ws_port,
+            'scheme': 'ws'
+        }, {
+            'port': wss_port,
+            'scheme': 'wss',
+            'sslcert': True
+        }]
 
         # TODO(burnik): We can probably avoid PID files for WPT in the future.
         fs = self._filesystem
@@ -36,16 +46,20 @@ class WPTServe(server_base.ServerBase):
         self._config_file = fs.join(self._runtime_path, 'wpt.config.json')
 
         finder = PathFinder(fs)
-        path_to_pywebsocket = finder.path_from_chromium_base('third_party', 'pywebsocket3', 'src')
-        self.path_to_wpt_support = finder.path_from_blink_tools('blinkpy', 'third_party', 'wpt')
+        path_to_pywebsocket = finder.path_from_chromium_base(
+            'third_party', 'pywebsocket3', 'src')
+        self.path_to_wpt_support = finder.path_from_blink_tools(
+            'blinkpy', 'third_party', 'wpt')
         path_to_wpt_root = fs.join(self.path_to_wpt_support, 'wpt')
-        path_to_wpt_tests = fs.abspath(fs.join(self._port_obj.web_tests_dir(), 'external', 'wpt'))
-        path_to_ws_handlers = fs.join(path_to_wpt_tests, 'websockets', 'handlers')
+        path_to_wpt_tests = fs.abspath(
+            fs.join(self._port_obj.web_tests_dir(), 'external', 'wpt'))
+        path_to_ws_handlers = fs.join(path_to_wpt_tests, 'websockets',
+                                      'handlers')
         wpt_script = fs.join(path_to_wpt_root, 'wpt')
-        start_cmd = [self._port_obj.host.executable,
-                     '-u', wpt_script, 'serve',
-                     '--config', self._config_file,
-                     '--doc_root', path_to_wpt_tests]
+        start_cmd = [
+            self._port_obj.host.executable, '-u', wpt_script, 'serve',
+            '--config', self._config_file, '--doc_root', path_to_wpt_tests
+        ]
 
         # Some users (e.g. run_webdriver_tests.py) do not need WebSocket
         # handlers, so we only add the flag if the directory exists.
@@ -58,22 +72,25 @@ class WPTServe(server_base.ServerBase):
         self._env.update({'PYTHONPATH': path_to_pywebsocket})
         self._start_cmd = start_cmd
 
-        self._error_log_path = self._filesystem.join(output_dir, 'wptserve_stderr.txt')
+        self._error_log_path = self._filesystem.join(output_dir,
+                                                     'wptserve_stderr.txt')
 
         expiration_date = datetime.date(2025, 1, 4)
         if datetime.date.today() > expiration_date - datetime.timedelta(30):
             _log.error(
                 'Pre-generated keys and certificates are going to be expired at %s.'
-                ' Please re-generate them by following steps in %s/README.chromium.', expiration_date.strftime('%b %d %Y'),
-                self.path_to_wpt_support)
+                ' Please re-generate them by following steps in %s/README.chromium.',
+                expiration_date.strftime('%b %d %Y'), self.path_to_wpt_support)
 
     def _prepare_config(self):
         fs = self._filesystem
         template_path = fs.join(self.path_to_wpt_support, 'wpt.config.json')
         config = json.loads(fs.read_text_file(template_path))
         config['aliases'].append({
-            'url-path': '/gen/',
-            'local-dir': self._port_obj.generated_sources_directory()
+            'url-path':
+            '/gen/',
+            'local-dir':
+            self._port_obj.generated_sources_directory()
         })
 
         with fs.open_text_file_for_writing(self._config_file) as f:

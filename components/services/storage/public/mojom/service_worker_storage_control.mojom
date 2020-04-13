@@ -68,6 +68,15 @@ interface ServiceWorkerResourceMetadataWriter {
   WriteMetadata(mojo_base.mojom.BigBuffer data) => (int32 status);
 };
 
+// Represents an entry of user data which is stored with a service worker
+// registration. An entry of user data is an arbitrary key-vaule pair. The
+// lifetime of user data is tied up with the registration.
+// It will be deleted when the corresponding registration is deleted.
+struct ServiceWorkerUserData {
+  string key;
+  string value;
+};
+
 // Controls the state of service worker storage within a partition. This is a
 // privileged interface and must not be brokered to untrusted clients.
 //
@@ -122,4 +131,18 @@ interface ServiceWorkerStorageControl {
   CreateResourceMetadataWriter(
       int64 resource_id,
       pending_receiver<ServiceWorkerResourceMetadataWriter> writer);
+
+  // Gets user data associated with the given |registration_id|.
+  // Succeeds only when all keys are found. On success, the size and the order
+  // of |values| are the same as |keys|.
+  GetUserData(int64 registration_id, array<string> keys) =>
+      (ServiceWorkerDatabaseStatus status, array<string> values);
+  // Stores |user_data| on persistent storage.
+  StoreUserData(int64 registration_id,
+                url.mojom.Url origin,
+                array<ServiceWorkerUserData> user_data) =>
+      (ServiceWorkerDatabaseStatus status);
+  // Clears user data specified by |registration_id| and |keys|.
+  ClearUserData(int64 registration_id, array<string> keys) =>
+      (ServiceWorkerDatabaseStatus status);
 };

@@ -65,8 +65,6 @@ css-parser/font-size-adjust.html
 custom-elements/array-squat-crash.html
 custom-elements/imports/upgrade-order.html
 custom-elements/spec/state-failed-create.html
-device_orientation/motion/add-listener-from-callback.html
-device_orientation/orientation/create-event.html
 dom/attr/parent-adopt-node.html
 dom/comment/remove.html
 dom/document_fragment/parent-node-interface.html
@@ -271,7 +269,9 @@ external/wpt/mediasession/playbackstate.html
 external/wpt/mediasession/setactionhandler.html
 external/wpt/navigation-timing/nav2_test_instance_accessible_from_the_start.html
 external/wpt/navigation-timing/test_navigation_redirectCount_none.html
-external/wpt/orientation-event/devicemotionevent-init.html
+external/wpt/orientation-event/motion/add-listener-from-callback.https.html
+external/wpt/orientation-event/orientation/create-event.https.html
+external/wpt/orientation-event/devicemotionevent-init.https.html
 external/wpt/pointerevents/pointerevent_touch-action-illegal.html
 external/wpt/preload/avoid-delaying-onload-link-preload.html
 external/wpt/referrer-policy/generic/subresource-test/attr-referrer-invalid-value.html

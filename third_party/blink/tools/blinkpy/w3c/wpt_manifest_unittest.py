@@ -12,7 +12,6 @@ from blinkpy.web_tests.port.test import TestPort, WEB_TEST_DIR
 
 
 class WPTManifestUnitTest(unittest.TestCase):
-
     def test_ensure_manifest_copies_new_manifest(self):
         host = MockHost()
         port = TestPort(host)
@@ -21,47 +20,40 @@ class WPTManifestUnitTest(unittest.TestCase):
         self.assertFalse(host.filesystem.exists(manifest_path))
         WPTManifest.ensure_manifest(port)
         self.assertTrue(host.filesystem.exists(manifest_path))
-        self.assertEqual(host.filesystem.written_files, {manifest_path: '{"manifest": "base"}'})
+        self.assertEqual(host.filesystem.written_files,
+                         {manifest_path: '{"manifest": "base"}'})
 
-        self.assertEqual(
-            host.executive.calls,
-            [
-                [
-                    'python',
-                    '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
-                    'manifest',
-                    '--no-download',
-                    '--tests-root',
-                    WEB_TEST_DIR + '/external/wpt',
-                ]
-            ]
-        )
+        self.assertEqual(host.executive.calls, [[
+            'python',
+            '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
+            'manifest',
+            '--no-download',
+            '--tests-root',
+            WEB_TEST_DIR + '/external/wpt',
+        ]])
 
     def test_ensure_manifest_updates_manifest_if_it_exists(self):
         host = MockHost()
         port = TestPort(host)
         manifest_path = WEB_TEST_DIR + '/external/wpt/MANIFEST.json'
 
-        host.filesystem.write_text_file(manifest_path, '{"manifest": "NOT base"}')
+        host.filesystem.write_text_file(manifest_path,
+                                        '{"manifest": "NOT base"}')
 
         self.assertTrue(host.filesystem.exists(manifest_path))
         WPTManifest.ensure_manifest(port)
         self.assertTrue(host.filesystem.exists(manifest_path))
-        self.assertEqual(host.filesystem.written_files, {manifest_path: '{"manifest": "base"}'})
+        self.assertEqual(host.filesystem.written_files,
+                         {manifest_path: '{"manifest": "base"}'})
 
-        self.assertEqual(
-            host.executive.calls,
-            [
-                [
-                    'python',
-                    '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
-                    'manifest',
-                    '--no-download',
-                    '--tests-root',
-                    WEB_TEST_DIR + '/external/wpt',
-                ]
-            ]
-        )
+        self.assertEqual(host.executive.calls, [[
+            'python',
+            '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
+            'manifest',
+            '--no-download',
+            '--tests-root',
+            WEB_TEST_DIR + '/external/wpt',
+        ]])
 
     def test_ensure_manifest_raises_exception(self):
         host = MockHost()
@@ -75,19 +67,14 @@ class WPTManifestUnitTest(unittest.TestCase):
         host = MockHost()
         port = TestPort(host)
         WPTManifest.ensure_manifest(port, 'wpt_internal')
-        self.assertEqual(
-            host.executive.calls,
-            [
-                [
-                    'python',
-                    '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
-                    'manifest',
-                    '--no-download',
-                    '--tests-root',
-                    WEB_TEST_DIR + '/wpt_internal',
-                ]
-            ]
-        )
+        self.assertEqual(host.executive.calls, [[
+            'python',
+            '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
+            'manifest',
+            '--no-download',
+            '--tests-root',
+            WEB_TEST_DIR + '/wpt_internal',
+        ]])
 
     def test_does_not_throw_when_missing_some_test_types(self):
         manifest_json = '''
@@ -143,14 +130,17 @@ class WPTManifestUnitTest(unittest.TestCase):
     }
 }       '''
         manifest = WPTManifest(manifest_json)
-        self.assertEqual(manifest.all_url_items(),
-                         {u'/test.any.html': [u'/test.any.html', {}],
-                          u'/test.any.worker.html': [u'/test.any.worker.html', {}]})
+        self.assertEqual(
+            manifest.all_url_items(), {
+                u'/test.any.html': [u'/test.any.html', {}],
+                u'/test.any.worker.html': [u'/test.any.worker.html', {}]
+            })
         # Ensure that we can get back to `test.any.js` from both of the tests.
-        self.assertEqual(manifest.file_path_for_test_url('/test.any.html'),
-                         'test.any.js')
-        self.assertEqual(manifest.file_path_for_test_url('/test.any.worker.html'),
-                         'test.any.js')
+        self.assertEqual(
+            manifest.file_path_for_test_url('/test.any.html'), 'test.any.js')
+        self.assertEqual(
+            manifest.file_path_for_test_url('/test.any.worker.html'),
+            'test.any.js')
 
     def test_crash_tests(self):
         # Test that the manifest recognizes crash tests and that is_crash_test
@@ -174,7 +164,11 @@ class WPTManifestUnitTest(unittest.TestCase):
 }
         '''
         manifest = WPTManifest(manifest_json)
-        self.assertEqual(manifest.all_url_items(), {u'test.html': [u'test.html', {}], u'test-crash.html': [u'test-crash.html', {}]})
+        self.assertEqual(
+            manifest.all_url_items(), {
+                u'test.html': [u'test.html', {}],
+                u'test-crash.html': [u'test-crash.html', {}]
+            })
 
         self.assertTrue(manifest.is_crash_test(u'test-crash.html'))
         self.assertFalse(manifest.is_crash_test(u'test.html'))

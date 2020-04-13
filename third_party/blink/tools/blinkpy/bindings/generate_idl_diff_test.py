@@ -11,7 +11,6 @@ from blinkpy.bindings.generate_idl_diff import DIFF_TAG
 from blinkpy.bindings.generate_idl_diff import DIFF_TAG_DELETED
 from blinkpy.bindings.generate_idl_diff import DIFF_TAG_ADDED
 
-
 testdata_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), 'testdata')
 old_data_path = os.path.join(testdata_path, 'old_blink_idls.json')
@@ -19,7 +18,6 @@ new_data_path = os.path.join(testdata_path, 'new_blink_idls.json')
 
 
 class TestGenerateIDLDiff(unittest.TestCase):
-
     def setUp(self):
         old = generate_idl_diff.load_json_file(old_data_path)
         new = generate_idl_diff.load_json_file(new_data_path)

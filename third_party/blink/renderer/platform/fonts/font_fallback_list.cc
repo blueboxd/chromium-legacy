@@ -50,6 +50,7 @@ FontFallbackList::FontFallbackList(FontSelector* font_selector)
       can_shape_word_by_word_computed_(false) {}
 
 void FontFallbackList::Invalidate() {
+  DCHECK(RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled());
   ReleaseFontData();
   font_list_.clear();
   cached_primary_simple_font_data_ = nullptr;
@@ -234,11 +235,6 @@ FallbackListCompositeKey FontFallbackList::CompositeKey(
 const FontData* FontFallbackList::FontDataAt(
     const FontDescription& font_description,
     unsigned realized_font_index) {
-  if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
-    if (!IsValid())
-      Invalidate();
-  }
-
   // This fallback font is already in our list.
   if (realized_font_index < font_list_.size())
     return font_list_[realized_font_index].get();
@@ -280,11 +276,6 @@ bool FontFallbackList::ComputeCanShapeWordByWord(
 
 bool FontFallbackList::CanShapeWordByWord(
     const FontDescription& font_description) {
-  if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
-    if (!IsValid())
-      Invalidate();
-  }
-
   if (!can_shape_word_by_word_computed_) {
     can_shape_word_by_word_ = ComputeCanShapeWordByWord(font_description);
     can_shape_word_by_word_computed_ = true;

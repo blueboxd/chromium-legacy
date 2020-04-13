@@ -271,6 +271,7 @@
       (syscall-number SYS_proc_info)
       (syscall-number SYS_psynch_mutexdrop)
       (syscall-number SYS_psynch_mutexwait)
+      (syscall-number SYS_psynch_rw_rdlock)
       (syscall-number SYS_read)
       (syscall-number SYS_read_nocancel)
       (syscall-number SYS_readlink)

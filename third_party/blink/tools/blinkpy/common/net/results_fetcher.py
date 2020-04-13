@@ -49,6 +49,7 @@ class Build(collections.namedtuple('Build', ('builder_name', 'build_number'))):
     If build number is None, this represents the latest build
     for a given builder.
     """
+
     def __new__(cls, builder_name, build_number=None):
         return super(Build, cls).__new__(cls, builder_name, build_number)
 
@@ -72,10 +73,12 @@ class TestResultsFetcher(object):
         the latest results.
         """
         if build_number:
-            assert str(build_number).isdigit(), 'expected numeric build number, got %s' % build_number
+            assert str(build_number).isdigit(), \
+                'expected numeric build number, got %s' % build_number
             url_base = self.builder_results_url_base(builder_name)
             if step_name is None:
-                step_name = self.get_layout_test_step_name(Build(builder_name, build_number))
+                step_name = self.get_layout_test_step_name(
+                    Build(builder_name, build_number))
             if step_name:
                 return '%s/%s/%s/layout-test-results' % (
                     url_base, build_number, urllib.quote(step_name))
@@ -89,7 +92,8 @@ class TestResultsFetcher(object):
         name is the builder name transformed to be more URL-friendly by
         replacing all spaces, periods and parentheses with underscores.
         """
-        return '%s/%s' % (RESULTS_URL_BASE, re.sub('[ .()]', '_', builder_name))
+        return '%s/%s' % (RESULTS_URL_BASE, re.sub('[ .()]', '_',
+                                                   builder_name))
 
     @memoized
     def fetch_retry_summary_json(self, build):
@@ -100,15 +104,18 @@ class TestResultsFetcher(object):
         that failed only with the patch ("failures"), and tests that failed
         both with and without ("ignored").
         """
-        url_base = '%s/%s' % (self.builder_results_url_base(build.builder_name), build.build_number)
+        url_base = '%s/%s' % (self.builder_results_url_base(
+            build.builder_name), build.build_number)
         # Originally we used retry_summary.json, which is the summary of retry
         # without patch; now we retry again with patch and ignore the flakes.
         # See https://crbug.com/882969.
-        return self.web.get_binary('%s/%s' % (url_base, 'retry_with_patch_summary.json'),
-                                   return_none_on_404=True)
+        return self.web.get_binary(
+            '%s/%s' % (url_base, 'retry_with_patch_summary.json'),
+            return_none_on_404=True)
 
     def accumulated_results_url_base(self, builder_name):
-        return self.builder_results_url_base(builder_name) + '/results/layout-test-results'
+        return self.builder_results_url_base(
+            builder_name) + '/results/layout-test-results'
 
     @memoized
     def fetch_results(self, build, full=False):
@@ -119,9 +126,10 @@ class TestResultsFetcher(object):
             _log.debug('Builder name or build number is None')
             return None
         return self.fetch_web_test_results(
-            self.results_url(build.builder_name, build.build_number,
-                             step_name=self.get_layout_test_step_name(build)),
-            full)
+            self.results_url(
+                build.builder_name,
+                build.build_number,
+                step_name=self.get_layout_test_step_name(build)), full)
 
     @memoized
     def get_layout_test_step_name(self, build):
@@ -129,13 +137,15 @@ class TestResultsFetcher(object):
             _log.debug('Builder name or build number is None')
             return None
 
-        url = '%s/testfile?%s' % (TEST_RESULTS_SERVER, urllib.urlencode({
-            'builder': build.builder_name,
-            'buildnumber': build.build_number,
-            'name': 'full_results.json',
-            # This forces the server to gives us JSON rather than an HTML page.
-            'callback': json_results_generator.JSON_CALLBACK,
-        }))
+        url = '%s/testfile?%s' % (
+            TEST_RESULTS_SERVER,
+            urllib.urlencode({
+                'builder': build.builder_name,
+                'buildnumber': build.build_number,
+                'name': 'full_results.json',
+                # This forces the server to gives us JSON rather than an HTML page.
+                'callback': json_results_generator.JSON_CALLBACK,
+            }))
         data = self.web.get_binary(url, return_none_on_404=True)
         if not data:
             _log.debug('Got 404 response from:\n%s', url)
@@ -149,8 +159,8 @@ class TestResultsFetcher(object):
             # patch)'. Only make sure it starts with blink_web_tests and
             # runs with a patch. This should be changed eventually to use actual
             # structured data from the test results server.
-            if (entry['TestType'].startswith('blink_web_tests') and
-                entry['TestType'].endswith('(with patch)'))
+            if (entry['TestType'].startswith('blink_web_tests')
+                and entry['TestType'].endswith('(with patch)'))
         ]
         # In manual testing, I sometimes saw results where the same suite was
         # repeated twice. De-duplicate here to try to catch this.
@@ -158,8 +168,8 @@ class TestResultsFetcher(object):
         if len(suites) != 1:
             raise Exception(
                 'build %s on builder %s expected to only have one web test '
-                'step, instead has %s' % (
-                    build.build_number, build.builder_name, suites))
+                'step, instead has %s' % (build.build_number,
+                                          build.builder_name, suites))
 
         return suites[0]
 
@@ -169,10 +179,11 @@ class TestResultsFetcher(object):
         Uses full_results.json if full is True, otherwise failing_results.json.
         """
         base_filename = 'full_results.json' if full else 'failing_results.json'
-        results_file = self.web.get_binary('%s/%s' % (results_url, base_filename),
-                                           return_none_on_404=True)
+        results_file = self.web.get_binary(
+            '%s/%s' % (results_url, base_filename), return_none_on_404=True)
         if results_file is None:
-            _log.debug('Got 404 response from:\n%s/%s', results_url, base_filename)
+            _log.debug('Got 404 response from:\n%s/%s', results_url,
+                       base_filename)
             return None
         return WebTestResults.results_from_string(results_file)
 
@@ -181,13 +192,15 @@ class TestResultsFetcher(object):
             _log.debug('Builder name or build number or master is None')
             return None
 
-        url = '%s/testfile?%s' % (TEST_RESULTS_SERVER, urllib.urlencode({
-            'builder': build.builder_name,
-            'buildnumber': build.build_number,
-            'name': 'full_results.json',
-            'testtype': 'webdriver_tests_suite (with patch)',
-            'master': master
-        }))
+        url = '%s/testfile?%s' % (
+            TEST_RESULTS_SERVER,
+            urllib.urlencode({
+                'builder': build.builder_name,
+                'buildnumber': build.build_number,
+                'name': 'full_results.json',
+                'testtype': 'webdriver_tests_suite (with patch)',
+                'master': master
+            }))
 
         data = self.web.get_binary(url, return_none_on_404=True)
         if not data:
@@ -211,6 +224,7 @@ def filter_latest_builds(builds):
     latest_builds = {}
     for build in builds:
         builder = build.builder_name
-        if builder not in latest_builds or build.build_number > latest_builds[builder].build_number:
+        if builder not in latest_builds or build.build_number > latest_builds[
+                builder].build_number:
             latest_builds[builder] = build
     return sorted(latest_builds.values())

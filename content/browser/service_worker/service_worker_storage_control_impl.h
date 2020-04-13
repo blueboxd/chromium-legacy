@@ -69,6 +69,17 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
       int64_t resource_id,
       mojo::PendingReceiver<storage::mojom::ServiceWorkerResourceMetadataWriter>
           writer) override;
+  void GetUserData(int64_t registration_id,
+                   const std::vector<std::string>& keys,
+                   GetUserDataCallback callback) override;
+  void StoreUserData(
+      int64_t registration_id,
+      const GURL& origin,
+      std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data,
+      StoreUserDataCallback callback) override;
+  void ClearUserData(int64_t registration_id,
+                     const std::vector<std::string>& keys,
+                     ClearUserDataCallback callback) override;
 
   const std::unique_ptr<ServiceWorkerStorage> storage_;
 };

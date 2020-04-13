@@ -49,6 +49,8 @@ const char kValue1[] = "value1";
 const char kValue2[] = "value2";
 const char kValue3[] = "value3";
 
+const char kCacheGuid[] = "TestCacheGuid";
+
 ClientTagHash GetHash(const std::string& key) {
   return FakeModelTypeSyncBridge::TagHashFromKey(key);
 }
@@ -133,6 +135,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   void SetInitialSyncDone(bool is_done) {
     ModelTypeState model_type_state(db().model_type_state());
     model_type_state.set_initial_sync_done(is_done);
+    model_type_state.set_cache_guid(kCacheGuid);
     model_type_state.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(model_type_));
     model_type_state.set_authenticated_account_id(
@@ -278,7 +281,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
 
   void OnSyncStarting(const std::string& authenticated_account_id =
                           kDefaultAuthenticatedAccountId,
-                      const std::string& cache_guid = "TestCacheGuid",
+                      const std::string& cache_guid = kCacheGuid,
                       SyncMode sync_mode = SyncMode::kFull) {
     DataTypeActivationRequest request;
     request.error_handler = base::BindRepeating(
@@ -471,6 +474,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   std::unique_ptr<MetadataBatch> metadata_batch = db()->CreateMetadataBatch();
   sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
   model_type_state.set_initial_sync_done(true);
+  model_type_state.set_cache_guid(kCacheGuid);
   model_type_state.set_authenticated_account_id("PersistedAccountId");
   model_type_state.mutable_progress_marker()->set_data_type_id(
       GetSpecificsFieldNumberFromModelType(GetModelType()));
@@ -489,9 +493,9 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldExposeNewlyTrackedCacheGuid) {
   ModelReadyToSync();
   ASSERT_EQ("", type_processor()->TrackedCacheGuid());
-  OnSyncStarting(kDefaultAuthenticatedAccountId, "TestCacheGuid");
+  OnSyncStarting();
   worker()->UpdateFromServer();
-  EXPECT_EQ("TestCacheGuid", type_processor()->TrackedCacheGuid());
+  EXPECT_EQ(kCacheGuid, type_processor()->TrackedCacheGuid());
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
@@ -1881,7 +1885,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldReportEphemeralConfigurationTime) {
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
-  OnSyncStarting(kDefaultAuthenticatedAccountId, "TestCacheGuid",
+  OnSyncStarting(kDefaultAuthenticatedAccountId, kCacheGuid,
                  SyncMode::kTransportOnly);
 
   base::HistogramTester histogram_tester;
@@ -1906,8 +1910,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldReportPersistentConfigurationTime) {
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
-  OnSyncStarting(kDefaultAuthenticatedAccountId, "TestCacheGuid",
-                 SyncMode::kFull);
+  OnSyncStarting();
 
   base::HistogramTester histogram_tester;
 
@@ -1976,7 +1979,7 @@ TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
 TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
        ShouldReportEphemeralConfigurationTimeOnlyForFirstFullUpdate) {
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
-  OnSyncStarting(kDefaultAuthenticatedAccountId, "TestCacheGuid",
+  OnSyncStarting(kDefaultAuthenticatedAccountId, kCacheGuid,
                  SyncMode::kTransportOnly);
 
   UpdateResponseDataList updates1;
@@ -2632,6 +2635,7 @@ TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
   std::unique_ptr<MetadataBatch> metadata_batch = db()->CreateMetadataBatch();
   sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
   model_type_state.set_initial_sync_done(true);
+  model_type_state.set_cache_guid(kCacheGuid);
   model_type_state.set_authenticated_account_id("PersistedAccountId");
   model_type_state.mutable_progress_marker()->set_data_type_id(
       GetSpecificsFieldNumberFromModelType(GetModelType()));
@@ -2660,6 +2664,7 @@ TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
   std::unique_ptr<MetadataBatch> metadata_batch = db()->CreateMetadataBatch();
   sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
   model_type_state.set_initial_sync_done(true);
+  model_type_state.set_cache_guid(kCacheGuid);
   model_type_state.set_authenticated_account_id("PersistedAccountId");
   model_type_state.mutable_progress_marker()->set_data_type_id(
       GetSpecificsFieldNumberFromModelType(GetModelType()));

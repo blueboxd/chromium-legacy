@@ -60,11 +60,6 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   uint16_t Generation() const { return generation_; }
 
   ShapeCache* GetShapeCache(const FontDescription& font_description) {
-    if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
-      if (!IsValid())
-        Invalidate();
-    }
-
     if (!shape_cache_) {
       FallbackListCompositeKey key = CompositeKey(font_description);
       shape_cache_ =
@@ -78,11 +73,6 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
 
   const SimpleFontData* PrimarySimpleFontData(
       const FontDescription& font_description) {
-    if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
-      if (!IsValid())
-        Invalidate();
-    }
-
     if (!cached_primary_simple_font_data_) {
       cached_primary_simple_font_data_ =
           DeterminePrimarySimpleFontData(font_description);

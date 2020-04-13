@@ -1,7 +1,6 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Updates expectations and baselines when updating web-platform-tests.
 
 Specifically, this class fetches results from try bots for the current CL, then
@@ -28,11 +27,11 @@ UMBRELLA_BUG = 'crbug.com/626703'
 # TODO(robertma): Investigate reusing web_tests.models.test_expectations and
 # alike in this module.
 
-SimpleTestResult = namedtuple('SimpleTestResult', ['expected', 'actual', 'bug'])
+SimpleTestResult = namedtuple('SimpleTestResult',
+                              ['expected', 'actual', 'bug'])
 
 
 class WPTExpectationsUpdater(object):
-
     def __init__(self, host):
         self.host = host
         self.port = self.host.port_factory.get()
@@ -44,9 +43,15 @@ class WPTExpectationsUpdater(object):
 
     def run(self, args=None):
         parser = argparse.ArgumentParser(description=__doc__)
-        parser.add_argument('--patchset', default=None,
-                            help='Patchset number to fetch new baselines from.')
-        parser.add_argument('-v', '--verbose', action='store_true', help='More verbose logging.')
+        parser.add_argument(
+            '--patchset',
+            default=None,
+            help='Patchset number to fetch new baselines from.')
+        parser.add_argument(
+            '-v',
+            '--verbose',
+            action='store_true',
+            help='More verbose logging.')
         args = parser.parse_args(args)
 
         log_level = logging.DEBUG if args.verbose else logging.INFO
@@ -80,12 +85,14 @@ class WPTExpectationsUpdater(object):
             if job_status.result == 'SUCCESS':
                 self.ports_with_all_pass.add(self.port_name(build))
             port_results = self.get_failing_results_dict(build)
-            test_expectations = self.merge_dicts(test_expectations, port_results)
+            test_expectations = self.merge_dicts(test_expectations,
+                                                 port_results)
 
         # And then we merge results for different platforms that had the same results.
         for test_name, platform_result in test_expectations.iteritems():
             # platform_result is a dict mapping platforms to results.
-            test_expectations[test_name] = self.merge_same_valued_keys(platform_result)
+            test_expectations[test_name] = self.merge_same_valued_keys(
+                platform_result)
 
         # At this point, test_expectations looks like: {
         #     'test-with-failing-result': {
@@ -94,7 +101,8 @@ class WPTExpectationsUpdater(object):
         #     }
         # }
 
-        rebaselined_tests, test_expectations = self.download_text_baselines(test_expectations)
+        rebaselined_tests, test_expectations = self.download_text_baselines(
+            test_expectations)
         test_expectation_lines = self.create_line_dict(test_expectations)
         self.write_to_test_expectations(test_expectation_lines)
         return rebaselined_tests, test_expectation_lines
@@ -105,7 +113,8 @@ class WPTExpectationsUpdater(object):
 
     def get_latest_try_jobs(self):
         """Returns the latest finished try jobs as Build objects."""
-        return self.git_cl.latest_try_jobs(builder_names=self._get_try_bots(), patchset=self.patchset)
+        return self.git_cl.latest_try_jobs(
+            builder_names=self._get_try_bots(), patchset=self.patchset)
 
     def get_failing_results_dict(self, build):
         """Returns a nested dict of failing test results.
@@ -135,10 +144,10 @@ class WPTExpectationsUpdater(object):
         has_webdriver_tests = self.host.builders.has_webdriver_tests_for_builder(
             build.builder_name)
         if has_webdriver_tests:
-            master = self.host.builders.master_for_builder(
-                build.builder_name)
+            master = self.host.builders.master_for_builder(build.builder_name)
             test_result_list.append(
-                self.host.results_fetcher.fetch_webdriver_test_results(build, master))
+                self.host.results_fetcher.fetch_webdriver_test_results(
+                    build, master))
 
         test_result_list = filter(None, test_result_list)
         if not test_result_list:
@@ -149,13 +158,18 @@ class WPTExpectationsUpdater(object):
         failing_test_results = []
         for test_result in test_result_list:
             failing_test_results += [
-                result for result in test_result.didnt_run_as_expected_results() if not result.did_pass()]
+                result
+                for result in test_result.didnt_run_as_expected_results()
+                if not result.did_pass()
+            ]
 
-        return self.generate_results_dict(self.port_name(build), failing_test_results)
+        return self.generate_results_dict(
+            self.port_name(build), failing_test_results)
 
     @memoized
     def port_name(self, build):
-        return self.host.builders.port_name_for_builder_name(build.builder_name)
+        return self.host.builders.port_name_for_builder_name(
+            build.builder_name)
 
     def generate_results_dict(self, full_port_name, web_test_results):
         """Makes a dict with results for one platform.
@@ -179,11 +193,11 @@ class WPTExpectationsUpdater(object):
                 continue
 
             test_dict[test_name] = {
-                full_port_name: SimpleTestResult(
+                full_port_name:
+                SimpleTestResult(
                     expected=result.expected_results(),
                     actual=result.actual_results(),
-                    bug=UMBRELLA_BUG
-                )
+                    bug=UMBRELLA_BUG)
             }
         return test_dict
 
@@ -201,12 +215,16 @@ class WPTExpectationsUpdater(object):
         path = path or []
         for key in source:
             if key in target:
-                if (isinstance(target[key], dict)) and isinstance(source[key], dict):
-                    self.merge_dicts(target[key], source[key], path + [str(key)])
+                if (isinstance(target[key], dict)) and isinstance(
+                        source[key], dict):
+                    self.merge_dicts(target[key], source[key],
+                                     path + [str(key)])
                 elif target[key] == source[key]:
                     pass
                 else:
-                    raise ValueError('The key: %s already exist in the target dictionary.' % '.'.join(path))
+                    raise ValueError(
+                        'The key: %s already exist in the target dictionary.' %
+                        '.'.join(path))
             else:
                 target[key] = source[key]
         return target
@@ -249,8 +267,11 @@ class WPTExpectationsUpdater(object):
 
                 if next_item == keys[-1]:
                     if found_match:
-                        merged_dict[tuple(matching_value_keys)] = dictionary[current_key]
-                        keys = [k for k in keys if k not in matching_value_keys]
+                        merged_dict[tuple(
+                            matching_value_keys)] = dictionary[current_key]
+                        keys = [
+                            k for k in keys if k not in matching_value_keys
+                        ]
                     else:
                         merged_dict[current_key] = dictionary[current_key]
                         keys.remove(current_key)
@@ -319,10 +340,13 @@ class WPTExpectationsUpdater(object):
         line_dict = defaultdict(list)
         for test_name, port_results in sorted(merged_results.iteritems()):
             if not self.port.is_wpt_test(test_name):
-                _log.warning('Non-WPT test "%s" unexpectedly passed to create_line_dict.', test_name)
+                _log.warning(
+                    'Non-WPT test "%s" unexpectedly passed to create_line_dict.',
+                    test_name)
                 continue
             for port_names, result in sorted(port_results.iteritems()):
-                line_dict[test_name].extend(self._create_lines(test_name, port_names, result))
+                line_dict[test_name].extend(
+                    self._create_lines(test_name, port_names, result))
         return line_dict
 
     def _create_lines(self, test_name, port_names, result):
@@ -351,7 +375,8 @@ class WPTExpectationsUpdater(object):
         # also apply to any ports that we weren't able to get results for.
         port_names.extend(self.ports_with_no_results)
 
-        expectations = '[ %s ]' % ' '.join(self.get_expectations(result, test_name))
+        expectations = '[ %s ]' % \
+            ' '.join(self.get_expectations(result, test_name))
         for specifier in self.normalized_specifiers(test_name, port_names):
             line_parts = []
             if specifier:
@@ -380,12 +405,14 @@ class WPTExpectationsUpdater(object):
         """
         specifiers = []
         for name in sorted(port_names):
-            specifiers.append(self.host.builders.version_specifier_for_port_name(name))
+            specifiers.append(
+                self.host.builders.version_specifier_for_port_name(name))
 
         if self.specifiers_can_extend_to_all_platforms(specifiers, test_name):
             return ['']
 
-        specifiers = self.simplify_specifiers(specifiers, self.port.configuration_specifier_macros())
+        specifiers = self.simplify_specifiers(
+            specifiers, self.port.configuration_specifier_macros())
         if not specifiers:
             return ['']
         return specifiers
@@ -405,20 +432,26 @@ class WPTExpectationsUpdater(object):
         """
         extended_specifiers = specifiers + self.skipped_specifiers(test_name)
         # If the list is simplified to empty, then all platforms are covered.
-        return not self.simplify_specifiers(extended_specifiers, self.port.configuration_specifier_macros())
+        return not self.simplify_specifiers(
+            extended_specifiers, self.port.configuration_specifier_macros())
 
     def skipped_specifiers(self, test_name):
         """Returns a list of platform specifiers for which the test is skipped."""
         specifiers = []
         for port in self.all_try_builder_ports():
             if port.skips_test(test_name):
-                specifiers.append(self.host.builders.version_specifier_for_port_name(port.name()))
+                specifiers.append(
+                    self.host.builders.version_specifier_for_port_name(
+                        port.name()))
         return specifiers
 
     @memoized
     def all_try_builder_ports(self):
         """Returns a list of Port objects for all try builders."""
-        return [self.host.port_factory.get_from_builder_name(name) for name in self._get_try_bots()]
+        return [
+            self.host.port_factory.get_from_builder_name(name)
+            for name in self._get_try_bots()
+        ]
 
     def simplify_specifiers(self, specifiers, specifier_macros):
         """Simplifies the specifier part of an expectation line if possible.
@@ -446,7 +479,10 @@ class WPTExpectationsUpdater(object):
             macro = macro.lower()
 
             # Only consider version specifiers that have corresponding try bots.
-            versions = {s.lower() for s in versions if s.lower() in covered_by_try_bots}
+            versions = {
+                s.lower()
+                for s in versions if s.lower() in covered_by_try_bots
+            }
             if len(versions) == 0:
                 continue
             if versions <= specifiers:
@@ -460,7 +496,8 @@ class WPTExpectationsUpdater(object):
         all_platform_specifiers = set()
         for builder_name in self._get_try_bots():
             all_platform_specifiers.add(
-                self.host.builders.platform_specifier_for_builder(builder_name).lower())
+                self.host.builders.platform_specifier_for_builder(
+                    builder_name).lower())
         return frozenset(all_platform_specifiers)
 
     def write_to_test_expectations(self, line_dict):
@@ -478,7 +515,8 @@ class WPTExpectationsUpdater(object):
         """
         if not line_dict:
             _log.info(
-                'No lines to write to TestExpectations, WebdriverExpectations or NeverFixTests.')
+                'No lines to write to TestExpectations, WebdriverExpectations or NeverFixTests.'
+            )
             return
 
         line_list = []
@@ -501,30 +539,39 @@ class WPTExpectationsUpdater(object):
             if not lines:
                 continue
 
-            _log.info('Lines to write to %s:\n %s', expectations_file_path, '\n'.join(lines))
+            _log.info('Lines to write to %s:\n %s', expectations_file_path,
+                      '\n'.join(lines))
             # Writes to TestExpectations file.
-            file_contents = self.host.filesystem.read_text_file(expectations_file_path)
+            file_contents = self.host.filesystem.read_text_file(
+                expectations_file_path)
 
             marker_comment_index = file_contents.find(MARKER_COMMENT)
             if marker_comment_index == -1:
                 file_contents += '\n%s\n' % MARKER_COMMENT
                 file_contents += '\n'.join(lines)
             else:
-                end_of_marker_line = (file_contents[marker_comment_index:].find('\n')) + marker_comment_index
-                file_contents = file_contents[:end_of_marker_line + 1] + '\n'.join(lines) + file_contents[end_of_marker_line:]
+                end_of_marker_line = (file_contents[marker_comment_index:].
+                                      find('\n')) + marker_comment_index
+                file_contents = (
+                    file_contents[:end_of_marker_line + 1] + '\n'.join(lines) +
+                    file_contents[end_of_marker_line:])
 
-            self.host.filesystem.write_text_file(expectations_file_path, file_contents)
+            self.host.filesystem.write_text_file(expectations_file_path,
+                                                 file_contents)
 
         if wont_fix_list:
-            _log.info('Lines to write to NeverFixTests:\n %s', '\n'.join(wont_fix_list))
+            _log.info('Lines to write to NeverFixTests:\n %s',
+                      '\n'.join(wont_fix_list))
             # Writes to NeverFixTests file.
             wont_fix_path = self.port.path_to_never_fix_tests_file()
-            wont_fix_file_content = self.host.filesystem.read_text_file(wont_fix_path)
+            wont_fix_file_content = self.host.filesystem.read_text_file(
+                wont_fix_path)
             if not wont_fix_file_content.endswith('\n'):
                 wont_fix_file_content += '\n'
             wont_fix_file_content += '\n'.join(wont_fix_list)
             wont_fix_file_content += '\n'
-            self.host.filesystem.write_text_file(wont_fix_path, wont_fix_file_content)
+            self.host.filesystem.write_text_file(wont_fix_path,
+                                                 wont_fix_file_content)
 
     # TODO(robertma): Unit test this method.
     def download_text_baselines(self, test_results):
@@ -544,7 +591,8 @@ class WPTExpectationsUpdater(object):
             the test_results dictionary containing only tests that couldn't be
             rebaselined.
         """
-        tests_to_rebaseline, test_results = self.get_tests_to_rebaseline(test_results)
+        tests_to_rebaseline, test_results = self.get_tests_to_rebaseline(
+            test_results)
         if not tests_to_rebaseline:
             _log.info('No tests to rebaseline.')
             return tests_to_rebaseline, test_results

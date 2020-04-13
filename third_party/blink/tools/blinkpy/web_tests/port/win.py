@@ -25,7 +25,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Windows implementation of the Port interface."""
 
 import errno
@@ -43,7 +42,6 @@ from blinkpy.common import exit_codes
 from blinkpy.web_tests.breakpad.dump_reader_win import DumpReaderWin
 from blinkpy.web_tests.models import test_run_results
 from blinkpy.web_tests.port import base
-
 
 _log = logging.getLogger(__name__)
 
@@ -76,7 +74,8 @@ class WinPort(base.Port):
     def __init__(self, host, port_name, **kwargs):
         super(WinPort, self).__init__(host, port_name, **kwargs)
         self._version = port_name[port_name.index('win-') + len('win-'):]
-        assert self._version in self.SUPPORTED_VERSIONS, '%s is not in %s' % (self._version, self.SUPPORTED_VERSIONS)
+        assert self._version in self.SUPPORTED_VERSIONS, \
+            '%s is not in %s' % (self._version, self.SUPPORTED_VERSIONS)
         if self.get_option('disable_breakpad'):
             self._dump_reader = None
         else:
@@ -85,7 +84,11 @@ class WinPort(base.Port):
     def additional_driver_flags(self):
         flags = super(WinPort, self).additional_driver_flags()
         if not self.get_option('disable_breakpad'):
-            flags += ['--enable-crash-reporter', '--crash-dumps-dir=%s' % self._dump_reader.crash_dumps_directory()]
+            flags += [
+                '--enable-crash-reporter',
+                '--crash-dumps-dir=%s' %
+                self._dump_reader.crash_dumps_directory()
+            ]
         return flags
 
     def check_httpd(self):
@@ -99,7 +102,9 @@ class WinPort(base.Port):
                 res = self._check_reg(r'.cgi\Shell\ExecCGI\Command') and res
                 res = self._check_reg(r'.pl\Shell\ExecCGI\Command') and res
             else:
-                _log.warning('Could not check the registry; http may not work correctly.')
+                _log.warning(
+                    'Could not check the registry; http may not work correctly.'
+                )
 
         return res
 
@@ -115,7 +120,8 @@ class WinPort(base.Port):
 
             # In order to keep multiple checkouts from stepping on each other, we simply check that an
             # existing entry points to a valid path and has the right command line.
-            if len(args) == 2 and self._filesystem.exists(args[0]) and args[0].endswith('perl.exe') and args[1] == '-wT':
+            if (len(args) == 2 and self._filesystem.exists(args[0])
+                    and args[0].endswith('perl.exe') and args[1] == '-wT'):
                 return True
         except WindowsError as error:  # WindowsError is not defined on non-Windows platforms - pylint: disable=undefined-variable
             if error.errno != errno.ENOENT:
@@ -124,9 +130,11 @@ class WinPort(base.Port):
 
         # Note that we write to HKCU so that we don't need privileged access
         # to the registry, and that will get reflected in HKCR when it is read, above.
-        cmdline = self._path_from_chromium_base(
-            'third_party', 'perl', 'perl', 'bin', 'perl.exe') + ' -wT'
-        hkey = _winreg.CreateKeyEx(_winreg.HKEY_CURRENT_USER, 'Software\\Classes\\' + sub_key, 0, _winreg.KEY_WRITE)
+        cmdline = self._path_from_chromium_base('third_party', 'perl', 'perl',
+                                                'bin', 'perl.exe') + ' -wT'
+        hkey = _winreg.CreateKeyEx(_winreg.HKEY_CURRENT_USER,
+                                   'Software\\Classes\\' + sub_key, 0,
+                                   _winreg.KEY_WRITE)
         _winreg.SetValue(hkey, '', _winreg.REG_SZ, cmdline)
         _winreg.CloseKey(hkey)
         return True
@@ -136,7 +144,8 @@ class WinPort(base.Port):
         if 'TEMP' not in self.host.environ:
             self.host.environ['TEMP'] = tempfile.gettempdir()
         # CGIs are run directory-relative so they need an absolute TEMP
-        self.host.environ['TEMP'] = self._filesystem.abspath(self.host.environ['TEMP'])
+        self.host.environ['TEMP'] = self._filesystem.abspath(
+            self.host.environ['TEMP'])
         # Make TMP an alias for TEMP
         self.host.environ['TMP'] = self.host.environ['TEMP']
         env = super(WinPort, self).setup_environ_for_server()
@@ -152,7 +161,9 @@ class WinPort(base.Port):
         if result:
             _log.error('For complete Windows build requirements, please see:')
             _log.error('')
-            _log.error('    https://chromium.googlesource.com/chromium/src/+/master/docs/windows_build_instructions.md')
+            _log.error(
+                '    https://chromium.googlesource.com/chromium/src/+/master/docs/windows_build_instructions.md'
+            )
         return result
 
     def operating_system(self):
@@ -169,11 +180,12 @@ class WinPort(base.Port):
         return val
 
     def path_to_apache(self):
-        return self._path_from_chromium_base(
-            'third_party', 'apache-win32', 'bin', 'httpd.exe')
+        return self._path_from_chromium_base('third_party', 'apache-win32',
+                                             'bin', 'httpd.exe')
 
     def path_to_apache_config_file(self):
-        return self._filesystem.join(self.apache_config_directory(), 'win-httpd.conf')
+        return self._filesystem.join(self.apache_config_directory(),
+                                     'win-httpd.conf')
 
     #
     # PROTECTED ROUTINES
@@ -190,7 +202,8 @@ class WinPort(base.Port):
     def look_for_new_crash_logs(self, crashed_processes, start_time):
         if self.get_option('disable_breakpad'):
             return None
-        return self._dump_reader.look_for_new_crash_logs(crashed_processes, start_time)
+        return self._dump_reader.look_for_new_crash_logs(
+            crashed_processes, start_time)
 
     def clobber_old_port_specific_results(self):
         if not self.get_option('disable_breakpad'):

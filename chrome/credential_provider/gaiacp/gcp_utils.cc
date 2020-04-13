@@ -70,9 +70,16 @@ base::string16 g_test_serial_number = L"";
 bool g_use_test_mac_addresses = false;
 std::vector<std::string> g_test_mac_addresses;
 
+// Overriden in tests to fake os version.
+bool g_use_test_os_version = false;
+std::string g_test_os_version = "";
+
 // Overridden in tests to fake installed chrome path.
 bool g_use_test_chrome_path = false;
 base::FilePath g_test_chrome_path(L"");
+
+const wchar_t kKernelLibFile[] = L"kernel32.dll";
+const int kVersionStringSize = 128;
 
 namespace {
 
@@ -182,13 +189,17 @@ GoogleRegistrationDataForTesting::~GoogleRegistrationDataForTesting() {
 // GemDeviceDetailsForTesting //////////////////////////////////////////
 
 GemDeviceDetailsForTesting::GemDeviceDetailsForTesting(
-    std::vector<std::string>& mac_addresses) {
+    std::vector<std::string>& mac_addresses,
+    std::string os_version) {
   g_use_test_mac_addresses = true;
+  g_use_test_os_version = true;
   g_test_mac_addresses = mac_addresses;
+  g_test_os_version = os_version;
 }
 
 GemDeviceDetailsForTesting::~GemDeviceDetailsForTesting() {
   g_use_test_mac_addresses = false;
+  g_use_test_os_version = false;
 }
 
 // GemDeviceDetailsForTesting //////////////////////////////////////////
@@ -985,6 +996,36 @@ std::vector<std::string> GetMacAddresses() {
   }
   delete[] pAdapterInfo;
   return mac_addresses;
+}
+
+// The current solution is based on the version of the "kernel32.dll" file. A
+// cleaner alternative would be to use the GetVersionEx API. However, since
+// Windows 8.1 the values returned by that API are dependent on how
+// the application is manifested, and might not be the actual OS version.
+void GetOsVersion(std::string* version) {
+  if (g_use_test_os_version) {
+    *version = g_test_os_version;
+    return;
+  }
+  int buffer_size = GetFileVersionInfoSize(kKernelLibFile, nullptr);
+  if (buffer_size) {
+    std::vector<wchar_t> buffer(buffer_size, 0);
+    if (GetFileVersionInfo(kKernelLibFile, 0, buffer_size, buffer.data())) {
+      UINT size;
+      void* fixed_version_info_raw;
+      if (VerQueryValue(buffer.data(), L"\\", &fixed_version_info_raw, &size)) {
+        VS_FIXEDFILEINFO* fixed_version_info =
+            static_cast<VS_FIXEDFILEINFO*>(fixed_version_info_raw);
+        int major = HIWORD(fixed_version_info->dwFileVersionMS);
+        int minor = LOWORD(fixed_version_info->dwFileVersionMS);
+        int build = HIWORD(fixed_version_info->dwFileVersionLS);
+        char version_buffer[kVersionStringSize];
+        snprintf(version_buffer, kVersionStringSize, "%d.%d.%d", major, minor,
+                 build);
+        *version = version_buffer;
+      }
+    }
+  }
 }
 
 HRESULT GenerateDeviceId(std::string* device_id) {

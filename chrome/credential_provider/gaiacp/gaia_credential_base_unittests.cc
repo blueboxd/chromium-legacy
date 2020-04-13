@@ -2718,7 +2718,8 @@ TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
   std::vector<std::string> mac_addresses;
   mac_addresses.push_back("mac_address_1");
   mac_addresses.push_back("mac_address_2");
-  GemDeviceDetailsForTesting g_mac_addresses(mac_addresses);
+  std::string os_version = "10.1.17134";
+  GemDeviceDetailsForTesting g_device_details(mac_addresses, os_version);
 
   // Create a fake user associated to a gaia id.
   CComBSTR sid;
@@ -2795,6 +2796,8 @@ TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
   ASSERT_NE(nullptr, request_dict.FindStringKey("user_sid"));
   ASSERT_EQ(*request_dict.FindStringKey("user_sid"),
             base::UTF16ToUTF8((BSTR)sid));
+  ASSERT_NE(nullptr, request_dict.FindStringKey("os_edition"));
+  ASSERT_EQ(*request_dict.FindStringKey("os_edition"), os_version);
   ASSERT_TRUE(request_dict.FindBoolKey("is_ad_joined_user").has_value());
   ASSERT_EQ(request_dict.FindBoolKey("is_ad_joined_user").value(), true);
   ASSERT_TRUE(request_dict.FindKey("wlan_mac_addr")->is_list());

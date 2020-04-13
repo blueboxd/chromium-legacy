@@ -31,19 +31,42 @@ class TestAuditNonBlinkUsageTest(unittest.TestCase):
         for entry in audit_non_blink_usage._COMPILED_CONFIG:
             if entry['paths'] == ['third_party/blink/renderer/']:
                 check_list = [
-                    {'type': 'url::mojom::Origin', 'allowed': False},
-                    {'type': '::media::mojom::InterfaceFactory', 'allowed': False},
-                    {'type': 'Hogenetwork::mojom::URLLoaderFactory', 'allowed': False},
-                    {'type': 'url::mojom::blink::Origin', 'allowed': True},
-                    {'type': '::media::mojom::blink::InterfaceFactory', 'allowed': True},
-                    {'type': 'network::mojom::URLLoaderFactory', 'allowed': True},
-                    {'type': '::network::mojom::URLLoaderFactory', 'allowed': True},
+                    {
+                        'type': 'url::mojom::Origin',
+                        'allowed': False
+                    },
+                    {
+                        'type': '::media::mojom::InterfaceFactory',
+                        'allowed': False
+                    },
+                    {
+                        'type': 'Hogenetwork::mojom::URLLoaderFactory',
+                        'allowed': False
+                    },
+                    {
+                        'type': 'url::mojom::blink::Origin',
+                        'allowed': True
+                    },
+                    {
+                        'type': '::media::mojom::blink::InterfaceFactory',
+                        'allowed': True
+                    },
+                    {
+                        'type': 'network::mojom::URLLoaderFactory',
+                        'allowed': True
+                    },
+                    {
+                        'type': '::network::mojom::URLLoaderFactory',
+                        'allowed': True
+                    },
                 ]
                 for item in check_list:
                     if item['allowed']:
-                        self.assertIsNone(re.match(entry['disallowed'], item['type']))
+                        self.assertIsNone(
+                            re.match(entry['disallowed'], item['type']))
                     elif not item['allowed']:
-                        self.assertIsNotNone(re.match(entry['disallowed'], item['type']))
+                        self.assertIsNotNone(
+                            re.match(entry['disallowed'], item['type']))
 
 
 if __name__ == '__main__':

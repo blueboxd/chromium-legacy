@@ -8,9 +8,9 @@ from blinkpy.common.base85 import decode_base85
 
 
 class TestBase85(unittest.TestCase):
-
     def test_decode(self):
-        self.assertEqual(decode_base85('cmV?d00001'), 'x\x01\x03\x00\x00\x00\x00\x01')
+        self.assertEqual(
+            decode_base85('cmV?d00001'), 'x\x01\x03\x00\x00\x00\x00\x01')
 
     def test_decode_invalid_input(self):
         self.assertRaises(ValueError, decode_base85, '1')

@@ -47,13 +47,19 @@ class HistoryChecker(object):
             description='''Examine the version history of web tests to check
             if they were created before the Blink fork; and if so, whether all
             contributions were made by Googlers.''')
-        parser.add_argument('--verbose', '-v', action='count', default=0, help='show verbose logging (can be repeated, e.g. -vv)')
+        parser.add_argument(
+            '--verbose',
+            '-v',
+            action='count',
+            default=0,
+            help='show verbose logging (can be repeated, e.g. -vv)')
         parser.add_argument(
             'paths',
             metavar='PATH',
             type=str,
             nargs='*',
-            help='test path relative to web_tests (same as the arguments for run_web_tests.py); '
+            help=
+            'test path relative to web_tests (same as the arguments for run_web_tests.py); '
             'if no path is provided, the script will check all files.')
         return parser.parse_args(args)
 
@@ -63,7 +69,8 @@ class HistoryChecker(object):
 
     def run_git_log(self, path):
         # Follow rename and copy.
-        output = self.git(['log', '--follow', '-M', '-C', '--format=' + self.FORMAT, path])
+        output = self.git(
+            ['log', '--follow', '-M', '-C', '--format=' + self.FORMAT, path])
         commits = []
         for line in output.splitlines():
             parts = line.split()
@@ -100,7 +107,10 @@ class HistoryChecker(object):
             return 1
         _log.info("Total test files discovered: %d", len(files))
 
-        pool = multiprocessing.Pool(processes=multiprocessing.cpu_count(), initializer=_init, initargs=(self, ))
+        pool = multiprocessing.Pool(
+            processes=multiprocessing.cpu_count(),
+            initializer=_init,
+            initargs=(self, ))
 
         # Capture SIGTERM/INT to exit gracefully without leaving workers behind.
         def _handler(signum, _):
@@ -133,10 +143,12 @@ class HistoryChecker(object):
         return 0
 
     def _is_test(self, path):
-        return self.port.is_non_wpt_test_file(self.filesystem.dirname(path), self.filesystem.basename(path))
+        return self.port.is_non_wpt_test_file(
+            self.filesystem.dirname(path), self.filesystem.basename(path))
 
     def process(self):
-        if len(self.options.paths) == 1 and self._is_test(self.options.paths[0]):
+        if len(self.options.paths) == 1 and self._is_test(
+                self.options.paths[0]):
             return self._process_single(self.options.paths[0])
         return self._process_many(self.options.paths)
 
@@ -154,7 +166,8 @@ def _init(checker):
 
 def _run(path):
     try:
-        abs_path = _checker.filesystem.join(_checker.port.web_tests_dir(), path)
+        abs_path = _checker.filesystem.join(_checker.port.web_tests_dir(),
+                                            path)
         commits = _checker.run_git_log(abs_path)
         return _checker.analyze(path, commits)
     except Exception as e:

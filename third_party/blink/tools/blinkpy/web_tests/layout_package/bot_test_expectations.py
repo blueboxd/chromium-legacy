@@ -25,7 +25,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Generates a fake TestExpectations file consisting of flaky tests from the bot
 corresponding to the give port.
 """
@@ -122,16 +121,20 @@ class BotTestExpectationsFactory(object):
         return self._results_json_for_builder(builder)
 
     def _results_url_for_builder(self, builder):
-        return self.RESULTS_URL_FORMAT % (
-            urllib.quote(self.builders.master_for_builder(builder)), urllib.quote(builder))
+        return self.RESULTS_URL_FORMAT % (urllib.quote(
+            self.builders.master_for_builder(builder)), urllib.quote(builder))
 
     def _results_json_for_builder(self, builder):
         results_url = self._results_url_for_builder(builder)
         try:
-            _log.debug('Fetching flakiness data from appengine: %s', results_url)
-            return ResultsJSON(builder, json.load(urllib2.urlopen(results_url)))
+            _log.debug('Fetching flakiness data from appengine: %s',
+                       results_url)
+            return ResultsJSON(builder, json.load(
+                urllib2.urlopen(results_url)))
         except urllib2.URLError as error:
-            _log.warning('Could not retrieve flakiness data from the bot.  url: %s', results_url)
+            _log.warning(
+                'Could not retrieve flakiness data from the bot.  url: %s',
+                results_url)
             _log.warning(error)
 
     def expectations_for_port(self, port_name, builder_category='layout'):
@@ -163,13 +166,15 @@ class BotTestExpectations(object):
     # specifiers arg is used in unittests to avoid the static dependency on builders.
     def __init__(self, results_json, builders, specifiers=None):
         self.results_json = results_json
-        self.specifiers = specifiers or set(builders.specifiers_for_builder(results_json.builder_name))
+        self.specifiers = specifiers or set(
+            builders.specifiers_for_builder(results_json.builder_name))
 
     def flakes_by_path(self, only_ignore_very_flaky):
         """Sets test expectations to bot results if there are at least two distinct results."""
         flakes_by_path = {}
         for test_path, entry in self.results_json.walk_results():
-            flaky_types = self._flaky_types_in_results(entry, only_ignore_very_flaky)
+            flaky_types = self._flaky_types_in_results(entry,
+                                                       only_ignore_very_flaky)
             if len(flaky_types) <= 1:
                 continue
             flakes_by_path[test_path] = flaky_types
@@ -180,7 +185,8 @@ class BotTestExpectations(object):
         unexpected_results_by_path = {}
         for test_path, entry in self.results_json.walk_results():
             # Expectations for this test. No expectation defaults to PASS.
-            exp_string =  entry.get(self.results_json.EXPECTATIONS_KEY, ResultType.Pass)
+            exp_string = entry.get(self.results_json.EXPECTATIONS_KEY,
+                                   ResultType.Pass)
 
             # All run-length-encoded results for this test.
             results_dict = entry.get(self.results_json.RESULTS_KEY, {})
@@ -195,13 +201,16 @@ class BotTestExpectations(object):
             expectations = exp_string.split(' ')
 
             # Unexpected results will become additional expectations
-            additional_expectations = [res for res in results if res not in expectations]
+            additional_expectations = [
+                res for res in results if res not in expectations
+            ]
 
             if not additional_expectations:
                 continue
 
             # Get typ expectation result tags
-            unexpected_results_by_path[test_path] = set(expectations + additional_expectations)
+            unexpected_results_by_path[test_path] = set(
+                expectations + additional_expectations)
         return unexpected_results_by_path
 
     def all_results_by_path(self):
@@ -230,7 +239,8 @@ class BotTestExpectations(object):
                 continue
 
             # Distinct results as non-encoded strings.
-            result_strings = map(self.results_json.expectation_for_type, result_types)
+            result_strings = map(self.results_json.expectation_for_type,
+                                 result_types)
 
             results_by_path[test_path] = sorted(result_strings)
         return results_by_path
@@ -238,20 +248,24 @@ class BotTestExpectations(object):
     def expectation_lines(self, only_ignore_very_flaky):
         lines = []
         for test_path, entry in self.results_json.walk_results():
-            flaky_types = self._flaky_types_in_results(entry, only_ignore_very_flaky)
+            flaky_types = self._flaky_types_in_results(entry,
+                                                       only_ignore_very_flaky)
             if len(flaky_types) > 1:
-                line = self._line_from_test_and_flaky_types(test_path, flaky_types)
+                line = self._line_from_test_and_flaky_types(
+                    test_path, flaky_types)
                 lines.append(line)
         return lines
 
     def _line_from_test_and_flaky_types(self, test_name, flaky_types):
-        return Expectation(tags=self.specifiers, test=test_name, results=flaky_types)
+        return Expectation(
+            tags=self.specifiers, test=test_name, results=flaky_types)
 
     def _all_types_in_results(self, run_length_encoded_results):
         results = set()
 
         for result_item in run_length_encoded_results:
-            _, result_types = self.results_json.occurances_and_type_from_result_item(result_item)
+            _, result_types = self.results_json.occurances_and_type_from_result_item(
+                result_item)
 
             for result_type in result_types:
                 if result_type not in self.RESULT_TYPES_TO_IGNORE:
@@ -266,17 +280,20 @@ class BotTestExpectations(object):
         # This fixes cases where the expectations have an implicit Pass, e.g. [ Slow ].
         latest_expectations = [ResultType.Pass]
         if self.results_json.EXPECTATIONS_KEY in results_entry:
-            expectations_list = results_entry[self.results_json.EXPECTATIONS_KEY].split(' ')
+            expectations_list = results_entry[self.results_json.
+                                              EXPECTATIONS_KEY].split(' ')
             latest_expectations.extend(expectations_list)
 
         for result_item in results_entry[self.results_json.RESULTS_KEY]:
-            _, result_types_str = self.results_json.occurances_and_type_from_result_item(result_item)
+            _, result_types_str = self.results_json.occurances_and_type_from_result_item(
+                result_item)
 
             result_types = []
             for result_type in result_types_str:
                 # TODO(ojan): Remove this if-statement once crbug.com/514378 is fixed.
                 if result_type not in self.NON_RESULT_TYPES:
-                    result_types.append(self.results_json.expectation_for_type(result_type))
+                    result_types.append(
+                        self.results_json.expectation_for_type(result_type))
 
             # It didn't flake if it didn't retry.
             if len(result_types) <= 1:

@@ -114,8 +114,14 @@ bool FETurbulence::SetStitchTiles(bool stitch) {
 }
 
 sk_sp<PaintFilter> FETurbulence::CreateImageFilter() {
-  if (base_frequency_x_ < 0 || base_frequency_y_ < 0)
-    return CreateTransparentBlack();
+  float base_frequency_x = base_frequency_x_;
+  float base_frequency_y = base_frequency_y_;
+  if (base_frequency_x < 0 || base_frequency_y < 0) {
+    // Negative values are unsupported which means it should be treated as
+    // if they hadn't been specified. So, it implies "0 0"(the initial
+    // value).
+    base_frequency_x = base_frequency_y = 0;
+  }
 
   PaintFilter::CropRect rect = GetCropRect();
   TurbulencePaintFilter::TurbulenceType type =
@@ -129,8 +135,8 @@ sk_sp<PaintFilter> FETurbulence::CreateImageFilter() {
   // and not the target bounding box scale (as SVGFilter::apply*Scale()
   // would do). Note also that we divide by the scale since this is
   // a frequency, not a period.
-  float base_frequency_x = base_frequency_x_ / GetFilter()->Scale();
-  float base_frequency_y = base_frequency_y_ / GetFilter()->Scale();
+  base_frequency_x /= GetFilter()->Scale();
+  base_frequency_y /= GetFilter()->Scale();
 
   // Cap the number of octaves to the maximum detectable when rendered with
   // 8 bits per pixel, plus one for higher bit depth.

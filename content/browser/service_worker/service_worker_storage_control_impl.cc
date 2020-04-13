@@ -68,6 +68,15 @@ void DidGetRegistrationsForOrigin(
   std::move(callback).Run(status, std::move(registrations));
 }
 
+void DidGetUserData(
+    ServiceWorkerStorageControlImpl::GetUserDataCallback callback,
+    const std::vector<std::string>& values,
+    storage::mojom::ServiceWorkerDatabaseStatus status) {
+  // TODO(bashi): Change ServiceWorkerStorage::GetUserDataInDBCallback to remove
+  // this indirection (the order of |values| and |status| is different).
+  std::move(callback).Run(status, values);
+}
+
 }  // namespace
 
 ServiceWorkerStorageControlImpl::ServiceWorkerStorageControlImpl(
@@ -172,6 +181,37 @@ void ServiceWorkerStorageControlImpl::CreateResourceMetadataWriter(
       std::make_unique<ServiceWorkerResourceMetadataWriterImpl>(
           storage_->CreateResponseMetadataWriter(resource_id)),
       std::move(writer));
+}
+
+void ServiceWorkerStorageControlImpl::GetUserData(
+    int64_t registration_id,
+    const std::vector<std::string>& keys,
+    GetUserDataCallback callback) {
+  storage_->GetUserData(registration_id, keys,
+                        base::BindOnce(&DidGetUserData, std::move(callback)));
+}
+
+void ServiceWorkerStorageControlImpl::StoreUserData(
+    int64_t registration_id,
+    const GURL& origin,
+    std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data,
+    StoreUserDataCallback callback) {
+  // TODO(bashi): Change ServiceWorkerStorage::StoreUserData to take
+  // |user_data| so that we don't need to convert it.
+  std::vector<std::pair<std::string, std::string>> key_value_pairs;
+  for (auto& entry : user_data) {
+    key_value_pairs.push_back(
+        std::make_pair(std::move(entry->key), std::move(entry->value)));
+  }
+  storage_->StoreUserData(registration_id, origin, std::move(key_value_pairs),
+                          std::move(callback));
+}
+
+void ServiceWorkerStorageControlImpl::ClearUserData(
+    int64_t registration_id,
+    const std::vector<std::string>& keys,
+    ClearUserDataCallback callback) {
+  storage_->ClearUserData(registration_id, keys, std::move(callback));
 }
 
 }  // namespace content

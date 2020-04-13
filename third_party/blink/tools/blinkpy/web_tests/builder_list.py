@@ -25,7 +25,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Represents a set of builder bots running web tests.
 
 This class is used to hold a list of builder bots running web tests and their
@@ -38,7 +37,6 @@ from blinkpy.common.path_finder import PathFinder
 
 
 class BuilderList(object):
-
     def __init__(self, builders_dict):
         """Creates and validates a builders list.
 
@@ -74,10 +72,12 @@ class BuilderList(object):
         return sorted(self._builders)
 
     def all_try_builder_names(self):
-        return sorted(b for b in self._builders if self._builders[b].get('is_try_builder'))
+        return sorted(b for b in self._builders
+                      if self._builders[b].get('is_try_builder'))
 
     def all_continuous_builder_names(self):
-        return sorted(b for b in self._builders if not self._builders[b].get('is_try_builder'))
+        return sorted(b for b in self._builders
+                      if not self._builders[b].get('is_try_builder'))
 
     def all_port_names(self):
         return sorted({b['port_name'] for b in self._builders.values()})
@@ -142,6 +142,7 @@ class BuilderList(object):
         """
         for builder_name, info in sorted(self._builders.items()):
             specifiers = info['specifiers']
-            if specifiers[0].lower() == version.lower() and specifiers[1].lower() == build_type.lower():
+            if (specifiers[0].lower() == version.lower()
+                    and specifiers[1].lower() == build_type.lower()):
                 return builder_name
         return ''

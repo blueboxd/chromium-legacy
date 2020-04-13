@@ -25,19 +25,18 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Chromium Mac implementation of the Port interface."""
 
 import logging
 
 from blinkpy.web_tests.port import base
 
-
 _log = logging.getLogger(__name__)
 
 
 class MacPort(base.Port):
-    SUPPORTED_VERSIONS = ('mac10.10', 'mac10.11', 'mac10.12', 'mac10.13', 'mac10.14', 'mac10.15', 'retina')
+    SUPPORTED_VERSIONS = ('mac10.10', 'mac10.11', 'mac10.12', 'mac10.13',
+                          'mac10.14', 'mac10.15', 'retina')
     port_name = 'mac'
 
     # FIXME: We treat Retina (High-DPI) devices as if they are running a
@@ -80,7 +79,9 @@ class MacPort(base.Port):
         if result:
             _log.error('For complete Mac build requirements, please see:')
             _log.error('')
-            _log.error('    https://chromium.googlesource.com/chromium/src/+/master/docs/mac_build_instructions.md')
+            _log.error(
+                '    https://chromium.googlesource.com/chromium/src/+/master/docs/mac_build_instructions.md'
+            )
 
         return result
 
@@ -92,12 +93,17 @@ class MacPort(base.Port):
     #
 
     def path_to_apache(self):
-        return self._path_from_chromium_base(
-            'third_party', 'apache-mac', 'bin', 'httpd')
+        return self._path_from_chromium_base('third_party', 'apache-mac',
+                                             'bin', 'httpd')
 
     def path_to_apache_config_file(self):
-        config_file_basename = 'apache2-httpd-%s-php7.conf' % (self._apache_version(),)
-        return self._filesystem.join(self.apache_config_directory(), config_file_basename)
+        config_file_basename = 'apache2-httpd-%s-php7.conf' % (
+            self._apache_version(), )
+        return self._filesystem.join(self.apache_config_directory(),
+                                     config_file_basename)
 
     def _path_to_driver(self, target=None):
-        return self._build_path_with_target(target, self.driver_name() + '.app', 'Contents', 'MacOS', self.driver_name())
+        return self._build_path_with_target(target,
+                                            self.driver_name() + '.app',
+                                            'Contents', 'MacOS',
+                                            self.driver_name())

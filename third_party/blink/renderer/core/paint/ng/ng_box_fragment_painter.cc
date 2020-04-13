@@ -1437,22 +1437,6 @@ void NGBoxFragmentPainter::PaintTextItem(const NGInlineCursor& cursor,
   text_painter.Paint(paint_info, paint_offset);
 }
 
-NGBoxFragmentPainter::MoveTo NGBoxFragmentPainter::PaintLineBoxItem(
-    const NGFragmentItem& item,
-    const PaintInfo& paint_info,
-    const PhysicalOffset& paint_offset) {
-  DCHECK_EQ(item.Type(), NGFragmentItem::kLine);
-  DCHECK(items_);
-  // TODO(kojii): Check CullRect.
-  const PhysicalOffset line_box__offset =
-      paint_offset + item.OffsetInContainerBlock();
-  const NGPhysicalLineBoxFragment* line_box_fragment = item.LineBoxFragment();
-  DCHECK(line_box_fragment);
-  PaintLineBox(*line_box_fragment, item, /* line_box_paint_fragment */ nullptr,
-               &item, paint_info, line_box__offset);
-  return kDontSkipChildren;
-}
-
 // Paint non-culled box item.
 void NGBoxFragmentPainter::PaintBoxItem(
     const NGFragmentItem& item,

@@ -340,8 +340,8 @@ def make_default_value_expr(idl_type, default_value):
             is_initializer_lightweight = True
             assignment_value = "nullptr"
         elif type_info.value_t == "ScriptValue":
-            initializer = None  # ScriptValue::IsEmpty() by default
-            assignment_value = "ScriptValue()"
+            initializer = "${isolate}, v8::Null(${isolate})"
+            assignment_value = "ScriptValue::CreateNull(${isolate})"
         elif idl_type.unwrap().is_union:
             initializer = None  # <union_type>::IsNull() by default
             assignment_value = "{}()".format(type_info.value_t)

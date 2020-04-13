@@ -25,7 +25,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Abstract base class for Port classes.
 
 The Port classes encapsulate Port-specific (platform-specific) behavior
@@ -110,6 +109,7 @@ VALID_FILE_NAME_REGEX = re.compile(r'^[\w\-=]+$')
 # contain all the disc artifacts created by web tests
 ARTIFACTS_SUB_DIR = 'layout-test-results'
 
+
 class Port(object):
     """Abstract class for Port-specific hooks for the web_test package."""
 
@@ -131,20 +131,16 @@ class Port(object):
         # a different operating system version. This isn't accurate, but will
         # work until we need to test and support baselines across multiple OS versions.
         ('retina', 'x86'),
-
         ('mac10.10', 'x86'),
         ('mac10.11', 'x86'),
         ('mac10.12', 'x86'),
         ('mac10.13', 'x86'),
         ('mac10.14', 'x86'),
         ('mac10.15', 'x86'),
-
         ('win7', 'x86'),
         ('win10', 'x86'),
         ('trusty', 'x86_64'),
-
         ('fuchsia', 'x86_64'),
-
         ('ios12.2', 'x86_64'),
         ('ios13.0', 'x86_64'),
     )
@@ -154,8 +150,8 @@ class Port(object):
         # we don't have separate baselines for it (it shares the mac10.14
         # results in the platform/mac directory). This list will need to be
         # updated if/when we actually have separate baselines.
-        'mac': ['retina', 'mac10.10', 'mac10.11', 'mac10.12', 'mac10.13',
-                'mac10.14'],
+        'mac':
+        ['retina', 'mac10.10', 'mac10.11', 'mac10.12', 'mac10.13', 'mac10.14'],
         'win': ['win7', 'win10'],
         'linux': ['trusty'],
         'fuschia': ['fuchsia'],
@@ -204,7 +200,8 @@ class Port(object):
     # WPT_REGEX captures: 1. the root directory of WPT relative to web_tests
     # (without a trailing slash), 2. the path of the test within WPT (without a
     # leading slash).
-    WPT_REGEX = re.compile(r'^(?:virtual/[^/]+/)?(external/wpt|wpt_internal)/(.*)$')
+    WPT_REGEX = re.compile(
+        r'^(?:virtual/[^/]+/)?(external/wpt|wpt_internal)/(.*)$')
 
     # Because this is an abstract base class, arguments to functions may be
     # unused in this class - pylint: disable=unused-argument
@@ -248,7 +245,8 @@ class Port(object):
         self._dump_reader = None
 
         if not hasattr(options, 'configuration') or not options.configuration:
-            self.set_option_default('configuration', self.default_configuration())
+            self.set_option_default('configuration',
+                                    self.default_configuration())
         if not hasattr(options, 'target') or not options.target:
             self.set_option_default('target', self._options.configuration)
         self._test_configuration = None
@@ -257,13 +255,16 @@ class Port(object):
 
     def __str__(self):
         return 'Port{name=%s, version=%s, architecture=%s, test_configuration=%s}' % (
-            self._name, self._version, self._architecture, self._test_configuration)
+            self._name, self._version, self._architecture,
+            self._test_configuration)
 
     def get_platform_tags(self):
         """Returns system condition tags that are used to find active expectations
            for a test run on a specific system"""
-        return frozenset([self._options.configuration.lower(), self._version,
-                          self.port_name, self._architecture])
+        return frozenset([
+            self._options.configuration.lower(), self._version, self.port_name,
+            self._architecture
+        ])
 
     @memoized
     def _flag_specific_config_name(self):
@@ -294,25 +295,33 @@ class Port(object):
     @memoized
     def _flag_specific_configs(self):
         """Reads configuration from FlagSpecificConfig and returns a dictionary from name to args."""
-        config_file = self._filesystem.join(self.web_tests_dir(), 'FlagSpecificConfig')
+        config_file = self._filesystem.join(self.web_tests_dir(),
+                                            'FlagSpecificConfig')
         if not self._filesystem.exists(config_file):
             return {}
 
         try:
-            json_configs = json.loads(self._filesystem.read_text_file(config_file))
+            json_configs = json.loads(
+                self._filesystem.read_text_file(config_file))
         except ValueError as error:
-            raise ValueError('{} is not a valid JSON file: {}'.format(config_file, error))
+            raise ValueError('{} is not a valid JSON file: {}'.format(
+                config_file, error))
 
         configs = {}
         for config in json_configs:
             name = config['name']
             args = config['args']
             if not VALID_FILE_NAME_REGEX.match(name):
-                raise ValueError('{}: name "{}" contains invalid characters'.format(config_file, name))
+                raise ValueError(
+                    '{}: name "{}" contains invalid characters'.format(
+                        config_file, name))
             if name in configs:
-                raise ValueError('{} contains duplicated name {}.'.format(config_file, name))
+                raise ValueError('{} contains duplicated name {}.'.format(
+                    config_file, name))
             if args in configs.itervalues():
-                raise ValueError('{}: name "{}" has the same args as another entry.'.format(config_file, name))
+                raise ValueError(
+                    '{}: name "{}" has the same args as another entry.'.format(
+                        config_file, name))
             configs[name] = args
         return configs
 
@@ -324,14 +333,16 @@ class Port(object):
            3. Zero or more flags passed by --additional-driver-flag.
         """
         flags = []
-        flag_file = self._filesystem.join(self.web_tests_dir(), 'additional-driver-flag.setting')
+        flag_file = self._filesystem.join(self.web_tests_dir(),
+                                          'additional-driver-flag.setting')
         if self._filesystem.exists(flag_file):
             flags = self._filesystem.read_text_file(flag_file).split()
 
         flag_specific_option = self.get_option('flag_specific')
         if flag_specific_option:
             configs = self._flag_specific_configs()
-            assert flag_specific_option in configs, '{} is not defined in FlagSpecificConfig'.format(flag_specific_option)
+            assert flag_specific_option in configs, '{} is not defined in FlagSpecificConfig'.format(
+                flag_specific_option)
             flags += configs[flag_specific_option]
 
         flags += self.get_option('additional_driver_flag', [])
@@ -344,15 +355,16 @@ class Port(object):
                 '--run-web-tests',
                 '--ignore-certificate-errors-spki-list=' + WPT_FINGERPRINT +
                 ',' + SXG_FINGERPRINT + ',' + SXG_WPT_FINGERPRINT,
-                '--user-data-dir']
+                '--user-data-dir'
+            ]
 
         # If we're already repeating the tests more than once, then we're not
         # particularly concerned with speed. Resetting the shell between tests
         # increases test run time by 2-5X, but provides more consistent results
         # [less state leaks between tests].
-        if (self.get_option('reset_shell_between_tests') or
-                self.get_option('repeat_each') > 1 or
-                self.get_option('iterations') > 1):
+        if (self.get_option('reset_shell_between_tests')
+                or self.get_option('repeat_each') > 1
+                or self.get_option('iterations') > 1):
             flags += ['--reset-shell-between-tests']
         return flags
 
@@ -373,7 +385,8 @@ class Port(object):
         """Returns the amount of time in seconds to wait before killing the process in driver.stop()."""
         # We want to wait for at least 3 seconds, but if we are really slow, we
         # want to be slow on cleanup as well (for things like ASAN, Valgrind, etc.)
-        return 3.0 * float(self.get_option('time_out_ms', '0')) / self.default_timeout_ms()
+        return (3.0 * float(self.get_option('time_out_ms', '0')) /
+                self.default_timeout_ms())
 
     def default_batch_size(self):
         """Returns the default batch size to use for this port."""
@@ -410,15 +423,15 @@ class Port(object):
     def baseline_search_path(self):
         return (self.get_option('additional_platform_directory', []) +
                 self._flag_specific_baseline_search_path() +
-                self._compare_baseline() +
-                self.default_baseline_search_path())
+                self._compare_baseline() + self.default_baseline_search_path())
 
     def default_baseline_search_path(self):
         """Returns a list of absolute paths to directories to search under for baselines.
 
         The directories are searched in order.
         """
-        return map(self._absolute_baseline_path, self.FALLBACK_PATHS[self.version()])
+        return map(self._absolute_baseline_path,
+                   self.FALLBACK_PATHS[self.version()])
 
     @memoized
     def _compare_baseline(self):
@@ -428,8 +441,11 @@ class Port(object):
             return factory.get(target_port).default_baseline_search_path()
         return []
 
-    def _check_file_exists(self, path_to_file, file_description,
-                           override_step=None, more_logging=True):
+    def _check_file_exists(self,
+                           path_to_file,
+                           file_description,
+                           override_step=None,
+                           more_logging=True):
         """Verifies that the file is present where expected, or logs an error.
 
         Args:
@@ -455,10 +471,12 @@ class Port(object):
         if not self._check_file_exists(self._path_to_driver(), 'test driver'):
             return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
-        if not self._check_driver_build_up_to_date(self.get_option('configuration')):
+        if not self._check_driver_build_up_to_date(
+                self.get_option('configuration')):
             return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
-        if not self._check_file_exists(self._path_to_image_diff(), 'image_diff'):
+        if not self._check_file_exists(self._path_to_image_diff(),
+                                       'image_diff'):
             return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
         if self._dump_reader and not self._dump_reader.check_is_functional():
@@ -485,7 +503,8 @@ class Port(object):
         if httpd_path:
             try:
                 env = self.setup_environ_for_server()
-                if self._executive.run_command([httpd_path, '-v'], env=env, return_exit_code=True) != 0:
+                if self._executive.run_command(
+                    [httpd_path, '-v'], env=env, return_exit_code=True) != 0:
                     _log.error('httpd seems broken. Cannot run http tests.')
                     return False
                 return True
@@ -517,7 +536,8 @@ class Port(object):
         tempdir = self._filesystem.mkdtemp()
 
         expected_filename = self._filesystem.join(str(tempdir), 'expected.png')
-        self._filesystem.write_binary_file(expected_filename, expected_contents)
+        self._filesystem.write_binary_file(expected_filename,
+                                           expected_contents)
 
         actual_filename = self._filesystem.join(str(tempdir), 'actual.png')
         self._filesystem.write_binary_file(actual_filename, actual_contents)
@@ -526,7 +546,10 @@ class Port(object):
 
         executable = self._path_to_image_diff()
         # Although we are handed 'old', 'new', image_diff wants 'new', 'old'.
-        command = [executable, '--diff', actual_filename, expected_filename, diff_filename]
+        command = [
+            executable, '--diff', actual_filename, expected_filename,
+            diff_filename
+        ]
         # Notifies image_diff to allow a tolerance when calculating the pixel
         # diff. To account for variances when the tests are ran on an actual
         # GPU.
@@ -536,7 +559,8 @@ class Port(object):
         result = None
         err_str = None
         try:
-            exit_code = self._executive.run_command(command, return_exit_code=True)
+            exit_code = self._executive.run_command(
+                command, return_exit_code=True)
             if exit_code == 0:
                 # The images are the same.
                 result = None
@@ -567,11 +591,14 @@ class Port(object):
         reference_files = self.reference_files(test_name)
         if reference_files:
             # FIXME: How should this handle more than one type of reftest?
-            baseline_dict['.' + reference_files[0][0]] = self.relative_test_filename(reference_files[0][1])
+            baseline_dict['.' + reference_files[0][0]] = \
+                self.relative_test_filename(reference_files[0][1])
 
         for extension in self.BASELINE_EXTENSIONS:
-            path = self.expected_filename(test_name, extension, return_default=False)
-            baseline_dict[extension] = self.relative_test_filename(path) if path else path
+            path = self.expected_filename(
+                test_name, extension, return_default=False)
+            baseline_dict[extension] = self.relative_test_filename(
+                path) if path else path
 
         return baseline_dict
 
@@ -608,7 +635,11 @@ class Port(object):
             test_name_root, _ = self._filesystem.splitext(test_name)
         return test_name_root + suffix + extension
 
-    def expected_baselines(self, test_name, extension, all_baselines=False, match=True):
+    def expected_baselines(self,
+                           test_name,
+                           extension,
+                           all_baselines=False,
+                           match=True):
         """Given a test name, finds where the baseline results are located.
 
         Return values will be in the format appropriate for the current
@@ -639,12 +670,15 @@ class Port(object):
                     unless None was returned.)
         """
         baseline_filename = self.output_filename(
-            test_name, self.BASELINE_SUFFIX if match else self.BASELINE_MISMATCH_SUFFIX, extension)
+            test_name,
+            self.BASELINE_SUFFIX if match else self.BASELINE_MISMATCH_SUFFIX,
+            extension)
         baseline_search_path = self.baseline_search_path()
 
         baselines = []
         for platform_dir in baseline_search_path:
-            if self._filesystem.exists(self._filesystem.join(platform_dir, baseline_filename)):
+            if self._filesystem.exists(
+                    self._filesystem.join(platform_dir, baseline_filename)):
                 baselines.append((platform_dir, baseline_filename))
 
             if not all_baselines and baselines:
@@ -653,7 +687,8 @@ class Port(object):
         # If it wasn't found in a platform directory, return the expected
         # result in the test directory, even if no such file actually exists.
         platform_dir = self.web_tests_dir()
-        if self._filesystem.exists(self._filesystem.join(platform_dir, baseline_filename)):
+        if self._filesystem.exists(
+                self._filesystem.join(platform_dir, baseline_filename)):
             baselines.append((platform_dir, baseline_filename))
 
         if baselines:
@@ -661,8 +696,12 @@ class Port(object):
 
         return [(None, baseline_filename)]
 
-    def expected_filename(self, test_name, extension,
-                          return_default=True, fallback_base_for_virtual=True, match=True):
+    def expected_filename(self,
+                          test_name,
+                          extension,
+                          return_default=True,
+                          fallback_base_for_virtual=True,
+                          match=True):
         """Given a test name, returns an absolute path to its expected results.
 
         If no expected results are found in any of the searched directories,
@@ -691,17 +730,20 @@ class Port(object):
         """
         # The [0] means the first expected baseline (which is the one to be
         # used) in the fallback paths.
-        platform_dir, baseline_filename = self.expected_baselines(test_name, extension, match=match)[0]
+        platform_dir, baseline_filename = self.expected_baselines(
+            test_name, extension, match=match)[0]
         if platform_dir:
             return self._filesystem.join(platform_dir, baseline_filename)
 
         if fallback_base_for_virtual:
             actual_test_name = self.lookup_virtual_test_base(test_name)
             if actual_test_name:
-                return self.expected_filename(actual_test_name, extension, return_default, match=match)
+                return self.expected_filename(
+                    actual_test_name, extension, return_default, match=match)
 
         if return_default:
-            return self._filesystem.join(self.web_tests_dir(), baseline_filename)
+            return self._filesystem.join(self.web_tests_dir(),
+                                         baseline_filename)
         return None
 
     def fallback_expected_filename(self, test_name, extension):
@@ -711,16 +753,19 @@ class Port(object):
         Returns:
             An absolute path to the next fallback baseline, or None if not found.
         """
-        baselines = self.expected_baselines(test_name, extension, all_baselines=True)
+        baselines = self.expected_baselines(
+            test_name, extension, all_baselines=True)
         if len(baselines) < 2:
             actual_test_name = self.lookup_virtual_test_base(test_name)
             if actual_test_name:
                 if len(baselines) == 0:
-                    return self.fallback_expected_filename(actual_test_name, extension)
+                    return self.fallback_expected_filename(
+                        actual_test_name, extension)
                 # In this case, baselines[0] is the current baseline of the
                 # virtual test, so the first base test baseline is the fallback
                 # baseline of the virtual test.
-                return self.expected_filename(actual_test_name, extension, return_default=False)
+                return self.expected_filename(
+                    actual_test_name, extension, return_default=False)
             return None
 
         platform_dir, baseline_filename = baselines[1]
@@ -735,7 +780,8 @@ class Port(object):
         png_path = self.expected_filename(test_name, '.png')
 
         if self._filesystem.exists(png_path):
-            with self._filesystem.open_binary_file_for_reading(png_path) as filehandle:
+            with self._filesystem.open_binary_file_for_reading(
+                    png_path) as filehandle:
                 return read_checksum_from_png.read_checksum(filehandle)
 
         return None
@@ -775,7 +821,8 @@ class Port(object):
         reftest_list = []
         for expectation in ('==', '!='):
             for extension in Port.supported_file_extensions:
-                path = self.expected_filename(test_name, extension, match=(expectation == '=='))
+                path = self.expected_filename(
+                    test_name, extension, match=(expectation == '=='))
                 if self._filesystem.exists(path):
                     reftest_list.append((expectation, path))
         if reftest_list:
@@ -787,8 +834,10 @@ class Port(object):
             return []
         wpt_path = match.group(1)
         path_in_wpt = match.group(2)
-        for expectation, ref_path_in_wpt in self.wpt_manifest(wpt_path).extract_reference_list(path_in_wpt):
-            ref_absolute_path = self._filesystem.join(self.web_tests_dir(), wpt_path + ref_path_in_wpt)
+        for expectation, ref_path_in_wpt in self.wpt_manifest(
+                wpt_path).extract_reference_list(path_in_wpt):
+            ref_absolute_path = self._filesystem.join(
+                self.web_tests_dir(), wpt_path + ref_path_in_wpt)
             reftest_list.append((expectation, ref_absolute_path))
         return reftest_list
 
@@ -809,7 +858,8 @@ class Port(object):
 
         if paths:
             tests.extend(self._virtual_tests_matching_paths(paths))
-            if (any(wpt_path in path for wpt_path in self.WPT_DIRS for path in paths)
+            if (any(wpt_path in path for wpt_path in self.WPT_DIRS
+                    for path in paths)
                     # TODO(robertma): Remove this special case when external/wpt is moved to wpt.
                     or any('external' in path for path in paths)):
                 tests.extend(self._wpt_test_urls_matching_paths(paths))
@@ -817,16 +867,19 @@ class Port(object):
             tests.extend(self._all_virtual_tests())
             # '/' is used instead of filesystem.sep as the WPT manifest always
             # uses '/' for paths (it is not OS dependent).
-            tests.extend([wpt_path + '/' + test for wpt_path in self.WPT_DIRS
-                          for test in self.wpt_manifest(wpt_path).all_urls()])
+            tests.extend([
+                wpt_path + '/' + test for wpt_path in self.WPT_DIRS
+                for test in self.wpt_manifest(wpt_path).all_urls()
+            ])
         return tests
 
     def real_tests(self, paths):
         """Find all real tests in paths except WPT."""
         # When collecting test cases, skip these directories.
-        skipped_directories = set(
-            ['platform', 'resources', 'support', 'script-tests',
-             'reference', 'reftest'])
+        skipped_directories = set([
+            'platform', 'resources', 'support', 'script-tests', 'reference',
+            'reftest'
+        ])
         # Also ignore all WPT directories. Note that this is only an
         # optimization; is_non_wpt_test_file should skip WPT regardless.
         skipped_directories |= set(self.WPT_DIRS)
@@ -850,8 +903,16 @@ class Port(object):
 
     # When collecting test cases, we include any file with these extensions.
     supported_file_extensions = set([
-        '.html', '.xml', '.xhtml', '.xht', '.pl',
-        '.htm', '.php', '.svg', '.mht', '.pdf',
+        '.html',
+        '.xml',
+        '.xhtml',
+        '.xht',
+        '.pl',
+        '.htm',
+        '.php',
+        '.svg',
+        '.mht',
+        '.pdf',
     ])
 
     def _has_supported_extension(self, filename):
@@ -862,24 +923,30 @@ class Port(object):
     def is_non_wpt_test_file(self, dirname, filename):
         # Convert dirname to a relative path to web_tests with slashes
         # normalized and ensure it has a trailing slash.
-        normalized_test_dir = self.relative_test_filename(dirname) + self.TEST_PATH_SEPARATOR
-        if any(normalized_test_dir.startswith(d + self.TEST_PATH_SEPARATOR) for d in self.WPT_DIRS):
+        normalized_test_dir = self.relative_test_filename(
+            dirname) + self.TEST_PATH_SEPARATOR
+        if any(
+                normalized_test_dir.startswith(d + self.TEST_PATH_SEPARATOR)
+                for d in self.WPT_DIRS):
             return False
         extension = self._filesystem.splitext(filename)[1]
         if 'inspector-protocol' in dirname and extension == '.js':
             return True
         if 'devtools' in dirname and extension == '.js':
             return True
-        return (self._has_supported_extension(filename) and
-                not Port.is_reference_html_file(self._filesystem, dirname, filename))
+        return (self._has_supported_extension(filename)
+                and not Port.is_reference_html_file(self._filesystem, dirname,
+                                                    filename))
 
     @memoized
     def wpt_manifest(self, path):
         assert path in self.WPT_DIRS
         # Convert '/' to the platform-specific separator.
         path = self._filesystem.normpath(path)
-        manifest_path = self._filesystem.join(self.web_tests_dir(), path, MANIFEST_NAME)
-        if not self._filesystem.exists(manifest_path) or self.get_option('manifest_update', True):
+        manifest_path = self._filesystem.join(self.web_tests_dir(), path,
+                                              MANIFEST_NAME)
+        if not self._filesystem.exists(manifest_path) or self.get_option(
+                'manifest_update', True):
             _log.debug('Generating MANIFEST.json for %s...', path)
             WPTManifest.ensure_manifest(self, path)
         return WPTManifest(self._filesystem.read_text_file(manifest_path))
@@ -913,10 +980,8 @@ class Port(object):
         subdirectories.
         """
         dirname, basename = self.split_test(test_name)
-        return (
-            self._natural_sort_key(dirname + self.TEST_PATH_SEPARATOR),
-            self._natural_sort_key(basename)
-        )
+        return (self._natural_sort_key(dirname + self.TEST_PATH_SEPARATOR),
+                self._natural_sort_key(basename))
 
     def _natural_sort_key(self, string_to_split):
         """Turns a string into a list of string and number chunks.
@@ -926,6 +991,7 @@ class Port(object):
         http://www.codinghorror.com/blog/2007/12/sorting-for-humans-natural-sort-order.html
         http://nedbatchelder.com/blog/200712.html#e20071211T054956
         """
+
         def tryint(val):
             try:
                 return int(val)
@@ -938,7 +1004,10 @@ class Port(object):
         """Returns the list of top-level test directories."""
         web_tests_dir = self.web_tests_dir()
         fs = self._filesystem
-        return [d for d in fs.listdir(web_tests_dir) if fs.isdir(fs.join(web_tests_dir, d))]
+        return [
+            d for d in fs.listdir(web_tests_dir)
+            if fs.isdir(fs.join(web_tests_dir, d))
+        ]
 
     @memoized
     def test_isfile(self, test_name):
@@ -1011,7 +1080,7 @@ class Port(object):
     def web_tests_dir(self):
         custom_web_tests_dir = self.get_option('layout_tests_directory')
         if custom_web_tests_dir:
-            return  self._filesystem.abspath(custom_web_tests_dir)
+            return self._filesystem.abspath(custom_web_tests_dir)
         return self._path_finder.web_tests_dir()
 
     def skips_test(self, test):
@@ -1021,7 +1090,8 @@ class Port(object):
         only or because the test is marked as WontFix, but *not* if the test
         is only marked as Skip indicating a temporary skip.
         """
-        return self.skipped_due_to_smoke_tests(test) or self.skipped_in_never_fix_tests(test)
+        return self.skipped_due_to_smoke_tests(
+            test) or self.skipped_in_never_fix_tests(test)
 
     @memoized
     def _tests_from_file(self, filename):
@@ -1067,7 +1137,8 @@ class Port(object):
         contents = self._filesystem.read_text_file(path)
         test_expectations = TestExpectations(tags=self.get_platform_tags())
         test_expectations.parse_tagged_list(contents)
-        return ResultType.Skip in test_expectations.expectations_for(test).results
+        return ResultType.Skip in test_expectations.expectations_for(
+            test).results
 
     def path_to_never_fix_tests_file(self):
         return self._filesystem.join(self.web_tests_dir(), 'NeverFixTests')
@@ -1129,7 +1200,8 @@ class Port(object):
     @memoized
     def name_for_test(self, test_name):
         test_base = self.lookup_virtual_test_base(test_name)
-        if test_base and not self._filesystem.exists(self.abspath_for_test(test_name)):
+        if test_base and not self._filesystem.exists(
+                self.abspath_for_test(test_name)):
             return test_base
         return test_name
 
@@ -1144,7 +1216,8 @@ class Port(object):
         """Returns the absolute path directory which will store all web tests outputted
         files. It may include a sub directory for artifacts and it may store performance test results."""
         if not self._results_directory:
-            option_val = self.get_option('results_directory') or self.default_results_directory()
+            option_val = self.get_option(
+                'results_directory') or self.default_results_directory()
             # TODO(crbug.com/1027708): There are several blink tests step
             # configuration files in the infra repository which append the
             # layout-test-results to the value passed in for the
@@ -1162,7 +1235,8 @@ class Port(object):
         """Returns path to artifacts sub directory of the results directory. This
         directory will store test artifacts, which may include actual and expected
         output from web tests."""
-        return self._filesystem.join(self.results_directory(), ARTIFACTS_SUB_DIR)
+        return self._filesystem.join(self.results_directory(),
+                                     ARTIFACTS_SUB_DIR)
 
     def perf_results_directory(self):
         return self.results_directory()
@@ -1190,7 +1264,8 @@ class Port(object):
             self._filesystem.rmtree(cachedir)
 
         if self._dump_reader:
-            self._filesystem.maybe_make_directory(self._dump_reader.crash_dumps_directory())
+            self._filesystem.maybe_make_directory(
+                self._dump_reader.crash_dumps_directory())
 
     def num_workers(self, requested_num_workers):
         """Returns the number of available workers (possibly less than the number requested)."""
@@ -1221,16 +1296,12 @@ class Port(object):
         if 'TMPDIR' not in self.host.environ:
             self.host.environ['TMPDIR'] = tempfile.gettempdir()
         # CGIs are run directory-relative so they need an absolute TMPDIR
-        self.host.environ['TMPDIR'] = self._filesystem.abspath(self.host.environ['TMPDIR'])
+        self.host.environ['TMPDIR'] = self._filesystem.abspath(
+            self.host.environ['TMPDIR'])
         if self.host.platform.is_linux() or self.host.platform.is_freebsd():
             variables_to_copy += [
-                'XAUTHORITY',
-                'HOME',
-                'LANG',
-                'LD_LIBRARY_PATH',
-                'DBUS_SESSION_BUS_ADDRESS',
-                'XDG_DATA_DIRS',
-                'XDG_RUNTIME_DIR'
+                'XAUTHORITY', 'HOME', 'LANG', 'LD_LIBRARY_PATH',
+                'DBUS_SESSION_BUS_ADDRESS', 'XDG_DATA_DIRS', 'XDG_RUNTIME_DIR'
             ]
             clean_env['DISPLAY'] = self.host.environ.get('DISPLAY', ':1')
         if self.host.platform.is_mac():
@@ -1255,7 +1326,8 @@ class Port(object):
 
     def show_results_html_file(self, results_filename):
         """Displays the given HTML file in a user's browser."""
-        return self.host.user.open_url(abspath_to_uri(self.host.platform, results_filename))
+        return self.host.user.open_url(
+            abspath_to_uri(self.host.platform, results_filename))
 
     def create_driver(self, worker_number, no_timeout=False):
         """Returns a newly created Driver subclass for starting/stopping the
@@ -1268,16 +1340,21 @@ class Port(object):
         # be the case when the tests aren't run on the host platform.
         return False
 
-    def start_http_server(self, additional_dirs, number_of_drivers, output_dir=''):
+    def start_http_server(self,
+                          additional_dirs,
+                          number_of_drivers,
+                          output_dir=''):
         """Start a web server. Raise an error if it can't start or is already running.
 
         Ports can stub this out if they don't need a web server to be running.
         """
         assert not self._http_server, 'Already running an http server.'
         output_dir = output_dir or self.artifacts_directory()
-        server = apache_http.ApacheHTTP(self, output_dir,
-                                        additional_dirs=additional_dirs,
-                                        number_of_servers=(number_of_drivers * 4))
+        server = apache_http.ApacheHTTP(
+            self,
+            output_dir,
+            additional_dirs=additional_dirs,
+            number_of_servers=(number_of_drivers * 4))
         server.start()
         self._http_server = server
 
@@ -1288,7 +1365,10 @@ class Port(object):
         """
         assert not self._websocket_server, 'Already running a websocket server.'
         output_dir = output_dir or self.artifacts_directory()
-        server = pywebsocket.PyWebSocket(self, output_dir, python_executable=self._options.python_executable)
+        server = pywebsocket.PyWebSocket(
+            self,
+            output_dir,
+            python_executable=self._options.python_executable)
         server.start()
         self._websocket_server = server
 
@@ -1322,18 +1402,23 @@ class Port(object):
     def http_server_requires_http_protocol_options_unsafe(self):
         httpd_path = self.path_to_apache()
         intentional_syntax_error = 'INTENTIONAL_SYNTAX_ERROR'
-        cmd = [httpd_path,
-               '-t',
-               '-f', self.path_to_apache_config_file(),
-               '-C', 'ServerRoot "%s"' % self.apache_server_root(),
-               '-C', 'HttpProtocolOptions Unsafe',
-               '-C', intentional_syntax_error]
+        # yapf: disable
+        cmd = [
+            httpd_path,
+            '-t',
+            '-f', self.path_to_apache_config_file(),
+            '-C', 'ServerRoot "%s"' % self.apache_server_root(),
+            '-C', 'HttpProtocolOptions Unsafe',
+            '-C', intentional_syntax_error
+        ]
+        # yapf: enable
         env = self.setup_environ_for_server()
 
         def error_handler(err):
             pass
-        output = self._executive.run_command(cmd, env=env,
-                                             error_handler=error_handler)
+
+        output = self._executive.run_command(
+            cmd, env=env, error_handler=error_handler)
         # If apache complains about the intentional error, it apparently
         # accepted the HttpProtocolOptions directive, and we should add it.
         return intentional_syntax_error in output
@@ -1361,7 +1446,9 @@ class Port(object):
     def test_configuration(self):
         """Returns the current TestConfiguration for the port."""
         if not self._test_configuration:
-            self._test_configuration = TestConfiguration(self._version, self._architecture, self._options.configuration.lower())
+            self._test_configuration = TestConfiguration(
+                self._version, self._architecture,
+                self._options.configuration.lower())
         return self._test_configuration
 
     # FIXME: Belongs on a Platform object.
@@ -1392,24 +1479,27 @@ class Port(object):
         test_configurations = []
         for version, architecture in self.ALL_SYSTEMS:
             for build_type in self.ALL_BUILD_TYPES:
-                test_configurations.append(TestConfiguration(version, architecture, build_type))
+                test_configurations.append(
+                    TestConfiguration(version, architecture, build_type))
         return test_configurations
 
     def _flag_specific_expectations_path(self):
         config_name = self._flag_specific_config_name()
         if config_name:
-            return self._filesystem.join(
-                self.web_tests_dir(), self.FLAG_EXPECTATIONS_PREFIX, config_name)
+            return self._filesystem.join(self.web_tests_dir(),
+                                         self.FLAG_EXPECTATIONS_PREFIX,
+                                         config_name)
 
     def _flag_specific_baseline_search_path(self):
         config_name = self._flag_specific_config_name()
         if not config_name:
             return []
-        flag_dir = self._filesystem.join(
-            self.web_tests_dir(), 'flag-specific', config_name)
+        flag_dir = self._filesystem.join(self.web_tests_dir(), 'flag-specific',
+                                         config_name)
         platform_dirs = [
             self._filesystem.join(flag_dir, 'platform', platform_dir)
-            for platform_dir in self.FALLBACK_PATHS[self.version()]]
+            for platform_dir in self.FALLBACK_PATHS[self.version()]
+        ]
         return platform_dirs + [flag_dir]
 
     def expectations_dict(self):
@@ -1437,20 +1527,24 @@ class Port(object):
         for path in self.get_option('additional_expectations', []):
             expanded_path = self._filesystem.expanduser(path)
             if self._filesystem.exists(expanded_path):
-                _log.debug("reading additional_expectations from path '%s'", path)
-                expectations[path] = self._filesystem.read_text_file(expanded_path)
+                _log.debug("reading additional_expectations from path '%s'",
+                           path)
+                expectations[path] = self._filesystem.read_text_file(
+                    expanded_path)
             else:
                 # TODO(rmhasan): Fix additional expectation paths for
                 # not_site_per_process_blink_web_tests, then change this back
                 # to raising exceptions for incorrect expectation paths.
-                _log.warning("additional_expectations path '%s' does not exist", path)
+                _log.warning(
+                    "additional_expectations path '%s' does not exist", path)
         return expectations
 
     def all_expectations_dict(self):
         """Returns an OrderedDict of name -> expectations strings."""
         expectations = self.expectations_dict()
 
-        flag_path = self._filesystem.join(self.web_tests_dir(), self.FLAG_EXPECTATIONS_PREFIX)
+        flag_path = self._filesystem.join(self.web_tests_dir(),
+                                          self.FLAG_EXPECTATIONS_PREFIX)
         if not self._filesystem.exists(flag_path):
             return expectations
 
@@ -1464,7 +1558,8 @@ class Port(object):
                 try:
                     expectations[path] = self._filesystem.read_text_file(path)
                 except UnicodeDecodeError:
-                    _log.error('Failed to read expectations file: \'%s\'', path)
+                    _log.error('Failed to read expectations file: \'%s\'',
+                               path)
                     raise
 
         return expectations
@@ -1473,12 +1568,14 @@ class Port(object):
         if not self.get_option('ignore_flaky_tests'):
             return {}
 
-        full_port_name = self.determine_full_port_name(self.host, self._options, self.port_name)
+        full_port_name = self.determine_full_port_name(
+            self.host, self._options, self.port_name)
         builder_category = self.get_option('ignore_builder_category', 'layout')
         factory = BotTestExpectationsFactory(self.host.builders)
         # FIXME: This only grabs release builder's flakiness data. If we're running debug,
         # when we should grab the debug builder's data.
-        expectations = factory.expectations_for_port(full_port_name, builder_category)
+        expectations = factory.expectations_for_port(full_port_name,
+                                                     builder_category)
 
         if not expectations:
             return {}
@@ -1502,7 +1599,8 @@ class Port(object):
             self.path_to_generic_test_expectations_file(),
             self.path_to_webdriver_expectations_file(),
             self._filesystem.join(self.web_tests_dir(), 'NeverFixTests'),
-            self._filesystem.join(self.web_tests_dir(), 'StaleTestExpectations'),
+            self._filesystem.join(self.web_tests_dir(),
+                                  'StaleTestExpectations'),
             self._filesystem.join(self.web_tests_dir(), 'SlowTests'),
             self._flag_specific_expectations_path()
         ])
@@ -1524,7 +1622,8 @@ class Port(object):
 
     @memoized
     def path_to_webdriver_expectations_file(self):
-        return self._filesystem.join(self.web_tests_dir(), 'WebDriverExpectations')
+        return self._filesystem.join(self.web_tests_dir(),
+                                     'WebDriverExpectations')
 
     def repository_path(self):
         """Returns the repository path for the chromium code base."""
@@ -1561,24 +1660,28 @@ class Port(object):
 
         This is needed only by ports that use the apache_http_server module.
         """
-        config_file_from_env = self.host.environ.get('WEBKIT_HTTP_SERVER_CONF_PATH')
+        config_file_from_env = self.host.environ.get(
+            'WEBKIT_HTTP_SERVER_CONF_PATH')
         if config_file_from_env:
             if not self._filesystem.exists(config_file_from_env):
-                raise IOError('%s was not found on the system' % config_file_from_env)
+                raise IOError(
+                    '%s was not found on the system' % config_file_from_env)
             return config_file_from_env
 
         config_file_name = self._apache_config_file_name_for_platform()
-        return self._filesystem.join(self.apache_config_directory(), config_file_name)
+        return self._filesystem.join(self.apache_config_directory(),
+                                     config_file_name)
 
     def _apache_version(self):
         config = self._executive.run_command([self.path_to_apache(), '-v'])
         # Log version including patch level.
-        _log.debug('Found apache version %s', re.sub(
-            r'(?:.|\n)*Server version: Apache/(\d+\.\d+(?:\.\d+)?)(?:.|\n)*',
-            r'\1', config))
-        return re.sub(
-            r'(?:.|\n)*Server version: Apache/(\d+\.\d+)(?:.|\n)*',
-            r'\1', config)
+        _log.debug(
+            'Found apache version %s',
+            re.sub(
+                r'(?:.|\n)*Server version: Apache/(\d+\.\d+(?:\.\d+)?)(?:.|\n)*',
+                r'\1', config))
+        return re.sub(r'(?:.|\n)*Server version: Apache/(\d+\.\d+)(?:.|\n)*',
+                      r'\1', config)
 
     def _apache_config_file_name_for_platform(self):
         if self.host.platform.is_linux():
@@ -1586,7 +1689,8 @@ class Port(object):
 
             custom_configurations = ['arch', 'debian', 'fedora', 'redhat']
             if distribution in custom_configurations:
-                return '%s-httpd-%s.conf' % (distribution, self._apache_version())
+                return '%s-httpd-%s.conf' % (distribution,
+                                             self._apache_version())
 
         return 'apache2-httpd-' + self._apache_version() + '.conf'
 
@@ -1605,7 +1709,8 @@ class Port(object):
         """Return the absolute path to the top of the baseline tree for a
         given platform directory.
         """
-        return self._filesystem.join(self.web_tests_dir(), 'platform', platform_dir)
+        return self._filesystem.join(self.web_tests_dir(), 'platform',
+                                     platform_dir)
 
     def _driver_class(self):
         """Returns the port's driver implementation."""
@@ -1626,7 +1731,8 @@ class Port(object):
             # serialize access to it across all the concurrently running drivers.
 
             llvm_symbolizer_path = self._path_from_chromium_base(
-                'third_party', 'llvm-build', 'Release+Asserts', 'bin', 'llvm-symbolizer')
+                'third_party', 'llvm-build', 'Release+Asserts', 'bin',
+                'llvm-symbolizer')
             if self._filesystem.exists(llvm_symbolizer_path):
                 env = self.host.environ.copy()
                 env['LLVM_SYMBOLIZER_PATH'] = llvm_symbolizer_path
@@ -1636,9 +1742,13 @@ class Port(object):
                 'tools', 'valgrind', 'asan', 'asan_symbolize.py')
             sanitizer_strip_path_prefix = 'Release/../../'
             if self._filesystem.exists(sanitizer_filter_path):
-                stderr = self._executive.run_command(
-                    ['flock', sys.executable, sanitizer_filter_path, sanitizer_strip_path_prefix],
-                    input=stderr, decode_output=False, env=env)
+                stderr = self._executive.run_command([
+                    'flock', sys.executable, sanitizer_filter_path,
+                    sanitizer_strip_path_prefix
+                ],
+                                                     input=stderr,
+                                                     decode_output=False,
+                                                     env=env)
 
         name_str = name or '<unknown process name>'
         pid_str = str(pid or '<unknown>')
@@ -1655,10 +1765,10 @@ class Port(object):
         else:
             stderr_lines = [u'<empty>']
 
-        return (stderr,
-                'crash log for %s (pid %s):\n%s\n%s\n' % (name_str, pid_str,
-                                                          '\n'.join(('STDOUT: ' + l) for l in stdout_lines),
-                                                          '\n'.join(('STDERR: ' + l) for l in stderr_lines)),
+        return (stderr, 'crash log for %s (pid %s):\n%s\n%s\n' %
+                (name_str, pid_str, '\n'.join(
+                    ('STDOUT: ' + l) for l in stdout_lines), '\n'.join(
+                        ('STDERR: ' + l) for l in stderr_lines)),
                 self._get_crash_site(stderr_lines))
 
     def _get_crash_site(self, stderr_lines):
@@ -1686,16 +1796,22 @@ class Port(object):
 
     def virtual_test_suites(self):
         if self._virtual_test_suites is None:
-            path_to_virtual_test_suites = self._filesystem.join(self.web_tests_dir(), 'VirtualTestSuites')
-            assert self._filesystem.exists(path_to_virtual_test_suites), path_to_virtual_test_suites + ' not found'
+            path_to_virtual_test_suites = self._filesystem.join(
+                self.web_tests_dir(), 'VirtualTestSuites')
+            assert self._filesystem.exists(path_to_virtual_test_suites), \
+                path_to_virtual_test_suites + ' not found'
             try:
-                test_suite_json = json.loads(self._filesystem.read_text_file(path_to_virtual_test_suites))
+                test_suite_json = json.loads(
+                    self._filesystem.read_text_file(
+                        path_to_virtual_test_suites))
                 self._virtual_test_suites = []
                 for json_config in test_suite_json:
                     vts = VirtualTestSuite(**json_config)
-                    if any(vts.full_prefix == s.full_prefix for s in self._virtual_test_suites):
-                        raise ValueError('{} contains entries with the same prefix: {!r}. Please combine them'
-                                         .format(path_to_virtual_test_suites, json_config))
+                    if any(vts.full_prefix == s.full_prefix
+                           for s in self._virtual_test_suites):
+                        raise ValueError(
+                            '{} contains entries with the same prefix: {!r}. Please combine them'
+                            .format(path_to_virtual_test_suites, json_config))
                     self._virtual_test_suites.append(vts)
             except ValueError as error:
                 raise ValueError('{} is not a valid JSON file: {}'.format(
@@ -1718,33 +1834,42 @@ class Port(object):
             # TODO(crbug.com/982208): If we can pass in the set of paths and
             # maps then this could be more efficient.
             if suite.bases:
-                tests.extend(map(lambda x : suite.full_prefix + x, self.real_tests(suite.bases)))
+                tests.extend(
+                    map(lambda x: suite.full_prefix + x,
+                        self.real_tests(suite.bases)))
 
         if suite_paths:
-            tests.extend(self._wpt_test_urls_matching_paths(suite_paths, suite_prefixes))
+            tests.extend(
+                self._wpt_test_urls_matching_paths(suite_paths,
+                                                   suite_prefixes))
         return tests
 
     def _all_virtual_tests_for_suite(self, suite):
         if not suite.bases:
             return []
         tests = []
-        tests.extend(map(lambda x : suite.full_prefix + x, self.real_tests(suite.bases)))
-        tests.extend(self._wpt_test_urls_matching_paths(suite.bases,
-                                                        [suite.full_prefix] * len(suite.bases)))
+        tests.extend(
+            map(lambda x: suite.full_prefix + x, self.real_tests(suite.bases)))
+        tests.extend(
+            self._wpt_test_urls_matching_paths(
+                suite.bases, [suite.full_prefix] * len(suite.bases)))
         return tests
 
     def _virtual_tests_matching_paths(self, paths):
         tests = []
         normalized_paths = [self.normalize_test_name(p) for p in paths]
         for suite in self.virtual_test_suites():
-            if not any(p.startswith(suite.full_prefix) for p in normalized_paths):
+            if not any(
+                    p.startswith(suite.full_prefix) for p in normalized_paths):
                 continue
             for test in self._all_virtual_tests_for_suite(suite):
                 if any(test.startswith(p) for p in normalized_paths):
                     tests.append(test)
 
         if any(self._path_has_wildcard(path) for path in paths):
-            _log.warning('WARNING: Wildcards in paths are not supported for virtual test suites.')
+            _log.warning(
+                'WARNING: Wildcards in paths are not supported for virtual test suites.'
+            )
 
         return tests
 
@@ -1764,15 +1889,18 @@ class Port(object):
         # Generate the manifest files if needed and then read them. Do this once
         # for this whole method as the file is large and generation/loading is
         # slow.
-        wpts = [(wpt_path, self.wpt_manifest(wpt_path)) for wpt_path in self.WPT_DIRS]
+        wpts = [(wpt_path, self.wpt_manifest(wpt_path))
+                for wpt_path in self.WPT_DIRS]
 
-        _log.debug("Finding WPT tests that match %d path prefixes", len(filter_paths));
+        _log.debug("Finding WPT tests that match %d path prefixes",
+                   len(filter_paths))
 
         tests = []
         # This walks through the set of paths where we should look for tests.
         # For each path, a map can be provided that we replace 'path' with in
         # the result.
-        for filter_path, virtual_prefix in itertools.izip_longest(filter_paths, virtual_prefixes):
+        for filter_path, virtual_prefix in itertools.izip_longest(
+                filter_paths, virtual_prefixes):
             # This is to make sure "external[\\/]?" can also match to
             # external/wpt.
             # TODO(robertma): Remove this special case when external/wpt is
@@ -1810,9 +1938,11 @@ class Port(object):
                     # to only match the exact directory name and not directories
                     # with the filter as a prefix.
                     if wpt_manifest.is_test_file(filter_path_from_wpt):
-                        filter_path_from_wpt = re.sub(r'\.js$', '.', filter_path_from_wpt)
+                        filter_path_from_wpt = re.sub(r'\.js$', '.',
+                                                      filter_path_from_wpt)
                     elif not wpt_manifest.is_test_url(filter_path_from_wpt):
-                        filter_path_from_wpt = filter_path_from_wpt.rstrip('/') + '/'
+                        filter_path_from_wpt = filter_path_from_wpt.rstrip(
+                            '/') + '/'
 
                 # We now have a path to an actual test directory or file on
                 # disk, in unix format, relative to the WPT directory.
@@ -1831,7 +1961,8 @@ class Port(object):
                         # directory. If a |virtual_prefix| was given, we prepend
                         # that to the result.
                         prefix = virtual_prefix if virtual_prefix else ''
-                        tests.append(prefix + wpt_path + '/' + test_path_from_wpt)
+                        tests.append(prefix + wpt_path + '/' +
+                                     test_path_from_wpt)
         return tests
 
     def _lookup_virtual_suite(self, test_name):
@@ -1845,10 +1976,12 @@ class Port(object):
         if not suite:
             return None
         assert test_name.startswith(suite.full_prefix)
-        maybe_base = self.normalize_test_name(test_name[len(suite.full_prefix):])
+        maybe_base = self.normalize_test_name(
+            test_name[len(suite.full_prefix):])
         for base in suite.bases:
             normalized_base = self.normalize_test_name(base)
-            if normalized_base.startswith(maybe_base) or maybe_base.startswith(normalized_base):
+            if normalized_base.startswith(maybe_base) or maybe_base.startswith(
+                    normalized_base):
                 return maybe_base
         return None
 
@@ -1867,8 +2000,7 @@ class Port(object):
         target = target or self.get_option('target')
         return self._filesystem.join(
             self._path_from_chromium_base(),
-            self.get_option('build_directory') or 'out',
-            target, *comps)
+            self.get_option('build_directory') or 'out', target, *comps)
 
     def _check_driver_build_up_to_date(self, target):
         # FIXME: We should probably get rid of this check altogether as it has
@@ -1885,11 +2017,13 @@ class Port(object):
             debug_mtime = self._filesystem.mtime(debug_path)
             release_mtime = self._filesystem.mtime(release_path)
 
-            if (debug_mtime > release_mtime and target == 'Release' or
-                    release_mtime > debug_mtime and target == 'Debug'):
+            if (debug_mtime > release_mtime and target == 'Release'
+                    or release_mtime > debug_mtime and target == 'Debug'):
                 most_recent_binary = 'Release' if target == 'Debug' else 'Debug'
-                _log.warning('You are running the %s binary. However the %s binary appears to be more recent. '
-                             'Please pass --%s.', target, most_recent_binary, most_recent_binary.lower())
+                _log.warning(
+                    'You are running the %s binary. However the %s binary appears to be more recent. '
+                    'Please pass --%s.', target, most_recent_binary,
+                    most_recent_binary.lower())
                 _log.warning('')
         # This will fail if we don't have both a debug and release binary.
         # That's fine because, in this case, we must already be running the
@@ -1914,12 +2048,14 @@ class Port(object):
                     exists = True
                     break
             if not exists:
-                message = 'You are missing %s under %s.' % (font_file, font_dirs)
+                message = 'You are missing %s under %s.' % (font_file,
+                                                            font_dirs)
                 if package:
                     message += ' Try installing %s. See build instructions.' % package
 
                 _log.error(message)
-                raise TestRunException(exit_codes.SYS_DEPS_EXIT_STATUS, message)
+                raise TestRunException(exit_codes.SYS_DEPS_EXIT_STATUS,
+                                       message)
         return result
 
     @staticmethod
@@ -1960,8 +2096,8 @@ class Port(object):
         names_after_split = test_name.split(
             Port.WEBDRIVER_SUBTEST_PYTEST_SEPARATOR)
 
-        assert len(names_after_split) <= 2, "%s has a length greater than 2 after split by ::" % (
-            test_name)
+        assert len(names_after_split) <= 2, \
+            "%s has a length greater than 2 after split by ::" % (test_name)
         if len(names_after_split) == 1:
             return (names_after_split[0], None)
 
@@ -1975,9 +2111,9 @@ class Port(object):
 
 
 class VirtualTestSuite(object):
-
     def __init__(self, prefix=None, bases=None, args=None):
-        assert VALID_FILE_NAME_REGEX.match(prefix), "Virtual test suite prefix '{}' contains invalid characters".format(prefix)
+        assert VALID_FILE_NAME_REGEX.match(prefix), \
+            "Virtual test suite prefix '{}' contains invalid characters".format(prefix)
         assert isinstance(bases, list)
         assert args
         assert isinstance(args, list)
@@ -1986,4 +2122,5 @@ class VirtualTestSuite(object):
         self.args = args
 
     def __repr__(self):
-        return "VirtualTestSuite('%s', %s, %s)" % (self.full_prefix, self.bases, self.args)
+        return "VirtualTestSuite('%s', %s, %s)" % (self.full_prefix,
+                                                   self.bases, self.args)

@@ -33,18 +33,29 @@ from blinkpy.web_tests.models.typ_types import ResultType, Artifacts
 from blinkpy.web_tests.port.base import ARTIFACTS_SUB_DIR
 
 
-def build_test_result(
-    driver_output, test_name, retry_attempt=0,
-        failures=None, test_run_time=None, reftest_type=None,
-        pid=None, references=None, device_failed=False, crash_site=None):
+def build_test_result(driver_output,
+                      test_name,
+                      retry_attempt=0,
+                      failures=None,
+                      test_run_time=None,
+                      reftest_type=None,
+                      pid=None,
+                      references=None,
+                      device_failed=False,
+                      crash_site=None):
     failures = failures or []
     if not failures and driver_output.error:
         failures.append(test_failures.PassWithStderr(driver_output))
     return TestResult(
-        test_name, retry_attempt=retry_attempt,
-        failures=failures, test_run_time=test_run_time,
-        reftest_type=reftest_type, pid=pid, references=references,
-        device_failed=device_failed, crash_site=crash_site)
+        test_name,
+        retry_attempt=retry_attempt,
+        failures=failures,
+        test_run_time=test_run_time,
+        reftest_type=reftest_type,
+        pid=pid,
+        references=references,
+        device_failed=device_failed,
+        crash_site=crash_site)
 
 
 class TestResult(object):
@@ -57,9 +68,16 @@ class TestResult(object):
     def loads(string):
         return cPickle.loads(string)
 
-    def __init__(self, test_name, retry_attempt=0,  failures=None,
-                 test_run_time=None, reftest_type=None,
-                 pid=None, references=None, device_failed=False, crash_site=None):
+    def __init__(self,
+                 test_name,
+                 retry_attempt=0,
+                 failures=None,
+                 test_run_time=None,
+                 reftest_type=None,
+                 pid=None,
+                 references=None,
+                 device_failed=False,
+                 crash_site=None):
         self.test_name = test_name
         self.failures = failures or []
         self.test_run_time = test_run_time or 0  # The time taken to execute the test itself.
@@ -75,12 +93,13 @@ class TestResult(object):
 
         results = set([f.result for f in self.failures] or [ResultType.Pass])
         assert len(results) <= 2, (
-            'single_test_runner.py incorrectly reported results %s for test %s' %
-            (', '.join(results), test_name))
+            'single_test_runner.py incorrectly reported results %s for test %s'
+            % (', '.join(results), test_name))
         if len(results) == 2:
             assert ResultType.Timeout in results and ResultType.Failure in results, (
                 'The only combination of 2 results allowable is TIMEOUT and FAIL. '
-                'Test %s reported the following results %s' % (test_name, ', '.join(results)))
+                'Test %s reported the following results %s' %
+                (test_name, ', '.join(results)))
             self.type = ResultType.Timeout
         else:
             # FIXME: Setting this in the constructor makes this class hard to mutate.
@@ -92,7 +111,10 @@ class TestResult(object):
         self.total_run_time = 0  # The time taken to run the test plus any references, compute diffs, etc.
         self.test_number = None
         self.artifacts = Artifacts(
-            self.results_directory, self.filesystem, retry_attempt, ARTIFACTS_SUB_DIR,
+            self.results_directory,
+            self.filesystem,
+            retry_attempt,
+            ARTIFACTS_SUB_DIR,
             repeat_tests=self.repeat_tests)
 
     def create_artifacts(self):
@@ -100,11 +122,11 @@ class TestResult(object):
             failure.create_artifacts(self.artifacts)
 
     def __eq__(self, other):
-        return (self.test_name == other.test_name and
-                self.failures == other.failures and
-                self.test_run_time == other.test_run_time and
-                self.retry_attempt == other.retry_attempt and
-                self.results_directory == other.results_directory)
+        return (self.test_name == other.test_name
+                and self.failures == other.failures
+                and self.test_run_time == other.test_run_time
+                and self.retry_attempt == other.retry_attempt
+                and self.results_directory == other.results_directory)
 
     def __ne__(self, other):
         return not (self == other)

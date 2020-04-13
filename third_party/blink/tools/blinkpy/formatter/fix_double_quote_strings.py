@@ -1,7 +1,6 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """A 2to3 fixer that converts all string literals to use double quotes.
 
 Strings that contain double quotes will not be modified. Prefixed string

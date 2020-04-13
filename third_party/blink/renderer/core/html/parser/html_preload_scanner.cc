@@ -334,7 +334,16 @@ class TokenPreloadScanner::StartTagScanner {
       }
     }
 
-    request->SetIntegrityMetadata(integrity_metadata_);
+    // Do not set integrity metadata for <link> elements for destinations not
+    // supporting SRI (crbug.com/1058045).
+    // A corresponding check for non-preload-scanner code path is in
+    // PreloadHelper::PreloadIfNeeded().
+    // TODO(crbug.com/981419): Honor the integrity attribute value for all
+    // supported preload destinations, not just the destinations that support
+    // SRI in the first place.
+    if (type == ResourceType::kScript || type == ResourceType::kCSSStyleSheet) {
+      request->SetIntegrityMetadata(integrity_metadata_);
+    }
 
     if (scanner_type_ == ScannerType::kInsertion)
       request->SetFromInsertionScanner(true);

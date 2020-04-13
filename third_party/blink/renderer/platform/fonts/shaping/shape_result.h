@@ -146,7 +146,6 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   static scoped_refptr<ShapeResult> CreateForStretchyMathOperator(
       const Font*,
       TextDirection,
-      OpenTypeMathStretchData::StretchAxis,
       Glyph,
       float stretch_size);
   static scoped_refptr<ShapeResult> CreateForStretchyMathOperator(

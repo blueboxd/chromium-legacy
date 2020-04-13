@@ -285,9 +285,11 @@ CompositingReasons CompositingReasonFinder::CompositingReasonsForWillChange(
     reasons |= CompositingReason::kWillChangeTransform;
   if (style.HasWillChangeOpacityHint())
     reasons |= CompositingReason::kWillChangeOpacity;
+  if (style.HasWillChangeFilterHint())
+    reasons |= CompositingReason::kWillChangeFilter;
 
-  // kWillChangeOther is needed only when neither kWillChangeTransform nor
-  // kWillChangeOpacity is set.
+  // kWillChangeOther is needed only when none of the explicit kWillChange*
+  // reasons are set.
   if (reasons == CompositingReason::kNone &&
       style.HasWillChangeCompositingHint())
     reasons |= CompositingReason::kWillChangeOther;

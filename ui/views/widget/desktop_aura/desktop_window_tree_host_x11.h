@@ -17,11 +17,11 @@
 namespace ui {
 enum class DomCode;
 class X11Window;
+class X11DesktopWindowMoveClient;
 }  // namespace ui
 
 namespace views {
 class DesktopDragDropClientAuraX11;
-class X11DesktopWindowMoveClient;
 
 class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
                                               public ui::XEventDelegate {
@@ -58,7 +58,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
 
   DesktopDragDropClientAuraX11* drag_drop_client_ = nullptr;
 
-  std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
+  std::unique_ptr<ui::X11DesktopWindowMoveClient> x11_window_move_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11);
 };

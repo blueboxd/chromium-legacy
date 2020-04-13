@@ -126,7 +126,7 @@ ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (!service_) {
+  if (!service_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, kNoServiceError));
     return promise;
@@ -152,7 +152,7 @@ ScriptPromise ImageCapture::getPhotoSettings(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (!service_) {
+  if (!service_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, kNoServiceError));
     return promise;
@@ -189,7 +189,7 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
     return promise;
   }
 
-  if (!service_) {
+  if (!service_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, kNoServiceError));
     return promise;
@@ -269,7 +269,7 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* script_state) {
         "The associated Track is in an invalid state."));
     return promise;
   }
-  if (!service_) {
+  if (!service_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, kNoServiceError));
     return promise;
@@ -343,7 +343,7 @@ void ImageCapture::SetMediaTrackConstraints(
     ScriptPromiseResolver* resolver,
     const HeapVector<Member<MediaTrackConstraintSet>>& constraints_vector) {
   DCHECK_GT(constraints_vector.size(), 0u);
-  if (!service_) {
+  if (!service_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, kNoServiceError));
     return;
@@ -691,6 +691,7 @@ void ImageCapture::GetMediaTrackSettings(MediaTrackSettings* settings) const {
 ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
     : ExecutionContextLifecycleObserver(context),
       stream_track_(track),
+      service_(context),
       capabilities_(MediaTrackCapabilities::Create()),
       settings_(MediaTrackSettings::Create()),
       current_constraints_(MediaTrackConstraintSet::Create()),
@@ -704,7 +705,8 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
     return;
 
   GetFrame()->GetBrowserInterfaceBroker().GetInterface(
-      service_.BindNewPipeAndPassReceiver());
+      service_.BindNewPipeAndPassReceiver(
+          context->GetTaskRunner(TaskType::kDOMManipulation)));
 
   service_.set_disconnect_handler(WTF::Bind(
       &ImageCapture::OnServiceConnectionError, WrapWeakPersistent(this)));
@@ -957,6 +959,7 @@ void ImageCapture::ResolveWithPhotoCapabilities(
 
 void ImageCapture::Trace(Visitor* visitor) {
   visitor->Trace(stream_track_);
+  visitor->Trace(service_);
   visitor->Trace(capabilities_);
   visitor->Trace(settings_);
   visitor->Trace(photo_settings_);

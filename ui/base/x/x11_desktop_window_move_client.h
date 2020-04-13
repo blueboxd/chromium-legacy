@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_X11_DESKTOP_WINDOW_MOVE_CLIENT_H_
-#define UI_VIEWS_WIDGET_DESKTOP_AURA_X11_DESKTOP_WINDOW_MOVE_CLIENT_H_
+#ifndef UI_BASE_X_X11_DESKTOP_WINDOW_MOVE_CLIENT_H_
+#define UI_BASE_X_X11_DESKTOP_WINDOW_MOVE_CLIENT_H_
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
+#include "ui/base/x/x11_move_loop_delegate.h"
+#include "ui/base/x/x11_whole_screen_move_loop.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/x11.h"
-#include "ui/views/views_export.h"
-#include "ui/views/widget/desktop_aura/x11_move_loop_delegate.h"
-#include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
 
 namespace ui {
-class XWindow;
-}
 
-namespace views {
+class XWindow;
 
 // When we're dragging tabs, we need to manually position our window.
-class VIEWS_EXPORT X11DesktopWindowMoveClient
-    : public views::X11MoveLoopDelegate {
+class COMPONENT_EXPORT(UI_BASE_X) X11DesktopWindowMoveClient
+    : public X11MoveLoopDelegate {
  public:
   explicit X11DesktopWindowMoveClient(ui::XWindow* window);
   ~X11DesktopWindowMoveClient() override;
@@ -49,6 +47,6 @@ class VIEWS_EXPORT X11DesktopWindowMoveClient
   gfx::Vector2d window_offset_;
 };
 
-}  // namespace views
+}  // namespace ui
 
-#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_X11_DESKTOP_WINDOW_MOVE_CLIENT_H_
+#endif  // UI_BASE_X_X11_DESKTOP_WINDOW_MOVE_CLIENT_H_

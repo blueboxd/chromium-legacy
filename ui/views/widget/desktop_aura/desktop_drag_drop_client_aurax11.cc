@@ -26,6 +26,7 @@
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_drag_context.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_whole_screen_move_loop.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -34,7 +35,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
-#include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
 #include "ui/views/widget/widget.h"
 
 using aura::client::DragDropDelegate;
@@ -251,9 +251,9 @@ void DesktopDragDropClientAuraX11::OnMoveLoopEnded() {
   XDragDropClient::HandleMoveLoopEnded();
 }
 
-std::unique_ptr<X11MoveLoop> DesktopDragDropClientAuraX11::CreateMoveLoop(
+std::unique_ptr<ui::X11MoveLoop> DesktopDragDropClientAuraX11::CreateMoveLoop(
     X11MoveLoopDelegate* delegate) {
-  return base::WrapUnique(new X11WholeScreenMoveLoop(this));
+  return base::WrapUnique(new ui::X11WholeScreenMoveLoop(this));
 }
 
 void DesktopDragDropClientAuraX11::DragTranslate(

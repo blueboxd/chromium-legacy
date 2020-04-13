@@ -99,7 +99,7 @@ void SerialChooserController::Select(const std::vector<size_t>& indices) {
 
   chooser_context_->GrantPortPermission(requesting_origin_, embedding_origin_,
                                         *ports_[index]);
-  std::move(callback_).Run(std::move(ports_[index]));
+  std::move(callback_).Run(ports_[index]->Clone());
 }
 
 void SerialChooserController::Cancel() {}

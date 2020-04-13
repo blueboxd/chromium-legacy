@@ -16,6 +16,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/x/x11_drag_drop_client.h"
+#include "ui/base/x/x11_move_loop_delegate.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/x11_window_event_manager.h"
@@ -23,7 +24,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/views/views_export.h"
-#include "ui/views/widget/desktop_aura/x11_move_loop_delegate.h"
 
 namespace aura {
 namespace client {
@@ -40,12 +40,12 @@ namespace ui {
 class DropTargetEvent;
 class OSExchangeData;
 class XTopmostWindowFinder;
+class X11MoveLoop;
 }  // namespace ui
 
 namespace views {
 class DesktopNativeCursorManager;
 class Widget;
-class X11MoveLoop;
 
 // Implements drag and drop on X11 for aura. On one side, this class takes raw
 // X11 events forwarded from DesktopWindowTreeHostLinux, while on the other, it
@@ -56,7 +56,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
       public aura::client::DragDropClient,
       public ui::XEventDispatcher,
       public aura::WindowObserver,
-      public X11MoveLoopDelegate {
+      public ui::X11MoveLoopDelegate {
  public:
   DesktopDragDropClientAuraX11(
       aura::Window* root_window,
@@ -85,7 +85,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // aura::WindowObserver:
   void OnWindowDestroyed(aura::Window* window) override;
 
-  // X11MoveLoopDelegate:
+  // ui::X11MoveLoopDelegate:
   void OnMouseMovement(const gfx::Point& screen_point,
                        int flags,
                        base::TimeTicks event_time) override;
@@ -97,7 +97,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   Widget* drag_widget() { return drag_widget_.get(); }
 
   // Creates a move loop.  Virtual for testing.
-  virtual std::unique_ptr<X11MoveLoop> CreateMoveLoop(
+  virtual std::unique_ptr<ui::X11MoveLoop> CreateMoveLoop(
       X11MoveLoopDelegate* delegate);
 
  private:
@@ -125,8 +125,8 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   void EndMoveLoop() override;
 
   // A nested run loop that notifies this object of events through the
-  // X11MoveLoopDelegate interface.
-  std::unique_ptr<X11MoveLoop> move_loop_;
+  // ui::X11MoveLoopDelegate interface.
+  std::unique_ptr<ui::X11MoveLoop> move_loop_;
 
   aura::Window* root_window_;
 

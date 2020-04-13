@@ -110,18 +110,22 @@ void HidChooserController::Select(const std::vector<size_t>& indices) {
   DCHECK_LT(index, devices_.size());
 
   if (!chooser_context_) {
-    std::move(callback_).Run(std::vector<device::mojom::HidDeviceInfoPtr>());
+    std::move(callback_).Run({});
     return;
   }
 
   auto it = devices_.begin();
   std::advance(it, index);
+
   DCHECK_GT(it->second.size(), 0u);
+  std::vector<device::mojom::HidDeviceInfoPtr> devices;
+  devices.reserve(it->second.size());
   for (auto& device : it->second) {
     chooser_context_->GrantDevicePermission(requesting_origin_,
                                             embedding_origin_, *device);
+    devices.push_back(device->Clone());
   }
-  std::move(callback_).Run(std::move(it->second));
+  std::move(callback_).Run(std::move(devices));
 }
 
 void HidChooserController::Cancel() {

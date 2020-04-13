@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
+#include "ui/base/x/x11_desktop_window_move_client.h"
 
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_window.h"
 #include "ui/events/event.h"
 #include "ui/gfx/x/x11.h"
 
-namespace views {
+namespace ui {
 
 X11DesktopWindowMoveClient::X11DesktopWindowMoveClient(ui::XWindow* window)
     : window_(window) {}
@@ -40,4 +40,4 @@ void X11DesktopWindowMoveClient::EndMoveLoop() {
   move_loop_.EndMoveLoop();
 }
 
-}  // namespace views
+}  // namespace ui

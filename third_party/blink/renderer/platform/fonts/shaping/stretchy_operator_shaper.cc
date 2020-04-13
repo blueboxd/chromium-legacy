@@ -27,18 +27,6 @@ inline float HarfBuzzUnitsToFloat(hb_position_t value) {
   return kFloatToHbRatio * value;
 }
 
-inline float GetGlyphStretchSize(
-    FloatRect bounds,
-    OpenTypeMathStretchData::StretchAxis stretch_axis) {
-  return stretch_axis == OpenTypeMathStretchData::StretchAxis::Horizontal
-             ? bounds.Width()
-             : bounds.Height();
-}
-
-inline StretchyOperatorShaper::Metrics ToMetrics(FloatRect bounds) {
-  return {bounds.Width(), -bounds.Y(), bounds.MaxY()};
-}
-
 base::Optional<OpenTypeMathStretchData::AssemblyParameters>
 GetAssemblyParameters(const HarfBuzzFace* harfbuzz_face,
                       Glyph base_glyph,
@@ -138,57 +126,16 @@ GetAssemblyParameters(const HarfBuzzFace* harfbuzz_face,
 
 }  // namespace
 
-StretchyOperatorShaper::Metrics StretchyOperatorShaper::GetMetrics(
-    const Font* font,
-    float target_size) const {
-  const SimpleFontData* primary_font = font->PrimaryFont();
-  const HarfBuzzFace* harfbuzz_face =
-      primary_font->PlatformData().GetHarfBuzzFace();
-  Glyph base_glyph = primary_font->GlyphForCharacter(stretchy_character_);
-
-  FloatRect bounds;
-
-  // Try different glyph variants.
-  for (auto& variant : OpenTypeMathSupport::GetGlyphVariantRecords(
-           harfbuzz_face, base_glyph, stretch_axis_)) {
-    bounds = primary_font->BoundsForGlyph(variant);
-    if (GetGlyphStretchSize(bounds, stretch_axis_) >= target_size)
-      return ToMetrics(bounds);
-  }
-
-  // Try a glyph assembly.
-  auto params = GetAssemblyParameters(harfbuzz_face, base_glyph, stretch_axis_,
-                                      target_size);
-  if (!params)
-    return ToMetrics(bounds);
-
-  bounds = stretch_axis_ == OpenTypeMathStretchData::StretchAxis::Horizontal
-               ? FloatRect(0, 0, params->stretch_size, 0)
-               : FloatRect(0, -params->stretch_size, 0, params->stretch_size);
-
-  for (auto& part : params->parts) {
-    // Include dimension of the part, orthogonal to the stretch axis.
-    auto glyph_bounds = primary_font->BoundsForGlyph(part.glyph);
-    if (stretch_axis_ == OpenTypeMathStretchData::StretchAxis::Horizontal) {
-      glyph_bounds.SetX(0);
-      glyph_bounds.SetWidth(0);
-    } else {
-      glyph_bounds.SetY(0);
-      glyph_bounds.SetHeight(0);
-    }
-    bounds.UniteEvenIfEmpty(glyph_bounds);
-  }
-
-  return ToMetrics(bounds);
-}
-
 scoped_refptr<ShapeResult> StretchyOperatorShaper::Shape(
     const Font* font,
-    float target_size) const {
+    float target_size,
+    Metrics* metrics) const {
   const SimpleFontData* primary_font = font->PrimaryFont();
   const HarfBuzzFace* harfbuzz_face =
       primary_font->PlatformData().GetHarfBuzzFace();
   Glyph base_glyph = primary_font->GlyphForCharacter(stretchy_character_);
+  if (metrics)
+    *metrics = Metrics();
 
   Glyph glyph_variant;
   float glyph_variant_stretch_size;
@@ -198,12 +145,18 @@ scoped_refptr<ShapeResult> StretchyOperatorShaper::Shape(
   for (auto& variant : OpenTypeMathSupport::GetGlyphVariantRecords(
            harfbuzz_face, base_glyph, stretch_axis_)) {
     glyph_variant = variant;
-    auto bounds = primary_font->BoundsForGlyph(glyph_variant);
-    glyph_variant_stretch_size = GetGlyphStretchSize(bounds, stretch_axis_);
+    FloatRect bounds = primary_font->BoundsForGlyph(glyph_variant);
+    if (metrics) {
+      *metrics = {primary_font->WidthForGlyph(variant), -bounds.Y(),
+                  bounds.MaxY()};
+    }
+    glyph_variant_stretch_size =
+        stretch_axis_ == OpenTypeMathStretchData::StretchAxis::Horizontal
+            ? bounds.Width()
+            : bounds.Height();
     if (glyph_variant_stretch_size >= target_size) {
       return ShapeResult::CreateForStretchyMathOperator(
-          font, direction, stretch_axis_, glyph_variant,
-          glyph_variant_stretch_size);
+          font, direction, glyph_variant, glyph_variant_stretch_size);
     }
   }
 
@@ -212,12 +165,31 @@ scoped_refptr<ShapeResult> StretchyOperatorShaper::Shape(
                                       target_size);
   if (!params) {
     return ShapeResult::CreateForStretchyMathOperator(
-        font, direction, stretch_axis_, glyph_variant,
-        glyph_variant_stretch_size);
+        font, direction, glyph_variant, glyph_variant_stretch_size);
   }
 
-  return ShapeResult::CreateForStretchyMathOperator(
-      font, direction, stretch_axis_, std::move(*params));
+  scoped_refptr<ShapeResult> shape_result_for_glyph_assembly =
+      ShapeResult::CreateForStretchyMathOperator(font, direction, stretch_axis_,
+                                                 std::move(*params));
+  if (metrics) {
+    // The OpenType MATH specification does provide any distinction between
+    // the advance width and ink width, so the latter is returned here.
+    FloatRect bounds = shape_result_for_glyph_assembly->ComputeInkBounds();
+    if (stretch_axis_ == OpenTypeMathStretchData::StretchAxis::Horizontal) {
+      *metrics = {bounds.Width(), -bounds.Y(), bounds.MaxY()};
+    } else {
+      // For assemblies growing in the vertical direction, the distribution of
+      // height between ascent and descent is not defined by the OpenType MATH
+      // specification. This code uses MathML Core's convention of
+      // ascent = height and descent = 0.
+      // Additionally, ShapeResult::CreateForStretchyMathOperator uses a text
+      // run that is HB_DIRECTION_TTB in order to stack the parts vertically but
+      // the actual glyph assembly is still horizontal text, so height and width
+      // are inverted.
+      *metrics = {bounds.Height(), bounds.Width(), 0};
+    }
+  }
+  return shape_result_for_glyph_assembly;
 }
 
 }  // namespace blink

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_X11_WHOLE_SCREEN_MOVE_LOOP_H_
-#define UI_VIEWS_WIDGET_DESKTOP_AURA_X11_WHOLE_SCREEN_MOVE_LOOP_H_
+#ifndef UI_BASE_X_X11_WHOLE_SCREEN_MOVE_LOOP_H_
+#define UI_BASE_X_X11_WHOLE_SCREEN_MOVE_LOOP_H_
 
 #include <stdint.h>
 
@@ -11,29 +11,27 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/base/cursor/cursor.h"
+#include "ui/base/x/x11_move_loop.h"
+#include "ui/base/x/x11_move_loop_delegate.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11_types.h"
-#include "ui/views/widget/desktop_aura/x11_move_loop.h"
-#include "ui/views/widget/desktop_aura/x11_move_loop_delegate.h"
 
 namespace ui {
 class MouseEvent;
 class ScopedEventDispatcher;
 class XScopedEventSelector;
-}  // namespace ui
-
-namespace views {
 
 // Runs a nested run loop and grabs the mouse. This is used to implement
 // dragging.
-class X11WholeScreenMoveLoop : public X11MoveLoop,
-                               public ui::PlatformEventDispatcher {
+class COMPONENT_EXPORT(UI_BASE_X) X11WholeScreenMoveLoop
+    : public X11MoveLoop,
+      public ui::PlatformEventDispatcher {
  public:
   explicit X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate);
   ~X11WholeScreenMoveLoop() override;
@@ -96,6 +94,6 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
   DISALLOW_COPY_AND_ASSIGN(X11WholeScreenMoveLoop);
 };
 
-}  // namespace views
+}  // namespace ui
 
-#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_X11_WHOLE_SCREEN_MOVE_LOOP_H_
+#endif  // UI_BASE_X_X11_WHOLE_SCREEN_MOVE_LOOP_H_

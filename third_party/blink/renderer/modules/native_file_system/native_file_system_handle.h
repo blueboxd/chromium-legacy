@@ -22,7 +22,7 @@ class ExecutionContext;
 class FileSystemHandlePermissionDescriptor;
 
 class NativeFileSystemHandle : public ScriptWrappable,
-                               public ExecutionContextLifecycleObserver {
+                               public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(NativeFileSystemHandle);
 

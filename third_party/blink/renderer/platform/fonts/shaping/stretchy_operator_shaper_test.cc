@@ -91,7 +91,8 @@ TEST_F(StretchyOperatorShaperTest, GlyphVariants) {
 
       // Metrics of horizontal size variants.
       {
-        auto metrics = horizontal_shaper.GetMetrics(&math, target_size);
+        StretchyOperatorShaper::Metrics metrics;
+        horizontal_shaper.Shape(&math, target_size, &metrics);
         EXPECT_NEAR(metrics.advance, (i + 1) * 1000, kSizeError);
         EXPECT_NEAR(metrics.ascent, 1000, kSizeError);
         EXPECT_FLOAT_EQ(metrics.descent, 0);
@@ -100,7 +101,8 @@ TEST_F(StretchyOperatorShaperTest, GlyphVariants) {
       // Metrics of vertical size variants.
 
       {
-        auto metrics = vertical_shaper.GetMetrics(&math, target_size);
+        StretchyOperatorShaper::Metrics metrics;
+        vertical_shaper.Shape(&math, target_size, &metrics);
         EXPECT_NEAR(metrics.advance, 1000, kSizeError);
         EXPECT_NEAR(metrics.ascent, (i + 1) * 1000, kSizeError);
         EXPECT_FLOAT_EQ(metrics.descent, 0);
@@ -170,7 +172,8 @@ TEST_F(StretchyOperatorShaperTest, GlyphVariants) {
 
     // Metrics of horizontal assembly.
     {
-      auto metrics = horizontal_shaper.GetMetrics(&math, target_size);
+      StretchyOperatorShaper::Metrics metrics;
+      horizontal_shaper.Shape(&math, target_size, &metrics);
       EXPECT_NEAR(metrics.advance, target_size, kSizeError);
       EXPECT_NEAR(metrics.ascent, 1000, kSizeError);
       EXPECT_FLOAT_EQ(metrics.descent, 0);
@@ -178,7 +181,8 @@ TEST_F(StretchyOperatorShaperTest, GlyphVariants) {
 
     // Metrics of vertical assembly.
     {
-      auto metrics = vertical_shaper.GetMetrics(&math, target_size);
+      StretchyOperatorShaper::Metrics metrics;
+      vertical_shaper.Shape(&math, target_size, &metrics);
       EXPECT_NEAR(metrics.advance, 1000, kSizeError);
       EXPECT_NEAR(metrics.ascent, target_size, kSizeError);
       EXPECT_FLOAT_EQ(metrics.descent, 0);

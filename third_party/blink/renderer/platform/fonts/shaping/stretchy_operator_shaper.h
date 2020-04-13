@@ -30,22 +30,20 @@ class PLATFORM_EXPORT StretchyOperatorShaper final {
                          OpenTypeMathStretchData::StretchAxis stretch_axis)
       : stretchy_character_(stretchy_character), stretch_axis_(stretch_axis) {}
 
-  // Returns the metrics of the stretched operator for layout purpose.
-  // May be called multiple times; font and direction may vary between calls.
-  // https://mathml-refresh.github.io/mathml-core/#dfn-box-metrics-of-a-stretchy-glyph
   struct Metrics {
     float advance;
     float ascent;
     float descent;
     // TODO(https://crbug.com/1057592): Add italic correction.
   };
-  Metrics GetMetrics(const Font*, float target_size) const;
-
   // Shape the stretched operator. The coordinates of the glyph(s) use the same
-  // origin as the rectangle returned by GetMetrics.
+  // origin as the rectangle assigned to the optional OUT Metrics parameter.
   // May be called multiple times; font and direction may vary between calls.
   // https://mathml-refresh.github.io/mathml-core/#dfn-shape-a-stretchy-glyph
-  scoped_refptr<ShapeResult> Shape(const Font*, float target_size) const;
+  // https://mathml-refresh.github.io/mathml-core/#dfn-box-metrics-of-a-stretchy-glyph
+  scoped_refptr<ShapeResult> Shape(const Font*,
+                                   float target_size,
+                                   Metrics* metrics = nullptr) const;
 
   ~StretchyOperatorShaper() = default;
 

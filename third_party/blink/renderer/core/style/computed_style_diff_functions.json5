@@ -130,10 +130,6 @@
             field_dependencies: ["border-right-width"]
           },
           {
-            method: "HasFilters()",
-            field_dependencies: ["filter"]
-          },
-          {
             method: "HasPseudoElementStyle(kPseudoIdScrollbar)",
             field_dependencies: ["StyleType"]
           },

@@ -1968,7 +1968,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
       "利";
 
   // Set up an observer to be able to wait for the bubble to be shown.
-  translate::TranslateWaiter language_waiter(
+  auto language_waiter = translate::CreateTranslateWaiter(
       GetWebContents(),
       translate::TranslateWaiter::WaitEvent::kLanguageDetermined);
 
@@ -1976,7 +1976,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
   ASSERT_NO_FATAL_FAILURE(
       ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
 
-  language_waiter.Wait();
+  language_waiter->Wait();
 
   // Verify current translate step.
   const TranslateBubbleModel* model =
@@ -1988,14 +1988,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
   translate::test_utils::PressTranslate(browser());
 
   // Wait for translation.
-  translate::TranslateWaiter translate_waiter(
+  auto translate_waiter = translate::CreateTranslateWaiter(
       GetWebContents(), translate::TranslateWaiter::WaitEvent::kPageTranslated);
 
   // Simulate the translate script being retrieved.
   // Pass fake google.translate lib as the translate script.
   SimulateURLFetch();
 
-  translate_waiter.Wait();
+  translate_waiter->Wait();
 
   TryBasicFormFill();
 }

@@ -328,6 +328,8 @@ Resource* PreloadHelper::PreloadIfNeeded(
   }
 
   const String& integrity_attr = params.integrity;
+  // A corresponding check for the preload-scanner code path is in
+  // TokenPreloadScanner::StartTagScanner::CreatePreloadRequest().
   // TODO(crbug.com/981419): Honor the integrity attribute value for all
   // supported preload destinations, not just the destinations that support SRI
   // in the first place.

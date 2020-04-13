@@ -16,7 +16,6 @@ class StoragePressureBubbleView : public views::BubbleDialogDelegateView {
 
  private:
   StoragePressureBubbleView(views::View* anchor_view,
-                            const gfx::Rect& anchor_rect,
                             Browser* browser,
                             const url::Origin origin);
   ~StoragePressureBubbleView() override;

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Build targets for constructing CIPD release packages.
+# Build targets for constructing CIPD release archives.
 
 assert(is_fuchsia)
 
@@ -16,10 +16,9 @@ if (host_os == "mac") {
   _gn_path = "//buildtools/linux64/gn"
 }
 
-_license_path = "${target_gen_dir}/LICENSE"
-
 # Produces a consolidated license file.
 action("license") {
+  _license_path = "${target_gen_dir}/LICENSE"
   script = "//tools/licenses.py"
   inputs = [ "$_gn_path" ]
   outputs = [ _license_path ]
@@ -46,18 +45,18 @@ process_version("build_id") {
   process_only = true
 }
 
-# Prepares a CIPD package and generates a package definition.
+# Prepares a CIPD archive and generates a manifest file.
 #
 # Parameters:
-#   package_definition_name: CIPD package definition filename. "cipd.yaml"
-#                            if unspecified.
+#   package_definition_yaml: The filename to use for the generated CIPD YAML
+#                            file.
 #   package: The path where the package will be located inside the CIPD
 #            repository.
 #   description: Sets the "description" field in CIPD metadata.
 #   install_mode: String, should be either "symlink" or "copy".
 #   deps: A list of targets to build prior to copying files.
 #   sources: A list of files to copy into the staging root.
-template("cipd_package") {
+template("cipd_archive") {
   forward_variables_from(invoker,
                          [
                            "deps",
@@ -67,7 +66,15 @@ template("cipd_package") {
   if (!defined(deps)) {
     deps = []
   }
-  deps += [ ":build_id" ]
+  deps += [
+    ":build_id",
+    ":license",
+  ]
+
+  if (!defined(sources)) {
+    sources = []
+  }
+  sources += get_target_outputs(":license")
 
   cipd_package_definition(target_name) {
     testonly = true
@@ -76,18 +83,17 @@ template("cipd_package") {
                              "description",
                              "install_mode",
                              "package",
-                             "package_definition_name",
+                             "package_definition_yaml",
                            ])
   }
 }
 
-cipd_package("webrunner") {
-  package_definition_name = "webrunner.yaml"
+cipd_archive("webrunner") {
+  package_definition_yaml = "webrunner.yaml"
   package = "chromium/fuchsia/webrunner-\${targetarch}"
   description = "Prebuilt Chrome and Web Runner binaries for Fuchsia."
 
   deps = [
-    ":license",
     "//fuchsia/engine:web_engine",
     "//fuchsia/runners:web_runner_pkg",
   ]
@@ -95,40 +101,27 @@ cipd_package("webrunner") {
   sources = [
     "${root_gen_dir}/fuchsia/engine/web_engine/web_engine.far",
     "${root_gen_dir}/fuchsia/runners/web_runner/web_runner.far",
-    _license_path,
   ]
 }
 
-cipd_package("castrunner") {
-  package_definition_name = "castrunner.yaml"
+cipd_archive("castrunner") {
+  package_definition_yaml = "castrunner.yaml"
   package = "chromium/fuchsia/castrunner-\${targetarch}"
   description = "Prebuilt Cast application Runner binaries for Fuchsia."
 
-  deps = [
-    ":license",
-    "//fuchsia/runners:cast_runner_pkg",
-  ]
+  deps = [ "//fuchsia/runners:cast_runner_pkg" ]
 
-  sources = [
-    "${root_gen_dir}/fuchsia/runners/cast_runner/cast_runner.far",
-    _license_path,
-  ]
+  sources = [ "${root_gen_dir}/fuchsia/runners/cast_runner/cast_runner.far" ]
 }
 
-cipd_package("http") {
-  package_definition_name = "http.yaml"
+cipd_archive("http") {
+  package_definition_yaml = "http.yaml"
   package = "chromium/fuchsia/http-\${targetarch}"
   description = "Prebuilt HTTP service binary for Fuchsia."
 
-  deps = [
-    ":license",
-    "//fuchsia/http:http_pkg",
-  ]
+  deps = [ "//fuchsia/http:http_pkg" ]
 
-  sources = [
-    "${root_gen_dir}/fuchsia/http/http/http.far",
-    _license_path,
-  ]
+  sources = [ "${root_gen_dir}/fuchsia/http/http/http.far" ]
 }
 
 _stripped_chromedriver_file = "${root_out_dir}/clang_x64/stripped/chromedriver"
@@ -156,31 +149,23 @@ action("strip_chromedriver_binary") {
   visibility = [ ":*" ]
 }
 
-cipd_package("chromedriver") {
-  package_definition_name = "chromedriver.yaml"
+cipd_archive("chromedriver") {
+  package_definition_yaml = "chromedriver.yaml"
   package = "chromium/fuchsia/chromedriver/\${os}-\${arch}"
   description = "Prebuilt Chromedriver binary for Fuchsia host."
   install_mode = "copy"
+  deps = [ ":strip_chromedriver_binary" ]
 
-  deps = [
-    ":license",
-    ":strip_chromedriver_binary",
-  ]
-
-  sources = [
-    _license_path,
-    _stripped_chromedriver_file,
-  ]
+  sources = [ _stripped_chromedriver_file ]
 }
 
-cipd_package("tests") {
+cipd_archive("tests") {
   _manifest_path = "${target_gen_dir}/test_manifest.json"
-  package_definition_name = "tests.yaml"
+  package_definition_yaml = "tests.yaml"
   package = "chromium/fuchsia/tests-\${targetarch}"
   description = "Prebuilt Chromium tests for Fuchsia."
 
   deps = [
-    ":license",
     "//base:base_unittests_pkg",
     "//fuchsia/runners:cast_runner_integration_tests_pkg",
     "//fuchsia/runners:web_runner_integration_tests_pkg",
@@ -202,7 +187,7 @@ cipd_package("tests") {
     "${root_gen_dir}/third_party/blink/common/blink_common_unittests/blink_common_unittests.far",
   ]
 
-  # Build a JSON manifest of the tests and include it in the package.
+  # Build a JSON manifest of the tests and include it in the archive.
   _manifest_contents = []
   foreach(source, far_sources) {
     package_name = get_path_info(source, "name")
@@ -216,14 +201,11 @@ cipd_package("tests") {
   }
   write_file(_manifest_path, _manifest_contents, "json")
 
-  sources = far_sources + [
-              _manifest_path,
-              _license_path,
-            ]
+  sources = far_sources + [ _manifest_path ]
 }
 
-cipd_package("debug_symbols") {
-  package_definition_name = "debug_symbols.yaml"
+cipd_archive("debug_symbols") {
+  package_definition_yaml = "debug_symbols.yaml"
   package = "chromium/fuchsia/debug-symbols-\${targetarch}"
   description = "Debugging symbols for prebuilt binaries from Chromium."
 
@@ -241,31 +223,21 @@ cipd_package("debug_symbols") {
   write_file(_symbol_manifest, _symbol_manifest_contents, "json")
 
   deps = [
-    ":license",
     "//fuchsia/engine:symbol_archive",
     "//fuchsia/runners:cast_runner_symbol_archive",
     "//fuchsia/runners:web_runner_symbol_archive",
   ]
-  sources = _symbol_tarballs + [
-              _symbol_manifest,
-              _license_path,
-            ]
+  sources = [ _symbol_manifest ] + _symbol_tarballs
 }
 
-cipd_package("clear_key_cdm") {
-  package_definition_name = "clear_key_cdm.yaml"
+cipd_archive("clear_key_cdm") {
+  package_definition_yaml = "clear_key_cdm.yaml"
   package = "chromium/fuchsia/libclearkeycdm-\${targetarch}"
   description = "Prebuilt libclearkeycdm.so binary for Fuchsia."
 
-  deps = [
-    ":license",
-    "//media/cdm/library_cdm/clear_key_cdm:clear_key_cdm",
-  ]
+  deps = [ "//media/cdm/library_cdm/clear_key_cdm:clear_key_cdm" ]
 
-  sources = [
-    "${root_out_dir}/lib/libclearkeycdm.so",
-    _license_path,
-  ]
+  sources = [ "${root_out_dir}/lib/libclearkeycdm.so" ]
 }
 
 group("cipd") {

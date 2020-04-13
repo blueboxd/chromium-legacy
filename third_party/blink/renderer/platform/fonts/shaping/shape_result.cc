@@ -1453,18 +1453,14 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForSpaces(const Font* font,
 scoped_refptr<ShapeResult> ShapeResult::CreateForStretchyMathOperator(
     const Font* font,
     TextDirection direction,
-    OpenTypeMathStretchData::StretchAxis stretch_axis,
     Glyph glyph_variant,
     float stretch_size) {
-  bool is_horizontal_assembly =
-      stretch_axis == OpenTypeMathStretchData::StretchAxis::Horizontal;
   unsigned start_index = 0;
   unsigned num_characters = 1;
   scoped_refptr<ShapeResult> result =
       ShapeResult::Create(font, start_index, num_characters, direction);
 
-  hb_direction_t hb_direction =
-      is_horizontal_assembly ? HB_DIRECTION_LTR : HB_DIRECTION_TTB;
+  hb_direction_t hb_direction = HB_DIRECTION_LTR;
   unsigned glyph_index = 0;
   scoped_refptr<ShapeResult::RunInfo> run = RunInfo::Create(
       font->PrimaryFont(), hb_direction, CanvasRotationInVertical::kRegular,

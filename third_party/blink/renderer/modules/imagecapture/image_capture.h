@@ -7,7 +7,6 @@
 
 #include <memory>
 #include "media/capture/mojom/image_capture.mojom-blink.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_capabilities.h"
@@ -18,6 +17,8 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -100,7 +101,9 @@ class MODULES_EXPORT ImageCapture final
 
   Member<MediaStreamTrack> stream_track_;
   std::unique_ptr<ImageCaptureFrameGrabber> frame_grabber_;
-  mojo::Remote<media::mojom::blink::ImageCapture> service_;
+  HeapMojoRemote<media::mojom::blink::ImageCapture,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      service_;
 
   Member<MediaTrackCapabilities> capabilities_;
   Member<MediaTrackSettings> settings_;

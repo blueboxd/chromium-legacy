@@ -758,24 +758,21 @@ jumbo_component("views") {
       ]
       public_deps += [ "//ui/base/mojom:cursor_type" ]
       if (use_x11) {
-        deps += [ "//ui/platform_window/x11" ]
+        deps += [
+          "//ui/base/x",
+          "//ui/platform_window/x11",
+        ]
         public += [
           "widget/desktop_aura/desktop_drag_drop_client_aurax11.h",
           "widget/desktop_aura/desktop_screen_x11.h",
           "widget/desktop_aura/desktop_window_tree_host_x11.h",
-          "widget/desktop_aura/x11_desktop_window_move_client.h",
-          "widget/desktop_aura/x11_move_loop.h",
-          "widget/desktop_aura/x11_move_loop_delegate.h",
           "widget/desktop_aura/x11_topmost_window_finder.h",
-          "widget/desktop_aura/x11_whole_screen_move_loop.h",
         ]
         sources += [
           "widget/desktop_aura/desktop_drag_drop_client_aurax11.cc",
           "widget/desktop_aura/desktop_screen_x11.cc",
           "widget/desktop_aura/desktop_window_tree_host_x11.cc",
-          "widget/desktop_aura/x11_desktop_window_move_client.cc",
           "widget/desktop_aura/x11_topmost_window_finder.cc",
-          "widget/desktop_aura/x11_whole_screen_move_loop.cc",
         ]
       } else if (is_win) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_win.h" ]

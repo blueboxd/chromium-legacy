@@ -51,9 +51,10 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
                browser()->tab_strip_model()->GetActiveWebContents())
                ->GetLanguageState()
                .original_language()) {
-      TranslateWaiter(browser()->tab_strip_model()->GetActiveWebContents(),
-                      TranslateWaiter::WaitEvent::kLanguageDetermined)
-          .Wait();
+      CreateTranslateWaiter(
+          browser()->tab_strip_model()->GetActiveWebContents(),
+          TranslateWaiter::WaitEvent::kLanguageDetermined)
+          ->Wait();
     }
   }
 

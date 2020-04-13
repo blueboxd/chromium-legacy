@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/bubble_anchor_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -57,7 +56,7 @@ void StoragePressureBubbleView::ShowBubble(const url::Origin origin) {
       BrowserView::GetBrowserViewForBrowser(browser)
           ->toolbar_button_provider()
           ->GetAppMenuButton(),
-      gfx::Rect(), browser, std::move(origin));
+      browser, std::move(origin));
   views::BubbleDialogDelegateView::CreateBubble(bubble)->Show();
 
   RecordBubbleHistogramValue(StoragePressureBubbleHistogramValue::kShown);
@@ -65,18 +64,12 @@ void StoragePressureBubbleView::ShowBubble(const url::Origin origin) {
 
 StoragePressureBubbleView::StoragePressureBubbleView(
     views::View* anchor_view,
-    const gfx::Rect& anchor_rect,
     Browser* browser,
     const url::Origin origin)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       browser_(browser),
       origin_(std::move(origin)),
       ignored_(true) {
-  if (!anchor_view) {
-    SetAnchorRect(anchor_rect);
-    set_parent_window(
-        platform_util::GetViewForWindow(browser->window()->GetNativeWindow()));
-  }
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,

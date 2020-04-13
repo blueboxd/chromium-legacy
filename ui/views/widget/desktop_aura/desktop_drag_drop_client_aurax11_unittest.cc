@@ -20,6 +20,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/x/x11_move_loop.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/x/x11.h"
@@ -29,7 +30,6 @@
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_aura/x11_move_loop.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -66,17 +66,17 @@ class ClientMessageEventCollector {
   DISALLOW_COPY_AND_ASSIGN(ClientMessageEventCollector);
 };
 
-// An implementation of X11MoveLoop where RunMoveLoop() always starts the move
-// loop.
-class TestMoveLoop : public X11MoveLoop {
+// An implementation of ui::X11MoveLoop where RunMoveLoop() always starts the
+// move loop.
+class TestMoveLoop : public ui::X11MoveLoop {
  public:
-  explicit TestMoveLoop(X11MoveLoopDelegate* delegate);
+  explicit TestMoveLoop(ui::X11MoveLoopDelegate* delegate);
   ~TestMoveLoop() override;
 
   // Returns true if the move loop is running.
   bool IsRunning() const;
 
-  // X11MoveLoop:
+  // ui::X11MoveLoop:
   bool RunMoveLoop(bool can_grab_pointer,
                    ::Cursor old_cursor,
                    ::Cursor new_cursor) override;
@@ -85,7 +85,7 @@ class TestMoveLoop : public X11MoveLoop {
 
  private:
   // Not owned.
-  X11MoveLoopDelegate* delegate_;
+  ui::X11MoveLoopDelegate* delegate_;
 
   // Ends the move loop.
   base::OnceClosure quit_closure_;
@@ -111,8 +111,8 @@ class SimpleTestDragDropClient : public DesktopDragDropClientAuraX11 {
 
  private:
   // DesktopDragDropClientAuraX11:
-  std::unique_ptr<X11MoveLoop> CreateMoveLoop(
-      X11MoveLoopDelegate* delegate) override;
+  std::unique_ptr<ui::X11MoveLoop> CreateMoveLoop(
+      ui::X11MoveLoopDelegate* delegate) override;
   XID FindWindowFor(const gfx::Point& screen_point) override;
 
   // The XID of the window which is simulated to be the topmost window.
@@ -209,7 +209,7 @@ void ClientMessageEventCollector::RecordEvent(
 ///////////////////////////////////////////////////////////////////////////////
 // TestMoveLoop
 
-TestMoveLoop::TestMoveLoop(X11MoveLoopDelegate* delegate)
+TestMoveLoop::TestMoveLoop(ui::X11MoveLoopDelegate* delegate)
     : delegate_(delegate) {}
 
 TestMoveLoop::~TestMoveLoop() = default;
@@ -259,8 +259,8 @@ bool SimpleTestDragDropClient::IsMoveLoopRunning() {
   return loop_->IsRunning();
 }
 
-std::unique_ptr<X11MoveLoop> SimpleTestDragDropClient::CreateMoveLoop(
-    X11MoveLoopDelegate* delegate) {
+std::unique_ptr<ui::X11MoveLoop> SimpleTestDragDropClient::CreateMoveLoop(
+    ui::X11MoveLoopDelegate* delegate) {
   loop_ = new TestMoveLoop(delegate);
   return base::WrapUnique(loop_);
 }

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_X11_MOVE_LOOP_DELEGATE_H_
-#define UI_VIEWS_WIDGET_DESKTOP_AURA_X11_MOVE_LOOP_DELEGATE_H_
+#ifndef UI_BASE_X_X11_MOVE_LOOP_DELEGATE_H_
+#define UI_BASE_X_X11_MOVE_LOOP_DELEGATE_H_
 
 namespace gfx {
 class Point;
 }
 
-namespace views {
+namespace ui {
 
 // Receives mouse events while the X11MoveLoop is tracking a drag.
 class X11MoveLoopDelegate {
@@ -29,6 +29,6 @@ class X11MoveLoopDelegate {
   virtual void OnMoveLoopEnded() = 0;
 };
 
-}  // namespace views
+}  // namespace ui
 
-#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_X11_MOVE_LOOP_DELEGATE_H_
+#endif  // UI_BASE_X_X11_MOVE_LOOP_DELEGATE_H_

@@ -52,6 +52,8 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "Has a will-change: transform compositing hint"},
     {CompositingReason::kWillChangeOpacity, "willChangeOpacity",
      "Has a will-change: opacity compositing hint"},
+    {CompositingReason::kWillChangeFilter, "willChangeFilter",
+     "Has a will-change: filter compositing hint"},
     {CompositingReason::kWillChangeOther, "willChangeOther",
      "Has a will-change compositing hint other than transform and opacity"},
     {CompositingReason::kBackdropFilter, "backdropFilter",

@@ -9,6 +9,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/mock_callback.h"
 #include "chrome/browser/chooser_controller/mock_chooser_controller_view.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
@@ -131,4 +132,44 @@ TEST_F(SerialChooserControllerTest, PortsAddedAndRemoved) {
   EXPECT_EQ(1u, controller->NumOptions());
   EXPECT_EQ(base::ASCIIToUTF16("Test Port 2 (ttyS1)"),
             controller->GetOption(0));
+}
+
+TEST_F(SerialChooserControllerTest, PortSelected) {
+  auto port = device::mojom::SerialPortInfo::New();
+  port->token = base::UnguessableToken::Create();
+  port->display_name = "Test Port";
+  port->path = base::FilePath(FILE_PATH_LITERAL("/dev/ttyS0"));
+  base::UnguessableToken port_token = port->token;
+  port_manager().AddPort(std::move(port));
+
+  base::MockCallback<content::SerialChooser::Callback> callback;
+  std::vector<blink::mojom::SerialPortFilterPtr> filters;
+  auto controller = std::make_unique<SerialChooserController>(
+      main_rfh(), std::move(filters), callback.Get());
+
+  MockChooserControllerView view;
+  controller->set_view(&view);
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(view, OnOptionsInitialized).WillOnce(Invoke([&] {
+      EXPECT_EQ(1u, controller->NumOptions());
+      EXPECT_EQ(base::ASCIIToUTF16("Test Port (ttyS0)"),
+                controller->GetOption(0));
+      run_loop.Quit();
+    }));
+    run_loop.Run();
+  }
+
+  EXPECT_CALL(callback, Run(_))
+      .WillOnce(Invoke([&](device::mojom::SerialPortInfoPtr port) {
+        EXPECT_EQ(port_token, port->token);
+
+        // Regression test for https://crbug.com/1069057. Ensure that the set of
+        // options is still valid after the callback is run.
+        EXPECT_EQ(1u, controller->NumOptions());
+        EXPECT_EQ(base::ASCIIToUTF16("Test Port (ttyS0)"),
+                  controller->GetOption(0));
+      }));
+  controller->Select({0});
 }

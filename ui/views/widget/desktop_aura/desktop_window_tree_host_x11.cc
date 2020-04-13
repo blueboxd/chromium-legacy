@@ -35,6 +35,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/layout.h"
+#include "ui/base/x/x11_desktop_window_move_client.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
@@ -57,7 +58,6 @@
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
 #include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/window_util.h"
@@ -91,7 +91,7 @@ void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
-  x11_window_move_client_ = std::make_unique<X11DesktopWindowMoveClient>(
+  x11_window_move_client_ = std::make_unique<ui::X11DesktopWindowMoveClient>(
       static_cast<ui::X11Window*>(platform_window()));
   DesktopWindowTreeHostLinux::OnNativeWidgetCreated(params);
 }

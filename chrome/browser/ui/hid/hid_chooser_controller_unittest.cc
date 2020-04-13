@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
@@ -76,17 +77,12 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
   }
 
   std::unique_ptr<HidChooserController> CreateHidChooserController(
-      std::vector<blink::mojom::HidDeviceFilterPtr>& filters) {
+      std::vector<blink::mojom::HidDeviceFilterPtr> filters,
+      content::HidChooser::Callback callback = base::DoNothing()) {
     auto hid_chooser_controller = std::make_unique<HidChooserController>(
-        main_rfh(), std::move(filters), content::HidChooser::Callback());
+        main_rfh(), std::move(filters), std::move(callback));
     hid_chooser_controller->set_view(&fake_hid_chooser_view_);
     return hid_chooser_controller;
-  }
-
-  std::unique_ptr<HidChooserController>
-  CreateHidChooserControllerWithoutFilters() {
-    std::vector<blink::mojom::HidDeviceFilterPtr> filters;
-    return CreateHidChooserController(filters);
   }
 
   device::mojom::HidDeviceInfoPtr CreateAndAddFakeHidDevice(
@@ -133,7 +129,7 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(HidChooserControllerTest, EmptyChooser) {
-  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
+  auto hid_chooser_controller = CreateHidChooserController({});
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
@@ -144,7 +140,7 @@ TEST_F(HidChooserControllerTest, EmptyChooser) {
 TEST_F(HidChooserControllerTest, AddBlockedFidoDevice) {
   // FIDO U2F devices (and other devices on the USB blocklist) should be
   // excluded from the device chooser.
-  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
+  auto hid_chooser_controller = CreateHidChooserController({});
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
@@ -158,7 +154,7 @@ TEST_F(HidChooserControllerTest, AddUnknownFidoDevice) {
   // Devices that expose a top-level collection with the FIDO usage page should
   // be blocked even if they aren't on the USB blocklist.
   const uint16_t kFidoU2fHidUsage = 1;
-  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
+  auto hid_chooser_controller = CreateHidChooserController({});
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
@@ -171,7 +167,7 @@ TEST_F(HidChooserControllerTest, AddUnknownFidoDevice) {
 }
 
 TEST_F(HidChooserControllerTest, AddNamedDevice) {
-  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
+  auto hid_chooser_controller = CreateHidChooserController({});
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
@@ -183,7 +179,7 @@ TEST_F(HidChooserControllerTest, AddNamedDevice) {
 }
 
 TEST_F(HidChooserControllerTest, AddUnnamedDevice) {
-  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
+  auto hid_chooser_controller = CreateHidChooserController({});
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
@@ -199,7 +195,7 @@ TEST_F(HidChooserControllerTest, DeviceIdFilterVendorOnly) {
   std::vector<blink::mojom::HidDeviceFilterPtr> filters;
   filters.push_back(
       blink::mojom::HidDeviceFilter::New(CreateVendorFilter(1), nullptr));
-  auto hid_chooser_controller = CreateHidChooserController(filters);
+  auto hid_chooser_controller = CreateHidChooserController(std::move(filters));
 
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
@@ -224,7 +220,7 @@ TEST_F(HidChooserControllerTest, DeviceIdFilterVendorAndProduct) {
   std::vector<blink::mojom::HidDeviceFilterPtr> filters;
   filters.push_back(blink::mojom::HidDeviceFilter::New(
       CreateVendorAndProductFilter(1, 1), nullptr));
-  auto hid_chooser_controller = CreateHidChooserController(filters);
+  auto hid_chooser_controller = CreateHidChooserController(std::move(filters));
 
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
@@ -243,7 +239,7 @@ TEST_F(HidChooserControllerTest, UsageFilterUsagePageOnly) {
   std::vector<blink::mojom::HidDeviceFilterPtr> filters;
   filters.push_back(blink::mojom::HidDeviceFilter::New(
       nullptr, CreatePageFilter(device::mojom::kPageGenericDesktop)));
-  auto hid_chooser_controller = CreateHidChooserController(filters);
+  auto hid_chooser_controller = CreateHidChooserController(std::move(filters));
 
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
@@ -266,7 +262,7 @@ TEST_F(HidChooserControllerTest, UsageFilterUsageAndPage) {
       nullptr,
       CreateUsageAndPageFilter(device::mojom::kPageGenericDesktop,
                                device::mojom::kGenericDesktopGamePad)));
-  auto hid_chooser_controller = CreateHidChooserController(filters);
+  auto hid_chooser_controller = CreateHidChooserController(std::move(filters));
 
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
@@ -292,7 +288,7 @@ TEST_F(HidChooserControllerTest, DeviceIdAndUsageFilterIntersection) {
       CreateVendorAndProductFilter(1, 1),
       CreateUsageAndPageFilter(device::mojom::kPageGenericDesktop,
                                device::mojom::kGenericDesktopGamePad)));
-  auto hid_chooser_controller = CreateHidChooserController(filters);
+  auto hid_chooser_controller = CreateHidChooserController(std::move(filters));
 
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
@@ -320,7 +316,7 @@ TEST_F(HidChooserControllerTest, DeviceIdAndUsageFilterUnion) {
       nullptr,
       CreateUsageAndPageFilter(device::mojom::kPageGenericDesktop,
                                device::mojom::kGenericDesktopGamePad)));
-  auto hid_chooser_controller = CreateHidChooserController(filters);
+  auto hid_chooser_controller = CreateHidChooserController(std::move(filters));
 
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
@@ -339,7 +335,8 @@ TEST_F(HidChooserControllerTest, DeviceIdAndUsageFilterUnion) {
 }
 
 TEST_F(HidChooserControllerTest, OneItemForSamePhysicalDevice) {
-  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
+  base::MockCallback<content::HidChooser::Callback> callback;
+  auto hid_chooser_controller = CreateHidChooserController({}, callback.Get());
 
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
@@ -362,10 +359,32 @@ TEST_F(HidChooserControllerTest, OneItemForSamePhysicalDevice) {
   run_loop.Run();
 
   EXPECT_EQ(2u, hid_chooser_controller->NumOptions());
+  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
+            hid_chooser_controller->GetOption(0));
+  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
+            hid_chooser_controller->GetOption(1));
+
+  EXPECT_CALL(callback, Run(testing::_))
+      .WillOnce(testing::Invoke(
+          [&](std::vector<device::mojom::HidDeviceInfoPtr> devices) {
+            EXPECT_EQ(2u, devices.size());
+            EXPECT_EQ(kTestPhysicalDeviceIds[0],
+                      devices[0]->physical_device_id);
+            EXPECT_EQ(kTestPhysicalDeviceIds[0],
+                      devices[1]->physical_device_id);
+            EXPECT_NE(devices[0]->guid, devices[1]->guid);
+
+            // Regression test for https://crbug.com/1069057. Ensure that the
+            // set of options is still valid after the callback is run.
+            EXPECT_EQ(2u, hid_chooser_controller->NumOptions());
+            EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
+                      hid_chooser_controller->GetOption(0));
+          }));
+  hid_chooser_controller->Select({0});
 }
 
 TEST_F(HidChooserControllerTest, NoMergeWithEmptyPhysicalDeviceId) {
-  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
+  auto hid_chooser_controller = CreateHidChooserController({});
 
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(

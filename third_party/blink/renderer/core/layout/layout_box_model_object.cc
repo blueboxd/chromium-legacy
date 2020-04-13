@@ -261,6 +261,7 @@ DISABLE_CFI_PERF
 void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
                                           const ComputedStyle* old_style) {
   bool had_transform_related_property = HasTransformRelatedProperty();
+  bool had_filter_inducing_property = HasFilterInducingProperty();
   bool had_layer = HasLayer();
   bool layer_was_self_painting = had_layer && Layer()->IsSelfPaintingLayer();
   bool was_horizontal_writing_mode = IsHorizontalWritingMode();
@@ -314,7 +315,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     Layer()->RemoveOnlyThisLayerAfterStyleChange(old_style);
     if (EverHadLayout())
       SetChildNeedsLayout();
-    if (had_transform_related_property) {
+    if (had_transform_related_property || had_filter_inducing_property) {
       SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
           layout_invalidation_reason::kStyleChange);
     }
@@ -335,9 +336,10 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     AddSubtreePaintPropertyUpdateReason(
         SubtreePaintPropertyUpdateReason::kContainerChainMayChange);
   } else if (had_layer == HasLayer() &&
-             had_transform_related_property != HasTransformRelatedProperty()) {
-    // This affects whether to create transform node. Note that if the
-    // HasLayer() value changed, then all of this was already set in
+             (had_transform_related_property != HasTransformRelatedProperty() ||
+              had_filter_inducing_property != HasFilterInducingProperty())) {
+    // This affects whether to create transform or filter nodes. Note that if
+    // the HasLayer() value changed, then all of this was already set in
     // CreateLayerAfterStyleChange() or DestroyLayer().
     SetNeedsPaintPropertyUpdate();
     if (Layer())

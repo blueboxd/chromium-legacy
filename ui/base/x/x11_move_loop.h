@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_X11_MOVE_LOOP_H_
-#define UI_VIEWS_WIDGET_DESKTOP_AURA_X11_MOVE_LOOP_H_
+#ifndef UI_BASE_X_X11_MOVE_LOOP_H_
+#define UI_BASE_X_X11_MOVE_LOOP_H_
 
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
-namespace views {
+namespace ui {
 
 // Runs a nested run loop and grabs the mouse. This is used to implement
 // dragging.
@@ -32,6 +32,6 @@ class X11MoveLoop {
   virtual void EndMoveLoop() = 0;
 };
 
-}  // namespace views
+}  // namespace ui
 
-#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_X11_MOVE_LOOP_H_
+#endif  // UI_BASE_X_X11_MOVE_LOOP_H_

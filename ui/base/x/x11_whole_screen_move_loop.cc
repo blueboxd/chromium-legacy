@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
+#include "ui/base/x/x11_whole_screen_move_loop.h"
 
 #include <stddef.h>
 
@@ -27,9 +27,8 @@
 #include "ui/events/x/events_x_utils.h"
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/x/x11.h"
-#include "ui/platform_window/x11/x11_window.h"
 
-namespace views {
+namespace ui {
 
 // XGrabKey requires the modifier mask to explicitly be specified.
 const unsigned int kModifiersMasks[] = {0,         // No additional modifier.
@@ -250,4 +249,4 @@ void X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
   XMapRaised(display, grab_input_window_);
 }
 
-}  // namespace views
+}  // namespace ui

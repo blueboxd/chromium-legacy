@@ -132,17 +132,18 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
                            const bool expect_translate) {
     ASSERT_TRUE(browser_);
 
-    TranslateWaiter waiter(browser_->tab_strip_model()->GetActiveWebContents(),
-                           TranslateWaiter::WaitEvent::kLanguageDetermined);
+    auto waiter = CreateTranslateWaiter(
+        browser_->tab_strip_model()->GetActiveWebContents(),
+        TranslateWaiter::WaitEvent::kLanguageDetermined);
     NavigateToUrl(path);
-    waiter.Wait();
+    waiter->Wait();
 
     // Language detection sometimes fires early with an "und" detected code.
     while (GetLanguageState().original_language() == "und" ||
            GetLanguageState().original_language().empty()) {
-      TranslateWaiter(browser_->tab_strip_model()->GetActiveWebContents(),
-                      TranslateWaiter::WaitEvent::kLanguageDetermined)
-          .Wait();
+      CreateTranslateWaiter(browser_->tab_strip_model()->GetActiveWebContents(),
+                            TranslateWaiter::WaitEvent::kLanguageDetermined)
+          ->Wait();
     }
 
     TranslateBubbleView* const bubble = TranslateBubbleView::GetCurrentBubble();
@@ -164,8 +165,9 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
   }
 
   void Translate(const bool first_translate) {
-    TranslateWaiter waiter(browser_->tab_strip_model()->GetActiveWebContents(),
-                           TranslateWaiter::WaitEvent::kPageTranslated);
+    auto waiter = CreateTranslateWaiter(
+        browser_->tab_strip_model()->GetActiveWebContents(),
+        TranslateWaiter::WaitEvent::kPageTranslated);
 
     EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
               GetCurrentModel(browser_)->GetViewState());
@@ -174,7 +176,7 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
     if (first_translate)
       SimulateURLFetch();
 
-    waiter.Wait();
+    waiter->Wait();
     EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE,
               GetCurrentModel(browser_)->GetViewState());
   }
@@ -310,10 +312,11 @@ IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTestWithTranslateRecentTarget,
 
   // Load a French page. This should trigger an auto-translate to Chinese, but
   // not a recent target update.
-  TranslateWaiter waiter(browser()->tab_strip_model()->GetActiveWebContents(),
-                         TranslateWaiter::WaitEvent::kPageTranslated);
+  auto waiter = CreateTranslateWaiter(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      TranslateWaiter::WaitEvent::kPageTranslated);
   NavigateToUrl(kFrenchTestPath);
-  waiter.Wait();
+  waiter->Wait();
   EXPECT_EQ("zh-CN", GetLanguageState().current_language());
   EXPECT_EQ("es", GetTranslatePrefs()->GetRecentTargetLanguage());
 

@@ -1173,6 +1173,71 @@ TEST_F(LayoutBoxModelObjectTest, BackfaceVisibilityChange) {
   EXPECT_FALSE(target_layer->SelfNeedsRepaint());
 }
 
+TEST_F(LayoutBoxModelObjectTest, ChangingFilterWithWillChange) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        width: 100px;
+        height: 100px;
+        will-change: filter;
+      }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  // Adding a filter should not need to check for paint invalidation because
+  // will-change: filter is present.
+  auto* target = GetDocument().getElementById("target");
+  target->setAttribute(html_names::kStyleAttr, "filter: grayscale(1)");
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_FALSE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+
+  // Removing a filter should not need to check for paint invalidation because
+  // will-change: filter is present.
+  target->removeAttribute(html_names::kStyleAttr);
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_FALSE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+}
+
+TEST_F(LayoutBoxModelObjectTest, ChangingWillChangeFilter) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .willChange {
+        will-change: filter;
+      }
+      #filter {
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  // Adding will-change: filter should check for paint invalidation and create
+  // a PaintLayer.
+  auto* target = GetDocument().getElementById("target");
+  target->classList().Add("willChange");
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_TRUE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+  EXPECT_TRUE(ToLayoutBoxModelObject(target->GetLayoutObject())->Layer());
+
+  // A lifecycle update should clear dirty bits.
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+  EXPECT_TRUE(ToLayoutBoxModelObject(target->GetLayoutObject())->Layer());
+
+  // Removing will-change: filter should check for paint invalidation and remove
+  // the PaintLayer.
+  target->classList().Remove("willChange");
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_TRUE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+  EXPECT_FALSE(ToLayoutBoxModelObject(target->GetLayoutObject())->Layer());
+}
+
 TEST_F(LayoutBoxModelObjectTest, UpdateStackingContextForOption) {
   // We do not create LayoutObject for option elements inside multiple selects
   // on platforms where DelegatesMenuListRendering() returns true like Android.

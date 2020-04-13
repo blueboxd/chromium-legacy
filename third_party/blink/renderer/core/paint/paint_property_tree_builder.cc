@@ -702,11 +702,11 @@ static CompositingReasons CompositingReasonsForTransformProperty() {
   // property instead of creating all nodes and only create a transform/
   // effect/filter node if needed.
   reasons |= CompositingReason::kComboActiveAnimation;
-  // We also need to create transform node if the opacity node is created for
-  // will-change:opacity to avoid raster invalidation (caused by otherwise a
-  // created/deleted effect node) when we start/stop an opacity animation.
-  // https://crbug.com/942681
+  // We also need to create a transform node if will-change creates other nodes,
+  // to avoid raster invalidation caused by creating/deleting those nodes when
+  // starting/stopping an animation. See: https://crbug.com/942681.
   reasons |= CompositingReason::kWillChangeOpacity;
+  reasons |= CompositingReason::kWillChangeFilter;
   return reasons;
 }
 
@@ -875,13 +875,13 @@ static CompositingReasons CompositingReasonsForEffectProperty() {
   // property instead of creating all nodes and only create a transform/
   // effect/filter node if needed.
   reasons |= CompositingReason::kComboActiveAnimation;
-  // We also need to create effect node if the transform node is created for
-  // will-change:transform to avoid raster invalidation (caused by otherwise a
-  // created/deleted effect node) when we start/stop a transform animation.
-  // https://crbug.com/942681
+  // We also need to create an effect node if will-change creates other nodes,
+  // to avoid raster invalidation caused by creating/deleting those nodes when
+  // starting/stopping an animation. See: https://crbug.com/942681.
   // In CompositeAfterPaint, this also avoids decomposition of the effect when
   // the object is forced compositing with will-change:transform.
   reasons |= CompositingReason::kWillChangeTransform;
+  reasons |= CompositingReason::kWillChangeFilter;
   return reasons;
 }
 
@@ -1197,12 +1197,12 @@ static CompositingReasons CompositingReasonsForFilterProperty() {
   // property instead of creating all nodes and only create a transform/
   // effect/filter node if needed.
   reasons |= CompositingReason::kComboActiveAnimation;
-  // We also need to create filter node if the transform/effect node is
-  // created for will-change:transform/opacity to avoid raster invalidation
-  // (caused by otherwise a created/deleted filter node) when we start/stop a
-  // transform/opacity animation. https://crbug.com/942681
+
+  // We also need to create a filter node if will-change creates other nodes,
+  // to avoid raster invalidation caused by creating/deleting those nodes when
+  // starting/stopping an animation. See: https://crbug.com/942681.
   // In CompositeAfterPaint, this also avoids decomposition of the filter when
-  // the object is forced compositing with will-change:transform/opacity.
+  // the object is forced compositing with will-change.
   reasons |= CompositingReason::kWillChangeTransform |
              CompositingReason::kWillChangeOpacity;
   return reasons;

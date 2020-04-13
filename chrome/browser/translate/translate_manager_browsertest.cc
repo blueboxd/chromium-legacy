@@ -205,13 +205,14 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
   void WaitUntilLanguageDetermined() { language_determined_waiter_->Wait(); }
 
   void WaitUntilPageTranslated() {
-    TranslateWaiter(browser()->tab_strip_model()->GetActiveWebContents(),
-                    TranslateWaiter::WaitEvent::kPageTranslated)
-        .Wait();
+    translate::CreateTranslateWaiter(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        TranslateWaiter::WaitEvent::kPageTranslated)
+        ->Wait();
   }
 
   void ResetObserver() {
-    language_determined_waiter_ = std::make_unique<TranslateWaiter>(
+    language_determined_waiter_ = translate::CreateTranslateWaiter(
         browser()->tab_strip_model()->GetActiveWebContents(),
         TranslateWaiter::WaitEvent::kLanguageDetermined);
   }

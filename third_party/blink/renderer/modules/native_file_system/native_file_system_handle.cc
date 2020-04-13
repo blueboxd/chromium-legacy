@@ -22,7 +22,7 @@ using mojom::blink::NativeFileSystemErrorPtr;
 NativeFileSystemHandle::NativeFileSystemHandle(
     ExecutionContext* execution_context,
     const String& name)
-    : ExecutionContextLifecycleObserver(execution_context), name_(name) {}
+    : ExecutionContextClient(execution_context), name_(name) {}
 
 // static
 NativeFileSystemHandle* NativeFileSystemHandle::CreateFromMojoEntry(
@@ -114,7 +114,7 @@ ScriptPromise NativeFileSystemHandle::isSameEntry(
 
 void NativeFileSystemHandle::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ExecutionContextLifecycleObserver::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

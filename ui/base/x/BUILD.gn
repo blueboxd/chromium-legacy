@@ -44,12 +44,18 @@ jumbo_component("x") {
     sources += [
       "selection_owner.cc",
       "selection_owner.h",
+      "x11_desktop_window_move_client.cc",
+      "x11_desktop_window_move_client.h",
       "x11_drag_context.cc",
       "x11_drag_context.h",
       "x11_drag_drop_client.cc",
       "x11_drag_drop_client.h",
+      "x11_move_loop.h",
+      "x11_move_loop_delegate.h",
       "x11_os_exchange_data_provider.cc",
       "x11_os_exchange_data_provider.h",
+      "x11_whole_screen_move_loop.cc",
+      "x11_whole_screen_move_loop.h",
     ]
   }
 

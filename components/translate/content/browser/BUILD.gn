@@ -17,13 +17,27 @@ static_library("browser") {
     "//components/translate/content/common",
     "//components/translate/core/browser",
     "//components/translate/core/common",
+    "//content/public/browser",
   ]
   deps = [
     "//components/language/core/browser",
     "//components/search_engines:search_engines",
     "//components/ukm/content",
-    "//content/public/browser",
     "//content/public/common",
     "//net",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "translate_waiter.cc",
+    "translate_waiter.h",
+  ]
+  public_deps = [
+    ":browser",
+    "//base",
+    "//components/translate/core/common",
   ]
 }

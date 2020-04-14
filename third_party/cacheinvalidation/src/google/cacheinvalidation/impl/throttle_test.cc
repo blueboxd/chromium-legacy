@@ -39,7 +39,7 @@ class ThrottleTest : public testing::Test {
     // Increment the call count.
     ++call_count_;
     // Check that we haven't been called within the last one second.
-    Time now = scheduler_->GetCurrentTime();
+    Time now = scheduler_->CurrentTime();
     ASSERT_TRUE((now - last_call_time_) >= TimeDelta::FromSeconds(1));
     // Update the last time we were called to now.
     last_call_time_ = now;
@@ -53,7 +53,7 @@ class ThrottleTest : public testing::Test {
   void SetUp() {
     logger_.reset(new TestLogger());
     scheduler_.reset(new DeterministicScheduler(logger_.get()));
-    start_time_ = scheduler_->GetCurrentTime();
+    start_time_ = scheduler_->CurrentTime();
     call_count_ = 0;
     last_call_time_ = Time() - TimeDelta::FromHours(1);
     ProtoHelpers::InitRateLimitP(1000, kMessagesPerSecond, rate_limits_.Add());
@@ -115,7 +115,7 @@ TEST_F(ThrottleTest, ThrottlingScripted) {
   // ... until the short throttle interval passes, at which time it should be
   // called once more.
   scheduler_->PassTime(
-      start_time_ + TimeDelta::FromSeconds(1) - scheduler_->GetCurrentTime());
+      start_time_ + TimeDelta::FromSeconds(1) - scheduler_->CurrentTime());
 
   ASSERT_EQ(2, call_count_);
 
@@ -144,7 +144,7 @@ TEST_F(ThrottleTest, ThrottlingScripted) {
   // Now if we fire slowly, we still shouldn't make calls, since we'd violate
   // the larger rate limit interval.
   int fire_attempts =
-      ((start_time_ + TimeDelta::FromMinutes(1) - scheduler_->GetCurrentTime())
+      ((start_time_ + TimeDelta::FromMinutes(1) - scheduler_->CurrentTime())
           / long_interval) - 1;
   // This value should be 20.
   for (int i = 0; i < fire_attempts; ++i) {
@@ -154,7 +154,7 @@ TEST_F(ThrottleTest, ThrottlingScripted) {
   }
 
   Time time_to_send_again = start_time_ + TimeDelta::FromMinutes(1);
-  scheduler_->PassTime(time_to_send_again - scheduler_->GetCurrentTime());
+  scheduler_->PassTime(time_to_send_again - scheduler_->CurrentTime());
 
   ASSERT_EQ(kMessagesPerMinute + 1, call_count_);
 }

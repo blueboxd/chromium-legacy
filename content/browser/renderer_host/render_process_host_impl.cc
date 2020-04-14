@@ -3731,9 +3731,11 @@ void RenderProcessHostImpl::Cleanup() {
     info.status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
     info.exit_code = 0;
     PopulateTerminationInfoRendererFields(&info);
+    within_cleanup_process_died_observer_ = true;
     for (auto& observer : observers_) {
       observer.RenderProcessExited(this, info);
     }
+    within_cleanup_process_died_observer_ = false;
   }
   for (auto& observer : observers_)
     observer.RenderProcessHostDestroyed(this);

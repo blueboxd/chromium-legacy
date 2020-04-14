@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/allocator/partition_allocator/address_space_randomization.h"
-#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -110,9 +109,8 @@ void AllocateRandomly(base::PartitionRootGeneric* root,
   }
 
   for (size_t i = 0; i < count; ++i) {
-    if (allocations[i]) {
-      base::PartitionFree(allocations[i]);
-    }
+    if (allocations[i])
+      root->Free(allocations[i]);
   }
 }
 
@@ -2200,7 +2198,7 @@ TEST_F(PartitionAllocTest, ZeroFill) {
     }
     EXPECT_EQ(kAllZerosSentinel, non_zero_position)
         << "test allocation size: " << size;
-    PartitionFree(p);
+    generic_allocator.root()->Free(p);
   }
 
   for (int i = 0; i < 10; ++i) {
@@ -2224,7 +2222,7 @@ TEST_F(PartitionAllocTest, Bug_897585) {
                                      kDesiredSize, nullptr);
   ASSERT_NE(nullptr, ptr);
   memset(ptr, 0xbd, kDesiredSize);
-  PartitionFree(ptr);
+  generic_allocator.root()->Free(ptr);
 }
 
 TEST_F(PartitionAllocTest, OverrideHooks) {
@@ -2266,7 +2264,7 @@ TEST_F(PartitionAllocTest, OverrideHooks) {
                                          kOverriddenSize, kOverriddenType);
   ASSERT_EQ(ptr, overridden_allocation);
 
-  PartitionFree(ptr);
+  generic_allocator.root()->Free(ptr);
   EXPECT_TRUE(free_called);
 
   // overridden_allocation has not actually been freed so we can now immediately
@@ -2278,7 +2276,7 @@ TEST_F(PartitionAllocTest, OverrideHooks) {
   EXPECT_NE(ptr, overridden_allocation);
   EXPECT_TRUE(free_called);
   EXPECT_EQ(*(char*)ptr, kOverriddenChar);
-  PartitionFree(ptr);
+  generic_allocator.root()->Free(ptr);
 
   PartitionAllocHooks::SetOverrideHooks(nullptr, nullptr, nullptr);
   free(overridden_allocation);

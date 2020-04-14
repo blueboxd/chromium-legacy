@@ -13,10 +13,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.native_page.NativePageFactory.NativePageType;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.components.embedder_support.util.UrlConstants;
 
@@ -26,6 +24,8 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class NativePageFactoryTest {
+    private NativePageFactory mNativePageFactory;
+
     private static class MockNativePage implements NativePage {
         public final @NativePageType int type;
         public int updateForUrlCalls;
@@ -84,19 +84,22 @@ public class NativePageFactoryTest {
     }
 
     private static class MockNativePageBuilder extends NativePageFactory.NativePageBuilder {
+        private MockNativePageBuilder() {
+            super(null, null);
+        }
+
         @Override
-        public NativePage buildNewTabPage(ChromeActivity activity, Tab tab,
-                TabModelSelector tabModelSelector) {
+        public NativePage buildNewTabPage(Tab tab) {
             return new MockNativePage(NativePageType.NTP);
         }
 
         @Override
-        public NativePage buildBookmarksPage(ChromeActivity activity, Tab tab) {
+        public NativePage buildBookmarksPage(Tab tab) {
             return new MockNativePage(NativePageType.BOOKMARKS);
         }
 
         @Override
-        public NativePage buildRecentTabsPage(ChromeActivity activity, Tab tab) {
+        public NativePage buildRecentTabsPage(Tab tab) {
             return new MockNativePage(NativePageType.RECENT_TABS);
         }
     }
@@ -155,7 +158,8 @@ public class NativePageFactoryTest {
 
     @Before
     public void setUp() {
-        NativePageFactory.setNativePageBuilderForTesting(new MockNativePageBuilder());
+        mNativePageFactory = new NativePageFactory(null);
+        mNativePageFactory.setNativePageBuilderForTesting(new MockNativePageBuilder());
     }
 
     /**
@@ -199,8 +203,9 @@ public class NativePageFactoryTest {
                 for (@NativePageType int candidateType : candidateTypes) {
                     MockNativePage candidate = candidateType == NativePageType.NONE ? null
                             : new MockNativePage(candidateType);
-                    MockNativePage page = (MockNativePage) NativePageFactory.createNativePageForURL(
-                            urlCombo.url, candidate, null, null, isIncognito);
+                    MockNativePage page =
+                            (MockNativePage) mNativePageFactory.createNativePageForURL(
+                                    urlCombo.url, candidate, null, isIncognito);
                     String debugMessage = String.format(
                             "Failed test case: isIncognito=%s, urlCombo={%s,%s}, candidateType=%s",
                             isIncognito, urlCombo.url, urlCombo.expectedType, candidateType);
@@ -226,15 +231,14 @@ public class NativePageFactoryTest {
         for (UrlCombo urlCombo : VALID_URLS) {
             if (!isValidInIncognito(urlCombo)) {
                 Assert.assertNull(urlCombo.url,
-                        NativePageFactory.createNativePageForURL(
-                                urlCombo.url, null, null, null, true));
+                        mNativePageFactory.createNativePageForURL(urlCombo.url, null, null, true));
             }
         }
         for (boolean isIncognito : new boolean[] {true, false}) {
             for (String invalidUrl : INVALID_URLS) {
                 Assert.assertNull(invalidUrl,
-                        NativePageFactory.createNativePageForURL(
-                                invalidUrl, null, null, null, isIncognito));
+                        mNativePageFactory.createNativePageForURL(
+                                invalidUrl, null, null, isIncognito));
             }
         }
     }

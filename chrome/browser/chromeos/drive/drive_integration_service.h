@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/scoped_observer.h"
 #include "chromeos/components/drivefs/drivefs_host.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -66,7 +67,7 @@ struct QuickAccessItem {
 
 // Interface for classes that need to observe events from
 // DriveIntegrationService.  All events are notified on UI thread.
-class DriveIntegrationServiceObserver {
+class DriveIntegrationServiceObserver : public base::CheckedObserver {
  public:
   // Triggered when the file system is mounted.
   virtual void OnFileSystemMounted() {
@@ -79,9 +80,6 @@ class DriveIntegrationServiceObserver {
   // Triggered when mounting the filesystem has failed in a fashion that will
   // not be automatically retried.
   virtual void OnFileSystemMountFailed() {}
-
- protected:
-  virtual ~DriveIntegrationServiceObserver() {}
 };
 
 // DriveIntegrationService is used to integrate Drive to Chrome. This class
@@ -256,7 +254,7 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<internal::ResourceMetadataStorage, util::DestroyHelper>
       metadata_storage_;
 
-  base::ObserverList<DriveIntegrationServiceObserver>::Unchecked observers_;
+  base::ObserverList<DriveIntegrationServiceObserver> observers_;
 
   std::unique_ptr<DriveFsHolder> drivefs_holder_;
   std::unique_ptr<PreferenceWatcher> preference_watcher_;

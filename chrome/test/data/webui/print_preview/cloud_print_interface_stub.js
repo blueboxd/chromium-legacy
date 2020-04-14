@@ -29,6 +29,14 @@ export class CloudPrintInterfaceStub extends TestBrowserProxy {
 
     /** @private {!Array<string>} */
     this.users_ = [];
+
+    /** @private {boolean} */
+    this.configured_ = false;
+  }
+
+  /** @override */
+  configure() {
+    this.configured_ = true;
   }
 
   /** @override */
@@ -39,6 +47,11 @@ export class CloudPrintInterfaceStub extends TestBrowserProxy {
   /** @override */
   isCloudDestinationSearchInProgress() {
     return this.searchInProgress_;
+  }
+
+  /** @override */
+  isConfigured() {
+    return this.configured_;
   }
 
   /** @override */

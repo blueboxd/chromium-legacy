@@ -10,10 +10,6 @@
 
 namespace first_run {
 
-NSString* const kSignInButtonAccessibilityIdentifier =
-    @"SignInButtonAccessibilityIdentifier";
-NSString* const kSignInSkipButtonAccessibilityIdentifier =
-    @"SkipButtonAccessibilityIdentifier";
 NSString* const kUMAMetricsButtonAccessibilityIdentifier =
     @"UMAMetricsButtonAccessibilityIdentifier";
 

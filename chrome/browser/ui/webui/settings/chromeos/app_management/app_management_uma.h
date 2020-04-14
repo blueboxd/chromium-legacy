@@ -23,9 +23,4 @@ enum class AppManagementEntryPoint {
   kMaxValue = kOsSettingsMainPage,
 };
 
-// This histogram is also declared and used at chrome/browser/resources/
-// settings/chrome_os/os_apps_page/app_management_page/constants.js.
-constexpr char kAppManagementEntryPointsHistogramName[] =
-    "AppManagement.EntryPoints";
-
 #endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_APP_MANAGEMENT_APP_MANAGEMENT_UMA_H_

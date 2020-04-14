@@ -160,13 +160,11 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
       return;
     }
     head->headers = response_headers_;
-    head->headers->AddHeader(
-        base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentLength,
-                           base::NumberToString(head->content_length).c_str()));
+    head->headers->AddHeader(net::HttpRequestHeaders::kContentLength,
+                             base::NumberToString(head->content_length));
     if (!head->mime_type.empty()) {
-      head->headers->AddHeader(
-          base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
-                             head->mime_type.c_str()));
+      head->headers->AddHeader(net::HttpRequestHeaders::kContentType,
+                               head->mime_type.c_str());
     }
     client_->OnReceiveResponse(std::move(head));
     client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));

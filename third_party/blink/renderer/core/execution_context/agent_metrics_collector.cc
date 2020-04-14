@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -41,7 +42,8 @@ AgentMetricsCollector::AgentMetricsCollector()
               : nullptr,
           this,
           &AgentMetricsCollector::ReportingTimerFired)),
-      clock_(base::DefaultTickClock::GetInstance()) {
+      clock_(base::DefaultTickClock::GetInstance()),
+      agent_metrics_collector_host_(nullptr) {
   // From now until we call CreatedNewAgent will be reported as having 0
   // agents.
   time_last_reported_ = clock_->NowTicks();
@@ -160,17 +162,19 @@ void AgentMetricsCollector::ReportingTimerFired(TimerBase*) {
   ReportToBrowser();
 }
 
-mojo::Remote<blink::mojom::blink::AgentMetricsCollectorHost>&
+blink::mojom::blink::AgentMetricsCollectorHost*
 AgentMetricsCollector::GetAgentMetricsCollectorHost() {
-  if (!agent_metrics_collector_host_) {
+  if (!agent_metrics_collector_host_.is_bound()) {
     blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-        agent_metrics_collector_host_.BindNewPipeAndPassReceiver());
+        agent_metrics_collector_host_.BindNewPipeAndPassReceiver(
+            ThreadScheduler::Current()->IPCTaskRunner()));
   }
-  return agent_metrics_collector_host_;
+  return agent_metrics_collector_host_.get();
 }
 
 void AgentMetricsCollector::Trace(Visitor* visitor) {
   visitor->Trace(agent_to_documents_map_);
+  visitor->Trace(agent_metrics_collector_host_);
 }
 
 }  // namespace blink

@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
-import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
@@ -1069,10 +1068,10 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         // While detached for reparenting we don't have an owning Activity, or TabModelSelector,
         // so we can't create the native page. The native page will be created once reparenting is
         // completed.
-        if (isDetached(this)) return false;
+        if (isDetached(this) || mDelegateFactory.getNativePageFactory() == null) return false;
         NativePage candidateForReuse = forceReload ? null : getNativePage();
-        NativePage nativePage = NativePageFactory.createNativePageForURL(
-                url, candidateForReuse, this, getActivity());
+        NativePage nativePage = mDelegateFactory.getNativePageFactory().createNativePageForURL(
+                url, candidateForReuse, this);
         if (nativePage != null) {
             showNativePage(nativePage);
             notifyPageTitleChanged();

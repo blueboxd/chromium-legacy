@@ -10,9 +10,6 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -112,18 +109,8 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
 
         SigninUtils.logEvent(ProfileAccountManagementMetrics.VIEW, mGaiaServiceType);
 
-        int avatarImageSize = getResources().getDimensionPixelSize(R.dimen.user_picture_size);
-        ProfileDataCache.BadgeConfig badgeConfig = null;
-        if (mProfile.isChild()) {
-            Bitmap badge =
-                    BitmapFactory.decodeResource(getResources(), R.drawable.ic_account_child_20dp);
-            int badgePositionX = getResources().getDimensionPixelOffset(R.dimen.badge_position_x);
-            int badgePositionY = getResources().getDimensionPixelOffset(R.dimen.badge_position_y);
-            int badgeBorderSize = getResources().getDimensionPixelSize(R.dimen.badge_border_size);
-            badgeConfig = new ProfileDataCache.BadgeConfig(
-                    badge, new Point(badgePositionX, badgePositionY), badgeBorderSize);
-        }
-        mProfileDataCache = new ProfileDataCache(getActivity(), avatarImageSize, badgeConfig);
+        mProfileDataCache = ProfileDataCache.createProfileDataCache(
+                getActivity(), mProfile.isChild() ? R.drawable.ic_account_child_20dp : 0);
     }
 
     @Override

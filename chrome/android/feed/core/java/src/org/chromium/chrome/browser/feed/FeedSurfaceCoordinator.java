@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.feed.library.api.client.scope.ProcessScope;
@@ -42,6 +43,8 @@ import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.feed.R;
@@ -56,7 +59,8 @@ import java.util.Arrays;
  * Provides a surface that displays an interest feed rendered list of content suggestions.
  */
 public class FeedSurfaceCoordinator {
-    private final ChromeActivity mActivity;
+    private final Activity mActivity;
+    private final SnackbarManager mSnackbarManager;
     @Nullable
     private final View mNtpHeader;
     private final ActionApi mActionApi;
@@ -266,6 +270,9 @@ public class FeedSurfaceCoordinator {
      * Constructs a new FeedSurfaceCoordinator.
      *
      * @param activity The containing {@link ChromeActivity}.
+     * @param snackbarManager The {@link SnackbarManager} displaying Snackbar UI.
+     * @param tabModelSelector {@link TabModelSelector} object.
+     * @param tabProvider Provides the current active tab.
      * @param snapScrollHelper The {@link SnapScrollHelper} for the New Tab Page.
      * @param ntpHeader The extra header on top of the feeds for the New Tab Page.
      * @param sectionHeaderView The {@link SectionHeaderView} for the feed.
@@ -273,11 +280,13 @@ public class FeedSurfaceCoordinator {
      * @param showDarkBackground Whether is shown on dark background.
      * @param delegate The constructing {@link FeedSurfaceDelegate}.
      */
-    public FeedSurfaceCoordinator(ChromeActivity activity,
+    public FeedSurfaceCoordinator(Activity activity, SnackbarManager snackbarManager,
+            TabModelSelector tabModelSelector, Supplier<Tab> tabProvider,
             @Nullable SnapScrollHelper snapScrollHelper, @Nullable View ntpHeader,
             @Nullable SectionHeaderView sectionHeaderView, ActionApi actionApi,
             boolean showDarkBackground, FeedSurfaceDelegate delegate) {
         mActivity = activity;
+        mSnackbarManager = snackbarManager;
         mNtpHeader = ntpHeader;
         mSectionHeaderView = sectionHeaderView;
         mActionApi = actionApi;
@@ -300,7 +309,7 @@ public class FeedSurfaceCoordinator {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
             // TODO(jianli): Temporary: simulate opening the feed V2 surface. This should probably
             // move to FeedSurfaceMediator.
-            mFeedStreamSurface = new FeedStreamSurface(mActivity);
+            mFeedStreamSurface = new FeedStreamSurface(tabModelSelector, tabProvider);
             mFeedStreamSurface.surfaceOpened();
         }
     }
@@ -376,7 +385,7 @@ public class FeedSurfaceCoordinator {
                         .createStreamScopeBuilder(mActivity, mImageLoader, mActionApi,
                                 new BasicStreamConfiguration(),
                                 new BasicCardConfiguration(mActivity.getResources(), mUiConfig),
-                                new BasicSnackbarApi(mActivity.getSnackbarManager()),
+                                new BasicSnackbarApi(mSnackbarManager),
                                 FeedProcessScopeFactory.getFeedOfflineIndicator(), tooltipApi)
                         .setIsBackgroundDark(mShowDarkBackground)
                         .build();

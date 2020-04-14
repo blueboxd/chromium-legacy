@@ -111,6 +111,16 @@ const Profile::OTRProfileID Profile::OTRProfileID::PrimaryID() {
   return OTRProfileID("profile::primary_otr");
 }
 
+// static
+int Profile::OTRProfileID::first_unused_index_ = 0;
+
+// static
+Profile::OTRProfileID Profile::OTRProfileID::CreateUnique(
+    const std::string& profile_id_prefix) {
+  return OTRProfileID(base::StringPrintf("%s-%i", profile_id_prefix.c_str(),
+                                         first_unused_index_++));
+}
+
 const std::string& Profile::OTRProfileID::ToString() const {
   return profile_id_;
 }

@@ -332,12 +332,18 @@ void SupervisedUserService::SetPrimaryPermissionCreatorForTest(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void SupervisedUserService::AddOrUpdateExtensionApproval(
     const extensions::Extension& extension) {
-  bool has_key = base::Contains(approved_extensions_map_, extension.id());
-  ApprovedExtensionChange update_type = has_key
+  auto it = approved_extensions_map_.find(extension.id());
+  bool has_key = it != approved_extensions_map_.end();
+  ApprovedExtensionChange change_type = has_key
                                             ? ApprovedExtensionChange::kUpdate
                                             : ApprovedExtensionChange::kNew;
-  UpdateApprovedExtension(extension.id(), extension.VersionString(),
-                          update_type);
+  if (change_type != ApprovedExtensionChange::kUpdate ||
+      it->second.CompareTo(extension.version())) {
+    // If the type is kUpdate, we don't need to do anything if there's no change
+    // in the approved version.
+    UpdateApprovedExtension(extension.id(), extension.VersionString(),
+                            change_type);
+  }
 }
 
 void SupervisedUserService::RemoveExtensionApproval(

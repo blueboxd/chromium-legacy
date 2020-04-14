@@ -34,7 +34,7 @@ class PLATFORM_EXPORT StretchyOperatorShaper final {
     float advance;
     float ascent;
     float descent;
-    // TODO(https://crbug.com/1057592): Add italic correction.
+    float italic_correction;
   };
   // Shape the stretched operator. The coordinates of the glyph(s) use the same
   // origin as the rectangle assigned to the optional OUT Metrics parameter.

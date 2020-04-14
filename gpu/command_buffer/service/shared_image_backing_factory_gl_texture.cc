@@ -18,12 +18,14 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -202,6 +204,101 @@ GLuint MakeTextureAndSetParameters(gl::GLApi* api,
                            GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
   }
   return service_id;
+}
+
+std::unique_ptr<SharedImageRepresentationDawn> ProduceDawnCommon(
+    SharedImageFactory* factory,
+    SharedImageManager* manager,
+    MemoryTypeTracker* tracker,
+    WGPUDevice device,
+    SharedImageBacking* backing,
+    bool use_passthrough) {
+  DCHECK(factory);
+  // Make SharedContextState from factory the current context
+  SharedContextState* shared_context_state = factory->GetSharedContextState();
+  if (!shared_context_state->MakeCurrent(nullptr, true)) {
+    DLOG(ERROR) << "Cannot make util SharedContextState the current context";
+    return nullptr;
+  }
+
+  Mailbox dst_mailbox = Mailbox::GenerateForSharedImage();
+
+  bool success = factory->CreateSharedImage(
+      dst_mailbox, backing->format(), backing->size(), backing->color_space(),
+      gpu::kNullSurfaceHandle, backing->usage() | SHARED_IMAGE_USAGE_WEBGPU);
+  if (!success) {
+    DLOG(ERROR) << "Cannot create a shared image resource for internal blit";
+    return nullptr;
+  }
+
+  // Create a representation for current backing to avoid non-expected release
+  // and using scope access methods.
+  std::unique_ptr<SharedImageRepresentationGLTextureBase> src_image;
+  std::unique_ptr<SharedImageRepresentationGLTextureBase> dst_image;
+  if (use_passthrough) {
+    src_image =
+        manager->ProduceGLTexturePassthrough(backing->mailbox(), tracker);
+    dst_image = manager->ProduceGLTexturePassthrough(dst_mailbox, tracker);
+  } else {
+    src_image = manager->ProduceGLTexture(backing->mailbox(), tracker);
+    dst_image = manager->ProduceGLTexture(dst_mailbox, tracker);
+  }
+
+  if (!src_image || !dst_image) {
+    DLOG(ERROR) << "ProduceDawn: Couldn't produce shared image for copy";
+    return nullptr;
+  }
+
+  std::unique_ptr<SharedImageRepresentationGLTextureBase::ScopedAccess>
+      source_access = src_image->BeginScopedAccess(
+          GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM,
+          SharedImageRepresentation::AllowUnclearedAccess::kNo);
+  if (!source_access) {
+    DLOG(ERROR) << "ProduceDawn: Couldn't access shared image for copy.";
+    return nullptr;
+  }
+
+  std::unique_ptr<SharedImageRepresentationGLTextureBase::ScopedAccess>
+      dest_access = dst_image->BeginScopedAccess(
+          GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM,
+          SharedImageRepresentation::AllowUnclearedAccess::kYes);
+  if (!dest_access) {
+    DLOG(ERROR) << "ProduceDawn: Couldn't access shared image for copy.";
+    return nullptr;
+  }
+
+  GLuint source_texture = src_image->GetTextureBase()->service_id();
+  GLuint dest_texture = dst_image->GetTextureBase()->service_id();
+  DCHECK_NE(source_texture, dest_texture);
+
+  GLenum target = dst_image->GetTextureBase()->target();
+
+  // Ensure skia's internal cache of GL context state is reset before using it.
+  // TODO(crbug.com/1036142: Figure out cases that need this invocation).
+  shared_context_state->PessimisticallyResetGrContext();
+
+  if (use_passthrough) {
+    gl::GLApi* gl = shared_context_state->context_state()->api();
+
+    gl->glCopyTextureCHROMIUMFn(source_texture, 0, target, dest_texture, 0,
+                                viz::GLDataFormat(backing->format()),
+                                viz::GLDataType(backing->format()), false,
+                                false, false);
+  } else {
+    // TODO(crbug.com/1036142: Implement copyTextureCHROMIUM for validating
+    // path).
+    NOTREACHED();
+    return nullptr;
+  }
+
+  // Set cleared flag for internal backing to prevent auto clear.
+  dst_image->SetCleared();
+
+  // Safe to destroy factory's ref. The backing is kept alive by GL
+  // representation ref.
+  factory->DestroySharedImage(dst_mailbox);
+
+  return manager->ProduceDawn(dst_mailbox, tracker, device);
 }
 
 }  // anonymous namespace
@@ -578,6 +675,18 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
     return result;
   }
 
+  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      WGPUDevice device) override {
+    if (!factory()) {
+      DLOG(ERROR) << "No SharedImageFactory to create a dawn representation.";
+      return nullptr;
+    }
+
+    return ProduceDawnCommon(factory(), manager, tracker, device, this, false);
+  }
+
  private:
   gles2::Texture* texture_ = nullptr;
   gles2::Texture* rgb_emulation_texture_ = nullptr;
@@ -686,6 +795,18 @@ class SharedImageBackingPassthroughGLTexture
         texture_passthrough_->service_id());
     cached_promise_texture_ = result->promise_texture();
     return result;
+  }
+
+  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      WGPUDevice device) override {
+    if (!factory()) {
+      DLOG(ERROR) << "No SharedImageFactory to create a dawn representation.";
+      return nullptr;
+    }
+
+    return ProduceDawnCommon(factory(), manager, tracker, device, this, true);
   }
 
  private:

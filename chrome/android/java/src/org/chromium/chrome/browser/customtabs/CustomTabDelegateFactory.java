@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
@@ -471,6 +472,12 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         return new ChromeContextMenuPopulator(
                 new TabContextMenuItemDelegate(tab, () -> mEphemeralTabCoordinator),
                 shareDelegateSupplier, contextMenuMode, ExternalAuthUtils.getInstance());
+    }
+
+    @Override
+    public NativePageFactory getNativePageFactory() {
+        // Custom tab does not create native pages.
+        return null;
     }
 
     /**

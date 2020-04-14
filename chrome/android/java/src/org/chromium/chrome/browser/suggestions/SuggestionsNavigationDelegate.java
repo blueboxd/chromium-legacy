@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import org.chromium.chrome.browser.ChromeActivity;
+import android.app.Activity;
+
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegateImpl;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -29,8 +30,8 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateImpl {
     private static final String NEW_TAB_URL_HELP = "https://support.google.com/chrome/?p=new_tab";
 
-    public SuggestionsNavigationDelegate(ChromeActivity activity, Profile profile,
-            NativePageHost host, TabModelSelector tabModelSelector, Tab tab) {
+    public SuggestionsNavigationDelegate(Activity activity, Profile profile, NativePageHost host,
+            TabModelSelector tabModelSelector, Tab tab) {
         super(activity, profile, host, tabModelSelector, tab);
     }
 

@@ -28,8 +28,6 @@ Polymer({
       readOnly: true,
     },
 
-    showApps: Boolean,
-
     showCrostini: Boolean,
 
     showReset: Boolean,

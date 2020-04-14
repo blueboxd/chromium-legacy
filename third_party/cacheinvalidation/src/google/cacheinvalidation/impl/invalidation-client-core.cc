@@ -167,7 +167,7 @@ HeartbeatTask::HeartbeatTask(InvalidationClientCore* client)
             client->config_.heartbeat_interval_ms()),
         Scheduler::NoDelay()),
       client_(client) {
-  next_performance_send_time_ = client_->internal_scheduler_->GetCurrentTime() +
+  next_performance_send_time_ = client_->internal_scheduler_->CurrentTime() +
       smearer()->GetSmearedDelay(TimeDelta::FromMilliseconds(
           client_->config_.perf_counter_delay_ms()));
 }
@@ -179,9 +179,9 @@ bool HeartbeatTask::RunTask() {
        client_->ToString().c_str());
   Scheduler *scheduler = client_->internal_scheduler_;
   bool must_send_perf_counters =
-      next_performance_send_time_ > scheduler->GetCurrentTime();
+      next_performance_send_time_ > scheduler->CurrentTime();
   if (must_send_perf_counters) {
-    next_performance_send_time_ = scheduler->GetCurrentTime() +
+    next_performance_send_time_ = scheduler->CurrentTime() +
         client_->smearer_.GetSmearedDelay(TimeDelta::FromMilliseconds(
             client_->config_.perf_counter_delay_ms()));
   }
@@ -762,7 +762,7 @@ void InvalidationClientCore::HandleErrorMessage(
 
 void InvalidationClientCore::HandleMessageSent() {
   CHECK(internal_scheduler_->IsRunningOnThread()) << "Not on internal thread";
-  last_message_send_time_ = internal_scheduler_->GetCurrentTime();
+  last_message_send_time_ = internal_scheduler_->CurrentTime();
 }
 
 void InvalidationClientCore::HandleNetworkStatusChange(bool is_online) {
@@ -772,13 +772,13 @@ void InvalidationClientCore::HandleNetworkStatusChange(bool is_online) {
   bool was_online = is_online_;
   is_online_ = is_online;
   if (is_online && !was_online &&
-      (internal_scheduler_->GetCurrentTime() >
+      (internal_scheduler_->CurrentTime() >
        last_message_send_time_ + TimeDelta::FromMilliseconds(
            config_.offline_heartbeat_threshold_ms()))) {
     TLOG(logger_, INFO,
          "Sending heartbeat after reconnection; previous send was %s ms ago",
          SimpleItoa(
-             (internal_scheduler_->GetCurrentTime() - last_message_send_time_)
+             (internal_scheduler_->CurrentTime() - last_message_send_time_)
              .InMilliseconds()).c_str());
     SendInfoMessageToServer(
         false, !registration_manager_.IsStateInSyncWithServer());

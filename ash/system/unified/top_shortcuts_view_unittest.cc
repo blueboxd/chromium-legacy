@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/top_shortcuts_view.h"
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/system/unified/collapse_button.h"
 #include "ash/system/unified/sign_out_button.h"
@@ -12,6 +13,7 @@
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
+#include "components/prefs/pref_registry_simple.h"
 
 namespace ash {
 
@@ -170,6 +172,21 @@ TEST_F(TopShortcutsViewTest, ButtonLayoutSupervisedUserFlow) {
       "foo@example.com", user_manager::USER_TYPE_REGULAR, enable_settings);
   SetUpView();
   Layout();
+}
+
+// Settings button is disabled when kSettingsIconDisabled is set.
+TEST_F(TopShortcutsViewTest, DisableSettingsIconPolicy) {
+  const bool enable_settings = true;
+  GetSessionControllerClient()->AddUserSession(
+      "foo@example.com", user_manager::USER_TYPE_REGULAR, enable_settings);
+  SetUpView();
+  EXPECT_EQ(views::Button::STATE_NORMAL, GetSettingsButton()->state());
+
+  local_state()->SetBoolean(prefs::kOsSettingsEnabled, false);
+  EXPECT_EQ(views::Button::STATE_DISABLED, GetSettingsButton()->state());
+
+  local_state()->SetBoolean(prefs::kOsSettingsEnabled, true);
+  EXPECT_EQ(views::Button::STATE_NORMAL, GetSettingsButton()->state());
 }
 
 }  // namespace ash

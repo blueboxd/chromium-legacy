@@ -5,27 +5,22 @@
 #ifndef IOS_WEB_VIEW_INTERNAL_PASSWORDS_WEB_VIEW_PASSWORD_MANAGER_DRIVER_H_
 #define IOS_WEB_VIEW_INTERNAL_PASSWORDS_WEB_VIEW_PASSWORD_MANAGER_DRIVER_H_
 
+#import <Foundation/Foundation.h>
 #include <vector>
 
 #include "base/macros.h"
+#include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 
-namespace autofill {
-struct PasswordFormFillData;
-}  // namespace autofill
-
-namespace password_manager {
-class PasswordAutofillManager;
-class PasswordManager;
-}  // namespace password_manager
-
 // Defines the interface the driver needs to the controller.
-@protocol CWVPasswordManagerDriverDelegate
+@protocol CWVPasswordManagerDriverDelegate <NSObject>
+
+@property(readonly, nonatomic)
+    password_manager::PasswordManager* passwordManager;
 
 // Returns the current URL of the main frame.
 @property(readonly, nonatomic) const GURL& lastCommittedURL;
-
-- (password_manager::PasswordManager*)passwordManager;
 
 // Finds and fills the password form using the supplied |formData| to
 // match the password form and to populate the field values.
@@ -33,6 +28,7 @@ class PasswordManager;
 
 // Informs delegate that there are no saved credentials for the current page.
 - (void)informNoSavedCredentials;
+
 @end
 
 namespace ios_web_view {
@@ -40,8 +36,7 @@ namespace ios_web_view {
 class WebViewPasswordManagerDriver
     : public password_manager::PasswordManagerDriver {
  public:
-  explicit WebViewPasswordManagerDriver(
-      id<CWVPasswordManagerDriverDelegate> delegate);
+  explicit WebViewPasswordManagerDriver();
   ~WebViewPasswordManagerDriver() override;
 
   // password_manager::PasswordManagerDriver implementation.
@@ -64,6 +59,10 @@ class WebViewPasswordManagerDriver
   bool IsMainFrame() const override;
   bool CanShowAutofillUi() const override;
   const GURL& GetLastCommittedURL() const override;
+
+  void set_delegate(id<CWVPasswordManagerDriverDelegate> delegate) {
+    delegate_ = delegate;
+  }
 
  private:
   __weak id<CWVPasswordManagerDriverDelegate> delegate_;

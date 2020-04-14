@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_gles2_export.h"
@@ -45,10 +46,11 @@ class SharedImageRepresentationDawn;
 class SharedImageRepresentationOverlay;
 class SharedImageRepresentationVaapi;
 class MemoryTypeTracker;
+class SharedImageFactory;
 class VaapiDependenciesFactory;
 
 // Represents the actual storage (GL texture, VkImage, GMB) for a SharedImage.
-// Should not be accessed direclty, instead is accessed through a
+// Should not be accessed directly, instead is accessed through a
 // SharedImageRepresentation.
 class GPU_GLES2_EXPORT SharedImageBacking {
  public:
@@ -80,6 +82,15 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   void OnReadSucceeded();
   // Notify backing a write access is succeeded.
   void OnWriteSucceeded();
+
+  // This factory is registered when creating backing to help
+  // create intermediate interop backing buffer
+  // and share resource from gl backing buffer to dawn.
+  // The factory pointer needs to be reset if the origin
+  // factory is destructed. This will handled by destructor of
+  // SharedImageRepresentationFactoryRef.
+  void RegisterImageFactory(SharedImageFactory* factory);
+  void UnregisterImageFactory();
 
   // Returns the initialized / cleared region of the SharedImage.
   virtual gfx::Rect ClearedRect() const = 0;
@@ -149,6 +160,12 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Used by subclasses during destruction.
   bool have_context() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
+  // Used by SharedImageBackingFactoryGLTexture to get register factory.
+  SharedImageFactory* factory() {
+    DCHECK_CALLED_ON_VALID_THREAD(factory_thread_checker_);
+    return factory_;
+  }
+
   // Helper class used by subclasses to acquire |lock_| if it exists.
   class SCOPED_LOCKABLE GPU_GLES2_EXPORT AutoLock {
    public:
@@ -194,6 +211,12 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   const gfx::ColorSpace color_space_;
   const uint32_t usage_;
   const size_t estimated_size_;
+
+  SharedImageFactory* factory_ = nullptr;
+
+  // Bound to the thread on which the backing is created. The |factory_|
+  // can only be used from this thread.
+  THREAD_CHECKER(factory_thread_checker_);
 
   bool have_context_ GUARDED_BY(lock_) = true;
 

@@ -419,8 +419,6 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
   for (auto&& buffer : v4l2_buffers) {
     const int i = buffer.BufferId();
 
-    DCHECK(buffers[i].size() == egl_image_size_);
-
     OutputRecord& output_record = output_buffer_map_[i];
     DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
     DCHECK_EQ(output_record.picture_id, -1);

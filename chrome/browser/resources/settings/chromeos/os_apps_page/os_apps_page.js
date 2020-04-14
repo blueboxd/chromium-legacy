@@ -46,13 +46,6 @@ Polymer({
      */
     showAndroidApps: Boolean,
 
-
-    /**
-     * Show link to App Management.
-     * @type {boolean}
-     */
-    showAppManagement: Boolean,
-
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,

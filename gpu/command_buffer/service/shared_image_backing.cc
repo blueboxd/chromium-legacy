@@ -6,6 +6,7 @@
 
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 
@@ -24,6 +25,8 @@ SharedImageBacking::SharedImageBacking(const Mailbox& mailbox,
       color_space_(color_space),
       usage_(usage),
       estimated_size_(estimated_size) {
+  DCHECK_CALLED_ON_VALID_THREAD(factory_thread_checker_);
+
   if (is_thread_safe)
     lock_.emplace();
 }
@@ -117,6 +120,19 @@ void SharedImageBacking::ReleaseRef(SharedImageRepresentation* representation) {
     refs_[0]->tracker()->TrackMemAlloc(estimated_size_);
     return;
   }
+}
+
+void SharedImageBacking::RegisterImageFactory(SharedImageFactory* factory) {
+  DCHECK_CALLED_ON_VALID_THREAD(factory_thread_checker_);
+  DCHECK(!factory_);
+
+  factory_ = factory;
+}
+
+void SharedImageBacking::UnregisterImageFactory() {
+  DCHECK_CALLED_ON_VALID_THREAD(factory_thread_checker_);
+
+  factory_ = nullptr;
 }
 
 bool SharedImageBacking::HasAnyRefs() const {

@@ -6,16 +6,15 @@ package org.chromium.chrome.browser.tasks;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import com.google.android.material.appbar.AppBarLayout;
 
@@ -23,7 +22,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ntp.IncognitoDescriptionView;
-import org.chromium.chrome.browser.ntp.NewTabPageLayout.SearchBoxContainerView;
+import org.chromium.chrome.browser.ntp.search.SearchBoxCoordinator;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
@@ -34,8 +33,7 @@ class TasksView extends CoordinatorLayoutForPointer {
     private FrameLayout mBodyViewContainer;
     private FrameLayout mCarouselTabSwitcherContainer;
     private AppBarLayout mHeaderView;
-    private SearchBoxContainerView mSearchBoxContainerView;
-    private TextView mSearchBoxText;
+    private SearchBoxCoordinator mSearchBoxCoordinator;
     private IncognitoDescriptionView mIncognitoDescriptionView;
     private View.OnClickListener mIncognitoDescriptionLearnMoreListener;
     private boolean mIncognitoCookieControlsCardIsVisible;
@@ -52,10 +50,10 @@ class TasksView extends CoordinatorLayoutForPointer {
     }
 
     public void initialize(ActivityLifecycleDispatcher activityLifecycleDispatcher) {
-        assert mSearchBoxContainerView
+        assert mSearchBoxCoordinator
                 != null : "#onFinishInflate should be completed before the call to initialize.";
 
-        mSearchBoxContainerView.initialize(activityLifecycleDispatcher);
+        mSearchBoxCoordinator.initialize(activityLifecycleDispatcher);
     }
 
     @Override
@@ -64,12 +62,11 @@ class TasksView extends CoordinatorLayoutForPointer {
 
         mCarouselTabSwitcherContainer =
                 (FrameLayout) findViewById(R.id.carousel_tab_switcher_container);
-        mSearchBoxContainerView = findViewById(R.id.search_box);
+        mSearchBoxCoordinator = new SearchBoxCoordinator(getContext(), this);
         mHeaderView = (AppBarLayout) findViewById(R.id.task_surface_header);
         AppBarLayout.LayoutParams layoutParams =
-                (AppBarLayout.LayoutParams) mSearchBoxContainerView.getLayoutParams();
+                (AppBarLayout.LayoutParams) mSearchBoxCoordinator.getView().getLayoutParams();
         layoutParams.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
-        mSearchBoxText = (TextView) mSearchBoxContainerView.findViewById(R.id.search_box_text);
     }
 
     ViewGroup getCarouselTabSwitcherContainer() {
@@ -90,43 +87,10 @@ class TasksView extends CoordinatorLayoutForPointer {
     }
 
     /**
-     * Set the given listener for the fake search box.
-     * @param listener The given listener.
+     * @return The {@link SearchBoxCoordinator} representing the fake search box.
      */
-    void setFakeSearchBoxClickListener(@Nullable View.OnClickListener listener) {
-        mSearchBoxText.setOnClickListener(listener);
-    }
-
-    /**
-     * Set the given watcher for the fake search box.
-     * @param textWatcher The given {@link TextWatcher}.
-     */
-    void setFakeSearchBoxTextWatcher(TextWatcher textWatcher) {
-        mSearchBoxText.addTextChangedListener(textWatcher);
-    }
-
-    /**
-     * Set the visibility of the fake search box.
-     * @param isVisible Whether it's visible.
-     */
-    void setFakeSearchBoxVisibility(boolean isVisible) {
-        mSearchBoxContainerView.setVisibility(isVisible ? View.VISIBLE : View.GONE);
-    }
-
-    /**
-     * Set the visibility of the voice recognition button.
-     * @param isVisible Whether it's visible.
-     */
-    void setVoiceRecognitionButtonVisibility(boolean isVisible) {
-        findViewById(R.id.voice_search_button).setVisibility(isVisible ? View.VISIBLE : View.GONE);
-    }
-
-    /**
-     * Set the voice recognition button click listener.
-     * @param listener The given listener.
-     */
-    void setVoiceRecognitionButtonClickListener(@Nullable View.OnClickListener listener) {
-        findViewById(R.id.voice_search_button).setOnClickListener(listener);
+    SearchBoxCoordinator getSearchBoxCoordinator() {
+        return mSearchBoxCoordinator;
     }
 
     /**
@@ -152,12 +116,13 @@ class TasksView extends CoordinatorLayoutForPointer {
         int backgroundColor = ChromeColors.getPrimaryBackgroundColor(resources, isIncognito);
         setBackgroundColor(backgroundColor);
         mHeaderView.setBackgroundColor(backgroundColor);
-        mSearchBoxContainerView.setBackgroundResource(
-                isIncognito ? R.drawable.fake_search_box_bg_incognito : R.drawable.ntp_search_box);
+
+        mSearchBoxCoordinator.setBackground(AppCompatResources.getDrawable(mContext,
+                isIncognito ? R.drawable.fake_search_box_bg_incognito : R.drawable.ntp_search_box));
         int hintTextColor = isIncognito
                 ? ApiCompatibilityUtils.getColor(resources, R.color.locationbar_light_hint_text)
                 : ApiCompatibilityUtils.getColor(resources, R.color.locationbar_dark_hint_text);
-        mSearchBoxText.setHintTextColor(hintTextColor);
+        mSearchBoxCoordinator.setSearchBoxHintColor(hintTextColor);
     }
 
     /**

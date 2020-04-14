@@ -4,6 +4,7 @@
 
 #include "system_features_disable_list_policy_handler.h"
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
@@ -28,11 +29,16 @@ void SystemFeaturesDisableListPolicyHandler::ApplyList(
     PrefValueMap* prefs) {
   DCHECK(filtered_list.is_list());
   base::Value enums_list(base::Value::Type::LIST);
+  bool os_settings_enabled = true;
   for (const auto& element : filtered_list.GetList()) {
-    enums_list.Append(ConvertToEnum(element.GetString()));
+    SystemFeature feature = ConvertToEnum(element.GetString());
+    enums_list.Append(feature);
+    if (feature == SystemFeature::OS_SETTINGS)
+      os_settings_enabled = false;
   }
   prefs->SetValue(policy_prefs::kSystemFeaturesDisableList,
                   std::move(enums_list));
+  prefs->SetBoolean(ash::prefs::kOsSettingsEnabled, os_settings_enabled);
 }
 
 SystemFeature SystemFeaturesDisableListPolicyHandler::ConvertToEnum(

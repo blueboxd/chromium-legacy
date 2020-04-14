@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Point;
@@ -26,10 +27,10 @@ import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -55,7 +56,6 @@ import org.chromium.chrome.browser.suggestions.tile.TileGroupDelegateImpl;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -87,7 +87,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     public static final String CONTEXT_MENU_USER_ACTION_PREFIX = "Suggestions";
 
     protected final Tab mTab;
-    private final ActivityTabProvider mActivityTabProvider;
+    private final Supplier<Tab> mActivityTabProvider;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
 
     private final String mTitle;
@@ -96,6 +96,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     protected final TileGroup.Delegate mTileGroupDelegate;
     private final boolean mIsTablet;
     private final ChromeFullscreenManager mFullscreenManager;
+    private final NewTabPageUma mNewTabPageUma;
 
     /**
      * The {@link NewTabPageView} shown in this NewTabPageLayout. This may be null in sub-classes.
@@ -219,6 +220,12 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         }
 
         @Override
+        public void performSearchQuery(String query) {
+            if (mFakeboxDelegate == null) return;
+            mFakeboxDelegate.performSearchQuery(query);
+        }
+
+        @Override
         public boolean isCurrentPage() {
             if (mIsDestroyed) return false;
             if (mFakeboxDelegate == null) return false;
@@ -243,9 +250,9 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      * {@link NewTabPage}.
      */
     private class NewTabPageTileGroupDelegate extends TileGroupDelegateImpl {
-        private NewTabPageTileGroupDelegate(ChromeActivity activity, Profile profile,
-                SuggestionsNavigationDelegate navigationDelegate) {
-            super(activity, profile, navigationDelegate, activity.getSnackbarManager());
+        private NewTabPageTileGroupDelegate(Context context, Profile profile,
+                SuggestionsNavigationDelegate navigationDelegate, SnackbarManager snackbarManager) {
+            super(context, profile, navigationDelegate, snackbarManager);
         }
 
         @Override
@@ -273,22 +280,30 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     /**
      * Constructs a NewTabPage.
      * @param activity The activity used for context to create the new tab page's View.
+     * @param fullscreenManager {@link ChromeFullscreenManager} to observe for offset changes.
+     * @param activityTabProvider Provides the current active tab.
+     * @param overviewModeBehavior Overview mode to observe for mode changes.
+     * @param snackbarManager {@link SnackBarManager} object.
+     * @param lifecycleDispatcher Activity lifecycle dispatcher.
+     * @param tabModelSelector {@link TabModelSelector} object.
+     * @param isTablet {@code true} if running on a Tablet device.
+     * @param uma {@link NewTabPageUma} object recording user metrics.
+     * @param isInNightMode {@code true} if the night mode setting is on.
      * @param nativePageHost The host that is showing this new tab page.
-     * @param tabModelSelector The TabModelSelector used to open tabs.
-     * @param activityTabProvider Allows us to check if we are the current tab.
-     * @param activityLifecycleDispatcher Allows us to subscribe to backgrounding events.
-     * @param tab The {@link TabImpl} that contains this new tab page.
+     * @param tab The {@link Tab} that contains this new tab page.
      */
-    public NewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
-            TabModelSelector tabModelSelector, ActivityTabProvider activityTabProvider,
-            ActivityLifecycleDispatcher activityLifecycleDispatcher, Tab tab) {
+    public NewTabPage(Activity activity, ChromeFullscreenManager fullscreenManager,
+            Supplier<Tab> activityTabProvider, @Nullable OverviewModeBehavior overviewModeBehavior,
+            SnackbarManager snackbarManager, ActivityLifecycleDispatcher lifecycleDispatcher,
+            TabModelSelector tabModelSelector, boolean isTablet, NewTabPageUma uma,
+            boolean isInNightMode, NativePageHost nativePageHost, Tab tab) {
         mConstructedTimeNs = System.nanoTime();
         TraceEvent.begin(TAG);
 
         mActivityTabProvider = activityTabProvider;
-        mActivityLifecycleDispatcher = activityLifecycleDispatcher;
-
+        mActivityLifecycleDispatcher = lifecycleDispatcher;
         mTab = tab;
+        mNewTabPageUma = uma;
         Profile profile = Profile.fromWebContents(mTab.getWebContents());
 
         SuggestionsDependencyFactory depsFactory = SuggestionsDependencyFactory.getInstance();
@@ -299,13 +314,14 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 activity, profile, nativePageHost, tabModelSelector, mTab);
         mNewTabPageManager = new NewTabPageManagerImpl(suggestionsSource, eventReporter,
                 navigationDelegate, profile, nativePageHost,
-                GlobalDiscardableReferencePool.getReferencePool(), activity.getSnackbarManager());
-        mTileGroupDelegate = new NewTabPageTileGroupDelegate(activity, profile, navigationDelegate);
+                GlobalDiscardableReferencePool.getReferencePool(), snackbarManager);
+        mTileGroupDelegate = new NewTabPageTileGroupDelegate(
+                activity, profile, navigationDelegate, snackbarManager);
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);
         mBackgroundColor =
                 ApiCompatibilityUtils.getColor(activity.getResources(), R.color.default_bg_color);
-        mIsTablet = activity.isTablet();
+        mIsTablet = isTablet;
         TemplateUrlServiceFactory.get().addObserver(this);
 
         mTabObserver = new EmptyTabObserver() {
@@ -344,9 +360,10 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mActivityLifecycleDispatcher.register(mLifecycleObserver);
 
         updateSearchProviderHasLogo();
-        initializeMainView(activity, nativePageHost);
+        initializeMainView(activity, nativePageHost, activityTabProvider, lifecycleDispatcher,
+                snackbarManager, overviewModeBehavior, tabModelSelector, uma, isInNightMode);
 
-        mFullscreenManager = activity.getFullscreenManager();
+        mFullscreenManager = fullscreenManager;
         getView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View view) {
@@ -367,27 +384,37 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mTabStripAndToolbarHeight =
                 activity.getResources().getDimensionPixelSize(R.dimen.tab_strip_and_toolbar_height);
 
-        NewTabPageUma.recordIsUserOnline();
-        NewTabPageUma.recordLoadType(activity);
-        NewTabPageUma.recordContentSuggestionsDisplayStatus();
+        mNewTabPageUma.recordIsUserOnline();
+        mNewTabPageUma.recordLoadType();
+        mNewTabPageUma.recordContentSuggestionsDisplayStatus();
         TraceEvent.end(TAG);
     }
 
     /**
      * Create and initialize the main view contained in this NewTabPage.
-     * @param context The context used to inflate the view.
+     * @param activity The activity used to initialize the view.
      * @param host NativePageHost used for initialization.
+     * @param tabProvider Provides the current active tab.
+     * @param lifecycleDispatcher Activity lifecycle dispatcher.
+     * @param snackbarManager {@link SnackBarManager} object.
+     * @param overviewModeBehavior Overview mode to observe for mode changes.
+     * @param tabModelSelector {@link TabModelSelector} object.
+     * @param uma {@link NewTabPageUma} object recording user metrics.
+     * @param isInNightMode {@code true} if the night mode setting is on.
      */
-    protected void initializeMainView(Context context, NativePageHost host) {
-        LayoutInflater inflater = LayoutInflater.from(context);
+    protected void initializeMainView(Activity activity, NativePageHost host,
+            Supplier<Tab> tabProvider, ActivityLifecycleDispatcher lifecycleDispatcher,
+            SnackbarManager snackbarManager, @Nullable OverviewModeBehavior overviewModeBehavior,
+            TabModelSelector tabModelSelector, NewTabPageUma uma, boolean isInNightMode) {
+        LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page_view, null);
         mNewTabPageLayout = mNewTabPageView.getNewTabPageLayout();
 
-        mNewTabPageView.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
+        mNewTabPageView.initialize(mNewTabPageManager, activity, mTab, mTileGroupDelegate,
                 mSearchProviderHasLogo,
                 TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
                 getScrollPositionFromNavigationEntry(NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mTab),
-                mConstructedTimeNs, mActivityLifecycleDispatcher);
+                mConstructedTimeNs, tabProvider, lifecycleDispatcher, overviewModeBehavior, uma);
     }
 
     /**

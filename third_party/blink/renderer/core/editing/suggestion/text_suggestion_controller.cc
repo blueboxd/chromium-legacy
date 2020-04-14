@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_info.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
@@ -193,7 +194,9 @@ SuggestionInfosWithNodeAndHighlightColor ComputeSuggestionInfos(
 }  // namespace
 
 TextSuggestionController::TextSuggestionController(LocalFrame& frame)
-    : is_suggestion_menu_open_(false), frame_(&frame) {}
+    : is_suggestion_menu_open_(false),
+      frame_(&frame),
+      text_suggestion_host_(frame.DomWindow()) {}
 
 void TextSuggestionController::DidAttachDocument(Document* document) {
   DCHECK(document);
@@ -243,9 +246,10 @@ void TextSuggestionController::HandlePotentialSuggestionTap(
   if (marker && marker->Suggestions().IsEmpty())
     return;
 
-  if (!text_suggestion_host_) {
+  if (!text_suggestion_host_.is_bound()) {
     GetFrame().GetBrowserInterfaceBroker().GetInterface(
-        text_suggestion_host_.BindNewPipeAndPassReceiver());
+        text_suggestion_host_.BindNewPipeAndPassReceiver(
+            GetFrame().GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
 
   text_suggestion_host_->StartSuggestionMenuTimer();
@@ -253,6 +257,7 @@ void TextSuggestionController::HandlePotentialSuggestionTap(
 
 void TextSuggestionController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
+  visitor->Trace(text_suggestion_host_);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
 

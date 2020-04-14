@@ -32,26 +32,7 @@ suite('AppsPageTests', function() {
     const AndroidAppsShown = () => !!appsPage.$$('#android-apps');
     const AppManagementShown = () => !!appsPage.$$('#appManagement');
 
-    test('Nothing Shown', function() {
-      appsPage.showAppManagement = false;
-      appsPage.showAndroidApps = false;
-      Polymer.dom.flush();
-
-      assertFalse(AppManagementShown());
-      assertFalse(AndroidAppsShown());
-    });
-
-    test('Only Android Apps Shown', function() {
-      appsPage.showAppManagement = false;
-      appsPage.showAndroidApps = true;
-      Polymer.dom.flush();
-
-      assertFalse(AppManagementShown());
-      assertTrue(AndroidAppsShown());
-    });
-
     test('Only App Management Shown', function() {
-      appsPage.showAppManagement = true;
       appsPage.showAndroidApps = false;
       Polymer.dom.flush();
 
@@ -60,7 +41,6 @@ suite('AppsPageTests', function() {
     });
 
     test('Android Apps and App Management Shown', function() {
-      appsPage.showAppManagement = true;
       appsPage.showAndroidApps = true;
       Polymer.dom.flush();
 

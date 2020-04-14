@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -28,6 +29,8 @@ class OffscreenCanvas;
 class CORE_EXPORT WorkerAnimationFrameProvider
     : public GarbageCollected<WorkerAnimationFrameProvider>,
       public BeginFrameProviderClient {
+  USING_GARBAGE_COLLECTED_MIXIN(WorkerAnimationFrameProvider);
+
  public:
   WorkerAnimationFrameProvider(
       ExecutionContext* context,
@@ -36,7 +39,7 @@ class CORE_EXPORT WorkerAnimationFrameProvider
   int RegisterCallback(FrameRequestCallbackCollection::FrameCallback* callback);
   void CancelCallback(int id);
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) override;
 
   // BeginFrameProviderClient
   void BeginFrame(const viz::BeginFrameArgs&) override;
@@ -47,7 +50,7 @@ class CORE_EXPORT WorkerAnimationFrameProvider
   static const int kInvalidCallbackId = -1;
 
  private:
-  const std::unique_ptr<BeginFrameProvider> begin_frame_provider_;
+  const Member<BeginFrameProvider> begin_frame_provider_;
   DISALLOW_COPY_AND_ASSIGN(WorkerAnimationFrameProvider);
   FrameRequestCallbackCollection callback_collection_;
 

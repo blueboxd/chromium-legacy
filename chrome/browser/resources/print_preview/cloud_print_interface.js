@@ -5,6 +5,7 @@
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 import {Destination, DestinationOrigin} from './data/destination.js';
 import {Invitation} from './data/invitation.js';
+import {NativeLayer} from './native_layer.js';
 
 /**
  * Event types dispatched by the cloudprint interface.
@@ -74,6 +75,21 @@ export let CloudPrintInterfaceProcessInviteDetail;
 export class CloudPrintInterface {
   /** @return {boolean} Whether cookie destinations are disabled. */
   areCookieDestinationsDisabled() {}
+
+  /**
+   * @param {string} baseUrl Base part of the Google Cloud Print service URL
+   *     with no trailing slash. For example,
+   *     'https://www.google.com/cloudprint'.
+   * @param {!NativeLayer} nativeLayer Native layer used to get
+   *     Auth2 tokens.
+   * @param {boolean} isInAppKioskMode Whether the print preview is in App
+   *     Kiosk mode.
+   * @param {string} uiLocale The UI locale.
+   */
+  configure(baseUrl, nativeLayer, isInAppKioskMode, uiLocale) {}
+
+  /** @return {boolean} Whether the interface has been configured. */
+  isConfigured() {}
 
   /**
    * @return {boolean} Whether a search for cloud destinations is in progress.

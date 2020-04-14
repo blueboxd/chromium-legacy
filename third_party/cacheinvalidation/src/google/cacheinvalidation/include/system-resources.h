@@ -128,7 +128,7 @@ class Scheduler : public ResourceComponent {
    * necessarily the UNIX epoch).  The only requirement is that this time
    * advance at the rate of real time.
    */
-  virtual Time GetCurrentTime() const = 0;
+  virtual Time CurrentTime() const = 0;
 };
 
 /* Interface specifying the network functionality provided by

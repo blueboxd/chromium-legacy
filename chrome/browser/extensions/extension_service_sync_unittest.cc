@@ -2337,6 +2337,50 @@ TEST_F(ExtensionServiceTestSupervised,
                    "SupervisedUsers_Extensions_Removed"));
 }
 
+// Tests that the kNewVersionApprovalGranted UMA metric only increments when
+// there's an actual change in the approved version.
+// Prevents a regression to crbug/1068438.
+TEST_F(ExtensionServiceTestSupervised, DontTriggerUpdateIfNoVersionChange) {
+  InitSupervisedUserExtensionInstallFeatures(
+      SupervisedUserExtensionInstallFeatureMode::kFull);
+  InitServices(/*profile_is_supervised=*/true);
+  SetSupervisedUserExtensionsMayRequestPermissionsPref(true);
+
+  base::HistogramTester histogram_tester;
+
+  base::FilePath path = data_dir().AppendASCII("good.crx");
+  const Extension* extension = InstallCRX(path, INSTALL_WITHOUT_LOAD);
+  ASSERT_TRUE(extension);
+  // The extension should be installed but disabled pending custodian approval.
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(extension->id()));
+
+  // Simulate parent approval for the extension installation.
+  supervised_user_service()->AddOrUpdateExtensionApproval(*extension);
+  // The extension should be enabled now.
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
+
+  // Should see 1 kNewExtensionApprovalGranted metric count recorded.
+  histogram_tester.ExpectUniqueSample(
+      "SupervisedUsers.Extensions",
+      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+          kNewExtensionApprovalGranted,
+      1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 1);
+
+  // Simulate the supervised user disabling and re-enabling the extension
+  // without changing the extension version.
+  supervised_user_service()->AddOrUpdateExtensionApproval(*extension);
+
+  // Should not see kNewVersionApprovalGranted metric count recorded because
+  // there was no version change.
+  histogram_tester.ExpectBucketCount(
+      "SupervisedUsers.Extensions",
+      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+          kNewVersionApprovalGranted,
+      0);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 1);
+}
+
 TEST_F(ExtensionServiceTestSupervised, SupervisedUserInitiatedInstalls) {
   InitSupervisedUserExtensionInstallFeatures(
       SupervisedUserExtensionInstallFeatureMode::kFull);

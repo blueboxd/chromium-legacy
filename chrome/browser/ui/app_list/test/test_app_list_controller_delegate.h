@@ -24,7 +24,6 @@ class TestAppListControllerDelegate : public AppListControllerDelegate {
   void UnpinApp(const std::string& app_id) override;
   Pinnable GetPinnable(const std::string& app_id) override;
   bool IsAppOpen(const std::string& app_id) const override;
-  bool CanDoShowAppInfoFlow() override;
   void DoShowAppInfoFlow(Profile* profile,
                          const std::string& extension_id) override;
   void CreateNewWindow(Profile* profile, bool incognito) override;

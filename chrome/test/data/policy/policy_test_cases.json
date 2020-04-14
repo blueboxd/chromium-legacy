@@ -3680,7 +3680,8 @@
         "policies": {
           "SystemFeaturesDisableList": ["os_settings"]
         },
-        "prefs": { "policy.system_features_disable_list": { "local_state": true } }
+        "prefs": { "policy.system_features_disable_list": { "local_state": true },
+                   "os_settings_enabled": { "local_state": true } }
       }
     ]
   },

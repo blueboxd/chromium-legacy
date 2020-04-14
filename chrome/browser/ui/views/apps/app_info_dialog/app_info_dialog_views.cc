@@ -87,8 +87,7 @@ bool CanShowAppInfoDialog(Profile* profile, const std::string& extension_id) {
   }
 
   // App Management only displays apps that are displayed in the launcher.
-  if (base::FeatureList::IsEnabled(features::kAppManagement) &&
-      !extension->ShouldDisplayInAppLauncher()) {
+  if (!extension->ShouldDisplayInAppLauncher()) {
     return false;
   }
 #endif

@@ -276,9 +276,8 @@ void AppServiceContextMenu::BuildExtensionAppShortcutsMenu(
 
 void AppServiceContextMenu::ShowAppInfo() {
   if (app_type_ == apps::mojom::AppType::kArc) {
-    chrome::ShowAppManagementPage(profile(), app_id());
-    base::UmaHistogramEnumeration(
-        kAppManagementEntryPointsHistogramName,
+    chrome::ShowAppManagementPage(
+        profile(), app_id(),
         AppManagementEntryPoint::kAppListContextMenuAppInfoArc);
     return;
   }

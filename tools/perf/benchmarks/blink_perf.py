@@ -628,3 +628,14 @@ class BlinkPerfDisplayLocking(_BlinkPerfBenchmark):
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(
       ['--enable-blink-features=DisplayLocking,CSSContentSize'])
+
+@benchmark.Info(emails=['hongchan@chromium.org', 'rtoy@chromium.org'],
+                component='Blink>WebAudio',
+                documentation_url='https://bit.ly/blink-perf-benchmarks')
+class BlinkPerfWebAudio(_BlinkPerfBenchmark):
+  SUBDIR = 'webaudio'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
+
+  @classmethod
+  def Name(cls):
+    return 'UNSCHEDULED_blink_perf.webaudio'

@@ -168,17 +168,14 @@
           <os-settings-search-page prefs="{{prefs}}">
           </os-settings-search-page>
         </settings-section>
-        <template is="dom-if" if="[[showApps]]" restamp>
-          <settings-section page-title="$i18n{appsPageTitle}" section="apps">
-            <os-settings-apps-page
-                prefs="{{prefs}}"
-                android-apps-info="[[androidAppsInfo]]"
-                have-play-store-app="[[havePlayStoreApp]]"
-                show-android-apps="[[showAndroidApps]]"
-                show-app-management="[[showAppManagement]]">
-            </os-settings-apps-page>
-          </settings-section>
-        </template>
+        <settings-section page-title="$i18n{appsPageTitle}" section="apps">
+          <os-settings-apps-page
+              prefs="{{prefs}}"
+              android-apps-info="[[androidAppsInfo]]"
+              have-play-store-app="[[havePlayStoreApp]]"
+              show-android-apps="[[showAndroidApps]]">
+          </os-settings-apps-page>
+        </settings-section>
         <template is="dom-if" if="[[showCrostini]]" restamp>
           <settings-section page-title="$i18n{crostiniPageTitle}"
               section="crostini">

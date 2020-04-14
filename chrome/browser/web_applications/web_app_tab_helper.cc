@@ -106,11 +106,9 @@ void WebAppTabHelper::DOMContentLoaded(
   if (app_id_.empty())
     return;
 
-  // Ordinary Web Apps need to hold valid origin trial tokens to continue using
-  // File Handling API.
-  if (provider_->system_web_app_manager().IsSystemWebApp(app_id_))
-    return;
-  provider_->file_handler_manager().UpdateFileHandlingOriginTrialExpiry(
+  // There is no way to reliably know if |app_id_| is for a System Web App
+  // during startup, so we always call MaybeUpdateFileHandlingOriginTrialExpiry.
+  provider_->file_handler_manager().MaybeUpdateFileHandlingOriginTrialExpiry(
       web_contents(), app_id_);
 }
 
@@ -138,17 +136,8 @@ void WebAppTabHelper::OnWebAppInstalled(const AppId& installed_app_id) {
 
   SetAppId(app_id);
 
-  // Ordinary Web Apps need valid origin trial tokens to use File Handling API.
-  // When an App is installed, record its origin trial expiry time.
-  //
   // TODO(crbug.com/1053371): Clean up where we install file handlers.
-  // The following check is not necessary. This tab helper is not attached to
-  // the WebContents we used to install the WebApp. When a System Web App is
-  // installed, there is no associated tab and we early return at `app_id !=
-  // installed_app_id`.
-  if (provider_->system_web_app_manager().IsSystemWebApp(installed_app_id))
-    return;
-  provider_->file_handler_manager().UpdateFileHandlingOriginTrialExpiry(
+  provider_->file_handler_manager().MaybeUpdateFileHandlingOriginTrialExpiry(
       web_contents(), installed_app_id);
 }
 

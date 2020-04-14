@@ -32,8 +32,8 @@ id<GREYMatcher> FirstRunOptInAcceptButton() {
 
 // Returns matcher for the skip sign in button.
 id<GREYMatcher> SkipSigninButton() {
-  return grey_accessibilityID(
-      first_run::kSignInSkipButtonAccessibilityIdentifier);
+  return ButtonWithAccessibilityLabel(
+      l10n_util::GetNSString(IDS_IOS_FIRSTRUN_ACCOUNT_CONSISTENCY_SKIP_BUTTON));
 }
 }
 

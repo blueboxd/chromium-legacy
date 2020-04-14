@@ -46,10 +46,6 @@ bool TestAppListControllerDelegate::IsAppOpen(const std::string& app_id) const {
   return false;
 }
 
-bool TestAppListControllerDelegate::CanDoShowAppInfoFlow() {
-  return false;
-}
-
 void TestAppListControllerDelegate::DoShowAppInfoFlow(
     Profile* profile,
     const std::string& extension_id) {

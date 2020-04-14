@@ -90,6 +90,7 @@ void WakeLockSentinel::DoRelease() {
   if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
     return;
 
+  LOG(INFO) << "Dispatching release event.";
   // 6. Queue a task to fire an event named "release" at lock.
   DispatchEvent(*Event::Create(event_type_names::kRelease));
 }

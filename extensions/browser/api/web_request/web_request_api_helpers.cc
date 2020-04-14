@@ -1101,8 +1101,7 @@ static void StoreResponseCookies(
     scoped_refptr<net::HttpResponseHeaders> override_response_headers) {
   override_response_headers->RemoveHeader("Set-Cookie");
   for (const std::unique_ptr<net::ParsedCookie>& cookie : cookies) {
-    override_response_headers->AddHeader("Set-Cookie: " +
-                                         cookie->ToCookieLine());
+    override_response_headers->AddHeader("Set-Cookie", cookie->ToCookieLine());
   }
 }
 
@@ -1377,8 +1376,7 @@ void MergeOnHeadersReceivedResponses(
           if (added_headers.find(lowercase_header) != added_headers.end())
             continue;
           added_headers.insert(lowercase_header);
-          (*override_response_headers)
-              ->AddHeader(header.first + ": " + header.second);
+          (*override_response_headers)->AddHeader(header.first, header.second);
         }
       }
       *response_headers_modified = true;
@@ -1404,8 +1402,7 @@ void MergeOnHeadersReceivedResponses(
               original_response_headers->raw_headers());
     }
     (*override_response_headers)->ReplaceStatusLine("HTTP/1.1 302 Found");
-    (*override_response_headers)->RemoveHeader("location");
-    (*override_response_headers)->AddHeader("Location: " + new_url.spec());
+    (*override_response_headers)->SetHeader("Location", new_url.spec());
     // Prevent the original URL's fragment from being added to the new URL.
     *preserve_fragment_on_redirect_url = new_url;
   }

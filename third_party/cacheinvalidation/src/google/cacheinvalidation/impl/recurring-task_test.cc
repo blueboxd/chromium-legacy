@@ -68,7 +68,7 @@ class TestTask : public RecurringTask {
   virtual bool RunTask() {
     current_runs++;
     TLOG(logger_, INFO, "(%d) Task running: %d",
-         scheduler_->GetCurrentTime().ToInternalValue(), current_runs);
+         scheduler_->CurrentTime().ToInternalValue(), current_runs);
     return current_runs < max_runs_;
   }
 

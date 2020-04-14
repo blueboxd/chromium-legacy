@@ -162,7 +162,7 @@ public class ArticleSnippetsTest {
             mRecyclerView.init(mUiConfig, activity::closeContextMenu);
 
             mSuggestion = new SnippetArticleViewHolder(mRecyclerView, mContextMenuManager,
-                    mUiDelegate, mUiConfig, /* offlinePageBridge = */ null);
+                    mUiDelegate, mUiConfig, /* offlinePageBridge = */ null, null);
         });
     }
 

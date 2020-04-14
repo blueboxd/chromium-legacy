@@ -148,13 +148,10 @@
       <structure name="IDR_PRINT_PREVIEW_CLOUD_PRINT_INTERFACE_JS"
                  file="cloud_print_interface.js"
                  type="chrome_html" />
-      <structure name="IDR_PRINT_PREVIEW_CLOUD_PRINT_INTERFACE_JS_JS"
-                 file="cloud_print_interface_js.js"
+      <structure name="IDR_PRINT_PREVIEW_CLOUD_PRINT_INTERFACE_IMPL_JS"
+                 file="cloud_print_interface_impl.js"
                  type="chrome_html"
                  preprocess="true" />
-      <structure name="IDR_PRINT_PREVIEW_CLOUD_PRINT_INTERFACE_MANAGER_JS"
-                 file="cloud_print_interface_manager.js"
-                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NATIVE_LAYER_JS"
                  file="native_layer.js"
                  type="chrome_html"

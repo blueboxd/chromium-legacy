@@ -14,6 +14,7 @@ public class InterceptNavigationDelegateTabHelper implements UserData {
             InterceptNavigationDelegateTabHelper.class;
 
     private final InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
+    private final InterceptNavigationDelegateClientImpl mInterceptNavigationDelegateClient;
 
     public static void createForTab(Tab tab) {
         assert get(tab) == null;
@@ -29,12 +30,14 @@ public class InterceptNavigationDelegateTabHelper implements UserData {
     }
 
     InterceptNavigationDelegateTabHelper(Tab tab) {
-        mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl(
-                tab, new InterceptNavigationDelegateClientImpl(tab));
+        mInterceptNavigationDelegateClient = new InterceptNavigationDelegateClientImpl(tab);
+        mInterceptNavigationDelegate =
+                new InterceptNavigationDelegateImpl(mInterceptNavigationDelegateClient);
+        mInterceptNavigationDelegateClient.initializeWithDelegate(mInterceptNavigationDelegate);
     }
 
     @Override
     public void destroy() {
-        mInterceptNavigationDelegate.destroy();
+        mInterceptNavigationDelegateClient.destroy();
     }
 }

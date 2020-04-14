@@ -108,9 +108,17 @@ void FileHandlerManager::DisableAndUnregisterOsFileHandlers(
   UnregisterFileHandlersWithOs(app_id, profile());
 }
 
-void FileHandlerManager::UpdateFileHandlingOriginTrialExpiry(
+void FileHandlerManager::MaybeUpdateFileHandlingOriginTrialExpiry(
     content::WebContents* web_contents,
     const AppId& app_id) {
+  // If an App has force enabled file handling, there is no need to check its
+  // WebContents.
+  if (IsFileHandlingForceEnabled(app_id)) {
+    if (on_file_handling_expiry_updated_for_testing_)
+      on_file_handling_expiry_updated_for_testing_.Run();
+    return;
+  }
+
   mojo::AssociatedRemote<blink::mojom::FileHandlingExpiry> expiry_service;
   web_contents->GetMainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
       &expiry_service);
@@ -167,7 +175,15 @@ void FileHandlerManager::OnOriginTrialExpiryTimeReceived(
     mojo::AssociatedRemote<blink::mojom::FileHandlingExpiry> /*interface*/,
     const AppId& app_id,
     base::Time expiry_time) {
-  UpdateFileHandlersForOriginTrialExpiryTime(app_id, expiry_time);
+  // Updates the expiry time, if file handling is enabled by origin trial
+  // tokens. If an App has force enabled file handling, it might not have expiry
+  // time associated with it.
+  if (!IsFileHandlingForceEnabled(app_id)) {
+    UpdateFileHandlersForOriginTrialExpiryTime(app_id, expiry_time);
+  }
+
+  if (on_file_handling_expiry_updated_for_testing_)
+    on_file_handling_expiry_updated_for_testing_.Run();
 }
 
 void FileHandlerManager::UpdateFileHandlersForOriginTrialExpiryTime(
@@ -189,9 +205,6 @@ void FileHandlerManager::UpdateFileHandlersForOriginTrialExpiryTime(
   } else if (file_handlers_enabled) {
     DisableAndUnregisterOsFileHandlers(app_id);
   }
-
-  if (on_file_handling_expiry_updated_for_testing_)
-    on_file_handling_expiry_updated_for_testing_.Run();
 }
 
 void FileHandlerManager::DisableAutomaticFileHandlerCleanupForTesting() {
@@ -262,6 +275,14 @@ const base::Optional<GURL> FileHandlerManager::GetMatchingFileHandlerURL(
   }
 
   return base::nullopt;
+}
+
+bool FileHandlerManager::IsFileHandlingForceEnabled(const AppId& app_id) {
+  double pref_expiry_time =
+      GetDoubleWebAppPref(profile()->GetPrefs(), app_id,
+                          kFileHandlingOriginTrialExpiryTime)
+          .value_or(0);
+  return pref_expiry_time == kMaxOriginTrialExpiryTime;
 }
 
 }  // namespace web_app

@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser.tab;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
+import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
@@ -41,4 +44,10 @@ public interface TabDelegateFactory {
      * @param tab The associated {@link Tab}.
      */
     BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab);
+
+    /**
+     * @return {@link NativePageFactory} providing a method that creates a new native page.
+     */
+    @Nullable
+    NativePageFactory getNativePageFactory();
 }

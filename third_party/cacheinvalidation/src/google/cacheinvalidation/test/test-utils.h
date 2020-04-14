@@ -86,7 +86,7 @@ class MockScheduler : public Scheduler {
  public:
   MOCK_METHOD2(Schedule, void(TimeDelta, Closure*));  // NOLINT
   MOCK_CONST_METHOD0(IsRunningOnThread, bool());
-  MOCK_CONST_METHOD0(GetCurrentTime, Time());
+  MOCK_CONST_METHOD0(CurrentTime, Time());
   MOCK_METHOD1(SetSystemResources, void(SystemResources*));  // NOLINT
 };
 

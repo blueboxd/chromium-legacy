@@ -18,6 +18,7 @@
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/url_formatter/elide_url.h"
 #include "google_apis/google_api_keys.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
@@ -48,6 +49,8 @@
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #import "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 #import "ios/web_view/internal/passwords/cwv_password_controller.h"
+#import "ios/web_view/internal/passwords/web_view_password_manager_client.h"
+#import "ios/web_view/internal/passwords/web_view_password_manager_driver.h"
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -643,8 +646,20 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
           [_webState->GetJSInjectionReceiver()
               instanceOfClass:[JsSuggestionManager class]]);
   [JSSuggestionManager setWebFramesManager:_webState->GetWebFramesManager()];
-  CWVPasswordController* passwordController =
-      [[CWVPasswordController alloc] initWithWebState:_webState.get()];
+
+  auto passwordManagerClient =
+      ios_web_view::WebViewPasswordManagerClient::Create(
+          _webState.get(), _configuration.browserState);
+  auto passwordManager = std::make_unique<password_manager::PasswordManager>(
+      passwordManagerClient.get());
+  auto passwordManagerDriver =
+      std::make_unique<ios_web_view::WebViewPasswordManagerDriver>();
+  CWVPasswordController* passwordController = [[CWVPasswordController alloc]
+           initWithWebState:_webState.get()
+            passwordManager:std::move(passwordManager)
+      passwordManagerClient:std::move(passwordManagerClient)
+      passwordManagerDriver:std::move(passwordManagerDriver)];
+
   return [[CWVAutofillController alloc] initWithWebState:_webState.get()
                                            autofillAgent:autofillAgent
                                        JSAutofillManager:JSAutofillManager

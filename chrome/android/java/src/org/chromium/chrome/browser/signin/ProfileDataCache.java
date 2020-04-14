@@ -19,6 +19,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
@@ -58,28 +59,34 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
      * a user avatar.
      */
     public static class BadgeConfig {
-        private final Bitmap mBadge;
+        private final Drawable mBadge;
+        private final int mBadgeSize;
         private final Point mPosition;
         private final int mBorderSize;
 
         /**
-         * @param badge Square badge bitmap to overlay on user avatar. Will be cropped to a circular
-         *         one while overlaying.
+         * @param badge Square badge drawable to overlay on user avatar. Will be cropped to a
+         *         circular one while overlaying.
+         * @param badgeSize Size of a side the square badge
          * @param position Position of top left corner of a badge relative to top left corner of
          *         avatar.
          * @param borderSize Size of a transparent border around badge.
          */
-        public BadgeConfig(Bitmap badge, Point position, int borderSize) {
-            assert badge.getHeight() == badge.getWidth();
+        public BadgeConfig(Drawable badge, int badgeSize, Point position, int borderSize) {
             assert position != null;
 
             mBadge = badge;
+            mBadgeSize = badgeSize;
             mPosition = position;
             mBorderSize = borderSize;
         }
 
-        Bitmap getBadge() {
+        Drawable getBadge() {
             return mBadge;
+        }
+
+        int getBadgeSize() {
+            return mBadgeSize;
         }
 
         Point getPosition() {
@@ -245,6 +252,40 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
         return new BitmapDrawable(resources, output);
     }
 
+    /**
+     * Returns a profile data cache object with the badgeResId provided. The badge is put with
+     * respect to R.dimen.user_picture_size. So this method only works with the user avatar of this
+     * size.
+     * @param context Context of the application to extract resources from
+     * @param badgeResId Resource id of the badge to be attached. If it is 0 then no badge is
+     *                   attached
+     */
+    public static ProfileDataCache createProfileDataCache(
+            Context context, @DrawableRes int badgeResId) {
+        return createProfileDataCache(context, badgeResId,
+                AccountManagerFacadeProvider.getInstance().getProfileDataSource());
+    }
+
+    @VisibleForTesting
+    static ProfileDataCache createProfileDataCache(
+            Context context, @DrawableRes int badgeResId, ProfileDataSource profileDataSource) {
+        Resources resources = context.getResources();
+        int userPictureSize = resources.getDimensionPixelSize(R.dimen.user_picture_size);
+        if (badgeResId == 0) {
+            return new ProfileDataCache(context, userPictureSize, null, profileDataSource);
+        }
+
+        Drawable badge = AppCompatResources.getDrawable(context, badgeResId);
+        int badgePositionX = resources.getDimensionPixelOffset(R.dimen.badge_position_x);
+        int badgePositionY = resources.getDimensionPixelOffset(R.dimen.badge_position_y);
+        int badgeBorderSize = resources.getDimensionPixelSize(R.dimen.badge_border_size);
+        int badgeSize = resources.getDimensionPixelSize(R.dimen.badge_size);
+        return new ProfileDataCache(context, userPictureSize,
+                new BadgeConfig(badge, badgeSize, new Point(badgePositionX, badgePositionY),
+                        badgeBorderSize),
+                profileDataSource);
+    }
+
     private Drawable prepareAvatar(Bitmap bitmap) {
         Drawable croppedAvatar = bitmap != null
                 ? makeRoundAvatar(mContext.getResources(), bitmap, mImageSize)
@@ -256,7 +297,7 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
     }
 
     private Drawable overlayBadgeOnUserPicture(Drawable userPicture) {
-        int badgeSize = mBadgeConfig.getBadge().getHeight();
+        int badgeSize = mBadgeConfig.getBadgeSize();
         int badgedPictureWidth = Math.max(mBadgeConfig.getPosition().x + badgeSize, mImageSize);
         int badgedPictureHeight = Math.max(mBadgeConfig.getPosition().y + badgeSize, mImageSize);
         Bitmap badgedPicture = Bitmap.createBitmap(
@@ -277,8 +318,10 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
                 badgeCenterX, badgeCenterY, badgeRadius + mBadgeConfig.getBorderSize(), paint);
 
         // Draw the badge
-        canvas.drawBitmap(mBadgeConfig.getBadge(), mBadgeConfig.getPosition().x,
-                mBadgeConfig.getPosition().y, null);
+        Drawable badge = mBadgeConfig.getBadge();
+        badge.setBounds(mBadgeConfig.getPosition().x, mBadgeConfig.getPosition().y,
+                mBadgeConfig.getPosition().x + badgeSize, mBadgeConfig.getPosition().y + badgeSize);
+        badge.draw(canvas);
         return new BitmapDrawable(mContext.getResources(), badgedPicture);
     }
 

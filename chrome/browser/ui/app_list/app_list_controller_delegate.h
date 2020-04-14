@@ -76,9 +76,6 @@ class AppListControllerDelegate {
   // Returns true if requested app is open.
   virtual bool IsAppOpen(const std::string& app_id) const = 0;
 
-  // Whether the controller supports a Show App Info flow.
-  virtual bool CanDoShowAppInfoFlow();
-
   // Show the dialog with the application's information. Call only if
   // CanDoShowAppInfoFlow() returns true.
   virtual void DoShowAppInfoFlow(Profile* profile, const std::string& app_id);

@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
-#include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -22,14 +22,15 @@ struct PLATFORM_EXPORT BeginFrameProviderParams final {
   viz::FrameSinkId frame_sink_id;
 };
 
-class PLATFORM_EXPORT BeginFrameProviderClient {
+class PLATFORM_EXPORT BeginFrameProviderClient : public GarbageCollectedMixin {
  public:
   virtual void BeginFrame(const viz::BeginFrameArgs&) = 0;
   virtual ~BeginFrameProviderClient() = default;
 };
 
 class PLATFORM_EXPORT BeginFrameProvider
-    : public viz::mojom::blink::CompositorFrameSinkClient,
+    : public GarbageCollected<BeginFrameProvider>,
+      public viz::mojom::blink::CompositorFrameSinkClient,
       public mojom::blink::EmbeddedFrameSinkClient {
  public:
   explicit BeginFrameProvider(
@@ -65,6 +66,8 @@ class PLATFORM_EXPORT BeginFrameProvider
 
   bool IsValidFrameProvider();
 
+  void Trace(Visitor*);
+
   ~BeginFrameProvider() override = default;
 
  private:
@@ -80,9 +83,7 @@ class PLATFORM_EXPORT BeginFrameProvider
   viz::FrameSinkId frame_sink_id_;
   viz::FrameSinkId parent_frame_sink_id_;
   mojo::Remote<viz::mojom::blink::CompositorFrameSink> compositor_frame_sink_;
-  BeginFrameProviderClient* begin_frame_client_;
-
-  base::WeakPtrFactory<BeginFrameProvider> weak_factory_{this};
+  Member<BeginFrameProviderClient> begin_frame_client_;
 };
 
 }  // namespace blink

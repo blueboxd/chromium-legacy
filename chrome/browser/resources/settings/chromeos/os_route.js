@@ -132,21 +132,15 @@ cr.define('settings', function() {
       r.OS_RESET = r.ADVANCED.createSection('/osReset', 'osReset');
     }
 
-    const showAppManagement = loadTimeData.valueExists('showAppManagement') &&
-        loadTimeData.getBoolean('showAppManagement');
-    const showAndroidApps = loadTimeData.valueExists('androidAppsVisible') &&
-        loadTimeData.getBoolean('androidAppsVisible');
     // Apps
-    if (showAppManagement || showAndroidApps) {
-      r.APPS = r.BASIC.createSection('/apps', 'apps');
-      if (showAppManagement) {
-        r.APP_MANAGEMENT = r.APPS.createChild('/app-management');
-        r.APP_MANAGEMENT_DETAIL =
-            r.APP_MANAGEMENT.createChild('/app-management/detail');
-      }
-      if (showAndroidApps) {
-        r.ANDROID_APPS_DETAILS = r.APPS.createChild('/androidAppsDetails');
-      }
+    r.APPS = r.BASIC.createSection('/apps', 'apps');
+    r.APP_MANAGEMENT = r.APPS.createChild('/app-management');
+    r.APP_MANAGEMENT_DETAIL =
+        r.APP_MANAGEMENT.createChild('/app-management/detail');
+    // Android apps page
+    if (loadTimeData.valueExists('androidAppsVisible') &&
+        loadTimeData.getBoolean('androidAppsVisible')) {
+      r.ANDROID_APPS_DETAILS = r.APPS.createChild('/androidAppsDetails');
     }
 
     r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');

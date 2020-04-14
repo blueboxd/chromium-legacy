@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
+import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
@@ -30,6 +31,7 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
     private final BrowserControlsVisibilityDelegate mAppBrowserControlsVisibilityDelegate;
     private final Supplier<ShareDelegate> mShareDelegateSupplier;
     private final Supplier<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier;
+    private NativePageFactory mNativePageFactory;
 
     public TabbedModeTabDelegateFactory(ChromeActivity activity,
             BrowserControlsVisibilityDelegate appBrowserControlsVisibilityDelegate,
@@ -64,5 +66,11 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
         return new ComposedBrowserControlsVisibilityDelegate(
                 new TabStateBrowserControlsVisibilityDelegate(tab),
                 mAppBrowserControlsVisibilityDelegate);
+    }
+
+    @Override
+    public NativePageFactory getNativePageFactory() {
+        if (mNativePageFactory == null) mNativePageFactory = new NativePageFactory(mActivity);
+        return mNativePageFactory;
     }
 }

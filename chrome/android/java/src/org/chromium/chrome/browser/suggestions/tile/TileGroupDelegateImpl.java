@@ -9,7 +9,6 @@ import android.content.Context;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
@@ -36,9 +35,9 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
     private boolean mIsDestroyed;
     private SnackbarController mTileRemovedSnackbarController;
 
-    public TileGroupDelegateImpl(ChromeActivity activity, Profile profile,
+    public TileGroupDelegateImpl(Context context, Profile profile,
             SuggestionsNavigationDelegate navigationDelegate, SnackbarManager snackbarManager) {
-        mContext = activity;
+        mContext = context;
         mSnackbarManager = snackbarManager;
         mNavigationDelegate = navigationDelegate;
         mMostVisitedSites =

@@ -6,8 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_AGENT_METRICS_COLLECTOR_H_
 
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/agents/agent_metrics.mojom-blink.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
 namespace base {
@@ -61,7 +62,7 @@ class AgentMetricsCollector final
 
   void ReportingTimerFired(TimerBase*);
 
-  mojo::Remote<blink::mojom::blink::AgentMetricsCollectorHost>&
+  blink::mojom::blink::AgentMetricsCollectorHost*
   GetAgentMetricsCollectorHost();
 
   std::unique_ptr<TaskRunnerTimer<AgentMetricsCollector>> reporting_timer_;
@@ -77,7 +78,8 @@ class AgentMetricsCollector final
 
   const base::TickClock* clock_;
 
-  mojo::Remote<blink::mojom::blink::AgentMetricsCollectorHost>
+  HeapMojoRemote<blink::mojom::blink::AgentMetricsCollectorHost,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
       agent_metrics_collector_host_;
 };
 

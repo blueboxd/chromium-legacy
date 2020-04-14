@@ -656,10 +656,6 @@ const base::Feature kSysInternals{"SysInternals",
 const base::Feature kSystemWebApps{"SystemWebApps",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables the App Management UI.
-const base::Feature kAppManagement{"AppManagement",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Disable downloads of unsafe file types over insecure transports if initiated
 // from a secure page
 const base::Feature kTreatUnsafeDownloadsAsActive{

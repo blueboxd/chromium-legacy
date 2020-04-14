@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/strcat.h"
@@ -53,11 +55,23 @@ class FakeFileHandlingExpiryService
 
   void RequestOriginTrialExpiryTime(
       RequestOriginTrialExpiryTimeCallback callback) override {
+    if (before_reply_callback_) {
+      std::move(before_reply_callback_).Run();
+    }
+
     std::move(callback).Run(expiry_time_);
+  }
+
+  // Set a callback to be called before FileHandlingExpiry interface replies
+  // the expiry time. Useful for testing inflight IPC.
+  void SetBeforeReplyCallback(base::RepeatingClosure before_reply_callback) {
+    before_reply_callback_ = before_reply_callback;
   }
 
  private:
   base::Time expiry_time_;
+  RequestOriginTrialExpiryTimeCallback callback_;
+  base::RepeatingClosure before_reply_callback_;
   mojo::AssociatedReceiver<blink::mojom::FileHandlingExpiry> receiver_{this};
 };
 
@@ -395,6 +409,66 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingOriginTrialBrowserTest,
   file_handler_manager().DisableForceEnabledFileHandlingOriginTrial(app_id());
   EXPECT_FALSE(file_handler_manager().AreFileHandlersEnabled(app_id()));
   EXPECT_EQ(nullptr, file_handler_manager().GetEnabledFileHandlers(app_id()));
+}
+
+IN_PROC_BROWSER_TEST_P(WebAppFileHandlingOriginTrialBrowserTest,
+                       ForceEnabledFileHandling_IgnoreExpiryTimeUpdate) {
+  InstallFileHandlingPWA();
+  SetUpInterceptorNavigateToAppAndMaybeWait();
+
+  EXPECT_FALSE(file_handler_manager().IsFileHandlingForceEnabled(app_id()));
+
+  // Force enables file handling.
+  file_handler_manager().ForceEnableFileHandlingOriginTrial(app_id());
+  EXPECT_TRUE(file_handler_manager().IsFileHandlingForceEnabled(app_id()));
+
+  // Update origin trial expiry time from the App's WebContents.
+  base::RunLoop loop;
+  file_handler_manager().SetOnFileHandlingExpiryUpdatedForTesting(
+      loop.QuitClosure());
+  file_handling_expiry().SetExpiryTime(base::Time());
+  file_handler_manager().MaybeUpdateFileHandlingOriginTrialExpiry(
+      web_contents(), app_id());
+  loop.Run();
+
+  // Force enabled file handling should not be updated by the expiry time in
+  // App's WebContents (i.e. origin trial token expiry).
+  EXPECT_TRUE(file_handler_manager().IsFileHandlingForceEnabled(app_id()));
+  EXPECT_TRUE(file_handler_manager().IsFileHandlingAPIAvailable(app_id()));
+  EXPECT_TRUE(file_handler_manager().GetEnabledFileHandlers(app_id()));
+}
+
+IN_PROC_BROWSER_TEST_P(WebAppFileHandlingOriginTrialBrowserTest,
+                       ForceEnabledFileHandling_IgnoreExpiryTimeInflightIPC) {
+  InstallFileHandlingPWA();
+  SetUpInterceptorNavigateToAppAndMaybeWait();
+
+  EXPECT_FALSE(file_handler_manager().IsFileHandlingForceEnabled(app_id()));
+
+  // Request to update origin trial expiry time from the App's WebContents, and
+  // force enables file handling origin trial before the expiry time reply is
+  // received.
+  base::RunLoop loop;
+  file_handler_manager().SetOnFileHandlingExpiryUpdatedForTesting(
+      loop.QuitClosure());
+  file_handling_expiry().SetExpiryTime(base::Time());
+  file_handling_expiry().SetBeforeReplyCallback(
+      base::BindLambdaForTesting([&]() {
+        EXPECT_FALSE(
+            file_handler_manager().IsFileHandlingForceEnabled(app_id()));
+        file_handler_manager().ForceEnableFileHandlingOriginTrial(app_id());
+      }));
+
+  EXPECT_FALSE(file_handler_manager().IsFileHandlingForceEnabled(app_id()));
+  file_handler_manager().MaybeUpdateFileHandlingOriginTrialExpiry(
+      web_contents(), app_id());
+  loop.Run();
+
+  // Force enabled file handling should not be updated by the inflight expiry
+  // time IPC.
+  EXPECT_TRUE(file_handler_manager().IsFileHandlingForceEnabled(app_id()));
+  EXPECT_TRUE(file_handler_manager().IsFileHandlingAPIAvailable(app_id()));
+  EXPECT_TRUE(file_handler_manager().GetEnabledFileHandlers(app_id()));
 }
 
 namespace {

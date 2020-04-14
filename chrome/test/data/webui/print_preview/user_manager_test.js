@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {DestinationStore, InvitationStore, NativeLayer} from 'chrome://print/print_preview.js';
+import {CloudPrintInterfaceImpl, DestinationStore, InvitationStore, NativeLayer} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
@@ -37,6 +37,7 @@ suite('UserManagerTest', function() {
     nativeLayer = new NativeLayerStub();
     NativeLayer.setInstance(nativeLayer);
     cloudPrintInterface = new CloudPrintInterfaceStub();
+    CloudPrintInterfaceImpl.instance_ = cloudPrintInterface;
 
     userManager = document.createElement('print-preview-user-manager');
 
@@ -64,12 +65,9 @@ suite('UserManagerTest', function() {
     cloudPrintInterface.setPrinter(getGoogleDriveDestination(account1));
     cloudPrintInterface.setPrinter(getGoogleDriveDestination(account2));
 
-    assertTrue(userManager.cloudPrintDisabled);
-
-    userManager.cloudPrintInterface = cloudPrintInterface;
-    assertFalse(userManager.cloudPrintDisabled);
     assertEquals(undefined, userManager.activeUser);
 
+    userManager.cloudPrintDisabled = false;
     userManager.initUserAccounts([], true /* syncAvailable */);
     assertEquals('', userManager.activeUser);
     assertEquals(0, userManager.users.length);
@@ -102,13 +100,10 @@ suite('UserManagerTest', function() {
   // Checks that initializing and updating user accounts works as expected
   // when sync is unavailable.
   test('update users without sync', function() {
-    assertTrue(userManager.cloudPrintDisabled);
-
     const whenCalled = cloudPrintInterface.whenCalled('printer');
-    userManager.cloudPrintInterface = cloudPrintInterface;
-    assertFalse(userManager.cloudPrintDisabled);
     assertEquals(undefined, userManager.activeUser);
 
+    userManager.cloudPrintDisabled = false;
     userManager.initUserAccounts([], false /* syncAvailable */);
     return whenCalled
         .then(() => {
@@ -147,10 +142,7 @@ suite('UserManagerTest', function() {
   // Checks that initializing and updating user accounts works as expected
   // when sync is unavailable.
   test('update users without sync', function() {
-    assertTrue(userManager.cloudPrintDisabled);
-
-    userManager.cloudPrintInterface = cloudPrintInterface;
-    assertFalse(userManager.cloudPrintDisabled);
+    userManager.cloudPrintDisabled = false;
     assertEquals(undefined, userManager.activeUser);
 
     userManager.initUserAccounts([], false /* syncAvailable */);
@@ -192,10 +184,9 @@ suite('UserManagerTest', function() {
     // Set up a cloud printer for each account.
     cloudPrintInterface.setPrinter(getGoogleDriveDestination(account1));
     cloudPrintInterface.setPrinter(getGoogleDriveDestination(account2));
-    userManager.cloudPrintInterface = cloudPrintInterface;
+    userManager.cloudPrintDisabled = false;
     userManager.initUserAccounts(
         [account1, account2], true /* syncAvailable */);
-    assertFalse(userManager.cloudPrintDisabled);
     assertEquals(account1, userManager.activeUser);
     assertEquals(2, userManager.users.length);
 

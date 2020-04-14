@@ -7,6 +7,7 @@
 #include <numeric>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -23,7 +24,10 @@
 #include "ash/system/unified/user_chooser_detailed_view_controller.h"
 #include "ash/system/unified/user_chooser_view.h"
 #include "base/numerics/ranges.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -198,6 +202,12 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
     settings_button_ = new TopShortcutButton(this, kUnifiedMenuSettingsIcon,
                                              IDS_ASH_STATUS_TRAY_SETTINGS);
     container_->AddChildView(settings_button_);
+    local_state_pref_change_registrar_.Init(Shell::Get()->local_state());
+    local_state_pref_change_registrar_.Add(
+        prefs::kOsSettingsEnabled,
+        base::BindRepeating(&TopShortcutsView::UpdateSettingsButtonState,
+                            base::Unretained(this)));
+    UpdateSettingsButtonState();
   }
 
   // |collapse_button_| should be right-aligned, so we make the buttons
@@ -206,6 +216,11 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
 
   collapse_button_ = new CollapseButton(this);
   AddChildView(collapse_button_);
+}
+
+// static
+void TopShortcutsView::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kOsSettingsEnabled, true);
 }
 
 void TopShortcutsView::SetExpandedAmount(double expanded_amount) {
@@ -230,6 +245,16 @@ void TopShortcutsView::ButtonPressed(views::Button* sender,
 
 const char* TopShortcutsView::GetClassName() const {
   return "TopShortcutsView";
+}
+
+void TopShortcutsView::UpdateSettingsButtonState() {
+  PrefService* const local_state = Shell::Get()->local_state();
+  const bool settings_icon_enabled =
+      local_state->GetBoolean(prefs::kOsSettingsEnabled);
+
+  settings_button_->SetState(settings_icon_enabled
+                                 ? views::Button::STATE_NORMAL
+                                 : views::Button::STATE_DISABLED);
 }
 
 }  // namespace ash

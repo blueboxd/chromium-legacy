@@ -351,12 +351,12 @@ void AppListClientImpl::SetProfile(Profile* new_profile) {
   if (!profile_)
     return;
 
-  // If we are in guest mode, the new profile should be an incognito profile.
+  // If we are in guest mode, the new profile should be an OffTheRecord profile.
   // Otherwise, this may later hit a check (same condition as this one) in
   // Browser::Browser when opening links in a browser window (see
   // http://crbug.com/460437).
   DCHECK(!profile_->IsGuestSession() || profile_->IsOffTheRecord())
-      << "Guest mode must use incognito profile";
+      << "Guest mode must use OffTheRecord profile";
 
   template_url_service_observer_.Add(
       TemplateURLServiceFactory::GetForProfile(profile_));
@@ -484,7 +484,7 @@ AppListControllerDelegate::Pinnable AppListClientImpl::GetPinnable(
 
 void AppListClientImpl::CreateNewWindow(Profile* profile, bool incognito) {
   if (incognito)
-    chrome::NewEmptyWindow(profile->GetOffTheRecordProfile());
+    chrome::NewEmptyWindow(profile->GetPrimaryOTRProfile());
   else
     chrome::NewEmptyWindow(profile);
 }

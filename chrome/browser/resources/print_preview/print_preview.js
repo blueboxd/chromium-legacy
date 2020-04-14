@@ -5,7 +5,7 @@
 import './ui/app.js';
 
 export {CloudPrintInterface, CloudPrintInterfaceEventType} from './cloud_print_interface.js';
-export {setCloudPrintInterfaceForTesting} from './cloud_print_interface_manager.js';
+export {CloudPrintInterfaceImpl} from './cloud_print_interface_impl.js';
 export {ColorMode, createDestinationKey, Destination, DestinationCertificateStatus, DestinationConnectionStatus, DestinationOrigin, DestinationType, makeRecentDestination} from './data/destination.js';
 export {PrinterType} from './data/destination_match.js';
 // <if expr="chromeos">

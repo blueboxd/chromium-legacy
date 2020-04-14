@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tab;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
@@ -25,7 +24,6 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ConsoleMessageLevel;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Class that controls navigations and allows to intercept them. It is used on Android to 'convert'
@@ -36,12 +34,10 @@ import org.chromium.ui.base.WindowAndroid;
  * See https://crbug.com/732260.
  */
 public class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
-    private final TabImpl mTab;
     private final AuthenticatorNavigationInterceptor mAuthenticatorHelper;
     private InterceptNavigationDelegateClient mClient;
     private @OverrideUrlLoadingResult int mLastOverrideUrlLoadingResult =
             OverrideUrlLoadingResult.NO_OVERRIDE;
-    private final TabObserver mDelegateObserver;
     private WebContents mWebContents;
     private ExternalNavigationHandler mExternalNavHandler;
 
@@ -55,48 +51,24 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
      * Default constructor of {@link InterceptNavigationDelegateImpl}.
      */
     @VisibleForTesting
-    InterceptNavigationDelegateImpl(Tab tab, InterceptNavigationDelegateClient client) {
-        mTab = (TabImpl) tab;
+    InterceptNavigationDelegateImpl(InterceptNavigationDelegateClient client) {
         mClient = client;
         mAuthenticatorHelper = mClient.createAuthenticatorNavigationInterceptor();
-        mDelegateObserver = new EmptyTabObserver() {
-            @Override
-            public void onContentChanged(Tab tab) {
-                associateWithWebContents(tab.getWebContents());
-            }
-
-            @Override
-            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
-                if (window != null) {
-                    setExternalNavigationHandler(mClient.createExternalNavigationHandler());
-                }
-            }
-
-            @Override
-            public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
-                if (!navigation.hasCommitted() || !navigation.isInMainFrame()) return;
-                maybeUpdateNavigationHistory();
-            }
-
-            @Override
-            public void onDestroyed(Tab tab) {
-                associateWithWebContents(null);
-            }
-        };
-        mTab.addObserver(mDelegateObserver);
         associateWithWebContents(mClient.getWebContents());
     }
 
-    public void destroy() {
-        mTab.removeObserver(mDelegateObserver);
+    // Invoked by the client when a navigation has finished in the context in which this object is
+    // operating.
+    public void onNavigationFinished(NavigationHandle navigation) {
+        if (!navigation.hasCommitted() || !navigation.isInMainFrame()) return;
+        maybeUpdateNavigationHistory();
     }
 
-    @VisibleForTesting
-    void setExternalNavigationHandler(ExternalNavigationHandler handler) {
+    public void setExternalNavigationHandler(ExternalNavigationHandler handler) {
         mExternalNavHandler = handler;
     }
 
-    private void associateWithWebContents(WebContents webContents) {
+    public void associateWithWebContents(WebContents webContents) {
         if (mWebContents == webContents) return;
         mWebContents = webContents;
         if (mWebContents == null) return;
@@ -320,11 +292,6 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                 : R.string.unreachable_navigation_warning;
         mClient.getWebContents().addMessageToDevToolsConsole(ConsoleMessageLevel.WARNING,
                 ContextUtils.getApplicationContext().getString(resId, url));
-    }
-
-    @VisibleForTesting
-    static void initDelegateForTesting(Tab tab, InterceptNavigationDelegateImpl delegate) {
-        delegate.associateWithWebContents(tab.getWebContents());
     }
 
     @NativeMethods

@@ -2226,14 +2226,18 @@ RenderFrameHostManager::CreateSpeculativeRenderFrame(SiteInstance* instance) {
         render_view_host->GetMainFrameRoutingIdForCrbug1006814();
     std::string message = base::StringPrintf(
         "created=%d,process=%d,proxy=%d,widget=%d,main_rfh=%d,new_rfh=%d,"
-        "in_pdo=%d",
+        "in_pdo=%d,in_cpdo=%d,wi=%d",
         new_render_frame_host->IsRenderFrameCreated(),
         new_render_frame_host->GetProcess()->IsInitializedAndNotDead(),
         !!GetRenderFrameProxyHost(instance), widget_renderer_initialized,
         main_rfh_routing_id, new_render_frame_host->routing_id(),
         static_cast<RenderProcessHostImpl*>(
             render_view_host->GetWidget()->GetProcess())
-            ->GetWithinProcessDiedObserverForCrbug1006814());
+            ->GetWithinProcessDiedObserverForCrbug1006814(),
+        static_cast<RenderProcessHostImpl*>(
+            render_view_host->GetWidget()->GetProcess())
+            ->GetWithinCleanupProcessDiedObserverForCrbug1006814(),
+        render_view_host->GetWidget()->get_initializer_for_crbug_1006814());
     // This string is whitelisted for collection from Android Webview. It must
     // only contain booleans to avoid leaking any PII.
     base::debug::SetCrashKeyString(crash_key, message);

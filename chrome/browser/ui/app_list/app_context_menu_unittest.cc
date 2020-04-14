@@ -75,10 +75,6 @@ class FakeAppListControllerDelegate
     return open_apps_.count(app_id) != 0;
   }
 
-  void SetCanShowAppInfo(bool can_show_app_info) {
-    can_show_app_info_ = can_show_app_info;
-  }
-
   // test::TestAppListControllerDelegate overrides:
   Pinnable GetPinnable(const std::string& app_id) override {
     std::map<std::string, Pinnable>::const_iterator it;
@@ -87,12 +83,10 @@ class FakeAppListControllerDelegate
       return NO_PIN;
     return it->second;
   }
-  bool CanDoShowAppInfoFlow() override { return can_show_app_info_; }
 
  private:
   std::map<std::string, Pinnable> pinnable_apps_;
   std::unordered_set<std::string> open_apps_;
-  bool can_show_app_info_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAppListControllerDelegate);
 };
@@ -225,12 +219,10 @@ class AppContextMenuTest : public AppListTestBase {
 
   void TestExtensionApp(const std::string& app_id,
                         bool platform_app,
-                        bool can_show_app_info,
                         AppListControllerDelegate::Pinnable pinnable,
                         extensions::LaunchType launch_type) {
     controller_ = std::make_unique<FakeAppListControllerDelegate>();
     controller_->SetAppPinnable(app_id, pinnable);
-    controller_->SetCanShowAppInfo(can_show_app_info);
     controller_->SetExtensionLaunchType(profile(), app_id, launch_type);
     app_list::ExtensionAppContextMenu menu(menu_delegate(), profile(), app_id,
                                            controller(), platform_app);
@@ -251,15 +243,13 @@ class AppContextMenuTest : public AppListTestBase {
     if (!platform_app)
       AddToStates(menu, MenuState(ash::OPTIONS, false, false), &states);
     AddToStates(menu, MenuState(ash::UNINSTALL), &states);
-    if (can_show_app_info)
-      AddToStates(menu, MenuState(ash::SHOW_APP_INFO), &states);
+    AddToStates(menu, MenuState(ash::SHOW_APP_INFO), &states);
 
     ValidateMenuState(menu_model.get(), states);
   }
 
-  void TestChromeApp(bool can_show_app_info) {
+  void TestChromeApp() {
     controller_ = std::make_unique<FakeAppListControllerDelegate>();
-    controller_->SetCanShowAppInfo(can_show_app_info);
     app_list::ExtensionAppContextMenu menu(
         menu_delegate(), profile(), extension_misc::kChromeAppId, controller(),
         false /* is_platform_app */);
@@ -271,8 +261,7 @@ class AppContextMenuTest : public AppListTestBase {
     if (!profile()->IsOffTheRecord())
       AddToStates(menu, MenuState(ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW),
                   &states);
-    if (can_show_app_info)
-      AddToStates(menu, MenuState(ash::SHOW_APP_INFO), &states);
+    AddToStates(menu, MenuState(ash::SHOW_APP_INFO), &states);
     ValidateMenuState(menu_model.get(), states);
   }
 
@@ -299,14 +288,11 @@ TEST_F(AppContextMenuTest, ExtensionApp) {
              static_cast<AppListControllerDelegate::Pinnable>(pinnable + 1)) {
       for (size_t combinations = 0; combinations < (1 << 2); ++combinations) {
         TestExtensionApp(AppListTestBase::kHostedAppId,
-                         (combinations & (1 << 0)) != 0,
-                         (combinations & (1 << 1)) != 0, pinnable, launch_type);
+                         (combinations & (1 << 0)) != 0, pinnable, launch_type);
         TestExtensionApp(AppListTestBase::kPackagedApp1Id,
-                         (combinations & (1 << 0)) != 0,
-                         (combinations & (1 << 1)) != 0, pinnable, launch_type);
+                         (combinations & (1 << 0)) != 0, pinnable, launch_type);
         TestExtensionApp(AppListTestBase::kPackagedApp2Id,
-                         (combinations & (1 << 0)) != 0,
-                         (combinations & (1 << 1)) != 0, pinnable, launch_type);
+                         (combinations & (1 << 0)) != 0, pinnable, launch_type);
       }
     }
   }
@@ -315,8 +301,7 @@ TEST_F(AppContextMenuTest, ExtensionApp) {
 TEST_F(AppContextMenuTest, ChromeApp) {
   app_list::ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
       true);
-  for (bool can_show_app_info : {true, false})
-    TestChromeApp(can_show_app_info);
+  TestChromeApp();
 }
 
 TEST_F(AppContextMenuTest, NonExistingExtensionApp) {

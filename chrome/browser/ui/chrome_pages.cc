@@ -63,7 +63,9 @@
 #include "url/url_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/version_info/version_info.h"
@@ -474,8 +476,16 @@ void ShowEnterpriseManagementPageInTabbedBrowser(Browser* browser) {
   ShowSingletonTabIgnorePathOverwriteNTP(browser, GURL(kChromeUIManagementURL));
 }
 
-void ShowAppManagementPage(Profile* profile, const std::string& app_id) {
-  DCHECK(base::FeatureList::IsEnabled(features::kAppManagement));
+void ShowAppManagementPage(Profile* profile,
+                           const std::string& app_id,
+                           AppManagementEntryPoint entry_point) {
+  // This histogram is also declared and used at chrome/browser/resources/
+  // settings/chrome_os/os_apps_page/app_management_page/constants.js.
+  constexpr char kAppManagementEntryPointsHistogramName[] =
+      "AppManagement.EntryPoints";
+
+  base::UmaHistogramEnumeration(kAppManagementEntryPointsHistogramName,
+                                entry_point);
   std::string sub_page =
       base::StrCat({chrome::kAppManagementDetailSubPage, "?id=", app_id});
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile,

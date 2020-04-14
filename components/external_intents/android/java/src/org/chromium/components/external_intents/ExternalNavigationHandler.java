@@ -766,10 +766,15 @@ public class ExternalNavigationHandler {
         return true;
     }
 
+    // This will handle external navigations only for intent meant for Autofill Assistant.
     private boolean handleWithAutofillAssistant(
             ExternalNavigationParams params, Intent targetIntent, String browserFallbackUrl) {
-        if (mDelegate.handleWithAutofillAssistant(params, targetIntent, browserFallbackUrl)) {
-            if (DEBUG) Log.i(TAG, "Handling with Assistant");
+        if (mDelegate.isIntentToAutofillAssistant(targetIntent)) {
+            if (mDelegate.handleWithAutofillAssistant(params, targetIntent, browserFallbackUrl)) {
+                if (DEBUG) Log.i(TAG, "Handled with Autofill Assistant.");
+            } else {
+                if (DEBUG) Log.i(TAG, "Not handled with Autofill Assistant.");
+            }
             return true;
         }
         return false;

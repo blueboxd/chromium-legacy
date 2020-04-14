@@ -100,11 +100,6 @@ public class NfcImpl implements Nfc {
     private NfcClient mClient;
 
     /**
-     * Watcher id that is incremented for each #watch call.
-     */
-    private int mWatcherId;
-
-    /**
      * Map of watchId <-> NdefScanOptions. All NdefScanOptions are matched against tag that is in
      * proximity, when match algorithm (@see #matchesWatchOptions) returns true, watcher with
      * corresponding ID would be notified using NfcClient interface.
@@ -245,6 +240,7 @@ public class NfcImpl implements Nfc {
      * @see NfcClient#onWatch(int[] id, String serial_number, NdefMessage message)
      *
      * @param options used to filter NdefMessages, @see NdefScanOptions.
+     * @param id request ID from Blink which will be the watch ID if succeeded.
      * @param callback that is used to notify caller when watch() is completed.
      */
     @Override

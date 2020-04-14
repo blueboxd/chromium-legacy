@@ -52,7 +52,7 @@ void Throttle::Fire() {
   // Go through all of the limits to see if we've hit one.  If so, schedule a
   // task to try again once that limit won't be violated.  If no limits would be
   // violated, send.
-  Time now = scheduler_->GetCurrentTime();
+  Time now = scheduler_->CurrentTime();
   for (size_t i = 0; i < static_cast<size_t>(rate_limits_.size()); ++i) {
     RateLimitP rate_limit   = rate_limits_.Get(i);
 
@@ -102,7 +102,7 @@ void Throttle::Fire() {
   listener_->Run();
 
   // Record the fact that we're triggering an event now.
-  recent_event_times_.push_back(scheduler_->GetCurrentTime());
+  recent_event_times_.push_back(scheduler_->CurrentTime());
 
   // Only save up to max_recent_events_ event times.
   if (recent_event_times_.size() > max_recent_events_) {

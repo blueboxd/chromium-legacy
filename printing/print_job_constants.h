@@ -176,13 +176,7 @@ enum ScalingType {
 
 // Must match print_preview.PrinterType in
 // chrome/browser/resources/print_preview/data/destination_match.js
-enum PrinterType {
-  kPrivetPrinter,
-  kExtensionPrinter,
-  kPdfPrinter,
-  kLocalPrinter,
-  kCloudPrinter
-};
+enum class PrinterType { kPrivet, kExtension, kPdf, kLocal, kCloud };
 
 }  // namespace printing
 

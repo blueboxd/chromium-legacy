@@ -31,13 +31,11 @@
   <settings-animated-pages id="pages" section="apps"
       focus-config="[[focusConfig_]]">
     <div route-path="default">
-      <template is="dom-if" if="[[showAppManagement]]">
-        <cr-link-row id="appManagement"
-          label="$i18n{appManagementTitle}"
-          on-click="onClickAppManagement_"
-          role-description="$i18n{subpageArrowRoleDescription}">
-        </cr-link-row>
-      </template>
+      <cr-link-row id="appManagement"
+        label="$i18n{appManagementTitle}"
+        on-click="onClickAppManagement_"
+        role-description="$i18n{subpageArrowRoleDescription}">
+      </cr-link-row>
       <template is="dom-if" if="[[showAndroidApps]]">
         <template is="dom-if" if="[[havePlayStoreApp]]" restamp>
           <div id="android-apps" class="settings-box first"
@@ -80,28 +78,27 @@
         </template>
       </template>
     </div>
-    <!-- APP MANAGEMENT -->
-    <template is="dom-if" if="[[showAppManagement]]">
-      <template is="dom-if" route-path="/app-management" no-search>
-        <settings-subpage
-            page-title="$i18n{appManagementTitle}"
-            search-label="$i18n{appManagementSearchPrompt}"
-            search-term="{{searchTerm}}">
-          <settings-app-management-page search-term="[[searchTerm]]">
-          </settings-app-management-page>
-        </settings-subpage>
-      </template>
 
-      <template is="dom-if" route-path="/app-management/detail" no-search>
-        <settings-subpage
-            page-title="[[app_.title]]"
-            title-icon="[[iconUrlFromId_(app_)]]">
-          <app-management-uninstall-button slot="subpage-title-extra">
-          </app-management-uninstall-button>
-          <app-management-app-detail-view>
-          </app-management-app-detail-view>
-        </settings-subpage>
-      </template>
+    <!-- APP MANAGEMENT -->
+    <template is="dom-if" route-path="/app-management" no-search>
+      <settings-subpage
+          page-title="$i18n{appManagementTitle}"
+          search-label="$i18n{appManagementSearchPrompt}"
+          search-term="{{searchTerm}}">
+        <settings-app-management-page search-term="[[searchTerm]]">
+        </settings-app-management-page>
+      </settings-subpage>
+    </template>
+
+    <template is="dom-if" route-path="/app-management/detail" no-search>
+      <settings-subpage
+          page-title="[[app_.title]]"
+          title-icon="[[iconUrlFromId_(app_)]]">
+        <app-management-uninstall-button slot="subpage-title-extra">
+        </app-management-uninstall-button>
+        <app-management-app-detail-view>
+        </app-management-app-detail-view>
+      </settings-subpage>
     </template>
 
     <!-- ANDROID APPS -->

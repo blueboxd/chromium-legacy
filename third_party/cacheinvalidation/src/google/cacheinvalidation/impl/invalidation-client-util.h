@@ -33,7 +33,7 @@ class InvalidationClientUtil {
 
   /* Returns the current time in the scheduler's epoch in milliseconds. */
   static int64_t GetCurrentTimeMs(Scheduler* scheduler) {
-    return GetTimeInMillis(scheduler->GetCurrentTime());
+    return GetTimeInMillis(scheduler->CurrentTime());
   }
 };
 

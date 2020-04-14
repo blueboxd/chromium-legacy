@@ -99,8 +99,8 @@ public class ExternalNavigationHandlerTest {
             "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;end";
     private static final String INTENT_APP_NOT_INSTALLED_WITH_MARKET_REFERRER =
             "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;S."
-            + ExternalNavigationHandler.EXTRA_MARKET_REFERRER + "="
-            + ENCODED_MARKET_REFERRER + ";end";
+            + ExternalNavigationHandler.EXTRA_MARKET_REFERRER + "=" + ENCODED_MARKET_REFERRER
+            + ";end";
     private static final String INTENT_APP_PACKAGE_NAME = "com.imdb.mobile";
     private static final String YOUTUBE_URL = "http://youtube.com";
     private static final String YOUTUBE_MOBILE_URL = "http://m.youtube.com";
@@ -120,11 +120,16 @@ public class ExternalNavigationHandlerTest {
             "com.google.android.instantapps.START", "com.google.android.instantapps.nmr1.INSTALL",
             "com.google.android.instantapps.nmr1.VIEW"};
 
-    private static final String AUTOFILL_ASSISTANT_INTENT_URL =
+    private static final String AUTOFILL_ASSISTANT_INTENT_URL_WITH_FALLBACK =
             "intent://www.example.com#Intent;scheme=https;"
             + "B.org.chromium.chrome.browser.autofill_assistant.ENABLED=true;"
             + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
             + Uri.encode("https://www.example.com") + ";end";
+
+    private static final String AUTOFILL_ASSISTANT_INTENT_URL_WITHOUT_FALLBACK =
+            "intent://www.example.com#Intent;scheme=https;"
+            + "B.org.chromium.chrome.browser.autofill_assistant.ENABLED=true;"
+            + "end;";
 
     private static final String IS_INSTANT_APP_EXTRA = "IS_INSTANT_APP";
 
@@ -1204,7 +1209,7 @@ public class ExternalNavigationHandlerTest {
         mDelegate.add(new IntentActivity(CALENDAR_URL, "calendar"));
 
         checkUrl(CALENDAR_URL + "/file.pdf")
-            .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
     @Test
@@ -1524,10 +1529,9 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testAutofillAssistantIntent_handledByDelegate() {
-        mDelegate.setHandleIntentWithAutofillAssistant(true);
-
-        checkUrl(AUTOFILL_ASSISTANT_INTENT_URL)
+    public void testAutofillAssistantIntentWithFallback_InRegular() {
+        mDelegate.setIsIntentToAutofillAssistant(true);
+        checkUrl(AUTOFILL_ASSISTANT_INTENT_URL_WITH_FALLBACK)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
 
         Assert.assertNull(mDelegate.startActivityIntent);
@@ -1535,16 +1539,35 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testAutofillAssistantIntent_notHandledByDelegate() {
-        mDelegate.setHandleIntentWithAutofillAssistant(false);
-
-        checkUrl(AUTOFILL_ASSISTANT_INTENT_URL)
+    public void testAutofillAssistantIntentWithFallback_InIncognito() {
+        mDelegate.setIsIntentToAutofillAssistant(true);
+        checkUrl(AUTOFILL_ASSISTANT_INTENT_URL_WITH_FALLBACK)
                 .withIsIncognito(true)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
-                        START_OTHER_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
 
-        Assert.assertNotNull(mDelegate.startActivityIntent);
-        Assert.assertTrue(mDelegate.startActivityIntent.getScheme().startsWith("https"));
+        Assert.assertNull(mDelegate.startActivityIntent);
+    }
+
+    @Test
+    @SmallTest
+    public void testAutofillAssistantIntentWithoutFallback_InRegular() {
+        mDelegate.setIsIntentToAutofillAssistant(true);
+        checkUrl(AUTOFILL_ASSISTANT_INTENT_URL_WITHOUT_FALLBACK)
+                .withIsIncognito(false)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+
+        Assert.assertNull(mDelegate.startActivityIntent);
+    }
+
+    @Test
+    @SmallTest
+    public void testAutofillAssistantIntentWithoutFallback_InIncognito() {
+        mDelegate.setIsIntentToAutofillAssistant(true);
+        checkUrl(AUTOFILL_ASSISTANT_INTENT_URL_WITHOUT_FALLBACK)
+                .withIsIncognito(true)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+
+        Assert.assertNull(mDelegate.startActivityIntent);
     }
 
     @Test
@@ -1685,8 +1708,7 @@ public class ExternalNavigationHandlerTest {
             String chromePackageName = ContextUtils.getApplicationContext().getPackageName();
             if (chromePackageName.equals(intent.getPackage())
                     || (intent.getComponent() != null
-                               && chromePackageName.equals(
-                                          intent.getComponent().getPackageName()))) {
+                            && chromePackageName.equals(intent.getComponent().getPackageName()))) {
                 return true;
             }
 
@@ -1844,6 +1866,11 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
+        public boolean isIntentToAutofillAssistant(Intent intent) {
+            return mIsIntentToAutofillAssistant;
+        }
+
+        @Override
         public boolean isValidWebApk(String packageName) {
             for (IntentActivity activity : mIntentActivities) {
                 if (activity.packageName().equals(packageName)) {
@@ -1926,6 +1953,10 @@ public class ExternalNavigationHandlerTest {
             mIsIntentToInstantApp = value;
         }
 
+        public void setIsIntentToAutofillAssistant(boolean value) {
+            mIsIntentToAutofillAssistant = value;
+        }
+
         public Intent startActivityIntent;
         public boolean startIncognitoIntentCalled;
         public boolean maybeSetUserGestureCalled;
@@ -1948,6 +1979,7 @@ public class ExternalNavigationHandlerTest {
         private boolean mIsCallingAppTrusted;
         private boolean mShouldDisableExternalIntentRequests;
         private boolean mIsIntentToInstantApp;
+        private boolean mIsIntentToAutofillAssistant;
 
         public boolean shouldRequestFileAccess;
     }

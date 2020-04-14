@@ -76,7 +76,7 @@ void WebAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
 
   AddContextMenuOption(menu_model, ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM);
 
-  if (controller()->CanDoShowAppInfoFlow() && !is_system_web_app) {
+  if (!is_system_web_app) {
     AddContextMenuOption(menu_model, ash::SHOW_APP_INFO,
                          IDS_APP_CONTEXT_MENU_SHOW_INFO);
   }

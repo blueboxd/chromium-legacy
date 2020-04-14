@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.SingleWindowKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -217,6 +218,12 @@ public class SearchActivity extends AsyncInitializationActivity
             @Override
             public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(
                     Tab tab) {
+                return null;
+            }
+
+            @Override
+            public NativePageFactory getNativePageFactory() {
+                // SearchActivity does not create native pages.
                 return null;
             }
         };

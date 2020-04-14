@@ -514,7 +514,7 @@ void RenderWidgetHostImpl::UpdatePriority() {
 void RenderWidgetHostImpl::Init() {
   DCHECK(process_->IsInitializedAndNotDead());
 
-  renderer_initialized_ = true;
+  set_renderer_initialized(true, RendererInitializer::kInit);
 
   SendScreenRects();
   SynchronizeVisualProperties();
@@ -575,7 +575,7 @@ void RenderWidgetHostImpl::BindFrameWidgetInterfaces(
 
 void RenderWidgetHostImpl::InitForFrame() {
   DCHECK(process_->IsInitializedAndNotDead());
-  renderer_initialized_ = true;
+  set_renderer_initialized(true, RendererInitializer::kInitForFrame);
 
   if (view_)
     view_->OnRenderWidgetInit();
@@ -1946,7 +1946,7 @@ void RenderWidgetHostImpl::RendererExited() {
 
   // Clearing this flag causes us to re-create the renderer when recovering
   // from a crashed renderer.
-  renderer_initialized_ = false;
+  set_renderer_initialized(false, RendererInitializer::kUnknown);
 
   // After the renderer crashes, the view is destroyed and so the
   // RenderWidgetHost cannot track its visibility anymore. We assume such

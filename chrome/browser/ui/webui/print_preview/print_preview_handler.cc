@@ -191,18 +191,18 @@ void ReportPrintDocumentTypeAndSizeHistograms(PrintDocumentTypeBuckets doctype,
 PrinterType GetPrinterTypeForUserAction(UserActionBuckets user_action) {
   switch (user_action) {
     case PRINT_WITH_PRIVET:
-      return PrinterType::kPrivetPrinter;
+      return PrinterType::kPrivet;
     case PRINT_WITH_EXTENSION:
-      return PrinterType::kExtensionPrinter;
+      return PrinterType::kExtension;
     case PRINT_TO_PDF:
-      return PrinterType::kPdfPrinter;
+      return PrinterType::kPdf;
     case PRINT_TO_PRINTER:
     case FALLBACK_TO_ADVANCED_SETTINGS_DIALOG:
     case OPEN_IN_MAC_PREVIEW:
-      return PrinterType::kLocalPrinter;
+      return PrinterType::kLocal;
     default:
       NOTREACHED();
-      return PrinterType::kLocalPrinter;
+      return PrinterType::kLocal;
   }
 }
 
@@ -424,13 +424,13 @@ UserActionBuckets DetermineUserAction(const base::Value& settings) {
   PrinterType type = static_cast<PrinterType>(
       settings.FindIntKey(kSettingPrinterType).value());
   switch (type) {
-    case kPrivetPrinter:
+    case PrinterType::kPrivet:
       return PRINT_WITH_PRIVET;
-    case kExtensionPrinter:
+    case PrinterType::kExtension:
       return PRINT_WITH_EXTENSION;
-    case kPdfPrinter:
+    case PrinterType::kPdf:
       return PRINT_TO_PDF;
-    case kLocalPrinter:
+    case PrinterType::kLocal:
       break;
     default:
       NOTREACHED();
@@ -646,15 +646,15 @@ void PrintPreviewHandler::ReadPrinterTypeDenyListFromPrefs() {
     // components/policy/resources/policy_templates.json
     const std::string& deny_list_str = deny_list_type.GetString();
     if (deny_list_str == "privet")
-      printer_type_deny_list_.insert(kPrivetPrinter);
+      printer_type_deny_list_.insert(PrinterType::kPrivet);
     else if (deny_list_str == "extension")
-      printer_type_deny_list_.insert(kExtensionPrinter);
+      printer_type_deny_list_.insert(PrinterType::kExtension);
     else if (deny_list_str == "pdf")
-      printer_type_deny_list_.insert(kPdfPrinter);
+      printer_type_deny_list_.insert(PrinterType::kPdf);
     else if (deny_list_str == "local")
-      printer_type_deny_list_.insert(kLocalPrinter);
+      printer_type_deny_list_.insert(PrinterType::kLocal);
     else if (deny_list_str == "cloud")
-      printer_type_deny_list_.insert(kCloudPrinter);
+      printer_type_deny_list_.insert(PrinterType::kCloud);
   }
 }
 
@@ -731,11 +731,11 @@ void PrintPreviewHandler::HandleGrantExtensionPrinterAccess(
             args->GetString(1, &printer_id) && !callback_id.empty();
   DCHECK(ok);
 
-  GetPrinterHandler(PrinterType::kExtensionPrinter)
-      ->StartGrantPrinterAccess(
-          printer_id,
-          base::BindOnce(&PrintPreviewHandler::OnGotExtensionPrinterInfo,
-                         weak_factory_.GetWeakPtr(), callback_id));
+  PrinterHandler* handler = GetPrinterHandler(PrinterType::kExtension);
+  handler->StartGrantPrinterAccess(
+      printer_id,
+      base::BindOnce(&PrintPreviewHandler::OnGotExtensionPrinterInfo,
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::HandleGetPrinterCapabilities(
@@ -934,11 +934,11 @@ void PrintPreviewHandler::HandlePrinterSetup(const base::ListValue* args) {
     return;
   }
 
-  GetPrinterHandler(PrinterType::kLocalPrinter)
-      ->StartGetCapability(
-          printer_name, base::BindOnce(&PrintPreviewHandler::SendPrinterSetup,
-                                       weak_factory_.GetWeakPtr(), callback_id,
-                                       printer_name));
+  PrinterHandler* handler = GetPrinterHandler(PrinterType::kLocal);
+  handler->StartGetCapability(
+      printer_name,
+      base::BindOnce(&PrintPreviewHandler::SendPrinterSetup,
+                     weak_factory_.GetWeakPtr(), callback_id, printer_name));
 }
 
 void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
@@ -1036,12 +1036,7 @@ void PrintPreviewHandler::HandleGetEulaUrl(const base::ListValue* args) {
   const std::string& callback_id = args->GetList()[0].GetString();
   const std::string& destination_id = args->GetList()[1].GetString();
 
-  PrinterHandler* handler = GetPrinterHandler(kLocalPrinter);
-  if (!handler) {
-    RejectJavascriptCallback(base::Value(callback_id), base::Value());
-    return;
-  }
-
+  PrinterHandler* handler = GetPrinterHandler(PrinterType::kLocal);
   handler->StartGetEulaUrl(
       destination_id, base::BindOnce(&PrintPreviewHandler::SendEulaUrl,
                                      weak_factory_.GetWeakPtr(), callback_id));
@@ -1083,10 +1078,10 @@ void PrintPreviewHandler::HandleGetInitialSettings(
 
   AllowJavascript();
 
-  GetPrinterHandler(PrinterType::kLocalPrinter)
-      ->GetDefaultPrinter(
-          base::BindOnce(&PrintPreviewHandler::SendInitialSettings,
-                         weak_factory_.GetWeakPtr(), callback_id));
+  PrinterHandler* handler = GetPrinterHandler(PrinterType::kLocal);
+  handler->GetDefaultPrinter(
+      base::BindOnce(&PrintPreviewHandler::SendInitialSettings,
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::GetUserAccountList(base::Value* settings) {
@@ -1143,7 +1138,7 @@ void PrintPreviewHandler::SendInitialSettings(
 
   initial_settings.SetBoolKey(
       kPdfPrinterDisabled,
-      base::Contains(printer_type_deny_list_, kPdfPrinter));
+      base::Contains(printer_type_deny_list_, PrinterType::kPdf));
 
   const bool destinations_managed =
       !printer_type_deny_list_.empty() &&
@@ -1386,7 +1381,7 @@ void PrintPreviewHandler::ClearInitiatorDetails() {
 
 PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
     PrinterType printer_type) {
-  if (printer_type == PrinterType::kExtensionPrinter) {
+  if (printer_type == PrinterType::kExtension) {
     if (!extension_printer_handler_) {
       extension_printer_handler_ = PrinterHandler::CreateForExtensionPrinters(
           Profile::FromWebUI(web_ui()));
@@ -1394,7 +1389,7 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
     return extension_printer_handler_.get();
   }
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-  if (printer_type == PrinterType::kPrivetPrinter) {
+  if (printer_type == PrinterType::kPrivet) {
     if (!privet_printer_handler_) {
       privet_printer_handler_ =
           PrinterHandler::CreateForPrivetPrinters(Profile::FromWebUI(web_ui()));
@@ -1402,7 +1397,7 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
     return privet_printer_handler_.get();
   }
 #endif
-  if (printer_type == PrinterType::kPdfPrinter) {
+  if (printer_type == PrinterType::kPdf) {
     if (!pdf_printer_handler_) {
       pdf_printer_handler_ = PrinterHandler::CreateForPdfPrinter(
           Profile::FromWebUI(web_ui()), preview_web_contents(),
@@ -1410,7 +1405,7 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
     }
     return pdf_printer_handler_.get();
   }
-  if (printer_type == PrinterType::kLocalPrinter) {
+  if (printer_type == PrinterType::kLocal) {
     if (!local_printer_handler_) {
       local_printer_handler_ = PrinterHandler::CreateForLocalPrinters(
           preview_web_contents(), Profile::FromWebUI(web_ui()));
@@ -1422,20 +1417,19 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
 }
 
 PdfPrinterHandler* PrintPreviewHandler::GetPdfPrinterHandler() {
-  return static_cast<PdfPrinterHandler*>(
-      GetPrinterHandler(PrinterType::kPdfPrinter));
+  return static_cast<PdfPrinterHandler*>(GetPrinterHandler(PrinterType::kPdf));
 }
 
 void PrintPreviewHandler::OnAddedPrinters(PrinterType printer_type,
                                           const base::ListValue& printers) {
-  DCHECK(printer_type == PrinterType::kExtensionPrinter ||
-         printer_type == PrinterType::kPrivetPrinter ||
-         printer_type == PrinterType::kLocalPrinter);
+  DCHECK(printer_type == PrinterType::kExtension ||
+         printer_type == PrinterType::kPrivet ||
+         printer_type == PrinterType::kLocal);
   DCHECK(!printers.empty());
-  FireWebUIListener("printers-added", base::Value(printer_type), printers);
+  FireWebUIListener("printers-added",
+                    base::Value(static_cast<int>(printer_type)), printers);
 
-  if (printer_type == PrinterType::kLocalPrinter &&
-      !has_logged_printers_count_) {
+  if (printer_type == PrinterType::kLocal && !has_logged_printers_count_) {
     UMA_HISTOGRAM_COUNTS_1M("PrintPreview.NumberOfPrinters",
                             printers.GetSize());
     has_logged_printers_count_ = true;
@@ -1477,7 +1471,7 @@ void PrintPreviewHandler::OnPrintResult(const std::string& callback_id,
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {
   DCHECK(!identity_manager_);
   cloud_print_enabled_ =
-      !base::Contains(printer_type_deny_list_, kCloudPrinter) &&
+      !base::Contains(printer_type_deny_list_, PrinterType::kCloud) &&
       GetPrefs()->GetBoolean(prefs::kCloudPrintSubmitEnabled);
 
   if (!cloud_print_enabled_)

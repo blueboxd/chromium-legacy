@@ -17,7 +17,7 @@ import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behav
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {CloudPrintInterface, CloudPrintInterfaceErrorEventDetail, CloudPrintInterfaceEventType} from '../cloud_print_interface.js';
-import {getCloudPrintInterface} from '../cloud_print_interface_manager.js';
+import {CloudPrintInterfaceImpl} from '../cloud_print_interface_impl.js';
 import {Destination} from '../data/destination.js';
 import {DocumentSettings} from '../data/document_info.js';
 import {Margins} from '../data/margins.js';
@@ -340,7 +340,8 @@ Polymer({
    */
   initializeCloudPrint_(cloudPrintUrl, appKioskMode, uiLocale) {
     assert(!this.cloudPrintInterface_);
-    this.cloudPrintInterface_ = getCloudPrintInterface(
+    this.cloudPrintInterface_ = CloudPrintInterfaceImpl.getInstance();
+    this.cloudPrintInterface_.configure(
         cloudPrintUrl, assert(this.nativeLayer_), appKioskMode, uiLocale);
     this.tracker_.add(
         assert(this.cloudPrintInterface_).getEventTarget(),

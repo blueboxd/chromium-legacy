@@ -302,7 +302,7 @@ Refer to README.md for content description and update process.
  <item id="url_prevision_fetcher" hash_code="118389509" type="0" content_hash_code="66145513" os_list="linux,windows" file_path="content/browser/media/url_provision_fetcher.cc"/>
  <item id="user_info_fetcher" hash_code="22265491" type="0" content_hash_code="72016232" os_list="linux,windows" file_path="components/policy/core/common/cloud/user_info_fetcher.cc"/>
  <item id="viz_devtools_server" hash_code="16292315" type="0" content_hash_code="70061664" os_list="linux,windows" file_path="components/ui_devtools/devtools_server.cc"/>
- <item id="web_bundle_start_url_loader" hash_code="95880423" type="0" content_hash_code="26756886" os_list="linux,windows" file_path="content/browser/web_package/web_bundle_handle.cc"/>
+ <item id="web_bundle_loader" hash_code="114615359" type="0" content_hash_code="57390734" os_list="linux,windows" file_path="content/browser/web_package/web_bundle_utils.cc"/>
  <item id="web_history_counter" hash_code="137457845" type="1" second_id="110307337" content_hash_code="49663381" os_list="linux,windows" semantics_fields="2,3,4" policy_fields="4" file_path="components/browsing_data/core/counters/history_counter.cc"/>
  <item id="web_history_delete_url" hash_code="41749213" type="1" second_id="110307337" content_hash_code="25943026" os_list="linux,windows" semantics_fields="2,3,4" policy_fields="4" file_path="components/history/core/browser/history_service.cc"/>
  <item id="web_history_expire" hash_code="60946824" type="1" second_id="110307337" content_hash_code="92626030" os_list="linux,windows" semantics_fields="2,3,4" policy_fields="4" file_path="components/history/core/browser/browsing_history_service.cc"/>

@@ -182,6 +182,12 @@ public interface ExternalNavigationDelegate {
     boolean isIntentToInstantApp(Intent intent);
 
     /**
+     * @param intent The intent to launch
+     * @return Whether the Intent points to Autofill Assistant
+     */
+    boolean isIntentToAutofillAssistant(Intent intent);
+
+    /**
      * @param packageName The package to check.
      * @return Whether the package is a valid WebAPK package.
      */

@@ -114,9 +114,9 @@ DragDropOperation::DragDropOperation(
       base::BindOnce(&DragDropOperation::ScheduleStartDragDropOperation,
                      weak_ptr_factory_.GetWeakPtr());
 
-  // Make the count kMaxClipboardDataTypes + 1 so we can wait for the icon to be
-  // captured as well.
-  counter_ = base::BarrierClosure(kMaxClipboardDataTypes + 1,
+  // When the icon is present, make the count kMaxClipboardDataTypes + 1 so we
+  // can wait for the icon to be captured as well.
+  counter_ = base::BarrierClosure(kMaxClipboardDataTypes + (icon ? 1 : 0),
                                   std::move(start_op_callback));
 
   source->GetDataForPreferredMimeTypes(

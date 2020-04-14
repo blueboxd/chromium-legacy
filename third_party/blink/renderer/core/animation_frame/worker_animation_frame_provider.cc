@@ -15,8 +15,8 @@ WorkerAnimationFrameProvider::WorkerAnimationFrameProvider(
     ExecutionContext* context,
     const BeginFrameProviderParams& begin_frame_provider_params)
     : begin_frame_provider_(
-          std::make_unique<BeginFrameProvider>(begin_frame_provider_params,
-                                               this)),
+          MakeGarbageCollected<BeginFrameProvider>(begin_frame_provider_params,
+                                                   this)),
       callback_collection_(context),
       context_(context) {}
 
@@ -81,9 +81,11 @@ void WorkerAnimationFrameProvider::DeregisterOffscreenCanvas(
 }
 
 void WorkerAnimationFrameProvider::Trace(Visitor* visitor) {
+  visitor->Trace(begin_frame_provider_);
   visitor->Trace(callback_collection_);
   visitor->Trace(offscreen_canvases_);
   visitor->Trace(context_);
+  BeginFrameProviderClient::Trace(visitor);
 }
 
 }  // namespace blink

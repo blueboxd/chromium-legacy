@@ -32,9 +32,11 @@ import org.chromium.ui.modelutil.PropertyModel;
 class TasksViewBinder {
     public static void bind(PropertyModel model, TasksView view, PropertyKey propertyKey) {
         if (propertyKey == FAKE_SEARCH_BOX_CLICK_LISTENER) {
-            view.setFakeSearchBoxClickListener(model.get(FAKE_SEARCH_BOX_CLICK_LISTENER));
+            view.getSearchBoxCoordinator().setSearchBoxClickListener(
+                    model.get(FAKE_SEARCH_BOX_CLICK_LISTENER));
         } else if (propertyKey == FAKE_SEARCH_BOX_TEXT_WATCHER) {
-            view.setFakeSearchBoxTextWatcher(model.get(FAKE_SEARCH_BOX_TEXT_WATCHER));
+            view.getSearchBoxCoordinator().setSearchBoxTextWatcher(
+                    model.get(FAKE_SEARCH_BOX_TEXT_WATCHER));
         } else if (propertyKey == INCOGNITO_COOKIE_CONTROLS_CARD_VISIBILITY) {
             view.setIncognitoCookieControlsCardVisibility(
                     model.get(INCOGNITO_COOKIE_CONTROLS_CARD_VISIBILITY));
@@ -54,7 +56,7 @@ class TasksViewBinder {
             view.setIncognitoDescriptionLearnMoreClickListener(
                     model.get(INCOGNITO_LEARN_MORE_CLICK_LISTENER));
         } else if (propertyKey == IS_FAKE_SEARCH_BOX_VISIBLE) {
-            view.setFakeSearchBoxVisibility(model.get(IS_FAKE_SEARCH_BOX_VISIBLE));
+            view.getSearchBoxCoordinator().setVisibility(model.get(IS_FAKE_SEARCH_BOX_VISIBLE));
         } else if (propertyKey == IS_INCOGNITO) {
             view.setIncognitoMode(model.get(IS_INCOGNITO));
         } else if (propertyKey == IS_INCOGNITO_DESCRIPTION_INITIALIZED) {
@@ -72,14 +74,14 @@ class TasksViewBinder {
         } else if (propertyKey == IS_TAB_CAROUSEL_VISIBLE) {
             view.setTabCarouselVisibility(model.get(IS_TAB_CAROUSEL_VISIBLE));
         } else if (propertyKey == IS_VOICE_RECOGNITION_BUTTON_VISIBLE) {
-            view.setVoiceRecognitionButtonVisibility(
+            view.getSearchBoxCoordinator().setVoiceSearchButtonVisibility(
                     model.get(IS_VOICE_RECOGNITION_BUTTON_VISIBLE));
         } else if (propertyKey == MORE_TABS_CLICK_LISTENER) {
             view.setMoreTabsOnClickListener(model.get(MORE_TABS_CLICK_LISTENER));
         } else if (propertyKey == MV_TILES_VISIBLE) {
             view.setMostVisitedVisibility(model.get(MV_TILES_VISIBLE) ? View.VISIBLE : View.GONE);
         } else if (propertyKey == VOICE_SEARCH_BUTTON_CLICK_LISTENER) {
-            view.setVoiceRecognitionButtonClickListener(
+            view.getSearchBoxCoordinator().setVoiceSearchButtonClickListener(
                     model.get(VOICE_SEARCH_BUTTON_CLICK_LISTENER));
         }
     }

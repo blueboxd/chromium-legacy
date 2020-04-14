@@ -56,7 +56,7 @@ TEST_F(PrintViewManagerBasicTest, CancelJobDuringDestruction) {
   auto query = queue->CreatePrinterQuery(main_rfh()->GetProcess()->GetID(),
                                          main_rfh()->GetRoutingID());
   base::RunLoop runloop;
-  query->SetSettings(GetPrintTicket(printing::kLocalPrinter),
+  query->SetSettings(GetPrintTicket(PrinterType::kLocal),
                      runloop.QuitClosure());
   runloop.Run();
   auto cookie = query->cookie();

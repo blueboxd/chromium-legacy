@@ -122,7 +122,6 @@
       <div class="drawer-content">
         <template is="dom-if" id="drawerTemplate">
           <os-settings-menu
-              show-apps="[[showApps_]]"
               show-crostini="[[showCrostini_]]"
               show-plugin-vm="[[showPluginVm_]]"
               show-reset="[[showReset_]]"
@@ -136,7 +135,6 @@
     <div id="container" class="no-outline">
       <div id="left">
         <os-settings-menu page-visibility="[[pageVisibility_]]"
-            show-apps="[[showApps_]]"
             show-crostini="[[showCrostini_]]"
             show-plugin-vm="[[showPluginVm_]]"
             show-reset="[[showReset_]]"
@@ -149,8 +147,6 @@
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"
           page-visibility="[[pageVisibility_]]"
           show-android-apps="[[showAndroidApps_]]"
-          show-app-management="[[showAppManagement_]]"
-          show-apps="[[showApps_]]"
           show-crostini="[[showCrostini_]]"
           show-plugin-vm="[[showPluginVm_]]"
           show-reset="[[showReset_]]"

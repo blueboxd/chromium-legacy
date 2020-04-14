@@ -7,8 +7,11 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
+
+class PrefRegistrySimple;
 
 namespace ash {
 
@@ -48,6 +51,8 @@ class ASH_EXPORT TopShortcutsView : public views::View,
  public:
   explicit TopShortcutsView(UnifiedSystemTrayController* controller);
 
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
   // Change the expanded state. CollapseButton icon will rotate.
   void SetExpandedAmount(double expanded_amount);
 
@@ -60,6 +65,9 @@ class ASH_EXPORT TopShortcutsView : public views::View,
  private:
   friend class TopShortcutsViewTest;
 
+  // Disables/Enables the |settings_button_| based on kSettingsIconEnabled pref.
+  void UpdateSettingsButtonState();
+
   UnifiedSystemTrayController* controller_;
 
   // Owned by views hierarchy.
@@ -70,6 +78,8 @@ class ASH_EXPORT TopShortcutsView : public views::View,
   TopShortcutButton* settings_button_ = nullptr;
   TopShortcutButton* power_button_ = nullptr;
   CollapseButton* collapse_button_ = nullptr;
+
+  PrefChangeRegistrar local_state_pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TopShortcutsView);
 };

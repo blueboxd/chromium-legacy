@@ -876,13 +876,14 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
       web_app_provider_->install_finalizer().UninstallExternalAppByUser(
           extension_id_prompting_, std::move(uninstall_success_callback));
     } else {
+      Browser* browser =
+          chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
       web_app::WebAppUiManagerImpl::Get(Profile::FromWebUI(web_ui()))
           ->dialog_manager()
           .UninstallWebApp(
               extension_id_prompting_,
               web_app::WebAppDialogManager::UninstallSource::kAppsPage,
-              /*browser_window=*/nullptr,
-              std::move(uninstall_success_callback));
+              browser->window(), std::move(uninstall_success_callback));
     }
     return;
   }

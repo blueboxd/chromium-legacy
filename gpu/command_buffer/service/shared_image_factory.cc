@@ -84,6 +84,7 @@ SharedImageFactory::SharedImageFactory(
     bool enable_wrapped_sk_image)
     : mailbox_manager_(mailbox_manager),
       shared_image_manager_(shared_image_manager),
+      shared_context_state_(context_state),
       memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
       using_vulkan_(context_state && context_state->GrContextIsVulkan()),
       using_metal_(context_state && context_state->GrContextIsMetal()),
@@ -480,6 +481,8 @@ bool SharedImageFactory::RegisterBacking(
     LOG(ERROR) << "CreateSharedImage: could not register backing.";
     return false;
   }
+
+  shared_image->RegisterImageFactory(this);
 
   // TODO(ericrk): Remove this once no legacy cases remain.
   if (allow_legacy_mailbox &&

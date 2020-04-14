@@ -72,10 +72,6 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
   [self.navigationController setNavigationBarHidden:YES];
-  self.primaryButton.accessibilityIdentifier =
-      first_run::kSignInButtonAccessibilityIdentifier;
-  self.secondaryButton.accessibilityIdentifier =
-      first_run::kSignInSkipButtonAccessibilityIdentifier;
 }
 
 - (void)viewDidAppear:(BOOL)animated {

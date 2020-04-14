@@ -4,11 +4,10 @@
 
 package org.chromium.chrome.browser.native_page;
 
+import android.app.Activity;
+
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.offlinepages.DownloadUiActionFlags;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -19,11 +18,8 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.mojom.WindowOpenDisposition;
-import org.chromium.ui.widget.Toast;
 
 /**
  * {@link NativePageNavigationDelegate} implementation.
@@ -34,11 +30,11 @@ public class NativePageNavigationDelegateImpl implements NativePageNavigationDel
     private final TabModelSelector mTabModelSelector;
     private final Tab mTab;
 
-    protected final ChromeActivity mActivity;
+    protected final Activity mActivity;
     protected final NativePageHost mHost;
 
-    public NativePageNavigationDelegateImpl(ChromeActivity activity, Profile profile,
-            NativePageHost host, TabModelSelector tabModelSelector, Tab tab) {
+    public NativePageNavigationDelegateImpl(Activity activity, Profile profile, NativePageHost host,
+            TabModelSelector tabModelSelector, Tab tab) {
         mActivity = activity;
         mProfile = profile;
         mHost = host;
@@ -86,20 +82,8 @@ public class NativePageNavigationDelegateImpl implements NativePageNavigationDel
     }
 
     private Tab openUrlInNewTab(LoadUrlParams loadUrlParams) {
-        Tab tab = mTabModelSelector.openNewTab(loadUrlParams,
-                TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab,
-                /* incognito = */ false);
-
-        // If animations are disabled in the DeviceClassManager, a toast is already displayed for
-        // all tabs opened in the background.
-        // TODO(twellington): Replace this with an animation.
-        BottomSheetController controller = mActivity.getBottomSheetController();
-        if (controller != null && controller.getSheetState() == SheetState.FULL
-                && DeviceClassManager.enableAnimations()) {
-            Toast.makeText(mActivity, R.string.open_in_new_tab_toast, Toast.LENGTH_SHORT).show();
-        }
-
-        return tab;
+        return mTabModelSelector.openNewTab(loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND,
+                mTab, /* incognito = */ false);
     }
 
     private void saveUrlForOffline(String url) {

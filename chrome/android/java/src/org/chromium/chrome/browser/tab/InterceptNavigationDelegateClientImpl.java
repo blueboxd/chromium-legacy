@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.tab;
 
 import android.app.Activity;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -13,7 +15,9 @@ import org.chromium.components.external_intents.AuthenticatorNavigationIntercept
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.InterceptNavigationDelegateClient;
 import org.chromium.components.external_intents.RedirectHandlerImpl;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Class that provides embedder-level information to InterceptNavigationDelegateImpl based off a
@@ -21,9 +25,35 @@ import org.chromium.content_public.browser.WebContents;
  */
 public class InterceptNavigationDelegateClientImpl implements InterceptNavigationDelegateClient {
     private TabImpl mTab;
+    private final TabObserver mTabObserver;
+    private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
 
     InterceptNavigationDelegateClientImpl(Tab tab) {
         mTab = (TabImpl) tab;
+        mTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onContentChanged(Tab tab) {
+                mInterceptNavigationDelegate.associateWithWebContents(tab.getWebContents());
+            }
+
+            @Override
+            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+                if (window != null) {
+                    mInterceptNavigationDelegate.setExternalNavigationHandler(
+                            createExternalNavigationHandler());
+                }
+            }
+
+            @Override
+            public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
+                mInterceptNavigationDelegate.onNavigationFinished(navigation);
+            }
+
+            @Override
+            public void onDestroyed(Tab tab) {
+                mInterceptNavigationDelegate.associateWithWebContents(null);
+            }
+        };
     }
 
     @Override
@@ -83,5 +113,16 @@ public class InterceptNavigationDelegateClientImpl implements InterceptNavigatio
     @Override
     public void closeTab() {
         TabModelSelector.from(mTab).closeTab(mTab);
+    }
+
+    public void initializeWithDelegate(InterceptNavigationDelegateImpl delegate) {
+        mInterceptNavigationDelegate = delegate;
+        mTab.addObserver(mTabObserver);
+    }
+
+    public void destroy() {
+        assert mInterceptNavigationDelegate != null;
+        mTab.removeObserver(mTabObserver);
+        mInterceptNavigationDelegate = null;
     }
 }

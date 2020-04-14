@@ -31,7 +31,7 @@ void DeterministicScheduler::Schedule(TimeDelta delay, Closure* task) {
   CHECK(run_state_.IsStarted());
   TLOG(logger_, INFO, "(Now: %d) Enqueuing %p with delay %d",
        current_time_.ToInternalValue(), task, delay.InMilliseconds());
-  work_queue_.push(TaskEntry(GetCurrentTime() + delay, current_id_++, task));
+  work_queue_.push(TaskEntry(CurrentTime() + delay, current_id_++, task));
 }
 
 void DeterministicScheduler::PassTime(TimeDelta delta_time, TimeDelta step) {
@@ -67,7 +67,7 @@ bool DeterministicScheduler::RunNextTask() {
     // The queue is not empty, so get the first task and see if its scheduled
     // execution time has passed.
     TaskEntry top_elt = work_queue_.top();
-    if (top_elt.time <= GetCurrentTime()) {
+    if (top_elt.time <= CurrentTime()) {
       // The task is scheduled to run in the past or present, so remove it
       // from the queue and run the task.
       work_queue_.pop();

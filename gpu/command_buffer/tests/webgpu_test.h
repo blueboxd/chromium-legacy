@@ -63,6 +63,10 @@ class WebGPUTest : public testing::Test {
   };
   DeviceAndClientID GetNewDeviceAndClientID();
 
+  viz::TestGpuServiceHolder* GetGpuServiceHolder() {
+    return gpu_service_holder_.get();
+  }
+
   const uint32_t kAdapterServiceID = 0u;
 
  private:

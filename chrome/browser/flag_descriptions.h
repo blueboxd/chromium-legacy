@@ -1564,9 +1564,6 @@ extern const char kAndroidNightModeTabReparentingDescription[];
 
 #else  // !defined(OS_ANDROID)
 
-extern const char kAppManagementName[];
-extern const char kAppManagementDescription[];
-
 extern const char kCastMediaRouteProviderName[];
 extern const char kCastMediaRouteProviderDescription[];
 

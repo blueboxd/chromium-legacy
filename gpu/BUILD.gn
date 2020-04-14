@@ -348,6 +348,7 @@ test("gl_tests") {
   if (use_dawn) {
     sources += [
       "command_buffer/service/webgpu_decoder_unittest.cc",
+      "command_buffer/tests/shared_image_gl_backing_produce_dawn_unittest.cc",
       "command_buffer/tests/webgpu_fence_unittest.cc",
       "command_buffer/tests/webgpu_mailbox_unittest.cc",
       "command_buffer/tests/webgpu_test.cc",

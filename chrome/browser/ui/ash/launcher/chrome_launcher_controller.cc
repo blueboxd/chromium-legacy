@@ -18,7 +18,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
@@ -130,13 +129,6 @@ std::string GetCrostiniAppIdFromContents(content::WebContents* web_contents) {
   base::Optional<std::string> app_id_opt =
       crostini::CrostiniAppIdFromAppName(browser->app_name());
   return app_id_opt.value_or("");
-}
-
-const extensions::Extension* GetExtension(Profile* profile,
-                                          const std::string& extension_id) {
-  const extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile);
-  return registry->GetInstalledExtension(extension_id);
 }
 
 apps::mojom::LaunchSource ConvertLaunchSource(ash::ShelfLaunchSource source) {
@@ -891,48 +883,26 @@ bool ChromeLauncherController::CanDoShowAppInfoFlow(
 
 void ChromeLauncherController::DoShowAppInfoFlow(Profile* profile,
                                                  const std::string& app_id) {
-  DCHECK(CanPlatformShowAppInfoDialog());
-
-  if (base::FeatureList::IsEnabled(features::kAppManagement)) {
-    apps::AppServiceProxy* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile);
-    if (proxy && proxy->AppRegistryCache().GetAppType(app_id) ==
-                     apps::mojom::AppType::kUnknown) {
-      return;
-    }
-
-    chrome::ShowAppManagementPage(profile, app_id);
-
-    web_app::WebAppProvider* web_app_provider =
-        web_app::WebAppProvider::Get(profile);
-    if (web_app_provider && web_app_provider->registrar().IsInstalled(app_id)) {
-      base::UmaHistogramEnumeration(
-          kAppManagementEntryPointsHistogramName,
-          AppManagementEntryPoint::kShelfContextMenuAppInfoWebApp);
-    } else {
-      base::UmaHistogramEnumeration(
-          kAppManagementEntryPointsHistogramName,
-          AppManagementEntryPoint::kShelfContextMenuAppInfoChromeApp);
-    }
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  // Apps that are not in the App Service may call this function.
+  // E.g. extensions, apps that are using their platform specific IDs.
+  if (proxy && proxy->AppRegistryCache().GetAppType(app_id) ==
+                   apps::mojom::AppType::kUnknown) {
     return;
   }
 
-  // TODO(crbug.com/1065766): Remove below code.
-  const extensions::Extension* extension = GetExtension(profile, app_id);
-  if (!extension)
-    return;
-
-  if (extension->is_hosted_app() && extension->from_bookmark()) {
-    chrome::ShowSiteSettings(
-        profile, extensions::AppLaunchInfo::GetFullLaunchURL(extension));
-    return;
+  web_app::WebAppProvider* web_app_provider =
+      web_app::WebAppProvider::Get(profile);
+  if (web_app_provider && web_app_provider->registrar().IsInstalled(app_id)) {
+    chrome::ShowAppManagementPage(
+        profile, app_id,
+        AppManagementEntryPoint::kShelfContextMenuAppInfoWebApp);
+  } else {
+    chrome::ShowAppManagementPage(
+        profile, app_id,
+        AppManagementEntryPoint::kShelfContextMenuAppInfoChromeApp);
   }
-
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
-                            AppInfoLaunchSource::FROM_SHELF,
-                            AppInfoLaunchSource::NUM_LAUNCH_SOURCES);
-
-  ShowAppInfo(profile, extension, base::Closure());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

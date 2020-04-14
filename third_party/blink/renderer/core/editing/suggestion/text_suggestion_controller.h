@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SUGGESTION_TEXT_SUGGESTION_CONTROLLER_H_
 
 #include <utility>
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/input/input_host.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -14,6 +13,8 @@
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -78,7 +79,9 @@ class CORE_EXPORT TextSuggestionController final
 
   bool is_suggestion_menu_open_;
   const Member<LocalFrame> frame_;
-  mojo::Remote<mojom::blink::TextSuggestionHost> text_suggestion_host_;
+  HeapMojoRemote<mojom::blink::TextSuggestionHost,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      text_suggestion_host_;
 
   DISALLOW_COPY_AND_ASSIGN(TextSuggestionController);
 };

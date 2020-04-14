@@ -593,10 +593,26 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void RejectMouseLockOrUnlockIfNecessary(
       blink::mojom::PointerLockResult reason);
 
-  void set_renderer_initialized(bool renderer_initialized) {
+  // The places in our codebase that call set_renderer_initialized or set the
+  // state to true directly.
+  // TODO(https://crbug.com/1006814): Delete this.
+  enum class RendererInitializer {
+    kUnknown,
+    kTest,  // We don't care about tests, this can be used for any test call.
+    kInit,  // RenderWidgetHostImpl
+    kInitForFrame,  // RenderWidgetHostImpl
+    kWebContentsInit,
+    kCreateRenderView,
+  };
+  void set_renderer_initialized(bool renderer_initialized,
+                                RendererInitializer initializer) {
     renderer_initialized_ = renderer_initialized;
+    initializer_ = initializer;
   }
-
+  // TODO(https://crbug.com/1006814): Delete this.
+  RendererInitializer get_initializer_for_crbug_1006814() {
+    return initializer_;
+  }
   // Store values received in a child frame RenderWidgetHost from a parent
   // RenderWidget, in order to pass them to the renderer and continue their
   // propagation down the RenderWidget tree.
@@ -1266,6 +1282,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   mojo::AssociatedReceiver<blink::mojom::WidgetHost>
       blink_widget_host_receiver_{this};
   mojo::AssociatedRemote<blink::mojom::Widget> blink_widget_;
+
+  // Who initialized us.
+  // TODO(https://crbug.com/1006814): Delete this.
+  RendererInitializer initializer_ = RendererInitializer::kUnknown;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 

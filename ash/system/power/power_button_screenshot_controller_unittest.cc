@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/login_status.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_button_controller_test_api.h"
@@ -16,9 +17,36 @@
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/events/event.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
+
+namespace {
+class KeyEventWindowDelegate : public aura::test::TestWindowDelegate {
+ public:
+  KeyEventWindowDelegate() = default;
+  ~KeyEventWindowDelegate() override = default;
+
+  KeyEventWindowDelegate(const KeyEventWindowDelegate&) = delete;
+  KeyEventWindowDelegate& operator=(const KeyEventWindowDelegate&) = delete;
+
+  void OnKeyEvent(ui::KeyEvent* event) override {
+    key_code_ = event->key_code();
+  }
+
+  ui::KeyboardCode GetReceivedKeyCodeAndReset() {
+    ui::KeyboardCode tmp = key_code_;
+    key_code_ = ui::VKEY_UNKNOWN;
+    return tmp;
+  }
+
+ private:
+  ui::KeyboardCode key_code_ = ui::VKEY_UNKNOWN;
+};
+
+}  // namespace
 
 // Test fixture used for testing power button screenshot behavior under tablet
 // power button.
@@ -85,9 +113,34 @@ class PowerButtonScreenshotControllerTest : public PowerButtonTestBase {
   DISALLOW_COPY_AND_ASSIGN(PowerButtonScreenshotControllerTest);
 };
 
+class PowerButtonScreenshotControllerWithSystemKeysTest
+    : public PowerButtonScreenshotControllerTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  PowerButtonScreenshotControllerWithSystemKeysTest() = default;
+  ~PowerButtonScreenshotControllerWithSystemKeysTest() override = default;
+
+  PowerButtonScreenshotControllerWithSystemKeysTest(
+      const PowerButtonScreenshotControllerWithSystemKeysTest&) = delete;
+  PowerButtonScreenshotControllerWithSystemKeysTest& operator=(
+      const PowerButtonScreenshotControllerWithSystemKeysTest&) = delete;
+
+  void SetUp() override {
+    PowerButtonScreenshotControllerTest::SetUp();
+    if (GetParam()) {
+      aura::Window* window =
+          CreateTestWindowInShellWithDelegate(&delegate_, 1, gfx::Rect());
+      window->SetProperty(ash::kCanConsumeSystemKeysKey, true);
+    }
+  }
+
+ private:
+  KeyEventWindowDelegate delegate_;
+};
+
 // Tests the functionalities that press the power button first and then press
 // volume down and volume up key alternative.
-TEST_F(PowerButtonScreenshotControllerTest,
+TEST_P(PowerButtonScreenshotControllerWithSystemKeysTest,
        PowerButtonPressedFirst_Screenshot) {
   PressPowerButton();
   tick_clock_.Advance(PowerButtonScreenshotController::kScreenshotChordDelay -
@@ -134,6 +187,10 @@ TEST_F(PowerButtonScreenshotControllerTest,
   EXPECT_EQ(0, GetScreenshotCount());
   EXPECT_FALSE(LastKeyConsumed());
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         PowerButtonScreenshotControllerWithSystemKeysTest,
+                         testing::Bool());
 
 // Tests the functionalities that press the volume key first and then press
 // volume down and volume up key alternative.
@@ -184,6 +241,56 @@ TEST_F(PowerButtonScreenshotControllerTest, VolumeKeyPressedFirst_Screenshot) {
   ReleaseKey(ui::VKEY_VOLUME_UP);
   EXPECT_EQ(0, GetScreenshotCount());
   EXPECT_FALSE(LastKeyConsumed());
+}
+
+// If the window with kConsumeSystemKeysKey property is active in tablet mode,
+// volume keys will be passed to the window if they are pressed first.
+TEST_F(PowerButtonScreenshotControllerTest, WindowWithSystemKeys) {
+  EnableTabletMode(true);
+
+  KeyEventWindowDelegate delegate;
+  std::unique_ptr<aura::Window> window = base::WrapUnique(
+      CreateTestWindowInShellWithDelegate(&delegate, 1, gfx::Rect()));
+  window->SetProperty(ash::kCanConsumeSystemKeysKey, true);
+  ::wm::ActivateWindow(window.get());
+
+  // Tests when volume up pressed first, it's consumed by an app.
+  // screenshot chord.
+  GetEventGenerator()->PressKey(ui::VKEY_VOLUME_UP, ui::EF_NONE);
+  EXPECT_EQ(ui::VKEY_VOLUME_UP, delegate.GetReceivedKeyCodeAndReset());
+
+  GetEventGenerator()->PressKey(ui::VKEY_VOLUME_UP, ui::EF_NONE);
+  EXPECT_EQ(ui::VKEY_VOLUME_UP, delegate.GetReceivedKeyCodeAndReset());
+  EXPECT_EQ(0, GetScreenshotCount());
+
+  // Tests when volume down pressed first, it's consumed by an app.
+  // screenshot chord.
+  GetEventGenerator()->PressKey(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
+  EXPECT_EQ(ui::VKEY_VOLUME_DOWN, delegate.GetReceivedKeyCodeAndReset());
+
+  GetEventGenerator()->PressKey(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
+  EXPECT_EQ(ui::VKEY_VOLUME_DOWN, delegate.GetReceivedKeyCodeAndReset());
+  EXPECT_EQ(0, GetScreenshotCount());
+
+  // Delete the window, and volume will be consumed by shortcut.
+  // Screenshot using up.
+  window.reset();
+  GetEventGenerator()->PressKey(ui::VKEY_VOLUME_UP, ui::EF_NONE);
+  EXPECT_EQ(ui::VKEY_UNKNOWN, delegate.GetReceivedKeyCodeAndReset());
+  PressPowerButton();
+  ReleasePowerButton();
+  GetEventGenerator()->ReleaseKey(ui::VKEY_VOLUME_UP, ui::EF_NONE);
+  EXPECT_EQ(ui::VKEY_UNKNOWN, delegate.GetReceivedKeyCodeAndReset());
+  EXPECT_EQ(1, GetScreenshotCount());
+
+  // Screenshot using down.
+  GetEventGenerator()->PressKey(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
+  EXPECT_EQ(ui::VKEY_UNKNOWN, delegate.GetReceivedKeyCodeAndReset());
+  PressPowerButton();
+  ReleasePowerButton();
+  GetEventGenerator()->ReleaseKey(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
+  EXPECT_EQ(ui::VKEY_UNKNOWN, delegate.GetReceivedKeyCodeAndReset());
+  EXPECT_EQ(2, GetScreenshotCount());
 }
 
 class PowerButtonScreenshotControllerWithKeyCodeTest

@@ -65,7 +65,7 @@ class DeterministicScheduler : public Scheduler {
     // Nothing to do.
   }
 
-  virtual Time GetCurrentTime() const {
+  virtual Time CurrentTime() const {
     return current_time_;
   }
 

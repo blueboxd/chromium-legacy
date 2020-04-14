@@ -77,10 +77,8 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
                            ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW,
                            IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
     }
-    if (controller()->CanDoShowAppInfoFlow()) {
-      AddContextMenuOption(menu_model, ash::SHOW_APP_INFO,
-                           IDS_APP_CONTEXT_MENU_SHOW_INFO);
-    }
+    AddContextMenuOption(menu_model, ash::SHOW_APP_INFO,
+                         IDS_APP_CONTEXT_MENU_SHOW_INFO);
   } else {
     extension_menu_items_ = std::make_unique<extensions::ContextMenuMatcher>(
         profile(), this, menu_model,
@@ -117,7 +115,7 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
                          is_platform_app_ ? IDS_APP_LIST_UNINSTALL_ITEM
                                           : IDS_APP_LIST_EXTENSIONS_UNINSTALL);
 
-    if (controller()->CanDoShowAppInfoFlow() && !is_system_web_app) {
+    if (!is_system_web_app) {
       AddContextMenuOption(menu_model, ash::SHOW_APP_INFO,
                            IDS_APP_CONTEXT_MENU_SHOW_INFO);
     }

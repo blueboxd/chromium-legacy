@@ -101,7 +101,16 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
 
 #pragma mark - Initialization
 
-- (instancetype)initWithWebState:(web::WebState*)webState {
+- (instancetype)initWithWebState:(web::WebState*)webState
+                 passwordManager:
+                     (std::unique_ptr<password_manager::PasswordManager>)
+                         passwordManager
+           passwordManagerClient:
+               (std::unique_ptr<ios_web_view::WebViewPasswordManagerClient>)
+                   passwordManagerClient
+           passwordManagerDriver:
+               (std::unique_ptr<ios_web_view::WebViewPasswordManagerDriver>)
+                   passwordManagerDriver {
   self = [super init];
   if (self) {
     DCHECK(webState);
@@ -113,12 +122,11 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
         [[PasswordFormHelper alloc] initWithWebState:webState delegate:self];
     _suggestionHelper =
         [[PasswordSuggestionHelper alloc] initWithDelegate:self];
-    _passwordManagerClient =
-        std::make_unique<WebViewPasswordManagerClient>(self);
-    _passwordManager = std::make_unique<password_manager::PasswordManager>(
-        _passwordManagerClient.get());
-    _passwordManagerDriver =
-        std::make_unique<WebViewPasswordManagerDriver>(self);
+    _passwordManagerClient = std::move(passwordManagerClient);
+    _passwordManagerClient->set_delegate(self);
+    _passwordManager = std::move(passwordManager);
+    _passwordManagerDriver = std::move(passwordManagerDriver);
+    _passwordManagerDriver->set_delegate(self);
 
     // TODO(crbug.com/865114): Credential manager related logic
   }
@@ -175,16 +183,6 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
 }
 
 #pragma mark - CWVPasswordManagerClientDelegate
-
-- (ios_web_view::WebViewBrowserState*)browserState {
-  return _webState ? ios_web_view::WebViewBrowserState::FromBrowserState(
-                         _webState->GetBrowserState())
-                   : nullptr;
-}
-
-- (web::WebState*)webState {
-  return _webState;
-}
 
 - (password_manager::PasswordManager*)passwordManager {
   return _passwordManager.get();

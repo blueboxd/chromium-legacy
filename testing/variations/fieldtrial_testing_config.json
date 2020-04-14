@@ -1278,6 +1278,25 @@
             ]
         }
     ],
+    "CctClientDataHeader": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "expected_version": "300000000",
+                        "header_value": "header value"
+                    },
+                    "enable_features": [
+                        "CCTClientDataHeader"
+                    ]
+                }
+            ]
+        }
+    ],
     "CertDualVerificationTrial": [
         {
             "platforms": [

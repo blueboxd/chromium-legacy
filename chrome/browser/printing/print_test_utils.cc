@@ -38,7 +38,7 @@ base::Value GetPrintTicket(PrinterType type) {
   ticket.SetBoolKey(kSettingShouldPrintSelectionOnly, false);
   ticket.SetBoolKey(kSettingPreviewModifiable, true);
   ticket.SetBoolKey(kSettingPreviewIsPdf, false);
-  ticket.SetIntKey(kSettingPrinterType, type);
+  ticket.SetIntKey(kSettingPrinterType, static_cast<int>(type));
   ticket.SetBoolKey(kSettingRasterizePdf, false);
   ticket.SetIntKey(kSettingScaleFactor, 100);
   ticket.SetIntKey(kSettingScalingType, FIT_TO_PAGE);
@@ -50,9 +50,9 @@ base::Value GetPrintTicket(PrinterType type) {
   ticket.SetIntKey(kSettingPageHeight, 279400);
   ticket.SetBoolKey(kSettingShowSystemDialog, false);
 
-  if (type == kCloudPrinter) {
+  if (type == PrinterType::kCloud) {
     ticket.SetStringKey(kSettingCloudPrintId, kDummyPrinterName);
-  } else if (type == kPrivetPrinter || type == kExtensionPrinter) {
+  } else if (type == PrinterType::kPrivet || type == PrinterType::kExtension) {
     base::Value capabilities(base::Value::Type::DICTIONARY);
     capabilities.SetBoolKey("duplex", true);  // non-empty
     std::string caps_string;

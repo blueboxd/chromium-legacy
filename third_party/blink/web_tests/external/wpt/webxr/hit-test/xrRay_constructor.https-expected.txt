@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL XRRay constructors work assert_throws_js: Constructor should throw for zero direction function "() => new XRRay(
+        DOMPoint.fromPoint(originDict),
+        DOMPoint.fromPoint({x : 0.0, y : 0.0, z : 0.0, w : 0.0})
+    )" threw object "InvalidStateError: Failed to construct 'XRRay': Unable to normalize vector of length 0." ("InvalidStateError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
+Harness: the test ran to completion.
+

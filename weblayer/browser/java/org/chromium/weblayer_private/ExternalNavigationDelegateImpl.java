@@ -491,6 +491,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
+    public boolean isIntentToAutofillAssistant(Intent intent) {
+        return false;
+    }
+
+    @Override
     public boolean isValidWebApk(String packageName) {
         // TODO(crbug.com/1063874): Determine whether to refine this.
         return false;

@@ -2726,10 +2726,6 @@ const char kAndroidNightModeTabReparentingDescription[] =
 
 #else  // !defined(OS_ANDROID)
 
-const char kAppManagementName[] = "Enable App Management page";
-const char kAppManagementDescription[] =
-    "Shows the new app management page at chrome://apps.";
-
 const char kCastMediaRouteProviderName[] = "Cast Media Route Provider";
 const char kCastMediaRouteProviderDescription[] =
     "Enables the native Cast Media Route Provider implementation to be used "

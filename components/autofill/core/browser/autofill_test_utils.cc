@@ -413,27 +413,25 @@ CreditCard GetVerifiedCreditCard2() {
 
 CreditCard GetMaskedServerCard() {
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
-  // TODO(crbug/1059087): Change hardcoded year to NextYear.
   test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
-                          "2109" /* Mastercard */, "12", "2020", "1");
+                          "2109" /* Mastercard */, NextMonth().c_str(),
+                          NextYear().c_str(), "1");
   credit_card.SetNetworkForMaskedCard(kMasterCard);
   return credit_card;
 }
 
 CreditCard GetMaskedServerCardAmex() {
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "b456");
-  // TODO(crbug/1059087): Change hardcoded year to NextYear.
-  test::SetCreditCardInfo(&credit_card, "Justin Thyme", "8431" /* Amex */, "9",
-                          "2020", "1");
+  test::SetCreditCardInfo(&credit_card, "Justin Thyme", "8431" /* Amex */,
+                          NextMonth().c_str(), NextYear().c_str(), "1");
   credit_card.SetNetworkForMaskedCard(kAmericanExpressCard);
   return credit_card;
 }
 
 CreditCard GetMaskedServerCardWithNickname() {
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "c789");
-  // TODO(crbug/1059087): Change hardcoded year to NextYear.
-  test::SetCreditCardInfo(&credit_card, "Test user", "1111" /* Visa */, "9",
-                          "2050", "1");
+  test::SetCreditCardInfo(&credit_card, "Test user", "1111" /* Visa */,
+                          NextMonth().c_str(), NextYear().c_str(), "1");
   credit_card.SetNetworkForMaskedCard(kVisaCard);
   credit_card.SetNickname(ASCIIToUTF16("Test nickname"));
   return credit_card;
@@ -441,9 +439,9 @@ CreditCard GetMaskedServerCardWithNickname() {
 
 CreditCard GetFullServerCard() {
   CreditCard credit_card(CreditCard::FULL_SERVER_CARD, "c123");
-  // TODO(crbug/1059087): Change hardcoded year to NextYear.
   test::SetCreditCardInfo(&credit_card, "Full Carter",
-                          "4111111111111111" /* Visa */, "12", "2020", "1");
+                          "4111111111111111" /* Visa */, NextMonth().c_str(),
+                          NextYear().c_str(), "1");
   return credit_card;
 }
 

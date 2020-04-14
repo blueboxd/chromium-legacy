@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, CWVPasswordUserDecision);
@@ -14,9 +16,18 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision);
 @class CWVPasswordController;
 @class CWVPassword;
 
+namespace ios_web_view {
+class WebViewPasswordManagerClient;
+class WebViewPasswordManagerDriver;
+}  // namespace ios_web_view
+
+namespace password_manager {
+class PasswordManager;
+}  // namespace password_manager
+
 namespace web {
 class WebState;
-}
+}  // namespace web
 
 // Internal protocol to receive callbacks related to password autofilling.
 @protocol CWVPasswordControllerDelegate
@@ -52,7 +63,15 @@ class WebState;
 
 // Creates a new password controller with the given |webState|.
 - (instancetype)initWithWebState:(web::WebState*)webState
-    NS_DESIGNATED_INITIALIZER;
+                 passwordManager:
+                     (std::unique_ptr<password_manager::PasswordManager>)
+                         passwordManager
+           passwordManagerClient:
+               (std::unique_ptr<ios_web_view::WebViewPasswordManagerClient>)
+                   passwordManagerClient
+           passwordManagerDriver:
+               (std::unique_ptr<ios_web_view::WebViewPasswordManagerDriver>)
+                   passwordManagerDriver NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 

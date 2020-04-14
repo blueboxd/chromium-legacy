@@ -4234,12 +4234,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPaintHoldingDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kPaintHolding)},
 
-#if !defined(OS_ANDROID)
-    {"app-management", flag_descriptions::kAppManagementName,
-     flag_descriptions::kAppManagementDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kAppManagement)},
-#endif  // !defined(OS_ANDROID)
-
 #if defined(OS_CHROMEOS)
     {"app-service-instance-registry",
      flag_descriptions::kAppServiceInstanceRegistryName,

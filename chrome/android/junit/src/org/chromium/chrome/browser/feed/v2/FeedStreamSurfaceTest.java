@@ -42,7 +42,7 @@ public class FeedStreamSurfaceTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         mocker.mock(FeedStreamSurfaceJni.TEST_HOOKS, mFeedStreamSurfaceJniMock);
-        mFeedStreamSurface = new FeedStreamSurface(null);
+        mFeedStreamSurface = new FeedStreamSurface(null, () -> null);
     }
 
     @Test

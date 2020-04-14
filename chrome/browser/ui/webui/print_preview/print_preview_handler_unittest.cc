@@ -49,16 +49,18 @@ const char kEmptyPrinterName[] = "EmptyPrinter";
 const char kTestData[] = "abc";
 
 // Array of all PrinterTypes.
-constexpr PrinterType kAllTypes[] = {kPrivetPrinter, kExtensionPrinter,
-                                     kPdfPrinter, kLocalPrinter, kCloudPrinter};
+constexpr PrinterType kAllTypes[] = {PrinterType::kPrivet,
+                                     PrinterType::kExtension, PrinterType::kPdf,
+                                     PrinterType::kLocal, PrinterType::kCloud};
 
 // Array of all PrinterTypes that have working PrinterHandlers.
-constexpr PrinterType kAllSupportedTypes[] = {kPrivetPrinter, kExtensionPrinter,
-                                              kPdfPrinter, kLocalPrinter};
+constexpr PrinterType kAllSupportedTypes[] = {
+    PrinterType::kPrivet, PrinterType::kExtension, PrinterType::kPdf,
+    PrinterType::kLocal};
 
 // All three printer types that implement PrinterHandler::StartGetPrinters().
-constexpr PrinterType kFetchableTypes[] = {kPrivetPrinter, kExtensionPrinter,
-                                           kLocalPrinter};
+constexpr PrinterType kFetchableTypes[] = {
+    PrinterType::kPrivet, PrinterType::kExtension, PrinterType::kLocal};
 
 struct PrinterInfo {
   std::string id;
@@ -99,7 +101,7 @@ PrinterInfo GetEmptyPrinterInfo() {
 }
 
 base::Value GetPrintPreviewTicket() {
-  base::Value print_ticket = GetPrintTicket(kLocalPrinter);
+  base::Value print_ticket = GetPrintTicket(PrinterType::kLocal);
 
   // Make some modifications to match a preview print ticket.
   print_ticket.SetKey(kSettingPageRange, base::Value());
@@ -479,7 +481,7 @@ class PrintPreviewHandlerTest : public testing::Test {
   void SendGetPrinters(PrinterType type, const std::string& callback_id_in) {
     base::Value args(base::Value::Type::LIST);
     args.Append(callback_id_in);
-    args.Append(type);
+    args.Append(static_cast<int>(type));
     handler()->HandleGetPrinters(&base::Value::AsListValue(args));
   }
 
@@ -492,7 +494,7 @@ class PrintPreviewHandlerTest : public testing::Test {
     const content::TestWebUI::CallData& add_data =
         *web_ui()->call_data()[call_data_size - 2];
     AssertWebUIEventFired(add_data, "printers-added");
-    const int type = add_data.arg2()->GetInt();
+    const auto type = static_cast<PrinterType>(add_data.arg2()->GetInt());
     EXPECT_EQ(expected_type, type);
     ASSERT_TRUE(add_data.arg3());
     base::Value::ConstListView printer_list = add_data.arg3()->GetList();
@@ -509,7 +511,7 @@ class PrintPreviewHandlerTest : public testing::Test {
     base::Value args(base::Value::Type::LIST);
     args.Append(callback_id_in);
     args.Append(printer_name);
-    args.Append(type);
+    args.Append(static_cast<int>(type));
     handler()->HandleGetPrinterCapabilities(&base::Value::AsListValue(args));
   }
 
@@ -705,7 +707,7 @@ TEST_F(PrintPreviewHandlerTest, GetNoDenyListPrinters) {
     // type that isn't on the deny list (one for printers-added, and one for the
     // response), and only 1 more for each type on the deny list (just for
     // response).
-    const bool is_allowed_type = type == kLocalPrinter;
+    const bool is_allowed_type = type == PrinterType::kLocal;
     EXPECT_EQ(is_allowed_type, handler()->CalledOnlyForType(type));
     expected_callbacks += is_allowed_type ? 2 : 1;
     ASSERT_EQ(expected_callbacks, web_ui()->call_data().size());
@@ -787,7 +789,7 @@ TEST_F(PrintPreviewHandlerTest, GetNoDenyListPrinterCapabilities) {
     SendGetPrinterCapabilities(type, callback_id_in, kDummyPrinterName);
 
     const bool is_allowed_type =
-        type == kPrivetPrinter || type == kExtensionPrinter;
+        type == PrinterType::kPrivet || type == PrinterType::kExtension;
     EXPECT_EQ(is_allowed_type, handler()->CalledOnlyForType(type));
 
     // Start with 1 call from initial settings, then add 1 more for each loop
@@ -819,7 +821,7 @@ TEST_F(PrintPreviewHandlerTest, Print) {
 
     // Verify correct PrinterHandler was called or that no handler was requested
     // for cloud printers.
-    if (type == kCloudPrinter) {
+    if (type == PrinterType::kCloud) {
       EXPECT_TRUE(handler()->NotCalled());
     } else {
       EXPECT_TRUE(handler()->CalledOnlyForType(type));
@@ -830,7 +832,7 @@ TEST_F(PrintPreviewHandlerTest, Print) {
     CheckWebUIResponse(data, callback_id_in, true);
 
     // For cloud print, should also get the encoded data back as a string.
-    if (type == kCloudPrinter) {
+    if (type == PrinterType::kCloud) {
       std::string print_data;
       ASSERT_TRUE(data.arg3()->GetAsString(&print_data));
       std::string expected_data;
@@ -999,7 +1001,7 @@ TEST_F(PrintPreviewHandlerFailingTest, GetPrinterCapabilities) {
         "test-callback-id-" + base::NumberToString(i + 1);
     args.Append(callback_id_in);
     args.Append(kDummyPrinterName);
-    args.Append(type);
+    args.Append(static_cast<int>(type));
     std::unique_ptr<base::ListValue> list_args =
         base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
     handler()->HandleGetPrinterCapabilities(list_args.get());

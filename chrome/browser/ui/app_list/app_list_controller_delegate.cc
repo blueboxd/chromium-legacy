@@ -7,9 +7,6 @@
 #include <utility>
 
 #include "ash/public/cpp/app_list/app_list_switches.h"
-#include "base/bind.h"
-#include "base/feature_list.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -18,17 +15,13 @@
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/ash/tablet_mode_page_behavior.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -89,62 +82,25 @@ bool AppListControllerDelegate::UninstallAllowed(Profile* profile,
          !policy->MustRemainInstalled(extension, nullptr);
 }
 
-bool AppListControllerDelegate::CanDoShowAppInfoFlow() {
-  return CanPlatformShowAppInfoDialog();
-}
-
 void AppListControllerDelegate::DoShowAppInfoFlow(Profile* profile,
                                                   const std::string& app_id) {
-  DCHECK(CanDoShowAppInfoFlow());
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  DCHECK_NE(proxy->AppRegistryCache().GetAppType(app_id),
+            apps::mojom::AppType::kUnknown);
 
-  if (base::FeatureList::IsEnabled(features::kAppManagement)) {
-    apps::AppServiceProxy* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile);
-    DCHECK(proxy && proxy->AppRegistryCache().GetAppType(app_id) !=
-                        apps::mojom::AppType::kUnknown);
-
-    chrome::ShowAppManagementPage(profile, app_id);
-
-    web_app::WebAppProvider* web_app_provider =
-        web_app::WebAppProvider::Get(profile);
-    if (web_app_provider && web_app_provider->registrar().IsInstalled(app_id)) {
-      base::UmaHistogramEnumeration(
-          kAppManagementEntryPointsHistogramName,
-          AppManagementEntryPoint::kAppListContextMenuAppInfoWebApp);
-    } else {
-      base::UmaHistogramEnumeration(
-          kAppManagementEntryPointsHistogramName,
-          AppManagementEntryPoint::kAppListContextMenuAppInfoChromeApp);
-    }
-    return;
+  web_app::AppRegistrar& registrar =
+      web_app::WebAppProvider::Get(profile)->registrar();
+  if (registrar.IsInstalled(app_id)) {
+    chrome::ShowAppManagementPage(
+        profile, app_id,
+        AppManagementEntryPoint::kAppListContextMenuAppInfoWebApp);
+  } else {
+    chrome::ShowAppManagementPage(
+        profile, app_id,
+        AppManagementEntryPoint::kAppListContextMenuAppInfoChromeApp);
   }
-
-  // TODO(crbug.com/1065766): Remove below code.
-  const extensions::Extension* extension = GetExtension(profile, app_id);
-  DCHECK(extension);
-
-  if (extension->is_hosted_app() && extension->from_bookmark()) {
-    chrome::ShowSiteSettings(
-        profile, extensions::AppLaunchInfo::GetFullLaunchURL(extension));
-    return;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
-                            AppInfoLaunchSource::FROM_APP_LIST,
-                            AppInfoLaunchSource::NUM_LAUNCH_SOURCES);
-
-  // Since the AppListControllerDelegate is a leaky singleton, passing its raw
-  // pointer around is OK.
-  GetAppInfoDialogBounds(base::BindOnce(
-      [](base::WeakPtr<AppListControllerDelegate> self, Profile* profile,
-         const std::string& extension_id, const gfx::Rect& bounds) {
-        const extensions::Extension* extension =
-            GetExtension(profile, extension_id);
-        DCHECK(extension);
-        ShowAppInfoInAppList(self->GetAppListWindow(), bounds, profile,
-                             extension);
-      },
-      weak_ptr_factory_.GetWeakPtr(), profile, app_id));
 }
 
 void AppListControllerDelegate::UninstallApp(Profile* profile,

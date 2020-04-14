@@ -27,6 +27,7 @@
 #include "ash/system/palette/palette_welcome_bubble.h"
 #include "ash/system/power/power_prefs.h"
 #include "ash/system/session/logout_button_tray.h"
+#include "ash/system/unified/top_shortcuts_view.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/desks_restore_util.h"
@@ -79,6 +80,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry, bool for_test) {
   DetachableBaseHandler::RegisterPrefs(registry);
   PowerPrefs::RegisterLocalStatePrefs(registry);
   DisplayPrefs::RegisterLocalStatePrefs(registry);
+  TopShortcutsView::RegisterLocalStatePrefs(registry);
 }
 
 void RegisterSigninProfilePrefs(PrefRegistrySimple* registry, bool for_test) {

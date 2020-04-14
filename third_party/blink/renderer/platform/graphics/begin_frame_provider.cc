@@ -77,7 +77,7 @@ void BeginFrameProvider::CreateCompositorFrameSinkIfNeeded() {
       compositor_frame_sink_.BindNewPipeAndPassReceiver());
 
   compositor_frame_sink_.set_disconnect_with_reason_handler(base::BindOnce(
-      &BeginFrameProvider::OnMojoConnectionError, weak_factory_.GetWeakPtr()));
+      &BeginFrameProvider::OnMojoConnectionError, WrapWeakPersistent(this)));
 }
 
 void BeginFrameProvider::RequestBeginFrame() {
@@ -118,6 +118,10 @@ void BeginFrameProvider::OnBeginFrame(
 
 void BeginFrameProvider::FinishBeginFrame(const viz::BeginFrameArgs& args) {
   compositor_frame_sink_->DidNotProduceFrame(viz::BeginFrameAck(args, false));
+}
+
+void BeginFrameProvider::Trace(Visitor* visitor) {
+  visitor->Trace(begin_frame_client_);
 }
 
 }  // namespace blink

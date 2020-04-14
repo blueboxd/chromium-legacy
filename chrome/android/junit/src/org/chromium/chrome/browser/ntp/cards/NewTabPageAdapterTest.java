@@ -62,6 +62,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo.SigninObserver;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
@@ -1233,7 +1234,7 @@ public class NewTabPageAdapterTest {
         mSource.removeObservers();
         mAdapter = new NewTabPageAdapter(mUiDelegate, mock(View.class), /* logoView = */
                 makeUiConfig(), mOfflinePageBridge, mock(ContextMenuManager.class),
-                mMockSigninManager
+                mock(NewTabPageUma.class), mMockSigninManager
                 /* tileGroupDelegate = */);
         mAdapter.refreshSuggestions();
     }

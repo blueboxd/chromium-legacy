@@ -17,9 +17,8 @@ using password_manager::PasswordAutofillManager;
 using password_manager::PasswordManager;
 
 namespace ios_web_view {
-WebViewPasswordManagerDriver::WebViewPasswordManagerDriver(
-    id<CWVPasswordManagerDriverDelegate> delegate)
-    : delegate_(delegate) {}
+
+WebViewPasswordManagerDriver::WebViewPasswordManagerDriver() {}
 
 WebViewPasswordManagerDriver::~WebViewPasswordManagerDriver() = default;
 
@@ -64,7 +63,7 @@ WebViewPasswordManagerDriver::GetPasswordGenerationHelper() {
 }
 
 PasswordManager* WebViewPasswordManagerDriver::GetPasswordManager() {
-  return [delegate_ passwordManager];
+  return delegate_.passwordManager;
 }
 
 PasswordAutofillManager*

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.content.Intent;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -13,7 +14,7 @@ import androidx.annotation.IntDef;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -32,9 +33,7 @@ import java.lang.annotation.RetentionPolicy;
  * Records UMA stats for which actions the user takes on the NTP in the
  * "NewTabPage.ActionAndroid2" histogram.
  */
-public final class NewTabPageUma {
-    private NewTabPageUma() {}
-
+public class NewTabPageUma {
     // Possible actions taken by the user on the NTP. These values are also defined in
     // enums.xml as NewTabPageActionAndroid2.
     // WARNING: these values must stay in sync with enums.xml.
@@ -154,6 +153,26 @@ public final class NewTabPageUma {
     /** The number of load types. */
     private static final int LOAD_TYPE_COUNT = 3;
 
+    private final TabModelSelector mTabModelSelector;
+    private final Supplier<Long> mLastInteractionTime;
+    private final boolean mActivityHadWarmStart;
+    private final Supplier<Intent> mActivityIntent;
+
+    /**
+     * Constructor.
+     * @param tabModelSelector Tab model selector to observe tab creation event.
+     * @param lastInteractionTime The time user interacted with UI lastly.
+     * @param activityHadWarmStart {@code true} if the activity did a warm start.
+     * @param intent Supplier of the activity intent.
+     */
+    public NewTabPageUma(TabModelSelector tabModelSelector, Supplier<Long> lastInteractionTime,
+            boolean activityHadWarmStart, Supplier<Intent> intent) {
+        mTabModelSelector = tabModelSelector;
+        mLastInteractionTime = lastInteractionTime;
+        mActivityHadWarmStart = activityHadWarmStart;
+        mActivityIntent = intent;
+    }
+
     /**
      * Records an action taken by the user on the NTP.
      * @param action One of the ACTION_* values defined in this class.
@@ -196,23 +215,22 @@ public final class NewTabPageUma {
     /**
      * Records how often new tabs with a NewTabPage are created. This helps to determine how often
      * users navigate back to already opened NTPs.
-     * @param tabModelSelector Model selector controlling the creation of new tabs.
      */
-    public static void monitorNTPCreation(TabModelSelector tabModelSelector) {
-        tabModelSelector.addObserver(new TabCreationRecorder());
+    public void monitorNTPCreation() {
+        mTabModelSelector.addObserver(new TabCreationRecorder());
     }
 
     /**
      * Records the type of load for the NTP, such as cold or warm start.
      */
-    public static void recordLoadType(ChromeActivity activity) {
-        if (activity.getLastUserInteractionTime() > 0) {
+    public void recordLoadType() {
+        if (mLastInteractionTime.get() > 0) {
             RecordHistogram.recordEnumeratedHistogram(
                     "NewTabPage.LoadType", LOAD_TYPE_OTHER, LOAD_TYPE_COUNT);
             return;
         }
 
-        if (activity.hadWarmStart()) {
+        if (mActivityHadWarmStart) {
             RecordHistogram.recordEnumeratedHistogram(
                     "NewTabPage.LoadType", LOAD_TYPE_WARM_START, LOAD_TYPE_COUNT);
             return;
@@ -225,32 +243,23 @@ public final class NewTabPageUma {
     /**
      * Records the network status of the user.
      */
-    public static void recordIsUserOnline() {
+    public void recordIsUserOnline() {
         RecordHistogram.recordBooleanHistogram(
                 "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());
     }
 
     /**
-     * Records the time duration that the NTP was visible.
-     * @param lastShownTimeNs A long as returned by System#nanoTime() - this should have been
-     *                        called at the moment the new tab page is shown.
-     */
-    public static void recordTimeSpentOnNtp(long lastShownTimeNs) {
-        RecordHistogram.recordMediumTimesHistogram("NewTabPage.TimeSpent",
-                (System.nanoTime() - lastShownTimeNs) / TimeUtils.NANOSECONDS_PER_MILLISECOND);
-    }
-    /**
      * Records how much time elapsed from start until the search box became available to the user.
      */
-    public static void recordSearchAvailableLoadTime(ChromeActivity activity) {
+    public void recordSearchAvailableLoadTime() {
         // Log the time it took for the search box to be displayed at startup, based on the
         // timestamp on the intent for the activity. If the user has interacted with the
         // activity already, it's not a startup, and the timestamp on the activity would not be
         // relevant either.
-        if (activity.getLastUserInteractionTime() != 0) return;
+        if (mLastInteractionTime.get() != 0) return;
         long timeFromIntent = SystemClock.elapsedRealtime()
-                - IntentHandler.getTimestampFromIntent(activity.getIntent());
-        if (activity.hadWarmStart()) {
+                - IntentHandler.getTimestampFromIntent(mActivityIntent.get());
+        if (mActivityHadWarmStart) {
             RecordHistogram.recordMediumTimesHistogram(
                     "NewTabPage.SearchAvailableLoadTime2.WarmStart", timeFromIntent);
         } else {
@@ -274,7 +283,7 @@ public final class NewTabPageUma {
      * Records position of a prefetched article suggestion, which was seen by the user on the
      * suggestions surface when there was no network connection.
      */
-    public static void recordPrefetchedArticleSuggestionImpressionPosition(int positionInSection) {
+    public void recordPrefetchedArticleSuggestionImpressionPosition(int positionInSection) {
         RecordHistogram.recordEnumeratedHistogram("NewTabPage.ContentSuggestions.Shown.Articles."
                         + "Prefetched.Offline2",
                 positionInSection, MAX_SUGGESTIONS_PER_SECTION);
@@ -283,7 +292,7 @@ public final class NewTabPageUma {
     /**
      * Records Content Suggestions Display Status when NTPs opened.
      */
-    public static void recordContentSuggestionsDisplayStatus() {
+    public void recordContentSuggestionsDisplayStatus() {
         @ContentSuggestionsDisplayStatus
         int status = ContentSuggestionsDisplayStatus.VISIBLE;
         if (!PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED)) {
@@ -317,7 +326,7 @@ public final class NewTabPageUma {
      * @param view The UI element to track.
      * @param constructedTimeNs The timestamp at which the new tab page's construction started.
      */
-    public static void trackTimeToFirstDraw(View view, long constructedTimeNs) {
+    public void trackTimeToFirstDraw(View view, long constructedTimeNs) {
         // Use preDraw instead of draw because api level 25 and earlier doesn't seem to call the
         // onDraw listener. Also, the onDraw version cannot be removed inside of the
         // notification, which complicates this.

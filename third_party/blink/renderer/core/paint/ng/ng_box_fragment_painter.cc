@@ -1433,6 +1433,13 @@ void NGBoxFragmentPainter::PaintTextItem(const NGInlineCursor& cursor,
       paint_info.phase != PaintPhase::kMask)
     return;
 
+  // Skip if this child does not intersect with CullRect.
+  if (!paint_info.IntersectsCullRect(
+          item.InkOverflow(), paint_offset + item.OffsetInContainerBlock()) &&
+      // Don't skip <br>, it doesn't have ink but need to paint selection.
+      !item.IsLineBreak())
+    return;
+
   NGTextFragmentPainter<NGInlineCursor> text_painter(cursor, parent_offset);
   text_painter.Paint(paint_info, paint_offset);
 }
@@ -1451,7 +1458,10 @@ void NGBoxFragmentPainter::PaintBoxItem(
   if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsFloating())
     return;
 
-  // TODO(kojii): Check CullRect.
+  // Skip if this child does not intersect with CullRect.
+  if (!paint_info.IntersectsCullRect(
+          item.InkOverflow(), paint_offset + item.OffsetInContainerBlock()))
+    return;
 
   if (child_fragment.IsAtomicInline() || child_fragment.IsListMarker()) {
     if (FragmentRequiresLegacyFallback(child_fragment)) {
@@ -1479,6 +1489,11 @@ void NGBoxFragmentPainter::PaintBoxItem(const NGFragmentItem& item,
     PaintBoxItem(item, *child_fragment, cursor, paint_info, paint_offset);
     return;
   }
+
+  // Skip if this child does not intersect with CullRect.
+  if (!paint_info.IntersectsCullRect(
+          item.InkOverflow(), paint_offset + item.OffsetInContainerBlock()))
+    return;
 
   // This |item| is a culled inline box.
   DCHECK(item.GetLayoutObject()->IsLayoutInline());

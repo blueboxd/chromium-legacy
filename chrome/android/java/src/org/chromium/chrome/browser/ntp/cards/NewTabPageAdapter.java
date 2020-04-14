@@ -17,6 +17,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -62,6 +63,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
     private final RemoteSuggestionsStatusObserver mRemoteSuggestionsStatusObserver;
 
+    private final NewTabPageUma mNewTabPageUma;
+
     // Used to track if the NTP has loaded or not. This assumes that there's only one
     // NewTabPageAdapter per NTP. This does not fully tear down even when the main activity is
     // destroyed. This is actually convenient in mimicking the current behavior of
@@ -78,11 +81,12 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
      * @param uiConfig the NTP UI configuration, to be passed to created views.
      * @param offlinePageBridge used to determine if articles are available.
      * @param contextMenuManager used to build context menus.
+     * @param uma {@link NewTabPageUma} object recording user metrics.
      */
     public NewTabPageAdapter(SuggestionsUiDelegate uiDelegate, @Nullable View aboveTheFoldView,
             UiConfig uiConfig, OfflinePageBridge offlinePageBridge,
-            ContextMenuManager contextMenuManager) {
-        this(uiDelegate, aboveTheFoldView, uiConfig, offlinePageBridge, contextMenuManager,
+            ContextMenuManager contextMenuManager, NewTabPageUma uma) {
+        this(uiDelegate, aboveTheFoldView, uiConfig, offlinePageBridge, contextMenuManager, uma,
                 IdentityServicesProvider.get().getSigninManager());
     }
 
@@ -96,12 +100,13 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
      * @param uiConfig the NTP UI configuration, to be passed to created views.
      * @param offlinePageBridge used to determine if articles are available.
      * @param contextMenuManager used to build context menus.
+     * @param uma {@link NewTabPageUma} object recording user metrics.
      * @param signinManager used by SectionList for SignInPromo.
      */
     @VisibleForTesting
     public NewTabPageAdapter(SuggestionsUiDelegate uiDelegate, @Nullable View aboveTheFoldView,
             UiConfig uiConfig, OfflinePageBridge offlinePageBridge,
-            ContextMenuManager contextMenuManager, SigninManager signinManager) {
+            ContextMenuManager contextMenuManager, NewTabPageUma uma, SigninManager signinManager) {
         mUiDelegate = uiDelegate;
         mContextMenuManager = contextMenuManager;
 
@@ -109,6 +114,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mUiConfig = uiConfig;
         mRoot = new InnerNode<>();
         mSections = new SectionList(mUiDelegate, offlinePageBridge, signinManager);
+        mNewTabPageUma = uma;
 
         if (mAboveTheFoldView != null) mRoot.addChildren(new AboveTheFoldItem());
         mFooter = new Footer();
@@ -159,7 +165,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
             case ItemViewType.SNIPPET:
                 return new SnippetArticleViewHolder(mRecyclerView, mContextMenuManager, mUiDelegate,
-                        mUiConfig, mOfflinePageBridge);
+                        mUiConfig, mOfflinePageBridge, mNewTabPageUma);
 
             case ItemViewType.STATUS:
                 return new StatusCardViewHolder(mRecyclerView, mContextMenuManager, mUiConfig);

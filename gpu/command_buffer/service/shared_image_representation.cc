@@ -210,6 +210,7 @@ SharedImageRepresentationDawn::BeginScopedAccess(
 }
 
 SharedImageRepresentationFactoryRef::~SharedImageRepresentationFactoryRef() {
+  backing()->UnregisterImageFactory();
   backing()->MarkForDestruction();
 }
 

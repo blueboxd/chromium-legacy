@@ -394,9 +394,8 @@ void AppServiceShelfContextMenu::BuildChromeAppMenu(
 
 void AppServiceShelfContextMenu::ShowAppInfo() {
   if (app_type_ == apps::mojom::AppType::kArc) {
-    chrome::ShowAppManagementPage(controller()->profile(), item().id.app_id);
-    base::UmaHistogramEnumeration(
-        kAppManagementEntryPointsHistogramName,
+    chrome::ShowAppManagementPage(
+        controller()->profile(), item().id.app_id,
         AppManagementEntryPoint::kShelfContextMenuAppInfoArc);
     return;
   }

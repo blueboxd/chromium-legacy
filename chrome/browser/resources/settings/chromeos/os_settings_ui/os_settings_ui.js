@@ -81,12 +81,6 @@ Polymer({
     showAndroidApps_: Boolean,
 
     /** @private */
-    showAppManagement_: Boolean,
-
-    /** @private */
-    showApps_: Boolean,
-
-    /** @private */
     showCrostini_: Boolean,
 
     /** @private */
@@ -158,9 +152,7 @@ Polymer({
     };
 
     this.havePlayStoreApp_ = loadTimeData.getBoolean('havePlayStoreApp');
-    this.showAppManagement_ = loadTimeData.getBoolean('showAppManagement');
     this.showAndroidApps_ = loadTimeData.getBoolean('androidAppsVisible');
-    this.showApps_ = this.showAppManagement_ || this.showAndroidApps_;
     this.showCrostini_ = loadTimeData.getBoolean('showCrostini');
     this.showPluginVm_ = loadTimeData.getBoolean('showPluginVm');
     this.showReset_ = loadTimeData.getBoolean('allowPowerwash');

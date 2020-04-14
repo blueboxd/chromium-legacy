@@ -282,7 +282,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         }
         if (!TextUtils.isEmpty(filterPackageName)
                 && (info.activityInfo == null
-                           || !info.activityInfo.packageName.equals(filterPackageName))) {
+                        || !info.activityInfo.packageName.equals(filterPackageName))) {
             return false;
         }
         return true;
@@ -698,6 +698,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public boolean isIntentToInstantApp(Intent intent) {
         return InstantAppsHandler.isIntentToInstantApp(intent);
+    }
+
+    @Override
+    public boolean isIntentToAutofillAssistant(Intent intent) {
+        return AutofillAssistantFacade.isAutofillAssistantByIntentTriggeringEnabled(intent);
     }
 
     @Override

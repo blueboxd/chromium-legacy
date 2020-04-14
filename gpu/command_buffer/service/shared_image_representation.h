@@ -138,6 +138,9 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
     return backing()->ProduceLegacyMailbox(mailbox_manager);
   }
   bool PresentSwapChain() { return backing()->PresentSwapChain(); }
+  void RegisterImageFactory(SharedImageFactory* factory) {
+    backing()->RegisterImageFactory(factory);
+  }
 };
 
 class GPU_GLES2_EXPORT SharedImageRepresentationGLTextureBase

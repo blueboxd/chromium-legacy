@@ -48,6 +48,7 @@ class WrappedSkImageFactory;
 // SharedImageRepresentationFactory.
 class GPU_GLES2_EXPORT SharedImageFactory {
  public:
+  // All objects passed are expected to outlive this class.
   SharedImageFactory(const GpuPreferences& gpu_preferences,
                      const GpuDriverBugWorkarounds& workarounds,
                      const GpuFeatureInfo& gpu_feature_info,
@@ -109,6 +110,10 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   bool RegisterBacking(std::unique_ptr<SharedImageBacking> backing,
                        bool allow_legacy_mailbox);
 
+  SharedContextState* GetSharedContextState() const {
+    return shared_context_state_;
+  }
+
   void RegisterSharedImageBackingFactoryForTesting(
       SharedImageBackingFactory* factory);
 
@@ -121,6 +126,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
       gfx::GpuMemoryBufferType gmb_type = gfx::EMPTY_BUFFER);
   MailboxManager* mailbox_manager_;
   SharedImageManager* shared_image_manager_;
+  SharedContextState* shared_context_state_;
   std::unique_ptr<MemoryTypeTracker> memory_tracker_;
   const bool using_vulkan_;
   const bool using_metal_;

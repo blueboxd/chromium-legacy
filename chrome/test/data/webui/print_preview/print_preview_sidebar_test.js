@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CloudPrintInterface, NativeLayer, setCloudPrintInterfaceForTesting} from 'chrome://print/print_preview.js';
+import {CloudPrintInterface, CloudPrintInterfaceImpl, NativeLayer} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
@@ -38,6 +38,7 @@ suite(print_preview_sidebar_test.suiteName, function() {
     NativeLayer.setInstance(nativeLayer);
     nativeLayer.setLocalDestinationCapabilities(getCddTemplate('FooDevice'));
     cloudPrintInterface = new CloudPrintInterfaceStub();
+    CloudPrintInterfaceImpl.instance_ = cloudPrintInterface;
 
     PolymerTest.clearBody();
     model = document.createElement('print-preview-model');
@@ -50,7 +51,6 @@ suite(print_preview_sidebar_test.suiteName, function() {
     fakeDataBind(model, sidebar, 'settings');
     document.body.appendChild(sidebar);
     sidebar.init(false, 'FooDevice', null);
-    sidebar.cloudPrintInterface = cloudPrintInterface;
 
     return nativeLayer.whenCalled('getPrinterCapabilities');
   });

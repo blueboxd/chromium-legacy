@@ -19,6 +19,7 @@
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #import "components/autofill/ios/form_util/form_activity_tab_helper.h"
 #import "components/autofill/ios/form_util/test_form_activity_tab_helper.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #import "ios/web/public/deprecated/crw_test_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/fakes/fake_web_frame.h"
@@ -29,6 +30,8 @@
 #include "ios/web/public/web_client.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #import "ios/web_view/internal/passwords/cwv_password_controller_fake.h"
+#import "ios/web_view/internal/passwords/web_view_password_manager_client.h"
+#import "ios/web_view/internal/passwords/web_view_password_manager_driver.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
 #include "ios/web_view/test/test_with_locale_and_resources.h"
@@ -79,8 +82,21 @@ class CWVAutofillControllerTest : public TestWithLocaleAndResources {
     fake_web_frames_manager_ = frames_manager.get();
     test_web_state_.SetWebFramesManager(std::move(frames_manager));
 
-    password_controller_ =
-        [[CWVPasswordControllerFake alloc] initWithWebState:&test_web_state_];
+    // TODO(crbug.com/1070468): Redo CWVPasswordController so it is easier to
+    // fake in unit tests.
+    auto passwordManagerClient = std::make_unique<WebViewPasswordManagerClient>(
+        &test_web_state_, /*sync_service=*/nullptr, browser_state_.GetPrefs(),
+        /*identity_manager=*/nullptr, /*log_manager=*/nullptr,
+        /*profile_store=*/nullptr, /*account_store=*/nullptr);
+    auto passwordManager = std::make_unique<password_manager::PasswordManager>(
+        passwordManagerClient.get());
+    auto passwordManagerDriver =
+        std::make_unique<WebViewPasswordManagerDriver>();
+    password_controller_ = [[CWVPasswordControllerFake alloc]
+             initWithWebState:&test_web_state_
+              passwordManager:std::move(passwordManager)
+        passwordManagerClient:std::move(passwordManagerClient)
+        passwordManagerDriver:std::move(passwordManagerDriver)];
 
     autofill_controller_ =
         [[CWVAutofillController alloc] initWithWebState:&test_web_state_

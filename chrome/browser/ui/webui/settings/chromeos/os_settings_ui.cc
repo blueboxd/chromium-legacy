@@ -173,8 +173,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<::settings::SearchEnginesHandler>(profile));
 
-  html_source->AddBoolean("showAppManagement", base::FeatureList::IsEnabled(
-                                                   ::features::kAppManagement));
   html_source->AddBoolean("splitSettingsSyncEnabled",
                           chromeos::features::IsSplitSettingsSyncEnabled());
   html_source->AddBoolean("splitSyncConsent",

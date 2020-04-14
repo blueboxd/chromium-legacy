@@ -8,6 +8,7 @@ import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behav
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {CloudPrintInterface, CloudPrintInterfaceErrorEventDetail, CloudPrintInterfaceEventType} from '../cloud_print_interface.js';
+import {CloudPrintInterfaceImpl} from '../cloud_print_interface_impl.js';
 
 import {Destination, DestinationOrigin} from './destination.js';
 import {DestinationStore} from './destination_store.js';
@@ -34,14 +35,7 @@ Polymer({
 
     cloudPrintDisabled: {
       type: Boolean,
-      value: true,
-      notify: true,
-    },
-
-    /** @type {?CloudPrintInterface} */
-    cloudPrintInterface: {
-      type: Object,
-      observer: 'onCloudPrintInterfaceSet_',
+      observer: 'onCloudPrintDisabledChanged_',
     },
 
     /** @type {?DestinationStore} */
@@ -61,6 +55,9 @@ Polymer({
       },
     },
   },
+
+  /** @private {?CloudPrintInterface} */
+  cloudPrintInterface_: null,
 
   /** @private {boolean} */
   initialized_: false,
@@ -108,23 +105,26 @@ Polymer({
   },
 
   /** @private */
-  onCloudPrintInterfaceSet_() {
+  onCloudPrintDisabledChanged_() {
+    if (this.cloudPrintDisabled) {
+      return;
+    }
+
+    this.cloudPrintInterface_ = CloudPrintInterfaceImpl.getInstance();
     this.tracker_.add(
-        this.cloudPrintInterface.getEventTarget(),
+        this.cloudPrintInterface_.getEventTarget(),
         CloudPrintInterfaceEventType.UPDATE_USERS,
         this.onCloudPrintUpdateUsers_.bind(this));
     [CloudPrintInterfaceEventType.SEARCH_FAILED,
      CloudPrintInterfaceEventType.PRINTER_FAILED,
     ].forEach(eventType => {
       this.tracker_.add(
-          this.cloudPrintInterface.getEventTarget(), eventType,
+          this.cloudPrintInterface_.getEventTarget(), eventType,
           this.checkCloudPrintStatus_.bind(this));
     });
     if (this.users.length > 0) {
-      this.cloudPrintInterface.setUsers(this.users);
+      this.cloudPrintInterface_.setUsers(this.users);
     }
-    assert(this.cloudPrintDisabled);
-    this.cloudPrintDisabled = false;
   },
 
   /**
@@ -136,7 +136,7 @@ Polymer({
    */
   checkCloudPrintStatus_(event) {
     if (event.detail.status !== 403 ||
-        this.cloudPrintInterface.areCookieDestinationsDisabled()) {
+        this.cloudPrintInterface_.areCookieDestinationsDisabled()) {
       return;
     }
 
@@ -167,8 +167,8 @@ Polymer({
     const updateActiveUser = (users.length > 0 && this.users.length === 0) ||
         !users.includes(this.activeUser);
     this.users = users;
-    if (this.cloudPrintInterface) {
-      this.cloudPrintInterface.setUsers(users);
+    if (this.cloudPrintInterface_) {
+      this.cloudPrintInterface_.setUsers(users);
     }
     if (updateActiveUser) {
       this.updateActiveUser(this.users[0] || '');

@@ -25,7 +25,7 @@ class TextSuggestionControllerTest : public EditingTestBase {
     return bool(GetDocument()
                     .GetFrame()
                     ->GetTextSuggestionController()
-                    .text_suggestion_host_);
+                    .text_suggestion_host_.is_bound());
   }
 
   void ShowSuggestionMenu(

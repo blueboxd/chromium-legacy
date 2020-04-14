@@ -52,7 +52,7 @@ void RecurringTask::EnsureScheduled(bool is_retry, string debug_reason) {
 
   TLOG(logger_, FINE, "[%s] Scheduling %d with a delay %d, Now = %d",
        debug_reason.c_str(), name_.c_str(), delay.ToInternalValue(),
-       scheduler_->GetCurrentTime().ToInternalValue());
+       scheduler_->CurrentTime().ToInternalValue());
   scheduler_->Schedule(delay, NewPermanentCallback(this,
        &RecurringTask::RunTaskAndRescheduleIfNeeded));
   is_scheduled_ = true;

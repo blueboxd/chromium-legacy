@@ -115,6 +115,9 @@ class Profile : public content::BrowserContext {
     // |GuestID| when the use cases are reduced.
     static const OTRProfileID PrimaryID();
 
+    // Creates a unique OTR profile id with the given profile id prefix.
+    static OTRProfileID CreateUnique(const std::string& profile_id_prefix);
+
     bool operator==(const OTRProfileID& other) const {
       return profile_id_ == other.profile_id_;
     }
@@ -136,6 +139,8 @@ class Profile : public content::BrowserContext {
     // Returns this OTRProfileID in a string format that can be used for debug
     // message.
     const std::string& ToString() const;
+
+    static int first_unused_index_;
 
     const std::string profile_id_;
   };

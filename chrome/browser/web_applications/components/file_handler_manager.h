@@ -74,9 +74,11 @@ class FileHandlerManager : public AppRegistrarObserver {
   void DisableAndUnregisterOsFileHandlers(const AppId& app_id);
 
   // Updates the file handling origin trial expiry timer based on a currently
-  // open instance of the site.
-  void UpdateFileHandlingOriginTrialExpiry(content::WebContents* web_contents,
-                                           const AppId& app_id);
+  // open instance of the site. This will not update the expiry timer if
+  // |app_id| has force enabled file handling origin trial.
+  void MaybeUpdateFileHandlingOriginTrialExpiry(
+      content::WebContents* web_contents,
+      const AppId& app_id);
 
   // Force enables File Handling origin trial. This will register the App's file
   // handlers even if the App does not have a valid origin trial token.
@@ -85,6 +87,9 @@ class FileHandlerManager : public AppRegistrarObserver {
   // Disable a force enabled File Handling origin trial. This will unregister
   // App's file handlers.
   void DisableForceEnabledFileHandlingOriginTrial(const AppId& app_id);
+
+  // Returns whether App's file handling is force enabled.
+  bool IsFileHandlingForceEnabled(const AppId& app_id);
 
   // Gets all enabled file handlers for |app_id|. |nullptr| if the app has no
   // enabled file handlers. Note: The lifetime of the file handlers are tied to

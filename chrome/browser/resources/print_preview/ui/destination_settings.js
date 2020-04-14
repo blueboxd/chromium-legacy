@@ -20,7 +20,7 @@ import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {CloudPrintInterface} from '../cloud_print_interface.js';
+import {CloudPrintInterfaceImpl} from '../cloud_print_interface_impl.js';
 import {createDestinationKey, createRecentDestinationKey, Destination, DestinationOrigin, makeRecentDestination, RecentDestination} from '../data/destination.js';
 import {DestinationErrorType, DestinationStore} from '../data/destination_store.js';
 import {InvitationStore} from '../data/invitation_store.js';
@@ -52,12 +52,6 @@ Polymer({
   ],
 
   properties: {
-    /** @type {CloudPrintInterface} */
-    cloudPrintInterface: {
-      type: Object,
-      observer: 'onCloudPrintInterfaceSet_',
-    },
-
     dark: Boolean,
 
     /** @type {?Destination} */
@@ -96,7 +90,10 @@ Polymer({
     },
 
     /** @private {boolean} */
-    cloudPrintDisabled_: Boolean,
+    cloudPrintDisabled_: {
+      type: Boolean,
+      value: true,
+    },
 
     /** @private {?DestinationStore} */
     destinationStore_: {
@@ -205,13 +202,6 @@ Polymer({
   },
 
   /** @private */
-  onCloudPrintInterfaceSet_() {
-    const cloudPrintInterface = assert(this.cloudPrintInterface);
-    this.destinationStore_.setCloudPrintInterface(cloudPrintInterface);
-    this.invitationStore_.setCloudPrintInterface(cloudPrintInterface);
-  },
-
-  /** @private */
   updateDriveDestinationReady_() {
     const key = createDestinationKey(
         Destination.GooglePromotedId.DOCS, DestinationOrigin.COOKIES,
@@ -293,6 +283,12 @@ Polymer({
   init(
       defaultPrinter, pdfPrinterDisabled, serializedDefaultDestinationRulesStr,
       userAccounts, syncAvailable) {
+    const cloudPrintInterface = CloudPrintInterfaceImpl.getInstance();
+    if (cloudPrintInterface.isConfigured()) {
+      this.cloudPrintDisabled_ = false;
+      this.destinationStore_.setCloudPrintInterface(cloudPrintInterface);
+      this.invitationStore_.setCloudPrintInterface(cloudPrintInterface);
+    }
     this.pdfPrinterDisabled_ = pdfPrinterDisabled;
     this.$.userManager.initUserAccounts(userAccounts, syncAvailable);
     this.destinationStore_.init(

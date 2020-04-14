@@ -166,9 +166,7 @@ def constant_name(cg_context):
 
     property_name = cg_context.property_.identifier.lower()
 
-    kind = "Constant"
-
-    return name_style.constant(kind, property_name)
+    return name_style.constant(property_name)
 
 
 def custom_function_name(cg_context):
@@ -1620,7 +1618,7 @@ def make_constant_callback_def(cg_context, function_name):
     body = func_def.body
 
     v8_set_return_value = _format(
-        "bindings::V8SetReturnValue(${info}, ${class_name}::{});",
+        "bindings::V8SetReturnValue(${info}, ${class_name}::Constant::{});",
         constant_name(cg_context))
     body.extend([
         make_runtime_call_timer_scope(cg_context),
@@ -3200,15 +3198,17 @@ def make_cross_origin_indexed_getter_callback(cg_context, function_name):
         body.append(TextNode("${throw_security_error}"))
         return func_def
 
-    body.append(
+    bind_return_value(body, cg_context, overriding_args=["${index}"])
+
+    body.extend([
         TextNode("""\
 if (${index} >= ${blink_receiver}->length()) {
   ${throw_security_error}
   return;
 }
-
-${class_name}::IndexedPropertyGetterCallback(${index}, ${info});
-"""))
+"""),
+        make_v8_set_return_value(cg_context),
+    ])
 
     return func_def
 
@@ -3688,14 +3688,16 @@ def make_same_origin_indexed_getter_callback(cg_context, function_name):
         "SameOriginProperty_IndexedPropertyGetter")
     body = func_def.body
 
-    body.append(
+    bind_return_value(body, cg_context, overriding_args=["${index}"])
+
+    body.extend([
         TextNode("""\
 if (${index} >= ${blink_receiver}->length()) {
   return;
 }
-
-${class_name}::IndexedPropertyGetterCallback(${index}, ${info});
-"""))
+"""),
+        make_v8_set_return_value(cg_context),
+    ])
 
     return func_def
 
@@ -4396,7 +4398,8 @@ def _make_property_entries_and_callback_defs(
         if const_callback_node is None:
             const_callback_name = None
         # IDL constant's C++ constant name
-        const_constant_name = _format("${class_name}::{}", constant_name(cgc))
+        const_constant_name = _format("${class_name}::Constant::{}",
+                                      constant_name(cgc))
 
         callback_def_nodes.extend([
             const_callback_node,
@@ -5108,7 +5111,8 @@ def make_indexed_and_named_property_callbacks_and_install_node(cg_context):
     install_node = SequenceNode()
 
     interface = cg_context.interface
-    if not (interface and interface.indexed_and_named_properties):
+    if not (interface and interface.indexed_and_named_properties
+            and "Global" not in interface.extended_attributes):
         return func_decls, func_defs, install_node
     props = interface.indexed_and_named_properties
 
@@ -5125,8 +5129,7 @@ def make_indexed_and_named_property_callbacks_and_install_node(cg_context):
     cg_context = cg_context.make_copy(
         v8_callback_type=CodeGenContext.V8_OTHER_CALLBACK)
 
-    if (props.own_named_getter
-            and "Global" not in interface.extended_attributes):
+    if props.own_named_getter:
         add_callback(*make_named_property_getter_callback(
             cg_context.make_copy(named_property_getter=props.named_getter),
             "NamedPropertyGetterCallback"))
@@ -5145,7 +5148,7 @@ def make_indexed_and_named_property_callbacks_and_install_node(cg_context):
         add_callback(*make_named_property_enumerator_callback(
             cg_context, "NamedPropertyEnumeratorCallback"))
 
-    if props.named_getter and "Global" not in interface.extended_attributes:
+    if props.named_getter:
         impl_bridge = v8_bridge_class_name(
             most_derived_interface(
                 props.named_getter.owner, props.named_setter
@@ -5240,6 +5243,11 @@ ${instance_template}->SetHandler(
             F(pattern,
               impl_bridge=impl_bridge,
               property_handler_flags=property_handler_flags))
+
+    func_defs.accumulate(
+        CodeGenAccumulator.require_include_headers([
+            "third_party/blink/renderer/bindings/core/v8/v8_set_return_value_for_core.h",
+        ]))
 
     return func_decls, func_defs, install_node
 
@@ -5339,6 +5347,7 @@ def make_cross_origin_property_callbacks_and_install_node(
     CROSS_ORIGIN_INTERFACES = ("Window", "Location")
     if cg_context.interface.identifier not in CROSS_ORIGIN_INTERFACES:
         return callback_defs, install_node
+    props = cg_context.interface.indexed_and_named_properties
 
     entry_nodes = []
     for entry in attribute_entries:
@@ -5434,7 +5443,9 @@ def make_cross_origin_property_callbacks_and_install_node(
         make_cross_origin_named_enumerator_callback(
             cg_context, "CrossOriginNamedEnumeratorCallback"),
         make_cross_origin_indexed_getter_callback(
-            cg_context, "CrossOriginIndexedGetterCallback"),
+            cg_context.make_copy(
+                indexed_property_getter=(props and props.indexed_getter)),
+            "CrossOriginIndexedGetterCallback"),
         make_cross_origin_indexed_setter_callback(
             cg_context, "CrossOriginIndexedSetterCallback"),
         make_cross_origin_indexed_deleter_callback(
@@ -5490,7 +5501,9 @@ ${instance_template}->SetAccessCheckCallbackAndHandler(
 
     func_defs = [
         make_same_origin_indexed_getter_callback(
-            cg_context, "SameOriginIndexedGetterCallback"),
+            cg_context.make_copy(
+                indexed_property_getter=(props and props.indexed_getter)),
+            "SameOriginIndexedGetterCallback"),
         make_same_origin_indexed_setter_callback(
             cg_context, "SameOriginIndexedSetterCallback"),
         make_same_origin_indexed_deleter_callback(
@@ -5864,11 +5877,14 @@ def generate_interface(interface):
         impl_class_def = api_class_def
 
     # Constants
-    constant_defs = ListNode()
-    for constant in interface.constants:
-        cgc = cg_context.make_copy(constant=constant)
-        constant_defs.append(
-            make_constant_constant_def(cgc, constant_name(cgc)))
+    constants_def = None
+    if interface.constants:
+        constants_def = CxxClassDefNode(name="Constant", final=True)
+        constants_def.top_section.append(TextNode("STATIC_ONLY(Constant);"))
+        for constant in interface.constants:
+            cgc = cg_context.make_copy(constant=constant)
+            constants_def.public_section.append(
+                make_constant_constant_def(cgc, constant_name(cgc)))
 
     # Custom callback implementations
     custom_callback_impl_decls = ListNode()
@@ -6200,6 +6216,13 @@ def generate_interface(interface):
     if is_cross_components:
         impl_header_blink_ns.body.append(impl_class_def)
 
+    if constants_def:
+        api_class_def.public_section.extend([
+            TextNode("// Constants"),
+            constants_def,
+            EmptyNode(),
+        ])
+
     api_class_def.public_section.append(get_wrapper_type_info_def)
     api_class_def.public_section.append(EmptyNode())
     api_class_def.public_section.extend([
@@ -6238,13 +6261,6 @@ def generate_interface(interface):
         api_class_def.public_section.append(installer_function_decls)
         api_class_def.public_section.append(EmptyNode())
 
-    if constant_defs:
-        api_class_def.public_section.extend([
-            TextNode("// Constants"),
-            constant_defs,
-            EmptyNode(),
-        ])
-
     if custom_callback_impl_decls:
         api_class_def.public_section.extend([
             TextNode("// Custom callback implementations"),
@@ -6258,13 +6274,15 @@ def generate_interface(interface):
             indexed_and_named_property_decls,
             EmptyNode(),
         ])
+        api_source_blink_ns.body.extend([
+            indexed_and_named_property_defs,
+            EmptyNode(),
+        ])
 
     impl_source_blink_ns.body.extend([
         CxxNamespaceNode(name="", body=callback_defs),
         EmptyNode(),
         installer_function_defs,
-        EmptyNode(),
-        indexed_and_named_property_defs,
         EmptyNode(),
     ])
 

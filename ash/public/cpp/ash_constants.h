@@ -60,6 +60,10 @@ constexpr int kDefaultAutoclickMovementThreshold = 20;
 constexpr FloatingMenuPosition kDefaultAutoclickMenuPosition =
     FloatingMenuPosition::kSystemDefault;
 
+// The default floating accessibility menu position.
+constexpr FloatingMenuPosition kDefaultFloatingMenuPosition =
+    FloatingMenuPosition::kSystemDefault;
+
 // The default frame color.
 constexpr SkColor kDefaultFrameColor = SkColorSetRGB(0xFD, 0xFE, 0xFF);
 

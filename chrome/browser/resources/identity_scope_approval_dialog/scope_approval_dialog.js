@@ -43,7 +43,7 @@ function loadAuthUrlAndShowWindow(url, win) {
       windowId = win.id;
     }
     webview.executeScript({file: 'inject.js'});
-  });
+  }, {once: true});
 }
 
 chrome.runtime.onMessageExternal.addListener(function(

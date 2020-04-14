@@ -8,6 +8,12 @@
  * using the refreshed controls UI.
  */
 
+/* This sheet is appended to html.css before parsing which means the selectors
+   below are in the default html namespace:
+
+   @namespace "http://www.w3.org/1999/xhtml"
+*/
+
 select,
 select:-internal-list-box,
 input,

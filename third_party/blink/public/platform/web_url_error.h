@@ -36,6 +36,7 @@
 #include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/cpp/blocked_by_response_reason.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
+#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url.h"
 
 namespace blink {
@@ -71,6 +72,16 @@ struct WebURLError {
                                     HasCopyInCache,
                                     const WebURL&);
 
+  // Constructs a new error for a request failing due to a Trust Tokens error.
+  // This takes an integer error code in addition to a TrustTokenOperationStatus
+  // because there are multiple Trust Tokens //net error codes.
+  //
+  // |trust_token_operation_error| must be an actual error (i.e., not kOk).
+  BLINK_PLATFORM_EXPORT WebURLError(
+      int reason,
+      network::mojom::TrustTokenOperationStatus trust_token_operation_error,
+      const WebURL& url);
+
   int reason() const { return reason_; }
   int extended_reason() const { return extended_reason_; }
   const net::ResolveErrorInfo& resolve_error_info() const {
@@ -85,6 +96,10 @@ struct WebURLError {
   const base::Optional<network::BlockedByResponseReason>
   blocked_by_response_reason() const {
     return blocked_by_response_reason_;
+  }
+  network::mojom::TrustTokenOperationStatus trust_token_operation_error()
+      const {
+    return trust_token_operation_error_;
   }
 
  private:
@@ -114,6 +129,16 @@ struct WebURLError {
   // More detailed reason for failing the response with
   // ERR_net::ERR_BLOCKED_BY_RESPONSE |error_code|.
   base::Optional<network::BlockedByResponseReason> blocked_by_response_reason_;
+
+  // More detailed reason for failing the response with
+  // net::ERR_TRUST_TOKEN_OPERATION_FAILED or
+  // net::ERR_TRUST_TOKEN_OPERATION_CACHE_HIT.
+  //
+  // A value of kOk means that this request failed for a reason other than a
+  // Trust Tokens operation failure. This does not necessarily mean that a Trust
+  // Tokens operation was executed successfully, or even that one was attempted.
+  network::mojom::TrustTokenOperationStatus trust_token_operation_error_ =
+      network::mojom::TrustTokenOperationStatus::kOk;
 };
 
 }  // namespace blink

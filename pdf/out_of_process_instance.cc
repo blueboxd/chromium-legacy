@@ -922,8 +922,7 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
 }
 
 void OutOfProcessInstance::DidChangeFocus(bool has_focus) {
-  if (!has_focus)
-    engine_->KillFormFocus();
+  engine_->UpdateFocus(has_focus);
 }
 
 void OutOfProcessInstance::GetPrintPresetOptionsFromDocument(

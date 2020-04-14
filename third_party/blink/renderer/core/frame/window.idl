@@ -35,9 +35,9 @@
 ] interface Window : EventTarget {
     // the current browsing context
     // FIXME: The spec uses the WindowProxy type for this and many other attributes.
-    [Affects=Nothing, Unforgeable, CrossOrigin] readonly attribute Window window;
-    [Replaceable, CrossOrigin] readonly attribute Window self;
-    [Affects=Nothing, Unforgeable, CachedAccessor] readonly attribute Document document;
+    [Affects=Nothing, Unforgeable, CrossOrigin, CachedAccessor=kWindowProxy] readonly attribute Window window;
+    [Replaceable, CrossOrigin, CachedAccessor=kWindowProxy] readonly attribute Window self;
+    [Affects=Nothing, Unforgeable, CachedAccessor=kWindowDocument] readonly attribute Document document;
     attribute DOMString name;
     [Affects=Nothing, PutForwards=href, Unforgeable, CrossOrigin=(Getter,Setter), Custom=Getter] readonly attribute Location location;
     [CallWith=ScriptState] readonly attribute CustomElementRegistry customElements;
@@ -56,7 +56,7 @@
     [CrossOrigin] void blur();
 
     // other browsing contexts
-    [Replaceable, CrossOrigin] readonly attribute Window frames;
+    [Replaceable, CrossOrigin, CachedAccessor=kWindowProxy] readonly attribute Window frames;
     [Replaceable, CrossOrigin] readonly attribute unsigned long length;
     [Unforgeable, CrossOrigin] readonly attribute Window? top;
     // FIXME: opener should be of type any.

@@ -517,10 +517,6 @@ const base::Feature kRunVideoCaptureServiceInBrowserProcess{
 const base::Feature kSavePageAsWebBundle{"SavePageAsWebBundle",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Start streaming scripts on script preload.
-const base::Feature kScriptStreamingOnPreload{"ScriptStreamingOnPreload",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Make sendBeacon throw for a Blob with a non simple type.
 const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
     "SendBeaconThrowForBlobWithNonSimpleType",

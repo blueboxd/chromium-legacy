@@ -169,16 +169,17 @@ class SupervisedUserWhitelistServiceTest : public testing::Test {
 TEST_F(SupervisedUserWhitelistServiceTest, MergeEmpty) {
   service_->Init();
 
+  ASSERT_TRUE(
+      service_->GetAllSyncDataForTesting(syncer::SUPERVISED_USER_WHITELISTS)
+          .empty());
   syncer::SyncMergeResult result = service_->MergeDataAndStartSyncing(
       syncer::SUPERVISED_USER_WHITELISTS, syncer::SyncDataList(),
       std::unique_ptr<syncer::SyncChangeProcessor>(),
       std::unique_ptr<syncer::SyncErrorFactory>());
+  EXPECT_TRUE(
+      service_->GetAllSyncDataForTesting(syncer::SUPERVISED_USER_WHITELISTS)
+          .empty());
   EXPECT_FALSE(result.error().IsSet());
-  EXPECT_EQ(0, result.num_items_added());
-  EXPECT_EQ(0, result.num_items_modified());
-  EXPECT_EQ(0, result.num_items_deleted());
-  EXPECT_EQ(0, result.num_items_before_association());
-  EXPECT_EQ(0, result.num_items_after_association());
 
   EXPECT_EQ(0u, installer_->registered_whitelists().size());
 }
@@ -214,16 +215,17 @@ TEST_F(SupervisedUserWhitelistServiceTest, MergeExisting) {
   initial_data.push_back(
       SupervisedUserWhitelistService::CreateWhitelistSyncData(
           "cccc", "Whitelist C"));
+  ASSERT_EQ(
+      2u, service_->GetAllSyncDataForTesting(syncer::SUPERVISED_USER_WHITELISTS)
+              .size());
   syncer::SyncMergeResult result = service_->MergeDataAndStartSyncing(
       syncer::SUPERVISED_USER_WHITELISTS, initial_data,
       std::unique_ptr<syncer::SyncChangeProcessor>(),
       std::unique_ptr<syncer::SyncErrorFactory>());
+  EXPECT_EQ(
+      2u, service_->GetAllSyncDataForTesting(syncer::SUPERVISED_USER_WHITELISTS)
+              .size());
   EXPECT_FALSE(result.error().IsSet());
-  EXPECT_EQ(1, result.num_items_added());
-  EXPECT_EQ(1, result.num_items_modified());
-  EXPECT_EQ(1, result.num_items_deleted());
-  EXPECT_EQ(2, result.num_items_before_association());
-  EXPECT_EQ(2, result.num_items_after_association());
 
   // Whitelist A (which was previously ready) should be removed now, and
   // whitelist B was never ready.

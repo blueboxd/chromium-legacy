@@ -8,11 +8,14 @@
 #include <set>
 #include <utility>
 
+#include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
+#include "components/performance_manager/public/graph/node_data_describer.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 #include "components/performance_manager/test_support/graph_impl.h"
 #include "components/performance_manager/test_support/mock_graphs.h"
 #include "content/public/test/browser_task_environment.h"
@@ -26,7 +29,7 @@ namespace {
 
 using performance_manager::NodeBase;
 
-const std::string kHtmlMimeType = "text/html";
+const char kHtmlMimeType[] = "text/html";
 
 class TestChangeStream : public discards::mojom::GraphChangeStream {
  public:
@@ -139,6 +142,31 @@ class DiscardsGraphDumpImplTest : public testing::Test {
   performance_manager::TestGraphImpl graph_;
 };
 
+class TestNodeDataDescriber : public performance_manager::NodeDataDescriber {
+ public:
+  // NodeDataDescriber implementations:
+  base::Value DescribeFrameNodeData(
+      const performance_manager::FrameNode* node) const override {
+    return base::Value("frame");
+  }
+  base::Value DescribePageNodeData(
+      const performance_manager::PageNode* node) const override {
+    return base::Value("page");
+  }
+  base::Value DescribeProcessNodeData(
+      const performance_manager::ProcessNode* node) const override {
+    return base::Value("process");
+  }
+  base::Value DescribeSystemNodeData(
+      const performance_manager::SystemNode* node) const override {
+    return base::Value("system");
+  }
+  base::Value DescribeWorkerNodeData(
+      const performance_manager::WorkerNode* node) const override {
+    return base::Value("worker");
+  }
+};
+
 }  // namespace
 
 TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
@@ -175,6 +203,9 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
   impl->BindWithGraph(&graph_, graph_dump_remote.BindNewPipeAndPassReceiver());
   graph_.PassToGraph(std::move(impl));
 
+  TestNodeDataDescriber describer;
+  graph_.GetNodeDataDescriberRegistry()->RegisterDescriber(&describer, "test");
+
   TestChangeStream change_stream;
   graph_dump_remote->SubscribeToChanges(change_stream.GetRemote());
 
@@ -186,11 +217,22 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
 
   EXPECT_EQ(2u, change_stream.process_map().size());
   for (const auto& kv : change_stream.process_map()) {
-    EXPECT_NE(0u, kv.second->id);
+    const auto* process_info = kv.second.get();
+    EXPECT_NE(0u, process_info->id);
+    EXPECT_EQ(base::JSONReader::Read("{\"test\":\"process\"}"),
+              base::JSONReader::Read(process_info->description_json));
   }
 
   EXPECT_EQ(3u, change_stream.frame_map().size());
+  for (const auto& kv : change_stream.frame_map()) {
+    EXPECT_EQ(base::JSONReader::Read("{\"test\":\"frame\"}"),
+              base::JSONReader::Read(kv.second->description_json));
+  }
   EXPECT_EQ(1u, change_stream.worker_map().size());
+  for (const auto& kv : change_stream.worker_map()) {
+    EXPECT_EQ(base::JSONReader::Read("{\"test\":\"worker\"}"),
+              base::JSONReader::Read(kv.second->description_json));
+  }
 
   // Count the top-level frames as we go.
   size_t top_level_frames = 0;
@@ -218,6 +260,8 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
     const auto& page = kv.second;
     EXPECT_NE(0u, page->id);
     EXPECT_EQ(kExampleUrl, page->main_frame_url);
+    EXPECT_EQ(base::JSONReader::Read("{\"test\":\"page\"}"),
+              base::JSONReader::Read(kv.second->description_json));
   }
 
   // Test change notifications.
@@ -249,4 +293,6 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
   EXPECT_EQ(nullptr, graph_.TakeFromGraph(impl_raw));
 
   worker->RemoveClientFrame(mock_graph.frame.get());
+
+  graph_.GetNodeDataDescriberRegistry()->UnregisterDescriber(&describer);
 }

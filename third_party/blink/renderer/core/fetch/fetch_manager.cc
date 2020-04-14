@@ -12,10 +12,12 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_response_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -25,6 +27,7 @@
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/place_holder_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
+#include "third_party/blink/renderer/core/fetch/trust_token_to_mojom.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -226,7 +229,9 @@ class FetchManager::Loader final
   void PerformNetworkError(const String& message);
   void PerformHTTPFetch(ExceptionState&);
   void PerformDataFetch();
-  void Failed(const String& message);
+  // If |dom_exception| is provided, throws the specified DOMException instead
+  // of the usual "Failed to fetch" TypeError.
+  void Failed(const String& message, DOMException* dom_exception);
   void NotifyFinished();
   ExecutionContext* GetExecutionContext() { return execution_context_; }
 
@@ -530,11 +535,18 @@ void FetchManager::Loader::DidFinishLoading(uint64_t) {
 }
 
 void FetchManager::Loader::DidFail(const ResourceError& error) {
-  Failed(String());
+  if (error.TrustTokenOperationError() !=
+      network::mojom::blink::TrustTokenOperationStatus::kOk) {
+    Failed(String(),
+           TrustTokenErrorToDOMException(error.TrustTokenOperationError()));
+    return;
+  }
+
+  Failed(String(), nullptr);
 }
 
 void FetchManager::Loader::DidFailRedirectCheck() {
-  Failed(String());
+  Failed(String(), nullptr);
 }
 
 void FetchManager::Loader::Start(ExceptionState& exception_state) {
@@ -690,7 +702,7 @@ void FetchManager::Loader::PerformSchemeFetch(ExceptionState& exception_state) {
 }
 
 void FetchManager::Loader::PerformNetworkError(const String& message) {
-  Failed(message);
+  Failed(message, nullptr);
 }
 
 void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
@@ -832,7 +844,8 @@ void FetchManager::Loader::PerformDataFetch() {
   threadable_loader_->Start(request);
 }
 
-void FetchManager::Loader::Failed(const String& message) {
+void FetchManager::Loader::Failed(const String& message,
+                                  DOMException* dom_exception) {
   if (failed_ || finished_)
     return;
   failed_ = true;
@@ -846,8 +859,12 @@ void FetchManager::Loader::Failed(const String& message) {
   if (resolver_) {
     ScriptState* state = resolver_->GetScriptState();
     ScriptState::Scope scope(state);
-    resolver_->Reject(V8ThrowException::CreateTypeError(state->GetIsolate(),
-                                                        "Failed to fetch"));
+    if (dom_exception) {
+      resolver_->Reject(dom_exception);
+    } else {
+      resolver_->Reject(V8ThrowException::CreateTypeError(state->GetIsolate(),
+                                                          "Failed to fetch"));
+    }
   }
   NotifyFinished();
 }

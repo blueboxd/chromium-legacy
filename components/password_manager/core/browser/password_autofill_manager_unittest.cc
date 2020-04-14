@@ -789,11 +789,47 @@ TEST_F(PasswordAutofillManagerTest,
       });
   EXPECT_CALL(*client.GetPasswordFeatureManager(),
               SetAccountStorageOptIn(true));
+  EXPECT_CALL(
+      autofill_client,
+      HideAutofillPopup(autofill::PopupHidingReason::kAcceptSuggestion));
   EXPECT_CALL(client, GeneratePassword());
 
   password_autofill_manager_->DidAcceptSuggestion(
       test_username_,
       autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE, 1);
+}
+
+// Test that the popup shows an empty state if opted-into an empty store.
+TEST_F(PasswordAutofillManagerTest, SuccessfullOptInMayShowEmptyState) {
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
+  client.SetAccountStorageOptIn(true);
+  const CoreAccountId kAliceId = client.identity_test_env()
+                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
+                                     .account_id;
+  testing::Mock::VerifyAndClearExpectations(&autofill_client);
+
+  // Only the unlock button was available. After being clicked, it's in a
+  // loading state which the DeleteFillData() call will end.
+  Suggestion unlock_suggestion(
+      /*label=*/"Unlock passwords and fill", /*value=*/"", /*icon=*/"",
+      /*fronend_id=*/
+      autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN);
+  unlock_suggestion.is_loading = Suggestion::IsLoading(true);
+  EXPECT_CALL(autofill_client, GetPopupSuggestions)
+      .WillRepeatedly(Return(std::vector<Suggestion>{unlock_suggestion}));
+  EXPECT_CALL(autofill_client,
+              HideAutofillPopup(autofill::PopupHidingReason::kStaleData));
+  EXPECT_CALL(
+      autofill_client,
+      UpdatePopup(
+          SuggestionVectorIdsAre(ElementsAreArray(
+              {autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY})),
+          PopupType::kPasswords));
+
+  password_autofill_manager_->DeleteFillData();
+  password_autofill_manager_->OnNoCredentialsFound();
 }
 
 // Test that the popup is updated once "opt in and fill" is clicked".
@@ -813,10 +849,11 @@ TEST_F(PasswordAutofillManagerTest,
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   new_data.additional_logins[additional_username] = additional;
   EXPECT_CALL(autofill_client, GetPopupSuggestions())
-      .Times(2)
       .WillRepeatedly(Return(CreateTestSuggestions(
           /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ false,
           /*has_re_signin=*/false)));
+  EXPECT_CALL(autofill_client,
+              HideAutofillPopup(autofill::PopupHidingReason::kStaleData));
   EXPECT_CALL(
       autofill_client,
       UpdatePopup(
@@ -825,6 +862,8 @@ TEST_F(PasswordAutofillManagerTest,
                autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
                autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY}))),
           PopupType::kPasswords));
+
+  password_autofill_manager_->DeleteFillData();
   password_autofill_manager_->OnAddPasswordFillData(new_data);
 }
 

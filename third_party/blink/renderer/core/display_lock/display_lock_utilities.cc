@@ -51,8 +51,6 @@ bool UpdateStyleAndLayoutForRangeIfNeeded(const EphemeralRangeInFlatTree& range,
                                                                    reason)) {
       DCHECK(locked_activatable_ancestor->GetDisplayLockContext());
       DCHECK(locked_activatable_ancestor->GetDisplayLockContext()->IsLocked());
-      DCHECK(!locked_activatable_ancestor->GetDisplayLockContext()
-                  ->UpdateForced());
       scoped_forced_update_list_.push_back(
           locked_activatable_ancestor->GetDisplayLockContext()
               ->GetScopedForcedUpdate());
@@ -212,10 +210,8 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
     auto* ancestor_node = DynamicTo<Element>(ancestor);
     if (!ancestor_node)
       continue;
-    if (auto* context = ancestor_node->GetDisplayLockContext()) {
-      DCHECK(!context->UpdateForced());
+    if (auto* context = ancestor_node->GetDisplayLockContext())
       scoped_update_forced_list_.push_back(context->GetScopedForcedUpdate());
-    }
   }
 }
 

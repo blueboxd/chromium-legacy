@@ -94,6 +94,10 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // Called when main frame navigates. Not called for in-page navigations.
   void DidNavigateMainFrame();
 
+  // Called if no suggestions were found. Assumed to be mutually exclusive with
+  // |OnAddPasswordFillData|.
+  void OnNoCredentialsFound();
+
   // A public version of FillSuggestion(), only for use in tests.
   bool FillSuggestionForTest(const base::string16& username);
 

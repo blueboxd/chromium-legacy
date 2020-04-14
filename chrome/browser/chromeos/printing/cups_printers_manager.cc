@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
 #include "chrome/browser/chromeos/printing/printers_map.h"
 #include "chrome/browser/chromeos/printing/server_printers_provider.h"
+#include "chrome/browser/chromeos/printing/server_printers_provider_factory.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector.h"
@@ -62,7 +63,7 @@ class CupsPrintersManagerImpl
       std::unique_ptr<PrinterConfigurer> printer_configurer,
       std::unique_ptr<UsbPrinterNotificationController>
           usb_notification_controller,
-      std::unique_ptr<ServerPrintersProvider> server_printers_provider,
+      ServerPrintersProvider* server_printers_provider,
       std::unique_ptr<EnterprisePrintersProvider> enterprise_printers_provider,
       PrinterEventTracker* event_tracker,
       PrefService* pref_service)
@@ -75,7 +76,7 @@ class CupsPrintersManagerImpl
         auto_usb_printer_configurer_(std::move(printer_configurer),
                                      this,
                                      usb_notification_controller_.get()),
-        server_printers_provider_(std::move(server_printers_provider)),
+        server_printers_provider_(server_printers_provider),
         enterprise_printers_provider_(std::move(enterprise_printers_provider)),
         enterprise_printers_provider_observer_(this),
         event_tracker_(event_tracker) {
@@ -529,7 +530,8 @@ class CupsPrintersManagerImpl
 
   AutomaticUsbPrinterConfigurer auto_usb_printer_configurer_;
 
-  std::unique_ptr<ServerPrintersProvider> server_printers_provider_;
+  // Not owned.
+  ServerPrintersProvider* server_printers_provider_;
 
   std::unique_ptr<EnterprisePrintersProvider> enterprise_printers_provider_;
   ScopedObserver<EnterprisePrintersProvider,
@@ -577,7 +579,8 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::Create(
       UsbPrinterDetector::Create(), ZeroconfPrinterDetector::Create(),
       CreatePpdProvider(profile), PrinterConfigurer::Create(profile),
       UsbPrinterNotificationController::Create(profile),
-      ServerPrintersProvider::Create(profile),
+      ServerPrintersProviderFactory::GetInstance()->GetForBrowserContext(
+          profile),
       EnterprisePrintersProvider::Create(CrosSettings::Get(), profile),
       PrinterEventTrackerFactory::GetInstance()->GetForBrowserContext(profile),
       profile->GetPrefs());
@@ -592,7 +595,7 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::CreateForTesting(
     std::unique_ptr<PrinterConfigurer> printer_configurer,
     std::unique_ptr<UsbPrinterNotificationController>
         usb_notification_controller,
-    std::unique_ptr<ServerPrintersProvider> server_printers_provider,
+    ServerPrintersProvider* server_printers_provider,
     std::unique_ptr<EnterprisePrintersProvider> enterprise_printers_provider,
     PrinterEventTracker* event_tracker,
     PrefService* pref_service) {
@@ -600,8 +603,8 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::CreateForTesting(
       synced_printers_manager, std::move(usb_detector),
       std::move(zeroconf_detector), std::move(ppd_provider),
       std::move(printer_configurer), std::move(usb_notification_controller),
-      std::move(server_printers_provider),
-      std::move(enterprise_printers_provider), event_tracker, pref_service);
+      server_printers_provider, std::move(enterprise_printers_provider),
+      event_tracker, pref_service);
 }
 
 // static

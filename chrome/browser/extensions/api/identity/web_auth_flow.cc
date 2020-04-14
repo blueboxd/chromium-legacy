@@ -37,6 +37,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -247,6 +248,13 @@ void WebAuthFlow::DidFinishNavigation(
       // the web auth flow.
       DCHECK_EQ(net::ERR_UNKNOWN_URL_SCHEME,
                 navigation_handle->GetNetErrorCode());
+    } else if (navigation_handle->GetResponseHeaders() &&
+               navigation_handle->GetResponseHeaders()->response_code() ==
+                   net::HTTP_NO_CONTENT) {
+      // Navigation to no content URLs is aborted but shouldn't be treated as a
+      // failure.
+      // In particular, Gaia navigates to a no content page to pass Mirror
+      // response headers.
     } else {
       failed = true;
       TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(

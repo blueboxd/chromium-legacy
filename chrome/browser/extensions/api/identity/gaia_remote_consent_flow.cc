@@ -33,7 +33,9 @@ GaiaRemoteConsentFlow::GaiaRemoteConsentFlow(
     : delegate_(delegate),
       profile_(profile),
       account_id_(token_key.account_id),
-      resolution_data_(resolution_data) {}
+      resolution_data_(resolution_data),
+      web_flow_started_(false),
+      scoped_observer_(this) {}
 
 GaiaRemoteConsentFlow::~GaiaRemoteConsentFlow() {
   if (web_flow_)
@@ -46,40 +48,16 @@ void GaiaRemoteConsentFlow::Start() {
         this, profile_, resolution_data_.url, WebAuthFlow::INTERACTIVE);
   }
 
-  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
-  std::vector<CoreAccountId> accounts;
-  if (IdentityAPI::GetFactoryInstance()
-          ->Get(profile_)
-          ->AreExtensionsRestrictedToPrimaryAccount()) {
-    CoreAccountId primary_account_id = identity_manager->GetPrimaryAccountId();
-    accounts.push_back(primary_account_id);
-  } else {
-    auto chrome_accounts_with_refresh_tokens =
-        identity_manager->GetAccountsWithRefreshTokens();
-    for (const auto& chrome_account : chrome_accounts_with_refresh_tokens) {
-      // An account in persistent error state would make multilogin fail.
-      // Showing only a subset of accounts seems to be a better alternative than
-      // failing with an error.
-      if (identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
-              chrome_account.account_id)) {
-        continue;
-      }
-      accounts.push_back(chrome_account.account_id);
-    }
-  }
-
-  set_accounts_in_cookie_task_ =
-      identity_manager->GetAccountsCookieMutator()
-          ->SetAccountsInCookieForPartition(
-              this,
-              {gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
-               accounts},
-              base::BindOnce(&GaiaRemoteConsentFlow::OnSetAccountsComplete,
-                             base::Unretained(this)));
+  SetAccountsInCookie();
 }
 
 void GaiaRemoteConsentFlow::OnSetAccountsComplete(
     signin::SetAccountsInCookieResult result) {
+  set_accounts_in_cookie_task_.reset();
+  if (web_flow_started_) {
+    return;
+  }
+
   if (result != signin::SetAccountsInCookieResult::kSuccess) {
     delegate_->OnGaiaRemoteConsentFlowFailed(
         GaiaRemoteConsentFlow::Failure::SET_ACCOUNTS_IN_COOKIE_FAILED);
@@ -102,8 +80,9 @@ void GaiaRemoteConsentFlow::OnSetAccountsComplete(
               base::Bind(&GaiaRemoteConsentFlow::OnConsentResultSet,
                          base::Unretained(this)));
 
-  set_accounts_in_cookie_task_.reset();
+  scoped_observer_.Add(IdentityManagerFactory::GetForProfile(profile_));
   web_flow_->Start();
+  web_flow_started_ = true;
 }
 
 void GaiaRemoteConsentFlow::OnConsentResultSet(
@@ -163,11 +142,55 @@ GaiaRemoteConsentFlow::GetCookieManagerForPartition() {
   return web_flow_->GetGuestPartition()->GetCookieManagerForBrowserProcess();
 }
 
+void GaiaRemoteConsentFlow::OnEndBatchOfRefreshTokenStateChanges() {
+  SetAccountsInCookie();
+}
+
 void GaiaRemoteConsentFlow::SetWebAuthFlowForTesting(
     std::unique_ptr<WebAuthFlow> web_auth_flow) {
   if (web_flow_)
     web_flow_.release()->DetachDelegateAndDelete();
   web_flow_ = std::move(web_auth_flow);
+}
+
+void GaiaRemoteConsentFlow::SetAccountsInCookie() {
+  // Reset a task that is already in flight because it contains stale
+  // information.
+  if (set_accounts_in_cookie_task_)
+    set_accounts_in_cookie_task_.reset();
+
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
+  std::vector<CoreAccountId> accounts;
+  if (IdentityAPI::GetFactoryInstance()
+          ->Get(profile_)
+          ->AreExtensionsRestrictedToPrimaryAccount()) {
+    CoreAccountId primary_account_id = identity_manager->GetPrimaryAccountId();
+    accounts.push_back(primary_account_id);
+  } else {
+    auto chrome_accounts_with_refresh_tokens =
+        identity_manager->GetAccountsWithRefreshTokens();
+    for (const auto& chrome_account : chrome_accounts_with_refresh_tokens) {
+      // An account in persistent error state would make multilogin fail.
+      // Showing only a subset of accounts seems to be a better alternative than
+      // failing with an error.
+      if (identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
+              chrome_account.account_id)) {
+        continue;
+      }
+      accounts.push_back(chrome_account.account_id);
+    }
+  }
+
+  // base::Unretained() is safe here because this class owns
+  // |set_accounts_in_cookie_task_| that will eventually invoke this callback.
+  set_accounts_in_cookie_task_ =
+      identity_manager->GetAccountsCookieMutator()
+          ->SetAccountsInCookieForPartition(
+              this,
+              {gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+               accounts},
+              base::BindOnce(&GaiaRemoteConsentFlow::OnSetAccountsComplete,
+                             base::Unretained(this)));
 }
 
 }  // namespace extensions

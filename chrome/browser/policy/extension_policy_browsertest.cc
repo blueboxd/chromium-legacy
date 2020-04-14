@@ -347,10 +347,37 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
-                       ExtensionInstallBlacklistOsSettings) {
+                       SystemFeaturesDisableListOsSettings) {
   extensions::ExtensionPrefs* extension_prefs =
       extensions::ExtensionPrefs::Get(browser()->profile());
 
+  extensions::ExtensionRegistry* registry = extension_registry();
+  const extensions::Extension* bookmark_app = InstallOSSettings();
+  ASSERT_TRUE(bookmark_app);
+  ASSERT_TRUE(registry->enabled_extensions().GetByID(
+      chromeos::default_web_apps::kOsSettingsAppId));
+
+  base::ListValue feature_list;
+  feature_list.AppendString("os_settings");
+  PolicyMap policies;
+  policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               feature_list.CreateDeepCopy(), nullptr);
+  UpdateProviderPolicy(policies);
+
+  EXPECT_EQ(1u, registry->disabled_extensions().size());
+  extensions::ExtensionService* service = extension_service();
+  EXPECT_FALSE(service->IsExtensionEnabled(
+      chromeos::default_web_apps::kOsSettingsAppId));
+  EXPECT_EQ(extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY,
+            extension_prefs->GetDisableReasons(
+                chromeos::default_web_apps::kOsSettingsAppId));
+}
+
+// Ensure that OS Settings is only blocked by the SystemFeaturesDisableList
+// policy.
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       ExtensionInstallBlacklistOsSettings) {
   extensions::ExtensionRegistry* registry = extension_registry();
   const extensions::Extension* bookmark_app = InstallOSSettings();
   ASSERT_TRUE(bookmark_app);
@@ -363,31 +390,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                blacklist.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-
-  EXPECT_EQ(1u, registry->disabled_extensions().size());
-  extensions::ExtensionService* service = extension_service();
-  EXPECT_FALSE(service->IsExtensionEnabled(
-      chromeos::default_web_apps::kOsSettingsAppId));
-  EXPECT_EQ(extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY,
-            extension_prefs->GetDisableReasons(
-                chromeos::default_web_apps::kOsSettingsAppId));
-}
-
-// Ensure that OS Settings is not blocked by the ExtensionAllowedTypes policy.
-IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionAllowedTypesOsSettings) {
-  extensions::ExtensionRegistry* registry = extension_registry();
-  const extensions::Extension* bookmark_app = InstallOSSettings();
-  ASSERT_TRUE(bookmark_app);
-  ASSERT_TRUE(registry->enabled_extensions().GetByID(
-      chromeos::default_web_apps::kOsSettingsAppId));
-
-  base::ListValue allowed_types;
-  allowed_types.AppendString("theme");
-  PolicyMap policies;
-  policies.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               allowed_types.CreateDeepCopy(), nullptr);
   UpdateProviderPolicy(policies);
 
   extensions::ExtensionService* service = extension_service();

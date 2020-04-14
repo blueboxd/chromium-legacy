@@ -15,6 +15,7 @@
 #import "ios/web/public/web_state_observer_bridge.h"
 
 @protocol ApplicationCommands;
+class Browser;
 @class NotifyUserAutoSigninViewController;
 @protocol PasswordBreachCommands;
 @protocol PasswordFormFiller;
@@ -69,6 +70,9 @@ class PasswordManagerClient;
 
 // Delegate used by this PasswordController to show UI on BVC.
 @property(weak, nonatomic) id<PasswordControllerDelegate> delegate;
+
+// The browser.
+@property(nonatomic, assign) Browser* browser;
 
 // |webState| should not be nil.
 - (instancetype)initWithWebState:(web::WebState*)webState;

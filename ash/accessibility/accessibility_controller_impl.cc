@@ -32,6 +32,7 @@
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
+#include "ash/system/accessibility/floating_accessibility_controller.h"
 #include "ash/system/accessibility/switch_access_menu_bubble_controller.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_status.h"
@@ -590,6 +591,10 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kAccessibilityFloatingMenuEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAccessibilityFloatingMenuPosition,
+      static_cast<int>(kDefaultFloatingMenuPosition),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kAccessibilityFocusHighlightEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
@@ -1147,6 +1152,20 @@ bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForVirtualKeyboard() {
   return virtual_keyboard().IsEnterpriseIconVisible();
 }
 
+void AccessibilityControllerImpl::ShowFloatingMenuIfEnabled() {
+  if (floating_menu().enabled()) {
+    DCHECK(!floating_menu_controller_);
+    floating_menu_controller_ =
+        std::make_unique<FloatingAccessibilityController>();
+    floating_menu_controller_->Show(GetFloatingMenuPosition());
+  }
+}
+
+FloatingAccessibilityController*
+AccessibilityControllerImpl::GetFloatingMenuControllerForTesting() {
+  return floating_menu_controller_.get();
+}
+
 void AccessibilityControllerImpl::SetTabletModeShelfNavigationButtonsEnabled(
     bool enabled) {
   if (!active_user_prefs_)
@@ -1388,6 +1407,11 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
           &AccessibilityControllerImpl::UpdateAutoclickMenuPositionFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
+      prefs::kAccessibilityFloatingMenuPosition,
+      base::BindRepeating(
+          &AccessibilityControllerImpl::UpdateFloatingMenuPositionFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kAccessibilityLargeCursorDipSize,
       base::BindRepeating(
           &AccessibilityControllerImpl::UpdateLargeCursorFromPref,
@@ -1445,6 +1469,7 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
   UpdateAutoclickStabilizePositionFromPref();
   UpdateAutoclickMovementThresholdFromPref();
   UpdateAutoclickMenuPositionFromPref();
+  UpdateFloatingMenuPositionFromPref();
   UpdateLargeCursorFromPref();
   UpdateShortcutsEnabledFromPref();
   UpdateTabletModeShelfNavigationButtonsFromPref();
@@ -1545,6 +1570,26 @@ void AccessibilityControllerImpl::OnAutoclickScrollableBoundsFound(
     gfx::Rect& bounds_in_screen) {
   Shell::Get()->autoclick_controller()->OnAutoclickScrollableBoundsFound(
       bounds_in_screen);
+}
+
+void AccessibilityControllerImpl::SetFloatingMenuPosition(
+    FloatingMenuPosition position) {
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetInteger(prefs::kAccessibilityFloatingMenuPosition,
+                                 static_cast<int>(position));
+  active_user_prefs_->CommitPendingWrite();
+}
+
+void AccessibilityControllerImpl::UpdateFloatingMenuPositionFromPref() {
+  if (floating_menu_controller_)
+    floating_menu_controller_->SetMenuPosition(GetFloatingMenuPosition());
+}
+
+FloatingMenuPosition AccessibilityControllerImpl::GetFloatingMenuPosition() {
+  DCHECK(active_user_prefs_);
+  return static_cast<FloatingMenuPosition>(active_user_prefs_->GetInteger(
+      prefs::kAccessibilityFloatingMenuPosition));
 }
 
 void AccessibilityControllerImpl::UpdateLargeCursorFromPref() {

@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task/post_task.h"
@@ -19,6 +20,8 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/node_data_describer.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/web_contents_proxy.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -33,6 +36,16 @@ namespace {
 
 int64_t GetSerializationId(const performance_manager::Node* node) {
   return performance_manager::Node::GetSerializationId(node);
+}
+
+// Best effort convert |value| to a string.
+std::string ToJSON(const base::Value& value) {
+  std::string result;
+  JSONStringValueSerializer serializer(&result);
+  if (serializer.Serialize(value))
+    return result;
+
+  return std::string();
 }
 
 }  // namespace
@@ -372,6 +385,8 @@ void DiscardsGraphDumpImpl::SendFrameNotification(
   frame_info->page_id = GetSerializationId(page);
 
   frame_info->url = frame->GetURL();
+  frame_info->description_json = ToJSON(
+      graph_->GetNodeDataDescriberRegistry()->DescribeFrameNodeData(frame));
 
   if (created)
     change_subscriber_->FrameCreated(std::move(frame_info));
@@ -388,6 +403,9 @@ void DiscardsGraphDumpImpl::SendPageNotification(
 
   page_info->id = GetSerializationId(page_node);
   page_info->main_frame_url = page_node->GetMainFrameUrl();
+  page_info->description_json = ToJSON(
+      graph_->GetNodeDataDescriberRegistry()->DescribePageNodeData(page_node));
+
   if (created)
     change_subscriber_->PageCreated(std::move(page_info));
   else
@@ -404,6 +422,9 @@ void DiscardsGraphDumpImpl::SendProcessNotification(
   process_info->id = GetSerializationId(process);
   process_info->pid = process->GetProcessId();
   process_info->private_footprint_kb = process->GetPrivateFootprintKb();
+
+  process_info->description_json = ToJSON(
+      graph_->GetNodeDataDescriberRegistry()->DescribeProcessNodeData(process));
 
   if (created)
     change_subscriber_->ProcessCreated(std::move(process_info));
@@ -434,6 +455,9 @@ void DiscardsGraphDumpImpl::SendWorkerNotification(
        worker->GetChildWorkers()) {
     worker_info->child_worker_ids.push_back(GetSerializationId(child_worker));
   }
+
+  worker_info->description_json = ToJSON(
+      graph_->GetNodeDataDescriberRegistry()->DescribeWorkerNodeData(worker));
 
   if (created)
     change_subscriber_->WorkerCreated(std::move(worker_info));

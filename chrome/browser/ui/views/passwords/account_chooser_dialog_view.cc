@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/views/passwords/account_chooser_dialog_view.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -54,6 +56,7 @@ views::ScrollView* CreateCredentialsView(
     CredentialsItemView* credential_view =
         new CredentialsItemView(button_listener, titles.first, titles.second,
                                 form.get(), loader_factory);
+    credential_view->SetStoreIndicatorIcon(form->in_store);
     ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
     gfx::Insets insets =
         layout_provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION);

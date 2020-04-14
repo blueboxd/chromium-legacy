@@ -8,9 +8,12 @@
 #include "base/callback_list.h"
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/identity/extension_token_key.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/set_accounts_in_cookie_result.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
@@ -19,7 +22,8 @@ namespace extensions {
 
 class GaiaRemoteConsentFlow
     : public WebAuthFlow::Delegate,
-      public signin::AccountsCookieMutator::PartitionDelegate {
+      public signin::AccountsCookieMutator::PartitionDelegate,
+      public signin::IdentityManager::Observer {
  public:
   enum Failure {
     WINDOW_CLOSED,
@@ -60,27 +64,37 @@ class GaiaRemoteConsentFlow
   void OnConsentResultSet(const std::string& consent_result,
                           const std::string& window_id);
 
-  // WebAuthFlow::Delegate implementation.
+  // WebAuthFlow::Delegate:
   void OnAuthFlowFailure(WebAuthFlow::Failure failure) override;
 
-  // AccountsCookieMutator::PartitionDelegate:
+  // signin::AccountsCookieMutator::PartitionDelegate:
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcherForPartition(
       GaiaAuthConsumer* consumer) override;
   network::mojom::CookieManager* GetCookieManagerForPartition() override;
 
+  // signin::IdentityManager::Observer:
+  void OnEndBatchOfRefreshTokenStateChanges() override;
+
   void SetWebAuthFlowForTesting(std::unique_ptr<WebAuthFlow> web_auth_flow);
 
  private:
+  void SetAccountsInCookie();
+
   Delegate* delegate_;
   Profile* profile_;
   CoreAccountId account_id_;
   RemoteConsentResolutionData resolution_data_;
+
   std::unique_ptr<WebAuthFlow> web_flow_;
+  bool web_flow_started_;
+
   std::unique_ptr<signin::AccountsCookieMutator::SetAccountsInCookieTask>
       set_accounts_in_cookie_task_;
   std::unique_ptr<base::CallbackList<void(const std::string&,
                                           const std::string&)>::Subscription>
       identity_api_set_consent_result_subscription_;
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
+      scoped_observer_;
 };
 
 }  // namespace extensions

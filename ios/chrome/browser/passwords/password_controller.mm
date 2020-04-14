@@ -46,6 +46,7 @@
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/passwords/credential_manager.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 #import "ios/chrome/browser/passwords/ios_chrome_update_password_infobar_delegate.h"
@@ -864,10 +865,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
            object:nil];
 
   // TODO(crbug.com/886583): add eg tests
-  // TODO(crbug.com/1029346): add browser value.
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.baseViewController
-                         browser:nil
+                         browser:self.browser
                            title:@""
                          message:@""
                             rect:self.baseViewController.view.frame

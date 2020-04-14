@@ -242,8 +242,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      media::kOverflowIconsForMediaControls, kUseFeatureState},
     {wf::EnableAllowActivationDelegationAttr,
      features::kAllowActivationDelegationAttr, kUseFeatureState},
-    {wf::EnableScriptStreamingOnPreload, features::kScriptStreamingOnPreload,
-     kUseFeatureState},
     {wf::EnableLazyFrameLoading, features::kLazyFrameLoading, kUseFeatureState},
     {wf::EnableLazyFrameVisibleLoadTimeMetrics,
      features::kLazyFrameVisibleLoadTimeMetrics, kUseFeatureState},

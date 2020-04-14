@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class DOMException;
+
 // Converts an IDL trustToken object to its Mojo counterpart.
 // The elements of trustToken (and of TrustTokenParams) comprise:
 // - an operation type, always populated
@@ -31,6 +33,13 @@ namespace blink {
 bool ConvertTrustTokenToMojom(const TrustToken& in,
                               ExceptionState* exception_state,
                               network::mojom::blink::TrustTokenParams* out);
+
+// Converts a Mojo TrustTokenOperationStatus denoting an error into a
+// DOMException suitable for displaying to the API's client.
+//
+// This should only be called on failure; |status| must not equal kOk.
+DOMException* TrustTokenErrorToDOMException(
+    network::mojom::blink::TrustTokenOperationStatus error);
 
 }  // namespace blink
 

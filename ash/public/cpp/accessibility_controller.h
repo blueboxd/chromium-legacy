@@ -108,6 +108,9 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
   // Disables restoring of recommended policy values.
   virtual void DisablePolicyRecommendationRestorerForTesting() {}
 
+  // Shows floating accessibility menu if it was enabled by policy.
+  virtual void ShowFloatingMenuIfEnabled() {}
+
  protected:
   AccessibilityController();
   virtual ~AccessibilityController();

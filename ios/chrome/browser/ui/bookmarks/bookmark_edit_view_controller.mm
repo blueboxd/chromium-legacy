@@ -453,7 +453,7 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
                     editedNodes:editedNodes
                    allowsCancel:NO
                  selectedFolder:self.folder
-                     dispatcher:self.dispatcher];
+                        browser:_browser];
   folderViewController.delegate = self;
   self.folderViewController = folderViewController;
   self.folderViewController.navigationItem.largeTitleDisplayMode =

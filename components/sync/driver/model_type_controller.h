@@ -61,6 +61,8 @@ class ModelTypeController : public DataTypeController {
   void GetStatusCounters(StatusCountersCallback callback) override;
   void RecordMemoryUsageAndCountsHistograms() override;
 
+  ModelTypeControllerDelegate* GetDelegateForTransportModeForTest();
+
  protected:
   // Subclasses that use this constructor must call InitModelTypeController().
   explicit ModelTypeController(ModelType type);

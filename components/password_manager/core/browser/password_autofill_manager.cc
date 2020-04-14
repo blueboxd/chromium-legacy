@@ -260,6 +260,16 @@ autofill::Suggestion CreateEntryToReSignin() {
   return suggestion;
 }
 
+// Entry showing the empty state (i.e. no passwords found in account-storage).
+autofill::Suggestion CreateAccountStorageEmptyEntry() {
+  autofill::Suggestion suggestion(
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_NO_ACCOUNT_STORE_MATCHES));
+  suggestion.frontend_id =
+      autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY;
+  suggestion.icon = "empty";
+  return suggestion;
+}
+
 bool ContainsOtherThanManagePasswords(
     const std::vector<autofill::Suggestion> suggestions) {
   return std::any_of(suggestions.begin(), suggestions.end(),
@@ -275,6 +285,15 @@ bool AreSuggestionForPasswordField(
                      [](const autofill::Suggestion& suggestion) {
                        return suggestion.frontend_id ==
                               autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
+                     });
+}
+
+bool HasLoadingSuggestion(base::span<const autofill::Suggestion> suggestions,
+                          autofill::PopupItemId item_id) {
+  return std::any_of(suggestions.begin(), suggestions.end(),
+                     [&item_id](const autofill::Suggestion& suggestion) {
+                       return suggestion.frontend_id == item_id &&
+                              suggestion.is_loading;
                      });
 }
 
@@ -329,6 +348,7 @@ void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
                                                   int identifier) {
   ClearPreviewedForm();
   if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
+      identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY ||
       identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY ||
       identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
       identifier ==
@@ -375,7 +395,9 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kGenerate,
         password_client_->IsIncognito());
-  } else if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
+  } else if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
+             identifier ==
+                 autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY) {
     password_client_->NavigateToManagePasswordsPage(
         ManagePasswordsReferrer::kPasswordDropdown);
     metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
@@ -461,12 +483,20 @@ void PasswordAutofillManager::OnAddPasswordFillData(
 
   if (!autofill_client_ || autofill_client_->GetPopupSuggestions().empty())
     return;
-  // TODO(https://crbug.com/1043963): Add empty state.
   UpdatePopup(BuildSuggestions(base::string16(),
                                ForPasswordField(AreSuggestionForPasswordField(
                                    autofill_client_->GetPopupSuggestions())),
                                ShowAllPasswords(true), OffersGeneration(false),
                                ShowPasswordSuggestions(true)));
+}
+
+void PasswordAutofillManager::OnNoCredentialsFound() {
+  if (!autofill_client_ ||
+      !HasLoadingSuggestion(
+          autofill_client_->GetPopupSuggestions(),
+          autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN))
+    return;
+  UpdatePopup({CreateAccountStorageEmptyEntry()});
 }
 
 void PasswordAutofillManager::DeleteFillData() {
@@ -586,6 +616,7 @@ void PasswordAutofillManager::LogMetricsForSuggestions(
   for (const auto& suggestion : suggestions) {
     switch (suggestion.frontend_id) {
       case autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
+      case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY:
         metrics_util::LogContextOfShowAllSavedPasswordsShown(
             metrics_util::ShowAllSavedPasswordsContext::kPassword);
         continue;
@@ -720,6 +751,8 @@ void PasswordAutofillManager::OnUnlockReauthCompleted(
     if (unlock_item ==
         autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE) {
       password_client_->GeneratePassword();
+      autofill_client_->HideAutofillPopup(
+          autofill::PopupHidingReason::kAcceptSuggestion);
     }
     return;
   }

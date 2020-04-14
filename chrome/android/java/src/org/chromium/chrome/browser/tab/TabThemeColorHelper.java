@@ -213,13 +213,14 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     // TabObserver
 
     @Override
-    public void onInitialized(Tab tab, TabState tabState) {
-        if (tabState == null) return;
+    public void onInitialized(
+            Tab tab, String appId, @Nullable Boolean hasThemeColor, int themeColor) {
+        if (hasThemeColor == null) return;
 
         // Update from TabState.
-        mIsUsingColorFromTabContents = tabState.hasThemeColor();
+        mIsUsingColorFromTabContents = hasThemeColor;
         mIsDefaultColorUsed = !mIsUsingColorFromTabContents;
-        mColor = mIsDefaultColorUsed ? getDefaultColor() : tabState.getThemeColor();
+        mColor = mIsDefaultColorUsed ? getDefaultColor() : themeColor;
         updateIfNeeded(false);
     }
 

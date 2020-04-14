@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @class BookmarkFolderEditorViewController;
-@protocol BrowserCommands;
 class Browser;
 
 namespace bookmarks {
@@ -52,7 +51,7 @@ class BookmarkNode;
 + (instancetype)
     folderCreatorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                       parentFolder:(const bookmarks::BookmarkNode*)parentFolder
-                        dispatcher:(id<BrowserCommands>)dispatcher;
+                           browser:(Browser*)browser;
 
 // |bookmarkModel| must not be null and must be loaded.
 // |folder| must not be NULL and be editable.

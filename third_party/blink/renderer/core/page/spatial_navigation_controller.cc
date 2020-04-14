@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -162,7 +163,11 @@ bool IsInAccessibilityMode(Page* page) {
 
 SpatialNavigationController::SpatialNavigationController(Page& page)
     : page_(&page),
-      spatial_navigation_state_(mojom::blink::SpatialNavigationState::New()) {
+      spatial_navigation_state_(mojom::blink::SpatialNavigationState::New()),
+      spatial_navigation_host_(
+          DynamicTo<LocalFrame>(page.MainFrame())
+              ? DynamicTo<LocalFrame>(page.MainFrame())->DomWindow()
+              : nullptr) {
   DCHECK(page_->GetSettings().GetSpatialNavigationEnabled());
 }
 
@@ -300,6 +305,7 @@ void SpatialNavigationController::DidDetachFrameView(
 void SpatialNavigationController::Trace(Visitor* visitor) {
   visitor->Trace(interest_element_);
   visitor->Trace(page_);
+  visitor->Trace(spatial_navigation_host_);
 }
 
 bool SpatialNavigationController::Advance(
@@ -693,7 +699,8 @@ bool SpatialNavigationController::UpdateHasDefaultVideoControls(
   return true;
 }
 
-const mojo::Remote<mojom::blink::SpatialNavigationHost>&
+const HeapMojoRemote<mojom::blink::SpatialNavigationHost,
+                     HeapMojoWrapperMode::kWithoutContextObserver>&
 SpatialNavigationController::GetSpatialNavigationHost() {
   if (!spatial_navigation_host_.is_bound()) {
     LocalFrame* frame = DynamicTo<LocalFrame>(page_->MainFrame());

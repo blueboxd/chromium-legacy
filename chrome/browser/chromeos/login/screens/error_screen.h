@@ -86,7 +86,7 @@ class ErrorScreen : public BaseScreen,
   void SetParentScreen(OobeScreenId parent_screen);
 
   // Sets callback that is called on hide.
-  void SetHideCallback(const base::Closure& on_hide);
+  void SetHideCallback(base::OnceClosure on_hide);
 
   // Shows captive portal dialog.
   void ShowCaptivePortal();
@@ -171,7 +171,7 @@ class ErrorScreen : public BaseScreen,
   OobeScreenId parent_screen_ = OobeScreen::SCREEN_UNKNOWN;
 
   // Optional callback that is called when NetworkError screen is hidden.
-  std::unique_ptr<base::Closure> on_hide_callback_;
+  base::OnceClosure on_hide_callback_;
 
   // Callbacks to be invoked when a connection attempt is requested.
   base::CallbackList<void()> connect_request_callbacks_;

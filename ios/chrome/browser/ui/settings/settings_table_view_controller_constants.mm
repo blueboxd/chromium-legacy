@@ -39,3 +39,4 @@ NSString* const kSettingsAddLanguageCellId = @"kSettingsAddLanguageCellId";
 NSString* const kSettingsClearBrowsingDataCellId =
     @"kSettingsClearBrowsingDataCellId";
 NSString* const kSettingsHandoffCellId = @"kSettingsHandoffCellId";
+NSString* const kSettingsCookiesCellId = @"kSettingsCookiesCellId";

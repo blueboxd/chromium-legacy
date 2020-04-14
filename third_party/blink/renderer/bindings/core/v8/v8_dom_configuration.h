@@ -145,8 +145,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     const char* const name;
     v8::FunctionCallback getter;
     v8::FunctionCallback setter;
-    // V8PrivateProperty::CachedAccessorSymbol
-    unsigned cached_property_key : 1;
+    // V8PrivateProperty::CachedAccessor
+    unsigned cached_property_key : 2;
     // v8::PropertyAttribute
     unsigned attribute : 8;
     // PropertyLocationConfiguration

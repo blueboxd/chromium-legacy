@@ -62,6 +62,13 @@ bool AreAllValuesOfType(const std::vector<ValueProto>& values,
 // Returns true if all |values| share the specified |target_size|.
 bool AreAllValuesOfSize(const std::vector<ValueProto>& values, int target_size);
 
+// Returns the number of elements in |value|.
+int GetValueSize(const ValueProto& value);
+
+// Returns the |index|'th item of |value| or nullopt if |index| is
+// out-of-bounds.
+base::Optional<ValueProto> GetNthValue(const ValueProto& value, int index);
+
 // Combines all specified |values| in a single ValueProto where the individual
 // value lists are appended after each other. Returns nullopt if |values| do not
 // share the same type.

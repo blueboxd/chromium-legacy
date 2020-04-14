@@ -452,6 +452,9 @@ class PDFEngine {
   // Remove focus from form widgets, consolidating the user input.
   virtual void KillFormFocus() = 0;
 
+  // Notify whether the PDF currently has the focus or not.
+  virtual void UpdateFocus(bool has_focus) = 0;
+
   virtual uint32_t GetLoadedByteSize() = 0;
   virtual bool ReadLoadedBytes(uint32_t length, void* buffer) = 0;
 };

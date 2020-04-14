@@ -68,7 +68,7 @@ class TestResponseAdapter : public signin::ResponseAdapter,
                       bool is_main_frame)
       : is_main_frame_(is_main_frame),
         headers_(new net::HttpResponseHeaders(std::string())) {
-    headers_->AddHeader(header_name + ": " + header_value);
+    headers_->SetHeader(header_name, header_value);
   }
 
   ~TestResponseAdapter() override {}

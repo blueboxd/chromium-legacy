@@ -71,7 +71,16 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
 
   // Optional Trust Tokens (https://github.com/wicg/trust-token-api) error
   // details.
-  base::Optional<mojom::TrustTokenOperationStatus> trust_token_operation_status;
+  //
+  // A non-kOk value denotes that the request failed because a Trust Tokens
+  // operation was attempted and failed for the given reason.
+  //
+  // The status is set to kOk in all other cases. In particular, a value of kOk
+  // does not imply that a Trust Tokens operation was executed successfully
+  // alongside this request, or even that a Trust Tokens operation was
+  // attempted.
+  mojom::TrustTokenOperationStatus trust_token_operation_status =
+      mojom::TrustTokenOperationStatus::kOk;
 
   // Optional SSL certificate info.
   base::Optional<net::SSLInfo> ssl_info;

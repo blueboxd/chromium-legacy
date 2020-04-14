@@ -2963,7 +2963,7 @@ group("dawn_perf_tests") {
   testonly = true
   data_deps = [ "//testing:run_perf_test" ]
   if (build_dawn_tests) {
-    data_deps += [ "//third_party/dawn:dawn_perf_tests_temp_group" ]
+    data_deps += [ "//third_party/dawn/src/tests:dawn_perf_tests" ]
   }
 }
 
@@ -5425,6 +5425,7 @@ test("unit_tests") {
       "../browser/supervised_user/child_accounts/family_info_fetcher_unittest.cc",
       "../browser/supervised_user/child_accounts/permission_request_creator_apiary_unittest.cc",
       "../browser/supervised_user/kids_management_url_checker_client_unittest.cc",
+      "../browser/supervised_user/supervised_user_model_type_controller_unittest.cc",
       "../browser/supervised_user/supervised_user_pref_store_unittest.cc",
       "../browser/supervised_user/supervised_user_service_unittest.cc",
       "../browser/supervised_user/supervised_user_settings_service_unittest.cc",

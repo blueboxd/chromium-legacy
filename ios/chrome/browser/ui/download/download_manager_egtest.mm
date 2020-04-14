@@ -134,15 +134,7 @@ bool WaitForOpenInDownloadsButton() {
 // Tests sucessfull download up to the point where "Open in..." button is
 // presented. EarlGrey does not allow testing "Open in..." dialog, because it
 // is run in a separate process. Performs download in Incognito.
-#if !TARGET_IPHONE_SIMULATOR
-// TODO(crbug.com/1059320): Test consistently failing on device.
-#define MAYBE_testSucessfullDownloadInIncognito \
-  DISABLED_testSucessfullDownloadInIncognito
-#else
-#define MAYBE_testSucessfullDownloadInIncognito \
-  testSucessfullDownloadInIncognito
-#endif
-- (void)MAYBE_testSucessfullDownloadInIncognito {
+- (void)testSucessfullDownloadInIncognito {
   [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGrey waitForWebStateContainingText:"Download"];

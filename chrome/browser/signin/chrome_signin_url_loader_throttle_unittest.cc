@@ -167,8 +167,8 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
 
   auto response_head = network::mojom::URLResponseHead::New();
   response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  response_head->headers->AddHeader("X-Response-1: Foo");
-  response_head->headers->AddHeader("X-Response-2: Bar");
+  response_head->headers->SetHeader("X-Response-1", "Foo");
+  response_head->headers->SetHeader("X-Response-2", "Bar");
 
   std::vector<std::string> request_headers_to_remove;
   net::HttpRequestHeaders modified_request_headers;
@@ -211,8 +211,8 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
 
   response_head = network::mojom::URLResponseHead::New();
   response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  response_head->headers->AddHeader("X-Response-3: Foo");
-  response_head->headers->AddHeader("X-Response-4: Bar");
+  response_head->headers->SetHeader("X-Response-3", "Foo");
+  response_head->headers->SetHeader("X-Response-4", "Bar");
 
   throttle->WillProcessResponse(kTestRedirectURL, response_head.get(), &defer);
 

@@ -125,9 +125,10 @@ class IOSAppConfigWriterUnitTests(writer_unittest_common.WriterUnittestCommon):
 
   def testDictPolicy(self):
     policy_json = self._GetTestPolicyTemplate('DictPolicy', 'dict')
-    # Dict policies are not supported by the appconfig.xml format and should not
-    # be present in the output.
-    expected = self._GetExpectedOutput('83.0.4089.0', None)
+    # Dict policies are not supported by the appconfig.xml format, therefore
+    # they are treated as JSON strings.
+    expected = self._GetExpectedOutput('83.0.4089.0',
+                                       '<string keyName="DictPolicy"/>')
     output = self.GetOutput(policy_json, {
         '_google_chrome': '1',
         'version': '83.0.4089.0'

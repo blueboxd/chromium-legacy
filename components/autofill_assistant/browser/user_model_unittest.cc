@@ -219,4 +219,90 @@ TEST_F(UserModelTest, UpdateProto) {
                 Property(&ModelProto::ModelValue::value, Eq(value_c)))));
 }
 
+TEST_F(UserModelTest, SubscriptAccess) {
+  ValueProto value;
+  value.mutable_strings()->add_values("a");
+  value.mutable_strings()->add_values("b");
+  value.mutable_strings()->add_values("c");
+
+  model_.SetValue("value", value);
+  EXPECT_EQ(model_.GetValue("value"), value);
+  EXPECT_EQ(model_.GetValue("value[0]"), SimpleValue(std::string("a")));
+  EXPECT_EQ(model_.GetValue("value[1]"), SimpleValue(std::string("b")));
+  EXPECT_EQ(model_.GetValue("value[2]"), SimpleValue(std::string("c")));
+  EXPECT_EQ(model_.GetValue("value[001]"), SimpleValue(std::string("b")));
+
+  EXPECT_EQ(model_.GetValue("value[3]"), base::nullopt);
+  EXPECT_EQ(model_.GetValue("value[-1]"), base::nullopt);
+
+  model_.SetValue("index", SimpleValue(0));
+  EXPECT_EQ(model_.GetValue("value[index]"), SimpleValue(std::string("a")));
+  model_.SetValue("index", SimpleValue(1));
+  EXPECT_EQ(model_.GetValue("value[index]"), SimpleValue(std::string("b")));
+  model_.SetValue("index", SimpleValue(2));
+  EXPECT_EQ(model_.GetValue("value[index]"), SimpleValue(std::string("c")));
+  model_.SetValue("index", SimpleValue(3));
+  EXPECT_EQ(model_.GetValue("value[index]"), base::nullopt);
+  model_.SetValue("index", SimpleValue(-1));
+  EXPECT_EQ(model_.GetValue("value[index]"), base::nullopt);
+
+  model_.SetValue("index", SimpleValue(0));
+  EXPECT_EQ(model_.GetValue("value[index[0]]"), SimpleValue(std::string("a")));
+  model_.SetValue("index", SimpleValue(std::string("not an index")));
+  EXPECT_EQ(model_.GetValue("value[index]"), base::nullopt);
+
+  ValueProto indices;
+  indices.mutable_ints()->add_values(2);
+  indices.mutable_ints()->add_values(0);
+  indices.mutable_ints()->add_values(1);
+  model_.SetValue("indices", indices);
+
+  model_.SetValue("index", SimpleValue(0));
+  EXPECT_EQ(model_.GetValue("value[indices[index]]"),
+            SimpleValue(std::string("c")));
+
+  model_.SetValue("index", SimpleValue(1));
+  EXPECT_EQ(model_.GetValue("value[indices[index]]"),
+            SimpleValue(std::string("a")));
+
+  model_.SetValue("index", SimpleValue(2));
+  EXPECT_EQ(model_.GetValue("value[indices[index]]"),
+            SimpleValue(std::string("b")));
+}
+
+TEST_F(UserModelTest, IrregularModelIdentifiers) {
+  ValueProto value;
+  value.mutable_strings()->add_values("a");
+  value.mutable_strings()->add_values("b");
+  value.mutable_strings()->add_values("c");
+
+  model_.SetValue("normal_identifier", value);
+  model_.SetValue("utf_8_ü万𠜎", value);
+  model_.SetValue("ends_in_bracket]", value);
+  model_.SetValue("contains_[brackets]", value);
+  model_.SetValue("[]", value);
+  model_.SetValue("empty_brackets[]", value);
+
+  // Retrieving simple values works for any identifiers.
+  EXPECT_EQ(model_.GetValue("normal_identifier"), value);
+  EXPECT_EQ(model_.GetValue("utf_8_ü万𠜎"), value);
+  EXPECT_EQ(model_.GetValue("ends_in_bracket]"), value);
+  EXPECT_EQ(model_.GetValue("contains_[brackets]"), value);
+  EXPECT_EQ(model_.GetValue("[]"), value);
+  EXPECT_EQ(model_.GetValue("empty_brackets[]"), value);
+
+  // Subscript access is not supported for model identifiers containing
+  // irregular characters (i.e., outside of \w+).
+  EXPECT_EQ(model_.GetValue("normal_identifier[1]"),
+            SimpleValue(std::string("b")));
+  EXPECT_EQ(model_.GetValue("ends_in_bracket][1]"), base::nullopt);
+  EXPECT_EQ(model_.GetValue("contains_[brackets][1]"), base::nullopt);
+  EXPECT_EQ(model_.GetValue("[][0]"), base::nullopt);
+  EXPECT_EQ(model_.GetValue("empty_brackets[1]"), base::nullopt);
+  EXPECT_EQ(model_.GetValue("empty_brackets[][1]"), base::nullopt);
+
+  // Subscript access into UTF-8 identifiers is not supported.
+  EXPECT_EQ(model_.GetValue("utf_8_ü万𠜎[1]"), base::nullopt);
+}
+
 }  // namespace autofill_assistant

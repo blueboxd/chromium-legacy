@@ -524,5 +524,248 @@ test.util.async.renderWindowTextDirectionRTL = (contentWindow, callback) => {
   });
 };
 
+/**
+ * Maps the path to the replaced attribute to the PrepareFake instance that
+ * replaced it, to be able to restore the original value.
+ *
+ * @private {Object<string, test.util.PrepareFake}
+ */
+test.util.backgroundReplacedObjects_ = {};
+
+/**
+ * @param {string} attrName
+ * @param {*} staticValue
+ * @return {function(...)}
+ */
+test.util.staticFakeFactory = (attrName, staticValue) => {
+  const fake = (...args) => {
+    console.warn(`staticFake for ${staticValue}`);
+    // Find the first callback.
+    for (const arg of args) {
+      if (arg instanceof Function) {
+        return arg(staticValue);
+      }
+    }
+    throw new Error(`Couldn't find callback for ${attrName}`);
+  };
+  return fake;
+};
+
+/**
+ * Registry of available fakes, it maps the an string ID to a factory function
+ * which returns the actual fake used to replace an implementation.
+ *
+ * @private {Object<string, function(string, *)>}
+ */
+test.util.fakes_ = {
+  'static_fake': test.util.staticFakeFactory,
+};
+
+/**
+ * Class holds the information for applying and restoring fakes.
+ */
+test.util.PrepareFake = class {
+  /**
+   * @param {string} attrName Name of the attribute to be replaced by the fake
+   *   e.g.: "chrome.app.window.create".
+   * @param {string} fakeId The name of the fake to be used from
+   *   test.util.fakes_.
+   * @param {*} context The context where the attribute will be traversed from,
+   *   e.g.: Window object.
+   * @param {...} args Additinal args provided from the integration test to the
+   *   fake, e.g.: static return value.
+   */
+  constructor(attrName, fakeId, context, ...args) {
+    /**
+     * The instance of the fake to be used, ready to be used.
+     * @private {*}
+     */
+    this.fake_ = null;
+
+    /**
+     * The attribute name to be traversed in the |context_|.
+     * @private {string}
+     */
+    this.attrName_ = attrName;
+
+    /**
+     * The fake id the key to retrieve from test.util.fakes_.
+     * @private {string}
+     */
+    this.fakeId_ = fakeId;
+
+    /**
+     * The context where |attrName_| will be traversed from, e.g. Window.
+     * @private {*}
+     */
+    this.context_ = context;
+
+    /**
+     * After traversing |context_| the object that holds the attribute to be
+     * replaced by the fake.
+     * @private {*}
+     */
+    this.parentObject_ = null;
+
+    /**
+     * After traversing |context_| the attribute name in |parentObject_| that
+     * will be replaced by the fake.
+     * @private {string}
+     */
+    this.leafAttrName_ = '';
+
+    /**
+     * Additional data provided from integration tests to the fake constructor.
+     * @private {!Array}
+     */
+    this.args_ = args;
+
+    /**
+     * Original object that was replaced by the fake.
+     * @private {*}
+     */
+    this.original_ = null;
+
+    /**
+     * If this fake object has been constructed and everything initialized.
+     * @private {boolean}
+     */
+    this.prepared_ = false;
+  }
+
+  /**
+   * Initializes the fake and traverse |context_| to be ready to replace the
+   * original implementation with the fake.
+   */
+  prepare() {
+    this.buildFake_();
+    this.traverseContext_();
+    this.prepared_ = true;
+  }
+
+  /**
+   * Replaces the original implementation with the fake.
+   * NOTE: It requires prepare() to have been called.
+   */
+  replace() {
+    const suffix = `for ${this.attrName_} ${this.fakeId_}`;
+    if (!this.prepared_) {
+      throw new Error(`PrepareFake prepare() not called ${suffix}`);
+    }
+    if (!this.parentObject_) {
+      throw new Error(`Missing parentObject_ ${suffix}`);
+    }
+    if (!this.fake_) {
+      throw new Error(`Missing fake_ ${suffix}`);
+    }
+    if (!this.leafAttrName_) {
+      throw new Error(`Missing leafAttrName_ ${suffix}`);
+    }
+
+    this.saveOriginal_();
+    this.parentObject_[this.leafAttrName_] = this.fake_;
+  }
+
+  /**
+   * Restores the original implementation that had been rpeviously replaced by
+   * the fake.
+   */
+  restore() {
+    if (!this.original_) {
+      return;
+    }
+    this.parentObject_[this.leafAttrName_] = this.original_;
+    this.original_ = null;
+  }
+
+  /**
+   * Saves the original implementation to be able restore it later.
+   */
+  saveOriginal_() {
+    // Only save once, otherwise it can save an object that is already fake.
+    if (!test.util.backgroundReplacedObjects_[this.attrName_]) {
+      const original = this.parentObject_[this.leafAttrName_];
+      this.original_ = original;
+      test.util.backgroundReplacedObjects_[this.attrName_] = this;
+    }
+  }
+
+  /**
+   * Constructs the fake.
+   */
+  buildFake_() {
+    const factory = test.util.fakes_[this.fakeId_];
+    if (!factory) {
+      throw new Error(`Failed to find the fake factory for ${this.fakeId_}`);
+    }
+
+    this.fake_ = factory(this.attrName_, ...this.args_);
+  }
+
+  /**
+   * Finds the parent and the object to be replaced by fake.
+   */
+  traverseContext_() {
+    let target = this.context_;
+    let parentObj;
+    let attr = '';
+
+    for (const a of this.attrName_.split('.')) {
+      attr = a;
+      parentObj = target;
+      target = target[a];
+
+      if (target === undefined) {
+        throw new Error(`Couldn't find "${0}" from "${this.attrName_}"`);
+      }
+    }
+
+    this.parentObject_ = parentObj;
+    this.leafAttrName_ = attr;
+  }
+};
+
+/**
+ * Replaces implementations in the background page with fakes.
+ *
+ * @param {Object{<string, Array>}} fakeData An object mapping the path to the
+ * object to be replaced and the value is the Array with fake id and additinal
+ * arguments for the fake constructor, e.g.:
+ *   fakeData = {
+ *     'chrome.app.window.create' : [
+ *       'static_fake',
+ *       ['some static value', 'other arg'],
+ *     ]
+ *   }
+ *
+ *  This will replace the API 'chrome.app.window.create' with a static fake,
+ *  providing the additional data to static fake: ['some static value', 'other
+ *  value'].
+ */
+test.util.sync.backgroundFake = (fakeData) => {
+  for (const [path, mockValue] of Object.entries(fakeData)) {
+    const fakeId = mockValue[0];
+    const fakeArgs = mockValue[1] || [];
+
+    const fake = new test.util.PrepareFake(path, fakeId, window, ...fakeArgs);
+    fake.prepare();
+    fake.replace();
+  }
+};
+
+/**
+ * Removes all fakes that were applied to the background page.
+ */
+test.util.sync.removeAllBackgroundFakes = () => {
+  const savedFakes = Object.entries(test.util.backgroundReplacedObjects_);
+  let removedCount = 0;
+  for (const [path, fake] of savedFakes) {
+    fake.restore();
+    removedCount++;
+  }
+
+  return removedCount;
+};
+
 // Register the test utils.
 test.util.registerRemoteTestUtils();

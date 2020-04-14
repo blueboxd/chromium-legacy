@@ -115,14 +115,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 + (instancetype)folderCreatorWithBookmarkModel:
                     (bookmarks::BookmarkModel*)bookmarkModel
                                   parentFolder:(const BookmarkNode*)parentFolder
-                                    dispatcher:(id<BrowserCommands>)dispatcher {
-  DCHECK(dispatcher);
+                                       browser:(Browser*)browser {
+  DCHECK(browser);
   BookmarkFolderEditorViewController* folderCreator =
       [[self alloc] initWithBookmarkModel:bookmarkModel];
   folderCreator.parentFolder = parentFolder;
   folderCreator.folder = NULL;
+  folderCreator.browser = browser;
   folderCreator.editingExistingFolder = NO;
-  folderCreator.dispatcher = dispatcher;
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  folderCreator.dispatcher =
+      static_cast<id<BrowserCommands>>(browser->GetCommandDispatcher());
   return folderCreator;
 }
 
@@ -305,7 +309,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                     editedNodes:editedNodes
                    allowsCancel:NO
                  selectedFolder:self.parentFolder
-                     dispatcher:self.dispatcher];
+                        browser:_browser];
   folderViewController.delegate = self;
   self.folderViewController = folderViewController;
 

@@ -196,7 +196,7 @@ def attribute_context(interface, attribute, interfaces, component_info):
         'activity_logging_world_check':
         v8_utilities.activity_logging_world_check(attribute),
         'cached_accessor_name':
-        '%s%sCachedAccessor' % (interface.name, attribute.name.capitalize()),
+        'k%s%s' % (interface.name, attribute.name.capitalize()),
         'cached_attribute_validation_method':
         cached_attribute_validation_method,
         'camel_case_name':
@@ -733,8 +733,6 @@ def is_writable(attribute):
 
 
 def is_data_type_property(interface, attribute):
-    if 'CachedAccessor' in attribute.extended_attributes:
-        return False
     return (is_constructor_attribute(attribute)
             or 'CrossOrigin' in attribute.extended_attributes)
 

@@ -248,7 +248,7 @@ void UpdateRequiredScreen::ShowErrorMessage() {
                           weak_factory_.GetWeakPtr()));
   error_screen_->SetUIState(NetworkError::UI_STATE_UPDATE);
   error_screen_->SetParentScreen(UpdateRequiredView::kScreenId);
-  error_screen_->SetHideCallback(base::BindRepeating(
+  error_screen_->SetHideCallback(base::BindOnce(
       &UpdateRequiredScreen::OnErrorScreenHidden, weak_factory_.GetWeakPtr()));
   error_screen_->SetIsPersistentError(true /* is_persistent */);
   error_screen_->Show();

@@ -4965,8 +4965,8 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
   delete_run_loop.Run();
 
   EXPECT_EQ(client()->completion_status().error_code, net::OK);
-  EXPECT_THAT(client()->completion_status().trust_token_operation_status,
-              Optional(mojom::TrustTokenOperationStatus::kOk));
+  EXPECT_EQ(client()->completion_status().trust_token_operation_status,
+            mojom::TrustTokenOperationStatus::kOk);
   // The page should still have loaded.
   base::FilePath file = GetTestFilePath("simple_page.html");
   std::string expected;
@@ -5020,8 +5020,8 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
 
   EXPECT_EQ(client()->completion_status().error_code,
             net::ERR_TRUST_TOKEN_OPERATION_CACHE_HIT);
-  EXPECT_THAT(client()->completion_status().trust_token_operation_status,
-              Optional(mojom::TrustTokenOperationStatus::kAlreadyExists));
+  EXPECT_EQ(client()->completion_status().trust_token_operation_status,
+            mojom::TrustTokenOperationStatus::kAlreadyExists);
 
   EXPECT_FALSE(client()->response_head());
   EXPECT_FALSE(client()->response_body().is_valid());
@@ -5062,8 +5062,8 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
 
   EXPECT_EQ(client()->completion_status().error_code,
             net::ERR_TRUST_TOKEN_OPERATION_FAILED);
-  EXPECT_THAT(client()->completion_status().trust_token_operation_status,
-              Optional(mojom::TrustTokenOperationStatus::kFailedPrecondition));
+  EXPECT_EQ(client()->completion_status().trust_token_operation_status,
+            mojom::TrustTokenOperationStatus::kFailedPrecondition);
 
   EXPECT_FALSE(client()->response_head());
   EXPECT_FALSE(client()->response_body().is_valid());
@@ -5104,8 +5104,8 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
 
   EXPECT_EQ(client()->completion_status().error_code,
             net::ERR_TRUST_TOKEN_OPERATION_FAILED);
-  EXPECT_THAT(client()->completion_status().trust_token_operation_status,
-              Optional(mojom::TrustTokenOperationStatus::kBadResponse));
+  EXPECT_EQ(client()->completion_status().trust_token_operation_status,
+            mojom::TrustTokenOperationStatus::kBadResponse);
 }
 
 // When URLLoader receives a  request parameterized to perform a Trust Tokens
@@ -5145,8 +5145,8 @@ TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
 
   EXPECT_EQ(client()->completion_status().error_code,
             net::ERR_TRUST_TOKEN_OPERATION_FAILED);
-  EXPECT_THAT(client()->completion_status().trust_token_operation_status,
-              Optional(mojom::TrustTokenOperationStatus::kInternalError));
+  EXPECT_EQ(client()->completion_status().trust_token_operation_status,
+            mojom::TrustTokenOperationStatus::kInternalError);
 }
 
 }  // namespace network

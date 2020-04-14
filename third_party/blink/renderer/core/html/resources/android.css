@@ -30,6 +30,12 @@
 
 /* These styles override other user-agent styles for Chromium on Android. */
 
+/* This sheet is appended to html.css before parsing which means the selectors
+   below are in the default html namespace:
+
+   @namespace "http://www.w3.org/1999/xhtml"
+*/
+
 input[type="date" i]:disabled,
 input[type="datetime-local" i]:disabled,
 input[type="month" i]:disabled,

@@ -260,6 +260,12 @@ void ModelTypeController::RecordMemoryUsageAndCountsHistograms() {
   delegate_->RecordMemoryUsageAndCountsHistograms();
 }
 
+ModelTypeControllerDelegate*
+ModelTypeController::GetDelegateForTransportModeForTest() {
+  auto it = delegate_map_.find(SyncMode::kTransportOnly);
+  return it != delegate_map_.end() ? it->second.get() : nullptr;
+}
+
 void ModelTypeController::ReportModelError(SyncError::ErrorType error_type,
                                            const ModelError& error) {
   DCHECK(CalledOnValidThread());

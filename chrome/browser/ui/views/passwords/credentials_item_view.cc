@@ -4,17 +4,22 @@
 
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/autofill/core/common/password_form.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/tooltip_icon.h"
 #include "ui/views/controls/image_view.h"
@@ -64,6 +69,9 @@ CredentialsItemView::CredentialsItemView(
           views::BoxLayout::Orientation::kHorizontal));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
+  layout->set_between_child_spacing(
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   // Create an image-view for the avatar. Make sure it ignores events so that
   // the parent can receive the events instead.
   auto image_view = std::make_unique<CircularImageView>();
@@ -94,12 +102,6 @@ CredentialsItemView::CredentialsItemView(
             views::BoxLayout::Orientation::kVertical));
     text_layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStart);
-    text_container->SetProperty(
-        views::kMarginsKey,
-        gfx::Insets(0,
-                    ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        views::DISTANCE_RELATED_LABEL_HORIZONTAL),
-                    0, 0));
     layout->SetFlexForView(text_container, 1);
   }
 
@@ -132,6 +134,24 @@ CredentialsItemView::CredentialsItemView(
 }
 
 CredentialsItemView::~CredentialsItemView() = default;
+
+void CredentialsItemView::SetStoreIndicatorIcon(
+    autofill::PasswordForm::Store store) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (store == autofill::PasswordForm::Store::kAccountStore &&
+      !store_indicator_icon_view_) {
+    store_indicator_icon_view_ =
+        AddChildView(std::make_unique<views::ImageView>());
+    store_indicator_icon_view_->set_can_process_events_within_subtree(false);
+    store_indicator_icon_view_->SetImage(
+        gfx::CreateVectorIcon(kGoogleGLogoIcon, gfx::kPlaceholderColor));
+  } else if (store == autofill::PasswordForm::Store::kProfileStore &&
+             store_indicator_icon_view_) {
+    RemoveChildView(store_indicator_icon_view_);
+    store_indicator_icon_view_ = nullptr;
+  }
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+}
 
 void CredentialsItemView::UpdateAvatar(const gfx::ImageSkia& image) {
   image_view_->SetImage(ScaleImageForAccountAvatar(image));

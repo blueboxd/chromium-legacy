@@ -306,7 +306,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayCheckSelectWithFakeItemSelected"),
         TestCase("fileDisplayCheckReadOnlyIconOnFakeDirectory"),
         TestCase("fileDisplayCheckNoReadOnlyIconOnDownloads"),
-        TestCase("fileDisplayCheckNoReadOnlyIconOnLinuxFiles")));
+        TestCase("fileDisplayCheckNoReadOnlyIconOnLinuxFiles"),
+        TestCase("fileDisplayStartupError")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenVideoFiles, /* open_video_files.js */

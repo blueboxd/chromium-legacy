@@ -79,4 +79,7 @@ extern NSString* const kSettingsClearBrowsingDataCellId;
 // The accessibility identifier of the Handoff cell.
 extern NSString* const kSettingsHandoffCellId;
 
+// The accessibility identifier of the Cookies cell.
+extern NSString* const kSettingsCookiesCellId;
+
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SETTINGS_TABLE_VIEW_CONTROLLER_CONSTANTS_H_

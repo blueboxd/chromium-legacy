@@ -359,9 +359,13 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   controllers.push_back(std::make_unique<SupervisedUserSyncModelTypeController>(
-      syncer::SUPERVISED_USER_SETTINGS, profile_, dump_stack, this));
+      syncer::SUPERVISED_USER_SETTINGS, profile_, dump_stack,
+      model_type_store_factory,
+      GetSyncableServiceForType(syncer::SUPERVISED_USER_SETTINGS)));
   controllers.push_back(std::make_unique<SupervisedUserSyncModelTypeController>(
-      syncer::SUPERVISED_USER_WHITELISTS, profile_, dump_stack, this));
+      syncer::SUPERVISED_USER_WHITELISTS, profile_, dump_stack,
+      model_type_store_factory,
+      GetSyncableServiceForType(syncer::SUPERVISED_USER_WHITELISTS)));
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

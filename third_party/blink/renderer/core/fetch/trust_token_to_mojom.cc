@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/fetch/trust_token_to_mojom.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 
 namespace blink {
 
@@ -85,6 +86,29 @@ bool ConvertTrustTokenToMojom(const TrustToken& in,
   }
 
   return true;
+}
+
+DOMException* TrustTokenErrorToDOMException(
+    network::mojom::blink::TrustTokenOperationStatus error) {
+  // This should only be called on failure.
+  DCHECK_NE(error, network::mojom::blink::TrustTokenOperationStatus::kOk);
+
+  switch (error) {
+    case network::mojom::blink::TrustTokenOperationStatus::kAlreadyExists:
+      return DOMException::Create(
+          "Redemption operation aborted due to Signed Redemption Record "
+          "cache hit",
+          DOMException::GetErrorName(
+              DOMExceptionCode::kNoModificationAllowedError));
+    case network::mojom::blink::TrustTokenOperationStatus::kFailedPrecondition:
+      return DOMException::Create(
+          "Precondition failed during Trust Tokens operation",
+          DOMException::GetErrorName(DOMExceptionCode::kInvalidStateError));
+    default:
+      return DOMException::Create(
+          "Error executing Trust Tokens operation",
+          DOMException::GetErrorName(DOMExceptionCode::kOperationError));
+  }
 }
 
 }  // namespace blink

@@ -328,7 +328,8 @@ class CORE_EXPORT DisplayLockContext final
   // style recalc on them.
   HeapHashSet<Member<Element>> whitespace_reattach_set_;
 
-  bool update_forced_ = false;
+  // If non-zero, then the update has been forced.
+  int update_forced_ = 0;
 
   StyleType blocked_style_traversal_type_ = kStyleUpdateNotRequired;
   // Signifies whether we've blocked a layout tree reattachment on |element_|'s

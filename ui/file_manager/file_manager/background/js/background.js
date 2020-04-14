@@ -127,9 +127,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
     chrome.fileManagerPrivate.onMountCompleted.addListener(
         this.onMountCompleted_.bind(this));
 
-    launcher.queue.run(callback => {
-      this.initializationPromise_.then(callback);
-    });
+    launcher.setInitializationPromise(this.initializationPromise_);
   }
 
   /**

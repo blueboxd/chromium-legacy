@@ -31,6 +31,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -78,6 +79,7 @@ constexpr int kIconSize = 16;
 constexpr autofill::PopupItemId kItemTypesUsingLeadingIcons[] = {
     autofill::PopupItemId::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS,
     autofill::PopupItemId::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY,
+    autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY,
     autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN,
     autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN,
     autofill::PopupItemId::
@@ -130,6 +132,10 @@ gfx::ImageSkia GetIconImageByName(const std::string& icon_str) {
   }
   if (icon_str == "settingsIcon") {
     return gfx::CreateVectorIcon(vector_icons::kSettingsIcon, kIconSize,
+                                 gfx::kChromeIconGrey);
+  }
+  if (icon_str == "empty") {
+    return gfx::CreateVectorIcon(omnibox::kHttpIcon, kIconSize,
                                  gfx::kChromeIconGrey);
   }
   if (icon_str == "google") {
@@ -1097,6 +1103,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
       case autofill::PopupItemId::POPUP_ITEM_ID_SCAN_CREDIT_CARD:
       case autofill::PopupItemId::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
       case autofill::PopupItemId::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
+      case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY:
       case autofill::PopupItemId::POPUP_ITEM_ID_HIDE_AUTOFILL_SUGGESTIONS:
       case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN:
       case autofill::PopupItemId::

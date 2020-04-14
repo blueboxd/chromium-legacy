@@ -75,7 +75,7 @@ public class TabBrowserControlsConstraintsHelperTest {
         initHelper();
         Mockito.verify(mDelegateFactory, Mockito.never())
                 .createBrowserControlsVisibilityDelegate(mTab);
-        mRegisteredTabObserver.onInitialized(mTab, null);
+        mRegisteredTabObserver.onInitialized(mTab, null, null, 0);
         Mockito.verify(mDelegateFactory, Mockito.times(1))
                 .createBrowserControlsVisibilityDelegate(mTab);
         verifyUpdateState(BrowserControlsState.BOTH);
@@ -126,7 +126,7 @@ public class TabBrowserControlsConstraintsHelperTest {
         initHelper();
         Mockito.verify(mDelegateFactory, Mockito.never())
                 .createBrowserControlsVisibilityDelegate(mTab);
-        mRegisteredTabObserver.onInitialized(mTab, null);
+        mRegisteredTabObserver.onInitialized(mTab, null, null, 0);
         Mockito.verify(mDelegateFactory).createBrowserControlsVisibilityDelegate(mTab);
         Mockito.verifyNoMoreInteractions(mDelegateFactory);
         verifyUpdateState(BrowserControlsState.BOTH);

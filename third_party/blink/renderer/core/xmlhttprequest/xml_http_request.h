@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_trust_token.h"
 #include "third_party/blink/renderer/core/dom/document_parser_client.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
@@ -159,6 +160,9 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   String responseType();
   void setResponseType(const String&, ExceptionState&);
   String responseURL();
+  DOMException* trustTokenOperationError() const {
+    return trust_token_operation_error_;
+  }
 
   // For Inspector.
   void SendForInspectorXHRReplay(scoped_refptr<EncodedFormData>,
@@ -303,6 +307,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   AtomicString method_;
   HTTPHeaderMap request_headers_;
   network::mojom::blink::TrustTokenParamsPtr trust_token_params_;
+  Member<DOMException> trust_token_operation_error_;
   // Not converted to ASCII lowercase. Must be lowered later or compared
   // using case insensitive comparison functions if needed.
   AtomicString mime_type_override_;

@@ -176,8 +176,7 @@ bool IsOobeComplete() {
 // Returns true if signin (not oobe) should be displayed.
 bool ShouldShowSigninScreen(chromeos::OobeScreenId first_screen) {
   return (first_screen == chromeos::OobeScreen::SCREEN_UNKNOWN &&
-          IsOobeComplete()) ||
-         first_screen == chromeos::OobeScreen::SCREEN_SPECIAL_LOGIN;
+          IsOobeComplete());
 }
 
 void MaybeShowDeviceDisabledScreen() {
@@ -1081,7 +1080,7 @@ void ShowLoginWizard(OobeScreenId first_screen) {
           switches::kNaturalScrollDefault));
 
   auto session_state = session_manager::SessionState::OOBE;
-  if (IsOobeComplete() || first_screen == OobeScreen::SCREEN_SPECIAL_LOGIN)
+  if (IsOobeComplete())
     session_state = session_manager::SessionState::LOGIN_PRIMARY;
   session_manager::SessionManager::Get()->SetSessionState(session_state);
 

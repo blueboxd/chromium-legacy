@@ -5,11 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SPATIAL_NAVIGATION_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SPATIAL_NAVIGATION_CONTROLLER_H_
 
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/page/spatial_navigation.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -106,7 +107,8 @@ class CORE_EXPORT SpatialNavigationController final
   bool UpdateIsFormFocused(Element* element);
   bool UpdateHasDefaultVideoControls(Element* element);
 
-  const mojo::Remote<mojom::blink::SpatialNavigationHost>&
+  const HeapMojoRemote<mojom::blink::SpatialNavigationHost,
+                       HeapMojoWrapperMode::kWithoutContextObserver>&
   GetSpatialNavigationHost();
   void ResetMojoBindings();
 
@@ -121,7 +123,9 @@ class CORE_EXPORT SpatialNavigationController final
   bool enter_key_press_seen_ = false;
 
   mojom::blink::SpatialNavigationStatePtr spatial_navigation_state_;
-  mojo::Remote<mojom::blink::SpatialNavigationHost> spatial_navigation_host_;
+  HeapMojoRemote<mojom::blink::SpatialNavigationHost,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      spatial_navigation_host_;
 };
 
 }  // namespace blink

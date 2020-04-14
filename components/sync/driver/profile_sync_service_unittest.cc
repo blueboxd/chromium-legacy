@@ -21,6 +21,7 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/user_demographics.h"
 #include "components/sync/base/user_selectable_type.h"
@@ -71,6 +72,7 @@ class FakeDataTypeManager : public DataTypeManager {
   void Configure(ModelTypeSet desired_types,
                  const ConfigureContext& context) override {
     state_ = CONFIGURED;
+    desired_types_ = desired_types;
     DCHECK(!configure_called_.is_null());
     configure_called_.Run(context.reason);
   }
@@ -79,13 +81,14 @@ class FakeDataTypeManager : public DataTypeManager {
   void ResetDataTypeErrors() override {}
   void PurgeForMigration(ModelTypeSet undesired_types) override {}
   void Stop(ShutdownReason reason) override {}
-  ModelTypeSet GetActiveDataTypes() const override { return ModelTypeSet(); }
+  ModelTypeSet GetActiveDataTypes() const override { return desired_types_; }
   bool IsNigoriEnabled() const override { return true; }
   State state() const override { return state_; }
 
  private:
   ConfigureCalled configure_called_;
   State state_;
+  ModelTypeSet desired_types_;
 };
 
 ACTION_P(ReturnNewFakeDataTypeManager, configure_called) {
@@ -177,8 +180,11 @@ class ProfileSyncServiceTest : public ::testing::Test {
   void CreateService(ProfileSyncService::StartBehavior behavior) {
     DCHECK(!service_);
 
+    // Include a regular controller and a transport-mode controller.
     DataTypeController::TypeVector controllers;
     controllers.push_back(std::make_unique<FakeDataTypeController>(BOOKMARKS));
+    controllers.push_back(
+        std::make_unique<FakeDataTypeController>(SUPERVISED_USER_SETTINGS));
 
     std::unique_ptr<SyncClientMock> sync_client =
         profile_sync_service_bundle_.CreateSyncClientMock();
@@ -199,8 +205,11 @@ class ProfileSyncServiceTest : public ::testing::Test {
   void CreateServiceWithLocalSyncBackend() {
     DCHECK(!service_);
 
+    // Include a regular controller and a transport-mode controller.
     DataTypeController::TypeVector controllers;
     controllers.push_back(std::make_unique<FakeDataTypeController>(BOOKMARKS));
+    controllers.push_back(
+        std::make_unique<FakeDataTypeController>(SUPERVISED_USER_SETTINGS));
 
     std::unique_ptr<SyncClientMock> sync_client =
         profile_sync_service_bundle_.CreateSyncClientMock();
@@ -419,6 +428,27 @@ TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
   // The local sync data shouldn't be cleared.
   EXPECT_EQ(kTestCacheGuid, sync_prefs.GetCacheGuid());
   EXPECT_EQ(kLastSyncedTime, sync_prefs.GetLastSyncedTime());
+}
+
+TEST_F(ProfileSyncServiceTest, ModelTypesForTransportMode) {
+  CreateService(ProfileSyncService::AUTO_START);
+  SignIn();
+  InitializeForNthSync();
+
+  // Disable sync-the-feature.
+  service()->GetUserSettings()->SetSyncRequested(false);
+  ASSERT_FALSE(service()->IsSyncFeatureActive());
+  ASSERT_FALSE(service()->IsSyncFeatureEnabled());
+
+  // Sync-the-transport is still active.
+  ASSERT_EQ(SyncService::TransportState::ACTIVE,
+            service()->GetTransportState());
+
+  // ModelTypes for sync-the-feature are not configured.
+  EXPECT_FALSE(service()->GetActiveDataTypes().Has(BOOKMARKS));
+
+  // ModelTypes for sync-the-transport are configured.
+  EXPECT_TRUE(service()->GetActiveDataTypes().Has(SUPERVISED_USER_SETTINGS));
 }
 
 // Verify that the SetSetupInProgress function call updates state

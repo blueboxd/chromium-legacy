@@ -16,7 +16,8 @@ WorkerAnimationFrameProvider::WorkerAnimationFrameProvider(
     const BeginFrameProviderParams& begin_frame_provider_params)
     : begin_frame_provider_(
           MakeGarbageCollected<BeginFrameProvider>(begin_frame_provider_params,
-                                                   this)),
+                                                   this,
+                                                   context)),
       callback_collection_(context),
       context_(context) {}
 

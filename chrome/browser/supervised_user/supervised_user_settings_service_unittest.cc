@@ -204,11 +204,9 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessSplitSetting) {
 
 TEST_F(SupervisedUserSettingsServiceTest, Merge) {
   syncer::SyncMergeResult result = StartSyncing(syncer::SyncDataList());
-  EXPECT_EQ(0, result.num_items_before_association());
-  EXPECT_EQ(0, result.num_items_added());
-  EXPECT_EQ(0, result.num_items_modified());
-  EXPECT_EQ(0, result.num_items_deleted());
-  EXPECT_EQ(0, result.num_items_after_association());
+  EXPECT_TRUE(settings_service_
+                  .GetAllSyncDataForTesting(syncer::SUPERVISED_USER_SETTINGS)
+                  .empty());
 
   ASSERT_TRUE(settings_);
   const base::Value* value = nullptr;
@@ -234,11 +232,10 @@ TEST_F(SupervisedUserSettingsServiceTest, Merge) {
               it.value()));
     }
     result = StartSyncing(sync_data);
-    EXPECT_EQ(0, result.num_items_before_association());
-    EXPECT_EQ(3, result.num_items_added());
-    EXPECT_EQ(0, result.num_items_modified());
-    EXPECT_EQ(0, result.num_items_deleted());
-    EXPECT_EQ(3, result.num_items_after_association());
+    EXPECT_EQ(3u,
+              settings_service_
+                  .GetAllSyncDataForTesting(syncer::SUPERVISED_USER_SETTINGS)
+                  .size());
     settings_service_.StopSyncing(syncer::SUPERVISED_USER_SETTINGS);
   }
 
@@ -264,11 +261,10 @@ TEST_F(SupervisedUserSettingsServiceTest, Merge) {
               it.value()));
     }
     result = StartSyncing(sync_data);
-    EXPECT_EQ(6, result.num_items_before_association());
-    EXPECT_EQ(0, result.num_items_added());
-    EXPECT_EQ(1, result.num_items_modified());
-    EXPECT_EQ(2, result.num_items_deleted());
-    EXPECT_EQ(4, result.num_items_after_association());
+    EXPECT_EQ(4u,
+              settings_service_
+                  .GetAllSyncDataForTesting(syncer::SUPERVISED_USER_SETTINGS)
+                  .size());
   }
 }
 

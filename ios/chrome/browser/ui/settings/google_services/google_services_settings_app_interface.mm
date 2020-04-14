@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_app_interface.h"
 
 #import "ios/chrome/app/main_controller.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"

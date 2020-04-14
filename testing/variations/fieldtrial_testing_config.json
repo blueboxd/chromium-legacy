@@ -5177,26 +5177,6 @@
             ]
         }
     ],
-    "ScriptStreamingOnPreload": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ScriptStreamingOnPreload"
-                    ]
-                }
-            ]
-        }
-    ],
     "ScrollResamplingRollout": [
         {
             "platforms": [

@@ -64,14 +64,6 @@ void PrimaryAccountMutatorImpl::SetUnconsentedPrimaryAccount(
   AccountInfo account_info = account_tracker_->GetAccountInfo(account_id);
   primary_account_manager_->SetUnconsentedPrimaryAccountInfo(account_info);
 }
-
-bool PrimaryAccountMutatorImpl::DeprecatedSetPrimaryAccountAndUpdateAccountInfo(
-    const std::string& gaia_id,
-    const std::string& email) {
-  CoreAccountId account_id = account_tracker_->SeedAccountInfo(gaia_id, email);
-  SetPrimaryAccount(account_id);
-  return true;
-}
 #endif
 
 #if !defined(OS_CHROMEOS)

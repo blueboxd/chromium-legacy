@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -28,14 +29,13 @@ void PasswordTabHelper::SetBaseViewController(
   controller_.baseViewController = baseViewController;
 }
 
-void PasswordTabHelper::SetDispatcher(
-    id<ApplicationCommands, PasswordBreachCommands> dispatcher) {
-  controller_.dispatcher = dispatcher;
-}
-
 void PasswordTabHelper::SetPasswordControllerDelegate(
     id<PasswordControllerDelegate> delegate) {
   controller_.delegate = delegate;
+}
+
+void PasswordTabHelper::SetBrowser(Browser* browser) {
+  controller_.browser = browser;
 }
 
 id<FormSuggestionProvider> PasswordTabHelper::GetSuggestionProvider() {

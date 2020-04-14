@@ -111,13 +111,8 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   GetRelevantMatchesForGeneration(
       const std::vector<const autofill::PasswordForm*>& matches);
 
-  virtual void SaveInternal(
-      const std::vector<const autofill::PasswordForm*>& matches,
-      const base::string16& old_password);
-
-  virtual void UpdateInternal(
-      const std::vector<const autofill::PasswordForm*>& matches,
-      const base::string16& old_password);
+  virtual void SavePendingToStoreImpl(
+      const autofill::PasswordForm& parsed_submitted_form);
 
   // Clones the current object into |clone|. |clone| must not be null.
   void CloneInto(PasswordSaveManagerImpl* clone);
@@ -142,6 +137,9 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   const FormFetcher* form_fetcher_;
 
  private:
+  base::string16 GetOldPassword(
+      const autofill::PasswordForm& parsed_submitted_form) const;
+
   void SetVotesAndRecordMetricsForPendingCredentials(
       const autofill::PasswordForm& parsed_submitted_form);
 

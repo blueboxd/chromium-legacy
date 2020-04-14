@@ -74,7 +74,7 @@
 #define SEQUENCE_CHECKER(name) base::SequenceChecker name
 #define DCHECK_CALLED_ON_VALID_SEQUENCE(name, ...)                   \
   base::ScopedValidateSequenceChecker SEQUENCE_CHECKER_INTERNAL_UID( \
-      scoped_validate_sequence_checker_)(name, ##__VA_ARGS__);
+      scoped_validate_sequence_checker_)(name, ##__VA_ARGS__)
 #define DETACH_FROM_SEQUENCE(name) (name).DetachFromSequence()
 #else  // DCHECK_IS_ON()
 #if __OBJC__ && defined(OS_IOS) && !HAS_FEATURE(objc_cxx_static_assert)

@@ -52,6 +52,26 @@ V8PrivateProperty::Symbol V8PrivateProperty::GetWindowDocumentCachedAccessor(
       private_prop->symbol_window_document_cached_accessor_.NewLocal(isolate));
 }
 
+V8PrivateProperty::Symbol V8PrivateProperty::GetCachedAccessor(
+    v8::Isolate* isolate,
+    CachedAccessor symbol_id) {
+  switch (symbol_id) {
+    case CachedAccessor::kNone:
+      break;
+    case CachedAccessor::kWindowProxy:
+      return Symbol(
+          isolate,
+          v8::Private::ForApi(
+              isolate,
+              V8String(isolate,
+                       "V8PrivateProperty::CachedAccessor::kWindowProxy")));
+    case CachedAccessor::kWindowDocument:
+      return GetWindowDocumentCachedAccessor(isolate);
+  }
+  NOTREACHED();
+  return GetEmptySymbol();
+}
+
 V8PrivateProperty::Symbol V8PrivateProperty::GetSymbol(
     v8::Isolate* isolate,
     const V8PrivateProperty::SymbolKey& key) {

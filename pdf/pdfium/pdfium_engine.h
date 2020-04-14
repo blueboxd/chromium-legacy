@@ -60,6 +60,11 @@ class PDFiumEngine : public PDFEngine,
   // HandleDocumentLoad().
   void SetDocumentLoaderForTesting(std::unique_ptr<DocumentLoader> loader);
 
+  using SetSelectedTextFunction = void (*)(pp::Instance* instance,
+                                           const std::string& selected_text);
+  static void OverrideSetSelectedTextFunctionForTesting(
+      SetSelectedTextFunction function);
+
   // PDFEngine implementation.
   bool New(const char* url, const char* headers) override;
   void PageOffsetUpdated(const pp::Point& page_offset) override;
@@ -150,6 +155,7 @@ class PDFiumEngine : public PDFEngine,
   void OnDocumentComplete() override;
   void OnDocumentCanceled() override;
   void KillFormFocus() override;
+  void UpdateFocus(bool has_focus) override;
   uint32_t GetLoadedByteSize() override;
   bool ReadLoadedBytes(uint32_t length, void* buffer) override;
 #if defined(PDF_ENABLE_XFA)
@@ -698,6 +704,12 @@ class PDFiumEngine : public PDFEngine,
 
   // The focus item type for the currently focused object.
   FocusElementType focus_item_type_ = FocusElementType::kNone;
+
+  // Stores the last focused object's focus item type before PDF loses focus.
+  FocusElementType last_focused_item_type_ = FocusElementType::kNone;
+
+  // Stores the last focused annotation's index before PDF loses focus.
+  int last_focused_annot_index_ = -1;
 
   // Holds the zero-based page index of the last page that had the focused
   // object.

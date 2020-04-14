@@ -1548,9 +1548,6 @@
       status: "stable",
     },
     {
-      name: "ScriptStreamingOnPreload",
-    },
-    {
       name: "ScrollCustomization",
     },
     {

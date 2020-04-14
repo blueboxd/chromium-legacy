@@ -151,8 +151,8 @@ void ErrorScreen::SetParentScreen(OobeScreenId parent_screen) {
   // Not really used on JS side yet so no need to propagate to screen context.
 }
 
-void ErrorScreen::SetHideCallback(const base::Closure& on_hide) {
-  on_hide_callback_.reset(new base::Closure(on_hide));
+void ErrorScreen::SetHideCallback(base::OnceClosure on_hide) {
+  on_hide_callback_ = std::move(on_hide);
 }
 
 void ErrorScreen::ShowCaptivePortal() {
@@ -198,8 +198,8 @@ void ErrorScreen::DoShow() {
 void ErrorScreen::DoHide() {
   LOG(WARNING) << "Network error screen message is hidden";
   if (on_hide_callback_) {
-    on_hide_callback_->Run();
-    on_hide_callback_.reset();
+    std::move(on_hide_callback_).Run();
+    on_hide_callback_ = base::OnceClosure();
   }
   network_portal_detector::GetInstance()->SetStrategy(
       PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
@@ -207,8 +207,8 @@ void ErrorScreen::DoHide() {
 
 void ErrorScreen::ShowImpl() {
   if (!on_hide_callback_) {
-    SetHideCallback(base::Bind(&ErrorScreen::DefaultHideCallback,
-                               weak_factory_.GetWeakPtr()));
+    SetHideCallback(base::BindOnce(&ErrorScreen::DefaultHideCallback,
+                                   weak_factory_.GetWeakPtr()));
   }
   if (view_)
     view_->Show();

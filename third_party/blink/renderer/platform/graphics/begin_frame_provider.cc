@@ -18,11 +18,15 @@ namespace blink {
 
 BeginFrameProvider::BeginFrameProvider(
     const BeginFrameProviderParams& begin_frame_provider_params,
-    BeginFrameProviderClient* client)
+    BeginFrameProviderClient* client,
+    ContextLifecycleNotifier* context)
     : needs_begin_frame_(false),
       requested_needs_begin_frame_(false),
+      cfs_receiver_(this, context),
+      efs_receiver_(this, context),
       frame_sink_id_(begin_frame_provider_params.frame_sink_id),
       parent_frame_sink_id_(begin_frame_provider_params.parent_frame_sink_id),
+      compositor_frame_sink_(context),
       begin_frame_client_(client) {}
 
 void BeginFrameProvider::ResetCompositorFrameSink() {
@@ -74,9 +78,9 @@ void BeginFrameProvider::CreateCompositorFrameSinkIfNeeded() {
       parent_frame_sink_id_, frame_sink_id_,
       efs_receiver_.BindNewPipeAndPassRemote(task_runner),
       cfs_receiver_.BindNewPipeAndPassRemote(task_runner),
-      compositor_frame_sink_.BindNewPipeAndPassReceiver());
+      compositor_frame_sink_.BindNewPipeAndPassReceiver(task_runner));
 
-  compositor_frame_sink_.set_disconnect_with_reason_handler(base::BindOnce(
+  compositor_frame_sink_.set_disconnect_with_reason_handler(WTF::Bind(
       &BeginFrameProvider::OnMojoConnectionError, WrapWeakPersistent(this)));
 }
 
@@ -121,6 +125,9 @@ void BeginFrameProvider::FinishBeginFrame(const viz::BeginFrameArgs& args) {
 }
 
 void BeginFrameProvider::Trace(Visitor* visitor) {
+  visitor->Trace(cfs_receiver_);
+  visitor->Trace(efs_receiver_);
+  visitor->Trace(compositor_frame_sink_);
   visitor->Trace(begin_frame_client_);
 }
 

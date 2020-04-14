@@ -59,13 +59,14 @@ class MODULES_EXPORT NDEFReader : public EventTargetWithInlineData,
   // ExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
 
-  void Abort(ScriptPromiseResolver*);
+  void Abort();
 
   NFCProxy* GetNfcProxy() const;
 
+  void OnScanRequestCompleted(device::mojom::blink::NDEFErrorPtr error);
+
   // Permission handling
-  void OnRequestPermission(ScriptPromiseResolver* resolver,
-                           const NDEFScanOptions* options,
+  void OnRequestPermission(const NDEFScanOptions* options,
                            mojom::blink::PermissionStatus status);
   mojom::blink::PermissionService* GetPermissionService();
   mojo::Remote<mojom::blink::PermissionService> permission_service_;

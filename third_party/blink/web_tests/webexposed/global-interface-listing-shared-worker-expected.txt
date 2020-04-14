@@ -3697,6 +3697,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter status
 [Worker]     getter statusText
 [Worker]     getter timeout
+[Worker]     getter trustTokenOperationError
 [Worker]     getter upload
 [Worker]     getter withCredentials
 [Worker]     method abort

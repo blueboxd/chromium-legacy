@@ -69,6 +69,7 @@ source_set("passwords") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/sync/glue",

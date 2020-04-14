@@ -253,13 +253,13 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
 
     auto redirect_head = network::mojom::URLResponseHead::New();
     redirect_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-    redirect_head->headers->AddHeader("X-Response-1: Foo");
-    redirect_head->headers->AddHeader("X-Response-2: Bar");
+    redirect_head->headers->SetHeader("X-Response-1", "Foo");
+    redirect_head->headers->SetHeader("X-Response-2", "Bar");
 
     auto response_head = network::mojom::URLResponseHead::New();
     response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-    response_head->headers->AddHeader("X-Response-3: Foo");
-    response_head->headers->AddHeader("X-Response-4: Bar");
+    response_head->headers->SetHeader("X-Response-3", "Foo");
+    response_head->headers->SetHeader("X-Response-4", "Bar");
     std::string body("Hello.");
     network::URLLoaderCompletionStatus status;
     status.decoded_body_length = body.size();

@@ -562,9 +562,10 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeSetterCallba
 
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
-{% set cached_property_key = 'V8PrivateProperty::k' +
+{% set cached_property_key = 'V8PrivateProperty::CachedAccessor::' +
     (attribute.cached_accessor_name if attribute.is_cached_accessor
-     else 'NoCachedAccessor') %}
+     else 'kNone') %}
+{% set cached_property_key = 'static_cast<unsigned>(%s)' % cached_property_key %}
 {% set holder_check = 'V8DOMConfiguration::kDoNotCheckHolder'
     if attribute.is_lenient_this or attribute.has_promise_type
     else 'V8DOMConfiguration::kCheckHolder' %}

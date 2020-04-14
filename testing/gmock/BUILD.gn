@@ -10,7 +10,6 @@ source_set("gmock") {
   testonly = true
   sources = [
     "include/gmock/gmock-actions.h",
-    "include/gmock/gmock-generated-function-mockers.h",
     "include/gmock/gmock-matchers.h",
     "include/gmock/gmock.h",
   ]

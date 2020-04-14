@@ -15,6 +15,9 @@
 // Shows ClearBrowsingData screen.
 - (void)showClearBrowsingData;
 
+// Shows Cookies screen.
+- (void)showCookies;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_PRIVACY_PRIVACY_NAVIGATION_COMMANDS_H_

@@ -301,7 +301,14 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         return mWindowAndroid;
     }
 
-    @Override
+    /**
+     * Update the attachment state to Window(Activity).
+     * @param window A new {@link WindowAndroid} to attach the tab to. If {@code null},
+     *        the tab is being detached. See {@link ReparentingTask#detach()} for details.
+     * @param tabDelegateFactory The new delegate factory this tab should be using. Can be
+     *        {@code null} even when {@code window} is not, meaning we simply want to swap out
+     *        {@link WindowAndroid} for this tab and keep using the current delegate factory.
+     */
     public void updateAttachment(
             @Nullable WindowAndroid window, @Nullable TabDelegateFactory tabDelegateFactory) {
         // Non-null delegate factory while being detached is not valid.
@@ -845,7 +852,12 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             if (mTimestampMillis == INVALID_TIMESTAMP) {
                 mTimestampMillis = System.currentTimeMillis();
             }
-            for (TabObserver observer : mObservers) observer.onInitialized(this, tabState);
+            String appId = tabState != null ? tabState.openerAppId : null;
+            Boolean hasThemeColor = tabState != null ? tabState.hasThemeColor() : null;
+            int themeColor = tabState != null ? tabState.getThemeColor() : 0;
+            for (TabObserver observer : mObservers) {
+                observer.onInitialized(this, appId, hasThemeColor, themeColor);
+            }
             TraceEvent.end("Tab.initialize");
         }
     }

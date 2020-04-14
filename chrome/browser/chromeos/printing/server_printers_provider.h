@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/printing/printer_detector.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
@@ -21,11 +22,11 @@ namespace chromeos {
 // printers are signaled through a callback registered with the method
 // RegisterPrintersFoundCallback(...). All methods must be called from the UI
 // sequence, the callback is also called from this sequence.
-class ServerPrintersProvider {
+class ServerPrintersProvider : public KeyedService {
  public:
   // |profile| is a user profile, it cannot be nullptr.
   static std::unique_ptr<ServerPrintersProvider> Create(Profile* profile);
-  virtual ~ServerPrintersProvider() = default;
+  ~ServerPrintersProvider() override = default;
 
   using OnPrintersUpdateCallback = base::RepeatingCallback<void(bool complete)>;
 

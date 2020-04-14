@@ -213,6 +213,29 @@ void SupervisedUserWhitelistService::StopSyncing(syncer::ModelType type) {
   DCHECK_EQ(syncer::SUPERVISED_USER_WHITELISTS, type);
 }
 
+syncer::SyncDataList SupervisedUserWhitelistService::GetAllSyncDataForTesting(
+    syncer::ModelType type) const {
+  syncer::SyncDataList sync_data;
+  const base::DictionaryValue* whitelists =
+      prefs_->GetDictionary(prefs::kSupervisedUserWhitelists);
+  for (base::DictionaryValue::Iterator it(*whitelists); !it.IsAtEnd();
+       it.Advance()) {
+    const std::string& id = it.key();
+    const base::DictionaryValue* dict = nullptr;
+    it.value().GetAsDictionary(&dict);
+    std::string name;
+    bool result = dict->GetString(kName, &name);
+    DCHECK(result);
+    sync_pb::EntitySpecifics specifics;
+    sync_pb::ManagedUserWhitelistSpecifics* whitelist =
+        specifics.mutable_managed_user_whitelist();
+    whitelist->set_id(id);
+    whitelist->set_name(name);
+    sync_data.push_back(syncer::SyncData::CreateLocalData(id, name, specifics));
+  }
+  return sync_data;
+}
+
 syncer::SyncError SupervisedUserWhitelistService::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {

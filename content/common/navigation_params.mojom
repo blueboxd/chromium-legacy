@@ -200,10 +200,6 @@ struct CommonNavigationParams {
   int32 previews_state;
 
   // The navigationStart time exposed through the Navigation Timing API to JS.
-  // If this is for a browser-initiated navigation, this can override the
-  // navigation_start value in Blink.
-  // For renderer initiated navigations, this will be set on the
-  // renderer side and sent with FrameHost::BeginNavigation.
   mojo_base.mojom.TimeTicks navigation_start;
 
   // The request method: GET, POST, etc.

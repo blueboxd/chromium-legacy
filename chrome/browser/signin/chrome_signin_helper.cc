@@ -29,6 +29,7 @@
 #include "chrome/browser/signin/cookie_reminter_factory.h"
 #include "chrome/browser/signin/dice_response_handler.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
+#include "chrome/browser/signin/header_modification_delegate_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/process_dice_header_delegate_impl.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -192,9 +193,19 @@ void ProcessMirrorHeader(
   signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
       account_reconcilor->GetState());
 
+  bool should_ignore_guest_webview = true;
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // The mirror headers from some guest web views need to be processed.
+  should_ignore_guest_webview =
+      HeaderModificationDelegateImpl::ShouldIgnoreGuestWebViewRequest(
+          web_contents);
+#endif
+
   // Do not do anything if the navigation happened in the "background".
-  if (!chrome::FindBrowserWithWebContents(web_contents))
+  if (!chrome::FindBrowserWithWebContents(web_contents) &&
+      should_ignore_guest_webview) {
     return;
+  }
 
   // Record the service type.
   UMA_HISTOGRAM_ENUMERATION("AccountManager.ManageAccountsServiceType",

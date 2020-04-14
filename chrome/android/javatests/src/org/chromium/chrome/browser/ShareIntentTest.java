@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareDelegateImpl;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -183,7 +184,7 @@ public class ShareIntentTest {
             };
         });
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mockActivity.getActivityTab().updateAttachment(window, null));
+                () -> ((TabImpl) mockActivity.getActivityTab()).updateAttachment(window, null));
 
         TestThreadUtils.runOnUiThreadBlocking(
                 ()

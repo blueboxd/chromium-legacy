@@ -3,6 +3,12 @@
  * found in the LICENSE file.
  */
 
+/* This sheet is appended to html.css before parsing which means the selectors
+   below are in the default html namespace:
+
+   @namespace "http://www.w3.org/1999/xhtml"
+*/
+
 input[type="date" i],
 input[type="datetime-local" i],
 input[type="month" i],

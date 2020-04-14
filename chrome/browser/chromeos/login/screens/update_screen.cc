@@ -169,7 +169,7 @@ void UpdateScreen::ShowErrorMessage() {
           &UpdateScreen::OnConnectRequested, weak_factory_.GetWeakPtr()));
   error_screen_->SetUIState(NetworkError::UI_STATE_UPDATE);
   error_screen_->SetParentScreen(UpdateView::kScreenId);
-  error_screen_->SetHideCallback(base::BindRepeating(
+  error_screen_->SetHideCallback(base::BindOnce(
       &UpdateScreen::OnErrorScreenHidden, weak_factory_.GetWeakPtr()));
   error_screen_->Show();
   histogram_helper_->OnErrorShow(error_screen_->GetErrorState());

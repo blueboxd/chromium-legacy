@@ -96,9 +96,10 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
   ~AccountMigrationBaseStep() override = default;
 
  protected:
-  bool IsAccountPresentInAccountManager(
+  bool IsAccountWithNonDummyTokenPresentInAccountManager(
       const AccountManager::AccountKey& account) const {
-    return base::Contains(account_manager_accounts_, account);
+    return base::Contains(account_manager_accounts_, account) &&
+           !account_manager_->HasDummyGaiaToken(account);
   }
 
   bool IsAccountManagerEmpty() const {
@@ -184,7 +185,7 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
 
  private:
   void StartMigration() override {
-    if (IsAccountPresentInAccountManager(device_account_)) {
+    if (IsAccountWithNonDummyTokenPresentInAccountManager(device_account_)) {
       FinishWithSuccess();
       return;
     }

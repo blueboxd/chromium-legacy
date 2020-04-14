@@ -248,8 +248,8 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
       base::Bind(&AutoEnrollmentCheckScreen::OnConnectRequested,
                  base::Unretained(this)));
   error_screen_->SetHideCallback(
-      base::BindRepeating(&AutoEnrollmentCheckScreen::OnErrorScreenHidden,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&AutoEnrollmentCheckScreen::OnErrorScreenHidden,
+                     weak_ptr_factory_.GetWeakPtr()));
   error_screen_->SetParentScreen(AutoEnrollmentCheckScreenView::kScreenId);
   error_screen_->Show();
   histogram_helper_->OnErrorShow(error_state);

@@ -172,7 +172,7 @@ public class StartSurfaceLayoutPerfTest {
     @Test
     @EnormousTest
     @DisableIf
-            .Build(sdk_is_less_than = Build.VERSION_CODES.M, message = "https://crbug.com/1045938")
+            .Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "https://crbug.com/1045938")
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabWith10TabsWithoutThumbnail() throws InterruptedException {
         // Note that most of the tabs won't have thumbnails.

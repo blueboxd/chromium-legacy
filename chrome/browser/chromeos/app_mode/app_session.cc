@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <signal.h>
 
+#include "ash/public/cpp/accessibility_controller.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -64,6 +65,13 @@ bool IsPepperPlugin(const base::FilePath& plugin_path) {
 void RebootDevice() {
   PowerManagerClient::Get()->RequestRestart(
       power_manager::REQUEST_RESTART_OTHER, "kiosk app session");
+}
+
+void StartFloatingAccessibilityMenu() {
+  ash::AccessibilityController* accessibility_controller =
+      ash::AccessibilityController::Get();
+  if (accessibility_controller)
+    accessibility_controller->ShowFloatingMenuIfEnabled();
 }
 
 // Sends a SIGFPE signal to plugin subprocesses that matches |child_ids|
@@ -207,6 +215,8 @@ void AppSession::Init(Profile* profile, const std::string& app_id) {
 
   plugin_handler_ = std::make_unique<KioskSessionPluginHandler>(this);
 
+  StartFloatingAccessibilityMenu();
+
   // For a demo app, we don't need to either setup the update service or
   // the idle app name notification.
   if (DemoAppLauncher::IsDemoAppSession(
@@ -240,6 +250,8 @@ void AppSession::InitForWebKiosk(Browser* browser) {
   // the browser window was closed.
   browser_window_handler_ =
       std::make_unique<BrowserWindowHandler>(this, browser);
+
+  StartFloatingAccessibilityMenu();
 }
 
 void AppSession::SetAttemptUserExitForTesting(base::OnceClosure closure) {

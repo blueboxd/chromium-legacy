@@ -5,6 +5,7 @@
 #include "pdf/pdfium/pdfium_test_base.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "build/build_config.h"
@@ -24,6 +25,9 @@ bool IsValidLinkForTesting(const std::string& url) {
   return !url.empty();
 }
 
+void SetSelectedTextForTesting(pp::Instance* instance,
+                               const std::string& selected_text) {}
+
 }  // namespace
 
 PDFiumTestBase::PDFiumTestBase() = default;
@@ -41,11 +45,14 @@ bool PDFiumTestBase::IsRunningOnChromeOS() {
 
 void PDFiumTestBase::SetUp() {
   InitializePDFium();
+  PDFiumEngine::OverrideSetSelectedTextFunctionForTesting(
+      &SetSelectedTextForTesting);
   PDFiumPage::SetIsValidLinkFunctionForTesting(&IsValidLinkForTesting);
 }
 
 void PDFiumTestBase::TearDown() {
   PDFiumPage::SetIsValidLinkFunctionForTesting(nullptr);
+  PDFiumEngine::OverrideSetSelectedTextFunctionForTesting(nullptr);
   FPDF_DestroyLibrary();
 }
 

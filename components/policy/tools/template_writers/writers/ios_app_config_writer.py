@@ -54,7 +54,7 @@ class IOSAppConfigWriter(xml_formatted_writer.XMLFormattedWriter):
         'string-enum-list': 'stringArray',
         'main': 'boolean',
         'list': 'stringArray',
-        'dict': None,
+        'dict': 'string',
     }
 
   def GetTemplateText(self):

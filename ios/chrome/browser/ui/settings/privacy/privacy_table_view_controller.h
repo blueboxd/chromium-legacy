@@ -20,7 +20,7 @@ extern NSString* const kPrivacyTableViewId;
 @protocol PrivacyTableViewControllerPresentationDelegate
 
 // Called when the view controller is removed from its parent.
-- (void)privacyTableViewControllerViewControllerWasRemoved:
+- (void)privacyTableViewControllerWasRemoved:
     (PrivacyTableViewController*)controller;
 
 @end

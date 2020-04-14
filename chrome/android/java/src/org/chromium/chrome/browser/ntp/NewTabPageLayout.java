@@ -267,11 +267,10 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         setSearchProviderInfo(searchProviderHasLogo, searchProviderIsGoogle);
         mSearchProviderLogoView.showSearchProviderInitialView();
 
-        mQueryTileSection = new QueryTileSection(findViewById(R.id.query_tiles),
-                mSearchBoxCoordinator, profile, mManager::performSearchQuery);
+        mQueryTileSection = new QueryTileSection(
+                findViewById(R.id.query_tiles), mSearchBoxCoordinator, profile);
 
-        mTileGroup.startObserving(
-                getMaxRowsForMostVisitedTiles() * getMaxColumnsForMostVisitedTiles());
+        mTileGroup.startObserving(getMaxTileRows() * getMaxTileColumns());
 
         VrModuleProvider.registerVrModeObserver(this);
         if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
@@ -786,15 +785,15 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         }
     }
 
-    private int getMaxRowsForMostVisitedTiles() {
-        return mQueryTileSection != null && mQueryTileSection.shouldConsiderAsSmallScreen() ? 1 : 2;
+    private static int getMaxTileRows() {
+        return 2;
     }
 
     /**
      * Determines The maximum number of tiles to try and fit in a row. On smaller screens, there
      * may not be enough space to fit all of them.
      */
-    private int getMaxColumnsForMostVisitedTiles() {
+    private int getMaxTileColumns() {
         return 4;
     }
 

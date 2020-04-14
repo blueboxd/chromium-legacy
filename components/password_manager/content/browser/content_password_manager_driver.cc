@@ -112,6 +112,7 @@ void ContentPasswordManagerDriver::FillPasswordForm(
 }
 
 void ContentPasswordManagerDriver::InformNoSavedCredentials() {
+  GetPasswordAutofillManager()->OnNoCredentialsFound();
   GetPasswordAutofillAgent()->InformNoSavedCredentials();
 }
 

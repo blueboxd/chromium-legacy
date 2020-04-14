@@ -469,12 +469,6 @@
     "args": ["--disable-site-isolation-trials"]
   },
   {
-    "prefix": "streaming-preload",
-    "bases": ["external/wpt/html/semantics/scripting-1",
-              "http/tests/fetch"],
-    "args": ["--enable-features=ScriptStreamingOnPreload"]
-  },
-  {
     "prefix": "focusless-spat-nav",
     "bases": [],
     "args": ["--enable-blink-features=FocuslessSpatialNavigation",
@@ -735,7 +729,7 @@
   },
   {
     "prefix": "trust-tokens",
-    "bases": [ "external/wpt/trust-tokens/end-to-end" ],
+    "bases": [ "external/wpt/trust-tokens/end-to-end", "http/tests/loading/trust-tokens" ],
     "args": [ "--enable-features=TrustTokens" ]
   }
 ]

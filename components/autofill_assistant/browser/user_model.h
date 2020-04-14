@@ -47,6 +47,8 @@ class UserModel {
                 bool force_notification = false);
 
   // Returns the value for |identifier| or nullopt if there is no such value.
+  // Also supports the array operator to retrieve a specific element of a list,
+  // e.g., "identifier[0]" to get the first item.
   base::Optional<ValueProto> GetValue(const std::string& identifier) const;
 
   // Returns the value for |reference| or nullopt if there is no such value.

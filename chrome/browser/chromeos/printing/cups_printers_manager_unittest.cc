@@ -357,9 +357,6 @@ class CupsPrintersManagerTest : public testing::Test,
     auto usb_notif_controller =
         std::make_unique<FakeUsbPrinterNotificationController>();
     usb_notif_controller_ = usb_notif_controller.get();
-    auto server_printers_provider =
-        std::make_unique<FakeServerPrintersProvider>();
-    server_printers_provider_ = server_printers_provider.get();
     auto enterprise_printers_provider =
         std::make_unique<FakeEnterprisePrintersProvider>();
     enterprise_printers_provider_ = enterprise_printers_provider.get();
@@ -371,9 +368,8 @@ class CupsPrintersManagerTest : public testing::Test,
         &synced_printers_manager_, std::move(usb_detector),
         std::move(zeroconf_detector), ppd_provider_,
         std::move(printer_configurer), std::move(usb_notif_controller),
-        std::move(server_printers_provider),
-        std::move(enterprise_printers_provider), &event_tracker_,
-        &pref_service_);
+        &server_printers_provider_, std::move(enterprise_printers_provider),
+        &event_tracker_, &pref_service_);
     manager_->AddObserver(this);
   }
 
@@ -414,7 +410,7 @@ class CupsPrintersManagerTest : public testing::Test,
   FakePrinterDetector* zeroconf_detector_;     // Not owned.
   TestPrinterConfigurer* printer_configurer_;  // Not owned.
   FakeUsbPrinterNotificationController* usb_notif_controller_;  // Not owned.
-  FakeServerPrintersProvider* server_printers_provider_;        // Not owned.
+  FakeServerPrintersProvider server_printers_provider_;
   scoped_refptr<FakePpdProvider> ppd_provider_;
 
   // This is unused, it's just here for memory ownership.

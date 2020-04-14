@@ -61,6 +61,7 @@
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -1021,6 +1022,19 @@ WebURLError WebURLLoaderImpl::PopulateURLError(
     return WebURLError(*status.blocked_by_response_reason,
                        status.resolve_error_info, has_copy_in_cache, url);
   }
+
+  if (status.trust_token_operation_status !=
+      network::mojom::TrustTokenOperationStatus::kOk) {
+    DCHECK(status.error_code == net::ERR_TRUST_TOKEN_OPERATION_CACHE_HIT ||
+           status.error_code == net::ERR_TRUST_TOKEN_OPERATION_FAILED)
+        << "Unexpected error code on Trust Token operation failure (or cache "
+           "hit): "
+        << status.error_code;
+
+    return WebURLError(status.error_code, status.trust_token_operation_status,
+                       url);
+  }
+
   return WebURLError(status.error_code, status.extended_error_code,
                      status.resolve_error_info, has_copy_in_cache,
                      WebURLError::IsWebSecurityViolation::kFalse, url);

@@ -36,6 +36,7 @@ namespace ash {
 
 class AccessibilityHighlightController;
 class AccessibilityObserver;
+class FloatingAccessibilityController;
 class ScopedBacklightsForcedOff;
 class SelectToSpeakEventHandler;
 class SwitchAccessMenuBubbleController;
@@ -58,8 +59,8 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
     kCaretHighlight,
     KCursorHighlight,
     kDictation,
-    kFocusHighlight,
     kFloatingMenu,
+    kFocusHighlight,
     kFullscreenMagnifier,
     kDockedMagnifier,
     kHighContrast,
@@ -167,9 +168,9 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   Feature& caret_highlight() const;
   Feature& cursor_highlight() const;
   FeatureWithDialog& dictation() const;
+  Feature& floating_menu() const;
   Feature& focus_highlight() const;
   FeatureWithDialog& fullscreen_magnifier() const;
-  Feature& floating_menu() const;
   FeatureWithDialog& docked_magnifier() const;
   FeatureWithDialog& high_contrast() const;
   Feature& large_cursor() const;
@@ -204,6 +205,10 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void SetAutoclickMenuPosition(FloatingMenuPosition position);
   FloatingMenuPosition GetAutoclickMenuPosition();
   void RequestAutoclickScrollableBoundsForPoint(gfx::Point& point_in_screen);
+
+  void SetFloatingMenuPosition(FloatingMenuPosition position);
+  FloatingMenuPosition GetFloatingMenuPosition();
+  FloatingAccessibilityController* GetFloatingMenuControllerForTesting();
 
   // Update the autoclick menu bounds if necessary. This may need to happen when
   // the display work area changes, or if system ui regions change (like the
@@ -288,6 +293,8 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   bool tablet_mode_shelf_navigation_buttons_enabled() const {
     return tablet_mode_shelf_navigation_buttons_enabled_;
   }
+
+  void ShowFloatingMenuIfEnabled() override;
 
   bool dictation_active() const { return dictation_active_; }
 
@@ -417,6 +424,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void UpdateAutoclickStabilizePositionFromPref();
   void UpdateAutoclickMovementThresholdFromPref();
   void UpdateAutoclickMenuPositionFromPref();
+  void UpdateFloatingMenuPositionFromPref();
   void UpdateLargeCursorFromPref();
   void UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand command);
   void UpdateSwitchAccessAutoScanEnabledFromPref();
@@ -460,6 +468,9 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   // Used to control the highlights of caret, cursor and focus.
   std::unique_ptr<AccessibilityHighlightController>
       accessibility_highlight_controller_;
+
+  // Used to display accessibility floating menu.
+  std::unique_ptr<FloatingAccessibilityController> floating_menu_controller_;
 
   // Used to force the backlights off to darken the screen.
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_backlights_forced_off_;

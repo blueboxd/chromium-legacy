@@ -541,6 +541,36 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
   ASSERT_THAT(GetAllLoginsFromAccountPasswordStore(),
               ElementsAre(MatchesLogin("user", "pass")));
 }
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
+                       AutoUpdatePSLMatchInBothStoresOnSuccessfulUse) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Add the same PSL-matched credential to both stores (i.e. it's stored for
+  // psl.example.com instead of www.example.com).
+  AddCredentialToFakeServer(CreateTestPSLPasswordForm("user", "pass"));
+  AddLocalCredential(CreateTestPSLPasswordForm("user", "pass"));
+
+  SetupSyncTransportWithPasswordAccountStorage();
+
+  content::WebContents* web_contents = nullptr;
+  GetNewTab(GetBrowser(0), &web_contents);
+
+  // Go to a form (on www.) and submit it with the saved credentials.
+  NavigateToFile(web_contents, "/password/simple_password.html");
+  FillAndSubmitPasswordForm(web_contents, "user", "pass");
+
+  // Now the PSL-matched credential should have been automatically saved for
+  // www. as well, in both stores.
+  EXPECT_THAT(GetAllLoginsFromAccountPasswordStore(),
+              UnorderedElementsAre(
+                  MatchesLoginAndRealm("user", "pass", GetWWWOrigin()),
+                  MatchesLoginAndRealm("user", "pass", GetPSLOrigin())));
+  EXPECT_THAT(GetAllLoginsFromProfilePasswordStore(),
+              UnorderedElementsAre(
+                  MatchesLoginAndRealm("user", "pass", GetWWWOrigin()),
+                  MatchesLoginAndRealm("user", "pass", GetPSLOrigin())));
+}
 #endif  // !defined(OS_CHROMEOS)
 
 }  // namespace

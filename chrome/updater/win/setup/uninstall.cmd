@@ -1,9 +1,10 @@
-rem Deletes the script's parent directory if \AppData\Local\ChromeUpdater\ is
-rem anywhere in the directory path. Sleeps 3 seconds and tries 3 times to
-rem delete the directory.
+rem Deletes the script's parent directory if
+rem \AppData\Local\@COMPANY_SHORTNAME@\@PRODUCT_FULLNAME@\ is anywhere in the
+rem directory path.  Sleeps 3 seconds and tries 3 times to delete the
+rem directory.
 @echo off
 set Directory=%~dp0
-@echo %Directory% | FindStr /R \\AppData\\Local\\Google\\GoogleUpdater\\ > nul
+@echo %Directory% | FindStr /R \\AppData\\Local\\@COMPANY_SHORTNAME@\\@PRODUCT_FULLNAME@\\ > nul
 IF %ERRORLEVEL% NEQ 0 exit 1
 @echo Deleting "%Directory%"...
 for /L %%G IN (1,1,3) do (

@@ -11180,6 +11180,7 @@ interface XMLHttpRequest : XMLHttpRequestEventTarget
     getter status
     getter statusText
     getter timeout
+    getter trustTokenOperationError
     getter upload
     getter withCredentials
     method abort

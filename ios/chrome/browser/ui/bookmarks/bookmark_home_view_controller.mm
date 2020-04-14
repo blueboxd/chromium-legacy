@@ -624,7 +624,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                                                       editedNodes:nodes
                                                      allowsCancel:YES
                                                    selectedFolder:selectedFolder
-                                                       dispatcher:self.handler];
+                                                          browser:self.browser];
   self.folderSelector.delegate = self;
   UINavigationController* navController = [[BookmarkNavigationController alloc]
       initWithRootViewController:self.folderSelector];

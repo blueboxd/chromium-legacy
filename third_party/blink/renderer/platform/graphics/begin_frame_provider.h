@@ -13,6 +13,8 @@
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -35,7 +37,8 @@ class PLATFORM_EXPORT BeginFrameProvider
  public:
   explicit BeginFrameProvider(
       const BeginFrameProviderParams& begin_frame_provider_params,
-      BeginFrameProviderClient*);
+      BeginFrameProviderClient*,
+      ContextLifecycleNotifier*);
 
   void CreateCompositorFrameSinkIfNeeded();
 
@@ -77,12 +80,20 @@ class PLATFORM_EXPORT BeginFrameProvider
   bool needs_begin_frame_;
   bool requested_needs_begin_frame_;
 
-  mojo::Receiver<viz::mojom::blink::CompositorFrameSinkClient> cfs_receiver_{
-      this};
-  mojo::Receiver<mojom::blink::EmbeddedFrameSinkClient> efs_receiver_{this};
+  HeapMojoReceiver<viz::mojom::blink::CompositorFrameSinkClient,
+                   BeginFrameProvider,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      cfs_receiver_;
+
+  HeapMojoReceiver<mojom::blink::EmbeddedFrameSinkClient,
+                   BeginFrameProvider,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      efs_receiver_;
   viz::FrameSinkId frame_sink_id_;
   viz::FrameSinkId parent_frame_sink_id_;
-  mojo::Remote<viz::mojom::blink::CompositorFrameSink> compositor_frame_sink_;
+  HeapMojoRemote<viz::mojom::blink::CompositorFrameSink,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      compositor_frame_sink_;
   Member<BeginFrameProviderClient> begin_frame_client_;
 };
 

@@ -279,35 +279,61 @@ bool AreAllValuesOfSize(const std::vector<ValueProto>& values,
     return false;
   }
   for (const auto& value : values) {
-    switch (value.kind_case()) {
-      case ValueProto::kStrings:
-        if (value.strings().values_size() != target_size)
-          return false;
-        break;
-      case ValueProto::kBooleans:
-        if (value.booleans().values_size() != target_size)
-          return false;
-        break;
-      case ValueProto::kInts:
-        if (value.ints().values_size() != target_size)
-          return false;
-        break;
-      case ValueProto::kUserActions:
-        if (value.user_actions().values_size() != target_size)
-          return false;
-        break;
-      case ValueProto::kDates:
-        if (value.dates().values_size() != target_size)
-          return false;
-        break;
-      case ValueProto::KIND_NOT_SET:
-        if (target_size != 0) {
-          return false;
-        }
-        break;
+    if (GetValueSize(value) != target_size) {
+      return false;
     }
   }
   return true;
+}
+
+int GetValueSize(const ValueProto& value) {
+  switch (value.kind_case()) {
+    case ValueProto::kStrings:
+      return value.strings().values_size();
+    case ValueProto::kBooleans:
+      return value.booleans().values_size();
+    case ValueProto::kInts:
+      return value.ints().values_size();
+    case ValueProto::kUserActions:
+      return value.user_actions().values_size();
+    case ValueProto::kDates:
+      return value.dates().values_size();
+    case ValueProto::KIND_NOT_SET:
+      return 0;
+  }
+}
+
+base::Optional<ValueProto> GetNthValue(const ValueProto& value, int index) {
+  if (value == ValueProto()) {
+    return base::nullopt;
+  }
+  if (index < 0 || index >= GetValueSize(value)) {
+    return base::nullopt;
+  }
+  ValueProto nth_value;
+  switch (value.kind_case()) {
+    case ValueProto::kStrings:
+      nth_value.mutable_strings()->add_values(
+          value.strings().values().at(index));
+      return nth_value;
+    case ValueProto::kBooleans:
+      nth_value.mutable_booleans()->add_values(
+          value.booleans().values().at(index));
+      return nth_value;
+    case ValueProto::kInts:
+      nth_value.mutable_ints()->add_values(value.ints().values().at(index));
+      return nth_value;
+    case ValueProto::kUserActions:
+      *nth_value.mutable_user_actions()->add_values() =
+          value.user_actions().values().at(index);
+      return nth_value;
+    case ValueProto::kDates:
+      *nth_value.mutable_dates()->add_values() =
+          value.dates().values().at(index);
+      return nth_value;
+    case ValueProto::KIND_NOT_SET:
+      return base::nullopt;
+  }
 }
 
 base::Optional<ValueProto> CombineValues(

@@ -25,6 +25,7 @@ if (is_android) {
       "//base:base_java_test_support",
       "//chrome/android:chrome_java",
       "//chrome/android:chrome_test_java",
+      "//chrome/browser/tab:java",
       "//chrome/test/android:chrome_java_test_support",
       "//components/safe_browsing/android:safe_browsing_java",
       "//content/public/test/android:content_java_test_support",

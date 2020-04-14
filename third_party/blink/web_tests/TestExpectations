@@ -3149,6 +3149,7 @@ crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 
 crbug.com/947951 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch.html [ Pass Timeout ]
 crbug.com/1067277 external/wpt/css/css-content/element-replacement-on-replaced-element.tentative.html [ Failure ]
+crbug.com/1069300 external/wpt/css/css-pseudo/active-selection-063.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Linux ] external/wpt/webxr/hit-test/ar_hittest_subscription_refSpaces.https.html [ Timeout ]
@@ -3178,9 +3179,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-strict-
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-normal-015b.xht [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-normal-015b.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-normal-015b.xht [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/active-selection-063.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/active-selection-063.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/active-selection-063.html [ Failure ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/preload/onload-event.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/storage/estimate-indexeddb.https.any.worker.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/fetch/origin/assorted.window.html [ Failure Timeout ]
@@ -6662,6 +6660,11 @@ crbug.com/1064065 virtual/threaded/external/wpt/css/css-animations/event-dispatc
 crbug.com/1064127 virtual/threaded/external/wpt/web-animations/timing-model/animations/update-playback-rate-slow.html [ Pass Failure ]
 crbug.com/1064463 external/wpt/web-animations/interfaces/Animation/style-change-events.html [ Pass Failure ]
 
+# These tests will pass once the --enable-features=TrustTokens flag is on by
+# default. A virtual test suite runs the same tests with the flag enabled.
+crbug.com/1061765 http/tests/loading/trust-tokens/* [ Skip ]
+crbug.com/1061765 external/wpt/trust-tokens/end-to-end/* [ Skip ]
+
 # Sheriff 2020-03-26
 crbug.com/1064839 fast/hidpi/image-srcset-svg-canvas-2x.html [ Pass Failure ]
 # Sheriff 2020-03-27
@@ -6674,9 +6677,6 @@ crbug.com/1065335 [ Win ] fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ 
 crbug.com/1066122 virtual/threaded-no-composited-antialiasing/animations/events/animation-iteration-event.html [ Pass Failure ]
 crbug.com/1066732 fast/events/platform-wheelevent-paging-x-in-scrolling-div.html [ Pass Failure ]
 crbug.com/1066732 fast/events/platform-wheelevent-paging-y-in-scrolling-div.html [ Pass Failure ]
-
-# These tests will pass once the --enable-features=TrustTokens flag is on by default.
-crbug.com/1061765 external/wpt/trust-tokens/end-to-end/* [ Skip ]
 
 # Test flakes
 crbug.com/1066716 http/tests/cache/zero-length-xhr.html [ Pass Timeout ]

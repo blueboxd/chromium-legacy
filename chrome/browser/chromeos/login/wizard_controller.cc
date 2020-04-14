@@ -114,6 +114,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gesture_navigation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
@@ -623,7 +624,7 @@ void WizardController::ShowLoginScreen() {
     UMA_HISTOGRAM_MEDIUM_TIMES("OOBE.EULAToSignInTime", delta);
   }
   VLOG(1) << "Showing login screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_SPECIAL_LOGIN);
+  UpdateStatusAreaVisibilityForScreen(GaiaView::kScreenId);
   GetLoginDisplayHost()->StartSignInScreen();
   login_screen_started_ = true;
 }
@@ -1539,8 +1540,6 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowWelcomeScreen();
   } else if (screen_id == NetworkScreenView::kScreenId) {
     ShowNetworkScreen();
-  } else if (screen_id == OobeScreen::SCREEN_SPECIAL_LOGIN) {
-    ShowLoginScreen();
   } else if (screen_id == PackagedLicenseView::kScreenId) {
     ShowPackagedLicenseScreen();
   } else if (screen_id == UpdateView::kScreenId) {

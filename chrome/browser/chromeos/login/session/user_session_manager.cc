@@ -1282,109 +1282,90 @@ void UserSessionManager::InitProfilePreferences(
       DCHECK(!gaia_id.empty());
     }
 
-    bool should_use_legacy_flow = false;
-    if (!identity_manager
-             ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
-                 gaia_id)
-             .has_value() &&
-        user_context.GetRefreshToken().empty()) {
-      // Edge case: |AccountManager| is enabled but neither |IdentityManager|
-      // nor |user_context| has the refresh token. This means that an existing
-      // user has switched on Account Manager for the first time and has not
-      // undergone the migration flow yet. This migration will be done shorty
-      // in-session.
-      // TODO(https://crbug.com/987955): Remove this.
-      should_use_legacy_flow = true;
+    // We need to set the Primary Account. This is handled by
+    // |IdentityManager|, which enforces the invariant that only an account
+    // previously known to |IdentityManager| can be set as the Primary
+    // Account. |IdentityManager| gets its knowledge of accounts from
+    // |AccountManager| and hence, before we set the Primary Account, we need
+    // to make sure that:
+    // 1. The account is present in |AccountManager|, and
+    // 2. |IdentityManager| has been notified about it.
+
+    AccountManager* account_manager =
+        g_browser_process->platform_part()
+            ->GetAccountManagerFactory()
+            ->GetAccountManager(profile->GetPath().value());
+
+    // |AccountManager| MUST have been fully initialized at this point (via
+    // |UserSessionManager::InitializeAccountManager|), otherwise we cannot
+    // guarantee that |IdentityManager| will have this account in Step (2).
+    // Reason: |AccountManager::UpsertAccount| is an async API that can
+    // technically take an arbitrarily long amount of time to complete and
+    // notify |AccountManager|'s observers. However, if |AccountManager| has
+    // been fully initialized, |AccountManager::UpsertAccount| and the
+    // associated notifications happen synchronously. We are relying on that
+    // (undocumented) behaviour here.
+    // TODO(sinhak): This is a leaky abstraction. Explore if
+    // |UserSessionManager::InitProfilePreferences| can handle an asynchronous
+    // callback and continue.
+    DCHECK(account_manager->IsInitialized());
+
+    const AccountManager::AccountKey account_key{
+        gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA};
+
+    // 1. Make sure that the account is present in |AccountManager|.
+    if (!user_context.GetRefreshToken().empty()) {
+      // |AccountManager::UpsertAccount| is idempotent. We can safely call it
+      // without checking for re-auth cases.
+      // We MUST NOT revoke old Device Account tokens (|revoke_old_token| =
+      // |false|), otherwise Gaia will revoke all tokens associated to this
+      // user's device id, including |refresh_token_| and the user will be
+      // stuck performing an online auth with Gaia at every login. See
+      // https://crbug.com/952570 and https://crbug.com/865189 for context.
+      account_manager->UpsertAccount(account_key,
+                                     user->GetDisplayEmail() /* raw_email */,
+                                     user_context.GetRefreshToken());
+    } else if (!account_manager->IsTokenAvailable(account_key)) {
+      // When |user_context| does not contain a refresh token and account is not
+      // present in the AccountManager it means the migration to the
+      // AccountManager didn't happen.
+      // Set account with dummy token to let IdentitManager know that account
+      // exists and we can safely configure the primary account at the step 2.
+      // The real token will be set later during the migration.
+      account_manager->UpsertAccount(account_key,
+                                     user->GetDisplayEmail() /* raw_email */,
+                                     AccountManager::kInvalidToken);
     }
-    base::UmaHistogramBoolean(
-        "AccountManager.LegacySetPrimaryAccountAndUpdateAccountInfo",
-        should_use_legacy_flow);
+    DCHECK(account_manager->IsTokenAvailable(account_key));
 
-    if (!should_use_legacy_flow) {
-      // We need to set the Primary Account. This is handled by
-      // |IdentityManager|, which enforces the invariant that only an account
-      // previously known to |IdentityManager| can be set as the Primary
-      // Account. |IdentityManager| gets its knowledge of accounts from
-      // |AccountManager| and hence, before we set the Primary Account, we need
-      // to make sure that:
-      // 1. The account is present in |AccountManager|, and
-      // 2. |IdentityManager| has been notified about it.
+    // 2. Make sure that IdentityManager has been notified about it.
+    base::Optional<AccountInfo> account_info =
+        identity_manager
+            ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
+                gaia_id);
 
-      AccountManager* account_manager =
-          g_browser_process->platform_part()
-              ->GetAccountManagerFactory()
-              ->GetAccountManager(profile->GetPath().value());
-
-      // |AccountManager| MUST have been fully initialized at this point (via
-      // |UserSessionManager::InitializeAccountManager|), otherwise we cannot
-      // guarantee that |IdentityManager| will have this account in Step (2).
-      // Reason: |AccountManager::UpsertAccount| is an async API that can
-      // technically take an arbitrarily long amount of time to complete and
-      // notify |AccountManager|'s observers. However, if |AccountManager| has
-      // been fully initialized, |AccountManager::UpsertAccount| and the
-      // associated notifications happen synchronously. We are relying on that
-      // (undocumented) behaviour here.
-      // TODO(sinhak): This is a leaky abstraction. Explore if
-      // |UserSessionManager::InitProfilePreferences| can handle an asynchronous
-      // callback and continue.
-      DCHECK(account_manager->IsInitialized());
-
-      // 1. Make sure that the account is present in |AccountManager|.
-      if (!user_context.GetRefreshToken().empty()) {
-        // |AccountManager::UpsertAccount| is idempotent. We can safely call it
-        // without checking for re-auth cases.
-        // We MUST NOT revoke old Device Account tokens (|revoke_old_token| =
-        // |false|), otherwise Gaia will revoke all tokens associated to this
-        // user's device id, including |refresh_token_| and the user will be
-        // stuck performing an online auth with Gaia at every login. See
-        // https://crbug.com/952570 and https://crbug.com/865189 for context.
-        account_manager->UpsertAccount(
-            AccountManager::AccountKey{
-                gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA},
-            user->GetDisplayEmail() /* raw_email */,
-            user_context.GetRefreshToken());
-      }
-      // else: If |user_context| does not contain a refresh token, then we are
-      // restoring an existing Profile, in which case the account will be
-      // already present in |AccountManager|.
-
-      // 2. Make sure that IdentityManager has been notified about it.
-      base::Optional<AccountInfo> account_info =
-          identity_manager
-              ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
-                  gaia_id);
-      DCHECK(account_info.has_value());
-      if (features::IsSplitSyncConsentEnabled()) {
-        if (is_new_profile) {
-          if (!identity_manager->HasPrimaryAccount(ConsentLevel::kSync)) {
-            // Set the account without recording browser sync consent.
-            identity_manager->GetPrimaryAccountMutator()
-                ->SetUnconsentedPrimaryAccount(account_info->account_id);
-          }
+    DCHECK(account_info.has_value());
+    if (features::IsSplitSyncConsentEnabled()) {
+      if (is_new_profile) {
+        if (!identity_manager->HasPrimaryAccount(ConsentLevel::kSync)) {
+          // Set the account without recording browser sync consent.
+          identity_manager->GetPrimaryAccountMutator()
+              ->SetUnconsentedPrimaryAccount(account_info->account_id);
         }
-        CHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kNotRequired));
-        CHECK_EQ(
-            identity_manager->GetPrimaryAccountInfo(ConsentLevel::kNotRequired)
-                .gaia,
-            gaia_id);
-      } else {
-        // Set a primary account here because the profile might have been
-        // created with the feature SplitSyncConsent enabled. Then the
-        // profile might only have an unconsented primary account.
-        identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
-            account_info->account_id);
-        CHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kSync));
-        CHECK_EQ(identity_manager->GetPrimaryAccountInfo().gaia, gaia_id);
       }
+      CHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kNotRequired));
+      CHECK_EQ(
+          identity_manager->GetPrimaryAccountInfo(ConsentLevel::kNotRequired)
+              .gaia,
+          gaia_id);
     } else {
-      // Make sure that the google service username is properly set (we do this
-      // on every sign in, not just the first login, to deal with existing
-      // profiles that might not have it set yet).
-      // TODO(https://crbug.com/987955): Check the UMA stat and remove it when
-      // all users have been migrated to Account Manager.
-      identity_manager->GetPrimaryAccountMutator()
-          ->DeprecatedSetPrimaryAccountAndUpdateAccountInfo(
-              gaia_id, user_context.GetAccountId().GetUserEmail());
+      // Set a primary account here because the profile might have been
+      // created with the feature SplitSyncConsent enabled. Then the
+      // profile might only have an unconsented primary account.
+      identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
+          account_info->account_id);
+      CHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kSync));
+      CHECK_EQ(identity_manager->GetPrimaryAccountInfo().gaia, gaia_id);
     }
 
     CoreAccountId account_id =

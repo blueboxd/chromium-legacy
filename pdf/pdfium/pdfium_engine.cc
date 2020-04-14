@@ -347,6 +347,13 @@ wchar_t SimplifyForSearch(wchar_t c) {
   }
 }
 
+PDFiumEngine::SetSelectedTextFunction g_set_selected_text_func_for_testing =
+    nullptr;
+
+void SetSelectedText(pp::Instance* instance, const std::string& selected_text) {
+  pp::PDF::SetSelectedText(instance, selected_text.c_str());
+}
+
 }  // namespace
 
 void InitializeSDK(bool enable_v8) {
@@ -424,6 +431,12 @@ void PDFiumEngine::SetDocumentLoaderForTesting(
   DCHECK(!doc_loader_);
   doc_loader_ = std::move(loader);
   doc_loader_set_for_testing_ = true;
+}
+
+// static
+void PDFiumEngine::OverrideSetSelectedTextFunctionForTesting(
+    SetSelectedTextFunction function) {
+  g_set_selected_text_func_for_testing = function;
 }
 
 bool PDFiumEngine::New(const char* url, const char* headers) {
@@ -913,6 +926,40 @@ pp::Buffer_Dev PDFiumEngine::ConvertPdfToBufferDev(
 void PDFiumEngine::KillFormFocus() {
   FORM_ForceToKillFocus(form());
   SetInFormTextArea(false);
+}
+
+void PDFiumEngine::UpdateFocus(bool has_focus) {
+  if (has_focus) {
+    focus_item_type_ = last_focused_item_type_;
+    if (focus_item_type_ == FocusElementType::kPage &&
+        PageIndexInBounds(last_focused_page_) &&
+        last_focused_annot_index_ != -1) {
+      ScopedFPDFAnnotation last_focused_annot(FPDFPage_GetAnnot(
+          pages_[last_focused_page_]->GetPage(), last_focused_annot_index_));
+      if (last_focused_annot) {
+        FPDF_BOOL ret = FORM_SetFocusedAnnot(form(), last_focused_annot.get());
+        DCHECK(ret);
+      }
+    }
+  } else {
+    last_focused_item_type_ = focus_item_type_;
+    if (focus_item_type_ == FocusElementType::kDocument) {
+      focus_item_type_ = FocusElementType::kNone;
+    } else if (focus_item_type_ == FocusElementType::kPage) {
+      FPDF_ANNOTATION last_focused_annot = nullptr;
+      FPDF_BOOL ret = FORM_GetFocusedAnnot(form(), &last_focused_page_,
+                                           &last_focused_annot);
+      DCHECK(ret);
+      if (PageIndexInBounds(last_focused_page_) && last_focused_annot) {
+        last_focused_annot_index_ = FPDFPage_GetAnnotIndex(
+            pages_[last_focused_page_]->GetPage(), last_focused_annot);
+      } else {
+        last_focused_annot_index_ = -1;
+      }
+      FPDFPage_CloseAnnot(last_focused_annot);
+    }
+    KillFormFocus();
+  }
 }
 
 uint32_t PDFiumEngine::GetLoadedByteSize() {
@@ -3507,8 +3554,13 @@ void PDFiumEngine::SetInFormTextArea(bool in_form_text_area) {
   // Clearing needs to be done before changing focus to ensure the correct
   // observer is notified of the change in selection. When |in_form_text_area_|
   // is true, this is the Renderer. After it flips, the MimeHandler is notified.
-  if (in_form_text_area_)
-    pp::PDF::SetSelectedText(GetPluginInstance(), "");
+  if (in_form_text_area_) {
+    SetSelectedTextFunction set_selected_text_func =
+        g_set_selected_text_func_for_testing
+            ? g_set_selected_text_func_for_testing
+            : &SetSelectedText;
+    set_selected_text_func(GetPluginInstance(), "");
+  }
 
   client_->FormTextFieldFocusChange(in_form_text_area);
   in_form_text_area_ = in_form_text_area;

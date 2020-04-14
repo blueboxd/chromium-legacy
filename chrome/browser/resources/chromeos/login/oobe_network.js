@@ -113,8 +113,8 @@ Polymer({
    * @private
    */
   onShown_() {
+    this.$.networkSelectLogin.refresh();
     this.async(function() {
-      this.$.networkSelectLogin.refresh();
       if (this.isConnected_)
         this.$.nextButton.focus();
       else

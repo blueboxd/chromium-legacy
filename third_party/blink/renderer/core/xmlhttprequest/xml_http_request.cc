@@ -30,6 +30,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
@@ -1694,6 +1695,12 @@ void XMLHttpRequest::DidFail(const ResourceError& error) {
     return;
   }
 
+  if (error.TrustTokenOperationError() !=
+      network::mojom::TrustTokenOperationStatus::kOk) {
+    trust_token_operation_error_ =
+        TrustTokenErrorToDOMException(error.TrustTokenOperationError());
+  }
+
   HandleNetworkError();
 }
 
@@ -2082,6 +2089,7 @@ void XMLHttpRequest::Trace(Visitor* visitor) {
   visitor->Trace(upload_);
   visitor->Trace(blob_loader_);
   visitor->Trace(response_text_);
+  visitor->Trace(trust_token_operation_error_);
   XMLHttpRequestEventTarget::Trace(visitor);
   ThreadableLoaderClient::Trace(visitor);
   DocumentParserClient::Trace(visitor);

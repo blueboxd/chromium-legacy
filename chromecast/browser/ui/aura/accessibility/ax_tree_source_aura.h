@@ -25,6 +25,8 @@ class AXTreeSourceAura : public views::AXTreeSourceViews {
                      ui::AXNodeData* out_data) const override;
 
  private:
+  views::AXAuraObjCache* cache_;
+
   DISALLOW_COPY_AND_ASSIGN(AXTreeSourceAura);
 };
 

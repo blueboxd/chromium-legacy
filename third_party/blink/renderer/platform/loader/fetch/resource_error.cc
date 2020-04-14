@@ -26,13 +26,16 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/mojom/trust_tokens.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/trust_token_params_conversion.h"
 
 namespace blink {
 
@@ -101,7 +104,8 @@ ResourceError::ResourceError(const WebURLError& error)
       is_access_check_(error.is_web_security_violation()),
       has_copy_in_cache_(error.has_copy_in_cache()),
       cors_error_status_(error.cors_error_status()),
-      blocked_by_response_reason_(error.blocked_by_response_reason()) {
+      blocked_by_response_reason_(error.blocked_by_response_reason()),
+      trust_token_operation_error_(error.trust_token_operation_error()) {
   DCHECK_NE(error_code_, 0);
   InitializeDescription();
 }
@@ -114,6 +118,7 @@ ResourceError ResourceError::Copy() const {
   error_copy.has_copy_in_cache_ = has_copy_in_cache_;
   error_copy.localized_description_ = localized_description_.IsolatedCopy();
   error_copy.is_access_check_ = is_access_check_;
+  error_copy.trust_token_operation_error_ = trust_token_operation_error_;
   return error_copy;
 }
 
@@ -125,6 +130,11 @@ ResourceError::operator WebURLError() const {
   if (cors_error_status_) {
     DCHECK_EQ(net::ERR_FAILED, error_code_);
     return WebURLError(*cors_error_status_, has_copy_in_cache, failing_url_);
+  }
+
+  if (trust_token_operation_error_ !=
+      network::mojom::blink::TrustTokenOperationStatus::kOk) {
+    return WebURLError(error_code_, trust_token_operation_error_, failing_url_);
   }
 
   return WebURLError(
@@ -157,6 +167,9 @@ bool ResourceError::Compare(const ResourceError& a, const ResourceError& b) {
     return false;
 
   if (a.resolve_error_info_ != b.resolve_error_info_)
+    return false;
+
+  if (a.trust_token_operation_error_ != b.trust_token_operation_error_)
     return false;
 
   return true;
@@ -299,7 +312,10 @@ std::ostream& operator<<(std::ostream& os, const ResourceError& error) {
             << ", IsAccessCheck = " << error.IsAccessCheck()
             << ", IsTimeout = " << error.IsTimeout()
             << ", HasCopyInCache = " << error.HasCopyInCache()
-            << ", IsCacheMiss = " << error.IsCacheMiss();
+            << ", IsCacheMiss = " << error.IsCacheMiss()
+            << ", TrustTokenOperationError = "
+            << String::FromUTF8(base::NumberToString(
+                   static_cast<int32_t>(error.TrustTokenOperationError())));
 }
 
 }  // namespace blink

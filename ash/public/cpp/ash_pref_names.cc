@@ -80,6 +80,9 @@ const char kAccessibilityCursorHighlightEnabled[] =
 // A boolean pref which determines whether floating accessibility menu is
 // enabled.
 const char kAccessibilityFloatingMenuEnabled[] = "settings.a11y.floating_menu";
+// Floating a11y menu position, a FloatingMenuPosition;
+const char kAccessibilityFloatingMenuPosition[] =
+    "settings.a11y.floating_menu_position";
 // A boolean pref which determines whether focus highlighting is enabled.
 const char kAccessibilityFocusHighlightEnabled[] =
     "settings.a11y.focus_highlight";

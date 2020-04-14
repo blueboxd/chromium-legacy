@@ -4,9 +4,46 @@
 
 #include "components/autofill_assistant/browser/user_model.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace autofill_assistant {
+
+namespace {
+
+// Matches an ASCII identifier (w+) which ends in [<string>], e.g.,
+// test_identifier[sub_identifier[2]].
+static const char* const kExtractArraySubidentifierRegex = R"(^(\w+)\[(.+)\]$)";
+
+// Simple wrapper around value_util::GetNthValue to unwrap the base::optional
+// |value|.
+base::Optional<ValueProto> GetNthValue(const base::Optional<ValueProto>& value,
+                                       int index) {
+  if (!value.has_value()) {
+    return base::nullopt;
+  }
+
+  return GetNthValue(*value, index);
+}
+
+// Same as above, but expects |index_value| to point to a single integer value
+// specifying the index to retrieve.
+base::Optional<ValueProto> GetNthValue(
+    const base::Optional<ValueProto>& value,
+    const base::Optional<ValueProto>& index_value) {
+  if (!value.has_value() || !index_value.has_value()) {
+    return base::nullopt;
+  }
+  if (!AreAllValuesOfSize({*index_value}, 1) ||
+      !AreAllValuesOfType({*index_value}, ValueProto::kInts)) {
+    return base::nullopt;
+  }
+
+  return GetNthValue(*value, index_value->ints().values().at(0));
+}
+
+}  // namespace
 
 UserModel::Observer::Observer() = default;
 UserModel::Observer::~Observer() = default;
@@ -38,6 +75,21 @@ base::Optional<ValueProto> UserModel::GetValue(
   auto it = values_.find(identifier);
   if (it != values_.end()) {
     return it->second;
+  } else if (base::EndsWith(identifier, "]", base::CompareCase::SENSITIVE)) {
+    std::string identifier_without_suffix;
+    std::string subidentifier;
+    if (re2::RE2::FullMatch(identifier, kExtractArraySubidentifierRegex,
+                            &identifier_without_suffix, &subidentifier)) {
+      int index;
+      if (base::StringToInt(subidentifier, &index)) {
+        // The case 'identifier[n]'.
+        return GetNthValue(GetValue(identifier_without_suffix), index);
+      } else {
+        // The case 'identifier[subidentifier]'.
+        return GetNthValue(GetValue(identifier_without_suffix),
+                           GetValue(subidentifier));
+      }
+    }
   }
   return base::nullopt;
 }

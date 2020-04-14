@@ -49,7 +49,7 @@ class CC_EXPORT BeginFrameTracker {
 
   // Start using a new BFA value and check invariant properties.
   // **Must** only be called after finishing with any previous BFA.
-  void Start(viz::BeginFrameArgs new_args);
+  void Start(const viz::BeginFrameArgs& new_args);
   // Finish using the current BFA.
   // **Must** only be called while still using a BFA.
   void Finish();

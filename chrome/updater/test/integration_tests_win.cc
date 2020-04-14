@@ -8,6 +8,9 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,6 +35,15 @@ bool Run(base::CommandLine command_line, int* exit_code) {
   if (!process.WaitForExitWithTimeout(base::TimeDelta::FromSeconds(60),
                                       exit_code))
     return false;
+  base::WaitableEvent sleep(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  // The process will exit before it is done uninstalling: sleep for five
+  // seconds to allow uninstall to complete.
+  base::ThreadPool::PostDelayedTask(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&sleep)),
+      base::TimeDelta::FromSeconds(5));
+  sleep.Wait();
   return true;
 }
 
@@ -68,7 +80,7 @@ void ExpectClean() {
 
   // Files must not exist on the file system.
 
-  // EXPECT_FALSE(base::PathExists(GetProductPath()));
+  EXPECT_FALSE(base::PathExists(GetProductPath()));
 }
 
 void ExpectInstalled() {

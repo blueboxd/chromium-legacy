@@ -350,5 +350,19 @@ TEST_F(ValueUtilTest, NotEqualOperatorForValueProto) {
   EXPECT_TRUE(value_a != value_b);
 }
 
+TEST_F(ValueUtilTest, TestGetNthValue) {
+  ValueProto value;
+  value.mutable_strings()->add_values("a");
+  value.mutable_strings()->add_values("b");
+  value.mutable_strings()->add_values("c");
+
+  EXPECT_EQ(GetNthValue(value, 0), SimpleValue(std::string("a")));
+  EXPECT_EQ(GetNthValue(value, 1), SimpleValue(std::string("b")));
+  EXPECT_EQ(GetNthValue(value, 2), SimpleValue(std::string("c")));
+
+  EXPECT_EQ(GetNthValue(value, -1), base::nullopt);
+  EXPECT_EQ(GetNthValue(value, 3), base::nullopt);
+}
+
 }  // namespace value_util
 }  // namespace autofill_assistant

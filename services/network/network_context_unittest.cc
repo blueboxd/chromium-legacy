@@ -6608,8 +6608,8 @@ TEST_F(NetworkContextTest,
                    mojom::kBrowserProcessId, std::move(factory_params));
   EXPECT_EQ(client->completion_status().error_code,
             net::ERR_TRUST_TOKEN_OPERATION_FAILED);
-  EXPECT_THAT(client->completion_status().trust_token_operation_status,
-              Optional(mojom::TrustTokenOperationStatus::kUnavailable));
+  EXPECT_EQ(client->completion_status().trust_token_operation_status,
+            mojom::TrustTokenOperationStatus::kUnavailable);
 }
 
 }  // namespace

@@ -415,8 +415,8 @@ test("gl_tests") {
 
   if (use_dawn) {
     deps += [
+      "//third_party/dawn/src/dawn:dawn_proc",
       "//third_party/dawn/src/dawn:dawncpp",
-      "//third_party/dawn/src/dawn:libdawn_proc",
       "//third_party/dawn/src/dawn_native",
     ]
   }

@@ -38,6 +38,7 @@ if (is_android) {
       ":ukm_java_test_support",
       "//base:base_java_test_support",
       "//chrome/android:chrome_java",
+      "//chrome/browser/tab:java",
       "//chrome/test/android:chrome_java_test_support",
       "//components/metrics:metrics_java",
       "//content/public/test/android:content_java_test_support",

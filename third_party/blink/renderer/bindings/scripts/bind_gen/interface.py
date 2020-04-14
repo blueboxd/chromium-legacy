@@ -3973,6 +3973,11 @@ ${npo_prototype_template}->SetInternalFieldCount(
             code_node.register_code_symbol(symbol_node)
 
 
+def _make_property_entry_cached_accessor(property_):
+    value = property_.extended_attributes.value_of("CachedAccessor")
+    return "V8PrivateProperty::CachedAccessor::{}".format(value or "kNone")
+
+
 def _make_property_entry_v8_property_attribute(property_):
     values = []
     if "NotEnumerable" in property_.extended_attributes:
@@ -4064,7 +4069,7 @@ def _make_attribute_registration_table(table_name, attribute_entries):
                    "\"{property_name}\", "
                    "{attribute_get_callback}, "
                    "{attribute_set_callback}, "
-                   "V8PrivateProperty::kNoCachedAccessor, "
+                   "static_cast<unsigned>({cached_accessor}), "
                    "{v8_property_attribute}, "
                    "{on_which_object}, "
                    "{check_receiver}, "
@@ -4077,6 +4082,8 @@ def _make_attribute_registration_table(table_name, attribute_entries):
             property_name=entry.property_.identifier,
             attribute_get_callback=entry.attr_get_callback_name,
             attribute_set_callback=(entry.attr_set_callback_name or "nullptr"),
+            cached_accessor=_make_property_entry_cached_accessor(
+                entry.property_),
             v8_property_attribute=_make_property_entry_v8_property_attribute(
                 entry.property_),
             on_which_object=_make_property_entry_on_which_object(
@@ -4604,6 +4611,22 @@ bindings::InstallUnscopablePropertyNames(
 // V8 defines "constructor" property on the prototype object by default.
 ${prototype_object}->Delete(
     ${v8_context}, V8AtomicString(${isolate}, "constructor")).ToChecked();
+"""))
+
+    if class_like.identifier == "Window":
+        nodes.append(
+            TextNode("""\
+// TODO(yukishiino): Remove the following empty check.  Since Blink is
+//   creating a new object from a boilerplate (i.e. CreateWrapperFromCache),
+//   we can install all context-dependent properties at a time onto all of
+//   instance_object, prototype_object, and interface_object by refactoring
+//   V8PerContextData.
+if (!${instance_object}.IsEmpty()) {
+  // [CachedAccessor=kWindowProxy]
+  V8PrivateProperty::GetCachedAccessor(
+      ${isolate}, V8PrivateProperty::CachedAccessor::kWindowProxy)
+      .Set(${instance_object}, ${v8_context}->Global());
+}
 """))
 
     if ("Global" in class_like.extended_attributes

@@ -5,6 +5,10 @@
 source_set("privacy") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "cookies_coordinator.h",
+    "cookies_coordinator.mm",
+    "cookies_view_controller.h",
+    "cookies_view_controller.mm",
     "handoff_table_view_controller.h",
     "handoff_table_view_controller.mm",
     "privacy_coordinator.h",
@@ -28,6 +32,7 @@ source_set("privacy") {
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/page_info:features",
     "//ios/chrome/browser/ui/settings:constants",
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings/cells",

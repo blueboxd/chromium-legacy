@@ -122,6 +122,10 @@ class AppWindowWrapper {
 
       // Create a window.
       chrome.app.window.create(this.url_, this.options_, appWindow => {
+        if (!appWindow) {
+          callback();
+          return;
+        }
         // Exit full screen state if it's created as a full screen window.
         if (appWindow.isFullscreen()) {
           appWindow.restore();
@@ -141,18 +145,23 @@ class AppWindowWrapper {
 
     // After creating.
     this.queue.run(callback => {
+      if (!this.window_) {
+        opt_callback && opt_callback();
+        callback();
+      }
+
       // If there is another window in the same position, shift the window.
       const makeBoundsKey = bounds => {
         return bounds.left + '/' + bounds.top;
       };
       const notAvailablePositions = {};
       for (let i = 0; i < similarWindows.length; i++) {
-        let key = makeBoundsKey(similarWindows[i].getBounds());
+        const key = makeBoundsKey(similarWindows[i].getBounds());
         notAvailablePositions[key] = true;
       }
       const candidateBounds = this.window_.getBounds();
       while (true) {
-        let key = makeBoundsKey(candidateBounds);
+        const key = makeBoundsKey(candidateBounds);
         if (!notAvailablePositions[key]) {
           break;
         }
@@ -333,8 +342,9 @@ class SingletonAppWindowWrapper extends AppWindowWrapper {
         return;  // No app state persisted.
       }
 
+      let appState;
       try {
-        var appState = assertInstanceof(JSON.parse(value), Object);
+        appState = assertInstanceof(JSON.parse(value), Object);
       } catch (e) {
         console.error('Corrupt launch data for ' + this.id_, value);
         opt_callback && opt_callback();

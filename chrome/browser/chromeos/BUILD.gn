@@ -2189,6 +2189,8 @@ source_set("chromeos") {
     "printing/server_printers_fetcher.h",
     "printing/server_printers_provider.cc",
     "printing/server_printers_provider.h",
+    "printing/server_printers_provider_factory.cc",
+    "printing/server_printers_provider_factory.h",
     "printing/specifics_translation.cc",
     "printing/specifics_translation.h",
     "printing/synced_printers_manager.cc",

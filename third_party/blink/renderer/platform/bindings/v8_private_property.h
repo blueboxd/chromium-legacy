@@ -34,9 +34,11 @@ class PLATFORM_EXPORT V8PrivateProperty {
   USING_FAST_MALLOC(V8PrivateProperty);
 
  public:
-  enum CachedAccessorSymbol : unsigned {
-    kNoCachedAccessor = 0,
-    kWindowDocumentCachedAccessor,
+  // Private properties used to implement [CachedAccessor].
+  enum class CachedAccessor : unsigned {
+    kNone = 0,
+    kWindowProxy,
+    kWindowDocument,
   };
 
   V8PrivateProperty() = default;
@@ -111,16 +113,7 @@ class PLATFORM_EXPORT V8PrivateProperty {
   static Symbol GetWindowDocumentCachedAccessor(v8::Isolate* isolate);
 
   static Symbol GetCachedAccessor(v8::Isolate* isolate,
-                                  CachedAccessorSymbol symbol_id) {
-    switch (symbol_id) {
-      case kWindowDocumentCachedAccessor:
-        return GetWindowDocumentCachedAccessor(isolate);
-      case kNoCachedAccessor:
-        break;
-    }
-    NOTREACHED();
-    return GetEmptySymbol();
-  }
+                                  CachedAccessor symbol_id);
 
   // This is a hack for PopStateEvent to get the same private property of
   // History, named State.

@@ -72,18 +72,6 @@ class PrimaryAccountMutator {
   // of "unconsented".
   virtual void SetUnconsentedPrimaryAccount(
       const CoreAccountId& account_id) = 0;
-
-  // Updates the info of the account corresponding to (|gaia_id|, |email|),
-  // marks it as the primary account, and returns whether the operation
-  // succeeded or not. Currently, this method is guaranteed to succeed.
-  // NOTE: Unlike SetPrimaryAccount(), this method does not require that the
-  // account is known by IdentityManager. The reason is that there are
-  // contexts on ChromeOS where the primary account is not guaranteed to be
-  // known by IdentityManager when it is set.
-  // TODO(https://crbug.com/987955): Remove this API.
-  virtual bool DeprecatedSetPrimaryAccountAndUpdateAccountInfo(
-      const std::string& gaia_id,
-      const std::string& email) = 0;
 #endif
 
 #if !defined(OS_CHROMEOS)

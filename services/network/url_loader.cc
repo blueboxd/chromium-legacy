@@ -1622,7 +1622,8 @@ void URLLoader::NotifyCompleted(int error_code) {
     status.proxy_server = url_request_->proxy_server();
     status.resolve_error_info =
         url_request_->response_info().resolve_error_info;
-    status.trust_token_operation_status = trust_token_status_;
+    if (trust_token_status_)
+      status.trust_token_operation_status = *trust_token_status_;
 
     if ((options_ & mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
         net::IsCertStatusError(url_request_->ssl_info().cert_status)) {

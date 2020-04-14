@@ -85,9 +85,7 @@ ScriptResource* ScriptResource::Fetch(FetchParameters& params,
 
   if (streaming_allowed == kAllowStreaming) {
     // Start streaming the script as soon as we get it.
-    if (RuntimeEnabledFeatures::ScriptStreamingOnPreloadEnabled()) {
-      resource->StartStreaming(fetcher->GetTaskRunner());
-    }
+    resource->StartStreaming(fetcher->GetTaskRunner());
   } else {
     // Advance the |streaming_state_| to kStreamingNotAllowed by calling
     // SetClientIsWaitingForFinished unless it is explicitly allowed.'

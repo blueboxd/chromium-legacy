@@ -2549,12 +2549,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   SnapshotTabHelper::FromWebState(webState)->SetDelegate(self);
 
-  // TODO(crbug.com/777557): do not pass the dispatcher to PasswordTabHelper.
+  // TODO(crbug.com/1069763): do not pass the browser to PasswordTabHelper.
   if (PasswordTabHelper* passwordTabHelper =
           PasswordTabHelper::FromWebState(webState)) {
     passwordTabHelper->SetBaseViewController(self);
-    passwordTabHelper->SetDispatcher(self.dispatcher);
     passwordTabHelper->SetPasswordControllerDelegate(self);
+    passwordTabHelper->SetBrowser(self.browser);
   }
 
   if (!IsIPadIdiom()) {
@@ -2604,10 +2604,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)uninstallDelegatesForWebState:(web::WebState*)webState {
   DCHECK_EQ(webState->GetDelegate(), _webStateDelegate.get());
 
-  // TODO(crbug.com/777557): do not pass the dispatcher to PasswordTabHelper.
+  // TODO(crbug.com/1069763): do not pass the browser to PasswordTabHelper.
   if (PasswordTabHelper* passwordTabHelper =
           PasswordTabHelper::FromWebState(webState)) {
-    passwordTabHelper->SetDispatcher(nil);
+    passwordTabHelper->SetBrowser(self.browser);
   }
 
   if (!IsIPadIdiom()) {

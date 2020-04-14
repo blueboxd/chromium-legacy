@@ -89,6 +89,8 @@ class SupervisedUserWhitelistService : public syncer::SyncableService {
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
+  syncer::SyncDataList GetAllSyncDataForTesting(syncer::ModelType type) const;
+
  private:
   // The following methods handle whitelist additions, updates and removals,
   // usually coming from Sync.

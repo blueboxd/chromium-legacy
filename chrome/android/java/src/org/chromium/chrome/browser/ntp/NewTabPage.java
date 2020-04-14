@@ -220,12 +220,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         }
 
         @Override
-        public void performSearchQuery(String query) {
-            if (mFakeboxDelegate == null) return;
-            mFakeboxDelegate.performSearchQuery(query);
-        }
-
-        @Override
         public boolean isCurrentPage() {
             if (mIsDestroyed) return false;
             if (mFakeboxDelegate == null) return false;

@@ -79,8 +79,8 @@ using bookmarks::BookmarkNode;
 @property(nonatomic, assign, readonly)
     const std::vector<const BookmarkNode*>& folders;
 
-// The dispatcher for this ViewController.
-@property(nonatomic, readonly, weak) id<BrowserCommands> dispatcher;
+// The browser for this ViewController.
+@property(nonatomic, readonly) Browser* browser;
 
 // Reloads the model and the updates |self.tableView| to reflect any model
 // changes.
@@ -115,18 +115,19 @@ using bookmarks::BookmarkNode;
                               (const std::set<const BookmarkNode*>&)nodes
                          allowsCancel:(BOOL)allowsCancel
                        selectedFolder:(const BookmarkNode*)selectedFolder
-                           dispatcher:(id<BrowserCommands>)dispatcher {
+                              browser:(Browser*)browser {
   DCHECK(bookmarkModel);
   DCHECK(bookmarkModel->loaded());
+  DCHECK(browser);
   DCHECK(selectedFolder == NULL || selectedFolder->is_folder());
   self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
+    _browser = browser;
     _allowsCancel = allowsCancel;
     _allowsNewFolders = allowsNewFolders;
     _bookmarkModel = bookmarkModel;
     _editedNodes = nodes;
     _selectedFolder = selectedFolder;
-    _dispatcher = dispatcher;
 
     // Set up the bookmark model oberver.
     _modelBridge.reset(
@@ -449,7 +450,7 @@ using bookmarks::BookmarkNode;
       [BookmarkFolderEditorViewController
           folderCreatorWithBookmarkModel:self.bookmarkModel
                             parentFolder:self.selectedFolder
-                              dispatcher:self.dispatcher];
+                                 browser:self.browser];
   folderCreator.delegate = self;
   [self.navigationController pushViewController:folderCreator animated:YES];
   self.folderAddController = folderCreator;

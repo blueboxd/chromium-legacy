@@ -43,17 +43,6 @@
 @synthesize rawCancelAction = _rawCancelAction;
 @synthesize message = _message;
 
-// TODO(crbug.com/1029346): Remove this init after migrate away from downstream
-// AlertCoordinator use.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                     title:(NSString*)title
-                                   message:(NSString*)message {
-  return [self initWithBaseViewController:viewController
-                                  browser:nil
-                                    title:title
-                                  message:message];
-}
-
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser
                                      title:(NSString*)title

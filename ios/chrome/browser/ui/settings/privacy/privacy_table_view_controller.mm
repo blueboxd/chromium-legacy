@@ -15,6 +15,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_navigation_commands.h"
@@ -39,11 +41,13 @@ namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierWebServices = kSectionIdentifierEnumZero,
+  SectionIndentifierCookies,
   SectionIdentifierClearBrowsingData,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeOtherDevicesHandoff = kItemTypeEnumZero,
+  ItemTypeCookies,
   ItemTypeClearBrowsingDataClear,
   // Footer to suggest the user to open Sync and Google services settings.
   ItemTypeClearBrowsingDataFooter,
@@ -112,8 +116,7 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
 - (void)didMoveToParentViewController:(UIViewController*)parent {
   [super didMoveToParentViewController:parent];
   if (!parent) {
-    [self.presentationDelegate
-        privacyTableViewControllerViewControllerWasRemoved:self];
+    [self.presentationDelegate privacyTableViewControllerWasRemoved:self];
   }
 }
 
@@ -128,6 +131,13 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
   [model addSectionWithIdentifier:SectionIdentifierWebServices];
   [model addItem:[self handoffDetailItem]
       toSectionWithIdentifier:SectionIdentifierWebServices];
+
+  if (base::FeatureList::IsEnabled(kPageInfoChromeGuard)) {
+    // Cookies Section
+    [model addSectionWithIdentifier:SectionIndentifierCookies];
+    [model addItem:[self cookiesItem]
+        toSectionWithIdentifier:SectionIndentifierCookies];
+  }
 
   // Clear Browsing Section
   [model addSectionWithIdentifier:SectionIdentifierClearBrowsingData];
@@ -164,6 +174,14 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
   showClearBrowsingDataFooterItem.linkURL = GURL(kGoogleServicesSettingsURL);
 
   return showClearBrowsingDataFooterItem;
+}
+
+// Returns TableViewHeaderFooterItem instance to open Cookies screen.
+- (TableViewItem*)cookiesItem {
+  return [self detailItemWithType:ItemTypeCookies
+                          titleId:IDS_IOS_OPTIONS_PRIVACY_COOKIES
+                       detailText:nil
+          accessibilityIdentifier:kSettingsCookiesCellId];
 }
 
 - (TableViewItem*)clearBrowsingDetailItem {
@@ -213,6 +231,9 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
       break;
     case ItemTypeClearBrowsingDataClear:
       [self.handler showClearBrowsingData];
+      break;
+    case ItemTypeCookies:
+      [self.handler showCookies];
       break;
     default:
       break;

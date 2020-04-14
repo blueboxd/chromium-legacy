@@ -16,7 +16,7 @@ BeginFrameTracker::BeginFrameTracker(const base::Location& location)
 
 BeginFrameTracker::~BeginFrameTracker() = default;
 
-void BeginFrameTracker::Start(viz::BeginFrameArgs new_args) {
+void BeginFrameTracker::Start(const viz::BeginFrameArgs& new_args) {
   // Trace the frame time being passed between BeginFrameTrackers.
   TRACE_EVENT_FLOW_STEP0(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"), "BeginFrameArgs",

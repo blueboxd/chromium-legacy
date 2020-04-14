@@ -197,5 +197,4 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
   }
 };
 
-new RangeAutomationHandler();
 });  // goog.scope

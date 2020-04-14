@@ -139,7 +139,7 @@ class FileSystemDirectoryHandle extends FileSystemHandle {
   /**
    * @param {string} name
    * @param {FileSystemGetFileOptions=} options
-   * @return {Promise<!FileSystemFileHandle>}
+   * @return {!Promise<!FileSystemFileHandle>}
    */
   getFile(name, options) {}
 
@@ -204,10 +204,10 @@ let ChooseFileSystemEntriesOptionsAccepts;
  *    excludeAcceptAllOption: (boolean|undefined)
  * }}
  */
-let chooseFileSystemEntriesOptions;
+let ChooseFileSystemEntriesOptions;
 
 /**
- * @param {(!chooseFileSystemEntriesOptions|undefined)} options
+ * @param {(!ChooseFileSystemEntriesOptions|undefined)} options
  * @return {!Promise<(!FileSystemHandle|!Array<!FileSystemHandle>)>}
  */
 window.chooseFileSystemEntries;

@@ -8994,6 +8994,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Dark Theme
       </message>
 
+      <!-- Live caption. -->
+      <message name="IDS_LIVE_CAPTION_BUBBLE_TITLE" desc="Title for the Live Caption bubble">
+          Live Caption
+      </message>
+
       <!-- Media Galleries. -->
       <if expr="not is_android">
         <message name="IDS_MEDIA_GALLERIES_DIALOG_HEADER" desc="Header for media gallery permissions dialog.">

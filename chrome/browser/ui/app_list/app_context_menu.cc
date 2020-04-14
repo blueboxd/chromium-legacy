@@ -10,7 +10,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/image_model.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/vector_icons.h"
@@ -68,19 +67,18 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
-const gfx::VectorIcon* AppContextMenu::GetVectorIconForCommandId(
-    int command_id) const {
+ui::ImageModel AppContextMenu::GetIconForCommandId(int command_id) const {
   DCHECK_EQ(command_id, ash::TOGGLE_PIN);
   const gfx::VectorIcon& icon =
       GetMenuItemVectorIcon(command_id, controller_->IsAppPinned(app_id_)
                                             ? IDS_APP_LIST_CONTEXT_MENU_UNPIN
                                             : IDS_APP_LIST_CONTEXT_MENU_PIN);
-  return &icon;
+  return ui::ImageModel::FromVectorIcon(icon);
 }
 
-const gfx::VectorIcon& AppContextMenu::GetMenuItemVectorIcon(
-    int command_id,
-    int string_id) const {
+// static
+const gfx::VectorIcon& AppContextMenu::GetMenuItemVectorIcon(int command_id,
+                                                             int string_id) {
   switch (command_id) {
     case ash::LAUNCH_NEW:
       if (string_id == IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW)

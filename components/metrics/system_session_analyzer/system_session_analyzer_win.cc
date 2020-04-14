@@ -113,8 +113,13 @@ bool SystemSessionAnalyzer::GetEventInfo(
 
 SystemSessionAnalyzer::Status SystemSessionAnalyzer::IsSessionUnclean(
     base::Time timestamp) {
-  if (!EnsureInitialized())
+  if (!EnsureInitialized()) {
+    // Insufficient events in the error log is a special-case with its own error
+    // code so that a truncated system log doesn't cause failures.
+    if (GetExtendedFailureStatus() == ExtendedStatus::EVENT_COUNT_MISMATCH)
+      return INSUFFICIENT_DATA;
     return INITIALIZE_FAILED;
+  }
 
   while (timestamp < coverage_start_ && sessions_queried_ < max_session_cnt_) {
     // Fetch the next session start and end events.

@@ -49,14 +49,9 @@ base::string16 SimpleMenuModel::Delegate::GetLabelForCommandId(
   return base::string16();
 }
 
-bool SimpleMenuModel::Delegate::GetIconForCommandId(
-    int command_id, gfx::Image* image_skia) const {
-  return false;
-}
-
-const gfx::VectorIcon* SimpleMenuModel::Delegate::GetVectorIconForCommandId(
+ImageModel SimpleMenuModel::Delegate::GetIconForCommandId(
     int command_id) const {
-  return nullptr;
+  return ImageModel();
 }
 
 void SimpleMenuModel::Delegate::OnMenuWillShow(SimpleMenuModel* /*source*/) {}
@@ -405,12 +400,8 @@ int SimpleMenuModel::GetGroupIdAt(int index) const {
 }
 
 ImageModel SimpleMenuModel::GetIconAt(int index) const {
-  if (IsItemDynamicAt(index)) {
-    gfx::Image icon;
-    if (delegate_->GetIconForCommandId(GetCommandIdAt(index), &icon))
-      return ImageModel::FromImage(icon);
-    return ImageModel();
-  }
+  if (IsItemDynamicAt(index))
+    return delegate_->GetIconForCommandId(GetCommandIdAt(index));
 
   ValidateItemIndex(index);
   return items_[index].icon;

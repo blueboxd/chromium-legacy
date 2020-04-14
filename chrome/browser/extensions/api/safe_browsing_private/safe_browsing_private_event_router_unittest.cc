@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -834,7 +833,7 @@ class SafeBrowsingIsRealtimeReportingEnabledTest
     const AccountId account_id(
         AccountId::FromUserEmail(profile_->GetProfileUserName()));
     const user_manager::User* user = user_manager->AddUserWithAffiliation(
-        account_id, /*is_affiliated=*/true);
+        account_id, /*is_affiliated=*/is_manageable_);
     chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
                                                                       profile_);
     user_manager->UserLoggedIn(account_id, user->username_hash(),
@@ -845,8 +844,6 @@ class SafeBrowsingIsRealtimeReportingEnabledTest
     profile_->ScopedCrosSettingsTestHelper()
         ->InstallAttributes()
         ->SetCloudManaged("domain.com", "device_id");
-    profile_->GetProfilePolicyConnector()->OverrideIsManagedForTesting(
-        is_manageable_);
 #endif
   }
 

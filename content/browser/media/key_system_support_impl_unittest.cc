@@ -69,7 +69,7 @@ class KeySystemSupportTest : public testing::Test {
     return CdmCapability(
         {VideoCodec::kCodecVP8, VideoCodec::kCodecVP9},
         {EncryptionScheme::kCenc, EncryptionScheme::kCbcs},
-        {CdmSessionType::kTemporary, CdmSessionType::kPersistentLicense}, {});
+        {CdmSessionType::kTemporary, CdmSessionType::kPersistentLicense});
   }
 
   // Registers |key_system| with |capability|. All other values for CdmInfo have

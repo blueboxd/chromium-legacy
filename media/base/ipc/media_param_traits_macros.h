@@ -37,9 +37,6 @@
 #include "media/base/video_types.h"
 #include "media/base/waiting.h"
 #include "media/base/watch_time_keys.h"
-// TODO(crbug.com/676224): When EnabledIf attribute is supported in mojom files,
-// move CdmProxy related code into #if BUILDFLAG(ENABLE_LIBRARY_CDMS).
-#include "media/cdm/cdm_proxy.h"
 #include "media/media_buildflags.h"
 #include "media/video/supported_video_decoder_config.h"
 #include "ui/gfx/ipc/color/gfx_param_traits_macros.h"
@@ -72,18 +69,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::CdmMessageType,
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmPromise::Exception,
                           media::CdmPromise::Exception::EXCEPTION_MAX)
-
-IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::Function,
-                          media::CdmProxy::Function::kMaxValue)
-
-IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::KeyType,
-                          media::CdmProxy::KeyType::kMaxValue)
-
-IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::Protocol,
-                          media::CdmProxy::Protocol::kMaxValue)
-
-IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::Status,
-                          media::CdmProxy::Status::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmSessionType,
                           media::CdmSessionType::kMaxValue)

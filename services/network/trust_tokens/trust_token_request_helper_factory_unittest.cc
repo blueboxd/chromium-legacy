@@ -74,14 +74,16 @@ class TrustTokenRequestHelperFactoryTest : public ::testing::Test {
       const mojom::TrustTokenParams& params) {
     base::RunLoop run_loop;
     TrustTokenStatusOrRequestHelper obtained_result;
-    TrustTokenRequestHelperFactory(/*store=*/nullptr)
-        .CreateTrustTokenHelperForRequest(
-            request, params,
-            base::BindLambdaForTesting(
-                [&](TrustTokenStatusOrRequestHelper result) {
-                  obtained_result = std::move(result);
-                  run_loop.Quit();
-                }));
+    PendingTrustTokenStore store;
+
+    store.OnStoreReady(TrustTokenStore::CreateInMemory());
+
+    TrustTokenRequestHelperFactory(&store).CreateTrustTokenHelperForRequest(
+        request, params,
+        base::BindLambdaForTesting([&](TrustTokenStatusOrRequestHelper result) {
+          obtained_result = std::move(result);
+          run_loop.Quit();
+        }));
 
     run_loop.Run();
     return obtained_result;
@@ -135,6 +137,35 @@ TEST_F(TrustTokenRequestHelperFactoryTest, NotImplemented) {
   EXPECT_EQ(CreateHelperAndWaitForResult(suitable_request(), suitable_params())
                 .status(),
             mojom::TrustTokenOperationStatus::kUnavailable);
+}
+
+TEST_F(TrustTokenRequestHelperFactoryTest,
+       CreatingSigningHelperRequiresSuitableIssuer) {
+  auto request = CreateSuitableRequest();
+
+  auto params = suitable_params().Clone();
+  params->type = mojom::TrustTokenOperationType::kSigning;
+  params->issuer.reset();
+
+  EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
+            mojom::TrustTokenOperationStatus::kInvalidArgument);
+
+  params->issuer = UnsuitableUntrustworthyOrigin();
+  EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
+            mojom::TrustTokenOperationStatus::kInvalidArgument);
+
+  params->issuer = UnsuitableNonHttpNonHttpsOrigin();
+  EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
+            mojom::TrustTokenOperationStatus::kInvalidArgument);
+}
+
+TEST_F(TrustTokenRequestHelperFactoryTest, CreatesSigningHelper) {
+  auto params = suitable_params().Clone();
+  params->type = mojom::TrustTokenOperationType::kSigning;
+
+  auto result = CreateHelperAndWaitForResult(suitable_request(), *params);
+  ASSERT_TRUE(result.ok());
+  EXPECT_TRUE(result.TakeOrCrash());
 }
 
 }  // namespace network

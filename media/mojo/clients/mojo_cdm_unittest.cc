@@ -99,7 +99,6 @@ class MojoCdmTest : public ::testing::Test {
 
     MojoCdm::Create(key_system, url::Origin::Create(GURL(kTestSecurityOrigin)),
                     CdmConfig(), cdm_receiver_.BindNewPipeAndPassRemote(),
-                    nullptr,
                     base::Bind(&MockCdmClient::OnSessionMessage,
                                base::Unretained(&cdm_client_)),
                     base::Bind(&MockCdmClient::OnSessionClosed,

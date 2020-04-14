@@ -32,18 +32,12 @@ base::Optional<extensions::Command> CommandForExtensionAction(
   auto* service = extensions::CommandService::Get(profile);
   extensions::Command command;
 
-  if (info->type == extensions::ActionInfo::TYPE_BROWSER &&
-      service->GetBrowserActionCommand(extension->id(),
-                                       extensions::CommandService::ACTIVE,
-                                       &command, nullptr)) {
+  if (service->GetExtensionActionCommand(extension->id(), info->type,
+                                         extensions::CommandService::ACTIVE,
+                                         &command, nullptr)) {
     return command;
   }
-  if (info->type == extensions::ActionInfo::TYPE_PAGE &&
-      service->GetPageActionCommand(extension->id(),
-                                    extensions::CommandService::ACTIVE,
-                                    &command, nullptr)) {
-    return command;
-  }
+
   return base::nullopt;
 }
 

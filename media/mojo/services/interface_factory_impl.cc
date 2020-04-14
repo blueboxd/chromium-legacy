@@ -34,10 +34,6 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-#include "media/mojo/services/mojo_cdm_proxy_service.h"
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
-
 namespace media {
 
 InterfaceFactoryImpl::InterfaceFactoryImpl(
@@ -196,22 +192,6 @@ void InterfaceFactoryImpl::CreateDecryptor(
   decryptor_receivers_.Add(std::move(mojo_decryptor_service),
                            std::move(receiver));
 }
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-void InterfaceFactoryImpl::CreateCdmProxy(
-    const base::Token& cdm_guid,
-    mojo::PendingReceiver<mojom::CdmProxy> receiver) {
-  DVLOG(2) << __func__;
-  auto cdm_proxy = mojo_media_client_->CreateCdmProxy(cdm_guid);
-  if (!cdm_proxy) {
-    DLOG(ERROR) << "CdmProxy creation failed.";
-    return;
-  }
-
-  cdm_proxy_receivers_.Add(std::make_unique<MojoCdmProxyService>(
-                               std::move(cdm_proxy), &cdm_service_context_),
-                           std::move(receiver));
-}
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 void InterfaceFactoryImpl::OnDestroyPending(base::OnceClosure destroy_cb) {
   DVLOG(1) << __func__;
@@ -242,11 +222,6 @@ bool InterfaceFactoryImpl::IsEmpty() {
     return false;
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  if (!cdm_proxy_receivers_.empty())
-    return false;
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
-
   if (!decryptor_receivers_.empty())
     return false;
 
@@ -275,10 +250,6 @@ void InterfaceFactoryImpl::SetReceiverDisconnectHandler() {
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   cdm_receivers_.set_disconnect_handler(disconnect_cb);
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
-
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  cdm_proxy_receivers_.set_disconnect_handler(disconnect_cb);
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
   decryptor_receivers_.set_disconnect_handler(disconnect_cb);
 }

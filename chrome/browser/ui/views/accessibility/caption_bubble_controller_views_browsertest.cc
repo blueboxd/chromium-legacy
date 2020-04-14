@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/accessibility/caption_bubble_controller_views.h"
 
@@ -12,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/accessibility/caption_bubble.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
 namespace captions {
@@ -36,7 +36,11 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
   }
 
   views::Label* GetLabel() {
-    return controller_ ? &controller_->caption_bubble_->label_ : nullptr;
+    return controller_ ? controller_->caption_bubble_->label_ : nullptr;
+  }
+
+  views::Label* GetTitle() {
+    return controller_ ? controller_->caption_bubble_->title_ : nullptr;
   }
 
   std::string GetLabelText() {
@@ -93,4 +97,17 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, LaysOutCaptionLabel) {
             GetBubble()->GetBoundsInScreen().bottom());
 }
 
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
+                       CaptionTitleShownAtFirst) {
+  // With one line of text, the title is visible and positioned between the
+  // top of the bubble and top of the label.
+  GetController()->OnCaptionReceived("Cats rock");
+  EXPECT_TRUE(GetTitle()->GetVisible());
+  EXPECT_EQ(GetTitle()->GetBoundsInScreen().bottom(),
+            GetLabel()->GetBoundsInScreen().y());
+
+  GetController()->OnCaptionReceived("Cats rock\nDogs too");
+
+  EXPECT_FALSE(GetTitle()->GetVisible());
+}
 }  // namespace captions

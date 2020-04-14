@@ -15,7 +15,6 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.core.AllOf.allOf;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.view.View;
 import android.widget.ImageView;
@@ -26,6 +25,7 @@ import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.language.settings.LanguageSettings;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.SettingsActivity;
-import org.chromium.chrome.browser.settings.SettingsActivityTest;
+import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
@@ -56,13 +56,14 @@ import org.chromium.ui.test.util.UiRestriction;
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class LanguageSettingsTest {
     // clang-format on
-
+    @Rule
+    public final SettingsActivityTestRule<LanguageSettings> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(LanguageSettings.class);
     private SettingsActivity mActivity;
 
     @Before
     public void setUp() throws Exception {
-        mActivity = SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(), LanguageSettings.class.getName());
+        mActivity = mSettingsActivityTestRule.startSettingsActivity();
     }
 
     private void addLanguage() {

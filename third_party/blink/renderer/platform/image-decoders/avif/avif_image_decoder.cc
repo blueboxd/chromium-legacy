@@ -36,6 +36,34 @@
 
 namespace {
 
+gfx::ColorSpace GetColorSpace(const avifImage* image) {
+  if (image->profileFormat == AVIF_PROFILE_FORMAT_NCLX) {
+    media::VideoColorSpace color_space(
+        image->nclx.colourPrimaries, image->nclx.transferCharacteristics,
+        image->nclx.matrixCoefficients,
+        image->nclx.fullRangeFlag ? gfx::ColorSpace::RangeID::FULL
+                                  : gfx::ColorSpace::RangeID::LIMITED);
+    if (color_space.IsSpecified())
+      return color_space.ToGfxColorSpace();
+    if (image->nclx.fullRangeFlag)
+      return gfx::ColorSpace::CreateJpeg();
+    return gfx::ColorSpace::CreateREC709();
+  }
+  if (image->profileFormat == AVIF_PROFILE_FORMAT_ICC) {
+    auto iccp = gfx::ICCProfile::FromData(image->icc.data, image->icc.size);
+    if (iccp.IsValid())
+      return iccp.GetColorSpace();
+
+    // TODO(dalecurtis): Do we need to reparse this per frame when dealing
+    // with animated AVIF files? Or is it only for still picture?
+
+    // TODO(wtc): We need to set the color profile using
+    // SetEmbeddedColorProfile() rather than handling all the color space
+    // conversion during decode.
+  }
+  return gfx::ColorSpace();
+}
+
 media::VideoPixelFormat AvifToVideoPixelFormat(avifPixelFormat fmt, int depth) {
   if (depth != 8 && depth != 10 && depth != 12) {
     // Unsupported bit depth.
@@ -100,14 +128,15 @@ enum class ColorType { kMono, kColor };
 
 template <ColorType color_type, typename InputType, typename OutputType>
 void YUVAToRGBA(const avifImage* image,
-                const avifPixelFormatInfo* format_info,
                 const gfx::ColorTransform* transform,
                 OutputType* rgba_dest) {
+  avifPixelFormatInfo format_info;
+  avifGetPixelFormatInfo(image->yuvFormat, &format_info);
   gfx::Point3F pixel;
   const int max_channel_i = (1 << image->depth) - 1;
   const float max_channel = float{max_channel_i};
   for (uint32_t j = 0; j < image->height; ++j) {
-    const int uv_j = j >> format_info->chromaShiftY;
+    const int uv_j = j >> format_info.chromaShiftY;
 
     const InputType* y_ptr = reinterpret_cast<InputType*>(
         &image->yuvPlanes[AVIF_CHAN_Y][j * image->yuvRowBytes[AVIF_CHAN_Y]]);
@@ -122,7 +151,7 @@ void YUVAToRGBA(const avifImage* image,
     }
 
     for (uint32_t i = 0; i < image->width; ++i) {
-      const int uv_i = i >> format_info->chromaShiftX;
+      const int uv_i = i >> format_info.chromaShiftX;
       // TODO(wtc): Use templates or other ways to avoid doing this comparison
       // and checking whether the image supports alpha in the inner loop.
       if (image->yuvRange == AVIF_RANGE_LIMITED) {
@@ -261,36 +290,8 @@ void AVIFImageDecoder::Decode(size_t index) {
                               ? Vector<size_t>(1, 0)
                               : FindFramesToDecode(index);
 
-  // TODO(wtc): Split up this for loop into component functions for readability
-  // and to reduce nesting. Something like:
-  // DecodeImage(i);
-  // MaybeSetSize(image);
-  // cs = SetColorSpace(image, buffer);
-  // RenderImage(image, cs, buffer);
   for (auto i : base::Reversed(frames_to_decode)) {
-    if (!pending_decoded_image_ || decoder_->imageIndex != int{i}) {
-      auto ret = (decoder_->imageIndex + 1 == int{i})
-                     ? avifDecoderNextImage(decoder_.get())
-                     : avifDecoderNthImage(decoder_.get(), i);
-      if (ret != AVIF_RESULT_OK || !decoder_->image) {
-        // We shouldn't be called more times than specified in
-        // DecodeFrameCount(); possibly this should truncate if the initial
-        // count is wrong?
-        DCHECK_NE(ret, AVIF_RESULT_NO_IMAGES_REMAINING);
-        SetFailed();
-        return;
-      }
-    }
-
-    const auto* image = decoder_->image;
-    is_high_bit_depth_ = image->depth > 8;
-    decode_to_half_float_ =
-        is_high_bit_depth_ &&
-        high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat;
-
-    // All frames must be the same size.
-    if (IsSizeAvailable() ? Size() != IntSize(image->width, image->height)
-                          : !SetSize(image->width, image->height)) {
+    if (!DecodeImage(i)) {
       SetFailed();
       return;
     }
@@ -305,40 +306,15 @@ void AVIFImageDecoder::Decode(size_t index) {
     if (buffer.GetStatus() == ImageFrame::kFrameComplete)
       continue;
 
+    const auto* image = decoder_->image;
     buffer.SetHasAlpha(!!image->alphaPlane);
     if (decode_to_half_float_)
       buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
 
     // Set color space information on the frame if appropriate.
     gfx::ColorSpace frame_cs;
-    if (!IgnoresColorSpace()) {
-      if (image->profileFormat == AVIF_PROFILE_FORMAT_NCLX) {
-        media::VideoColorSpace color_space(
-            image->nclx.colourPrimaries, image->nclx.transferCharacteristics,
-            image->nclx.matrixCoefficients,
-            image->nclx.fullRangeFlag ? gfx::ColorSpace::RangeID::FULL
-                                      : gfx::ColorSpace::RangeID::LIMITED);
-        if (color_space.IsSpecified()) {
-          frame_cs = color_space.ToGfxColorSpace();
-        } else if (image->nclx.fullRangeFlag) {
-          frame_cs = gfx::ColorSpace::CreateJpeg();
-        } else {
-          frame_cs = gfx::ColorSpace::CreateREC709();
-        }
-      } else if (image->profileFormat == AVIF_PROFILE_FORMAT_ICC) {
-        auto iccp = gfx::ICCProfile::FromData(image->icc.data, image->icc.size);
-        if (iccp.IsValid())
-          frame_cs = iccp.GetColorSpace();
-
-        // TODO(dalecurtis): Do we need to reparse this per frame when dealing
-        // with animated AVIF files? Or is it only for still picture?
-
-        // TODO(wtc): We need to set the color profile using
-        // SetEmbeddedColorProfile() rather than handling all the color space
-        // conversion during decode.
-      }
-    }
-
+    if (!IgnoresColorSpace())
+      frame_cs = GetColorSpace(image);
     if (CanSetColorSpace()) {
       last_color_space_ = frame_cs.GetAsFullRangeRGB();
     } else {
@@ -353,95 +329,9 @@ void AVIFImageDecoder::Decode(size_t index) {
       return;
     }
 
-    auto dest_rgb_cs = gfx::ColorSpace(*buffer.Bitmap().colorSpace());
-    if (!format_info_) {
-      format_info_ = std::make_unique<avifPixelFormatInfo>();
-      avifGetPixelFormatInfo(image->yuvFormat, format_info_.get());
-    }
-
-    const bool is_mono = !image->yuvPlanes[AVIF_CHAN_U];
-
-    // TODO(dalecurtis): We should decode to YUV when possible. Currently the
-    // YUV path seems to only support still-image YUV8.
-    if (decode_to_half_float_) {
-      if (!UpdateColorTransform(frame_cs, dest_rgb_cs)) {
-        DVLOG(1) << "Failed to update color transform...";
-        SetFailed();
-        return;
-      }
-
-      uint64_t* rgba_hhhh = buffer.GetAddrF16(0, 0);
-
-      // Color and format convert from YUV HBD -> RGBA half float.
-      if (is_mono) {
-        YUVAToRGBA<ColorType::kMono, uint16_t>(
-            image, format_info_.get(), color_transform_.get(), rgba_hhhh);
-      } else {
-        // TODO: Add fast path for 10bit 4:2:0 using libyuv.
-        YUVAToRGBA<ColorType::kColor, uint16_t>(
-            image, format_info_.get(), color_transform_.get(), rgba_hhhh);
-      }
-    } else {
-      uint32_t* rgba_8888 = buffer.GetAddr(0, 0);
-      if (ImageIsHighBitDepth() ||
-          // TODO(wtc): Figure out a way to check frame_cs == ~BT.2020 too since
-          // ConvertVideoFrameToRGBPixels() can handle that too.
-          frame_cs == gfx::ColorSpace::CreateREC709() ||
-          frame_cs == gfx::ColorSpace::CreateREC601() ||
-          frame_cs == gfx::ColorSpace::CreateJpeg()) {
-        // Create temporary frame wrapping the YUVA planes.
-        scoped_refptr<media::VideoFrame> frame;
-        auto pixel_format =
-            AvifToVideoPixelFormat(image->yuvFormat, image->depth);
-        if (pixel_format == media::PIXEL_FORMAT_UNKNOWN) {
-          SetFailed();
-          return;
-        }
-        auto size = gfx::Size(image->width, image->height);
-        if (image->alphaPlane) {
-          if (pixel_format == media::PIXEL_FORMAT_I420) {
-            pixel_format = media::PIXEL_FORMAT_I420A;
-          } else {
-            NOTIMPLEMENTED();
-            SetFailed();
-            return;
-          }
-          frame = media::VideoFrame::WrapExternalYuvaData(
-              pixel_format, size, gfx::Rect(size), size, image->yuvRowBytes[0],
-              image->yuvRowBytes[1], image->yuvRowBytes[2],
-              image->alphaRowBytes, image->yuvPlanes[0], image->yuvPlanes[1],
-              image->yuvPlanes[2], image->alphaPlane, base::TimeDelta());
-        } else {
-          frame = media::VideoFrame::WrapExternalYuvData(
-              pixel_format, size, gfx::Rect(size), size, image->yuvRowBytes[0],
-              image->yuvRowBytes[1], image->yuvRowBytes[2], image->yuvPlanes[0],
-              image->yuvPlanes[1], image->yuvPlanes[2], base::TimeDelta());
-        }
-
-        // Really only handles 709, 601, JPEG 8-bit conversions and uses libyuv
-        // under the hood, so is much faster than our manual path.
-        //
-        // Technically has support for 10-bit 4:2:0 and 4:2:2, but not to
-        // half-float and only has support for 4:4:4 and 12-bit by down-shifted
-        // copies.
-        //
-        // https://bugs.chromium.org/p/libyuv/issues/detail?id=845
-        media::PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
-            frame.get(), rgba_8888, frame->visible_rect().width() * 4);
-      } else {
-        if (!UpdateColorTransform(frame_cs, dest_rgb_cs)) {
-          DVLOG(1) << "Failed to update color transform...";
-          SetFailed();
-          return;
-        }
-        if (is_mono) {
-          YUVAToRGBA<ColorType::kMono, uint8_t>(
-              image, format_info_.get(), color_transform_.get(), rgba_8888);
-        } else {
-          YUVAToRGBA<ColorType::kColor, uint8_t>(
-              image, format_info_.get(), color_transform_.get(), rgba_8888);
-        }
-      }
+    if (!RenderImage(image, frame_cs, &buffer)) {
+      SetFailed();
+      return;
     }
 
     buffer.SetDuration(
@@ -496,6 +386,32 @@ void AVIFImageDecoder::MaybeCreateDemuxer() {
   Decode(0);
 }
 
+bool AVIFImageDecoder::DecodeImage(size_t index) {
+  if (!pending_decoded_image_ || decoder_->imageIndex != int{index}) {
+    auto ret = (decoder_->imageIndex + 1 == int{index})
+                   ? avifDecoderNextImage(decoder_.get())
+                   : avifDecoderNthImage(decoder_.get(), index);
+    if (ret != AVIF_RESULT_OK || !decoder_->image) {
+      // We shouldn't be called more times than specified in
+      // DecodeFrameCount(); possibly this should truncate if the initial
+      // count is wrong?
+      DCHECK_NE(ret, AVIF_RESULT_NO_IMAGES_REMAINING);
+      return false;
+    }
+  }
+
+  const auto* image = decoder_->image;
+  is_high_bit_depth_ = image->depth > 8;
+  decode_to_half_float_ =
+      is_high_bit_depth_ &&
+      high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat;
+
+  if (!IsSizeAvailable())
+    return SetSize(image->width, image->height);
+  // All frames must be the same size.
+  return Size() == IntSize(image->width, image->height);
+}
+
 bool AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& src_cs,
                                             const gfx::ColorSpace& dest_cs) {
   if (color_transform_ && color_transform_->GetSrcColorSpace() == src_cs)
@@ -510,6 +426,94 @@ bool AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& src_cs,
 // and animated cases.
 bool AVIFImageDecoder::CanSetColorSpace() const {
   return decode_to_half_float_ || decoded_frame_count_ > 1;
+}
+
+bool AVIFImageDecoder::RenderImage(const avifImage* image,
+                                   const gfx::ColorSpace& frame_cs,
+                                   ImageFrame* buffer) {
+  const gfx::ColorSpace dest_rgb_cs(*buffer->Bitmap().colorSpace());
+
+  const bool is_mono = !image->yuvPlanes[AVIF_CHAN_U];
+
+  // TODO(dalecurtis): We should decode to YUV when possible. Currently the
+  // YUV path seems to only support still-image YUV8.
+  if (decode_to_half_float_) {
+    if (!UpdateColorTransform(frame_cs, dest_rgb_cs)) {
+      DVLOG(1) << "Failed to update color transform...";
+      return false;
+    }
+
+    uint64_t* rgba_hhhh = buffer->GetAddrF16(0, 0);
+
+    // Color and format convert from YUV HBD -> RGBA half float.
+    if (is_mono) {
+      YUVAToRGBA<ColorType::kMono, uint16_t>(image, color_transform_.get(),
+                                             rgba_hhhh);
+    } else {
+      // TODO: Add fast path for 10bit 4:2:0 using libyuv.
+      YUVAToRGBA<ColorType::kColor, uint16_t>(image, color_transform_.get(),
+                                              rgba_hhhh);
+    }
+    return true;
+  }
+
+  uint32_t* rgba_8888 = buffer->GetAddr(0, 0);
+  if (ImageIsHighBitDepth() ||
+      // TODO(wtc): Figure out a way to check frame_cs == ~BT.2020 too since
+      // ConvertVideoFrameToRGBPixels() can handle that too.
+      frame_cs == gfx::ColorSpace::CreateREC709() ||
+      frame_cs == gfx::ColorSpace::CreateREC601() ||
+      frame_cs == gfx::ColorSpace::CreateJpeg()) {
+    // Create temporary frame wrapping the YUVA planes.
+    scoped_refptr<media::VideoFrame> frame;
+    auto pixel_format = AvifToVideoPixelFormat(image->yuvFormat, image->depth);
+    if (pixel_format == media::PIXEL_FORMAT_UNKNOWN)
+      return false;
+    auto size = gfx::Size(image->width, image->height);
+    if (image->alphaPlane) {
+      if (pixel_format == media::PIXEL_FORMAT_I420) {
+        pixel_format = media::PIXEL_FORMAT_I420A;
+      } else {
+        NOTIMPLEMENTED();
+        return false;
+      }
+      frame = media::VideoFrame::WrapExternalYuvaData(
+          pixel_format, size, gfx::Rect(size), size, image->yuvRowBytes[0],
+          image->yuvRowBytes[1], image->yuvRowBytes[2], image->alphaRowBytes,
+          image->yuvPlanes[0], image->yuvPlanes[1], image->yuvPlanes[2],
+          image->alphaPlane, base::TimeDelta());
+    } else {
+      frame = media::VideoFrame::WrapExternalYuvData(
+          pixel_format, size, gfx::Rect(size), size, image->yuvRowBytes[0],
+          image->yuvRowBytes[1], image->yuvRowBytes[2], image->yuvPlanes[0],
+          image->yuvPlanes[1], image->yuvPlanes[2], base::TimeDelta());
+    }
+
+    // Really only handles 709, 601, JPEG 8-bit conversions and uses libyuv
+    // under the hood, so is much faster than our manual path.
+    //
+    // Technically has support for 10-bit 4:2:0 and 4:2:2, but not to
+    // half-float and only has support for 4:4:4 and 12-bit by down-shifted
+    // copies.
+    //
+    // https://bugs.chromium.org/p/libyuv/issues/detail?id=845
+    media::PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
+        frame.get(), rgba_8888, frame->visible_rect().width() * 4);
+    return true;
+  }
+
+  if (!UpdateColorTransform(frame_cs, dest_rgb_cs)) {
+    DVLOG(1) << "Failed to update color transform...";
+    return false;
+  }
+  if (is_mono) {
+    YUVAToRGBA<ColorType::kMono, uint8_t>(image, color_transform_.get(),
+                                          rgba_8888);
+  } else {
+    YUVAToRGBA<ColorType::kColor, uint8_t>(image, color_transform_.get(),
+                                           rgba_8888);
+  }
+  return true;
 }
 
 }  // namespace blink

@@ -162,10 +162,14 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
   void StoreMediaFeedItemSafeSearchResults(
       std::map<int64_t, media_feeds::mojom::SafeSearchResult> results);
 
+  void Close();
+
  private:
   friend class base::RefCountedThreadSafe<MediaHistoryStore>;
 
   ~MediaHistoryStore();
+
+  bool CanAccessDatabase() const;
 
   scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner_;
   const base::FilePath db_path_;

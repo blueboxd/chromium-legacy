@@ -17,13 +17,15 @@ import android.support.test.filters.SmallTest;
 import androidx.preference.Preference;
 
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
-import org.chromium.chrome.browser.settings.SettingsActivityTest;
+import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -38,6 +40,15 @@ import java.text.NumberFormat;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class AccessibilitySettingsTest {
+    @Rule
+    public SettingsActivityTestRule<AccessibilitySettings> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(AccessibilitySettings.class);
+
+    @Before
+    public void setUp() {
+        mSettingsActivityTestRule.startSettingsActivity();
+    }
+
     /**
      * Tests setting FontScaleFactor and ForceEnableZoom in AccessibilitySettings and ensures
      * that ForceEnableZoom changes corresponding to FontScaleFactor.
@@ -46,12 +57,7 @@ public class AccessibilitySettingsTest {
     @SmallTest
     @Feature({"Accessibility"})
     public void testAccessibilitySettings() throws Exception {
-        String accessibilitySettingsClassname = AccessibilitySettings.class.getName();
-        AccessibilitySettings accessibilitySettings =
-                (AccessibilitySettings) SettingsActivityTest
-                        .startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
-                                accessibilitySettingsClassname)
-                        .getMainFragment();
+        AccessibilitySettings accessibilitySettings = mSettingsActivityTestRule.getFragment();
         TextScalePreference textScalePref =
                 (TextScalePreference) accessibilitySettings.findPreference(
                         AccessibilitySettings.PREF_TEXT_SCALE);
@@ -98,12 +104,7 @@ public class AccessibilitySettingsTest {
     @SmallTest
     @Feature({"Accessibility"})
     public void testCaptionPreferences() {
-        String accessibilitySettingsClassname = AccessibilitySettings.class.getName();
-        AccessibilitySettings accessibilitySettings =
-                (AccessibilitySettings) SettingsActivityTest
-                        .startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
-                                accessibilitySettingsClassname)
-                        .getMainFragment();
+        AccessibilitySettings accessibilitySettings = mSettingsActivityTestRule.getFragment();
         Preference captionsPref =
                 accessibilitySettings.findPreference(AccessibilitySettings.PREF_CAPTIONS);
         Assert.assertNotNull(captionsPref);

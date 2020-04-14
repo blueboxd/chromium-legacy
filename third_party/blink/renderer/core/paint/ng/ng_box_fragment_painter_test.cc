@@ -67,10 +67,7 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
         ElementsAre(
-            IsPaintChunk(0, 1,
-                         PaintChunk::Id(ViewScrollingBackgroundClient(),
-                                        DisplayItem::kDocumentBackground),
-                         GetLayoutView().FirstFragment().ContentsProperties()),
+            IsPaintChunk(0, 0), IsPaintChunk(0, 1),  // LayoutView chunks.
             IsPaintChunk(
                 1, 1,
                 PaintChunk::Id(*scroller.Layer(), DisplayItem::kLayerChunk),
@@ -85,10 +82,7 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
         ElementsAre(
-            IsPaintChunk(0, 1,
-                         PaintChunk::Id(ViewScrollingBackgroundClient(),
-                                        DisplayItem::kDocumentBackground),
-                         GetLayoutView().FirstFragment().ContentsProperties()),
+            IsPaintChunk(0, 1),  // LayutView.
             IsPaintChunk(
                 1, 1,
                 PaintChunk::Id(root_fragment, DisplayItem::kScrollHitTest),

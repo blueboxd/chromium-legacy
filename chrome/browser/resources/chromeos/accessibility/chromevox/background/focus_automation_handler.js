@@ -78,5 +78,4 @@ FocusAutomationHandler = class extends BaseAutomationHandler {
   }
 };
 
-new FocusAutomationHandler();
 });  // goog.scope

@@ -127,7 +127,7 @@ Polymer({
           map.set(
               settings.routes.MANAGE_PROFILE.path,
               this.signinAllowed_ ? '#edit-profile .subpage-arrow' :
-                                    '#picture-subpage-trigger .subpage-arrow');
+                                    '#profile-row .subpage-arrow');
         }
         // </if>
         return map;
@@ -204,7 +204,7 @@ Polymer({
    */
   getEditPersonAssocControl_() {
     return this.signinAllowed_ ? assert(this.$$('#edit-profile')) :
-                                 assert(this.$$('#picture-subpage-trigger'));
+                                 assert(this.$$('#profile-row'));
   },
 
   /**

@@ -77,6 +77,8 @@ bool AssistiveSuggester::OnKeyEvent(
       case SuggestionStatus::kDismiss:
         current_suggester_ = nullptr;
         return false;
+      case SuggestionStatus::kBrowsing:
+        return true;
       default:
         break;
     }

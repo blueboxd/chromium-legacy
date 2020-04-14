@@ -15,8 +15,6 @@ loadable_module("clear_key_cdm") {
     "cdm_file_adapter.h",
     "cdm_file_io_test.cc",
     "cdm_file_io_test.h",
-    "cdm_proxy_handler.cc",
-    "cdm_proxy_handler.h",
     "cdm_video_decoder.cc",
     "cdm_video_decoder.h",
     "clear_key_cdm.cc",
@@ -31,7 +29,6 @@ loadable_module("clear_key_cdm") {
   defines = [ "CDM_IMPLEMENTATION" ]
 
   deps = [
-    ":cdm_proxy_common",
     "//base",
     "//media",
     "//media:media_buildflags",
@@ -52,21 +49,4 @@ loadable_module("clear_key_cdm") {
     defines += [ "CLEAR_KEY_CDM_USE_FFMPEG_DECODER" ]
     deps += [ "//third_party/ffmpeg" ]
   }
-}
-
-source_set("clear_key_cdm_proxy") {
-  sources = [
-    "clear_key_cdm_proxy.cc",
-    "clear_key_cdm_proxy.h",
-  ]
-
-  deps = [
-    ":cdm_proxy_common",
-    "//base",
-    "//media",
-  ]
-}
-
-source_set("cdm_proxy_common") {
-  sources = [ "cdm_proxy_common.h" ]
 }

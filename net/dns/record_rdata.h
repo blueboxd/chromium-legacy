@@ -14,11 +14,13 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_export.h"
 #include "net/dns/public/dns_protocol.h"
+#include "third_party/boringssl/src/include/openssl/sha.h"
 
 namespace net {
 
@@ -308,6 +310,62 @@ class NET_EXPORT EsniRecordRdata : public RecordRdata {
   std::vector<IPAddress> addresses_;
 
   DISALLOW_COPY_AND_ASSIGN(EsniRecordRdata);
+};
+
+// This class parses and serializes the INTEGRITY DNS record.
+//
+// This RR was invented for a preliminary HTTPSSVC experiment. See the public
+// design doc:
+// https://docs.google.com/document/d/14eCqVyT_3MSj7ydqNFl1Yl0yg1fs6g24qmYUUdi5V-k/edit?usp=sharing
+//
+// The wire format of INTEGRITY records consists of a U16-prefixed nonce
+// followed by |kDigestLen| bytes, which should be equal to the SHA256 hash of
+// the nonce contents.
+class NET_EXPORT IntegrityRecordRdata : public RecordRdata {
+ public:
+  static constexpr uint16_t kType = dns_protocol::kExperimentalTypeIntegrity;
+
+  static constexpr size_t kDigestLen = SHA256_DIGEST_LENGTH;
+
+  using Nonce = std::vector<uint8_t>;
+  using Digest = std::array<uint8_t, kDigestLen>;
+
+  IntegrityRecordRdata() = delete;
+  // Constructs a new record, computing the digest value from |nonce|.
+  explicit IntegrityRecordRdata(Nonce nonce);
+  IntegrityRecordRdata(IntegrityRecordRdata&&);
+  IntegrityRecordRdata(const IntegrityRecordRdata&);
+  ~IntegrityRecordRdata() override;
+
+  IntegrityRecordRdata& operator=(const IntegrityRecordRdata&) = default;
+  IntegrityRecordRdata& operator=(IntegrityRecordRdata&&) = default;
+
+  bool IsEqual(const RecordRdata* other) const override;
+  uint16_t Type() const override;
+
+  // Attempts to parse an INTEGRITY record from |data|. Returns nullptr when the
+  // parse fails or when the parsed digest is not equal to the SHA256 hash of
+  // the parsed nonce.
+  static std::unique_ptr<IntegrityRecordRdata> Create(
+      const base::StringPiece& data);
+
+  // Generate an integrity record with a random nonce and corresponding digest.
+  static IntegrityRecordRdata Random();
+
+  // Serialize |this| using the INTEGRITY wire format.
+  std::vector<uint8_t> Serialize() const;
+
+  // Returns the exact number of bytes |this| will occupy when serialized.
+  size_t LengthForSerialization() const;
+
+  const Nonce& nonce() const { return nonce_; }
+  base::StringPiece digest() const;
+
+ private:
+  static Digest Hash(const Nonce& nonce);
+
+  Nonce nonce_;
+  Digest digest_;
 };
 
 }  // namespace net

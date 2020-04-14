@@ -8,7 +8,7 @@
 #include <memory>
 
 namespace image_fetcher {
-class ImageFetcher;
+class ImageFetcherService;
 }  // namespace image_fetcher
 
 namespace upboarding {
@@ -16,7 +16,7 @@ namespace upboarding {
 class TileService;
 
 std::unique_ptr<TileService> CreateTileService(
-    image_fetcher::ImageFetcher* image_fetcher);
+    image_fetcher::ImageFetcherService* image_fetcher_service);
 
 }  // namespace upboarding
 

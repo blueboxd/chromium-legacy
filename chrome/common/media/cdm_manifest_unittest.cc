@@ -37,8 +37,6 @@ const char kCdmPersistentLicenseSupportName[] =
     "x-cdm-persistent-license-support";
 const char kCdmSupportedEncryptionSchemesName[] =
     "x-cdm-supported-encryption-schemes";
-const char kCdmSupportedCdmProxyProtocolsName[] =
-    "x-cdm-supported-cdm-proxy-protocols";
 
 // Version checking does change over time. Deriving these values from constants
 // in the code to ensure they change when the CDM interface changes.
@@ -82,7 +80,6 @@ base::Value DefaultManifest() {
   dict.SetBoolKey(kCdmPersistentLicenseSupportName, true);
   dict.SetKey(kCdmSupportedEncryptionSchemesName,
               MakeListValue("cenc", "cbcs"));
-  dict.SetKey(kCdmSupportedCdmProxyProtocolsName, MakeListValue("intel"));
 
   // The following are dependent on what the current code supports.
   EXPECT_TRUE(media::IsSupportedCdmModuleVersion(kSupportedCdmModuleVersion));
@@ -120,15 +117,6 @@ void CheckSessionTypes(const base::flat_set<media::CdmSessionType>& actual,
   EXPECT_EQ(expected.size(), actual.size());
   for (const auto& session_type : expected) {
     EXPECT_TRUE(base::Contains(actual, session_type));
-  }
-}
-
-void CheckProxyProtocols(
-    const base::flat_set<media::CdmProxy::Protocol>& actual,
-    const std::vector<media::CdmProxy::Protocol>& expected) {
-  EXPECT_EQ(expected.size(), actual.size());
-  for (const auto& proxy_protocol : expected) {
-    EXPECT_TRUE(base::Contains(actual, proxy_protocol));
   }
 }
 
@@ -202,8 +190,6 @@ TEST(CdmManifestTest, ValidManifest) {
   CheckSessionTypes(capability.session_types,
                     {media::CdmSessionType::kTemporary,
                      media::CdmSessionType::kPersistentLicense});
-  CheckProxyProtocols(capability.cdm_proxy_protocols,
-                      {media::CdmProxy::Protocol::kIntel});
 }
 
 TEST(CdmManifestTest, EmptyManifest) {
@@ -215,7 +201,6 @@ TEST(CdmManifestTest, EmptyManifest) {
                          {media::EncryptionScheme::kCenc});
   CheckSessionTypes(capability.session_types,
                     {media::CdmSessionType::kTemporary});
-  CheckProxyProtocols(capability.cdm_proxy_protocols, {});
 }
 
 TEST(CdmManifestTest, ManifestCodecs) {
@@ -385,41 +370,6 @@ TEST(CdmManifestTest, ManifestSessionTypes) {
   }
 }
 
-TEST(CdmManifestTest, ManifestProxyProtocols) {
-  auto manifest = DefaultManifest();
-
-  {
-    // Try only supported value.
-    CdmCapability capability;
-    manifest.SetKey(kCdmSupportedCdmProxyProtocolsName, MakeListValue("intel"));
-    EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    CheckProxyProtocols(capability.cdm_proxy_protocols,
-                        {media::CdmProxy::Protocol::kIntel});
-  }
-  {
-    // Unrecognized values are ignored.
-    CdmCapability capability;
-    manifest.SetKey(kCdmSupportedCdmProxyProtocolsName,
-                    MakeListValue("unknown", "intel"));
-    EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    CheckProxyProtocols(capability.cdm_proxy_protocols,
-                        {media::CdmProxy::Protocol::kIntel});
-  }
-  {
-    // Wrong types are an error.
-    CdmCapability capability;
-    manifest.SetStringKey(kCdmSupportedCdmProxyProtocolsName, "intel");
-    EXPECT_FALSE(ParseCdmManifest(manifest, &capability));
-  }
-  {
-    // Missing values are OK.
-    CdmCapability capability;
-    EXPECT_TRUE(manifest.RemoveKey(kCdmSupportedCdmProxyProtocolsName));
-    EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    CheckProxyProtocols(capability.cdm_proxy_protocols, {});
-  }
-}
-
 TEST(CdmManifestTest, FileManifest) {
   const char kVersion[] = "1.2.3.4";
 
@@ -446,8 +396,6 @@ TEST(CdmManifestTest, FileManifest) {
   CheckSessionTypes(capability.session_types,
                     {media::CdmSessionType::kTemporary,
                      media::CdmSessionType::kPersistentLicense});
-  CheckProxyProtocols(capability.cdm_proxy_protocols,
-                      {media::CdmProxy::Protocol::kIntel});
 }
 
 TEST(CdmManifestTest, FileManifestNoVersion) {
@@ -525,7 +473,6 @@ TEST(CdmManifestTest, FileManifestLite) {
                          {media::EncryptionScheme::kCenc});
   CheckSessionTypes(capability.session_types,
                     {media::CdmSessionType::kTemporary});
-  CheckProxyProtocols(capability.cdm_proxy_protocols, {});
 }
 
 TEST(CdmManifestTest, FileManifestNotDictionary) {

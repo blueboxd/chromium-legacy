@@ -75,6 +75,14 @@ async function runTestQuery(data) {
     } catch (/** @type{Error} */ error) {
       result = `renameOriginalFile failed Error: ${error}`;
     }
+  } else if (data.saveCopy) {
+    const existingFile = lastReceivedFileList.item(0);
+    if (!existingFile) {
+      result = 'saveCopy failed, no file loaded';
+    } else {
+      DELEGATE.saveCopy(existingFile);
+      result = 'boo yah!';
+    }
   }
   return {testQueryResult: result};
 }

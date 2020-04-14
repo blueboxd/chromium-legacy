@@ -42,13 +42,16 @@ developer hurdles.
 
 ## Physical device
 
-### Flash a prebuilt image (Googler only)
+### Flash a prebuilt image
 
 Googlers can consult internal instructions
 [here](http://go/clank-webview/building-webview/device-setup).
 
-Unfortunately, Google does not offer prebuilt `userdebug`/`eng` images for
-external contributors.
+External contributors can flash a prebuilt userdebug image (based off
+aosp-master) onto a Pixel device with [Android Flash
+Tool](https://flash.android.com/welcome?continue=%2Fcustom). This requires a
+browser capable of WebUSB (we recommend the latest Google Chrome stable
+release).
 
 ### Building AOSP yourself (hard way)
 

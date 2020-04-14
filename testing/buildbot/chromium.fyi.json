@@ -2174,6 +2174,23 @@
         },
         "test": "interactive_ui_tests",
         "test_target": "//chrome/test:interactive_ui_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "weblayer_unittests",
+        "test_target": "//weblayer/test:weblayer_unittests"
       }
     ]
   },
@@ -2308,6 +2325,18 @@
         },
         "test": "services_unittests",
         "test_target": "//services:services_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "weblayer_unittests",
+        "test_target": "//weblayer/test:weblayer_unittests"
       }
     ]
   },

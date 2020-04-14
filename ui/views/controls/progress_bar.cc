@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/i18n/number_formatting.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "cc/paint/paint_flags.h"
@@ -21,6 +22,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -42,6 +44,10 @@ void AddPossiblyRoundRectToPath(const gfx::Rect& rectangle,
   }
 }
 
+int RoundToPercent(double fractional_value) {
+  return static_cast<int>(fractional_value * 100);
+}
+
 }  // namespace
 
 ProgressBar::ProgressBar(int preferred_height, bool allow_round_corner)
@@ -54,6 +60,10 @@ ProgressBar::~ProgressBar() = default;
 
 void ProgressBar::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kProgressIndicator;
+  if (IsIndeterminate())
+    node_data->RemoveStringAttribute(ax::mojom::StringAttribute::kValue);
+  else
+    node_data->SetValue(base::FormatPercent(RoundToPercent(current_value_)));
 }
 
 gfx::Size ProgressBar::CalculatePreferredSize() const {
@@ -62,6 +72,14 @@ gfx::Size ProgressBar::CalculatePreferredSize() const {
   gfx::Insets insets = GetInsets();
   pref_size.Enlarge(insets.width(), insets.height());
   return pref_size;
+}
+
+void ProgressBar::VisibilityChanged(View* starting_from, bool is_visible) {
+  MaybeNotifyAccessibilityValueChanged();
+}
+
+void ProgressBar::AddedToWidget() {
+  MaybeNotifyAccessibilityValueChanged();
 }
 
 void ProgressBar::OnPaint(gfx::Canvas* canvas) {
@@ -117,6 +135,8 @@ void ProgressBar::SetValue(double value) {
     indeterminate_bar_animation_.reset();
     OnPropertyChanged(&current_value_, kPropertyEffectsPaint);
   }
+
+  MaybeNotifyAccessibilityValueChanged();
 }
 
 SkColor ProgressBar::GetForegroundColor() const {
@@ -225,6 +245,15 @@ void ProgressBar::OnPaintIndeterminate(gfx::Canvas* canvas) {
   slice_flags.setAntiAlias(true);
   slice_flags.setColor(GetForegroundColor());
   canvas->DrawPath(slice_path, slice_flags);
+}
+
+void ProgressBar::MaybeNotifyAccessibilityValueChanged() {
+  if (!GetWidget() || !GetWidget()->IsVisible() ||
+      RoundToPercent(current_value_) == last_announced_percentage_) {
+    return;
+  }
+  last_announced_percentage_ = RoundToPercent(current_value_);
+  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
 }
 
 BEGIN_METADATA(ProgressBar)

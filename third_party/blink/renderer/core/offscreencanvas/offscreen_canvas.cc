@@ -105,8 +105,6 @@ void OffscreenCanvas::Dispose() {
     context_->DetachHost();
     context_ = nullptr;
   }
-
-  DeregisterFromAnimationFrameProvider();
 }
 
 void OffscreenCanvas::DeregisterFromAnimationFrameProvider() {

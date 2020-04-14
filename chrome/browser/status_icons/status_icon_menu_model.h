@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace gfx {
@@ -77,7 +78,7 @@ class StatusIconMenuModel
                                   ui::Accelerator* accelerator) const override;
   bool IsItemForCommandIdDynamic(int command_id) const override;
   base::string16 GetLabelForCommandId(int command_id) const override;
-  bool GetIconForCommandId(int command_id, gfx::Image* icon) const override;
+  ui::ImageModel GetIconForCommandId(int command_id) const override;
 
  protected:
   // Overriden from ui::SimpleMenuModel:

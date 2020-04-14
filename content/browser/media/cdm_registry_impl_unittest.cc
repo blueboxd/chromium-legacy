@@ -27,7 +27,6 @@ namespace {
 using VideoCodec = media::VideoCodec;
 using EncryptionScheme = media::EncryptionScheme;
 using CdmSessionType = media::CdmSessionType;
-using CdmProxy = media::CdmProxy;
 
 const char kTestCdmName[] = "Test CDM";
 const char kAlternateCdmName[] = "Alternate CDM";
@@ -58,9 +57,6 @@ bool StlEquals(const Container a, std::initializer_list<T> b) {
 #define EXPECT_SESSION_TYPES(...) \
   EXPECT_STL_EQ(cdm.capability.session_types, __VA_ARGS__)
 
-#define EXPECT_CDM_PROXY_PROTOCOLS(...) \
-  EXPECT_STL_EQ(cdm.capability.cdm_proxy_protocols, __VA_ARGS__)
-
 }  // namespace
 
 // For simplicity and to make failures easier to diagnose, this test uses
@@ -77,8 +73,7 @@ class CdmRegistryImplTest : public testing::Test {
         base::FilePath::FromUTF8Unsafe(kTestPath), kTestFileSystemId,
         CdmCapability(
             {media::kCodecVP8, media::kCodecVP9}, {EncryptionScheme::kCenc},
-            {CdmSessionType::kTemporary, CdmSessionType::kPersistentLicense},
-            {CdmProxy::Protocol::kIntel}),
+            {CdmSessionType::kTemporary, CdmSessionType::kPersistentLicense}),
         kTestKeySystem, /*supports_sub_key_systems=*/true);
   }
 
@@ -121,7 +116,6 @@ TEST_F(CdmRegistryImplTest, Register) {
   EXPECT_ENCRYPTION_SCHEMES(EncryptionScheme::kCenc);
   EXPECT_SESSION_TYPES(CdmSessionType::kTemporary,
                        CdmSessionType::kPersistentLicense);
-  EXPECT_CDM_PROXY_PROTOCOLS(CdmProxy::Protocol::kIntel);
   EXPECT_EQ(kTestKeySystem, cdm.supported_key_system);
   EXPECT_TRUE(cdm.supports_sub_key_systems);
 }

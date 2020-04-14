@@ -156,8 +156,11 @@ public class MainActivity extends FragmentActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            getMenuInflater().inflate(R.menu.options_menu, menu);
+        getMenuInflater().inflate(R.menu.options_menu, menu);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            // Switching WebView providers is only possible for API >= 24.
+            MenuItem item = menu.findItem(R.id.options_menu_switch_provider);
+            item.setVisible(false);
         }
         return true;
     }

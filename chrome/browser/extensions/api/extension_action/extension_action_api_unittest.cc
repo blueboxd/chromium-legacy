@@ -22,8 +22,7 @@ class ExtensionActionAPIUnitTest
       public ::testing::WithParamInterface<ActionInfo::Type> {
  public:
   ExtensionActionAPIUnitTest()
-      : current_channel_(
-            extension_test_util::GetOverrideChannelForActionType(GetParam())) {}
+      : current_channel_(GetOverrideChannelForActionType(GetParam())) {}
   ~ExtensionActionAPIUnitTest() override {}
 
  private:

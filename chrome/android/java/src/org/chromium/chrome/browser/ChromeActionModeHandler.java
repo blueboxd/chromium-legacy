@@ -45,14 +45,11 @@ import java.util.Set;
  */
 public class ChromeActionModeHandler {
     /** Observes the active WebContents being initialized into a Tab. */
-    private final Consumer<WebContents> mInitWebContentsObserver;
+    private final Callback<WebContents> mInitWebContentsObserver;
 
     private final ActivityTabProvider.ActivityTabTabObserver mActivityTabTabObserver;
 
     private Tab mActiveTab;
-
-    /** Set to {@code true} once the first Tab content is changed. */
-    private boolean mContentChanged;
 
     /**
      * @param activityTabProvider {@link ActivityTabProvider} instance.
@@ -84,19 +81,6 @@ public class ChromeActionModeHandler {
                         TabWebContentsObserver.from(tab).addInitWebContentsObserver(
                                 mInitWebContentsObserver);
                         mActiveTab = tab;
-
-                        // For the very first tab being observed, we miss mInitWebContentsObserver
-                        // because TabObserver.onContentChanged ->
-                        // TabWebContentsObserver.initWebContents occurs before this activity tab
-                        // observer is ready. Manually triggers it here.
-                        if (!mContentChanged && tab.getWebContents() != null) {
-                            mInitWebContentsObserver.accept(tab.getWebContents());
-                        }
-                    }
-
-                    @Override
-                    public void onContentChanged(Tab tab) {
-                        mContentChanged = true;
                     }
                 };
     }

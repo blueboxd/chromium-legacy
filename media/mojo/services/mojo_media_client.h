@@ -22,7 +22,6 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-class Token;
 }  // namespace base
 
 namespace gfx {
@@ -33,7 +32,6 @@ namespace media {
 
 class AudioDecoder;
 class CdmFactory;
-class CdmProxy;
 class MediaLog;
 class Renderer;
 class VideoDecoder;
@@ -94,12 +92,6 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   // nullptr if the host chose not to bind the InterfacePtr.
   virtual std::unique_ptr<CdmFactory> CreateCdmFactory(
       mojom::FrameInterfaceFactory* frame_interfaces);
-
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  // Creates a CdmProxy that proxies part of CDM functionalities to a different
-  // entity, e.g. hardware CDM modules.
-  virtual std::unique_ptr<CdmProxy> CreateCdmProxy(const base::Token& cdm_guid);
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
  protected:
   MojoMediaClient();

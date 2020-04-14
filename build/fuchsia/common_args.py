@@ -62,6 +62,10 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--ssh-config', '-F',
                            help='The path to the SSH configuration used for '
                                 'connecting to the target device.')
+  common_args.add_argument('--enable-fuchsia-system-log',
+                           action='store_true',
+                           help='Write the Fuchsia system log to the test '
+                           'system_log instead of the Fuchsia kernel log.')
   common_args.add_argument('--fuchsia-out-dir',
                            help='Path to a Fuchsia build output directory. '
                                 'Equivalent to setting --ssh_config and '

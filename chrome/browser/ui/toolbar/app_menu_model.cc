@@ -333,14 +333,14 @@ base::string16 AppMenuModel::GetLabelForCommandId(int command_id) const {
   }
 }
 
-bool AppMenuModel::GetIconForCommandId(int command_id, gfx::Image* icon) const {
+ui::ImageModel AppMenuModel::GetIconForCommandId(int command_id) const {
   if (command_id == IDC_UPGRADE_DIALOG) {
     DCHECK(browser_defaults::kShowUpgradeMenuItem);
     DCHECK(app_menu_icon_controller_);
-    *icon = gfx::Image(app_menu_icon_controller_->GetIconImage(false));
-    return true;
+    return ui::ImageModel::FromImageSkia(
+        app_menu_icon_controller_->GetIconImage(false));
   }
-  return false;
+  return ui::ImageModel();
 }
 
 void AppMenuModel::ExecuteCommand(int command_id, int event_flags) {

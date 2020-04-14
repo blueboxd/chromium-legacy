@@ -26,17 +26,14 @@
 #include "ui/gl/gl_image.h"
 
 namespace media {
-class CdmProxyContext;
+
 class D3D11H264Accelerator;
 class MediaLog;
 
-
 class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
  public:
-  // |cdm_proxy_context| may be null for clear content.
   D3D11H264Accelerator(D3D11VideoDecoderClient* client,
                        MediaLog* media_log,
-                       CdmProxyContext* cdm_proxy_context,
                        ComD3D11VideoDecoder video_decoder,
                        ComD3D11VideoDevice video_device,
                        std::unique_ptr<VideoContextWrapper> video_context);
@@ -90,7 +87,6 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
 
   D3D11VideoDecoderClient* client_;
   MediaLog* media_log_ = nullptr;
-  CdmProxyContext* const cdm_proxy_context_;
 
   ComD3D11VideoDecoder video_decoder_;
   ComD3D11VideoDevice video_device_;

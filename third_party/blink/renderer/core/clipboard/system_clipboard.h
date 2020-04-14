@@ -5,10 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_SYSTEM_CLIPBOARD_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_SYSTEM_CLIPBOARD_H_
 
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -72,12 +73,14 @@ class CORE_EXPORT SystemClipboard final
   // the OS clipboard.
   void CommitWrite();
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor*);
 
  private:
   bool IsValidBufferType(mojom::ClipboardBuffer);
 
-  mojo::Remote<mojom::blink::ClipboardHost> clipboard_;
+  HeapMojoRemote<mojom::blink::ClipboardHost,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      clipboard_;
   // In X11, |buffer_| may equal ClipboardBuffer::kStandard or kSelection.
   // Outside X11, |buffer_| always equals ClipboardBuffer::kStandard.
   mojom::ClipboardBuffer buffer_ = mojom::ClipboardBuffer::kStandard;

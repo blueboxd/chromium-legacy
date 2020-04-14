@@ -1,8 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_slider/cr_slider.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="fonts_browser_proxy.html">
 <link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_dropdown_menu.html">
@@ -11,7 +13,7 @@
 
 <dom-module id="settings-appearance-fonts-page">
   <template>
-    <style include="settings-shared">
+    <style include="cr-shared-style settings-shared iron-flex">
       #minimumSize {
         align-items: flex-end;
         display: flex;
@@ -22,8 +24,8 @@
         text-align: end;
       }
     </style>
-    <div class="settings-box first">
-      <div class="start settings-box-text" aria-hidden="true">
+    <div class="cr-row first">
+      <div class="flex cr-padded-text" aria-hidden="true">
         $i18n{fontSize}
       </div>
       <settings-slider id="sizeSlider"
@@ -32,8 +34,8 @@
           label-min="$i18n{tiny}" label-max="$i18n{huge}">
       </settings-slider>
     </div>
-    <div class="settings-box">
-      <div class="start settings-box-text" aria-hidden="true">
+    <div class="cr-row">
+      <div class="flex cr-padded-text" aria-hidden="true">
         $i18n{minimumFont}
       </div>
       <div id="minimumSize">
@@ -54,7 +56,7 @@
         </div>
       </div>
     </div>
-    <div class="settings-box" aria-hidden="true">
+    <div class="cr-row" aria-hidden="true">
       <h2>$i18n{standardFont}</h2>
     </div>
     <div class="list-frame">
@@ -64,7 +66,7 @@
             menu-options="[[fontOptions_]]">
         </settings-dropdown-menu>
       </div>
-      <div class="list-item settings-box-text"
+      <div class="list-item cr-padded-text"
           style="
               font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
               font-family:
@@ -75,7 +77,7 @@
         </span>
       </div>
     </div>
-    <div class="settings-box" aria-hidden="true">
+    <div class="cr-row" aria-hidden="true">
       <h2>$i18n{serifFont}</h2>
     </div>
     <div class="list-frame">
@@ -85,7 +87,7 @@
             menu-options="[[fontOptions_]]">
         </settings-dropdown-menu>
       </div>
-      <div class="list-item settings-box-text"
+      <div class="list-item cr-padded-text"
           style="
               font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
               font-family:
@@ -96,7 +98,7 @@
         </span>
       </div>
     </div>
-    <div class="settings-box" aria-hidden="true">
+    <div class="cr-row" aria-hidden="true">
       <h2>$i18n{sansSerifFont}</h2>
     </div>
     <div class="list-frame">
@@ -106,7 +108,7 @@
             menu-options="[[fontOptions_]]">
         </settings-dropdown-menu>
       </div>
-      <div class="list-item settings-box-text"
+      <div class="list-item cr-padded-text"
           style="
               font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
               font-family:
@@ -117,7 +119,7 @@
         </span>
       </div>
     </div>
-    <div class="settings-box" aria-hidden="true">
+    <div class="cr-row" aria-hidden="true">
       <h2>$i18n{fixedWidthFont}</h2>
     </div>
     <div class="list-frame">
@@ -127,7 +129,7 @@
             menu-options="[[fontOptions_]]">
         </settings-dropdown-menu>
       </div>
-      <div class="list-item settings-box-text"
+      <div class="list-item cr-padded-text"
           style="
               font-size:
                   [[prefs.webkit.webprefs.default_fixed_font_size.value]]px;

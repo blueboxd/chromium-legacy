@@ -19,9 +19,9 @@ void ReportPDFLoadStatus(PDFLoadStatus status) {
 }
 
 std::string GetPDFPlaceholderHTML(const GURL& pdf_url) {
-  std::string template_html = ui::ResourceBundle::GetSharedInstance()
-                                  .GetRawDataResource(IDR_PDF_PLUGIN_HTML)
-                                  .as_string();
+  std::string template_html =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          IDR_PDF_PLUGIN_HTML);
   webui::AppendWebUiCssTextDefaults(&template_html);
 
   base::DictionaryValue values;

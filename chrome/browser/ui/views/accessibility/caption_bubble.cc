@@ -4,14 +4,21 @@
 
 #include "chrome/browser/ui/views/accessibility/caption_bubble.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/strings/string16.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
@@ -20,12 +27,19 @@
 
 namespace {
 // Formatting constants
-static constexpr int kLineHeightDip = 18;
+static constexpr int kLineHeightDip = 24;
 static constexpr int kMaxHeightDip = kLineHeightDip * 2;
 static constexpr int kCornerRadiusDip = 8;
+static constexpr int kMaxWidthDip = 548;
+static constexpr int kHorizontalMarginsDip = 6;
+static constexpr int kVerticalMarginsDip = 8;
 static constexpr double kPreferredAnchorWidthPercentage = 0.8;
-// Dark grey at 80% opacity.
-static constexpr SkColor kCaptionBubbleColor = SkColorSetARGB(204, 30, 30, 30);
+// 90% opacity.
+static constexpr int kCaptionBubbleAlpha = 230;
+static constexpr char kPrimaryFont[] = "Roboto";
+static constexpr char kSecondaryFont[] = "Arial";
+static constexpr char kTertiaryFont[] = "sans-serif";
+static constexpr int kFontSizePx = 16;
 
 // CaptionBubble implementation of BubbleFrameView.
 class CaptionBubbleFrameView : public views::BubbleFrameView {
@@ -78,24 +92,45 @@ void CaptionBubble::Init() {
                                views::MaximumFlexSizeRule::kPreferred,
                                /*adjust_height_for_width*/ true));
 
-  set_color(kCaptionBubbleColor);
+  // TODO(crbug.com/1055150): Use system caption color scheme rather than
+  // hard-coding the colors.
+  SkColor caption_bubble_color_ =
+      SkColorSetA(gfx::kGoogleGrey900, kCaptionBubbleAlpha);
+  set_color(caption_bubble_color_);
   set_close_on_deactivate(false);
 
-  label_.SetMultiLine(true);
-  int max_width = GetAnchorView()->width() * kPreferredAnchorWidthPercentage;
-  label_.SetMaximumWidth(max_width);
-  label_.SetEnabledColor(SK_ColorWHITE);
-  label_.SetBackgroundColor(SK_ColorTRANSPARENT);
-  label_.SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  label_.SetLineHeight(kLineHeightDip);
+  auto label = std::make_unique<views::Label>();
+  label->SetMultiLine(true);
+  label->SetMaximumWidth(kMaxWidthDip);
+  label->SetEnabledColor(SK_ColorWHITE);
+  label->SetBackgroundColor(SK_ColorTRANSPARENT);
+  label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  label->SetLineHeight(kLineHeightDip);
+  label->SetTooltipText(base::string16());
 
-  std::vector<std::string> font_names = {"Arial", "Helvetica"};
-  label_.SetFontList(gfx::FontList(font_names, gfx::Font::FontStyle::NORMAL, 14,
-                                   gfx::Font::Weight::NORMAL));
+  // TODO(crbug.com/1055150): Respect the user's font size and minimum font size
+  // settings rather than having a fixed font size.
+  const gfx::FontList font_list = gfx::FontList(
+      {kPrimaryFont, kSecondaryFont, kTertiaryFont},
+      gfx::Font::FontStyle::NORMAL, kFontSizePx, gfx::Font::Weight::NORMAL);
+  label->SetFontList(font_list);
 
-  SetPreferredSize(gfx::Size(max_width, kMaxHeightDip));
+  auto title = std::make_unique<views::Label>();
+  title->SetEnabledColor(gfx::kGoogleGrey500);
+  title->SetBackgroundColor(SK_ColorTRANSPARENT);
+  title->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
+  title->SetLineHeight(kLineHeightDip);
+  title->SetFontList(font_list);
+  title->SetText(l10n_util::GetStringUTF16(IDS_LIVE_CAPTION_BUBBLE_TITLE));
 
-  AddChildView(&label_);
+  // TODO(crbug.com/1055150): Resize responsively with anchor size changes.
+  int min_width = GetAnchorView()->width() * kPreferredAnchorWidthPercentage;
+  int width = std::min(min_width, kMaxWidthDip);
+  SetPreferredSize(gfx::Size(width, kMaxHeightDip));
+  set_margins(gfx::Insets(kHorizontalMarginsDip, kVerticalMarginsDip));
+
+  title_ = AddChildView(std::move(title));
+  label_ = AddChildView(std::move(label));
 }
 
 bool CaptionBubble::ShouldShowCloseButton() const {
@@ -106,7 +141,7 @@ views::NonClientFrameView* CaptionBubble::CreateNonClientFrameView(
     views::Widget* widget) {
   CaptionBubbleFrameView* frame = new CaptionBubbleFrameView();
   auto border = std::make_unique<views::BubbleBorder>(
-      views::BubbleBorder::FLOAT, views::BubbleBorder::NO_SHADOW,
+      views::BubbleBorder::FLOAT, views::BubbleBorder::DIALOG_SHADOW,
       gfx::kPlaceholderColor);
   border->SetCornerRadius(kCornerRadiusDip);
   frame->SetBubbleBorder(std::move(border));
@@ -114,7 +149,9 @@ views::NonClientFrameView* CaptionBubble::CreateNonClientFrameView(
 }
 
 void CaptionBubble::SetText(const std::string& text) {
-  label_.SetText(base::ASCIIToUTF16(text));
+  label_->SetText(base::ASCIIToUTF16(text));
+  // Show the title if there is room for it.
+  title_->SetVisible(label_->GetPreferredSize().height() < kMaxHeightDip);
 }
 
 }  // namespace captions

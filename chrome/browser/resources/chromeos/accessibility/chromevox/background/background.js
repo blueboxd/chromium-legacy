@@ -56,6 +56,9 @@ Background = class extends ChromeVoxState {
   constructor() {
     super();
 
+    // Initialize legacy background page first.
+    ChromeVoxBackground.init();
+
     /**
      * A list of site substring patterns to use with ChromeVox next. Keep these
      * strings relatively specific.
@@ -141,6 +144,15 @@ Background = class extends ChromeVoxState {
     /** @type {boolean} */
     this.talkBackEnabled = false;
 
+    // Initialize various handlers for automation.
+    DesktopAutomationHandler.init();
+    /** @private {!RangeAutomationHandler} */
+    this.rangeAutomationHandler_ = new RangeAutomationHandler();
+    /** @private {!FocusAutomationHandler} */
+    this.focusAutomationHandler_ = new FocusAutomationHandler();
+    /** @private {!MediaAutomationHandler} */
+    this.mediaAutomationHandler_ = new MediaAutomationHandler();
+
     CommandHandler.init();
     FindHandler.init();
     DownloadHandler.init();
@@ -161,15 +173,6 @@ Background = class extends ChromeVoxState {
     // Set the darkScreen state to false, since the display will be on whenever
     // ChromeVox starts.
     sessionStorage.setItem('darkScreen', 'false');
-
-    chrome.loginState.getSessionState((sessionState) => {
-      // Play startup progress only when starting in a user session. Split
-      // incognito manifest appears to run two copies of the background page in
-      // different contexts, so that two progress ticks play.
-      if (sessionState === 'IN_OOBE_SCREEN' ||
-          sessionState === 'IN_LOGIN_SCREEN') {
-        return;
-      }
 
       // A self-contained class to start and stop progress sounds before any
       // speech has been generated on startup. This is important in cases where
@@ -193,7 +196,6 @@ Background = class extends ChromeVoxState {
         onTtsInterrupted() {}
       };
       new ProgressPlayer();
-    });
   }
 
   /**
@@ -550,5 +552,16 @@ Background = class extends ChromeVoxState {
 };
 
 
+// In 'split' manifest mode, the extension system runs two copies of the
+// extension. One in an incognito context; the other not. In guest mode, the
+// extension system runs only the extension in an incognito context. To prevent
+// doubling of this extension, only continue for one context.
+const manifest =
+    /** @type {{incognito: (string|undefined)}} */ (
+        chrome.runtime.getManifest());
+if (manifest.incognito == 'split' && !chrome.extension.inIncognitoContext) {
+  window.close();
+}
 new Background();
+
 });  // goog.scope

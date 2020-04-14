@@ -90,7 +90,8 @@ virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.h
 
 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
 
-crbug.com/940033 virtual/threaded-prefer-compositing/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Pass Failure ]
+crbug.com/940033 virtual/threaded-prefer-compositing/fast/scrolling/mouse-scrolling-over-standard-scrollbar.html [ Failure ]
+crbug.com/940033 virtual/threaded-prefer-compositing/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
 
 # Missing compositing reasons
 http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
@@ -104,13 +105,6 @@ crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Fail
 crbug.com/1047359 http/tests/subresource_filter/ad-highlight-frame-resized.html [ Failure ]
 
 virtual/threaded/fast/scroll-snap/snaps-after-touchpad-scrolling.html [ Failure ]
-
-# DCHECK(latched_scroll_type_.has_value()) in LayerTreeHostImpl::ScrollLatchedScroller().
-crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Crash ]
-crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow-desktop.html [ Crash ]
-crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Crash ]
-crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Crash ]
-crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Crash ]
 
 compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
 http/tests/images/image-decode-in-frame.html [ Pass Failure ]

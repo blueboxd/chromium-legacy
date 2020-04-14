@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -53,8 +53,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ReaderModeTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
 
     private static final String TEST_PAGE = "/chrome/test/data/dom_distiller/simple_article.html";
     private static final String TITLE = "Test Page Title";
@@ -62,11 +62,13 @@ public class ReaderModeTest {
 
     @SuppressWarnings("FieldCanBeLocal")
     private EmbeddedTestServer mTestServer;
+    private String mURL;
 
     @Before
     public void setUp() throws InterruptedException, TimeoutException {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PAGE));
+        mURL = mTestServer.getURL(TEST_PAGE);
+        mActivityTestRule.startMainActivityWithURL(mURL);
     }
 
     @After
@@ -88,10 +90,36 @@ public class ReaderModeTest {
         String innerHtml = getInnerHtml(originalTab);
         assertThat(innerHtml).doesNotContain("article-header");
 
-        TestThreadUtils.runOnUiThreadBlocking(()
-                                                      -> mActivityTestRule.getActivity()
-                                                                 .getReaderModeManager()
-                                                                 .activateReaderMode(originalTab));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity().getReaderModeManager().activateReaderMode(originalTab);
+        });
+        CustomTabActivity customTabActivity = waitForCustomTabActivity();
+        CriteriaHelper.pollUiThread(
+                Criteria.checkThat(customTabActivity::getActivityTab, notNullValue()));
+        @NonNull
+        Tab distillerViewerTab = Objects.requireNonNull(customTabActivity.getActivityTab());
+        waitForDistillation(TITLE, distillerViewerTab);
+
+        innerHtml = getInnerHtml(distillerViewerTab);
+        assertThat(innerHtml).contains("article-header");
+        assertThat(innerHtml).contains(CONTENT);
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
+    public void testReaderModeInCCT_Incognito() throws TimeoutException {
+        ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity(), mURL, true);
+
+        Tab originalTab = mActivityTestRule.getActivity().getActivityTab();
+        assertThat(originalTab.isIncognito()).isEqualTo(true);
+        String innerHtml = getInnerHtml(originalTab);
+        assertThat(innerHtml).doesNotContain("article-header");
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity().getReaderModeManager().activateReaderMode(originalTab);
+        });
         CustomTabActivity customTabActivity = waitForCustomTabActivity();
         CriteriaHelper.pollUiThread(
                 Criteria.checkThat(customTabActivity::getActivityTab, notNullValue()));
@@ -112,10 +140,9 @@ public class ReaderModeTest {
         String innerHtml = getInnerHtml(tab);
         assertThat(innerHtml).doesNotContain("article-header");
 
-        TestThreadUtils.runOnUiThreadBlocking(()
-                                                      -> mActivityTestRule.getActivity()
-                                                                 .getReaderModeManager()
-                                                                 .activateReaderMode(tab));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity().getReaderModeManager().activateReaderMode(tab);
+        });
         waitForDistillation(TITLE, mActivityTestRule.getActivity().getActivityTab());
 
         innerHtml = getInnerHtml(tab);

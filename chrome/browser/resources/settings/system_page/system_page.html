@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../controls/extension_controlled_indicator.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../lifetime_browser_proxy.html">
@@ -12,7 +13,7 @@
 
 <dom-module id="settings-system-page">
   <template>
-    <style include="settings-shared"></style>
+    <style include="cr-shared-style settings-shared iron-flex"></style>
 <if expr="not is_macosx">
     <settings-toggle-button
         pref="{{prefs.background_mode.enabled}}"
@@ -30,16 +31,16 @@
       </template>
     </settings-toggle-button>
 
-    <div id="proxy" class="settings-box" on-click="onProxyTap_"
+    <div id="proxy" class="cr-row" on-click="onProxyTap_"
         actionable$="[[isProxyDefault_]]">
-      <div class="start settings-box-text" hidden$="[[!isProxyDefault_]]">
+      <div class="flex cr-row-text" hidden$="[[!isProxyDefault_]]">
         $i18n{proxySettingsLabel}
       </div>
-      <div class="start settings-box-text"
+      <div class="flex cr-row-text"
           hidden$="[[!prefs.proxy.extensionId]]">
         $i18n{proxySettingsExtensionLabel}
       </div>
-      <div class="start settings-box-text"
+      <div class="flex cr-row-text"
           hidden$="[[!isProxyEnforcedByPolicy_]]">
         $i18n{proxySettingsPolicyLabel}
       </div>
@@ -53,8 +54,8 @@
       </template>
     </div>
     <template is="dom-if" if="[[prefs.proxy.extensionId]]">
-      <div class="settings-box continuation">
-        <extension-controlled-indicator class="start"
+      <div class="cr-row continuation">
+        <extension-controlled-indicator class="flex"
             extension-id="[[prefs.proxy.extensionId]]"
             extension-name="[[prefs.proxy.controlledByName]]"
             extension-can-be-disabled="[[prefs.proxy.extensionCanBeDisabled]]"

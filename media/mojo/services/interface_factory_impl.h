@@ -28,10 +28,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-#include "media/mojo/mojom/cdm_proxy.mojom.h"
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
-
 namespace media {
 
 class CdmFactory;
@@ -75,10 +71,6 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
       mojo::PendingReceiver<mojom::ContentDecryptionModule> receiver) final;
   void CreateDecryptor(int cdm_id,
                        mojo::PendingReceiver<mojom::Decryptor> receiver) final;
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  void CreateCdmProxy(const base::Token& cdm_guid,
-                      mojo::PendingReceiver<mojom::CdmProxy> receiver) final;
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
   // DeferredDestroy<mojom::InterfaceFactory> implemenation.
   void OnDestroyPending(base::OnceClosure destroy_cb) final;
@@ -118,10 +110,6 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   std::unique_ptr<CdmFactory> cdm_factory_;
   mojo::UniqueReceiverSet<mojom::ContentDecryptionModule> cdm_receivers_;
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
-
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  mojo::UniqueReceiverSet<mojom::CdmProxy> cdm_proxy_receivers_;
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
   mojo::Remote<mojom::FrameInterfaceFactory> frame_interfaces_;
 

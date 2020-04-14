@@ -16,11 +16,6 @@
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_model.h"
 
-namespace gfx {
-class Image;
-struct VectorIcon;
-}
-
 namespace ui {
 
 class ButtonMenuItemModel;
@@ -48,15 +43,8 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
     // Some command ids have labels and icons that change over time.
     virtual bool IsItemForCommandIdDynamic(int command_id) const;
     virtual base::string16 GetLabelForCommandId(int command_id) const;
-    // Gets the icon for the item with the specified id, returning true if there
-    // is an icon, false otherwise.
-    virtual bool GetIconForCommandId(int command_id,
-                                     gfx::Image* icon) const;
-
-    // Returns the vector icon for the given command id, or null if there is
-    // none. Only used for dynamic menu items.
-    virtual const gfx::VectorIcon* GetVectorIconForCommandId(
-        int command_id) const;
+    // Gets the icon for the item with the specified id.
+    virtual ImageModel GetIconForCommandId(int command_id) const;
 
     // Performs the action associates with the specified command id.
     // The passed |event_flags| are the flags from the event which issued this

@@ -4701,11 +4701,6 @@ test("unit_tests") {
       "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
       "../browser/safe_browsing/test_extension_event_observer.cc",
       "../browser/safe_browsing/test_extension_event_observer.h",
-
-      # TODO(1026557): The below test depends on TestExtensionEventObserver.
-      # Maybe it should be changed to not use that class so that it could be
-      # run on all platforms and hopefully componentized?
-      "../browser/ssl/ssl_blocking_page_unittest.cc",
       "../browser/sync/glue/extensions_activity_monitor_unittest.cc",
       "../browser/sync_file_system/drive_backend/callback_helper_unittest.cc",
       "../browser/sync_file_system/drive_backend/callback_tracker_unittest.cc",
@@ -5455,10 +5450,6 @@ test("unit_tests") {
       "../browser/browser_switcher/mock_alternative_browser_driver.h",
       "../browser/password_manager/password_store_signin_notifier_impl_unittest.cc",
     ]
-  }
-
-  if (enable_cdm_proxy && enable_widevine && is_win) {
-    sources += [ "../gpu/widevine_cdm_proxy_factory_unittest.cc" ]
   }
 
   if (enable_widevine_cdm_component && is_desktop_linux) {

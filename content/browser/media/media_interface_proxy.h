@@ -81,11 +81,6 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   void CreateDecryptor(
       int cdm_id,
       mojo::PendingReceiver<media::mojom::Decryptor> receiver) final;
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  void CreateCdmProxy(
-      const base::Token& cdm_guid,
-      mojo::PendingReceiver<media::mojom::CdmProxy> receiver) final;
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
  private:
   // Gets services provided by the browser (at RenderFrameHost level) to the
@@ -113,15 +108,6 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // Callback for connection error from the CdmFactoryPtr in the
   // |cdm_factory_map_| associated with |cdm_guid|.
   void OnCdmServiceConnectionError(const base::Token& cdm_guid);
-
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  // Creates a CdmProxy for the CDM in CdmService. Not implemented in
-  // CreateCdmProxy() because we don't want any client to be able to create
-  // a CdmProxy.
-  void CreateCdmProxyInternal(
-      const base::Token& cdm_guid,
-      mojo::PendingReceiver<media::mojom::CdmProxy> receiver);
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   // Safe to hold a raw pointer since |this| is owned by RenderFrameHostImpl.

@@ -118,18 +118,18 @@ GpuMojoMediaClient::GpuMojoMediaClient(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-    AndroidOverlayMojoFactoryCB android_overlay_factory_cb,
-    CdmProxyFactoryCB cdm_proxy_factory_cb)
+    AndroidOverlayMojoFactoryCB android_overlay_factory_cb)
     : gpu_preferences_(gpu_preferences),
       gpu_workarounds_(gpu_workarounds),
       gpu_feature_info_(gpu_feature_info),
       gpu_task_runner_(std::move(gpu_task_runner)),
       media_gpu_channel_manager_(std::move(media_gpu_channel_manager)),
-      android_overlay_factory_cb_(std::move(android_overlay_factory_cb)),
+      android_overlay_factory_cb_(std::move(android_overlay_factory_cb))
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-      gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
+      ,
+      gpu_memory_buffer_factory_(gpu_memory_buffer_factory)
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-      cdm_proxy_factory_cb_(std::move(cdm_proxy_factory_cb)) {
+{
 }
 
 GpuMojoMediaClient::~GpuMojoMediaClient() = default;
@@ -331,15 +331,5 @@ std::unique_ptr<CdmFactory> GpuMojoMediaClient::CreateCdmFactory(
   return nullptr;
 #endif  // defined(OS_ANDROID)
 }
-
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-std::unique_ptr<CdmProxy> GpuMojoMediaClient::CreateCdmProxy(
-    const base::Token& cdm_guid) {
-  if (cdm_proxy_factory_cb_)
-    return cdm_proxy_factory_cb_.Run(cdm_guid);
-
-  return nullptr;
-}
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 }  // namespace media

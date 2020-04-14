@@ -37,27 +37,6 @@ cdm::FileIO* MojoCdmHelper::CreateCdmFileIO(cdm::FileIOClient* client) {
   return cdm_file_io;
 }
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-cdm::CdmProxy* MojoCdmHelper::CreateCdmProxy(cdm::CdmProxyClient* client) {
-  DVLOG(3) << __func__;
-  if (cdm_proxy_) {
-    DVLOG(1) << __func__ << ": Only one outstanding CdmProxy allowed.";
-    return nullptr;
-  }
-
-  mojo::PendingRemote<mojom::CdmProxy> cdm_proxy_remote;
-  frame_interfaces_->CreateCdmProxy(
-      cdm_proxy_remote.InitWithNewPipeAndPassReceiver());
-  cdm_proxy_ =
-      std::make_unique<MojoCdmProxy>(std::move(cdm_proxy_remote), client);
-  return cdm_proxy_.get();
-}
-
-int MojoCdmHelper::GetCdmProxyCdmId() {
-  return cdm_proxy_ ? cdm_proxy_->GetCdmId() : CdmContext::kInvalidCdmId;
-}
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
-
 cdm::Buffer* MojoCdmHelper::CreateCdmBuffer(size_t capacity) {
   return GetAllocator()->CreateCdmBuffer(capacity);
 }

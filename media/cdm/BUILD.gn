@@ -78,14 +78,6 @@ source_set("cdm") {
       "cdm_helpers.h",
       "cdm_module.cc",
       "cdm_module.h",
-
-      # Not putting these under |enable_cdm_proxy| so we don't have to if/def
-      # every usage of CdmProxy base types, e.g. in CdmCapability. This also
-      # helps enable more tests.
-      "cdm_proxy.cc",
-      "cdm_proxy.h",
-      "cdm_proxy_context.cc",
-      "cdm_proxy_context.h",
       "cdm_type_conversion.cc",
       "cdm_type_conversion.h",
       "cdm_wrapper.h",

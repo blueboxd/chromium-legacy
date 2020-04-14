@@ -14,7 +14,6 @@
 namespace media {
 
 class CallbackRegistration;
-class CdmProxyContext;
 class Decryptor;
 class MediaCryptoContext;
 
@@ -86,13 +85,6 @@ class MEDIA_EXPORT CdmContext {
   // TODO(crbug.com/804397): Use base::UnguessableToken for CDM ID.
   virtual int GetCdmId() const;
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  // Returns a CdmProxyContext that can be used by hardware decoders/decryptors.
-  // Returns nullptr if CdmProxyContext is not supported, e.g. |this| is not
-  // hosted by a CdmProxy.
-  virtual CdmProxyContext* GetCdmProxyContext();
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
 #if defined(OS_ANDROID)
   // Returns a MediaCryptoContext that can be used by MediaCodec based decoders.
   virtual MediaCryptoContext* GetMediaCryptoContext();
@@ -120,7 +112,7 @@ MEDIA_EXPORT void IgnoreCdmAttached(bool success);
 
 // A reference holder to make sure the CdmContext is always valid as long as
 // |this| is alive. Typically |this| will hold a reference (directly or
-// indirectly) to the host, e.g. a ContentDecryptionModule or a CdmProxy.
+// indirectly) to the host, e.g. a ContentDecryptionModule.
 // This class must be held on the same thread where the host lives. The raw
 // CdmContext pointer returned by GetCdmContext() may be used on other threads
 // if it's supported by the CdmContext implementation.

@@ -104,12 +104,6 @@ CommandHandler.onCommand = function(command) {
       break;
     case 'toggleStickyMode':
       ChromeVoxBackground.setPref('sticky', !ChromeVox.isStickyPrefOn, true);
-
-      if (ChromeVox.isStickyPrefOn) {
-        chrome.accessibilityPrivate.setKeyboardListener(true, true);
-      } else {
-        chrome.accessibilityPrivate.setKeyboardListener(true, false);
-      }
       CommandHandler.smartStickyMode_.onStickyModeCommand(
           ChromeVoxState.instance.currentRange);
       return false;

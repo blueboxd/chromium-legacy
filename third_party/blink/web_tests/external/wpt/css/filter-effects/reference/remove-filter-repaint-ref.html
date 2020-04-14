@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>filter-bug</title>
+    <title>CSS Filters: Repaint a compositing layer</title>
     <style>
     .backdrop {
         position: absolute;
@@ -27,36 +27,15 @@
         background-color: navy;
         color: white;
     }
-    .play.changed {
-        filter: drop-shadow(black 0 0 5px);
-    }
     .composited {
         will-change: transform;
     }
-
     </style>
-    <script>
-        if (window.testRunner)
-            testRunner.waitUntilDone();
-
-        function doTest()
-        {
-            requestAnimationFrame(function() {
-
-document.getElementById('play').classList.remove('changed');
-                if (window.testRunner)
-                    testRunner.notifyDone();
-            }, 0);
-        }
-
-        window.addEventListener('load', doTest, false);
-    </script>
 </head>
 <body>
     <div class="composited backdrop"></div>
     <div class="overlay">
-        <span id="play" class="play changed">this should be
-	visible</span>
+        <span id="play" class="play changed">this should be visible</span>
     </div>
 </body>
 </html>

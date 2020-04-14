@@ -10,7 +10,6 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/media_log.h"
 #include "media/base/win/mf_helpers.h"
-#include "media/cdm/cdm_proxy_context.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/windows/d3d11_picture_buffer.h"
@@ -64,20 +63,16 @@ D3D11H264Picture::~D3D11H264Picture() {
 D3D11H264Accelerator::D3D11H264Accelerator(
     D3D11VideoDecoderClient* client,
     MediaLog* media_log,
-    CdmProxyContext* cdm_proxy_context,
     ComD3D11VideoDecoder video_decoder,
     ComD3D11VideoDevice video_device,
     std::unique_ptr<VideoContextWrapper> video_context)
     : client_(client),
       media_log_(media_log),
-      cdm_proxy_context_(cdm_proxy_context),
       video_decoder_(video_decoder),
       video_device_(video_device),
       video_context_(std::move(video_context)) {
   DCHECK(client);
   DCHECK(media_log_);
-  // |cdm_proxy_context_| is non-null for encrypted content but can be null for
-  // clear content.
 }
 
 D3D11H264Accelerator::~D3D11H264Accelerator() {}
@@ -99,28 +94,9 @@ DecoderStatus D3D11H264Accelerator::SubmitFrameMetadata(
     const H264Picture::Vector& ref_pic_listb1,
     scoped_refptr<H264Picture> pic) {
   const bool is_encrypted = pic->decrypt_config();
-
-  std::unique_ptr<D3D11_VIDEO_DECODER_BEGIN_FRAME_CRYPTO_SESSION> content_key;
-  // This decrypt context has to be outside the if block because pKeyInfo in
-  // D3D11_VIDEO_DECODER_BEGIN_FRAME_CRYPTO_SESSION is a pointer (to a GUID).
-  base::Optional<CdmProxyContext::D3D11DecryptContext> decrypt_context;
   if (is_encrypted) {
-    DCHECK(cdm_proxy_context_) << "No CdmProxyContext but picture is encrypted";
-    decrypt_context = cdm_proxy_context_->GetD3D11DecryptContext(
-        CdmProxy::KeyType::kDecryptAndDecode, pic->decrypt_config()->key_id());
-    if (!decrypt_context) {
-      RecordFailure("Cannot find decrypt context for the frame.");
-      return DecoderStatus::kTryAgain;
-    }
-
-    content_key =
-        std::make_unique<D3D11_VIDEO_DECODER_BEGIN_FRAME_CRYPTO_SESSION>();
-    content_key->pCryptoSession = decrypt_context->crypto_session;
-    content_key->pBlob = const_cast<void*>(decrypt_context->key_blob);
-    content_key->BlobSize = decrypt_context->key_blob_size;
-    content_key->pKeyInfoId = &decrypt_context->key_info_guid;
-    frame_iv_.assign(pic->decrypt_config()->iv().begin(),
-                     pic->decrypt_config()->iv().end());
+    RecordFailure("Cannot find decrypt context for the frame.");
+    return DecoderStatus::kFail;
   }
 
   HRESULT hr;
@@ -128,7 +104,7 @@ DecoderStatus D3D11H264Accelerator::SubmitFrameMetadata(
     hr = video_context_->DecoderBeginFrame(
         video_decoder_.Get(),
         static_cast<D3D11H264Picture*>(pic.get())->picture->output_view().Get(),
-        content_key ? sizeof(*content_key) : 0, content_key.get());
+        0, nullptr);
 
     if (hr == E_PENDING || hr == D3DERR_WASSTILLDRAWING) {
       // Hardware is busy.  We should make the call again.

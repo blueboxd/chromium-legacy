@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/network/trust_tokens/trust_token_request_helper_factory.h"
+#include <memory>
 
 #include <utility>
 
@@ -10,14 +11,20 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
+#include "services/network/trust_tokens/ed25519_trust_token_request_signer.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
+#include "services/network/trust_tokens/trust_token_key_commitment_controller.h"
+#include "services/network/trust_tokens/trust_token_request_canonicalizer.h"
+#include "services/network/trust_tokens/trust_token_request_signing_helper.h"
 
 namespace network {
 
 TrustTokenRequestHelperFactory::TrustTokenRequestHelperFactory(
     PendingTrustTokenStore* store)
     : store_(store) {}
+TrustTokenRequestHelperFactory::TrustTokenRequestHelperFactory() = default;
+TrustTokenRequestHelperFactory::~TrustTokenRequestHelperFactory() = default;
 
 void TrustTokenRequestHelperFactory::CreateTrustTokenHelperForRequest(
     const net::URLRequest& request,
@@ -40,15 +47,52 @@ void TrustTokenRequestHelperFactory::CreateTrustTokenHelperForRequest(
     return;
   }
 
-  // Silence the compile warning: |store_| will be used to construct concrete
-  // TrustTokenRequestHelpers once they are implemented.
-  ignore_result(store_);
+  store_->ExecuteOrEnqueue(
+      base::BindOnce(&TrustTokenRequestHelperFactory::ConstructHelperUsingStore,
+                     weak_factory_.GetWeakPtr(), *maybe_top_frame_origin,
+                     base::Passed(params.Clone()), std::move(done)));
+}
 
-  // (Currently, there's no asynchronous logic here; subsequent CLs will change
-  // this, since actually creating the helpers will require using the
-  // TrustTokenStore into which |store_| materializes asynchronously.)
+void TrustTokenRequestHelperFactory::ConstructHelperUsingStore(
+    SuitableTrustTokenOrigin top_frame_origin,
+    mojom::TrustTokenParamsPtr params,
+    base::OnceCallback<void(TrustTokenStatusOrRequestHelper)> done,
+    TrustTokenStore* store) {
+  DCHECK(params);
 
-  std::move(done).Run(mojom::TrustTokenOperationStatus::kUnavailable);
+  switch (params->type) {
+    case mojom::TrustTokenOperationType::kSigning: {
+      base::Optional<SuitableTrustTokenOrigin> maybe_issuer;
+      if (params->issuer) {
+        maybe_issuer =
+            SuitableTrustTokenOrigin::Create(std::move(*params->issuer));
+      }
+
+      if (!maybe_issuer) {
+        std::move(done).Run(mojom::TrustTokenOperationStatus::kInvalidArgument);
+        return;
+      }
+
+      TrustTokenRequestSigningHelper::Params signing_params(
+          std::move(*maybe_issuer), top_frame_origin,
+          std::move(params->additional_signed_headers),
+          params->include_timestamp_header, params->sign_request_data);
+
+      std::move(done).Run(std::unique_ptr<TrustTokenRequestHelper>(
+          new TrustTokenRequestSigningHelper(
+              store, std::move(signing_params),
+              std::make_unique<Ed25519TrustTokenRequestSigner>(),
+              std::make_unique<TrustTokenRequestCanonicalizer>())));
+      return;
+    }
+
+    // Issuance and redemption aren't yet implemented.
+    case mojom::TrustTokenOperationType::kIssuance:
+    case mojom::TrustTokenOperationType::kRedemption: {
+      std::move(done).Run(mojom::TrustTokenOperationStatus::kUnavailable);
+      return;
+    }
+  }
 }
 
 TrustTokenStatusOrRequestHelper::TrustTokenStatusOrRequestHelper() = default;

@@ -64,8 +64,8 @@ void MojoCdmFactory::Create(
       key_system, cdm_pending_remote.InitWithNewPipeAndPassReceiver());
 
   MojoCdm::Create(key_system, security_origin, cdm_config,
-                  std::move(cdm_pending_remote), interface_factory_,
-                  session_message_cb, session_closed_cb, session_keys_change_cb,
+                  std::move(cdm_pending_remote), session_message_cb,
+                  session_closed_cb, session_keys_change_cb,
                   session_expiration_update_cb, std::move(cdm_created_cb));
 }
 

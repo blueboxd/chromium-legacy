@@ -10,13 +10,8 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
-import android.app.Activity;
-import android.app.Instrumentation;
-import android.content.Context;
-import android.content.Intent;
 import android.support.test.filters.SmallTest;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,20 +31,6 @@ import org.chromium.policy.test.annotations.Policies;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class SettingsActivityTest {
-    /**
-     * Launches the settings activity with the specified fragment.
-     * Returns the activity that was started.
-     */
-    public static SettingsActivity startSettingsActivity(
-            Instrumentation instrumentation, String fragmentName) {
-        Context context = instrumentation.getTargetContext();
-        Intent intent =
-                SettingsLauncher.getInstance().createIntentForSettingsPage(context, fragmentName);
-        Activity activity = instrumentation.startActivitySync(intent);
-        Assert.assertTrue(activity instanceof SettingsActivity);
-        return (SettingsActivity) activity;
-    }
-
     @Rule
     public SettingsActivityTestRule<MainSettings> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(MainSettings.class);

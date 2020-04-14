@@ -56,8 +56,9 @@ class FeedStreamApi {
   // Rejects a change. Returns false if the change does not exist.
   virtual bool RejectEphemeralChange(EphemeralChangeId id) = 0;
 
-  // User interaction reporting. These should have no side-effects other than
-  // reporting metrics.
+  // User interaction reporting. These should have no side-effects other than:
+  // - reporting metrics
+  // - updating |UserClass|
 
   // A slice was viewed (2/3rds of it is in the viewport). Should be called
   // once for each viewed slice in the stream.

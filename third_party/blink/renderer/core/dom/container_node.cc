@@ -1551,6 +1551,12 @@ RadioNodeList* ContainerNode::GetRadioNodeList(const AtomicString& name,
 }
 
 Element* ContainerNode::getElementById(const AtomicString& id) const {
+  // According to https://dom.spec.whatwg.org/#concept-id, empty IDs are
+  // treated as equivalent to the lack of an id attribute.
+  if (id.IsEmpty()) {
+    return nullptr;
+  }
+
   if (IsInTreeScope()) {
     // Fast path if we are in a tree scope: call getElementById() on tree scope
     // and check if the matching element is in our subtree.

@@ -122,6 +122,18 @@ public class WebContentsUtils {
         return SelectionPopupControllerImpl.createForTesting(webContents);
     }
 
+    /**
+     * Checks if the given WebContents has a valid {@link ActionMode.Callback} set in place.
+     * @return {@code true} if WebContents (its SelectionPopupController) has a valid
+     *         action mode callback object.
+     */
+    public static boolean isActionModeSupported(WebContents webContents) {
+        SelectionPopupControllerImpl controller =
+                ((SelectionPopupControllerImpl) SelectionPopupController.fromWebContents(
+                        webContents));
+        return controller.isActionModeSupported();
+    }
+
     private static native void nativeReportAllFrameSubmissions(
             WebContents webContents, boolean enabled);
     private static native RenderFrameHost nativeGetFocusedFrame(WebContents webContents);

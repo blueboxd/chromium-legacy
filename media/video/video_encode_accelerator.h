@@ -144,6 +144,9 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
 
     std::string AsHumanReadableString() const;
 
+    bool HasTemporalLayer() const;
+    bool HasSpatialLayer() const;
+
     // Frame format of input stream (as would be reported by
     // VideoFrame::format() for frames passed to Encode()).
     VideoPixelFormat input_format;

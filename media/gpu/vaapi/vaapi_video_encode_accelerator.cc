@@ -279,6 +279,10 @@ bool VaapiVideoEncodeAccelerator::Initialize(const Config& config,
   DCHECK_EQ(state_, kUninitialized);
 
   VLOGF(2) << "Initializing VAVEA, " << config.AsHumanReadableString();
+  if (config.HasTemporalLayer() || config.HasSpatialLayer()) {
+    VLOGF(1) << "Neither temporal nor spatial layer encoding is supported";
+    return false;
+  }
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
   client_ = client_ptr_factory_->GetWeakPtr();

@@ -955,6 +955,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   ASSERT_TRUE(content::ExecuteScript(web_frame_rfh, about_blank_javascript));
 
   web_about_blank_manager.WaitForNavigationFinished();
+  // After navigation, the frame may change.
+  web_frame_rfh = ChildFrameAt(panel_frame_rfh, 2);
 
   EXPECT_EQ(about_blank_url, web_frame_rfh->GetLastCommittedURL());
   EXPECT_EQ(web_url.host(),

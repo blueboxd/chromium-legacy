@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
-#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "components/sync/driver/sync_service.h"
@@ -25,7 +24,6 @@
 #import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/internal/web_view_global_state_util.h"
-#include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -152,24 +150,11 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
     SigninErrorController* signinErrorController =
         ios_web_view::WebViewSigninErrorControllerFactory::GetForBrowserState(
             self.browserState);
-    autofill::PersonalDataManager* personalDataManager =
-        ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
-            self.browserState);
-    scoped_refptr<autofill::AutofillWebDataService> autofillWebDataService =
-        ios_web_view::WebViewWebDataServiceWrapperFactory::
-            GetAutofillWebDataForBrowserState(
-                self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
-    scoped_refptr<password_manager::PasswordStore> passwordStore =
-        ios_web_view::WebViewAccountPasswordStoreFactory::GetForBrowserState(
-            self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
 
-    _syncController = [[CWVSyncController alloc]
-           initWithSyncService:syncService
-               identityManager:identityManager
-         signinErrorController:signinErrorController
-           personalDataManager:personalDataManager
-        autofillWebDataService:autofillWebDataService.get()
-                 passwordStore:passwordStore.get()];
+    _syncController =
+        [[CWVSyncController alloc] initWithSyncService:syncService
+                                       identityManager:identityManager
+                                 signinErrorController:signinErrorController];
   }
   return _syncController;
 }

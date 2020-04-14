@@ -8,12 +8,12 @@ import static org.chromium.chrome.browser.flags.ChromeFeatureList.DARKEN_WEBSITE
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_DARKEN_WEBSITES_ENABLED;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.LinearLayout;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -26,8 +26,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.night_mode.ThemeType;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.SettingsActivity;
-import org.chromium.chrome.browser.settings.SettingsActivityTest;
+import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
@@ -51,6 +50,10 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
             Arrays.asList(new ParameterSet().value(false).name("DefaultLightDisabled"),
                     new ParameterSet().value(true).name("DefaultLightEnabled"));
 
+    @Rule
+    public SettingsActivityTestRule<ThemeSettingsFragment> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(ThemeSettingsFragment.class);
+
     private boolean mDefaultToLight;
     private ThemeSettingsFragment mFragment;
     private RadioButtonGroupThemePreference mPreference;
@@ -65,10 +68,8 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
         super.setUpTest();
         SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING);
         SharedPreferencesManager.getInstance().removeKey(UI_THEME_DARKEN_WEBSITES_ENABLED);
-        SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(),
-                ThemeSettingsFragment.class.getName());
-        mFragment = (ThemeSettingsFragment) settingsActivity.getMainFragment();
+        mSettingsActivityTestRule.startSettingsActivity();
+        mFragment = mSettingsActivityTestRule.getFragment();
         mPreference = (RadioButtonGroupThemePreference) mFragment.findPreference(
                 ThemeSettingsFragment.PREF_UI_THEME_PREF);
     }

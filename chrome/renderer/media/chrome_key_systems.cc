@@ -81,8 +81,6 @@ static void AddExternalClearKey(
       "org.chromium.externalclearkey.storageidtest";
   static const char kExternalClearKeyDifferentGuidTestKeySystem[] =
       "org.chromium.externalclearkey.differentguid";
-  static const char kExternalClearKeyCdmProxyKeySystem[] =
-      "org.chromium.externalclearkey.cdmproxy";
 
   // TODO(xhwang): Actually use |capability| to determine capabilities.
   media::mojom::KeySystemCapabilityPtr capability;
@@ -135,10 +133,6 @@ static void AddExternalClearKey(
   // A key system that is registered with a different CDM GUID.
   concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
       kExternalClearKeyDifferentGuidTestKeySystem));
-
-  // A key system that requires the use of CdmProxy.
-  concrete_key_systems->emplace_back(
-      new cdm::ExternalClearKeyProperties(kExternalClearKeyCdmProxyKeySystem));
 }
 
 #if BUILDFLAG(ENABLE_WIDEVINE)

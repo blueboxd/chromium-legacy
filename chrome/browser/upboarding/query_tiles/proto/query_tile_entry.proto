@@ -39,19 +39,3 @@ message QueryTileEntry {
   // Sub level children.
   repeated QueryTileEntry sub_tiles = 6;
 }
-
-// Data schema of a group of entries and its metadata.
-// Next tag: 5
-message QueryTileGroup {
-  // Unique id of each group.
-  string id = 1;
-
-  // Locale setting of this group.
-  string locale = 2;
-
-  // Last updated timestamp in ms;
-  int64 last_updated_time_ms = 3;
-
-  // Top level tiles;
-  repeated QueryTileEntry tiles = 4;
-}

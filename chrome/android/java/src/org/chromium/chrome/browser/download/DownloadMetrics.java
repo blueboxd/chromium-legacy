@@ -6,9 +6,7 @@ package org.chromium.chrome.browser.download;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.content_public.browser.BrowserStartupController;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -39,11 +37,6 @@ public class DownloadMetrics {
      * @param mimeType The mime type of the download.
      */
     public static void recordDownloadOpen(@DownloadOpenSource int source, String mimeType) {
-        if (!isNativeLoaded()) {
-            Log.w(TAG, "Native is not loaded, dropping download open metrics.");
-            return;
-        }
-
         @DownloadFilter.Type
         int type = DownloadFilter.fromMimeType(mimeType);
         if (type == DownloadFilter.Type.VIDEO) {
@@ -59,10 +52,6 @@ public class DownloadMetrics {
     }
 
     public static void recordDownloadPageOpen(@DownloadOpenSource int source) {
-        if (!isNativeLoaded()) {
-            Log.w(TAG, "Native is not loaded, dropping download open metrics.");
-            return;
-        }
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.DownloadPage.OpenSource", source, DownloadOpenSource.MAX_VALUE);
     }
@@ -94,9 +83,5 @@ public class DownloadMetrics {
                         }
                     }
                 });
-    }
-
-    private static boolean isNativeLoaded() {
-        return BrowserStartupController.getInstance().isNativeStarted();
     }
 }

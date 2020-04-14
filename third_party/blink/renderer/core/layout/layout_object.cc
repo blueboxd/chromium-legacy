@@ -1339,7 +1339,7 @@ bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
   // Backdrop-filter creates a containing block for fixed and absolute
   // positioned elements:
   // https://drafts.fxtf.org/filter-effects-2/#backdrop-filter-operation
-  if (!is_document_element && style->HasBackdropFilter())
+  if (!is_document_element && style->HasNonInitialBackdropFilter())
     return true;
   // The LayoutView is always a container of fixed positioned descendants. In
   // addition, SVG foreignObjects become such containers, so that descendants

@@ -83,7 +83,7 @@ MediaHistoryKeyedService::MediaHistoryKeyedService(Profile* profile)
   } else {
     auto db_task_runner = base::ThreadPool::CreateUpdateableSequencedTaskRunner(
         {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+         base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
     store_ = std::make_unique<StoreHolder>(profile_, std::move(db_task_runner));
   }
@@ -105,6 +105,11 @@ void MediaHistoryKeyedService::Shutdown() {
       profile_, ServiceAccessType::IMPLICIT_ACCESS);
   if (history)
     history->RemoveObserver(this);
+
+  if (auto* store = store_->GetForWrite()) {
+    store->db_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&MediaHistoryStore::Close, store));
+  }
 }
 
 void MediaHistoryKeyedService::OnURLsDeleted(

@@ -339,7 +339,6 @@ currently supported services:
 * `PlatformVerification`: to check whether the platform is secure
 * `CdmFileIO`: for the CDM to store persistent data
 * `ProvisionFetcher`: for Android MediaDrm device provisioning
-* `CdmProxy`: (in progress)
 
 ### Security
 
@@ -358,8 +357,7 @@ which process in production, see [Adoption](#Adoption) below.
 Also note that all the [Secure Auxiliary Services](#Secure-Auxiliary-Services)
 are running in a more privileged process than the process where the media
 components that use them run in. For example, all of the existing services run
-in the browser process except for the `CdmProxy`, which runs in the GPU process.
-They must defend against compromised media components.
+in the browser process. They must defend against compromised media components.
 
 ### Adoption
 
@@ -400,7 +398,6 @@ They must defend against compromised media components.
     * `MediaService` in the GPU process (registered in `GpuServiceFactory` with
       `GpuMojoMediaClient`)
     * `MojoVideoDecoder` + hardware video decoders such as D3D11VideoDecoder
-    * Provides `CdmProxy` to the `CdmService`
 
 ## Other Services
 

@@ -30,7 +30,6 @@
 #include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #endif
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -726,6 +725,9 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback(
   auto* user = GetChromeOSUser();
   if (user) {
     auto* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+    // If primary user profile is not finalized, use the current profile.
+    if (!profile)
+      profile = Profile::FromBrowserContext(context_);
     DCHECK(profile);
     if (user->IsActiveDirectoryUser()) {
       // TODO(crbug.com/1012048): Handle AD, likely through crbug.com/1012170.
@@ -887,14 +889,10 @@ bool SafeBrowsingPrivateEventRouter::IsRealtimeReportingAvailable() {
            ->IsEnterpriseManaged())
     return false;
 
-  // The Chrome OS user must be afiliated with the device.
+  // The Chrome OS user must be affiliated with the device.
+  // This also implies that the user is managed.
   auto* user = GetChromeOSUser();
-  if (!user || !user->IsAffiliated())
-    return false;
-
-  // And that user must be managed.
-  auto* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
-  return profile && profile->GetProfilePolicyConnector()->IsManaged();
+  return user && user->IsAffiliated();
 #else
   return policy::ChromeBrowserCloudManagementController::IsEnabled();
 #endif

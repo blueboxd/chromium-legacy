@@ -34,11 +34,6 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
   void PostCompositorThreadCreated(
       base::SingleThreadTaskRunner* task_runner) override;
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  std::unique_ptr<media::CdmProxy> CreateCdmProxy(
-      const base::Token& cdm_guid) override;
-#endif
-
 #if defined(OS_CHROMEOS)
   scoped_refptr<arc::ProtectedBufferManager> GetProtectedBufferManager();
 #endif

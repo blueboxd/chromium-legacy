@@ -80,7 +80,6 @@ bool IsHardwareSecureCodecsOverriddenFromCommandLine(
 
 void GetHardwareSecureDecryptionCaps(
     const std::string& key_system,
-    const base::flat_set<media::CdmProxy::Protocol>& cdm_proxy_protocols,
     std::vector<media::VideoCodec>* video_codecs,
     std::vector<media::EncryptionScheme>* encryption_schemes) {
   DCHECK(video_codecs->empty());
@@ -95,11 +94,6 @@ void GetHardwareSecureDecryptionCaps(
   if (IsHardwareSecureCodecsOverriddenFromCommandLine(video_codecs,
                                                       encryption_schemes)) {
     DVLOG(1) << "Hardware secure codecs overridden from command line";
-    return;
-  }
-
-  if (cdm_proxy_protocols.empty()) {
-    DVLOG(1) << "CDM does not support any CdmProxy protocols";
     return;
   }
 
@@ -123,8 +117,7 @@ void GetHardwareSecureDecryptionCaps(
   base::flat_set<media::EncryptionScheme> encryption_scheme_set;
 
   GetContentClient()->browser()->GetHardwareSecureDecryptionCaps(
-      key_system, cdm_proxy_protocols, &video_codec_set,
-      &encryption_scheme_set);
+      key_system, &video_codec_set, &encryption_scheme_set);
 
   *video_codecs = SetToVector(video_codec_set);
   *encryption_schemes = SetToVector(encryption_scheme_set);
@@ -184,7 +177,6 @@ void KeySystemSupportImpl::IsKeySystemSupported(
       SetToVector(cdm_info->capability.encryption_schemes);
 
   GetHardwareSecureDecryptionCaps(key_system,
-                                  cdm_info->capability.cdm_proxy_protocols,
                                   &capability->hw_secure_video_codecs,
                                   &capability->hw_secure_encryption_schemes);
 

@@ -117,7 +117,7 @@ cr.define('settings_people_page', function() {
 
           // The correct /manageProfile link row is shown.
           assertFalse(!!peoplePage.$$('#edit-profile'));
-          assertTrue(!!peoplePage.$$('#picture-subpage-trigger'));
+          assertTrue(!!peoplePage.$$('#profile-row'));
 
           // Control element doesn't exist when policy forbids sync.
           sync_test_util.simulateSyncStatus({
@@ -165,7 +165,7 @@ cr.define('settings_people_page', function() {
 
           // The correct /manageProfile link row is shown.
           assertTrue(!!peoplePage.$$('#edit-profile'));
-          assertFalse(!!peoplePage.$$('#picture-subpage-trigger'));
+          assertFalse(!!peoplePage.$$('#profile-row'));
 
           sync_test_util.simulateSyncStatus({
             signedIn: false,

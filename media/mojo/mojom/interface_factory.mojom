@@ -5,8 +5,6 @@
 module media.mojom;
 
 import "media/mojo/mojom/audio_decoder.mojom";
-[EnableIf=enable_cdm_proxy]
-import "media/mojo/mojom/cdm_proxy.mojom";
 import "media/mojo/mojom/decryptor.mojom";
 import "media/mojo/mojom/content_decryption_module.mojom";
 import "media/mojo/mojom/renderer.mojom";
@@ -66,11 +64,4 @@ interface InterfaceFactory {
 
   // Creates a Decryptor associated with the |cdm_id|.
   CreateDecryptor(int32 cdm_id, pending_receiver<Decryptor> decryptor);
-
-  // Creates a CdmProxy that proxies part of CDM functionalities to a different
-  // entity, e.g. hardware CDM modules. The created |cdm_proxy| must match the
-  // type of the CDM, identified by |cdm_guid|.
-  [EnableIf=enable_cdm_proxy]
-  CreateCdmProxy(mojo_base.mojom.Token cdm_guid,
-                 pending_receiver<CdmProxy> cdm_proxy);
 };

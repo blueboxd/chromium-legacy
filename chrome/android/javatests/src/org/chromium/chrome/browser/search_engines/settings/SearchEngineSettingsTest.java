@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.settings.MainSettings;
 import org.chromium.chrome.browser.settings.SettingsActivity;
-import org.chromium.chrome.browser.settings.SettingsActivityTest;
+import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.site_settings.PermissionInfo;
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridgeJni;
@@ -51,6 +51,9 @@ import java.util.concurrent.ExecutionException;
 public class SearchEngineSettingsTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
+    @Rule
+    public final SettingsActivityTestRule<SearchEngineSettings> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(SearchEngineSettings.class);
 
     /**
      * Change search engine and make sure it works correctly.
@@ -63,12 +66,11 @@ public class SearchEngineSettingsTest {
     public void testSearchEnginePreference() throws Exception {
         ensureTemplateUrlServiceLoaded();
 
-        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(), SearchEngineSettings.class.getName());
+        mSettingsActivityTestRule.startSettingsActivity();
 
         // Set the second search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEngineSettings pref = (SearchEngineSettings) settingsActivity.getMainFragment();
+            SearchEngineSettings pref = mSettingsActivityTestRule.getFragment();
             pref.setValueForTesting("1");
 
             // Ensure that the second search engine in the list is selected.
@@ -178,18 +180,17 @@ public class SearchEngineSettingsTest {
     public void testSearchEnginePreferenceHttp() throws Exception {
         ensureTemplateUrlServiceLoaded();
 
-        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(), SearchEngineSettings.class.getName());
+        mSettingsActivityTestRule.startSettingsActivity();
 
         // Set the first search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEngineSettings pref = (SearchEngineSettings) settingsActivity.getMainFragment();
+            SearchEngineSettings pref = mSettingsActivityTestRule.getFragment();
             pref.setValueForTesting("0");
         });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Ensure that the first search engine in the list is selected.
-            SearchEngineSettings pref = (SearchEngineSettings) settingsActivity.getMainFragment();
+            SearchEngineSettings pref = mSettingsActivityTestRule.getFragment();
             Assert.assertNotNull(pref);
             Assert.assertEquals("0", pref.getValueForTesting());
 

@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
@@ -184,20 +185,22 @@ void ConstructCommands(CommandService* command_service,
     command_value.is_extension_action = is_extension_action;
     return command_value;
   };
+  // TODO(https://crbug.com/1067130): Extensions shouldn't be able to specify
+  // commands for actions they don't have, so we should just be able to query
+  // for a single action type.
   bool active = false;
   Command browser_action;
-  if (command_service->GetBrowserActionCommand(extension_id,
-                                               CommandService::ALL,
-                                               &browser_action,
-                                               &active)) {
+  if (command_service->GetExtensionActionCommand(
+          extension_id, ActionInfo::TYPE_BROWSER, CommandService::ALL,
+          &browser_action, &active)) {
     commands->push_back(construct_command(browser_action, active, true));
   }
 
   Command page_action;
-  if (command_service->GetPageActionCommand(extension_id,
-                                            CommandService::ALL,
-                                            &page_action,
-                                            &active)) {
+  active = false;
+  if (command_service->GetExtensionActionCommand(
+          extension_id, ActionInfo::TYPE_PAGE, CommandService::ALL,
+          &page_action, &active)) {
     commands->push_back(construct_command(page_action, active, true));
   }
 

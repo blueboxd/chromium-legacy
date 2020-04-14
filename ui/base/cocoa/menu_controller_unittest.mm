@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #import "ui/base/test/cocoa_helper.h"
@@ -148,13 +149,9 @@ class DynamicDelegate : public Delegate {
   base::string16 GetLabelForCommandId(int command_id) const override {
     return label_;
   }
-  bool GetIconForCommandId(int command_id, gfx::Image* icon) const override {
-    if (icon_.IsEmpty()) {
-      return false;
-    } else {
-      *icon = icon_;
-      return true;
-    }
+  ui::ImageModel GetIconForCommandId(int command_id) const override {
+    return icon_.IsEmpty() ? ui::ImageModel()
+                           : ui::ImageModel::FromImage(icon_);
   }
   void SetDynamicLabel(base::string16 label) { label_ = label; }
   void SetDynamicIcon(const gfx::Image& icon) { icon_ = icon; }

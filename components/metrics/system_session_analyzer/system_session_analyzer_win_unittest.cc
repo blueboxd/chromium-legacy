@@ -35,10 +35,19 @@ TEST(SystemSessionAnalyzerTest, FetchEvents) {
 // session.
 TEST(SystemSessionAnalyzerTest, ValidateEvents) {
   SystemSessionAnalyzer analyzer(1U);
-  EXPECT_EQ(SystemSessionAnalyzer::CLEAN,
-            analyzer.IsSessionUnclean(base::Time::Now()))
-      << "Extended error code is: "
-      << static_cast<int>(analyzer.GetExtendedFailureStatus());
+  auto is_session_unclean = analyzer.IsSessionUnclean(base::Time::Now());
+  // If the system event log rate is high enough then there may not be enough
+  // events to make a clean/unclean determination. Check for this situation and
+  // don't treat it as a failure. See https://crbug.com/968440 for details.
+  if (is_session_unclean == SystemSessionAnalyzer::INSUFFICIENT_DATA) {
+    // This warning can be ignored, but it does mean that our clean/unclean
+    // check did not give an answer.
+    LOG(WARNING) << "Insufficient events found in ValidateEvents.";
+  } else {
+    EXPECT_EQ(SystemSessionAnalyzer::CLEAN, is_session_unclean)
+        << "Extended error code is: "
+        << static_cast<int>(analyzer.GetExtendedFailureStatus());
+  }
 }
 
 // Stubs FetchEvents.
@@ -96,7 +105,7 @@ TEST(SystemSessionAnalyzerTest, StandardCase) {
 
 TEST(SystemSessionAnalyzerTest, NoEvent) {
   StubSystemSessionAnalyzer analyzer(0U);
-  EXPECT_EQ(SystemSessionAnalyzer::INITIALIZE_FAILED,
+  EXPECT_EQ(SystemSessionAnalyzer::INSUFFICIENT_DATA,
             analyzer.IsSessionUnclean(base::Time::Now()));
 }
 

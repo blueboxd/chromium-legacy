@@ -558,13 +558,4 @@ TEST_P(CdmAdapterTestWithMockCdm, GetDecryptor) {
   EXPECT_TRUE(cdm_context->GetDecryptor());
 }
 
-TEST_P(CdmAdapterTestWithMockCdm, GetDecryptor_UseHwSecureCodecs) {
-  CdmConfig cdm_config;
-  cdm_config.use_hw_secure_codecs = true;
-  InitializeWithCdmConfig(cdm_config);
-  auto* cdm_context = cdm_->GetCdmContext();
-  ASSERT_TRUE(cdm_context);
-  EXPECT_FALSE(cdm_context->GetDecryptor());
-}
-
 }  // namespace media

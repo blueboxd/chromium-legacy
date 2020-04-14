@@ -126,11 +126,13 @@ SmartStickyMode = class {
     }
 
     let editable = this.getEditableOrRelatedEditable_(range.start.node);
-    if (!editable) {
-      return;
-    }
-
-    while (!editable.editableRoot) {
+    while (editable && !editable.editableRoot) {
+      if (!editable.parent ||
+          editable.parent.state[chrome.automation.StateType.EDITABLE]) {
+        // Not all editables from all trees (e.g. Android, views) set the
+        // editable root boolean attribute.
+        break;
+      }
       editable = editable.parent;
     }
     this.ignoredNodeSubtree_ = editable;

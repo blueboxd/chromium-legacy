@@ -30,9 +30,11 @@ class VIEWS_EXPORT ProgressBar : public View, public gfx::AnimationDelegate {
                        bool allow_round_corner = true);
   ~ProgressBar() override;
 
-  // Overridden from View:
+  // View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
+  void AddedToWidget() override;
   void OnPaint(gfx::Canvas* canvas) override;
 
   double GetValue() const;
@@ -59,6 +61,9 @@ class VIEWS_EXPORT ProgressBar : public View, public gfx::AnimationDelegate {
   bool IsIndeterminate();
   void OnPaintIndeterminate(gfx::Canvas* canvas);
 
+  // Fire an accessibility event if visible and the progress has changed.
+  void MaybeNotifyAccessibilityValueChanged();
+
   // Current progress to display, should be in the range 0.0 to 1.0.
   double current_value_ = 0.0;
 
@@ -71,6 +76,8 @@ class VIEWS_EXPORT ProgressBar : public View, public gfx::AnimationDelegate {
   base::Optional<SkColor> background_color_;
 
   std::unique_ptr<gfx::LinearAnimation> indeterminate_bar_animation_;
+
+  int last_announced_percentage_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(ProgressBar);
 };

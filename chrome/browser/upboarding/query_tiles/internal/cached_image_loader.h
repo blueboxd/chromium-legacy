@@ -20,16 +20,22 @@ namespace upboarding {
 // network data consumption.
 class CachedImageLoader : public ImageLoader {
  public:
-  explicit CachedImageLoader(image_fetcher::ImageFetcher* image_fetcher);
+  CachedImageLoader(image_fetcher::ImageFetcher* cached_image_fetcher,
+                    image_fetcher::ImageFetcher* reduced_mode_image_fetcher);
   ~CachedImageLoader() override;
 
  private:
   // ImageLoader implementation.
   void FetchImage(const GURL& url, BitmapCallback callback) override;
+  void PrefetchImage(const GURL& url, SuccessCallback callback) override;
 
-  // Owned by ImageFetcherService. Outlives TileService, the owner of this
-  // class.
-  image_fetcher::ImageFetcher* image_fetcher_;
+  // Used to load the image bitmap for UI. Owned by ImageFetcherService.
+  // Outlives TileService.
+  image_fetcher::ImageFetcher* cached_image_fetcher_;
+
+  // Used to prefetch the image in reduced mode. The data is downloaded to disk
+  // without decoding. Owned by ImageFetcherService. Outlives TileService.
+  image_fetcher::ImageFetcher* reduced_mode_image_fetcher_;
 };
 
 }  // namespace upboarding

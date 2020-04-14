@@ -7,5 +7,5 @@
  * Externs for draft interfaces not yet upstreamed to closure.
  */
 
-/** @type {function(): Promise<ArrayBuffer>} */
+/** @type {function(): !Promise<!ArrayBuffer>} */
 Blob.prototype.arrayBuffer;

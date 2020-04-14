@@ -8,7 +8,10 @@
 #include <string>
 
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/controls/label.h"
+
+namespace views {
+class Label;
+}
 
 namespace captions {
 
@@ -37,7 +40,11 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
 
  private:
   friend class CaptionBubbleControllerViewsTest;
-  views::Label label_;
+
+  // Unowned. Owned by views hierarchy.
+  views::Label* label_;
+  views::Label* title_;
+
   base::ScopedClosureRunner destroyed_callback_;
 };
 

@@ -3,6 +3,8 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../controls/controlled_button.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
@@ -11,13 +13,13 @@
 
 <dom-module id="settings-downloads-page">
   <template>
-    <style include="settings-shared">
+    <style include="cr-shared-style settings-shared iron-flex">
       #defaultDownloadPath {
         word-break: break-word;
       }
     </style>
-    <div class="settings-box first two-line">
-      <div class="start settings-box-text">
+    <div class="cr-row first">
+      <div class="flex cr-padded-text">
         <div>$i18n{downloadLocation}</div>
         <div class="secondary" id="defaultDownloadPath">
 <if expr="not chromeos">
@@ -42,8 +44,8 @@
         label="$i18n{promptForDownload}">
     </settings-toggle-button>
     <template is="dom-if" if="[[autoOpenDownloads_]]" restamp>
-      <div class="settings-box">
-        <div class="start">$i18n{openFileTypesAutomatically}</div>
+      <div class="cr-row">
+        <div class="flex">$i18n{openFileTypesAutomatically}</div>
         <div class="separator"></div>
         <cr-button id="resetAutoOpenFileTypes"
             on-click="onClearAutoOpenFileTypesTap_">

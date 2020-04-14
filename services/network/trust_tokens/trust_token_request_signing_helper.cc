@@ -187,6 +187,17 @@ TrustTokenRequestSigningHelper::TrustTokenRequestSigningHelper(
 TrustTokenRequestSigningHelper::~TrustTokenRequestSigningHelper() = default;
 
 Params::Params(SuitableTrustTokenOrigin issuer,
+               SuitableTrustTokenOrigin toplevel,
+               std::vector<std::string> additional_headers_to_sign,
+               bool should_add_timestamp,
+               mojom::TrustTokenSignRequestData sign_request_data)
+    : issuer(std::move(issuer)),
+      toplevel(std::move(toplevel)),
+      additional_headers_to_sign(std::move(additional_headers_to_sign)),
+      should_add_timestamp(should_add_timestamp),
+      sign_request_data(sign_request_data) {}
+
+Params::Params(SuitableTrustTokenOrigin issuer,
                SuitableTrustTokenOrigin toplevel)
     : issuer(std::move(issuer)), toplevel(std::move(toplevel)) {}
 Params::~Params() = default;

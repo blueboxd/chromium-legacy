@@ -122,14 +122,11 @@ base::string16 StatusIconMenuModel::GetLabelForCommandId(int command_id) const {
   return base::string16();
 }
 
-bool StatusIconMenuModel::GetIconForCommandId(int command_id,
-                                              gfx::Image* image_skia) const {
+ui::ImageModel StatusIconMenuModel::GetIconForCommandId(int command_id) const {
   auto iter = item_states_.find(command_id);
-  if (iter != item_states_.end() && !iter->second.icon.IsEmpty()) {
-    *image_skia = iter->second.icon;
-    return true;
-  }
-  return false;
+  if (iter != item_states_.end() && !iter->second.icon.IsEmpty())
+    return ui::ImageModel::FromImage(iter->second.icon);
+  return ui::ImageModel();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

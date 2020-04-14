@@ -1155,7 +1155,7 @@ TEST_F(DscpManagerTest, SocketReAddedOnRecreateHandle) {
       .WillOnce(Return(true));
   dscp_manager_->Set(DSCP_CS7);
 
-  auto error = std::make_unique<base::internal::ScopedClearLastError>();
+  auto error = std::make_unique<base::ScopedClearLastError>();
   ::SetLastError(ERROR_DEVICE_REINITIALIZATION_NEEDED);
   EXPECT_CALL(api_, AddSocketToFlow(_, _, _, _, _, _)).WillOnce(Return(false));
   EXPECT_CALL(api_, SetFlow(_, _, _, _, _, _, _)).Times(0);

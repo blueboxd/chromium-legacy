@@ -188,16 +188,8 @@ void MojoCdmService::OnCdmCreated(
         &MojoCdmService::OnDecryptorConnectionError, base::Unretained(this)));
   }
 
-  // If the |context_| is not null, we should support connecting the |cdm| with
-  // the media player in the same process, which also has access to the
-  // |context_|. Hence pass back the |cdm_id_| obtained from the |context_|.
-  // Otherwise, if the |cdm| has a valid CDM ID by itself, this CDM can proxy
-  // all or parts of its functionalities to another remote CDM or CdmProxy. In
-  // this case, just we pass the remote CDM ID back.
-  int cdm_id = context_ ? cdm_id_ : cdm_context->GetCdmId();
-
   cdm_promise_result->success = true;
-  std::move(callback).Run(std::move(cdm_promise_result), cdm_id,
+  std::move(callback).Run(std::move(cdm_promise_result), cdm_id_,
                           std::move(decryptor_remote));
 }
 

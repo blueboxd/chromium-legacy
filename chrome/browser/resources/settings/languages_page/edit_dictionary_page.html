@@ -17,7 +17,7 @@
 
 <dom-module id="settings-edit-dictionary-page">
   <template>
-    <style include="settings-shared">
+    <style include="cr-shared-style settings-shared">
       :host {
         display: flex;
         flex-direction: column;
@@ -36,7 +36,7 @@
         flex: 1;
       }
     </style>
-    <div class="settings-box first">
+    <div class="cr-row first">
       <iron-a11y-keys id="keys" keys="enter esc"
           on-keys-pressed="onKeysPress_"></iron-a11y-keys>
       <cr-input id="newWord" value="{{newWordValue_}}"
@@ -50,7 +50,7 @@
         </cr-button>
       </cr-input>
     </div>
-    <div class="settings-box continuation block">
+    <div class="cr-row continuation">
       <h2>$i18n{customDictionaryWords}</h2>
     </div>
     <div class="list-frame">

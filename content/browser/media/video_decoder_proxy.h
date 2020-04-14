@@ -66,11 +66,6 @@ class CONTENT_EXPORT VideoDecoderProxy : public media::mojom::InterfaceFactory {
   void CreateDecryptor(
       int cdm_id,
       mojo::PendingReceiver<media::mojom::Decryptor> receiver) final;
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  void CreateCdmProxy(
-      const base::Token& cdm_guid,
-      mojo::PendingReceiver<media::mojom::CdmProxy> receiver) final;
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
  private:
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();

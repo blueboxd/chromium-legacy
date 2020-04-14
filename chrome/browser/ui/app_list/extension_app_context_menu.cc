@@ -19,7 +19,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/context_menu_params.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/image_model.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/vector_icons.h"
@@ -133,12 +132,14 @@ base::string16 ExtensionAppContextMenu::GetLabelForCommandId(
   return AppContextMenu::GetLabelForCommandId(command_id);
 }
 
-const gfx::VectorIcon* ExtensionAppContextMenu::GetVectorIconForCommandId(
+ui::ImageModel ExtensionAppContextMenu::GetIconForCommandId(
     int command_id) const {
-  if (command_id == ash::LAUNCH_NEW)
-    return &GetMenuItemVectorIcon(ash::LAUNCH_NEW, GetLaunchStringId());
+  if (command_id == ash::LAUNCH_NEW) {
+    return ui::ImageModel::FromVectorIcon(
+        GetMenuItemVectorIcon(ash::LAUNCH_NEW, GetLaunchStringId()));
+  }
 
-  return AppContextMenu::GetVectorIconForCommandId(command_id);
+  return AppContextMenu::GetIconForCommandId(command_id);
 }
 
 bool ExtensionAppContextMenu::IsItemForCommandIdDynamic(int command_id) const {

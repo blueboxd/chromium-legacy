@@ -223,12 +223,9 @@ void AppServiceContextMenu::OnGetMenuModel(
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
   submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
   size_t index = 0;
-  // Unretained is safe here because PopulateNewItemFromMojoMenuItems should
-  // call GetVectorIcon synchronously.
   if (apps::PopulateNewItemFromMojoMenuItems(
           menu_items->items, menu_model.get(), submenu_.get(),
-          base::BindOnce(&AppServiceContextMenu::GetMenuItemVectorIcon,
-                         base::Unretained(this)))) {
+          base::BindOnce(&AppServiceContextMenu::GetMenuItemVectorIcon))) {
     index = 1;
   }
 

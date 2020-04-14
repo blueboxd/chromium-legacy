@@ -18,6 +18,7 @@ const Message = {
   OPEN_FEEDBACK_DIALOG: 'open-feedback-dialog',
   OVERWRITE_FILE: 'overwrite-file',
   RENAME_FILE: 'rename-file',
+  SAVE_COPY: 'save-copy'
 };
 
 /**
@@ -83,9 +84,30 @@ const RenameResult = {
  * Message sent by the unprivileged context to request the privileged context to
  * rename the currently writable file.
  * If the supplied file `token` is invalid the request is rejected.
- @typedef {{token: number, newFilename: string}}
+ * @typedef {{token: number, newFilename: string}}
  */
 let RenameFileMessage;
 
 /** @typedef {{renameResult: RenameResult}}  */
 let RenameFileResponse;
+
+/**
+ * Message sent by the unprivileged context to the privileged context requesting
+ * for the provided file to be copied and saved in a new location which the user
+ * is prompted for, i.e a 'save as' operation. Once the native filesystem api
+ * allows, this save as dialog will have the filename input be pre-filled with
+ * `suggestedName`. `suggestedName` is additionally used to determine the file
+ * extension which helps inform the save as dialog as to which files should be
+ * overwritable. This method can be called with any file, not just the currently
+ * writable file.
+ * @typedef {{blob: !Blob, suggestedName: string}}
+ */
+let SaveCopyMessage;
+
+/**
+ * Response message sent by the privileged context indicating the error message
+ * if the associated save as operation could not be performed. Returns nothing
+ * if the operation was successful.
+ * @typedef {{ errorMessage: ?string }}
+ */
+let SaveCopyResponse;

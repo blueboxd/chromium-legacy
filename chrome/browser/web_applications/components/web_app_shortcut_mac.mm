@@ -1200,11 +1200,19 @@ bool WebAppShortcutCreator::IsMultiProfile() const {
 
 void WebAppShortcutCreator::RevealAppShimInFinder(
     const base::FilePath& app_path) const {
-  // Use selectFile to show the contents of parent directory with the app
-  // shim selected.
-  [[NSWorkspace sharedWorkspace]
-                    selectFile:base::mac::FilePathToNSString(app_path)
-      inFileViewerRootedAtPath:@""];
+  auto closure = base::BindOnce(
+      [](const base::FilePath& app_path) {
+        // Use selectFile to show the contents of parent directory with the app
+        // shim selected.
+        [[NSWorkspace sharedWorkspace]
+                          selectFile:base::mac::FilePathToNSString(app_path)
+            inFileViewerRootedAtPath:@""];
+      },
+      app_path);
+  // Perform the call to NSWorkSpace on the UI thread. Calling it on the IO
+  // thread appears to cause crashes.
+  // https://crbug.com/1067367
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, std::move(closure));
 }
 
 void LaunchShim(LaunchShimUpdateBehavior update_behavior,

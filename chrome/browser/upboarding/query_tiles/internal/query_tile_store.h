@@ -15,29 +15,26 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/upboarding/query_tiles/internal/store.h"
-#include "chrome/browser/upboarding/query_tiles/internal/tile_group.h"
 #include "chrome/browser/upboarding/query_tiles/proto/query_tile_entry.pb.h"
 #include "chrome/browser/upboarding/query_tiles/query_tile_entry.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
 namespace leveldb_proto {
 
-void DataToProto(upboarding::TileGroup* data,
-                 upboarding::query_tiles::proto::QueryTileGroup* proto);
-void ProtoToData(upboarding::query_tiles::proto::QueryTileGroup* proto,
-                 upboarding::TileGroup* data);
+void DataToProto(upboarding::QueryTileEntry* data,
+                 upboarding::query_tiles::proto::QueryTileEntry* proto);
+void ProtoToData(upboarding::query_tiles::proto::QueryTileEntry* proto,
+                 upboarding::QueryTileEntry* data);
 
 }  // namespace leveldb_proto
 
 namespace upboarding {
-// QueryTileStore is the storage layer of all TileGroup which contains
-// the top-level tile entries and group metadata. Sub-level tiles are
-// recursively owned by their parents.
-class QueryTileStore : public Store<TileGroup> {
+
+class QueryTileStore : public Store<QueryTileEntry> {
  public:
   using QueryTileProtoDb = std::unique_ptr<
-      leveldb_proto::ProtoDatabase<query_tiles::proto::QueryTileGroup,
-                                   TileGroup>>;
+      leveldb_proto::ProtoDatabase<query_tiles::proto::QueryTileEntry,
+                                   QueryTileEntry>>;
   explicit QueryTileStore(QueryTileProtoDb db);
   ~QueryTileStore() override;
 
@@ -45,14 +42,14 @@ class QueryTileStore : public Store<TileGroup> {
   QueryTileStore& operator=(const QueryTileStore& other) = delete;
 
  private:
-  using KeyEntryVector = std::vector<std::pair<std::string, TileGroup>>;
+  using KeyEntryVector = std::vector<std::pair<std::string, QueryTileEntry>>;
   using KeyVector = std::vector<std::string>;
-  using EntryVector = std::vector<TileGroup>;
+  using EntryVector = std::vector<QueryTileEntry>;
 
-  // Store<TileGroup> implementation.
+  // Store<QueryTileEntry> implementation.
   void InitAndLoad(LoadCallback callback) override;
   void Update(const std::string& key,
-              const TileGroup& entry,
+              const QueryTileEntry& entry,
               UpdateCallback callback) override;
   void Delete(const std::string& key, DeleteCallback callback) override;
 
@@ -64,7 +61,7 @@ class QueryTileStore : public Store<TileGroup> {
   void OnDataLoaded(
       LoadCallback callback,
       bool success,
-      std::unique_ptr<std::map<std::string, TileGroup>> loaded_entries);
+      std::unique_ptr<std::map<std::string, QueryTileEntry>> loaded_entries);
 
   QueryTileProtoDb db_;
 

@@ -92,6 +92,15 @@ mediaApp.ClientApiDelegate = function() {};
  *     an error message, resolves with null otherwise.
  */
 mediaApp.ClientApiDelegate.prototype.openFeedbackDialog = function() {};
+/**
+ * Saves a copy of `file` in a custom location with a custom
+ * name which the user is prompted for via a native save file dialog.
+ * @param {!mediaApp.AbstractFile} file
+ * @return {!Promise<?string>} Promise which resolves when the request has been
+ *     acknowledged. If the dialog could not be opened the promise resolves with
+ *     an error message. Otherwise, with null after writing is complete.
+ */
+mediaApp.ClientApiDelegate.prototype.saveCopy = function(file) {};
 
 /**
  * The client Api for interacting with the media app instance.

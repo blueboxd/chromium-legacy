@@ -43,9 +43,6 @@ class TestMojoMediaClient : public MojoMediaClient {
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       mojom::FrameInterfaceFactory* /* frame_interfaces */) final;
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  std::unique_ptr<CdmProxy> CreateCdmProxy(const base::Token& cdm_guid) final;
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
  private:
   std::unique_ptr<AudioManager> audio_manager_;

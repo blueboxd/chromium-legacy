@@ -55,9 +55,7 @@ class SuggestionWindowBorder : public views::BubbleBorder {
 
 }  // namespace
 
-SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent,
-                                           int window_shell_id)
-    : window_shell_id_(window_shell_id) {
+SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent) {
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   SetCanActivate(false);
   DCHECK(parent);

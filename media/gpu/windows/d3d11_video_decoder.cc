@@ -150,7 +150,6 @@ std::string D3D11VideoDecoder::GetDisplayName() const {
 
 HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
     const VideoDecoderConfig& config,
-    CdmProxyContext* proxy_context,
     ComD3D11VideoDecoder video_decoder) {
   TRACE_EVENT0("gpu", "D3D11VideoDecoder::InitializeAcceleratedDecoder");
   // If we got an 11.1 D3D11 Device, we can use a |ID3D11VideoContext1|,
@@ -168,18 +167,18 @@ HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
   profile_ = config.profile();
   if (config.codec() == kCodecVP9) {
     accelerated_video_decoder_ = std::make_unique<VP9Decoder>(
-        std::make_unique<D3D11VP9Accelerator>(
-            this, media_log_.get(), proxy_context, video_decoder, video_device_,
-            std::move(video_context)),
+        std::make_unique<D3D11VP9Accelerator>(this, media_log_.get(),
+                                              video_decoder, video_device_,
+                                              std::move(video_context)),
         profile_, config.color_space_info());
     return hr;
   }
 
   if (config.codec() == kCodecH264) {
     accelerated_video_decoder_ = std::make_unique<H264Decoder>(
-        std::make_unique<D3D11H264Accelerator>(
-            this, media_log_.get(), proxy_context, video_decoder, video_device_,
-            std::move(video_context)),
+        std::make_unique<D3D11H264Accelerator>(this, media_log_.get(),
+                                               video_decoder, video_device_,
+                                               std::move(video_context)),
         profile_, config.color_space_info());
     return hr;
   }
@@ -189,7 +188,7 @@ HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
 
 void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
                                    bool low_delay,
-                                   CdmContext* cdm_context,
+                                   CdmContext* /* cdm_context */,
                                    InitCB init_cb,
                                    const OutputCB& output_cb,
                                    const WaitingCB& waiting_cb) {
@@ -365,19 +364,13 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  CdmProxyContext* proxy_context = nullptr;
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  if (cdm_context)
-    proxy_context = cdm_context->GetCdmProxyContext();
-#endif
-
   // Ensure that if we are encrypted, that we have a CDM.
-  if (config_.is_encrypted() && !proxy_context) {
-    NotifyError("Video stream is encrypted, but no cdm was found");
+  if (config_.is_encrypted()) {
+    NotifyError("Encrypted stream not supported");
     return;
   }
 
-  hr = InitializeAcceleratedDecoder(config, proxy_context, video_decoder);
+  hr = InitializeAcceleratedDecoder(config, video_decoder);
 
   if (!SUCCEEDED(hr)) {
     NotifyError("Failed to get device context");
@@ -394,14 +387,6 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
                                             base::debug::CrashKeySize::Size32);
     base::debug::SetCrashKeyString(codec_name,
                                    config.GetHumanReadableCodecName());
-  }
-
-  // |cdm_context| could be null for clear playback.
-  // TODO(liberato): On re-init, should this still happen?
-  if (cdm_context) {
-    new_key_callback_registration_ =
-        cdm_context->RegisterEventCB(base::BindRepeating(
-            &D3D11VideoDecoder::OnCdmContextEvent, weak_factory_.GetWeakPtr()));
   }
 
   auto impl_init_cb = base::BindOnce(&D3D11VideoDecoder::OnGpuInitComplete,

@@ -1,5 +1,7 @@
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../appearance_page/fonts_browser_proxy.html">
 <link rel="import" href="../controls/settings_dropdown_menu.html">
@@ -11,7 +13,7 @@
 
 <dom-module id="settings-captions">
   <template>
-    <style include="settings-shared">
+    <style include="cr-shared-style settings-shared">
       .preview-box {
         all: initial;
         align-items: center;
@@ -27,8 +29,8 @@
         text-align: center;
       }
     </style>
-    <div class="settings-box first">
-      <h2 class="start">$i18n{captionsPreview}</h2>
+    <div class="cr-row first">
+      <h2>$i18n{captionsPreview}</h2>
     </div>
     <div class="preview-box">
       <span style="
@@ -47,12 +49,12 @@
         $i18n{quickBrownFox}
       </span>
     </div>
-    <div class="settings-box continuation">
+    <div class="cr-row continuation">
       <h2 class="start">$i18n{captionsSettings}</h2>
     </div>
     <div class="list-frame">
       <div class="list-item underbar first">
-        <div class="start settings-box-text" aria-hidden="true">
+        <div class="start cr-padded-text" aria-hidden="true">
           $i18n{captionsTextSize}
         </div>
         <settings-dropdown-menu id="captionsTextSize"
@@ -62,7 +64,7 @@
         </settings-dropdown-menu>
       </div>
       <div class="list-item underbar">
-        <div class="start settings-box-text" aria-hidden="true">
+        <div class="start cr-padded-text" aria-hidden="true">
           $i18n{captionsTextFont}
         </div>
         <settings-dropdown-menu id="captionsTextFont"
@@ -72,7 +74,7 @@
         </settings-dropdown-menu>
       </div>
       <div class="list-item underbar">
-        <div class="start settings-box-text" aria-hidden="true">
+        <div class="start cr-padded-text" aria-hidden="true">
           $i18n{captionsTextColor}
         </div>
         <settings-dropdown-menu id="captionsTextColor"
@@ -82,7 +84,7 @@
         </settings-dropdown-menu>
       </div>
       <div class="list-item underbar">
-        <div class="start settings-box-text" aria-hidden="true">
+        <div class="start cr-padded-text" aria-hidden="true">
           $i18n{captionsTextOpacity}
         </div>
         <settings-dropdown-menu id="captionsTextOpacity"
@@ -92,7 +94,7 @@
         </settings-dropdown-menu>
       </div>
       <div class="list-item underbar">
-        <div class="start settings-box-text" aria-hidden="true">
+        <div class="start cr-padded-text" aria-hidden="true">
           $i18n{captionsTextShadow}
         </div>
         <settings-dropdown-menu id="captionsTextShadow"
@@ -102,7 +104,7 @@
         </settings-dropdown-menu>
       </div>
       <div class="list-item underbar">
-        <div class="start settings-box-text" aria-hidden="true">
+        <div class="start cr-padded-text" aria-hidden="true">
           $i18n{captionsBackgroundColor}
         </div>
         <settings-dropdown-menu id="captionsBackgroundColor"
@@ -112,7 +114,7 @@
         </settings-dropdown-menu>
       </div>
       <div class="list-item">
-        <div class="start settings-box-text" aria-hidden="true">
+        <div class="start cr-padded-text" aria-hidden="true">
           $i18n{captionsBackgroundOpacity}
         </div>
         <settings-dropdown-menu id="captionsBackgroundOpacity"

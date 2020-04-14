@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
-#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/version_info/channel.h"
@@ -209,8 +208,7 @@ class MultiActionAPITest
       public testing::WithParamInterface<ActionInfo::Type> {
  public:
   MultiActionAPITest()
-      : current_channel_(
-            extension_test_util::GetOverrideChannelForActionType(GetParam())) {}
+      : current_channel_(GetOverrideChannelForActionType(GetParam())) {}
 
   // Returns true if the |action| has whatever state its default is on the
   // tab with the given |tab_id|.

@@ -16,6 +16,7 @@
 #include "third_party/webrtc/api/video_codecs/video_encoder.h"
 #include "third_party/webrtc/common_video/h264/profile_level_id.h"
 #include "third_party/webrtc/media/base/codec.h"
+#include "third_party/webrtc/media/base/vp9_profile.h"
 
 namespace blink {
 
@@ -113,10 +114,28 @@ base::Optional<webrtc::SdpVideoFormat> VEAToWebRTCFormat(
         {cricket::kH264FmtpPacketizationMode, "1"}};
     return format;
   }
+
   if (profile.profile >= media::VP9PROFILE_MIN &&
       profile.profile <= media::VP9PROFILE_MAX) {
-    return webrtc::SdpVideoFormat("VP9");
+    webrtc::VP9Profile vp9_profile;
+    switch (profile.profile) {
+      case media::VP9PROFILE_PROFILE0:
+        vp9_profile = webrtc::VP9Profile::kProfile0;
+        break;
+      case media::VP9PROFILE_PROFILE2:
+        vp9_profile = webrtc::VP9Profile::kProfile2;
+        break;
+      default:
+        // Unsupported VP9 profiles (profile1 & profile3) in WebRTC.
+        return base::nullopt;
+    }
+    webrtc::SdpVideoFormat format("VP9");
+    format.parameters = {
+        {webrtc::kVP9FmtpProfileId,
+         webrtc::VP9ProfileToString(vp9_profile)}};
+    return format;
   }
+
   return base::nullopt;
 }  // namespace
 
@@ -170,6 +189,7 @@ RTCVideoEncoderFactory::CreateVideoEncoder(
       if (IsSameFormat(format, supported_formats.sdp_formats[i])) {
         encoder = std::make_unique<RTCVideoEncoder>(
             supported_formats.profiles[i], gpu_factories_);
+        break;
       }
     }
   } else {

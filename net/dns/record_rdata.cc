@@ -9,6 +9,7 @@
 
 #include "base/big_endian.h"
 #include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
 #include "net/base/ip_address.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/public/dns_protocol.h"
@@ -510,6 +511,100 @@ bool EsniRecordRdata::IsEqual(const RecordRdata* other) const {
       static_cast<const EsniRecordRdata*>(other);
   return esni_keys_ == esni_other->esni_keys_ &&
          addresses_ == esni_other->addresses_;
+}
+
+IntegrityRecordRdata::IntegrityRecordRdata(Nonce nonce)
+    : nonce_(std::move(nonce)), digest_(Hash(nonce_)) {
+  DCHECK(Hash(nonce_) == digest_);
+}
+
+IntegrityRecordRdata::IntegrityRecordRdata(IntegrityRecordRdata&&) = default;
+IntegrityRecordRdata::IntegrityRecordRdata(const IntegrityRecordRdata&) =
+    default;
+IntegrityRecordRdata::~IntegrityRecordRdata() = default;
+
+// static
+constexpr size_t IntegrityRecordRdata::kDigestLen;
+
+bool IntegrityRecordRdata::IsEqual(const RecordRdata* other) const {
+  if (other->Type() != Type())
+    return false;
+  const IntegrityRecordRdata* integrity_other =
+      static_cast<const IntegrityRecordRdata*>(other);
+  return this->nonce_ == integrity_other->nonce_ &&
+         this->digest_ == integrity_other->digest_;
+}
+
+uint16_t IntegrityRecordRdata::Type() const {
+  return kType;
+}
+
+// static
+std::unique_ptr<IntegrityRecordRdata> IntegrityRecordRdata::Create(
+    const base::StringPiece& data) {
+  base::BigEndianReader reader(data.data(), data.size());
+  // Parse a U16-prefixed |Nonce| followed by a |Digest|.
+  base::StringPiece parsed_nonce, parsed_digest;
+  if (!reader.ReadU16LengthPrefixed(&parsed_nonce) ||
+      !reader.ReadPiece(&parsed_digest, kDigestLen)) {
+    return nullptr;
+  }
+  if (reader.remaining() > 0) {
+    return nullptr;
+  }
+
+  // Generate an Integrity record given only the nonce.
+  auto record = std::make_unique<IntegrityRecordRdata>(
+      Nonce(parsed_nonce.begin(), parsed_nonce.end()));
+
+  // Verify that the computed digest matches the parsed digest.
+  if (parsed_digest != record->digest()) {
+    return nullptr;
+  }
+  return record;
+}
+
+// static
+IntegrityRecordRdata IntegrityRecordRdata::Random() {
+  constexpr uint16_t kMinNonceLen = 32;
+  constexpr uint16_t kMaxNonceLen = 512;
+
+  // Construct random nonce.
+  const uint16_t nonce_len = base::RandInt(kMinNonceLen, kMaxNonceLen);
+  Nonce nonce(nonce_len);
+  base::RandBytes(nonce.data(), nonce.size());
+
+  return IntegrityRecordRdata(std::move(nonce));
+}
+
+std::vector<uint8_t> IntegrityRecordRdata::Serialize() const {
+  // Create backing buffer and writer.
+  std::vector<uint8_t> serialized(LengthForSerialization());
+  base::BigEndianWriter writer(reinterpret_cast<char*>(serialized.data()),
+                               serialized.size());
+  CHECK(writer.WriteU16(nonce_.size()));
+  CHECK(writer.WriteBytes(nonce_.data(), nonce_.size()));
+  CHECK(writer.WriteBytes(digest_.data(), digest_.size()));
+  CHECK_EQ(writer.remaining(), 0u);
+  return serialized;
+}
+
+size_t IntegrityRecordRdata::LengthForSerialization() const {
+  // A serialized IntegrityRecordRdata consists of a U16-prefixed |nonce_|,
+  // followed by the bytes of |digest_|.
+  return sizeof(uint16_t) + nonce_.size() + digest_.size();
+}
+
+// static
+IntegrityRecordRdata::Digest IntegrityRecordRdata::Hash(const Nonce& nonce) {
+  Digest digest;
+  SHA256(nonce.data(), nonce.size(), digest.data());
+  return digest;
+}
+
+base::StringPiece IntegrityRecordRdata::digest() const {
+  return base::StringPiece(reinterpret_cast<const char*>(digest_.data()),
+                           digest_.size());
 }
 
 }  // namespace net

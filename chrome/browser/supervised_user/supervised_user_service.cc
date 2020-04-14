@@ -129,7 +129,7 @@ void SupervisedUserService::RegisterProfilePrefs(
       prefs::kSupervisedUserExtensionsMayRequestPermissions, false);
   registry->RegisterDictionaryPref(
       prefs::kSupervisedUserApprovedExtensions,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
   registry->RegisterDictionaryPref(prefs::kSupervisedUserManualHosts);
   registry->RegisterDictionaryPref(prefs::kSupervisedUserManualURLs);

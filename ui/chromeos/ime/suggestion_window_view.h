@@ -20,10 +20,7 @@ class SuggestionView;
 class UI_CHROMEOS_EXPORT SuggestionWindowView
     : public views::BubbleDialogDelegateView {
  public:
-  explicit SuggestionWindowView(
-      gfx::NativeView parent,
-      int window_shell_id =
-          -1 /* equals ash::ShellWindowId::kShellWindowId_Invalid */);
+  explicit SuggestionWindowView(gfx::NativeView parent);
   ~SuggestionWindowView() override;
   views::Widget* InitWidget();
 
@@ -49,9 +46,6 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
 
   // The suggestion view is used for rendering suggestion.
   SuggestionView* suggestion_view_;
-
-  // Corresponds to ash::ShellWindowId.
-  const int window_shell_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionWindowView);
 };

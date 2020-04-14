@@ -8,7 +8,6 @@
 
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
-#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/channel.h"
 #include "content/public/test/browser_task_environment.h"
@@ -46,8 +45,7 @@ class ExtensionActionManagerTest
 };
 
 ExtensionActionManagerTest::ExtensionActionManagerTest()
-    : current_channel_(
-          extension_test_util::GetOverrideChannelForActionType(GetParam())),
+    : current_channel_(GetOverrideChannelForActionType(GetParam())),
       profile_(std::make_unique<TestingProfile>()) {
   registry_ = ExtensionRegistry::Get(profile_.get());
   manager_ = ExtensionActionManager::Get(profile_.get());

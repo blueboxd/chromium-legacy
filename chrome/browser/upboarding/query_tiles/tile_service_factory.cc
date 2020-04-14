@@ -33,11 +33,8 @@ TileServiceFactory::~TileServiceFactory() {}
 
 std::unique_ptr<KeyedService> TileServiceFactory::BuildServiceInstanceFor(
     SimpleFactoryKey* key) const {
-  // TODO(xingliu): Add reduced mode image fetcher for prefetch.
-  auto* image_fetcher =
-      ImageFetcherServiceFactory::GetForKey(key)->GetImageFetcher(
-          image_fetcher::ImageFetcherConfig::kDiskCacheOnly);
-  return CreateTileService(image_fetcher);
+  auto* image_fetcher_service = ImageFetcherServiceFactory::GetForKey(key);
+  return CreateTileService(image_fetcher_service);
 }
 
 }  // namespace upboarding

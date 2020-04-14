@@ -81,7 +81,7 @@ TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
                 .View()
                 ->GetPaintArtifactCompositor()
                 ->RootLayer()
-                ->children()[0]
+                ->children()[1]
                 .get()
           : GetLayoutView().Layer()->GraphicsLayerBacking()->CcLayer();
 

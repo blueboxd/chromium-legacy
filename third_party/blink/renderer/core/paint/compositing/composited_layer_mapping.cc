@@ -994,7 +994,7 @@ void CompositedLayerMapping::UpdateDrawsContentAndPaintsHitTest() {
     scrolling_contents_are_empty_ =
         !owning_layer_.HasVisibleContent() ||
         !(GetLayoutObject().StyleRef().HasBackground() ||
-          GetLayoutObject().HasBackdropFilter() || PaintsChildren());
+          GetLayoutObject().HasNonInitialBackdropFilter() || PaintsChildren());
     scrolling_contents_layer_->SetDrawsContent(!scrolling_contents_are_empty_);
     scrolling_contents_layer_->SetPaintsHitTest(paints_hit_test);
   }
@@ -1300,7 +1300,7 @@ bool CompositedLayerMapping::UpdateMaskLayer(bool needs_mask_layer) {
           GetLayoutObject().UniqueId(),
           CompositorElementIdNamespace::kEffectMask);
       mask_layer_->SetElementId(element_id);
-      if (GetLayoutObject().HasBackdropFilter())
+      if (GetLayoutObject().HasNonInitialBackdropFilter())
         mask_layer_->CcLayer()->SetIsBackdropFilterMask(true);
       mask_layer_->SetHitTestable(true);
       layer_changed = true;

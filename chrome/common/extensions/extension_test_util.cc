@@ -13,10 +13,8 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/version_info/channel.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -93,24 +91,6 @@ void SetGalleryUpdateURL(const GURL& new_url) {
   command_line->AppendSwitchASCII(switches::kAppsGalleryUpdateURL,
                                   new_url.spec());
   extensions::ExtensionsClient::Get()->InitializeWebStoreUrls(command_line);
-}
-
-std::unique_ptr<extensions::ScopedCurrentChannel>
-GetOverrideChannelForActionType(extensions::ActionInfo::Type action_type) {
-  std::unique_ptr<extensions::ScopedCurrentChannel> channel;
-  // The "action" key is currently restricted to trunk. Use a fake channel iff
-  // we're testing that key, so that we still get multi-channel coverage for
-  // browser and page actions.
-  switch (action_type) {
-    case extensions::ActionInfo::TYPE_ACTION:
-      channel = std::make_unique<extensions::ScopedCurrentChannel>(
-          version_info::Channel::UNKNOWN);
-      break;
-    case extensions::ActionInfo::TYPE_PAGE:
-    case extensions::ActionInfo::TYPE_BROWSER:
-      break;
-  }
-  return channel;
 }
 
 }  // namespace extension_test_util

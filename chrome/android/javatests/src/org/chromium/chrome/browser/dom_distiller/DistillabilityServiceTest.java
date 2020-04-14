@@ -36,16 +36,13 @@ import java.util.concurrent.TimeoutException;
  * Tests for making sure the distillability service is communicating correctly.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({
-        "enable-dom-distiller", "reader-mode-heuristics=alwaystrue",
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class DistillabilityServiceTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
-    private static final String TEST_PAGE = "/chrome/test/data/android/simple.html";
+    private static final String TEST_PAGE = "/chrome/test/data/dom_distiller/simple_article.html";
 
     @Before
     public void setUp() throws InterruptedException {

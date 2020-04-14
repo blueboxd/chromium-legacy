@@ -4,7 +4,10 @@
 
 #include "chrome/browser/upboarding/query_tiles/internal/proto_conversion.h"
 
-#include <type_traits>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "chrome/browser/upboarding/query_tiles/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,37 +15,37 @@
 namespace upboarding {
 namespace {
 
-void TestQueryTileEntryConversion(const QueryTileEntry& expected) {
+void TestQueryTileEntryConversion(QueryTileEntry& expected) {
   upboarding::query_tiles::proto::QueryTileEntry proto;
   QueryTileEntry actual;
-  QueryTileEntryToProto(std::remove_const<QueryTileEntry*>::type(&expected),
-                        &proto);
+  QueryTileEntryToProto(&expected, &proto);
   QueryTileEntryFromProto(&proto, &actual);
-  EXPECT_EQ(expected, actual) << "actual: \n"
-                              << test::DebugString(&actual) << "expected: \n"
-                              << test::DebugString(&expected);
+  EXPECT_TRUE(expected == actual)
+      << "actual: \n"
+      << test::DebugString(&actual) << "expected: \n"
+      << test::DebugString(&expected);
 }
 
-void TestTileGroupConversion(const TileGroup& expected) {
-  upboarding::query_tiles::proto::QueryTileGroup proto;
-  TileGroup actual;
-  TileGroupToProto(std::remove_const<TileGroup*>::type(&expected), &proto);
-  TileGroupFromProto(&proto, &actual);
-  EXPECT_EQ(expected, actual) << "actual: \n"
-                              << test::DebugString(&actual) << "expected: \n"
-                              << test::DebugString(&expected);
-}
-
-TEST(QueryTileProtoConversionTest, ConvertTileEntryGroudtrip) {
+TEST(ProtoConversionTest, QueryTileEntryConversion) {
   QueryTileEntry entry;
-  test::ResetTestEntry(&entry);
+  entry.id = "test-guid-root";
+  entry.query_text = "test query str";
+  entry.display_text = "test display text";
+  entry.accessibility_text = "read this test display text";
+  entry.image_metadatas.emplace_back("image-test-id-1",
+                                     GURL("www.example.com"));
+  entry.image_metadatas.emplace_back("image-test-id-2",
+                                     GURL("www.fakeurl.com"));
+  auto entry1 = std::make_unique<QueryTileEntry>();
+  entry1->id = "test-guid-001";
+  auto entry2 = std::make_unique<QueryTileEntry>();
+  entry2->id = "test-guid-002";
+  auto entry3 = std::make_unique<QueryTileEntry>();
+  entry3->id = "test-guid-003";
+  entry1->sub_tiles.emplace_back(std::move(entry3));
+  entry.sub_tiles.emplace_back(std::move(entry1));
+  entry.sub_tiles.emplace_back(std::move(entry2));
   TestQueryTileEntryConversion(entry);
-}
-
-TEST(QueryTileProtoConversionTest, ConvertTileGroupRoundtrip) {
-  TileGroup group;
-  test::ResetTestGroup(&group);
-  TestTileGroupConversion(group);
 }
 
 }  // namespace

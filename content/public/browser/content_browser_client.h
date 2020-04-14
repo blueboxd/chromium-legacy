@@ -31,7 +31,6 @@
 #include "content/public/common/window_container_type.mojom-forward.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "media/base/video_codecs.h"
-#include "media/cdm/cdm_proxy.h"
 #include "media/mojo/mojom/media_service.mojom-forward.h"
 #include "media/mojo/mojom/remoting.mojom-forward.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
@@ -1139,13 +1138,9 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Gets supported hardware secure |video_codecs| and |encryption_schemes| for
   // the purpose of decrypting encrypted media using a Content Decryption Module
-  // (CDM) and a CdmProxy associated with |key_system|. The CDM supports all
-  // protocols in |cdm_proxy_protocols|, but only one CdmProxy protocol will be
-  // supported by the CdmProxy on the system, for which the capabilities will
-  // be returned.
+  // (CDM) associated with |key_system|.
   virtual void GetHardwareSecureDecryptionCaps(
       const std::string& key_system,
-      const base::flat_set<media::CdmProxy::Protocol>& cdm_proxy_protocols,
       base::flat_set<media::VideoCodec>* video_codecs,
       base::flat_set<media::EncryptionScheme>* encryption_schemes);
 

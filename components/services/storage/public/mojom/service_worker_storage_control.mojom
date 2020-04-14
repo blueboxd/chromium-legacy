@@ -145,4 +145,18 @@ interface ServiceWorkerStorageControl {
   // Clears user data specified by |registration_id| and |keys|.
   ClearUserData(int64 registration_id, array<string> keys) =>
       (ServiceWorkerDatabaseStatus status);
+
+  // Gets user data values associated with the given |registration_id|
+  // filtered by |key_prefix|.
+  GetUserDataByKeyPrefix(int64 registration_id, string key_prefix) =>
+      (ServiceWorkerDatabaseStatus status, array<string> values);
+  // Gets user data associated with the given |registration_id| filtered by
+  // |key_prefix|. Returns user data as key-value pairs.
+  GetUserKeysAndDataByKeyPrefix(int64 registration_id, string key_prefix) =>
+      (ServiceWorkerDatabaseStatus status, map<string, string> user_data);
+  // Clears user data associated with the given |registration_id| filtered by
+  // |key_prefix|.
+  ClearUserDataByKeyPrefixes(int64 registratation_id,
+                             array<string> key_prefixes) =>
+      (ServiceWorkerDatabaseStatus status);
 };

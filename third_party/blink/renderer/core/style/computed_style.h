@@ -435,6 +435,8 @@ class ComputedStyle : public ComputedStyleBase,
     DCHECK(BackdropFilterInternal().Get());
     return MutableBackdropFilterInternal()->operations_;
   }
+  // For containing blocks, use |HasNonInitialBackdropFilter()| which includes
+  // will-change: backdrop-filter.
   bool HasBackdropFilter() const {
     DCHECK(BackdropFilterInternal().Get());
     return !BackdropFilterInternal()->operations_.Operations().IsEmpty();
@@ -457,6 +459,8 @@ class ComputedStyle : public ComputedStyleBase,
     DCHECK(FilterInternal().Get());
     return FilterInternal()->operations_;
   }
+  // For containing blocks, use |HasNonInitialFilter()| which includes
+  // will-change: filter.
   bool HasFilter() const {
     DCHECK(FilterInternal().Get());
     return !FilterInternal()->operations_.Operations().IsEmpty();
@@ -1480,6 +1484,9 @@ class ComputedStyle : public ComputedStyleBase,
     return WillChangeProperties().Contains(CSSPropertyID::kFilter) ||
            WillChangeProperties().Contains(CSSPropertyID::kAliasWebkitFilter);
   }
+  bool HasWillChangeBackdropFilterHint() const {
+    return WillChangeProperties().Contains(CSSPropertyID::kBackdropFilter);
+  }
 
   // Hyphen utility functions.
   Hyphenation* GetHyphenation() const;
@@ -2348,6 +2355,12 @@ class ComputedStyle : public ComputedStyleBase,
     return HasFilter() || HasWillChangeFilterHint();
   }
 
+  // Returns |true| if backdrop-filter should be considered to have non-initial
+  // value for the purposes of containing blocks.
+  bool HasNonInitialBackdropFilter() const {
+    return HasBackdropFilter() || HasWillChangeBackdropFilterHint();
+  }
+
   // Returns |true| if opacity should be considered to have non-initial value
   // for the purpose of creating stacking contexts.
   bool HasNonInitialOpacity() const {
@@ -2434,7 +2447,7 @@ class ComputedStyle : public ComputedStyleBase,
            // positioned elements:
            // https://drafts.fxtf.org/filter-effects-2/#backdrop-filter-operation
            (!is_document_element &&
-            (HasNonInitialFilter() || HasBackdropFilter()));
+            (HasNonInitialFilter() || HasNonInitialBackdropFilter()));
   }
 
   // Whitespace utility functions.
@@ -2504,7 +2517,8 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasBoxDecorations() const {
     return HasBorderDecoration() || HasBorderRadius() || HasOutline() ||
            HasEffectiveAppearance() || BoxShadow() ||
-           HasFilterInducingProperty() || HasBackdropFilter() || HasResize();
+           HasFilterInducingProperty() || HasNonInitialBackdropFilter() ||
+           HasResize();
   }
 
   // "Box decoration background" includes all box decorations and backgrounds

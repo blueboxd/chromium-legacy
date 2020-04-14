@@ -14,7 +14,7 @@
 #include "ui/gfx/color_transform.h"
 
 struct avifDecoder;
-struct avifPixelFormatInfo;
+struct avifImage;
 
 namespace blink {
 
@@ -51,6 +51,10 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   // Creates |decoder_| and decodes the first frame.
   void MaybeCreateDemuxer();
 
+  // Decodes the frame at index |index|. The decoded frame is available in
+  // decoder_->image. Returns true on success, false on failure.
+  bool DecodeImage(size_t index);
+
   // Updates or creates |color_transform_|. Returns true on success, false on
   // failure.
   bool UpdateColorTransform(const gfx::ColorSpace& src_cs,
@@ -59,6 +63,12 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   // Returns true if we can set the color space on the image.
   bool CanSetColorSpace() const;
 
+  // Renders |image| in |buffer|. |frame_cs| is the color space of |image|.
+  // Returns true on success, false on failure.
+  bool RenderImage(const avifImage* image,
+                   const gfx::ColorSpace& frame_cs,
+                   ImageFrame* buffer);
+
   bool pending_decoded_image_ = false;
   bool is_high_bit_depth_ = false;
   bool decode_to_half_float_ = false;
@@ -66,7 +76,6 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   std::unique_ptr<avifDecoder, void (*)(avifDecoder*)> decoder_{nullptr,
                                                                 nullptr};
 
-  std::unique_ptr<avifPixelFormatInfo> format_info_;
   std::unique_ptr<gfx::ColorTransform> color_transform_;
 
   gfx::ColorSpace last_color_space_;

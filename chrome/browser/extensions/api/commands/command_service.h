@@ -95,27 +95,16 @@ class CommandService : public BrowserContextKeyedAPI,
   // Convenience method to get the CommandService for a profile.
   static CommandService* Get(content::BrowserContext* context);
 
-  // Gets the command (if any) for the browser action of an extension given
-  // its |extension_id|. The function consults the master list to see if
-  // the command is active. Returns false if the extension has no browser
-  // action. Returns false if the command is not active and |type| requested
-  // is ACTIVE. |command| contains the command found and |active| (if not
-  // NULL) contains whether |command| is active.
-  bool GetBrowserActionCommand(const std::string& extension_id,
-                               QueryType type,
-                               Command* command,
-                               bool* active) const;
-
-  // Gets the command (if any) for the page action of an extension given
-  // its |extension_id|. The function consults the master list to see if
-  // the command is active. Returns false if the extension has no page
-  // action. Returns false if the command is not active and |type| requested
-  // is ACTIVE. |command| contains the command found and |active| (if not
-  // NULL) contains whether |command| is active.
-  bool GetPageActionCommand(const std::string& extension_id,
-                            QueryType type,
-                            Command* command,
-                            bool* active) const;
+  // Gets the command (if any) for the specified |action_type| of an extension
+  // given its |extension_id|. The function consults the master list to see if
+  // the command is active. Returns false if the command is not active and
+  // |type| requested is ACTIVE. |command| contains the command found and
+  // |active| (if not null) contains whether |command| is active.
+  bool GetExtensionActionCommand(const std::string& extension_id,
+                                 ActionInfo::Type action_type,
+                                 QueryType type,
+                                 Command* command,
+                                 bool* active) const;
 
   // Gets the active named commands (if any) for the extension with
   // |extension_id|. The function consults the master list to see if the
@@ -224,12 +213,6 @@ class CommandService : public BrowserContextKeyedAPI,
   // |extension|-suggested value.
   bool IsCommandShortcutUserModified(const Extension* extension,
                                      const std::string& command_name);
-
-  bool GetExtensionActionCommand(const std::string& extension_id,
-                                 QueryType query_type,
-                                 Command* command,
-                                 bool* active,
-                                 ActionInfo::Type type) const;
 
   // A weak pointer to the profile we are associated with. Not owned by us.
   Profile* profile_;

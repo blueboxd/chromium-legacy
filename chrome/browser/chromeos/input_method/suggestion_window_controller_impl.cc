@@ -42,8 +42,7 @@ void SuggestionWindowControllerImpl::Init() {
                     : ash::Shell::GetRootWindowForNewWindows(),
       ash::kShellWindowId_VirtualKeyboardContainer);
   // suggestion_window_view_ is deleted by DialogDelegateView::DeleteDelegate.
-  suggestion_window_view_ = new ui::ime::SuggestionWindowView(
-      parent, ash::kShellWindowId_VirtualKeyboardContainer);
+  suggestion_window_view_ = new ui::ime::SuggestionWindowView(parent);
   views::Widget* widget = suggestion_window_view_->InitWidget();
   widget->AddObserver(this);
   widget->Show();

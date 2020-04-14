@@ -21,7 +21,6 @@
 #include "media/mojo/clients/mojo_decryptor.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/mojom/decryptor.mojom.h"
-#include "media/mojo/mojom/interface_factory.mojom.h"
 #include "services/service_manager/public/cpp/connect.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "url/origin.h"
@@ -43,15 +42,14 @@ void MojoCdm::Create(
     const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
-    mojom::InterfaceFactory* interface_factory,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     CdmCreatedCB cdm_created_cb) {
-  scoped_refptr<MojoCdm> mojo_cdm(new MojoCdm(
-      std::move(remote_cdm), interface_factory, session_message_cb,
-      session_closed_cb, session_keys_change_cb, session_expiration_update_cb));
+  scoped_refptr<MojoCdm> mojo_cdm(
+      new MojoCdm(std::move(remote_cdm), session_message_cb, session_closed_cb,
+                  session_keys_change_cb, session_expiration_update_cb));
 
   // |mojo_cdm| ownership is passed to the promise.
   auto promise = std::make_unique<CdmInitializedPromise>(
@@ -62,13 +60,11 @@ void MojoCdm::Create(
 }
 
 MojoCdm::MojoCdm(mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
-                 mojom::InterfaceFactory* interface_factory,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
                  const SessionKeysChangeCB& session_keys_change_cb,
                  const SessionExpirationUpdateCB& session_expiration_update_cb)
     : remote_cdm_(std::move(remote_cdm)),
-      interface_factory_(interface_factory),
       cdm_id_(CdmContext::kInvalidCdmId),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
@@ -305,25 +301,11 @@ Decryptor* MojoCdm::GetDecryptor() {
   if (decryptor_)
     return decryptor_.get();
 
-  mojo::PendingRemote<mojom::Decryptor> decryptor_remote;
-
   // Can be called on a different thread.
   if (decryptor_remote_.is_valid()) {
     DVLOG(1) << __func__ << ": Using Decryptor exposed by the CDM directly";
-    decryptor_remote = std::move(decryptor_remote_);
-  } else if (interface_factory_ && cdm_id_ != CdmContext::kInvalidCdmId) {
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-    // TODO(xhwang): Pass back info on whether Decryptor is supported by the
-    // remote CDM.
-    DVLOG(1) << __func__ << ": Using Decryptor associated with CDM ID "
-             << cdm_id_ << ", typically hosted by CdmProxy in MediaService";
-    interface_factory_->CreateDecryptor(
-        cdm_id_, decryptor_remote.InitWithNewPipeAndPassReceiver());
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
+    decryptor_ = std::make_unique<MojoDecryptor>(std::move(decryptor_remote_));
   }
-
-  if (decryptor_remote)
-    decryptor_ = std::make_unique<MojoDecryptor>(std::move(decryptor_remote));
 
   return decryptor_.get();
 }

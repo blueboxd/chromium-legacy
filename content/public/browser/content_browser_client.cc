@@ -36,7 +36,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_utils.h"
 #include "media/audio/audio_manager.h"
-#include "media/media_buildflags.h"
 #include "media/mojo/mojom/media_service.mojom.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/ssl/client_cert_identity.h"
@@ -237,7 +236,6 @@ bool ContentBrowserClient::OverridesAudioManager() {
 
 void ContentBrowserClient::GetHardwareSecureDecryptionCaps(
     const std::string& key_system,
-    const base::flat_set<media::CdmProxy::Protocol>& cdm_proxy_protocols,
     base::flat_set<media::VideoCodec>* video_codecs,
     base::flat_set<media::EncryptionScheme>* encryption_schemes) {}
 

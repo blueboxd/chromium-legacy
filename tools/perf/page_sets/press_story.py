@@ -29,12 +29,13 @@ class PressStory(page_module.Page):
   DETERMINISTIC_JS = False
   NAME = None
 
-  def __init__(self, ps):
+  def __init__(self, ps, tags=None):
     super(PressStory, self).__init__(
         self.URL, ps,
         base_dir=ps.base_dir,
         make_javascript_deterministic=self.DETERMINISTIC_JS,
-        name=self.NAME if self.NAME else self.URL)
+        name=self.NAME if self.NAME else self.URL,
+        tags=tags)
     self._measurements = []
     self._action_runner = None
 

@@ -24,7 +24,6 @@
 #include "media/base/content_decryption_module.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/video_codecs.h"
-#include "media/cdm/cdm_proxy.h"
 #include "media/cdm/supported_cdm_versions.h"
 #include "media/media_buildflags.h"
 
@@ -42,7 +41,6 @@ namespace {
 //   x-cdm-codecs
 //   x-cdm-persistent-license-support
 //   x-cdm-supported-encryption-schemes
-//   x-cdm-supported-cdm-proxy-protocols
 // What they represent is listed below. They should never have non-backwards
 // compatible changes. All values are strings. All values that are lists are
 // delimited by commas. No trailing commas. For example, "1,2,4".
@@ -66,9 +64,6 @@ const char kCdmPersistentLicenseSupportName[] =
 //  The list of supported encryption schemes (e.g. ["cenc","cbcs"]).
 const char kCdmSupportedEncryptionSchemesName[] =
     "x-cdm-supported-encryption-schemes";
-//  The list of supported proxy protocols (e.g. ["intel"]).
-const char kCdmSupportedCdmProxyProtocolsName[] =
-    "x-cdm-supported-cdm-proxy-protocols";
 
 // The following strings are used to specify supported codecs in the
 // parameter |kCdmCodecsListName|.
@@ -88,10 +83,6 @@ const char kCdmSupportedCodecAvc1[] = "avc1";
 // the parameter |kCdmSupportedEncryptionSchemesName|.
 const char kCdmSupportedEncryptionSchemeCenc[] = "cenc";
 const char kCdmSupportedEncryptionSchemeCbcs[] = "cbcs";
-
-// The following string(s) are used to specify supported CdmProxy protocols in
-// the parameter |kCdmSupportedCdmProxyProtocolsName|.
-const char kCdmSupportedCdmProxyProtocolIntel[] = "intel";
 
 typedef bool (*VersionCheckFunc)(int version);
 
@@ -265,47 +256,6 @@ bool GetEncryptionSchemes(
   return true;
 }
 
-// Returns true and updates |cdm_proxy_protocols| if the appropriate manifest
-// entry is valid. Returns false and does not modify |cdm_proxy_protocols| if
-// the manifest entry is incorrectly formatted. Incorrect types in the manifest
-// entry will log the error and fail. Unrecognized values will be reported but
-// otherwise ignored.
-bool GetCdmProxyProtocols(
-    const base::Value& manifest,
-    base::flat_set<media::CdmProxy::Protocol>* cdm_proxy_protocols) {
-  DCHECK(manifest.is_dict());
-  const auto* value = manifest.FindKey(kCdmSupportedCdmProxyProtocolsName);
-  if (!value)
-    return true;
-
-  if (!value->is_list()) {
-    DLOG(ERROR) << "CDM manifest entry " << kCdmSupportedCdmProxyProtocolsName
-                << " is not a list.";
-    return false;
-  }
-
-  base::flat_set<media::CdmProxy::Protocol> result;
-  for (const auto& item : value->GetList()) {
-    if (!item.is_string()) {
-      DLOG(ERROR) << "Unrecognized item type in CDM manifest entry "
-                  << kCdmSupportedCdmProxyProtocolsName;
-      return false;
-    }
-
-    const std::string& protocol = item.GetString();
-    if (protocol == kCdmSupportedCdmProxyProtocolIntel) {
-      result.insert(media::CdmProxy::Protocol::kIntel);
-    } else {
-      DLOG(WARNING) << "Unrecognized CdmProxy protocol '" << protocol
-                    << "' in CDM manifest entry "
-                    << kCdmSupportedCdmProxyProtocolsName;
-    }
-  }
-
-  cdm_proxy_protocols->swap(result);
-  return true;
-}
-
 bool GetVersion(const base::Value& manifest, base::Version* version) {
   DCHECK(manifest.is_dict());
   auto* version_string =
@@ -346,8 +296,7 @@ bool ParseCdmManifest(const base::Value& manifest,
   return GetCodecs(manifest, &capability->video_codecs,
                    &capability->supports_vp9_profile2) &&
          GetEncryptionSchemes(manifest, &capability->encryption_schemes) &&
-         GetSessionTypes(manifest, &capability->session_types) &&
-         GetCdmProxyProtocols(manifest, &capability->cdm_proxy_protocols);
+         GetSessionTypes(manifest, &capability->session_types);
 }
 
 bool ParseCdmManifestFromPath(const base::FilePath& manifest_path,

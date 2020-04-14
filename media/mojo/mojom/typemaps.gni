@@ -27,7 +27,3 @@ typemaps = [
 if (enable_media_drm_storage) {
   typemaps += [ "//media/mojo/mojom/media_drm_storage.typemap" ]
 }
-
-if (enable_cdm_proxy) {
-  typemaps += [ "//media/mojo/mojom/cdm_proxy.typemap" ]
-}

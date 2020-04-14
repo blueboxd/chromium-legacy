@@ -41,8 +41,15 @@ class HeapMojoRemote {
   bool is_bound() const { return wrapper_->remote().is_bound(); }
   bool is_connected() const { return wrapper_->remote().is_connected(); }
   void reset() { wrapper_->remote().reset(); }
+  void ResetWithReason(uint32_t custom_reason, const std::string& description) {
+    wrapper_->remote().ResetWithReason(custom_reason, description);
+  }
   void set_disconnect_handler(base::OnceClosure handler) {
     wrapper_->remote().set_disconnect_handler(std::move(handler));
+  }
+  void set_disconnect_with_reason_handler(
+      mojo::ConnectionErrorWithReasonCallback handler) {
+    wrapper_->remote().set_disconnect_with_reason_handler(std::move(handler));
   }
   mojo::PendingReceiver<Interface> BindNewPipeAndPassReceiver(
       scoped_refptr<base::SequencedTaskRunner> task_runner) WARN_UNUSED_RESULT {

@@ -132,7 +132,6 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
 
   // instantiate |accelerated_video_decoder_| based on the video profile
   HRESULT InitializeAcceleratedDecoder(const VideoDecoderConfig& config,
-                                       CdmProxyContext* proxy_context,
                                        ComD3D11VideoDecoder video_decoder);
 
   // Query the video device for a specific decoder ID.

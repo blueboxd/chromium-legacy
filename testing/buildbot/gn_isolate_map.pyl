@@ -1878,6 +1878,10 @@
       "-v",
     ],
   },
+  "weblayer_unittests": {
+    "label": "//weblayer/test:weblayer_unittests",
+    "type": "windowed_test_launcher",
+  },
   "webview_cts_tests": {
     "args": [
       "--logdog-bin-cmd",

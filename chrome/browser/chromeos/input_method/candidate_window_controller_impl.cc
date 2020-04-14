@@ -47,8 +47,7 @@ void CandidateWindowControllerImpl::InitCandidateWindowView() {
       active_window ? active_window->GetRootWindow()
                     : ash::Shell::GetRootWindowForNewWindows(),
       ash::kShellWindowId_VirtualKeyboardContainer);
-  candidate_window_view_ = new ui::ime::CandidateWindowView(
-      parent, ash::kShellWindowId_VirtualKeyboardContainer);
+  candidate_window_view_ = new ui::ime::CandidateWindowView(parent);
   candidate_window_view_->AddObserver(this);
   candidate_window_view_->SetCursorBounds(cursor_bounds_, composition_head_);
   views::Widget* widget = candidate_window_view_->InitWidget();

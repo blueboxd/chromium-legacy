@@ -136,9 +136,6 @@ cr.define('settings_people_page', function() {
       });
 
       // Profile row opens account manager, so the row is actionable.
-      const profileIcon = peoplePage.$$('#profile-icon');
-      assertTrue(!!profileIcon);
-      assertTrue(profileIcon.hasAttribute('actionable'));
       const profileRow = peoplePage.$$('#profile-row');
       assertTrue(!!profileRow);
       assertTrue(profileRow.hasAttribute('actionable'));

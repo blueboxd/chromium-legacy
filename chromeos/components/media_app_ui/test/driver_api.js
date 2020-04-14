@@ -14,6 +14,7 @@ let TestMessageResponseData;
  *     property: (string|undefined),
  *     renameLastFile: (string|undefined),
  *     requestFullscreen: (boolean|undefined),
+ *     saveCopy: (boolean|undefined),
  *     testQuery: string,
  * }}
  */

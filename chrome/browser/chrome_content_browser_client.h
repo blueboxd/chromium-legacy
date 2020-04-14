@@ -427,7 +427,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::NavigationHandle* navigation_handle) override;
   void GetHardwareSecureDecryptionCaps(
       const std::string& key_system,
-      const base::flat_set<media::CdmProxy::Protocol>& cdm_proxy_protocols,
       base::flat_set<media::VideoCodec>* video_codecs,
       base::flat_set<media::EncryptionScheme>* encryption_schemes) override;
   ::rappor::RapporService* GetRapporService() override;

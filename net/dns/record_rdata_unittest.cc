@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/big_endian.h"
+#include "base/optional.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_test_util.h"
 #include "net/test/gtest_util.h"
@@ -25,6 +26,10 @@ using ::testing::SizeIs;
 base::StringPiece MakeStringPiece(const uint8_t* data, unsigned size) {
   const char* data_cc = reinterpret_cast<const char*>(data);
   return base::StringPiece(data_cc, size);
+}
+
+base::StringPiece MakeStringPiece(const std::vector<uint8_t>& vec) {
+  return MakeStringPiece(vec.data(), vec.size());
 }
 
 TEST(RecordRdataTest, ParseSrvRecord) {
@@ -775,6 +780,121 @@ TEST(RecordRdataTest, AddOptToOptRecord) {
   OptRecordRdata rdata;
   rdata.AddOpt(OptRecordRdata::Opt(255, "\xde\xad\xbe\xef"));
   EXPECT_THAT(rdata.buf(), ElementsAreArray(expected_rdata));
+}
+
+// Test that for arbitrary IntegrityRecordRdata r, Parse(Serialize(r)) == r.
+TEST(RecordRdataTest, IntegrityParseSerializeInverseProperty) {
+  IntegrityRecordRdata record(IntegrityRecordRdata::Random());
+  base::Optional<std::vector<uint8_t>> serialized = record.Serialize();
+  EXPECT_TRUE(serialized);
+  std::unique_ptr<IntegrityRecordRdata> reparsed =
+      IntegrityRecordRdata::Create(MakeStringPiece(*serialized));
+  EXPECT_TRUE(reparsed);
+  EXPECT_TRUE(reparsed->IsEqual(&record));
+}
+
+TEST(RecordRdataTest, IntegrityEmptyNonceCornerCase) {
+  const IntegrityRecordRdata::Nonce empty_nonce;
+  IntegrityRecordRdata record(empty_nonce);
+
+  base::Optional<std::vector<uint8_t>> serialized = record.Serialize();
+  EXPECT_TRUE(serialized);
+  std::unique_ptr<IntegrityRecordRdata> reparsed =
+      IntegrityRecordRdata::Create(MakeStringPiece(*serialized));
+  EXPECT_TRUE(reparsed);
+  EXPECT_TRUE(reparsed->IsEqual(&record));
+  EXPECT_EQ(reparsed->nonce().size(), 0u);
+}
+
+TEST(RecordRdataTest, IntegrityMoveConstructor) {
+  IntegrityRecordRdata record_a(IntegrityRecordRdata::Random());
+  std::vector<uint8_t> serialized_a = record_a.Serialize();
+
+  IntegrityRecordRdata record_b = std::move(record_a);
+  std::vector<uint8_t> serialized_b = record_b.Serialize();
+
+  EXPECT_EQ(serialized_a, serialized_b);
+}
+
+TEST(RecordRdataTest, IntegrityRandomRecordsDiffer) {
+  IntegrityRecordRdata record_a(IntegrityRecordRdata::Random());
+  IntegrityRecordRdata record_b(IntegrityRecordRdata::Random());
+  EXPECT_TRUE(!record_a.IsEqual(&record_b));
+}
+
+TEST(RecordRdataTest, IntegritySerialize) {
+  IntegrityRecordRdata record({'A'});
+  const base::Optional<std::vector<uint8_t>> serialized = record.Serialize();
+  EXPECT_TRUE(serialized);
+
+  // Expected payload contains the SHA256 hash of 'A'. For the lazy:
+  //   $ echo -n A | sha256sum | cut -f1 -d' ' | sed -e 's/\(..\)/0x\1, /g'
+  const std::vector<uint8_t> expected = {
+      0, 1, 'A',  // Length prefix and nonce
+                  // Begin digest
+      0x55, 0x9a, 0xea, 0xd0, 0x82, 0x64, 0xd5, 0x79, 0x5d, 0x39, 0x09, 0x71,
+      0x8c, 0xdd, 0x05, 0xab, 0xd4, 0x95, 0x72, 0xe8, 0x4f, 0xe5, 0x55, 0x90,
+      0xee, 0xf3, 0x1a, 0x88, 0xa0, 0x8f, 0xdf, 0xfd,  // End digest
+  };
+
+  EXPECT_TRUE(*serialized == expected);
+}
+
+TEST(RecordRdataTest, IntegrityParse) {
+  const std::vector<uint8_t> serialized = {
+      0,    6,    'f',  'o',  'o',  'b',  'a',  'r',  // Length prefix and nonce
+      0xc3, 0xab, 0x8f, 0xf1, 0x37, 0x20, 0xe8, 0xad, 0x90,  // Begin digest
+      0x47, 0xdd, 0x39, 0x46, 0x6b, 0x3c, 0x89, 0x74, 0xe5, 0x92, 0xc2,
+      0xfa, 0x38, 0x3d, 0x4a, 0x39, 0x60, 0x71, 0x4c, 0xae, 0xf0, 0xc4,
+      0xf2,  // End digest
+  };
+  auto record = IntegrityRecordRdata::Create(MakeStringPiece(serialized));
+  EXPECT_TRUE(record);
+}
+
+TEST(RecordRdataTest, IntegrityBadParseTruncatedNonce) {
+  const std::vector<uint8_t> serialized = {
+      0, 6, 'f', 'o', 'o'  // Length prefix and truncated nonce
+  };
+  auto record = IntegrityRecordRdata::Create(MakeStringPiece(serialized));
+  EXPECT_EQ(record, nullptr);
+}
+
+TEST(RecordRdataTest, IntegrityBadParseTruncatedDigest) {
+  const std::vector<uint8_t> serialized = {
+      0, 6, 'f', 'o', 'o', 'b', 'a', 'r',  // Length prefix and nonce
+                                           // Begin Digest
+      0xc3, 0xab, 0x8f, 0xf1, 0x37, 0x20, 0xe8, 0xad, 0x90, 0x47, 0xdd, 0x39,
+      0x46, 0x6b, 0x3c, 0x89, 0x74, 0xe5, 0x92, 0xc2, 0xfa, 0x38, 0x3d,
+      0x4a,  // End digest
+  };
+  auto record = IntegrityRecordRdata::Create(MakeStringPiece(serialized));
+  EXPECT_EQ(record, nullptr);
+}
+
+TEST(RecordRdataTest, IntegrityBadParseExtraBytes) {
+  const std::vector<uint8_t> serialized = {
+      0, 6, 'f', 'o', 'o', 'b', 'a', 'r',  // Length prefix and nonce
+                                           // Begin digest
+      0xc3, 0xab, 0x8f, 0xf1, 0x37, 0x20, 0xe8, 0xad, 0x90, 0x47, 0xdd, 0x39,
+      0x46, 0x6b, 0x3c, 0x89, 0x74, 0xe5, 0x92, 0xc2, 0xfa, 0x38, 0x3d, 0x4a,
+      0x39, 0x60, 0x71, 0x4c, 0xae, 0xf0, 0xc4, 0xf2,  // End digest
+      'e', 'x', 't', 'r', 'a'                          // Trailing bytes
+  };
+  auto record = IntegrityRecordRdata::Create(MakeStringPiece(serialized));
+  EXPECT_EQ(record, nullptr);
+}
+
+TEST(RecordRdataTest, IntegrityCorruptedDigest) {
+  const std::vector<uint8_t> serialized = {
+      0,    6,    'f',  'o',  'o',  'b',  'a',  'r',  // Length prefix and nonce
+      0xde, 0xad, 0xbe, 0xef, 0x37, 0x20, 0xe8, 0xad, 0x90,  // Begin digest
+      0x47, 0xdd, 0x39, 0x46, 0x6b, 0x3c, 0x89, 0x74, 0xe5, 0x92, 0xc2,
+      0xfa, 0x38, 0x3d, 0x4a, 0x39, 0x60, 0x71, 0x4c, 0xae, 0xf0, 0xc4,
+      0xf2,  // End digest
+  };
+  auto record = IntegrityRecordRdata::Create(MakeStringPiece(serialized));
+  EXPECT_FALSE(record);
 }
 
 }  // namespace

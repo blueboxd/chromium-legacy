@@ -111,7 +111,7 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
     const char kNewTimeOutParam[] = "new_time_out";
     const char kMaxExtraCyclesBeforeKillParam[] =
         "max_extra_cycles_before_kill";
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
     constexpr int kFinchMaxExtraCyclesBeforeKill = 1;
 #else
     constexpr int kFinchMaxExtraCyclesBeforeKill = 2;

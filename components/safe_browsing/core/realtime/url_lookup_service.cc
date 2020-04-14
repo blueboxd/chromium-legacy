@@ -168,8 +168,6 @@ void RealTimeUrlLookupService::SendRequest(
   resource_request->url = GURL(kRealTimeLookupUrlPrefix);
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
   resource_request->method = "POST";
-  // TODO(crbug.com/1041912): Verify if a header is still needed when oauth
-  // token is empty.
   if (access_token_info.has_value()) {
     resource_request->headers.SetHeader(
         net::HttpRequestHeaders::kAuthorization,

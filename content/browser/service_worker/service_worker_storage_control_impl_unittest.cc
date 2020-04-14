@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string.h>
-
 #include "content/browser/service_worker/service_worker_storage_control_impl.h"
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
+#include "base/containers/flat_map.h"
 #include "base/containers/span.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/bind_test_util.h"
@@ -21,6 +24,7 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/navigation_preload_state.mojom.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -29,6 +33,16 @@ using FindRegistrationResult =
     storage::mojom::ServiceWorkerFindRegistrationResultPtr;
 
 namespace {
+
+struct GetUserDataByKeyPrefixResult {
+  DatabaseStatus status;
+  std::vector<std::string> values;
+};
+
+struct GetUserKeysAndDataByKeyPrefixResult {
+  DatabaseStatus status;
+  base::flat_map<std::string, std::string> user_data;
+};
 
 int ReadResponseHead(storage::mojom::ServiceWorkerResourceReader* reader,
                      network::mojom::URLResponseHeadPtr& out_response_head,
@@ -285,6 +299,56 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     base::RunLoop loop;
     storage()->ClearUserData(
         registration_id, keys,
+        base::BindLambdaForTesting([&](DatabaseStatus status) {
+          return_value = status;
+          loop.Quit();
+        }));
+    loop.Run();
+    return return_value;
+  }
+
+  GetUserDataByKeyPrefixResult GetUserDataByKeyPrefix(
+      int64_t registration_id,
+      const std::string& key_prefix) {
+    GetUserDataByKeyPrefixResult result;
+    base::RunLoop loop;
+    storage()->GetUserDataByKeyPrefix(
+        registration_id, key_prefix,
+        base::BindLambdaForTesting(
+            [&](DatabaseStatus status, const std::vector<std::string>& values) {
+              result.status = status;
+              result.values = values;
+              loop.Quit();
+            }));
+    loop.Run();
+    return result;
+  }
+
+  GetUserKeysAndDataByKeyPrefixResult GetUserKeysAndDataByKeyPrefix(
+      int64_t registration_id,
+      const std::string& key_prefix) {
+    GetUserKeysAndDataByKeyPrefixResult result;
+    base::RunLoop loop;
+    storage()->GetUserKeysAndDataByKeyPrefix(
+        registration_id, key_prefix,
+        base::BindLambdaForTesting(
+            [&](DatabaseStatus status,
+                const base::flat_map<std::string, std::string>& user_data) {
+              result.status = status;
+              result.user_data = user_data;
+              loop.Quit();
+            }));
+    loop.Run();
+    return result;
+  }
+
+  DatabaseStatus ClearUserDataByKeyPrefixes(
+      int64_t registration_id,
+      const std::vector<std::string>& key_prefixes) {
+    DatabaseStatus return_value;
+    base::RunLoop loop;
+    storage()->ClearUserDataByKeyPrefixes(
+        registration_id, key_prefixes,
         base::BindLambdaForTesting([&](DatabaseStatus status) {
           return_value = status;
           loop.Quit();
@@ -681,6 +745,77 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndGetUserData) {
     GetUserData(new_registration_id, keys, status, values);
     ASSERT_EQ(status, DatabaseStatus::kErrorNotFound);
     EXPECT_EQ(values.size(), 0UL);
+  }
+}
+
+// Tests that storing/getting user data by key prefix works.
+TEST_F(ServiceWorkerStorageControlImplTest, StoreAndGetUserDataByKeyPrefix) {
+  const GURL kScope("https://www.example.com/");
+  const GURL kScriptUrl("https://www.example.com/sw.js");
+  const int64_t kScriptSize = 10;
+
+  LazyInitializeForTest();
+
+  const int64_t registration_id = GetNewRegistrationId();
+  DatabaseStatus status;
+  status = CreateAndStoreRegistration(registration_id, kScope, kScriptUrl,
+                                      kScriptSize);
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+
+  // Store some user data with prefixes.
+  std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data;
+  user_data.push_back(
+      storage::mojom::ServiceWorkerUserData::New("prefixA", "value1"));
+  user_data.push_back(
+      storage::mojom::ServiceWorkerUserData::New("prefixA2", "value2"));
+  user_data.push_back(
+      storage::mojom::ServiceWorkerUserData::New("prefixB", "value3"));
+  user_data.push_back(
+      storage::mojom::ServiceWorkerUserData::New("prefixC", "value4"));
+  status =
+      StoreUserData(registration_id, kScope.GetOrigin(), std::move(user_data));
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+
+  {
+    GetUserDataByKeyPrefixResult result =
+        GetUserDataByKeyPrefix(registration_id, "prefix");
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+    EXPECT_EQ(result.values.size(), 4UL);
+    EXPECT_EQ(result.values[0], "value1");
+    EXPECT_EQ(result.values[1], "value2");
+    EXPECT_EQ(result.values[2], "value3");
+    EXPECT_EQ(result.values[3], "value4");
+  }
+
+  {
+    GetUserKeysAndDataByKeyPrefixResult result =
+        GetUserKeysAndDataByKeyPrefix(registration_id, "prefix");
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+    ASSERT_EQ(result.user_data.size(), 4UL);
+    EXPECT_EQ(result.user_data["A"], "value1");
+    EXPECT_EQ(result.user_data["A2"], "value2");
+    EXPECT_EQ(result.user_data["B"], "value3");
+    EXPECT_EQ(result.user_data["C"], "value4");
+  }
+
+  {
+    GetUserDataByKeyPrefixResult result =
+        GetUserDataByKeyPrefix(registration_id, "prefixA");
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+    ASSERT_EQ(result.values.size(), 2UL);
+    EXPECT_EQ(result.values[0], "value1");
+    EXPECT_EQ(result.values[1], "value2");
+  }
+
+  status = ClearUserDataByKeyPrefixes(registration_id, {"prefixA", "prefixC"});
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+
+  {
+    GetUserDataByKeyPrefixResult result =
+        GetUserDataByKeyPrefix(registration_id, "prefix");
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+    ASSERT_EQ(result.values.size(), 1UL);
+    EXPECT_EQ(result.values[0], "value3");
   }
 }
 

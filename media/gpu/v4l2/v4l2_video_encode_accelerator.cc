@@ -200,6 +200,10 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
 
   TRACE_EVENT0("media,gpu", "V4L2VEA::Initialize");
   VLOGF(2) << ": " << config.AsHumanReadableString();
+  if (config.HasTemporalLayer() || config.HasSpatialLayer()) {
+    VLOGF(1) << "Neither temporal nor spatial layer encoding is supported";
+    return false;
+  }
 
   encoder_input_visible_rect_ = gfx::Rect(config.input_visible_size);
 

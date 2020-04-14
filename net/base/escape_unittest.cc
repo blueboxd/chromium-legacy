@@ -203,6 +203,7 @@ TEST(EscapeTest, UnescapeURLComponent) {
        "(%E2%80%89)(%E2%80%8A)(%E2%80%A8)(%E2%80%A9)"},
       {"(%E2%80%AF)(%E2%81%9F)(%E3%80%80)", UnescapeRule::NORMAL,
        "(%E2%80%AF)(%E2%81%9F)(%E3%80%80)"},
+      {"(%E2%A0%80)", UnescapeRule::NORMAL, "(%E2%A0%80)"},
 
       // Default Ignorable and Formatting characters should not be unescaped.
       {"(%E2%81%A5)(%EF%BF%B0)(%EF%BF%B8)", UnescapeRule::NORMAL,

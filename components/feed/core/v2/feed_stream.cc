@@ -296,6 +296,7 @@ void FeedStream::LoadStreamTaskComplete(LoadStreamTask::Result result) {
 
 void FeedStream::AttachSurface(SurfaceInterface* surface) {
   metrics_reporter_->SurfaceOpened();
+  user_classifier_->OnEvent(UserClassifier::Event::kSuggestionsViewed);
   surfaces_.AddObserver(surface);
   surface_updater_->SurfaceAdded(surface);
   TriggerStreamLoad();
@@ -474,9 +475,11 @@ void FeedStream::UnloadModel() {
 }
 
 void FeedStream::ReportOpenAction() {
+  user_classifier_->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   metrics_reporter_->OpenAction();
 }
 void FeedStream::ReportOpenInNewTabAction() {
+  user_classifier_->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   metrics_reporter_->OpenInNewTabAction();
 }
 void FeedStream::ReportSliceViewed(const std::string& slice_id) {

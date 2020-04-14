@@ -181,16 +181,10 @@ declare_args() {
   # (which takes precedence), or by setting |alternate_cdm_storage_id_key|.
   # The key must be a string of at least 32 characters.
   alternate_cdm_storage_id_key = ""
-
-  # This feature is still under development. See crbug.com/641132.
-  enable_cdm_proxy = false
 }
 
 assert(!enable_cdm_host_verification || is_mac || is_win,
        "CDM host verification is only supported on Mac and Windows.")
-
-assert(enable_library_cdms || !enable_cdm_proxy,
-       "CDM Proxy should only be enabled when library CDM is enabled.")
 
 # Default |mojo_media_services| and |mojo_media_host| on various platforms. See
 # comments below for valid values. Can be overridden by gn build arguments from
@@ -213,17 +207,13 @@ if (is_chromecast) {
   _default_mojo_media_host = "gpu"
 }
 
-# On Fuchsia, this is only enabled to build libclearkeycdm.so, the mojo CDM
-# service is not used.
+# When |enable_library_cdms| is true, the "cdm" service will run in a separate
+# CdmService in the CDM (utility) process. Therefor there's no need to specify
+# |_default_mojo_media_host| which controls where the MediaService runs in.
+# On Fuchsia, |enable_library_cdms| is only enabled to build libclearkeycdm.so,
+# the mojo CDM service is not used.
 if (enable_library_cdms && !is_fuchsia) {
   _default_mojo_media_services += [ "cdm" ]
-
-  # Having a CDM running means it could require a CdmProxy running in the GPU
-  # process.
-  assert(_default_mojo_media_host == "" || _default_mojo_media_host == "gpu",
-         "For now, mojo_media_host should not overwrite it with a different " +
-             "value if it has been set.")
-  _default_mojo_media_host = "gpu"
 }
 
 declare_args() {

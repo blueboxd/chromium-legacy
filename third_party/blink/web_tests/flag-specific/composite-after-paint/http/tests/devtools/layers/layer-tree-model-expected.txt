@@ -2,6 +2,7 @@ Tests general layer tree model functionality
 Initial layer tree
 <invalid node id> 0x0 (0)
     #document (1)
+    #document (1)
     div#subframe1 80x80 (1)
     div#a 200x200 (1)
     div#b1 100x150 (1)
@@ -11,6 +12,7 @@ Initial layer tree
 Updated layer tree
 <invalid node id> 0x0 (0)
     #document (1)
+    #document (1)
     div#subframe1 80x80 (1)
     div#a 200x200 (1)
     div#b2 110x140 (1)
@@ -19,6 +21,7 @@ Updated layer tree
     div#b4 88x77
 Updated layer geometry
 <invalid node id> 0x0 (0)
+    #document (1)
     #document (1)
     div#subframe1 80x80 (1)
     div#a 200x200 (1)

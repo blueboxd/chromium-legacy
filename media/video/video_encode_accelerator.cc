@@ -89,6 +89,18 @@ std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
   return str;
 }
 
+bool VideoEncodeAccelerator::Config::HasTemporalLayer() const {
+  for (const auto& sl : spatial_layers) {
+    if (sl.num_of_temporal_layers > 1u)
+      return true;
+  }
+  return false;
+}
+
+bool VideoEncodeAccelerator::Config::HasSpatialLayer() const {
+  return spatial_layers.size() > 1u;
+}
+
 void VideoEncodeAccelerator::Client::NotifyEncoderInfoChange(
     const VideoEncoderInfo& info) {
   // Do nothing if a client doesn't use the info.

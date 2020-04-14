@@ -9,6 +9,7 @@
 
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 
 namespace {
 
@@ -32,20 +33,21 @@ ExtensionFunction::ResponseAction GetAllCommandsFunction::Run() {
   extensions::CommandService* command_service =
       extensions::CommandService::Get(browser_context());
 
+  // TODO(https://crbug.com/1067130): We should be able to check what
+  // type of action (if any) the extension has, and just check for
+  // that one.
   extensions::Command browser_action;
   bool active = false;
-  if (command_service->GetBrowserActionCommand(extension_->id(),
-          extensions::CommandService::ALL,
-          &browser_action,
-          &active)) {
+  if (command_service->GetExtensionActionCommand(
+          extension_->id(), extensions::ActionInfo::TYPE_BROWSER,
+          extensions::CommandService::ALL, &browser_action, &active)) {
     command_list->Append(CreateCommandValue(browser_action, active));
   }
 
   extensions::Command page_action;
-  if (command_service->GetPageActionCommand(extension_->id(),
-          extensions::CommandService::ALL,
-          &page_action,
-          &active)) {
+  if (command_service->GetExtensionActionCommand(
+          extension_->id(), extensions::ActionInfo::TYPE_PAGE,
+          extensions::CommandService::ALL, &page_action, &active)) {
     command_list->Append(CreateCommandValue(page_action, active));
   }
 

@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
@@ -23,7 +24,7 @@
 
 <dom-module id="settings-appearance-page">
   <template>
-    <style include="settings-shared md-select iron-flex">
+    <style include="cr-shared-style settings-shared md-select iron-flex">
       /* Lines up with cr-input. */
       #custom-input {
         /* (cr-input line-height + cr-input top/bottom padding) / 2 -
@@ -132,8 +133,8 @@
             inverted>
         </settings-toggle-button>
 </if>
-        <div class="settings-box">
-          <div class="start settings-box-text" aria-hidden="true">
+        <div class="cr-row">
+          <div class="flex cr-padded-text" aria-hidden="true">
             $i18n{fontSize}
           </div>
           <settings-dropdown-menu id="defaultFontSize" label="$i18n{fontSize}"
@@ -145,8 +146,8 @@
             label="$i18n{customizeFonts}" on-click="onCustomizeFontsTap_"
             role-description="$i18n{subpageArrowRoleDescription}">
         </cr-link-row>
-        <div class="settings-box" hidden="[[!pageVisibility.pageZoom]]">
-          <div id="pageZoom" class="start settings-box-text" aria-hidden="true">
+        <div class="cr-row" hidden="[[!pageVisibility.pageZoom]]">
+          <div id="pageZoom" class="flex cr-padded-text" aria-hidden="true">
             $i18n{pageZoom}
           </div>
           <select id="zoomLevel" class="md-select" aria-labelledby="pageZoom"

@@ -18,16 +18,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "media/media_buildflags.h"
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-#include "media/cdm/cdm_paths.h"
-#include "media/cdm/library_cdm/clear_key_cdm/clear_key_cdm_proxy.h"
-#include "third_party/widevine/cdm/buildflags.h"
-#if BUILDFLAG(ENABLE_WIDEVINE) && defined(OS_WIN)
-#include "chrome/gpu/widevine_cdm_proxy_factory.h"
-#include "third_party/widevine/cdm/widevine_cdm_common.h"
-#endif  // BUILDFLAG(ENABLE_WIDEVINE) && defined(OS_WIN)
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
-
 #if defined(OS_CHROMEOS)
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -90,21 +80,6 @@ void ChromeContentGpuClient::PostCompositorThreadCreated(
       base::BindOnce(&ThreadProfiler::StartOnChildThread,
                      metrics::CallStackProfileParams::COMPOSITOR_THREAD));
 }
-
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-std::unique_ptr<media::CdmProxy> ChromeContentGpuClient::CreateCdmProxy(
-    const base::Token& cdm_guid) {
-  if (cdm_guid == media::kClearKeyCdmGuid)
-    return std::make_unique<media::ClearKeyCdmProxy>();
-
-#if BUILDFLAG(ENABLE_WIDEVINE) && defined(OS_WIN)
-  if (cdm_guid == kWidevineCdmGuid)
-    return CreateWidevineCdmProxy();
-#endif  // BUILDFLAG(ENABLE_WIDEVINE) && defined(OS_WIN)
-
-  return nullptr;
-}
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 #if defined(OS_CHROMEOS)
 scoped_refptr<arc::ProtectedBufferManager>

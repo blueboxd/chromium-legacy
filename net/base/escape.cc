@@ -240,6 +240,9 @@ bool ShouldUnescapeCodePoint(UnescapeRule::Type rules, uint32_t code_point) {
       code_point == 0x202F ||  // NARROW NO-BREAK SPACE      (%E2%80%AF)
       code_point == 0x205F ||  // MEDIUM MATHEMATICAL SPACE  (%E2%81%9F)
       code_point == 0x3000 ||  // IDEOGRAPHIC SPACE          (%E3%80%80)
+      // U+2800 is rendered as a space, but is not considered whitespace (see
+      // crbug.com/1068531).
+      code_point == 0x2800 ||  // BRAILLE PATTERN BLANK      (%E2%A0%80)
 
       // Default Ignorable ([:Default_Ignorable_Code_Point=Yes:]) and Format
       // characters ([:Cf:]) are also banned (see crbug.com/824715).

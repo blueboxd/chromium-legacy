@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
@@ -36,7 +37,7 @@
 
 <dom-module id="settings-people-page">
   <template>
-    <style include="settings-shared iron-flex">
+    <style include="cr-shared-style settings-shared iron-flex">
       .sync-row {
         align-items: center;
         flex: auto;
@@ -108,42 +109,38 @@
         </template>
         <template is="dom-if" if="[[!shouldShowSyncAccountControl_(
             syncStatus.syncSystemEnabled)]]" restamp>
-          <div id="picture-subpage-trigger" class="settings-box first two-line">
-            <template is="dom-if" if="[[syncStatus]]">
-              <div id="profile-icon" on-click="onProfileTap_"
+          <div id="profile-row" class="cr-row first two-line"
                   actionable$="[[isProfileActionable_]]"
+                  on-click="onProfileTap_">
+            <template is="dom-if" if="[[syncStatus]]">
+              <div id="profile-icon"
                   style="background-image: [[getIconImageSet_(
                       profileIconUrl_)]]">
               </div>
-              <div class="middle two-line no-min-width"
-                  id="profile-row"
-                  on-click="onProfileTap_"
-                  actionable$="[[isProfileActionable_]]">
-                <div class="flex text-elide settings-box-text">
-                  <span id="profile-name">[[profileName_]]</span>
+              <div class="flex cr-row-gap cr-padded-text text-elide">
+                <span id="profile-name">[[profileName_]]</span>
 <!-- When the user is signed-in, the settings-sync-account-control is always
-  shown on non-ChromeOS platforms -->
+shown on non-ChromeOS platforms -->
 <if expr="chromeos">
-                  <div class="secondary" hidden="[[!syncStatus.signedIn]]">
-                    [[syncStatus.signedInUsername]]
-                  </div>
-</if>
+                <div class="secondary" hidden="[[!syncStatus.signedIn]]">
+                  [[syncStatus.signedInUsername]]
                 </div>
-<if expr="not chromeos">
-                <cr-icon-button class="subpage-arrow"
-                    aria-label="$i18n{editPerson}"
-                    aria-describedby="profile-name"
-                    aria-roledescription="$i18n{subpageArrowRoleDescription}">
-                </cr-icon-button>
-</if>
-<if expr="chromeos">
-                <cr-icon-button class="icon-external"
-                    id="profile-subpage-arrow"
-                    hidden="[[!isProfileActionable_]]"
-                    aria-label="$i18n{accountManagerSubMenuLabel}"
-                    aria-describedby="profile-name"></cr-icon-button>
 </if>
               </div>
+<if expr="not chromeos">
+              <cr-icon-button class="subpage-arrow"
+                  aria-label="$i18n{editPerson}"
+                  aria-describedby="profile-name"
+                  aria-roledescription="$i18n{subpageArrowRoleDescription}">
+              </cr-icon-button>
+</if>
+<if expr="chromeos">
+              <cr-icon-button class="icon-external"
+                  id="profile-subpage-arrow"
+                  hidden="[[!isProfileActionable_]]"
+                  aria-label="$i18n{accountManagerSubMenuLabel}"
+                  aria-describedby="profile-name"></cr-icon-button>
+</if>
             </template>
           </div>
         </template> <!-- if="[[!shouldShowSyncAccountControl_()]]" -->
@@ -162,9 +159,9 @@
               hidden="[[!shouldShowGoogleAccount_]]"
               on-click="openGoogleAccount_" external></cr-link-row>
 
-          <div class="settings-box" id="edit-profile" on-click="onProfileTap_"
+          <div class="cr-row" id="edit-profile" on-click="onProfileTap_"
               actionable>
-            <div class="start settings-box-text">
+            <div class="flex cr-padded-text">
               $i18n{profileNameAndPicture}
             </div>
             <cr-icon-button class="subpage-arrow" aria-label="$i18n{editPerson}"

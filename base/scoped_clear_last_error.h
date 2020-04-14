@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 
 namespace base {
-namespace internal {
 
 // ScopedClearLastError stores and resets the value of thread local error codes
 // (errno, GetLastError()), and restores them in the destructor. This is useful
@@ -41,7 +40,7 @@ class BASE_EXPORT ScopedClearLastError : public ScopedClearLastErrorBase {
   ~ScopedClearLastError();
 
  private:
-  unsigned int last_system_error_;
+  const unsigned long last_system_error_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedClearLastError);
 };
@@ -52,7 +51,6 @@ using ScopedClearLastError = ScopedClearLastErrorBase;
 
 #endif  // defined(OS_WIN)
 
-}  // namespace internal
 }  // namespace base
 
 #endif  // BASE_SCOPED_CLEAR_LAST_ERROR_H_

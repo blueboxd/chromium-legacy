@@ -1125,7 +1125,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool HasHiddenBackface() const {
     return StyleRef().BackfaceVisibility() == EBackfaceVisibility::kHidden;
   }
-  bool HasBackdropFilter() const { return StyleRef().HasBackdropFilter(); }
+  bool HasNonInitialBackdropFilter() const {
+    return StyleRef().HasNonInitialBackdropFilter();
+  }
 
   // Returns |true| if any property that renders using filter operations is
   // used (including, but not limited to, 'filter' and 'box-reflect').
@@ -2060,7 +2062,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool CreatesGroup() const {
     return StyleRef().HasOpacity() || HasMask() || HasClipPath() ||
-           HasFilterInducingProperty() || HasBackdropFilter() ||
+           HasFilterInducingProperty() || HasNonInitialBackdropFilter() ||
            StyleRef().HasBlendMode();
   }
 

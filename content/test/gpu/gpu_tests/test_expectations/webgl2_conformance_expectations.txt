@@ -194,6 +194,8 @@ crbug.com/965648 [ opengl win passthrough nvidia-0x1cb3 ] deqp/functional/gles3/
 crbug.com/822733 [ opengl win nvidia-0x1cb3             ] deqp/functional/gles3/transformfeedback/* [ RetryOnFailure ]
 crbug.com/1060024 [ opengl win passthrough nvidia-0x1cb3 ] deqp/functional/gles3/shaderloop_do_while.html [ RetryOnFailure ]
 crbug.com/1060024 [ opengl win passthrough nvidia-0x1cb3 ] deqp/functional/gles3/shaderloop_while.html [ RetryOnFailure ]
+crbug.com/angleproject/4555 [ win opengl passthrough nvidia ] conformance/misc/type-conversion-test.html [ Skip ]
+
 
 # Win / AMD
 
@@ -635,6 +637,9 @@ crbug.com/703779 [ opengl linux nvidia-0x1cb3 ] conformance/textures/misc/textur
 crbug.com/703779 [ opengl linux nvidia-0x1cb3 ] conformance/extensions/webgl-compressed-texture-size-limit.html [ Failure ]
 crbug.com/703779 [ opengl linux nvidia-0x1cb3 ] conformance/textures/misc/texture-size-limit.html [ Failure ]
 crbug.com/703779 [ opengl linux nvidia-0x1cb3 ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
+
+# Linux / OpenGL / NVIDIA failures
+crbug.com/angleproject/4555 [ linux opengl passthrough nvidia ] conformance/misc/type-conversion-test.html [ Skip ]
 
 # Linux AMD only.
 # It looks like AMD shader compiler rejects many valid ES3 semantics.

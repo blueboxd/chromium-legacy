@@ -73,9 +73,6 @@ class TestFrameInterfaceFactory : public mojom::FrameInterfaceFactory {
     mojo::MakeSelfOwnedReceiver(std::make_unique<MockCdmStorage>(),
                                 std::move(receiver));
   }
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  void CreateCdmProxy(mojo::PendingReceiver<mojom::CdmProxy>) override {}
-#endif
   void BindEmbedderReceiver(mojo::GenericPendingReceiver) override {}
 };
 

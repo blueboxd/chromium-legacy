@@ -10,9 +10,16 @@
 #include "base/callback.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
+#include "components/image_fetcher/core/request_metadata.h"
+#include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
+
+using image_fetcher::ImageDataFetcherCallback;
+using image_fetcher::ImageFetcher;
+using image_fetcher::ImageFetcherParams;
+using image_fetcher::RequestMetadata;
 
 namespace upboarding {
 namespace {
@@ -50,6 +57,13 @@ constexpr net::NetworkTrafficAnnotationTag kQueryTilesTrafficAnnotation =
         }
       })");
 
+ImageFetcherParams CreateImageFetcherParams() {
+  ImageFetcherParams params(kQueryTilesTrafficAnnotation,
+                            kImageFetcherUmaClientName);
+  params.set_hold_for_expiration_interval(kImageCacheExpirationInterval);
+  return params;
+}
+
 void OnImageFetched(ImageLoader::BitmapCallback callback,
                     const gfx::Image& image,
                     const image_fetcher::RequestMetadata&) {
@@ -57,22 +71,38 @@ void OnImageFetched(ImageLoader::BitmapCallback callback,
   std::move(callback).Run(image.AsBitmap());
 }
 
+void OnImageDataPrefetched(ImageLoader::SuccessCallback callback,
+                           const std::string&,
+                           const RequestMetadata& request_metadata) {
+  bool success = request_metadata.http_response_code == net::OK;
+  if (callback)
+    std::move(callback).Run(success);
+}
+
 }  // namespace
 
-CachedImageLoader::CachedImageLoader(image_fetcher::ImageFetcher* image_fetcher)
-    : image_fetcher_(image_fetcher) {
-  DCHECK(image_fetcher_);
+CachedImageLoader::CachedImageLoader(ImageFetcher* cached_image_fetcher,
+                                     ImageFetcher* reduced_mode_image_fetcher)
+    : cached_image_fetcher_(cached_image_fetcher),
+      reduced_mode_image_fetcher_(reduced_mode_image_fetcher) {
+  DCHECK(cached_image_fetcher_);
+  DCHECK(reduced_mode_image_fetcher_);
 }
 
 CachedImageLoader::~CachedImageLoader() = default;
 
 void CachedImageLoader::FetchImage(const GURL& url, BitmapCallback callback) {
   // Fetch and decode the image from network or disk cache.
-  image_fetcher::ImageFetcherParams params(kQueryTilesTrafficAnnotation,
-                                           kImageFetcherUmaClientName);
-  params.set_hold_for_expiration_interval(kImageCacheExpirationInterval);
-  image_fetcher_->FetchImage(
-      url, base::BindOnce(&OnImageFetched, std::move(callback)), params);
+  cached_image_fetcher_->FetchImage(
+      url, base::BindOnce(&OnImageFetched, std::move(callback)),
+      CreateImageFetcherParams());
+}
+
+void CachedImageLoader::PrefetchImage(const GURL& url,
+                                      SuccessCallback callback) {
+  reduced_mode_image_fetcher_->FetchImageData(
+      url, base::BindOnce(&OnImageDataPrefetched, std::move(callback)),
+      CreateImageFetcherParams());
 }
 
 }  // namespace upboarding

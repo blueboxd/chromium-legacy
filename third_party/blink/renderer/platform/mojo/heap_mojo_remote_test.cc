@@ -123,6 +123,38 @@ class HeapMojoRemoteDestroyContextBaseTest : public TestSupportingGC {
   Persistent<RemoteOwner<Mode>> owner_;
 };
 
+template <HeapMojoWrapperMode Mode>
+class HeapMojoRemoteDisconnectWithReasonHandlerBaseTest
+    : public TestSupportingGC {
+ public:
+  base::RunLoop& run_loop() { return run_loop_; }
+  bool& disconnected_with_reason() { return disconnected_with_reason_; }
+
+ protected:
+  void SetUp() override {
+    CHECK(!disconnected_with_reason_);
+    context_ = MakeGarbageCollected<MockContext>();
+    owner_ = MakeGarbageCollected<RemoteOwner<Mode>>(context_);
+    scoped_refptr<base::NullTaskRunner> null_task_runner =
+        base::MakeRefCounted<base::NullTaskRunner>();
+    impl_.receiver().Bind(
+        owner_->remote().BindNewPipeAndPassReceiver(null_task_runner));
+    impl_.receiver().set_disconnect_with_reason_handler(WTF::Bind(
+        [](HeapMojoRemoteDisconnectWithReasonHandlerBaseTest* remote_test,
+           const uint32_t custom_reason, const std::string& description) {
+          remote_test->run_loop().Quit();
+          remote_test->disconnected_with_reason() = true;
+        },
+        WTF::Unretained(this)));
+  }
+
+  ServiceImpl impl_;
+  Persistent<MockContext> context_;
+  Persistent<RemoteOwner<Mode>> owner_;
+  base::RunLoop run_loop_;
+  bool disconnected_with_reason_ = false;
+};
+
 }  // namespace
 
 class HeapMojoRemoteGCWithContextObserverTest
@@ -136,6 +168,12 @@ class HeapMojoRemoteDestroyContextWithContextObserverTest
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoRemoteDestroyContextWithoutContextObserverTest
     : public HeapMojoRemoteDestroyContextBaseTest<
+          HeapMojoWrapperMode::kWithoutContextObserver> {};
+class HeapMojoRemoteDisconnectWithReasonHandlerWithContextObserverTest
+    : public HeapMojoRemoteDisconnectWithReasonHandlerBaseTest<
+          HeapMojoWrapperMode::kWithContextObserver> {};
+class HeapMojoRemoteDisconnectWithReasonHandlerWithoutContextObserverTest
+    : public HeapMojoRemoteDisconnectWithReasonHandlerBaseTest<
           HeapMojoWrapperMode::kWithoutContextObserver> {};
 
 // Make HeapMojoRemote with context observer garbage collected and check that
@@ -176,6 +214,30 @@ TEST_F(HeapMojoRemoteDestroyContextWithoutContextObserverTest,
   EXPECT_TRUE(owner_->remote().is_bound());
   context_->NotifyContextDestroyed();
   EXPECT_TRUE(owner_->remote().is_bound());
+}
+
+// Reset the remote with custom reason and check that the specified handler is
+// fired.
+TEST_F(HeapMojoRemoteDisconnectWithReasonHandlerWithContextObserverTest,
+       ResetWithReason) {
+  EXPECT_FALSE(disconnected_with_reason());
+  const std::string message = "test message";
+  const uint32_t reason = 0;
+  owner_->remote().ResetWithReason(reason, message);
+  run_loop().Run();
+  EXPECT_TRUE(disconnected_with_reason());
+}
+
+// Reset the remote with custom reason and check that the specified handler is
+// fired.
+TEST_F(HeapMojoRemoteDisconnectWithReasonHandlerWithoutContextObserverTest,
+       ResetWithReason) {
+  EXPECT_FALSE(disconnected_with_reason());
+  const std::string message = "test message";
+  const uint32_t reason = 0;
+  owner_->remote().ResetWithReason(reason, message);
+  run_loop().Run();
+  EXPECT_TRUE(disconnected_with_reason());
 }
 
 }  // namespace blink

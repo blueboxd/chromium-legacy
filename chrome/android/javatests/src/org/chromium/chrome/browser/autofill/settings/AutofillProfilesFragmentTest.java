@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.autofill.settings;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.KeyEvent;
 import android.widget.EditText;
@@ -24,7 +23,7 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.SettingsActivity;
-import org.chromium.chrome.browser.settings.SettingsActivityTest;
+import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -41,6 +40,9 @@ import java.util.concurrent.TimeoutException;
 public class AutofillProfilesFragmentTest {
     @Rule
     public final AutofillTestRule rule = new AutofillTestRule();
+    @Rule
+    public final SettingsActivityTestRule<AutofillProfilesFragment> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(AutofillProfilesFragment.class);
 
     @Before
     public void setUp() throws TimeoutException {
@@ -65,9 +67,7 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testAddProfile() throws Exception {
-        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(),
-                AutofillProfilesFragment.class.getName());
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
         AutofillProfilesFragment autofillProfileFragment =
                 (AutofillProfilesFragment) activity.getMainFragment();
 
@@ -108,9 +108,7 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testAddIncompletedProfile() throws Exception {
-        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(),
-                AutofillProfilesFragment.class.getName());
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
         AutofillProfilesFragment autofillProfileFragment =
                 (AutofillProfilesFragment) activity.getMainFragment();
 
@@ -133,9 +131,7 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testDeleteProfile() throws Exception {
-        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(),
-                AutofillProfilesFragment.class.getName());
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
         AutofillProfilesFragment autofillProfileFragment =
                 (AutofillProfilesFragment) activity.getMainFragment();
 
@@ -167,9 +163,7 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testEditProfile() throws Exception {
-        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(),
-                AutofillProfilesFragment.class.getName());
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
         AutofillProfilesFragment autofillProfileFragment =
                 (AutofillProfilesFragment) activity.getMainFragment();
 
@@ -211,9 +205,7 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testOpenProfileWithCompleteState() throws Exception {
-        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(),
-                AutofillProfilesFragment.class.getName());
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
         AutofillProfilesFragment autofillProfileFragment =
                 (AutofillProfilesFragment) activity.getMainFragment();
 
@@ -239,11 +231,8 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testOpenProfileWithInvalidState() throws Exception {
-        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(),
-                AutofillProfilesFragment.class.getName());
-        AutofillProfilesFragment autofillProfileFragment =
-                (AutofillProfilesFragment) activity.getMainFragment();
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
+        AutofillProfilesFragment autofillProfileFragment = mSettingsActivityTestRule.getFragment();
 
         // Check the preferences on the initial screen.
         Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
@@ -267,9 +256,7 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testKeyboardShownOnDpadCenter() throws TimeoutException {
-        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(),
-                AutofillProfilesFragment.class.getName());
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
 
         AutofillProfilesFragment fragment = (AutofillProfilesFragment) activity.getMainFragment();
         AutofillProfileEditorPreference addProfile =

@@ -118,5 +118,4 @@ MediaAutomationHandler = class extends BaseAutomationHandler {
 /** @type {number} */
 MediaAutomationHandler.MIN_WAITTIME_MS = 1000;
 
-new MediaAutomationHandler();
 });  // goog.scope

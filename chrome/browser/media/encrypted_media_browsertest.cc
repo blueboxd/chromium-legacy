@@ -72,10 +72,6 @@ const char kExternalClearKeyVerifyCdmHostTestKeySystem[] =
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 const char kExternalClearKeyStorageIdTestKeySystem[] =
     "org.chromium.externalclearkey.storageidtest";
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-const char kExternalClearKeyCdmProxyKeySystem[] =
-    "org.chromium.externalclearkey.cdmproxy";
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 // Sessions to load.
@@ -962,21 +958,6 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_MultipleCdmTypes) {
   RunMediaTestPage("multiple_cdm_types.html", empty_query_params, media::kEnded,
                    true);
 }
-
-// Tests that only works on newer CDM interfaces.
-
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CdmProxy) {
-  if (GetCdmInterfaceVersion() < 11) {
-    DVLOG(0) << "Skipping test; CdmProxy only supported on CDM_11 and above.";
-    return;
-  }
-
-  // ClearKeyCdmProxy only supports decrypt-only.
-  RunSimpleEncryptedMediaTest("bear-a_enc-a.webm",
-                              kExternalClearKeyCdmProxyKeySystem, SrcType::MSE);
-}
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 // Output Protection Tests. Run with different capture inputs. "monitor"
 // simulates the whole screen being captured. "window" simulates the Chrome

@@ -11,21 +11,12 @@
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "content/public/common/content_client.h"
-#include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
-
-namespace base {
-class Token;
-}
 
 namespace gpu {
 struct GpuPreferences;
 class SharedImageManager;
 class SyncPointManager;
-}
-
-namespace media {
-class CdmProxy;
 }
 
 namespace viz {
@@ -60,13 +51,6 @@ class CONTENT_EXPORT ContentGpuClient {
   virtual gpu::SyncPointManager* GetSyncPointManager();
   virtual gpu::SharedImageManager* GetSharedImageManager();
   virtual viz::VizCompositorThreadRunner* GetVizCompositorThreadRunner();
-
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  // Creates a media::CdmProxy for the type of Content Decryption Module (CDM)
-  // identified by |cdm_guid|.
-  virtual std::unique_ptr<media::CdmProxy> CreateCdmProxy(
-      const base::Token& cdm_guid);
-#endif
 };
 
 }  // namespace content

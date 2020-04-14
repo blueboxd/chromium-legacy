@@ -929,7 +929,7 @@ class BASE_EXPORT LogMessage {
   // This is useful since the LogMessage class uses a lot of Win32 calls
   // that will lose the value of GLE and the code that called the log function
   // will have lost the thread error value when the log call returns.
-  base::internal::ScopedClearLastError last_error_;
+  base::ScopedClearLastError last_error_;
 
   DISALLOW_COPY_AND_ASSIGN(LogMessage);
 };

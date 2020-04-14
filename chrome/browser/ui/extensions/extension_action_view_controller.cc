@@ -339,12 +339,9 @@ bool ExtensionActionViewController::GetExtensionCommand(
     return false;
 
   CommandService* command_service = CommandService::Get(browser_->profile());
-  if (extension_action_->action_type() == ActionInfo::TYPE_PAGE) {
-    return command_service->GetPageActionCommand(
-        extension_->id(), CommandService::ACTIVE, command, NULL);
-  }
-  return command_service->GetBrowserActionCommand(
-      extension_->id(), CommandService::ACTIVE, command, NULL);
+  return command_service->GetExtensionActionCommand(
+      extension_->id(), extension_action_->action_type(),
+      CommandService::ACTIVE, command, nullptr);
 }
 
 bool ExtensionActionViewController::CanHandleAccelerators() const {

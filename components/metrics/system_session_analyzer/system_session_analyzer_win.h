@@ -30,6 +30,7 @@ class SystemSessionAnalyzer {
     INITIALIZE_FAILED = 3,
     FETCH_EVENTS_FAILED = 4,
     PROCESS_SESSION_FAILED = 5,
+    INSUFFICIENT_DATA = 6,
   };
 
   // Track internal details of what went wrong.

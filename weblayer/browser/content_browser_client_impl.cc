@@ -373,9 +373,10 @@ bool ContentBrowserClientImpl::CanCreateWindow(
   if (!tab || !tab->has_new_tab_delegate())
     return false;
 
-  if (container_type == content::mojom::WindowContainerType::BACKGROUND) {
-    // TODO(https://crbug.com/1019923): decide if WebLayer needs to support
-    // background tabs.
+  if (container_type == content::mojom::WindowContainerType::BACKGROUND ||
+      container_type == content::mojom::WindowContainerType::PERSISTENT) {
+    // WebLayer does not support extensions/apps, which are the only permitted
+    // users of background windows.
     return false;
   }
 

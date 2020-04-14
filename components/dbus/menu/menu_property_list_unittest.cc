@@ -67,12 +67,10 @@ class TestMenuModel : public ui::SimpleMenuModel,
     EXPECT_LE(command_id, 0);
     return label_;
   }
-  bool GetIconForCommandId(int command_id, gfx::Image* icon) const override {
+  ui::ImageModel GetIconForCommandId(int command_id) const override {
     EXPECT_LE(command_id, 0);
-    if (icon_.IsEmpty())
-      return false;
-    *icon = icon_;
-    return true;
+    return icon_.IsEmpty() ? ui::ImageModel()
+                           : ui::ImageModel::FromImage(icon_);
   }
   void ExecuteCommand(int command_id, int event_flags) override {
     EXPECT_LE(command_id, 0);

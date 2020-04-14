@@ -772,5 +772,28 @@ TEST_F(FeedStreamTest, ReportSliceViewedIdentifiesCorrectIndex) {
   EXPECT_EQ(1, metrics_reporter_.slice_viewed_index);
 }
 
+TEST_F(FeedStreamTest, OpeningTheFeedChangesUserClassification) {
+  ASSERT_EQ(UserClass::kActiveSuggestionsViewer, stream_->GetUserClass());
+  for (int i = 0; i < 5; i++) {
+    TestSurface surface(stream_.get());
+    task_environment_.FastForwardBy(base::TimeDelta::FromHours(100));
+  }
+  ASSERT_EQ(UserClass::kRareSuggestionsViewer, stream_->GetUserClass());
+  for (int i = 0; i < 5; i++) {
+    TestSurface surface(stream_.get());
+    task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
+  }
+  EXPECT_EQ(UserClass::kActiveSuggestionsViewer, stream_->GetUserClass());
+}
+
+TEST_F(FeedStreamTest, UsingTheFeedChangesUserClassification) {
+  ASSERT_EQ(UserClass::kActiveSuggestionsViewer, stream_->GetUserClass());
+  for (int i = 0; i < 5; i++) {
+    task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
+    stream_->ReportOpenAction();
+  }
+  EXPECT_EQ(UserClass::kActiveSuggestionsConsumer, stream_->GetUserClass());
+}
+
 }  // namespace
 }  // namespace feed

@@ -71,20 +71,18 @@ void WorkerAnimationFrameProvider::BeginFrame(const viz::BeginFrameArgs& args) {
 
 void WorkerAnimationFrameProvider::RegisterOffscreenCanvas(
     OffscreenCanvas* context) {
-  DCHECK(offscreen_canvases_.Find(context) == kNotFound);
-  offscreen_canvases_.push_back(context);
+  auto result = offscreen_canvases_.insert(context);
+  DCHECK(result.is_new_entry);
 }
 
 void WorkerAnimationFrameProvider::DeregisterOffscreenCanvas(
     OffscreenCanvas* offscreen_canvas) {
-  wtf_size_t pos = offscreen_canvases_.Find(offscreen_canvas);
-  if (pos != kNotFound) {
-    offscreen_canvases_.EraseAt(pos);
-  }
+  offscreen_canvases_.erase(offscreen_canvas);
 }
 
 void WorkerAnimationFrameProvider::Trace(Visitor* visitor) {
   visitor->Trace(callback_collection_);
+  visitor->Trace(offscreen_canvases_);
   visitor->Trace(context_);
 }
 

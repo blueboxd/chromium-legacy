@@ -39,8 +39,6 @@ typedef NS_ENUM(NSInteger, CWVSyncError) {
   // Indicates the service responded to a request, but we cannot
   // interpret the response.
   CWVSyncErrorUnexpectedServiceResponse = -600,
-  // Sync is not fully stopped yet.
-  CWVSyncErrorCleanupPending = -700,
 };
 
 // Used to manage syncing for autofill and password data. Usage:

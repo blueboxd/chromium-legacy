@@ -120,8 +120,6 @@ source_set("earl_grey_test_support") {
   sources = [
     "public/test/earl_grey/js_test_util.h",
     "public/test/earl_grey/js_test_util.mm",
-    "public/test/earl_grey/web_app_interface.h",
-    "public/test/earl_grey/web_app_interface.mm",
     "public/test/earl_grey/web_view_actions.h",
     "public/test/earl_grey/web_view_actions.mm",
     "public/test/earl_grey/web_view_matchers.h",
@@ -149,29 +147,10 @@ source_set("eg_app_support+eg2") {
   sources = [
     "public/test/earl_grey/js_test_util.h",
     "public/test/earl_grey/js_test_util.mm",
-    "public/test/earl_grey/web_app_interface.h",
-    "public/test/earl_grey/web_app_interface.mm",
     "public/test/earl_grey/web_view_actions.h",
     "public/test/earl_grey/web_view_actions.mm",
     "public/test/earl_grey/web_view_matchers.h",
     "public/test/earl_grey/web_view_matchers.mm",
-  ]
-}
-
-source_set("eg_test_support+eg2") {
-  defines = [ "CHROME_EARL_GREY_2" ]
-  configs += [
-    "//build/config/compiler:enable_arc",
-    "//build/config/ios:xctest_config",
-  ]
-  testonly = true
-  sources = [
-    "public/test/earl_grey/web_app_interface.h",
-    "public/test/earl_grey/web_app_interface_stub.mm",
-  ]
-  deps = [
-    "//ios/testing/earl_grey:eg_test_support+eg2",
-    "//ios/third_party/earl_grey2:test_lib",
   ]
 }
 

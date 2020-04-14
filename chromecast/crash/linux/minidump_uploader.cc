@@ -264,6 +264,8 @@ bool MinidumpUploader::DoWork() {
       // Save our state by flushing our dumps to the lockfile
       // We'll come back around later and try again.
       LOG(ERROR) << "Upload report failed. response: " << response;
+      // The increment will happen when it retries the upload.
+      DecrementNumDumpsInCurrentPeriod();
       SetCurrentDumps(dumps);
       return true;
     }

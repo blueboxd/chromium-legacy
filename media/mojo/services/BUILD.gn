@@ -132,19 +132,6 @@ jumbo_component("services") {
       "//media/cdm:cdm_paths",
     ]
 
-    if (enable_cdm_proxy) {
-      sources += [
-        "mojo_cdm_proxy.cc",
-        "mojo_cdm_proxy.h",
-        "mojo_cdm_proxy_service.cc",
-        "mojo_cdm_proxy_service.h",
-      ]
-      deps += [
-        # Needed by test_mojo_media_client.cc to create ClearKeyCdmProxy.
-        "//media/cdm/library_cdm/clear_key_cdm:clear_key_cdm_proxy",
-      ]
-    }
-
     # TODO(xhwang): Ideally media should not worry about sandbox. Find a way to
     # remove this dependency.
     if (is_mac) {
@@ -199,10 +186,6 @@ source_set("unit_tests") {
       "mojo_cdm_file_io_unittest.cc",
       "mojo_cdm_helper_unittest.cc",
     ]
-
-    if (enable_cdm_proxy) {
-      sources += [ "mojo_cdm_proxy_unittest.cc" ]
-    }
 
     deps += [ "//media/cdm:cdm_api" ]
   }

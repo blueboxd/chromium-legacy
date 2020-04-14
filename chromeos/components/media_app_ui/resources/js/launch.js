@@ -55,10 +55,8 @@ guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
   if (!currentlyWritableFile || overwrite.token !== fileToken) {
     throw new Error('File not current.');
   }
-  const writer = await currentlyWritableFile.handle.createWritable();
-  await writer.write(overwrite.blob);
-  await writer.truncate(overwrite.blob.size);
-  await writer.close();
+
+  await saveToFile(currentlyWritableFile.handle, overwrite.blob);
 });
 
 guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
@@ -90,11 +88,8 @@ guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
       renameMsg.newFilename, {create: true});
 
   // Copy file data over to the new file.
-  const writer = await renamedFileHandle.createWritable();
   // TODO(b/153021155): Use originalFile.stream().
-  await writer.write(await originalFile.arrayBuffer());
-  await writer.truncate(originalFile.size);
-  await writer.close();
+  await saveToFile(renamedFileHandle, await originalFile.arrayBuffer());
 
   // Remove the old file since the new file has all the data & the new name.
   // Note even though removing an entry that doesn't exist is considered
@@ -116,6 +111,71 @@ guestMessagePipe.registerHandler(Message.NAVIGATE, async (message) => {
 
   await advance(navigate.direction);
 });
+
+guestMessagePipe.registerHandler(Message.SAVE_COPY, async (message) => {
+  const {blob, suggestedName} = /** @type {!SaveCopyMessage} */ (message);
+  const extension = suggestedName.split('.').reverse()[0];
+  // TODO(b/141587270): Add a default filename when it's supported by the native
+  // file api.
+  /** @type {!ChooseFileSystemEntriesOptions} */
+  const options = {
+    type: 'save-file',
+    accepts: [{extension, mimeTypes: [blob.type]}]
+  };
+  /** @type {!FileSystemHandle} */
+  let fileSystemHandle;
+  // chooseFileSystem is where recoverable errors happen, errors in the write
+  // process should be treated as unexpected and propagated through
+  // MessagePipe's standard exception handling.
+  try {
+    fileSystemHandle =
+        /** @type {!FileSystemHandle} */ (
+            await window.chooseFileSystemEntries(options));
+  } catch (/** @type {!DOMException} */ err) {
+    if (err.name !== 'SecurityError' && err.name !== 'AbortError') {
+      // Unknown error.
+      throw err;
+    }
+    console.log(`Aborting SAVE_COPY: ${err.message}`);
+    return err.name;
+  }
+
+  const {handle} = await getFileFromHandle(fileSystemHandle);
+  if (await handle.isSameEntry(currentlyWritableFile.handle)) {
+    return 'attemptedCurrentlyWritableFileOverwrite';
+  }
+
+  // Load this file into the app.
+  await saveToFile(handle, blob);
+});
+
+/**
+ * Saves the provided blob or arrayBuffer to the provided fileHandle. Assumes
+ * the handle is writable.
+ * @param {!FileSystemFileHandle} handle
+ * @param {!Blob|!ArrayBuffer} data
+ * @return {!Promise<undefined>}
+ */
+async function saveToFile(handle, data) {
+  const writer = await handle.createWritable();
+  await writer.write(data);
+  await writer.truncate(data.size);
+  await writer.close();
+}
+
+/**
+ * Loads a single file into the guest.
+ * @param {{file: !File, handle: !FileSystemFileHandle}} fileHandle
+ * @returns {!Promise<undefined>}
+ */
+async function loadSingleFile(fileHandle) {
+  /** @type {!FileDescriptor} */
+  const fd = {token: -1, file: fileHandle.file, handle: fileHandle.handle};
+  currentFiles.length = 0;
+  currentFiles.push(fd);
+  entryIndex = 0;
+  await sendFilesToGuest();
+}
 
 /**
  * Loads the current file list into the guest.
@@ -205,7 +265,7 @@ async function getFileFromHandle(fileSystemHandle) {
   if (!fileSystemHandle || !fileSystemHandle.isFile) {
     return null;
   }
-  const handle = /** @type{!FileSystemFileHandle} */ (fileSystemHandle);
+  const handle = /** @type {!FileSystemFileHandle} */ (fileSystemHandle);
   const file = await handle.getFile();
   return {file, handle};
 }

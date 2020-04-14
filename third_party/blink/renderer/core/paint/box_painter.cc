@@ -299,23 +299,19 @@ void BoxPainter::RecordScrollHitTestData(
   if (!fragment)
     return;
 
-  // Only create scroll hit test data for objects that scroll.
-  if (layout_box_.GetScrollableArea()->ScrollsOverflow()) {
-    const auto* properties = fragment->PaintProperties();
-
-    // If there is an associated scroll node, emit scroll hit test data.
-    if (properties && properties->Scroll()) {
-      DCHECK(properties->ScrollTranslation());
-      // We record scroll hit test data in the local border box properties
-      // instead of the contents properties so that the scroll hit test is not
-      // clipped or scrolled.
-      auto& paint_controller = paint_info.context.GetPaintController();
-      DCHECK_EQ(fragment->LocalBorderBoxProperties(),
-                paint_controller.CurrentPaintChunkProperties());
-      paint_controller.RecordScrollHitTestData(
-          background_client, DisplayItem::kScrollHitTest,
-          properties->ScrollTranslation(), fragment->VisualRect());
-    }
+  // If there is an associated scroll node, emit scroll hit test data.
+  const auto* properties = fragment->PaintProperties();
+  if (properties && properties->Scroll()) {
+    DCHECK(properties->ScrollTranslation());
+    // We record scroll hit test data in the local border box properties
+    // instead of the contents properties so that the scroll hit test is not
+    // clipped or scrolled.
+    auto& paint_controller = paint_info.context.GetPaintController();
+    DCHECK_EQ(fragment->LocalBorderBoxProperties(),
+              paint_controller.CurrentPaintChunkProperties());
+    paint_controller.RecordScrollHitTestData(
+        background_client, DisplayItem::kScrollHitTest,
+        properties->ScrollTranslation(), fragment->VisualRect());
   }
 
   ScrollableAreaPainter(*layout_box_.GetScrollableArea())

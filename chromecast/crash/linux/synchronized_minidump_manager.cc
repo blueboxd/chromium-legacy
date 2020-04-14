@@ -391,6 +391,15 @@ bool SynchronizedMinidumpManager::IncrementNumDumpsInCurrentPeriod() {
   return SetRatelimitPeriodDumps(metadata_.get(), last_dumps + 1);
 }
 
+bool SynchronizedMinidumpManager::DecrementNumDumpsInCurrentPeriod() {
+  DCHECK(metadata_);
+  int last_dumps = GetRatelimitPeriodDumps(metadata_.get());
+  if (last_dumps > 0) {
+    return SetRatelimitPeriodDumps(metadata_.get(), last_dumps - 1);
+  }
+  return true;
+}
+
 bool SynchronizedMinidumpManager::CanUploadDump() {
   base::Time cur_time = base::Time::Now();
   base::Time period_start = GetRatelimitPeriodStart(metadata_.get());

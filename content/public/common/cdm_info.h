@@ -16,7 +16,6 @@
 #include "media/base/content_decryption_module.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/video_codecs.h"
-#include "media/cdm/cdm_proxy.h"
 
 namespace content {
 
@@ -25,8 +24,7 @@ struct CONTENT_EXPORT CdmCapability {
   CdmCapability();
   CdmCapability(std::vector<media::VideoCodec> video_codecs,
                 base::flat_set<media::EncryptionScheme> encryption_schemes,
-                base::flat_set<media::CdmSessionType> session_types,
-                base::flat_set<media::CdmProxy::Protocol> cdm_proxy_protocols);
+                base::flat_set<media::CdmSessionType> session_types);
   CdmCapability(const CdmCapability& other);
   ~CdmCapability();
 
@@ -48,10 +46,6 @@ struct CONTENT_EXPORT CdmCapability {
 
   // List of session types supported by the CDM.
   base::flat_set<media::CdmSessionType> session_types;
-
-  // List of CdmProxy protocols supported by the CDM. These protocols should
-  // also be supported by the system to support hardware secure decryption.
-  base::flat_set<media::CdmProxy::Protocol> cdm_proxy_protocols;
 };
 
 // Represents a Content Decryption Module implementation and its capabilities.

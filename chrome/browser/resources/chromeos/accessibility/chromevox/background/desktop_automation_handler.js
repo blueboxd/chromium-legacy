@@ -652,9 +652,12 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
   /**
    * Initializes global state for DesktopAutomationHandler.
-   * @private
    */
-  static init_() {
+  static init() {
+    if (DesktopAutomationHandler.instance) {
+      throw new Error('DesktopAutomationHandler.instance already exists.');
+    }
+
     chrome.automation.getDesktop(function(desktop) {
       DesktopAutomationHandler.instance = new DesktopAutomationHandler(desktop);
     });
@@ -683,13 +686,10 @@ DesktopAutomationHandler.announceActions = false;
 /** @const {number} */
 DesktopAutomationHandler.MIN_HOVER_EXIT_SOUND_DELAY_MS = 500;
 
-
 /**
  * Global instance.
  * @type {DesktopAutomationHandler}
  */
 DesktopAutomationHandler.instance;
 
-
-DesktopAutomationHandler.init_();
 });  // goog.scope

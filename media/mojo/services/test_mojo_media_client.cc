@@ -22,12 +22,6 @@
 #include "media/renderers/default_decoder_factory.h"
 #include "media/renderers/default_renderer_factory.h"
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-#include "media/cdm/cdm_paths.h"  // nogncheck
-#include "media/cdm/cdm_proxy.h"  // nogncheck
-#include "media/cdm/library_cdm/clear_key_cdm/clear_key_cdm_proxy.h"  // nogncheck
-#endif
-
 namespace media {
 
 TestMojoMediaClient::TestMojoMediaClient() = default;
@@ -112,16 +106,5 @@ std::unique_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(
   DVLOG(1) << __func__;
   return std::make_unique<DefaultCdmFactory>();
 }
-
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-std::unique_ptr<CdmProxy> TestMojoMediaClient::CreateCdmProxy(
-    const base::Token& cdm_guid) {
-  DVLOG(1) << __func__ << ": cdm_guid = " << cdm_guid.ToString();
-  if (cdm_guid == kClearKeyCdmGuid)
-    return std::make_unique<ClearKeyCdmProxy>();
-
-  return nullptr;
-}
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 }  // namespace media

@@ -131,22 +131,6 @@ CommandService* CommandService::Get(content::BrowserContext* context) {
   return BrowserContextKeyedAPIFactory<CommandService>::Get(context);
 }
 
-bool CommandService::GetBrowserActionCommand(const std::string& extension_id,
-                                             QueryType type,
-                                             Command* command,
-                                             bool* active) const {
-  return GetExtensionActionCommand(extension_id, type, command, active,
-                                   ActionInfo::TYPE_BROWSER);
-}
-
-bool CommandService::GetPageActionCommand(const std::string& extension_id,
-                                          QueryType type,
-                                          Command* command,
-                                          bool* active) const {
-  return GetExtensionActionCommand(extension_id, type, command, active,
-                                   ActionInfo::TYPE_PAGE);
-}
-
 bool CommandService::GetNamedCommands(const std::string& extension_id,
                                       QueryType type,
                                       CommandScope scope,
@@ -397,13 +381,15 @@ void CommandService::RemoveRelinquishedKeybindings(const Extension* extension) {
     }
   }
 
+  // TODO(https://crbug.com/1067130): Extensions shouldn't be able to specify
+  // commands for actions they don't have, so we should just be able to query
+  // for a single action type.
   Command existing_browser_action_command;
   const Command* new_browser_action_command =
       CommandsInfo::GetBrowserActionCommand(extension);
-  if (GetBrowserActionCommand(extension->id(),
-                              CommandService::ACTIVE,
-                              &existing_browser_action_command,
-                              NULL) &&
+  if (GetExtensionActionCommand(extension->id(), ActionInfo::TYPE_BROWSER,
+                                CommandService::ACTIVE,
+                                &existing_browser_action_command, nullptr) &&
       // The browser action command may be defaulted to an unassigned
       // accelerator if a browser action is specified by the extension but a
       // keybinding is not declared. See
@@ -412,21 +398,18 @@ void CommandService::RemoveRelinquishedKeybindings(const Extension* extension) {
        new_browser_action_command->accelerator().key_code() ==
            ui::VKEY_UNKNOWN) &&
       !IsCommandShortcutUserModified(
-          extension,
-          existing_browser_action_command.command_name())) {
+          extension, existing_browser_action_command.command_name())) {
     RemoveKeybindingPrefs(extension->id(),
                           existing_browser_action_command.command_name());
   }
 
   Command existing_page_action_command;
-  if (GetPageActionCommand(extension->id(),
-                           CommandService::ACTIVE,
-                           &existing_page_action_command,
-                           NULL) &&
+  if (GetExtensionActionCommand(extension->id(), ActionInfo::TYPE_PAGE,
+                                CommandService::ACTIVE,
+                                &existing_page_action_command, nullptr) &&
       !CommandsInfo::GetPageActionCommand(extension) &&
       !IsCommandShortcutUserModified(
-          extension,
-          existing_page_action_command.command_name())) {
+          extension, existing_page_action_command.command_name())) {
     RemoveKeybindingPrefs(extension->id(),
                           existing_page_action_command.command_name());
   }
@@ -572,6 +555,7 @@ void CommandService::RemoveDefunctExtensionSuggestedCommandPrefs(
         current_prefs->DeepCopy());
     const CommandMap* named_commands =
         CommandsInfo::GetNamedCommands(extension);
+
     const Command* browser_action_command =
         CommandsInfo::GetBrowserActionCommand(extension);
     for (base::DictionaryValue::Iterator it(*current_prefs);
@@ -685,12 +669,11 @@ void CommandService::RemoveKeybindingPrefs(const std::string& extension_id,
   }
 }
 
-bool CommandService::GetExtensionActionCommand(
-    const std::string& extension_id,
-    QueryType query_type,
-    Command* command,
-    bool* active,
-    ActionInfo::Type action_type) const {
+bool CommandService::GetExtensionActionCommand(const std::string& extension_id,
+                                               ActionInfo::Type action_type,
+                                               QueryType query_type,
+                                               Command* command,
+                                               bool* active) const {
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(profile_)->enabled_extensions();
   const Extension* extension = extensions.GetByID(extension_id);
@@ -709,7 +692,6 @@ bool CommandService::GetExtensionActionCommand(
       break;
     case ActionInfo::TYPE_ACTION:
       // TODO(devlin): Add support for the "action" key.
-      NOTREACHED();
       return false;
   }
   if (!requested_command)

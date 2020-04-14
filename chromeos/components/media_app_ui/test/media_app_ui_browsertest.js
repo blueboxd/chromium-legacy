@@ -72,9 +72,14 @@ var MediaAppUIBrowserTest = class extends testing.Test {
 const TEST_IMAGE_WIDTH = 123;
 const TEST_IMAGE_HEIGHT = 456;
 
-/** @return {Promise<File>} A 123x456 transparent encoded image/png. */
-async function createTestImageFile() {
-  const canvas = new OffscreenCanvas(TEST_IMAGE_WIDTH, TEST_IMAGE_HEIGHT);
+/**
+ * @param {number=} width
+ * @param {number=} height
+ * @return {Promise<File>} A {width}x{height} transparent encoded image/png.
+ */
+async function createTestImageFile(
+    width = TEST_IMAGE_WIDTH, height = TEST_IMAGE_HEIGHT) {
+  const canvas = new OffscreenCanvas(width, height);
   canvas.getContext('2d');  // convertToBlob fails without a rendering context.
   const blob = await canvas.convertToBlob();
   return new File([blob], 'test_file.png', {type: 'image/png'});
@@ -108,7 +113,7 @@ TEST_F('MediaAppUIBrowserTest', 'LoadFile', async () => {
 });
 
 // Tests that chrome://media-app can successfully send a request to open the
-// feedback dialog and recieve a response.
+// feedback dialog and receive a response.
 TEST_F('MediaAppUIBrowserTest', 'CanOpenFeedbackDialog', async () => {
   const result = await mediaAppPageHandler.openFeedbackDialog();
 
@@ -294,6 +299,35 @@ TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
   // No change to the existing file.
   assertEquals(directory.files.length, 1);
   assertEquals(directory.files[0].name, 'new_file_name.png');
+  testDone();
+});
+
+// Tests the IPC behind the saveCopy delegate function.
+TEST_F('MediaAppUIBrowserTest', 'SaveCopyIPC', async () => {
+  // Mock out choose file system entries since it can only be interacted with
+  // via trusted user gestures.
+  const newFileHandle = new FakeFileSystemFileHandle();
+  const chooseEntries = new Promise(resolve => {
+    window.chooseFileSystemEntries = options => {
+      resolve(options);
+      return newFileHandle;
+    };
+  });
+  const testImage = await createTestImageFile(10, 10);
+  loadFile(testImage, new FakeFileSystemFileHandle());
+
+  const result = await guestMessagePipe.sendMessage('test', {saveCopy: true});
+  assertEquals(result.testQueryResult, 'boo yah!');
+  const options = await chooseEntries;
+
+  assertEquals(options.type, 'save-file');
+  assertEquals(options.accepts.length, 1);
+  assertEquals(options.accepts[0].extension, 'png');
+  assertEquals(options.accepts[0].mimeTypes.length, 1);
+  assertEquals(options.accepts[0].mimeTypes[0], 'image/png');
+
+  const writeResult = await newFileHandle.lastWritable.closePromise;
+  assertEquals(await writeResult.text(), await testImage.text());
   testDone();
 });
 

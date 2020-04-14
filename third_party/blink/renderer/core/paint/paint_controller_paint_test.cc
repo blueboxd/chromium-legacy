@@ -238,10 +238,7 @@ TEST_P(PaintControllerPaintTestForCAP, BlockScrollingNonLayeredContents) {
   EXPECT_THAT(
       RootPaintController().PaintChunks(),
       ElementsAre(
-          IsPaintChunk(0, 1,
-                       PaintChunk::Id(ViewScrollingBackgroundClient(),
-                                      DisplayItem::kDocumentBackground),
-                       GetLayoutView().FirstFragment().ContentsProperties()),
+          IsPaintChunk(0, 0), IsPaintChunk(0, 1),  // LayoutView chunks.
           IsPaintChunk(
               1, 1,
               PaintChunk::Id(*container.Layer(), DisplayItem::kLayerChunk),
@@ -270,10 +267,7 @@ TEST_P(PaintControllerPaintTestForCAP, BlockScrollingNonLayeredContents) {
   EXPECT_THAT(
       RootPaintController().PaintChunks(),
       ElementsAre(
-          IsPaintChunk(0, 1,
-                       PaintChunk::Id(ViewScrollingBackgroundClient(),
-                                      DisplayItem::kDocumentBackground),
-                       GetLayoutView().FirstFragment().ContentsProperties()),
+          IsPaintChunk(0, 0), IsPaintChunk(0, 1),  // LayoutView chunks.
           IsPaintChunk(
               1, 1,
               PaintChunk::Id(*container.Layer(), DisplayItem::kLayerChunk),
@@ -400,10 +394,7 @@ TEST_P(PaintControllerPaintTestForCAP, NonStackingScrollHitTestOrder) {
   EXPECT_THAT(
       RootPaintController().PaintChunks(),
       ElementsAre(
-          IsPaintChunk(0, 1,
-                       PaintChunk::Id(ViewScrollingBackgroundClient(),
-                                      DisplayItem::kDocumentBackground),
-                       GetLayoutView().FirstFragment().ContentsProperties()),
+          IsPaintChunk(0, 0), IsPaintChunk(0, 1),  // LayoutView chunks.
           IsPaintChunk(
               1, 2,
               PaintChunk::Id(*neg_z_child.Layer(), DisplayItem::kLayerChunk),
@@ -480,10 +471,7 @@ TEST_P(PaintControllerPaintTestForCAP, StackingScrollHitTestOrder) {
   EXPECT_THAT(
       RootPaintController().PaintChunks(),
       ElementsAre(
-          IsPaintChunk(0, 1,
-                       PaintChunk::Id(ViewScrollingBackgroundClient(),
-                                      DisplayItem::kDocumentBackground),
-                       GetLayoutView().FirstFragment().ContentsProperties()),
+          IsPaintChunk(0, 0), IsPaintChunk(0, 1),  // LayoutView chunks.
           IsPaintChunk(
               1, 2,
               PaintChunk::Id(*container.Layer(), DisplayItem::kLayerChunk),
@@ -553,10 +541,7 @@ TEST_P(PaintControllerPaintTestForCAP,
   EXPECT_THAT(
       RootPaintController().PaintChunks(),
       ElementsAre(
-          IsPaintChunk(0, 1,
-                       PaintChunk::Id(ViewScrollingBackgroundClient(),
-                                      DisplayItem::kDocumentBackground),
-                       GetLayoutView().FirstFragment().ContentsProperties()),
+          IsPaintChunk(0, 0), IsPaintChunk(0, 1),  // LayoutView chunks.
           IsPaintChunk(
               1, 2,
               PaintChunk::Id(*neg_z_child.Layer(), DisplayItem::kLayerChunk),

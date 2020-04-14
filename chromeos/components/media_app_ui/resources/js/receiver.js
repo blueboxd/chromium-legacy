@@ -133,7 +133,7 @@ class ReceivedFileList {
 }
 
 parentMessagePipe.registerHandler(Message.LOAD_FILES, async (message) => {
-  const filesMessage = /** @type{!LoadFilesMessage} */ (message);
+  const filesMessage = /** @type {!LoadFilesMessage} */ (message);
   await loadFiles(new ReceivedFileList(filesMessage));
 });
 
@@ -143,11 +143,18 @@ parentMessagePipe.registerHandler(Message.LOAD_FILES, async (message) => {
  * @type {!mediaApp.ClientApiDelegate}
  */
 const DELEGATE = {
-  /** @override */
   async openFeedbackDialog() {
     const response =
         await parentMessagePipe.sendMessage(Message.OPEN_FEEDBACK_DIALOG);
     return /** @type {?string} */ (response['errorMessage']);
+  },
+  async saveCopy(/** !mediaApp.AbstractFile */ abstractFile) {
+    /** @type {!SaveCopyMessage} */
+    const msg = {blob: abstractFile.blob, suggestedName: abstractFile.name};
+    const response =
+        /** @type {!SaveCopyResponse} */ (
+            await parentMessagePipe.sendMessage(Message.SAVE_COPY, msg));
+    return response.errorMessage;
   }
 };
 

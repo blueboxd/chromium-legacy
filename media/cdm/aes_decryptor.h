@@ -88,7 +88,6 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
  private:
   // Testing classes that needs to manipulate internal states for testing.
   friend class ClearKeyPersistentSessionCdm;
-  friend class ClearKeyCdmProxy;
 
   // Internally this class supports persistent license type sessions so that
   // it can be used by ClearKeyPersistentSessionCdm. The following methods

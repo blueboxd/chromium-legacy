@@ -38,14 +38,12 @@ std::unique_ptr<MediaService> CreateGpuMediaService(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-    AndroidOverlayMojoFactoryCB android_overlay_factory_cb,
-    CdmProxyFactoryCB cdm_proxy_factory_cb) {
+    AndroidOverlayMojoFactoryCB android_overlay_factory_cb) {
   return std::make_unique<MediaService>(
       std::make_unique<GpuMojoMediaClient>(
           gpu_preferences, gpu_workarounds, gpu_feature_info, task_runner,
           media_gpu_channel_manager, gpu_memory_buffer_factory,
-          std::move(android_overlay_factory_cb),
-          std::move(cdm_proxy_factory_cb)),
+          std::move(android_overlay_factory_cb)),
       std::move(receiver));
 }
 

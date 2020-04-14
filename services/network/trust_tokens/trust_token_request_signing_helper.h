@@ -70,6 +70,16 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
       'T', 'r', 'u', 's', 't', ' ', 'T', 'o', 'k', 'e', 'n', ' ', 'v', '0'};
 
   struct Params {
+    // Refer to fields' comments for their semantics.
+    Params(SuitableTrustTokenOrigin issuer,
+           SuitableTrustTokenOrigin toplevel,
+           std::vector<std::string> additional_headers_to_sign,
+           bool should_add_timestamp,
+           mojom::TrustTokenSignRequestData sign_request_data);
+
+    // Minimal convenience constructor. Other fields have reasonable defaults,
+    // but it's necessary to have |issuer| and |toplevel| at construction time
+    // since SuitableTrustTokenOrigin has no default constructor.
     Params(SuitableTrustTokenOrigin issuer, SuitableTrustTokenOrigin toplevel);
     ~Params();
 

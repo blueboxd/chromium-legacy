@@ -413,29 +413,12 @@ std::unique_ptr<CallbackRegistration> CdmAdapter::RegisterEventCB(
 
 Decryptor* CdmAdapter::GetDecryptor() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  // When using HW secure codecs, we cannot and should not use the CDM instance
-  // to do decrypt and/or decode. Instead, we should use the CdmProxy.
-  // TODO(xhwang): Fix External Clear Key key system to be able to set
-  // |use_hw_secure_codecs| so that we don't have to check both.
-  // TODO(xhwang): Update this logic to support transcryption.
-  if (cdm_config_.use_hw_secure_codecs || cdm_proxy_created_) {
-    DVLOG(2) << __func__ << ": GetDecryptor() returns null";
-    return nullptr;
-  }
-
   return this;
 }
 
 int CdmAdapter::GetCdmId() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  int cdm_id = helper_->GetCdmProxyCdmId();
-  DVLOG(2) << __func__ << ": cdm_id = " << cdm_id;
-  return cdm_id;
-#else
   return CdmContext::kInvalidCdmId;
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 }
 
 void CdmAdapter::RegisterNewKeyCB(StreamType stream_type,
@@ -1070,22 +1053,7 @@ void CdmAdapter::RequestStorageId(uint32_t version) {
 cdm::CdmProxy* CdmAdapter::RequestCdmProxy(cdm::CdmProxyClient* client) {
   DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  // CdmProxy should only be created once, at CDM initialization time.
-  if (cdm_proxy_created_ ||
-      init_promise_id_ == CdmPromiseAdapter::kInvalidPromiseId) {
-    DVLOG(1) << __func__
-             << ": CdmProxy can only be created once, and must be created "
-                "during CDM initialization.";
-    return nullptr;
-  }
-
-  cdm_proxy_created_ = true;
-  return helper_->CreateCdmProxy(client);
-#else
   return nullptr;
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 }
 
 void CdmAdapter::OnStorageIdObtained(uint32_t version,

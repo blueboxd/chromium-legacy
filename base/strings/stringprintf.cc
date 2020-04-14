@@ -62,7 +62,7 @@ static void StringAppendVT(std::basic_string<CharT>* dst,
   va_list ap_copy;
   va_copy(ap_copy, ap);
 
-  base::internal::ScopedClearLastError last_error;
+  base::ScopedClearLastError last_error;
   int result = vsnprintfT(stack_buf, base::size(stack_buf), format, ap_copy);
   va_end(ap_copy);
 

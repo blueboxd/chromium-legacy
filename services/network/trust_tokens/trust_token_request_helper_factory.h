@@ -13,6 +13,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/pending_trust_token_store.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 
 namespace network {
@@ -29,8 +30,8 @@ class TrustTokenRequestHelperFactory {
   // helpers.
   explicit TrustTokenRequestHelperFactory(PendingTrustTokenStore* store);
 
-  TrustTokenRequestHelperFactory() = default;
-  virtual ~TrustTokenRequestHelperFactory() = default;
+  TrustTokenRequestHelperFactory();
+  virtual ~TrustTokenRequestHelperFactory();
 
   // Attempts to create a TrustTokenRequestHelper able to help execute the Trust
   // Tokens protocol operation given by |params| against the request |request|.
@@ -52,7 +53,18 @@ class TrustTokenRequestHelperFactory {
       base::OnceCallback<void(TrustTokenStatusOrRequestHelper)> done);
 
  private:
+  // Continuation of |CreateTrustTokenHelperForRequest|. Uses |store|, alongside
+  // the information provided to |CreateTrustTokenHelperForRequest|, to finish
+  // constructing a store or return an error.
+  void ConstructHelperUsingStore(
+      SuitableTrustTokenOrigin top_frame_origin,
+      mojom::TrustTokenParamsPtr params,
+      base::OnceCallback<void(TrustTokenStatusOrRequestHelper)> done,
+      TrustTokenStore* store);
+
   PendingTrustTokenStore* store_;
+
+  base::WeakPtrFactory<TrustTokenRequestHelperFactory> weak_factory_{this};
 };
 
 class TrustTokenStatusOrRequestHelper {

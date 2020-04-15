@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">باز کردن تنظیمات</translation>
 <translation id="4250229828105606438">عکس صفحه‌نمایش</translation>
 <translation id="4256782883801055595">مجوزهای متن‌باز</translation>
-<translation id="4259722352634471385">پیمایش مسدود شده است: <ph name="URL" /></translation>
 <translation id="4269820728363426813">کپی نشانی پیوند</translation>
 <translation id="4275663329226226506">رسانه</translation>
 <translation id="4278390842282768270">مجاز است</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">برای اینکه به نشانک‌ها در همه دستگاه‌هایتان دسترسی داشته باشید، همگام‌سازی را روشن کنید</translation>
 <translation id="8110087112193408731">‏فعالیت Chrome شما در «آسایش دیجیتالی» نشان داده شود؟</translation>
+<translation id="8115259494083109761">‏برای اسکن کردن کد QR، به Chrome اجازه دهید از دوربین استفاده کند</translation>
 <translation id="8116925261070264013">صامت‌شده</translation>
 <translation id="8127542551745560481">ویرایش صفحه اصلی</translation>
 <translation id="813082847718468539">مشاهدهٔ اطلاعات سایت</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">باز کردن در پنجره دیگر</translation>
 <translation id="8951232171465285730">‏Chrome ‏<ph name="MEGABYTES" /> مگابایت از داده‌های شما را ذخیره کرده است</translation>
 <translation id="8958424370300090006">کوکی‌ها را برای سایت خاصی مسدود کنید.</translation>
-<translation id="8959122750345127698">پیمایش غیرقابل دسترسی است: <ph name="URL" /></translation>
 <translation id="8965591936373831584">در انتظار</translation>
 <translation id="8970887620466824814">مشکلی پیش آمد.</translation>
 <translation id="8972098258593396643">در پوشه پیش‌فرض بارگیری شود؟</translation>

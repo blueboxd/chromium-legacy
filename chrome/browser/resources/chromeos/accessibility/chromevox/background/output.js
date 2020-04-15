@@ -748,7 +748,7 @@ Output = class {
           const nameOrAnnotation =
               UserAnnotationHandler.getAnnotationForNode(node) || node.name;
           if (localStorage['languageSwitching'] === 'true') {
-            this.assignLocalesAndAppend(nameOrAnnotation, node, buff, options);
+            this.assignLocaleAndAppend_(nameOrAnnotation, node, buff, options);
           } else {
             this.append_(buff, nameOrAnnotation || '', options);
           }
@@ -1669,7 +1669,7 @@ Output = class {
     }
 
     if (localStorage['languageSwitching'] === 'true') {
-      this.assignLocalesAndAppend(text, node, buff, options);
+      this.assignLocaleAndAppend_(text, node, buff, options);
     } else {
       this.append_(buff, text, options);
     }
@@ -2098,29 +2098,19 @@ Output = class {
    * @param {!AutomationNode} contextNode
    * @param {!Array<Spannable>} buff
    * @param {{isUnique: (boolean|undefined), annotation: !Array<*>}} options
+   * @private
    */
-  assignLocalesAndAppend(text, contextNode, buff, options) {
-    /**
-     * A callback that appends |outputString| to |buff| with |newLocale|.
-     * @param {!Array<Spannable>} buff
-     * @param {{isUnique: (boolean|undefined),
-     *      annotation: !Array<*>}} options
-     * @param {string} outputString
-     * @param {string} newLocale
-     */
-    const appendStringWithLocale = function(
-        buff, options, outputString, newLocale) {
-      const speechProps = new Output.SpeechProperties();
-      speechProps.properties['lang'] = newLocale;
-      this.append_(buff, outputString, options);
-      // Attach associated SpeechProperties if the buffer is
-      // non-empty.
-      if (buff.length > 0) {
-        buff[buff.length - 1].setSpan(speechProps, 0, 0);
-      }
-    };
-    LocaleOutputHelper.instance.assignLocalesAndAppend(
-        text, contextNode, appendStringWithLocale.bind(this, buff, options));
+  assignLocaleAndAppend_(text, contextNode, buff, options) {
+    const data =
+        LocaleOutputHelper.instance.computeTextAndLocale(text, contextNode);
+    const speechProps = new Output.SpeechProperties();
+    speechProps.properties['lang'] = data.locale;
+    this.append_(buff, data.text, options);
+    // Attach associated SpeechProperties if the buffer is
+    // non-empty.
+    if (buff.length > 0) {
+      buff[buff.length - 1].setSpan(speechProps, 0, 0);
+    }
   }
 };
 

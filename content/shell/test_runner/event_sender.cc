@@ -26,9 +26,9 @@
 #include "content/renderer/compositor/compositor_dependencies.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
+#include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/mock_spell_check.h"
 #include "content/shell/test_runner/test_interfaces.h"
-#include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "gin/handle.h"
@@ -451,8 +451,7 @@ void PopulateCustomItems(const WebVector<WebMenuItemInfo>& customItems,
 // - Some test even checks actual string content. So providing it would be also
 // helpful.
 std::vector<std::string> MakeMenuItemStringsFor(
-    WebContextMenuData* context_menu,
-    WebTestDelegate* delegate) {
+    WebContextMenuData* context_menu) {
   // These constants are based on Safari's context menu because tests are made
   // for it.
   static const char* kNonEditableMenuStrings[] = {
@@ -1314,7 +1313,6 @@ EventSender::EventSender(WebWidgetTestProxy* web_widget_test_proxy)
 EventSender::~EventSender() {}
 
 void EventSender::Reset() {
-  DCHECK(current_drag_data_.IsNull());
   current_drag_data_.Reset();
   current_drag_effect_ = blink::kWebDragOperationNone;
   current_drag_effects_allowed_ = blink::kWebDragOperationNone;
@@ -1808,7 +1806,7 @@ std::vector<std::string> EventSender::ContextClick() {
 #endif
 
   std::vector<std::string> menu_items =
-      MakeMenuItemStringsFor(last_context_menu_data_.get(), delegate());
+      MakeMenuItemStringsFor(last_context_menu_data_.get());
   last_context_menu_data_.reset();
   return menu_items;
 }
@@ -1942,8 +1940,9 @@ void EventSender::DumpFilenameBeingDragged() {
 #else
       filename = filename.ReplaceExtension(filename_extension.Utf8());
 #endif
-      delegate()->PrintMessage(std::string("Filename being dragged: ") +
-                               filename.AsUTF8Unsafe() + "\n");
+      blink_test_runner()->PrintMessage(
+          std::string("Filename being dragged: ") + filename.AsUTF8Unsafe() +
+          "\n");
       return;
     }
   }
@@ -2011,7 +2010,7 @@ void EventSender::BeginDragWithItems(
   }
   if (!absolute_filenames.empty()) {
     current_drag_data_.SetFilesystemId(
-        delegate()->RegisterIsolatedFileSystem(absolute_filenames));
+        blink_test_runner()->RegisterIsolatedFileSystem(absolute_filenames));
   }
   current_drag_effects_allowed_ = blink::kWebDragOperationCopy;
 
@@ -2038,7 +2037,8 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
   for (size_t i = 0; i < files.size(); ++i) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeFilename;
-    item.filename_data = delegate()->GetAbsoluteWebStringFromUTF8Path(files[i]);
+    item.filename_data =
+        blink_test_runner()->GetAbsoluteWebStringFromUTF8Path(files[i]);
     items.emplace_back(item);
   }
 
@@ -2240,20 +2240,20 @@ void EventSender::MouseLeave(
 }
 
 void EventSender::ScheduleAsynchronousClick(int button_number, int modifiers) {
-  delegate()->PostTask(base::BindOnce(&EventSender::MouseDown,
-                                      weak_factory_.GetWeakPtr(), button_number,
-                                      modifiers));
-  delegate()->PostTask(base::BindOnce(&EventSender::MouseUp,
-                                      weak_factory_.GetWeakPtr(), button_number,
-                                      modifiers));
+  blink_test_runner()->PostTask(base::BindOnce(&EventSender::MouseDown,
+                                               weak_factory_.GetWeakPtr(),
+                                               button_number, modifiers));
+  blink_test_runner()->PostTask(base::BindOnce(&EventSender::MouseUp,
+                                               weak_factory_.GetWeakPtr(),
+                                               button_number, modifiers));
 }
 
 void EventSender::ScheduleAsynchronousKeyDown(const std::string& code_str,
                                               int modifiers,
                                               KeyLocationCode location) {
-  delegate()->PostTask(base::BindOnce(&EventSender::KeyDown,
-                                      weak_factory_.GetWeakPtr(), code_str,
-                                      modifiers, location));
+  blink_test_runner()->PostTask(base::BindOnce(&EventSender::KeyDown,
+                                               weak_factory_.GetWeakPtr(),
+                                               code_str, modifiers, location));
 }
 
 void EventSender::ConsumeUserActivation() {
@@ -2874,8 +2874,8 @@ TestInterfaces* EventSender::interfaces() {
   return web_widget_test_proxy_->GetWebViewTestProxy()->test_interfaces();
 }
 
-WebTestDelegate* EventSender::delegate() {
-  return web_widget_test_proxy_->GetWebViewTestProxy()->delegate();
+BlinkTestRunner* EventSender::blink_test_runner() {
+  return web_widget_test_proxy_->GetWebViewTestProxy()->blink_test_runner();
 }
 
 const blink::WebView* EventSender::view() const {
@@ -2893,9 +2893,14 @@ blink::WebWidget* EventSender::widget() {
 blink::WebFrameWidget* EventSender::MainFrameWidget() {
   if (!view() || !view()->MainFrame())
     return nullptr;
+
   DCHECK(view()->MainFrame()->IsWebLocalFrame())
       << "Event Sender doesn't support being run in a remote frame for this "
          "operation.";
+
+  if (!view()->MainFrame()->ToWebLocalFrame())
+    return nullptr;
+
   return view()->MainFrame()->ToWebLocalFrame()->FrameWidget();
 }
 

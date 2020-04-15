@@ -3,6 +3,7 @@
 <translationbundle lang="ko">
 <translation id="1005230401424685968">연도</translation>
 <translation id="1016495303386450659">북마크가 업데이트되었습니다.</translation>
+<translation id="1044891598689252897">사이트가 정상적으로 작동합니다.</translation>
 <translation id="1047726139967079566">현재 페이지를 북마크에 추가...</translation>
 <translation id="1049743911850919806">시크릿</translation>
 <translation id="1063454504051558093">다른 비밀번호를 사용하세요...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860">항목 <ph name="COUNT" />개</translation>
 <translation id="1491277525950327607">설정을 전환하려면 두 번 탭하세요.</translation>
 <translation id="1509486075633541495">웹사이트에 로그인</translation>
+<translation id="1509960214886564027">다수의 사이트에서 기능이 작동하지 않을 수 있음</translation>
 <translation id="152234381334907219">저장하지 않음</translation>
 <translation id="1540800554400757039">주소 1</translation>
 <translation id="1545749641540134597">QR 코드 스캔</translation>
@@ -528,6 +530,7 @@
 <translation id="7961015016161918242">사용하지 않음</translation>
 <translation id="7971521879845308059">팝업 차단</translation>
 <translation id="7982789257301363584">네트워크</translation>
+<translation id="7993619969781047893">일부 사이트에서는 기능이 작동하지 않을 수 있음</translation>
 <translation id="800361585186029508">입력된 URL을 Chrome에서 엽니다.</translation>
 <translation id="8007420562015504427">시크릿 검색</translation>
 <translation id="8019783059653722575">액세스를 허용하면 사진을 저장하고 업로드할 수 있습니다.</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="lo">
 <translation id="1005230401424685968">ປປປປ</translation>
 <translation id="1016495303386450659">ອັບ​ເດດ​ລາຍ​ການ​ແລ້ວ</translation>
+<translation id="1044891598689252897">ເວັບໄຊຈະເຮັດວຽກໄດ້ປົກກະຕິ</translation>
 <translation id="1047726139967079566">ໃສ່ບຸກມາກສ໌ຫນ້າ​ນີ້...</translation>
 <translation id="1049743911850919806">ບໍ່​ເຜີຍ​ຕົວຕົນ</translation>
 <translation id="1063454504051558093">ໃຊ້ລະຫັດຜ່ານອື່ນ...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> ລາຍ​ການ</translation>
 <translation id="1491277525950327607">ແຕະສອງຄັ້ງເພື່ອສັບປ່ຽນການຕັ້ງຄ່າ</translation>
 <translation id="1509486075633541495">ເຂົ້າສູ່ລະບົບເວັບໄຊ</translation>
+<translation id="1509960214886564027">ຄຸນສົມບັດໃນຫຼາຍໆເວັບໄຊອາດຈະໃຊ້ບໍ່ໄດ້</translation>
 <translation id="152234381334907219">ຢ່າບັນທຶກ</translation>
 <translation id="1540800554400757039">ທີ່ຢູ່ 1</translation>
 <translation id="1545749641540134597">ສະແກນລະຫັດ QR</translation>
@@ -528,6 +530,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="7961015016161918242">ບໍ່​ເລີຍ</translation>
 <translation id="7971521879845308059">ບລັອກປັອບອັບ</translation>
 <translation id="7982789257301363584">ເຄືອ​ຂ່າຍ</translation>
+<translation id="7993619969781047893">ຄຸນສົມບັດໃນບາງເວັບໄຊອາດຈະໃຊ້ບໍ່ໄດ້</translation>
 <translation id="800361585186029508">ເປີດ URL ທີ່ປ້ອນໃນ Google Chrome.</translation>
 <translation id="8007420562015504427">ການຊອກຫາແບບບໍ່ເຜີຍຕົວຕົນ</translation>
 <translation id="8019783059653722575">ນີ້ອະນຸຍາດໃຫ້ທ່ານບັນທຶກ ແລະ ອັບໂຫຼດຮູບຖ່າຍ.</translation>

@@ -17,6 +17,7 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -496,9 +497,11 @@ void Dispatcher::WillEvaluateServiceWorkerOnWorkerThread(
   v8::Isolate* isolate = context->isolate();
 
   // Fetch the source code for service_worker_bindings.js.
-  base::StringPiece script_resource =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+  scoped_refptr<base::RefCountedMemory> bytes =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
           IDR_SERVICE_WORKER_BINDINGS_JS);
+  base::StringPiece script_resource(
+      reinterpret_cast<const char*>(bytes->front()), bytes->size());
   v8::Local<v8::String> script =
       v8::String::NewExternalOneByte(
           isolate, new StaticV8ExternalOneByteStringResource(script_resource))
@@ -618,9 +621,9 @@ void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
       (extension->is_extension() || extension->is_platform_app())) {
     int resource_id = extension->is_platform_app() ? IDR_PLATFORM_APP_CSS
                                                    : IDR_EXTENSION_FONTS_CSS;
-    std::string stylesheet = ui::ResourceBundle::GetSharedInstance()
-                                 .GetRawDataResource(resource_id)
-                                 .as_string();
+    std::string stylesheet =
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+            resource_id);
     base::ReplaceFirstSubstringAfterOffset(
         &stylesheet, 0, "$FONTFAMILY", system_font_family_);
     base::ReplaceFirstSubstringAfterOffset(
@@ -637,11 +640,10 @@ void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
   if (extension && extension->is_extension() &&
       OptionsPageInfo::ShouldUseChromeStyle(extension) &&
       effective_document_url == OptionsPageInfo::GetOptionsPage(extension)) {
-    base::StringPiece extension_css =
-        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+    std::string extension_css =
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
             IDR_EXTENSION_CSS);
-    frame->GetDocument().InsertStyleSheet(
-        WebString::FromUTF8(extension_css.data(), extension_css.length()));
+    frame->GetDocument().InsertStyleSheet(WebString::FromUTF8(extension_css));
   }
 }
 

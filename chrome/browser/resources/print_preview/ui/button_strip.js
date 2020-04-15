@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../strings.m.js';
 
@@ -23,11 +24,12 @@ Polymer({
 
     firstLoad: Boolean,
 
+    maxSheets: Number,
+
+    sheetCount: Number,
+
     /** @type {!State} */
-    state: {
-      type: Number,
-      observer: 'updatePrintButtonEnabled_',
-    },
+    state: Number,
 
     /** @private */
     printButtonEnabled_: {
@@ -44,7 +46,10 @@ Polymer({
     },
   },
 
-  observers: ['updatePrintButtonLabel_(destination.id)'],
+  observers: [
+    'updatePrintButtonLabel_(destination.id)',
+    'updatePrintButtonEnabled_(state, destination.id, maxSheets, sheetCount)'
+  ],
 
   /** @private {!State} */
   lastState_: State.NOT_READY,
@@ -82,7 +87,12 @@ Polymer({
         this.printButtonEnabled_ = false;
         break;
       case (State.READY):
+        // <if expr="chromeos">
+        this.printButtonEnabled_ = !this.printButtonDisabled_();
+        // </if>
+        // <if expr="not chromeos">
         this.printButtonEnabled_ = true;
+        // </if>
         if (this.firstLoad) {
           this.$$('cr-button.action-button').focus();
           this.fire('print-button-focused');
@@ -94,4 +104,45 @@ Polymer({
     }
     this.lastState_ = this.state;
   },
+
+  // <if expr="chromeos">
+  /**
+   * @return {boolean} Whether to disable "Print" button because of sheets limit
+   *     policy.
+   * @private
+   */
+  printButtonDisabled_() {
+    // The "Print" button is disabled if 3 conditions are met:
+    // * This is "real" printing, i.e. not saving to PDF/Drive.
+    // * Sheets policy is present.
+    // * Either number of sheets is not calculated or exceeds policy limit.
+    return !this.isPdfOrDrive_() && this.maxSheets > 0 &&
+        (this.sheetCount === 0 || this.sheetCount > this.maxSheets);
+  },
+
+  /**
+   * @return {boolean} Whether to show the "Too many sheets" error.
+   * @private
+   */
+  showSheetsError_() {
+    // The error is shown if the number of sheets is already calculated and the
+    // print button is disabled.
+    return this.sheetCount > 0 && this.printButtonDisabled_();
+  },
+
+  /**
+   * @return {string} Localized message to show as an error.
+   * @private
+   */
+  getErrorMessage_() {
+    if (this.maxSheets === 0) {
+      return '';
+    }
+
+    const singularOrPlural = this.maxSheets > 1 ? 'Plural' : 'Singular';
+    const label = loadTimeData.getString(`sheetsLimitLabel${singularOrPlural}`);
+    return loadTimeData.getStringF(
+        'sheetsLimitErrorMessage', this.maxSheets.toLocaleString(), label);
+  },
+  // </if>
 });

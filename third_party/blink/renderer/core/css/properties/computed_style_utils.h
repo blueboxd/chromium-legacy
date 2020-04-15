@@ -24,7 +24,7 @@ class ComputedStyle;
 class StyleColor;
 class StylePropertyShorthand;
 
-class ComputedStyleUtils {
+class CORE_EXPORT ComputedStyleUtils {
   STATIC_ONLY(ComputedStyleUtils);
 
  public:
@@ -146,8 +146,15 @@ class ComputedStyleUtils {
     kDontUsePixelSnappedBox,
     kUsePixelSnappedBox,
   };
-  static CSSValue* ValueForMatrixTransform(const TransformationMatrix&,
-                                           const ComputedStyle&);
+
+  // Serializes a TransformationMatrix into a matrix() or matrix3d() transform
+  // function value. If force_matrix3d is true, it will always give a matrix3d
+  // value (for serializing a matrix3d in a transform list), otherwise it
+  // will give a matrix() where possible (for serializing matrix in transform
+  // lists or resolved transformation matrices).
+  static CSSValue* ValueForTransformationMatrix(const TransformationMatrix&,
+                                                float zoom,
+                                                bool force_matrix3d);
   static CSSValue* ValueForTransformOperation(const TransformOperation&,
                                               float zoom);
   static FloatRect ReferenceBoxForTransform(

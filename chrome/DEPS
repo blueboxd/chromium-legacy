@@ -18,6 +18,7 @@ include_rules = [
   "-chrome",
   "+chrome/common",
   "+chrome/test",
+  "+components/content_settings/common",
   "+components/content_settings/core/common",
   "+components/embedder_support/switches.h",
   "+components/error_page/common",

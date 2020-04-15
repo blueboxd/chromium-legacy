@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">Copy link</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Title</translation>
+<translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
 <translation id="4570913071927164677">Details</translation>
 <translation id="4645575059429386691">Managed by your parent</translation>
 <translation id="4883854917563148705">Managed settings cannot be reset</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">Clear input</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8730621377337864115">Done</translation>
+<translation id="8959122750345127698">Navigation is unreachable: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Managed by your parents</translation>
 </translationbundle>

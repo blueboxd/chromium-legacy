@@ -92,7 +92,8 @@ class ChromeBrowsingDataRemoverDelegate
         DATA_TYPE_WEB_APP_DATA |
 #endif
         DATA_TYPE_SITE_USAGE_DATA | DATA_TYPE_DURABLE_PERMISSION |
-        DATA_TYPE_EXTERNAL_PROTOCOL_DATA | DATA_TYPE_ISOLATED_ORIGINS,
+        DATA_TYPE_EXTERNAL_PROTOCOL_DATA | DATA_TYPE_ISOLATED_ORIGINS |
+        content::BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
 
     // Datatypes protected by Important Sites.
     IMPORTANT_SITES_DATA_TYPES =

@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/test/test_assistant_client.h"
 #include "ash/assistant/test/test_assistant_service.h"
 #include "ash/assistant/util/assistant_util.h"

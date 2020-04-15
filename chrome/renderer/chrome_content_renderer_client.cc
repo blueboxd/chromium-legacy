@@ -44,9 +44,9 @@
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/benchmarking_extension.h"
 #include "chrome/renderer/browser_exposed_renderer_interfaces.h"
+#include "chrome/renderer/chrome_content_settings_agent_delegate.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
-#include "chrome/renderer/content_settings_agent_impl.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/media/flash_embed_rewrite.h"
 #include "chrome/renderer/media/webrtc_logging_agent_impl.h"
@@ -473,12 +473,16 @@ void ChromeContentRendererClient::RenderFrameCreated(
   bool should_whitelist_for_content_settings =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kInstantProcess);
-  ContentSettingsAgentImpl* content_settings = new ContentSettingsAgentImpl(
-      render_frame, should_whitelist_for_content_settings, registry);
+  auto content_settings_delegate =
+      std::make_unique<ChromeContentSettingsAgentDelegate>(render_frame);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  content_settings->SetExtensionDispatcher(
+  content_settings_delegate->SetExtensionDispatcher(
       ChromeExtensionsRendererClient::GetInstance()->extension_dispatcher());
 #endif
+  content_settings::ContentSettingsAgentImpl* content_settings =
+      new content_settings::ContentSettingsAgentImpl(
+          render_frame, should_whitelist_for_content_settings,
+          std::move(content_settings_delegate));
   if (chrome_observer_.get()) {
     content_settings->SetContentSettingRules(
         chrome_observer_->content_setting_rules());
@@ -809,8 +813,10 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       params.mime_type = WebString::FromUTF8(actual_mime_type);
     }
 
-    ContentSettingsAgentImpl* content_settings_agent =
-        ContentSettingsAgentImpl::Get(render_frame);
+    auto* content_settings_agent =
+        content_settings::ContentSettingsAgentImpl::Get(render_frame);
+    auto* content_settings_agent_delegate =
+        ChromeContentSettingsAgentDelegate::Get(render_frame);
 
     const ContentSettingsType content_type =
         ShouldUseJavaScriptSettingForPlugin(info)
@@ -819,7 +825,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
     if ((status == chrome::mojom::PluginStatus::kUnauthorized ||
          status == chrome::mojom::PluginStatus::kBlocked) &&
-        content_settings_agent->IsPluginTemporarilyAllowed(identifier)) {
+        content_settings_agent_delegate->IsPluginTemporarilyAllowed(
+            identifier)) {
       status = chrome::mojom::PluginStatus::kAllowed;
     }
 

@@ -3,6 +3,7 @@
 <translationbundle lang="eu">
 <translation id="1005230401424685968">UUUU</translation>
 <translation id="1016495303386450659">Eguneratu da elementua</translation>
+<translation id="1044891598689252897">Webguneek ohiko moduan funtzionatuko dute</translation>
 <translation id="1047726139967079566">Ezarri laster-marka orriari…</translation>
 <translation id="1049743911850919806">Ezkutuko modua</translation>
 <translation id="1063454504051558093">Erabili beste pasahitz bat…</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> elementu</translation>
 <translation id="1491277525950327607">Sakatu birritan ezarpena aldatzeko</translation>
 <translation id="1509486075633541495">Hasi saioa webgunean</translation>
+<translation id="1509960214886564027">Baliteke webgune askotako eginbideek ez funtzionatzea</translation>
 <translation id="152234381334907219">Ez dira inoiz gordeko</translation>
 <translation id="1540800554400757039">Helbidea (1)</translation>
 <translation id="1545749641540134597">Eskaneatu QR kodea</translation>
@@ -528,6 +530,7 @@ Kontua <ph name="HOSTED_DOMAIN" /> domeinuak kudeatzen duenez, saioa amaitzen du
 <translation id="7961015016161918242">Inoiz ez</translation>
 <translation id="7971521879845308059">Blokeatu leihoak</translation>
 <translation id="7982789257301363584">Sarea</translation>
+<translation id="7993619969781047893">Baliteke webgune batzuetako eginbideek ez funtzionatzea</translation>
 <translation id="800361585186029508">Idatzitako URLak Google Chrome-n irekitzen ditu.</translation>
 <translation id="8007420562015504427">Ezkutuko moduko bilaketa</translation>
 <translation id="8019783059653722575">Honi esker, argazkiak gorde eta kargatu ahal izango dituzu.</translation>

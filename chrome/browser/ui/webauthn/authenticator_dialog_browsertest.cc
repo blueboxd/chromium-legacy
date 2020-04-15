@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -109,6 +110,14 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "get_pin_fallback") {
       model->set_internal_uv_locked();
       model->CollectPIN(8, base::Bind([](std::string pin) {}));
+    } else if (name == "inline_bio_enrollment") {
+      model->StartInlineBioEnrollment(bio_samples_remaining_);
+      timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(2),
+                   base::BindLambdaForTesting([&, weak_model = model.get()] {
+                     weak_model->OnSampleCollected(--bio_samples_remaining_);
+                     if (bio_samples_remaining_ <= 0)
+                       timer_.Stop();
+                   }));
     } else if (name == "retry_uv") {
       model->OnRetryUserVerification(5);
     } else if (name == "retry_uv_two_tries_remaining") {
@@ -173,6 +182,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
   }
 
  private:
+  base::RepeatingTimer timer_;
+  int bio_samples_remaining_ = 5;
+
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorDialogTest);
 };
 
@@ -276,6 +288,11 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_get_pin_fallback) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_inline_bio_enrollment) {
   ShowAndVerifyUi();
 }
 

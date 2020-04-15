@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
@@ -108,6 +109,12 @@ class OmniboxPopupContentsView : public views::View,
   // the specified point.
   size_t GetIndexForPoint(const gfx::Point& point);
 
+  // Update which result views are visible when the hidden group IDs change.
+  void OnHiddenGroupIdsUpdate();
+
+  // Gets the pref service for this view. May return nullptr in tests.
+  PrefService* GetPrefService() const;
+
   // views::View:
   const char* GetClassName() const override;
 
@@ -123,12 +130,15 @@ class OmniboxPopupContentsView : public views::View,
   // The edit view that invokes us.
   OmniboxViewViews* omnibox_view_;
 
-  // The location bar view that owns |omnibox_view_|.
+  // The location bar view that owns |omnibox_view_|. May be nullptr in tests.
   LocationBarView* location_bar_view_;
 
   // The child WebView for the suggestions. This only exists if the
   // omnibox::kWebUIOmniboxPopup flag is on.
   WebUIOmniboxPopupView* webui_view_ = nullptr;
+
+  // A pref change registrar for toggling result view visibility.
+  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContentsView);
 };

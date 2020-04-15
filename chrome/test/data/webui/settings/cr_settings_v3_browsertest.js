@@ -430,6 +430,7 @@ TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
  ['DownloadsPage', 'downloads_page_test.m.js'],
  ['DropdownMenu', 'dropdown_menu_tests.m.js'],
  ['ExtensionControlledIndicator', 'extension_controlled_indicator_tests.m.js'],
+ ['HelpPage', 'help_page_v3_test.js'],
  ['Languages', 'languages_tests.m.js'],
  ['Menu', 'settings_menu_test.m.js'],
  ['OnStartupPage', 'on_startup_page_tests.m.js'],

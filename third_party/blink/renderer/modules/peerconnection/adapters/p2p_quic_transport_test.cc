@@ -550,6 +550,8 @@ class ConnectedCryptoClientStreamFactory final
 class P2PQuicTransportTest : public testing::Test {
  public:
   P2PQuicTransportTest() {
+    // TODO(crbug/1070747): Fix tests for IETF QUIC.
+    quic::test::DisableQuicVersionsWithTls();
     // Quic crashes if packets are sent at time 0, and the clock defaults to 0.
     clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(1000));
     quic_random_ = quic::QuicRandom::GetInstance();

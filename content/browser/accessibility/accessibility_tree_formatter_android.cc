@@ -63,10 +63,22 @@ const char* const INT_ATTRIBUTES[] = {
 }  // namespace
 
 class AccessibilityTreeFormatterAndroid
-    : public AccessibilityTreeFormatterBrowser {
+    : public AccessibilityTreeFormatterBase {
  public:
   AccessibilityTreeFormatterAndroid();
   ~AccessibilityTreeFormatterAndroid() override;
+
+  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
+      BrowserAccessibility* root) override;
+
+  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForProcess(
+      base::ProcessId pid) override;
+
+  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForWindow(
+      gfx::AcceleratedWidget widget) override;
+
+  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForPattern(
+      const base::StringPiece& pattern) override;
 
   void AddDefaultFilters(
       std::vector<PropertyFilter>* property_filters) override;
@@ -77,8 +89,13 @@ class AccessibilityTreeFormatterAndroid
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
   const std::string GetDenyNodeString() override;
+
+  void RecursiveBuildAccessibilityTree(const BrowserAccessibility& node,
+                                       base::DictionaryValue* dict) const;
+
   void AddProperties(const BrowserAccessibility& node,
-                     base::DictionaryValue* dict) override;
+                     base::DictionaryValue* dict) const;
+
   base::string16 ProcessTreeForOutput(
       const base::DictionaryValue& node,
       base::DictionaryValue* filtered_dict_result = nullptr) override;
@@ -104,6 +121,38 @@ AccessibilityTreeFormatterAndroid::AccessibilityTreeFormatterAndroid() {}
 
 AccessibilityTreeFormatterAndroid::~AccessibilityTreeFormatterAndroid() {}
 
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterAndroid::BuildAccessibilityTree(
+    BrowserAccessibility* root) {
+  CHECK(root);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+
+  // XXX: Android formatter should walk native Android tree (not internal one).
+  RecursiveBuildAccessibilityTree(*root, dict.get());
+  return dict;
+}
+
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterAndroid::BuildAccessibilityTreeForProcess(
+    base::ProcessId pid) {
+  NOTREACHED();
+  return nullptr;
+}
+
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterAndroid::BuildAccessibilityTreeForWindow(
+    gfx::AcceleratedWidget widget) {
+  NOTREACHED();
+  return nullptr;
+}
+
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterAndroid::BuildAccessibilityTreeForPattern(
+    const base::StringPiece& pattern) {
+  NOTREACHED();
+  return nullptr;
+}
+
 void AccessibilityTreeFormatterAndroid::AddDefaultFilters(
     std::vector<PropertyFilter>* property_filters) {
   AddPropertyFilter(property_filters, "hint=*");
@@ -112,9 +161,27 @@ void AccessibilityTreeFormatterAndroid::AddDefaultFilters(
                     PropertyFilter::DENY);
   AddPropertyFilter(property_filters, "has_image", PropertyFilter::DENY);
 }
+
+void AccessibilityTreeFormatterAndroid::RecursiveBuildAccessibilityTree(
+    const BrowserAccessibility& node,
+    base::DictionaryValue* dict) const {
+  AddProperties(node, dict);
+
+  auto children = std::make_unique<base::ListValue>();
+
+  for (size_t i = 0; i < node.PlatformChildCount(); ++i) {
+    BrowserAccessibility* child_node = node.PlatformGetChild(i);
+    std::unique_ptr<base::DictionaryValue> child_dict(
+        new base::DictionaryValue);
+    RecursiveBuildAccessibilityTree(*child_node, child_dict.get());
+    children->Append(std::move(child_dict));
+  }
+  dict->Set(kChildrenDictAttr, std::move(children));
+}
+
 void AccessibilityTreeFormatterAndroid::AddProperties(
     const BrowserAccessibility& node,
-    base::DictionaryValue* dict) {
+    base::DictionaryValue* dict) const {
   dict->SetInteger("id", node.GetId());
 
   const BrowserAccessibilityAndroid* android_node =

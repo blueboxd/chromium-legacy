@@ -352,8 +352,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     }
 
     // True if action mode is initialized to a working (not a no-op) mode.
-    @VisibleForTesting
-    public boolean isActionModeSupported() {
+    private boolean isActionModeSupported() {
         return mCallback != EMPTY_CALLBACK;
     }
 

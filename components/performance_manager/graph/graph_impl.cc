@@ -66,25 +66,21 @@ class NodeDataDescriberRegistryImpl : public NodeDataDescriberRegistry {
                          base::StringPiece name) override;
   void UnregisterDescriber(const NodeDataDescriber* describer) override;
 
-  base::Value DescribeFrameNodeData(const FrameNode* node) const override;
-  base::Value DescribePageNodeData(const PageNode* node) const override;
-  base::Value DescribeProcessNodeData(const ProcessNode* node) const override;
-  base::Value DescribeSystemNodeData(const SystemNode* node) const override;
-  base::Value DescribeWorkerNodeData(const WorkerNode* node) const override;
+  base::Value DescribeNodeData(const Node* node) const override;
 
  private:
-  template <typename NodeType>
+  template <typename NodeType, typename NodeImplType>
   base::Value DescribeNodeImpl(
       base::Value (NodeDataDescriber::*DescribeFn)(const NodeType*) const,
-      const NodeType* node) const;
+      const NodeImplType* node) const;
 
   base::flat_map<const NodeDataDescriber*, std::string> describers_;
 };
 
-template <typename NodeType>
+template <typename NodeType, typename NodeImplType>
 base::Value NodeDataDescriberRegistryImpl::DescribeNodeImpl(
     base::Value (NodeDataDescriber::*Describe)(const NodeType*) const,
-    const NodeType* node) const {
+    const NodeImplType* node) const {
   base::Value result(base::Value::Type::DICTIONARY);
 
   bool inserted = false;
@@ -124,29 +120,29 @@ void NodeDataDescriberRegistryImpl::UnregisterDescriber(
   DCHECK_EQ(1u, erased);
 }
 
-base::Value NodeDataDescriberRegistryImpl::DescribeFrameNodeData(
-    const FrameNode* node) const {
-  return DescribeNodeImpl(&NodeDataDescriber::DescribeFrameNodeData, node);
-}
-
-base::Value NodeDataDescriberRegistryImpl::DescribePageNodeData(
-    const PageNode* node) const {
-  return DescribeNodeImpl(&NodeDataDescriber::DescribePageNodeData, node);
-}
-
-base::Value NodeDataDescriberRegistryImpl::DescribeProcessNodeData(
-    const ProcessNode* node) const {
-  return DescribeNodeImpl(&NodeDataDescriber::DescribeProcessNodeData, node);
-}
-
-base::Value NodeDataDescriberRegistryImpl::DescribeSystemNodeData(
-    const SystemNode* node) const {
-  return DescribeNodeImpl(&NodeDataDescriber::DescribeSystemNodeData, node);
-}
-
-base::Value NodeDataDescriberRegistryImpl::DescribeWorkerNodeData(
-    const WorkerNode* node) const {
-  return DescribeNodeImpl(&NodeDataDescriber::DescribeWorkerNodeData, node);
+base::Value NodeDataDescriberRegistryImpl::DescribeNodeData(
+    const Node* node) const {
+  const NodeBase* node_base = NodeBase::FromNode(node);
+  switch (node_base->type()) {
+    case NodeTypeEnum::kInvalidType:
+      NOTREACHED();
+      return base::Value();
+    case NodeTypeEnum::kFrame:
+      return DescribeNodeImpl(&NodeDataDescriber::DescribeFrameNodeData,
+                              FrameNodeImpl::FromNodeBase(node_base));
+    case NodeTypeEnum::kPage:
+      return DescribeNodeImpl(&NodeDataDescriber::DescribePageNodeData,
+                              PageNodeImpl::FromNodeBase(node_base));
+    case NodeTypeEnum::kProcess:
+      return DescribeNodeImpl(&NodeDataDescriber::DescribeProcessNodeData,
+                              ProcessNodeImpl::FromNodeBase(node_base));
+    case NodeTypeEnum::kSystem:
+      return DescribeNodeImpl(&NodeDataDescriber::DescribeSystemNodeData,
+                              SystemNodeImpl::FromNodeBase(node_base));
+    case NodeTypeEnum::kWorker:
+      return DescribeNodeImpl(&NodeDataDescriber::DescribeWorkerNodeData,
+                              WorkerNodeImpl::FromNodeBase(node_base));
+  }
 }
 
 }  // namespace

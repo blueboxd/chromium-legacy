@@ -256,6 +256,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -1492,6 +1493,13 @@ void WebLocalFrameImpl::DispatchBeforePrintEvent() {
                               "DispatchBeforePrintEvent() call.";
   is_in_printing_ = true;
 #endif
+
+  // Disable BackForwardCache when printing API is used for now. When the page
+  // navigates with BackForwardCache, we currently do not close the printing
+  // popup properly.
+  GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
+      blink::SchedulingPolicy::Feature::kPrinting,
+      {blink::SchedulingPolicy::RecordMetricsForBackForwardCache()});
 
   GetFrame()->GetDocument()->SetPrinting(Document::kBeforePrinting);
   DispatchPrintEventRecursively(event_type_names::kBeforeprint);

@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include "content/shell/common/web_test/web_test_string_util.h"
+#include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/web_frame_test_proxy.h"
-#include "content/shell/test_runner/web_test_delegate.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -21,9 +21,7 @@
 
 namespace content {
 
-void WebViewTestProxy::Initialize(TestInterfaces* interfaces,
-                                  std::unique_ptr<WebTestDelegate> delegate) {
-  delegate_ = std::move(delegate);
+void WebViewTestProxy::Initialize(TestInterfaces* interfaces) {
   test_interfaces_ = interfaces;
   test_interfaces()->WindowOpened(this);
 }
@@ -38,7 +36,7 @@ blink::WebView* WebViewTestProxy::CreateView(
     const blink::FeaturePolicy::FeatureState& opener_feature_state,
     const blink::SessionStorageNamespaceId& session_storage_namespace_id) {
   if (GetTestRunner()->ShouldDumpNavigationPolicy()) {
-    delegate()->PrintMessage(
+    blink_test_runner()->PrintMessage(
         "Default policy for createView for '" +
         web_test_string_util::URLDescription(request.Url()) + "' is '" +
         web_test_string_util::WebNavigationPolicyToString(policy) + "'\n");
@@ -48,7 +46,7 @@ blink::WebView* WebViewTestProxy::CreateView(
     return nullptr;
 
   if (GetTestRunner()->ShouldDumpCreateView()) {
-    delegate()->PrintMessage(
+    blink_test_runner()->PrintMessage(
         std::string("createView(") +
         web_test_string_util::URLDescription(request.Url()) + ")\n");
   }
@@ -94,7 +92,7 @@ void WebViewTestProxy::Reset() {
   }
 }
 
-void WebViewTestProxy::BindTo(blink::WebLocalFrame* frame) {
+void WebViewTestProxy::Install(blink::WebLocalFrame* frame) {
   accessibility_controller_.Install(frame);
   text_input_controller_.Install(frame);
   view_test_runner_.Install(frame);

@@ -11,7 +11,6 @@
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ambient/ui/photo_view.h"
 #include "ash/ambient/util/ambient_util.h"
-#include "ash/assistant/assistant_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"

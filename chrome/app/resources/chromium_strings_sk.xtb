@@ -41,7 +41,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2799223571221894425">Znova spustiť</translation>
 <translation id="2805036593126168338">Systému Chromium OS sa nepodarilo synchronizovať vaše heslá. Opraviť.</translation>
 <translation id="2847479871509788944">Odstrániť z prehliadača Chromium...</translation>
-<translation id="2886012850691518054">Voliteľné: Pomôžte vylepšiť služby prehliadača Chromium tým, že nastavíte automatické odosielanie štatistík používania a správ o zlyhaní spoločnosti Google.</translation>
 <translation id="2910007522516064972">Informácie o prehliadači &amp;Chromium</translation>
 <translation id="2977470724722393594">Prehliadač Chromium bol aktualizovaný</translation>
 <translation id="2983934633046890458">Chromium sa pokúša upraviť heslá.</translation>
@@ -60,6 +59,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="328888136576916638">Chýbajú kľúče rozhrania Google API. Niektoré funkcie prehliadača Google Chromium budú zakázané.</translation>
 <translation id="3296368748942286671">Po zatvorení prehliadača Chromium ponechať spustené aplikácie na pozadí</translation>
 <translation id="331951419404882060">Systému OS Chromium sa nepodarilo synchronizovať vaše údaje, pretože sa pri prihlasovaní vyskytla chyba.</translation>
+<translation id="347328004046849135">Chromium vás upozorní, keď sa prihlásite pomocou prelomeného hesla</translation>
 <translation id="3474745554856756813">Táto akcia odstráni zo zariadenia niekoľko položiek (počet: <ph name="ITEMS_COUNT" />). Ak budete chcieť svoje údaje neskôr opäť načítať, prihláste sa do prehliadača Chromium ako <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Zatvorte všetky okná prehliadača Chromium a skúste to znova.</translation>
 <translation id="3575459661164320785">V počítači máte škodlivý softvér. Chromium ho môže odstrániť, obnoviť nastavenia a deaktivovať rozšírenia, aby prehliadač znova normálne fungoval.</translation>
@@ -95,11 +95,13 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4746050847053251315">Chcete Chromium napriek tomu ukončiť?</translation>
 <translation id="4748217263233248895">Práve bola použitá mimoriadna bezpečnostná aktualizácia pre prehliadač Chromium. Zmeny sa prejavia až po jeho reštartovaní (vaše karty sa automaticky obnovia).</translation>
 <translation id="4750035648288509542">Takmer aktualizované. Aktualizáciu dokončíte reštartovaním prehliadača Chromium. Okná inkognito sa neotvoria.</translation>
+<translation id="4788777615168560705">Chromium nemôže skontrolovať heslá. Skúste to znova o 24 hodín alebo <ph name="BEGIN_LINK" />skontrolujte heslá vo svojom účte Google<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Využíva rovnaký nástroj na kontrolu pravopisu, aký sa používa vo Vyhľadávaní Google. Text zadaný do prehliadača sa odošle Googlu. Toto správanie môžete zmeniť v nastaveniach.</translation>
 <translation id="4888717733111232871">Pravidlo pre prichádzajúce prenosy pre prehliadač Chromium, ktoré povoľuje prenos dát mDNS.</translation>
 <translation id="4943838377383847465">Chromium je v režime na pozadí.</translation>
 <translation id="4987820182225656817">Hostia môžu používať prehliadač Chromium bez toho, aby po sebe zanechali akékoľvek informácie.</translation>
 <translation id="4994636714258228724">Pridajte si účet do prehliadača Chromium</translation>
+<translation id="5224391634244552924">Žiadne uložené heslá. Chromium môže skontrolovať heslá, keď ich uložíte.</translation>
 <translation id="5277894862589591112">Ak chcete zmeny použiť, spustite Chromium znova</translation>
 <translation id="5358375970380395591">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom Chromium. Vaše údaje prehliadača Chromium, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME" />. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Aktualizuje sa Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -166,6 +168,7 @@ Niektoré funkcie nemusia byť k dispozícii. Zadajte iný adresár profilu aleb
 <translation id="7066436765290594559">Systému OS Chromium sa nepodarilo synchronizovať vaše údaje. Aktualizujte prístupovú frázu synchronizácie.</translation>
 <translation id="7067091210845072982">Ak obrázok nemá užitočný popis, Chromium sa vám ho pokúsi poskytnúť. Obrázky sa odosielajú Googlu, aby bolo možné vytvoriť popisy.</translation>
 <translation id="7196312274710523067">Chromium sa nepodarilo spustiť. Skúste to znova.</translation>
+<translation id="7197677400338048821">Chromium nemôže skontrolovať heslá. Skúste to znova o 24 hodín.</translation>
 <translation id="7205698830395646142">Skryť v Ponuke Chromium</translation>
 <translation id="7223968959479464213">Správca úloh – Chromium</translation>
 <translation id="731644333568559921">Aktualizovať systém &amp;Chromium OS</translation>

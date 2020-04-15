@@ -538,6 +538,7 @@ void PasswordFormMetricsRecorder::RecordPasswordBubbleShown(
     case metrics_util::AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION:
     case metrics_util::MANUAL_GENERATED_PASSWORD_CONFIRMATION:
     case metrics_util::AUTOMATIC_SIGNIN_TOAST:
+    case metrics_util::AUTOMATIC_COMPROMISED_CREDENTIALS_REMINDER:
       // Do nothing.
       return;
 

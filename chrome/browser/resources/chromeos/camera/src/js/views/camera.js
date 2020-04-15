@@ -173,12 +173,33 @@ export class Camera extends View {
      */
     this.take_ = null;
 
-    document.querySelectorAll('#start-takephoto, #start-recordvideo')
-        .forEach(
-            (btn) => btn.addEventListener('click', () => this.beginTake_()));
+    document.querySelector('#start-takephoto')
+        .addEventListener('click', () => this.beginTake_());
 
-    document.querySelectorAll('#stop-takephoto, #stop-recordvideo')
-        .forEach((btn) => btn.addEventListener('click', () => this.endTake_()));
+    document.querySelector('#stop-takephoto')
+        .addEventListener('click', () => this.endTake_());
+
+    const videoShutter = document.querySelector('#recordvideo');
+    videoShutter.addEventListener('click', () => {
+      if (!state.get(state.State.TAKING)) {
+        this.beginTake_();
+      } else {
+        this.endTake_();
+      }
+    });
+
+    // TODO(shik): Tune the timing for playing video shutter button
+    // animation. Currently the |TAKING| state is ended when the file is saved.
+    state.addObserver(state.State.TAKING, (taking) => {
+      if (!state.get(Mode.VIDEO)) {
+        return;
+      }
+      const label =
+          taking ? 'record_video_stop_button' : 'record_video_start_button';
+      videoShutter.setAttribute('i18n-label', label);
+      videoShutter.setAttribute(
+          'aria-label', browserProxy.getI18nMessage(label));
+    });
 
     // Monitor the states to stop camera when locked/minimized.
     ChromeHelper.getInstance().addOnLockListener((isLocked) => {

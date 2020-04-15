@@ -87,13 +87,16 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
     DCHECK(context_state_->IsCurrent(nullptr));
 
     if (!surface_ || final_msaa_count != surface_msaa_count_ ||
-        surface_props != *surface_props_) {
-      surface_msaa_count_ = final_msaa_count;
-      surface_props_.emplace(surface_props);
+        surface_props != surface_->props()) {
       surface_ = SkSurface::MakeFromBackendTexture(
           context_state_->gr_context(), backend_texture_,
           kTopLeft_GrSurfaceOrigin, surface_msaa_count_, GetSkColorType(),
-          color_space().ToSkColorSpace(), &surface_props_.value());
+          color_space().ToSkColorSpace(), &surface_props);
+      if (!surface_) {
+        LOG(ERROR) << "MakeFromBackendTexture() failed.";
+        return nullptr;
+      }
+      surface_msaa_count_ = final_msaa_count;
     }
     return surface_;
   }
@@ -231,7 +234,6 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
   sk_sp<SkPromiseImageTexture> promise_texture_;
   sk_sp<SkSurface> surface_;
   int surface_msaa_count_ = 0;
-  base::Optional<SkSurfaceProps> surface_props_;
 
   uint64_t tracing_id_ = 0;
 
@@ -254,6 +256,8 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
       std::vector<GrBackendSemaphore>* end_semaphores) override {
     auto surface =
         wrapped_sk_image()->GetSkSurface(final_msaa_count, surface_props);
+    if (!surface)
+      return nullptr;
     int save_count = surface->getCanvas()->save();
     ALLOW_UNUSED_LOCAL(save_count);
     DCHECK_EQ(1, save_count);

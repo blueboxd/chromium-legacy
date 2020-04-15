@@ -18,6 +18,7 @@
 #include "ios/web/public/test/web_task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -263,9 +264,12 @@ void GaiaAuthFetcherIOSNSURLSessionBridgeTest::AddCookiesToCookieManager(
     options.set_include_httponly();
     options.set_same_site_cookie_context(
         net::CookieOptions::SameSiteCookieContext::MakeInclusive());
+    net::CanonicalCookie canonical_cookie =
+        net::CanonicalCookieFromSystemCookie(cookie, base::Time::Now());
     cookie_manager->SetCanonicalCookie(
-        net::CanonicalCookieFromSystemCookie(cookie, base::Time::Now()),
-        "https", options, base::DoNothing());
+        canonical_cookie,
+        net::cookie_util::SimulatedCookieSource(canonical_cookie, "https"),
+        options, base::DoNothing());
   }
   WaitForBackgroundTasks();
 }

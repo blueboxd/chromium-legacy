@@ -1799,7 +1799,7 @@ base::Optional<base::Value> DecodeJsonStringAndNormalize(
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           json_string, base::JSON_ALLOW_TRAILING_COMMAS);
-  if (value_with_error.error_code != base::JSONReader::JSON_NO_ERROR) {
+  if (!value_with_error.value) {
     *error = "Invalid JSON string: " + value_with_error.error_message;
     return base::nullopt;
   }

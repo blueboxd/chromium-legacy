@@ -6,6 +6,7 @@ package org.chromium.components.external_intents;
 
 import android.app.Activity;
 
+import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -49,4 +50,8 @@ public interface InterceptNavigationDelegateClient {
 
     /* Invoked when the tab associated with this client should be closed. */
     void closeTab();
+
+    /* Invoked when a navigation has begun in the InterceptNavigationDelegateImpl instance
+     * associated with this instance. */
+    void onNavigationStarted(NavigationParams params);
 }

@@ -6,10 +6,10 @@
 
 #include "content/common/unique_name_helper.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/web_frame_test_client.h"
-#include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_testing_support.h"
@@ -18,12 +18,13 @@ namespace content {
 
 namespace {
 
-void PrintFrameUserGestureStatus(WebTestDelegate* delegate,
+void PrintFrameUserGestureStatus(BlinkTestRunner* blink_test_runner,
                                  blink::WebLocalFrame* frame,
                                  const char* msg) {
   bool is_user_gesture = frame->HasTransientUserActivation();
-  delegate->PrintMessage(std::string("Frame with user gesture \"") +
-                         (is_user_gesture ? "true" : "false") + "\"" + msg);
+  blink_test_runner->PrintMessage(std::string("Frame with user gesture \"") +
+                                  (is_user_gesture ? "true" : "false") + "\"" +
+                                  msg);
 }
 
 class TestRenderFrameObserver : public content::RenderFrameObserver {
@@ -38,7 +39,9 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
     return web_view_test_proxy_->test_interfaces()->GetTestRunner();
   }
 
-  WebTestDelegate* delegate() { return web_view_test_proxy_->delegate(); }
+  BlinkTestRunner* blink_test_runner() {
+    return web_view_test_proxy_->blink_test_runner();
+  }
 
   // content::RenderFrameObserver overrides.
   void OnDestruct() override { delete this; }
@@ -47,13 +50,15 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
       const GURL& url,
       base::Optional<blink::WebNavigationType> navigation_type) override {
     if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
-      std::string description = WebFrameTestClient::PrintFrameDescription(
-          delegate(), render_frame()->GetWebFrame());
-      delegate()->PrintMessage(description + " - DidStartNavigation\n");
+      std::string description = WebFrameTestClient::GetFrameDescription(
+          render_frame()->GetWebFrame());
+      blink_test_runner()->PrintMessage(description +
+                                        " - DidStartNavigation\n");
     }
 
     if (test_runner()->ShouldDumpUserGestureInFrameLoadCallbacks()) {
-      PrintFrameUserGestureStatus(delegate(), render_frame()->GetWebFrame(),
+      PrintFrameUserGestureStatus(blink_test_runner(),
+                                  render_frame()->GetWebFrame(),
                                   " - in DidStartNavigation\n");
     }
   }
@@ -61,53 +66,56 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override {
     if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
-      std::string description = WebFrameTestClient::PrintFrameDescription(
-          delegate(), render_frame()->GetWebFrame());
-      delegate()->PrintMessage(description + " - ReadyToCommitNavigation\n");
+      std::string description = WebFrameTestClient::GetFrameDescription(
+          render_frame()->GetWebFrame());
+      blink_test_runner()->PrintMessage(description +
+                                        " - ReadyToCommitNavigation\n");
     }
   }
 
   void DidFailProvisionalLoad() override {
     if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
-      std::string description = WebFrameTestClient::PrintFrameDescription(
-          delegate(), render_frame()->GetWebFrame());
-      delegate()->PrintMessage(description +
-                               " - didFailProvisionalLoadWithError\n");
+      std::string description = WebFrameTestClient::GetFrameDescription(
+          render_frame()->GetWebFrame());
+      blink_test_runner()->PrintMessage(description +
+                                        " - didFailProvisionalLoadWithError\n");
     }
   }
 
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override {
     if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
-      std::string description = WebFrameTestClient::PrintFrameDescription(
-          delegate(), render_frame()->GetWebFrame());
-      delegate()->PrintMessage(description + " - didCommitLoadForFrame\n");
+      std::string description = WebFrameTestClient::GetFrameDescription(
+          render_frame()->GetWebFrame());
+      blink_test_runner()->PrintMessage(description +
+                                        " - didCommitLoadForFrame\n");
     }
   }
 
   void DidFinishDocumentLoad() override {
     if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
-      std::string description = WebFrameTestClient::PrintFrameDescription(
-          delegate(), render_frame()->GetWebFrame());
-      delegate()->PrintMessage(description +
-                               " - didFinishDocumentLoadForFrame\n");
+      std::string description = WebFrameTestClient::GetFrameDescription(
+          render_frame()->GetWebFrame());
+      blink_test_runner()->PrintMessage(description +
+                                        " - didFinishDocumentLoadForFrame\n");
     }
   }
 
   void DidFinishLoad() override {
     if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
-      std::string description = WebFrameTestClient::PrintFrameDescription(
-          delegate(), render_frame()->GetWebFrame());
-      delegate()->PrintMessage(description + " - didFinishLoadForFrame\n");
+      std::string description = WebFrameTestClient::GetFrameDescription(
+          render_frame()->GetWebFrame());
+      blink_test_runner()->PrintMessage(description +
+                                        " - didFinishLoadForFrame\n");
     }
   }
 
   void DidHandleOnloadEvents() override {
     if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
-      std::string description = WebFrameTestClient::PrintFrameDescription(
-          delegate(), render_frame()->GetWebFrame());
-      delegate()->PrintMessage(description +
-                               " - didHandleOnloadEventsForFrame\n");
+      std::string description = WebFrameTestClient::GetFrameDescription(
+          render_frame()->GetWebFrame());
+      blink_test_runner()->PrintMessage(description +
+                                        " - didHandleOnloadEventsForFrame\n");
     }
   }
 

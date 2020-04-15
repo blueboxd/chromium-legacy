@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/login/test/local_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/scoped_policy_update.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 
@@ -30,7 +31,8 @@ namespace chromeos {
 // It will initialized the fake in-memory client in
 // SetUpInProcessBrowserTestFixture(), provided that a session manager was not
 // initialized previously.
-class DeviceStateMixin : public InProcessBrowserTestMixin {
+class DeviceStateMixin : public InProcessBrowserTestMixin,
+                         public LocalStateMixin::Delegate {
  public:
   enum class State {
     BEFORE_OOBE,
@@ -47,8 +49,9 @@ class DeviceStateMixin : public InProcessBrowserTestMixin {
   // InProcessBrowserTestMixin:
   bool SetUpUserDataDirectory() override;
   void SetUpInProcessBrowserTestFixture() override;
-  void CreatedBrowserMainParts(
-      content::BrowserMainParts* browser_main_parts) override;
+
+  // LocalStateMixin::Delegate:
+  void SetUpLocalState() override;
 
   // Returns a ScopedDevicePolicyUpdate instance that can be used to update
   // local device policy blob (kept in fake session manager client).
@@ -112,6 +115,8 @@ class DeviceStateMixin : public InProcessBrowserTestMixin {
   policy::DevicePolicyBuilder device_policy_;
   std::map<std::string, policy::UserPolicyBuilder>
       device_local_account_policies_;
+
+  LocalStateMixin local_state_mixin_;
 
   base::WeakPtrFactory<DeviceStateMixin> weak_factory_{this};
 

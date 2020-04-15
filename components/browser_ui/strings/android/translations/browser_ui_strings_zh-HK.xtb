@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">複製連結</translation>
 <translation id="3991845972263764475">已下載：<ph name="BYTES_DOWNLOADED_WITH_UNITS" />，總大小：不明</translation>
 <translation id="4002066346123236978">標題</translation>
+<translation id="4259722352634471385">瀏覽網址被封鎖：<ph name="URL" /></translation>
 <translation id="4570913071927164677">詳細資料</translation>
 <translation id="4645575059429386691">由您的家長管理</translation>
 <translation id="4883854917563148705">無法重設受管理的設定</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">清除輸入</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8730621377337864115">完成</translation>
+<translation id="8959122750345127698">無法存取瀏覽網址：<ph name="URL" /></translation>
 <translation id="9019902583201351841">由您的家長管理</translation>
 </translationbundle>

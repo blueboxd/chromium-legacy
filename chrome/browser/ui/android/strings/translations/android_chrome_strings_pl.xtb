@@ -436,7 +436,6 @@ Obraz z kamery będziesz widzieć tylko Ty. Strona nie będzie mieć do niego d
 <translation id="4242533952199664413">Otwórz ustawienia</translation>
 <translation id="4250229828105606438">Zrzut ekranu</translation>
 <translation id="4256782883801055595">Licencje open source</translation>
-<translation id="4259722352634471385">Adres zablokowany: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiuj adres linku</translation>
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Dopuszczone</translation>
@@ -1067,7 +1066,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8942627711005830162">Otwórz w innym oknie</translation>
 <translation id="8951232171465285730">Chrome pozwolił Ci zaoszczędzić <ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">Blokuj pliki cookie z określonej strony internetowej.</translation>
-<translation id="8959122750345127698">Adres nieosiągalny: <ph name="URL" /></translation>
 <translation id="8965591936373831584">Oczekiwanie</translation>
 <translation id="8970887620466824814">Coś poszło nie tak.</translation>
 <translation id="8972098258593396643">Czy pobrać do folderu domyślnego?</translation>

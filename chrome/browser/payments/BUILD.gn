@@ -6,6 +6,7 @@ source_set("browsertests") {
   testonly = true
 
   sources = [
+    "colocated_payment_manifests_browsertest.cc",
     "empty_parameters_browsertest.cc",
     "has_enrolled_instrument_browsertest.cc",
     "has_enrolled_instrument_query_quota_browsertest.cc",

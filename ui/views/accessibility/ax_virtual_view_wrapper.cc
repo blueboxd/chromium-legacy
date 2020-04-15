@@ -51,4 +51,9 @@ bool AXVirtualViewWrapper::HandleAccessibleAction(
   return virtual_view_->HandleAccessibleAction(action);
 }
 
+std::string AXVirtualViewWrapper::ToString() const {
+  std::string description = "Virtual view child of ";
+  return description + virtual_view_->GetOwnerView()->GetClassName();
+}
+
 }  // namespace views

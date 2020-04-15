@@ -21,6 +21,8 @@ extern NSString* const kBookmarkFolderCreateViewContainerIdentifier;
 extern NSString* const kBookmarkFolderPickerViewContainerIdentifier;
 // Accessibility identifier of the Bookmark Home TableView.
 extern NSString* const kBookmarkHomeTableViewIdentifier;
+// Accessibility identifier of the Bookmark Home context menu.
+extern NSString* const kBookmarkHomeContextMenuIdentifier;
 
 // UINavigationBar accessibility constants:
 // Accessibility identifier of the Bookmark navigation bar.

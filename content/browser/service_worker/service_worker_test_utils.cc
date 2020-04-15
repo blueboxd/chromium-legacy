@@ -211,7 +211,7 @@ void WriteToDiskCacheAsyncInternal(
   http_info->headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.0 200 OK\0\0");
   for (const auto& header : headers)
-    http_info->headers->AddHeader(header.first + ": " + header.second);
+    http_info->headers->AddHeader(header.first, header.second);
 
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
       base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(http_info));

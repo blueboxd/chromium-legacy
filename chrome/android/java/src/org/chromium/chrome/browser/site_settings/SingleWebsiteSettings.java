@@ -27,8 +27,6 @@ import androidx.preference.PreferenceScreen;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
-import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
@@ -429,13 +427,13 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
     }
 
     private void setUpNotificationsPreference(Preference preference) {
-        TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
+        NotificationSettingsClient client = getSiteSettingsClient().getNotificationSettingsClient();
         Origin origin = Origin.create(mSite.getAddress().getOrigin());
         if (origin != null) {
-            String managedBy = manager.getDelegateAppName(origin);
+            String managedBy = client.getDelegateAppNameForOrigin(origin);
             if (managedBy != null) {
-                final Intent notificationSettingsIntent =
-                        getNotificationSettingsIntent(manager.getDelegatePackageName(origin));
+                final Intent notificationSettingsIntent = getNotificationSettingsIntent(
+                        client.getDelegatePackageNameForOrigin(origin));
                 String summaryText =
                         getString(R.string.website_notification_managed_by_app, managedBy);
                 ChromeImageViewPreference newPreference =
@@ -503,8 +501,9 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         // generic Sites channel if no specific channel has been created for the given
         // origin, so it is safe to open the channel settings for whatever channel ID
         // it returns.
-        String channelId = SiteChannelsManager.getInstance().getChannelIdForOrigin(
-                mSite.getAddress().getOrigin());
+        String channelId =
+                getSiteSettingsClient().getNotificationSettingsClient().getChannelIdForOrigin(
+                        mSite.getAddress().getOrigin());
         launchOsChannelSettings(preference.getContext(), channelId);
     }
 

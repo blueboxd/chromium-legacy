@@ -100,6 +100,8 @@ message ViewAttributesProto {
   optional string content_description = 6;
   // Whether the view is initially visible or not.
   optional bool visible = 7 [default = true];
+  // Whether the view is initially enabled or not.
+  optional bool enabled = 8 [default = true];
 }
 
 // Parameters configuring how views attach to their parents.

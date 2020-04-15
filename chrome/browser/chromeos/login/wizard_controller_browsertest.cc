@@ -2012,7 +2012,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerScreenPriorityOOBETest,
   CheckCurrentScreen(UpdateView::kScreenId);
 }
 
-class WizardControllerScreenPriorityTest : public LoginManagerTest {
+class WizardControllerScreenPriorityTest : public LoginManagerTest,
+                                           public LocalStateMixin::Delegate {
  protected:
   WizardControllerScreenPriorityTest() {
     login_manager_mixin_.AppendRegularUsers(1);
@@ -2026,20 +2027,18 @@ class WizardControllerScreenPriorityTest : public LoginManagerTest {
               WizardController::default_controller()->current_screen());
   }
 
+  // LocalStateMixin::Delegate:
+  void SetUpLocalState() override {
+    // Set pref to show reset screen on startup.
+    g_browser_process->local_state()->SetBoolean(prefs::kFactoryResetRequested,
+                                                 true);
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
+  LocalStateMixin local_state_mixin_{&mixin_host_, this};
 };
-
-// TODO(https://crbug.com/1064271) Replace this PRE test with adding adding a
-// custom part to |ChromeBrowserMainParts| in CreatedBrowserMainParts(...) and
-// then setting the pref value in the custom part's PostEarlyInitialization().
-IN_PROC_BROWSER_TEST_F(WizardControllerScreenPriorityTest,
-                       PRE_CanNavigateToTest) {
-  // Set pref to show reset screen on startup.
-  g_browser_process->local_state()->SetBoolean(prefs::kFactoryResetRequested,
-                                               true);
-}
 
 IN_PROC_BROWSER_TEST_F(WizardControllerScreenPriorityTest, CanNavigateToTest) {
   WizardController* const wizard_controller =

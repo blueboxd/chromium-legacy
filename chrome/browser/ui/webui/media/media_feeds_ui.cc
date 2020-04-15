@@ -53,7 +53,9 @@ void MediaFeedsUI::BindInterface(
 }
 
 void MediaFeedsUI::GetMediaFeeds(GetMediaFeedsCallback callback) {
-  GetMediaHistoryService()->GetMediaFeedsForDebug(std::move(callback));
+  GetMediaHistoryService()->GetMediaFeeds(
+      media_history::MediaHistoryKeyedService::GetMediaFeedsRequest(),
+      std::move(callback));
 }
 
 void MediaFeedsUI::GetItemsForMediaFeed(int64_t feed_id,

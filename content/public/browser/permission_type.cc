@@ -57,7 +57,12 @@ base::Optional<PermissionType> PermissionDescriptorToPermissionType(
     case PermissionName::AUDIO_CAPTURE:
       return PermissionType::AUDIO_CAPTURE;
     case PermissionName::VIDEO_CAPTURE:
-      return PermissionType::VIDEO_CAPTURE;
+      if (descriptor->extension && descriptor->extension->is_camera_device() &&
+          descriptor->extension->get_camera_device()->panTiltZoom) {
+        return PermissionType::CAMERA_PAN_TILT_ZOOM;
+      } else {
+        return PermissionType::VIDEO_CAPTURE;
+      }
     case PermissionName::BACKGROUND_SYNC:
       return PermissionType::BACKGROUND_SYNC;
     case PermissionName::SENSORS:

@@ -548,7 +548,8 @@ void ChromeNewWindowClient::OpenChromePageFromArc(ChromePage page) {
   NOTREACHED();
 }
 
-void ChromeNewWindowClient::LaunchCameraApp(const std::string& queries) {
+void ChromeNewWindowClient::LaunchCameraApp(const std::string& queries,
+                                            int32_t task_id) {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
   const extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile);

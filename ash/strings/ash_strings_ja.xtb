@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">ロック画面に通知を表示するには、ロックを解除して設定を変更してください</translation>
 <translation id="4144413954005649103">右クリックするか長押しすると、画面で選択した項目に関連する情報が表示されます。</translation>
 <translation id="4146833061457621061">音楽を再生して</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> は <ph name="DOMAIN" /> によって管理されています</translation>
 <translation id="4181841719683918333">言語</translation>
 <translation id="4195877955194704651">自動クリックボタン</translation>
 <translation id="4215497585250573029">VPN 設定</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">ショートカットがオフになっています</translation>
 <translation id="6910714959251846841">このアップデートを適用するにはデバイスで Powerwash を実行する必要があります。<ph name="SYSTEM_APP_NAME" /> の最新アップデートの詳細をご確認ください。</translation>
 <translation id="6919251195245069855">スマートカードを認識できませんでした。もう一度お試しください。</translation>
+<translation id="6945221475159498467">選択</translation>
 <translation id="6972754398087986839">開始する</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="698231206551913481">このユーザーを削除すると、このユーザーに関連付けられているファイルとローカルデータもすべて完全に削除されます。</translation>
@@ -558,6 +558,7 @@
 <translation id="8142699993796781067">プライベート ネットワーク</translation>
 <translation id="8152092012181020186">閉じるには Ctrl+W キーを押します。</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> この設定は管理者によって管理されています。</translation>
+<translation id="815598010540052116">下にスクロール</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> を使用しています</translation>
 <translation id="8190698733819146287">言語と入力方法をカスタマイズ...</translation>
 <translation id="8192202700944119416">通知は非表示になっています。</translation>

@@ -327,6 +327,14 @@ class TaskEnvironment {
   static void AddDestructionObserver(DestructionObserver* observer);
   static void RemoveDestructionObserver(DestructionObserver* observer);
 
+  // The number of foreground workers in the ThreadPool managed by a
+  // TaskEnvironment instance. This can be used to determine the maximum
+  // parallelism in tests that require each parallel task it spawns to be
+  // running at once. Having multiple threads prevents deadlocks should some
+  // blocking APIs not use ScopedBlockingCall. It also allows enough concurrency
+  // to allow TSAN to spot data races.
+  static constexpr int kNumForegroundThreadPoolThreads = 4;
+
  protected:
   explicit TaskEnvironment(TaskEnvironment&& other);
 

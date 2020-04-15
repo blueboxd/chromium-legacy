@@ -39,7 +39,6 @@
 <translation id="2799223571221894425">Luncurkan Ulang</translation>
 <translation id="2805036593126168338">Chromium OS tidak dapat menyinkronkan sandi Anda. Perbaiki sekarang.</translation>
 <translation id="2847479871509788944">Buang dari Chromium...</translation>
-<translation id="2886012850691518054">Opsional: Bantu menjadikan Chrome lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google.</translation>
 <translation id="2910007522516064972">Tentang &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium sudah diperbarui</translation>
 <translation id="2983934633046890458">Chromium mencoba mengedit sandi.</translation>
@@ -58,6 +57,7 @@
 <translation id="328888136576916638">Kunci API Google tidak ada. Beberapa fungsi Chromium tidak akan berfungsi.</translation>
 <translation id="3296368748942286671">Lanjutkan aplikasi yang berjalan di latar belakang jika Chromium ditutup</translation>
 <translation id="331951419404882060">Chromium OS tidak dapat menyinkronkan data Anda karena kesalahan saat masuk.</translation>
+<translation id="347328004046849135">Chromium akan memberi tahu Anda saat Anda login dengan sandi yang telah dibobol</translation>
 <translation id="3474745554856756813">Tindakan ini akan menghapus <ph name="ITEMS_COUNT" /> item dari perangkat. Untuk mengambil data nanti, login ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Tutup semua jendela Chromium dan coba lagi.</translation>
 <translation id="3575459661164320785">Ada software berbahaya di komputer Anda. Chromium dapat menghapusnya, memulihkan setelan Anda, dan menonaktifkan ekstensi agar browser berfungsi kembali secara normal.</translation>
@@ -93,11 +93,13 @@
 <translation id="4746050847053251315">Tetap tutup Chromium?</translation>
 <translation id="4748217263233248895">Update keamanan khusus untuk Chromium baru saja diterapkan. Mulai ulang Chromium sekarang dan kami akan memulihkan tab Anda.</translation>
 <translation id="4750035648288509542">Update hampir selesai. Luncurkan ulang Chromium untuk menyelesaikan update. Jendela Samaran tidak akan dibuka kembali.</translation>
+<translation id="4788777615168560705">Chromium tidak dapat memeriksa sandi Anda. Coba lagi setelah 24 jam atau <ph name="BEGIN_LINK" />periksa sandi di Akun Google Anda<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Tindakan ini akan menggunakan pemeriksa ejaan yang sama dengan yang digunakan di penelusuran Google. Teks yang Anda ketikkan di browser dikirim ke Google. Anda dapat mengubah perilaku ini di setelan.</translation>
 <translation id="4888717733111232871">Inbound rule untuk Chromium guna mengizinkan lalu lintas mDNS.</translation>
 <translation id="4943838377383847465">Chromium berjalan di mode latar belakang.</translation>
 <translation id="4987820182225656817">Tamu dapat menggunakan Chromium tanpa meninggalkan apa pun.</translation>
 <translation id="4994636714258228724">Tambahkan diri Anda ke Chromium</translation>
+<translation id="5224391634244552924">Tidak ada sandi yang tersimpan. Chromium dapat memeriksa sandi saat Anda menyimpannya.</translation>
 <translation id="5277894862589591112">Untuk menerapkan perubahan Anda, luncurkan ulang Chromium</translation>
 <translation id="5358375970380395591">Anda masuk dengan akun terkelola dan memberikan administratornya kontrol atas profil Chromium Anda. Data Chromium Anda, seperti aplikasi, bookmark, histori, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME" />. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Memperbarui Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -164,6 +166,7 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="7066436765290594559">Chromium OS tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
 <translation id="7067091210845072982">Jika gambar tidak memiliki deskripsi yang berguna, Chromium akan mencoba memberikan deskripsi untuk Anda. Untuk membuat deskripsi, gambar akan dikirim ke Google.</translation>
 <translation id="7196312274710523067">Tidak dapat meluncurkan Chromium. Harap coba lagi.</translation>
+<translation id="7197677400338048821">Chromium tidak dapat memeriksa sandi Anda. Coba lagi setelah 24 jam.</translation>
 <translation id="7205698830395646142">Sembunyikan di Menu Chromium</translation>
 <translation id="7223968959479464213">Pengelola Tugas - Chromium</translation>
 <translation id="731644333568559921">Pembaruan &amp;Chromium OS</translation>

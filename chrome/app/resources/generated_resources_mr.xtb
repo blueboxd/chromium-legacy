@@ -518,7 +518,7 @@
 <translation id="168991973552362966">एक जवळपासचे प्रिंटर जोडा</translation>
 <translation id="1689945336726856614">URL कॉपी करा</translation>
 <translation id="1692115862433274081">दुसरे खाते वापरा</translation>
-<translation id="1692118695553449118">संकालन चालू आहे</translation>
+<translation id="1692118695553449118">संकालन सुरू आहे</translation>
 <translation id="1692210323591458290">गडद जांभळा</translation>
 <translation id="1697150536837697295">कला</translation>
 <translation id="1697686431566694143">फाइल संपादित करा</translation>
@@ -686,7 +686,6 @@
 <translation id="189210018541388520">फुल स्क्रीन उघडा</translation>
 <translation id="1892341345406963517">हाय <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">इतर भाषा</translation>
-<translation id="1895252664692693738"><ph name="TIME_LEFT" /> शिल्लक</translation>
 <translation id="1895658205118569222">बंद करा</translation>
 <translation id="1895934970388272448">ही प्रक्रिया समाप्त करण्यासाठी तुम्हाला आपल्या प्रिंटरवर नोंदणीची पुष्टी करणे आवश्यक आहे - हे आता तपासा.</translation>
 <translation id="1899826437968063457">रन करण्यासाठी प्लग-इन VM ला परवानगीची आवश्यकता आहे</translation>
@@ -2416,7 +2415,7 @@
 <translation id="4144218403971135344">आणखी चांगल्या दर्जाचे व्हिडिओ मिळवा आणि बॅटरी लाइफ वाचवा. व्हिडिओ फक्त तुमच्या Cast सुरू केलेल्या स्क्रीनवर प्ले होईल.</translation>
 <translation id="4146026355784316281">नेहमी सिस्टम दर्शकासह उघडा</translation>
 <translation id="4146785383423576110">रीसेट करा आणि साफ करा</translation>
-<translation id="4147897805161313378">Google फोटो</translation>
+<translation id="4147897805161313378">Google Photos</translation>
 <translation id="4147911968024186208">रीबूट करा. तुम्हाला ही एरर पुन्हा दिसल्यास कृपया तुमच्या साहाय्य प्रतिनिधीशी संपर्क साधा.</translation>
 <translation id="4150201353443180367">डिस्प्ले करा</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 टॅब}other{# टॅब}}</translation>
@@ -2493,7 +2492,7 @@
 <translation id="4278101229438943600">तुमचा असिस्टंट तयार आहे</translation>
 <translation id="4278390842282768270">अनुमत</translation>
 <translation id="4281844954008187215">सेवा अटी</translation>
-<translation id="4282196459431406533">Smart Lock चालू आहे</translation>
+<translation id="4282196459431406533">Smart Lock सुरू आहे</translation>
 <translation id="4285418559658561636">पासवर्ड अपडेट करा</translation>
 <translation id="4285498937028063278">अनपिन</translation>
 <translation id="428565720843367874">या फाईलचे स्कॅनिंग करताना अँटी-व्हायरस सॉफ्टवेअर अनपेक्षितपणे अयशस्वी झाले.</translation>
@@ -3999,7 +3998,6 @@
 <translation id="6365411474437319296">कुटुंब आणि मित्र जोडा</translation>
 <translation id="636850387210749493">Enterprise नावनोंदणी</translation>
 <translation id="6370021412472292592">मॅनिफेस्ट लोड करू शकलो नाही.</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{पासवर्ड बदला}other{पासवर्ड बदला}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">पुन्हा प्रयत्न करा</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' साठी एक परिणाम</translation>
@@ -4297,7 +4295,7 @@
 <translation id="6795884519221689054">पांडा</translation>
 <translation id="6797493596609571643">अरेरे, काहीतरी चूक झाली.</translation>
 <translation id="6798578729981748444">इंपोर्ट करणे पूर्ण करण्यासाठी, सर्व Firefox विंडो बंद करा.</translation>
-<translation id="6798780071646309401">कॅप्स लॉक चालू आहे</translation>
+<translation id="6798780071646309401">कॅप्स लॉक सुरू आहे</translation>
 <translation id="6798954102094737107">प्लग-इन: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801129617625983991">सर्वसाधारण सेटिंग्ज</translation>
 <translation id="6801435275744557998">टचस्क्रीन कॅलिब्रेट करा</translation>
@@ -5224,7 +5222,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8009225694047762179">पासवर्ड व्यवस्थापित करा</translation>
 <translation id="8012647001091218357">आम्ही याक्षणी आपल्या पालकांपर्यंत पोहोचू शकलो नाही. कृपया पुन्हा प्रयत्न करा.</translation>
 <translation id="8013993649590906847">इमेजचे उपयोगी वर्णन नसल्यास, Chrome तुमच्यासाठी ते देण्याचा प्रयत्न करेल. वर्णने तयार करण्यासाठी, इमेज Google ला पाठवल्या जातात.</translation>
-<translation id="8014154204619229810">अद्यतनकर्ता सध्या चालू आहे. पुन्हा तपासण्यासाठी एक मिनिटात रिफ्रेश करा.</translation>
+<translation id="8014154204619229810">अद्यतनकर्ता सध्या सुरू आहे. पुन्हा तपासण्यासाठी एक मिनिटात रिफ्रेश करा.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> पूर्वी इंस्टॉल केलेल्या आवृत्तीवर परत करण्यात अक्षम आहे. कृपया तुमचे डिव्हाइस Powerwash करण्यासाठी पुन्हा प्रयत्न करा.</translation>
 <translation id="8015163965024115122">तुमच्या पालकाने <ph name="IDS_SHORT_PRODUCT_NAME" /> किंवा <ph name="IDS_SHORT_PRODUCT_NAME" /> वर सेट केलेली मर्यादा संपली आहे.</translation>
 <translation id="8016266267177410919">तात्पुरते स्टोरेज</translation>

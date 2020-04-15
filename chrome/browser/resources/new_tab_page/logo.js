@@ -112,6 +112,10 @@ class LogoElement extends PolymerElement {
     BrowserProxy.getInstance().handler.getDoodle().then(({doodle}) => {
       this.doodle_ = doodle;
       this.loaded_ = true;
+      if (this.doodle_ && this.doodle_.content.interactiveDoodle) {
+        this.width_ = `${this.doodle_.content.interactiveDoodle.width}px`;
+        this.height_ = `${this.doodle_.content.interactiveDoodle.height}px`;
+      }
     });
   }
 
@@ -146,7 +150,8 @@ class LogoElement extends PolymerElement {
       if (this.doodle_ &&
           /* We hide interactive doodles when offline. Otherwise, the iframe
              would show an ugly error page. */
-          (!this.doodle_.content.url || window.navigator.onLine)) {
+          (!this.doodle_.content.interactiveDoodle ||
+           window.navigator.onLine)) {
         return 'doodle';
       }
     }
@@ -206,8 +211,8 @@ class LogoElement extends PolymerElement {
    * @private
    */
   computeIframeUrl_() {
-    return (this.doodle_ && this.doodle_.content.url) ?
-        `iframe?${this.doodle_.content.url.url}` :
+    return (this.doodle_ && this.doodle_.content.interactiveDoodle) ?
+        `iframe?${this.doodle_.content.interactiveDoodle.url.url}` :
         '';
   }
 

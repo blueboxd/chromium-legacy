@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list_types.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/common/gaia_id_hash.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -78,6 +79,13 @@ class FormFetcher {
   // Whether there are blacklisted matches in the backend. Valid only if
   // GetState() returns NOT_WAITING.
   virtual bool IsBlacklisted() const = 0;
+
+  // Whether moving the credentials with |username| from the
+  // local store to the account store for the user with
+  // |destination| GaiaIdHash is blocked. This is relevant only for account
+  // store users.
+  virtual bool IsMovingBlocked(const autofill::GaiaIdHash& destination,
+                               const base::string16& username) const = 0;
 
   // Non-federated matches obtained from the backend that have the same scheme
   // of this form.

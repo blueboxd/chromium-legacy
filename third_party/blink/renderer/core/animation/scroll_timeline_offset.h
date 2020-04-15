@@ -54,8 +54,8 @@ class CORE_EXPORT ScrollTimelineOffset final
   // We either have an scroll or element based offset so at any time one of
   // these is null. If both are null, it represents the default value of
   // 'auto'.
-  Member<CSSPrimitiveValue> scroll_based_;
-  Member<ScrollTimelineElementBasedOffset> element_based;
+  Member<CSSPrimitiveValue> length_based_offset_;
+  Member<ScrollTimelineElementBasedOffset> element_based_offset_;
 };
 
 }  // namespace blink

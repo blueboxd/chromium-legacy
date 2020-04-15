@@ -1,6 +1,7 @@
-# google-analytics-bundle.js
+# analytics.js
 
-* [Project Page](https://github.com/googlearchive/chrome-platform-analytics)
+* [Project Page](https://developers.google.com/analytics/devguides/collection/analyticsjs)
+* The extern file [universal_analytics_api.js]((https://github.com/google/closure-compiler/blob/master/contrib/externs/universal_analytics_api.js)) is copied from the [closure compiler project](https://github.com/google/closure-compiler)
 
 # comlink.js
 

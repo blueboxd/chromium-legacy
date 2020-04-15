@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "components/feed/core/proto/v2/store.pb.h"
+#include "components/feed/core/v2/types.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 
@@ -69,7 +70,12 @@ class FeedStore {
       base::OnceCallback<
           void(std::unique_ptr<feedstore::StreamAndContentState>)> callback);
 
-  // TODO(iwells): implement reading stored actions
+  void ReadActions(
+      base::OnceCallback<void(std::vector<feedstore::StoredAction>)> callback);
+  void WriteActions(std::vector<feedstore::StoredAction> actions,
+                    base::OnceCallback<void(bool)> callback);
+  void RemoveActions(std::vector<LocalActionId> ids,
+                     base::OnceCallback<void(bool)> callback);
 
   // TODO(iwells): implement this
   // Deletes old records that are no longer needed
@@ -110,6 +116,11 @@ class FeedStore {
           void(std::unique_ptr<feedstore::StreamAndContentState>)> callback,
       bool success,
       std::unique_ptr<feedstore::Record> record);
+
+  void OnReadActionsFinished(
+      base::OnceCallback<void(std::vector<feedstore::StoredAction>)> callback,
+      bool success,
+      std::unique_ptr<std::vector<feedstore::Record>> records);
 
   void OnWriteFinished(base::OnceCallback<void(bool)> callback, bool success);
 

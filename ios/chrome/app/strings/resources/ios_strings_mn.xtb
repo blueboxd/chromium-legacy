@@ -3,6 +3,7 @@
 <translationbundle lang="mn">
 <translation id="1005230401424685968">ЖЖЖЖ</translation>
 <translation id="1016495303386450659">Шинэчлэгдсэн зүйл</translation>
+<translation id="1044891598689252897">Сайтууд хэвийн ажиллана</translation>
 <translation id="1047726139967079566">Энэ хуудсыг хадгал...</translation>
 <translation id="1049743911850919806">Нууцлал</translation>
 <translation id="1063454504051558093">Өөр нууц үг ашиглана уу...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> зүйлс</translation>
 <translation id="1491277525950327607">Унтраах/асаах тохиргоог хийхийн тулд хоёр удаа товшино уу</translation>
 <translation id="1509486075633541495">Вэб сайтад нэвтрэх</translation>
+<translation id="1509960214886564027">Олон сайтын онцлогууд ажиллахгүй байж болзошгүй</translation>
 <translation id="152234381334907219">Огт хадгалаагүй</translation>
 <translation id="1540800554400757039">Хаяг 1</translation>
 <translation id="1545749641540134597">Хурдан хариу үйлдлийн кодыг скан хийх</translation>
@@ -527,6 +529,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="7961015016161918242">Хэзээ ч</translation>
 <translation id="7971521879845308059">Зар сурталчилгааг хориглох</translation>
 <translation id="7982789257301363584">Сүлжээ</translation>
+<translation id="7993619969781047893">Зарим сайтын онцлогууд ажиллахгүй байж болзошгүй</translation>
 <translation id="800361585186029508">Оруулсан URL-г Google Chrome дээр нээдэг.</translation>
 <translation id="8007420562015504427">Нууцлалтай хайлт</translation>
 <translation id="8019783059653722575">Энэ нь танд зураг хадгалах, байршуулах боломжийг олгодог.</translation>

@@ -264,6 +264,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "autofill-enable-sticky-payments-bubble",
+    "owners": [ "siyua" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "autofill-enable-surfacing-server-card-nickname",
     "owners": [ "sujiezhu@google.com", "jsaul@google.com" ],
     "expiry_milestone": 90
@@ -920,11 +925,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "document-passive-wheel-event-listeners",
-    "owners": [ "sahel", "input-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "double-buffer-compositing",
     "owners": [ "chromeos-gfx@google.com" ],
     "expiry_milestone": 86
@@ -1110,6 +1110,11 @@
     "name": "enable-autofill-account-wallet-storage",
     "owners": [ "treib", "jsaul@google.com", "butter-team@google.com" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "enable-autofill-cache-server-card-info",
+    "owners": [ "annelim@google.com", "jsaul@google.com" ],
+    "expiry_milestone": 88
   },
   {
     "name": "enable-autofill-credit-card-ablation-experiment",
@@ -2549,6 +2554,11 @@
     // components for the survey without being limited by the triggering mechanism.
     // This flag should expire along with the above feature flag.
     "expiry_milestone": 84
+  },
+  {
+    "name": "happiness-tracking-surveys-for-desktop-migration",
+    "owners": [ "msramek", "chrome-friendly-settings@google.com" ],
+    "expiry_milestone": 90
   },
   {
     "name": "happiness-tracking-surveys-for-desktop-settings",

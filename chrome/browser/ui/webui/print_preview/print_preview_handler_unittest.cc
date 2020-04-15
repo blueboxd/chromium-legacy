@@ -442,11 +442,42 @@ class PrintPreviewHandlerTest : public testing::Test {
         settings->FindKeyOfType("syncAvailable", base::Value::Type::BOOLEAN));
   }
 
-  // Validates the initial settings policies structure in the response matches
-  // the print_preview.Policies type in
+  // Returns |policy_name| entry from initial settings policies.
+  const base::Value* GetInitialSettingsPolicy(const base::Value& settings,
+                                              const std::string& policy_name) {
+    const base::Value* policies =
+        settings.FindKeyOfType("policies", base::Value::Type::DICTIONARY);
+    if (!policies)
+      return nullptr;
+    return policies->FindKeyOfType(policy_name, base::Value::Type::DICTIONARY);
+  }
+
+  // Validates the initial settings value policies structure in the response
+  // matches the print_preview.Policies type in
   // chrome/browser/resources/print_preview/native_layer.js.
   // Assumes "test-callback-id-0" was used as the callback id.
-  void ValidateInitialSettingsPolicy(
+  void ValidateInitialSettingsValuePolicy(
+      const content::TestWebUI::CallData& data,
+      const std::string& policy_name,
+      base::Optional<base::Value> expected_policy_value) {
+    CheckWebUIResponse(data, "test-callback-id-0", true);
+    const base::Value* settings = data.arg3();
+
+    const base::Value* policy =
+        GetInitialSettingsPolicy(*settings, policy_name);
+    const base::Value* policy_value =
+        policy ? policy->FindKey("value") : nullptr;
+
+    ASSERT_EQ(expected_policy_value.has_value(), !!policy_value);
+    if (expected_policy_value.has_value())
+      EXPECT_EQ(expected_policy_value.value(), *policy_value);
+  }
+
+  // Validates the initial settings allowed/default mode policies structure in
+  // the response matches the print_preview.Policies type in
+  // chrome/browser/resources/print_preview/native_layer.js.
+  // Assumes "test-callback-id-0" was used as the callback id.
+  void ValidateInitialSettingsAllowedDefaultModePolicy(
       const content::TestWebUI::CallData& data,
       const std::string& policy_name,
       base::Optional<base::Value> expected_allowed_mode,
@@ -454,18 +485,12 @@ class PrintPreviewHandlerTest : public testing::Test {
     CheckWebUIResponse(data, "test-callback-id-0", true);
     const base::Value* settings = data.arg3();
 
-    const base::Value* allowed_mode = nullptr;
-    const base::Value* default_mode = nullptr;
-    const base::Value* policies =
-        settings->FindKeyOfType("policies", base::Value::Type::DICTIONARY);
-    if (policies) {
-      const base::Value* policy =
-          policies->FindKeyOfType(policy_name, base::Value::Type::DICTIONARY);
-      if (policy) {
-        allowed_mode = policy->FindKey("allowedMode");
-        default_mode = policy->FindKey("defaultMode");
-      }
-    }
+    const base::Value* policy =
+        GetInitialSettingsPolicy(*settings, policy_name);
+    const base::Value* allowed_mode =
+        policy ? policy->FindKey("allowedMode") : nullptr;
+    const base::Value* default_mode =
+        policy ? policy->FindKey("defaultMode") : nullptr;
 
     ASSERT_EQ(expected_allowed_mode.has_value(), !!allowed_mode);
     if (expected_allowed_mode.has_value())
@@ -585,10 +610,14 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsRuLocale) {
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsNoPolicies) {
   Initialize();
-  ValidateInitialSettingsPolicy(*web_ui()->call_data().back(), "headerFooter",
-                                base::nullopt, base::nullopt);
-  ValidateInitialSettingsPolicy(*web_ui()->call_data().back(), "cssBackground",
-                                base::nullopt, base::nullopt);
+  ValidateInitialSettingsAllowedDefaultModePolicy(*web_ui()->call_data().back(),
+                                                  "headerFooter", base::nullopt,
+                                                  base::nullopt);
+  ValidateInitialSettingsAllowedDefaultModePolicy(*web_ui()->call_data().back(),
+                                                  "cssBackground",
+                                                  base::nullopt, base::nullopt);
+  ValidateInitialSettingsValuePolicy(*web_ui()->call_data().back(), "sheets",
+                                     base::nullopt);
 }
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsRestrictHeaderFooterEnabled) {
@@ -596,8 +625,9 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsRestrictHeaderFooterEnabled) {
   prefs()->SetManagedPref(prefs::kPrintHeaderFooter,
                           std::make_unique<base::Value>(true));
   Initialize();
-  ValidateInitialSettingsPolicy(*web_ui()->call_data().back(), "headerFooter",
-                                base::Value(true), base::nullopt);
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "headerFooter", base::Value(true),
+      base::nullopt);
 }
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsRestrictHeaderFooterDisabled) {
@@ -605,24 +635,27 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsRestrictHeaderFooterDisabled) {
   prefs()->SetManagedPref(prefs::kPrintHeaderFooter,
                           std::make_unique<base::Value>(false));
   Initialize();
-  ValidateInitialSettingsPolicy(*web_ui()->call_data().back(), "headerFooter",
-                                base::Value(false), base::nullopt);
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "headerFooter", base::Value(false),
+      base::nullopt);
 }
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsEnableHeaderFooter) {
   // Set a pref that should take priority over StickySettings.
   prefs()->SetBoolean(prefs::kPrintHeaderFooter, true);
   Initialize();
-  ValidateInitialSettingsPolicy(*web_ui()->call_data().back(), "headerFooter",
-                                base::nullopt, base::Value(true));
+  ValidateInitialSettingsAllowedDefaultModePolicy(*web_ui()->call_data().back(),
+                                                  "headerFooter", base::nullopt,
+                                                  base::Value(true));
 }
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsDisableHeaderFooter) {
   // Set a pref that should take priority over StickySettings.
   prefs()->SetBoolean(prefs::kPrintHeaderFooter, false);
   Initialize();
-  ValidateInitialSettingsPolicy(*web_ui()->call_data().back(), "headerFooter",
-                                base::nullopt, base::Value(false));
+  ValidateInitialSettingsAllowedDefaultModePolicy(*web_ui()->call_data().back(),
+                                                  "headerFooter", base::nullopt,
+                                                  base::Value(false));
 }
 
 TEST_F(PrintPreviewHandlerTest,
@@ -630,8 +663,9 @@ TEST_F(PrintPreviewHandlerTest,
   // Set a pref with allowed value.
   prefs()->SetInteger(prefs::kPrintingAllowedBackgroundGraphicsModes, 1);
   Initialize();
-  ValidateInitialSettingsPolicy(*web_ui()->call_data().back(), "cssBackground",
-                                base::Value(1), base::nullopt);
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "cssBackground", base::Value(1),
+      base::nullopt);
 }
 
 TEST_F(PrintPreviewHandlerTest,
@@ -639,25 +673,37 @@ TEST_F(PrintPreviewHandlerTest,
   // Set a pref with allowed value.
   prefs()->SetInteger(prefs::kPrintingAllowedBackgroundGraphicsModes, 2);
   Initialize();
-  ValidateInitialSettingsPolicy(*web_ui()->call_data().back(), "cssBackground",
-                                base::Value(2), base::nullopt);
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "cssBackground", base::Value(2),
+      base::nullopt);
 }
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsEnableBackgroundGraphics) {
   // Set a pref that should take priority over StickySettings.
   prefs()->SetInteger(prefs::kPrintingBackgroundGraphicsDefault, 1);
   Initialize();
-  ValidateInitialSettingsPolicy(*web_ui()->call_data().back(), "cssBackground",
-                                base::nullopt, base::Value(1));
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "cssBackground", base::nullopt,
+      base::Value(1));
 }
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsDisableBackgroundGraphics) {
   // Set a pref that should take priority over StickySettings.
   prefs()->SetInteger(prefs::kPrintingBackgroundGraphicsDefault, 2);
   Initialize();
-  ValidateInitialSettingsPolicy(*web_ui()->call_data().back(), "cssBackground",
-                                base::nullopt, base::Value(2));
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "cssBackground", base::nullopt,
+      base::Value(2));
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(PrintPreviewHandlerTest, InitialSettingsMaxSheetsAllowedPolicy) {
+  prefs()->SetInteger(prefs::kPrintingMaxSheetsAllowed, 2);
+  Initialize();
+  ValidateInitialSettingsValuePolicy(*web_ui()->call_data().back(), "sheets",
+                                     base::Value(2));
+}
+#endif  // defined(OS_CHROMEOS)
 
 TEST_F(PrintPreviewHandlerTest, GetPrinters) {
   Initialize();

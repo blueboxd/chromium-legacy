@@ -41,6 +41,7 @@
 #include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_util.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -306,16 +307,31 @@ class SharedImageRepresentationSkiaVkAHB
     if (!BeginAccess(false /* readonly */, begin_semaphores, end_semaphores))
       return nullptr;
 
-    if (!surface_) {
+    auto* gr_context = context_state_->gr_context();
+    if (gr_context->abandoned()) {
+      LOG(ERROR) << "GrContext is abandoned.";
+      return nullptr;
+    }
+
+    if (!surface_ || final_msaa_count != surface_msaa_count_ ||
+        surface_props != surface_->props()) {
       SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
           /*gpu_compositing=*/true, format());
       surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
-          context_state_->gr_context(), promise_texture_->backendTexture(),
+          gr_context, promise_texture_->backendTexture(),
           kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
           color_space().ToSkColorSpace(), &surface_props);
+      if (!surface_) {
+        LOG(ERROR) << "MakeFromBackendTextureAsRenderTarget() failed.";
+        return nullptr;
+      }
+      surface_msaa_count_ = final_msaa_count;
     }
 
-    DCHECK(surface_);
+    int count = surface_->getCanvas()->save();
+    DCHECK_EQ(count, 1);
+    ALLOW_UNUSED_LOCAL(count);
+
     return surface_;
   }
 
@@ -325,7 +341,7 @@ class SharedImageRepresentationSkiaVkAHB
 
     surface.reset();
     DCHECK(surface_->unique());
-
+    surface_->getCanvas()->restoreToCount(1);
     EndAccess(false /* readonly */);
   }
 
@@ -451,6 +467,7 @@ class SharedImageRepresentationSkiaVkAHB
   std::unique_ptr<VulkanImage> vulkan_image_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
   RepresentationAccessMode mode_ = RepresentationAccessMode::kNone;
+  int surface_msaa_count_ = 0;
   sk_sp<SkSurface> surface_;
   scoped_refptr<SharedContextState> context_state_;
   VkSemaphore end_access_semaphore_ = VK_NULL_HANDLE;

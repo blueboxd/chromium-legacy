@@ -24,7 +24,7 @@
 <translation id="1175914831232945926">अङ्कहरू</translation>
 <translation id="1188858454923323853">पूरक</translation>
 <translation id="1195238899008218998">उपसंहार</translation>
-<translation id="1197088940767939838">सुन्तला रङ</translation>
+<translation id="1197088940767939838">सुन्तला रङ्ग</translation>
 <translation id="1201402288615127009">अर्को</translation>
 <translation id="1206619573307042055">मार्की</translation>
 <translation id="1207086294218137981">अर्को कुनै पनि लेभल ४ शीर्षक छैन</translation>
@@ -167,6 +167,7 @@
 <translation id="2347456970887948350">एउटा लिंक</translation>
 <translation id="2381733276052567791">बोली सक्रिय वा निष्क्रिय पार्न टगल गर्नुहोस्</translation>
 <translation id="2390264819538553347">अगाडि बढ्न इन्टर थिच्नुहोस्; पछाडि जान ब्याकस्पेस थिच्नुहोस्</translation>
+<translation id="2398579267367951220">यो पृष्ठमा खोज्न टाइप गर्नुहोस्। परिणामहरू भएको पृष्ठमा जान enter थिच्नुहोस्, परिणामहरू हेर्न माथि वा तल जनाउने तीर चिन्हहरू थिच्नुहोस्, अरू नै कुरा खोज्न टाइप गरिराख्नुहोस् वा खोज रद्द गर्न escape थिच्नुहोस्।</translation>
 <translation id="240709722712693803">निलो बैजनी</translation>
 <translation id="2416512023405990736">एउटा चेक हटाइएको जाँच बाकस</translation>
 <translation id="2417569100218200841">सामग्री जानकारी</translation>
@@ -230,7 +231,7 @@
 <translation id="2864481629947106776">अधिल्लो लिङ्क</translation>
 <translation id="2867808975387772810">ग्रन्थसूची</translation>
 <translation id="2873259058405069099">तालिकाको सुरुमा जानुहोस्</translation>
-<translation id="287383510823843610">गाढा सुन्तले रङ</translation>
+<translation id="287383510823843610">गाढा सुन्तले रङ्ग</translation>
 <translation id="288178314850623291">विशेष प्रकारका तत्वहरूलाई छाड्न जम्प सम्बन्धी आदेशहरूको प्रयोग गर्नुहोस्। शीर्षकहरूमा अगाडि बढ्न खोज + H वा पछाडि जान खोज + सिफ्ट + H को प्रयोग गर्नुहोस्।</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{मिनेट}other{मिनेट}}</translation>
 <translation id="2894654529758326923">जानकारी</translation>
@@ -239,7 +240,7 @@
 <translation id="2911433807131383493">खुला ChromeVox ट्यूटोरियल</translation>
 <translation id="2937799153569150791">अर्को कुनै लेभल ३ शीर्षक छैन</translation>
 <translation id="2942710183375260152">गाढा स्लेट मिश्रित निलो</translation>
-<translation id="2943596527105977722">गाढा सुनौलो रडको रङ</translation>
+<translation id="2943596527105977722">गाढा सुनौलो रडको रङ्ग</translation>
 <translation id="2964026537669811554">शीर्षक समूह</translation>
 <translation id="2968634799764242930">समुद्री हरियो</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{ ट्याब}other{# ट्याबहरू}}</translation>
@@ -440,7 +441,7 @@
 <translation id="4482330759234983253">अघिल्लो तालिका</translation>
 <translation id="4491109536499578614">छवि</translation>
 <translation id="4505167975768625962">थप्न</translation>
-<translation id="4511186779140817916">रातोपना कम भएको बदामको रङ</translation>
+<translation id="4511186779140817916">रातोपना कम भएको बदामको रङ्ग</translation>
 <translation id="451510441928265982">अघिल्लो कुनै पनि लेभल २ शीर्षक छैन</translation>
 <translation id="4517854969512651305">मान बढाउनुहोस्</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{स्ल्यास}other{# स्ल्यासहरू}}</translation>
@@ -545,7 +546,7 @@
 <translation id="5355014376930441909">अर्को कुनै पनि खण्ड छैन</translation>
 <translation id="5368000168321181111">Earcons बन्द</translation>
 <translation id="5368505757342402527">डाउनलोड <ph name="PROGRESS" />% पूरा भयो <ph name="FILE_NAME" />। लगभग <ph name="TIME" /> <ph name="UNITS" /> बाँकी छ।</translation>
-<translation id="5400836586163650660">खरानी रङ</translation>
+<translation id="5400836586163650660">खरानी रङ्ग</translation>
 <translation id="5402367795255837559">ब्रेल</translation>
 <translation id="5402791055281059602">एउटा मोडल सम्बन्धी सतर्कता</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{अर्धविराम}other{# अर्धविरामहरू}}</translation>
@@ -659,7 +660,7 @@
 <translation id="6324551002951139333">व्याकरणीय गल्ती पत्ता लाग्यो</translation>
 <translation id="6325241889020214828"><ph name="TEXT" /> प्रतिलिपि गर्नुहोस्।</translation>
 <translation id="6348657800373377022">कम्बो बाकस</translation>
-<translation id="6348869651006731065">मधुरो खरानी रङ</translation>
+<translation id="6348869651006731065">मधुरो खरानी रङ्ग</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{बुलेट}other{# बुलेटहरू}}</translation>
 <translation id="6357433033180746873">दायाँतिर कुनै पनि कक्ष छैन</translation>
 <translation id="6364795331201459219">h6</translation>
@@ -675,7 +676,7 @@
 <translation id="6452403590345320472">विषय सूची</translation>
 <translation id="6468049171101508116">अर्को बटन</translation>
 <translation id="646954774886932461">अनुक्रमणिका</translation>
-<translation id="6475604559827479857">शब्द हाइलाइट गर्ने रङ:</translation>
+<translation id="6475604559827479857">शब्द हाइलाइट गर्ने रङ्ग:</translation>
 <translation id="6493991254603208962">उज्यालो कम</translation>
 <translation id="6501595918865591267">टर्कोइस</translation>
 <translation id="6508059270146105198">ब्रेल प्रदर्शनलाई पृष्ठको तल पट्टी सार्नुहोस्</translation>
@@ -735,7 +736,7 @@
 <translation id="7037042857287298941">अधिल्लो सूची</translation>
 <translation id="7039555289296502784">ओलिव ड्राब</translation>
 <translation id="7041173719775863268">चयन अन्त्य गर्नुहोस्</translation>
-<translation id="7043850226734279132">गाढा खाली रङ</translation>
+<translation id="7043850226734279132">गाढा खाली रङ्ग</translation>
 <translation id="7051308646573997571">कोरल</translation>
 <translation id="7062635574500127092">गाढा निलो र हरियो</translation>
 <translation id="7086377898680121060">उज्यालो थप</translation>
@@ -851,7 +852,7 @@
 <translation id="7948364528129376623">अर्को कुनै पनि भ्रमण गरिएको लिङ्क छैन</translation>
 <translation id="7965147473449754028">मेनु बन्द गरियो</translation>
 <translation id="7968340748835037139">गाढा हरियो</translation>
-<translation id="7972507042926081808">चकलेटको रङ</translation>
+<translation id="7972507042926081808">चकलेटको रङ्ग</translation>
 <translation id="7974390230414479278">मेनु वस्त</translation>
 <translation id="8004507136466386272">शब्दहरू</translation>
 <translation id="8004512796067398576">बृद्धि</translation>
@@ -929,14 +930,14 @@
 <translation id="8606621670302093223">मिति नियन्त्रण</translation>
 <translation id="8613709718990529335">बिस्क</translation>
 <translation id="8625173877182443267">अर्को कुनै लेभल ६ शीर्षक छैन</translation>
-<translation id="8628186274519446680">टमाटरको रङ</translation>
+<translation id="8628186274519446680">टमाटरको रङ्ग</translation>
 <translation id="8638532244051952400">वर्तमान सेल अक्षांश घोषणा गर्नुहोस्</translation>
-<translation id="8640369214276455272">सेतो धुवाँ जस्तो रङ</translation>
+<translation id="8640369214276455272">सेतो धुवाँ जस्तो रङ्ग</translation>
 <translation id="8651481478098336970">आवाज म्यूट</translation>
 <translation id="8653646212587894517">लिङ्कहरूको सूची देखाउनुहोस्</translation>
 <translation id="8656888282555543604">ब्रेल लगिङ सक्षम पार्नुहोस्</translation>
 <translation id="867187640362843212">शिर्षक 5</translation>
-<translation id="8696284982970258155">मधुरसको रङ</translation>
+<translation id="8696284982970258155">मधुरसको रङ्ग</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{पाइप}other{# ठाडो पाइपहरू}}</translation>
 <translation id="8743786158317878347">तालिकाहरू जस्ता संरचना गरिएको सामग्री प्रविष्टि गर्नुहोस्</translation>
 <translation id="8747966237988593539">क्रम मिलाइएको सूची</translation>

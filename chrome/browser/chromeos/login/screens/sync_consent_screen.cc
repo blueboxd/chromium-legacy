@@ -116,6 +116,8 @@ void SyncConsentScreen::OnStateChanged(syncer::SyncService* sync) {
 void SyncConsentScreen::OnContinueAndReview(
     const std::vector<int>& consent_description,
     const int consent_confirmation) {
+  if (is_hidden())
+    return;
   RecordUmaReviewFollowingSetup(true);
   RecordConsent(CONSENT_GIVEN, consent_description, consent_confirmation);
   profile_->GetPrefs()->SetBoolean(prefs::kShowSyncSettingsOnSessionStart,
@@ -126,6 +128,8 @@ void SyncConsentScreen::OnContinueAndReview(
 void SyncConsentScreen::OnContinueWithDefaults(
     const std::vector<int>& consent_description,
     const int consent_confirmation) {
+  if (is_hidden())
+    return;
   RecordUmaReviewFollowingSetup(false);
   RecordConsent(CONSENT_GIVEN, consent_description, consent_confirmation);
   exit_callback_.Run();
@@ -136,6 +140,8 @@ void SyncConsentScreen::OnAcceptAndContinue(
     int consent_confirmation,
     bool enable_os_sync) {
   DCHECK(chromeos::features::IsSplitSyncConsentEnabled());
+  if (is_hidden())
+    return;
   // The user only consented to the feature if they left the toggle on.
   RecordConsent(enable_os_sync ? CONSENT_GIVEN : CONSENT_NOT_GIVEN,
                 consent_description, consent_confirmation);

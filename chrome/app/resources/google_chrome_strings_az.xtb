@@ -90,6 +90,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="34857402635545079">Chrome'dan datanı silin (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome məkanı bu saytla paylaşmaq üçün məkana giriş tələb edir</translation>
 <translation id="3533694711092285624">Yadda saxlanmış parol yoxdur. Parollarınızı yadda saxladıqda Chrome onları yoxlaya bilər.</translation>
+<translation id="3541482654983822893">Chrome parollarınızı yoxlaya bilmir. 24 saatdan sonra yenidən cəhd edin.</translation>
 <translation id="3576528680708590453">Sistem administratoru Google Chrome'u <ph name="TARGET_URL_HOSTNAME" /> ünvanına daxil olmaq məqsədilə alternativ brauzer açmaq üçün konfiqurasiya edib.</translation>
 <translation id="3582972582564653026">Chrome'u cihazlarda sinxronizasiya edin və fərdiləşdirin</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administrator güncəlləməni tətbiq etmək üçün Chrome'u yenidən başlatmanızı tələb edir}=1{Administrator güncəlləməni tətbiq etmək üçün Chrome'u yenidən başlatmanızı tələb edir. Anonim pəncərəniz yenidən açılmayacaq.}other{Administrator güncəlləməni tətbiq etmək üçün Chrome'u yenidən başlatmanızı tələb edir. # Anonim pəncərəniz yenidən açılmayacaq.}}</translation>
@@ -107,6 +108,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="4147555960264124640">İdarə olunan hesab ilə giriş edirsiniz və onun Chrome profili üzrə administrator nəzarətini verirsiniz. Tətbiqlər, əlfəcin, tarixçə, parol və digər ayarlar kimi Chrome datası həmişəlik <ph name="USER_NAME" /> adlı istifadəçi ilə əlaqələndiriləcək. Bu datanı Google İdarə panelindən silə biləcəksiniz, amma bu datanı başqa hesab ilə əlaqələndirə bilməyəcəksiniz. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Quraşdırıcı arxivi dekompres edə bilmədi. Google Chrome'u yenidən endirməyiniz xahiş olunur.</translation>
 <translation id="4191857738314598978">{0,plural, =1{Chrome'u gün ərzində yenidən başladın}other{Chrome'u # gün ərzində yenidən başladın}}</translation>
+<translation id="4205939740494406371">Chrome parollarınızı yoxlaya bilmir. 24 saatdan sonra yenidən cəhd edin və ya <ph name="BEGIN_LINK" />Google Hesabınızda parolları yoxlayın<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Chrome'dan çıxılsın?</translation>
 <translation id="4251615635259297716">Chrome datanız bu hesab ilə birləşdirilsin?</translation>
 <translation id="4293420128516039005">Chrome'u cihazlarda sinxronizasiya etmək və fərdiləşdirmək üçün daxil olun</translation>
@@ -231,7 +233,6 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="8342675569599923794">Bu fayl təhlükəlidir, bu səbəbdən Chrome onu blok etdi.</translation>
 <translation id="8370517070665726704">Müəllif hüquqları <ph name="YEAR" /> Google MMC. Bütün hüquqlar qorunur.</translation>
 <translation id="840084489713044809">Google Chrome parollarınızı eksport etmək istəyir.</translation>
-<translation id="8455999171311319804">Seçimə görə: Diaqnostika və istifadəçi datasını avtomatik Google'a göndərməklə Chrome OS tətbiqini təkmilləşdirin.</translation>
 <translation id="8498858610309223613">Google Chrome üçün xüsusi təhlükəsizlik yeniləməsi indicə tətbiq edildi. İndi yenidən başladın və açdığınız tablar bərpa ediləcək.</translation>
 <translation id="8521348052903287641">mDNS nəqliyyatına icazə vermək üçün Google Chrome Dev ümumi qaydası.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

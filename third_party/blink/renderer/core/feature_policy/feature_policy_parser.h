@@ -10,7 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy_helper.h"
+#include "third_party/blink/renderer/core/feature_policy/policy_helper.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"

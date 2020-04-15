@@ -50,7 +50,7 @@ def main():
       '--implementation-outdir',
       required=True,
       help='Build output directory for WebLayer implementation.')
-  args = parser.parse_args()
+  args, remaining_args = parser.parse_known_args()
 
   logging.basicConfig(level=logging.INFO)
 
@@ -82,7 +82,7 @@ def main():
       '--additional-apk',
       os.path.join(args.tests_outdir, 'apks/ChromiumNetTestSupport.apk')]
 
-  cmd = [executable_path] + executable_args
+  cmd = [executable_path] + executable_args + remaining_args
   cmd = [sys.executable] + cmd
   logging.info(' '.join(cmd))
   return subprocess.call(cmd)

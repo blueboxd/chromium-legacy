@@ -80,6 +80,8 @@ enum SearchResultType {
   ZERO_STATE_FILE,
   // A result from the Drive QuickAccess provider.
   DRIVE_QUICK_ACCESS,
+  // A result from the Assistant provider.
+  ASSISTANT,
   // Boundary is always last.
   SEARCH_RESULT_TYPE_BOUNDARY
 };

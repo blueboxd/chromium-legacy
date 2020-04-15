@@ -19,7 +19,6 @@
 #import "ios/web_view/internal/cwv_web_view_internal.h"
 #import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
 #import "ios/web_view/internal/sync/cwv_sync_controller_internal.h"
 #import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -147,14 +146,10 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
     signin::IdentityManager* identityManager =
         ios_web_view::WebViewIdentityManagerFactory::GetForBrowserState(
             self.browserState);
-    SigninErrorController* signinErrorController =
-        ios_web_view::WebViewSigninErrorControllerFactory::GetForBrowserState(
-            self.browserState);
-
-    _syncController =
-        [[CWVSyncController alloc] initWithSyncService:syncService
-                                       identityManager:identityManager
-                                 signinErrorController:signinErrorController];
+    _syncController = [[CWVSyncController alloc]
+        initWithSyncService:syncService
+            identityManager:identityManager
+                prefService:_browserState->GetPrefs()];
   }
   return _syncController;
 }
@@ -179,7 +174,6 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
   for (CWVWebView* webView in _webViews) {
     [webView shutDown];
   }
-  [_syncController shutDown];
   _browserState.reset();
 }
 

@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/platform/p2p/port_allocator.h"
 #include "third_party/blink/renderer/platform/p2p/socket_dispatcher.h"
 #include "third_party/blink/renderer/platform/peerconnection/audio_codec_factory.h"
-#include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/stun_field_trial.h"
 #include "third_party/blink/renderer/platform/peerconnection/video_codec_factory.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -136,7 +135,7 @@ PeerConnectionDependencyFactory::GetInstance() {
   return &instance;
 }
 
-std::unique_ptr<RTCPeerConnectionHandlerPlatform>
+std::unique_ptr<RTCPeerConnectionHandler>
 PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler(
     RTCPeerConnectionHandlerClient* client,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,

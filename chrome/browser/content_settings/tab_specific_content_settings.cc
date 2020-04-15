@@ -25,11 +25,11 @@
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/content_settings_agent.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "components/browsing_data/content/local_storage_helper.h"
+#include "components/content_settings/common/content_settings_agent.mojom.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
@@ -771,7 +771,7 @@ void TabSpecificContentSettings::RenderFrameForInterstitialPageCreated(
     content::RenderFrameHost* render_frame_host) {
   // We want to tell the renderer-side code to ignore content settings for this
   // page.
-  mojo::AssociatedRemote<chrome::mojom::ContentSettingsAgent>
+  mojo::AssociatedRemote<content_settings::mojom::ContentSettingsAgent>
       content_settings_agent;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &content_settings_agent);
@@ -802,7 +802,7 @@ void TabSpecificContentSettings::ReadyToCommitNavigation(
       !profile->GetPrefs()->GetBoolean(
           security_state::prefs::kStricterMixedContentTreatmentEnabled)) {
     auto* render_frame_host = navigation_handle->GetRenderFrameHost();
-    mojo::AssociatedRemote<chrome::mojom::ContentSettingsAgent>
+    mojo::AssociatedRemote<content_settings::mojom::ContentSettingsAgent>
         content_settings_agent;
     render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
         &content_settings_agent);

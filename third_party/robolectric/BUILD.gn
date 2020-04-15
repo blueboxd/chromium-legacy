@@ -542,7 +542,7 @@ java_library("robolectric_pluginapi_java") {
 java_library("robolectric_shadowapi_java") {
   skip_jetify = true
   testonly = true
-  deps = [ "//third_party/jsr-305:jsr_305_javalib" ]
+  deps = [ "//third_party/android_deps:com_google_code_findbugs_jsr305_java" ]
 
   sources = [
     "robolectric/shadowapi/src/main/java/org/robolectric/annotation/internal/DoNotInstrument.java",

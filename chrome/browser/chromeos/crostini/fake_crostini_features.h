@@ -31,6 +31,9 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
   bool IsContainerUpgradeUIAllowed(Profile*) override;
   bool CanChangeAdbSideloading(Profile* profile) override;
 
+  void SetAll(bool flag);
+  void ClearAll();
+
   void set_allowed(bool allowed) {
     allowed_ = allowed;
   }

@@ -209,9 +209,9 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
 
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       ui::IMEBridge::Get()->GetCandidateWindowHandler();
-  chromeos::IMESuggestionWindowHandlerInterface* suggestion_window =
-      ui::IMEBridge::Get()->GetSuggestionWindowHandler();
-  if (!candidate_window && !suggestion_window)
+  chromeos::IMEAssistiveWindowHandlerInterface* assistive_window =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (!candidate_window && !assistive_window)
     return;
 
   const gfx::Rect caret_rect = client->GetCaretBounds();
@@ -226,8 +226,8 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
     composition_head = caret_rect;
   if (candidate_window)
     candidate_window->SetCursorBounds(caret_rect, composition_head);
-  if (suggestion_window)
-    suggestion_window->SetBounds(caret_rect);
+  if (assistive_window)
+    assistive_window->SetBounds(caret_rect);
   gfx::Range text_range;
   gfx::Range selection_range;
   base::string16 surrounding_text;
@@ -388,11 +388,11 @@ void InputMethodChromeOS::UpdateContextFocusState() {
   if (candidate_window)
     candidate_window->FocusStateChanged(IsNonPasswordInputFieldFocused());
 
-  // Propagate focus event to suggestion window handler.
-  chromeos::IMESuggestionWindowHandlerInterface* suggestion_window =
-      ui::IMEBridge::Get()->GetSuggestionWindowHandler();
-  if (suggestion_window)
-    suggestion_window->FocusStateChanged();
+  // Propagate focus event to assistive window handler.
+  chromeos::IMEAssistiveWindowHandlerInterface* assistive_window =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (assistive_window)
+    assistive_window->FocusStateChanged();
 
   ui::IMEEngineHandlerInterface::InputContext context(
       GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),

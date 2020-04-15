@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.view.View;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.share.SaveImageNotificationManager;
@@ -22,9 +23,12 @@ import org.chromium.ui.widget.Toast;
 class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
     private final Context mContext;
     private final PropertyModel mPropertyModel;
+
     // The number of times the user has attempted to download the QR code in this dialog.
     private int mNumDownloads;
 
+    private long mDownloadStartTime;
+    private boolean mIsDownloadInProgress;
     /**
      * The QrCodeScanMediator constructor.
      * @param context The context to use.
@@ -41,9 +45,11 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
     /** Triggers download for the generated QR code bitmap if available. */
     protected void downloadQrCode(View view) {
         Bitmap qrcodeBitmap = mPropertyModel.get(QrCodeShareViewProperties.QRCODE_BITMAP);
-        if (qrcodeBitmap != null) {
+        if (qrcodeBitmap != null && !mIsDownloadInProgress) {
             String fileName = mContext.getString(
                     R.string.qr_code_filename_prefix, String.valueOf(System.currentTimeMillis()));
+            mIsDownloadInProgress = true;
+            mDownloadStartTime = System.currentTimeMillis();
             ShareImageFileUtils.saveBitmapToExternalStorage(mContext, fileName, qrcodeBitmap, this);
         }
         logDownload();
@@ -64,6 +70,10 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
     public void onImageSaved(Uri uri, String displayName) {
         RecordUserAction.record("SharingQRCode.DownloadQRCode.Succeeded");
 
+        mIsDownloadInProgress = false;
+        long delta = System.currentTimeMillis() - mDownloadStartTime;
+        RecordHistogram.recordMediumTimesHistogram("Sharing.DownloadQRCode.Succeeded.Time", delta);
+
         // Notify success.
         Toast.makeText(mContext,
                      mContext.getResources().getString(R.string.download_notification_completed),
@@ -75,6 +85,10 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
     @Override
     public void onImageSaveError(String displayName) {
         RecordUserAction.record("SharingQRCode.DownloadQRCode.Failed");
+
+        mIsDownloadInProgress = false;
+        long delta = System.currentTimeMillis() - mDownloadStartTime;
+        RecordHistogram.recordMediumTimesHistogram("Sharing.DownloadQRCode.Failed.Time", delta);
 
         // Notify failure.
         Toast.makeText(mContext,

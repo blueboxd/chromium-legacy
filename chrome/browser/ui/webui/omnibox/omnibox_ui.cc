@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/webui/omnibox/omnibox_page_handler.h"
 #include "chrome/browser/ui/webui/version_handler.h"
 #include "chrome/browser/ui/webui/version_ui.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/omnibox_resources.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -33,19 +34,21 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui)
   VersionUI::AddVersionDetailStrings(source);
   source->UseStringsJs();
 
-  source->AddResourcePath("omnibox.css", IDR_OMNIBOX_CSS);
-  source->AddResourcePath("omnibox_input.css", IDR_OMNIBOX_INPUT_CSS);
-  source->AddResourcePath("output_results_group.css",
-                          IDR_OUTPUT_RESULTS_GROUP_CSS);
-  source->AddResourcePath("omnibox_output_column_widths.css",
-                          IDR_OMNIBOX_OUTPUT_COLUMN_WIDTHS_CSS);
-  source->AddResourcePath("omnibox_element.js", IDR_OMNIBOX_ELEMENT_JS);
-  source->AddResourcePath("omnibox_input.js", IDR_OMNIBOX_INPUT_JS);
-  source->AddResourcePath("omnibox_output.js", IDR_OMNIBOX_OUTPUT_JS);
-  source->AddResourcePath("omnibox.js", IDR_OMNIBOX_JS);
-  source->AddResourcePath(
-      "chrome/browser/ui/webui/omnibox/omnibox.mojom-lite.js",
-      IDR_OMNIBOX_MOJO_JS);
+  static constexpr webui::ResourcePath kResources[] = {
+      {"omnibox.css", IDR_OMNIBOX_CSS},
+      {"omnibox_input.css", IDR_OMNIBOX_INPUT_CSS},
+      {"output_results_group.css", IDR_OUTPUT_RESULTS_GROUP_CSS},
+      {"omnibox_output_column_widths.css",
+       IDR_OMNIBOX_OUTPUT_COLUMN_WIDTHS_CSS},
+      {"omnibox_element.js", IDR_OMNIBOX_ELEMENT_JS},
+      {"omnibox_input.js", IDR_OMNIBOX_INPUT_JS},
+      {"omnibox_output.js", IDR_OMNIBOX_OUTPUT_JS},
+      {"omnibox.js", IDR_OMNIBOX_JS},
+      {"chrome/browser/ui/webui/omnibox/omnibox.mojom-lite.js",
+       IDR_OMNIBOX_MOJO_JS},
+  };
+  webui::AddResourcePathsBulk(source, kResources);
+
   source->SetDefaultResource(IDR_OMNIBOX_HTML);
 
 #if !defined(OS_ANDROID)

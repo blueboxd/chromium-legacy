@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/omnibox/webui_omnibox_popup_view.h"
 #include "chrome/browser/ui/views/theme_copying_widget.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_popup_handler.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/closure_animation_observer.h"
@@ -148,6 +149,17 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
+
+  if (PrefService* const pref_service = GetPrefService()) {
+    // We are observing the preference here rather than in OmniboxResultView,
+    // because showing and hiding matches also requires resizing the popup.
+    pref_change_registrar_.Init(pref_service);
+    // Unretained is appropriate here. 'this' will outlive the registrar.
+    pref_change_registrar_.Add(
+        omnibox::kOmniboxHiddenGroupIds,
+        base::BindRepeating(&OmniboxPopupContentsView::OnHiddenGroupIdsUpdate,
+                            base::Unretained(this)));
+  }
 }
 
 OmniboxPopupContentsView::~OmniboxPopupContentsView() {
@@ -301,9 +313,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     }
   } else {
     base::Optional<int> previous_row_group_id = base::nullopt;
-    PrefService* pref_service = nullptr;
-    if (location_bar_view_->profile())
-      pref_service = location_bar_view_->profile()->GetPrefs();
+    PrefService* const pref_service = GetPrefService();
     for (size_t i = 0; i < result_size; ++i) {
       // Create child views lazily.  Since especially the first result view may
       // be expensive to create due to loading font data, this saves time and
@@ -331,6 +341,13 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
 
       OmniboxResultView* const result_view = row_view->result_view();
       result_view->SetMatch(match);
+
+      // Set visibility of the result view based on whether the group is hidden.
+      bool match_hidden = pref_service &&
+                          match.suggestion_group_id.has_value() &&
+                          omnibox::IsSuggestionGroupIdHidden(
+                              pref_service, match.suggestion_group_id.value());
+      result_view->SetVisible(!match_hidden);
 
       const SkBitmap* bitmap = model_->RichSuggestionBitmapAt(i);
       if (bitmap) {
@@ -455,7 +472,7 @@ gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
       -RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets());
   content_rect.set_height(popup_height);
 
-  // Finally, expand the widget to accomodate the custom-drawn shadows.
+  // Finally, expand the widget to accommodate the custom-drawn shadows.
   content_rect.Inset(-RoundedOmniboxResultsFrame::GetShadowInsets());
   return content_rect;
 }
@@ -483,6 +500,32 @@ size_t OmniboxPopupContentsView::GetIndexForPoint(const gfx::Point& point) {
       return i;
   }
   return OmniboxPopupModel::kNoMatch;
+}
+
+void OmniboxPopupContentsView::OnHiddenGroupIdsUpdate() {
+  for (size_t i = 0; i < model_->result().size(); ++i) {
+    const AutocompleteMatch& match = model_->result().match_at(i);
+    bool match_hidden =
+        match.suggestion_group_id.has_value() &&
+        omnibox::IsSuggestionGroupIdHidden(GetPrefService(),
+                                           match.suggestion_group_id.value());
+    if (OmniboxResultView* result_view = result_view_at(i))
+      result_view->SetVisible(!match_hidden);
+  }
+
+  // This is necssary for the popup to actually resize to accommodate newly
+  // shown or hidden matches.
+  if (popup_)
+    popup_->SetTargetBounds(GetTargetBounds());
+
+  InvalidateLayout();
+}
+
+PrefService* OmniboxPopupContentsView::GetPrefService() const {
+  if (!location_bar_view_ || !location_bar_view_->profile())
+    return nullptr;
+
+  return location_bar_view_->profile()->GetPrefs();
 }
 
 void OmniboxPopupContentsView::GetAccessibleNodeData(

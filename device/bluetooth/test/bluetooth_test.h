@@ -155,9 +155,6 @@ class BluetoothTestBase : public testing::Test {
   // Then RunLoop().RunUntilIdle().
   void StartLowEnergyDiscoverySessionExpectedToFail();
 
-  // Check if Low Energy is available.
-  virtual bool PlatformSupportsLowEnergy() = 0;
-
   // Initializes the BluetoothAdapter |adapter_| with the system adapter.
   virtual void InitWithDefaultAdapter() {}
 

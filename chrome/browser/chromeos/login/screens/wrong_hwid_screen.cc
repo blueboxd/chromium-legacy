@@ -26,6 +26,8 @@ WrongHWIDScreen::~WrongHWIDScreen() {
 }
 
 void WrongHWIDScreen::OnExit() {
+  if (is_hidden())
+    return;
   exit_callback_.Run();
 }
 

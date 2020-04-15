@@ -8,6 +8,8 @@ import android.accounts.Account;
 
 import androidx.annotation.VisibleForTesting;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -27,6 +29,17 @@ public class AccountUtils {
      */
     public static Account createAccountFromName(String name) {
         return new Account(name, GOOGLE_ACCOUNT_TYPE);
+    }
+
+    /**
+     * Converts a list of the accounts to a list of account names.
+     */
+    public static List<String> toAccountNames(final List<Account> accounts) {
+        List<String> accountNames = new ArrayList<>();
+        for (Account account : accounts) {
+            accountNames.add(account.name);
+        }
+        return accountNames;
     }
 
     /**

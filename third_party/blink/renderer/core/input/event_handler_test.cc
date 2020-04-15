@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/range.h"
@@ -3038,6 +3039,47 @@ TEST_F(EventHandlerSimTest, PenDraggingOnElementActive) {
 
   EXPECT_EQ(GetDocument().GetActiveElement(),
             GetDocument().getElementById("target"));
+}
+
+TEST_F(EventHandlerSimTest, TestNoCrashOnMouseWheelZeroDelta) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <body>
+      <div id="area" style="width:100px;height:100px">
+      </div>
+      <p id='log'>no wheel event</p>
+    </body>
+    <script>
+      document.addEventListener('wheel', (e) => {
+        let log = document.getElementById('log');
+        log.innerText = 'received wheel event, deltaX: ' + e.deltaX + ' deltaY: ' + e.deltaY;
+      });
+    </script>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // Set mouse position and active web view.
+  InitializeMousePositionAndActivateView(50, 50);
+  Compositor().BeginFrame();
+
+  WebElement element = GetDocument().getElementById("log");
+  WebMouseWheelEvent wheel_event(
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  wheel_event.SetPositionInScreen(50, 50);
+  wheel_event.delta_x = 0;
+  wheel_event.delta_y = 0;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseBegan;
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("received wheel event, deltaX: 0 deltaY: 0",
+            element.InnerHTML().Utf8());
+  ASSERT_EQ(0,
+            GetDocument().View()->LayoutViewport()->GetScrollOffset().Height());
+  ASSERT_EQ(0,
+            GetDocument().View()->LayoutViewport()->GetScrollOffset().Width());
 }
 
 }  // namespace blink

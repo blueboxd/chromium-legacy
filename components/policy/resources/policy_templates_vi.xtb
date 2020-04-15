@@ -300,12 +300,6 @@
 <translation id="1427655258943162134">Địa chỉ hoặc URL của máy chủ proxy</translation>
 <translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
 <translation id="1438739959477268107">Cài đặt tạo khóa mặc định</translation>
-<translation id="1455804070656338445">Định cấu hình URL thay đổi mật khẩu (chỉ dành cho giao thức HTTP và HTTPS). Dịch vụ bảo vệ mật khẩu sẽ chuyển hướng người dùng đến URL này để thay đổi mật khẩu của họ sau khi thấy cảnh báo trên trình duyệt.
-      Để <ph name="PRODUCT_NAME" /> ghi lại chính xác vân tay số của mật khẩu mới trên trang thay đổi mật khẩu này, hãy đảm bảo trang thay đổi mật khẩu của bạn tuân thủ các nguyên tắc trên https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Nếu bạn bật tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ chuyển hướng người dùng đến URL này để thay đổi mật khẩu của họ sau khi thấy cảnh báo trên trình duyệt.
-      Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ chuyển hướng người dùng đến trang web https://myaccount.google.com để thay đổi mật khẩu của họ.
-      Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="1456822151187621582">Windows (ứng dụng <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1464848559468748897">Kiểm soát hành vi người dùng trong phiên có nhiều cấu hình trên thiết bị <ph name="PRODUCT_OS_NAME" />.
 
@@ -363,6 +357,7 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
           Nếu bạn đặt chính sách "EnableMediaRouter" thành false, thì khi đó giá trị của chính sách này sẽ không có hiệu lực.</translation>
 <translation id="1509692106376861764">Chính sách này đã chấm dứt kể từ phiên bản <ph name="PRODUCT_NAME" /> 29.</translation>
 <translation id="1514888685242892912">Bật <ph name="PRODUCT_NAME" /></translation>
+<translation id="1515230621229117540">Bật trình đơn hỗ trợ tiếp cận nổi</translation>
 <translation id="1515824657887788963">Cho phép một trang thực hiện các yêu cầu XHR đồng bộ trong khi đóng trang.</translation>
 <translation id="1522425503138261032">Cho phép các trang web theo dõi vị trí thực của người dùng</translation>
 <translation id="1523774894176285446">Trình duyệt thay thế để chạy các trang web đã định cấu hình.</translation>
@@ -394,6 +389,7 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 <translation id="1561424797596341174">Chính sách ghi đè dành cho bản dựng Gỡ lỗi của máy chủ truy cập từ xa</translation>
 <translation id="1561967320164410511">Tiện ích U2F+ để chứng thực cá nhân</translation>
 <translation id="1583248206450240930">Sử dụng <ph name="PRODUCT_FRAME_NAME" /> theo mặc định</translation>
+<translation id="1588240398285670601">Cài đặt của trình duyệt</translation>
 <translation id="1599424828227887013">Bật tính năng Cách ly trang web cho nguồn gốc đã chỉ định trên thiết bị Android</translation>
 <translation id="1608755754295374538">Các URL sẽ được cấp quyền truy cập thiết bị ghi âm mà không cần phải hiển thị lời nhắc</translation>
 <translation id="1615221548356595305">Cho phép hợp nhất các đường kết nối HTTP/2 đối với những máy chủ này kể cả khi sử dụng chứng chỉ ứng dụng khách</translation>
@@ -600,12 +596,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
       Nếu bạn đặt thành false, thì tính năng báo cáo số liệu và dữ liệu chẩn đoán sẽ bị tắt.
 
       Nếu bạn không định cấu hình, thì tính năng báo cáo số liệu và dữ liệu chẩn đoán sẽ bị tắt trên các thiết bị không được quản lý và được bật trên các thiết bị được quản lý.</translation>
-<translation id="1907431809333268751">Định cấu hình danh sách URL đăng nhập của doanh nghiệp (chỉ dành cho giao thức HTTP và HTTPS). Vân tay số của mật khẩu sẽ được ghi lại trên những URL này và dùng để phát hiện trường hợp sử dụng lại mật khẩu.
-      Để <ph name="PRODUCT_NAME" /> ghi lại chính xác vân tay số của mật khẩu, hãy đảm bảo trang đăng nhập của bạn tuân thủ các nguyên tắc trên https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Nếu bạn bật tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ ghi lại vân tay số của mật khẩu trên các URL này cho mục đích phát hiện trường hợp sử dụng lại mật khẩu.
-      Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ ghi lại vân tay số của mật khẩu trên trang web https://accounts.google.com.
-      Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="1910704279188129272">Cho phép đặt giới hạn sử dụng cho mỗi ứng dụng.
         Bạn có thể áp dụng giới hạn sử dụng cho các ứng dụng đã cài đặt trên <ph name="PRODUCT_OS_NAME" /> đối với người dùng cụ thể.
         Các giới hạn phải được chỉ định trong danh sách |app_limits|. Chỉ được phép áp dụng một giới hạn cho mỗi ứng dụng. Các ứng dụng không có trong danh sách này sẽ không bị giới hạn.
@@ -1363,6 +1353,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="2873651257716068683">Ghi đè kích thước trang in mặc định. Nếu không có kích thước trang in này thì chính sách sẽ bị bỏ qua.</translation>
 <translation id="2874209944580848064">Lưu ý dành cho thiết bị <ph name="PRODUCT_OS_NAME" /> hỗ trợ ứng dụng Android:</translation>
+<translation id="2874901846804525128">Không cho phép người dùng sử dụng ứng dụng Android từ các nguồn không tin cậy.</translation>
 <translation id="2875192972412983412">Chỉ định tập hợp con các máy chủ máy in sẽ được truy vấn khi hệ thống tìm máy chủ máy in.
 
       Nếu bạn sử dụng chính sách này, thì chỉ những máy chủ máy in có mã nhận dạng khớp với các giá trị trong chính sách này mới được cung cấp cho người dùng.
@@ -3003,6 +2994,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Nếu đặt thành đúng hoặc không định cấu hình, người dùng này có thể tạo và quản lý tài khoản người dùng bị giám sát.</translation>
 <translation id="5369937289900051171">Chỉ in màu</translation>
 <translation id="5370279767682621504">Bật hỗ trợ HTTP/0.9 trên các cổng không phải là cổng mặc định</translation>
+<translation id="5377606826822211923">Kiểm soát việc người dùng sử dụng ứng dụng Android từ những nguồn không tin cậy</translation>
 <translation id="5378985487213287085">Cho phép bạn đặt liệu các trang web có được phép hiển thị thông báo trên màn hình hay không. Việc hiển thị thông báo trên màn hình có thể được cho phép theo mặc định, từ chối theo mặc định hoặc người dùng có thể được hỏi mỗi lần trang web muốn hiển thị thông báo trên màn hình.
 
           Nếu không thiết lập chính sách này, 'AskNotifications' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
@@ -3364,6 +3356,17 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
           Nếu không có cài đặt nào được cung cấp, <ph name="PRODUCT_NAME" /> sẽ quay trở lại sử dụng tên thư viện mặc định.</translation>
 <translation id="5783009211970309878">In đầu trang và chân trang</translation>
+<translation id="5783576706065107606">Bật tùy chọn giảm thiểu kiểm tra <ph name="CORS" /> trong quy trình triển khai <ph name="CORS" /> mới, cho phép Tiện ích duy trì hành vi tương thích và cho phép <ph name="PRODUCT_NAME" /> gửi các tiêu đề đã chỉ định mà không cần kiểm tra <ph name="CORS" />.
+
+      Nếu bạn đặt danh sách này thành trống, thì <ph name="PRODUCT_NAME" /> sẽ cố chạy Tiện ích theo cách thức tương thích và không làm thay đổi <ph name="API" /> đối với <ph name="PRODUCT_NAME" /> 79 như giải thích tại <ph name="WEB_REQUEST_API_MANUAL" />.
+
+      Nếu bạn đặt danh sách này thành có tên tiêu đề yêu cầu <ph name="HTTP" />, thì quá trình kiểm tra <ph name="CORS" /> sẽ bật tùy chọn giảm thiểu cho Tiện ích và bỏ qua các tiêu đề có trong danh sách.
+
+      Nếu bạn không đặt danh sách này, thì cả hai tùy chọn giảm thiểu giải thích ở trên đều không áp dụng.
+
+      Để biết thông tin chi tiết về <ph name="CORS" />, hãy truy cập vào: <ph name="CORS_HELP_URL" />.
+
+      Xin lưu ý rằng chúng tôi đã thông báo là chính sách này sẽ bị loại bỏ trong <ph name="PRODUCT_NAME" /> phiên bản 82. Tuy nhiên, kế hoạch đã thay đổi, chính sách này sẽ bị loại bỏ trong phiên bản 84.</translation>
 <translation id="5790763087505467169">Hạn chế các thông báo tự động chạy phiên khách được quản lý</translation>
 <translation id="5806128552675651249">Chỉ cho phép in không có đồ họa nền</translation>
 <translation id="5809210507920527553">Kiểm soát các tùy chọn cài đặt cho vùng chứa Linux (Crostini).</translation>
@@ -3427,6 +3430,17 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Nếu cài đặt này bị tắt hoặc không được đặt thì tên miền TalkGadget mặc định ('chromoting-host.talkgadget.google.com') sẽ được sử dụng cho tất cả máy chủ.
 
           Các ứng dụng khách truy cập từ xa không bị ảnh hưởng bởi cài đặt chính sách này. Chúng sẽ luôn sử dụng 'chromoting-client.talkgadget.google.com' để truy cập vào TalkGadget.</translation>
+<translation id="5888171512889380367">Sử dụng quy trình triển khai <ph name="CORS" /> cũ thay vì <ph name="CORS" /> mới.
+
+      Nếu bạn đặt tùy chọn cài đặt này thành True, thì quy trình triển khai cũ tương thích với các phiên bản trước sẽ được sử dụng.
+
+      Nếu bạn đặt tùy chọn cài đặt này thành False hoặc không đặt, thì quy trình triển khai mới sẽ được sử dụng và có thể gây ra các sự cố tương thích cụ thể đối với doanh nghiệp.
+
+      Chính sách này sẽ bị loại bỏ sau một số mốc thời gian.
+
+      Để biết thông tin chi tiết về <ph name="CORS" />, hãy truy cập vào: <ph name="CORS_HELP_URL" />.
+
+      Xin lưu ý rằng chúng tôi đã thông báo là chính sách này sẽ bị loại bỏ trong <ph name="PRODUCT_NAME" /> phiên bản 82. Tuy nhiên, kế hoạch đã thay đổi, chính sách này sẽ bị loại bỏ trong phiên bản 84.</translation>
 <translation id="5893553533827140852">Nếu cài đặt này được bật, yêu cầu xác thực gnubby sẽ được proxy qua kết nối máy chủ từ xa.
 
           Nếu cài đặt này bị tắt hoặc không được định cấu hình, yêu cầu xác thực gnubby sẽ không được proxy.</translation>
@@ -3717,6 +3731,11 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
           Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="6417265370957905582">Trợ lý Google</translation>
+<translation id="6422575351619065453">Trong chế độ kiosk, hãy kiểm soát xem trình đơn hỗ trợ tiếp cận nổi có đang hiển thị hay không.
+
+      Nếu bạn đặt chính sách này thành bật, thì trình đơn hỗ trợ tiếp cận nổi sẽ luôn hiển thị.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành tắt, thì trình đơn hỗ trợ tiếp cận nổi sẽ không hiển thị.</translation>
 <translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">Bạn không thể buộc ứng dụng Android sử dụng proxy. Tập hợp con của cài đặt proxy được cung cấp cho ứng dụng Android. Cài đặt mà ứng dụng có thể tự nguyện chọn để thực hiện:
 
@@ -3815,6 +3834,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Xin lưu ý rằng EnabledPlugins và DisabledPluginsExceptions có thể ghi đè chính sách này.
 
       Nếu bạn không đặt chính sách này, thì người dùng có thể sử dụng bất kỳ plugin nào được cài đặt trên hệ thống, ngoại trừ các plugin không tương thích, lỗi thời hoặc nguy hiểm đã được mã hóa cứng.</translation>
+<translation id="6571871508154591774">Tắt máy ảnh, các tùy chọn cài đặt của trình duyệt và của hệ điều hành</translation>
 <translation id="6573305661369899995">Đặt nguồn bên ngoài cho hạn chế URL</translation>
 <translation id="6583851521569686409">Định cấu hình danh sách máy in.
 
@@ -3890,6 +3910,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6731757988219967594">Lọc các trang web cấp cao nhất (không phải iframe được nhúng) có nội dung người lớn</translation>
 <translation id="6734521799274931721">Kiểm soát khả năng sử dụng của ứng dụng Chia sẻ tệp trong mạng trên Chrome OS</translation>
 <translation id="6735701345096330595">Buộc bật tính năng kiểm tra chính tả ngôn ngữ</translation>
+<translation id="6737677282967014160">Cho phép người dùng sử dụng ứng dụng Android từ các nguồn không tin cậy.</translation>
 <translation id="6757613329154374267">Đã bật dịch vụ sao lưu và khôi phục</translation>
 <translation id="6758659208493449452">Chính sách này kiểm soát việc người dùng đăng ký chương trình Bảo vệ nâng cao có nhận được các tính năng tăng cường bảo vệ hay không. Một số tính năng trong số này có thể chia sẻ dữ liệu với Google (ví dụ: người dùng chương trình Bảo vệ nâng cao có thể gửi các tệp đã tải xuống cho Google để quét tìm phần mềm độc hại). Nếu bạn không đặt hoặc đặt chính sách này thành True, thì người dùng đã đăng ký sẽ nhận được các tính năng tăng cường bảo vệ. Nếu bạn đặt chính sách này thành False, thì người dùng chương trình Bảo vệ nâng cao sẽ chỉ nhận được các tính năng dành cho người dùng thông thường.</translation>
 <translation id="6762235610019366960">Cho phép bạn kiểm soát việc trình bày nội dung giáo dục và/hoặc quảng cáo dưới dạng toàn bộ tab trong <ph name="PRODUCT_NAME" />.
@@ -4033,13 +4054,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
 <translation id="7003746348783715221">Tùy chọn <ph name="PRODUCT_NAME" /></translation>
-<translation id="7007671350884342624">Định cấu hình thư mục <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ dữ liệu người dùng.
-
-      Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục được cung cấp bất kể người dùng có chỉ định cờ '--user-data-dir' hay không. Để tránh mất dữ liệu hoặc các lỗi không mong đợi khác, không nên đặt chính sách này thành thư mục gốc của ổ đĩa hoặc thành thư mục cho các mục đích khác, vì <ph name="PRODUCT_NAME" /> quản lý các nội dung của nó.
-
-      Xem https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để biết danh sách các biến có thể được sử dụng.
-
-      Nếu chính sách này không được đặt thì đường dẫn hồ sơ mặc định sẽ được sử dụng và người dùng có thể ghi đè bằng cờ dòng lệnh '--user-data-dir'.</translation>
 <translation id="7008308728445338159">Đã bật các tùy chọn kiểm tra chặn hệ thống tên miền (DNS)</translation>
 <translation id="7027785306666625591">Định cấu hình việc quản lý nguồn trong <ph name="PRODUCT_OS_NAME" />.
 
@@ -4430,6 +4444,13 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Các mẫu URL có cùng định dạng với chính sách 'URLBlacklist' được nêu tại https://www.chromium.org/administrators/url-blacklist-filter-format.
       </translation>
 <translation id="7566878661979235378">Loại xác thực đăng nhập SAML</translation>
+<translation id="7567373982693549834">Chính sách này kiểm soát việc sử dụng ứng dụng Android từ những nguồn không tin cậy (không phải là Cửa hàng Google Play) của từng người dùng.
+
+      Nếu không được đặt, thì giá trị mặc định của chính sách này sẽ là không cho phép.
+
+      Nếu người dùng sử dụng thiết bị được quản lý, thì khả năng đặt chính sách này sẽ còn phụ thuộc vào chính sách tương ứng của thiết bị.
+
+      Nếu người dùng sử dụng thiết bị không được quản lý, thì khả năng đặt chính sách này sẽ còn phụ thuộc vào việc người dùng có phải là chủ sở hữu thiết bị hay không.</translation>
 <translation id="757395965347379751">Khi bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ cho phép các chứng chỉ có chữ ký SHA-1 miễn là các chứng chỉ xác thực thành công và cung cấp đến chứng chỉ CA được cài đặt cục bộ.
 
       Hãy lưu ý rằng chính sách này phụ thuộc vào ngăn xếp xác minh chứng chỉ hệ điều hành cho phép chữ ký SHA-1. Nếu bản cập nhật HĐH thay đổi khả năng xử lý HĐH của chứng chỉ SHA-1 thì chính sách này có thể không còn hiệu lực nữa.  Ngoài ra, theo dự kiến, chính sách này sẽ là giải pháp tạm thời nhằm cho các doanh nghiệp thêm thời gian để di chuyển khỏi SHA-1.  Chính sách này sẽ bị xóa vào hoặc khoảng ngày 01 tháng 01 năm 2019.
@@ -4616,6 +4637,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
           Lưu ý: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> (nếu đã được chỉ định) sẽ ghi đè chính sách này.</translation>
 <translation id="7846952520291088817">URL cho các IP cục bộ hiển thị trong các ứng viên WebRTC ICE</translation>
+<translation id="7848641140449742406">Cài đặt hệ điều hành</translation>
 <translation id="7858404742201086014">Nếu bạn bật tùy chọn cài đặt này, các plugin lỗi thời sẽ được sử dụng như những plugin bình thường.
 
       Nếu bạn tắt tùy chọn cài đặt này, các plugin lỗi thời sẽ không được sử dụng và người dùng sẽ không được yêu cầu cấp quyền để chạy các plugin đó.
@@ -4943,7 +4965,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8424255554404582727">Đặt chế độ xoay màn hình mặc định, được áp dụng lại mỗi lần khởi động lại</translation>
 <translation id="8426231401662877819">Xoay màn hình 90 độ theo chiều kim đồng hồ</translation>
 <translation id="8433186206711564395">Cài đặt mạng</translation>
-<translation id="8433423491036718210">Định cấu hình danh sách các URL đăng nhập của doanh nghiệp mà dịch vụ bảo vệ mật khẩu sẽ quét dấu vân tay của mật khẩu.</translation>
 <translation id="8445576299806775661">Sau mỗi lần cập nhật phiên bản trên quy mô lớn, Chrome sẽ chụp nhanh một số phần dữ liệu duyệt web của người dùng để sử dụng trong trường hợp khôi phục phiên bản khẩn cấp diễn ra sau đó. Nếu tiến hành khôi phục khẩn cấp đối với một phiên bản mà người dùng có ảnh chụp nhanh tương ứng, thì dữ liệu trong ảnh chụp nhanh đó sẽ được khôi phục. Điều này cho phép người dùng giữ lại những tùy chọn cài đặt như dấu trang và dữ liệu tự động điền.
 
       Nếu bạn không đặt chính sách này, thì giá trị mặc định là 3 sẽ được sử dụng

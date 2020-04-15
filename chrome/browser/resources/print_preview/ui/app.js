@@ -59,7 +59,7 @@ Polymer({
     controlsManaged_: {
       type: Boolean,
       computed: 'computeControlsManaged_(destinationsManaged_, ' +
-          'settingsManaged_)',
+          'settingsManaged_, maxSheets_)',
     },
 
     /** @private {Destination} */
@@ -109,6 +109,9 @@ Polymer({
       type: Object,
       value: null,
     },
+
+    /** @private {number} */
+    maxSheets_: Number,
   },
 
   listeners: {
@@ -358,7 +361,9 @@ Polymer({
    * @private
    */
   computeControlsManaged_() {
-    return this.destinationsManaged_ || this.settingsManaged_;
+    // If |this.maxSheets_| equals to 0, no sheets limit policy is present.
+    return this.destinationsManaged_ || this.settingsManaged_ ||
+        this.maxSheets_ > 0;
   },
 
   /** @private */

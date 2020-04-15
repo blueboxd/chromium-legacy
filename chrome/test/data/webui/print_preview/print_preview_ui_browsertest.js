@@ -70,6 +70,12 @@ TEST_F('PrintPreviewAppTest', 'CssBackgroundManaged', function() {
   this.runMochaTest(print_preview_app_test.TestNames.CssBackgroundManaged);
 });
 
+GEN('#if defined(OS_CHROMEOS)');
+TEST_F('PrintPreviewAppTest', 'SheetsManaged', function() {
+  this.runMochaTest(print_preview_app_test.TestNames.SheetsManaged);
+});
+GEN('#endif');
+
 // eslint-disable-next-line no-var
 var PrintPreviewSidebarTest = class extends PrintPreviewTest {
   /** @override */
@@ -146,6 +152,12 @@ TEST_F('PrintPreviewPolicyTest', 'HeaderFooterPolicy', function() {
 TEST_F('PrintPreviewPolicyTest', 'CssBackgroundPolicy', function() {
   this.runMochaTest(policy_tests.TestNames.CssBackgroundPolicy);
 });
+
+GEN('#if defined(OS_CHROMEOS)');
+TEST_F('PrintPreviewPolicyTest', 'SheetsPolicy', function() {
+  this.runMochaTest(policy_tests.TestNames.SheetsPolicy);
+});
+GEN('#endif');
 
 // eslint-disable-next-line no-var
 var PrintPreviewSettingsSelectTest = class extends PrintPreviewTest {

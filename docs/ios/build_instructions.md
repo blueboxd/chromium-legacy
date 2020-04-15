@@ -206,7 +206,7 @@ then it will be impossible to install the application on a device (Xcode will
 display an error stating that "The application was signed with invalid
 entitlements").
 
-## Running apps from the commandline
+## Running apps from the command line
 
 Any target that is built and runs on the bots (see [below](#Troubleshooting))
 should run successfully in a local build. To run in the simulator from the
@@ -284,6 +284,11 @@ The second command syncs dependencies to the appropriate versions and re-runs
 hooks as needed.
 
 ## Tips, tricks, and troubleshooting
+
+Remember that the XCode project you interact with while working on Chromium is a
+build artifact, generated from the `BUILD.gn` files. Do not use it to add new
+files; instead see the procedures for [working with
+files](working_with_files.md).
 
 If you have problems building, join us in `#chromium` on `irc.freenode.net` and
 ask there. As mentioned above, be sure that the

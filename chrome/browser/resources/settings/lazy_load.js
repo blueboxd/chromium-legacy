@@ -40,7 +40,7 @@ import './a11y_page/a11y_page.m.js';
 import './downloads_page/downloads_page.m.js';
 import './languages_page/languages_page.m.js';
 import './printing_page/printing_page.m.js';
-import './reset_page/reset_page.m.js';
+import './reset_page/reset_page.js';
 // <if expr="not chromeos">
 import './system_page/system_page.m.js';
 // </if>

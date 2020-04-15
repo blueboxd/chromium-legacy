@@ -29,6 +29,18 @@
       'win-chrome': 'official_goma_x86',
     },
 
+    'chrome.pgo': {
+      'mac-pgo-beta': 'official_goma_mac_pgo',
+      'mac-pgo-stable': 'official_goma_mac_pgo',
+      'mac-pgo-trunk': 'official_goma_mac_pgo',
+      'win32-pgo-beta': 'official_goma_x86_pgo',
+      'win32-pgo-stable': 'official_goma_x86_pgo',
+      'win32-pgo-trunk': 'official_goma_x86_pgo',
+      'win64-pgo-beta': 'official_goma_x64_pgo',
+      'win64-pgo-stable': 'official_goma_x64_pgo',
+      'win64-pgo-trunk': 'official_goma_x64_pgo',
+    },
+
     # Take care when changing any of these builders to ensure that you do not
     # include a configuration with 'chrome_with_codecs' since these builders
     # generated publicly advertised non-Official builds which are not allowed
@@ -84,6 +96,7 @@
       'Android WebView P FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'android-marshmallow-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_whitelisting',
       'android-bfcache-rel': 'android_release_bot_minimal_symbols_arm64',
+      'android-weblayer-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
     },
 
     'chromium.chromedriver': {
@@ -511,18 +524,6 @@
       'chromeos-kevin-builder-perf-fyi': 'chromeos_kevin',
     },
 
-    'chromium.pgo': {
-      'mac-pgo-beta': 'official_goma_mac_pgo',
-      'mac-pgo-stable': 'official_goma_mac_pgo',
-      'mac-pgo-trunk': 'official_goma_mac_pgo',
-      'win32-pgo-beta': 'official_goma_x86_pgo',
-      'win32-pgo-stable': 'official_goma_x86_pgo',
-      'win32-pgo-trunk': 'official_goma_x86_pgo',
-      'win64-pgo-beta': 'official_goma_x64_pgo',
-      'win64-pgo-stable': 'official_goma_x64_pgo',
-      'win64-pgo-trunk': 'official_goma_x64_pgo',
-    },
-
     'chromium.swangle': {
       'linux-swangle-chromium-x64': 'gpu_tests_release_trybot',
       'linux-swangle-tot-angle-x64': 'angle_deqp_release_trybot',
@@ -697,6 +698,7 @@
       'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google',
       'android-pie-x86-rel': 'android_release_trybot_x86_fastbuild_webview_google',
       'android-weblayer-pie-arm64-fyi-rel': 'android_release_trybot_arm64',
+      'android-weblayer-pie-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_google',
       'android-webview-pie-arm64-fyi-rel': 'android_release_trybot_arm64_webview_google',
       'android-10-arm64-rel': 'android_release_trybot_arm64_fastbuild_webview_google',
       'android-webview-marshmallow-arm64-dbg': 'android_release_trybot_arm64_webview_google',

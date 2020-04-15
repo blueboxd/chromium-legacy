@@ -1531,16 +1531,23 @@ void RenderViewContextMenu::AppendPageItems() {
   }
 
   // Context menu item for QR Code Generator.
-  // This is presented alongside the send-tab-to-self items, though each may be
-  // present without the other due to feature experimentation. Therefore we
-  // may or may not need to create a new separator.
-  bool should_offer_qr_code_generator =
-      base::FeatureList::IsEnabled(kSharingQRCodeGenerator);
-  if (GetBrowser() && should_offer_qr_code_generator) {
+  if (IsQRCodeGeneratorEnabled()) {
+    // This is presented alongside the send-tab-to-self items, though each may
+    // be present without the other due to feature experimentation. Therefore we
+    // may or may not need to create a new separator.
     if (!send_tab_to_self_menu_present)
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+
+#if defined(OS_MACOSX)
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATE_QR_CODE,
                                     IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE);
+#else
+    menu_model_.AddItemWithStringIdAndIcon(
+        IDC_CONTENT_CONTEXT_GENERATE_QR_CODE,
+        IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE,
+        ui::ImageModel::FromVectorIcon(kQrcodeGeneratorIcon));
+#endif
+
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   } else if (send_tab_to_self_menu_present) {
     // Close out sharing section if send-tab-to-self was present but QR
@@ -2052,8 +2059,10 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
     case IDC_SEND_TAB_TO_SELF:
     case IDC_SEND_TAB_TO_SELF_SINGLE_TARGET:
-    case IDC_CONTENT_CONTEXT_GENERATE_QR_CODE:
       return true;
+
+    case IDC_CONTENT_CONTEXT_GENERATE_QR_CODE:
+      return IsQRCodeGeneratorEnabled();
 
     case IDC_CONTENT_LINK_SEND_TAB_TO_SELF:
     case IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET:
@@ -2292,8 +2301,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           GetBrowser()->tab_strip_model()->GetActiveWebContents();
       auto* bubble_controller =
           qrcode_generator::QRCodeGeneratorBubbleController::Get(web_contents);
-      bubble_controller->ShowBubble(params_.link_url);
-      // TODO(skare): Log a useraction here and in the page icon launch.
+      NavigationEntry* entry =
+          embedder_web_contents_->GetController().GetLastCommittedEntry();
+      bubble_controller->ShowBubble(entry->GetURL());
       break;
     }
 
@@ -2644,6 +2654,21 @@ bool RenderViewContextMenu::IsPrintPreviewEnabled() const {
 
   Browser* browser = GetBrowser();
   return browser && chrome::CanPrint(browser);
+}
+
+bool RenderViewContextMenu::IsQRCodeGeneratorEnabled() const {
+  if (!GetBrowser())
+    return false;
+
+  if (!base::FeatureList::IsEnabled(kSharingQRCodeGenerator))
+    return false;
+
+  NavigationEntry* entry =
+      embedder_web_contents_->GetController().GetLastCommittedEntry();
+  if (!entry || !content::IsSavableURL(entry->GetURL()))
+    return false;
+
+  return true;
 }
 
 bool RenderViewContextMenu::IsRouteMediaEnabled() const {

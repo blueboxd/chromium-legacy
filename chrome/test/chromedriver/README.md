@@ -58,14 +58,10 @@ available in many languages, and many are available from the open source
 ChromeDriver uses the webserver from
 [net/server](https://source.chromium.org/chromium/chromium/src/+/master:net/server/).
 
-ChromeDriver has a main thread, called the command thread, an IO thread,
-and a thread per session. The webserver receives a request on the IO thread,
-which is sent to a handler on the command thread. The handler executes the
-appropriate command function, which completes asynchronously. The create
-session command may create a new thread for subsequent session-related commands,
-which will execute on the dedicated session thread synchronously. When a
-command is finished, it will invoke a callback, which will eventually make its
-way back to the IO thread as a HTTP response for the server to send.
+Additional information is available on the following pages:
+* [Threading](docs/threading.md): ChromeDriver threading model.
+* [Chrome Connection](docs/chrome_connection.md):
+  How ChromeDriver connects to Chrome and controls it.
 
 ## Code structure (relative to this file)
 

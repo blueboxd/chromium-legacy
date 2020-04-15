@@ -385,8 +385,8 @@ void DiscardsGraphDumpImpl::SendFrameNotification(
   frame_info->page_id = GetSerializationId(page);
 
   frame_info->url = frame->GetURL();
-  frame_info->description_json = ToJSON(
-      graph_->GetNodeDataDescriberRegistry()->DescribeFrameNodeData(frame));
+  frame_info->description_json =
+      ToJSON(graph_->GetNodeDataDescriberRegistry()->DescribeNodeData(frame));
 
   if (created)
     change_subscriber_->FrameCreated(std::move(frame_info));
@@ -404,7 +404,7 @@ void DiscardsGraphDumpImpl::SendPageNotification(
   page_info->id = GetSerializationId(page_node);
   page_info->main_frame_url = page_node->GetMainFrameUrl();
   page_info->description_json = ToJSON(
-      graph_->GetNodeDataDescriberRegistry()->DescribePageNodeData(page_node));
+      graph_->GetNodeDataDescriberRegistry()->DescribeNodeData(page_node));
 
   if (created)
     change_subscriber_->PageCreated(std::move(page_info));
@@ -423,8 +423,8 @@ void DiscardsGraphDumpImpl::SendProcessNotification(
   process_info->pid = process->GetProcessId();
   process_info->private_footprint_kb = process->GetPrivateFootprintKb();
 
-  process_info->description_json = ToJSON(
-      graph_->GetNodeDataDescriberRegistry()->DescribeProcessNodeData(process));
+  process_info->description_json =
+      ToJSON(graph_->GetNodeDataDescriberRegistry()->DescribeNodeData(process));
 
   if (created)
     change_subscriber_->ProcessCreated(std::move(process_info));
@@ -456,8 +456,8 @@ void DiscardsGraphDumpImpl::SendWorkerNotification(
     worker_info->child_worker_ids.push_back(GetSerializationId(child_worker));
   }
 
-  worker_info->description_json = ToJSON(
-      graph_->GetNodeDataDescriberRegistry()->DescribeWorkerNodeData(worker));
+  worker_info->description_json =
+      ToJSON(graph_->GetNodeDataDescriberRegistry()->DescribeNodeData(worker));
 
   if (created)
     change_subscriber_->WorkerCreated(std::move(worker_info));

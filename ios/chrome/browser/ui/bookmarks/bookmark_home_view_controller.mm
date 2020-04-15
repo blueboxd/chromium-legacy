@@ -497,10 +497,17 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)cacheIndexPathRow {
   // Cache IndexPathRow for BookmarkTableView.
   int topMostVisibleIndexPathRow = [self topMostVisibleIndexPathRow];
-  [BookmarkPathCache
-      cacheBookmarkTopMostRowWithPrefService:self.browserState->GetPrefs()
-                                    folderId:_rootNode->id()
-                                  topMostRow:topMostVisibleIndexPathRow];
+  if (_rootNode) {
+    [BookmarkPathCache
+        cacheBookmarkTopMostRowWithPrefService:self.browserState->GetPrefs()
+                                      folderId:_rootNode->id()
+                                    topMostRow:topMostVisibleIndexPathRow];
+  } else {
+    // TODO(crbug.com/1061882):Remove DCHECK once we know the root cause of the
+    // bug, for now this will cause a crash on Dev/Canary and we should get
+    // breadcrumbs.
+    DCHECK(NO);
+  }
 }
 
 #pragma mark - BookmarkHomeConsumer
@@ -1595,7 +1602,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
      forMultipleBookmarkURLs:(const std::set<const BookmarkNode*>)nodes {
   __weak BookmarkHomeViewController* weakSelf = self;
   coordinator.alertController.view.accessibilityIdentifier =
-      @"bookmark_context_menu";
+      kBookmarkHomeContextMenuIdentifier;
 
   [coordinator
       addItemWithTitle:l10n_util::GetNSString(
@@ -1634,7 +1641,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   __weak BookmarkHomeViewController* weakSelf = self;
   std::string urlString = node->url().possibly_invalid_spec();
   coordinator.alertController.view.accessibilityIdentifier =
-      @"bookmark_context_menu";
+      kBookmarkHomeContextMenuIdentifier;
 
   [coordinator addItemWithTitle:l10n_util::GetNSString(
                                     IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)
@@ -1679,7 +1686,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
      forSingleBookmarkFolder:(const BookmarkNode*)node {
   __weak BookmarkHomeViewController* weakSelf = self;
   coordinator.alertController.view.accessibilityIdentifier =
-      @"bookmark_context_menu";
+      kBookmarkHomeContextMenuIdentifier;
 
   [coordinator addItemWithTitle:l10n_util::GetNSString(
                                     IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)
@@ -1707,7 +1714,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
         (const std::set<const bookmarks::BookmarkNode*>)nodes {
   __weak BookmarkHomeViewController* weakSelf = self;
   coordinator.alertController.view.accessibilityIdentifier =
-      @"bookmark_context_menu";
+      kBookmarkHomeContextMenuIdentifier;
 
   [coordinator addItemWithTitle:l10n_util::GetNSString(
                                     IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)

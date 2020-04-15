@@ -100,11 +100,11 @@ void CookieManager::GetCookieList(const GURL& url,
 }
 
 void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
-                                       const std::string& source_scheme,
+                                       const GURL& source_url,
                                        const net::CookieOptions& cookie_options,
                                        SetCanonicalCookieCallback callback) {
   cookie_store_->SetCanonicalCookieAsync(
-      std::make_unique<net::CanonicalCookie>(cookie), source_scheme,
+      std::make_unique<net::CanonicalCookie>(cookie), source_url,
       cookie_options, std::move(callback));
 }
 

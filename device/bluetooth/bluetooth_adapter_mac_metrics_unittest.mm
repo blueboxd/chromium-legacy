@@ -10,10 +10,6 @@ namespace device {
 class BluetoothAdapterMacMetricsTest : public BluetoothTest {
  public:
   void FakeDeviceBoilerPlate() {
-    if (!PlatformSupportsLowEnergy()) {
-      LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-      return;
-    }
     InitWithFakeAdapter();
     StartLowEnergyDiscoverySession();
     device_ = SimulateLowEnergyDevice(3);

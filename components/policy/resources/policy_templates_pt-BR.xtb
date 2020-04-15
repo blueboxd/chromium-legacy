@@ -293,12 +293,6 @@
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
 <translation id="1435659902881071157">Configuração de rede em nível de dispositivo</translation>
 <translation id="1438739959477268107">Configuração padrão de geração de chaves</translation>
-<translation id="1455804070656338445">Configura o URL de alteração de senha (somente para esquemas HTTP e HTTPS). O serviço de proteção de senhas encaminhará os usuários a esse URL para que alterem a própria senha após receberem um aviso no navegador.
-      Para que o <ph name="PRODUCT_NAME" /> capture corretamente a nova impressão digital de senha na página de alteração de senha, essa página precisa seguir as diretrizes que constam em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se essa configuração estiver ativada, o serviço de proteção de senhas encaminhará os usuários a esse URL para que alterem a própria senha após receberem um aviso no navegador.
-      Se essa configuração estiver desativada ou não for definida, o serviço de proteção de senhas encaminhará os usuários para https://myaccount.google.com para a alteração da senha.
-      Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="1456822151187621582">Windows (clientes do <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1464848559468748897">Controla o comportamento do usuário em uma sessão de diversos perfis nos dispositivos com <ph name="PRODUCT_OS_NAME" />.
 
@@ -591,12 +585,6 @@ Se você desativar a política, essa rolagem será desativada.</translation>
       Se configurada como falsa, os relatórios de métricas e dados de diagnóstico serão desativados.
 
       Se não for configurada, os relatórios de métricas e dados de diagnóstico serão desativados em dispositivos não gerenciados e ativados em dispositivos gerenciados.</translation>
-<translation id="1907431809333268751">Configura a lista de URLs de login corporativo (somente para esquemas HTTP e HTTPS). A impressão digital da senha será capturada nesses URLs e usada para detecção de reutilização de senhas.
-      Para que as impressões digitais de senha sejam capturadas corretamente no <ph name="PRODUCT_NAME" />, suas páginas de login precisam seguir as diretrizes que constam em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se essa configuração estiver ativada, a impressão digital da senha será capturada nesses URLs pelo serviço de proteção de senhas para detecção de reutilização.
-      Se essa configuração estiver desativada ou não estiver definida, a impressão digital da senha será capturada pelo serviço de proteção de senhas apenas em https://accounts.google.com.br.
-      Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="1910704279188129272">Permite definir restrições de uso por app.
         As restrições de uso podem ser aplicadas aos apps instalados no <ph name="PRODUCT_OS_NAME" /> para um determinado usuário.
         As restrições precisam ser passadas na lista |app_limits|. É permitida apenas uma entrada por app. Os apps que não estão na lista não têm restrições.
@@ -2921,7 +2909,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
           Se definida como verdadeira ou não configurada, este usuário poderá criar e gerenciar usuários supervisionados.</translation>
 <translation id="5369937289900051171">Apenas impressão colorida</translation>
 <translation id="5370279767682621504">Ativar suporte a HTTP/0.9 em portas não padrão</translation>
-<translation id="5377606826822211923">Controla o uso de apps para Android de fontes em que o usuário não confia</translation>
+<translation id="5377606826822211923">Controla, no lugar do usuário, o uso de apps para Android de fontes não confiáveis</translation>
 <translation id="5378985487213287085">Permite que você defina se os websites são autorizados a exibir notificações na área de trabalho. A exibição de notificações na área de trabalho pode ser autorizada ou recusada por padrão ou o usuário pode ser solicitado a autorizar todas as vezes em que um website quiser exibir notificações na área de trabalho. Se esta política for deixada sem definição, a política "AskNotifications" será utilizada, podendo ser modificada pelo usuário.</translation>
 <translation id="5380329473151894945">Definir o estado padrão do recurso de acessibilidade de cursor grande na tela de login.
 
@@ -3947,13 +3935,6 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
       Se a opção U2F_EXTENDED for selecionada, o segundo fator integrado fornecerá as funções de U2F, além de algumas extensões para declaração individual.</translation>
 <translation id="7003334574344702284">Se ativada, esta política força a importação de senhas a partir do navegador padrão anterior. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, as senhas salvas não são importadas. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="7003746348783715221">Preferências do <ph name="PRODUCT_NAME" /></translation>
-<translation id="7007671350884342624">Configura o diretório que o <ph name="PRODUCT_NAME" /> usará para armazenar dados do usuário.
-
-      Se você definir esta política, o <ph name="PRODUCT_NAME" /> usará o diretório fornecido independentemente de o usuário ter especificado a sinalização "--user-data-dir" ou não. Para evitar perda de dados ou outros erros inesperados, esta política não deve ser definida para um diretório raiz de volume ou um diretório usado para outros fins, pois o <ph name="PRODUCT_NAME" /> gerencia seus conteúdos.
-
-      Consulte https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver uma lista de variáveis que podem ser usadas.
-
-      Se esta política for deixada sem definição, o caminho padrão de perfil será usado, e o usuário poderá substituí-lo pela sinalização de linha de comando "--user-data-dir".</translation>
 <translation id="7008308728445338159">Verificação de interceptações de DNS ativada</translation>
 <translation id="7027785306666625591">Configura o gerenciamento de energia no <ph name="PRODUCT_OS_NAME" />.
 
@@ -4338,7 +4319,7 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Os padrões do URL têm o mesmo formato que a política "URLBlacklist", documentada em https://www.chromium.org/administrators/url-blacklist-filter-format (em inglês).
       </translation>
 <translation id="7566878661979235378">Tipo de autenticação de login SAML</translation>
-<translation id="7567373982693549834">Esta política controla o uso de apps para Android de fontes em que o usuário não confia (diferentes do Google Play).
+<translation id="7567373982693549834">Esta política controla, no lugar de cada usuário, o uso de apps para Android de fontes não confiáveis (diferentes do Google Play).
 
       Se o valor da política não for definido, a funcionalidade será tratada como não permitida.
 
@@ -4855,7 +4836,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8424255554404582727">Definir rotação padrão da tela, reaplicada em cada reinicialização</translation>
 <translation id="8426231401662877819">Girar tela no sentido horário em 90 graus</translation>
 <translation id="8433186206711564395">Configurações de rede</translation>
-<translation id="8433423491036718210">Configure a lista de URLs de login corporativo em que o serviço de proteção de senha deve capturar a impressão digital da senha.</translation>
 <translation id="8445576299806775661">Depois de cada atualização importante de versão, o Chrome criará um snapshot de certas partes dos dados de navegação do usuário para uso em caso de reversão de emergência da versão. Se uma reversão de emergência for feita para uma versão da qual o usuário tem um snapshot correspondente, os dados serão restaurados. Isso permite que o usuário retenha essas configurações na forma de favoritos e dados de preenchimento automático.
 
       Se essa política não for definida, o valor padrão 3 será usado.

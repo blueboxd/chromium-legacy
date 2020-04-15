@@ -93,15 +93,15 @@ class IMEBridgeImpl : public IMEBridge {
   }
 
   // IMEBridge override.
-  void SetSuggestionWindowHandler(
-      chromeos::IMESuggestionWindowHandlerInterface* handler) override {
-    suggestion_window_handler_ = handler;
+  void SetAssistiveWindowHandler(
+      chromeos::IMEAssistiveWindowHandlerInterface* handler) override {
+    assistive_window_handler_ = handler;
   }
 
   // IMEBridge override.
-  chromeos::IMESuggestionWindowHandlerInterface* GetSuggestionWindowHandler()
+  chromeos::IMEAssistiveWindowHandlerInterface* GetAssistiveWindowHandler()
       const override {
-    return suggestion_window_handler_;
+    return assistive_window_handler_;
   }
 #endif
 
@@ -114,7 +114,7 @@ class IMEBridgeImpl : public IMEBridge {
 #if defined(OS_CHROMEOS)
   chromeos::IMECandidateWindowHandlerInterface* candidate_window_handler_ =
       nullptr;
-  chromeos::IMESuggestionWindowHandlerInterface* suggestion_window_handler_ =
+  chromeos::IMEAssistiveWindowHandlerInterface* assistive_window_handler_ =
       nullptr;
 #endif
 

@@ -612,7 +612,7 @@
 <translation id="1805888043020974594">Afdrukserver</translation>
 <translation id="1805967612549112634">Pincode bevestigen</translation>
 <translation id="1806335016774576568">Overschakelen naar een andere geopende app</translation>
-<translation id="1809483812148634490">Apps die je hebt gedownload via Google Play, worden van deze Chromebook verwijderd.
+<translation id="1809483812148634490">Apps die je hebt gedownload via Google Play worden van deze Chromebook verwijderd.
     <ph name="LINE_BREAKS1" />
     De content die je hebt gekocht, zoals films, tv-programma's, muziek, boeken of andere in-app-aankopen, worden mogelijk ook verwijderd.
     <ph name="LINE_BREAKS2" />
@@ -687,7 +687,6 @@
 <translation id="189210018541388520">Openen in volledig scherm</translation>
 <translation id="1892341345406963517">Hallo <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Andere talen</translation>
-<translation id="1895252664692693738">Nog <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Uitschakeling</translation>
 <translation id="1895934970388272448">Je moet de registratie op je printer bevestigen om dit proces te voltooien. Controleer dit nu.</translation>
 <translation id="1899826437968063457">Plugin VM heeft toestemming nodig om te kunnen worden uitgevoerd</translation>
@@ -4001,7 +4000,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6365411474437319296">Familie en vrienden toevoegen</translation>
 <translation id="636850387210749493">Aanmelding voor Enterprise</translation>
 <translation id="6370021412472292592">Kan manifest niet laden.</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Wachtwoord wijzigen}other{Wachtwoorden wijzigen}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Opnieuw proberen</translation>
 <translation id="6377268785556383139">Eén resultaat voor '<ph name="SEARCH_TEXT" />'</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="uk">
 <translation id="1005230401424685968">РРРР</translation>
 <translation id="1016495303386450659">Закладку оновлено</translation>
+<translation id="1044891598689252897">Сайти працюватимуть у звичному режимі</translation>
 <translation id="1047726139967079566">Додати цю сторінку до закладок...</translation>
 <translation id="1049743911850919806">Анонімний перегляд</translation>
 <translation id="1063454504051558093">Ввести інший пароль…</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860">Закладок: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Двічі торкніться, щоб змінити налаштування</translation>
 <translation id="1509486075633541495">Увійдіть в обліковий запис на веб-сайті</translation>
+<translation id="1509960214886564027">Функції на багатьох сайтах можуть не працювати</translation>
 <translation id="152234381334907219">Ніколи не зберігалося</translation>
 <translation id="1540800554400757039">Адреса 1</translation>
 <translation id="1545749641540134597">Сканувати QR-код</translation>
@@ -528,6 +530,7 @@
 <translation id="7961015016161918242">Ніколи</translation>
 <translation id="7971521879845308059">Блок.сплив.вікна</translation>
 <translation id="7982789257301363584">Мережа</translation>
+<translation id="7993619969781047893">Функції на деяких сайтах можуть не працювати</translation>
 <translation id="800361585186029508">Відкриває введені URL-адреси в Google Chrome.</translation>
 <translation id="8007420562015504427">Пошук у режимі інкогніто</translation>
 <translation id="8019783059653722575">Ви зможете зберігати й завантажувати фотографії.</translation>

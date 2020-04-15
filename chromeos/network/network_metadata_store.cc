@@ -75,7 +75,8 @@ void NetworkMetadataStore::ConnectSucceeded(const std::string& service_path) {
   bool is_first_connection =
       GetLastConnectedTimestamp(network->guid()).is_zero();
 
-  UpdateLastConnectedTimestamp(network->guid());
+  SetLastConnectedTimestamp(network->guid(),
+                            base::Time::Now().ToDeltaSinceWindowsEpoch());
 
   if (is_first_connection) {
     for (auto& observer : observers_) {
@@ -135,13 +136,6 @@ void NetworkMetadataStore::RemoveNetworkFromPref(
   pref_service->Set(kNetworkMetadataPref, writeable_dict);
 }
 
-void NetworkMetadataStore::UpdateLastConnectedTimestamp(
-    const std::string& network_guid) {
-  double timestamp =
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InMillisecondsF();
-  SetPref(network_guid, kLastConnectedTimestampPref, base::Value(timestamp));
-}
-
 void NetworkMetadataStore::SetIsConfiguredBySync(
     const std::string& network_guid) {
   SetPref(network_guid, kIsFromSync, base::Value(true));
@@ -157,6 +151,13 @@ base::TimeDelta NetworkMetadataStore::GetLastConnectedTimestamp(
   }
 
   return base::TimeDelta::FromMillisecondsD(timestamp->GetDouble());
+}
+
+void NetworkMetadataStore::SetLastConnectedTimestamp(
+    const std::string& network_guid,
+    const base::TimeDelta& timestamp) {
+  double timestamp_f = timestamp.InMillisecondsF();
+  SetPref(network_guid, kLastConnectedTimestampPref, base::Value(timestamp_f));
 }
 
 bool NetworkMetadataStore::GetIsConfiguredBySync(

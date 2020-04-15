@@ -609,6 +609,11 @@
 <translation id="1805888043020974594">Serveri i printimit</translation>
 <translation id="1805967612549112634">Konfirmo kodin PIN</translation>
 <translation id="1806335016774576568">Kalo te një aplikacion tjetër i hapur</translation>
+<translation id="1809483812148634490">Aplikacionet që ke shkarkuar nga Google Play do të fshihen nga ky Chromebook.
+    <ph name="LINE_BREAKS1" />
+      Përmbajtja që ke blerë si filmat, shfaqjet televizive, muzika, librat ose blerjet e tjera përmes aplikacionit mund të fshihen po ashtu.
+    <ph name="LINE_BREAKS2" />
+      Kjo nuk ndikon tek aplikacionet ose përmbajtjet në pajisjet e tjera.</translation>
 <translation id="1809734401532861917">Shto faqeshënuesit, historinë, fjalëkalimet dhe cilësimet e mia të tjera te <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">Shërbimet</translation>
 <translation id="18139523105317219">Emri i palës EDI</translation>
@@ -679,7 +684,6 @@
 <translation id="189210018541388520">Hap ekranin e plotë</translation>
 <translation id="1892341345406963517">Përshëndetje <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Gjuhë të tjera</translation>
-<translation id="1895252664692693738">Koha e mbetur: <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Mbyllja</translation>
 <translation id="1895934970388272448">Duhet të konfirmosh regjistrimin në printerin tënd për të përfunduar këtë proces - kontrolloje tani.</translation>
 <translation id="1899826437968063457">Plugin VM ka nevojë për leje për t'u ekzekutuar</translation>
@@ -1244,7 +1248,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="265390580714150011">Vlera e fushës</translation>
 <translation id="2654166010170466751">Lejo që sajtet të instalojnë përpunues të pagesave</translation>
 <translation id="2654553774144920065">Kërkesa për printim</translation>
-<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Funksionet ndryshojnë sipas pajisjes</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Veçoritë ndryshojnë sipas pajisjes</translation>
 <translation id="2660779039299703961">Ngjarje</translation>
 <translation id="266079277508604648">Printeri nuk mund të lidhet. Kontrollo që printeri është i ndezur dhe është i lidhur me pajisjen tënde Chromebook nëpërmjet Wi-Fi ose USB-së.</translation>
 <translation id="2661714428027871023">Shfleto më shpejt dhe përdor më pak të dhëna me "Modalitetin e lehtë". Kliko për të mësuar më shumë.</translation>
@@ -1390,6 +1394,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2825848369316359348">Gjej emrin e printuar në pjesën e pasme të çelësit të sigurisë</translation>
 <translation id="2828650939514476812">Lidhu me rrjetin Wi-Fi</translation>
 <translation id="2835294513443818940">Ky skedar nuk mund të shkarkohet në mënyrë të sigurt.</translation>
+<translation id="2835547721736623118">Shërbimi i njohjes së ligjërimit</translation>
 <translation id="2836269494620652131">Ndërprerje aksidentale</translation>
 <translation id="2836635946302913370">Identifikimi me këtë emër përdoruesi është çaktivizuar nga administratori yt.</translation>
 <translation id="283669119850230892">Për të përdorur rrjetin <ph name="NETWORK_ID" />, në fillim përfundo lidhjen tënde me internetin më poshtë.</translation>
@@ -1534,6 +1539,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3019285239893817657">Butoni i nënfaqes</translation>
 <translation id="3020183492814296499">Shkurtoret</translation>
 <translation id="3020990233660977256">Numri i serisë: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Gjatë kohës me bateri</translation>
 <translation id="3021066826692793094">Flutur</translation>
 <translation id="3021678814754966447">&amp;Shiko burimin e kornizës</translation>
 <translation id="3022978424994383087">Nuk e kuptova.</translation>
@@ -2730,6 +2736,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4633757335284074492">Rezervo në "Diskun e Google". Restauro të dhënat ose ndërro me lehtësi pajisjen në çdo kohë. Rezervimi yt përfshin të dhënat e aplikacioneve. Rezervimet ngarkohen në Google dhe enkriptohen duke përdorur fjalëkalimin e "Llogarisë së Google" të fëmijës tënd.</translation>
 <translation id="4634771451598206121">Identifikohu sërish...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> nuk ofrohet për përdoruesit vizitorë.</translation>
+<translation id="4635444580397524003">Rezervimi i Linux është restauruar me sukses.</translation>
 <translation id="4636930964841734540">Informacion</translation>
 <translation id="4637083375689622795">Më shumë veprime, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Aktivizo korrigjimin e ADB-së</translation>
@@ -2905,6 +2912,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4890773143211625964">Shfaq opsionet e përparuara të printerit</translation>
 <translation id="4891089016822695758">Forumi beta</translation>
 <translation id="4892229439761351791">Sajti mund të përdorë Bluetooth-in</translation>
+<translation id="489258173289528622">Veprimi i gjendjes joaktive gjatë kohës që është me bateri</translation>
 <translation id="4893336867552636863">Kjo do të fshijë në mënyrë të përhershme të dhënat e shfletimit nga kjo pajisje.</translation>
 <translation id="4893522937062257019">Në ekranin e kyçjes</translation>
 <translation id="489454699928748701">Lejoju faqeve të përdorin sensorët e lëvizjes</translation>
@@ -3611,6 +3619,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5863445608433396414">Aktivizo funksionet e korrigjimit</translation>
 <translation id="5864195618110239517">Përdor lidhjen me matje</translation>
 <translation id="5864471791310927901">Kërkimi i DHCP-së dështoi</translation>
+<translation id="5864754048328252126">Veprimi i gjendjes joaktive gjatë karikimit</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> do të vendoset në pauzë së shpejti</translation>
 <translation id="586567932979200359">Po e ekzekuton <ph name="PRODUCT_NAME" /> nga imazhi i tij i diskut. Instalimi i tij në kompjuter lejon që ta ekzekutosh pa imazhin e diskut dhe garanton se do të mbahet i përditësuar.</translation>
 <translation id="5865733239029070421">Dërgon automatikisht te Google statistika të përdorimit dhe raportet e ndërprerjeve aksidentale</translation>
@@ -3810,6 +3819,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6120205520491252677">Gozhdoje këtë faqe tek ekrani i Nisjes...</translation>
 <translation id="6122081475643980456">Lidhja jote e internetit po kontrollohet</translation>
 <translation id="6122095009389448667">Vazhdo të bllokosh këtë sajt që të mos shikojë kujtesën e fragmenteve</translation>
+<translation id="6122831415929794347">Të çaktivizohet "Shfletimi i sigurt"?</translation>
 <translation id="6122875415561139701">Veprimi i shkrimit nuk lejohet në: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">Shtesat vijuese varen nga kjo shtesë:</translation>
 <translation id="6124698108608891449">Ky sajt ka nevojë për më shumë autorizime.</translation>
@@ -3987,7 +3997,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6365411474437319296">Shto familjarë dhe miq</translation>
 <translation id="636850387210749493">Regjistrimi i ndërmarrjes</translation>
 <translation id="6370021412472292592">Manifesti nuk mund të ngarkohej.</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Ndrysho fjalëkalimin}other{Ndrysho fjalëkalimet}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Provo përsëri</translation>
 <translation id="6377268785556383139">1 rezultat për "<ph name="SEARCH_TEXT" />"</translation>
@@ -4013,6 +4022,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6408118934673775994">Lexo dhe ndrysho të dhënat e tua në <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dhe <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Skedarët e imazheve</translation>
 <translation id="6410328738210026208">Ndërro kanalin dhe zbato Powerwash</translation>
+<translation id="6410390304316730527">"Shfletimi i sigurt" të mbron kundër sulmuesve që mund të të mashtrojnë që të bësh diçka të rrezikshme si instalimi i softuerëve keqdashës ose të zbulosh informacion personal si fjalëkalime, numra telefoni ose karta krediti. Nëse e çaktivizon, ki kujdes kur shfleton sajte të panjohura ose pa reputacion.</translation>
 <translation id="6410668567036790476">Shto motor kërkimi</translation>
 <translation id="641081527798843608">Përputhja e subjektit</translation>
 <translation id="6412673304250309937">Kontrollon URL-të kundrejt një liste sajtesh të pasigurta të ruajtur në Chrome. Nëse një sajt përpiqet të vjedhë fjalëkalimin tënd, ose kur shkarkon një skedar të dëmshëm, Chrome mund t'i dërgojë po ashtu "Shfletimit të sigurt" URL-të, duke përfshirë pjesë të përmbajtjes së faqes.</translation>
@@ -5931,6 +5941,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8951256747718668828">Restaurimi nuk mund të përfundonte për shkak të një gabimi</translation>
 <translation id="8951465597020890363">Dëshiron të dalësh gjithsesi nga modaliteti "vizitor"?</translation>
 <translation id="8952831374766033534">Opsioni i konfigurimit nuk mbështetet: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">Gjatë karikimit</translation>
 <translation id="895347679606913382">Po niset...</translation>
 <translation id="8957762313041272117">Titra në çast</translation>
 <translation id="895944840846194039">Memoria e JavaScript</translation>

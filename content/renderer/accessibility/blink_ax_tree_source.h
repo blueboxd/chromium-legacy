@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <string>
 
 #include "base/optional.h"
 #include "content/common/ax_content_node_data.h"
@@ -112,6 +113,7 @@ class BlinkAXTreeSource
   bool IsEqual(blink::WebAXObject node1,
                blink::WebAXObject node2) const override;
   blink::WebAXObject GetNull() const override;
+  std::string GetDebugString(blink::WebAXObject node) const override;
 
   blink::WebDocument GetMainDocument() const;
 

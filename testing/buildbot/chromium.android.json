@@ -2664,7 +2664,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -2675,6 +2676,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2702,7 +2708,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -2712,7 +2718,8 @@
         "args": [
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -2724,6 +2731,11 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "name": "network_service_out_of_process_chrome_public_test_apk",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2751,7 +2763,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -5698,7 +5710,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -5709,6 +5722,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -5737,7 +5755,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -8720,7 +8738,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -8731,6 +8750,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -8759,7 +8783,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -8769,7 +8793,8 @@
         "args": [
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -8781,6 +8806,11 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "name": "network_service_out_of_process_chrome_public_test_apk",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -8809,7 +8839,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -12232,7 +12262,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -12243,6 +12274,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -12271,7 +12307,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -15424,7 +15460,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -15435,6 +15472,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -15462,7 +15504,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 14
         },
         "test": "chrome_public_test_apk",
@@ -15472,7 +15514,8 @@
         "args": [
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -15484,6 +15527,11 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "name": "network_service_out_of_process_chrome_public_test_apk",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -15511,7 +15559,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -18882,6 +18930,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
+          "--git-revision=${got_revision}",
           "--timeout-scale",
           "2.0"
         ],
@@ -18894,6 +18943,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -18922,7 +18976,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -21519,7 +21573,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "experiment_percentage": 0,
         "merge": {
@@ -21531,6 +21586,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -21558,7 +21618,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
         "test": "chrome_public_test_apk",
@@ -23038,7 +23098,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -23049,6 +23110,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -23076,7 +23142,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 25
         },
         "test": "chrome_public_test_apk",
@@ -23086,7 +23152,8 @@
         "args": [
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -23098,6 +23165,11 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "name": "network_service_out_of_process_chrome_public_test_apk",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -23125,7 +23197,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -27327,7 +27399,8 @@
         "args": [
           "--gtest_filter=TabTest.testTabContext",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -27338,6 +27411,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -27365,7 +27443,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_public_test_apk",
         "test_target": "//chrome/android:chrome_public_test_apk"
@@ -31132,7 +31210,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -31143,6 +31222,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -31170,7 +31254,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -31180,7 +31264,8 @@
         "args": [
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -31192,6 +31277,11 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "name": "network_service_out_of_process_chrome_public_test_apk",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -31219,7 +31309,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -34594,7 +34684,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "isolate_coverage_data": true,
         "merge": {
@@ -34606,6 +34697,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -34633,7 +34729,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 25
         },
         "test": "chrome_public_test_apk",
@@ -38406,6 +38502,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
+          "--git-revision=${got_revision}",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.chrome_public_test_apk.filter"
         ],
         "merge": {
@@ -38417,6 +38514,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -38445,7 +38547,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -42157,6 +42259,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
+          "--git-revision=${got_revision}",
           "--avd-config=../../tools/android/avd/proto/generic_playstore_android28.textpb",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.chrome_public_test_apk.filter"
         ],
@@ -42169,6 +42272,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -42208,7 +42316,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -42220,6 +42328,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
+          "--git-revision=${got_revision}",
           "--avd-config=../../tools/android/avd/proto/generic_playstore_android28.textpb",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.chrome_public_test_apk.filter"
         ],
@@ -42233,6 +42342,11 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "name": "network_service_out_of_process_chrome_public_test_apk",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -42272,7 +42386,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",

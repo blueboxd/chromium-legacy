@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">เปิดการตั้งค่า</translation>
 <translation id="4250229828105606438">ภาพหน้าจอ</translation>
 <translation id="4256782883801055595">ใบอนุญาตโอเพนซอร์ส</translation>
-<translation id="4259722352634471385">มีการบล็อกการนำทาง: <ph name="URL" /></translation>
 <translation id="4269820728363426813">คัดลอกที่อยู่ลิงก์</translation>
 <translation id="4275663329226226506">สื่อ</translation>
 <translation id="4278390842282768270">อนุญาตแล้ว</translation>
@@ -1067,7 +1066,6 @@
 <translation id="8942627711005830162">เปิดในหน้าต่างอื่น</translation>
 <translation id="8951232171465285730">Chrome ได้ประหยัดพื้นที่ให้คุณไป <ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">บล็อกคุกกี้ของเว็บไซต์ที่เจาะจง</translation>
-<translation id="8959122750345127698">ไม่สามารถเข้าถึงการนำทางได้: <ph name="URL" /></translation>
 <translation id="8965591936373831584">รอดำเนินการ</translation>
 <translation id="8970887620466824814">มีบางอย่างผิดพลาด</translation>
 <translation id="8972098258593396643">ดาวน์โหลดลงโฟลเดอร์เริ่มต้นไหม</translation>

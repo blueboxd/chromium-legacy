@@ -3,6 +3,7 @@
 <translationbundle lang="es-419">
 <translation id="1005230401424685968">AAAA</translation>
 <translation id="1016495303386450659">Elemento actualizado</translation>
+<translation id="1044891598689252897">Los sitios funcionarán normalmente</translation>
 <translation id="1047726139967079566">Agregar esta página a favoritos...</translation>
 <translation id="1049743911850919806">Incógnito</translation>
 <translation id="1063454504051558093">Usar otra contraseña…</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> elementos</translation>
 <translation id="1491277525950327607">Presiona dos veces para activar o desactivar la configuración</translation>
 <translation id="1509486075633541495">Acceder al sitio web</translation>
+<translation id="1509960214886564027">Es posible que las características de muchos sitios no funcionen de forma correcta</translation>
 <translation id="152234381334907219">Nunca guardado</translation>
 <translation id="1540800554400757039">Dirección 1</translation>
 <translation id="1545749641540134597">Escanear código QR</translation>
@@ -528,6 +530,7 @@ Como <ph name="HOSTED_DOMAIN" /> administra tu cuenta, los datos de Chrome se bo
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7971521879845308059">Bloquear ventanas emergentes</translation>
 <translation id="7982789257301363584">Red</translation>
+<translation id="7993619969781047893">Es posible que las características de algunos sitios no funcionen de forma correcta</translation>
 <translation id="800361585186029508">Abre las URL ingresadas en Google Chrome.</translation>
 <translation id="8007420562015504427">Búsqueda en el modo incógnito</translation>
 <translation id="8019783059653722575">Te permite guardar fotos y cargarlas.</translation>

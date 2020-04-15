@@ -10235,8 +10235,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
 
       <!-- WebAuthn authenticator internal user verification -->
+      <message name="IDS_WEBAUTHN_INLINE_ENROLLMENT_CANCEL_LABEL" desc="The label on a button allowing users to skip fingerprint registration when setting up a fingerprint enabled authenticator.">
+        Skip
+      </message>
       <message name="IDS_WEBAUTHN_UV_RETRY_TITLE" desc="The title on a dialog shown to the user when a previous attempt to verify their identity through fingerprints failed, and they are being asked to try again.">
-       Fingerprint not recognized
+        Fingerprint not recognized
       </message>
       <message name="IDS_WEBAUTHN_UV_RETRY_DESCRIPTION" desc="The description on a dialog shown to the user when a previous attempt to verify their identity through fingerprints failed, and they are being asked to try again.">
         Your fingerprint couldn't be recognized. Try again.

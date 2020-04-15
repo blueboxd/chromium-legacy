@@ -286,6 +286,8 @@ used when committed.
 *   [User Agent in Chrome for iOS](ios/user_agent.md) - Notes on User Agent
     strings using Chrome for iOS.
 *   [Running iOS test suites locally](ios/testing.md)
+*   [Working With Project Files in iOS](ios/working_with_files.md) - How
+    to add, remove, and rename files in the iOS Chromium project.
 
 ### Misc Chrome-OS-Specific Docs
 *   [Setting up captive portals and other restrictive networks](login/restrictive_networks.md)

@@ -500,13 +500,12 @@ void CookieManager::SetCookieHelper(const GURL& host,
     // *cc.get() is safe, because network::CookieManager::SetCanonicalCookie
     // will make a copy before our smart pointer goes out of scope.
     GetMojoCookieManager()->SetCanonicalCookie(
-        *cc.get(), new_host.scheme(), net::CookieOptions::MakeAllInclusive(),
+        *cc.get(), new_host, net::CookieOptions::MakeAllInclusive(),
         net::cookie_util::AdaptCookieInclusionStatusToBool(
             std::move(callback)));
   } else {
     GetCookieStore()->SetCanonicalCookieAsync(
-        std::move(cc), new_host.scheme(),
-        net::CookieOptions::MakeAllInclusive(),
+        std::move(cc), new_host, net::CookieOptions::MakeAllInclusive(),
         net::cookie_util::AdaptCookieInclusionStatusToBool(
             std::move(callback)));
   }

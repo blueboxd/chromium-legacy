@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">Kopiera länk</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Titel</translation>
+<translation id="4259722352634471385">Webbadressen har blockerats: <ph name="URL" /></translation>
 <translation id="4570913071927164677">Information</translation>
 <translation id="4645575059429386691">Hanteras av din förälder</translation>
 <translation id="4883854917563148705">Hanterade inställningar kan inte återställas</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">Radera inmatning</translation>
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8730621377337864115">Klart</translation>
+<translation id="8959122750345127698">Det går inte att nå webbadressen: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Hanteras av dina föräldrar</translation>
 </translationbundle>

@@ -22,6 +22,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
+#include "net/cookies/cookie_util.h"
 #include "net/cookies/test_cookie_access_delegate.h"
 #include "services/network/cookie_settings.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -214,7 +215,7 @@ class RestrictedCookieManagerTest
       options.set_include_httponly();
     cookie_monster_.SetCanonicalCookieAsync(
         std::make_unique<net::CanonicalCookie>(cookie),
-        std::move(source_scheme), options,
+        net::cookie_util::SimulatedCookieSource(cookie, source_scheme), options,
         base::BindOnce(&net::ResultSavingCookieCallback<
                            net::CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&callback)));
@@ -995,15 +996,16 @@ TEST_P(RestrictedCookieManagerTest, ChangeNotificationIncludesAccessSemantics) {
 
   ASSERT_THAT(listener.observed_changes(), testing::SizeIs(0));
 
+  GURL cookie_url("https://example.com");
   auto cookie = net::CanonicalCookie::Create(
-      GURL("https://example.com"), "cookie_with_no_samesite=unspecified",
-      base::Time::Now(), base::nullopt);
+      cookie_url, "cookie_with_no_samesite=unspecified", base::Time::Now(),
+      base::nullopt);
 
   // Set cookie directly into the CookieMonster, using all-inclusive options.
   net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
       callback;
   cookie_monster_.SetCanonicalCookieAsync(
-      std::move(cookie), "https", net::CookieOptions::MakeAllInclusive(),
+      std::move(cookie), cookie_url, net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&net::ResultSavingCookieCallback<
                          net::CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&callback)));
@@ -1045,20 +1047,21 @@ TEST_P(RestrictedCookieManagerTest, NoChangeNotificationForNonlegacyCookie) {
 
   ASSERT_THAT(listener.observed_changes(), testing::SizeIs(0));
 
+  GURL cookie_url("https://example.com");
+
   auto unspecified_cookie = net::CanonicalCookie::Create(
-      GURL("https://example.com"), "cookie_with_no_samesite=unspecified",
-      base::Time::Now(), base::nullopt);
+      cookie_url, "cookie_with_no_samesite=unspecified", base::Time::Now(),
+      base::nullopt);
 
   auto samesite_none_cookie = net::CanonicalCookie::Create(
-      GURL("https://example.com"),
-      "samesite_none_cookie=none; SameSite=None; Secure", base::Time::Now(),
-      base::nullopt);
+      cookie_url, "samesite_none_cookie=none; SameSite=None; Secure",
+      base::Time::Now(), base::nullopt);
 
   // Set cookies directly into the CookieMonster, using all-inclusive options.
   net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
       callback1;
   cookie_monster_.SetCanonicalCookieAsync(
-      std::move(unspecified_cookie), "https",
+      std::move(unspecified_cookie), cookie_url,
       net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&net::ResultSavingCookieCallback<
                          net::CanonicalCookie::CookieInclusionStatus>::Run,
@@ -1074,7 +1077,7 @@ TEST_P(RestrictedCookieManagerTest, NoChangeNotificationForNonlegacyCookie) {
   net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
       callback2;
   cookie_monster_.SetCanonicalCookieAsync(
-      std::move(samesite_none_cookie), "https",
+      std::move(samesite_none_cookie), cookie_url,
       net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&net::ResultSavingCookieCallback<
                          net::CanonicalCookie::CookieInclusionStatus>::Run,

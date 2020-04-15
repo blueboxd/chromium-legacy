@@ -43,11 +43,16 @@ RecommendAppsScreen::~RecommendAppsScreen() {
     view_->Bind(nullptr);
 }
 
+// TODO(https://crbug.com/1070917) Migrate to OnUserAction.
 void RecommendAppsScreen::OnSkip() {
+  if (is_hidden())
+    return;
   exit_callback_.Run(Result::SKIPPED);
 }
 
 void RecommendAppsScreen::OnInstall() {
+  if (is_hidden())
+    return;
   exit_callback_.Run(Result::SELECTED);
 }
 
@@ -88,6 +93,8 @@ void RecommendAppsScreen::OnLoadSuccess(const base::Value& app_list) {
 }
 
 void RecommendAppsScreen::OnLoadError() {
+  if (is_hidden())
+    return;
   exit_callback_.Run(Result::LOAD_ERROR);
 }
 

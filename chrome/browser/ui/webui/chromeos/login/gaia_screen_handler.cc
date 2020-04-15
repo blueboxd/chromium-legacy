@@ -441,15 +441,24 @@ void GaiaScreenHandler::LoadGaiaWithPartition(
   if (!partition)
     return;
 
+  // Note: The CanonicalCookie created here is not Secure. This is fine because
+  // it's being set into a different StoragePartition than the user's actual
+  // profile. The SetCanonicalCookie call will succeed regardless of the scheme
+  // of |gaia_url| since there are no scheme restrictions since the cookie is
+  // not Secure, and there is no preexisting Secure cookie in the profile that
+  // would preclude updating it insecurely. |gaia_url| is usually secure, and
+  // only insecure in local testing.
+
   std::string gaps_cookie_value(kGAPSCookie);
   gaps_cookie_value += "=" + context.gaps_cookie;
+  const GURL& gaia_url = GaiaUrls::GetInstance()->gaia_url();
   std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
-      GaiaUrls::GetInstance()->gaia_url(), gaps_cookie_value, base::Time::Now(),
+      gaia_url, gaps_cookie_value, base::Time::Now(),
       base::nullopt /* server_time */));
 
   const net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   partition->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
-      *cc.get(), "https", options, std::move(callback));
+      *cc.get(), gaia_url, options, std::move(callback));
 }
 
 void GaiaScreenHandler::OnSetCookieForLoadGaiaWithPartition(

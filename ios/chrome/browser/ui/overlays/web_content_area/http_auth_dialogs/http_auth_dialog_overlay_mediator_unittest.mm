@@ -19,6 +19,7 @@
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,9 +28,11 @@
 class HTTPAuthDialogOverlayMediatorTest : public AlertOverlayMediatorTest {
  public:
   HTTPAuthDialogOverlayMediatorTest()
-      : message_("Message"),
+      : url_("chromium.test"),
+        message_("Message"),
         default_user_text_("Default Text"),
         request_(OverlayRequest::CreateWithConfig<HTTPAuthOverlayRequestConfig>(
+            url_,
             message_,
             default_user_text_)) {
     SetMediator(
@@ -37,6 +40,7 @@ class HTTPAuthDialogOverlayMediatorTest : public AlertOverlayMediatorTest {
   }
 
  protected:
+  const GURL url_;
   const std::string message_;
   const std::string default_user_text_;
   std::unique_ptr<OverlayRequest> request_;

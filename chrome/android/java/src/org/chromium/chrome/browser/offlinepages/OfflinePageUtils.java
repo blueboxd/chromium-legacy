@@ -471,7 +471,7 @@ public class OfflinePageUtils {
         // file if it resides in internal directory.
         offlinePageBridge.acquireFileAccessPermission(webContents, (granted) -> {
             if (!granted) {
-                recordPublishPageResult(SavePageResult.PERMISSION_DENIED);
+                recordPublishPageResult(SavePageResult.STORAGE_PERMISSION_DENIED);
                 return;
             }
 

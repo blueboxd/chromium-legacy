@@ -17,7 +17,8 @@ print_preview_app_test.TestNames = {
   PrintPresets: 'print presets',
   DestinationsManaged: 'destinations managed',
   HeaderFooterManaged: 'header footer managed',
-  CssBackgroundManaged: 'css background managed'
+  CssBackgroundManaged: 'css background managed',
+  SheetsManaged: 'sheets managed'
 };
 
 suite(print_preview_app_test.suiteName, function() {
@@ -143,4 +144,11 @@ suite(print_preview_app_test.suiteName, function() {
         const sidebar = page.$$('print-preview-sidebar');
         assertTrue(sidebar.controlsManaged);
       });
+
+  test(assert(print_preview_app_test.TestNames.SheetsManaged), async () => {
+    initialSettings.policies = {sheets: {value: 2}};
+    await initialize();
+    const sidebar = page.$$('print-preview-sidebar');
+    assertTrue(sidebar.controlsManaged);
+  });
 });

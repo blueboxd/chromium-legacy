@@ -305,7 +305,7 @@ bool IsBannedCrossSiteAuth(network::ResourceRequest* resource_request,
         extra_data->allow_cross_origin_auth_prompt();
   }
 
-  if (first_party.IsFirstParty(request_url)) {
+  if (first_party.IsSchemelesslyFirstParty(request_url)) {
     // If the first party is secure but the subresource is not, this is
     // mixed-content. Do not allow the image.
     if (!allow_cross_origin_auth_prompt &&
@@ -773,6 +773,10 @@ void WebURLLoaderImpl::Context::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   if (client_)
     client_->DidStartLoadingResponseBody(std::move(body));
+
+  TRACE_EVENT_WITH_FLOW0(
+      "loading", "WebURLLoaderImpl::Context::OnStartLoadingResponseBody", this,
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 }
 
 void WebURLLoaderImpl::Context::OnTransferSizeUpdated(int transfer_size_diff) {

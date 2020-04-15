@@ -2667,6 +2667,7 @@ Unknown properties are collapsed to zero. -->
   <int value="28" label="Omnibox, Personalzied Suggestion"/>
   <int value="29" label="Zero State Local File"/>
   <int value="30" label="Drive Quick Access"/>
+  <int value="31" label="Assistant"/>
 </enum>
 
 <enum name="AppListSearchResultDisplayType">
@@ -15690,6 +15691,20 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3" label="Keyboard"/>
 </enum>
 
+<enum name="DocumentPolicyFeature">
+<!-- Generated from third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom.
+Called by update_document_policy_enum.py.-->
+
+  <int value="0" label="NotFound"/>
+  <int value="1" label="FontDisplay"/>
+  <int value="2" label="UnoptimizedLosslessImages"/>
+  <int value="3" label="ForceLoadAtTop"/>
+  <int value="4" label="UnoptimizedLosslessImagesStrict"/>
+  <int value="5" label="UnoptimizedLossyImages"/>
+  <int value="6" label="OversizedImages"/>
+  <int value="7" label="UnsizedMedia"/>
+</enum>
+
 <enum name="DocumentStateForDeferredLoading">
   <int value="0" label="Created"/>
   <int value="1" label="WouldLoadBecauseVisible"/>
@@ -19954,6 +19969,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="689" label="SystemFeaturesDisableList"/>
   <int value="690" label="CrostiniArcAdbSideloadingAllowed"/>
   <int value="691" label="FloatingAccessibilityMenuEnabled"/>
+  <int value="692" label="PrintingMaxSheetsAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -26956,6 +26972,12 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3223" label="LegacyLayoutByWebkitBoxWithoutVerticalLineClamp"/>
   <int value="3224"
       label="LegacyLayoutByTableFlexGridBlockInNGFragmentationContext"/>
+  <int value="3225" label="DocumentPolicyHeader"/>
+  <int value="3226" label="DocumentPolicyReportOnlyHeader"/>
+  <int value="3227" label="RequireDocumentPolicyHeader"/>
+  <int value="3228" label="DocumentPolicyIframePolicyAttribute"/>
+  <int value="3229" label="DocumentPolicyCausedPageUnload"/>
+  <int value="3230" label="RequiredDocumentPolicy"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36998,6 +37020,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="LinuxDistro">
+  <obsolete>
+    Deprecated 2020-04 in favor of LinuxDistro2 because distro-specific version
+    metrics were added.
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="(DEPRECATED) Ubuntu Other"/>
   <int value="2" label="(DEPRECATED) Ubuntu 14.04"/>
@@ -37043,6 +37069,67 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="205" label="Ubuntu 17.10"/>
   <int value="206" label="Ubuntu 18.04"/>
   <int value="207" label="Ubuntu 18.10"/>
+</enum>
+
+<enum name="LinuxDistro2">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Arch"/>
+  <int value="2" label="CentOS"/>
+  <int value="3" label="Debian"/>
+  <int value="4" label="elementary OS"/>
+  <int value="5" label="Fedora"/>
+  <int value="6" label="Mint"/>
+  <int value="7" label="openSUSE Leap"/>
+  <int value="8" label="RHEL"/>
+  <int value="9" label="SUSE Linux Enterprise"/>
+  <int value="10" label="Ubuntu"/>
+</enum>
+
+<enum name="LinuxDistroDebianVersion">
+  <int value="7" label="Wheezy"/>
+  <int value="8" label="Jessie"/>
+  <int value="9" label="Stretch"/>
+  <int value="10" label="Buster"/>
+  <int value="11" label="Bullseye"/>
+</enum>
+
+<enum name="LinuxDistroFedoraVersion">
+  <int value="24" label="24"/>
+  <int value="25" label="25"/>
+  <int value="26" label="26"/>
+  <int value="27" label="27"/>
+  <int value="28" label="28"/>
+  <int value="29" label="29"/>
+  <int value="30" label="30"/>
+  <int value="31" label="31"/>
+  <int value="32" label="32"/>
+  <int value="33" label="33"/>
+</enum>
+
+<enum name="LinuxDistroOpenSuseLeapVersion">
+  <int value="15000" label="15.0"/>
+  <int value="15001" label="15.1"/>
+  <int value="15002" label="15.2"/>
+  <int value="42002" label="42.2"/>
+  <int value="42003" label="42.3"/>
+</enum>
+
+<enum name="LinuxDistroUbuntuVersion">
+  <int value="12004" label="12.04"/>
+  <int value="12010" label="12.10"/>
+  <int value="13004" label="13.04"/>
+  <int value="13010" label="13.10"/>
+  <int value="14004" label="14.04"/>
+  <int value="14010" label="14.10"/>
+  <int value="16004" label="16.04"/>
+  <int value="16010" label="16.10"/>
+  <int value="17004" label="17.04"/>
+  <int value="17010" label="17.10"/>
+  <int value="18004" label="18.04"/>
+  <int value="18010" label="18.10"/>
+  <int value="19004" label="19.04"/>
+  <int value="19010" label="19.10"/>
+  <int value="20004" label="20.04"/>
 </enum>
 
 <enum name="LinuxGlibcVersion">
@@ -37930,6 +38017,7 @@ from previous Chrome versions.
   <int value="-1734254845" label="ash-enable-night-light"/>
   <int value="-1732888954" label="UseButtonTranslateBubbleUI:enabled"/>
   <int value="-1732561795" label="ConsistentOmniboxGeolocation:enabled"/>
+  <int value="-1731267886" label="AutofillEnableStickyPaymentsBubble:enabled"/>
   <int value="-1731149013" label="AndroidMessagesIntegration:enabled"/>
   <int value="-1729926412" label="enable-webusb-notifications"/>
   <int value="-1729808721" label="SubresourceRedirect:enabled"/>
@@ -38732,6 +38820,7 @@ from previous Chrome versions.
   <int value="-842438090" label="enable-md-feedback"/>
   <int value="-839664591" label="enable-web-authentication-testing-api"/>
   <int value="-837650216" label="DisableCryptAuthV1DeviceSync:disabled"/>
+  <int value="-837473047" label="AutofillEnableStickyPaymentsBubble:disabled"/>
   <int value="-836123854" label="wallet-service-use-sandbox"/>
   <int value="-835672415" label="PointerEventV1SpecCapturing:disabled"/>
   <int value="-835331907" label="TabOutlinesInLowContrastThemes:disabled"/>
@@ -39009,6 +39098,7 @@ from previous Chrome versions.
   <int value="-505679399" label="FontCacheScaling:enabled"/>
   <int value="-503601144" label="UserDataSnapshot:disabled"/>
   <int value="-503430431" label="XRSandbox:enabled"/>
+  <int value="-502156595" label="AutofillCacheServerCardInfo:disabled"/>
   <int value="-499186481"
       label="OmniboxGroupSuggestionsBySearchVsUrl:disabled"/>
   <int value="-498740735" label="ArcUsbHost:disabled"/>
@@ -39757,6 +39847,7 @@ from previous Chrome versions.
   <int value="388328387" label="WindowsMixedReality:enabled"/>
   <int value="388786873" label="EnableUnifiedMultiDeviceSettings:enabled"/>
   <int value="388996324" label="CustomContextMenu:disabled"/>
+  <int value="389340238" label="AutofillCacheServerCardInfo:enabled"/>
   <int value="392782890" label="SafeBrowsingTelemetryForApkDownloads:enabled"/>
   <int value="393704200" label="account-consistency"/>
   <int value="398903399" label="GenericSensorExtraClasses:disabled"/>
@@ -39794,6 +39885,8 @@ from previous Chrome versions.
   <int value="430959979" label="SyncStandaloneTransport:disabled"/>
   <int value="431691805" label="MediaDocumentDownloadButton:enabled"/>
   <int value="434033638" label="PwaPersistentNotification:disabled"/>
+  <int value="434530296"
+      label="HappinessTrackingSurveysForDesktopMigration:disabled"/>
   <int value="436682243" label="TabGroupsAndroid:disabled"/>
   <int value="439525862" label="GlobalMediaControlsForCast:disabled"/>
   <int value="444754854" label="LegacyTLSWarnings:disabled"/>
@@ -40521,6 +40614,8 @@ from previous Chrome versions.
   <int value="1308537004" label="force-pnacl-subzero"/>
   <int value="1311860720" label="ChromeHomeNtpRedesign:disabled"/>
   <int value="1312025202" label="NTPOfflinePageSuggestions:disabled"/>
+  <int value="1313570156"
+      label="HappinessTrackingSurveysForDesktopMigration:enabled"/>
   <int value="1313850691" label="Metal:disabled"/>
   <int value="1314681756" label="NoStatePrefetch:disabled"/>
   <int value="1317562265" label="SeccompSandboxAndroid:disabled"/>
@@ -43006,6 +43101,12 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Bad user status"/>
   <int value="2" label="Bad fetch result"/>
   <int value="3" label="Bad logo"/>
+</enum>
+
+<enum name="MediaFeedSafeSearchResult">
+  <int value="0" label="Unknown (check failed)"/>
+  <int value="1" label="Safe"/>
+  <int value="2" label="Unsafe"/>
 </enum>
 
 <enum name="MediaGalleriesUsageType">
@@ -48577,6 +48678,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="14" label="No storage permission">
     Unable to get storage permission for publish the page.
   </int>
+  <int value="15" label="Incorrect URL">
+    The URL from the saved page doesn't match the requested page URL.
+  </int>
 </enum>
 
 <enum name="OfflinePagesSharedPageWasOffline">
@@ -50347,6 +50451,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="9"
       label="Opened automatically / Offering to save unsynced passwords
              locally"/>
+  <int value="10"
+      label="Opened automatically / Notification about compromised passwords"/>
 </enum>
 
 <enum name="PasswordBubbleSignInPromoDismissalReason">
@@ -55711,6 +55817,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Missing primary volume">Hardcoded in rar2fs</int>
   <int value="13" label="Bad archive">ERAR_BAD_ARCHIVE from libunrar</int>
   <int value="14" label="Unknown format">ERAR_UNKNOWN_FORMAT from libunrar</int>
+  <int value="18" label="Cannot read">ERAR_EREAD from libunrar</int>
   <int value="22" label="Missing password">
     ERAR_MISSING_PASSWORD from libunrar
   </int>
@@ -59292,6 +59399,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="5" label="Automatic, by enterprise policy"/>
   <int value="6" label="Secure, by user choice"/>
   <int value="7" label="Secure, by enterprise policy"/>
+</enum>
+
+<enum name="SecurityFilteredTouchResult">
+  <int value="0" label="Touch event was handled by security sensitive dialog"/>
+  <int value="1"
+      label="Touch event was blocked because another window was obscuring
+             security sensitive dialog."/>
 </enum>
 
 <enum name="SecurityInterstitialDecision">
@@ -69417,6 +69531,7 @@ Called by update_scheduler_enums.py.-->
   <int value="40" label="OutstandingNetworkRequestFetch"/>
   <int value="41" label="OutstandingNetworkRequestXHR"/>
   <int value="42" label="AppBanner"/>
+  <int value="43" label="Printing"/>
 </enum>
 
 <enum name="WebShareMethod">

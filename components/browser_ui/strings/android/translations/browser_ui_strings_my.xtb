@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">လင့်ခ်ကူးယူမည်</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">ခေါင်းစဉ်</translation>
+<translation id="4259722352634471385">သွားလာမှုပြလမ်းညွှန်အား ပိတ်ထား၏- <ph name="URL" /></translation>
 <translation id="4570913071927164677">အသေးစိတ်</translation>
 <translation id="4645575059429386691">သင့်မိဘမှ စီမံသည်</translation>
 <translation id="4883854917563148705">စီမံထားသော ဆက်တင်များကို ပြင်ဆင်သတ်မှတ်၍ မရပါ</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">ထည့်သွင်းမှု ရှင်းရန်</translation>
 <translation id="8725066075913043281">ထပ် စမ်းကြည့်ရန်</translation>
 <translation id="8730621377337864115">ပြီးပါပြီ</translation>
+<translation id="8959122750345127698">သွားလာမှုပြလမ်းညွှန်ဆီသို့ မရောက်နိုင်ပါ- <ph name="URL" /></translation>
 <translation id="9019902583201351841">သင့်မိဘများမှ စီမံသည်</translation>
 </translationbundle>

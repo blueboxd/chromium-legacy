@@ -1,0 +1,4 @@
+# These deps should be only the required deps for //chromeos/memory
+include_rules = [
+  "+third_party/zlib/google",
+]

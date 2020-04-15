@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.ui.base.ViewUtils;
 
 /**
@@ -28,7 +28,7 @@ public class ExperimentalExploreSitesCategoryTileView extends LinearLayout {
     private ExploreSitesCategoryTile mCategoryData;
 
     private Resources mResources;
-    private FaviconFallbackGenerator mIconGenerator;
+    private RoundedIconGenerator mIconGenerator;
 
     private TextView mTitleView;
     private ImageView mIconView;
@@ -56,7 +56,7 @@ public class ExperimentalExploreSitesCategoryTileView extends LinearLayout {
                           * mResources.getDimensionPixelSize(
                                     R.dimen.experimental_explore_sites_padding));
         mIconHeightPx = mIconWidthPx * 2 / 3;
-        mIconGenerator = new FaviconFallbackGenerator(mIconWidthPx, mIconHeightPx,
+        mIconGenerator = new RoundedIconGenerator(mIconWidthPx, mIconHeightPx,
                 mResources.getDimensionPixelSize(R.dimen.experimental_explore_sites_radius),
                 ApiCompatibilityUtils.getColor(
                         mResources, R.color.default_favicon_background_color),

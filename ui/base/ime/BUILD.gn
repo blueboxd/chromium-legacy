@@ -57,12 +57,12 @@ jumbo_component("ime") {
   sources = [
     "constants.cc",
     "constants.h",
+    "ime_assistive_window_handler_interface.h",
     "ime_bridge.cc",
     "ime_bridge.h",
     "ime_candidate_window_handler_interface.h",
     "ime_engine_handler_interface.h",
     "ime_input_context_handler_interface.h",
-    "ime_suggestion_window_handler_interface.h",
     "input_method.h",
     "input_method_base.cc",
     "input_method_base.h",

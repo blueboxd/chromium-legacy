@@ -42,6 +42,7 @@ include_rules = [
   "+components/bookmarks/test",
   "+components/browser_ui/settings",
   "+components/browser_ui/util",
+  "+components/browser_ui/widget",
   "+components/browser_sync",
   "+components/browser_ui/site_settings",
   "+components/browser_watcher",

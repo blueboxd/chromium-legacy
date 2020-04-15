@@ -1231,17 +1231,6 @@ void WizardController::OnResetScreenExit() {
 void WizardController::OnChangedMetricsReportingState(bool enabled) {
   StatsReportingController::Get()->SetEnabled(
       ProfileManager::GetActiveUserProfile(), enabled);
-  if (crash_reporter::IsCrashpadEnabled()) {
-    return;
-  }
-
-  if (!enabled)
-    return;
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&breakpad::InitCrashReporter, std::string()));
-#endif
 }
 
 void WizardController::OnDeviceModificationCanceled() {

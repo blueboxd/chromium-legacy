@@ -39,7 +39,6 @@
 <translation id="2799223571221894425">Taaskäivita</translation>
 <translation id="2805036593126168338">Chromium OS ei saanud teie paroole sünkroonida. Parandage kohe.</translation>
 <translation id="2847479871509788944">Chromiumist eemaldamine ...</translation>
-<translation id="2886012850691518054">Valikuline: aidake muuta Chromiumi paremaks, saates Google'ile automaatselt kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="2910007522516064972">Teave &amp;Chromiumi kohta</translation>
 <translation id="2977470724722393594">Chromium on ajakohane</translation>
 <translation id="2983934633046890458">Chromium üritab paroole muuta.</translation>
@@ -58,6 +57,7 @@
 <translation id="328888136576916638">Google API võtmed on puudu. Teatud Chromiumi funktsioonid keelatakse.</translation>
 <translation id="3296368748942286671">Jätka taustarakenduste käitamist pärast Chromiumi sulgemist</translation>
 <translation id="331951419404882060">Chromium OS ei saanud sisselogimisvea tõttu teie andmeid sünkroonida.</translation>
+<translation id="347328004046849135">Chromium teavitab teid, kui logite sisse ohustatud parooliga</translation>
 <translation id="3474745554856756813">See kustutab seadmest <ph name="ITEMS_COUNT" /> üksust. Hiljem oma andmete toomiseks logige Chromiumi sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Sulgege kõik Chromiumi aknad ja proovige uuesti.</translation>
 <translation id="3575459661164320785">Teie arvutis on kahjulik tarkvara. Chromium saab selle eemaldada, taastada teie seaded ja keelata laiendused, et brauser töötaks jälle normaalselt.</translation>
@@ -93,11 +93,13 @@
 <translation id="4746050847053251315">Kas väljuda Chromiumist ikkagi?</translation>
 <translation id="4748217263233248895">Äsja rakendati Chromiumi spetsiaalne turvavärskendus. Taaskäivitage brauser, misjärel teie vahelehed taastatakse.</translation>
 <translation id="4750035648288509542">Peaaegu värskendatud! Värskendamise lõpuleviimiseks taaskäivitage Chromium. Inkognito aknaid ei avata uuesti.</translation>
+<translation id="4788777615168560705">Chromium ei saa teie paroole kontrollida. Proovige uuesti 24 tunni pärast või <ph name="BEGIN_LINK" />kontrollige oma Google'i kontol paroole<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">See kasutab sama õigekirjakontrolli, mida kasutatakse Google'i otsingus. Brauseris sisestatav tekst saadetakse Google'ile. Seda käitumist saab seadetes alati muuta.</translation>
 <translation id="4888717733111232871">Sissetuleku reegel Chromiumile mDNS-liikluse lubamiseks.</translation>
 <translation id="4943838377383847465">Chromium on taustarežiimis.</translation>
 <translation id="4987820182225656817">Külastajad saavad kasutada Chromiumi jälgi jätmata.</translation>
 <translation id="4994636714258228724">Lisa Chromiumi</translation>
+<translation id="5224391634244552924">Salvestatud paroole ei ole. Chromium saab teie paroole kontrollida, kui olete need salvestanud.</translation>
 <translation id="5277894862589591112">Muudatuste rakendamiseks käivitage Chromium uuesti</translation>
 <translation id="5358375970380395591">Logite sisse hallatud kontoga ja annate selle administraatorile üle Chromiumi profiili juhtimise. Teie Chromiumi andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME" />. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid seostada teise kontoga. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromiumi värskendamine (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -164,6 +166,7 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="7066436765290594559">Chromium OS ei saanud teie andmeid sünkroonida. Värskendage oma sünkroonimisparooli.</translation>
 <translation id="7067091210845072982">Kui pildil puudub kasulik kirjeldus, üritab Chromium selle ise luua. Kirjelduste loomiseks saadetakse pildid Google'ile.</translation>
 <translation id="7196312274710523067">Chromiumi ei õnnestunud käivitada. Proovige uuesti.</translation>
+<translation id="7197677400338048821">Chromium ei saa teie paroole kontrollida. Proovige uuesti 24 tunni pärast.</translation>
 <translation id="7205698830395646142">Chromiumi menüüs peitmine</translation>
 <translation id="7223968959479464213">Tegumihaldur – Chromium</translation>
 <translation id="731644333568559921">Värskenda &amp;Chromium OS-i</translation>

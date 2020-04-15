@@ -63,6 +63,29 @@ bool MultiStoreFormFetcher::IsBlacklisted() const {
   return is_blacklisted_in_profile_store_;
 }
 
+bool MultiStoreFormFetcher::IsMovingBlocked(
+    const autofill::GaiaIdHash& destination,
+    const base::string16& username) const {
+  for (const std::vector<std::unique_ptr<autofill::PasswordForm>>*
+           matches_vector : {&federated_, &non_federated_}) {
+    for (const auto& form : *matches_vector) {
+      // Only local entries can be moved to the account store (though
+      // account store matches should never have |moving_blocked_for_list|
+      // entries anyway).
+      if (form->IsUsingAccountStore())
+        continue;
+      // Ignore PSL matches for blocking moving.
+      if (form->is_public_suffix_match)
+        continue;
+      if (form->username_value != username)
+        continue;
+      if (base::Contains(form->moving_blocked_for_list, destination))
+        return true;
+    }
+  }
+  return false;
+}
+
 void MultiStoreFormFetcher::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);

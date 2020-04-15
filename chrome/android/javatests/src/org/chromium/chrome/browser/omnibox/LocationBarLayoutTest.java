@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.omnibox;
 
 import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
@@ -176,7 +175,7 @@ public class LocationBarLayoutTest {
     }
 
     private void setUrlBarTextAndFocus(String text) throws ExecutionException {
-        onView(withId(R.id.url_bar)).perform(click());
+        ClickUtils.clickButton(getUrlBar());
 
         TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override

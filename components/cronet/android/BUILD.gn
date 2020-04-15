@@ -326,7 +326,7 @@ android_library("cronet_impl_platform_base_java") {
     ":cronet_impl_java_util_java",
     "//net/android:net_thread_stats_uid_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/jsr-305:jsr_305_javalib",
+    "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
   ]
 }
 
@@ -401,7 +401,7 @@ android_library("cronet_impl_native_base_java") {
     ":cronet_impl_common_base_java",
     "//base:jni_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/jsr-305:jsr_305_javalib",
+    "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
   ]
   deps += cronet_impl_native_java_deps_to_package
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -520,7 +520,7 @@ java_prebuilt("package_impl_native_java") {
     ":package_impl_common_java",
     ":repackage_native",
     "//third_party/android_deps:android_support_v4_java",
-    "//third_party/jsr-305:jsr_305_javalib",
+    "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
   ]
   jar_excluded_patterns = [ "androidx/*/R*" ]
 }

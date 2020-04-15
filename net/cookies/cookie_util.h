@@ -59,6 +59,13 @@ NET_EXPORT base::Time ParseCookieExpirationTime(const std::string& time_string);
 // Convenience for converting a cookie origin (domain and https pair) to a URL.
 NET_EXPORT GURL CookieOriginToURL(const std::string& domain, bool is_https);
 
+// Returns a URL that could have been the cookie's source.
+// Not guaranteed to actually be the URL that set the cookie. Not guaranteed to
+// be a valid GURL. Intended as a shim for SetCanonicalCookieAsync calls, where
+// a source URL is required but only a source scheme may be available.
+NET_EXPORT GURL SimulatedCookieSource(const CanonicalCookie& cookie,
+                                      const std::string& source_scheme);
+
 // Returns true if the cookie |domain| matches the given |host| as described
 // in section 5.1.3 of RFC 6265.
 NET_EXPORT bool IsDomainMatch(const std::string& domain,

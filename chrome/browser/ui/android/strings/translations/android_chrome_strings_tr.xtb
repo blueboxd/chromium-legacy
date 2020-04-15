@@ -436,7 +436,6 @@ Kameranızın neye baktığını yalnızca siz görebilirsiniz. Site, kameranız
 <translation id="4242533952199664413">Ayarları aç</translation>
 <translation id="4250229828105606438">Ekran görüntüsü</translation>
 <translation id="4256782883801055595">Açık kaynak lisansları</translation>
-<translation id="4259722352634471385">Gezinme engellendi: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Bağlantı adresini kopyala</translation>
 <translation id="4275663329226226506">Medya</translation>
 <translation id="4278390842282768270">İzin verilen</translation>
@@ -1067,7 +1066,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8942627711005830162">Yeni pencerede aç</translation>
 <translation id="8951232171465285730">Chrome <ph name="MEGABYTES" /> MB tasarruf sağladı</translation>
 <translation id="8958424370300090006">Belirli bir site için çerezleri engelleyin.</translation>
-<translation id="8959122750345127698">Gezinme işlevine ulaşılamıyor: <ph name="URL" /></translation>
 <translation id="8965591936373831584">beklemede</translation>
 <translation id="8970887620466824814">Bir hata oluştu.</translation>
 <translation id="8972098258593396643">Varsayılan klasöre indirilsin mi?</translation>

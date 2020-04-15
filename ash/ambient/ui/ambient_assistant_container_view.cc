@@ -9,7 +9,7 @@
 
 #include "ash/ambient/ui/ambient_assistant_dialog_plate.h"
 #include "ash/ambient/ui/assistant_response_container_view.h"
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"

@@ -149,7 +149,8 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
       FeatureToBit(WebSchedulerTrackedFeature::kWakeLock) |
       FeatureToBit(WebSchedulerTrackedFeature::kWebShare) |
       FeatureToBit(WebSchedulerTrackedFeature::kWebFileSystem) |
-      FeatureToBit(WebSchedulerTrackedFeature::kAppBanner);
+      FeatureToBit(WebSchedulerTrackedFeature::kAppBanner) |
+      FeatureToBit(WebSchedulerTrackedFeature::kPrinting);
 
   uint64_t result = kAlwaysDisallowedFeatures;
 

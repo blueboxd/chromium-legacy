@@ -27,7 +27,7 @@ class Widget;
 
 namespace ash {
 
-class AssistantController;
+class AssistantControllerImpl;
 class AssistantInteractionController;
 class AssistantInteractionModel;
 class AssistantTestApi;
@@ -187,7 +187,7 @@ class AssistantAshTestBase : public AshTestBase {
   std::unique_ptr<AssistantTestApi> test_api_;
   std::unique_ptr<TestAssistantSetup> test_setup_;
   std::unique_ptr<TestAssistantWebViewFactory> test_web_view_factory_;
-  AssistantController* controller_ = nullptr;
+  AssistantControllerImpl* controller_ = nullptr;
 
   std::vector<std::unique_ptr<aura::Window>> windows_;
   std::vector<std::unique_ptr<views::Widget>> widgets_;

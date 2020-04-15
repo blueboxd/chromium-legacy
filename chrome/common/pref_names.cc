@@ -1435,6 +1435,9 @@ const char kPrintingSizeDefault[] = "printing.size_default";
 const char kPrintingSendUsernameAndFilenameEnabled[] =
     "printing.send_username_and_filename_enabled";
 
+// Indicates how many sheets is allowed to use for a single print job.
+const char kPrintingMaxSheetsAllowed[] = "printing.max_sheets_allowed";
+
 // Indicates how long print jobs metadata is stored on the device, in days.
 const char kPrintJobHistoryExpirationPeriod[] =
     "printing.print_job_history_expiration_period";
@@ -2171,7 +2174,6 @@ const char kOobeComplete[] = "OobeComplete";
 // The name of the screen that has to be shown if OOBE has been interrupted.
 const char kOobeScreenPending[] = "OobeScreenPending";
 
-
 // A boolean pref to indicate if the marketing opt-in screen in OOBE is finished
 // for the user.
 const char kOobeMarketingOptInScreenFinished[] =
@@ -2187,6 +2189,14 @@ const char kDeviceRegistered[] = "DeviceRegistered";
 // Boolean pref to signal corrupted enrollment to force the device through
 // enrollment recovery flow upon next boot.
 const char kEnrollmentRecoveryRequired[] = "EnrollmentRecoveryRequired";
+
+// Pref name for whether we should show the Getting Started module in the Help
+// app.
+const char kHelpAppShouldShowGetStarted[] = "help_app.should_show_get_started";
+
+// Pref name for whether the device was in tablet mode when going through
+// the OOBE.
+const char kHelpAppTabletModeDuringOobe[] = "help_app.tablet_mode_during_oobe";
 
 // List of usernames that used certificates pushed by policy before.
 // This is used to prevent these users from joining multiprofile sessions.
@@ -2978,5 +2988,8 @@ extern const char kRequiredClientCertificateForUser[] =
 extern const char kRequiredClientCertificateForDevice[] =
     "required_client_certificate_for_device";
 #endif
+
+// This pref enables checking of Media Feed items against the Safe Search API.
+const char kMediaFeedsSafeSearchEnabled[] = "media_feeds_safe_search_enabled";
 
 }  // namespace prefs

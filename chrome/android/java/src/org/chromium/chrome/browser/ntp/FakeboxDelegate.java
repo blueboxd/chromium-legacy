@@ -27,6 +27,14 @@ public interface FakeboxDelegate {
             boolean shouldBeFocused, @Nullable String pastedText, @OmniboxFocusReason int reason);
 
     /**
+     * Performs a search query on the current {@link Tab}.  This calls {@link
+     * TemplateUrlService#getUrlForSearchQuery(String)} to get a url based on {@code query} and
+     * loads that url in the current {@link Tab}.
+     * @param query The {@link String} that represents the text query that should be searched for.
+     */
+    void performSearchQuery(String query);
+
+    /**
      * @return Whether the URL bar is currently focused.
      */
     boolean isUrlBarFocused();

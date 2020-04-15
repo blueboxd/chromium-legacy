@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_grid.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_progress.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_as_block.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_table_caption.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
@@ -208,6 +209,14 @@ LayoutProgress* LayoutObjectFactory::CreateProgress(Node* node,
                                                     const ComputedStyle& style,
                                                     LegacyLayout legacy) {
   return CreateObject<LayoutProgress, LayoutNGProgress>(*node, style, legacy);
+}
+
+LayoutRubyAsBlock* LayoutObjectFactory::CreateRubyAsBlock(
+    Node* node,
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
+  return CreateObject<LayoutRubyAsBlock, LayoutNGRubyAsBlock>(*node, style,
+                                                              legacy);
 }
 
 }  // namespace blink

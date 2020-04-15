@@ -3,6 +3,7 @@
 <translationbundle lang="pt-BR">
 <translation id="1005230401424685968">AAAA</translation>
 <translation id="1016495303386450659">Item atualizado</translation>
+<translation id="1044891598689252897">Os sites funcionarão normalmente</translation>
 <translation id="1047726139967079566">Adicionar esta página aos favoritos...</translation>
 <translation id="1049743911850919806">Modo anônimo</translation>
 <translation id="1063454504051558093">Usar outra senha...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> itens</translation>
 <translation id="1491277525950327607">Toque duas vezes para alternar a configuração</translation>
 <translation id="1509486075633541495">Fazer login no site</translation>
+<translation id="1509960214886564027">Os recursos de muitos sites podem apresentar falhas</translation>
 <translation id="152234381334907219">Nunca salvas</translation>
 <translation id="1540800554400757039">Endereço 1</translation>
 <translation id="1545749641540134597">Ler código QR</translation>
@@ -528,6 +530,7 @@ Como a conta é gerenciada por <ph name="HOSTED_DOMAIN" />, seus dados do Chrome
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7971521879845308059">Bloquear pop-ups</translation>
 <translation id="7982789257301363584">Rede</translation>
+<translation id="7993619969781047893">Os recursos de alguns sites podem apresentar falhas</translation>
 <translation id="800361585186029508">Abre os URLs fornecidos no Google Chrome.</translation>
 <translation id="8007420562015504427">Pesquisa anônima</translation>
 <translation id="8019783059653722575">Isso permite que você salve fotos e faça upload delas.</translation>

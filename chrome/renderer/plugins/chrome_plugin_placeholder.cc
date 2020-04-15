@@ -20,10 +20,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
-#include "chrome/renderer/content_settings_agent_impl.h"
 #include "chrome/renderer/custom_menu_commands.h"
 #include "chrome/renderer/plugins/plugin_preroller.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
+#include "components/content_settings/renderer/content_settings_agent_impl.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/untrustworthy_context_menu_params.h"
@@ -360,7 +360,7 @@ void ChromePluginPlaceholder::OnBlockedContent(
 
   if (status ==
       content::RenderFrame::PeripheralContentStatus::CONTENT_STATUS_TINY) {
-    ContentSettingsAgentImpl::Get(render_frame())
+    content_settings::ContentSettingsAgentImpl::Get(render_frame())
         ->DidBlockContentType(ContentSettingsType::PLUGINS);
   }
 

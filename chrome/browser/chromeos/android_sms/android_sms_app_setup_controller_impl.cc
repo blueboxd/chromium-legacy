@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/url_util.h"
+#include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
@@ -102,17 +103,20 @@ void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
   net::CookieOptions options;
   options.set_same_site_cookie_context(
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
+  net::CanonicalCookie cookie = *net::CanonicalCookie::CreateSanitizedCookie(
+      app_url, kDefaultToPersistCookieName, kDefaultToPersistCookieValue,
+      std::string() /* domain */, std::string() /* path */,
+      base::Time::Now() /* creation_time */, base::Time() /* expiration_time */,
+      base::Time::Now() /* last_access_time */,
+      !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
+      net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT);
+  // TODO(crbug.com/1069974): The cookie source url must be faked here because
+  // otherwise, this would fail to set a secure cookie if |app_url| is insecure.
+  // Consider instead to use url::Replacements to force the scheme to be https.
   pwa_delegate_->GetCookieManager(app_url, profile_)
       ->SetCanonicalCookie(
-          *net::CanonicalCookie::CreateSanitizedCookie(
-              app_url, kDefaultToPersistCookieName,
-              kDefaultToPersistCookieValue, std::string() /* domain */,
-              std::string() /* path */, base::Time::Now() /* creation_time */,
-              base::Time() /* expiration_time */,
-              base::Time::Now() /* last_access_time */,
-              !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
-              net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT),
-          "https", options,
+          cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
+          options,
           base::BindOnce(&AndroidSmsAppSetupControllerImpl::
                              OnSetRememberDeviceByDefaultCookieResult,
                          weak_ptr_factory_.GetWeakPtr(), app_url, install_url,
@@ -318,17 +322,20 @@ void AndroidSmsAppSetupControllerImpl::SetMigrationCookie(
   net::CookieOptions options;
   options.set_same_site_cookie_context(
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
+  net::CanonicalCookie cookie = *net::CanonicalCookie::CreateSanitizedCookie(
+      app_url, kMigrationCookieName, migrated_to_app_url.GetContent(),
+      std::string() /* domain */, std::string() /* path */,
+      base::Time::Now() /* creation_time */, base::Time() /* expiration_time */,
+      base::Time::Now() /* last_access_time */,
+      !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
+      net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT);
+  // TODO(crbug.com/1069974): The cookie source url must be faked here because
+  // otherwise, this would fail to set a secure cookie if |app_url| is insecure.
+  // Consider instead to use url::Replacements to force the scheme to be https.
   pwa_delegate_->GetCookieManager(app_url, profile_)
       ->SetCanonicalCookie(
-          *net::CanonicalCookie::CreateSanitizedCookie(
-              app_url, kMigrationCookieName, migrated_to_app_url.GetContent(),
-              std::string() /* domain */, std::string() /* path */,
-              base::Time::Now() /* creation_time */,
-              base::Time() /* expiration_time */,
-              base::Time::Now() /* last_access_time */,
-              !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
-              net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT),
-          "https", options,
+          cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
+          options,
           base::BindOnce(
               &AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult,
               weak_ptr_factory_.GetWeakPtr(), app_url, std::move(callback)));

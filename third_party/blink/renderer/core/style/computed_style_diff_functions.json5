@@ -266,6 +266,10 @@
             method: "Resize()",
             field_dependencies: ["resize"]
           },
+          {
+            method: "UsedColorScheme()",
+            field_dependencies: ["color-scheme"]
+          },
         ],
         predicates_to_test: [
           {

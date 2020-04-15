@@ -28,17 +28,6 @@ namespace syncer {
 
 namespace {
 
-// Indicates whether |configuration_params| corresponds to Nigori only
-// configuration (which happens if initial sync for Nigori isn't completed).
-// If |configuration_params| is null, returns false.
-bool IsNigoriOnlyConfiguration(
-    const ConfigurationParams* configuration_params) {
-  if (!configuration_params) {
-    return false;
-  }
-  return configuration_params->types_to_download == ModelTypeSet(NIGORI);
-}
-
 bool IsConfigRelatedUpdateOriginValue(
     sync_pb::SyncEnums::GetUpdatesOrigin origin) {
   switch (origin) {
@@ -155,16 +144,6 @@ void SyncSchedulerImpl::OnCredentialsUpdated() {
   if (server_status == HttpResponse::NONE ||
       server_status == HttpResponse::SYNC_AUTH_ERROR) {
     OnServerConnectionErrorFixed();
-  }
-}
-
-void SyncSchedulerImpl::OnCredentialsInvalidated() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!nigori_configuration_with_invalidated_credentials_recorded &&
-      IsNigoriOnlyConfiguration(pending_configure_params_.get())) {
-    UMA_HISTOGRAM_BOOLEAN("Sync.NigoriConfigurationWithInvalidatedCredentials",
-                          true);
-    nigori_configuration_with_invalidated_credentials_recorded = true;
   }
 }
 

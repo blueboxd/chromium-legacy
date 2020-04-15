@@ -20,7 +20,7 @@ MockSignedExchangeHandlerParams::MockSignedExchangeHandlerParams(
     net::Error error,
     const GURL& inner_url,
     const std::string& mime_type,
-    std::vector<std::string> response_headers,
+    std::vector<std::pair<std::string, std::string>> response_headers,
     base::Optional<net::SHA256HashValue> header_integrity,
     const base::Time& signature_expire_time)
     : outer_url(outer_url),
@@ -50,10 +50,9 @@ MockSignedExchangeHandler::MockSignedExchangeHandler(
     head->headers =
         base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
     head->mime_type = params.mime_type;
-    head->headers->AddHeader(
-        base::StringPrintf("Content-type: %s", params.mime_type.c_str()));
+    head->headers->SetHeader("Content-type", params.mime_type);
     for (const auto& header : params.response_headers)
-      head->headers->AddHeader(header);
+      head->headers->AddHeader(header.first, header.second);
     head->is_signed_exchange_inner_response = true;
     head->content_length = head->headers->GetContentLength();
   }

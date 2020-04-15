@@ -436,7 +436,6 @@ Det er bare du som kan se hva kameraet ditt ser på. Nettstedet kan ikke se bild
 <translation id="4242533952199664413">Åpne innstillingene</translation>
 <translation id="4250229828105606438">Skjermdump</translation>
 <translation id="4256782883801055595">Lisenser for åpen kildekode</translation>
-<translation id="4259722352634471385">Nettadressen er blokkert: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiér linkadressen</translation>
 <translation id="4275663329226226506">Medier</translation>
 <translation id="4278390842282768270">Tillatt</translation>
@@ -1067,7 +1066,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8942627711005830162">Åpne i et annet vindu</translation>
 <translation id="8951232171465285730">Chrome har spart deg for <ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">Blokkér informasjonskapsler for et spesifikt nettsted.</translation>
-<translation id="8959122750345127698">Nettadressen er utilgjengelig: <ph name="URL" /></translation>
 <translation id="8965591936373831584">venter</translation>
 <translation id="8970887620466824814">Noe gikk galt.</translation>
 <translation id="8972098258593396643">Vil du laste ned til standardmappen?</translation>

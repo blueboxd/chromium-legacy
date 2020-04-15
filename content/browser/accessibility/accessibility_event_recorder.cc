@@ -35,7 +35,6 @@ AccessibilityEventRecorder::GetTestPasses() {
 #else   // defined(OS_ANDROID)
   return {
       {"blink", &AccessibilityEventRecorder::Create},
-      {"native", &AccessibilityEventRecorder::Create},
   };
 #endif  // defined(OS_ANDROID)
 }

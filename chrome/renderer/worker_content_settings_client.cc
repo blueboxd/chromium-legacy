@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/content_settings_agent_impl.h"
+#include "components/content_settings/renderer/content_settings_agent_impl.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -32,7 +32,8 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(
   content::ChildThread::Get()->BindHostReceiver(
       pending_content_settings_manager_.InitWithNewPipeAndPassReceiver());
 
-  ContentSettingsAgentImpl* agent = ContentSettingsAgentImpl::Get(render_frame);
+  content_settings::ContentSettingsAgentImpl* agent =
+      content_settings::ContentSettingsAgentImpl::Get(render_frame);
   allow_running_insecure_content_ = agent->allow_running_insecure_content();
   content_setting_rules_ = agent->GetContentSettingRules();
 }
@@ -59,23 +60,23 @@ WorkerContentSettingsClient::Clone() {
 }
 
 bool WorkerContentSettingsClient::RequestFileSystemAccessSync() {
-  return AllowStorageAccess(
-      chrome::mojom::ContentSettingsManager::StorageType::FILE_SYSTEM);
+  return AllowStorageAccess(content_settings::mojom::ContentSettingsManager::
+                                StorageType::FILE_SYSTEM);
 }
 
 bool WorkerContentSettingsClient::AllowIndexedDB() {
   return AllowStorageAccess(
-      chrome::mojom::ContentSettingsManager::StorageType::INDEXED_DB);
+      content_settings::mojom::ContentSettingsManager::StorageType::INDEXED_DB);
 }
 
 bool WorkerContentSettingsClient::AllowCacheStorage() {
   return AllowStorageAccess(
-      chrome::mojom::ContentSettingsManager::StorageType::CACHE);
+      content_settings::mojom::ContentSettingsManager::StorageType::CACHE);
 }
 
 bool WorkerContentSettingsClient::AllowWebLocks() {
   return AllowStorageAccess(
-      chrome::mojom::ContentSettingsManager::StorageType::WEB_LOCKS);
+      content_settings::mojom::ContentSettingsManager::StorageType::WEB_LOCKS);
 }
 
 bool WorkerContentSettingsClient::AllowRunningInsecureContent(
@@ -128,7 +129,7 @@ bool WorkerContentSettingsClient::ShouldAutoupgradeMixedContent() {
 }
 
 bool WorkerContentSettingsClient::AllowStorageAccess(
-    chrome::mojom::ContentSettingsManager::StorageType storage_type) {
+    content_settings::mojom::ContentSettingsManager::StorageType storage_type) {
   if (is_unique_origin_)
     return false;
 

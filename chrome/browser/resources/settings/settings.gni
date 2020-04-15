@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/closure_compiler/compile_js.gni")
+
 # Common namespace rewrites for all polymer_modulizer() or js_modulizer()
 # targets in Settings.
 settings_namespace_rewrites = [
@@ -134,3 +136,12 @@ settings_auto_imports = [
   "chrome/browser/resources/settings/printing_page/printing_browser_proxy.html|PrintingBrowserProxyImpl",
   "chrome/browser/resources/settings/site_settings/site_settings_behavior.html|SiteSettingsBehavior",
 ]
+
+settings_closure_flags =
+    default_closure_args + [
+      "js_module_root=../../chrome/browser/resources/settings/",
+      "js_module_root=./gen/chrome/browser/resources/settings/",
+    ]
+
+settings_migrated_imports =
+    [ "chrome/browser/resources/settings/reset_page/reset_profile_banner.html" ]

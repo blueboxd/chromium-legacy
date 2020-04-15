@@ -155,7 +155,6 @@ static_library("web_test_renderer") {
     "test_runner/web_frame_test_client.h",
     "test_runner/web_frame_test_proxy.cc",
     "test_runner/web_frame_test_proxy.h",
-    "test_runner/web_test_delegate.h",
     "test_runner/web_test_runtime_flags.cc",
     "test_runner/web_test_runtime_flags.h",
     "test_runner/web_view_test_proxy.cc",

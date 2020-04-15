@@ -39,7 +39,8 @@
     [CEReactions, Reflect=aria_rowcount] attribute DOMString? ariaRowCount;
     [CEReactions, Reflect=aria_rowindex] attribute DOMString? ariaRowIndex;
     [CEReactions, Reflect=aria_rowspan] attribute DOMString? ariaRowSpan;
-    [CEReactions, Reflect=aria_setsize] attribute DOMString? ariaSelected;
+    [CEReactions, Reflect=aria_selected] attribute DOMString? ariaSelected;
+    [CEReactions, Reflect=aria_setsize] attribute DOMString? ariaSetSize;
     [CEReactions, Reflect=aria_sort] attribute DOMString? ariaSort;
     [CEReactions, Reflect=aria_valuemax] attribute DOMString? ariaValueMax;
     [CEReactions, Reflect=aria_valuemin] attribute DOMString? ariaValueMin;

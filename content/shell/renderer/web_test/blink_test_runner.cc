@@ -152,7 +152,7 @@ BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
       RenderViewObserverTracker<BlinkTestRunner>(render_view),
       test_config_(mojom::ShellTestConfiguration::New()) {}
 
-BlinkTestRunner::~BlinkTestRunner() {}
+BlinkTestRunner::~BlinkTestRunner() = default;
 
 // WebTestDelegate  -----------------------------------------------------------
 
@@ -182,12 +182,6 @@ WebString BlinkTestRunner::RegisterIsolatedFileSystem(
   std::string filesystem_id;
   GetWebTestClientRemote()->RegisterIsolatedFileSystem(files, &filesystem_id);
   return WebString::FromUTF8(filesystem_id);
-}
-
-long long BlinkTestRunner::GetCurrentTimeInMillisecond() {
-  return base::TimeDelta(base::Time::Now() - base::Time::UnixEpoch())
-             .ToInternalValue() /
-         base::Time::kMicrosecondsPerMillisecond;
 }
 
 WebString BlinkTestRunner::GetAbsoluteWebStringFromUTF8Path(

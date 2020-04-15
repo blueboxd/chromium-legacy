@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/sanitizer_buildflags.h"
 #include "base/strings/string_piece.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -711,10 +712,8 @@ class TestLogListener : public fuchsia::logger::testing::LogListener_TestBase {
   TestLogListener() = default;
   ~TestLogListener() override = default;
 
-  void RunUntilDone() {
-    base::RunLoop loop;
-    dump_logs_done_quit_closure_ = loop.QuitClosure();
-    loop.Run();
+  void set_on_dump_logs_done(base::OnceClosure on_dump_logs_done) {
+    on_dump_logs_done_ = std::move(on_dump_logs_done);
   }
 
   bool DidReceiveString(base::StringPiece message,
@@ -735,16 +734,16 @@ class TestLogListener : public fuchsia::logger::testing::LogListener_TestBase {
                          std::make_move_iterator(messages.end()));
   }
 
-  void Done() override { std::move(dump_logs_done_quit_closure_).Run(); }
+  void Done() override { std::move(on_dump_logs_done_).Run(); }
 
   void NotImplemented_(const std::string& name) override {
-    NOTIMPLEMENTED() << name;
+    ADD_FAILURE() << "NotImplemented_: " << name;
   }
 
  private:
   fuchsia::logger::LogListenerPtr log_listener_;
   std::vector<fuchsia::logger::LogMessage> log_messages_;
-  base::OnceClosure dump_logs_done_quit_closure_;
+  base::OnceClosure on_dump_logs_done_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLogListener);
 };
@@ -758,7 +757,19 @@ TEST_F(LoggingTest, FuchsiaSystemLogging) {
   fidl::Binding<fuchsia::logger::LogListener> binding(&listener);
 
   fuchsia::logger::LogMessage logged_message;
-  do {
+
+  base::RunLoop wait_for_message_loop;
+
+  // |dump_logs| checks whether the expected log line has been received yet,
+  // and invokes DumpLogs() if not. It passes itself as the completion callback,
+  // so that when the call completes it can check again for the expected message
+  // and re-invoke DumpLogs(), or quit the loop, as appropriate.
+  base::RepeatingClosure dump_logs = base::BindLambdaForTesting([&]() {
+    if (listener.DidReceiveString(kLogMessage, &logged_message)) {
+      wait_for_message_loop.Quit();
+      return;
+    }
+
     std::unique_ptr<fuchsia::logger::LogFilterOptions> options =
         std::make_unique<fuchsia::logger::LogFilterOptions>();
     options->tags = {"base_unittests__exec"};
@@ -766,9 +777,15 @@ TEST_F(LoggingTest, FuchsiaSystemLogging) {
         base::fuchsia::ComponentContextForCurrentProcess()
             ->svc()
             ->Connect<fuchsia::logger::Log>();
+    listener.set_on_dump_logs_done(dump_logs);
     logger->DumpLogs(binding.NewBinding(), std::move(options));
-    listener.RunUntilDone();
-  } while (!listener.DidReceiveString(kLogMessage, &logged_message));
+  });
+
+  // Start the first DumpLogs() call.
+  dump_logs.Run();
+
+  // Run until kLogMessage is received.
+  wait_for_message_loop.Run();
 
   EXPECT_EQ(logged_message.severity,
             static_cast<int32_t>(fuchsia::logger::LogLevelFilter::ERROR));

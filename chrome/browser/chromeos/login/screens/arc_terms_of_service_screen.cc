@@ -18,7 +18,9 @@
 
 namespace {
 
+constexpr char kUserActionAccepted[] = "accepted";
 constexpr char kUserActionBack[] = "go-back";
+constexpr char kUserActionSkip[] = "skip";
 
 }  // namespace
 
@@ -83,18 +85,25 @@ void ArcTermsOfServiceScreen::HideImpl() {
 }
 
 void ArcTermsOfServiceScreen::OnUserAction(const std::string& action_id) {
-  if (action_id == kUserActionBack) {
+  if (action_id == kUserActionAccepted) {
+    exit_callback_.Run(Result::ACCEPTED);
+  } else if (action_id == kUserActionBack) {
     exit_callback_.Run(Result::BACK);
+  } else if (action_id == kUserActionSkip) {
+    exit_callback_.Run(Result::SKIPPED);
   } else {
     BaseScreen::OnUserAction(action_id);
   }
 }
 
 void ArcTermsOfServiceScreen::OnSkip() {
-  exit_callback_.Run(Result::SKIPPED);
+  // This would check if the screen is already hidden.
+  HandleUserAction(kUserActionSkip);
 }
 
 void ArcTermsOfServiceScreen::OnAccept(bool review_arc_settings) {
+  if (is_hidden())
+    return;
   base::UmaHistogramBoolean("OOBE.ArcTermsOfServiceScreen.ReviewFollowingSetup",
                             review_arc_settings);
   if (review_arc_settings) {
@@ -103,7 +112,7 @@ void ArcTermsOfServiceScreen::OnAccept(bool review_arc_settings) {
     profile->GetPrefs()->SetBoolean(prefs::kShowArcSettingsOnSessionStart,
                                     true);
   }
-  exit_callback_.Run(Result::ACCEPTED);
+  HandleUserAction(kUserActionAccepted);
 }
 
 void ArcTermsOfServiceScreen::OnViewDestroyed(

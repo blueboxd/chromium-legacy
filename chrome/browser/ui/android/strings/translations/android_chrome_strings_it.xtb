@@ -436,7 +436,6 @@ Soltanto tu puoi vedere cosa sta inquadrando la videocamera. Il sito non può ve
 <translation id="4242533952199664413">Apri le impostazioni</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4256782883801055595">Licenze open source</translation>
-<translation id="4259722352634471385">Navigazione bloccata: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copia indirizzo link</translation>
 <translation id="4275663329226226506">Multimediali</translation>
 <translation id="4278390842282768270">Consentito</translation>
@@ -965,6 +964,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Attiva la sincronizzazione per trovare i tuoi preferiti su tutti i dispositivi</translation>
 <translation id="8110087112193408731">Vuoi mostrare la tua attività di Chrome in Benessere digitale?</translation>
+<translation id="8115259494083109761">Per scansionare i codici QR, consenti a Chrome di usare la tua fotocamera</translation>
 <translation id="8116925261070264013">Con audio disattivato</translation>
 <translation id="8127542551745560481">Modifica home page</translation>
 <translation id="813082847718468539">Visualizza informazioni sul sito</translation>
@@ -1066,7 +1066,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8942627711005830162">Apri nell'altra finestra</translation>
 <translation id="8951232171465285730">Chrome ti ha fatto risparmiare <ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">Blocca i cookie per un sito specifico.</translation>
-<translation id="8959122750345127698">Navigazione inaccessibile: <ph name="URL" /></translation>
 <translation id="8965591936373831584">in attesa</translation>
 <translation id="8970887620466824814">C'è stato un problema.</translation>
 <translation id="8972098258593396643">Scaricare nella cartella predefinita?</translation>

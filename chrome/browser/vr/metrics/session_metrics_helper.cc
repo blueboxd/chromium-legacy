@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/vr/metrics/session_timer.h"
 #include "chrome/browser/vr/metrics/webxr_session_tracker.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -71,10 +70,10 @@ SessionMetricsHelper* SessionMetricsHelper::FromWebContents(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!web_contents)
-    return NULL;
+    return nullptr;
   SessionMetricsHelperData* data = static_cast<SessionMetricsHelperData*>(
       web_contents->GetUserData(kSessionMetricsHelperDataKey));
-  return data ? data->get() : NULL;
+  return data ? data->get() : nullptr;
 }
 
 // static
@@ -114,10 +113,9 @@ SessionMetricsHelper::StartInlineSession(
          webxr_inline_session_trackers_.end());
 
   auto result = webxr_inline_session_trackers_.emplace(
-      session_id,
-      std::make_unique<WebXRSessionTracker>(
-          std::make_unique<ukm::builders::XR_WebXR_Session>(
-              ukm::GetSourceIdForWebContentsDocument(web_contents()))));
+      session_id, std::make_unique<WebXRSessionTracker>(
+                      std::make_unique<ukm::builders::XR_WebXR_Session>(
+                          web_contents()->GetLastCommittedSourceId())));
   auto* tracker = result.first->second.get();
 
   ReportInitialSessionData(tracker, session_options, enabled_features);
@@ -152,7 +150,7 @@ SessionMetricsHelper::StartImmersiveSession(
 
   webxr_immersive_session_tracker_ = std::make_unique<WebXRSessionTracker>(
       std::make_unique<ukm::builders::XR_WebXR_Session>(
-          ukm::GetSourceIdForWebContentsDocument(web_contents())));
+          web_contents()->GetLastCommittedSourceId()));
 
   // TODO(https://crbug.com/1056930): Consider renaming the timers to something
   // that indicates both that these also record AR, and that these are no longer

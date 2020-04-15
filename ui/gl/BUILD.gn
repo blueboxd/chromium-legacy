@@ -482,10 +482,12 @@ jumbo_static_library("gl_unittest_utils") {
 jumbo_static_library("test_support") {
   testonly = true
   sources = [
+    "test/gl_image_bind_test_template.h",
     "test/gl_image_test_support.cc",
     "test/gl_image_test_support.h",
     "test/gl_image_test_template.cc",
     "test/gl_image_test_template.h",
+    "test/gl_image_zero_initialize_test_template.h",
     "test/gl_surface_test_support.cc",
     "test/gl_surface_test_support.h",
     "test/gl_test_helper.cc",

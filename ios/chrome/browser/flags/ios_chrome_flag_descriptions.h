@@ -159,6 +159,11 @@ extern const char kDragAndDropDescription[];
 extern const char kEmbedderBlockRestoreUrlName[];
 extern const char kEmbedderBlockRestoreUrlDescription[];
 
+// Title and description for the flag to enable caching of unmasked server
+// cards until page navigation to simplify consecutive fills on the same page.
+extern const char kEnableAutofillCacheServerCardInfoName[];
+extern const char kEnableAutofillCacheServerCardInfoDescription[];
+
 // Title and description for the flag to control if credit card upload can
 // display a cardholder name fix flow.
 extern const char kEnableAutofillCreditCardUploadEditableCardholderNameName[];

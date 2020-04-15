@@ -95,7 +95,7 @@ class NET_EXPORT HttpResponseHeaders
   void Update(const HttpResponseHeaders& new_headers);
 
   // Removes all instances of a particular header.
-  void RemoveHeader(const std::string& name);
+  void RemoveHeader(base::StringPiece name);
 
   // Removes all instances of particular headers.
   void RemoveHeaders(const std::unordered_set<std::string>& header_names);
@@ -149,7 +149,7 @@ class NET_EXPORT HttpResponseHeaders
   // NOTE: Do not make any assumptions about the encoding of this output
   // string.  It may be non-ASCII, and the encoding used by the server is not
   // necessarily known to us.  Do not assume that this output is UTF-8!
-  bool GetNormalizedHeader(const std::string& name, std::string* value) const;
+  bool GetNormalizedHeader(base::StringPiece name, std::string* value) const;
 
   // Returns the normalized status line.
   std::string GetStatusLine() const;
@@ -200,17 +200,16 @@ class NET_EXPORT HttpResponseHeaders
   // To handle cases such as this, use GetNormalizedHeader to return the full
   // concatenated header, and then parse manually.
   bool EnumerateHeader(size_t* iter,
-                       const base::StringPiece& name,
+                       base::StringPiece name,
                        std::string* value) const;
 
   // Returns true if the response contains the specified header-value pair.
   // Both name and value are compared case insensitively.
-  bool HasHeaderValue(const base::StringPiece& name,
-                      const base::StringPiece& value) const;
+  bool HasHeaderValue(base::StringPiece name, base::StringPiece value) const;
 
   // Returns true if the response contains the specified header.
   // The name is compared case insensitively.
-  bool HasHeader(const base::StringPiece& name) const;
+  bool HasHeader(base::StringPiece name) const;
 
   // Get the mime type and charset values in lower case form from the headers.
   // Empty strings are returned if the values are not present.
@@ -355,14 +354,14 @@ class NET_EXPORT HttpResponseHeaders
                        std::string::const_iterator line_end,
                        bool has_headers);
 
-  // Find the header in our list (case-insensitive) starting with parsed_ at
+  // Find the header in our list (case-insensitive) starting with |parsed_| at
   // index |from|.  Returns string::npos if not found.
-  size_t FindHeader(size_t from, const base::StringPiece& name) const;
+  size_t FindHeader(size_t from, base::StringPiece name) const;
 
   // Search the Cache-Control header for a directive matching |directive|. If
   // present, treat its value as a time offset in seconds, write it to |result|,
   // and return true.
-  bool GetCacheControlDirective(const base::StringPiece& directive,
+  bool GetCacheControlDirective(base::StringPiece directive,
                                 base::TimeDelta* result) const;
 
   // Add a header->value pair to our list.  If we already have header in our

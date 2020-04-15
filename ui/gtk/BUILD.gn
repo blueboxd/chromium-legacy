@@ -103,23 +103,3 @@ jumbo_component("gtk") {
     deps += [ "//ui/ozone" ]
   }
 }
-
-component("x") {
-  output_name = "ui_gtk_x"
-  sources = [
-    "gtk_event_loop_x11.cc",
-    "gtk_event_loop_x11.h",
-    "gtk_ui_delegate_x11.cc",
-    "gtk_ui_delegate_x11.h",
-  ]
-  deps = [
-    "//base",
-    "//build/config/linux/gtk",
-    "//ui/base",
-    "//ui/events/platform/x11",
-    "//ui/gfx/x",
-  ]
-  public_deps = [ ":gtk_ui_delegate" ]
-  defines = [ "IS_UI_GTK_X_IMPL" ]
-  configs += [ "//build/config/linux:x11" ]
-}

@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/test_files_request_filter.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/edu_account_login_handler_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_chromeos.h"
-#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/gaia_auth_host_resources.h"
 #include "chrome/grit/gaia_auth_host_resources_map.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -114,44 +114,37 @@ content::WebUIDataSource* CreateWebUIDataSource() {
                              test::GetTestFilesRequestFilter());
   }
 
-  source->AddResourcePath("inline_login.css", IDR_INLINE_LOGIN_CSS);
-  source->AddResourcePath("inline_login.js", IDR_INLINE_LOGIN_JS);
-  source->AddResourcePath("gaia_auth_host.js", IDR_GAIA_AUTH_AUTHENTICATOR_JS);
+  static constexpr webui::ResourcePath kResources[] = {
+    {"inline_login.css", IDR_INLINE_LOGIN_CSS},
+    {"inline_login.js", IDR_INLINE_LOGIN_JS},
+    {"gaia_auth_host.js", IDR_GAIA_AUTH_AUTHENTICATOR_JS},
+#if defined(OS_CHROMEOS)
+    {"edu", IDR_EDU_LOGIN_EDU_LOGIN_HTML},
+    {"app.js", IDR_EDU_LOGIN_EDU_LOGIN_JS},
+    {"edu_login_button.js", IDR_EDU_LOGIN_EDU_LOGIN_BUTTON_JS},
+    {"edu_login_template.js", IDR_EDU_LOGIN_EDU_LOGIN_TEMPLATE_JS},
+    {"edu_login_css.js", IDR_EDU_LOGIN_EDU_LOGIN_CSS_JS},
+    {"icons.js", IDR_EDU_LOGIN_ICONS_JS},
+    {"browser_proxy.js", IDR_EDU_LOGIN_BROWSER_PROXY_JS},
+    {"edu_login_util.js", IDR_EDU_LOGIN_EDU_LOGIN_UTIL_JS},
+    {"edu_login_welcome.js", IDR_EDU_LOGIN_EDU_LOGIN_WELCOME_JS},
+    {"edu_login_parents.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENTS_JS},
+    {"edu_login_parent_signin.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENT_SIGNIN_JS},
+    {"edu_login_parent_info.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENT_INFO_JS},
+    {"edu_login_signin.js", IDR_EDU_LOGIN_EDU_LOGIN_SIGNIN_JS},
+    {"test_loader.js", IDR_WEBUI_JS_TEST_LOADER},
+    {"test_loader.html", IDR_WEBUI_HTML_TEST_LOADER},
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    {"googleg.svg", IDR_ACCOUNT_MANAGER_WELCOME_GOOGLE_LOGO_SVG},
+#endif
+    {"family_link_logo.svg", IDR_FAMILY_LINK_LOGO_SVG},
+#endif  // defined(OS_CHROMEOS)
+  };
+  webui::AddResourcePathsBulk(source, kResources);
 
 #if defined(OS_CHROMEOS)
   source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources chrome://test 'self';");
-
-  source->AddResourcePath("edu", IDR_EDU_LOGIN_EDU_LOGIN_HTML);
-  source->AddResourcePath("app.js", IDR_EDU_LOGIN_EDU_LOGIN_JS);
-  source->AddResourcePath("edu_login_button.js",
-                          IDR_EDU_LOGIN_EDU_LOGIN_BUTTON_JS);
-  source->AddResourcePath("edu_login_template.js",
-                          IDR_EDU_LOGIN_EDU_LOGIN_TEMPLATE_JS);
-  source->AddResourcePath("edu_login_css.js", IDR_EDU_LOGIN_EDU_LOGIN_CSS_JS);
-  source->AddResourcePath("icons.js", IDR_EDU_LOGIN_ICONS_JS);
-  source->AddResourcePath("browser_proxy.js", IDR_EDU_LOGIN_BROWSER_PROXY_JS);
-  source->AddResourcePath("edu_login_util.js", IDR_EDU_LOGIN_EDU_LOGIN_UTIL_JS);
-  source->AddResourcePath("edu_login_welcome.js",
-                          IDR_EDU_LOGIN_EDU_LOGIN_WELCOME_JS);
-  source->AddResourcePath("edu_login_parents.js",
-                          IDR_EDU_LOGIN_EDU_LOGIN_PARENTS_JS);
-  source->AddResourcePath("edu_login_parent_signin.js",
-                          IDR_EDU_LOGIN_EDU_LOGIN_PARENT_SIGNIN_JS);
-  source->AddResourcePath("edu_login_parent_info.js",
-                          IDR_EDU_LOGIN_EDU_LOGIN_PARENT_INFO_JS);
-  source->AddResourcePath("edu_login_signin.js",
-                          IDR_EDU_LOGIN_EDU_LOGIN_SIGNIN_JS);
-
-  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
-  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  source->AddResourcePath("googleg.svg",
-                          IDR_ACCOUNT_MANAGER_WELCOME_GOOGLE_LOGO_SVG);
-#endif
-  source->AddResourcePath("family_link_logo.svg", IDR_FAMILY_LINK_LOGO_SVG);
-
   webui::SetupWebUIDataSource(
       source,
       base::make_span(kGaiaAuthHostResources, kGaiaAuthHostResourcesSize),

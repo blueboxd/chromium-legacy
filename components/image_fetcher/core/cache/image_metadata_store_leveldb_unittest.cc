@@ -328,8 +328,14 @@ TEST_F(CachedImageFetcherImageMetadataStoreLevelDBTest, GetAllKeysLoadFailed) {
 
 TEST_F(CachedImageFetcherImageMetadataStoreLevelDBTest, GetEstimatedSize) {
   PrepareDatabase(true);
+  EXPECT_EQ(5, metadata_store()->GetEstimatedSize(CacheStrategy::BEST_EFFORT));
 
-  EXPECT_EQ(5, metadata_store()->GetEstimatedSize());
+  metadata_store()->SaveImageMetadata(kOtherImageKey, 15,
+                                      /* needs_transcoding */ false,
+                                      base::TimeDelta::FromDays(7));
+  EXPECT_EQ(5, metadata_store()->GetEstimatedSize(CacheStrategy::BEST_EFFORT));
+  EXPECT_EQ(15, metadata_store()->GetEstimatedSize(
+                    CacheStrategy::HOLD_UNTIL_EXPIRED));
 }
 
 TEST_F(CachedImageFetcherImageMetadataStoreLevelDBTest,
@@ -351,8 +357,20 @@ TEST_F(CachedImageFetcherImageMetadataStoreLevelDBTest,
 TEST_F(CachedImageFetcherImageMetadataStoreLevelDBTest, GarbageCollect) {
   PrepareDatabase(true);
 
+  metadata_store()->SaveImageMetadata(kOtherImageKey, 100,
+                                      /* needs_transcoding */ false,
+                                      base::TimeDelta::FromSeconds(1));
+  db()->UpdateCallback(true);
+  EXPECT_EQ(metadata_store()->GetEstimatedSize(CacheStrategy::BEST_EFFORT),
+            kImageDataLength);
+  EXPECT_EQ(
+      metadata_store()->GetEstimatedSize(CacheStrategy::HOLD_UNTIL_EXPIRED),
+      100);
+
   // Calling GC with something to be collected.
-  EXPECT_CALL(*this, OnKeysReturned(std::vector<std::string>({kImageKey})));
+  EXPECT_CALL(
+      *this,
+      OnKeysReturned(std::vector<std::string>({kImageKey, kOtherImageKey})));
   RunGarbageCollection(
       base::TimeDelta::FromHours(1), base::TimeDelta::FromHours(1),
       base::BindOnce(
@@ -362,6 +380,10 @@ TEST_F(CachedImageFetcherImageMetadataStoreLevelDBTest, GarbageCollect) {
   db()->UpdateCallback(true);
 
   ASSERT_FALSE(IsDataPresent(kImageKey));
+  ASSERT_FALSE(IsDataPresent(kOtherImageKey));
+  EXPECT_EQ(metadata_store()->GetEstimatedSize(CacheStrategy::BEST_EFFORT), 0);
+  EXPECT_EQ(
+      metadata_store()->GetEstimatedSize(CacheStrategy::HOLD_UNTIL_EXPIRED), 0);
 }
 
 TEST_F(CachedImageFetcherImageMetadataStoreLevelDBTest, GarbageCollectNoHits) {

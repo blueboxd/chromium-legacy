@@ -2188,7 +2188,7 @@ bool SetCookieHelper(NetworkContext* network_context,
                            base::Time(), base::Time(), true, false,
                            net::CookieSameSite::NO_RESTRICTION,
                            net::COOKIE_PRIORITY_LOW),
-      url.scheme(), net::CookieOptions::MakeAllInclusive(),
+      url, net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&SetCookieCallback, &run_loop, &result));
   run_loop.Run();
   return result;
@@ -2205,12 +2205,13 @@ TEST_F(NetworkContextTest, CookieManager) {
   // Set a cookie through the cookie interface.
   base::RunLoop run_loop1;
   bool result = false;
+  net::CanonicalCookie cookie("TestCookie", "1", "www.test.com", "/",
+                              base::Time(), base::Time(), base::Time(), false,
+                              false, net::CookieSameSite::LAX_MODE,
+                              net::COOKIE_PRIORITY_LOW);
   cookie_manager_remote->SetCanonicalCookie(
-      net::CanonicalCookie("TestCookie", "1", "www.test.com", "/", base::Time(),
-                           base::Time(), base::Time(), false, false,
-                           net::CookieSameSite::LAX_MODE,
-                           net::COOKIE_PRIORITY_LOW),
-      "https", net::CookieOptions::MakeAllInclusive(),
+      cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
+      net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&SetCookieCallback, &run_loop1, &result));
   run_loop1.Run();
   EXPECT_TRUE(result);

@@ -307,10 +307,6 @@ void WebRuntimeFeatures::EnablePassiveDocumentEventListeners(bool enable) {
   RuntimeEnabledFeatures::SetPassiveDocumentEventListenersEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnablePassiveDocumentWheelEventListeners(bool enable) {
-  RuntimeEnabledFeatures::SetPassiveDocumentWheelEventListenersEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnablePaymentApp(bool enable) {
   RuntimeEnabledFeatures::SetPaymentAppEnabled(enable);
 }

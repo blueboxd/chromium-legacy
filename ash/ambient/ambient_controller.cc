@@ -10,7 +10,7 @@
 #include "ash/ambient/model/photo_model_observer.h"
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/util/ambient_util.h"
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"

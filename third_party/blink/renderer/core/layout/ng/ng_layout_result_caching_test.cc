@@ -1553,5 +1553,37 @@ TEST_F(NGLayoutResultCachingTest, HitFlexBoxMeasureAndLayout) {
   EXPECT_NE(result.get(), nullptr);
 }
 
+TEST_F(NGLayoutResultCachingTest, HitFlexLegacyImg) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .bfc { display: flex; flex-direction: column; width: 300px; }
+      .bfc > * { display: flex; }
+    </style>
+    <div class="bfc">
+      <div id="test">
+        <img />
+      </div>
+    </div>
+    <div class="bfc" style="height: 200px;">
+      <div id="src">
+        <img />
+      </div>
+    </div>
+  )HTML");
+
+  auto* test = To<LayoutBlock>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlock>(GetLayoutObjectByElementId("src"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+  const NGConstraintSpace& space =
+      src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test->CachedLayoutResult(
+      space, nullptr, nullptr, &fragment_geometry, &cache_status);
+
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+}
+
 }  // namespace
 }  // namespace blink

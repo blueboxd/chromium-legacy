@@ -2367,13 +2367,19 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--site-per-process",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "site_per_process_chrome_public_test_apk",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2383,7 +2389,7 @@
               "os": "Android"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -6794,7 +6800,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "isolate_coverage_data": true,
         "merge": {
@@ -6806,6 +6813,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -6833,7 +6845,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -6843,7 +6855,8 @@
         "args": [
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "isolate_coverage_data": true,
         "merge": {
@@ -6856,6 +6869,11 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "name": "network_service_out_of_process_chrome_public_test_apk",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -6883,7 +6901,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -11857,7 +11875,8 @@
         "args": [
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -11869,6 +11888,11 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "name": "network_service_out_of_process_chrome_public_test_apk",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -11896,7 +11920,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -27225,7 +27249,7 @@
           "--platform",
           "iPhone X",
           "--version",
-          "13.3",
+          "13.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -27236,7 +27260,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_egtests_iPhone X 13.3",
+        "name": "ios_chrome_bookmarks_egtests_iPhone X 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -27682,7 +27706,7 @@
           "--platform",
           "iPhone X",
           "--version",
-          "13.3",
+          "13.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -27693,7 +27717,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_reading_list_egtests_iPhone X 13.3",
+        "name": "ios_chrome_reading_list_egtests_iPhone X 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -27973,7 +27997,7 @@
           "--platform",
           "iPhone X",
           "--version",
-          "13.3",
+          "13.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -27984,7 +28008,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_egtests_iPhone X 13.3",
+        "name": "ios_chrome_settings_egtests_iPhone X 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -28507,7 +28531,7 @@
           "--platform",
           "iPhone X",
           "--version",
-          "13.3",
+          "13.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -28518,7 +28542,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_translate_egtests_iPhone X 13.3",
+        "name": "ios_chrome_translate_egtests_iPhone X 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -29251,7 +29275,7 @@
           "--platform",
           "iPhone X",
           "--version",
-          "13.3",
+          "13.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -29262,7 +29286,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_egtests_iPhone X 13.3",
+        "name": "ios_chrome_web_egtests_iPhone X 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -29784,7 +29808,7 @@
           "--platform",
           "iPhone X",
           "--version",
-          "13.3",
+          "13.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -29795,7 +29819,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_egtests_iPhone X 13.3",
+        "name": "ios_showcase_egtests_iPhone X 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -39996,6 +40020,7 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "wpt_tests_suite",
+        "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

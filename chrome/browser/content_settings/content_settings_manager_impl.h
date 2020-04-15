@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_MANAGER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "chrome/common/content_settings_manager.mojom.h"
+#include "components/content_settings/common/content_settings_manager.mojom.h"
 
 namespace content {
 class RenderProcessHost;
@@ -18,17 +18,20 @@ class CookieSettings;
 
 namespace chrome {
 
-class ContentSettingsManagerImpl : public mojom::ContentSettingsManager {
+class ContentSettingsManagerImpl
+    : public content_settings::mojom::ContentSettingsManager {
  public:
   ~ContentSettingsManagerImpl() override;
 
   static void Create(
       content::RenderProcessHost* render_process_host,
-      mojo::PendingReceiver<mojom::ContentSettingsManager> receiver);
+      mojo::PendingReceiver<content_settings::mojom::ContentSettingsManager>
+          receiver);
 
   // mojom::ContentSettingsManager methods:
   void Clone(
-      mojo::PendingReceiver<mojom::ContentSettingsManager> receiver) override;
+      mojo::PendingReceiver<content_settings::mojom::ContentSettingsManager>
+          receiver) override;
   void AllowStorageAccess(int32_t render_frame_id,
                           StorageType storage_type,
                           const url::Origin& origin,

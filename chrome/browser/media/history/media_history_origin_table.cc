@@ -45,6 +45,13 @@ sql::InitStatus MediaHistoryOriginTable::CreateTableIfNonExistent() {
                          kTableName)
           .c_str());
 
+  if (success) {
+    success = DB()->Execute(
+        "CREATE INDEX IF NOT EXISTS "
+        "origin_aggregate_watchtime_audio_video_s_index ON "
+        "origin (aggregate_watchtime_audio_video_s)");
+  }
+
   if (!success) {
     ResetDB();
     LOG(ERROR) << "Failed to create media history origin table.";

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tab;
 
 import org.chromium.base.UserData;
+import org.chromium.components.external_intents.InterceptNavigationDelegateImpl;
 
 /**
  * Class that glues InterceptNavigationDelegateImpl objects to Tabs.

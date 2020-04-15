@@ -611,7 +611,7 @@
 <translation id="1805822111539868586">Վերլուծել դիտումները</translation>
 <translation id="1805888043020974594">Տպման սերվեր</translation>
 <translation id="1805967612549112634">Հաստատեք PIN կոդը</translation>
-<translation id="1806335016774576568">Անցնել մյուս բացված հավելված</translation>
+<translation id="1806335016774576568">Անցնել մյուս ակտիվ հավելված</translation>
 <translation id="1809483812148634490">Google Play-ից ներբեռնված հավելվածները կհեռացվեն այս Chromebook-ից։
     <ph name="LINE_BREAKS1" />
     Ձեր գնած բովանդակությունը (ֆիլմերը, սերիալները, երգերը, գրքերը, ինչպես նաև հավելվածներից կատարած մյուս գնումները) նույնպես կարող է ջնջվել։
@@ -687,7 +687,6 @@
 <translation id="189210018541388520">Բացել լիաէկրան ռեժիմում</translation>
 <translation id="1892341345406963517">Ողջույն, <ph name="PARENT_NAME" />:</translation>
 <translation id="189358972401248634">Այլ լեզուներ</translation>
-<translation id="1895252664692693738">Մնացել է <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Աշխատանքի ավարտ</translation>
 <translation id="1895934970388272448">Այս գործընթացն ավարտելու համար դուք պետք է հաստատեք գրանցումը տպիչի վրա: Ստուգեք այն:</translation>
 <translation id="1899826437968063457">Plugin VM-ն աշխատեցնելու համար թույլտվություն է հարկավոր</translation>
@@ -4004,7 +4003,6 @@
 <translation id="6365411474437319296">Ավելացրեք հարազատներին և ընկերներին</translation>
 <translation id="636850387210749493">Ձեռնարկության գրանցում</translation>
 <translation id="6370021412472292592">Չհաջողվեց բեռնել մանիֆեստը:</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Փոխել գաղտնաբառը}one{Փոխել գաղտնաբառերը}other{Փոխել գաղտնաբառերը}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Փորձել կրկին</translation>
 <translation id="6377268785556383139">«<ph name="SEARCH_TEXT" />»-ի որոնման 1 արդյունք</translation>

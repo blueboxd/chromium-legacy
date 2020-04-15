@@ -6,10 +6,10 @@
 
 #include "content/renderer/compositor/compositor_dependencies.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
+#include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/test_runner_for_specific_view.h"
-#include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -82,7 +82,7 @@ void WebWidgetTestProxy::ScheduleAnimationInternal(bool do_raster) {
 
   if (!animation_scheduled_) {
     animation_scheduled_ = true;
-    GetWebViewTestProxy()->delegate()->PostDelayedTask(
+    GetWebViewTestProxy()->blink_test_runner()->PostDelayedTask(
         base::BindOnce(&WebWidgetTestProxy::AnimateNow,
                        weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(1));
@@ -164,7 +164,7 @@ void WebWidgetTestProxy::Reset() {
   UseSynchronousResizeModeForTesting(false);
 }
 
-void WebWidgetTestProxy::BindTo(blink::WebLocalFrame* frame) {
+void WebWidgetTestProxy::Install(blink::WebLocalFrame* frame) {
   event_sender_.Install(frame);
 }
 

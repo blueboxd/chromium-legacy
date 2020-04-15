@@ -18,7 +18,7 @@
 
 namespace ash {
 
-class AssistantController;
+class AssistantControllerImpl;
 class ProactiveSuggestions;
 class ProactiveSuggestionsView;
 
@@ -43,7 +43,7 @@ class AssistantProactiveSuggestionsController
       assistant::metrics::ProactiveSuggestionsShowResult;
 
   explicit AssistantProactiveSuggestionsController(
-      AssistantController* assistant_controller);
+      AssistantControllerImpl* assistant_controller);
   ~AssistantProactiveSuggestionsController() override;
 
   // AssistantControllerObserver:
@@ -88,7 +88,7 @@ class AssistantProactiveSuggestionsController
   void CloseUi(ProactiveSuggestionsShowResult result);
   void HideUi();
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
 
   ProactiveSuggestionsView* view_ = nullptr;  // Owned by view hierarchy.
 

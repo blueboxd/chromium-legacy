@@ -12,8 +12,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -69,55 +67,13 @@ void WriteFile(const base::FilePath& path, const std::string& blob) {
            base::WriteFile(path, blob.data(), blob.length()));
 }
 
-// Set of values that should be written to local state.
-struct LocalStateValues {
-  base::Optional<bool> oobe_complete;
-  base::Optional<bool> enrollment_recovery_required;
-  base::Optional<int> device_registered;
-};
-
-// Chrome main extra part used to initialize local state prefs to indicate the
-// configured device state. Injected into browser main parts in
-// CreatedBrowserMainParts() override.
-class TestLocalStateInitializerMainExtra : public ChromeBrowserMainExtraParts {
- public:
-  explicit TestLocalStateInitializerMainExtra(
-      LocalStateValues local_state_values)
-      : local_state_values_(std::move(local_state_values)) {}
-  ~TestLocalStateInitializerMainExtra() override = default;
-
-  // ChromeBrowserMainExtraParts:
-  void PostEarlyInitialization() override {
-    PrefService* local_state = g_browser_process->local_state();
-
-    if (local_state_values_.oobe_complete.has_value()) {
-      local_state->SetBoolean(prefs::kOobeComplete,
-                              *local_state_values_.oobe_complete);
-    }
-
-    if (local_state_values_.enrollment_recovery_required.has_value()) {
-      local_state->SetBoolean(
-          prefs::kEnrollmentRecoveryRequired,
-          *local_state_values_.enrollment_recovery_required);
-    }
-
-    if (local_state_values_.device_registered.has_value()) {
-      local_state->SetInteger(prefs::kDeviceRegistered,
-                              *local_state_values_.device_registered);
-    }
-  }
-
- private:
-  LocalStateValues local_state_values_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLocalStateInitializerMainExtra);
-};
-
 }  // namespace
 
 DeviceStateMixin::DeviceStateMixin(InProcessBrowserTestMixinHost* host,
                                    State initial_state)
-    : InProcessBrowserTestMixin(host), state_(initial_state) {
+    : InProcessBrowserTestMixin(host),
+      state_(initial_state),
+      local_state_mixin_(host, this) {
   DCHECK(!g_instance_created);
   g_instance_created = true;
 }
@@ -147,29 +103,22 @@ void DeviceStateMixin::SetUpInProcessBrowserTestFixture() {
   }
 }
 
-void DeviceStateMixin::CreatedBrowserMainParts(
-    content::BrowserMainParts* browser_main_parts) {
-  LocalStateValues local_state_values;
-
+void DeviceStateMixin::SetUpLocalState() {
+  PrefService* local_state = g_browser_process->local_state();
   switch (state_) {
     case DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED:
     case DeviceStateMixin::State::OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED:
     case DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED:
     case DeviceStateMixin::State::OOBE_COMPLETED_DEMO_MODE:
     case DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED:
-      local_state_values.device_registered = 1;
-      local_state_values.enrollment_recovery_required = false;
-      local_state_values.oobe_complete = true;
+      local_state->SetBoolean(prefs::kOobeComplete, true);
+      local_state->SetInteger(prefs::kDeviceRegistered, 1);
+      local_state->SetBoolean(prefs::kEnrollmentRecoveryRequired, false);
       break;
     case DeviceStateMixin::State::BEFORE_OOBE:
-      local_state_values.device_registered = 0;
+      local_state->SetInteger(prefs::kDeviceRegistered, 0);
       break;
   }
-
-  // |browser_main_parts| take ownership of TestUserRegistrationMainExtra.
-  static_cast<ChromeBrowserMainParts*>(browser_main_parts)
-      ->AddParts(new TestLocalStateInitializerMainExtra(
-          std::move(local_state_values)));
 }
 
 std::unique_ptr<ScopedDevicePolicyUpdate>

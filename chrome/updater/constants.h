@@ -70,6 +70,9 @@ extern const char kUninstallSwitch[];
 // Updates all apps registered with the updater.
 extern const char kUpdateAppsSwitch[];
 
+// The updater needs to operate in the system context.
+extern const char kSystemSwitch[];
+
 // Runs in test mode. Currently, it exits right away.
 extern const char kTestSwitch[];
 

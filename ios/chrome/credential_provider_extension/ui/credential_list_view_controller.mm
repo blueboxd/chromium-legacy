@@ -4,7 +4,6 @@
 
 #import "ios/chrome/credential_provider_extension/ui/credential_list_view_controller.h"
 
-#import "base/mac/foundation_util.h"
 #import "ios/chrome/common/credential_provider/credential.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
@@ -18,54 +17,6 @@ NSString* kHeaderIdentifier = @"clvcHeader";
 NSString* kCellIdentifier = @"clvcCell";
 
 const CGFloat kHeaderHeight = 70;
-const CGFloat kFallbackIconSize = 24;
-const CGFloat kFallbackRoundedCorner = 3;
-
-// Returns an icon with centered letter from given |string| and some
-// colors computed from the string.
-// TODO(crbug.com/1045454): draw actual icon or default icon.
-UIImage* GetFallbackImageWithStringAndColor(NSString* string) {
-  int hash = string.hash;
-  UIColor* backgroundColor =
-      [UIColor colorWithRed:0.5 + (hash & 0xff) / 510.0
-                      green:0.5 + ((hash >> 8) & 0xff) / 510.0
-                       blue:0.5 + ((hash >> 16) & 0xff) / 510.0
-                      alpha:1.0];
-
-  UIColor* textColor = [UIColor colorWithRed:(hash & 0xff) / 510.0
-                                       green:((hash >> 8) & 0xff) / 510.0
-                                        blue:((hash >> 16) & 0xff) / 510.0
-                                       alpha:1.0];
-
-  CGRect rect = CGRectMake(0, 0, kFallbackIconSize, kFallbackIconSize);
-
-  UIGraphicsBeginImageContext(rect.size);
-  CGContextRef context = UIGraphicsGetCurrentContext();
-  CGContextSetFillColorWithColor(context, [backgroundColor CGColor]);
-  CGContextSetStrokeColorWithColor(context, [textColor CGColor]);
-
-  UIBezierPath* rounded =
-      [UIBezierPath bezierPathWithRoundedRect:rect
-                                 cornerRadius:kFallbackRoundedCorner];
-  [rounded fill];
-
-  UIFont* font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-  font = [font fontWithSize:(kFallbackIconSize / 2)];
-  CGRect textRect = CGRectMake(0, (kFallbackIconSize - [font lineHeight]) / 2,
-                               kFallbackIconSize, [font lineHeight]);
-  NSMutableParagraphStyle* paragraphStyle =
-      [[NSMutableParagraphStyle alloc] init];
-  [paragraphStyle setAlignment:NSTextAlignmentCenter];
-  NSMutableDictionary* attributes = [[NSMutableDictionary alloc] init];
-  [attributes setValue:font forKey:NSFontAttributeName];
-  [attributes setValue:textColor forKey:NSForegroundColorAttributeName];
-  [attributes setValue:paragraphStyle forKey:NSParagraphStyleAttributeName];
-  [[string substringToIndex:1] drawInRect:textRect withAttributes:attributes];
-
-  UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
-  UIGraphicsEndImageContext();
-  return image;
-}
 }
 
 @interface CredentialListViewController () <UITableViewDataSource,
@@ -158,7 +109,15 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string) {
   }
 
   id<Credential> credential = [self credentialForIndexPath:indexPath];
-  cell.imageView.image = GetFallbackImageWithStringAndColor(credential.user);
+  if (credential.favicon.length) {
+    // TODO(crbug.com/1045454): draw actual icon.
+    cell.imageView.image = [[UIImage imageNamed:@"default_world_favicon"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  } else {
+    cell.imageView.image = [[UIImage imageNamed:@"default_world_favicon"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    cell.imageView.tintColor = [UIColor colorNamed:kPlaceholderImageTintColor];
+  }
   cell.imageView.contentMode = UIViewContentModeScaleAspectFit;
   cell.textLabel.text = credential.user;
   cell.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];

@@ -14,6 +14,7 @@ import android.net.Uri;
 import androidx.core.app.NotificationCompat;
 
 import org.chromium.base.IntentUtils;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
@@ -61,8 +62,10 @@ public class SaveImageNotificationManager {
                             uri, uri, Intent.normalizeMimeType(MIME_TYPE), true);
                     IntentHandler.startActivityForTrustedIntent(viewIntent);
                     close(context, id);
+                    RecordUserAction.record("SharingQRCode.SuccessNotificationTapped");
                     break;
                 case NotificationIntentInterceptor.IntentType.DELETE_INTENT:
+                    RecordUserAction.record("SharingQRCode.FailureNotificationTapped");
                     close(context, id);
             }
         }

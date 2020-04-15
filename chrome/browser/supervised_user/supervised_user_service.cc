@@ -89,6 +89,15 @@ const char kBlacklistURL[] =
 // The filename under which we'll store the blacklist (in the user data dir).
 const char kBlacklistFilename[] = "su-blacklist.bin";
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+// These extensions are allowed for supervised users for internal development
+// purposes.
+constexpr char const* kAllowlistExtensionIds[] = {
+    "behllobkkfkfnphdnhnkndlbkcpglgmj"  // Tast extension.
+};
+
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
 const char* const kCustodianInfoPrefs[] = {
     prefs::kSupervisedUserCustodianName,
     prefs::kSupervisedUserCustodianEmail,
@@ -760,6 +769,10 @@ SupervisedUserService::ExtensionState SupervisedUserService::GetExtensionState(
       extensions::Manifest::IsPolicyLocation(extension.location()) ||
       extension.is_theme() || extension.from_bookmark() ||
       extension.is_shared_module() || was_installed_by_default) {
+    return ExtensionState::ALLOWED;
+  }
+
+  if (base::Contains(kAllowlistExtensionIds, extension.id())) {
     return ExtensionState::ALLOWED;
   }
 

@@ -322,6 +322,12 @@ bool NGPhysicalContainerFragment::DependsOnPercentageBlockSize(
   if (!node || node.IsInline())
     return builder.has_descendant_that_depends_on_percentage_block_size_;
 
+  // For the below if-stmt we only want to consider legacy *containers* as
+  // potentially having %-dependent children - i.e. an image doesn't have any
+  // children.
+  bool is_legacy_container =
+      builder.is_legacy_layout_root_ && !node.IsReplaced();
+
   // NOTE: If an element is OOF positioned, and has top/bottom constraints
   // which are percentage based, this function will return false.
   //
@@ -346,7 +352,7 @@ bool NGPhysicalContainerFragment::DependsOnPercentageBlockSize(
   // We only need to know about if this flex-item has a %-block-size child if
   // the "definiteness" changes, not if the percentage resolution size changes.
   if ((builder.has_descendant_that_depends_on_percentage_block_size_ ||
-       builder.is_legacy_layout_root_) &&
+       is_legacy_container) &&
       (node.UseParentPercentageResolutionBlockSizeForChildren() ||
        node.IsFlexItem()))
     return true;

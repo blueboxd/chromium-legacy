@@ -1646,11 +1646,8 @@ bool PrintRenderFrameHelper::ProcessPreviewDocument(
 
   base::ReadOnlySharedMemoryMapping preview_document_mapping =
       preview_document_region.Map();
-  if (!preview_document_mapping.IsValid()) {
-    // TODO(jschettler): Remove logging when finished investigating b/152251595.
-    LOG(ERROR) << "Invalid memory region for preview document.";
+  if (!preview_document_mapping.IsValid())
     return false;
-  }
 
   CHECK(print_preview_context_.metafile()->InitFromData(
       preview_document_mapping.GetMemoryAsSpan<const uint8_t>()));
@@ -1659,11 +1656,8 @@ bool PrintRenderFrameHelper::ProcessPreviewDocument(
     return false;
 
   print_preview_context_.AllPagesRendered();
-  if (!FinalizePrintReadyDocument()) {
-    // TODO(jschettler): Remove logging when finished investigating b/152251595.
-    LOG(ERROR) << "Failed to finalize print-ready document.";
+  if (!FinalizePrintReadyDocument())
     return false;
-  }
 
   print_preview_context_.Finished();
   return true;

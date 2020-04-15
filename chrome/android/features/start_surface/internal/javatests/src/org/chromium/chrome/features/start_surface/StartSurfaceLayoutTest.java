@@ -12,7 +12,6 @@ import static android.support.test.espresso.contrib.RecyclerViewActions.actionOn
 import static android.support.test.espresso.matcher.ViewMatchers.Visibility.GONE;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
-import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
@@ -33,10 +32,10 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.c
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.switchTabModel;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabModelTabCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
-import static org.chromium.chrome.test.util.browser.RecyclerViewTestUtils.waitForStableRecyclerView;
 import static org.chromium.components.embedder_support.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
@@ -675,6 +674,7 @@ public class StartSurfaceLayoutTest {
             message = "https://crbug.com/1023833")
     public void testIncognitoToggle_tabCount() throws InterruptedException {
         mActivityTestRule.loadUrl(mUrl);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
         // Prepare two incognito tabs and enter tab switcher.
         prepareTabs(1, 2, mUrl);
@@ -683,11 +683,11 @@ public class StartSurfaceLayoutTest {
                 .check(TabCountAssertion.havingTabCount(2));
 
         for (int i = 0; i < mRepeat; i++) {
-            switchTabModel(false);
+            switchTabModel(cta, false);
             onView(withId(R.id.tab_list_view))
                     .check(TabCountAssertion.havingTabCount(1));
 
-            switchTabModel(true);
+            switchTabModel(cta, true);
             onView(withId(R.id.tab_list_view))
                     .check(TabCountAssertion.havingTabCount(2));
         }
@@ -701,6 +701,7 @@ public class StartSurfaceLayoutTest {
             message = "https://crbug.com/1023833")
     public void testIncognitoToggle_thumbnailFetchCount() throws InterruptedException {
         mActivityTestRule.loadUrl(mUrl);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         int oldFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
 
         // Prepare two incognito tabs and enter tab switcher.
@@ -715,7 +716,7 @@ public class StartSurfaceLayoutTest {
                 TabContentManager.ThumbnailFetchingResult.GOT_JPEG);
 
         for (int i = 0; i < mRepeat; i++) {
-            switchTabModel(false);
+            switchTabModel(cta, false);
             currentFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
             int currentHistogramRecord = RecordHistogram.getHistogramValueCountForTesting(
                     TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
@@ -725,7 +726,7 @@ public class StartSurfaceLayoutTest {
             oldFetchCount = currentFetchCount;
             oldHistogramRecord = currentHistogramRecord;
 
-            switchTabModel(true);
+            switchTabModel(cta, true);
             currentFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
             currentHistogramRecord = RecordHistogram.getHistogramValueCountForTesting(
                     TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
@@ -767,11 +768,12 @@ public class StartSurfaceLayoutTest {
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdatedNotCrashing_ForTabNotInCurrentModel() throws Exception {
         // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         prepareTabs(1, 1, null);
         enterGTSWithThumbnailChecking();
 
-        Tab tab = mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab();
-        switchTabModel(false);
+        Tab tab = cta.getTabModelSelector().getCurrentTab();
+        switchTabModel(cta, false);
 
         mActivityTestRule.loadUrlInTab(
                 mUrl, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, tab);
@@ -909,7 +911,7 @@ public class StartSurfaceLayoutTest {
         verifyTabModelTabCount(cta, 3, 0);
 
         // New tab tile should be showing in incognito mode.
-        switchTabModel(true);
+        switchTabModel(cta, true);
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
         onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
 
@@ -923,13 +925,13 @@ public class StartSurfaceLayoutTest {
 
         // Close all normal tabs and incognito tabs, the new tab tile should still show in both
         // modes.
-        switchTabModel(false);
+        switchTabModel(cta, false);
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(4));
         MenuUtils.invokeCustomMenuActionSync(
                 InstrumentationRegistry.getInstrumentation(), cta, R.id.close_all_tabs_menu_id);
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
         onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
-        switchTabModel(true);
+        switchTabModel(cta, true);
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
         onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
     }
@@ -1014,7 +1016,7 @@ public class StartSurfaceLayoutTest {
         onView(withId(R.id.new_tab_tile)).check(doesNotExist());
         verifyTabSwitcherCardCount(cta, 2);
 
-        switchTabModel(true);
+        switchTabModel(cta, true);
         onView(withId(R.id.new_tab_tile)).check(doesNotExist());
         verifyTabSwitcherCardCount(cta, 0);
     }
@@ -1288,10 +1290,10 @@ public class StartSurfaceLayoutTest {
         enterTabSwitcher(cta);
         checkNewTabVariationVisibility(false);
 
-        switchTabModel(false);
+        switchTabModel(cta, false);
         checkNewTabVariationVisibility(false);
 
-        switchTabModel(true);
+        switchTabModel(cta, true);
         checkNewTabVariationVisibility(false);
 
         closeFirstTabInTabSwitcher();
@@ -1620,24 +1622,6 @@ public class StartSurfaceLayoutTest {
     private void enterTabGroupManualSelection(ChromeTabbedActivity cta) {
         MenuUtils.invokeCustomMenuActionSync(
                 InstrumentationRegistry.getInstrumentation(), cta, R.id.menu_group_tabs);
-    }
-
-    private void switchTabModel(boolean isIncognito) {
-        assertTrue(isIncognito !=
-                mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected());
-
-        onView(withContentDescription(
-                isIncognito ? R.string.accessibility_tab_switcher_incognito_stack
-                            : R.string.accessibility_tab_switcher_standard_stack)
-        ).perform(click());
-
-        CriteriaHelper.pollUiThread(Criteria.equals(isIncognito,
-                () -> mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected()));
-
-        // Wait for tab list recyclerView to finish animation after tab model switch.
-        RecyclerView recyclerView =
-                mActivityTestRule.getActivity().findViewById(R.id.tab_list_view);
-        waitForStableRecyclerView(recyclerView);
     }
 
     /**

@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/views/qrcode_generator/qrcode_generator_bubble.h"
 
+#include "base/base64.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -16,13 +19,18 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/url_formatter.h"
+#include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/bubble/tooltip_icon.h"
 #include "ui/views/controls/button/label_button.h"
@@ -50,6 +58,8 @@ constexpr gfx::Size GetQRImageSize() {
 gfx::ImageSkia GetPlaceholderImageSkia(unsigned r, unsigned g, unsigned b) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(kQRImageSizePx, kQRImageSizePx);
+  bitmap.eraseARGB(0xFF, 0xFF, 0xFF, 0xFF);
+  // TODO(skare): rounded rect
   bitmap.eraseARGB(0xFF, r, g, b);
   return gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 1.0f));
 }
@@ -58,7 +68,7 @@ gfx::ImageSkia GetPlaceholderImageSkia(unsigned r, unsigned g, unsigned b) {
 void AddSmallPaddingRow(views::GridLayout* layout) {
   layout->AddPaddingRow(views::GridLayout::kFixedSize,
                         ChromeLayoutProvider::Get()->GetDistanceMetric(
-                            DISTANCE_RELATED_CONTROL_VERTICAL_SMALL));
+                            DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE));
 }
 
 }  // namespace
@@ -72,7 +82,8 @@ QRCodeGeneratorBubble::QRCodeGeneratorBubble(
     const GURL& url)
     : LocationBarBubbleDelegateView(anchor_view, nullptr),
       url_(url),
-      controller_(controller) {
+      controller_(controller),
+      web_contents_(web_contents) {
   DCHECK(controller);
 
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
@@ -82,6 +93,7 @@ QRCodeGeneratorBubble::~QRCodeGeneratorBubble() = default;
 
 void QRCodeGeneratorBubble::Show() {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::QR_CODE_GENERATOR);
+  textfield_url_->SetText(base::ASCIIToUTF16(url_.possibly_invalid_spec()));
   UpdateQRContent();
   ShowForReason(USER_GESTURE);
 }
@@ -155,54 +167,70 @@ void QRCodeGeneratorBubble::Init() {
       views::CONTROL, views::CONTROL));
 
   // Internal IDs for column layout; no effect on UI.
-  constexpr int kSingleColumnSetId = 0;
-  constexpr int kDownloadRowColumnSetId = 1;
+  constexpr int kQRImageColumnSetId = 0;
+  constexpr int kTextFieldColumnSetId = 1;
+  constexpr int kDownloadRowColumnSetId = 2;
 
   // Add top-level Grid Layout manager for this dialog.
   views::GridLayout* const layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());
-  views::ColumnSet* column_set = layout->AddColumnSet(kSingleColumnSetId);
-  column_set->AddColumn(
-      views::GridLayout::FILL,    // Fill horizontally.
-      views::GridLayout::CENTER,  // Align center vertically, do not resize.
-      1.0, views::GridLayout::USE_PREF, 0,
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_BUBBLE_PREFERRED_WIDTH));
 
-  // Main QR Code Image
+  // QR Code image, with padding and border.
+  views::ColumnSet* column_set_qr_image =
+      layout->AddColumnSet(kQRImageColumnSetId);
+  column_set_qr_image->AddColumn(
+      views::GridLayout::CENTER,  // Center horizontally, do not resize.
+      views::GridLayout::CENTER,  // Align center vertically, do not resize.
+      1.0, views::GridLayout::USE_PREF, 0, 0);
   using Alignment = views::ImageView::Alignment;
   auto qr_code_image = std::make_unique<views::ImageView>();
-  qr_code_image->SetVisible(true);
+  qr_code_image->SetBorder(views::CreateRoundedRectBorder(
+      /*thickness=*/10,
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH),
+      gfx::kGoogleGrey200));
   qr_code_image->SetHorizontalAlignment(Alignment::kCenter);
   qr_code_image->SetVerticalAlignment(Alignment::kCenter);
   qr_code_image->SetImageSize(GetQRImageSize());
   qr_code_image->SetPreferredSize(GetQRImageSize());
-  // google-gray-300
-  qr_code_image->SetImage(GetPlaceholderImageSkia(0xDA, 0xDC, 0xE0));
-  layout->StartRow(views::GridLayout::kFixedSize, kSingleColumnSetId);
+  // google-gray-100
+  qr_code_image->SetImage(GetPlaceholderImageSkia(0xF1, 0xF3, 0xF4));
+  layout->StartRow(views::GridLayout::kFixedSize, kQRImageColumnSetId);
   qr_code_image_ = layout->AddView(std::move(qr_code_image));
 
   // Padding
   AddSmallPaddingRow(layout);
 
   // Text box to edit URL
+  views::ColumnSet* column_set_textfield =
+      layout->AddColumnSet(kTextFieldColumnSetId);
+  column_set_textfield->AddColumn(
+      views::GridLayout::FILL,    // Fill text field horizontally.
+      views::GridLayout::CENTER,  // Align center vertically, do not resize.
+      1.0, views::GridLayout::USE_PREF, 0,
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_BUBBLE_PREFERRED_WIDTH));
   auto textfield_url = std::make_unique<views::Textfield>();
   textfield_url->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_BROWSER_SHARING_QR_CODE_DIALOG_URL_TEXTFIELD_ACCESSIBLE_NAME));
-  textfield_url->SetText(base::ASCIIToUTF16(url_.spec()));
+  textfield_url->SetText(
+      base::ASCIIToUTF16(url_.spec()));  // TODO(skare): check
   textfield_url->set_controller(this);
-  layout->StartRow(views::GridLayout::kFixedSize, kSingleColumnSetId);
+  layout->StartRow(views::GridLayout::kFixedSize, kTextFieldColumnSetId);
   textfield_url_ = layout->AddView(std::move(textfield_url));
 
-  // Padding
-  AddSmallPaddingRow(layout);
+  // Padding - larger between controls and action buttons.
+  layout->AddPaddingRow(
+      views::GridLayout::kFixedSize,
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL));
 
   // Controls row: tooltip and download button.
   views::ColumnSet* control_columns =
       layout->AddColumnSet(kDownloadRowColumnSetId);
   // Column for tooltip.
   control_columns->AddColumn(
-      views::GridLayout::FILL,      // View fills the horizontal space.
+      views::GridLayout::LEADING,   // View is aligned to leading edge, not
+                                    // resized.
       views::GridLayout::CENTER,    // View moves to center of vertical space.
       1.0,                          // This column has a resize weight of 1.
       views::GridLayout::USE_PREF,  // Use the preferred size of the view.
@@ -216,10 +244,16 @@ void QRCodeGeneratorBubble::Init() {
                              views::GridLayout::CENTER, 1.0,
                              views::GridLayout::USE_PREF, 0, 0);
   layout->StartRow(views::GridLayout::kFixedSize, kDownloadRowColumnSetId);
+
   // "More info" tooltip; looks like (i).
   auto tooltip_icon = std::make_unique<views::TooltipIcon>(
       l10n_util::GetStringUTF16(IDS_BROWSER_SHARING_QR_CODE_DIALOG_TOOLTIP));
+  tooltip_icon->set_bubble_width(ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_BUBBLE_PREFERRED_WIDTH));
+  tooltip_icon->set_anchor_point_arrow(
+      views::BubbleBorder::Arrow::BOTTOM_RIGHT);
   tooltip_icon_ = layout->AddView(std::move(tooltip_icon));
+
   // Download button.
   std::unique_ptr<views::LabelButton> download_button =
       views::MdTextButton::CreateSecondaryUiButton(
@@ -254,11 +288,62 @@ bool QRCodeGeneratorBubble::HandleMouseEvent(
   return false;
 }
 
+/*static*/
+const base::string16 QRCodeGeneratorBubble::GetQRCodeFilenameForURL(
+    const GURL& url) {
+  if (!url.has_host() || url.HostIsIPAddress())
+    return base::ASCIIToUTF16("qrcode_chrome.png");
+
+  return base::ASCIIToUTF16(base::StrCat({"qrcode_", url.host(), ".png"}));
+}
+
 void QRCodeGeneratorBubble::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
   DCHECK_EQ(sender, download_button_);
   if (sender == download_button_) {
-    // TODO(skare): Send data: URL for QR code to download manager.
+    // This will be replaced by data from a QR encoder service.
+    // This placeholder is a 50x50 png, solid black, generated in devtools.
+    const GURL data_url = GURL(
+        "data:image/png;base64,"
+        "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAk0lEQVRoQ+3SwQnAMBDEwH"
+        "X/RSc9CATGKP9bsCZn27cHvtNDLlNM5DKQJZKIVKBfSwqLZxPB6aTDRKSweDYRnE46TEQK"
+        "i2cTwemkw0SksHg2EZxOOkxECotnE8HppMNEpLB4NhGcTjpMRAqLZxPB6aTDRKSweDYRnE"
+        "46TEQKi2cTwemkw0SksHg2EZxOOkxECotnf62iMgGLjn9UAAAAAElFTkSuQmCC");
+
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+    content::DownloadManager* download_manager =
+        content::BrowserContext::GetDownloadManager(browser->profile());
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("qr_code_save", R"(
+        semantics {
+          sender: "QR Code Generator"
+          description:
+            "The user may generate a QR code linking to the current page or "
+            "image. This bubble view has a download button to save the "
+            "generated image to disk. "
+            "The image is generated via a Mojo service, but locally, so "
+            "this request never contacts the network. "
+          trigger: "User clicks 'download' in a bubble view launched from the "
+            "omnibox, right-click menu, or share dialog."
+          data: "QR Code image based on the current page's URL."
+          destination: LOCAL
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "No user-visible setting for this feature. Experiment and rollout "
+            "to be coordinated via Finch. Access point to be combined with "
+            "other sharing features later in 2020."
+          policy_exception_justification:
+            "Not implemented, considered not required."
+        })");
+    std::unique_ptr<download::DownloadUrlParameters> params(
+        content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
+            web_contents_, data_url, traffic_annotation));
+    // Suggest a name incorporating the hostname. Protocol, TLD, etc are
+    // not taken into consideration. Duplicate names get automatic suffixes.
+    params->set_suggested_name(GetQRCodeFilenameForURL(url_));
+    download_manager->DownloadUrl(std::move(params));
   }
 }
 

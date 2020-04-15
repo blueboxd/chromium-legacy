@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">లింక్‌ను కాపీ చేయి</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">శీర్షిక</translation>
+<translation id="4259722352634471385">నావిగేషన్ బ్లాక్ చేయబడింది: <ph name="URL" /></translation>
 <translation id="4570913071927164677">వివరాలు</translation>
 <translation id="4645575059429386691">మీ తల్లి/తండ్రి ద్వారా నిర్వహించబడుతోంది</translation>
 <translation id="4883854917563148705">నిర్వహిత సెట్టింగ్‌లు రీసెట్ చేయబడవు</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">ఇన్‌పుట్‌ను తీసివేయండి</translation>
 <translation id="8725066075913043281">మళ్ళీ ప్రయత్నించండి</translation>
 <translation id="8730621377337864115">పూర్తయింది</translation>
+<translation id="8959122750345127698">దీనికి నావిగేట్ చేయడం సాధ్యపడదు: <ph name="URL" /></translation>
 <translation id="9019902583201351841">మీ తల్లిదండ్రుల ద్వారా నిర్వహించబడుతోంది</translation>
 </translationbundle>

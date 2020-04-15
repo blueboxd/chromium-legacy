@@ -239,7 +239,7 @@
 <translation id="2717722538473713889">इमेल ठेगानाहरू</translation>
 <translation id="2728754400939377704">साइटद्वारा क्रमबद्ध गर्नुहोस्</translation>
 <translation id="2744248271121720757">तत्कालै खोज्नका लागि कुनै शब्दमा ट्याप गर्नुहोस् वा सम्बन्धित कारबाहीहरू हेर्नुहोस्</translation>
-<translation id="2760989362628427051">तपाईंको यन्त्रमा अँध्यारो विषयवस्तु वा ब्याट्री सेभर मोड सक्रिय हुँदा अँध्यारो विषयवस्तु सक्रिय गर्नुहोस्</translation>
+<translation id="2760989362628427051">तपाईंको यन्त्रमा अँध्यारो थिम वा ब्याट्री सेभर मोड सक्रिय हुँदा अँध्यारो थिम सक्रिय गर्नुहोस्</translation>
 <translation id="2762000892062317888">भर्खरै</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> सेकेन्ड बाँकी छ</translation>
 <translation id="2779651927720337254">डाउनलोड गर्न सकिएन</translation>
@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">सेटिङहरू खोल्नुहोस्</translation>
 <translation id="4250229828105606438">स्क्रिसट</translation>
 <translation id="4256782883801055595">स्रोत इजाजतपत्रहरू खोल्नुहोस्</translation>
-<translation id="4259722352634471385">नेभिगेशन रोकियो: <ph name="URL" /></translation>
 <translation id="4269820728363426813">लिङ्क ठेगानाको प्रतिलिपि बनाउनुहोस्</translation>
 <translation id="4275663329226226506">मिडिया</translation>
 <translation id="4278390842282768270">अनुमति प्राप्त</translation>
@@ -886,7 +885,7 @@
 <translation id="7572498721684305250">तपाईंले NFC यन्त्रहरूमा ट्याप गर्दा साइटहरूलाई जानकारी पठाउन र प्राप्त गर्न रोक लगाउनुहोस्</translation>
 <translation id="757524316907819857">साइटहरूलाई संरक्षित सामग्री प्ले गर्न रोक लगाउनुहोस्</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> फाइल डाउनलोड गरियो}other{<ph name="FILES_DOWNLOADED_MANY" /> फाइलहरू डाउनलोड गरिए}}</translation>
-<translation id="7588219262685291874">तपाईंको यन्त्रमा ब्याट्री सेभर मोड सक्रिय हुँदा अँध्यारो विषयवस्तु सक्रिय गर्नुहोस्</translation>
+<translation id="7588219262685291874">तपाईंको यन्त्रमा ब्याट्री सेभर मोड सक्रिय हुँदा अँध्यारो थिम सक्रिय गर्नुहोस्</translation>
 <translation id="7589445247086920869">हालको खोज इन्जिनका लागि रोक लगाउनुहोस्</translation>
 <translation id="7593557518625677601">Chrome सिंकलाई सुरु गर्न Android का सेटिङहरू खोल्नुहोस् र Android को प्रणालीसम्बन्धी सिंकलाई पुन:सक्षम पार्नुहोस्</translation>
 <translation id="7596558890252710462">अपरेटिङ सिस्टम</translation>
@@ -1065,7 +1064,6 @@
 <translation id="8942627711005830162">अर्को विन्डोमा खोल्नुहोस्</translation>
 <translation id="8951232171465285730">Chrome ले तपाईंको <ph name="MEGABYTES" /> एम.बि. बचाएको छ</translation>
 <translation id="8958424370300090006">कुनै खास साइटमा कुकीहरूलाई रोक लगाउनुहोस्।</translation>
-<translation id="8959122750345127698">नेभिगेशन पहुँचयोग्य छैन: <ph name="URL" /></translation>
 <translation id="8965591936373831584">विचाराधीन</translation>
 <translation id="8970887620466824814">केही चिज गडबड भयो।</translation>
 <translation id="8972098258593396643">पूर्वनिर्धारित फोल्डरमा डाउनलोड गर्ने हो?</translation>

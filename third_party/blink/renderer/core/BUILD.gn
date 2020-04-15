@@ -824,16 +824,16 @@ blink_python_runner("make_core_generated_css_primitive_value_unit_trie") {
 }
 
 blink_python_runner("make_core_generated_feature_policy_helper") {
-  script = "../build/scripts/make_feature_policy_helper.py"
+  script = "../build/scripts/make_policy_helper.py"
 
   inputs = scripts_for_json5_files + [
-             "../build/scripts/make_feature_policy_helper.py",
+             "../build/scripts/make_policy_helper.py",
              "./feature_policy/feature_policy_features.json5",
              "./feature_policy/document_policy_features.json5",
              "../platform/runtime_enabled_features.json5",
-             "../build/scripts/templates/feature_policy_helper.cc.tmpl",
+             "../build/scripts/templates/policy_helper.cc.tmpl",
            ]
-  outputs = [ "$blink_core_output_dir/feature_policy/feature_policy_helper.cc" ]
+  outputs = [ "$blink_core_output_dir/feature_policy/policy_helper.cc" ]
 
   args = [
     rebase_path("../platform/runtime_enabled_features.json5", root_build_dir),

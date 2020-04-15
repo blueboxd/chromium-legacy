@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">तुमच्या लॉक स्क्रीनवर सूचना पाहाण्यासाठी, सेटिंग बदलण्याकरिता अनलॉक करा</translation>
 <translation id="4144413954005649103">राइट क्लिक केल्याने किंवा दाबून ठेवल्याने, Assistant तुम्हाला तुम्ही स्क्रीनवर काय निवडता त्याच्याशी संबंधित माहिती दाखवतो.</translation>
 <translation id="4146833061457621061">म्युझिक प्ले करा</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> हे <ph name="DOMAIN" /> द्वारे व्यवस्थापित केले जाते</translation>
 <translation id="4181841719683918333">भाषा</translation>
 <translation id="4195877955194704651">आपोआप क्लिक बटण</translation>
 <translation id="4215497585250573029">VPN सेटिंग्ज</translation>
@@ -457,7 +456,7 @@
 <translation id="6723839937902243910">सामर्थ्य</translation>
 <translation id="6727969043791803658">कनेक्ट केले, <ph name="BATTERY_PERCENTAGE" />% बॅटरी</translation>
 <translation id="6751052314767925245">तुमच्या अ‍ॅडमिनिस्ट्रेटरने अंमलबजावणी केलेले</translation>
-<translation id="6751826523481687655">परफॉर्मंस ट्रेसिंग चालू आहे</translation>
+<translation id="6751826523481687655">परफॉर्मंस ट्रेसिंग सुरू आहे</translation>
 <translation id="6752912906630585008"><ph name="REMOVED_DESK" /> डेस्क काढून टाकले आणि डेस्क <ph name="RECEIVE_DESK" /> साेबत मर्ज केले</translation>
 <translation id="6777216307882431711">कनेक्ट केलेल्या USB-C डिव्‍हाइसना चार्ज करत आहे</translation>
 <translation id="6790428901817661496">प्ले करा</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">शॉर्टकट बंद केला आहे</translation>
 <translation id="6910714959251846841">या अपडेटसाठी तुमचे डिव्हाइस Powerwash करणे आवश्यक आहे. <ph name="SYSTEM_APP_NAME" /> च्या नवीनतम अपडेटबाबत अधिक जाणून घ्या.</translation>
 <translation id="6919251195245069855">तुमचे स्मार्ट कार्ड ओळखू शकलो नाही. पुन्हा प्रयत्न करा.</translation>
+<translation id="6945221475159498467">निवडा</translation>
 <translation id="6972754398087986839">प्रारंभ करा</translation>
 <translation id="6981982820502123353">ॲक्सेसिबिलिटी</translation>
 <translation id="698231206551913481">एकदा हा वापरकर्ता काढल्यानंतर या वापरकर्त्याशी संबद्ध सर्व फायली आणि स्थानिक डेटा कायमचा हटवला जाईल.</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">खाजगी नेटवर्क</translation>
 <translation id="8152092012181020186">बंद करण्यासाठी Ctrl + W दाबा.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> हे सेटिंग तुमच्या अ‍ॅडमिनिस्ट्रेटरद्वारे व्यवस्थापित केले जाते.</translation>
+<translation id="815598010540052116">खाली स्क्रोल करा</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> वापरत आहे</translation>
 <translation id="8190698733819146287">भाषा आणि इनपुट कस्टमाइझ करा...</translation>
 <translation id="8192202700944119416">सूचना लपवलेल्या आहेत.</translation>

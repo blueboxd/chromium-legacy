@@ -87,6 +87,14 @@ test(function() {
   assert_equals(result.toString(), 'matrix3d(1, 0, 0, 0.01, 0, 2, 0, 0.02, 0, 0, 3, 0.03, 4, 5, 6, 1)');
 }, 'transform preserves a matrix3d value with perspective');
 
+test(function() {
+  testElement.style.transform = 'matrix3d(2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 4, 5, 0, 1)';
+  var result = computedStyleMap.get('transform');
+  assert_equals(result.toString(), 'matrix3d(2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 4, 5, 0, 1)',
+      'Computes as specified (matrix3d)');
+  assert_equals(getComputedStyle(testElement).transform, 'matrix(2, 0, 0, 3, 4, 5)', 'Resolves as 2D');
+}, 'transform preserved a matrix3d value which reperesents a 2d transform')
+
 </script>
 </body>
 </html>

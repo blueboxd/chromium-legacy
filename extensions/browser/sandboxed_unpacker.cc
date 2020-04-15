@@ -57,15 +57,6 @@
 using base::ASCIIToUTF16;
 using content::BrowserThread;
 
-// The following macro makes histograms that record the length of paths
-// in this file much easier to read.
-// Windows has a short max path length. If the path length to a
-// file being unpacked from a CRX exceeds the max length, we might
-// fail to install. To see if this is happening, see how long the
-// path to the temp unpack directory is. See crbug.com/69693 .
-#define PATH_LENGTH_HISTOGRAM(name, path) \
-  UMA_HISTOGRAM_CUSTOM_COUNTS(name, path.value().length(), 1, 500, 100)
-
 // Record a rate (kB per second) at which extensions are unpacked.
 // Range from 1kB/s to 100mB/s.
 #define UNPACK_RATE_HISTOGRAM(name, rate) \
@@ -79,15 +70,11 @@ void RecordSuccessfulUnpackTimeHistograms(const base::FilePath& crx_path,
   const int64_t kBytesPerKb = 1024;
   const int64_t kBytesPerMb = 1024 * 1024;
 
-  UMA_HISTOGRAM_TIMES("Extensions.SandboxUnpackSuccessTime", unpack_time);
-
   // To get a sense of how CRX size impacts unpack time, record unpack
   // time for several increments of CRX size.
   int64_t crx_file_size;
-  if (!base::GetFileSize(crx_path, &crx_file_size)) {
-    UMA_HISTOGRAM_COUNTS_1M("Extensions.SandboxUnpackSuccessCantGetCrxSize", 1);
+  if (!base::GetFileSize(crx_path, &crx_file_size))
     return;
-  }
 
   // Cast is safe as long as the number of bytes in the CRX is less than
   // 2^31 * 2^10.
@@ -300,15 +287,11 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
     expected_hash = base::ToLowerASCII(crx_info.expected_hash);
   }
 
-  PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackInitialCrxPathLength",
-                        crx_info.path);
   if (!CreateTempDirectory())
     return;  // ReportFailure() already called.
 
   // Initialize the path that will eventually contain the unpacked extension.
   extension_root_ = temp_dir_.GetPath().AppendASCII(kTempExtensionName);
-  PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackUnpackedCrxPathLength",
-                        extension_root_);
 
   // Extract the public key and validate the package.
   if (!ValidateSignature(crx_info.path, expected_hash,
@@ -319,8 +302,6 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
   // Copy the crx file into our working directory.
   base::FilePath temp_crx_path =
       temp_dir_.GetPath().Append(crx_info.path.BaseName());
-  PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackTempCrxPathLength",
-                        temp_crx_path);
 
   if (!base::CopyFile(crx_info.path, temp_crx_path)) {
     // Failed to copy extension file to temporary directory.
@@ -347,9 +328,6 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
         l10n_util::GetStringUTF16(IDS_EXTENSION_UNPACK_FAILED));
     return;
   }
-
-  PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackLinkFreeCrxPathLength",
-                        link_free_crx_path);
 
   // Make sure to create the directory where the extension will be unzipped, as
   // the unzipper service requires it.
@@ -951,9 +929,6 @@ void SandboxedUnpacker::ReportFailure(
   UMA_HISTOGRAM_ENUMERATION(
       "Extensions.SandboxUnpackFailureReason", reason,
       SandboxedUnpackerFailureReason::NUM_FAILURE_REASONS);
-  if (!crx_unpack_start_time_.is_null())
-    UMA_HISTOGRAM_TIMES("Extensions.SandboxUnpackFailureTime",
-                        base::TimeTicks::Now() - crx_unpack_start_time_);
   Cleanup();
 
   client_->OnUnpackFailure(CrxInstallError(reason, error));

@@ -436,7 +436,6 @@ Chỉ bạn mới biết được máy ảnh đang nhìn vào thứ gì. Trang w
 <translation id="4242533952199664413">Mở phần cài đặt</translation>
 <translation id="4250229828105606438">Ảnh chụp màn hình</translation>
 <translation id="4256782883801055595">Giấy phép nguồn mở</translation>
-<translation id="4259722352634471385">Điều hướng bị chặn: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Sao chép địa chỉ liên kết</translation>
 <translation id="4275663329226226506">Truyền thông</translation>
 <translation id="4278390842282768270">Được cho phép</translation>
@@ -965,6 +964,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Để sử dụng dấu trang trên tất cả các thiết bị, hãy bật tính năng đồng bộ hóa</translation>
 <translation id="8110087112193408731">Bạn có muốn hiển thị hoạt động của mình trên Chrome trong Digital Wellbeing không?</translation>
+<translation id="8115259494083109761">Để quét mã QR, hãy cho phép Chrome dùng máy ảnh của bạn</translation>
 <translation id="8116925261070264013">Đã ẩn</translation>
 <translation id="8127542551745560481">Chỉnh sửa trang chủ</translation>
 <translation id="813082847718468539">Xem thông tin trang web</translation>
@@ -1066,7 +1066,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8942627711005830162">Mở trong cửa sổ khác</translation>
 <translation id="8951232171465285730">Chrome đã tiết kiệm <ph name="MEGABYTES" /> MB cho bạn</translation>
 <translation id="8958424370300090006">Chặn cookie của một trang web cụ thể.</translation>
-<translation id="8959122750345127698">Không thể tiếp cận điều hướng: <ph name="URL" /></translation>
 <translation id="8965591936373831584">đang chờ xử lý</translation>
 <translation id="8970887620466824814">Đã xảy ra lỗi.</translation>
 <translation id="8972098258593396643">Tải xuống thư mục mặc định?</translation>

@@ -223,15 +223,17 @@ class CreditCardAccessManagerTest : public testing::Test {
     personal_data_manager_.AddCreditCard(local_card);
   }
 
-  void CreateServerCard(std::string guid, std::string number = std::string()) {
-    CreditCard masked_server_card = CreditCard();
-    test::SetCreditCardInfo(&masked_server_card, "Elvis Presley",
-                            number.c_str(), NextMonth().c_str(),
-                            NextYear().c_str(), "1");
-    masked_server_card.set_guid(guid);
-    masked_server_card.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  void CreateServerCard(std::string guid,
+                        std::string number = std::string(),
+                        bool masked = true) {
+    CreditCard server_card = CreditCard();
+    test::SetCreditCardInfo(&server_card, "Elvis Presley", number.c_str(),
+                            NextMonth().c_str(), NextYear().c_str(), "1");
+    server_card.set_guid(guid);
+    server_card.set_record_type(masked ? CreditCard::MASKED_SERVER_CARD
+                                       : CreditCard::FULL_SERVER_CARD);
 
-    personal_data_manager_.AddServerCreditCard(masked_server_card);
+    personal_data_manager_.AddServerCreditCard(server_card);
   }
 
   CreditCardCVCAuthenticator* GetCVCAuthenticator() {
@@ -1760,6 +1762,30 @@ TEST_F(CreditCardAccessManagerTest, AuthenticationInProgress) {
 
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_FALSE(IsAuthenticationInProgress());
+}
+
+// Ensures that the use of |unmasked_card_cache_| is set and logged correctly.
+TEST_F(CreditCardAccessManagerTest, FetchCreditCardUsesUnmaskedCardCache) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillCacheServerCardInfo);
+  base::HistogramTester histogram_tester;
+  CreateServerCard(kTestGUID, kTestNumber, /*masked=*/false);
+  CreditCard* unmasked_card =
+      credit_card_access_manager_->GetCreditCard(kTestGUID);
+  credit_card_access_manager_->CacheUnmaskedCardInfo(
+      *unmasked_card, base::UTF8ToUTF16(kTestCvc));
+
+  CreateServerCard(kTestGUID, kTestNumber, /*masked=*/true);
+  CreditCard* masked_card =
+      credit_card_access_manager_->GetCreditCard(kTestGUID);
+
+  credit_card_access_manager_->FetchCreditCard(masked_card,
+                                               accessor_->GetWeakPtr());
+  histogram_tester.ExpectBucketCount("Autofill.UsedCachedServerCard", 1, 1);
+
+  credit_card_access_manager_->FetchCreditCard(masked_card,
+                                               accessor_->GetWeakPtr());
+  histogram_tester.ExpectBucketCount("Autofill.UsedCachedServerCard", 2, 1);
 }
 
 // TODO(crbug/949269): Once metrics are added, create test to ensure that

@@ -89,6 +89,9 @@ std::ostream& CheckError::stream() {
 }
 
 CheckError::~CheckError() {
+  // Note: This function ends up in crash stack traces. If its full name
+  // changes, the crash server's magic signature logic needs to be updated.
+  // See cl/306632920.
   delete log_message_;
 }
 

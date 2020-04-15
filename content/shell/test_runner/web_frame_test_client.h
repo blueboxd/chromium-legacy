@@ -12,10 +12,9 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 
 namespace content {
-
+class BlinkTestRunner;
 class TestRunner;
 class WebFrameTestProxy;
-class WebTestDelegate;
 class WebViewTestProxy;
 
 // WebFrameTestClient implements WebLocalFrameClient interface, providing
@@ -31,10 +30,10 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
                      WebFrameTestProxy* web_frame_test_proxy);
 
   ~WebFrameTestClient() override = default;
-  bool ShouldContinueNavigation(blink::WebNavigationInfo* info);
 
-  static std::string PrintFrameDescription(WebTestDelegate* delegate,
-                                           blink::WebLocalFrame* frame);
+  static std::string GetFrameDescription(blink::WebLocalFrame* frame);
+
+  bool ShouldContinueNavigation(blink::WebNavigationInfo* info);
 
   // WebLocalFrameClient overrides needed by WebFrameTestProxy.
   void PostAccessibilityEvent(const blink::WebAXObject& object,
@@ -63,7 +62,7 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
 
  private:
   TestRunner* test_runner();
-  WebTestDelegate* delegate();
+  BlinkTestRunner* blink_test_runner();
 
   void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
                                    const char* event_name);

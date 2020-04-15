@@ -363,13 +363,30 @@ bool PosixSystemProducer::SetupSharedMemoryForStartupTracing() {
 void PosixSystemProducer::ConnectSocket() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_ = State::kConnecting;
+  const char* host_package_name = nullptr;
+#if defined(OS_ANDROID)
+  host_package_name =
+      base::android::BuildInfo::GetInstance()->host_package_name();
+#endif  // defined(OS_ANDROID)
+
+  // On android we want to include if this is webview inside of an app or
+  // Android Chrome. To aid this we add the host_package_name to differentiate
+  // the various apps and sources.
+  std::string producer_name;
+  if (host_package_name) {
+    producer_name = base::StrCat(
+        {mojom::kPerfettoProducerNamePrefix, host_package_name, "-",
+         base::NumberToString(
+             base::trace_event::TraceLog::GetInstance()->process_id())});
+  } else {
+    producer_name = base::StrCat(
+        {mojom::kPerfettoProducerNamePrefix,
+         base::NumberToString(
+             base::trace_event::TraceLog::GetInstance()->process_id())});
+  }
+
   auto service = perfetto::ProducerIPCClient::Connect(
-      socket_name_.c_str(), this,
-      base::StrCat(
-          {mojom::kPerfettoProducerNamePrefix,
-           base::NumberToString(
-               base::trace_event::TraceLog::GetInstance()->process_id())}),
-      task_runner(),
+      socket_name_.c_str(), this, std::move(producer_name), task_runner(),
       perfetto::TracingService::ProducerSMBScrapingMode::kEnabled);
 
   base::AutoLock lock(lock_);

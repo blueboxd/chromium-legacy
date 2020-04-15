@@ -865,7 +865,8 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
         [](base::WeakPtr<AppLauncherHandler> app_launcher_handler,
            bool success) {
           LOCAL_HISTOGRAM_BOOLEAN("Apps.Launcher.UninstallSuccess", success);
-          app_launcher_handler->CleanupAfterUninstall();
+          if (app_launcher_handler)
+            app_launcher_handler->CleanupAfterUninstall();
         },
         weak_ptr_factory_.GetWeakPtr());
 

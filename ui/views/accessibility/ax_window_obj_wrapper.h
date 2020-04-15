@@ -35,6 +35,7 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   void GetChildren(std::vector<AXAuraObjWrapper*>* out_children) override;
   void Serialize(ui::AXNodeData* out_node_data) override;
   int32_t GetUniqueId() const final;
+  std::string ToString() const override;
 
   // WindowObserver overrides.
   void OnWindowDestroyed(aura::Window* window) override;

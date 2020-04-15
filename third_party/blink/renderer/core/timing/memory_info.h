@@ -62,9 +62,9 @@ class CORE_EXPORT MemoryInfo final : public ScriptWrappable {
 
   explicit MemoryInfo(Precision precision);
 
-  size_t totalJSHeapSize() const { return info_.total_js_heap_size; }
-  size_t usedJSHeapSize() const { return info_.used_js_heap_size; }
-  size_t jsHeapSizeLimit() const { return info_.js_heap_size_limit; }
+  uint64_t totalJSHeapSize() const { return info_.total_js_heap_size; }
+  uint64_t usedJSHeapSize() const { return info_.used_js_heap_size; }
+  uint64_t jsHeapSizeLimit() const { return info_.js_heap_size_limit; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MemoryInfoTest, Bucketized);

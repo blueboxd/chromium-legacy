@@ -88,9 +88,9 @@ public class AccountManagerFacadeRobolectricTest {
     public void testCanonicalAccount() {
         addTestAccount("test@gmail.com");
 
-        Assert.assertTrue(mFacade.hasAccountForName("test@gmail.com"));
-        Assert.assertTrue(mFacade.hasAccountForName("Test@gmail.com"));
-        Assert.assertTrue(mFacade.hasAccountForName("te.st@gmail.com"));
+        Assert.assertNotNull(mFacade.getAccountFromName("test@gmail.com"));
+        Assert.assertNotNull(mFacade.getAccountFromName("Test@gmail.com"));
+        Assert.assertNotNull(mFacade.getAccountFromName("te.st@gmail.com"));
     }
 
     // If this test starts flaking, please re-open crbug.com/568636 and make sure there is some sort
@@ -100,10 +100,10 @@ public class AccountManagerFacadeRobolectricTest {
     public void testNonCanonicalAccount() {
         addTestAccount("test.me@gmail.com");
 
-        Assert.assertTrue(mFacade.hasAccountForName("test.me@gmail.com"));
-        Assert.assertTrue(mFacade.hasAccountForName("testme@gmail.com"));
-        Assert.assertTrue(mFacade.hasAccountForName("Testme@gmail.com"));
-        Assert.assertTrue(mFacade.hasAccountForName("te.st.me@gmail.com"));
+        Assert.assertNotNull(mFacade.getAccountFromName("test.me@gmail.com"));
+        Assert.assertNotNull(mFacade.getAccountFromName("testme@gmail.com"));
+        Assert.assertNotNull(mFacade.getAccountFromName("Testme@gmail.com"));
+        Assert.assertNotNull(mFacade.getAccountFromName("te.st.me@gmail.com"));
     }
 
     @Test

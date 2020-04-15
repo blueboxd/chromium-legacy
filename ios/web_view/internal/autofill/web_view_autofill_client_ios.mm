@@ -10,15 +10,20 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/form_data_importer.h"
-#include "components/autofill/core/browser/logging/log_manager.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #include "components/security_state/ios/security_state_utils.h"
+#include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state.h"
 #include "ios/web_view/internal/app/application_context.h"
+#include "ios/web_view/internal/autofill/web_view_autocomplete_history_manager_factory.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_log_router_factory.h"
-#include "ios/web_view/internal/web_view_browser_state.h"
+#include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
+#include "ios/web_view/internal/autofill/web_view_strike_database_factory.h"
+#include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
+#import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
@@ -28,20 +33,47 @@
 
 namespace autofill {
 
+// static
+std::unique_ptr<WebViewAutofillClientIOS> WebViewAutofillClientIOS::Create(
+    web::WebState* web_state,
+    ios_web_view::WebViewBrowserState* browser_state) {
+  return std::make_unique<autofill::WebViewAutofillClientIOS>(
+      ios_web_view::ApplicationContext::GetInstance()->GetApplicationLocale(),
+      browser_state->GetPrefs(),
+      ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
+          browser_state->GetRecordingBrowserState()),
+      ios_web_view::WebViewAutocompleteHistoryManagerFactory::
+          GetForBrowserState(browser_state),
+      web_state,
+      ios_web_view::WebViewIdentityManagerFactory::GetForBrowserState(
+          browser_state->GetRecordingBrowserState()),
+      ios_web_view::WebViewStrikeDatabaseFactory::GetForBrowserState(
+          browser_state->GetRecordingBrowserState()),
+      ios_web_view::WebViewProfileSyncServiceFactory::GetForBrowserState(
+          browser_state),
+      // TODO(crbug.com/928595): Replace the closure with a callback to the
+      // renderer that indicates if log messages should be sent from the
+      // renderer.
+      LogManager::Create(
+          autofill::WebViewAutofillLogRouterFactory::GetForBrowserState(
+              browser_state),
+          base::Closure()));
+}
+
 WebViewAutofillClientIOS::WebViewAutofillClientIOS(
+    const std::string& locale,
     PrefService* pref_service,
     PersonalDataManager* personal_data_manager,
     AutocompleteHistoryManager* autocomplete_history_manager,
     web::WebState* web_state,
-    id<CWVAutofillClientIOSBridge> bridge,
     signin::IdentityManager* identity_manager,
     StrikeDatabase* strike_database,
-    syncer::SyncService* sync_service)
+    syncer::SyncService* sync_service,
+    std::unique_ptr<autofill::LogManager> log_manager)
     : pref_service_(pref_service),
       personal_data_manager_(personal_data_manager),
       autocomplete_history_manager_(autocomplete_history_manager),
       web_state_(web_state),
-      bridge_(bridge),
       identity_manager_(identity_manager),
       payments_client_(std::make_unique<payments::PaymentsClient>(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -49,22 +81,14 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
           identity_manager_,
           personal_data_manager_,
           web_state_->GetBrowserState()->IsOffTheRecord())),
-      form_data_importer_(std::make_unique<FormDataImporter>(
-          this,
-          payments_client_.get(),
-          personal_data_manager_,
-          ios_web_view::ApplicationContext::GetInstance()
-              ->GetApplicationLocale())),
+      form_data_importer_(
+          std::make_unique<FormDataImporter>(this,
+                                             payments_client_.get(),
+                                             personal_data_manager_,
+                                             locale)),
       strike_database_(strike_database),
       sync_service_(sync_service),
-      // TODO(crbug.com/928595): Replace the closure with a callback to the
-      // renderer that indicates if log messages should be sent from the
-      // renderer.
-      log_manager_(LogManager::Create(
-          autofill::WebViewAutofillLogRouterFactory::GetForBrowserState(
-              ios_web_view::WebViewBrowserState::FromBrowserState(
-                  web_state->GetBrowserState())),
-          base::Closure())) {}
+      log_manager_(std::move(log_manager)) {}
 
 WebViewAutofillClientIOS::~WebViewAutofillClientIOS() {
   HideAutofillPopup(PopupHidingReason::kTabGone);

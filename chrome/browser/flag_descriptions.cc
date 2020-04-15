@@ -168,6 +168,12 @@ const char kAutofillEnableLocalCardMigrationForNonSyncUserDescription[] =
     "When enabled, the local card migration flow will be enabled for users who "
     "have signed in but not enabled Chrome Sync.";
 
+const char kAutofillEnableStickyPaymentsBubbleName[] =
+    "Enable Autofill payments sticky bubbles";
+const char kAutofillEnableStickyPaymentsBubbleDescription[] =
+    "When enabled, all Autofill payments bubbles will not be dismissed upon "
+    "navigation.";
+
 const char kAutofillEnableSurfacingServerCardNicknameName[] =
     "Enable surfacing masked server card nicknames";
 const char kAutofillEnableSurfacingServerCardNicknameDescription[] =
@@ -454,6 +460,12 @@ const char kEnableAutofillAccountWalletStorageName[] =
     "Enable the account data storage for autofill";
 const char kEnableAutofillAccountWalletStorageDescription[] =
     "Enable the ephemeral storage for account data for autofill.";
+
+const char kEnableAutofillCacheServerCardInfoName[] =
+    "Enable Autofill to cache unmasked server card info";
+const char kEnableAutofillCacheServerCardInfoDescription[] =
+    "If enabled, when a server card is unmasked, its info will be cached until "
+    "page navigation to simplify consecutive fills on the same page.";
 
 const char kEnableAutofillCreditCardAblationExperimentDisplayName[] =
     "Credit card autofill ablation experiment.";
@@ -2791,6 +2803,11 @@ const char kHappinessTrackingSurveysForDesktopSettingsPrivacyName[] =
 const char kHappinessTrackingSurveysForDesktopSettingsPrivacyDescription[] =
     "Enable showing Happiness Tracking Surveys for Privacy Settings to users "
     "on Desktop";
+
+const char kHappinessTrackingSurveysForDesktopMigrationName[] =
+    "Happiness Tracking Surveys migration";
+const char kHappinessTrackingSurveysForDesktopMigrationDescription[] =
+    "Enable the latest version of Happiness Tracking Surveys.";
 
 const char kIntentPickerName[] = "Intent picker";
 const char kIntentPickerDescription[] =

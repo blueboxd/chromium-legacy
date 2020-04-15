@@ -4,7 +4,14 @@
 
 #import "ios/chrome/browser/ui/settings/privacy/cookies_view_controller.h"
 
-#import "ios/chrome/browser/ui/table_view/cells/table_view_multi_detail_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
+#import "ios/chrome/browser/ui/settings/privacy/cookies_commands.h"
+#import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -14,19 +21,26 @@
 
 namespace {
 
-typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierContent = kSectionIdentifierEnumZero,
-};
-
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAllowCookies = kItemTypeEnumZero,
   ItemTypeBlockThirdPartyCookiesIncognito,
   ItemTypeBlockThirdPartyCookies,
   ItemTypeBlockAllCookies,
-  ItemTypeCookiesDescription,
+  ItemTypeCookiesDescriptionFooter,
+};
+
+typedef NS_ENUM(NSInteger, SectionIdentifier) {
+  SectionIdentifierContent = kSectionIdentifierEnumZero,
 };
 
 }  // namespace
+
+@interface PrivacyCookiesViewController ()
+
+@property(nonatomic, strong) TableViewItem* selectedCookiesItem;
+@property(nonatomic, assign) ItemType selectedSetting;
+
+@end
 
 @implementation PrivacyCookiesViewController
 
@@ -34,10 +48,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
   self.title = l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_COOKIES);
+  self.styler.cellBackgroundColor = UIColor.cr_systemBackgroundColor;
+  self.styler.tableViewBackgroundColor = UIColor.cr_systemBackgroundColor;
+  self.tableView.backgroundColor = self.styler.tableViewBackgroundColor;
 
   [self loadModel];
-  // TODO(crbug.com/1064961): Implement this.
+  NSIndexPath* indexPath =
+      [self.tableViewModel indexPathForItemType:self.selectedSetting];
+  [self updateSelectedCookiesItemWithIndexPath:indexPath];
 }
 
 - (void)didMoveToParentViewController:(UIViewController*)parent {
@@ -53,44 +73,124 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super loadModel];
   [self.tableViewModel addSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewMultiDetailTextItem* allowCookies =
-      [[TableViewMultiDetailTextItem alloc] initWithType:ItemTypeAllowCookies];
+  SettingsMultilineDetailItem* allowCookies =
+      [[SettingsMultilineDetailItem alloc] initWithType:ItemTypeAllowCookies];
   allowCookies.text = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_ALLOW_COOKIES_TITLE);
-  allowCookies.leadingDetailText = l10n_util::GetNSString(
+  allowCookies.detailText = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_ALLOW_COOKIES_DETAIL);
   [self.tableViewModel addItem:allowCookies
        toSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewMultiDetailTextItem* blockThirdPartyCookiesIncognito =
-      [[TableViewMultiDetailTextItem alloc]
+  SettingsMultilineDetailItem* blockThirdPartyCookiesIncognito =
+      [[SettingsMultilineDetailItem alloc]
           initWithType:ItemTypeBlockThirdPartyCookiesIncognito];
   blockThirdPartyCookiesIncognito.text = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_INCOGNITO_TITLE);
-  blockThirdPartyCookiesIncognito.leadingDetailText = l10n_util::GetNSString(
+  blockThirdPartyCookiesIncognito.detailText = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_DETAIL);
   [self.tableViewModel addItem:blockThirdPartyCookiesIncognito
        toSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewMultiDetailTextItem* blockThirdPartyCookies =
-      [[TableViewMultiDetailTextItem alloc]
+  SettingsMultilineDetailItem* blockThirdPartyCookies =
+      [[SettingsMultilineDetailItem alloc]
           initWithType:ItemTypeBlockThirdPartyCookies];
   blockThirdPartyCookies.text = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_TITLE);
-  blockThirdPartyCookies.leadingDetailText = l10n_util::GetNSString(
+  blockThirdPartyCookies.detailText = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_DETAIL);
   [self.tableViewModel addItem:blockThirdPartyCookies
        toSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewMultiDetailTextItem* blockAllCookies =
-      [[TableViewMultiDetailTextItem alloc]
+  SettingsMultilineDetailItem* blockAllCookies =
+      [[SettingsMultilineDetailItem alloc]
           initWithType:ItemTypeBlockAllCookies];
   blockAllCookies.text = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_ALL_COOKIES_TITLE);
-  blockAllCookies.leadingDetailText = l10n_util::GetNSString(
+  blockAllCookies.detailText = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_ALL_COOKIES_DETAIL);
   [self.tableViewModel addItem:blockAllCookies
        toSectionWithIdentifier:SectionIdentifierContent];
+
+  TableViewLinkHeaderFooterItem* cookiesDescriptionFooter =
+      [[TableViewLinkHeaderFooterItem alloc]
+          initWithType:ItemTypeCookiesDescriptionFooter];
+  cookiesDescriptionFooter.text =
+      l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_COOKIES_DESCRIPTION);
+  [self.tableViewModel setFooter:cookiesDescriptionFooter
+        forSectionWithIdentifier:SectionIdentifierContent];
+
+  // TODO(crbug.com/1064961): Implement this.
+}
+
+#pragma mark - Private
+
+// Adds accessoryType to the selected item & cell.
+// Removes the accessoryType of the prevous selected option item & cell.
+- (void)updateSelectedCookiesItemWithIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* selectedCookiesItemCell;
+  if (self.selectedCookiesItem) {
+    self.selectedCookiesItem.accessoryType = UITableViewCellAccessoryNone;
+    selectedCookiesItemCell = [self.tableView
+        cellForRowAtIndexPath:[self.tableViewModel
+                                  indexPathForItem:self.selectedCookiesItem]];
+    selectedCookiesItemCell.accessoryType = UITableViewCellAccessoryNone;
+  }
+  self.selectedCookiesItem = [self.tableViewModel itemAtIndexPath:indexPath];
+  self.selectedCookiesItem.accessoryType = UITableViewCellAccessoryCheckmark;
+  selectedCookiesItemCell = [self.tableView
+      cellForRowAtIndexPath:[self.tableViewModel
+                                indexPathForItem:self.selectedCookiesItem]];
+  selectedCookiesItemCell.accessoryType = UITableViewCellAccessoryCheckmark;
+}
+
+// Returns the ItemType associated with the CookiesSettingType.
+- (ItemType)itemTypeForCookiesSettingType:(CookiesSettingType)settingType {
+  switch (settingType) {
+    case SettingTypeBlockThirdPartyCookiesIncognito:
+      return ItemTypeBlockThirdPartyCookiesIncognito;
+    case SettingTypeBlockThirdPartyCookies:
+      return ItemTypeBlockThirdPartyCookies;
+    case SettingTypeBlockAllCookies:
+      return ItemTypeBlockAllCookies;
+    case SettingTypeAllowCookies:
+      return ItemTypeAllowCookies;
+  }
+}
+
+#pragma mark - UITableViewDelegate
+
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  // TODO(crbug.com/1064961): Implement this after adding new table view item.
+  [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+  ItemType itemType =
+      (ItemType)[self.tableViewModel itemTypeForIndexPath:indexPath];
+  CookiesSettingType settingType;
+  switch (itemType) {
+    case ItemTypeAllowCookies:
+      settingType = SettingTypeAllowCookies;
+      break;
+    case ItemTypeBlockThirdPartyCookiesIncognito:
+      settingType = SettingTypeBlockThirdPartyCookiesIncognito;
+      break;
+    case ItemTypeBlockThirdPartyCookies:
+      settingType = SettingTypeBlockThirdPartyCookies;
+      break;
+    case ItemTypeBlockAllCookies:
+      settingType = SettingTypeBlockAllCookies;
+      break;
+    default:
+      return;
+  }
+  [self updateSelectedCookiesItemWithIndexPath:indexPath];
+  [self.handler selectedCookiesSettingType:settingType];
+}
+
+#pragma mark - PrivacyCookiesConsumer
+
+- (void)cookiesSettingsOptionSelected:(CookiesSettingType)settingType {
+  self.selectedSetting = [self itemTypeForCookiesSettingType:settingType];
 }
 
 @end

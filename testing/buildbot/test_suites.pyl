@@ -71,6 +71,10 @@
         'args': [
           '--gtest_filter=TabTest.testTabContext',
         ],
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
       },
       'content_browsertests': {
         'args': [
@@ -104,6 +108,10 @@
         'swarming': {
           'shards': 5,
         },
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
       },
       'webview_instrumentation_test_apk': {
         'swarming': {
@@ -133,6 +141,10 @@
         'swarming': {
           'shards': 20,
         },
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
       },
       'chrome_public_test_vr_apk': {
         'args': [
@@ -223,6 +235,10 @@
         'swarming': {
           'shards': 20,
         },
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
         'test': 'chrome_public_test_apk',
       },
       'bf_cache_content_shell_test_apk': {
@@ -809,6 +825,10 @@
         'swarming': {
           'shards': 15,
          },
+         'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
       },
       'content_browsertests': {
         'swarming': {
@@ -2961,6 +2981,10 @@
         'args': [
           '--disable-features=NetworkServiceInProcess',
         ],
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
         'test': 'chrome_public_test_apk',
       },
       'network_service_out_of_process_components_browsertests': {
@@ -3257,6 +3281,10 @@
         'swarming': {
           'shards': 20,
         },
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
         'test': 'chrome_public_test_apk',
       },
       'site_per_process_components_browsertests': {
@@ -3563,6 +3591,12 @@
       },
     },
 
+    'weblayer_android_x86_gtests': {
+      # TODO(crbug/1041619): Add weblayer skew tests here.
+      'weblayer_instrumentation_test_apk': {
+      },
+    },
+
     'weblayer_gtests': {
       'weblayer_browsertests': {
       },
@@ -3831,6 +3865,7 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'isolate_name': 'wpt_tests_isolate',
+        'results_handler': 'layout tests',
         'swarming': {
           'shards': 15,
         },
@@ -3930,6 +3965,10 @@
       # Experimental tests end here.
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
+    ],
+
+    'android_weblayer_x86_gtests': [
+      'weblayer_android_x86_gtests',
     ],
 
     'android_wpt_scripts': [
@@ -4740,7 +4779,7 @@
         'variants': [
           'SIM_IPHONE_7_13_4',
           'SIM_IPAD_AIR_2_13_4',
-          'SIM_IPHONE_X_13_3',
+          'SIM_IPHONE_X_13_4',
           'SIM_IPHONE_X_12_4',
           'SIM_IPAD_AIR_3RD_GEN_12_4',
         ]

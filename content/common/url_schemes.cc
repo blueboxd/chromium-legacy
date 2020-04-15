@@ -69,6 +69,7 @@ void RegisterContentSchemes() {
   for (auto& scheme : schemes.referrer_schemes)
     url::AddReferrerScheme(scheme.c_str(), url::SCHEME_WITH_HOST);
 
+  schemes.secure_schemes.push_back(kChromeDevToolsScheme);
   schemes.secure_schemes.push_back(kChromeUIScheme);
   schemes.secure_schemes.push_back(kChromeUIUntrustedScheme);
   schemes.secure_schemes.push_back(kChromeErrorScheme);

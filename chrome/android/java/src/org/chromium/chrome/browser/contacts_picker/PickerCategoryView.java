@@ -26,10 +26,10 @@ import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.util.BitmapCache;
 import org.chromium.chrome.browser.vr.VrModeProviderImpl;
 import org.chromium.components.browser_ui.util.ConversionUtils;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
 import org.chromium.content.browser.contacts.ContactsPickerPropertiesRequested;
 import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.UiUtils;
@@ -56,7 +56,7 @@ public class PickerCategoryView extends OptimizedFrameLayout
     private static final int ACTION_CONTACTS_SELECTED = 1;
     private static final int ACTION_BOUNDARY = 2;
 
-    // Constants for the FaviconFallbackGenerator.
+    // Constants for the RoundedIconGenerator.
     private static final int ICON_SIZE_DP = 36;
     private static final int ICON_CORNER_RADIUS_DP = 20;
     private static final int ICON_TEXT_SIZE_DP = 12;
@@ -89,7 +89,7 @@ public class PickerCategoryView extends OptimizedFrameLayout
     private LinearLayoutManager mLayoutManager;
 
     // A helper class to draw the icon for each contact.
-    private FaviconFallbackGenerator mIconGenerator;
+    private RoundedIconGenerator mIconGenerator;
 
     // The {@link SelectionDelegate} keeping track of which contacts are selected.
     private SelectionDelegate<ContactDetails> mSelectionDelegate;
@@ -150,7 +150,7 @@ public class PickerCategoryView extends OptimizedFrameLayout
         Resources resources = context.getResources();
         int iconColor =
                 ApiCompatibilityUtils.getColor(resources, R.color.default_favicon_background_color);
-        mIconGenerator = new FaviconFallbackGenerator(resources, ICON_SIZE_DP, ICON_SIZE_DP,
+        mIconGenerator = new RoundedIconGenerator(resources, ICON_SIZE_DP, ICON_SIZE_DP,
                 ICON_CORNER_RADIUS_DP, iconColor, ICON_TEXT_SIZE_DP);
 
         View root = LayoutInflater.from(context).inflate(R.layout.contacts_picker_dialog, this);
@@ -315,7 +315,7 @@ public class PickerCategoryView extends OptimizedFrameLayout
         return mSelectionDelegate;
     }
 
-    FaviconFallbackGenerator getIconGenerator() {
+    RoundedIconGenerator getIconGenerator() {
         return mIconGenerator;
     }
 

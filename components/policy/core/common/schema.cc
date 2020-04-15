@@ -1423,7 +1423,7 @@ base::Optional<base::Value> Schema::ParseToDictAndValidate(
           schema, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
   *error = value_with_error.error_message;
 
-  if (value_with_error.error_code != base::JSONReader::JSON_NO_ERROR)
+  if (!value_with_error.value)
     return base::nullopt;
   base::Value json = std::move(value_with_error.value.value());
   if (!json.is_dict()) {

@@ -67,8 +67,13 @@
 
   web::NavigationManager* navigationManager = webState->GetNavigationManager();
   if (navigationManager->IsRestoreSessionInProgress()) {
-    auto live_tab = std::make_unique<sessions::RestoreIOSLiveTab>(
-        webState->BuildSessionStorage());
+    // TODO(crbug.com/1070852): RestoreIOSLiveTab is not compiled with ARC and
+    // therefore is not properly retaining the CRWSessionStorage* which it is
+    // passed. Temporarily work around this bug by keeping a strong pointer to
+    // the CRWSessionStorage* here, until RestoreIOSLiveTab can be fixed
+    // properly.
+    CRWSessionStorage* storage = webState->BuildSessionStorage();
+    auto live_tab = std::make_unique<sessions::RestoreIOSLiveTab>(storage);
     _restoreService->CreateHistoricalTab(live_tab.get(), atIndex);
     return;
   }

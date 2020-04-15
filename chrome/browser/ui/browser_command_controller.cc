@@ -571,6 +571,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_SEND_TAB_TO_SELF:
       SendTabToSelfFromPageAction(browser_);
       break;
+    case IDC_QRCODE_GENERATOR:
+      GenerateQRCodeFromPageAction(browser_);
+      break;
 
     // Clipboard commands
     case IDC_CUT:
@@ -1333,6 +1336,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_QRCODE_GENERATOR, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SEND_TAB_TO_SELF, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,

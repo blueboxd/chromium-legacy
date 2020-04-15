@@ -6,7 +6,7 @@
 
 #include "content/public/common/origin_util.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
-#include "content/shell/test_runner/web_test_delegate.h"
+#include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/web_test_runtime_flags.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
@@ -17,7 +17,7 @@ namespace content {
 
 MockContentSettingsClient::MockContentSettingsClient(
     WebTestRuntimeFlags* web_test_runtime_flags)
-    : delegate_(nullptr), flags_(web_test_runtime_flags) {
+    : blink_test_runner_(nullptr), flags_(web_test_runtime_flags) {
   mojo::PendingRemote<client_hints::mojom::ClientHints> host_observer;
   blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       host_observer.InitWithNewPipeAndPassReceiver());
@@ -29,8 +29,9 @@ MockContentSettingsClient::~MockContentSettingsClient() {}
 bool MockContentSettingsClient::AllowImage(bool enabled_per_settings,
                                            const blink::WebURL& image_url) {
   bool allowed = enabled_per_settings && flags_->images_allowed();
-  if (flags_->dump_web_content_settings_client_callbacks() && delegate_) {
-    delegate_->PrintMessage(
+  if (flags_->dump_web_content_settings_client_callbacks() &&
+      blink_test_runner_) {
+    blink_test_runner_->PrintMessage(
         std::string("MockContentSettingsClient: allowImage(") +
         web_test_string_util::NormalizeWebTestURL(
             image_url.GetString().Utf8()) +
@@ -47,8 +48,9 @@ bool MockContentSettingsClient::AllowScriptFromSource(
     bool enabled_per_settings,
     const blink::WebURL& script_url) {
   bool allowed = enabled_per_settings && flags_->scripts_allowed();
-  if (flags_->dump_web_content_settings_client_callbacks() && delegate_) {
-    delegate_->PrintMessage(
+  if (flags_->dump_web_content_settings_client_callbacks() &&
+      blink_test_runner_) {
+    blink_test_runner_->PrintMessage(
         std::string("MockContentSettingsClient: allowScriptFromSource(") +
         web_test_string_util::NormalizeWebTestURL(
             script_url.GetString().Utf8()) +
@@ -67,8 +69,9 @@ bool MockContentSettingsClient::AllowRunningInsecureContent(
   return enabled_per_settings || flags_->running_insecure_content_allowed();
 }
 
-void MockContentSettingsClient::SetDelegate(WebTestDelegate* delegate) {
-  delegate_ = delegate;
+void MockContentSettingsClient::SetDelegate(
+    BlinkTestRunner* blink_test_runner) {
+  blink_test_runner_ = blink_test_runner;
 }
 
 namespace {

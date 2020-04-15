@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -967,6 +968,8 @@ void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
   std::vector<ProcessInfo> process_infos;
   std::vector<const performance_manager::ProcessNode*> process_nodes =
       graph->GetAllProcessNodes();
+  // Assign page nodes unique IDs within this lookup only.
+  base::flat_map<const performance_manager::PageNode*, uint64_t> page_id_map;
   for (auto* process_node : process_nodes) {
     if (process_node->GetProcessId() == base::kNullProcessId)
       continue;
@@ -982,10 +985,14 @@ void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
       if (page_node->GetUkmSourceID() == ukm::kInvalidSourceId)
         continue;
 
+      if (page_id_map.find(page_node) == page_id_map.end())
+        page_id_map.insert(std::make_pair(page_node, page_id_map.size() + 1));
+
       PageInfo page_info;
       page_info.ukm_source_id = page_node->GetUkmSourceID();
-      page_info.tab_id =
-          performance_manager::Node::GetSerializationId(page_node);
+
+      DCHECK(page_id_map.find(page_node) != page_id_map.end());
+      page_info.tab_id = page_id_map[page_node];
       page_info.hosts_main_frame = HostsMainFrame(process_node, page_node);
       page_info.is_visible = page_node->IsVisible();
       page_info.time_since_last_visibility_change =

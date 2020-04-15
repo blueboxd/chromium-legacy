@@ -202,7 +202,6 @@ TEST_F(ProtocolHandlerUtilTest, CopyHttpHeaders) {
 
   EXPECT_EQ("referrer", out_request->referrer());
   const HttpRequestHeaders& headers = out_request->extra_request_headers();
-  EXPECT_FALSE(headers.HasHeader("User-Agent"));    // User agent is not copied.
   EXPECT_FALSE(headers.HasHeader("Content-Type"));  // Only in POST requests.
   std::string header;
   EXPECT_TRUE(headers.GetHeader("Accept", &header));

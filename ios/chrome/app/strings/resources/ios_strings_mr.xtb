@@ -3,6 +3,7 @@
 <translationbundle lang="mr">
 <translation id="1005230401424685968">YYYY</translation>
 <translation id="1016495303386450659">आयटम अपडेट केला</translation>
+<translation id="1044891598689252897">साइट सामान्यपणे काम करतील</translation>
 <translation id="1047726139967079566">हे पृष्ठ बुकमार्क करा...</translation>
 <translation id="1049743911850919806">गुप्त</translation>
 <translation id="1063454504051558093">दुसरा पासवर्ड वापरा...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> आयटम</translation>
 <translation id="1491277525950327607">सेटिंग टॉगल करण्यासाठी दोनदा टॅप करा</translation>
 <translation id="1509486075633541495">वेबसाइटवर साइन इन करा</translation>
+<translation id="1509960214886564027">अनेक साइटवरील वैशिष्ट्यांमध्ये खंड पडू शकतो</translation>
 <translation id="152234381334907219">कधीही सेव्ह न केलेले</translation>
 <translation id="1540800554400757039">पत्ता 1</translation>
 <translation id="1545749641540134597">QR कोड स्कॅन करा</translation>
@@ -64,7 +66,7 @@
 <translation id="168715261339224929">तुमच्या सर्व डिव्हाइसवर तुमचे बुकमार्क मिळवण्यासाठी, सिंक चालू करा.</translation>
 <translation id="1687475363370981210">सर्व वाचले चिन्हांकित करा</translation>
 <translation id="1690731385917361335">कोणतेही आयटम नाहीत</translation>
-<translation id="1692118695553449118">संकालन चालू आहे</translation>
+<translation id="1692118695553449118">संकालन सुरू आहे</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> निवडले</translation>
 <translation id="1740468249224277719">इंस्टॉल करण्यासाठी दोनदा टॅप करा.</translation>
 <translation id="1746815479209538200">वेब ब्राउझ करण्यासाठी नवीन टॅब जोडा.</translation>
@@ -529,6 +531,7 @@
 <translation id="7961015016161918242">कधीही नाही</translation>
 <translation id="7971521879845308059">पॉप-अप अवरोधित करा</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
+<translation id="7993619969781047893">काही साइटवरील वैशिष्ट्यांमध्ये खंड पडू शकतो</translation>
 <translation id="800361585186029508">Google Chrome मध्ये इनपुट केलेल्या URL उघडते.</translation>
 <translation id="8007420562015504427">गुप्त शोध</translation>
 <translation id="8019783059653722575">हे तुम्हाला फोटो सेव्ह आणि अपलोड करू देते.</translation>

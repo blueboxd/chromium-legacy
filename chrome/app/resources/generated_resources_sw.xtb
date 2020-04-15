@@ -684,7 +684,6 @@ Hatua hii haiathiri programu au maudhui kwenye vifaa vingine.</translation>
 <translation id="189210018541388520">Fungua skrini nzima</translation>
 <translation id="1892341345406963517">Hujambo <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Lugha zingine</translation>
-<translation id="1895252664692693738">Zimesalia <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Funga</translation>
 <translation id="1895934970388272448">Lazima uthibitishe usajili kwenye printa yako ili umalize mchakato huu - angalia sasa.</translation>
 <translation id="1899826437968063457">Plugin VM inataka ruhusa ili itekeleze shughuli</translation>
@@ -3996,7 +3995,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6365411474437319296">Ongeza familia na marafiki</translation>
 <translation id="636850387210749493">Usajili wa biashara</translation>
 <translation id="6370021412472292592">Haikupakia maelezo.</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Badilisha nenosiri}other{Badilisha manenosiri}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Jaribu Tena</translation>
 <translation id="6377268785556383139">Imepata tokeo 1 la '<ph name="SEARCH_TEXT" />'</translation>
@@ -4782,7 +4780,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7454548535253569100">Tovuti kuu: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">Fungua Mahali...</translation>
-<translation id="7458168200501453431">Hutumia kikagua maendelezo kinachotumiwa katika Huduma ya Tafuta na Google. Maandishi unayochapisha katika kivinjari yanatumwa kwa Google.</translation>
+<translation id="7458168200501453431">Hutumia kikagua tahajia kinachotumiwa katika Huduma ya Tafuta na Google. Maandishi unayochapisha katika kivinjari yanatumwa kwa Google.</translation>
 <translation id="7460045493116006516">Mandhari ya sasa uliyosakinisha</translation>
 <translation id="7461924472993315131">Bana</translation>
 <translation id="746216226901520237">Wakati ujao, simu yako itafungua <ph name="DEVICE_TYPE" /> yako. Unaweza kuzima Smart Lock katika Mipangilio.</translation>

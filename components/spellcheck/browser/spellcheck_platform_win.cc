@@ -92,6 +92,20 @@ void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages) {
   // Not used in Windows
 }
 
+void RetrieveSpellcheckLanguages(
+    PlatformSpellChecker* spell_checker_instance,
+    RetrieveSpellcheckLanguagesCompleteCallback callback) {
+  reinterpret_cast<WindowsSpellChecker*>(spell_checker_instance)
+      ->RetrieveSpellcheckLanguages(std::move(callback));
+}
+
+void AddSpellcheckLanguagesForTesting(
+    PlatformSpellChecker* spell_checker_instance,
+    const std::vector<std::string>& languages) {
+  reinterpret_cast<WindowsSpellChecker*>(spell_checker_instance)
+      ->AddSpellcheckLanguagesForTesting(languages);
+}
+
 int GetDocumentTag() {
   return 1;  // Not used in Windows
 }

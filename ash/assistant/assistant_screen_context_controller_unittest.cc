@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/test/assistant_ash_test_base.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"

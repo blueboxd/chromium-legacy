@@ -9,6 +9,7 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/client_native_pixmap.h"
 #include "ui/gl/gl_image_native_pixmap.h"
+#include "ui/gl/test/gl_image_bind_test_template.h"
 #include "ui/gl/test/gl_image_test_template.h"
 #include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"

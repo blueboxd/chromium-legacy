@@ -104,7 +104,8 @@ class ThreadGroupImplImplTestBase : public ThreadGroup::Delegate {
         max_tasks,
         max_best_effort_tasks ? max_best_effort_tasks.value() : max_tasks,
         suggested_reclaim_time, service_thread_.task_runner(), worker_observer,
-        ThreadGroup::WorkerEnvironment::NONE, may_block_threshold);
+        ThreadGroup::WorkerEnvironment::NONE,
+        /* synchronous_thread_start_for_testing=*/false, may_block_threshold);
   }
 
   void CreateAndStartThreadGroup(

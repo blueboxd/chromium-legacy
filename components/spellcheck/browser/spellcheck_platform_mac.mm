@@ -109,6 +109,19 @@ void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages) {
   }
 }
 
+void RetrieveSpellcheckLanguages(
+    PlatformSpellChecker* spell_checker_instance,
+    RetrieveSpellcheckLanguagesCompleteCallback callback) {
+  NOTIMPLEMENTED();
+  std::move(callback).Run(std::vector<std::string>());
+}
+
+void AddSpellcheckLanguagesForTesting(
+    PlatformSpellChecker* spell_checker_instance,
+    const std::vector<std::string>& languages) {
+  NOTIMPLEMENTED();
+}
+
 std::string GetSpellCheckerLanguage() {
   return ConvertLanguageCodeFromMac([SharedSpellChecker() language]);
 }

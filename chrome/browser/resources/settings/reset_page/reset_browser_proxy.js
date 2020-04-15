@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
-cr.define('settings', function() {
   /** @interface */
-  /* #export */ class ResetBrowserProxy {
+  export class ResetBrowserProxy {
     /**
      * @param {boolean} sendSettings Whether the user gave consent to upload
      *     broken settings to Google for analysis.
@@ -16,7 +15,6 @@ cr.define('settings', function() {
      * @return {!Promise} A promise firing once resetting has completed.
      */
     performResetProfileSettings(sendSettings, requestOrigin) {}
-
     /**
      * A method to be called when the reset profile dialog is hidden.
      */
@@ -59,12 +57,12 @@ cr.define('settings', function() {
   }
 
   /**
-   * @implements {settings.ResetBrowserProxy}
+   * @implements {ResetBrowserProxy}
    */
-  /* #export */ class ResetBrowserProxyImpl {
+  export class ResetBrowserProxyImpl {
     /** @override */
     performResetProfileSettings(sendSettings, requestOrigin) {
-      return cr.sendWithPromise(
+      return sendWithPromise(
           'performResetProfileSettings', sendSettings, requestOrigin);
     }
 
@@ -85,7 +83,7 @@ cr.define('settings', function() {
 
     /** @override */
     showReportedSettings() {
-      cr.sendWithPromise('getReportedSettings').then(function(settings) {
+      sendWithPromise('getReportedSettings').then(function(settings) {
         const output = settings.map(function(entry) {
           return entry.key + ': ' + entry.value.replace(/\n/g, ', ');
         });
@@ -99,7 +97,7 @@ cr.define('settings', function() {
 
     /** @override */
     getTriggeredResetToolName() {
-      return cr.sendWithPromise('getTriggeredResetToolName');
+      return sendWithPromise('getTriggeredResetToolName');
     }
 
     // <if expr="chromeos">
@@ -115,11 +113,4 @@ cr.define('settings', function() {
     // </if>
   }
 
-  cr.addSingletonGetter(ResetBrowserProxyImpl);
-
-  // #cr_define_end
-  return {
-    ResetBrowserProxy: ResetBrowserProxy,
-    ResetBrowserProxyImpl: ResetBrowserProxyImpl,
-  };
-});
+  addSingletonGetter(ResetBrowserProxyImpl);

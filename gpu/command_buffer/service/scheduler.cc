@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -518,6 +520,7 @@ void Scheduler::RunNextTask() {
   scheduling_queue_.pop_back();
 
   TRACE_EVENT1("gpu", "Scheduler::RunNextTask", "state", state.AsValue());
+  base::ElapsedTimer task_timer;
 
   Sequence* sequence = GetSequence(state.sequence_id);
   DCHECK(sequence);
@@ -566,6 +569,11 @@ void Scheduler::RunNextTask() {
                      &SchedulingState::Comparator);
     }
   }
+
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "GPU.Scheduler.RunTaskTime", task_timer.Elapsed(),
+      base::TimeDelta::FromMicroseconds(10), base::TimeDelta::FromSeconds(30),
+      100);
 
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&Scheduler::RunNextTask, weak_ptr_));

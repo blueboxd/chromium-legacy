@@ -112,6 +112,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/favicon_size.h"
@@ -285,7 +286,7 @@ class RemoveCookieTester {
     bool result = false;
     base::RunLoop run_loop;
     cookie_manager_->GetCookieList(
-        Origin1(), net::CookieOptions(),
+        Origin1(), net::CookieOptions::MakeAllInclusive(),
         base::BindLambdaForTesting(
             [&](const net::CookieStatusList& cookie_list,
                 const net::CookieStatusList& excluded_cookies) {
@@ -308,7 +309,7 @@ class RemoveCookieTester {
     auto cookie = net::CanonicalCookie::Create(
         Origin1(), "A=1", base::Time::Now(), base::nullopt /* server_time */);
     cookie_manager_->SetCanonicalCookie(
-        *cookie, "http", net::CookieOptions(),
+        *cookie, Origin1(), net::CookieOptions::MakeAllInclusive(),
         base::BindLambdaForTesting(
             [&](net::CanonicalCookie::CookieInclusionStatus result) {
               EXPECT_TRUE(result.IsInclude());

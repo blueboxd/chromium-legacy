@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ</translation>
 <translation id="4250229828105606438">ਸਕ੍ਰੀਨਸ਼ਾਟ</translation>
 <translation id="4256782883801055595">ਖੁੱਲ੍ਹਾ ਸਰੋਤ ਲਾਇਸੰਸ</translation>
-<translation id="4259722352634471385">ਨੈਵੀਗੇਸ਼ਨ ਬਲੌਕ ਕੀਤੀ ਹੈ: <ph name="URL" /></translation>
 <translation id="4269820728363426813">ਲਿੰਕ ਪਤਾ ਕਾਪੀ ਕਰੋ</translation>
 <translation id="4275663329226226506">ਮੀਡੀਆ</translation>
 <translation id="4278390842282768270">ਆਗਿਆ ਦਿੱਤੀ</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">ਆਪਣੇ ਸਾਰੇ ਡੀਵਾਈਸਾਂ 'ਤੇ ਆਪਣੇ ਬੁੱਕਮਾਰਕ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ, ਸਮਕਾਲੀਕਰਨ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="8110087112193408731">ਕੀ ਤੁਸੀਂ ਡਿਜੀਟਲ ਜੀਵਨਸ਼ੈਲੀ ਵਿੱਚ ਆਪਣੀ Chrome ਸਰਗਰਮੀ ਦਿਖਾਉਣੀ ਹੈ?</translation>
+<translation id="8115259494083109761">ਕਿਸੇ QR ਕੋਡ ਨੂੰ ਸਕੈਨ ਕਰਨ ਲਈ, Chrome ਨੂੰ ਤੁਹਾਡਾ ਕੈਮਰਾ ਵਰਤਣ ਦਿਓ</translation>
 <translation id="8116925261070264013">ਮਿਊਟ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="8127542551745560481">ਹੋਮਪੇਜ ਦਾ ਸੰਪਾਦਨ ਕਰੋ</translation>
 <translation id="813082847718468539">ਸਾਈਟ ਜਾਣਕਾਰੀ ਦੇਖੋ</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">ਕਿਸੇ ਹੋਰ ਵਿੰਡੋ ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>
 <translation id="8951232171465285730">Chrome ਨੇ ਤੁਹਾਡੀ <ph name="MEGABYTES" /> MB ਦੀ ਬਚਤ ਕੀਤੀ ਹੈ</translation>
 <translation id="8958424370300090006">ਕਿਸੇ ਖਾਸ ਸਾਈਟ ਲਈ ਕੁਕੀਜ਼ ਬਲਾਕ ਕਰੋ।</translation>
-<translation id="8959122750345127698">ਨੈਵੀਗੇਸ਼ਨ ਨਾਪਹੁੰਚਯੋਗ ਹੈ: <ph name="URL" /></translation>
 <translation id="8965591936373831584">ਵਿਚਾਰ-ਅਧੀਨ</translation>
 <translation id="8970887620466824814">ਕੋਈ ਗੜਬੜ ਹੋ ਗਈ।</translation>
 <translation id="8972098258593396643">ਕੀ ਪੂਰਵ-ਨਿਰਧਾਰਤ ਫੋਲਡਰ ਵਿੱਚ ਡਾਊਨਲੋਡ ਕਰਨਾ ਹੈ?</translation>

@@ -46,30 +46,16 @@ LocaleOutputHelper = class {
   }
 
   /**
-   * Main entry point for locale switching logic.
-   * @param {string} text The text we want to queue for output.
+   * Computes |this.currentLocale_| and |outputString|, and returns them.
+   * @param {string} text
    * @param {AutomationNode} contextNode The AutomationNode that owns |text|.
-   * @param {function(string, string)} appendWithLocaleCallback
+   * @return {!{text: string, locale: string}}
    */
-  assignLocalesAndAppend(text, contextNode, appendWithLocaleCallback) {
+  computeTextAndLocale(text, contextNode) {
     if (!text || !contextNode) {
-      return;
+      return {text, locale: LocaleOutputHelper.BROWSER_UI_LOCALE_};
     }
 
-    this.processText_(text, contextNode, appendWithLocaleCallback);
-  }
-
-  /**
-   * This method does the following:
-   * 1. Computes output locale.
-   * 2. Computes |outputString|
-   * 3. Calls |appendWithLocaleCallback|
-   * @param {string} text
-   * @param {!AutomationNode} contextNode The AutomationNode that owns |text|.
-   * @param {function(string, string)} appendWithLocaleCallback
-   * @private
-   */
-  processText_(text, contextNode, appendWithLocaleCallback) {
     // Prefer the node's detected locale and fall back on the author-assigned
     // locale.
     const nodeLocale =
@@ -99,7 +85,7 @@ LocaleOutputHelper = class {
           Msgs.getMsg('voice_unavailable_for_language', [displayLanguage]);
     }
 
-    appendWithLocaleCallback(outputString, this.currentLocale_);
+    return {text: outputString, locale: this.currentLocale_};
   }
 
   /**

@@ -564,7 +564,7 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::ValidateJsonString(
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           json_string, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
-  if (value_with_error.error_code != base::JSONReader::JSON_NO_ERROR) {
+  if (!value_with_error.value) {
     if (errors) {
       errors->AddError(policy_name_, ErrorPath(index, ""),
                        IDS_POLICY_INVALID_JSON_ERROR,

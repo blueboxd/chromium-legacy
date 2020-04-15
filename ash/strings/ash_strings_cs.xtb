@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Chcete-li zobrazovat oznámení na obrazovce uzamčení, odemkněte zařízení a změňte příslušné nastavení.</translation>
 <translation id="4144413954005649103">Po kliknutí pravým tlačítkem nebo dlouhém stisknutí vám Asistent zobrazí informace související s obsahem vybraným na obrazovce.</translation>
 <translation id="4146833061457621061">Přehrát hudbu</translation>
-<translation id="4149156641122542261">Zařízení <ph name="DEVICE_TYPE" /> spravované doménou <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Jazyky</translation>
 <translation id="4195877955194704651">Tlačítko automatických kliknutí</translation>
 <translation id="4215497585250573029">Nastavení sítě VPN</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">Zkratka je vypnutá</translation>
 <translation id="6910714959251846841">Kvůli této aktualizaci je potřeba zařízení pomocí funkce Powerwash obnovit do továrního nastavení. Viz další informace o nejnovější aktualizaci systému <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">Chytrou kartu se nepodařilo rozpoznat. Zkuste to znovu.</translation>
+<translation id="6945221475159498467">Vybrat</translation>
 <translation id="6972754398087986839">Začínáme</translation>
 <translation id="6981982820502123353">Usnadnění</translation>
 <translation id="698231206551913481">Po odebrání tohoto uživatele budou trvale smazány všechny soubory a místní data, která jsou k němu přiřazena.</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">Soukromá síť</translation>
 <translation id="8152092012181020186">Zavřete stisknutím kláves Ctrl + W.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Toto nastavení spravuje administrátor.</translation>
+<translation id="815598010540052116">Posuv dolů</translation>
 <translation id="8167567890448493835">Používá se <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizovat jazyky a zadávání...</translation>
 <translation id="8192202700944119416">Oznámení jsou skryta.</translation>

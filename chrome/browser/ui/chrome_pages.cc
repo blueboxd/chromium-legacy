@@ -23,11 +23,11 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -36,13 +36,15 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/settings/site_settings_helper.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -53,7 +55,6 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -69,7 +70,6 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/version_info/version_info.h"
-#include "extensions/browser/extension_registry.h"
 #else
 #include "chrome/browser/ui/signin_view_controller.h"
 #endif
@@ -148,14 +148,18 @@ void LaunchReleaseNotesInTab(Profile* profile) {
 
 void LaunchReleaseNotesImpl(Profile* profile) {
   base::RecordAction(UserMetricsAction("ReleaseNotes.ShowReleaseNotes"));
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-          chromeos::default_web_apps::kReleaseNotesAppId,
-          extensions::ExtensionRegistry::EVERYTHING);
-  if (extension) {
-    apps::AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
-        profile, extension, 0, apps::mojom::AppLaunchSource::kSourceUntracked,
-        -1);
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
+  if (provider && provider->registrar().IsInstalled(
+                      chromeos::default_web_apps::kReleaseNotesAppId)) {
+    web_app::DisplayMode display_mode =
+        provider->registrar().GetAppEffectiveDisplayMode(
+            chromeos::default_web_apps::kReleaseNotesAppId);
+    apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
+        chromeos::default_web_apps::kReleaseNotesAppId,
+        /*event_flags=*/0, apps::mojom::AppLaunchSource::kSourceUntracked,
+        /*display_id=*/-1,
+        web_app::ConvertDisplayModeToAppLaunchContainer(display_mode));
+
     params.override_url = GURL(BuildQueryString(profile));
     apps::AppServiceProxyFactory::GetForProfile(profile)
         ->BrowserAppLauncher()

@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">Ανοίξτε τις ρυθμίσεις</translation>
 <translation id="4250229828105606438">Στιγμιότυπο οθόνης</translation>
 <translation id="4256782883801055595">Άδειες λογισμικού ανοικτού κώδικα</translation>
-<translation id="4259722352634471385">Αποκλείστηκε η μετάβαση στη διεύθυνση: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Αντιγρ. διεύθυνσης συνδέσμου</translation>
 <translation id="4275663329226226506">Μέσα</translation>
 <translation id="4278390842282768270">Επιτρέπεται</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Για να εμφανίζονται οι σελιδοδείκτες σας σε όλες τις συσκευές σας, ενεργοποιήστε τον συγχρονισμό</translation>
 <translation id="8110087112193408731">Να εμφανίζεται στο Digital Wellbeing η δραστηριότητά σας στο Chrome;</translation>
+<translation id="8115259494083109761">Για να σαρώσετε έναν κωδικό QR, επιτρέψτε στο Chrome να χρησιμοποιεί την κάμερά σας.</translation>
 <translation id="8116925261070264013">Σε σίγαση</translation>
 <translation id="8127542551745560481">Επεξεργασία αρχικής σελίδας</translation>
 <translation id="813082847718468539">Προβολή πληροφοριών τοποθεσίας</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">Άνοιγμα σε άλλο παράθυρο</translation>
 <translation id="8951232171465285730">Το Chrome έχει εξοικονομήσει <ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">Αποκλεισμός cookie για έναν συγκεκριμένο ιστοτόπο.</translation>
-<translation id="8959122750345127698">Δεν είναι δυνατή η μετάβαση στη διεύθυνση: <ph name="URL" /></translation>
 <translation id="8965591936373831584">σε εκκρεμότητα</translation>
 <translation id="8970887620466824814">Προέκυψε πρόβλημα.</translation>
 <translation id="8972098258593396643">Λήψη στον προεπιλεγμένο φάκελο;</translation>

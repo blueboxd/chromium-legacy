@@ -92,6 +92,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="34857402635545079">Pastro po ashtu të dhënat nga Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome ka nevojë për qasje te vendndodhja jote për të ndarë vendndodhjen me këtë sajt</translation>
 <translation id="3533694711092285624">Nuk ka asnjë fjalëkalim të ruajtur. Chrome mund t'i kontrollojë fjalëkalimet e tua kur ti i ruan ato.</translation>
+<translation id="3541482654983822893">Chrome nuk mund t'i kontrollojë fjalëkalimet e tua. Provo përsëri pas 24 orësh.</translation>
 <translation id="3576528680708590453">Administratori i sistemit ka konfiguruar Google Chrome që të hapë një shfletues alternativ për t'u qasur te <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sinkronizo dhe personalizo Chrome nëpër pajisjet e tua</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administratori yt kërkon që të hapësh përsëri Chrome për të zbatuar këtë përditësim}=1{Administratori yt kërkon që të hapësh përsëri Chrome për të zbatuar këtë përditësim Dritarja jote "e fshehtë" nuk do të rihapet.}other{Administratori yt kërkon që të hapësh përsëri Chrome për të zbatuar këtë përditësim # dritaret e tua "të fshehta" nuk do të rihapen.}}</translation>
@@ -109,6 +110,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="4147555960264124640">Po identifikohesh me një llogari të menaxhuar dhe po i jep administratorit të saj kontroll mbi profilin tënd të Google Chrome. Të dhënat e tua të Chrome, siç janë aplikacionet, faqeshënuesit, fjalëkalimet dhe cilësime të tjera do të lidhen në mënyrë të përhershme me <ph name="USER_NAME" />. Ti do të jesh në gjendje t'i fshish këto të dhëna përmes Panelit të llogarive të Google, por nuk do të jesh në gjendje t'i shoqërosh këto të dhëna me një llogari tjetër. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Instaluesi nuk arriti ta nxjerrë arkivin. Shkarko përsëri Google Chrome.</translation>
 <translation id="4191857738314598978">{0,plural, =1{Hap përsëri Chrome brenda një dite}other{Hap përsëri Chrome brenda # ditësh}}</translation>
+<translation id="4205939740494406371">Chrome nuk mund t'i kontrollojë fjalëkalimet e tua. Provo përsëri pas 24 orësh ose <ph name="BEGIN_LINK" />kontrollo fjalëkalimet në "Llogarinë tënde të Google"<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Do të dalësh nga Chrome?</translation>
 <translation id="4251615635259297716">Të lidhen të dhënat e tua të Chrome me këtë llogari?</translation>
 <translation id="4293420128516039005">Identifikohu për të sinkronizuar dhe personalizuar Chrome nëpër pajisjet e tua</translation>
@@ -235,7 +237,6 @@ Google Chrome nuk është në gjendje të rikuperojë cilësimet e tua.</transla
 <translation id="8342675569599923794">Ky skedar është i rrezikshëm, prandaj Chrome e ka bllokuar atë.</translation>
 <translation id="8370517070665726704">Të drejtat e autorit <ph name="YEAR" /> Google LLC. Të gjitha të drejtat e rezervuara.</translation>
 <translation id="840084489713044809">Google Chrome dëshiron të eksportojë fjalëkalimet e tua.</translation>
-<translation id="8455999171311319804">Opsionale: Ndihmo në përmirësimin e sistemit operativ Chrome duke dërguar automatikisht te Google të dhëna përdorimi dhe diagnostikuese.</translation>
 <translation id="8498858610309223613">Sapo është zbatuar një përditësim special i sigurisë për Google Chrome. Rinise tani dhe do të restaurojmë skedat e tua.</translation>
 <translation id="8521348052903287641">Rregulli hyrës për Google Chrome Dev për të lejuar trafikun mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

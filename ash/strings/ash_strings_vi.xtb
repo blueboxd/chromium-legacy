@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Để xem thông báo trên màn hình khóa, hãy mở khóa thiết bị để thay đổi tùy chọn cài đặt này</translation>
 <translation id="4144413954005649103">Khi nhấp chuột phải hoặc nhấn và giữ, Trợ lý sẽ hiển thị cho bạn thông tin liên quan đến nội dung bạn chọn trên màn hình.</translation>
 <translation id="4146833061457621061">Phát nhạc</translation>
-<translation id="4149156641122542261"><ph name="DOMAIN" /> quản lý <ph name="DEVICE_TYPE" /></translation>
 <translation id="4181841719683918333">Ngôn ngữ</translation>
 <translation id="4195877955194704651">Nút Lượt nhấp tự động</translation>
 <translation id="4215497585250573029">Cài đặt mạng riêng ảo (VPN)</translation>
@@ -412,6 +411,7 @@
 <translation id="6267036997247669271"><ph name="NAME" />: Đang kích hoạt...</translation>
 <translation id="6283712521836204486">Chế độ Không làm phiền đang tắt.</translation>
 <translation id="6284232397434400372">Đã thay đổi độ phân giải</translation>
+<translation id="6288235558961782912">Bạn có thể thêm <ph name="USER_EMAIL_ADDRESS" /> lại sau nếu cha mẹ cho phép.</translation>
 <translation id="6297287540776456956">Sử dụng bút cảm ứng để chọn một vùng</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> đã được xoay vòng sang <ph name="ROTATION" /></translation>
 <translation id="6376931439017688372">Bluetooth đang bật</translation>
@@ -466,6 +466,7 @@
 <translation id="6878400149835617132">Đã tắt phím tắt</translation>
 <translation id="6910714959251846841">Bản cập nhật này yêu cầu phải powerwash (đặt lại toàn bộ) thiết bị của bạn. Hãy tìm hiểu thêm về bản cập nhật <ph name="SYSTEM_APP_NAME" /> mới nhất.</translation>
 <translation id="6919251195245069855">Không nhận dạng được thẻ thông minh của bạn. Vui lòng thử lại.</translation>
+<translation id="6945221475159498467">Chọn</translation>
 <translation id="6972754398087986839">Bắt đầu</translation>
 <translation id="6981982820502123353">Hỗ trợ tiếp cận</translation>
 <translation id="698231206551913481">Tất cả các tệp và dữ liệu cục bộ liên quan tới người dùng này sẽ bị xóa vĩnh viễn sau khi người dùng này bị xóa.</translation>
@@ -556,6 +557,7 @@
 <translation id="8142699993796781067">Mạng riêng</translation>
 <translation id="8152092012181020186">Nhấn tổ hợp phím Ctrl + W để đóng.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Quản trị viên của bạn quản lý tùy chọn cài đặt này.</translation>
+<translation id="815598010540052116">Cuộn Xuống</translation>
 <translation id="8167567890448493835">Đang dùng <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
 <translation id="8192202700944119416">Đã ẩn thông báo.</translation>

@@ -148,29 +148,12 @@ public class AccountManagerFacade {
 
     /**
      * Retrieves a list of the Google account names on the device.
-     *
-     * @throws AccountManagerDelegateException if Google Play Services are out of date,
-     *         Chrome lacks necessary permissions, etc.
-     */
-    @AnyThread
-    public List<String> getGoogleAccountNames() throws AccountManagerDelegateException {
-        List<String> accountNames = new ArrayList<>();
-        for (Account account : getGoogleAccounts()) {
-            accountNames.add(account.name);
-        }
-        return accountNames;
-    }
-
-    /**
-     * Retrieves a list of the Google account names on the device.
      * Returns an empty list if Google Play Services aren't available or out of date.
      */
     @AnyThread
     public List<String> tryGetGoogleAccountNames() {
         List<String> accountNames = new ArrayList<>();
-        List<Account> tryGetGoogleAccounts = tryGetGoogleAccounts();
-        for (int i = 0; i < tryGetGoogleAccounts.size(); i++) {
-            Account account = tryGetGoogleAccounts.get(i);
+        for (Account account : tryGetGoogleAccounts()) {
             accountNames.add(account.name);
         }
         return accountNames;
@@ -260,15 +243,6 @@ public class AccountManagerFacade {
             }
         }
         return null;
-    }
-
-    /**
-     * Returns whether an account exists with the given name.
-     * Returns false if an error occurs while getting account list.
-     */
-    @AnyThread
-    public boolean hasAccountForName(String accountName) {
-        return getAccountFromName(accountName) != null;
     }
 
     /**

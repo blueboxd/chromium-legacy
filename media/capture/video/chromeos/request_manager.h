@@ -119,6 +119,9 @@ class CAPTURE_EXPORT RequestManager final
     cros::mojom::Effect reprocess_effect;
     // The input buffer id for this capture request.
     base::Optional<uint64_t> input_buffer_id;
+    // The orientation which is stored at the time the request is prepared. It
+    // can be used to construct the reprocess job info when the result is back.
+    int32_t orientation;
   };
 
   RequestManager(mojo::PendingReceiver<cros::mojom::Camera3CallbackOps>
@@ -207,17 +210,20 @@ class CAPTURE_EXPORT RequestManager final
   struct ReprocessJobInfo {
     ReprocessJobInfo(ReprocessTaskQueue queue,
                      cros::mojom::CameraMetadataPtr metadata,
-                     uint64_t timestamp);
+                     uint64_t timestamp,
+                     int32_t orientation);
     ReprocessJobInfo(ReprocessJobInfo&& info);
     ~ReprocessJobInfo();
 
     ReprocessTaskQueue task_queue;
     cros::mojom::CameraMetadataPtr metadata;
     uint64_t shutter_timestamp;
+    int32_t orientation;
   };
 
   // Puts Jpeg orientation information into the metadata.
-  void SetJpegOrientation(cros::mojom::CameraMetadataPtr* settings);
+  void SetJpegOrientation(cros::mojom::CameraMetadataPtr* settings,
+                          int32_t orientation);
 
   // Puts sensor timestamp into the metadata for reprocess request.
   void SetSensorTimestamp(cros::mojom::CameraMetadataPtr* settings,

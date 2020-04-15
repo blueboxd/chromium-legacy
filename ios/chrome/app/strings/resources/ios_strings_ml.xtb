@@ -3,6 +3,7 @@
 <translationbundle lang="ml">
 <translation id="1005230401424685968">YYYY</translation>
 <translation id="1016495303386450659">ഇനം അപ്‌ഡേറ്റുചെയ്‌തു</translation>
+<translation id="1044891598689252897">സൈറ്റുകൾ സാധാരണ രീതിയിൽ പ്രവർത്തിക്കും</translation>
 <translation id="1047726139967079566">ഈ പേജ് ബുക്ക്‌മാര്‍ക്ക് ചെയ്യുക...</translation>
 <translation id="1049743911850919806">ആള്‍‌മാറാട്ടം</translation>
 <translation id="1063454504051558093">മറ്റ് പാസ്‌വേഡ് ഉപയോഗിക്കുക...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> ഇനങ്ങൾ</translation>
 <translation id="1491277525950327607">ക്രമീകരണം മാറ്റാൻ രണ്ടുതവണ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="1509486075633541495">വെബ്‌സൈറ്റിലേക്ക് സൈൻ ഇൻ ചെയ്യുക</translation>
+<translation id="1509960214886564027">നിരവധി സൈറ്റുകളിലെ ഫീച്ചറുകൾക്ക് പ്രവർത്തനം നടത്താനായേക്കില്ല</translation>
 <translation id="152234381334907219">ഒരിക്കലും സംരക്ഷിച്ചില്ല</translation>
 <translation id="1540800554400757039">വിലാസം 1</translation>
 <translation id="1545749641540134597">QR കോഡ് സ്‌കാൻ ചെയ്യുക</translation>
@@ -528,6 +530,7 @@
 <translation id="7961015016161918242">ഒരിക്കലും</translation>
 <translation id="7971521879845308059">പോപ്പ്-അപ്പുകൾ തടയുക</translation>
 <translation id="7982789257301363584">നെറ്റ്‌വർക്ക്</translation>
+<translation id="7993619969781047893">ചില സൈറ്റുകളിലെ ഫീച്ചറുകൾക്ക് പ്രവർത്തനം നടത്താനായേക്കില്ല</translation>
 <translation id="800361585186029508">Google Chrome-ൽ നൽകിയിട്ടുള്ള URL-കൾ തുറക്കുന്നു.</translation>
 <translation id="8007420562015504427">അദൃശ്യ തിരയൽ</translation>
 <translation id="8019783059653722575">ഇത് ഫോട്ടോകൾ സംരക്ഷിച്ച്, അപ്‌ലോഡ് ചെയ്യാൻ നിങ്ങളെ അനുവദിക്കുന്നു.</translation>

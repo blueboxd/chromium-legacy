@@ -26,7 +26,7 @@ void FakeCookieStore::GetAllCookiesAsync(GetAllCookiesCallback callback) {
 
 void FakeCookieStore::SetCanonicalCookieAsync(
     std::unique_ptr<net::CanonicalCookie> cookie,
-    std::string source_scheme,
+    const GURL& source_url,
     const net::CookieOptions& options,
     SetCookiesCallback callback) {
   NOTIMPLEMENTED() << "Implement this if necessary.";

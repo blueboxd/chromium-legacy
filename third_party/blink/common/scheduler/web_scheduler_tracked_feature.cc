@@ -91,6 +91,8 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "WebFileSystem";
     case WebSchedulerTrackedFeature::kAppBanner:
       return "AppBanner";
+    case WebSchedulerTrackedFeature::kPrinting:
+      return "Printing";
   }
 }
 

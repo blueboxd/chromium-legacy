@@ -55,12 +55,12 @@ TEST_F(QuicClientSessionCacheTest, Basic) {
 
   std::unique_ptr<quic::QuicResumptionState> state1 =
       std::make_unique<quic::QuicResumptionState>();
-  state1->application_state.push_back('a');
+  state1->application_state->push_back('a');
   state1->tls_session = NewSSLSession();
   quic::QuicServerId id1("a.com", 443);
   std::unique_ptr<quic::QuicResumptionState> state2 =
       std::make_unique<quic::QuicResumptionState>();
-  state2->application_state.push_back('b');
+  state2->application_state->push_back('b');
   state2->tls_session = NewSSLSession();
   quic::QuicServerId id2("b.com", 443);
 
@@ -68,21 +68,24 @@ TEST_F(QuicClientSessionCacheTest, Basic) {
   EXPECT_EQ(nullptr, cache.Lookup(id2, ssl_ctx_.get()));
   EXPECT_EQ(0u, cache.size());
 
-  cache.Insert(id1, std::move(state1));
+  cache.Insert(id1, std::move(state1->tls_session), nullptr,
+               state1->application_state);
   EXPECT_EQ(1u, cache.size());
-  EXPECT_EQ('a', cache.Lookup(id1, ssl_ctx_.get())->application_state.front());
+  EXPECT_EQ('a', cache.Lookup(id1, ssl_ctx_.get())->application_state->front());
   EXPECT_EQ(nullptr, cache.Lookup(id2, ssl_ctx_.get()));
 
   std::unique_ptr<quic::QuicResumptionState> state3 =
       std::make_unique<quic::QuicResumptionState>();
-  state3->application_state.push_back('c');
+  state3->application_state->push_back('c');
   state3->tls_session = NewSSLSession();
   quic::QuicServerId id3("c.com", 443);
-  cache.Insert(id3, std::move(state3));
-  cache.Insert(id2, std::move(state2));
+  cache.Insert(id3, std::move(state3->tls_session), nullptr,
+               state3->application_state);
+  cache.Insert(id2, std::move(state2->tls_session), nullptr,
+               state2->application_state);
   EXPECT_EQ(2u, cache.size());
-  EXPECT_EQ('b', cache.Lookup(id2, ssl_ctx_.get())->application_state.front());
-  EXPECT_EQ('c', cache.Lookup(id3, ssl_ctx_.get())->application_state.front());
+  EXPECT_EQ('b', cache.Lookup(id2, ssl_ctx_.get())->application_state->front());
+  EXPECT_EQ('c', cache.Lookup(id3, ssl_ctx_.get())->application_state->front());
 
   // Verify that the cache is cleared after Lookups.
   EXPECT_EQ(nullptr, cache.Lookup(id1, ssl_ctx_.get()));
@@ -97,29 +100,32 @@ TEST_F(QuicClientSessionCacheTest, SizeLimit) {
 
   std::unique_ptr<quic::QuicResumptionState> state1 =
       std::make_unique<quic::QuicResumptionState>();
-  state1->application_state.push_back('a');
+  state1->application_state->push_back('a');
   state1->tls_session = NewSSLSession();
   quic::QuicServerId id1("a.com", 443);
 
   std::unique_ptr<quic::QuicResumptionState> state2 =
       std::make_unique<quic::QuicResumptionState>();
-  state2->application_state.push_back('b');
+  state2->application_state->push_back('b');
   state2->tls_session = NewSSLSession();
   quic::QuicServerId id2("b.com", 443);
 
   std::unique_ptr<quic::QuicResumptionState> state3 =
       std::make_unique<quic::QuicResumptionState>();
-  state3->application_state.push_back('c');
+  state3->application_state->push_back('c');
   state3->tls_session = NewSSLSession();
   quic::QuicServerId id3("c.com", 443);
 
-  cache.Insert(id1, std::move(state1));
-  cache.Insert(id2, std::move(state2));
-  cache.Insert(id3, std::move(state3));
+  cache.Insert(id1, std::move(state1->tls_session), nullptr,
+               state1->application_state);
+  cache.Insert(id2, std::move(state2->tls_session), nullptr,
+               state2->application_state);
+  cache.Insert(id3, std::move(state3->tls_session), nullptr,
+               state3->application_state);
 
   EXPECT_EQ(2u, cache.size());
-  EXPECT_EQ('b', cache.Lookup(id2, ssl_ctx_.get())->application_state.front());
-  EXPECT_EQ('c', cache.Lookup(id3, ssl_ctx_.get())->application_state.front());
+  EXPECT_EQ('b', cache.Lookup(id2, ssl_ctx_.get())->application_state->front());
+  EXPECT_EQ('c', cache.Lookup(id3, ssl_ctx_.get())->application_state->front());
   EXPECT_EQ(nullptr, cache.Lookup(id1, ssl_ctx_.get()));
 }
 
@@ -140,11 +146,13 @@ TEST_F(QuicClientSessionCacheTest, Expiration) {
       std::make_unique<quic::QuicResumptionState>();
   state2->tls_session = MakeTestSession(clock->Now(), 3 * kTimeout);
   ;
-  state2->application_state.push_back('b');
+  state2->application_state->push_back('b');
   quic::QuicServerId id2("b.com", 443);
 
-  cache.Insert(id1, std::move(state1));
-  cache.Insert(id2, std::move(state2));
+  cache.Insert(id1, std::move(state1->tls_session), nullptr,
+               state1->application_state);
+  cache.Insert(id2, std::move(state2->tls_session), nullptr,
+               state2->application_state);
 
   EXPECT_EQ(2u, cache.size());
   // Expire the session.
@@ -154,7 +162,7 @@ TEST_F(QuicClientSessionCacheTest, Expiration) {
 
   EXPECT_EQ(nullptr, cache.Lookup(id1, ssl_ctx_.get()));
   EXPECT_EQ(1u, cache.size());
-  EXPECT_EQ('b', cache.Lookup(id2, ssl_ctx_.get())->application_state.front());
+  EXPECT_EQ('b', cache.Lookup(id2, ssl_ctx_.get())->application_state->front());
   EXPECT_EQ(0u, cache.size());
 }
 
@@ -173,12 +181,14 @@ TEST_F(QuicClientSessionCacheTest, FlushOnMemoryNotifications) {
   std::unique_ptr<quic::QuicResumptionState> state2 =
       std::make_unique<quic::QuicResumptionState>();
   state2->tls_session = MakeTestSession(clock->Now(), 3 * kTimeout);
-  ;
-  state2->application_state.push_back('b');
+
+  state2->application_state->push_back('b');
   quic::QuicServerId id2("b.com", 443);
 
-  cache.Insert(id1, std::move(state1));
-  cache.Insert(id2, std::move(state2));
+  cache.Insert(id1, std::move(state1->tls_session), nullptr,
+               state1->application_state);
+  cache.Insert(id2, std::move(state2->tls_session), nullptr,
+               state2->application_state);
 
   EXPECT_EQ(2u, cache.size());
   // Expire the session.

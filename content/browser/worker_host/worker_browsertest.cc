@@ -158,13 +158,13 @@ class WorkerTest : public ContentBrowserTest,
         net::CookieOptions::SameSiteCookieContext(
             net::CookieOptions::SameSiteCookieContext::ContextType::
                 SAME_SITE_LAX));
+    GURL cookie_url = ssl_server_.GetURL(host, "/");
     std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
-        ssl_server_.GetURL(host, "/"),
-        std::string(kSameSiteCookie) + "; SameSite=Lax; Secure",
+        cookie_url, std::string(kSameSiteCookie) + "; SameSite=Lax; Secure",
         base::Time::Now(), base::nullopt /* server_time */);
     base::RunLoop run_loop;
     cookie_manager->SetCanonicalCookie(
-        *cookie, "https" /* source_scheme */, options,
+        *cookie, cookie_url, options,
         base::BindLambdaForTesting(
             [&](net::CanonicalCookie::CookieInclusionStatus set_cookie_result) {
               EXPECT_TRUE(set_cookie_result.IsInclude());

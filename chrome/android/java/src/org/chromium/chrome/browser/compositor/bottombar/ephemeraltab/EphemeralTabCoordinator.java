@@ -29,8 +29,8 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.embedder_support.view.ContentView;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -255,7 +255,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     static class FaviconLoader {
         private final Context mContext;
         private final FaviconHelper mFaviconHelper;
-        private final FaviconFallbackGenerator mIconGenerator;
+        private final RoundedIconGenerator mIconGenerator;
         private final int mFaviconSize;
 
         /** Constructor. */

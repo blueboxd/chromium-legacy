@@ -190,18 +190,9 @@ void SharedContextState::InitializeGrContext(
 
   if (GrContextIsGL()) {
     DCHECK(context_->IsCurrent(nullptr));
-
-    std::vector<const char*> blacklisted_extensions;
-    constexpr char kQualcommTiledRendering[] = "GL_QCOM_tiled_rendering";
-    // We rely on |enable_threaded_texture_mailboxes| to limit the
-    // workaround to webview only.
-    if (workarounds.disable_qcomm_tiled_rendering &&
-        gpu_preferences.enable_threaded_texture_mailboxes) {
-      blacklisted_extensions.push_back(kQualcommTiledRendering);
-    }
     sk_sp<GrGLInterface> interface(gl::init::CreateGrGLInterface(
         *context_->GetVersionInfo(), workarounds.use_es2_for_oopr,
-        progress_reporter, blacklisted_extensions));
+        progress_reporter));
     if (!interface) {
       LOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
                     "failed.";
@@ -288,6 +279,18 @@ bool SharedContextState::InitializeGL(
     return false;
   }
 
+  const GLint kGLES2RequiredMinimumTextureUnits = 8u;
+  GLint max_texture_units = 0;
+  api->glGetIntegervFn(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_units);
+  if (max_texture_units < kGLES2RequiredMinimumTextureUnits) {
+    LOG(ERROR)
+        << "SharedContextState::InitializeGL failure max_texture_units : "
+        << max_texture_units << " is less that minimum required : "
+        << kGLES2RequiredMinimumTextureUnits;
+    feature_info_ = nullptr;
+    return false;
+  }
+
   context_state_ = std::make_unique<gles2::ContextState>(
       feature_info_.get(), false /* track_texture_and_sampler_units */);
 
@@ -299,6 +302,11 @@ bool SharedContextState::InitializeGL(
   // if perf becomes a problem.
   context_state_->InitCapabilities(nullptr);
   context_state_->InitState(nullptr);
+
+  // Init |sampler_units|, ContextState uses the size of it to reset sampler to
+  // ground state.
+  // TODO(penghuang): remove it when GrContext is created with ES 3.0.
+  context_state_->sampler_units.resize(max_texture_units);
 
   GLenum driver_status = real_context_->CheckStickyGraphicsResetStatus();
   if (driver_status != GL_NO_ERROR) {

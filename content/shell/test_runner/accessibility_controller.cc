@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/stl_util.h"
-#include "content/shell/test_runner/web_test_delegate.h"
+#include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -172,7 +172,7 @@ bool AccessibilityController::ShouldLogAccessibilityEvents() {
 void AccessibilityController::NotificationReceived(
     const blink::WebAXObject& target,
     const std::string& notification_name) {
-  web_view_test_proxy_->delegate()->PostTask(
+  web_view_test_proxy_->blink_test_runner()->PostTask(
       base::BindOnce(&AccessibilityController::PostNotification,
                      weak_factory_.GetWeakPtr(), target, notification_name));
 }

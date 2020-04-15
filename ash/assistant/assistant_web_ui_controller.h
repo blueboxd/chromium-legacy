@@ -16,7 +16,7 @@
 
 namespace ash {
 
-class AssistantController;
+class AssistantControllerImpl;
 class AssistantWebContainerView;
 class AssistantWebContainerEventObserver;
 
@@ -25,7 +25,8 @@ class ASH_EXPORT AssistantWebUiController : public views::WidgetObserver,
                                             public AssistantControllerObserver,
                                             public AssistantStateObserver {
  public:
-  explicit AssistantWebUiController(AssistantController* assistant_controller);
+  explicit AssistantWebUiController(
+      AssistantControllerImpl* assistant_controller);
   ~AssistantWebUiController() override;
 
   // views::WidgetObserver:
@@ -53,7 +54,7 @@ class ASH_EXPORT AssistantWebUiController : public views::WidgetObserver,
   void CreateWebContainerView();
   void ResetWebContainerView();
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
 
   AssistantWebViewDelegateImpl view_delegate_;
 

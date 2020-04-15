@@ -21,6 +21,8 @@ class FeatureListCreator;
 class SafeBrowsingService;
 struct MainParams;
 
+blink::UserAgentMetadata GetUserAgentMetadata();
+
 class ContentBrowserClientImpl : public content::ContentBrowserClient {
  public:
   explicit ContentBrowserClientImpl(MainParams* params);
@@ -55,6 +57,7 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       const base::RepeatingCallback<content::WebContents*()>& wc_getter,
       content::NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) override;
+  bool IsHandledURL(const GURL& url) override;
   bool CanCreateWindow(content::RenderFrameHost* opener,
                        const GURL& opener_url,
                        const GURL& opener_top_level_frame_url,

@@ -20,7 +20,7 @@ import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.chrome.R;
 import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 
 /**
  * A preference that displays a website's favicon and URL and, optionally, the amount of local
@@ -160,8 +160,8 @@ class WebsitePreference extends ChromeImageViewPreference {
             // Invalid favicon, produce a generic one.
             float density = resources.getDisplayMetrics().density;
             int faviconSizeDp = Math.round(mFaviconSizePx / density);
-            FaviconFallbackGenerator faviconGenerator =
-                    new FaviconFallbackGenerator(resources, faviconSizeDp, faviconSizeDp,
+            RoundedIconGenerator faviconGenerator =
+                    new RoundedIconGenerator(resources, faviconSizeDp, faviconSizeDp,
                             Math.round(FAVICON_CORNER_RADIUS_FRACTION * faviconSizeDp),
                             FAVICON_BACKGROUND_COLOR,
                             Math.round(FAVICON_TEXT_SIZE_FRACTION * faviconSizeDp));

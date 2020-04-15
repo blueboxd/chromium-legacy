@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Për të parë njoftime në ekranin e kyçjes, shkyçe për të ndryshuar cilësimin</translation>
 <translation id="4144413954005649103">Me një klikim me butonin djathtas ose shtypje të gjatë, "Asistenti" të tregon informacion në lidhje me atë që zgjedh në ekran.</translation>
 <translation id="4146833061457621061">Luaj muzikë</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> menaxhohet nga <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Gjuhët</translation>
 <translation id="4195877955194704651">Butoni i klikimeve automatike</translation>
 <translation id="4215497585250573029">Cilësimet e VPN-së</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">Shkurtorja është çaktivizuar</translation>
 <translation id="6910714959251846841">Ky përditësim kërkon spastrim rrënjësor të pajisjes tënde. Mëso më shumë për përditësimin e fundit të <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">Karta inteligjente nuk mund të njihej. Provo përsëri.</translation>
+<translation id="6945221475159498467">Përzgjidhe</translation>
 <translation id="6972754398087986839">Fillo</translation>
 <translation id="6981982820502123353">Qasja</translation>
 <translation id="698231206551913481">Të gjithë skedarët dhe të dhënat lokale të lidhura me këtë përdorues do të fshihen përgjithmonë pasi të hiqet ky përdorues.</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">Rrjet privat</translation>
 <translation id="8152092012181020186">Shtyp Ctrl + W për ta mbyllur</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Ky cilësim menaxhohet nga administratori yt.</translation>
+<translation id="815598010540052116">Lëviz poshtë</translation>
 <translation id="8167567890448493835">Po përdor <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizo gjuhët dhe hyrjen...</translation>
 <translation id="8192202700944119416">Njoftimet janë të fshehura.</translation>

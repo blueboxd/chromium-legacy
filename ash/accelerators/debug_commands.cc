@@ -10,6 +10,7 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/hud_display/hud_display.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/debug_utils.h"
 #include "ash/public/cpp/toast_data.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -41,84 +42,6 @@
 namespace ash {
 namespace debug {
 namespace {
-
-void HandlePrintLayerHierarchy() {
-  for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
-    ui::Layer* layer = root->layer();
-    if (layer)
-      ui::PrintLayerHierarchy(
-          layer,
-          RootWindowController::ForWindow(root)->GetLastMouseLocationInRoot());
-  }
-}
-
-void HandlePrintViewHierarchy() {
-  aura::Window* active_window = window_util::GetActiveWindow();
-  if (!active_window)
-    return;
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(active_window);
-  if (!widget)
-    return;
-  views::PrintViewHierarchy(widget->GetRootView());
-}
-
-void PrintWindowHierarchy(const aura::Window* active_window,
-                          const aura::Window* focused_window,
-                          aura::Window* window,
-                          int indent,
-                          std::ostringstream* out) {
-  std::string indent_str(indent, ' ');
-  std::string name(window->GetName());
-  if (name.empty())
-    name = "\"\"";
-  const gfx::Vector2dF& subpixel_position_offset =
-      window->layer()->GetSubpixelOffset();
-  *out << indent_str;
-  *out << name << " (" << window << ")"
-       << " type=" << window->type();
-  int window_id = window->id();
-  if (window_id != aura::Window::kInitialId)
-    *out << " id=" << window_id;
-  if (window->GetProperty(kWindowStateKey))
-    *out << " " << WindowState::Get(window)->GetStateType();
-  *out << ((window == active_window) ? " [active]" : "")
-       << ((window == focused_window) ? " [focused]" : "")
-       << (window->IsVisible() ? " visible" : "") << " "
-       << (window->occlusion_state() != aura::Window::OcclusionState::UNKNOWN
-               ? aura::Window::OcclusionStateToString(window->occlusion_state())
-               : "")
-       << " " << window->bounds().ToString();
-  if (!subpixel_position_offset.IsZero())
-    *out << " subpixel offset=" + subpixel_position_offset.ToString();
-  std::string* tree_id = window->GetProperty(ui::kChildAXTreeID);
-  if (tree_id)
-    *out << " ax_tree_id=" << *tree_id;
-  base::string16 title(window->GetTitle());
-  if (!title.empty())
-    *out << " title=" << title;
-  int app_type = window->GetProperty(aura::client::kAppType);
-  *out << " app_type=" << app_type;
-  std::string* pkg_name = window->GetProperty(ash::kArcPackageNameKey);
-  if (pkg_name)
-    *out << " pkg_name=" << *pkg_name;
-  *out << '\n';
-
-  for (aura::Window* child : window->children())
-    PrintWindowHierarchy(active_window, focused_window, child, indent + 3, out);
-}
-
-void HandlePrintWindowHierarchy() {
-  aura::Window* active_window = window_util::GetActiveWindow();
-  aura::Window* focused_window = window_util::GetFocusedWindow();
-  aura::Window::Windows roots = Shell::Get()->GetAllRootWindows();
-  for (size_t i = 0; i < roots.size(); ++i) {
-    std::ostringstream out;
-    out << "RootWindow " << i << ":\n";
-    PrintWindowHierarchy(active_window, focused_window, roots[i], 0, &out);
-    // Error so logs can be collected from end-users.
-    LOG(ERROR) << out.str();
-  }
-}
 
 gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
   // TODO(oshima): Consider adding a command line option to control wallpaper
@@ -194,6 +117,101 @@ void HandleTriggerHUDDisplay() {
 }
 
 }  // namespace
+
+void PrintLayerHierarchy(std::ostringstream* out) {
+  for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
+    ui::Layer* layer = root->layer();
+    if (layer) {
+      ui::PrintLayerHierarchy(
+          layer,
+          RootWindowController::ForWindow(root)->GetLastMouseLocationInRoot(),
+          out);
+    }
+  }
+}
+
+void HandlePrintLayerHierarchy() {
+  std::ostringstream out;
+  PrintLayerHierarchy(&out);
+  LOG(ERROR) << out.str();
+}
+
+void PrintViewHierarchy(std::ostringstream* out) {
+  aura::Window* active_window = window_util::GetActiveWindow();
+  if (!active_window)
+    return;
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(active_window);
+  if (!widget)
+    return;
+  views::PrintViewHierarchy(widget->GetRootView(), out);
+}
+
+void HandlePrintViewHierarchy() {
+  std::ostringstream out;
+  PrintViewHierarchy(&out);
+  LOG(ERROR) << out.str();
+}
+
+void PrintWindowHierarchy(const aura::Window* active_window,
+                          const aura::Window* focused_window,
+                          aura::Window* window,
+                          int indent,
+                          std::ostringstream* out) {
+  std::string indent_str(indent, ' ');
+  std::string name(window->GetName());
+  if (name.empty())
+    name = "\"\"";
+  const gfx::Vector2dF& subpixel_position_offset =
+      window->layer()->GetSubpixelOffset();
+  *out << indent_str;
+  *out << name << " (" << window << ")"
+       << " type=" << window->type();
+  int window_id = window->id();
+  if (window_id != aura::Window::kInitialId)
+    *out << " id=" << window_id;
+  if (window->GetProperty(kWindowStateKey))
+    *out << " " << WindowState::Get(window)->GetStateType();
+  *out << ((window == active_window) ? " [active]" : "")
+       << ((window == focused_window) ? " [focused]" : "")
+       << (window->IsVisible() ? " visible" : "") << " "
+       << (window->occlusion_state() != aura::Window::OcclusionState::UNKNOWN
+               ? aura::Window::OcclusionStateToString(window->occlusion_state())
+               : "")
+       << " " << window->bounds().ToString();
+  if (!subpixel_position_offset.IsZero())
+    *out << " subpixel offset=" + subpixel_position_offset.ToString();
+  std::string* tree_id = window->GetProperty(ui::kChildAXTreeID);
+  if (tree_id)
+    *out << " ax_tree_id=" << *tree_id;
+  base::string16 title(window->GetTitle());
+  if (!title.empty())
+    *out << " title=" << title;
+  int app_type = window->GetProperty(aura::client::kAppType);
+  *out << " app_type=" << app_type;
+  std::string* pkg_name = window->GetProperty(ash::kArcPackageNameKey);
+  if (pkg_name)
+    *out << " pkg_name=" << *pkg_name;
+  *out << '\n';
+
+  for (aura::Window* child : window->children())
+    PrintWindowHierarchy(active_window, focused_window, child, indent + 3, out);
+}
+
+void PrintWindowHierarchy(std::ostringstream* out) {
+  aura::Window* active_window = window_util::GetActiveWindow();
+  aura::Window* focused_window = window_util::GetFocusedWindow();
+  aura::Window::Windows roots = Shell::Get()->GetAllRootWindows();
+  for (size_t i = 0; i < roots.size(); ++i) {
+    *out << "RootWindow " << i << ":\n";
+    PrintWindowHierarchy(active_window, focused_window, roots[i], 0, out);
+  }
+}
+
+void HandlePrintWindowHierarchy() {
+  std::ostringstream out;
+  PrintWindowHierarchy(&out);
+  LOG(ERROR) << out.str();
+}
 
 void PrintUIHierarchies() {
   // This is a separate command so the user only has to hit one key to generate

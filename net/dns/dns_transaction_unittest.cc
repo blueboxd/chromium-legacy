@@ -2205,7 +2205,7 @@ TEST_F(DnsTransactionTest, HttpsPostTestNoCookies) {
       cookie_url, "test-cookie=you-still-fail", base::Time::Now(),
       base::nullopt /* server_time */);
   request_context_->cookie_store()->SetCanonicalCookieAsync(
-      std::move(cookie), cookie_url.scheme(), CookieOptions(),
+      std::move(cookie), cookie_url, CookieOptions(),
       base::BindOnce(&CookieCallback::SetCookieCallback,
                      base::Unretained(&callback)));
   EXPECT_TRUE(helper1.RunUntilDone(transaction_factory_.get()));

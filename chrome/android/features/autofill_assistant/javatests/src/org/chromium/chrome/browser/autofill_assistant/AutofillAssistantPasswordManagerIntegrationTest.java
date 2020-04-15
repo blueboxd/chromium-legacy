@@ -27,6 +27,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.GeneratePasswordForFormFieldProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetFormFieldValueProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
@@ -93,7 +94,8 @@ public class AutofillAssistantPasswordManagerIntegrationTest {
     }
 
     /**
-     * Run a password change flow (fill a form with username, old password, new password).
+     * Run a password change flow (fill a form with username, old password, new
+     * password).
      */
     @Test
     @MediumTest
@@ -108,19 +110,24 @@ public class AutofillAssistantPasswordManagerIntegrationTest {
                                         .setElement(ElementReferenceProto.newBuilder().addSelectors(
                                                 "#username")))
                         .build());
-        // TODO(crbug.com/1057608): Implement Android wrapper for PasswordStore to add a step and
+        // TODO(crbug.com/1057608): Implement Android wrapper for PasswordStore to add a
+        // step and
         // verification for current password filling.
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setGeneratePasswordForFormField(
+                                GeneratePasswordForFormFieldProto.newBuilder()
+                                        .setMemoryKey("memory-key")
+                                        .setElement(ElementReferenceProto.newBuilder().addSelectors(
+                                                "#new-password")))
+                        .build());
+
         list.add(
                 (ActionProto) ActionProto.newBuilder()
                         .setSetFormValue(
                                 SetFormFieldValueProto.newBuilder()
                                         .addValue(SetFormFieldValueProto.KeyPress.newBuilder()
-                                                          .setGeneratePassword(
-                                                                  SetFormFieldValueProto
-                                                                          .GeneratePassword
-                                                                          .newBuilder()
-                                                                          .setMemoryKey(
-                                                                                  "memory-key")))
+                                                          .setClientMemoryKey("memory-key"))
                                         .setElement(ElementReferenceProto.newBuilder().addSelectors(
                                                 "#new-password")))
                         .build());

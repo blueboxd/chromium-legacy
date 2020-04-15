@@ -435,6 +435,7 @@ jumbo_static_library("ui") {
     "//components/captive_portal/core:buildflags",
     "//components/client_hints/browser",
     "//components/consent_auditor/",
+    "//components/content_settings/common:mojom",
     "//components/content_settings/core/browser",
     "//components/country_codes",
     "//components/crx_file",
@@ -1086,6 +1087,8 @@ jumbo_static_library("ui") {
       "passwords/bubble_controllers/items_bubble_controller.h",
       "passwords/bubble_controllers/password_bubble_controller_base.cc",
       "passwords/bubble_controllers/password_bubble_controller_base.h",
+      "passwords/bubble_controllers/post_save_compromised_bubble_controller.cc",
+      "passwords/bubble_controllers/post_save_compromised_bubble_controller.h",
       "passwords/bubble_controllers/save_unsynced_credentials_locally_bubble_controller.cc",
       "passwords/bubble_controllers/save_unsynced_credentials_locally_bubble_controller.h",
       "passwords/bubble_controllers/save_update_bubble_controller.cc",
@@ -1273,8 +1276,6 @@ jumbo_static_library("ui") {
       "webui/bookmarks/bookmarks_ui.h",
       "webui/chrome_web_contents_handler.cc",
       "webui/chrome_web_contents_handler.h",
-      "webui/constrained_web_dialog_delegate_base.cc",
-      "webui/constrained_web_dialog_delegate_base.h",
       "webui/devtools_ui.cc",
       "webui/devtools_ui.h",
       "webui/devtools_ui_data_source.cc",
@@ -1989,6 +1990,8 @@ jumbo_static_library("ui") {
       "webui/settings/chromeos/android_apps_handler.h",
       "webui/settings/chromeos/app_management/app_management_page_handler_factory.cc",
       "webui/settings/chromeos/app_management/app_management_page_handler_factory.h",
+      "webui/settings/chromeos/bluetooth_strings_provider.cc",
+      "webui/settings/chromeos/bluetooth_strings_provider.h",
       "webui/settings/chromeos/calculator/size_calculator.cc",
       "webui/settings/chromeos/calculator/size_calculator.h",
       "webui/settings/chromeos/change_picture_handler.cc",
@@ -2023,6 +2026,8 @@ jumbo_static_library("ui") {
       "webui/settings/chromeos/kerberos_accounts_handler.h",
       "webui/settings/chromeos/multidevice_handler.cc",
       "webui/settings/chromeos/multidevice_handler.h",
+      "webui/settings/chromeos/multidevice_strings_provider.cc",
+      "webui/settings/chromeos/multidevice_strings_provider.h",
       "webui/settings/chromeos/os_settings_localized_strings_provider.cc",
       "webui/settings/chromeos/os_settings_localized_strings_provider.h",
       "webui/settings/chromeos/os_settings_localized_strings_provider_factory.cc",
@@ -2191,6 +2196,8 @@ jumbo_static_library("ui") {
       "avatar_button_error_controller_delegate.h",
       "frame/window_frame_util.cc",
       "frame/window_frame_util.h",
+      "passwords/account_storage_auth_helper.cc",
+      "passwords/account_storage_auth_helper.h",
       "signin_reauth_popup_delegate.cc",
       "signin_reauth_popup_delegate.h",
       "signin_view_controller.cc",
@@ -3451,6 +3458,8 @@ jumbo_static_library("ui") {
       "views/web_apps/web_app_origin_text.h",
       "views/web_apps/web_app_uninstall_dialog_view.cc",
       "views/web_apps/web_app_uninstall_dialog_view.h",
+      "views/webauthn/authenticator_bio_enrollment_sheet_view.cc",
+      "views/webauthn/authenticator_bio_enrollment_sheet_view.h",
       "views/webauthn/authenticator_ble_pin_entry_sheet_view.cc",
       "views/webauthn/authenticator_ble_pin_entry_sheet_view.h",
       "views/webauthn/authenticator_client_pin_entry_sheet_view.cc",
@@ -3473,6 +3482,8 @@ jumbo_static_library("ui") {
       "views/webauthn/ble_pin_entry_view.h",
       "views/webauthn/hover_list_view.cc",
       "views/webauthn/hover_list_view.h",
+      "views/webauthn/ring_progress_bar.cc",
+      "views/webauthn/ring_progress_bar.h",
       "views/webauthn/sheet_view_factory.cc",
       "views/webauthn/sheet_view_factory.h",
       "webauthn/account_hover_list_model.cc",
@@ -3584,7 +3595,7 @@ jumbo_static_library("ui") {
           if (use_x11) {
             deps += [
               "//ui/gfx/x",
-              "//ui/gtk:x",
+              "//ui/gtk/x",
             ]
           }
           if (use_ozone) {
@@ -3823,6 +3834,8 @@ jumbo_static_library("ui") {
       "app_list/search/arc/arc_playstore_search_provider.h",
       "app_list/search/arc/arc_playstore_search_result.cc",
       "app_list/search/arc/arc_playstore_search_result.h",
+      "app_list/search/assistant_search_provider.cc",
+      "app_list/search/assistant_search_provider.h",
       "app_list/search/chrome_search_result.cc",
       "app_list/search/chrome_search_result.h",
       "app_list/search/common/file_icon_util.cc",
@@ -4006,12 +4019,11 @@ jumbo_static_library("ui") {
       "views/plugin_vm/plugin_vm_installer_view.h",
     ]
     deps += [
-      # TODO(wutao): Put new icons resources to ash/public/cpp/vector_icons/
-      # when UX provides them.
       "//ash/app_list",
+      "//ash/assistant/model",
       "//ash/public/cpp",
       "//ash/public/cpp/app_list/vector_icons",
-      "//ash/resources/vector_icons",
+      "//ash/public/cpp/vector_icons",
       "//chrome/browser/chromeos/crostini:crostini_installer_types_mojom",
       "//chrome/browser/ui/app_list/search/cros_action_history:cros_action_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:app_launch_event_logger_proto",

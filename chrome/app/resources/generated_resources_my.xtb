@@ -688,7 +688,6 @@
 <translation id="189210018541388520">မျက်နှာပြင် အပြည့် ဖွင့်ရန်</translation>
 <translation id="1892341345406963517">မင်္ဂလာပါ <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">အခြား ဘာသာစကားများ</translation>
-<translation id="1895252664692693738"><ph name="TIME_LEFT" /> ကျန်သည်</translation>
 <translation id="1895658205118569222">ပိတ်ရန်</translation>
 <translation id="1895934970388272448">ဤလုပ်ဆောင်ချက်ပြီးဆုံးရန် သင့်ပရင်တာပေါ်တွင် မှတ်ပုံတင်ခြင်း အတည်ပြုရမည် - ယခုစစ်ဆေးမည်။</translation>
 <translation id="1899826437968063457">ပလပ်အင် VM ကို ဖွင့်ရန် ခွင့်ပြုချက်လိုအပ်သည်</translation>
@@ -4001,7 +4000,6 @@
 <translation id="6365411474437319296">မိသားစုနှင့် သူငယ်ချင်းများ ပေါင်းထည့်</translation>
 <translation id="636850387210749493">လုပ်ငန်း အမည်စာရင်းသွင်းခြင်း</translation>
 <translation id="6370021412472292592">ကြေညာစာတမ်းကို တင် မပေးနိုင်ခဲ့ပါ။</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{စကားဝှက် ပြောင်းရန်}other{စကားဝှက်များ ပြောင်းရန်}}</translation>
 <translation id="6374077068638737855">အိုင်စ်ဝါဆယ်လ</translation>
 <translation id="6374469231428023295">ထပ်စမ်းကြည့်ပါ</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' အတွက် ရလဒ် ၁ ခု</translation>

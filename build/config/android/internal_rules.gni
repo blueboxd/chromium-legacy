@@ -862,7 +862,7 @@ if (enable_java_templates) {
       if (defined(invoker.min_sdk_version)) {
         _min_sdk_version = invoker.min_sdk_version
       }
-      _lint_path = "$lint_android_sdk_root/tools-lint/bin/lint"
+      _lint_path = "$lint_android_sdk_root/cmdline-tools/latest/bin/lint"
       _cache_dir = "$root_build_dir/android_lint_cache"
       _result_path = "$target_out_dir/$target_name/result.xml"
       _config_path = "$target_out_dir/$target_name/config.xml"
@@ -874,6 +874,7 @@ if (enable_java_templates) {
       script = "//build/android/gyp/lint.py"
       depfile = "$target_gen_dir/$target_name.d"
       inputs = [
+        _lint_path,
         _platform_xml_path,
         _suppressions_file,
       ]

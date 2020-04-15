@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">ਪ੍ਰਿੰਟ ਸਰਵਰ</translation>
 <translation id="1805967612549112634">ਪਿੰਨ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
 <translation id="1806335016774576568">ਕਿਸੇ ਹੋਰ ਖੁੱਲ੍ਹੀ ਐਪ 'ਤੇ ਜਾਓ</translation>
+<translation id="1809483812148634490">ਤੁਹਾਡੇ ਵੱਲੋਂ Google Play ਤੋਂ ਡਾਊਨਲੋਡ ਕੀਤੀਆਂ ਗਈਆਂ ਐਪਾਂ ਇਸ Chromebook ਤੋਂ ਮਿਟਾ ਦਿੱਤੀਆਂ ਜਾਣਗੀਆਂ।
+    <ph name="LINE_BREAKS1" />
+    ਤੁਹਾਡੇ ਵੱਲੋਂ ਖਰੀਦੀ ਸਮੱਗਰੀ ਜਿਵੇਂ ਫ਼ਿਲਮਾਂ, ਟੀਵੀ ਸ਼ੋਅ, ਸੰਗੀਤ, ਕਿਤਾਬਾਂ, ਜਾਂ ਹੋਰ ਐਪ-ਅੰਦਰ ਖਰੀਦਾਂ ਵੀ ਮਿਟਾਈਆਂ ਜਾ ਸਕਦੀਆਂ ਹਨ।
+    <ph name="LINE_BREAKS2" />
+    ਇਹ ਹੋਰ ਡੀਵਾਈਸਾਂ ਦੀਆਂ ਐਪਾਂ ਜਾਂ ਸਮੱਗਰੀ 'ਤੇ ਅਸਰ ਨਹੀਂ ਪਾਉਂਦਾ।</translation>
 <translation id="1809734401532861917"><ph name="USER_EMAIL_ADDRESS" /> ਵਿੱਚ ਮੇਰੇ ਬੁੱਕਮਾਰਕ, ਇਤਿਹਾਸ, ਪਾਸਵਰਡ ਅਤੇ ਹੋਰ ਸੈਟਿੰਗਾਂ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="1813278315230285598">ਸੇਵਾਵਾਂ</translation>
 <translation id="18139523105317219">EDI ਪਾਰਟੀ ਨਾਮ</translation>
@@ -682,7 +687,6 @@
 <translation id="189210018541388520">ਪੂਰੀ ਸਕ੍ਰੀਨ ਖੋਲ੍ਹੋ</translation>
 <translation id="1892341345406963517">ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">ਹੋਰ ਭਾਸ਼ਾਵਾਂ</translation>
-<translation id="1895252664692693738"><ph name="TIME_LEFT" /> ਬਾਕੀ</translation>
 <translation id="1895658205118569222">ਸ਼ਟਡਾਊਨ</translation>
 <translation id="1895934970388272448">ਤੁਹਾਨੂੰ ਇਹ ਪ੍ਰਕਿਰਿਆ ਪੂਰੀ ਕਰਨ ਲਈ ਆਪਣੇ ਪ੍ਰਿੰਟਰ ਤੇ ਰਜਿਸਟਰੇਸ਼ਨ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨੀ ਚਾਹੀਦੀ ਹੈ - ਹੁੁਣ ਇਸਦੀ ਜਾਂਚ ਕਰੋ।</translation>
 <translation id="1899826437968063457">ਪਲੱਗਇਨ VM ਨੂੰ ਚੱਲਣ ਲਈ ਇਜਾਜ਼ਤ ਦੀ ਲੋੜ ਹੈ</translation>
@@ -1392,6 +1396,7 @@
 <translation id="2825848369316359348">ਤੁਹਾਡੀ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਦੇ ਪਿਛਲੇ ਪਾਸੇ ਪ੍ਰਿੰਟ ਕੀਤਾ ਨਾਮ ਲੱਭੋ</translation>
 <translation id="2828650939514476812">ਵਾਈ-ਫਾਈ ਨੈੱਟਵਰਕ ਨਾਲ ਕਨੈਕਟ ਕਰੋ</translation>
 <translation id="2835294513443818940">ਇਸ ਫ਼ਾਈਲ ਨੂੰ ਸੁਰੱਖਿਅਤ ਢੰਗ ਨਾਲ ਡਾਊਨਲੋਡ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।</translation>
+<translation id="2835547721736623118">ਬੋਲੀ ਪਛਾਣ ਸੇਵਾ</translation>
 <translation id="2836269494620652131">ਕ੍ਰੈਸ਼</translation>
 <translation id="2836635946302913370">ਇਸ ਵਰਤੋਂਕਾਰ ਨਾਮ ਨਾਲ ਸਾਈਨ ਇਨ ਕਰਨ ਨੂੰ ਤੁਹਾਡੇ ਪ੍ਰਬੰਧਕ ਵੱਲੋਂ ਅਯੋਗ ਬਣਾਇਆ ਗਿਆ ਹੈ।</translation>
 <translation id="283669119850230892">ਨੈੱਟਵਰਕ <ph name="NETWORK_ID" /> ਵਰਤਣ ਲਈ, ਪਹਿਲਾਂ ਹੇਠਾਂ ਇੰਟਰਨੈਟ ਨਾਲ ਆਪਣੇ ਕਨੈਕਸ਼ਨ ਨੂੰ ਪੂਰਾ ਕਰੋ।</translation>
@@ -1535,6 +1540,7 @@
 <translation id="3019285239893817657">ਉਪ-ਪੰਨਾ ਬਟਨ</translation>
 <translation id="3020183492814296499">ਸ਼ਾਰਟਕੱਟ</translation>
 <translation id="3020990233660977256">ਲੜੀ ਨੰਬਰ: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">ਜਦੋਂ ਚਾਰਜ ਨਾ ਹੋ ਰਿਹਾ ਹੋਵੇ</translation>
 <translation id="3021066826692793094">ਤਿਤਲੀ</translation>
 <translation id="3021678814754966447">&amp;ਫ੍ਰੇਮ ਸ੍ਰੋਤ ਦੇਖੋ</translation>
 <translation id="3022978424994383087">ਸਮਝ ਨਹੀਂ ਆਇਆ।</translation>
@@ -2731,6 +2737,7 @@
 <translation id="4633757335284074492">'Google ਡਰਾਈਵ' ਵਿੱਚ ਬੈਕਅੱਪ ਲਓ। ਕਿਸੇ ਵੇਲੇ ਵੀ ਅਸਾਨੀ ਨਾਲ ਡਾਟਾ ਮੁੜ-ਬਹਾਲ ਕਰੋ ਜਾਂ ਡੀਵਾਈਸਾਂ ਵਿਚਾਲੇ ਅਦਲਾ-ਬਦਲੀ ਕਰੋ। ਇਸ ਬੈਕਅੱਪ ਵਿੱਚ ਐਪ ਡਾਟਾ ਸ਼ਾਮਲ ਹੈ। ਇਹ ਬੈਕਅੱਪ Google 'ਤੇ ਅੱਪਲੋਡ ਕੀਤੇ ਜਾਂਦੇ ਹਨ ਅਤੇ ਤੁਹਾਡੇ ਬੱਚੇ ਦੇ Google ਖਾਤੇ ਦੇ ਪਾਸਵਰਡ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਇਨਕ੍ਰਿਪਟ ਕੀਤੇ ਜਾਂਦੇ ਹਨ।</translation>
 <translation id="4634771451598206121">ਦੁਬਾਰਾ ਸਾਈਨ-ਇਨ ਕਰੋ…</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> ਮਹਿਮਾਨ ਵਰਤੋਂਕਾਰਾਂ ਲਈ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।</translation>
+<translation id="4635444580397524003">Linux ਬੈਕਅੱਪ ਨੂੰ ਸਫਲਤਾਪੂਰਵਕ ਮੁੜ-ਬਹਾਲ ਕੀਤਾ ਗਿਆ।</translation>
 <translation id="4636930964841734540">ਜਾਣਕਾਰੀ</translation>
 <translation id="4637083375689622795">ਹੋਰ ਕਾਰਵਾਈਆਂ, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">ADB ਡੀਬੱਗਿੰਗ ਨੂੰ ਚਾਲੂ ਕਰੋ</translation>
@@ -2906,6 +2913,7 @@
 <translation id="4890773143211625964">ਉੱਨਤ ਪ੍ਰਿੰਟਰ ਵਿਕਲਪ  ਦਿਖਾਓ </translation>
 <translation id="4891089016822695758">ਬੀਟਾ ਫ਼ੋਰਮ</translation>
 <translation id="4892229439761351791">ਸਾਈਟ ਬਲੂਟੁੱਥ ਨੂੰ ਵਰਤ ਸਕਦੀ ਹੈ</translation>
+<translation id="489258173289528622">ਬੈਟਰੀ ਚਾਰਜ ਨਾ ਹੋਣ ਦੌਰਾਨ ਅਕਿਰਿਆਸ਼ੀਲ ਕਾਰਵਾਈ</translation>
 <translation id="4893336867552636863">ਇਸ ਨਾਲ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਤੁਹਾਡਾ ਬ੍ਰਾਉਜ਼ਿੰਗ ਡਾਟਾ ਸਥਾਈ ਤੌਰ 'ਤੇ ਮਿਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ।</translation>
 <translation id="4893522937062257019">ਲਾਕ ਸਕ੍ਰੀਨ 'ਤੇ</translation>
 <translation id="489454699928748701">ਸਾਈਟਾਂ ਨੂੰ ਗਤੀਸ਼ੀਲਤਾ ਸੈਂਸਰਾਂ ਦੀ ਵਰਤੋਂ ਕਰਨ ਦਿਓ</translation>
@@ -3612,6 +3620,7 @@
 <translation id="5863445608433396414">ਡੀਬੱਗਿੰਗ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਨੂੰ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="5864195618110239517">ਮੀਟਰਡ ਕਨੈਕਸ਼ਨ ਵਰਤੋ</translation>
 <translation id="5864471791310927901">DHCP ਲੁਕਅੱਪ ਅਸਫ਼ਲ ਹੋ ਗਿਆ</translation>
+<translation id="5864754048328252126">ਚਾਰਜ ਕਰਨ ਦੌਰਾਨ ਅਕਿਰਿਆਸ਼ੀਲ ਕਾਰਵਾਈ</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> ਨੂੰ ਜਲਦ ਰੋਕਿਆ ਜਾਵੇਗਾ</translation>
 <translation id="586567932979200359">ਤੁਸੀਂ ਇਸਦੇ ਡਿਸਕ ਚਿੱਤਰ ਤੋਂ <ph name="PRODUCT_NAME" /> ਚਲਾ ਰਹੇ ਹੋ। ਇਸਨੂੰ ਆਪਣੇ ਕੰਪਿਊਟਰ 'ਤੇ ਸਥਾਪਤ ਕਰਨ ਨਾਲ ਇਹ ਤੁਹਾਨੂੰ ਬਿਨਾਂ ਡਿਸਕ ਇਮੇਜ ਦੇ ਚਲਾਉਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿੰਦਾ ਹੈ ਅਤੇ ਇਹ ਪੱਕਾ ਕਰਦਾ ਹੈ ਕਿ ਇਸਨੂੰ ਅੱਪ ਟੂ ਡੇਟ ਰੱਖਿਆ ਜਾਵੇਗਾ।</translation>
 <translation id="5865733239029070421">Google ਨੂੰ ਵਰਤੋਂ ਅੰਕੜੇ ਅਤੇ ਕ੍ਰੈਸ਼ ਰਿਪੋਰਟਾਂ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਭੇਜਦੀ ਹੈ</translation>
@@ -3811,6 +3820,7 @@
 <translation id="6120205520491252677">ਸਟਾਰਟ ਸਕ੍ਰੀਨ ਲਈ ਇਹ ਸਫ਼ਾ ਪਿਨ ਕਰੋ...</translation>
 <translation id="6122081475643980456">ਤੁਹਾਡੇ ਇੰਟਰਨੈਟ ਕਨੈਕਸ਼ਨ ਤੇ ਨਿਯੰਤਰਣ ਪਾਇਆ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="6122095009389448667">ਇਸ ਸਾਈਟ ਨੂੰ ਕਲਿੱਪਬੋਰਡ ਦੇਖਣ ਤੋਂ ਬਲਾਕ ਕਰਦੇ ਰਹੋ</translation>
+<translation id="6122831415929794347">ਕੀ ਸੁਰੱਖਿਅਤ ਬ੍ਰਾਊਜ਼ਿੰਗ ਨੂੰ ਬੰਦ ਕਰਨਾ ਹੈ?</translation>
 <translation id="6122875415561139701">ਇਸ 'ਤੇ ਲਿਖਣ ਦੀ ਕਿਰਿਆ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ: "<ph name="DEVICE_NAME" />"।</translation>
 <translation id="6124650939968185064">ਅਨੁਸਰਣ ਐਕਸਟੈਂਸ਼ਨਾਂ ਇਸ ਐਕਸਟੈਂਸ਼ਨਾਂ 'ਤੇ ਨਿਰਭਰ ਹਨ:</translation>
 <translation id="6124698108608891449">ਇਸ ਸਾਈਟ ਨੂੰ ਹੋਰ ਇਜਾਜ਼ਤਾਂ ਦੀ ਲੋੜ ਹੈ।</translation>
@@ -3988,7 +3998,6 @@
 <translation id="6365411474437319296">ਪਰਿਵਾਰ ਅਤੇ ਦੋਸਤਾਂ ਨੂੰ ਜੋੜੋ</translation>
 <translation id="636850387210749493">ਐਂਟਰਪ੍ਰਾਈਜ਼ ਐਨਰੌਲਮੈਂਟ</translation>
 <translation id="6370021412472292592">ਮੈਨੀਫ਼ੈਸਟ ਲੋਡ ਨਹੀਂ ਕਰ ਸਕਿਆ।</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{ਪਾਸਵਰਡ ਬਦਲੋ}one{ਪਾਸਵਰਡ ਬਦਲੋ}other{ਪਾਸਵਰਡ ਬਦਲੋ}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' ਲਈ 1 ਨਤੀਜਾ</translation>
@@ -4014,6 +4023,7 @@
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, ਅਤੇ <ph name="WEBSITE_3" /> ਤੇ ਆਪਣਾ ਡਾਟਾ ਪੜ੍ਹੋ ਅਤੇ ਬਦਲੋ</translation>
 <translation id="6410257289063177456">ਚਿੱਤਰ ਫਾਈਲਾਂ</translation>
 <translation id="6410328738210026208">ਚੈਨਲ ਅਤੇ ਪਾਵਰਵਾਸ਼ ਬਦਲੋ</translation>
+<translation id="6410390304316730527">ਸੁਰੱਖਿਅਤ ਬ੍ਰਾਊਜ਼ਿੰਗ ਅਜਿਹੇ ਹਮਲਾਵਾਰਾਂ ਤੋਂ ਤੁਹਾਡੀ ਸੁਰੱਖਿਆ ਕਰਦੀ ਹੈ ਜੋ ਖਰਾਬ ਸਾਫ਼ਟਵੇਅਰ ਨੂੰ ਸਥਾਪਤ ਕਰਨ ਜਾਂ ਪਾਸਵਰਡ, ਫ਼ੋਨ ਨੰਬਰ, ਜਾਂ ਕ੍ਰੈਡਿਟ ਕਾਰਡਾਂ ਵਰਗੀ ਨਿੱਜੀ ਜਾਣਕਾਰੀ ਦਾ ਖੁਲਾਸਾ ਕਰਨ ਵਰਗੇ ਖਤਰਨਾਕ ਕੰਮ ਕਰਕੇ ਤੁਹਾਡੇ ਨਾਲ ਚਾਲਬਾਜ਼ੀ ਕਰ ਸਕਦੇ ਹਨ। ਜੇ ਤੁਸੀਂ ਇਸਨੂੰ ਬੰਦ ਕਰਦੇ ਹੋ, ਤਾਂ ਅਣਪਛਾਤੀਆਂ ਅਤੇ ਅਪ੍ਰਸਿੱਧ ਸਾਈਟਾਂ 'ਤੇ ਬ੍ਰਾਊਜ਼ ਕਰਦੇ ਸਮੇਂ ਸਾਵਧਾਨ ਰਹੋ।</translation>
 <translation id="6410668567036790476">ਖੋਜ ਇੰਜਣ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="641081527798843608">ਵਿਸ਼ਾ ਮਿਲਾਨ</translation>
 <translation id="6412673304250309937">Chrome ਵਿੱਚ ਸਟੋਰ ਕੀਤੀਆਂ ਅਸੁਰੱਖਿਅਤ ਸਾਈਟਾਂ ਦੀ ਸੂਚੀ ਦੇ ਨਾਲ URL ਦੀ ਜਾਂਚ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। ਜੇ ਕੋਈ ਸਾਈਟ ਤੁਹਾਡੇ ਪਾਸਵਰਡ ਨੂੰ ਚੋਰੀ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰਦੀ ਹੈ ਜਾਂ ਜਦੋਂ ਤੁਸੀਂ ਕੋਈ ਨੁਕਸਾਨਦੇਹ ਫ਼ਾਈਲ ਡਾਊਨਲੋਡ ਕਰਦੇ ਹੋ, ਤਾਂ Chrome ਸੁਰੱਖਿਅਤ ਬ੍ਰਾਊਜ਼ਿੰਗ ਨੂੰ ਪੰਨੇ ਦੀ ਥੋੜ੍ਹੀ ਸਮੱਗਰੀ ਸਮੇਤ URL ਵੀ ਭੇਜ ਸਕਦਾ ਹੈ।</translation>
@@ -5931,6 +5941,7 @@
 <translation id="8951256747718668828">ਕਿਸੇ ਗੜਬੜ ਕਰਕੇ ਮੁੜ-ਬਹਾਲ ਦੀ ਪ੍ਰਕਿਰਿਆ ਨੂੰ ਪੂਰਾ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ</translation>
 <translation id="8951465597020890363">ਕੀ ਫਿਰ ਵੀ ਮਹਿਮਾਨ ਮੋਡ ਤੋਂ ਬਾਹਰ ਜਾਣਾ ਹੈ?</translation>
 <translation id="8952831374766033534">ਸੰਰੂਪਣ ਵਿਕਲਪ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">ਚਾਰਜਿੰਗ ਵੇਲੇ</translation>
 <translation id="895347679606913382">ਸ਼ੁਰੂ ਹੋ ਰਿਹਾ ਹੈ...</translation>
 <translation id="8957762313041272117">ਲਾਈਵ ਸੁਰਖੀਆਂ</translation>
 <translation id="895944840846194039">JavaScript ਮੈਮਰੀ</translation>

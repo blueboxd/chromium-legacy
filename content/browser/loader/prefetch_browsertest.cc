@@ -841,8 +841,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, SignedExchangeWithPreload) {
   MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
       target_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
       GURL(embedded_test_server()->GetURL(target_path)), "text/html",
-      {base::StringPrintf("Link: <%s>;rel=\"preload\";as=\"script\"",
-                          preload_url_in_sxg.spec().c_str())},
+      {{"Link", base::StringPrintf("<%s>;rel=\"preload\";as=\"script\"",
+                                   preload_url_in_sxg.spec().c_str())}},
       net::SHA256HashValue({{0x00}}))});
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
@@ -917,8 +917,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
       target_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
       GURL(cross_origin_server_->GetURL("3p.example", target_path)),
       "text/html",
-      {base::StringPrintf("Link: <%s>;rel=\"preload\";as=\"script\"",
-                          preload_url_in_sxg.spec().c_str())},
+      {{"Link", base::StringPrintf("<%s>;rel=\"preload\";as=\"script\"",
+                                   preload_url_in_sxg.spec().c_str())}},
       net::SHA256HashValue({{0x00}}))});
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 

@@ -24,6 +24,8 @@ COMPONENT_EXPORT(NETWORK_CPP) extern const char kExplicitlyAllowedPorts[];
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kUnsafelyTreatInsecureOriginAsSecure[];
 COMPONENT_EXPORT(NETWORK_CPP) extern const char kForceToDisableOutOfBlinkCors[];
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const char kAdditionalTrustTokenKeyCommitments[];
 
 }  // namespace switches
 

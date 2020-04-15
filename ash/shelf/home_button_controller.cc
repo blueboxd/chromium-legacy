@@ -5,7 +5,7 @@
 #include "ash/shelf/home_button_controller.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/assistant_overlay.h"

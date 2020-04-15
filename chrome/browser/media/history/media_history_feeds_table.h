@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
+#include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_table_base.h"
 #include "sql/init_status.h"
 #include "url/gurl.h"
@@ -62,7 +63,8 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
                            const std::string& display_name);
 
   // Returns the feed rows in the database.
-  std::vector<media_feeds::mojom::MediaFeedPtr> GetRows();
+  std::vector<media_feeds::mojom::MediaFeedPtr> GetRows(
+      const MediaHistoryKeyedService::GetMediaFeedsRequest& request);
 };
 
 }  // namespace media_history

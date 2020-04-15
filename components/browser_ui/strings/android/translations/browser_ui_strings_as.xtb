@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">লিংক প্ৰতিলিপি কৰক</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">শিৰোনাম</translation>
+<translation id="4259722352634471385">নেভিগে’শ্বন অৱৰোধ কৰা আছে: <ph name="URL" /></translation>
 <translation id="4570913071927164677">সবিশেষ</translation>
 <translation id="4645575059429386691">আপোনাৰ অভিভাৱকৰ দ্বাৰা পৰিচালিত</translation>
 <translation id="4883854917563148705">পৰিচালিত ছেটিংসমূহ ৰিছেট কৰিব নোৱাৰি</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">ইনপুট মচক</translation>
 <translation id="8725066075913043281">আকৌ চেষ্টা কৰক</translation>
 <translation id="8730621377337864115">হ’ল</translation>
+<translation id="8959122750345127698">ইয়ালৈ নেভিগেশ্বন পাব পৰা অৱস্থাত নাই: <ph name="URL" /></translation>
 <translation id="9019902583201351841">আপোনাৰ অভিভাৱকৰ দ্বাৰা পৰিচালিত</translation>
 </translationbundle>

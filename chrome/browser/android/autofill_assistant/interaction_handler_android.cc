@@ -194,6 +194,21 @@ CreateInteractionCallbackFromProto(
           base::BindRepeating(&android_interactions::SetViewVisibility,
                               user_model->GetWeakPtr(),
                               proto.set_view_visibility(), views));
+    case CallbackProto::kSetViewEnabled:
+      if (proto.set_view_enabled().view_identifier().empty()) {
+        VLOG(1) << "Error creating SetViewEnabled interaction: "
+                   "view_identifier not set";
+        return base::nullopt;
+      }
+      if (!proto.set_view_enabled().has_enabled()) {
+        VLOG(1) << "Error creating SetViewEnabled interaction: "
+                   "enabled not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(&android_interactions::SetViewEnabled,
+                              user_model->GetWeakPtr(),
+                              proto.set_view_enabled(), views));
     case CallbackProto::KIND_NOT_SET:
       VLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;

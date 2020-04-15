@@ -146,10 +146,10 @@ void AssistantCardElementView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void AssistantCardElementView::ScrollRectToVisible(const gfx::Rect& rect) {
-  // We expect this method is called outside this class to show its local
+  // We expect this method is called outside this class to show its contents
   // bounds. Inside this class, should call views::View::ScrollRectToVisible()
   // to show the focused node in the web contents.
-  DCHECK(rect == GetLocalBounds());
+  DCHECK(rect == GetContentsBounds());
 
   // When this view is focused, View::Focus() calls ScrollViewToVisible(), which
   // calls ScrollRectToVisible().  But we don't want that call to do anything,
@@ -204,7 +204,6 @@ void AssistantCardElementView::DidChangeFocusedNode(
 
 void AssistantCardElementView::InitLayout(
     const AssistantCardElement* card_element) {
-  SetFocusBehavior(FocusBehavior::ALWAYS);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Contents view.

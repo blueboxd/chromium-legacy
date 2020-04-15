@@ -186,7 +186,7 @@
 <translation id="1235458158152011030">পরিচিত নেটওয়ার্কগুলি</translation>
 <translation id="123578888592755962">ডিস্ক পূর্ণ</translation>
 <translation id="1238191093934674082">VPN খুলুন</translation>
-<translation id="1239439601391236986">ব্যক্তিগত তথ্য ইনপুটের সাজেশন টগল করুন</translation>
+<translation id="1239439601391236986">ব্যক্তিগত তথ্য ইনপুট করার ক্ষেত্রে সাজেশন টগল করুন</translation>
 <translation id="1239594683407221485">Files অ্যাপে ডিভাইসের কন্টেন্ট ঘুরে দেখুন।</translation>
 <translation id="124116460088058876">আরও ভাষা</translation>
 <translation id="1241753985463165747">চালু করলে বর্তমান ওয়েবসাইটের সব ডেটা পড়ে ও পরিবর্তন করে</translation>
@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">প্রিন্ট সার্ভার</translation>
 <translation id="1805967612549112634">পিন নিশ্চিত করুন</translation>
 <translation id="1806335016774576568">অন্য কোনও খোলা অ্যাপে যান</translation>
+<translation id="1809483812148634490">Google Play থেকে ডাউনলোড করা অ্যাপ এই Chromebook থেকে মুছে ফেলা হবে।
+    <ph name="LINE_BREAKS1" />
+    সিনেমা, টিভি শো, মিউজিক, বই, বা অন্যান্য অ্যাপ-মধ্যস্থ কেনাকাটার মতো কন্টেন্ট হয়ত মুছে ফেলা হতে পারে।
+    <ph name="LINE_BREAKS2" />
+    এর ফলে অন্যান্য ডিভাইসের অ্যাপ বা কন্টেন্টকে প্রভাবিত হয়।</translation>
 <translation id="1809734401532861917"><ph name="USER_EMAIL_ADDRESS" />-এ আমার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস যোগ করুন</translation>
 <translation id="1813278315230285598">পরিষেবাসমূহ</translation>
 <translation id="18139523105317219">EDI পার্টি নাম</translation>
@@ -682,7 +687,6 @@
 <translation id="189210018541388520">পূর্ণ স্ক্রিন খুলুন</translation>
 <translation id="1892341345406963517">হাই <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">অন্যান্য ভাষা</translation>
-<translation id="1895252664692693738"><ph name="TIME_LEFT" /> বাকি আছে</translation>
 <translation id="1895658205118569222">বন্ধ করুন</translation>
 <translation id="1895934970388272448">এই প্রক্রিয়াটি সম্পূর্ণ করতে আপনাকে অবশ্যই আপনার প্রিন্টারের রেজিস্ট্রেশন নিশ্চিত করতে হবে - এটিকে এখনি পরীক্ষা করুন৷</translation>
 <translation id="1899826437968063457">প্লাগ-ইন VM চালানোর জন্য অনুমতি প্রয়োজন</translation>
@@ -1392,6 +1396,7 @@
 <translation id="2825848369316359348">আপনার নিরাপত্তা কী-এর পিছনে প্রিন্ট করা নামটি খুঁজুন</translation>
 <translation id="2828650939514476812">ওয়াই-ফাই নেটওয়ার্কের সাথে সংযোগ করুন</translation>
 <translation id="2835294513443818940">এই ফাইলটি নিরাপদে ডাউনলোড করা যাচ্ছে না।</translation>
+<translation id="2835547721736623118">স্পিচ শনাক্তকরণ পরিষেবা</translation>
 <translation id="2836269494620652131">ক্র্যাশ</translation>
 <translation id="2836635946302913370">আপনার অ্যাডমিনিস্ট্রেটর এই ইউজারনেম দিয়ে সাইন-ইন করা বন্ধ করেছে৷</translation>
 <translation id="283669119850230892"><ph name="NETWORK_ID" /> নেটওয়ার্কটি ব্যবহার করতে, প্রথমে নিচে ইন্টারনেট থেকে আপনার সংযোগ সম্পূর্ণ করুন৷</translation>
@@ -1536,6 +1541,7 @@
 <translation id="3019285239893817657">সাবপেজ বোতাম</translation>
 <translation id="3020183492814296499">শর্টকাট</translation>
 <translation id="3020990233660977256">ক্রমিক সংখ্যা: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">ব্যাটারি ব্যবহার করার সময়ে</translation>
 <translation id="3021066826692793094">প্রজাপতি</translation>
 <translation id="3021678814754966447">ফ্রেম উৎস &amp;দেখুন</translation>
 <translation id="3022978424994383087">বুঝতে পারিনি।</translation>
@@ -1985,7 +1991,7 @@
 <translation id="3629631988386925734">Smart Lock চালু করতে আপনার পাসওয়ার্ড লিখুন। পরের বার, আপনার ফোন <ph name="DEVICE_TYPE" /> আনলক করবে। সেটিংসে গিয়ে Smart Lock বন্ধ করতে পারবেন।</translation>
 <translation id="3630132874740063857">আপনার ফোন</translation>
 <translation id="3630995161997703415">যেকোনও সময় ব্যবহার করার জন্য এই সাইটটিকে আপনার শেল্ফে যোগ করুন</translation>
-<translation id="3633309367764744750">পৃষ্ঠার তথ্য আগে থেকেই ফেচ করা হয়, এর মধ্যে সেই পৃষ্ঠাগুলিও আছে যেগুলিতে আপনি এখনও যাননি। যদি আপনি কুকিকে অনুমতি দিয়ে রাখেন, তাহলে ফেচ করা তথ্যে কুকি থাকতে পারে।</translation>
+<translation id="3633309367764744750">পৃষ্ঠার তথ্য আগে থেকেই ফেচ করা হয়, এর মধ্যে সেই পৃষ্ঠাগুলিও পড়ে যেগুলিতে আপনি এখনও যাননি। যদি আপনি কুকি ব্যবহারের অনুমতি দিয়ে রাখেন, তাহলে ফেচ করা তথ্যে কুকি থাকতে পারে।</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, অ্যাডমিনিস্ট্রেটর ম্যানেজ করে, বিবরণ</translation>
 <translation id="3635241501480133979">এই ডেটা আপনার সংস্থার নিরাপত্তার নীতি লঙ্ঘন করেছে, তাই এটি এখানে টেনে এনে রাখা যাবে না।</translation>
 <translation id="3635353578505343390">Google-এ মতামত জানান</translation>
@@ -2731,6 +2737,7 @@
 <translation id="4633757335284074492">Google Drive-এ ব্যাক-আপ নিন। যেকোনও সময় সহজেই ডেটা রিস্টোর করুন অথবা অন্য ডিভাইস ব্যবহার করুন। এই ব্যাক-আপের মধ্যে অ্যাপের ডেটাও থাকে। ব্যাক-আপ ডেটা Google-এ আপলোড করা হবে এবং আপনার সন্তানের Google অ্যাকাউন্টের পাসওয়ার্ড ব্যবহার করে সেগুলিকে এনক্রিপ্ট করা হবে।</translation>
 <translation id="4634771451598206121">আবার সাইন-ইন করুন...</translation>
 <translation id="4635398712689569051">অতিথি ব্যবহারকারীদের জন্য <ph name="PAGE_NAME" /> উপলভ্য নয়।</translation>
+<translation id="4635444580397524003">Linux ব্যাক-আপ রিস্টোর করা হয়ে গেছে।</translation>
 <translation id="4636930964841734540">তথ্য</translation>
 <translation id="4637083375689622795">আরও বিকল্প, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">ADB ডিবাগিং চালু করতে চান</translation>
@@ -2906,6 +2913,7 @@
 <translation id="4890773143211625964">উন্নত প্রিন্ট বিকল্পগুলি দেখান</translation>
 <translation id="4891089016822695758">বিটা ফোরাম</translation>
 <translation id="4892229439761351791">সাইট ব্লুটুথ ব্যবহার করতে পারে</translation>
+<translation id="489258173289528622">অ্যাক্টিভ না থাকা অবস্থায় ব্যাটারি ব্যবহার করার সময়</translation>
 <translation id="4893336867552636863">এটি স্থায়ীভাবে এই ডিভাইস থেকে আপনার ব্রাউজিং ডেটা মুছে ফেলবে।</translation>
 <translation id="4893522937062257019">লক স্ক্রিনে</translation>
 <translation id="489454699928748701">সাইটকে মোশন সেন্সর ব্যবহার করার অনুমতি দিন</translation>
@@ -3613,6 +3621,7 @@
 <translation id="5863445608433396414">ডিবাগিং বৈশিষ্ট্যাবলী চালু করুন</translation>
 <translation id="5864195618110239517">মিটার্ড ইন্টারনেট কানেকশন ব্যবহার করুন</translation>
 <translation id="5864471791310927901">DHCP লুকআপ ব্যর্থ</translation>
+<translation id="5864754048328252126">চার্জ করার সময়ে ফোন ইনঅ্যাক্টিভ স্ট্যাটাসে রাখা</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> শীঘ্রই পজ করা হবে</translation>
 <translation id="586567932979200359">আপনি <ph name="PRODUCT_NAME" /> থেকে এটির ডিস্ক ছবি চালাচ্ছেন৷ এটিকে আপনার কম্পিউটারে ইনস্টল করা হলে তা ডিস্ক ছবি ছাড়াই এটিকে চালাতে দেয় এবং এটিকে আপ টু ডেট আছে কিনা তা নিশ্চিত করে৷</translation>
 <translation id="5865733239029070421">ব্যবহারের পরিসংখ্যান এবং ক্র্যাশ রিপোর্ট নিজে থেকেই Google-কে পাঠায়</translation>
@@ -3812,6 +3821,7 @@
 <translation id="6120205520491252677">স্টার্ট স্ক্রীনে এই পৃষ্ঠাটিকে পিন করুন...</translation>
 <translation id="6122081475643980456">আপনার ইন্টারনেট সংযোগ নিয়ন্ত্রিত হচ্ছে</translation>
 <translation id="6122095009389448667">ক্লিপবোর্ড দেখা থেকে সাইটটিকে ব্লক করে রাখুন</translation>
+<translation id="6122831415929794347">Safe Browsing বন্ধ করতে চান?</translation>
 <translation id="6122875415561139701">"<ph name="DEVICE_NAME" />" এ লেখার ক্রিয়াকলাপ অনুমোদিত নয়।</translation>
 <translation id="6124650939968185064">নিম্নলিখিত এক্সটেনশনগুলি এই এক্সটেনশনটির উপর নির্ভর করে:</translation>
 <translation id="6124698108608891449">এই সাইটকে আরও অনুমতি দিতে হবে।</translation>
@@ -3990,7 +4000,6 @@
 <translation id="6365411474437319296">পরিবার এবং বন্ধুদের যোগ করুন</translation>
 <translation id="636850387210749493">এন্টারপ্রাইজ নথিভুক্তিকরণ</translation>
 <translation id="6370021412472292592">ম্যানিফেস্ট লোড করা যাবে না।</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{পাসওয়ার্ড পরিবর্তন করুন}one{পাসওয়ার্ড পরিবর্তন করুন}other{পাসওয়ার্ডগুলি পরিবর্তন করুন}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">আবার চেষ্টা করুন</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />'-এর জন্য ১টি ফলাফল</translation>
@@ -4016,11 +4025,12 @@
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, ও <ph name="WEBSITE_3" /> এ আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
 <translation id="6410257289063177456">ছবি ফাইল</translation>
 <translation id="6410328738210026208">চ্যানেল পরিবর্তন  করুন এবং পাওয়ারওয়াশ করুন</translation>
+<translation id="6410390304316730527">আক্রমণকারীরা হয়ত ক্ষতিকারক সফ্টওয়্যার ইনস্টল করা অথবা পাসওয়ার্ড, ফোন নম্বর বা ক্রেডিট কার্ডের মতো ব্য়ক্তিগত তথ্য প্রকাশ করার জন্য কৌশলে প্রতারণা করতে পারে। তার হাত থেকে Safe Browsing আপনাকে সুরক্ষিত রাখে। এটি বন্ধ করে রাখলে, অজানা বা পরিচিত নয় এমন সাইট ব্রাউজ করার সময়ে সতর্ক থাকুন।</translation>
 <translation id="6410668567036790476">সার্চ ইঞ্জিন যোগ করুন</translation>
 <translation id="641081527798843608">বিষয়ের মিল</translation>
 <translation id="6412673304250309937">Chrome-এ স্টোর করা নিরাপদ নয় এমন সাইটের তালিকা থেকে সাইটগুলির ইউআরএল পরীক্ষা করে দেখে। যদি কোনও সাইট আপনার পাসওয়ার্ড চুরি করার চেষ্টা করে বা আপনি কোনও ক্ষতিকারক ফাইল ডাউনলোড করলে, Safe Browsing-এ Chrome পৃষ্ঠার কিছু কন্টেন্ট সহ ইউআরএলও হয়ত পাঠাতে পারে।</translation>
 <translation id="6412931879992742813">নতুন ছদ্মবেশী উইন্ডো</translation>
-<translation id="6413591858632097328">এটি <ph name="ORIGIN_NAME" />-এর স্টোর করা সব ডেটা ও কুকি এবং এর ইনস্টল করা সমস্ত অ্যাপ মুছে দেবে।</translation>
+<translation id="6413591858632097328">এটি করলে, <ph name="ORIGIN_NAME" />-এর স্টোর করা সব ডেটা ও কুকি এবং এর ইনস্টল করা সমস্ত অ্যাপ মুছে যাবে।</translation>
 <translation id="641469293210305670">অ্যাপ ও আপডেটগুলি ইনস্টল করুন</translation>
 <translation id="6414888972213066896">এই পৃষ্ঠাটিতে যাওয়া ঠিক হবে কিনা সেই বিষয়ে আপনি আপনার অভিভাবকের অনুমতি নিন৷</translation>
 <translation id="6415900369006735853">আপনার ফোনের মাধ্যমে ইন্টারনেটে কানেক্ট করুন</translation>
@@ -5934,6 +5944,7 @@
 <translation id="8951256747718668828">কোনও সমস্যার জন্য ফিরিয়ে আনা যায়নি</translation>
 <translation id="8951465597020890363">তবে গেস্ট মোড থেকে বেরিয়ে আসবেন?</translation>
 <translation id="8952831374766033534">কনফিগারেশনের এই বিকল্প ব্যবহার করা যাবে না: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">চার্জ করার সময়</translation>
 <translation id="895347679606913382">শুরু হচ্ছে...</translation>
 <translation id="8957762313041272117">লাইভ ক্যাপশন</translation>
 <translation id="895944840846194039">জাভাস্ক্রিপ্ট মেমোরি</translation>

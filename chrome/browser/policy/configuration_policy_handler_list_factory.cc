@@ -1582,6 +1582,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<PrintingPinDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingSizeDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
+      key::kPrintingMaxSheetsAllowed, prefs::kPrintingMaxSheetsAllowed, 1,
+      INT_MAX, true));
+  handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kPrintJobHistoryExpirationPeriod,
       prefs::kPrintJobHistoryExpirationPeriod, -1, INT_MAX, true));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(

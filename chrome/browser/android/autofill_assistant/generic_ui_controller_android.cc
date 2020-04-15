@@ -309,7 +309,7 @@ base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
             ? base::android::ConvertUTF8ToJavaString(
                   env, proto.attributes().content_description())
             : nullptr,
-        proto.attributes().visible());
+        proto.attributes().visible(), proto.attributes().enabled());
   }
   if (proto.has_layout_params()) {
     Java_AssistantViewFactory_setViewLayoutParams(

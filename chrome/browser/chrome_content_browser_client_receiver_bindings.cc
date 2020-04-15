@@ -283,7 +283,7 @@ void ChromeContentBrowserClient::BindHostReceiverForRenderer(
     content::RenderProcessHost* render_process_host,
     mojo::GenericPendingReceiver receiver) {
   if (auto host_receiver =
-          receiver.As<chrome::mojom::ContentSettingsManager>()) {
+          receiver.As<content_settings::mojom::ContentSettingsManager>()) {
     chrome::ContentSettingsManagerImpl::Create(render_process_host,
                                                std::move(host_receiver));
     return;

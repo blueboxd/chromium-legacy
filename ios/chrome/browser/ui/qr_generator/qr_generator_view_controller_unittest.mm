@@ -20,6 +20,8 @@ class QRGeneratorViewControllerTest : public PlatformTest {
       : view_controller_([[QRGeneratorViewController alloc] init]) {}
 
  protected:
+  void SetUp() override { [view_controller_ loadViewIfNeeded]; }
+
   QRGeneratorViewController* view_controller_;
 
  private:

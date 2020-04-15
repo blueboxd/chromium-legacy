@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">Nakili kiungo</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Kichwa</translation>
+<translation id="4259722352634471385">Kudurusu kumezuiwa: <ph name="URL" /></translation>
 <translation id="4570913071927164677">Maelezo</translation>
 <translation id="4645575059429386691">Inadhibitiwa na wazazi wako</translation>
 <translation id="4883854917563148705">Huwezi kubadilisha mipangilio inayodhibitiwa</translation>
@@ -56,7 +57,7 @@
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 imechaguliwa}other{# vimechaguliwa}}</translation>
 <translation id="7087918508125750058">Imechagua <ph name="ITEM_COUNT" />. Chaguo zinapatikana karibu na sehemu ya juu ya skrini</translation>
 <translation id="7176368934862295254">KB <ph name="KILOBYTES" /></translation>
-<translation id="7250468141469952378">Imechagua <ph name="ITEM_COUNT" /></translation>
+<translation id="7250468141469952378">Umechagua <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">Usaidizi</translation>
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7781829728241885113">Jana</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">Futa uingizaji wa maandishi</translation>
 <translation id="8725066075913043281">Jaribu tena</translation>
 <translation id="8730621377337864115">Nimemaliza</translation>
+<translation id="8959122750345127698">Kudurusu hakufikiki: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Inadhibitiwa na wazazi wako</translation>
 </translationbundle>

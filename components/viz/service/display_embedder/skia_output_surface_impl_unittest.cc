@@ -21,14 +21,9 @@
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/service/service_utils.h"
-#include "gpu/vulkan/buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
-
-#if BUILDFLAG(ENABLE_VULKAN)
-#include "gpu/vulkan/tests/native_window.h"
-#endif
 
 namespace viz {
 namespace {
@@ -38,12 +33,10 @@ constexpr SkColor kOutputColor = SK_ColorRED;
 
 }  // namespace
 
-class SkiaOutputSurfaceImplTest : public testing::TestWithParam<bool> {
+class SkiaOutputSurfaceImplTest : public testing::Test {
  public:
   SkiaOutputSurfaceImplTest();
   ~SkiaOutputSurfaceImplTest() override;
-
-  bool CreateNativeWindow() const { return GetParam(); }
 
   GpuServiceImpl* GetGpuService() {
     return TestGpuServiceHolder::GetInstance()->gpu_service();
@@ -63,7 +56,6 @@ class SkiaOutputSurfaceImplTest : public testing::TestWithParam<bool> {
   void UnblockMainThread();
 
  protected:
-  gfx::AcceleratedWidget accelerated_widget_ = gfx::kNullAcceleratedWidget;
   gl::DisableNullDrawGLBindings enable_pixel_output_;
   std::unique_ptr<SkiaOutputSurface> output_surface_;
   cc::FakeOutputSurfaceClient output_surface_client_;
@@ -78,33 +70,14 @@ SkiaOutputSurfaceImplTest::SkiaOutputSurfaceImplTest()
 
 SkiaOutputSurfaceImplTest::~SkiaOutputSurfaceImplTest() {
   output_surface_.reset();
-  if (accelerated_widget_ != gfx::kNullAcceleratedWidget) {
-#if BUILDFLAG(ENABLE_VULKAN) && defined(USE_X11)
-    gpu::DestroyNativeWindow(accelerated_widget_);
-#else
-    // TODO(backer): Support other platforms.
-    NOTREACHED();
-#endif
-  }
 }
 
 void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
-  gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
-  if (CreateNativeWindow()) {
-#if BUILDFLAG(ENABLE_VULKAN) && defined(USE_X11)
-    accelerated_widget_ = gpu::CreateNativeWindow(kSurfaceRect);
-    surface_handle = accelerated_widget_;
-#else
-    // TODO(backer): Support other platforms.
-    NOTREACHED();
-#endif
-  }
-
   RendererSettings settings;
   settings.use_skia_renderer = true;
   output_surface_ = SkiaOutputSurfaceImpl::Create(
-      std::make_unique<SkiaOutputSurfaceDependencyImpl>(GetGpuService(),
-                                                        surface_handle),
+      std::make_unique<SkiaOutputSurfaceDependencyImpl>(
+          GetGpuService(), gpu::kNullSurfaceHandle),
       settings);
   output_surface_->BindToClient(&output_surface_client_);
 }
@@ -155,16 +128,7 @@ void SkiaOutputSurfaceImplTest::CopyRequestCallbackOnGpuThread(
   UnblockMainThread();
 }
 
-INSTANTIATE_TEST_SUITE_P(SkiaOutputSurfaceImplTest,
-                         SkiaOutputSurfaceImplTest,
-#if BUILDFLAG(ENABLE_VULKAN) && defined(USE_X11)
-                         ::testing::Values(false, true)
-#else
-                         ::testing::Values(false)
-#endif
-);
-
-TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
+TEST_F(SkiaOutputSurfaceImplTest, SubmitPaint) {
   output_surface_->Reshape(kSurfaceRect.size(), 1, gfx::ColorSpace(),
                            gfx::BufferFormat::RGBX_8888, /*use_stencil=*/false);
   constexpr gfx::Rect output_rect(0, 0, 10, 10);
@@ -206,7 +170,7 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
 
 // Draws two frames and calls Reshape() between the two frames changing the
 // color space. Verifies draw after color space change is successful.
-TEST_P(SkiaOutputSurfaceImplTest, SupportsColorSpaceChange) {
+TEST_F(SkiaOutputSurfaceImplTest, SupportsColorSpaceChange) {
   for (auto& color_space : {gfx::ColorSpace(), gfx::ColorSpace::CreateSRGB()}) {
     output_surface_->Reshape(kSurfaceRect.size(), 1, color_space,
                              gfx::BufferFormat::RGBX_8888,

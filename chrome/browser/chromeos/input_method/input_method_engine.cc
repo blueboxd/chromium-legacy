@@ -236,10 +236,10 @@ bool InputMethodEngine::SetSuggestion(int context_id,
     return false;
   }
 
-  IMESuggestionWindowHandlerInterface* sw_handler =
-      ui::IMEBridge::Get()->GetSuggestionWindowHandler();
-  if (sw_handler)
-    sw_handler->Show(text, confirmed_text, show_tab);
+  IMEAssistiveWindowHandlerInterface* aw_handler =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (aw_handler)
+    aw_handler->ShowSuggestion(text, confirmed_text, show_tab);
   return true;
 }
 
@@ -253,10 +253,10 @@ bool InputMethodEngine::DismissSuggestion(int context_id, std::string* error) {
     return false;
   }
 
-  IMESuggestionWindowHandlerInterface* sw_handler =
-      ui::IMEBridge::Get()->GetSuggestionWindowHandler();
-  if (sw_handler)
-    sw_handler->Hide();
+  IMEAssistiveWindowHandlerInterface* aw_handler =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (aw_handler)
+    aw_handler->HideSuggestion();
   return true;
 }
 
@@ -270,17 +270,17 @@ bool InputMethodEngine::AcceptSuggestion(int context_id, std::string* error) {
     return false;
   }
 
-  IMESuggestionWindowHandlerInterface* sw_handler =
-      ui::IMEBridge::Get()->GetSuggestionWindowHandler();
-  if (sw_handler) {
-    base::string16 suggestion_text = sw_handler->GetText();
+  IMEAssistiveWindowHandlerInterface* aw_handler =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (aw_handler) {
+    base::string16 suggestion_text = aw_handler->GetSuggestionText();
     if (suggestion_text.empty()) {
       *error = kSuggestionNotFound;
       return false;
     }
     CommitText(context_id_, (base::UTF16ToUTF8(suggestion_text)).c_str(),
                error);
-    sw_handler->Hide();
+    aw_handler->HideSuggestion();
   }
   return true;
 }

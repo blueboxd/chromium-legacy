@@ -240,7 +240,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q049, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q050, false)
 
 // If true, enable QUIC version T050.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t050, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t050_v2, true)
 
 // A testonly reloadable flag that will always default to false.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_testonly_default_false, false)
@@ -266,12 +266,6 @@ QUIC_FLAG(bool,
 // If true, use predictable grease settings identifiers and values.
 QUIC_FLAG(bool, FLAGS_quic_enable_http3_grease_randomness, true)
 
-// When the EACK connection option is sent by the client, an ack-eliciting frame
-// is bundled with ACKs sent after the PTO fires.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bundle_retransmittable_with_pto_ack,
-          true)
-
 // If true, enable QUIC version h3-25.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_enable_version_draft_25_v3,
@@ -293,16 +287,6 @@ QUIC_FLAG(
 // Please update the flag value in spdy when this flag is flipped.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_spdy_enable_granular_decompress_errors,
-          true)
-
-// If true, arm the 1st PTO with earliest in flight sent time.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_arm_pto_with_earliest_sent_time,
-          true)
-
-// If true, QUIC BBRv2 to avoid unnecessary PROBE_RTTs after quiescence.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr2_avoid_unnecessary_probe_rtt,
           true)
 
 // If true, use passed in ack_frame to calculate minimum size of the serialized
@@ -376,7 +360,7 @@ QUIC_FLAG(bool,
 // copy the bandwidth sampler states from BbrSender.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_copy_sampler_state_from_v1_to_v2,
-          false)
+          true)
 
 // If true, QUIC will enable connection options LRTT+BBQ2 by default.
 QUIC_FLAG(bool,
@@ -385,3 +369,19 @@ QUIC_FLAG(bool,
 
 // If true, server push will be allowed in QUIC versions using HTTP/3.
 QUIC_FLAG(bool, FLAGS_quic_enable_http3_server_push, false)
+
+// If true, disable QuicDispatcher workaround that replies to invalid QUIC
+// packets from the Android Conformance Test.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_remove_android_conformance_test_workaround,
+    false)
+
+// If true, lower the CWND gain in BBRv2 STARTUP to 2 when BBQ2 is in connection
+// options.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bbr2_lower_startup_cwnd_gain,
+          false)
+
+// The divisor that controls how often MAX_STREAMS frames are sent.
+QUIC_FLAG(int32_t, FLAGS_quic_max_streams_window_divisor, 2)

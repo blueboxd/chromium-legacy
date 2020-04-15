@@ -428,17 +428,11 @@ ServerCacheReplayer::Status PopulateCacheFromJSONFile(
     JSONReader::ValueWithError value_with_error =
         JSONReader().ReadAndReturnValueWithError(
             decompressed_json_text, JSONParserOptions::JSON_PARSE_RFC);
-    if (value_with_error.error_code !=
-        JSONReader::JsonParseError::JSON_NO_ERROR) {
+    if (!value_with_error.value) {
       return ServerCacheReplayer::Status{
           ServerCacheReplayer::StatusCode::kBadRead,
           base::StrCat({"Could not load cache from json file ",
                         "because: ", value_with_error.error_message})};
-    }
-    if (value_with_error.value == base::nullopt) {
-      return ServerCacheReplayer::Status{
-          ServerCacheReplayer::StatusCode::kBadRead,
-          "JSON Reader could not give any node object from json file"};
     }
     root_node = std::move(value_with_error.value.value());
   }

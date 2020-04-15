@@ -35,6 +35,7 @@ class VIEWS_EXPORT AXRootObjWrapper : public views::AXAuraObjWrapper,
       std::vector<views::AXAuraObjWrapper*>* out_children) override;
   void Serialize(ui::AXNodeData* out_node_data) override;
   int32_t GetUniqueId() const override;
+  std::string ToString() const override;
 
  private:
   // display::DisplayObserver:

@@ -6,6 +6,7 @@
 
 #include <lib/fit/function.h>
 #include <lib/sys/cpp/component_context.h>
+#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -18,6 +19,8 @@
 #include "fuchsia/base/legacymetrics_histogram_flattener.h"
 
 namespace cr_fuchsia {
+
+constexpr size_t LegacyMetricsClient::kMaxBatchSize;
 
 LegacyMetricsClient::LegacyMetricsClient() = default;
 
@@ -54,18 +57,23 @@ void LegacyMetricsClient::SetReportAdditionalMetricsCallback(
 void LegacyMetricsClient::ScheduleNextReport() {
   DVLOG(1) << "Scheduling next report in " << report_interval_.InSeconds()
            << "seconds.";
-  timer_.Start(FROM_HERE, report_interval_, this, &LegacyMetricsClient::Report);
+  timer_.Start(FROM_HERE, report_interval_, this,
+               &LegacyMetricsClient::StartReport);
 }
 
-void LegacyMetricsClient::Report() {
+void LegacyMetricsClient::StartReport() {
+  if (!report_additional_callback_) {
+    Report({});
+    return;
+  }
+  report_additional_callback_.Run(
+      base::BindOnce(&LegacyMetricsClient::Report, weak_factory_.GetWeakPtr()));
+}
+
+void LegacyMetricsClient::Report(
+    std::vector<fuchsia::legacymetrics::Event> events) {
   DCHECK(metrics_recorder_);
-  DVLOG(1) << __func__ << "called.";
-
-  std::vector<fuchsia::legacymetrics::Event> events;
-
-  // Add events from the additional metrics callback, if set.
-  if (report_additional_callback_)
-    report_additional_callback_.Run(&events);
+  DVLOG(1) << __func__ << " called.";
 
   // Include histograms.
   for (auto& histogram : GetLegacyMetricsDeltas()) {
@@ -88,10 +96,30 @@ void LegacyMetricsClient::Report() {
     return;
   }
 
-  metrics_recorder_->Record(std::move(events), [this]() {
-    VLOG(1) << "Report finished.";
+  DrainBuffer(std::move(events));
+}
+
+void LegacyMetricsClient::DrainBuffer(
+    std::vector<fuchsia::legacymetrics::Event> buffer) {
+  if (buffer.empty()) {
+    DVLOG(1) << "Buffer drained.";
     ScheduleNextReport();
-  });
+    return;
+  }
+
+  // Since ordering doesn't matter, we can efficiently drain |buffer| by
+  // repeatedly sending and truncating its tail.
+  const size_t batch_size = std::min(buffer.size(), kMaxBatchSize);
+  const size_t batch_start_idx = buffer.size() - batch_size;
+  std::vector<fuchsia::legacymetrics::Event> batch;
+  batch.resize(batch_size);
+  std::move(buffer.begin() + batch_start_idx, buffer.end(), batch.begin());
+  buffer.resize(buffer.size() - batch_size);
+
+  metrics_recorder_->Record(std::move(batch),
+                            [this, buffer = std::move(buffer)]() mutable {
+                              DrainBuffer(std::move(buffer));
+                            });
 }
 
 void LegacyMetricsClient::OnMetricsRecorderDisconnected(zx_status_t status) {

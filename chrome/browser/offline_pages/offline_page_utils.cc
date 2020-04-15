@@ -327,7 +327,7 @@ void OfflinePageUtils::ScheduleDownload(content::WebContents* web_contents,
 bool OfflinePageUtils::CanDownloadAsOfflinePage(
     const GURL& url,
     const std::string& contents_mime_type) {
-  return url.SchemeIsHTTPOrHTTPS() &&
+  return OfflinePageModel::CanSaveURL(url) &&
          (net::MatchesMimeType(contents_mime_type, "text/html") ||
           net::MatchesMimeType(contents_mime_type, "application/xhtml+xml"));
 }

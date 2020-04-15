@@ -30,8 +30,8 @@ import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.Pe
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.favicon.IconType;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
 import org.chromium.ui.modelutil.PropertyModel;
 
 class RevampedContextMenuHeaderMediator implements View.OnClickListener {
@@ -80,8 +80,7 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
             boolean isColorDefault, @IconType int iconType) {
         // If we didn't get a favicon, generate a monogram instead
         if (icon == null) {
-            final FaviconFallbackGenerator iconGenerator =
-                    createFaviconFallbackGenerator(fallbackColor);
+            final RoundedIconGenerator iconGenerator = createRoundedIconGenerator(fallbackColor);
             icon = iconGenerator.generateIconForUrl(mPlainUrl);
             // generateIconForUrl might return null if the URL is empty or the domain cannot be
             // resolved. See https://crbug.com/987101
@@ -183,7 +182,7 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
         mModel.set(RevampedContextMenuHeaderProperties.IMAGE, bitmap);
     }
 
-    private FaviconFallbackGenerator createFaviconFallbackGenerator(@ColorInt int iconColor) {
+    private RoundedIconGenerator createRoundedIconGenerator(@ColorInt int iconColor) {
         final Resources resources = mContext.getResources();
         final int iconSize =
                 resources.getDimensionPixelSize(R.dimen.revamped_context_menu_header_monogram_size);
@@ -191,6 +190,6 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
         final int textSize = resources.getDimensionPixelSize(
                 R.dimen.revamped_context_menu_header_monogram_text_size);
 
-        return new FaviconFallbackGenerator(iconSize, iconSize, cornerRadius, iconColor, textSize);
+        return new RoundedIconGenerator(iconSize, iconSize, cornerRadius, iconColor, textSize);
     }
 }

@@ -110,10 +110,6 @@ TEST(BluetoothDeviceTest, CanonicalizeAddressFormat_RejectsInvalidFormats) {
 
 #if defined(OS_WIN)
 TEST_P(BluetoothTestWinrtOnly, DeviceIsPaired) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
@@ -132,10 +128,6 @@ TEST_P(BluetoothTestWinrtOnly, DeviceIsPaired) {
 
 // Tests that providing a correct pin code results in a paired device.
 TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeCorrect) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
@@ -163,10 +155,6 @@ TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeCorrect) {
 
 // Tests that providing a wrong pin code does not result in a paired device.
 TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeWrong) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
@@ -195,10 +183,6 @@ TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeWrong) {
 
 // Tests that rejecting the pairing does not result in a paired device.
 TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeRejectPairing) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
@@ -227,10 +211,6 @@ TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeRejectPairing) {
 
 // Tests that cancelling the pairing does not result in a paired device.
 TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeCancelPairing) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
@@ -264,10 +244,6 @@ TEST_P(BluetoothTestWinrt, LowEnergyDeviceProperties) {
 #else
 TEST_F(BluetoothTest, LowEnergyDeviceProperties) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
@@ -296,10 +272,6 @@ TEST_P(BluetoothTestWinrt, LowEnergyDeviceNameDelayed) {
 // This test does not yet pass on any other platform.
 TEST_F(BluetoothTest, DISABLED_LowEnergyDeviceNameDelayed) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -318,10 +290,6 @@ TEST_P(BluetoothTestWinrt, LowEnergyDeviceNoUUIDs) {
 #else
 TEST_F(BluetoothTest, LowEnergyDeviceNoUUIDs) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -343,10 +311,6 @@ TEST_P(BluetoothTestWinrtOnly, GetServiceDataUUIDs_GetServiceDataForUUID) {
 #else
 TEST_F(BluetoothTest, MAYBE_GetServiceDataUUIDs_GetServiceDataForUUID) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
 
 #if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -456,10 +420,6 @@ TEST_P(BluetoothTestWinrtOnly, AdvertisementData_Discovery) {
 #else
 TEST_F(BluetoothTest, MAYBE_AdvertisementData_Discovery) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   TestBluetoothAdapterObserver observer(adapter_);
 
@@ -588,11 +548,6 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_Discovery) {
 // TODO(dougt) As I turn on new platforms for WebBluetooth Scanning,
 // I will relax this #ifdef
 TEST_F(BluetoothTest, DeviceAdvertisementReceived) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
-
   InitWithFakeAdapter();
   TestBluetoothAdapterObserver observer(adapter_);
 
@@ -633,11 +588,6 @@ TEST_P(BluetoothTestWinrtOnly, GetUUIDs_Connection) {
 #else
 TEST_F(BluetoothTest, MAYBE_GetUUIDs_Connection) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
-
   InitWithFakeAdapter();
   TestBluetoothAdapterObserver observer(adapter_);
 
@@ -720,11 +670,6 @@ TEST_F(BluetoothTest, MAYBE_GetUUIDs_Connection) {
 // Android: This test doesn't apply to Android because there is no services
 // changed event that could arrive during a discovery procedure.
 TEST_F(BluetoothTest, TwoPendingServiceDiscoveryRequests) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
-
   InitWithFakeAdapter();
   TestBluetoothAdapterObserver observer(adapter_);
 
@@ -768,11 +713,6 @@ TEST_F(BluetoothTest, TwoPendingServiceDiscoveryRequests) {
 // peripheral:didDiscoverServices:]. This should not happen, but if it does
 // (buggy device?), a discovery cycle should be done.
 TEST_F(BluetoothTest, ExtraDidDiscoverServicesCall) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
-
   InitWithFakeAdapter();
   TestBluetoothAdapterObserver observer(adapter_);
 
@@ -823,11 +763,6 @@ TEST_P(BluetoothTestWinrtOnly, AdvertisementData_DiscoveryDuringConnection) {
 #else
 TEST_F(BluetoothTest, MAYBE_AdvertisementData_DiscoveryDuringConnection) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
-
   InitWithFakeAdapter();
   TestBluetoothAdapterObserver observer(adapter_);
 
@@ -965,11 +900,6 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_ConnectionDuringDiscovery) {
 #endif
   // Tests that the Advertisement Data is correctly updated when
   // the device connects during discovery.
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
-
   InitWithFakeAdapter();
   TestBluetoothAdapterObserver observer(adapter_);
 
@@ -1123,10 +1053,6 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_ConnectionDuringDiscovery) {
 #endif
 // GetName for Device with no name.
 TEST_F(BluetoothTest, MAYBE_GetName_NullName) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
 
 // StartLowEnergyDiscoverySession is not yet implemented on ChromeOS|bluez,
@@ -1162,10 +1088,6 @@ TEST_P(BluetoothTestWinrtOnly, CreateGattConnection) {
 #else
 TEST_F(BluetoothTest, MAYBE_CreateGattConnection) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1190,10 +1112,6 @@ TEST_P(BluetoothTestWinrtOnly, DisconnectionNotifiesDeviceChanged) {
 #else
 TEST_F(BluetoothTest, MAYBE_DisconnectionNotifiesDeviceChanged) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   TestBluetoothAdapterObserver observer(adapter_);
   StartLowEnergyDiscoverySession();
@@ -1223,10 +1141,6 @@ TEST_P(BluetoothTestWinrtOnly, BluetoothGattConnection) {
 #else
 TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1284,10 +1198,6 @@ TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection) {
 // Calls CreateGattConnection then simulates multiple connections from platform.
 TEST_F(BluetoothTest,
        MAYBE_BluetoothGattConnection_ConnectWithMultipleOSConnections) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   TestBluetoothAdapterObserver observer(adapter_);
   StartLowEnergyDiscoverySession();
@@ -1328,10 +1238,6 @@ TEST_P(BluetoothTestWinrtOnly, BluetoothGattConnection_AlreadyConnected) {
 #else
 TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_AlreadyConnected) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1362,10 +1268,6 @@ TEST_P(BluetoothTestWinrtOnly,
 TEST_F(BluetoothTest,
        MAYBE_BluetoothGattConnection_NewConnectionLeavesPreviousDisconnected) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1402,10 +1304,6 @@ TEST_P(BluetoothTestWinrtOnly,
 TEST_F(BluetoothTest,
        MAYBE_BluetoothGattConnection_DisconnectWhenObjectsDestroyed) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1438,10 +1336,6 @@ TEST_P(BluetoothTestWinrtOnly, BluetoothGattConnection_DisconnectInProgress) {
 #else
 TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_DisconnectInProgress) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1489,10 +1383,6 @@ TEST_P(BluetoothTestWinrtOnly, BluetoothGattConnection_SimulateDisconnect) {
 #else
 TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_SimulateDisconnect) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1525,10 +1415,6 @@ TEST_P(BluetoothTestWinrtOnly,
 TEST_F(BluetoothTest,
        MAYBE_BluetoothGattConnection_DisconnectGatt_SimulateConnect) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1572,10 +1458,6 @@ TEST_P(BluetoothTestWinrtOnly,
 TEST_F(BluetoothTest,
        MAYBE_BluetoothGattConnection_DisconnectGatt_SimulateDisconnect) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1618,10 +1500,6 @@ TEST_P(BluetoothTestWinrtOnly, BluetoothGattConnection_DisconnectGatt_Cleanup) {
 #else
 TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_DisconnectGatt_Cleanup) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1677,10 +1555,6 @@ TEST_P(BluetoothTestWinrtOnly, BluetoothGattConnection_ErrorAfterConnection) {
 #else
 TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_ErrorAfterConnection) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1719,10 +1593,6 @@ TEST_P(BluetoothTestWinrtOnly, GattServices_ObserversCalls) {
 #else
 TEST_F(BluetoothTest, MAYBE_GattServices_ObserversCalls) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1750,10 +1620,6 @@ TEST_P(BluetoothTestWinrtOnly, GattServicesDiscovered_Success) {
 #else
 TEST_F(BluetoothTest, MAYBE_GattServicesDiscovered_Success) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   TestBluetoothAdapterObserver observer(adapter_);
@@ -1786,10 +1652,6 @@ TEST_F(BluetoothTest, MAYBE_GattServicesDiscovered_Success) {
 TEST_F(BluetoothTest, MAYBE_GattServicesDiscovered_AfterDeleted) {
   // Tests that we don't crash if services are discovered after
   // the device object is deleted.
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1818,10 +1680,6 @@ TEST_F(BluetoothTest, MAYBE_GattServicesDiscovered_AfterDeleted) {
 TEST_F(BluetoothTest, MAYBE_GattServicesDiscoveredError_AfterDeleted) {
   // Tests that we don't crash if there was an error discoverying services
   // after the device object is deleted.
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1851,10 +1709,6 @@ TEST_F(BluetoothTest, MAYBE_GattServicesDiscovered_AfterDisconnection) {
 #endif
   // Tests that we don't crash if there was an error discovering services after
   // the device disconnects.
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1889,10 +1743,6 @@ TEST_F(BluetoothTest, MAYBE_GattServicesDiscoveredError_AfterDisconnection) {
 #endif
   // Tests that we don't crash if services are discovered after
   // the device disconnects.
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1921,10 +1771,6 @@ TEST_P(BluetoothTestWinrt, GetGattServices_and_GetGattService) {
 #else
 TEST_F(BluetoothTest, MAYBE_GetGattServices_and_GetGattService) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1959,10 +1805,6 @@ TEST_P(BluetoothTestWinrtOnly, GetGattServices_FindNone) {
 #else
 TEST_F(BluetoothTest, MAYBE_GetGattServices_FindNone) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -1987,10 +1829,6 @@ TEST_P(BluetoothTestWinrtOnly, GetGattServices_DiscoveryError) {
 #else
 TEST_F(BluetoothTest, MAYBE_GetGattServices_DiscoveryError) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -2005,10 +1843,6 @@ TEST_F(BluetoothTest, MAYBE_GetGattServices_DiscoveryError) {
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 TEST_F(BluetoothTest, GetDeviceTransportType) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
   EXPECT_EQ(BLUETOOTH_TRANSPORT_LE, device->GetType());
@@ -2033,11 +1867,6 @@ TEST_P(BluetoothTestWinrt, GetPrimaryServices) {
 #else
 TEST_F(BluetoothTest, MAYBE_GetPrimaryServices) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
-
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -2067,11 +1896,6 @@ TEST_P(BluetoothTestWinrt, GetPrimaryServicesByUUID) {
 #else
 TEST_F(BluetoothTest, MAYBE_GetPrimaryServicesByUUID) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
-
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -2120,10 +1944,6 @@ TEST_P(BluetoothTestWinrtOnly, GattConnectedNameChange) {
 // platforms.
 TEST_F(BluetoothTest, DISABLED_GattConnectedNameChange) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
 
   StartLowEnergyDiscoverySession();
@@ -2144,10 +1964,6 @@ TEST_F(BluetoothTest, DISABLED_GattConnectedNameChange) {
 // WinRT sometimes calls OnConnectionStatusChanged when the status is
 // initialized and not when changed.
 TEST_P(BluetoothTestWinrtOnly, FalseStatusChangedTest) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -2171,10 +1987,6 @@ TEST_F(BluetoothTest, MAYBE_ServiceSpecificDiscovery) {
 #else
 TEST_P(BluetoothTestWinrtOnly, ServiceSpecificDiscovery) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(1);

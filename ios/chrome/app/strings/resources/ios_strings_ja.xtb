@@ -3,6 +3,7 @@
 <translationbundle lang="ja">
 <translation id="1005230401424685968">YYYY</translation>
 <translation id="1016495303386450659">更新済みのアイテム</translation>
+<translation id="1044891598689252897">サイトは通常どおり動作します</translation>
 <translation id="1047726139967079566">ブックマークに追加...</translation>
 <translation id="1049743911850919806">シークレット モード</translation>
 <translation id="1063454504051558093">他のパスワードを使用...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" />個のアイテム</translation>
 <translation id="1491277525950327607">設定を切り替えるにはダブルタップします</translation>
 <translation id="1509486075633541495">ウェブサイトにログイン</translation>
+<translation id="1509960214886564027">多くサイトで機能を使用できなくなる可能性があります</translation>
 <translation id="152234381334907219">常に保存しない</translation>
 <translation id="1540800554400757039">住所1行目</translation>
 <translation id="1545749641540134597">QR コードをスキャンします</translation>
@@ -528,6 +530,7 @@
 <translation id="7961015016161918242">使用しない</translation>
 <translation id="7971521879845308059">ポップアップのブロック</translation>
 <translation id="7982789257301363584">ネットワーク</translation>
+<translation id="7993619969781047893">一部のサイトで機能を使用できなくなる可能性があります</translation>
 <translation id="800361585186029508">入力された URL を Google Chrome で開きます。</translation>
 <translation id="8007420562015504427">シークレット検索</translation>
 <translation id="8019783059653722575">写真を保存してアップロードできます。</translation>

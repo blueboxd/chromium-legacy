@@ -83,7 +83,7 @@ class CookieStoreIOS : public net::CookieStore,
 
   // Implementation of the net::CookieStore interface.
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
-                               std::string source_scheme,
+                               const GURL& source_url,
                                const net::CookieOptions& options,
                                SetCookiesCallback callback) override;
   void GetCookieListWithOptionsAsync(const GURL& url,

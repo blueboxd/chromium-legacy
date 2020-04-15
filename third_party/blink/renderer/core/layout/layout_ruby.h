@@ -77,7 +77,7 @@ class LayoutRubyAsInline final : public LayoutInline {
 };
 
 // <ruby> when used as 'display:block' or 'display:inline-block'
-class LayoutRubyAsBlock final : public LayoutBlockFlow {
+class LayoutRubyAsBlock : public LayoutBlockFlow {
  public:
   LayoutRubyAsBlock(Element*);
   ~LayoutRubyAsBlock() override;
@@ -90,11 +90,11 @@ class LayoutRubyAsBlock final : public LayoutBlockFlow {
 
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
-
- private:
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectRuby || LayoutBlockFlow::IsOfType(type);
   }
+
+ private:
   bool CreatesAnonymousWrapper() const override { return true; }
   void RemoveLeftoverAnonymousBlock(LayoutBlock*) override { NOTREACHED(); }
 };

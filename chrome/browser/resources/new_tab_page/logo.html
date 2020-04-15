@@ -1,7 +1,8 @@
 <style include="cr-hidden-style">
   :host {
+    --ntp-logo-height: 230px;
     display: inline-block;
-    min-height: 230px;
+    min-height: var(--ntp-logo-height);
   }
 
   #singleColoredLogo,
@@ -25,10 +26,10 @@
   #imageContainer {
     cursor: pointer;
     display: grid;
-    height: 230px;
+    height: fit-content;
     outline: none;
     position: relative;
-    width: 500px;
+    width: fit-content;
   }
 
   :host-context(.focus-outline-visible) #imageContainer:focus {
@@ -41,7 +42,7 @@
   }
 
   #image {
-    max-height: 100%;
+    max-height: var(--ntp-logo-height);
     max-width: 100%;
   }
 
@@ -67,11 +68,10 @@
   }
 
   #iframe {
-    height: var(--height, 200px);
-    margin-bottom: 30px;
+    height: var(--height);
     transition-duration: var(--duration, 100ms);
     transition-property: height, width;
-    width: var(--width, 500px);
+    width: var(--width);
   }
 </style>
 <iron-pages selected="[[mode_]]" attr-for-selected="id">

@@ -37,8 +37,10 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
 
   // Reserve the capacity for (children + line box item).
   const wtf_size_t size_before = items_.size();
-  const wtf_size_t capacity = size_before + current_line_.size() + 1;
-  items_.ReserveCapacity(capacity);
+  const wtf_size_t estimated_size = size_before + current_line_.size() + 1;
+  const wtf_size_t old_capacity = items_.capacity();
+  if (estimated_size > old_capacity)
+    items_.ReserveCapacity(std::max(estimated_size, old_capacity * 2));
 
   // Add an empty item so that the start of the line can be set later.
   const wtf_size_t line_start_index = items_.size();
@@ -60,7 +62,7 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
   current_line_fragment_ = nullptr;
 #endif
 
-  DCHECK_LE(items_.size(), capacity);
+  DCHECK_LE(items_.size(), estimated_size);
 }
 
 void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {

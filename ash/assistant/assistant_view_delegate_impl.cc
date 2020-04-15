@@ -4,17 +4,14 @@
 
 #include "ash/assistant/assistant_view_delegate_impl.h"
 
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
-#include "ash/assistant/assistant_suggestions_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
-#include "ash/assistant/model/assistant_suggestions_model.h"
-#include "ash/assistant/model/assistant_suggestions_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/assistant/assistant_state_base.h"
@@ -24,7 +21,7 @@
 namespace ash {
 
 AssistantViewDelegateImpl::AssistantViewDelegateImpl(
-    AssistantController* assistant_controller)
+    AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {}
 
 AssistantViewDelegateImpl::~AssistantViewDelegateImpl() = default;
@@ -42,11 +39,6 @@ AssistantViewDelegateImpl::GetInteractionModel() const {
 const AssistantNotificationModel*
 AssistantViewDelegateImpl::GetNotificationModel() const {
   return assistant_controller_->notification_controller()->model();
-}
-
-const AssistantSuggestionsModel*
-AssistantViewDelegateImpl::GetSuggestionsModel() const {
-  return assistant_controller_->suggestions_controller()->model();
 }
 
 const AssistantUiModel* AssistantViewDelegateImpl::GetUiModel() const {
@@ -93,17 +85,6 @@ void AssistantViewDelegateImpl::AddNotificationModelObserver(
 void AssistantViewDelegateImpl::RemoveNotificationModelObserver(
     AssistantNotificationModelObserver* observer) {
   assistant_controller_->notification_controller()->RemoveModelObserver(
-      observer);
-}
-
-void AssistantViewDelegateImpl::AddSuggestionsModelObserver(
-    AssistantSuggestionsModelObserver* observer) {
-  assistant_controller_->suggestions_controller()->AddModelObserver(observer);
-}
-
-void AssistantViewDelegateImpl::RemoveSuggestionsModelObserver(
-    AssistantSuggestionsModelObserver* observer) {
-  assistant_controller_->suggestions_controller()->RemoveModelObserver(
       observer);
 }
 

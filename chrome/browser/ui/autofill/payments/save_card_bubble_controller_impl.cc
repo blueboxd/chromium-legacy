@@ -612,6 +612,11 @@ SaveCardBubbleView* SaveCardBubbleControllerImpl::GetSaveBubbleView() const {
 
 void SaveCardBubbleControllerImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableStickyPaymentsBubble)) {
+    return;
+  }
+
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
     return;
 

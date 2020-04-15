@@ -627,17 +627,6 @@ public class MediaNotificationManager {
     }
 
     /**
-     * Hides notifications with all known ids for all tabs if shown.
-     */
-    public static void clearAll() {
-        for (int i = 0; i < sManagers.size(); ++i) {
-            MediaNotificationManager manager = sManagers.valueAt(i);
-            manager.clearNotification();
-        }
-        sManagers.clear();
-    }
-
-    /**
      * Activates the Android MediaSession. This method is used to activate Android MediaSession more
      * often because some old version of Android might send events to the latest active session
      * based on when setActive(true) was called and regardless of the current playback state.

@@ -78,19 +78,42 @@ unsigned History::length(ExceptionState& exception_state) const {
   return GetFrame()->Client()->BackForwardLength();
 }
 
-ScriptValue History::state(v8::Isolate* isolate,
+ScriptValue History::state(ScriptState* script_state,
                            ExceptionState& exception_state) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  static const V8PrivateProperty::SymbolKey kHistoryStatePrivateProperty;
+  auto private_prop =
+      V8PrivateProperty::GetSymbol(isolate, kHistoryStatePrivateProperty);
+  v8::Local<v8::Object> v8_history = ToV8(this, script_state).As<v8::Object>();
+  v8::Local<v8::Value> v8_state;
+
+  // Returns the same V8 value unless the history gets updated.  This
+  // implementation is mostly the same as the one of [CachedAttribute], but
+  // it's placed in this function rather than in Blink-V8 bindings layer so
+  // that PopStateEvent.state can also access the same V8 value.
+  scoped_refptr<SerializedScriptValue> current_state = StateInternal();
+  if (last_state_object_requested_ == current_state) {
+    if (!private_prop.GetOrUndefined(v8_history).ToLocal(&v8_state))
+      return ScriptValue::CreateNull(isolate);
+    if (!v8_state->IsUndefined())
+      return ScriptValue(isolate, v8_state);
+  }
+
   if (!GetFrame()) {
     exception_state.ThrowSecurityError(
-        "May not use a History object associated with a Document that is not "
-        "fully active");
-    return ScriptValue::CreateNull(isolate);
+        "May not use a History object associated with a Document that is "
+        "not fully active");
+    v8_state = v8::Null(isolate);
+  } else if (!current_state) {
+    v8_state = v8::Null(isolate);
+  } else {
+    ScriptState::EscapableScope target_context_scope(script_state);
+    v8_state = target_context_scope.Escape(current_state->Deserialize(isolate));
   }
-  last_state_object_requested_ = StateInternal();
-  if (!last_state_object_requested_)
-    return ScriptValue::CreateNull(isolate);
-  return ScriptValue(isolate,
-                     last_state_object_requested_->Deserialize(isolate));
+
+  last_state_object_requested_ = current_state;
+  private_prop.Set(v8_history, v8_state);
+  return ScriptValue(isolate, v8_state);
 }
 
 SerializedScriptValue* History::StateInternal() const {
@@ -154,10 +177,6 @@ HistoryScrollRestorationType History::ScrollRestorationInternal() const {
     return default_type;
 
   return history_item->ScrollRestorationType();
-}
-
-bool History::stateChanged() const {
-  return last_state_object_requested_ != StateInternal();
 }
 
 bool History::IsSameAsCurrentState(SerializedScriptValue* state) const {

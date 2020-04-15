@@ -33,7 +33,7 @@ class Arguments;
 }
 
 namespace content {
-class WebTestDelegate;
+class BlinkTestRunner;
 class WebWidgetTestProxy;
 class WebViewTestProxy;
 
@@ -224,7 +224,7 @@ class TestRunnerForSpecificView {
   // Helpers for accessing pointers exposed by |web_view_test_proxy_|.
   WebWidgetTestProxy* main_frame_render_widget();
   blink::WebView* web_view();
-  WebTestDelegate* delegate();
+  BlinkTestRunner* blink_test_runner();
 
   WebViewTestProxy* web_view_test_proxy_;
 

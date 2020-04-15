@@ -475,7 +475,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // network error logging below, a data removal request for certain
   // sites/origins that has the Trust Tokens type in scope will clear all Trust
   // Tokens data associated with the requested sites/origins.
-  if (remove_mask & DATA_TYPE_COOKIES) {
+  if (remove_mask & DATA_TYPE_TRUST_TOKENS) {
     network::mojom::NetworkContext* network_context =
         storage_partition->GetNetworkContext();
     network_context->ClearTrustTokenData(

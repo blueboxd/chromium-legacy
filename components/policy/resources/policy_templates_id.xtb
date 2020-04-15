@@ -285,12 +285,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 <translation id="1427655258943162134">Alamat atau URL server proxy</translation>
 <translation id="1435659902881071157">Konfigurasi jaringan tingkat perangkat</translation>
 <translation id="1438739959477268107">Setelan pembuatan kunci default</translation>
-<translation id="1455804070656338445">Mengonfigurasi URL ubah sandi (khusus skema HTTP dan HTTPS). Layanan perlindungan sandi akan mengarahkan pengguna ke URL ini untuk mengubah sandinya setelah melihat peringatan di browser.
-      Agar <ph name="PRODUCT_NAME" /> dapat mengambil sidik jari sandi baru di halaman ubah sandi dengan benar, harap pastikan halaman ubah sandi Anda mengikuti pedoman di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Jika setelan ini diaktifkan, layanan perlindungan sandi akan mengarahkan pengguna ke URL ini untuk mengubah sandinya setelah melihat peringatan di browser.
-      Jika setelan ini dinonaktifkan atau tidak disetel, layanan perlindungan sandi akan mengarahkan pengguna ke https://myaccount.google.com untuk mengubah sandinya.
-      Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="1456822151187621582">Windows (klien <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1464848559468748897">Mengontrol perilaku pengguna di sesi multi profil di perangkat <ph name="PRODUCT_OS_NAME" />.
 
@@ -348,6 +342,7 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
           Jika kebijakan "EnableMediaRouter" disetel ke false, nilai kebijakan ini tidak akan berpengaruh.</translation>
 <translation id="1509692106376861764">Kebijakan ini tidak lagi digunakan mulai <ph name="PRODUCT_NAME" /> versi 29.</translation>
 <translation id="1514888685242892912">Aktifkan <ph name="PRODUCT_NAME" /></translation>
+<translation id="1515230621229117540">Mengaktifkan menu aksesibilitas mengambang</translation>
 <translation id="1515824657887788963">Mengizinkan halaman untuk melakukan permintaan XHR sinkron saat menutup halaman.</translation>
 <translation id="1522425503138261032">Izinkan situs melacak lokasi fisik pengguna</translation>
 <translation id="1523774894176285446">Browser alternatif untuk membuka situs yang dikonfigurasi.</translation>
@@ -586,12 +581,6 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
       Jika disetel ke false, pelaporan metrik dan data diagnostik akan dinonaktifkan.
 
       Jika tidak dikonfigurasi, pelaporan metrik dan data diagnostik akan dinonaktifkan di perangkat yang tidak dikelola dan diaktifkan di perangkat yang dikelola.</translation>
-<translation id="1907431809333268751">Mengonfigurasi daftar URL login perusahaan (khusus skema HTTP dan HTTPS). Sidik jari sandi akan diambil di URL tersebut dan digunakan untuk mendeteksi penggunaan ulang sandi.
-      Agar <ph name="PRODUCT_NAME" /> dapat mengambil sidik jari sandi dengan benar, pastikan halaman login Anda mengikuti pedoman di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Jika setelan ini diaktifkan, layanan perlindungan sandi akan mengambil sidik jari sandi di URL tersebut untuk tujuan deteksi penggunaan ulang sandi.
-      Jika setelan ini dinonaktifkan atau tidak disetel, layanan perlindungan sandi hanya akan mengambil sidik jari sandi di https://accounts.google.com.
-      Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="1910704279188129272">Memungkinkan untuk menetapkan pembatasan penggunaan per aplikasi.
         Pembatasan penggunaan dapat diterapkan ke aplikasi yang diinstal di <ph name="PRODUCT_OS_NAME" /> untuk pengguna tertentu.
         Pembatasan harus dimasukkan dalam daftar |app_limits|. Hanya diperbolehkan satu entri per aplikasi. Aplikasi yang tidak dimasukkan dalam daftar ini tidak dikenakan pembatasan.
@@ -3295,6 +3284,17 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Jika tidak ada setelan yang diberikan, <ph name="PRODUCT_NAME" /> akan kembali menggunakan nama pustaka default.</translation>
 <translation id="5783009211970309878">Cetak Header dan Footer</translation>
+<translation id="5783576706065107606">Mengaktifkan mitigasi pemeriksaan <ph name="CORS" /> dalam implementasi <ph name="CORS" /> baru, sehingga memungkinkan Ekstensi tetap kompatibel dan mengizinkan <ph name="PRODUCT_NAME" /> mengirim header tertentu tanpa pemeriksaan <ph name="CORS" />.
+
+      Jika daftar ini dibiarkan kosong, <ph name="PRODUCT_NAME" /> akan mencoba menjalankan Ekstensi secara kompatibel, dan tidak menerapkan perubahan <ph name="API" /> untuk <ph name="PRODUCT_NAME" /> versi 79 seperti yang dijelaskan dalam <ph name="WEB_REQUEST_API_MANUAL" />.
+
+      Jika daftar ini ditetapkan untuk memiliki nama header permintaan <ph name="HTTP" />, pemeriksaan <ph name="CORS" /> akan mengabaikan header yang tercantum dan mengaktifkan mitigasi untuk Ekstensi.
+
+      Jika daftar ini tidak ditetapkan, kedua mitigasi yang dijelaskan di atas tidak akan diterapkan.
+
+      Untuk mengetahui detail <ph name="CORS" />, buka: <ph name="CORS_HELP_URL" />.
+
+      Perlu diketahui bahwa kebijakan ini diumumkan akan dihapus di <ph name="PRODUCT_NAME" /> versi 82, tetapi rencananya berubah dan akan dihapus di versi 84.</translation>
 <translation id="5790763087505467169">Mengurangi Notifikasi otomatis untuk sesi tamu terkelola</translation>
 <translation id="5806128552675651249">Izinkan pencetakan hanya tanpa grafis latar belakang</translation>
 <translation id="5809210507920527553">Mengontrol setelan untuk container Linux (Crostini).</translation>
@@ -3358,6 +3358,17 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
           Jika setelan ini dinonaktifkan atau tidak disetel, maka nama domain TalkGadget default ('chromoting-host.talkgadget.google.com') akan digunakan untuk semua hosting.
 
           Klien akses jarak jauh tidak dipengaruhi oleh setelan kebijakan ini. Klien akses jarak jauh akan selalu menggunakan 'chromoting-client.talkgadget.google.com' untuk mengakses TalkGadget.</translation>
+<translation id="5888171512889380367">Menggunakan implementasi <ph name="CORS" /> lama, bukan <ph name="CORS" /> baru.
+
+      Jika setelan ini ditetapkan ke Benar, implementasi lama akan digunakan, yang seharusnya kompatibel dengan versi sebelumnya.
+
+      Jika setelan ini ditetapkan ke Salah atau tidak ditetapkan, implementasi baru akan digunakan, yang dapat menyebabkan potensi masalah kompatibilitas khusus perusahaan.
+
+      Kebijakan ini akan dihapus setelah beberapa versi.
+
+      Untuk mengetahui detail <ph name="CORS" />, buka: <ph name="CORS_HELP_URL" />.
+
+      Perlu diketahui bahwa kebijakan ini diumumkan akan dihapus di <ph name="PRODUCT_NAME" /> versi 82, tetapi rencananya berubah dan akan dihapus di versi 84.</translation>
 <translation id="5893553533827140852">Jika setelan ini diaktifkan, permintaan autentikasi gnubby akan dilakukan melalui proxy lewat sambungan hosting jarak jauh.
 
           Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, permintaan autentikasi gnubby tidak akan dilakukan melalui proxy.</translation>
@@ -3622,6 +3633,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="6417265370957905582">Asisten Google</translation>
+<translation id="6422575351619065453">Dalam mode kios, kebijakan akan mengontrol apakah menu aksesibilitas mengambang akan ditampilkan.
+
+      Jika kebijakan ini ditetapkan ke aktif, menu aksesibilitas mengambang akan selalu ditampilkan.
+
+      Jika kebijakan ini ditetapkan ke nonaktif atau tidak ditetapkan, menu aksesibilitas mengambang tidak akan ditampilkan.</translation>
 <translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">Anda tidak dapat memaksa aplikasi Android untuk menggunakan proxy. Bagian setelan proxy disediakan untuk aplikasi Android, yang dapat dipilih untuk dipatuhi secara sukarela:
 
@@ -3933,13 +3949,6 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       Jika 'U2F_EXTENDED' dipilih, faktor kedua yang diintegrasikan akan memberikan fungsi U2F, ditambah beberapa ekstensi untuk masing-masing pengesahan.</translation>
 <translation id="7003334574344702284">Kebijakan ini memaksa sandi tersimpan untuk diimpor dari browser default sebelumnya, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, sandi yang disimpan tidak diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="7003746348783715221">Preferensi <ph name="PRODUCT_NAME" /></translation>
-<translation id="7007671350884342624">Mengonfigurasi direktori yang akan digunakan oleh <ph name="PRODUCT_NAME" /> untuk menyimpan data pengguna.
-
-      Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang diberikan, terlepas apakah pengguna sudah menentukan tanda '--user-data-dir' atau belum. Untuk menghindari kehilangan data atau kesalahan tak terduga lain, kebijakan ini sebaiknya tidak disetel ke direktori akar volume atau ke direktori yang digunakan untuk tujuan lain, karena <ph name="PRODUCT_NAME" /> mengelola kontennya.
-
-      Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mengetahui daftar variabel yang dapat digunakan.
-
-      Jika kebijakan ini tidak disetel, jalur profil default akan digunakan dan pengguna dapat menggantinya dengan tanda baris perintah '--user-data-dir'.</translation>
 <translation id="7008308728445338159">Pemeriksaan intersepsi DNS diaktifkan</translation>
 <translation id="7027785306666625591">Mengonfigurasi pengelolaan daya di <ph name="PRODUCT_OS_NAME" />.
 
@@ -4838,7 +4847,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="8424255554404582727">Setel pemutaran layar default, diterapkan kembali setiap kali melakukan boot ulang</translation>
 <translation id="8426231401662877819">Putar layar searah jarum jam sebesar 90 derajat</translation>
 <translation id="8433186206711564395">Setelan jaringan</translation>
-<translation id="8433423491036718210">Konfigurasikan daftar URL login perusahaan ketika layanan perlindungan sandi harus menangkap sidik jari sandi.</translation>
 <translation id="8445576299806775661">Setelah masing-masing update versi utama, Chrome akan membuat rekaman bagian tertentu dari data penjelajahan pengguna untuk digunakan ketika terjadi rollback versi darurat nantinya. Jika rollback darurat dilakukan ke versi yang rekaman terkaitnya dimiliki pengguna, data di rekaman tersebut akan dipulihkan. Ini memungkinkan pengguna mempertahankan setelan seperti bookmark dan data isi otomatis.
 
       Jika kebijakan ini tidak ditetapkan, nilai default 3 akan digunakan

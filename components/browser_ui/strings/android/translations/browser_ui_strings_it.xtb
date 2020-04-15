@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">Copia link</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> di ?</translation>
 <translation id="4002066346123236978">Titolo</translation>
+<translation id="4259722352634471385">Navigazione bloccata: <ph name="URL" /></translation>
 <translation id="4570913071927164677">Dettagli</translation>
 <translation id="4645575059429386691">Gestito da un genitore</translation>
 <translation id="4883854917563148705">Le impostazioni gestite non possono essere reimpostate</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">Cancella testo inserito</translation>
 <translation id="8725066075913043281">Riprova</translation>
 <translation id="8730621377337864115">Fine</translation>
+<translation id="8959122750345127698">Navigazione inaccessibile: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Gestito dai genitori</translation>
 </translationbundle>

@@ -61,6 +61,8 @@ class FakeFormFetcher : public FormFetcher {
       const override;
 
   bool IsBlacklisted() const override;
+  bool IsMovingBlocked(const autofill::GaiaIdHash& destination,
+                       const base::string16& username) const override;
 
   const std::vector<const autofill::PasswordForm*>& GetAllRelevantMatches()
       const override;

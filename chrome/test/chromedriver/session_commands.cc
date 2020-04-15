@@ -31,7 +31,6 @@
 #include "chrome/test/chromedriver/chrome/geoposition.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/chrome_launcher.h"
 #include "chrome/test/chromedriver/command_listener.h"

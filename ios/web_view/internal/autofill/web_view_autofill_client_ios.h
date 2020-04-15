@@ -13,32 +13,36 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
+#import "ios/web/public/web_state.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_client_ios_bridge.h"
-
-namespace web {
-class WebState;
-}
+#include "ios/web_view/internal/web_view_browser_state.h"
 
 namespace autofill {
 
 // WebView implementation of AutofillClient.
 class WebViewAutofillClientIOS : public AutofillClient {
  public:
+  static std::unique_ptr<WebViewAutofillClientIOS> Create(
+      web::WebState* web_state,
+      ios_web_view::WebViewBrowserState* browser_state);
+
   WebViewAutofillClientIOS(
+      const std::string& locale,
       PrefService* pref_service,
       PersonalDataManager* personal_data_manager,
       AutocompleteHistoryManager* autocomplete_history_manager,
       web::WebState* web_state,
-      id<CWVAutofillClientIOSBridge> bridge,
       signin::IdentityManager* identity_manager,
       StrikeDatabase* strike_database,
-      syncer::SyncService* sync_service);
+      syncer::SyncService* sync_service,
+      std::unique_ptr<autofill::LogManager> log_manager);
   ~WebViewAutofillClientIOS() override;
 
   // AutofillClient:
@@ -124,6 +128,8 @@ class WebViewAutofillClientIOS : public AutofillClient {
       base::OnceCallback<void(const std::string&)> callback) override;
 
   LogManager* GetLogManager() const override;
+
+  void set_bridge(id<CWVAutofillClientIOSBridge> bridge) { bridge_ = bridge; }
 
  private:
   PrefService* pref_service_;

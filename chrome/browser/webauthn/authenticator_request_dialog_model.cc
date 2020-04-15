@@ -678,6 +678,20 @@ void AuthenticatorRequestDialogModel::CollectPIN(
   }
 }
 
+void AuthenticatorRequestDialogModel::StartInlineBioEnrollment(
+    int max_bio_samples) {
+  max_bio_samples_ = max_bio_samples;
+  bio_samples_remaining_ = max_bio_samples;
+  SetCurrentStep(Step::kInlineBioEnrollment);
+}
+
+void AuthenticatorRequestDialogModel::OnSampleCollected(
+    int bio_samples_remaining) {
+  DCHECK(current_step_ == Step::kInlineBioEnrollment);
+  *bio_samples_remaining_ = bio_samples_remaining;
+  OnSheetModelDidChange();
+}
+
 void AuthenticatorRequestDialogModel::RequestAttestationPermission(
     base::OnceCallback<void(bool)> callback) {
   DCHECK(current_step_ != Step::kClosed);

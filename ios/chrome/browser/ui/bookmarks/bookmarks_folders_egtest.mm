@@ -371,8 +371,8 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       performAction:grey_longPress()];
 
   // Verify it shows the context menu.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeContextMenuIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify options on context menu.
@@ -408,8 +408,8 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
   // Verify it doesn't show the context menu. (long press is disabled on
   // permanent node.)
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeContextMenuIdentifier)]
       assertWithMatcher:grey_nil()];
 }
 
@@ -803,8 +803,8 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       performAction:grey_tap()];
 
   // Verify it shows the context menu.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeContextMenuIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify options on context menu.

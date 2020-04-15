@@ -15,6 +15,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -31,60 +32,108 @@
 namespace updater {
 
 namespace {
+
+#pragma mark Helpers
 const base::FilePath GetUpdateFolderName() {
   return base::FilePath(COMPANY_SHORTNAME_STRING)
       .AppendASCII(PRODUCT_FULLNAME_STRING);
 }
+
 const base::FilePath GetUpdaterAppName() {
   return base::FilePath(PRODUCT_FULLNAME_STRING ".app");
 }
+
 const base::FilePath GetUpdaterAppExecutablePath() {
   return base::FilePath("Contents/MacOS").AppendASCII(PRODUCT_FULLNAME_STRING);
 }
 
-bool CopyBundle() {
-  // Copy bundle to ~/Library/COMPANY_SHORTNAME_STRING/PRODUCT_FULLNAME_STRING.
+bool IsSystemInstall() {
+  return geteuid() == 0;
+}
+
+const base::FilePath GetLocalLibraryDirectory() {
+  base::FilePath local_library_path;
+  if (!base::mac::GetLocalDirectory(NSLibraryDirectory, &local_library_path)) {
+    DLOG(WARNING) << "Could not get local library path";
+  }
+  return local_library_path;
+}
+
+const base::FilePath GetLibraryFolderPath() {
+  // For user installations: the "~/Library" for the logged in user.
+  // For system installations: "/Library".
+  return IsSystemInstall() ? GetLocalLibraryDirectory()
+                           : base::mac::GetUserLibraryPath();
+}
+
+const base::FilePath GetUpdaterFolderPath() {
+  // For user installations:
+  // ~/Library/COMPANY_SHORTNAME_STRING/PRODUCT_FULLNAME_STRING.
   // e.g. ~/Library/Google/GoogleUpdater
-  const base::FilePath dest_path =
-      base::mac::GetUserLibraryPath().Append(GetUpdateFolderName());
+  // For system installations:
+  // /Library/COMPANY_SHORTNAME_STRING/PRODUCT_FULLNAME_STRING.
+  // e.g. /Library/Google/GoogleUpdater
+  return GetLibraryFolderPath().Append(GetUpdateFolderName());
+}
+
+const base::FilePath GetUpdaterExecutablePath() {
+  return GetLibraryFolderPath()
+      .Append(GetUpdateFolderName())
+      .Append(GetUpdaterAppName())
+      .Append(GetUpdaterAppExecutablePath());
+}
+
+Launchd::Domain LaunchdDomain() {
+  return IsSystemInstall() ? Launchd::Domain::Local : Launchd::Domain::User;
+}
+
+Launchd::Type ServiceLaunchdType() {
+  return IsSystemInstall() ? Launchd::Type::Daemon : Launchd::Type::Agent;
+}
+
+Launchd::Type UpdateCheckLaunchdType() {
+  return Launchd::Type::Agent;
+}
+
+#pragma mark Setup
+bool CopyBundle() {
+  const base::FilePath dest_path = GetUpdaterFolderPath();
 
   if (!base::PathExists(dest_path)) {
-    if (!base::CreateDirectory(dest_path)) {
-      LOG(ERROR) << "Failed to create directory at "
-                 << dest_path.value().c_str();
+    base::File::Error error;
+    if (!base::CreateDirectoryAndGetError(dest_path, &error)) {
+      LOG(ERROR) << "Failed to create '" << dest_path.value().c_str()
+                 << "' directory: " << base::File::ErrorToString(error);
       return false;
     }
   }
 
   const base::FilePath src_path = base::mac::OuterBundlePath();
   if (!base::CopyDirectory(src_path, dest_path, true)) {
-    LOG(ERROR) << "Copying app to ~/Library failed";
+    LOG(ERROR) << "Copying app to '" << dest_path.value().c_str() << "' failed";
     return false;
   }
   return true;
 }
 
-bool DeleteInstallFolder() {
-  // Delete install folder
-  // ~/Library/COMPANY_SHORTNAME_STRING/PRODUCT_FULLNAME_STRING.
-  // e.g. ~/Library/Google/GoogleUpdater
-  const base::FilePath dest_path =
-      base::mac::GetUserLibraryPath().Append(GetUpdateFolderName());
-
-  if (!base::DeleteFileRecursively(dest_path)) {
-    LOG(ERROR) << "Deleting " << dest_path << " failed";
-    return false;
-  }
-  return true;
+NSString* MakeProgramArgument(const char* argument) {
+  return base::SysUTF8ToNSString(base::StrCat({"--", argument}));
 }
 
 base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateCheckLaunchdPlist(
     const base::FilePath* updater_path) {
   // See the man page for launchd.plist.
+  NSMutableArray* programArguments = [NSMutableArray array];
+  [programArguments addObjectsFromArray:@[
+    base::SysUTF8ToNSString(updater_path->value()),
+    MakeProgramArgument(kUpdateAppsSwitch)
+  ]];
+  if (IsSystemInstall())
+    [programArguments addObject:MakeProgramArgument(kSystemSwitch)];
+
   NSDictionary* launchd_plist = @{
     @LAUNCH_JOBKEY_LABEL : GetGoogleUpdateCheckLaunchDLabel(),
-    @LAUNCH_JOBKEY_PROGRAMARGUMENTS :
-        @[ base::SysUTF8ToNSString(updater_path->value()), @"--ua" ],
+    @LAUNCH_JOBKEY_PROGRAMARGUMENTS : programArguments,
     @LAUNCH_JOBKEY_STARTINTERVAL : @18000,
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
     @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : @"Aqua"
@@ -100,8 +149,10 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateServiceLaunchdPlist(
   // See the man page for launchd.plist.
   NSDictionary* launchd_plist = @{
     @LAUNCH_JOBKEY_LABEL : GetGoogleUpdateServiceLaunchDLabel(),
-    @LAUNCH_JOBKEY_PROGRAMARGUMENTS :
-        @[ base::SysUTF8ToNSString(updater_path->value()), @"--server" ],
+    @LAUNCH_JOBKEY_PROGRAMARGUMENTS : @[
+      base::SysUTF8ToNSString(updater_path->value()),
+      MakeProgramArgument(kServerSwitch)
+    ],
     @LAUNCH_JOBKEY_MACHSERVICES : @{GetGoogleUpdateServiceMachName() : @YES},
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
     @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : @"Aqua"
@@ -118,16 +169,12 @@ bool CreateLaunchdCheckItem() {
                                                 base::BlockingType::MAY_BLOCK);
   base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateCheckLaunchDName());
 
-  const base::FilePath updater_path =
-      base::mac::GetUserLibraryPath()
-          .Append(GetUpdateFolderName())
-          .Append(GetUpdaterAppName())
-          .Append(GetUpdaterAppExecutablePath());
+  const base::FilePath updater_path = GetUpdaterExecutablePath();
 
   base::ScopedCFTypeRef<CFDictionaryRef> plist(
       CreateGoogleUpdateCheckLaunchdPlist(&updater_path));
-  return Launchd::GetInstance()->WritePlistToFile(Launchd::User, Launchd::Agent,
-                                                  name, plist);
+  return Launchd::GetInstance()->WritePlistToFile(
+      LaunchdDomain(), UpdateCheckLaunchdType(), name, plist);
 }
 
 bool CreateLaunchdServiceItem() {
@@ -136,37 +183,24 @@ bool CreateLaunchdServiceItem() {
                                                 base::BlockingType::MAY_BLOCK);
   base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateServiceLaunchDName());
 
-  const base::FilePath updater_path =
-      base::mac::GetUserLibraryPath()
-          .Append(GetUpdateFolderName())
-          .Append(GetUpdaterAppName())
-          .Append(GetUpdaterAppExecutablePath());
+  const base::FilePath updater_path = GetUpdaterExecutablePath();
 
   base::ScopedCFTypeRef<CFDictionaryRef> plist(
       CreateGoogleUpdateServiceLaunchdPlist(&updater_path));
-  return Launchd::GetInstance()->WritePlistToFile(Launchd::User, Launchd::Agent,
-                                                  name, plist);
-}
-
-bool RemoveFromLaunchd() {
-  // This may block while deleting the launchd plist file.
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
-  base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateCheckLaunchDName());
-  return Launchd::GetInstance()->DeletePlist(Launchd::User, Launchd::Agent,
-                                             name);
+  return Launchd::GetInstance()->WritePlistToFile(
+      LaunchdDomain(), ServiceLaunchdType(), name, plist);
 }
 
 bool StartLaunchdUpdateCheckTask() {
   base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateCheckLaunchDName());
-  return Launchd::GetInstance()->RestartJob(Launchd::User, Launchd::Agent, name,
-                                            CFSTR("Aqua"));
+  return Launchd::GetInstance()->RestartJob(
+      LaunchdDomain(), UpdateCheckLaunchdType(), name, CFSTR("Aqua"));
 }
 
 bool StartLaunchdServiceTask() {
   base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateServiceLaunchDName());
-  return Launchd::GetInstance()->RestartJob(Launchd::User, Launchd::Agent, name,
-                                            CFSTR("Aqua"));
+  return Launchd::GetInstance()->RestartJob(
+      LaunchdDomain(), ServiceLaunchdType(), name, CFSTR("Aqua"));
 }
 
 }  // namespace
@@ -190,13 +224,45 @@ int SetupUpdater() {
   return 0;
 }
 
+#pragma mark Uninstall
+bool RemoveUpdateCheckFromLaunchd() {
+  // This may block while deleting the launchd plist file.
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateCheckLaunchDName());
+  return Launchd::GetInstance()->DeletePlist(LaunchdDomain(),
+                                             UpdateCheckLaunchdType(), name);
+}
+
+bool RemoveServiceFromLaunchd() {
+  // This may block while deleting the launchd plist file.
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateServiceLaunchDName());
+  return Launchd::GetInstance()->DeletePlist(LaunchdDomain(),
+                                             ServiceLaunchdType(), name);
+}
+
+bool DeleteInstallFolder() {
+  const base::FilePath dest_path = GetUpdaterFolderPath();
+
+  if (!base::DeleteFileRecursively(dest_path)) {
+    LOG(ERROR) << "Deleting " << dest_path << " failed";
+    return false;
+  }
+  return true;
+}
+
 int Uninstall(bool is_machine) {
   ALLOW_UNUSED_LOCAL(is_machine);
-  if (!RemoveFromLaunchd())
+  if (!RemoveUpdateCheckFromLaunchd())
     return -1;
 
-  if (!DeleteInstallFolder())
+  if (!RemoveServiceFromLaunchd())
     return -2;
+
+  if (!DeleteInstallFolder())
+    return -3;
 
   return 0;
 }

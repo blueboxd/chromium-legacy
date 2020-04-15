@@ -27,7 +27,7 @@ class MockSignedExchangeHandlerParams {
       net::Error error,
       const GURL& inner_url,
       const std::string& mime_type,
-      std::vector<std::string> response_headers,
+      std::vector<std::pair<std::string, std::string>> response_headers,
       base::Optional<net::SHA256HashValue> header_integrity,
       const base::Time& signature_expire_time = base::Time());
   MockSignedExchangeHandlerParams(const MockSignedExchangeHandlerParams& other);
@@ -37,7 +37,7 @@ class MockSignedExchangeHandlerParams {
   const net::Error error;
   const GURL inner_url;
   const std::string mime_type;
-  const std::vector<std::string> response_headers;
+  const std::vector<std::pair<std::string, std::string>> response_headers;
   const base::Optional<net::SHA256HashValue> header_integrity;
   const base::Time signature_expire_time;
 };

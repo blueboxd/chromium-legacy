@@ -91,8 +91,8 @@ void ImportCookies(base::RepeatingClosure completion_callback,
     options.set_same_site_cookie_context(
         net::CookieOptions::SameSiteCookieContext::MakeInclusive());
     cookie_manager->SetCanonicalCookie(
-        cookie, "https", options,
-        base::BindOnce(&OnCookieSet, cookie_completion_callback));
+        cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
+        options, base::BindOnce(&OnCookieSet, cookie_completion_callback));
   }
 }
 

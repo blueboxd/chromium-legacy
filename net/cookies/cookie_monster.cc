@@ -369,7 +369,7 @@ void CookieMonster::SetAllCookiesAsync(const CookieList& list,
 
 void CookieMonster::SetCanonicalCookieAsync(
     std::unique_ptr<CanonicalCookie> cookie,
-    std::string source_scheme,
+    const GURL& source_url,
     const CookieOptions& options,
     SetCookiesCallback callback) {
   DCHECK(cookie->IsCanonical());
@@ -381,8 +381,7 @@ void CookieMonster::SetCanonicalCookieAsync(
           // the callback on |*this|, so the callback will not outlive
           // the object.
           &CookieMonster::SetCanonicalCookie, base::Unretained(this),
-          std::move(cookie), std::move(source_scheme), options,
-          std::move(callback)),
+          std::move(cookie), source_url, options, std::move(callback)),
       domain);
 }
 
@@ -1146,15 +1145,14 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
 }
 
 void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
-                                       std::string source_scheme,
+                                       const GURL& source_url,
                                        const CookieOptions& options,
                                        SetCookiesCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   CanonicalCookie::CookieInclusionStatus status;
 
-  std::string scheme_lower = base::ToLowerASCII(source_scheme);
-  bool secure_source = GURL::SchemeIsCryptographic(scheme_lower);
+  bool secure_source = source_url.SchemeIsCryptographic();
   cc->SetSourceScheme(secure_source ? CookieSourceScheme::kSecure
                                     : CookieSourceScheme::kNonSecure);
   if ((cc->IsSecure() && !secure_source)) {
@@ -1162,7 +1160,7 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY);
   }
 
-  if (!IsCookieableScheme(scheme_lower)) {
+  if (!IsCookieableScheme(source_url.scheme())) {
     status.AddExclusionReason(
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
   }

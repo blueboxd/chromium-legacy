@@ -258,7 +258,6 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4129129681837227511">Pantaila blokeatuan jakinarazpenak ikusteko, desblokeatu gailua eta aldatu ezarpena</translation>
 <translation id="4144413954005649103">Eskuineko botoiarekin edo luze sakatuz gero, pantailan hautatu duzunari buruzko informazioa erakusten dizu Laguntzailea eginbideak.</translation>
 <translation id="4146833061457621061">Erreproduzitu musika</translation>
-<translation id="4149156641122542261"><ph name="DOMAIN" /> da <ph name="DEVICE_TYPE" /> gailuaren kudeatzailea</translation>
 <translation id="4181841719683918333">Hizkuntzak</translation>
 <translation id="4195877955194704651">Klik automatikoen botoia</translation>
 <translation id="4215497585250573029">VPN ezarpenak</translation>
@@ -468,6 +467,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="6878400149835617132">Lasterbidea desaktibatu da</translation>
 <translation id="6910714959251846841">Eguneratu ahal izateko, gailuaren fabrikako ezarpenak berrezarri behar dira. Lortu informazio gehiago <ph name="SYSTEM_APP_NAME" /> aplikazioaren azken eguneratzeari buruz.</translation>
 <translation id="6919251195245069855">Ezin izan da hauteman txartel adimenduna. Saiatu berriro.</translation>
+<translation id="6945221475159498467">Hautatu</translation>
 <translation id="6972754398087986839">Hasi erabiltzen</translation>
 <translation id="6981982820502123353">Erabilerraztasuna</translation>
 <translation id="698231206551913481">Erabiltzailea kentzen denean, harekin erlazionatutako fitxategi eta gailuko datu guztiak betiko ezabatuko dira.</translation>
@@ -558,6 +558,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="8142699993796781067">Sare pribatua</translation>
 <translation id="8152092012181020186">Ixteko, sakatu Ktrl + W.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Administratzaileak kudeatzen du ezarpen hau.</translation>
+<translation id="815598010540052116">Egin behera</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> erabiltzen</translation>
 <translation id="8190698733819146287">Pertsonalizatu hizkuntzak eta idazketa…</translation>
 <translation id="8192202700944119416">Jakinarazpenak ezkutatuta daude.</translation>

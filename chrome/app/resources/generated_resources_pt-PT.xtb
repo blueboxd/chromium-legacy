@@ -687,7 +687,6 @@
 <translation id="189210018541388520">Abrir ecrã inteiro</translation>
 <translation id="1892341345406963517">Olá, <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Outros idiomas</translation>
-<translation id="1895252664692693738">Resta(m) <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Encerrar</translation>
 <translation id="1895934970388272448">Tem de confirmar o registo na sua impressora para concluir este processo – verifique agora.</translation>
 <translation id="1899826437968063457">O Plugin VM necessita de autorização para ser executado</translation>
@@ -4002,7 +4001,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6365411474437319296">Adicionar família e amigos</translation>
 <translation id="636850387210749493">Inscrição empresarial</translation>
 <translation id="6370021412472292592">Não foi possível carregar manifesto.</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Alterar palavra-passe}other{Alterar palavras-passe}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Tentar novamente</translation>
 <translation id="6377268785556383139">1 resultado para "<ph name="SEARCH_TEXT" />"</translation>

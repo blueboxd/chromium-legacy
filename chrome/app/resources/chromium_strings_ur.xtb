@@ -41,7 +41,6 @@
 <translation id="2799223571221894425">دوبارہ شروع کریں</translation>
 <translation id="2805036593126168338">‏Chromium OS آپ کے پاس ورڈز کی مطابقت پذیری نہیں کر سکا۔ ابھی درست کریں۔</translation>
 <translation id="2847479871509788944">‏Chromium سے ہٹائیں…</translation>
-<translation id="2886012850691518054">‏اختیاری: Google کو استعمال کے اعداد و شمار اور کریش رپورٹس خودکار طور پر بھیج کر Chromium کو بہتر بنانے میں مدد کریں۔</translation>
 <translation id="2910007522516064972">‏Chromium&amp; کے بارے میں</translation>
 <translation id="2977470724722393594">‏Chromium اپ ٹو ڈیٹ ہے</translation>
 <translation id="2983934633046890458">‏Chromium پاس ورڈز میں ترمیم کرنے کی کوشش کر رہا ہے۔</translation>
@@ -60,6 +59,7 @@
 <translation id="328888136576916638">‏Google API کلیدیں دستیاب نہیں ہیں۔ Chromium کی کچھ فعالیت غیر فعال ہو جائے گی۔</translation>
 <translation id="3296368748942286671">‏Chromium بند ہو جانے پر پس منظر کی ایپس چلانا جاری رکھیں</translation>
 <translation id="331951419404882060">‏Chromium OS سائن ان میں ایک خرابی کی وجہ سے آپ کے ڈیٹا کی مطابقت پذیری نہیں کر سکا۔</translation>
+<translation id="347328004046849135">‏جب آپ کسی متاثرہ پاس ورڈ سے سائن ان کریں گے تو Chromium آپ کو مطلع کرے گا</translation>
 <translation id="3474745554856756813">‏یہ اس آلہ سے <ph name="ITEMS_COUNT" /> آئٹمز کو حذف کر دے گا۔ بعد میں اپنے ڈیٹا کی بازیافت کرنے کیلئے، Chromium میں <ph name="USER_EMAIL" /> کے بطور سائن ان کریں۔</translation>
 <translation id="3509308970982693815">‏براہ کرم سبھی Chromium ونڈوز بند کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="3575459661164320785">‏آپ کے کمپیوٹر میں نقصان دہ سافٹ ویئر ہے۔ Chromium اسے ہٹا کر آپ کی ترتیبات بحال اور ایکسٹینشنز کو غیر فعال کر سکتا ہے تاکہ آپ کا براؤزر دوبارہ حسب معمول کام کر سکے۔</translation>
@@ -95,11 +95,13 @@
 <translation id="4746050847053251315">‏بہر حال Chromium بند کریں؟</translation>
 <translation id="4748217263233248895">‏Chromium کے لیے ایک خاص سیکیورٹی اپ ڈیٹ ابھی ابھی لاگو کیا گیا ہے۔ ابھی دوبارہ شروع کریں اور ہم آپ کے ٹیبز کو بحال کر دیں گے۔</translation>
 <translation id="4750035648288509542">‏تقریباً اپ ٹو ڈیٹ! اپ ڈیٹ مکمل کرنے کے لیے Chromium کو بند کر کے دوبارہ چلائیں۔ پوشیدگی ونڈوز دوبارہ نہیں کھلیں گی۔</translation>
+<translation id="4788777615168560705">‏Chromium آپ کے پاس ورڈز چیک نہیں کر سکتا ہے۔ 24 گھنٹے بعد دوبارہ کوشش کریں یا <ph name="BEGIN_LINK" />اپنے Google اکاؤنٹ میں پاس ورڈز چیک کریں<ph name="END_LINK" />۔</translation>
 <translation id="479167709087336770">‏یہ وہی املا جانچ کنندہ استعمال کرتا ہے جسے Google تلاش میں استعمال کیا جاتا ہے۔ آپ براؤزر میں جو متن ٹائپ کرتے ہیں، اسے Google کو بھیجا جاتا ہے۔ آپ اس برتاؤ کو کسی بھی وقت ترتیبات میں تبدیل کر سکتے ہیں۔</translation>
 <translation id="4888717733111232871">‏mDNS ٹریفک کی اجازت دینے کیلئے Chromium کیلئے ان باؤنڈ اصول۔</translation>
 <translation id="4943838377383847465">‏Chromium پس منظر وضع میں ہے۔</translation>
 <translation id="4987820182225656817">‏مہمان کسی چیز کو پیچھے چھوڑے بغیر Chromium کو استعمال کر سکتے ہیں۔</translation>
 <translation id="4994636714258228724">‏خود کو Chromium میں شامل کریں</translation>
+<translation id="5224391634244552924">‏کوئی محفوظ کردہ پاس ورڈ نہیں۔ جب آپ پاس ورڈز کو محفوظ کرتے ہیں تو Chromium انہیں چیک کر سکتا ہے۔</translation>
 <translation id="5277894862589591112">‏اپنی تبدیلیوں کو لاگو کرنے کیلئے، Chromium کو دوبارہ شروع کریں</translation>
 <translation id="5358375970380395591">‏آپ زیر انتظام اکاؤنٹ سے سائن ان کر رہے ہیں اور اس کے منتظم کو اپنے Chromium پروفائل پر کنٹرول دے رہے ہیں. آپ کا Chromium کا ڈیٹا، جیسے آپ کی ایپس، بُک مارکس، سرگزشت، پاس ورڈز اور دیگر ترتیبات <ph name="USER_NAME" /> سے مستقل طور پر مربوط ہو جائیں گی۔ آپ Google اکاؤنٹس ڈیش بورڈ کے ذریعہ یا ڈیٹا حذف کر سکیں گے لیکن آپ اس ڈیٹا کو دوسرے اکاؤنٹ کے ساتھ وابستہ نہیں کر سکیں گے۔ <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">‏Chromium کو اپ ڈیٹ کیا جا رہا ہے (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -166,6 +168,7 @@
 <translation id="7066436765290594559">‏Chromium OS آپ کے ڈیٹا کی مطابقت پذیری نہیں کر سکا۔ براہ کرم اپنے Sync پاس فریز کو اپ ڈیٹ کریں۔</translation>
 <translation id="7067091210845072982">‏اگر کسی تصویر میں مفید تفصیل موجود نہیں ہے تو Chromium آپ کے لیے تفصیل فراہم کرنے کی کوشش کرے گا۔ تفصیلات تخلیق کرنے کے لیے، تصاویر Google کو بھیجی جاتی ہیں۔</translation>
 <translation id="7196312274710523067">‏Chromium شروع نہیں ہو سکا۔ دوبارہ کوشش کریں۔</translation>
+<translation id="7197677400338048821">‏Chromium آپ کے پاس ورڈز چیک نہیں کر سکتا ہے۔ 24 گھنٹے بعد دوبارہ کوشش کریں۔</translation>
 <translation id="7205698830395646142">‏Chromium مینو میں مخفی کریں</translation>
 <translation id="7223968959479464213">‏ٹاسک مینیجر - Chromium</translation>
 <translation id="731644333568559921">‏‎&amp;Chromium OS کو اپ ڈیٹ کریں</translation>

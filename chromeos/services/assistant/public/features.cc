@@ -26,6 +26,9 @@ const base::Feature kAssistantAppSupport{"AssistantAppSupport",
 const base::Feature kAssistantConversationStartersV2{
     "AssistantConversationStartersV2", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAssistantLauncherChipIntegration{
+    "AssistantLauncherChipIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAssistantProactiveSuggestions{
     "AssistantProactiveSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -146,6 +149,10 @@ bool IsDspHotwordEnabled() {
 
 bool IsFeedbackUiEnabled() {
   return base::FeatureList::IsEnabled(kAssistantFeedbackUi);
+}
+
+bool IsLauncherChipIntegrationEnabled() {
+  return base::FeatureList::IsEnabled(kAssistantLauncherChipIntegration);
 }
 
 bool IsMediaSessionIntegrationEnabled() {

@@ -1913,7 +1913,7 @@ bool SetCookie(BrowserContext* browser_context,
   options.set_include_httponly();
   options.set_same_site_cookie_context(context);
   cookie_manager->SetCanonicalCookie(
-      *cc.get(), url.scheme(), options,
+      *cc.get(), url, options,
       base::BindOnce(
           [](bool* result, base::RunLoop* run_loop,
              net::CanonicalCookie::CookieInclusionStatus set_cookie_status) {

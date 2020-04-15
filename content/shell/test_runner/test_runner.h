@@ -51,12 +51,12 @@ class Arguments;
 }
 
 namespace content {
+class BlinkTestRunner;
 class MockContentSettingsClient;
 class MockScreenOrientationClient;
 class SpellCheckClient;
 class TestInterfaces;
 class TestRunnerForSpecificView;
-class WebTestDelegate;
 
 // TestRunner class currently has dual purpose:
 // 1. It implements TestRunner javascript bindings for "global" / "ambient".
@@ -79,7 +79,7 @@ class TestRunner {
   void Install(blink::WebLocalFrame* frame,
                base::WeakPtr<TestRunnerForSpecificView> view_test_runner);
 
-  void SetDelegate(WebTestDelegate*);
+  void SetDelegate(BlinkTestRunner*);
   void SetMainView(blink::WebView*);
 
   void Reset();
@@ -103,13 +103,15 @@ class TestRunner {
   // embedder should use this for all WebLocalFrames it creates.
   blink::WebTextCheckClient* GetWebTextCheckClient() const;
 
-  // After WebTestDelegate::TestFinished was invoked, the following methods
+  // After BlinkTestRunner::TestFinished was invoked, the following methods
   // can be used to determine what kind of dump the main WebViewTestProxy can
   // provide.
 
-  // If true, WebTestDelegate::audioData returns an audio dump and no text
-  // or pixel results are available.
+  // Returns true if the test output should be an audio file, rather than text
+  // or pixel results.
   bool ShouldDumpAsAudio() const;
+  // Gets the audio test output for when audio test results are requested by
+  // the current test.
   void GetAudioData(std::vector<unsigned char>* buffer_view) const;
 
   // Reports if tests requested a recursive layout dump of all frames
@@ -135,7 +137,7 @@ class TestRunner {
                        base::OnceCallback<void(const SkBitmap&)> callback);
 
   // Replicates changes to web test runtime flags (i.e. changes that happened in
-  // another renderer). See also WebTestDelegate::OnWebTestRuntimeFlagsChanged.
+  // another renderer). See also BlinkTestRunner::OnWebTestRuntimeFlagsChanged.
   void ReplicateWebTestRuntimeFlagsChanges(
       const base::DictionaryValue& changed_values);
 
@@ -230,7 +232,7 @@ class TestRunner {
     virtual ~WorkItem() {}
 
     // Returns true if this started a load.
-    virtual bool Run(WebTestDelegate*, blink::WebView*) = 0;
+    virtual bool Run(BlinkTestRunner*, blink::WebView*) = 0;
   };
 
  private:
@@ -495,10 +497,7 @@ class TestRunner {
   void SetMockSpellCheckerEnabled(bool enabled);
 
   ///////////////////////////////////////////////////////////////////////////
-  // Methods interacting with the WebViewTestProxy
-
-  ///////////////////////////////////////////////////////////////////////////
-  // Methods forwarding to the WebTestDelegate
+  // Methods forwarding to the BlinkTestRunner.
 
   // Shows DevTools window.
   void ShowWebInspector(const std::string& str,
@@ -616,7 +615,7 @@ class TestRunner {
   std::vector<unsigned char> audio_data_;
 
   TestInterfaces* test_interfaces_;
-  WebTestDelegate* delegate_ = nullptr;
+  BlinkTestRunner* blink_test_runner_ = nullptr;
   blink::WebView* main_view_ = nullptr;
 
   // This is non empty when a load is in progress.
@@ -647,7 +646,7 @@ class TestRunner {
 
   // View that was focused by a previous call to TestRunner::SetFocus method.
   // Note - this can be a dangling pointer to an already destroyed WebView (this
-  // is ok, because this is taken care of in WebTestDelegate::SetFocus).
+  // is ok, because this is taken care of in BlinkTestRunner::SetFocus).
   blink::WebView* previously_focused_view_ = nullptr;
 
   // True when running a test in web_tests/external/wpt/.

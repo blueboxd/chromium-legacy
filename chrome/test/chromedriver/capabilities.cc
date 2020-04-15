@@ -23,7 +23,6 @@
 #include "chrome/test/chromedriver/chrome/mobile_device.h"
 #include "chrome/test/chromedriver/chrome/page_load_strategy.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/session.h"

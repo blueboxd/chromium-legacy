@@ -436,7 +436,6 @@ Solo tú podrás ver lo que captura la cámara. El sitio no tiene acceso a las i
 <translation id="4242533952199664413">Abrir la configuración</translation>
 <translation id="4250229828105606438">Captura de pantalla</translation>
 <translation id="4256782883801055595">Licencias de código abierto</translation>
-<translation id="4259722352634471385">Navegación bloqueada: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copiar dirección del vínculo</translation>
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Permitido</translation>
@@ -965,6 +964,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Para que tus favoritos estén en todos tus dispositivos, activa la sincronización</translation>
 <translation id="8110087112193408731">¿Quieres que se muestre tu actividad de Chrome en Bienestar digital?</translation>
+<translation id="8115259494083109761">Si quieres escanear un código QR, permite que Chrome use la cámara</translation>
 <translation id="8116925261070264013">Silenciados</translation>
 <translation id="8127542551745560481">Editar la página principal</translation>
 <translation id="813082847718468539">Consulta la información del sitio</translation>
@@ -1066,7 +1066,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8942627711005830162">Abrir en otra ventana</translation>
 <translation id="8951232171465285730">Chrome te permitió ahorrar <ph name="MEGABYTES" /> megabytes</translation>
 <translation id="8958424370300090006">Bloquea las cookies en un sitio específico.</translation>
-<translation id="8959122750345127698">Navegación inaccesible: <ph name="URL" /></translation>
 <translation id="8965591936373831584">pendiente</translation>
 <translation id="8970887620466824814">Se produjo un error</translation>
 <translation id="8972098258593396643">¿Deseas descargarlo a la carpeta predeterminada?</translation>

@@ -52,6 +52,7 @@ bool IsWhitelistedPermissionType(PermissionType permission) {
     case PermissionType::NFC:
     case PermissionType::VR:
     case PermissionType::AR:
+    case PermissionType::CAMERA_PAN_TILT_ZOOM:
       return false;
   }
 

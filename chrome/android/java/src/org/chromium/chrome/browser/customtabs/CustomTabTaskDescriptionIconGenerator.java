@@ -8,7 +8,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 
-import org.chromium.components.favicon.FaviconFallbackGenerator;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 
 /**
  * Generates icons suitable for Custom Tabs in the recent tasks list.
@@ -36,7 +36,7 @@ public class CustomTabTaskDescriptionIconGenerator {
     /**
      * Generates the icon if there is no adequate favicon.
      */
-    private FaviconFallbackGenerator mGenerator;
+    private RoundedIconGenerator mGenerator;
 
     public CustomTabTaskDescriptionIconGenerator(Context context) {
         mContext = context;
@@ -64,7 +64,7 @@ public class CustomTabTaskDescriptionIconGenerator {
         }
 
         if (mGenerator == null) {
-            mGenerator = new FaviconFallbackGenerator(mContext.getResources(), APP_ICON_SIZE_DP,
+            mGenerator = new RoundedIconGenerator(mContext.getResources(), APP_ICON_SIZE_DP,
                     APP_ICON_SIZE_DP, APP_ICON_CORNER_RADIUS_DP, APP_ICON_DEFAULT_BACKGROUND_COLOR,
                     APP_ICON_TEXT_SIZE_DP);
         }

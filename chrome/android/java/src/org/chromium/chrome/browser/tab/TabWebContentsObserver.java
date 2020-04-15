@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tab;
 
-import android.os.Handler;
 import android.view.View;
 
 import androidx.annotation.IntDef;
@@ -13,10 +12,9 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.Callback;
+import org.chromium.base.Consumer;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.AppHooks;
@@ -34,6 +32,8 @@ import org.chromium.content_public.browser.WebContentsObserver;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * WebContentsObserver used by Tab.
@@ -73,8 +73,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
     }
 
     private final TabImpl mTab;
-    private final ObserverList<Callback<WebContents>> mInitObservers = new ObserverList<>();
-    private final Handler mHandler = new Handler();
+    private final List<Consumer<WebContents>> mInitObservers = new ArrayList<>();
     private WebContentsObserver mObserver;
 
     public static TabWebContentsObserver from(Tab tab) {
@@ -98,22 +97,16 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
     /**
      * Adds an observer triggered when |initWebContents| is invoked.
-     * <p>A newly created tab adding this observer misses the event because
-     * |TabObserver.onContentChanged| -&gt; |TabWebContentsObserver.initWebContents|
-     * occurs before the observer is added. Manually trigger it here.
-     * @param observer Observer to add.
      */
-    public void addInitWebContentsObserver(Callback<WebContents> observer) {
-        if (mInitObservers.addObserver(observer) && mTab.getWebContents() != null) {
-            observer.onResult(mTab.getWebContents());
-        }
+    public void addInitWebContentsObserver(Consumer<WebContents> initObserver) {
+        mInitObservers.add(initObserver);
     }
 
     /**
      * Remove the InitWebContents observer from the list.
      */
-    public void removeInitWebContentsObserver(Callback<WebContents> observer) {
-        mInitObservers.removeObserver(observer);
+    public void removeInitWebContentsObserver(Consumer<WebContents> initObserver) {
+        mInitObservers.remove(initObserver);
     }
 
     @Override
@@ -129,7 +122,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         // is not the default behavior for embedded web views.
         WebContentsAccessibility.fromWebContents(webContents).setShouldFocusOnPageLoad(true);
 
-        for (Callback<WebContents> callback : mInitObservers) callback.onResult(webContents);
+        for (Consumer<WebContents> consumer : mInitObservers) consumer.accept(webContents);
     }
 
     @Override

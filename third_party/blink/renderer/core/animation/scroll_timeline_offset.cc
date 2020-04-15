@@ -33,7 +33,7 @@ bool StringToScrollOffset(String scroll_offset,
   return true;
 }
 
-bool ValidateIntersectionBasedOffset(ScrollTimelineElementBasedOffset* offset) {
+bool ValidateElementBasedOffset(ScrollTimelineElementBasedOffset* offset) {
   if (!offset->hasTarget())
     return false;
 
@@ -60,7 +60,7 @@ ScrollTimelineOffset* ScrollTimelineOffset::Create(
     return MakeGarbageCollected<ScrollTimelineOffset>(offset);
   } else if (input_offset.IsScrollTimelineElementBasedOffset()) {
     auto* offset = input_offset.GetAsScrollTimelineElementBasedOffset();
-    if (!ValidateIntersectionBasedOffset(offset))
+    if (!ValidateElementBasedOffset(offset))
       return nullptr;
 
     return MakeGarbageCollected<ScrollTimelineOffset>(offset);
@@ -78,7 +78,7 @@ double ScrollTimelineOffset::ResolveOffset(Node* scroll_source,
   DCHECK(root_box);
   Document& document = root_box->GetDocument();
 
-  if (scroll_based_) {
+  if (length_based_offset_) {
     // Resolve scroll based offset.
     const ComputedStyle& computed_style = root_box->StyleRef();
     const ComputedStyle* root_style =
@@ -90,14 +90,90 @@ double ScrollTimelineOffset::ResolveOffset(Node* scroll_source,
         &computed_style, root_style, document.GetLayoutView(),
         computed_style.EffectiveZoom());
     double resolved = FloatValueForLength(
-        scroll_based_->ConvertToLength(conversion_data), max_offset);
+        length_based_offset_->ConvertToLength(conversion_data), max_offset);
 
     return resolved;
-  } else if (element_based) {
-    // TODO(majidvp): turn element based info into an offset.
+  } else if (element_based_offset_) {
+    // We assume that the root is the target's ancestor in layout tree. Under
+    // this assumption |target.LocalToAncestorRect()| returns the targets's
+    // position relative to the root's border box, while ignoring scroll offset.
+    //
+    // TODO(majidvp): We need to validate this assumption and deal with cases
+    // where it is not true. See the spec discussion here:
+    // https://github.com/w3c/csswg-drafts/issues/4337#issuecomment-610989843
+
+    DCHECK(element_based_offset_->hasTarget());
+    Element* target = element_based_offset_->target();
+    const LayoutBox* target_box = target->GetLayoutBox();
+
+    // It is possible for target to not have a layout box e.g., if it is an
+    // unattached element. In which case we return the default offset for now.
+    //
+    // TODO(majidvp): Need to consider this case in the spec. Most likely we
+    // should remain unresolved. See the spec discussion here:
+    // https://github.com/w3c/csswg-drafts/issues/4337#issuecomment-610997231
+    if (!target_box) {
+      return default_offset;
+    }
+
+    PhysicalRect target_rect = target_box->PhysicalBorderBoxRect();
+    target_rect = target_box->LocalToAncestorRect(
+        target_rect, root_box,
+        kTraverseDocumentBoundaries | kIgnoreScrollOffset);
+
+    PhysicalRect root_rect(root_box->PhysicalBorderBoxRect());
+
+    LayoutUnit root_edge;
+    LayoutUnit target_edge;
+
+    // Here is the simple diagram that shows the computation.
+    //
+    //                 +-----+
+    //                 |     |     +------+
+    //                 |     |     |      |
+    // edge:start +----+-----+-------------------+-----+-------+
+    //            |                |xxxxxx|      |xxxxx|       |
+    //            |                +------+      |xxxxx|       |
+    //            |                              +-----+       |
+    //            |                                            |
+    // threshold: |    A) 0       B) 0.5         C) 1          |
+    //            |                                            |
+    //            |                              +-----+       |
+    //            |                +------+      |xxxxx|       |
+    //            |                |xxxxxx|      |xxxxx|       |
+    // edge: end  +----+-----+-------------------+-----+-------+
+    //                 |     |     |      |
+    //                 |     |     +------+
+    //                 +-----+
+    //
+    // We always take the target top edge and compute the distance to the
+    // root's selected edge. This give us (C) in start edge case and (A) in
+    // end edge case.
+    //
+    // To take threshold into account we simply add (1-threshold) or threshold
+    // in start and end edge cases respectively.
+    bool is_start = element_based_offset_->edge() == "start";
+    float threshold_adjustment = is_start
+                                     ? (1 - element_based_offset_->threshold())
+                                     : element_based_offset_->threshold();
+
+    if (orientation == kVerticalScroll) {
+      root_edge = is_start ? root_rect.Y() : root_rect.Bottom();
+      target_edge = target_rect.Y();
+      // Note that threshold is considered as a portion of target and not as a
+      // portion of root. IntersectionObserver has option to allow both.
+      target_edge += (threshold_adjustment * target_rect.Height());
+    } else {  // kHorizontalScroll
+      root_edge = is_start ? root_rect.X() : root_rect.Right();
+      target_edge = target_rect.X();
+      target_edge += (threshold_adjustment * target_rect.Width());
+    }
+
+    // TODO(majidvp): Potentially clip by min/max scroll offsets.
     // http://crbug.com/1023375
-    return default_offset;
+    return (target_edge - root_edge).ToDouble();
   } else {
+    // Resolve the default case (i.e., 'auto' value)
     return default_offset;
   }
 }
@@ -105,12 +181,12 @@ double ScrollTimelineOffset::ResolveOffset(Node* scroll_source,
 StringOrScrollTimelineElementBasedOffset
 ScrollTimelineOffset::ToStringOrScrollTimelineElementBasedOffset() const {
   StringOrScrollTimelineElementBasedOffset result;
-  if (scroll_based_) {
-    result.SetString(scroll_based_->CssText());
-  } else if (element_based) {
-    result.SetScrollTimelineElementBasedOffset(element_based);
+  if (length_based_offset_) {
+    result.SetString(length_based_offset_->CssText());
+  } else if (element_based_offset_) {
+    result.SetScrollTimelineElementBasedOffset(element_based_offset_);
   } else {
-    // we are dealing with default value
+    // This is the default value (i.e., 'auto' value)
     result.SetString("auto");
   }
 
@@ -118,15 +194,15 @@ ScrollTimelineOffset::ToStringOrScrollTimelineElementBasedOffset() const {
 }
 
 ScrollTimelineOffset::ScrollTimelineOffset(CSSPrimitiveValue* offset)
-    : scroll_based_(offset), element_based(nullptr) {}
+    : length_based_offset_(offset), element_based_offset_(nullptr) {}
 
 ScrollTimelineOffset::ScrollTimelineOffset(
     ScrollTimelineElementBasedOffset* offset)
-    : scroll_based_(nullptr), element_based(offset) {}
+    : length_based_offset_(nullptr), element_based_offset_(offset) {}
 
 void ScrollTimelineOffset::Trace(blink::Visitor* visitor) {
-  visitor->Trace(scroll_based_);
-  visitor->Trace(element_based);
+  visitor->Trace(length_based_offset_);
+  visitor->Trace(element_based_offset_);
 }
 
 }  // namespace blink

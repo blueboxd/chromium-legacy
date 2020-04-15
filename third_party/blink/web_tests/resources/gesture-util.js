@@ -186,6 +186,14 @@ function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, d
   });
 }
 
+function wheelTick(scroll_tick, center, direction, speed_in_pixels_s) {
+  if (typeof(speed_in_pixels_s) == "undefined")
+    speed_in_pixels_s = SPEED_INSTANT;
+  // Do not allow precise scrolling deltas for tick wheel scroll.
+  return smoothScroll(scroll_tick * pixelsPerTick(), center.x, center.y, GestureSourceType.MOUSE_INPUT,
+                      direction, speed_in_pixels_s, false /* precise_scrolling_deltas */);
+}
+
 const LEGACY_MOUSE_WHEEL_TICK_MULTIPLIER = 120;
 
 // Returns the number of pixels per wheel tick which is a platform specific value.

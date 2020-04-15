@@ -20,6 +20,7 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
+#include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
@@ -28,7 +29,6 @@
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_preferences.h"
 #include "content/shell/test_runner/test_runner.h"
-#include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "gin/arguments.h"
@@ -143,7 +143,7 @@ bool TestRunnerForSpecificView::isPointerLocked() {
 }
 
 void TestRunnerForSpecificView::PostTask(base::OnceClosure callback) {
-  delegate()->PostTask(std::move(callback));
+  blink_test_runner()->PostTask(std::move(callback));
 }
 
 void TestRunnerForSpecificView::PostV8Callback(
@@ -345,7 +345,7 @@ void TestRunnerForSpecificView::GetManifestCallback(
 
 void TestRunnerForSpecificView::GetBluetoothManualChooserEvents(
     v8::Local<v8::Function> callback) {
-  return delegate()->GetBluetoothManualChooserEvents(base::BindOnce(
+  return blink_test_runner()->GetBluetoothManualChooserEvents(base::BindOnce(
       &TestRunnerForSpecificView::GetBluetoothManualChooserEventsCallback,
       weak_factory_.GetWeakPtr(),
       v8::UniquePersistent<v8::Function>(blink::MainThreadIsolate(),
@@ -376,24 +376,24 @@ void TestRunnerForSpecificView::GetBluetoothManualChooserEventsCallback(
 void TestRunnerForSpecificView::SetBluetoothFakeAdapter(
     const std::string& adapter_name,
     v8::Local<v8::Function> callback) {
-  delegate()->SetBluetoothFakeAdapter(
+  blink_test_runner()->SetBluetoothFakeAdapter(
       adapter_name, CreateClosureThatPostsV8Callback(callback));
 }
 
 void TestRunnerForSpecificView::SetBluetoothManualChooser(bool enable) {
-  delegate()->SetBluetoothManualChooser(enable);
+  blink_test_runner()->SetBluetoothManualChooser(enable);
 }
 
 void TestRunnerForSpecificView::SendBluetoothManualChooserEvent(
     const std::string& event,
     const std::string& argument) {
-  delegate()->SendBluetoothManualChooserEvent(event, argument);
+  blink_test_runner()->SendBluetoothManualChooserEvent(event, argument);
 }
 
 void TestRunnerForSpecificView::SetBackingScaleFactor(
     double value,
     v8::Local<v8::Function> callback) {
-  delegate()->SetDeviceScaleFactor(value);
+  blink_test_runner()->SetDeviceScaleFactor(value);
 
   // TODO(oshima): remove this callback argument when all platforms are migrated
   // to use-zoom-for-dsf by default
@@ -407,14 +407,14 @@ void TestRunnerForSpecificView::SetBackingScaleFactor(
 void TestRunnerForSpecificView::SetColorProfile(
     const std::string& name,
     v8::Local<v8::Function> callback) {
-  delegate()->SetDeviceColorSpace(name);
+  blink_test_runner()->SetDeviceColorSpace(name);
   PostV8Callback(callback);
 }
 
 void TestRunnerForSpecificView::DispatchBeforeInstallPromptEvent(
     const std::vector<std::string>& event_platforms,
     v8::Local<v8::Function> callback) {
-  delegate()->DispatchBeforeInstallPromptEvent(
+  blink_test_runner()->DispatchBeforeInstallPromptEvent(
       event_platforms,
       base::BindOnce(
           &TestRunnerForSpecificView::DispatchBeforeInstallPromptCallback,
@@ -442,7 +442,7 @@ void TestRunnerForSpecificView::DispatchBeforeInstallPromptCallback(
 }
 
 void TestRunnerForSpecificView::RunIdleTasks(v8::Local<v8::Function> callback) {
-  delegate()->RunIdleTasks(CreateClosureThatPostsV8Callback(callback));
+  blink_test_runner()->RunIdleTasks(CreateClosureThatPostsV8Callback(callback));
 }
 
 void TestRunnerForSpecificView::SetTabKeyCyclesThroughElements(
@@ -729,8 +729,8 @@ blink::WebView* TestRunnerForSpecificView::web_view() {
   return web_view_test_proxy_->GetWebView();
 }
 
-WebTestDelegate* TestRunnerForSpecificView::delegate() {
-  return web_view_test_proxy_->delegate();
+BlinkTestRunner* TestRunnerForSpecificView::blink_test_runner() {
+  return web_view_test_proxy_->blink_test_runner();
 }
 
 }  // namespace content

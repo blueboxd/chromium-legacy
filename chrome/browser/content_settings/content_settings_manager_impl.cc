@@ -104,14 +104,16 @@ ContentSettingsManagerImpl::~ContentSettingsManagerImpl() = default;
 // static
 void ContentSettingsManagerImpl::Create(
     content::RenderProcessHost* render_process_host,
-    mojo::PendingReceiver<mojom::ContentSettingsManager> receiver) {
+    mojo::PendingReceiver<content_settings::mojom::ContentSettingsManager>
+        receiver) {
   mojo::MakeSelfOwnedReceiver(
       base::WrapUnique(new ContentSettingsManagerImpl(render_process_host)),
       std::move(receiver));
 }
 
 void ContentSettingsManagerImpl::Clone(
-    mojo::PendingReceiver<mojom::ContentSettingsManager> receiver) {
+    mojo::PendingReceiver<content_settings::mojom::ContentSettingsManager>
+        receiver) {
   mojo::MakeSelfOwnedReceiver(
       base::WrapUnique(new ContentSettingsManagerImpl(*this)),
       std::move(receiver));

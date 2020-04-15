@@ -7,7 +7,7 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/display/display_prefs.h"
 #include "ash/display/privacy_screen_controller.h"
@@ -42,7 +42,7 @@ namespace {
 void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   AccessibilityControllerImpl::RegisterProfilePrefs(registry);
   AppListControllerImpl::RegisterProfilePrefs(registry);
-  AssistantController::RegisterProfilePrefs(registry);
+  AssistantControllerImpl::RegisterProfilePrefs(registry);
   AmbientController::RegisterProfilePrefs(registry);
   BluetoothPowerController::RegisterProfilePrefs(registry);
   CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);

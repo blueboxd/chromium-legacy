@@ -39,6 +39,8 @@ gfx::Rect GetChooserAnchorRect(Browser* browser) {
 class ChooserBubbleUiViewDelegate : public LocationBarBubbleDelegateView,
                                     public views::TableViewObserver {
  public:
+  METADATA_HEADER(ChooserBubbleUiViewDelegate);
+
   ChooserBubbleUiViewDelegate(
       Browser* browser,
       content::WebContents* web_contents,
@@ -67,8 +69,6 @@ class ChooserBubbleUiViewDelegate : public LocationBarBubbleDelegateView,
   base::OnceClosure MakeCloseClosure();
   void Close();
 
-  static int g_num_instances_for_testing_;
-
  private:
   DeviceChooserContentView* device_chooser_content_view_ = nullptr;
 
@@ -77,8 +77,6 @@ class ChooserBubbleUiViewDelegate : public LocationBarBubbleDelegateView,
   DISALLOW_COPY_AND_ASSIGN(ChooserBubbleUiViewDelegate);
 };
 
-int ChooserBubbleUiViewDelegate::g_num_instances_for_testing_ = 0;
-
 ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
     Browser* browser,
     content::WebContents* contents,
@@ -86,7 +84,6 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
     : LocationBarBubbleDelegateView(
           GetChooserAnchorConfiguration(browser).anchor_view,
           contents) {
-  g_num_instances_for_testing_++;
   // ------------------------------------
   // | Chooser bubble title             |
   // | -------------------------------- |
@@ -127,9 +124,7 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER_UI);
 }
 
-ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() {
-  g_num_instances_for_testing_--;
-}
+ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() = default;
 
 void ChooserBubbleUiViewDelegate::AddedToWidget() {
   GetBubbleFrameView()->SetTitleView(CreateTitleOriginLabel(GetWindowTitle()));
@@ -175,6 +170,10 @@ void ChooserBubbleUiViewDelegate::Close() {
     GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
 }
 
+BEGIN_METADATA(ChooserBubbleUiViewDelegate)
+METADATA_PARENT_CLASS(LocationBarBubbleDelegateView)
+END_METADATA()
+
 namespace chrome {
 
 base::OnceClosure ShowDeviceChooserDialog(
@@ -204,10 +203,6 @@ base::OnceClosure ShowDeviceChooserDialog(
     widget->ShowInactive();
 
   return close_closure;
-}
-
-bool IsDeviceChooserShowingForTesting(Browser* browser) {
-  return ChooserBubbleUiViewDelegate::g_num_instances_for_testing_ > 0;
 }
 
 }  // namespace chrome

@@ -50,7 +50,7 @@ This file specifies browser resources for developer-facing chrome:// pages
       <include name="IDR_MEDIA_HISTORY_HTML" file="resources\media\media_history.html" flattenhtml="true" type="BINDATA" compress="gzip" allowexternalscript="true" />
       <include name="IDR_MEDIA_HISTORY_JS" file="resources\media\media_history.js" flattenhtml="true" type="BINDATA" compress="gzip" />
       <include name="IDR_MEDIA_HISTORY_STORE_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\media\history\media_history_store.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />
-      <include name="IDR_MEMORY_INTERNALS_HTML" file="resources\memory_internals\memory_internals.html" flattenhtml="true" type="BINDATA" compress="gzip" />
+      <include name="IDR_MEMORY_INTERNALS_HTML" file="resources\memory_internals\memory_internals.html" type="BINDATA" compress="gzip" />
       <include name="IDR_MEMORY_INTERNALS_JS" file="resources\memory_internals\memory_internals.js" type="BINDATA" compress="gzip" />
       <include name="IDR_NOTIFICATIONS_INTERNALS_HTML" file="resources\notifications_internals\notifications_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_NOTIFICATIONS_INTERNALS_CSS" file="resources\notifications_internals\notifications_internals.css" type="BINDATA" compress="gzip" />

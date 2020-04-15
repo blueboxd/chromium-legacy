@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">Copiar vínculo</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Título</translation>
+<translation id="4259722352634471385">Navegación bloqueada: <ph name="URL" /></translation>
 <translation id="4570913071927164677">Detalles</translation>
 <translation id="4645575059429386691">Administrado por tus padres</translation>
 <translation id="4883854917563148705">No puede restablecerse la configuración administrada</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">Borrar entrada</translation>
 <translation id="8725066075913043281">Intentar nuevamente</translation>
 <translation id="8730621377337864115">Listo</translation>
+<translation id="8959122750345127698">Navegación inaccesible: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
 </translationbundle>

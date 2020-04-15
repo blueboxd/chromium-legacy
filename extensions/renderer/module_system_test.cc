@@ -199,9 +199,9 @@ void ModuleSystemTestEnvironment::RegisterModule(const std::string& name,
 void ModuleSystemTestEnvironment::RegisterModule(const std::string& name,
                                                  int resource_id,
                                                  bool gzipped) {
-  const std::string& code = ui::ResourceBundle::GetSharedInstance()
-                                .GetRawDataResource(resource_id)
-                                .as_string();
+  std::string code =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          resource_id);
   source_map_->RegisterModule(name, code, gzipped);
 }
 

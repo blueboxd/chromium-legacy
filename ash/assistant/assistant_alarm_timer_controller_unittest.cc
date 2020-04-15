@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"

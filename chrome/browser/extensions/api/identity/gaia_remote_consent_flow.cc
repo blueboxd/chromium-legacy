@@ -17,6 +17,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
+#include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -69,8 +70,9 @@ void GaiaRemoteConsentFlow::OnSetAccountsComplete(
   net::CookieOptions options;
   for (const auto& cookie : resolution_data_.cookies) {
     cookie_manager->SetCanonicalCookie(
-        cookie, url::kHttpsScheme, options,
-        network::mojom::CookieManager::SetCanonicalCookieCallback());
+        cookie,
+        net::cookie_util::SimulatedCookieSource(cookie, url::kHttpsScheme),
+        options, network::mojom::CookieManager::SetCanonicalCookieCallback());
   }
 
   identity_api_set_consent_result_subscription_ =

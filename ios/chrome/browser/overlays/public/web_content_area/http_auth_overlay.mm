@@ -11,9 +11,10 @@
 OVERLAY_USER_DATA_SETUP_IMPL(HTTPAuthOverlayRequestConfig);
 
 HTTPAuthOverlayRequestConfig::HTTPAuthOverlayRequestConfig(
+    const GURL& url,
     const std::string& message,
     const std::string& default_username)
-    : message_(message), default_username_(default_username) {}
+    : url_(url), message_(message), default_username_(default_username) {}
 
 HTTPAuthOverlayRequestConfig::~HTTPAuthOverlayRequestConfig() = default;
 

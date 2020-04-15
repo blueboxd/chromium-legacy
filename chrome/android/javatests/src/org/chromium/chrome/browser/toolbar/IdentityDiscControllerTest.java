@@ -73,7 +73,8 @@ public class IdentityDiscControllerTest {
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
         View experimentalButton =
                 mActivityTestRule.getActivity().findViewById(R.id.optional_toolbar_button);
-        Assert.assertNull("IdentityDisc is visible for signed out user", experimentalButton);
+        Assert.assertTrue("IdentityDisc is visible for signed out user",
+                experimentalButton == null || View.GONE == experimentalButton.getVisibility());
 
         // Identity Disc should be shown on sign-in state change without NTP refresh.
         SigninTestUtil.addAndSignInTestAccount();

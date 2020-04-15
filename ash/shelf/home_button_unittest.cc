@@ -10,7 +10,7 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/test/test_assistant_service.h"

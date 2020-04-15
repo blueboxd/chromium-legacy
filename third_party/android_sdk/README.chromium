@@ -7,7 +7,6 @@ Version: 29
   Android SDK Platform-tools 29.0.5
   Android SDK Platform API 29
   Android SDK Sources 29
-  Android Lint 26.4.0-alpha04
   Google Cloud Messaging 3
   SDK Patch Applier v4
 Security Critical: no
@@ -18,24 +17,10 @@ The Android SDK provide API libraries and developer tools necessary to
 build, test and debug for Android.
 
 Local Modifications:
-
 - public/
   - Added extras/chromium/.
-- public/tools-lint/
-  - Go to go/studio-master-grid
-  - Find the first green build under sdk_tools_linux
-  - Email tnorbye@google.com and cc android-devtools@ to determine if that build
-    can be used publicly.
-  - Click through to Artifacts.
-  - Click the copy icon at the right for sdk-repo-linux-tools-XXXXXXX.zip
-  - Use the copied command to download the zip.
-  - Unzip and rename tools to tools-lint and move to the right spot in our repo.
-  - Create CL and carbon copy tnorbye@google.com
-
-No other modifications has been made to the public Android SDK.
 
 Update Instructions:
-
 * public/tools/bin/sdkmanager --list  # Look for "Installed packages:"
 * For cmdline-tools run: sdkmanager --channel=3 'cmdline-tools;latest'
 * Prepare the CIPD yaml files for packages that need update and add them

@@ -5,6 +5,7 @@
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/media/feeds/media_feeds.pb.h"
@@ -134,23 +135,93 @@ bool MediaHistoryFeedsTable::DiscoverFeed(const GURL& url) {
   }
 }
 
-std::vector<media_feeds::mojom::MediaFeedPtr>
-MediaHistoryFeedsTable::GetRows() {
+std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
+    const MediaHistoryKeyedService::GetMediaFeedsRequest& request) {
   std::vector<media_feeds::mojom::MediaFeedPtr> feeds;
   if (!CanAccessDatabase())
     return feeds;
 
-  sql::Statement statement(DB()->GetUniqueStatement(
-      "SELECT id, url, last_discovery_time_s, last_fetch_time_s, "
-      "user_status, last_fetch_result, fetch_failed_count, "
-      "last_fetch_time_not_cache_hit_s, "
-      "last_fetch_item_count, last_fetch_play_next_count, "
-      "last_fetch_content_types, "
-      "logo, display_name FROM mediaFeed"));
+  base::Optional<double> origin_count;
+  double rank = 0;
+
+  std::vector<std::string> sql;
+  sql.push_back(
+      "SELECT "
+      "mediaFeed.id, "
+      "mediaFeed.url, "
+      "mediaFeed.last_discovery_time_s, "
+      "mediaFeed.last_fetch_time_s, "
+      "mediaFeed.user_status, "
+      "mediaFeed.last_fetch_result, "
+      "mediaFeed.fetch_failed_count, "
+      "mediaFeed.last_fetch_time_not_cache_hit_s, "
+      "mediaFeed.last_fetch_item_count, "
+      "mediaFeed.last_fetch_play_next_count, "
+      "mediaFeed.last_fetch_content_types, "
+      "mediaFeed.logo, "
+      "mediaFeed.display_name ");
+
+  if (request.include_origin_watchtime_percentile_data) {
+    // If we need the percentile data we should select rows from the origin
+    // table and LEFT JOIN mediaFeed. This means there should be a row for each
+    // origin and if there is a media feed that will be included.
+    sql.push_back(
+        "FROM origin "
+        "LEFT JOIN mediaFeed "
+        "ON origin.id = mediaFeed.origin_id");
+  } else if (request.audio_video_watchtime_min) {
+    // If we need to filter by |audio_video_watchtime_min| then we should join
+    // the origin table to get the watchtime data.
+    sql.push_back(
+        "FROM mediaFeed "
+        "LEFT JOIN origin "
+        "ON origin.id = mediaFeed.origin_id");
+  } else {
+    sql.push_back("FROM mediaFeed");
+  }
+
+  // If we need a minimum watchtime then we should add it.
+  if (request.audio_video_watchtime_min) {
+    sql.push_back(base::StringPrintf(
+        "WHERE origin.aggregate_watchtime_audio_video_s > %f",
+        request.audio_video_watchtime_min->InSecondsF()));
+  }
+
+  // Sorts the feeds in descending watchtime order. We also need the total count
+  // of the origins so we can calculate a percentile.
+  if (request.include_origin_watchtime_percentile_data) {
+    sql::Statement statement(DB()->GetCachedStatement(
+        SQL_FROM_HERE, "SELECT COUNT(id) FROM origin"));
+
+    while (statement.Step()) {
+      origin_count = statement.ColumnDouble(0);
+      rank = *origin_count;
+    }
+
+    DCHECK(origin_count.has_value());
+
+    sql.push_back("ORDER BY origin.aggregate_watchtime_audio_video_s DESC");
+  }
+
+  // Add a SQL limit if we need one. If we are calculating the percentile then
+  // we should use a C++ limit since we might have rows that do not have an
+  // associated media feed.
+  if (request.limit.has_value() &&
+      !request.include_origin_watchtime_percentile_data) {
+    sql.push_back(base::StringPrintf("LIMIT %i", *request.limit));
+  }
+
+  sql::Statement statement(
+      DB()->GetUniqueStatement(base::JoinString(sql, " ").c_str()));
 
   while (statement.Step()) {
-    media_feeds::mojom::MediaFeedPtr feed(media_feeds::mojom::MediaFeed::New());
+    rank--;
 
+    // If there is no mediaFeed data then skip this.
+    if (statement.GetColumnType(0) == sql::ColumnType::kNull)
+      continue;
+
+    auto feed = media_feeds::mojom::MediaFeed::New();
     feed->user_status = static_cast<media_feeds::mojom::FeedUserStatus>(
         statement.ColumnInt64(4));
     feed->last_fetch_result =
@@ -207,7 +278,17 @@ MediaHistoryFeedsTable::GetRows() {
 
     feed->display_name = statement.ColumnString(12);
 
+    if (request.include_origin_watchtime_percentile_data && origin_count > 1) {
+      feed->origin_audio_video_watchtime_percentile =
+          (rank / (*origin_count - 1)) * 100;
+    }
+
     feeds.push_back(std::move(feed));
+
+    if (request.include_origin_watchtime_percentile_data &&
+        request.limit.has_value() && feeds.size() >= *request.limit) {
+      break;
+    }
   }
 
   DCHECK(statement.Succeeded());

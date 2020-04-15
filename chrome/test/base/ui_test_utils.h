@@ -350,6 +350,8 @@ class HistoryEnumerator {
   DISALLOW_COPY_AND_ASSIGN(HistoryEnumerator);
 };
 
+// In general, tests should use WaitForBrowserToClose() and
+// WaitForBrowserToOpen() rather than instantiating this class directly.
 class BrowserChangeObserver : public BrowserListObserver {
  public:
   enum class ChangeType {

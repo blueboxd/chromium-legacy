@@ -3,6 +3,7 @@
 <translationbundle lang="is">
 <translation id="1005230401424685968">ÁÁÁÁ</translation>
 <translation id="1016495303386450659">Atriði uppfært</translation>
+<translation id="1044891598689252897">Vefsvæði virka sem skyldi</translation>
 <translation id="1047726139967079566">Bókamerkja þessa síðu...</translation>
 <translation id="1049743911850919806">Fara huldu höfðu</translation>
 <translation id="1063454504051558093">Nota annað aðgangsorð...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> atriði</translation>
 <translation id="1491277525950327607">Ýttu tvisvar til að breyta stillingum</translation>
 <translation id="1509486075633541495">Skrá inn á vefsvæði</translation>
+<translation id="1509960214886564027">Eiginleikar gætu bilað á mörgum vefsvæðum</translation>
 <translation id="152234381334907219">Aldrei vistað</translation>
 <translation id="1540800554400757039">Heimilisfang 1</translation>
 <translation id="1545749641540134597">Skanna QR-kóða</translation>
@@ -528,6 +530,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="7961015016161918242">Aldrei</translation>
 <translation id="7971521879845308059">Útiloka sprettiglugga</translation>
 <translation id="7982789257301363584">Símkerfi</translation>
+<translation id="7993619969781047893">Ekki er víst að allir eiginleikar á öllum vefsvæðum virki</translation>
 <translation id="800361585186029508">Opnar innslegnar vefslóðir í Google Chrome.</translation>
 <translation id="8007420562015504427">Leit í huliðsstillingu</translation>
 <translation id="8019783059653722575">Með þessu móti geturðu vistað myndir og hlaðið þeim upp.</translation>

@@ -26,14 +26,9 @@ scrambling of the icons in display. If the old types work, why mess with them?
 
 ## Source PNG files
 
-Use whatever tools you want to create the PNG files, but please note the
-following:
-
-1. The PNG files must be in full RGB mode (i.e. not indexed-color). This will be
-enforced by the `png_check.py` tool below.
-1. The dimensions of the images in the PNG files must match exactly the size
-indicated by their filename. This will be enforced by the `makeicns2` tool
-below.
+Use whatever tools you want to create the PNG files, but please note that the
+dimensions of the images in the PNG files must match exactly the size indicated
+by their filename. This will be enforced by the `makeicns2` tool below.
 
 ## Construction
 

@@ -169,6 +169,13 @@ class CC_EXPORT ScrollbarController {
     // This is needed for thumb snapping when the pointer moves too far away
     // from the track while scrolling.
     float scroll_position_at_start_;
+
+    // The |scroller_displacement| indicates the scroll offset compensation that
+    // needs to be applied when the scroller's length changes dynamically mid
+    // thumb drag. This is needed done to ensure that the scroller does not jump
+    // while a thumb drag is in progress.
+    float scroller_displacement;
+    float scroller_length_at_previous_move;
   };
 
   struct CC_EXPORT CapturedScrollbarMetadata {
@@ -232,8 +239,8 @@ class CC_EXPORT ScrollbarController {
   ui::ScrollGranularity Granularity(const ScrollbarPart scrollbar_part,
                                     bool shift_modifier);
 
-  // Calculates the scroll_offset based on position_in_widget and drag_origin.
-  gfx::ScrollOffset GetScrollDeltaForDragPosition(
+  // Calculates the delta based on position_in_widget and drag_origin.
+  int GetScrollDeltaForDragPosition(
       const ScrollbarLayerImplBase* scrollbar,
       const gfx::PointF pointer_position_in_widget);
 

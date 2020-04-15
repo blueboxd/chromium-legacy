@@ -5,6 +5,7 @@
 #include "weblayer/browser/browser_context_impl.h"
 
 #include "base/threading/thread_restrictions.h"
+#include "components/client_hints/browser/client_hints.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "components/embedder_support/pref_names.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "weblayer/browser/client_hints_factory.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
 #include "weblayer/public/common/switches.h"
@@ -157,8 +159,7 @@ BrowserContextImpl::GetPermissionControllerDelegate() {
 
 content::ClientHintsControllerDelegate*
 BrowserContextImpl::GetClientHintsControllerDelegate() {
-  // TODO(crbug.com/1065537): implement me.
-  return nullptr;
+  return ClientHintsFactory::GetForBrowserContext(this);
 }
 
 content::BackgroundFetchDelegate*

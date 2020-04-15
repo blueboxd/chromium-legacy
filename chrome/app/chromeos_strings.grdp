@@ -4960,9 +4960,6 @@
   <message name="IDS_PLUGIN_VM_INSTALLER_DOWNLOAD_PROGRESS_WITHOUT_DOWNLOAD_SIZE_MESSAGE" desc="Text of the Plugin VM installer while downloading Plugin VM image, showing download progress when the full download size is not known.">
     <ph name="DOWNLOADED_SIZE">$1<ex>1.2 GB</ex></ph>
   </message>
-  <message name="IDS_PLUGIN_VM_INSTALLER_TIME_LEFT_MESSAGE" desc="Text of the Plugin VM installer that shows estimated time left before current installation stage ends.">
-    <ph name="TIME_LEFT">$1<ex>30 mins</ex></ph> left
-  </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_CONTINUE_BUTTON" desc="Label for the button in the Plugin VM installer to continue installation.">
     Continue
   </message>

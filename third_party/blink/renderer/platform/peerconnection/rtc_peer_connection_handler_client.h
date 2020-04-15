@@ -85,7 +85,7 @@ class PLATFORM_EXPORT RTCPeerConnectionHandlerClient {
   virtual void DidAddRemoteDataChannel(
       scoped_refptr<webrtc::DataChannelInterface>) = 0;
   virtual void DidNoteInterestingUsage(int usage_pattern) = 0;
-  virtual void ReleasePeerConnectionHandler() = 0;
+  virtual void UnregisterPeerConnectionHandler() = 0;
   virtual void ClosePeerConnection();
 };
 

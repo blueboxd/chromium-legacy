@@ -438,7 +438,6 @@
 <translation id="4242533952199664413">সেটিংস খুলুন</translation>
 <translation id="4250229828105606438">স্ক্রিনশট</translation>
 <translation id="4256782883801055595">ওপেন সোর্স লাইসেন্স</translation>
-<translation id="4259722352634471385">নেভিগেশন অবরুদ্ধ করা হয়েছে: <ph name="URL" /></translation>
 <translation id="4269820728363426813">লিঙ্ক অ্যাড্রেস কপি করুন</translation>
 <translation id="4275663329226226506">মাধ্যম</translation>
 <translation id="4278390842282768270">মঞ্জুরিপ্রাপ্ত</translation>
@@ -967,6 +966,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">আপনার সমস্ত ডিভাইসে বুকমার্কগুলি পেতে সিঙ্ক বিকল্প চালু করুন</translation>
 <translation id="8110087112193408731">ডিজিটাল ওয়েলবিং-এ আপনার Chrome অ্যাক্টিভিটি দেখতে চান?</translation>
+<translation id="8115259494083109761">QR কোড স্ক্যান করার জন্য, Chrome-কে আপনার ক্যামেরা ব্যবহার করতে দিন</translation>
 <translation id="8116925261070264013">মিউট করা আছে</translation>
 <translation id="8127542551745560481">হোমপেজ এডিট করুন</translation>
 <translation id="813082847718468539">সাইটের তথ্য দর্শন করুন</translation>
@@ -1068,7 +1068,6 @@
 <translation id="8942627711005830162">অন্য উইন্ডোতে খুলুন</translation>
 <translation id="8951232171465285730">Chrome আপনার জন্য <ph name="MEGABYTES" /> এমবি বাঁচিয়ে দিয়েছে</translation>
 <translation id="8958424370300090006">কোনও নির্দিষ্ট সাইটের জন্য কুকি ব্লক করুন।</translation>
-<translation id="8959122750345127698">নেভিগেশানে পৌছানো যাচ্ছে না: <ph name="URL" /></translation>
 <translation id="8965591936373831584">বাকি আছে</translation>
 <translation id="8970887620466824814">কিছু সমস্যা হয়েছে।</translation>
 <translation id="8972098258593396643">ডিফল্ট ফোল্ডারে ডাউনলোড করবেন?</translation>

@@ -13,7 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.ui.base.ViewUtils;
 
 /**
@@ -21,33 +21,32 @@ import org.chromium.ui.base.ViewUtils;
  */
 public class FaviconUtils {
     /**
-     * Creates a {@link FaviconFallbackGenerator} to generate circular {@link Bitmap}s of favicons.
+     * Creates a {@link RoundedIconGenerator} to generate circular {@link Bitmap}s of favicons.
      * @param resources The {@link Resources} for accessing color and dimen resources.
-     * @return A {@link FaviconFallbackGenerator} that uses the default circle icon style. Intended
+     * @return A {@link RoundedIconGenerator} that uses the default circle icon style. Intended
      *         for monograms, e.g. a circle with character(s) in the center.
      */
-    public static FaviconFallbackGenerator createCircularIconGenerator(Resources resources) {
+    public static RoundedIconGenerator createCircularIconGenerator(Resources resources) {
         int displayedIconSize = resources.getDimensionPixelSize(R.dimen.circular_monogram_size);
         int cornerRadius = displayedIconSize / 2;
         int textSize = resources.getDimensionPixelSize(R.dimen.circular_monogram_text_size);
-        return new FaviconFallbackGenerator(displayedIconSize, displayedIconSize, cornerRadius,
+        return new RoundedIconGenerator(displayedIconSize, displayedIconSize, cornerRadius,
                 getIconColor(resources), textSize);
     }
 
     /**
-     * Creates a {@link FaviconFallbackGenerator} to generate rounded rectangular {@link Bitmap}s of
+     * Creates a {@link RoundedIconGenerator} to generate rounded rectangular {@link Bitmap}s of
      * favicons.
      * @param resources The {@link Resources} for accessing color and dimen resources.
-     * @return A {@link FaviconFallbackGenerator} that uses the default rounded rectangle icon
+     * @return A {@link RoundedIconGenerator} that uses the default rounded rectangle icon
      *         style. Intended for monograms, e.g. a rounded rectangle with character(s) in the
      *         center.
      */
-    public static FaviconFallbackGenerator createRoundedRectangleIconGenerator(
-            Resources resources) {
+    public static RoundedIconGenerator createRoundedRectangleIconGenerator(Resources resources) {
         int displayedIconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
         int cornerRadius = resources.getDimensionPixelSize(R.dimen.default_favicon_corner_radius);
         int textSize = resources.getDimensionPixelSize(R.dimen.default_favicon_icon_text_size);
-        return new FaviconFallbackGenerator(displayedIconSize, displayedIconSize, cornerRadius,
+        return new RoundedIconGenerator(displayedIconSize, displayedIconSize, cornerRadius,
                 getIconColor(resources), textSize);
     }
 
@@ -72,15 +71,15 @@ public class FaviconUtils {
      *         generated.
      * @param url Url to generate a monogram. Used only if {@code icon} is null.
      * @param fallbackColor Color to generate a monogram. Used only if {@code icon} is null.
-     * @param iconGenerator FaviconFallbackGenerator to generate a monogram. Used only if {@code
-     *         icon} is null. Side effect: {@link FaviconFallbackGenerator#setBackgroundColor(int)}
+     * @param iconGenerator RoundedIconGenerator to generate a monogram. Used only if {@code
+     *         icon} is null. Side effect: {@link RoundedIconGenerator#setBackgroundColor(int)}
      *         will be called.
      * @param resources {@link Resources} to create a {@link BitmapDrawable}.
      * @param iconSize Width and height of the returned icon in px.
      * @return A {@link Drawable} to be displayed as the favicon.
      */
     public static Drawable getIconDrawableWithoutFilter(@Nullable Bitmap icon, String url,
-            int fallbackColor, FaviconFallbackGenerator iconGenerator, Resources resources,
+            int fallbackColor, RoundedIconGenerator iconGenerator, Resources resources,
             int iconSize) {
         if (icon == null) {
             iconGenerator.setBackgroundColor(fallbackColor);
@@ -98,7 +97,7 @@ public class FaviconUtils {
      * @param icon {@link Bitmap} with the icon to display. If null, a fallback monogram will be
      *         generated.
      * @param url Url to generate a monogram. Used only if {@code icon} is null.
-     * @param iconGenerator FaviconFallbackGenerator to generate a monogram. Used only if {@code
+     * @param iconGenerator RoundedIconGenerator to generate a monogram. Used only if {@code
      *         icon} is null.
      * @param defaultFaviconHelper Helper to generate default favicons.
      * @param resources {@link Resources} to create a {@link BitmapDrawable}.
@@ -106,7 +105,7 @@ public class FaviconUtils {
      * @return A {@link Drawable} to be displayed as the favicon.
      */
     public static Drawable getIconDrawableWithFilter(@Nullable Bitmap icon, @Nullable String url,
-            FaviconFallbackGenerator iconGenerator,
+            RoundedIconGenerator iconGenerator,
             FaviconHelper.DefaultFaviconHelper defaultFaviconHelper, Resources resources,
             int iconSize) {
         if (url == null) {

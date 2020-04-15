@@ -436,7 +436,6 @@ Nguwe kuphela ongabona ukuthi ikhamera yakho ibheke ini. Leli sayithi alikwazi u
 <translation id="4242533952199664413">Vula izilungiselelo</translation>
 <translation id="4250229828105606438">Isithombe-skrini</translation>
 <translation id="4256782883801055595">Amalayisensi womthombo ovulekile</translation>
-<translation id="4259722352634471385">Ukuzulazula kuvinjiwe: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopisha ikheli lesixhumanisi</translation>
 <translation id="4275663329226226506">Imidiya</translation>
 <translation id="4278390842282768270">Kuvunyelwe</translation>
@@ -965,6 +964,7 @@ Isibonelo, amanye amawebhusayithi angaphendula lesi sicelo ngokukubonisa izikhan
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Ukuze uthole amabhukhimakhi akho kuwo onke amadivayisi akho, vula ukuvumelanisa</translation>
 <translation id="8110087112193408731">Bonisa umsebenzi wakho we-Chrome ku-Digital Wellbeing?</translation>
+<translation id="8115259494083109761">Ukuskena ikhodi ye-QR, vumela i-Chrome ukusebenzisa ikhamera yakho</translation>
 <translation id="8116925261070264013">Kuthulisiwe</translation>
 <translation id="8127542551745560481">Hlela ikhasi lasekhaya</translation>
 <translation id="813082847718468539">Buka ulwazi lwesayithi</translation>
@@ -1066,7 +1066,6 @@ Isibonelo, amanye amawebhusayithi angaphendula lesi sicelo ngokukubonisa izikhan
 <translation id="8942627711005830162">Vula kwelinye iwindi</translation>
 <translation id="8951232171465285730">I-Chrome ikulondolozele okungu-<ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">Vimbela amakhukhi kusayithi elithile.</translation>
-<translation id="8959122750345127698">Ukuzulazula akufinyeleleki: <ph name="URL" /></translation>
 <translation id="8965591936373831584">kulindile</translation>
 <translation id="8970887620466824814">Okuthile akuhambanga kahle.</translation>
 <translation id="8972098258593396643">Landela kufonda yokuzenzakalelayo?</translation>

@@ -15,10 +15,15 @@ namespace updater {
 
 scoped_refptr<UpdateService> CreateUpdateService(
     scoped_refptr<update_client::Configurator> config) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessSwitch))
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(kSingleProcessSwitch))
     return base::MakeRefCounted<UpdateServiceInProcess>(config);
-  else
-    return base::MakeRefCounted<UpdateServiceOutOfProcess>();
+
+  return cmdline->HasSwitch(kSystemSwitch)
+             ? base::MakeRefCounted<UpdateServiceOutOfProcess>(
+                   UpdateService::Scope::kSystem)
+             : base::MakeRefCounted<UpdateServiceOutOfProcess>(
+                   UpdateService::Scope::kUser);
 }
 
 }  // namespace updater

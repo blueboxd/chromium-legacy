@@ -36,6 +36,11 @@ void PwaInstallView::UpdateImpl() {
   if (!web_contents)
     return;
 
+  if (web_contents->IsCrashed()) {
+    SetVisible(false);
+    return;
+  }
+
   auto* manager = banners::AppBannerManager::FromWebContents(web_contents);
   // May not be present e.g. in incognito mode.
   if (!manager)

@@ -12710,6 +12710,109 @@ TEST_F(LayerTreeHostImplTest, SingleGSUForScrollbarThumbDragPerFrame) {
   host_impl_ = nullptr;
 }
 
+// Tests that changing the scroller length in the middle of a thumb drag doesn't
+// cause the scroller to jump.
+TEST_F(LayerTreeHostImplTest, ThumbDragScrollerLengthIncrease) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.compositor_threaded_scrollbar_scrolling = true;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+
+  // Setup the viewport.
+  const gfx::Size viewport_size = gfx::Size(360, 600);
+  const gfx::Size content_size = gfx::Size(345, 3800);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+  LayerImpl* scroll_layer = OuterViewportScrollLayer();
+
+  // Set up the scrollbar and its dimensions.
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+  auto* scrollbar = AddLayer<PaintedScrollbarLayerImpl>(
+      layer_tree_impl, VERTICAL, /*is_left_side_vertical_scrollbar*/ false,
+      /*is_overlay*/ false);
+
+  // TODO(arakeri): crbug.com/1070063 Setting the dimensions for scrollbar parts
+  // (like thumb, track etc) should be moved to SetupScrollbarLayer.
+  SetupScrollbarLayer(scroll_layer, scrollbar);
+  const gfx::Size scrollbar_size = gfx::Size(15, 600);
+  scrollbar->SetBounds(scrollbar_size);
+
+  // Set up the thumb dimensions.
+  scrollbar->SetThumbThickness(15);
+  scrollbar->SetThumbLength(50);
+  scrollbar->SetTrackRect(gfx::Rect(0, 15, 15, 575));
+
+  // Set up scrollbar arrows.
+  scrollbar->SetBackButtonRect(
+      gfx::Rect(gfx::Point(345, 0), gfx::Size(15, 15)));
+  scrollbar->SetForwardButtonRect(
+      gfx::Rect(gfx::Point(345, 570), gfx::Size(15, 15)));
+  scrollbar->SetOffsetToTransformParent(gfx::Vector2dF(345, 0));
+
+  TestInputHandlerClient input_handler_client;
+  host_impl_->BindToClient(&input_handler_client);
+
+  // ----------------------------- Start frame 0 -----------------------------
+  viz::BeginFrameArgs begin_frame_args =
+      viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(200);
+  begin_frame_args.frame_time = start_time;
+  begin_frame_args.frame_id.sequence_number++;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  InputHandlerPointerResult result =
+      host_impl_->MouseDown(gfx::PointF(350, 18), /*shift_modifier*/ false);
+  EXPECT_EQ(result.scroll_offset.y(), 0);
+  EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
+  host_impl_->DidFinishImplFrame(begin_frame_args);
+
+  // ----------------------------- Start frame 1 -----------------------------
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(250);
+  begin_frame_args.frame_id.sequence_number++;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+
+  result = host_impl_->MouseMoveAt(gfx::Point(350, 20));
+  EXPECT_EQ(result.scroll_offset.y(), 12);
+
+  // This is intentional. The thumb drags that follow will test the behavior
+  // *after* the scroller length expansion.
+  scrollbar->SetScrollLayerLength(7000);
+  host_impl_->DidFinishImplFrame(begin_frame_args);
+
+  // ----------------------------- Start frame 2 -----------------------------
+  // The very first mousemove after the scroller length change will result in a
+  // zero offset. This is done to ensure that the scroller doesn't jump ahead
+  // when the length changes mid thumb drag. So, every time the scroller length
+  // changes mid thumb drag, a GSU is lost (in the worst case).
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(300);
+  begin_frame_args.frame_id.sequence_number++;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  result = host_impl_->MouseMoveAt(gfx::Point(350, 22));
+  EXPECT_EQ(result.scroll_offset.y(), 0);
+  host_impl_->DidFinishImplFrame(begin_frame_args);
+
+  // ----------------------------- Start frame 3 -----------------------------
+  // All subsequent mousemoves then produce deltas which are "displaced" by a
+  // certain amount. The previous mousemove (to y = 22) would have calculated
+  // the drag_state_->scroller_displacement value as 48 (based on the pointer
+  // movement). The current pointermove (to y = 26) calculates the delta as 97.
+  // Since delta -= drag_state_->scroller_displacement, the actual delta becomes
+  // 97 - 48 which is 49. The math that calculates the deltas (i.e 97 and 48)
+  // can be found in ScrollbarController::GetScrollDeltaForDragPosition.
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(350);
+  begin_frame_args.frame_id.sequence_number++;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  result = host_impl_->MouseMoveAt(gfx::Point(350, 26));
+  EXPECT_EQ(result.scroll_offset.y(), 49);
+  host_impl_->MouseUp(gfx::PointF(350, 26));
+  host_impl_->DidFinishImplFrame(begin_frame_args);
+
+  // Tear down the LayerTreeHostImpl before the InputHandlerClient.
+  host_impl_->ReleaseLayerTreeFrameSink();
+  host_impl_ = nullptr;
+}
+
 TEST_F(LayerTreeHostImplTest, MainThreadFallback) {
   LayerTreeSettings settings = DefaultSettings();
   settings.compositor_threaded_scrollbar_scrolling = true;

@@ -3,6 +3,7 @@
 <translationbundle lang="ca">
 <translation id="1005230401424685968">AAAA</translation>
 <translation id="1016495303386450659">S'ha actualitzat l'element.</translation>
+<translation id="1044891598689252897">Els llocs web funcionaran amb normalitat</translation>
 <translation id="1047726139967079566">Afegeix aquesta pàgina a les adreces d'interès...</translation>
 <translation id="1049743911850919806">Incògnit</translation>
 <translation id="1063454504051558093">Utilitza una altra contrasenya...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> elements</translation>
 <translation id="1491277525950327607">Fes doble toc per canviar la configuració</translation>
 <translation id="1509486075633541495">Inicia la sessió al lloc web</translation>
+<translation id="1509960214886564027">Pot ser que les funcions de molts llocs web no funcionin</translation>
 <translation id="152234381334907219">Contrasenyes que no es desen mai</translation>
 <translation id="1540800554400757039">Adreça 1</translation>
 <translation id="1545749641540134597">Escaneja el codi QR</translation>
@@ -528,6 +530,7 @@ Com que <ph name="HOSTED_DOMAIN" /> gestiona el teu compte, les dades de Chrome 
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7971521879845308059">Bloqueig de finestres emerg.</translation>
 <translation id="7982789257301363584">Xarxa</translation>
+<translation id="7993619969781047893">Pot ser que les funcions d'alguns llocs web no funcionin</translation>
 <translation id="800361585186029508">Obre els URL introduïts a Google Chrome.</translation>
 <translation id="8007420562015504427">Cerca d'incògnit</translation>
 <translation id="8019783059653722575">Això et permet desar i penjar fotos.</translation>

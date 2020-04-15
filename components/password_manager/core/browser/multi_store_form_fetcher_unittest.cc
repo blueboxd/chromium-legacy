@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "components/autofill/core/common/gaia_id_hash.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -14,6 +15,7 @@
 #include "url/origin.h"
 #include "url/url_constants.h"
 
+using autofill::GaiaIdHash;
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using testing::_;
@@ -65,7 +67,7 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
 PasswordForm CreateHTMLForm(const std::string& origin_url,
                             const std::string& username_value,
                             const std::string& password_value,
-                            base::Time date_last_used) {
+                            base::Time date_last_used = base::Time::Now()) {
   PasswordForm form;
   form.scheme = PasswordForm::Scheme::kHtml;
   form.origin = GURL(origin_url);
@@ -292,6 +294,51 @@ TEST_F(MultiStoreFormFetcherTest, BlacklistEntryInTheProfileStore) {
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kProfileStore));
   EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+}
+
+TEST_F(MultiStoreFormFetcherTest, MovingToAccountStoreIsBlocked) {
+  Fetch();
+  const GaiaIdHash kUser = GaiaIdHash::FromGaiaId("user");
+  const GaiaIdHash kAnotherUser = GaiaIdHash::FromGaiaId("another_user");
+
+  // Form that's blocked for |kUser| for "username1".
+  PasswordForm blocked_form =
+      CreateHTMLForm("www.url.com", "username1", "pass");
+  blocked_form.in_store = PasswordForm::Store::kProfileStore;
+  blocked_form.moving_blocked_for_list.push_back(kUser);
+
+  // Form that not blocked for "username2".
+  PasswordForm unblocked_form =
+      CreateHTMLForm("www.url.com", "username2", "pass");
+  unblocked_form.in_store = PasswordForm::Store::kProfileStore;
+
+  // PSL form that's blocked for |kUser| for "psl_username".
+  PasswordForm psl_form = CreateHTMLForm("psl.url.com", "psl_username", "pass");
+  psl_form.is_public_suffix_match = true;
+  psl_form.in_store = PasswordForm::Store::kProfileStore;
+  psl_form.moving_blocked_for_list.push_back(kUser);
+
+  // Pass response from the local store.
+  std::vector<std::unique_ptr<PasswordForm>> results;
+  results.push_back(std::make_unique<PasswordForm>(blocked_form));
+  results.push_back(std::make_unique<PasswordForm>(unblocked_form));
+  results.push_back(std::make_unique<PasswordForm>(psl_form));
+  form_fetcher_->OnGetPasswordStoreResults(std::move(results));
+  // Pass empty response from the account store.
+  form_fetcher_->OnGetPasswordStoreResults({});
+
+  // Moving should be blocked for |kUser| and |form1|.
+  EXPECT_TRUE(
+      form_fetcher_->IsMovingBlocked(kUser, blocked_form.username_value));
+  // Moving shouldn't be blocked for other usernames.
+  EXPECT_FALSE(
+      form_fetcher_->IsMovingBlocked(kUser, unblocked_form.username_value));
+  // Moving shouldn't be blocked for other users.
+  EXPECT_FALSE(form_fetcher_->IsMovingBlocked(kAnotherUser,
+                                              blocked_form.username_value));
+  // PSL match entries should be ignored when computing the moving blacklist
+  // entries.
+  EXPECT_FALSE(form_fetcher_->IsMovingBlocked(kUser, psl_form.username_value));
 }
 
 }  // namespace password_manager

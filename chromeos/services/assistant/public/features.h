@@ -32,6 +32,10 @@ extern const base::Feature kAssistantWarmerWelcomeFeature;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantAppSupport;
 
+// Enables Assistant launcher chip integration.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const base::Feature kAssistantLauncherChipIntegration;
+
 // Enables Assistant proactive suggestions.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantProactiveSuggestions;
@@ -109,6 +113,9 @@ bool IsConversationStartersV2Enabled();
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsDspHotwordEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsFeedbackUiEnabled();
+
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+bool IsLauncherChipIntegrationEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 bool IsMediaSessionIntegrationEnabled();

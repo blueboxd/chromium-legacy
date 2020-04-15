@@ -4,13 +4,14 @@
 
 #include "ash/assistant/assistant_proactive_suggestions_controller.h"
 
-#include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_suggestions_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
+#include "ash/assistant/assistant_suggestions_controller_impl.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/proactive_suggestions_rich_view.h"
 #include "ash/assistant/ui/proactive_suggestions_simple_view.h"
 #include "ash/assistant/ui/proactive_suggestions_view.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/assistant/util/histogram_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -27,7 +28,7 @@ using assistant::util::ProactiveSuggestionsAction;
 
 AssistantProactiveSuggestionsController::
     AssistantProactiveSuggestionsController(
-        AssistantController* assistant_controller)
+        AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
   DCHECK(chromeos::assistant::features::IsProactiveSuggestionsEnabled());
   assistant_controller_->AddObserver(this);
@@ -46,14 +47,14 @@ AssistantProactiveSuggestionsController::
 
 void AssistantProactiveSuggestionsController::
     OnAssistantControllerConstructed() {
-  assistant_controller_->suggestions_controller()->AddModelObserver(this);
+  AssistantSuggestionsController::Get()->AddModelObserver(this);
   assistant_controller_->view_delegate()->AddObserver(this);
 }
 
 void AssistantProactiveSuggestionsController::
     OnAssistantControllerDestroying() {
   assistant_controller_->view_delegate()->RemoveObserver(this);
-  assistant_controller_->suggestions_controller()->RemoveModelObserver(this);
+  AssistantSuggestionsController::Get()->RemoveModelObserver(this);
 }
 
 void AssistantProactiveSuggestionsController::OnAssistantReady() {
@@ -108,7 +109,8 @@ void AssistantProactiveSuggestionsController::OnProactiveSuggestionsChanged(
   // read-only access to the Assistant suggestions model, we forward this event
   // to the Assistant suggestions controller to cache state. We will then react
   // to the change in model state in OnProactiveSuggestionsChanged(new, old).
-  assistant_controller_->suggestions_controller()
+  static_cast<AssistantSuggestionsControllerImpl*>(
+      AssistantSuggestionsController::Get())
       ->OnProactiveSuggestionsChanged(std::move(proactive_suggestions));
 }
 
@@ -359,8 +361,8 @@ void AssistantProactiveSuggestionsController::MaybeShowUi() {
 
   // Retrieve the cached set of proactive suggestions.
   scoped_refptr<const ProactiveSuggestions> proactive_suggestions =
-      assistant_controller_->suggestions_controller()
-          ->model()
+      AssistantSuggestionsController::Get()
+          ->GetModel()
           ->GetProactiveSuggestions();
 
   // There's nothing to show if there are no proactive suggestions in the cache.

@@ -422,4 +422,51 @@ TEST_F(PersistentWindowControllerTest, SwapPrimaryDisplay) {
   EXPECT_EQ(gfx::Rect(-499, 0, 200, 100), w2->GetBoundsInScreen());
 }
 
+// Tests that restore bounds persist after adding and removing a display.
+TEST_F(PersistentWindowControllerTest, RestoreBounds) {
+  UpdateDisplay("0+0-500x500,0+501-500x500");
+
+  std::unique_ptr<aura::Window> window = CreateTestWindow(gfx::Rect(200, 200));
+  const int64_t primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
+  const int64_t secondary_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id();
+  display::Screen* screen = display::Screen::GetScreen();
+  ASSERT_EQ(primary_id, screen->GetDisplayNearestWindow(window.get()).id());
+
+  // Move the window to the secondary display and maximize it.
+  display_move_window_util::HandleMoveActiveWindowBetweenDisplays();
+  ASSERT_EQ(secondary_id, screen->GetDisplayNearestWindow(window.get()).id());
+  WindowState* window_state = WindowState::Get(window.get());
+  window_state->Maximize();
+  EXPECT_TRUE(window_state->HasRestoreBounds());
+  const gfx::Rect restore_bounds_in_screen =
+      window_state->GetRestoreBoundsInScreen();
+
+  display::ManagedDisplayInfo primary_info =
+      display_manager()->GetDisplayInfo(primary_id);
+  display::ManagedDisplayInfo secondary_info =
+      display_manager()->GetDisplayInfo(secondary_id);
+
+  // Disconnect secondary display.
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.push_back(primary_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(primary_id, screen->GetDisplayNearestWindow(window.get()).id());
+
+  // Reconnect secondary display. On restoring the maximized window, the bounds
+  // should be the same as they were before maximizing and disconnecting the
+  // display.
+  display_info_list.push_back(secondary_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(secondary_id, screen->GetDisplayNearestWindow(window.get()).id());
+  EXPECT_TRUE(window_state->IsMaximized());
+
+  // Restore the window (i.e. press restore button on header).
+  window_state->Restore();
+  EXPECT_TRUE(window_state->IsNormalStateType());
+  EXPECT_EQ(restore_bounds_in_screen, window->GetBoundsInScreen());
+}
+
 }  // namespace ash

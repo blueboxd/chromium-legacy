@@ -1349,6 +1349,7 @@ video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-control
 
 /* Timeline sizing does not include padding in max width. */
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i] {
+  width: calc(100% - 64px);
   max-width: 471px;
   height: 5px;
   margin-bottom: 20px;
@@ -1363,7 +1364,7 @@ video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-control
 
 video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-panel" i] {
   /* Centering the button panel and timeline within the controls. */
-  text-align: -webkit-center;
+  align-items: center;
 
   /* Taller scrim. */
   background:

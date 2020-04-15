@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_provider.h"
 #include "components/captive_portal/core/buildflags.h"
+#include "components/client_hints/browser/client_hints.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/find_in_page/find_types.h"
 #include "components/permissions/permission_manager.h"
@@ -31,7 +32,10 @@
 #include "ui/base/window_open_disposition.h"
 #include "weblayer/browser/autofill_client_impl.h"
 #include "weblayer/browser/browser_impl.h"
+#include "weblayer/browser/browser_process.h"
+#include "weblayer/browser/content_browser_client_impl.h"
 #include "weblayer/browser/file_select_helper.h"
+#include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/navigation_controller_impl.h"
@@ -208,6 +212,12 @@ TabImpl::TabImpl(ProfileImpl* profile,
 
   permissions::PermissionRequestManager::CreateForWebContents(
       web_contents_.get());
+  client_hints::ClientHints::CreateForWebContents(
+      web_contents_.get(),
+      BrowserProcess::GetInstance()->GetNetworkQualityTracker(),
+      HostContentSettingsMapFactory::GetForBrowserContext(
+          web_contents_->GetBrowserContext()),
+      GetUserAgentMetadata());
 
 #if defined(OS_ANDROID)
   javascript_dialogs::TabModalDialogManager::CreateForWebContents(

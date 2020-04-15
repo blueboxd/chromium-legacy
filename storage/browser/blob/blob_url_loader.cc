@@ -45,34 +45,30 @@ scoped_refptr<net::HttpResponseHeaders> GenerateHeaders(
   status.append(net::GetHttpReasonPhrase(status_code));
   status.append("\0\0", 2);
   scoped_refptr<net::HttpResponseHeaders> headers =
-      new net::HttpResponseHeaders(status);
+      base::MakeRefCounted<net::HttpResponseHeaders>(status);
 
   if (status_code == net::HTTP_OK || status_code == net::HTTP_PARTIAL_CONTENT) {
-    std::string content_length_header(net::HttpRequestHeaders::kContentLength);
-    content_length_header.append(": ");
-    content_length_header.append(base::NumberToString(content_size));
-    headers->AddHeader(content_length_header);
+    headers->SetHeader(net::HttpRequestHeaders::kContentLength,
+                       base::NumberToString(content_size));
     if (status_code == net::HTTP_PARTIAL_CONTENT) {
       DCHECK(byte_range->IsValid());
-      std::string content_range_header(net::HttpResponseHeaders::kContentRange);
-      content_range_header.append(": bytes ");
+      std::string content_range_header;
+      content_range_header.append("bytes ");
       content_range_header.append(base::StringPrintf(
           "%" PRId64 "-%" PRId64, byte_range->first_byte_position(),
           byte_range->last_byte_position()));
       content_range_header.append("/");
       content_range_header.append(base::StringPrintf("%" PRId64, total_size));
-      headers->AddHeader(content_range_header);
+      headers->SetHeader(net::HttpResponseHeaders::kContentRange,
+                         content_range_header);
     }
     if (!blob_handle->content_type().empty()) {
-      std::string content_type_header(net::HttpRequestHeaders::kContentType);
-      content_type_header.append(": ");
-      content_type_header.append(blob_handle->content_type());
-      headers->AddHeader(content_type_header);
+      headers->SetHeader(net::HttpRequestHeaders::kContentType,
+                         blob_handle->content_type());
     }
     if (!blob_handle->content_disposition().empty()) {
-      std::string content_disposition_header("Content-Disposition: ");
-      content_disposition_header.append(blob_handle->content_disposition());
-      headers->AddHeader(content_disposition_header);
+      headers->SetHeader("Content-Disposition",
+                         blob_handle->content_disposition());
     }
   }
 

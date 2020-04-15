@@ -205,6 +205,10 @@ enum class ContentSettingsType : int32_t {
   // TODO(https://crbug.com/989663): Reconcile the two.
   STORAGE_ACCESS,
 
+  // Content setting which stores whether to allow a site to control camera
+  // movements. It does not give access to camera.
+  CAMERA_PAN_TILT_ZOOM,
+
   NUM_TYPES,
 };
 

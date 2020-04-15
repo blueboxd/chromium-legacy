@@ -129,13 +129,13 @@ mojom::MemoryResultPtr MakeMemoryResult() {
       43264 /* page_faults_since_last_boot */));
 }
 
-base::Optional<std::vector<mojom::BacklightInfoPtr>> MakeBacklightInfo() {
+mojom::BacklightResultPtr MakeBacklightResult() {
   std::vector<mojom::BacklightInfoPtr> backlight_info;
   backlight_info.push_back(mojom::BacklightInfo::New(
       "path_1" /* path */, 6537 /* max_brightness */, 987 /* brightness */));
   backlight_info.push_back(mojom::BacklightInfo::New(
       "path_2" /* path */, 3242 /* max_brightness */, 65 /* brightness */));
-  return backlight_info;
+  return mojom::BacklightResult::NewBacklightInfo(std::move(backlight_info));
 }
 
 mojom::FanResultPtr MakeFanResult() {
@@ -152,7 +152,8 @@ mojom::TelemetryInfoPtr MakeTelemetryInfo() {
       MakeCachedVpdInfo() /* vpd_info */, MakeCpuResult() /* cpu_result */,
       MakeTimezoneResult() /* timezone_result */,
       MakeMemoryResult() /* memory_result */,
-      MakeBacklightInfo() /* backlight_info */, MakeFanResult() /* fan_result */
+      MakeBacklightResult() /* backlight_result */,
+      MakeFanResult() /* fan_result */
   );
 }
 

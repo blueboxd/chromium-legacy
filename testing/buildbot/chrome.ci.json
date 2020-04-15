@@ -54,7 +54,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -65,6 +66,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -94,7 +100,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
         "test": "chrome_public_test_apk",
@@ -400,7 +406,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -411,6 +418,11 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -440,7 +452,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
         "test": "chrome_public_test_apk",

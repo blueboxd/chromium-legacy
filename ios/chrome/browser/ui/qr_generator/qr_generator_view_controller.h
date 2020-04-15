@@ -15,6 +15,9 @@
 // Command handler for communicating with other components of the app.
 @property(nonatomic, weak) id<QRGenerationCommands> handler;
 
+// URL of the page to generate a QR code for.
+@property(nonatomic, copy) NSURL* pageURL;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_QR_GENERATOR_QR_GENERATOR_VIEW_CONTROLLER_H_

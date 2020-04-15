@@ -101,6 +101,8 @@ std::string GetPermissionRequestString(PermissionRequestType type) {
       return "AR";
     case PermissionRequestType::PERMISSION_STORAGE_ACCESS:
       return "StorageAccess";
+    case PermissionRequestType::PERMISSION_CAMERA_PAN_TILT_ZOOM:
+      return "CameraPanTiltZoom";
     default:
       NOTREACHED();
       return "";

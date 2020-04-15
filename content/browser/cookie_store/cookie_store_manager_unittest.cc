@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_util.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
@@ -283,7 +284,8 @@ class CookieStoreManagerTest
     base::RunLoop run_loop;
     bool success = false;
     cookie_manager_->SetCanonicalCookie(
-        cookie, "https", net::CookieOptions::MakeAllInclusive(),
+        cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
+        net::CookieOptions::MakeAllInclusive(),
         base::BindLambdaForTesting(
             [&](net::CanonicalCookie::CookieInclusionStatus service_status) {
               success = service_status.IsInclude();

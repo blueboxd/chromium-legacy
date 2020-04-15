@@ -37,6 +37,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/views/view_observer.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -45,6 +46,38 @@
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #endif  // defined(OS_CHROMEOS)
+
+namespace {
+
+class PwaInstallIconChangeWaiter : public views::ViewObserver {
+ public:
+  static void VerifyIconVisibility(views::View* iconView, bool visible) {
+    if (visible != iconView->GetVisible())
+      PwaInstallIconChangeWaiter(iconView).run_loop_.Run();
+
+    EXPECT_EQ(visible, iconView->GetVisible());
+  }
+
+ private:
+  explicit PwaInstallIconChangeWaiter(views::View* view) {
+    observed_.Add(view);
+  }
+  ~PwaInstallIconChangeWaiter() override = default;
+
+  // ViewObserver
+  void OnViewVisibilityChanged(views::View* observed_view,
+                               views::View* starting_view) override {
+    run_loop_.Quit();
+  }
+
+  base::RunLoop run_loop_;
+
+  ScopedObserver<views::View, views::ViewObserver> observed_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(PwaInstallIconChangeWaiter);
+};
+
+}  // namespace
 
 class PwaInstallViewBrowserTest
     : public extensions::ExtensionBrowserTest,
@@ -294,6 +327,18 @@ IN_PROC_BROWSER_TEST_P(PwaInstallViewBrowserTest,
   chrome::SelectNextTab(browser());
   ASSERT_EQ(non_installable_web_contents, GetCurrentTab());
   EXPECT_FALSE(pwa_install_view_->GetVisible());
+}
+
+// Tests that the plus icon updates its visibility when tab crashes.
+IN_PROC_BROWSER_TEST_P(PwaInstallViewBrowserTest,
+                       IconVisibilityAfterTabCrashed) {
+  StartNavigateToUrl(GetInstallableAppURL());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->GetVisible());
+
+  web_contents_->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  ASSERT_TRUE(web_contents_->IsCrashed());
+  PwaInstallIconChangeWaiter::VerifyIconVisibility(pwa_install_view_, false);
 }
 
 // Tests that the plus icon updates its visibility once the installability check

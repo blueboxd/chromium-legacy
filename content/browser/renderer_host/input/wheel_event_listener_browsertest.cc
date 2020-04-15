@@ -50,11 +50,8 @@ namespace content {
 
 class WheelEventListenerBrowserTest : public ContentBrowserTest {
  public:
-  WheelEventListenerBrowserTest() {
-    feature_list_.InitWithFeatures(
-        {features::kPassiveDocumentWheelEventListeners}, {});
-  }
-  ~WheelEventListenerBrowserTest() override {}
+  WheelEventListenerBrowserTest() = default;
+  ~WheelEventListenerBrowserTest() override = default;
 
  protected:
   RenderWidgetHostImpl* GetWidgetHost() {

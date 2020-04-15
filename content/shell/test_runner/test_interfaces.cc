@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/shell/test_runner/gamepad_controller.h"
-#include "content/shell/test_runner/gc_controller.h"
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/text_input_controller.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
@@ -46,14 +45,8 @@ void TestInterfaces::SetMainView(blink::WebView* web_view) {
   test_runner_->SetMainView(web_view);
 }
 
-void TestInterfaces::SetDelegate(WebTestDelegate* delegate) {
-  test_runner_->SetDelegate(delegate);
-  delegate_ = delegate;
-}
-
-void TestInterfaces::BindTo(blink::WebLocalFrame* frame) {
+void TestInterfaces::Install(blink::WebLocalFrame* frame) {
   gamepad_controller_->Install(frame);
-  GCController::Install(this, frame);
 }
 
 void TestInterfaces::ResetTestHelperControllers() {
@@ -62,18 +55,6 @@ void TestInterfaces::ResetTestHelperControllers() {
 
   for (WebViewTestProxy* web_view_test_proxy : window_list_)
     web_view_test_proxy->Reset();
-}
-
-void TestInterfaces::DelegateDestroyed(WebTestDelegate* delegate) {
-  if (delegate == delegate_) {
-    if (!window_list_.empty()) {
-      SetDelegate(window_list_[0]->delegate());
-      SetMainView(window_list_[0]->GetWebView());
-    } else {
-      SetDelegate(nullptr);
-      SetMainView(nullptr);
-    }
-  }
 }
 
 void TestInterfaces::ResetAll() {
@@ -133,6 +114,15 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
 }
 
 void TestInterfaces::WindowOpened(WebViewTestProxy* proxy) {
+  if (window_list_.empty()) {
+    // The first WebViewTestProxy in |window_list_| provides the
+    // BlinkTestRunner.
+    // TODO(lukasza): Using the first BlinkTestRunner as the main
+    // BlinkTestRunner is wrong, but it is difficult to change because this
+    // behavior has been baked for a long time into test assumptions (i.e. which
+    // PrintMessage gets  delivered to the browser depends on this).
+    test_runner_->SetDelegate(proxy->blink_test_runner());
+  }
   window_list_.push_back(proxy);
 }
 
@@ -143,17 +133,35 @@ void TestInterfaces::WindowClosed(WebViewTestProxy* proxy) {
     NOTREACHED();
     return;
   }
+
+  const bool was_first = window_list_[0] == proxy;
+
   window_list_.erase(pos);
 
-  DelegateDestroyed(proxy->delegate());
+  // If this was the first WebViewTestProxy, we replace the pointer
+  // to the new "first" WebViewTestProxy. If there's no WebViewTestProxy
+  // at all, then we'll set it when one is created.
+  // TODO(lukasza): Using the first BlinkTestRunner as the main BlinKTestRunner
+  // is wrong, but it is difficult to change because this behavior has been
+  // baked for a long time into test assumptions (i.e. which PrintMessage gets
+  // delivered to the browser depends on this).
+  if (was_first) {
+    if (!window_list_.empty()) {
+      test_runner_->SetDelegate(window_list_[0]->blink_test_runner());
+      SetMainView(window_list_[0]->GetWebView());
+    } else {
+      test_runner_->SetDelegate(nullptr);
+      SetMainView(nullptr);
+    }
+  }
 }
 
 TestRunner* TestInterfaces::GetTestRunner() {
   return test_runner_.get();
 }
 
-WebTestDelegate* TestInterfaces::GetDelegate() {
-  return delegate_;
+BlinkTestRunner* TestInterfaces::GetFirstBlinkTestRunner() {
+  return window_list_[0]->blink_test_runner();
 }
 
 const std::vector<WebViewTestProxy*>& TestInterfaces::GetWindowList() {

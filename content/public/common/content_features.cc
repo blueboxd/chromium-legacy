@@ -395,11 +395,6 @@ const base::Feature kOverscrollHistoryNavigation {
 const base::Feature kPassiveDocumentEventListeners{
     "PassiveDocumentEventListeners", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether document level wheel and mousewheel event listeners should default
-// 'passive' to true.
-const base::Feature kPassiveDocumentWheelEventListeners{
-    "PassiveDocumentWheelEventListeners", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Whether we should force a touchstart and first touchmove per scroll event
 // listeners to be non-blocking during fling.
 const base::Feature kPassiveEventListenersDueToFling{

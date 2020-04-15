@@ -92,6 +92,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="34857402635545079">Borrar también los datos de Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome necesita acceder a tu ubicación para compartirla con este sitio web</translation>
 <translation id="3533694711092285624">No hay ninguna contraseña guardada. Chrome puede comprobar tus contraseñas cuando las guardas.</translation>
+<translation id="3541482654983822893">Chrome no puede comprobar tus contraseñas. Vuelve a intentarlo en 24 horas.</translation>
 <translation id="3576528680708590453">El administrador del sistema ha configurado Google Chrome para que abra otro navegador al acceder a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sincroniza y personaliza Chrome en todos tus dispositivos</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Tu administrador pide que reinicies Chrome para aplicar una actualización}=1{Tu administrador pide que reinicies Chrome para aplicar una actualización. La ventana de incógnito no se volverá a abrir.}other{Tu administrador pide que reinicies Chrome para aplicar una actualización. Las # ventanas de incógnito no se volverán a abrir.}}</translation>
@@ -109,6 +110,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4147555960264124640">Vas a iniciar sesión con una cuenta gestionada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Google Chrome. Tus datos de Chrome como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociar estos datos a otra cuenta. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">El programa de instalación no ha podido descomprimir el archivo. Vuelve a descargar Google Chrome.</translation>
 <translation id="4191857738314598978">{0,plural, =1{Reiniciar Chrome en el transcurso de 1 día}other{Reiniciar Chrome en el transcurso de # días}}</translation>
+<translation id="4205939740494406371">Chrome no puede comprobar tus contraseñas. Vuelve a intentarlo en 24 horas o <ph name="BEGIN_LINK" />comprueba las contraseñas en tu cuenta de Google<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">¿Quieres cerrar sesión en Chrome?</translation>
 <translation id="4251615635259297716">¿Quieres vincular tus datos de Chrome a esta cuenta?</translation>
 <translation id="4293420128516039005">Inicia sesión para sincronizar y personalizar Chrome en todos tus dispositivos</translation>
@@ -235,7 +237,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="8342675569599923794">Este archivo es peligroso, por lo que Chrome lo ha bloqueado.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Todos los derechos reservados.</translation>
 <translation id="840084489713044809">Google Chrome quiere exportar tus contraseñas.</translation>
-<translation id="8455999171311319804">Opcional: Envía datos de uso y diagnóstico automáticamente a Google para ayudarnos a mejorar Chrome OS.</translation>
 <translation id="8498858610309223613">Se acaba de instalar una actualización de seguridad especial para Google Chrome. Reinicia ahora y restauraremos las pestañas.</translation>
 <translation id="8521348052903287641">Regla entrante para que Google Chrome Dev permita tráfico mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

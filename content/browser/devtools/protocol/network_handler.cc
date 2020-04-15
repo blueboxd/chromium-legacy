@@ -54,6 +54,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
+#include "content/public/common/referrer.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -352,34 +353,13 @@ String resourcePriority(net::RequestPriority priority) {
   return Network::ResourcePriorityEnum::Medium;
 }
 
-String referrerPolicy(net::URLRequest::ReferrerPolicy referrer_policy) {
-  switch (referrer_policy) {
-    case net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
-      return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
-    case net::URLRequest::
-        REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
-      return Network::Request::ReferrerPolicyEnum::StrictOriginWhenCrossOrigin;
-    case net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
-      return Network::Request::ReferrerPolicyEnum::OriginWhenCrossOrigin;
-    case net::URLRequest::NEVER_CLEAR_REFERRER:
-      return Network::Request::ReferrerPolicyEnum::Origin;
-    case net::URLRequest::ORIGIN:
-      return Network::Request::ReferrerPolicyEnum::Origin;
-    case net::URLRequest::NO_REFERRER:
-      return Network::Request::ReferrerPolicyEnum::NoReferrer;
-    default:
-      break;
-  }
-  NOTREACHED();
-  return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
-}
-
 String referrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
   switch (referrer_policy) {
     case network::mojom::ReferrerPolicy::kAlways:
       return Network::Request::ReferrerPolicyEnum::UnsafeUrl;
     case network::mojom::ReferrerPolicy::kDefault:
-      return referrerPolicy(content::Referrer::GetDefaultReferrerPolicy());
+      return referrerPolicy(Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+          content::Referrer::GetDefaultReferrerPolicy()));
     case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
       return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
     case network::mojom::ReferrerPolicy::kNever:
@@ -397,6 +377,11 @@ String referrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
   }
   NOTREACHED();
   return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
+}
+
+String referrerPolicy(net::URLRequest::ReferrerPolicy referrer_policy) {
+  return referrerPolicy(
+      Referrer::NetReferrerPolicyToBlinkReferrerPolicy(referrer_policy));
 }
 
 String securityState(const GURL& url, const net::CertStatus& cert_status) {
@@ -1185,7 +1170,8 @@ void NetworkHandler::SetCookie(const std::string& name,
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   options.set_include_httponly();
   storage_partition_->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
-      *cookie, "https", options,
+      *cookie, net::cookie_util::SimulatedCookieSource(*cookie, "https"),
+      options,
       net::cookie_util::AdaptCookieInclusionStatusToBool(base::BindOnce(
           &SetCookieCallback::sendSuccess, std::move(callback))));
 }
@@ -1222,7 +1208,8 @@ void NetworkHandler::SetCookies(
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   for (const auto& cookie : net_cookies) {
     cookie_manager->SetCanonicalCookie(
-        *cookie, "https", options,
+        *cookie, net::cookie_util::SimulatedCookieSource(*cookie, "https"),
+        options,
         base::BindOnce(
             [](base::RepeatingClosure callback,
                net::CanonicalCookie::CookieInclusionStatus) { callback.Run(); },

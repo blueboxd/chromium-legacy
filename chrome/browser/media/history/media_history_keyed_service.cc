@@ -317,13 +317,29 @@ void MediaHistoryKeyedService::PostTaskToDBForTest(base::OnceClosure callback) {
       FROM_HERE, base::DoNothing(), std::move(callback));
 }
 
-void MediaHistoryKeyedService::GetMediaFeedsForDebug(
+MediaHistoryKeyedService::GetMediaFeedsRequest::GetMediaFeedsRequest(
+    bool include_origin_watchtime_percentile_data,
+    base::Optional<unsigned> limit,
+    base::Optional<base::TimeDelta> audio_video_watchtime_min)
+    : include_origin_watchtime_percentile_data(
+          include_origin_watchtime_percentile_data),
+      limit(limit),
+      audio_video_watchtime_min(audio_video_watchtime_min) {}
+
+MediaHistoryKeyedService::GetMediaFeedsRequest::GetMediaFeedsRequest() =
+    default;
+
+MediaHistoryKeyedService::GetMediaFeedsRequest::GetMediaFeedsRequest(
+    const GetMediaFeedsRequest& t) = default;
+
+void MediaHistoryKeyedService::GetMediaFeeds(
+    const GetMediaFeedsRequest& request,
     base::OnceCallback<void(std::vector<media_feeds::mojom::MediaFeedPtr>)>
         callback) {
   base::PostTaskAndReplyWithResult(
       store_->GetForRead()->db_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&MediaHistoryStore::GetMediaFeedsForDebug,
-                     store_->GetForRead()),
+      base::BindOnce(&MediaHistoryStore::GetMediaFeeds, store_->GetForRead(),
+                     request),
       std::move(callback));
 }
 

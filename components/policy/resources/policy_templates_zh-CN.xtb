@@ -284,12 +284,6 @@
 <translation id="1427655258943162134">代理服务器的地址或网址</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
 <translation id="1438739959477268107">默认的密钥生成设置</translation>
-<translation id="1455804070656338445">配置用于更改密码的网址（仅限 HTTP 和 HTTPS 方案）。当浏览器显示警告后，密码保护服务即会将用户转到此网址，以便其更改密码。
-      为了使 <ph name="PRODUCT_NAME" /> 能够正确捕获这一用于更改密码的页面中的新密码指纹，请务必确保该页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的准则。
-
-      如果启用了此设置，当浏览器中显示了警告后，密码保护服务即会将用户转到此网址，以便其更改密码。
-      如果停用了或未配置此设置，则密码保护服务会将用户转到 https://myaccount.google.com，以便其更改密码。
-      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已加入设备管理服务的 Windows 10 专业版或企业版实例。</translation>
 <translation id="1456822151187621582">Windows（<ph name="PRODUCT_OS_NAME" />客户端）：</translation>
 <translation id="1464848559468748897">控制<ph name="PRODUCT_OS_NAME" />设备上多个人资料会话中的用户行为。
 
@@ -343,6 +337,7 @@
           如果“EnableMediaRouter”政策设为 false，那么此政策的值将不会发挥任何作用。</translation>
 <translation id="1509692106376861764">此政策从 <ph name="PRODUCT_NAME" /> 版本 29 起开始弃用。</translation>
 <translation id="1514888685242892912">启用 <ph name="PRODUCT_NAME" /></translation>
+<translation id="1515230621229117540">启用悬浮无障碍功能菜单</translation>
 <translation id="1515824657887788963">允许页面在关闭过程中执行同步 XHR 请求。</translation>
 <translation id="1522425503138261032">允许网站跟踪用户的地理位置</translation>
 <translation id="1523774894176285446">对于配置的网站要启动的替代浏览器。</translation>
@@ -569,12 +564,6 @@
       如果此政策设为 false，指标和诊断数据报告功能便会被停用。
 
       如果未配置此政策，指标和诊断数据报告功能将会在非托管设备上停用，但会在托管设备上启用。</translation>
-<translation id="1907431809333268751">配置企业登录网址（仅限 HTTP 和 HTTPS 方案）列表。系统会在这些网址上捕获密码指纹，并使用指纹进行密码重用检测。
-      为了使 <ph name="PRODUCT_NAME" /> 能够正确捕获密码指纹，请务必确保您的登录页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的准则。
-
-      如果启用了此设置，密码保护服务就会在这些网址上捕获密码指纹，以用于密码重用检测。
-      如果停用了或未设定此设置，则密码保护服务会仅在 https://accounts.google.com 上捕获密码指纹。
-      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="1910704279188129272">让您能够设置应用级使用限制。
         使用限制可以针对给定用户应用于 <ph name="PRODUCT_OS_NAME" />上安装的应用。
         使用限制应在 |app_limits| 列表中传递。只能为每个应用添加 1 个限制条目。未包含在此列表中的应用没有任何限制。
@@ -3228,6 +3217,17 @@
 
           如果此设置未指定，<ph name="PRODUCT_NAME" /> 将使用默认的库名称。</translation>
 <translation id="5783009211970309878">打印页眉和页脚</translation>
+<translation id="5783576706065107606">在新版 <ph name="CORS" /> 实现方案中启用 <ph name="CORS" /> 检查缓解功能，从而允许扩展程序保持兼容的行为，并允许 <ph name="PRODUCT_NAME" /> 无需进行 <ph name="CORS" /> 检查便可发送指定标头。
+
+      如果此列表设为空，<ph name="PRODUCT_NAME" /> 会尝试以兼容的方式运行扩展程序，而不会激活 <ph name="PRODUCT_NAME" /> 79 中引入的 <ph name="API" /> 更改（如 <ph name="WEB_REQUEST_API_MANUAL" /> 所述）。
+
+      如果此列表设为包含 <ph name="HTTP" /> 请求标头名称，则 <ph name="CORS" /> 检查将会忽略所列的标头，并会为扩展程序启用缓解功能。
+
+      如果此列表未设置，系统将不会应用上述两项缓解功能。
+
+      如需详细了解 <ph name="CORS" />，请访问：<ph name="CORS_HELP_URL" />。
+
+      请注意，我们曾宣布将在 <ph name="PRODUCT_NAME" /> 版本 82 中移除此政策，但该计划已改为在版本 84 中移除此政策。</translation>
 <translation id="5790763087505467169">减少受管理访客会话的自动启动通知</translation>
 <translation id="5806128552675651249">仅允许在没有背景图片的情况下打印</translation>
 <translation id="5809210507920527553">控制 Linux 容器 (Crostini) 的设置。</translation>
@@ -3291,6 +3291,17 @@
           如果停用或未设置该设置，那么所有主机都将使用默认的 TalkGadget 域名（“chromoting-host.talkgadget.google.com”）。
 
           远程访问客户端不受此策略设置影响。它们将始终使用“chromoting-client.talkgadget.google.com”访问 TalkGadget。</translation>
+<translation id="5888171512889380367">使用旧版 <ph name="CORS" /> 实现方案，而非新版 <ph name="CORS" />。
+
+      如果此设置设为 True，系统会使用旧版实现方案（此版实现方案应该会与以往的版本兼容）。
+
+      如果此设置设为 False 或未设置，系统会使用新版实现方案（此版实现方案可能会导致出现特定于企业的兼容性问题）。
+
+      此政策将在几个里程碑版本后移除。
+
+      如需详细了解 <ph name="CORS" />，请访问：<ph name="CORS_HELP_URL" />。
+
+      请注意，我们曾宣布将在 <ph name="PRODUCT_NAME" /> 版本 82 中移除此政策，但该计划已改为在版本 84 中移除此政策。</translation>
 <translation id="5893553533827140852">如果启用此设置，系统将通过远程主机连接经由代理处理gnubby身份验证请求。
 
           如果您已停用或未配置此设置，那么系统将不会经由代理处理gnubby身份验证请求。</translation>
@@ -3560,6 +3571,11 @@
 
           此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="6417265370957905582">Google 助理</translation>
+<translation id="6422575351619065453">在自助服务终端模式中，用于控制是否显示悬浮无障碍功能菜单。
+
+      如果此政策设为启用，系统将始终显示悬浮无障碍功能菜单。
+
+      如果此政策设为停用或未设置，系统将始终不显示悬浮无障碍功能菜单。</translation>
 <translation id="6424485010103067949"><ph name="OMA_URI" />：</translation>
 <translation id="6426205278746959912">您无法强制 Android 应用使用代理。一小部分代理设置已可供 Android 应用使用，此类应用可能会主动选择使用这些设置：
 
@@ -3869,13 +3885,6 @@
       如果选择“U2F_EXTENDED”，集成的双重身份验证将不仅会提供 U2F 功能，还会提供一些扩展功能以便进行个人验证。</translation>
 <translation id="7003334574344702284">如果启用此政策，就会强制从先前的默认浏览器导入已保存的密码，还会影响导入对话框。如果停用此政策，就不会导入已保存的密码。如果未设置此政策，系统就会询问用户是否导入已保存的密码，或者系统自动进行导入。</translation>
 <translation id="7003746348783715221">“<ph name="PRODUCT_NAME" />”偏好设置</translation>
-<translation id="7007671350884342624">配置 <ph name="PRODUCT_NAME" /> 在存储用户数据时所使用的目录。
-
-      如果您设置了此政策，那么无论用户是否已指定“--user-data-dir”标记，<ph name="PRODUCT_NAME" /> 都将使用本政策提供的目录。请勿将此政策设置为某个卷的根目录或用于其他用途的目录（因为 <ph name="PRODUCT_NAME" /> 会管理相关内容），以免丢失数据或发生其他意外错误。
-
-      有关可用变量的列表，请访问 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
-
-      如果未设置此政策，则系统将使用默认个人资料路径，而且日后用户将可以通过“--disk-cache-dir”命令行标记来替换此目录。</translation>
 <translation id="7008308728445338159">启用 DNS 拦截检查功能</translation>
 <translation id="7027785306666625591">配置<ph name="PRODUCT_OS_NAME" />中的电源管理设置。
 
@@ -4780,7 +4789,6 @@
 <translation id="8424255554404582727">设置显示屏默认旋转角度，每次重新启动后都重新应用设置的角度</translation>
 <translation id="8426231401662877819">将屏幕顺时针旋转 90 度</translation>
 <translation id="8433186206711564395">网络设置</translation>
-<translation id="8433423491036718210">配置企业登录网址列表，以便密码保护服务从这些网址中捕获密码指纹。</translation>
 <translation id="8445576299806775661">每次实施完重大版本更新后，Chrome 都会为用户浏览数据的某些部分创建快照，以供日后执行紧急版本回滚时使用。如果对某个版本执行了紧急回滚，且用户拥有与此版本对应的快照，系统便会恢复相应快照中的数据。这就使得用户能够继续拥有自己的书签和自动填充数据等设置。
 
       如果此政策未设置，系统将会使用默认值（即 3）

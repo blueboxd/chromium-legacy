@@ -95,13 +95,23 @@ suite('NewTabPageLogoTest', () => {
 
   test('setting interactive doodle shows iframe', async () => {
     // Act.
-    const logo = await createLogo({content: {url: {url: 'https://foo.com'}}});
+    const logo = await createLogo({
+      content: {
+        interactiveDoodle: {
+          url: {url: 'https://foo.com'},
+          width: 200,
+          height: 100,
+        }
+      }
+    });
 
     // Assert.
     assertNotStyle(logo.$.doodle, 'display', 'none');
     assertStyle(logo.$.logo, 'display', 'none');
     assertEquals(logo.$.iframe.path, 'iframe?https://foo.com');
     assertNotStyle(logo.$.iframe, 'display', 'none');
+    assertStyle(logo.$.iframe, 'width', '200px');
+    assertStyle(logo.$.iframe, 'height', '100px');
     assertStyle(logo.$.imageContainer, 'display', 'none');
   });
 
@@ -159,7 +169,8 @@ suite('NewTabPageLogoTest', () => {
   // Disabled for flakiness, see https://crbug.com/1065812.
   test.skip('receiving resize message resizes doodle', async () => {
     // Arrange.
-    const logo = await createLogo({content: {url: {url: 'https://foo.com'}}});
+    const logo = await createLogo(
+        {content: {interactiveDoodle: {url: {url: 'https://foo.com'}}}});
     const transitionend = eventToPromise('transitionend', logo.$.iframe);
 
     // Act.
@@ -190,7 +201,8 @@ suite('NewTabPageLogoTest', () => {
 
   test('receiving other message does not resize doodle', async () => {
     // Arrange.
-    const logo = await createLogo({content: {url: {url: 'https://foo.com'}}});
+    const logo = await createLogo(
+        {content: {interactiveDoodle: {url: {url: 'https://foo.com'}}}});
     const height = logo.$.iframe.offsetHeight;
     const width = logo.$.iframe.offsetWidth;
 

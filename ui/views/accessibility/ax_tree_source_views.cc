@@ -117,6 +117,10 @@ AXAuraObjWrapper* AXTreeSourceViews::GetNull() const {
   return nullptr;
 }
 
+std::string AXTreeSourceViews::GetDebugString(AXAuraObjWrapper* node) const {
+  return node->ToString();
+}
+
 void AXTreeSourceViews::SerializeNode(AXAuraObjWrapper* node,
                                       ui::AXNodeData* out_data) const {
   node->Serialize(out_data);

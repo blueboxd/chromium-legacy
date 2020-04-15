@@ -493,6 +493,9 @@ void GetFakeCrosHealthdData(
   chromeos::cros_healthd::mojom::BacklightInfo backlight_info(
       kFakeBacklightPath, kFakeMaxBrightness, kFakeBrightness);
   backlight_vector.push_back(backlight_info.Clone());
+  auto backlight_result =
+      chromeos::cros_healthd::mojom::BacklightResult::NewBacklightInfo(
+          std::move(backlight_vector));
   std::vector<chromeos::cros_healthd::mojom::FanInfoPtr> fan_vector;
   chromeos::cros_healthd::mojom::FanInfo fan_info(kFakeSpeedRpm);
   fan_vector.push_back(fan_info.Clone());
@@ -502,7 +505,7 @@ void GetFakeCrosHealthdData(
       battery_info.Clone(), std::move(block_device_info),
       cached_vpd_info.Clone(), std::move(cpu_result),
       std::move(timezone_result), std::move(memory_result),
-      std::move(backlight_vector), std::move(fan_result));
+      std::move(backlight_result), std::move(fan_result));
 
   // Create fake SampledData.
   em::CPUTempInfo fake_cpu_temp_sample;

@@ -436,7 +436,6 @@ Samo vi možete da vidite prikaz kamere. Sajt ne može da vidi slike kamere.</tr
 <translation id="4242533952199664413">Otvori podešavanja</translation>
 <translation id="4250229828105606438">Snimak ekrana</translation>
 <translation id="4256782883801055595">Licence otvorenog koda</translation>
-<translation id="4259722352634471385">Navigacija je blokirana: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiraj adresu linka</translation>
 <translation id="4275663329226226506">Mediji</translation>
 <translation id="4278390842282768270">Dozvoljeno</translation>
@@ -965,6 +964,7 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Da bi vam obeleživači bili dostupni na svim uređajima, uključite sinhronizaciju</translation>
 <translation id="8110087112193408731">Želite li da se Chrome aktivnosti prikazuju u Digitalnom blagostanju?</translation>
+<translation id="8115259494083109761">Da biste skenirali QR kôd, dozvolite da Chrome koristi kameru</translation>
 <translation id="8116925261070264013">Zvuk je isključen</translation>
 <translation id="8127542551745560481">Izmenite početnu stranicu</translation>
 <translation id="813082847718468539">Pogledajte informacije o sajtu</translation>
@@ -1066,7 +1066,6 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="8942627711005830162">Otvori u drugom prozoru</translation>
 <translation id="8951232171465285730">Chrome vam je uštedeo <ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">Blokirajte kolačiće za određeni sajt.</translation>
-<translation id="8959122750345127698">Navigacija je nedostupna: <ph name="URL" /></translation>
 <translation id="8965591936373831584">na čekanju</translation>
 <translation id="8970887620466824814">Došlo je do greške.</translation>
 <translation id="8972098258593396643">Preuzimate u podrazumevani direktorijum?</translation>

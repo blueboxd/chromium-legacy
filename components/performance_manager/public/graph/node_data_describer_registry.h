@@ -12,11 +12,7 @@
 
 namespace performance_manager {
 
-class FrameNode;
-class PageNode;
-class ProcessNode;
-class SystemNode;
-class WorkerNode;
+class Node;
 class NodeDataDescriber;
 
 // Allows registering NodeDataDescribers.
@@ -34,12 +30,7 @@ class NodeDataDescriberRegistry {
 
   // Invoke all registered describers for |node| and return a dictionary from
   // their name to their description - if any.
-  virtual base::Value DescribeFrameNodeData(const FrameNode* node) const = 0;
-  virtual base::Value DescribePageNodeData(const PageNode* node) const = 0;
-  virtual base::Value DescribeProcessNodeData(
-      const ProcessNode* node) const = 0;
-  virtual base::Value DescribeSystemNodeData(const SystemNode* node) const = 0;
-  virtual base::Value DescribeWorkerNodeData(const WorkerNode* node) const = 0;
+  virtual base::Value DescribeNodeData(const Node* node) const = 0;
 };
 
 }  // namespace performance_manager

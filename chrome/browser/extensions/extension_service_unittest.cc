@@ -5013,8 +5013,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
       net::CanonicalCookie::Create(ext_url, "dummy=value", base::Time::Now(),
                                    base::nullopt /* server_time */);
   cookie_store->SetCanonicalCookieAsync(
-      std::move(cookie), ext_url.scheme(),
-      net::CookieOptions::MakeAllInclusive(),
+      std::move(cookie), ext_url, net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&ExtensionCookieCallback::SetCookieCallback,
                      base::Unretained(&callback)));
   content::RunAllTasksUntilIdle();
@@ -5169,7 +5168,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
     bool set_result = false;
     base::RunLoop run_loop;
     cookie_manager_remote->SetCanonicalCookie(
-        *cc.get(), origin1.scheme(), net::CookieOptions::MakeAllInclusive(),
+        *cc.get(), origin1, net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(&SetCookieSaveData, &set_result,
                        run_loop.QuitClosure()));
     run_loop.Run();

@@ -91,6 +91,13 @@ jumbo_static_library("test_support") {
     "configuration_policy_pref_store_test.h",
   ]
 
+  if (!is_android && !is_fuchsia) {
+    sources += [
+      "policy_pref_mapping_test.cc",
+      "policy_pref_mapping_test.h",
+    ]
+  }
+
   public_deps = [
     ":browser",
     "//base",
@@ -101,7 +108,12 @@ jumbo_static_library("test_support") {
     "//components/policy:generated",
     "//components/policy/core/common:test_support",
   ]
-  deps = [ "//testing/gtest" ]
+  deps = [
+    "//build:branding_buildflags",
+    "//components/prefs",
+    "//testing/gtest",
+    "//url",
+  ]
 }
 
 source_set("unit_tests") {

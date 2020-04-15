@@ -22,6 +22,12 @@ Still reading?
   Note: PRODUCT_DIR will be substituted at run-time with actual
   directory path (e.g. out/Debug)
 -->
+  <issue id="AcceptsUserCertificates">
+    <!-- See https://crbug.com/827265 and comment in the file for context. -->
+    <ignore regexp="chrome/android/java/res/xml/network_security_config.xml"/>
+    <ignore regexp="android_webview/tools/system_webview_shell/apk/res/xml/network_security_config.xml"/>
+    <ignore regexp="test"/>
+  </issue>
   <!-- AllowBackup defaults to true, and causes a lint warning if not explicitly set. -->
   <issue id="AllowBackup">
     <ignore path="AndroidManifest.xml"/>
@@ -32,6 +38,7 @@ Still reading?
   <issue id="Assert" severity="ignore"/>
   <issue id="AuthLeak" severity="Error">
     <ignore regexp="chrome/android/javatests"/>
+    <ignore regexp="Test.java"/>
   </issue>
   <issue id="BadHostnameVerifier" severity="Error"/>
   <issue id="ButtonOrder" severity="Error">
@@ -166,6 +173,12 @@ Still reading?
     <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd"/>
     <ignore regexp="components/browser_ui/strings/android/browser_ui_strings_grd"/>
   </issue>
+  <issue id="InsecureBaseConfiguration">
+    <!-- See https://crbug.com/827265 and comment in the file for context. -->
+    <ignore regexp="chrome/android/java/res/xml/network_security_config.xml"/>
+    <ignore regexp="android_webview/tools/system_webview_shell/apk/res/xml/network_security_config.xml"/>
+    <ignore regexp="test"/>
+  </issue>
   <issue id="InconsistentArrays" severity="Error">
     <ignore regexp="android_webview/locale_paks.resources.zip/values/locale-paks.xml"/>
     <ignore regexp="chrome/android/chrome_locale_paks.resources.zip/values/locale-paks.xml"/>
@@ -278,6 +291,10 @@ Still reading?
   <issue id="ObsoleteSdkInt" severity="ignore"/>
   <issue id="OldTargetApi">
     <ignore path="AndroidManifest.xml"/>
+  </issue>
+  <issue id="OnClick">
+    <!-- False positive, see: http://issuetracker.google.com/148523770 for similar issue. -->
+    <ignore regexp="tools/android/audio_focus_grabber/java/res/layout/audio_focus_grabber_activity.xml"/>
   </issue>
   <issue id="Overdraw" severity="ignore"/>
   <issue id="PackageManagerGetSignatures">

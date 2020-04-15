@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "build/build_config.h"
-#include "chrome/browser/signin/reauth_result.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom-forward.h"
 #include "components/password_manager/content/browser/content_credential_manager.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
@@ -45,6 +44,8 @@
 
 class PasswordAccessoryController;
 class TouchToFillController;
+#else
+#include "chrome/browser/ui/passwords/account_storage_auth_helper.h"
 #endif
 
 class ChromeBiometricAuthenticator;
@@ -385,6 +386,10 @@ class ChromePasswordManagerClient
 
   // Whether OnPaste() was called from this ChromePasswordManagerClient
   bool was_on_paste_called_ = false;
+
+#if !defined(OS_ANDROID)
+  AccountStorageAuthHelper account_storage_auth_helper_;
+#endif
 
   // Helper for performing logic that is common between
   // ChromePasswordManagerClient and IOSChromePasswordManagerClient.

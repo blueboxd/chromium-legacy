@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//services/network/public/cpp/features.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 source_set("trust_tokens") {
@@ -157,4 +158,16 @@ proto_library("storage_proto") {
   deps = [ ":public_proto" ]
 
   extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+fuzzer_test("trust_token_key_commitment_parser_fuzzer") {
+  sources = [ "test/trust_token_key_commitment_parser_fuzzer.cc" ]
+  deps = [
+    ":trust_tokens",
+    "//base",
+    "//net:net_fuzzer_test_support",
+    "//services/network/public/mojom",
+  ]
+  dict = "test/trust_token_key_commitment_parser_fuzzer.dict"
+  seed_corpus = "//third_party/grpc/src/test/core/json/corpus/"
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 36
+// Next MinVersion: 37
 
 module arc.mojom;
 
@@ -288,12 +288,13 @@ interface IntentHelperHost {
   // intent expects the captured image would be down-scaled to a small enough
   // size. If |is_secure| is true, the intent is fired when the device is
   // secured, which means the camera app should not show any user-sensitive
-  // data.
+  // data. |task_id| represents the id of the caller task in ARC.
   [MinVersion=28] LaunchCameraApp@12(uint32 intent_id,
                                      CameraIntentMode mode,
                                      bool should_handle_result,
                                      bool should_down_scale,
-                                     bool is_secure);
+                                     bool is_secure,
+                                     [MinVersion=36] int32 task_id);
 
   // Called when intent filters are updated for one package. This will be
   // called when apps are installed, uninstalled or updated.

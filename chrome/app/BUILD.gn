@@ -165,6 +165,7 @@ static_library("test_support") {
     deps += [
       "//chrome/browser/chromeos",
       "//chromeos",
+      "//chromeos/memory:memory",
     ]
   }
 

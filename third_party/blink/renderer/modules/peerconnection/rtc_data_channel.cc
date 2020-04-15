@@ -38,8 +38,8 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_platform.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -212,7 +212,7 @@ void RTCDataChannel::Observer::OnMessageImpl(
 RTCDataChannel::RTCDataChannel(
     ExecutionContext* context,
     scoped_refptr<webrtc::DataChannelInterface> channel,
-    RTCPeerConnectionHandlerPlatform* peer_connection_handler)
+    RTCPeerConnectionHandler* peer_connection_handler)
     : ExecutionContextLifecycleObserver(context),
       state_(webrtc::DataChannelInterface::kConnecting),
       binary_type_(kBinaryTypeArrayBuffer),

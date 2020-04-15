@@ -1662,7 +1662,7 @@ bool CreateAndSetCookie(CookieStore* cs,
     return false;
   DCHECK(cs);
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
-  cs->SetCanonicalCookieAsync(std::move(cookie), url.scheme(),
+  cs->SetCanonicalCookieAsync(std::move(cookie), url,
                               CookieOptions::MakeAllInclusive(),
                               callback.MakeCallback());
   callback.WaitUntilDone();

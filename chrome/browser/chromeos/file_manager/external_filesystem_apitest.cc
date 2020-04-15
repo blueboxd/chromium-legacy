@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/drivefs_test_support.h"
+#include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -22,13 +23,17 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/test/result_catcher.h"
@@ -128,6 +133,50 @@ class FakeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
   const base::FilePath drivefs_root_;
 };
 
+// Waits for a WebContents of the background page of the extension under test
+// to load, then injects some javascript into it to trigger a particular test.
+class JSTestStarter : public content::TestNavigationObserver {
+ public:
+  explicit JSTestStarter(const std::string& test_name)
+      : TestNavigationObserver(GetUrlToWatch()), test_name_(test_name) {
+    WatchExistingWebContents();
+    StartWatchingNewWebContents();
+  }
+
+  static GURL GetUrlToWatch() {
+    // Use the chrome-extension:// ID corresponding to the key used in the app
+    // manifests for tests in this file. An improvement to this would use the ID
+    // of the extension from LoadExtensionAsComponentWithManifest(), but that's
+    // potentially racy.
+    return GURL(
+        "chrome-extension://pkplfbidichfdicaijlchgnapepdginl/"
+        "_generated_background_page.html");
+  }
+
+  // TestNavigationObserver:
+  void OnDidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    // If the background page scripts have run, the test will exist, so just run
+    // it. Otherwise, schedule the test to be run at the end of the background
+    // page script.
+    constexpr char kScript[] = R"(
+        if (self.$1) {
+          chrome.test.runTests([$1])
+        } else {
+          self.testNameToRun = '$1';
+        }
+    )";
+    ASSERT_TRUE(content::ExecuteScript(
+        navigation_handle->GetRenderFrameHost(),
+        base::ReplaceStringPlaceholders(kScript, {test_name_}, nullptr)));
+
+    TestNavigationObserver::OnDidFinishNavigation(navigation_handle);
+  }
+
+ private:
+  const std::string test_name_;
+};
+
 bool TouchFile(const base::FilePath& path,
                base::StringPiece mtime_string,
                base::StringPiece atime_string) {
@@ -138,12 +187,40 @@ bool TouchFile(const base::FilePath& path,
   return result;
 }
 
+// Configuration of a file residing in a "test_dir" of a created volume.
+// If contents is null, creates a subdirectory.
+struct TestDirConfig {
+  const char* mtime;
+  const char* atime;
+  const char* name;
+  const char* contents = kTestFileContent;
+};
+
+// An arbitrary time, for tests that don't care.
+constexpr const char kArbitraryTime[] = "2011-04-03T11:11:10.000Z";
+
+// The default configuration of entries in "test_dir" used in test harnesses.
+constexpr const TestDirConfig kDefaultDirConfig[] = {
+    {"2011-11-02T04:00:00.000Z", "2011-11-02T04:00:00.000Z", "empty_dir",
+     nullptr},
+    {"2011-04-01T18:34:08.234Z", "2012-01-02T00:00:01.000Z", "subdir", nullptr},
+    {"2011-12-14T00:40:47.330Z", "2012-01-02T00:00:00.000Z", "test_file.xul"},
+    {"2012-01-01T10:00:30.000Z", "2012-01-01T00:00:00.000Z",
+     "test_file.xul.foo"},
+    {"2011-04-03T11:11:10.000Z", "2012-01-02T00:00:00.000Z", "test_file.tiff"},
+    {"2011-12-14T00:40:47.330Z", "2010-01-02T00:00:00.000Z",
+     "test_file.tiff.foo"},
+    {"2011-12-14T00:40:47.330Z", "2011-12-14T00:40:47.330Z", "empty_file.foo",
+     ""},
+};
+
 // Sets up the initial file system state for native local and restricted native
 // local file systems. The hierarchy is the same as for the drive file system.
 // The directory is created at unique_temp_dir/|mount_point_name| path.
 bool InitializeLocalFileSystem(std::string mount_point_name,
                                base::ScopedTempDir* tmp_dir,
-                               base::FilePath* mount_point_dir) {
+                               base::FilePath* mount_point_dir,
+                               const std::vector<TestDirConfig>& dir_contents) {
   if (!tmp_dir->CreateUniqueTempDir())
     return false;
 
@@ -152,71 +229,32 @@ bool InitializeLocalFileSystem(std::string mount_point_name,
   if (!base::CreateDirectory(*mount_point_dir))
     return false;
 
-  base::FilePath test_dir = mount_point_dir->AppendASCII("test_dir");
+  constexpr TestDirConfig kTestDir = {"2012-01-02T00:00:00.000Z",
+                                      "2012-01-02T00:00:01.000Z", "test_dir",
+                                      nullptr};
+
+  const base::FilePath test_dir = mount_point_dir->AppendASCII(kTestDir.name);
   if (!base::CreateDirectory(test_dir))
     return false;
 
-  base::FilePath test_subdir = test_dir.AppendASCII("empty_dir");
-  if (!base::CreateDirectory(test_subdir))
-    return false;
+  for (const auto& file : dir_contents) {
+    const base::FilePath test_path = test_dir.AppendASCII(file.name);
+    if (file.contents) {
+      if (!google_apis::test_util::WriteStringToFile(test_path, file.contents))
+        return false;
+    } else {
+      if (!base::CreateDirectory(test_path))
+        return false;
+    }
+  }
 
-  test_subdir = test_dir.AppendASCII("subdir");
-  if (!base::CreateDirectory(test_subdir))
-    return false;
+  for (const auto& file : dir_contents) {
+    if (!TouchFile(test_dir.Append(file.name), file.mtime, file.atime))
+      return false;
+  }
 
-  base::FilePath test_file = test_dir.AppendASCII("test_file.xul");
-  if (!google_apis::test_util::WriteStringToFile(test_file, kTestFileContent))
-    return false;
-
-  test_file = test_dir.AppendASCII("test_file.xul.foo");
-  if (!google_apis::test_util::WriteStringToFile(test_file, kTestFileContent))
-    return false;
-
-  test_file = test_dir.AppendASCII("test_file.tiff");
-  if (!google_apis::test_util::WriteStringToFile(test_file, kTestFileContent))
-    return false;
-
-  test_file = test_dir.AppendASCII("test_file.tiff.foo");
-  if (!google_apis::test_util::WriteStringToFile(test_file, kTestFileContent))
-    return false;
-
-  test_file = test_dir.AppendASCII("empty_file.foo");
-  if (!google_apis::test_util::WriteStringToFile(test_file, ""))
-    return false;
-
-  if (!TouchFile(test_dir.Append("empty_dir"), "2011-11-02T04:00:00.000Z",
-                 "2011-11-02T04:00:00.000Z")) {
-    return false;
-  }
-  if (!TouchFile(test_dir.Append("subdir"), "2011-04-01T18:34:08.234Z",
-                 "2012-01-02T00:00:01.000Z")) {
-    return false;
-  }
-  if (!TouchFile(test_dir.Append("test_file.xul"), "2011-12-14T00:40:47.330Z",
-                 "2012-01-02T00:00:00.000Z")) {
-    return false;
-  }
-  if (!TouchFile(test_dir.Append("test_file.xul.foo"),
-                 "2012-01-01T10:00:30.000Z", "2012-01-01T00:00:00.000Z")) {
-    return false;
-  }
-  if (!TouchFile(test_dir.Append("test_file.tiff"), "2011-04-03T11:11:10.000Z",
-                 "2012-01-02T00:00:00.000Z")) {
-    return false;
-  }
-  if (!TouchFile(test_dir.Append("test_file.tiff.foo"),
-                 "2011-12-14T00:40:47.330Z", "2010-01-02T00:00:00.000Z")) {
-    return false;
-  }
-  if (!TouchFile(test_dir.Append("empty_file.foo"), "2011-12-14T00:40:47.330Z",
-                 "2011-12-14T00:40:47.330Z")) {
-    return false;
-  }
-  if (!TouchFile(test_dir, "2012-01-02T00:00:00.000Z",
-                 "2012-01-02T00:00:01.000Z")) {
-    return false;
-  }
-  return true;
+  // Touch the directory holding all the contents last.
+  return TouchFile(test_dir, kTestDir.mtime, kTestDir.atime);
 }
 
 // Helper class to wait for a background page to load or close again.
@@ -252,6 +290,10 @@ class FileSystemExtensionApiTestBase : public extensions::ExtensionApiTest {
 
   FileSystemExtensionApiTestBase() = default;
   ~FileSystemExtensionApiTestBase() override = default;
+
+  virtual std::vector<TestDirConfig> GetTestDirContents() {
+    return {std::begin(kDefaultDirConfig), std::end(kDefaultDirConfig)};
+  }
 
   bool SetUpUserDataDirectory() override {
     return drive::SetUpUserDataDirectoryForDriveFsTest();
@@ -338,6 +380,16 @@ class FileSystemExtensionApiTestBase : public extensions::ExtensionApiTest {
     return true;
   }
 
+  // Starts the app in |app_folder| then triggers the |test_name| on the
+  // background page using JSTestStarter. Does not configure a file handler app.
+  bool RunBackgroundPageTestCase(const std::string& app_folder,
+                                 const std::string& test_name) {
+    JSTestStarter starter(test_name);
+    return RunFileSystemExtensionApiTest("file_browser/" + app_folder,
+                                         FILE_PATH_LITERAL("manifest.json"),
+                                         std::string(), FLAGS_NONE);
+  }
+
  protected:
   // Sets up initial test file system hierarchy.
   virtual void InitTestFileSystem() = 0;
@@ -358,8 +410,9 @@ class LocalFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
 
   // FileSystemExtensionApiTestBase override.
   void InitTestFileSystem() override {
-    ASSERT_TRUE(InitializeLocalFileSystem(
-        kLocalMountPointName, &tmp_dir_, &mount_point_dir_))
+    ASSERT_TRUE(InitializeLocalFileSystem(kLocalMountPointName, &tmp_dir_,
+                                          &mount_point_dir_,
+                                          GetTestDirContents()))
         << "Failed to initialize file system.";
   }
 
@@ -388,8 +441,9 @@ class RestrictedFileSystemExtensionApiTest
 
   // FileSystemExtensionApiTestBase override.
   void InitTestFileSystem() override {
-    ASSERT_TRUE(InitializeLocalFileSystem(
-        kRestrictedMountPointName, &tmp_dir_, &mount_point_dir_))
+    ASSERT_TRUE(InitializeLocalFileSystem(kRestrictedMountPointName, &tmp_dir_,
+                                          &mount_point_dir_,
+                                          GetTestDirContents()))
         << "Failed to initialize file system.";
   }
 
@@ -458,7 +512,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     // could exist simultaneously.
     base::FilePath drivefs_mount_point;
     InitializeLocalFileSystem("drive-user/root", &drivefs_root_,
-                              &drivefs_mount_point);
+                              &drivefs_mount_point, GetTestDirContents());
     fake_drivefs_helper_ = std::make_unique<drive::FakeDriveFsHelper>(
         profile, drivefs_mount_point.DirName());
     return new drive::DriveIntegrationService(
@@ -582,8 +636,9 @@ class LocalAndDriveFileSystemExtensionApiTest
 
   // FileSystemExtensionApiTestBase override.
   void InitTestFileSystem() override {
-    ASSERT_TRUE(InitializeLocalFileSystem(
-        kLocalMountPointName, &local_tmp_dir_, &local_mount_point_dir_))
+    ASSERT_TRUE(InitializeLocalFileSystem(kLocalMountPointName, &local_tmp_dir_,
+                                          &local_mount_point_dir_,
+                                          GetTestDirContents()))
         << "Failed to initialize file system.";
 
     // Set up cache root to be used by DriveIntegrationService. This has to be
@@ -627,7 +682,7 @@ class LocalAndDriveFileSystemExtensionApiTest
     // profiles could exist simultaneously.
     base::FilePath drivefs_mount_point;
     InitializeLocalFileSystem("drive-user/root", &drivefs_root_,
-                              &drivefs_mount_point);
+                              &drivefs_mount_point, GetTestDirContents());
     fake_drivefs_helper_ = std::make_unique<drive::FakeDriveFsHelper>(
         profile, drivefs_mount_point.DirName());
     return new drive::DriveIntegrationService(
@@ -649,6 +704,83 @@ class LocalAndDriveFileSystemExtensionApiTest
   std::unique_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
       service_factory_for_test_;
 };
+
+// Mixin for starting one of the FileSystem test fixures with a specific app
+// configuration, which may include default-installed apps. Currently set up
+// to run with the chrome://media-app flag explicitly flipped (or not).
+class FileSystemExtensionApiTestWithApps
+    : public LocalFileSystemExtensionApiTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  FileSystemExtensionApiTestWithApps() {
+    if (MediaAppEnabled()) {
+      scoped_feature_list_.InitAndEnableFeature(chromeos::features::kMediaApp);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(chromeos::features::kMediaApp);
+    }
+  }
+
+  // A more readable accessor to determine if the MediaApp is enabled.
+  bool MediaAppEnabled() const { return GetParam(); }
+
+  // FileManagerPrivateApiTest:
+  void SetUpOnMainThread() override {
+    Profile* profile = browser()->profile();
+    file_manager::test::AddDefaultComponentExtensionsOnMainThread(profile);
+    web_app::WebAppProvider::Get(profile)
+        ->system_web_app_manager()
+        .InstallSystemAppsForTesting();
+    LocalFileSystemExtensionApiTest::SetUpOnMainThread();
+  }
+
+  std::vector<TestDirConfig> GetTestDirContents() override {
+    return {{kArbitraryTime, kArbitraryTime, "test_file.png"},
+            {kArbitraryTime, kArbitraryTime, "test_file.arw"}};
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+namespace {
+
+// Constants from app_service_metrics.cc.
+constexpr int kGalleryUmaBucket = 13;
+constexpr int kMediaAppUmaBucket = 19;
+
+// Metric recorded as the result of the call to apps::RecordAppLaunch().
+constexpr char kAppLaunchMetric[] = "Apps.DefaultAppLaunch.FromFileManager";
+
+std::string MediaAppBoolString(const testing::TestParamInfo<bool> info) {
+  return info.param ? "MediaApp" : "Gallery";
+}
+
+}  // namespace
+
+// Check the interception of ExecuteTask calls to replace Gallery for PNGs.
+IN_PROC_BROWSER_TEST_P(FileSystemExtensionApiTestWithApps, OpenGalleryForPng) {
+  base::HistogramTester histogram_tester;
+  EXPECT_TRUE(RunBackgroundPageTestCase("open_gallery", "testPngOpensGallery"))
+      << message_;
+  histogram_tester.ExpectBucketCount(kAppLaunchMetric, kGalleryUmaBucket,
+                                     MediaAppEnabled() ? 0 : 1);
+  histogram_tester.ExpectBucketCount(kAppLaunchMetric, kMediaAppUmaBucket,
+                                     MediaAppEnabled() ? 1 : 0);
+}
+
+// Ensures requests to invoke Gallery for raw files *always* open Gallery.
+IN_PROC_BROWSER_TEST_P(FileSystemExtensionApiTestWithApps, OpenGalleryForRaw) {
+  base::HistogramTester histogram_tester;
+  EXPECT_TRUE(RunBackgroundPageTestCase("open_gallery", "testRawOpensGallery"))
+      << message_;
+  histogram_tester.ExpectBucketCount(kAppLaunchMetric, kGalleryUmaBucket, 1);
+  histogram_tester.ExpectBucketCount(kAppLaunchMetric, kMediaAppUmaBucket, 0);
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         FileSystemExtensionApiTestWithApps,
+                         testing::Bool(),
+                         MediaAppBoolString);
 
 //
 // LocalFileSystemExtensionApiTests.

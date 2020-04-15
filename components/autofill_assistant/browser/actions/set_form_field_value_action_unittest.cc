@@ -20,8 +20,6 @@ const char kFakeUrl[] = "https://www.example.com";
 const char kFakeSelector[] = "#some_selector";
 const char kFakeUsername[] = "user@example.com";
 const char kFakePassword[] = "example_password";
-const char kGeneratedPassword[] = "m-W2b-_.7Fu9A.A";
-const char kMemoryKeyForGeneratedPassword[] = "memory-key-for-generation";
 }  // namespace
 
 namespace autofill_assistant {
@@ -59,8 +57,6 @@ class SetFormFieldValueActionTest : public testing::Test {
                 WebsiteLoginFetcher::Login(GURL(kFakeUrl), kFakeUsername)}));
     ON_CALL(mock_website_login_fetcher_, OnGetPasswordForLogin(_, _))
         .WillByDefault(RunOnceCallback<1>(true, kFakePassword));
-    ON_CALL(mock_website_login_fetcher_, GetGeneratedPassword())
-        .WillByDefault(Return(kGeneratedPassword));
     user_data_.selected_login_ =
         base::make_optional<WebsiteLoginFetcher::Login>(GURL(kFakeUrl),
                                                         kFakeUsername);
@@ -152,27 +148,6 @@ TEST_F(SetFormFieldValueActionTest, PasswordToFill) {
       callback_,
       Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
   action.ProcessAction(callback_.Get());
-}
-
-TEST_F(SetFormFieldValueActionTest, GeneratedPassword) {
-  auto* value = set_form_field_proto_->add_value();
-  value->mutable_generate_password()->set_memory_key(
-      kMemoryKeyForGeneratedPassword);
-  SetFormFieldValueAction action(&mock_action_delegate_, proto_);
-  ON_CALL(mock_action_delegate_, OnGetFieldValue(_, _))
-      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), kGeneratedPassword));
-  EXPECT_CALL(mock_action_delegate_,
-              OnSetFieldValue(fake_selector_, kGeneratedPassword, _, _, _))
-      .WillOnce(RunOnceCallback<4>(OkClientStatus()));
-
-  EXPECT_CALL(
-      callback_,
-      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
-  action.ProcessAction(callback_.Get());
-  EXPECT_EQ(kGeneratedPassword,
-            user_data_.additional_values_[kMemoryKeyForGeneratedPassword]
-                .strings()
-                .values(0));
 }
 
 TEST_F(SetFormFieldValueActionTest, Keycode) {

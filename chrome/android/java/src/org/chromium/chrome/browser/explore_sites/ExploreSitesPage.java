@@ -31,8 +31,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.ui.modelutil.ListModel;
@@ -225,8 +225,8 @@ public class ExploreSitesPage extends BasicNativePage {
             iconRadius = iconSizePx / 2;
         }
 
-        FaviconFallbackGenerator iconGenerator =
-                new FaviconFallbackGenerator(iconSizePx, iconSizePx, iconRadius,
+        RoundedIconGenerator iconGenerator =
+                new RoundedIconGenerator(iconSizePx, iconSizePx, iconRadius,
                         ApiCompatibilityUtils.getColor(
                                 context.getResources(), R.color.default_favicon_background_color),
                         context.getResources().getDimensionPixelSize(textSizeDimensionResource));

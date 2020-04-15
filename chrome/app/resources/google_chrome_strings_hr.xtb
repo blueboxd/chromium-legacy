@@ -88,6 +88,7 @@
 <translation id="34857402635545079">Izbriši i podatke s Chromea (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome treba dopuštenje za pristup vašoj lokaciji da bi je podijelio s ovom web-lokacijom</translation>
 <translation id="3533694711092285624">Nema nijedne spremljene zaporke. Chrome može provjeriti vaše zaporke kad ih spremite.</translation>
+<translation id="3541482654983822893">Chrome ne može provjeriti vaše zaporke. Pokušajte ponovno nakon 24 sata.</translation>
 <translation id="3576528680708590453">Vaš administrator sustava konfigurirao je Google Chrome da otvara zamjenski preglednik za pristup URL-u <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Uključite sinkronizaciju Chromea kako bi vam bio prilagođen na svim vašim uređajima</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Vaš administrator zahtijeva da ponovno pokrenete Chrome radi primjene ažuriranja}=1{Vaš administrator zahtijeva da ponovno pokrenete Chrome radi primjene ažuriranja. Anonimni se prozor neće ponovno otvoriti.}one{Vaš administrator zahtijeva da ponovno pokrenete Chrome radi primjene ažuriranja. Vaš # anonimni prozor neće se ponovno otvoriti.}few{Vaš administrator zahtijeva da ponovno pokrenete Chrome radi primjene ažuriranja. Vaša # anonimna prozora neće se ponovno otvoriti.}other{Vaš administrator zahtijeva da ponovno pokrenete Chrome radi primjene ažuriranja. Vaših # anonimnih prozora neće se ponovno otvoriti.}}</translation>
@@ -105,6 +106,7 @@
 <translation id="4147555960264124640">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Google Chrome. Vaši podaci u sustavu Chrome, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME" />. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Program za instalaciju nije dekomprimirao arhivu. Ponovno preuzmite program Google Chrome.</translation>
 <translation id="4191857738314598978">{0,plural, =1{Ponovo pokrenite Chrome u roku od jednog dana}one{Ponovo pokrenite Chrome u roku od # dana}few{Ponovo pokrenite Chrome u roku od # dana}other{Ponovo pokrenite Chrome u roku od # dana}}</translation>
+<translation id="4205939740494406371">Chrome ne može provjeriti vaše zaporke. Pokušajte ponovno nakon 24 sata ili <ph name="BEGIN_LINK" />provjerite zaporke na svojem Google računu<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Želite li se odjaviti s Chromea?</translation>
 <translation id="4251615635259297716">Želite li povezati svoje podatke sustava Chrome s tim računom?</translation>
 <translation id="4293420128516039005">Prijavite se da biste sinkronizirali i prilagodili Chrome na svim svojim uređajima</translation>
@@ -227,7 +229,6 @@
 <translation id="8342675569599923794">Datoteka je opasna i Chrome ju je blokirao.</translation>
 <translation id="8370517070665726704">Autorska prava <ph name="YEAR" />. Google LLC. Sva prava pridržana.</translation>
 <translation id="840084489713044809">Google Chrome želi izvesti vaše zaporke.</translation>
-<translation id="8455999171311319804">Dodatno: automatskim slanjem podataka o upotrebi i dijagnostici Googleu pomognite nam da poboljšamo OS Chrome.</translation>
 <translation id="8498858610309223613">Upravo je primijenjeno posebno sigurnosno ažuriranje za Google Chrome. Ponovo pokrenite sustav i vratit ćemo vaše kartice.</translation>
 <translation id="8521348052903287641">Ulazno pravilo kako bi Google Chrome Dev dopustio mDNS promet.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

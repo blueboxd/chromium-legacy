@@ -451,6 +451,7 @@ extern const char kPrintingDuplexDefault[];
 extern const char kPrintingPinDefault[];
 extern const char kPrintingSizeDefault[];
 extern const char kPrintingSendUsernameAndFilenameEnabled[];
+extern const char kPrintingMaxSheetsAllowed[];
 extern const char kPrintJobHistoryExpirationPeriod[];
 extern const char kPrintingAPIExtensionsWhitelist[];
 #endif  // OS_CHROMEOS
@@ -699,6 +700,8 @@ extern const char kOobeMarketingOptInScreenFinished[];
 extern const char kCanShowOobeGoodiesPage[];
 extern const char kDeviceRegistered[];
 extern const char kEnrollmentRecoveryRequired[];
+extern const char kHelpAppShouldShowGetStarted[];
+extern const char kHelpAppTabletModeDuringOobe[];
 extern const char kUsedPolicyCertificates[];
 extern const char kServerBackedDeviceState[];
 extern const char kCustomizationDefaultWallpaperURL[];
@@ -1048,6 +1051,8 @@ extern const char kKnownInterceptionDisclosureInfobarLastShown[];
 extern const char kRequiredClientCertificateForUser[];
 extern const char kRequiredClientCertificateForDevice[];
 #endif
+
+extern const char kMediaFeedsSafeSearchEnabled[];
 
 }  // namespace prefs
 

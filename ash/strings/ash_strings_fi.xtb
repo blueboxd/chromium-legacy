@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Jos haluat nähdä ilmoituksia lukitusnäytöllä, avaa lukitus muuttaaksesi asetusta</translation>
 <translation id="4144413954005649103">Kun klikkaat jotain kakkospainikkeella tai painat sitä pitkään, Assistant näyttää siihen liittyviä tietoja.</translation>
 <translation id="4146833061457621061">Soita musiikkia</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" />: ylläpitäjä on <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Kielet</translation>
 <translation id="4195877955194704651">Automaattinen klikkaus ‑painike</translation>
 <translation id="4215497585250573029">VPN-asetukset</translation>
@@ -469,6 +468,7 @@
 <translation id="6878400149835617132">Pikanäppäin poistettu käytöstä</translation>
 <translation id="6910714959251846841">Tämän päivityksen asennus edellyttää laitteen powerwashia. Lue lisää uusimmasta <ph name="SYSTEM_APP_NAME" /> ‑päivityksestä.</translation>
 <translation id="6919251195245069855">Älykorttia ei tunnistettu. Yritä uudelleen.</translation>
+<translation id="6945221475159498467">Valitse</translation>
 <translation id="6972754398087986839">Aloitusopas</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="698231206551913481">Kun käyttäjä poistetaan, kaikki kyseiseen käyttäjään yhdistetyt tiedostot ja paikalliset tiedot poistetaan pysyvästi.</translation>
@@ -559,6 +559,7 @@
 <translation id="8142699993796781067">Yksityinen verkko</translation>
 <translation id="8152092012181020186">Sulje painamalla Ctrl + W.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Järjestelmänvalvojasi ylläpitää tätä asetusta.</translation>
+<translation id="815598010540052116">Vieritä alas</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> käytössä</translation>
 <translation id="8190698733819146287">Muokkaa kieliä ja syötettä...</translation>
 <translation id="8192202700944119416">Ilmoitukset on piilotettu.</translation>

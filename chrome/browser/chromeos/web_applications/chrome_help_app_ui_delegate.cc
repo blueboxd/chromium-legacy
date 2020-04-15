@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/system/statistics_provider.h"
@@ -58,6 +59,13 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
   Profile* profile = Profile::FromWebUI(web_ui_);
   PrefService* pref_service = profile->GetPrefs();
 
+  // Add state from the OOBE flow.
+  source->AddBoolean(
+      "shouldShowGetStarted",
+      pref_service->GetBoolean(prefs::kHelpAppShouldShowGetStarted));
+  source->AddBoolean(
+      "tabletModeDuringOOBE",
+      pref_service->GetBoolean(prefs::kHelpAppTabletModeDuringOobe));
   // Checks if any of the MultiDevice features (e.g. Instant Tethering,
   // Messages, Smart Lock) is allowed on this device.
   source->AddBoolean(

@@ -19,7 +19,7 @@ import {SortedTableBehavior} from './sorted_table_behavior.js';
  *     being compared.
  * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
  *     being compared.
- * @return {number} A negative number if a < b, 0 if a == b, and a positive
+ * @return {number} A negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
 function compareRowsByOrigin(a, b) {
@@ -32,7 +32,7 @@ function compareRowsByOrigin(a, b) {
  *     being compared.
  * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
  *     being compared.
- * @return {number} A negative number if a < b, 0 if a == b, and a positive
+ * @return {number} A negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
 function compareRowsByIsDirty(a, b) {
@@ -45,7 +45,7 @@ function compareRowsByIsDirty(a, b) {
  *     being compared.
  * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
  *     being compared.
- * @return {number} A negative number if a < b, 0 if a == b, and a positive
+ * @return {number} A negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
 function compareRowsByLastLoaded(a, b) {
@@ -58,7 +58,7 @@ function compareRowsByLastLoaded(a, b) {
  *     being compared.
  * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
  *     being compared.
- * @return {number} A negative number if a < b, 0 if a == b, and a positive
+ * @return {number} A negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
 function compareRowsByCpuUsage(a, b) {
@@ -75,7 +75,7 @@ function compareRowsByCpuUsage(a, b) {
  *     being compared.
  * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
  *     being compared.
- * @return {number} A negative number if a < b, 0 if a == b, and a positive
+ * @return {number} A negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
 function compareRowsByMemoryUsage(a, b) {
@@ -92,7 +92,7 @@ function compareRowsByMemoryUsage(a, b) {
  *     being compared.
  * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
  *     being compared.
- * @return {number} A negative number if a < b, 0 if a == b, and a positive
+ * @return {number} A negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
 function compareRowsByLoadDuration(a, b) {
@@ -110,7 +110,7 @@ function compareRowsByLoadDuration(a, b) {
  * @return {function(discards.mojom.SiteCharacteristicsDatabaseEntry,
                      discards.mojom.SiteCharacteristicsDatabaseEntry): number}
  *     A comparison function that compares two tab infos, returns
- *     negative number if a < b, 0 if a == b, and a positive
+ *     negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
 function getSortFunctionForKey(sortKey) {
@@ -342,7 +342,7 @@ Polymer({
    * @param {boolean} sortReverse True if sorting is reversed.
    * @return {function({Object}, {Object}): number}
    *     A comparison function that compares two tab infos, returns
-   *     negative number if a < b, 0 if a == b, and a positive
+   *     negative number if a < b, 0 if a === b, and a positive
    *     number if a > b.
    * @private
    */
@@ -443,7 +443,7 @@ Polymer({
    * @private
    */
   kilobytesToString_(value) {
-    return value == -1 ? 'N/A' : kilobytesToString(value);
+    return value === -1 ? 'N/A' : kilobytesToString(value);
   },
 
   /**
@@ -452,6 +452,6 @@ Polymer({
    * @private
    */
   optionalIntegerToString_(value) {
-    return value == -1 ? 'N/A' : value.toString();
+    return value === -1 ? 'N/A' : value.toString();
   },
 });

@@ -243,7 +243,7 @@ std::unique_ptr<net::test_server::HttpResponse> CountResponse(
   [ChromeEarlGrey loadURL:chromePage];
 
   // Load error page.
-  const GURL errorPage = GURL("http://ndtv1234.com");
+  const GURL errorPage = GURL("http://invalid.");
   [ChromeEarlGrey loadURL:errorPage];
   [ChromeEarlGrey waitForWebStateContainingText:"ERR_"];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -276,12 +276,12 @@ std::unique_ptr<net::test_server::HttpResponse> CountResponse(
 
   // Go back to error page.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:OmniboxText("ndtv1234.com")]
+  [[EarlGrey selectElementWithMatcher:OmniboxText("invalid.")]
       assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey waitForWebStateContainingText:"ERR_"];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [self triggerRestore];
-  [[EarlGrey selectElementWithMatcher:OmniboxText("ndtv1234.com")]
+  [[EarlGrey selectElementWithMatcher:OmniboxText("invalid.")]
       assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey waitForWebStateContainingText:"ERR_"];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];

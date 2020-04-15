@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">Отваряне на настройките</translation>
 <translation id="4250229828105606438">Eкранна снимка</translation>
 <translation id="4256782883801055595">Лицензи за отворен код</translation>
-<translation id="4259722352634471385">Навигирането е блокирано: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Копиране на адреса на връзката</translation>
 <translation id="4275663329226226506">Медия</translation>
 <translation id="4278390842282768270">Разрешено</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /><ph name="SEPARATOR" /><ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Включете синхронизирането, за да получите отметките си на всичките си устройства</translation>
 <translation id="8110087112193408731">Искате ли активността ви в Chrome да се показва в „Дигитално благополучие“?</translation>
+<translation id="8115259494083109761">За да сканирате QR код, разрешете на Chrome да използва камерата ви</translation>
 <translation id="8116925261070264013">Заглушени</translation>
 <translation id="8127542551745560481">Редактиране на началната страница</translation>
 <translation id="813082847718468539">Преглед на информацията за сайта</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">Отваряне в другия прозорец</translation>
 <translation id="8951232171465285730">Chrome ви спести <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8958424370300090006">Блокиране на „бисквитките“ за конкретен сайт.</translation>
-<translation id="8959122750345127698">Навигирането не е възможно: <ph name="URL" /></translation>
 <translation id="8965591936373831584">изчаква</translation>
 <translation id="8970887620466824814">Нещо се обърка.</translation>
 <translation id="8972098258593396643">Да се изтегли ли файлът в стандартната папка?</translation>

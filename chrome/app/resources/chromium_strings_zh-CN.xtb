@@ -39,7 +39,6 @@
 <translation id="2799223571221894425">重新启动</translation>
 <translation id="2805036593126168338">Chromium 操作系统无法同步您的密码。请立即修正。</translation>
 <translation id="2847479871509788944">从Chromium中移除…</translation>
-<translation id="2886012850691518054">可选：将使用情况统计信息和崩溃报告自动发送给 Google，帮助我们完善 Chromium。</translation>
 <translation id="2910007522516064972">关于 Chromium(&amp;C)</translation>
 <translation id="2977470724722393594">Chromium 已是最新版本</translation>
 <translation id="2983934633046890458">Chromium 正在尝试修改密码。</translation>
@@ -58,6 +57,7 @@
 <translation id="328888136576916638">缺少 Google API 密钥，因此 Chromium 的部分功能将无法使用。</translation>
 <translation id="3296368748942286671">关闭 Chromium 后继续运行后台应用</translation>
 <translation id="331951419404882060">登录时出现错误，Chromium操作系统无法同步您的数据。</translation>
+<translation id="347328004046849135">当您使用已泄露的密码登录时，Chromium 会通知您</translation>
 <translation id="3474745554856756813">这会从这台设备上删除 <ph name="ITEMS_COUNT" /> 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
 <translation id="3509308970982693815">请关闭所有 Chromium 窗口并重试。</translation>
 <translation id="3575459661164320785">您的计算机上存在有害软件。Chromium 可以移除该软件、恢复您的设置并停用扩展程序，以确保您的浏览器能够重新正常运行。</translation>
@@ -93,11 +93,13 @@
 <translation id="4746050847053251315">仍要退出 Chromium？</translation>
 <translation id="4748217263233248895">Chromium 刚刚应用了一项特殊的安全更新。请立即重启，以便系统恢复您的标签页。</translation>
 <translation id="4750035648288509542">离最新版本只有一步之遥了！重新启动 Chromium 即可完成更新。无痕式窗口不会自动重新打开。</translation>
+<translation id="4788777615168560705">Chromium 无法检查您的密码。请过 24 小时再试，或者<ph name="BEGIN_LINK" />检查您的 Google 帐号中的密码<ph name="END_LINK" />。</translation>
 <translation id="479167709087336770">这项服务会使用 Google 搜索所用的拼写检查工具。您在浏览器中输入的文字会被发送给 Google。您随时可在“设置”中更改此行为。</translation>
 <translation id="4888717733111232871">Chromium的入站规则，允许mDNS流量。</translation>
 <translation id="4943838377383847465">Chromium处于后台运行模式。</translation>
 <translation id="4987820182225656817">访客使用Chromium不会留下任何痕迹。</translation>
 <translation id="4994636714258228724">将您自己添加到Chromium</translation>
+<translation id="5224391634244552924">尚未保存任何密码。您需要先保存密码才能使用 Chromium 的密码检查功能。</translation>
 <translation id="5277894862589591112">要想应用您的更改，请重新启动 Chromium</translation>
 <translation id="5358375970380395591">您目前登录的帐号是一个托管帐号，该帐号的管理员将能够控制您的 Chromium 个人资料。您的 Chromium 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐号信息中心删除这些数据，但无法将这些数据与其他帐号相关联。<ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">正在更新 Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -164,6 +166,7 @@
 <translation id="7066436765290594559">Chromium操作系统无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="7067091210845072982">如果图片缺少有用的说明，则 Chromium 会尝试为您提供一条说明。为便于创建说明，系统会将图片发送给 Google。</translation>
 <translation id="7196312274710523067">无法启动 Chromium。请重试。</translation>
+<translation id="7197677400338048821">Chromium 无法检查您的密码。请过 24 小时再试。</translation>
 <translation id="7205698830395646142">在 Chromium 菜单中隐藏</translation>
 <translation id="7223968959479464213">任务管理器 - Chromium</translation>
 <translation id="731644333568559921">更新 Chromium 操作系统(&amp;C)</translation>

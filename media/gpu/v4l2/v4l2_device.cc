@@ -240,9 +240,9 @@ scoped_refptr<VideoFrame> V4L2Buffer::GetVideoFrame() {
   // We can create the VideoFrame only when using MMAP buffers.
   if (v4l2_buffer_.memory != V4L2_MEMORY_MMAP) {
     VLOGF(1) << "Cannot create video frame from non-MMAP buffer";
-    // video_frame_ should be null since that's its default value.
-    DCHECK_EQ(video_frame_, nullptr);
-    return video_frame_;
+    // Allow NOTREACHED() on invalid argument because this is an internal
+    // method.
+    NOTREACHED();
   }
 
   // Create the video frame instance if requiring it for the first time.
@@ -2045,6 +2045,23 @@ bool V4L2Device::SetExtCtrls(uint32_t ctrl_class,
   ext_ctrls.count = ctrls.size();
   ext_ctrls.controls = &ctrls[0].ctrl;
   return Ioctl(VIDIOC_S_EXT_CTRLS, &ext_ctrls) == 0;
+}
+
+base::Optional<struct v4l2_ext_control> V4L2Device::GetCtrl(uint32_t ctrl_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  struct v4l2_ext_control ctrl = {};
+  struct v4l2_ext_controls ext_ctrls = {};
+
+  ctrl.id = ctrl_id;
+  ext_ctrls.controls = &ctrl;
+  ext_ctrls.count = 1;
+
+  if (Ioctl(VIDIOC_G_EXT_CTRLS, &ext_ctrls) != 0) {
+    VPLOGF(3) << "Failed to get control";
+    return base::nullopt;
+  }
+
+  return ctrl;
 }
 
 class V4L2Request {

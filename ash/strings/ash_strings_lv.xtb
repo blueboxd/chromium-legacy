@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Lai skatītu paziņojumus bloķēšanas ekrānā, atbloķējiet, lai mainītu iestatījumu</translation>
 <translation id="4144413954005649103">Ja noklikšķināsiet uz ekrānā redzamā satura ar peles labo pogu vai nospiedīsiet un turēsiet saturu, Asistents parādīs ar to saistītu informāciju.</translation>
 <translation id="4146833061457621061">Atskaņot mūziku</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> pārvalda domēns <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Valodas</translation>
 <translation id="4195877955194704651">Poga Automātiskie klikšķi</translation>
 <translation id="4215497585250573029">VPN iestatījumi</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">Īsinājumtaustiņš izslēgts</translation>
 <translation id="6910714959251846841">Lai atjauninātu sistēmu, ierīcē jāizmanto funkcija Powerwash. Uzziniet vairāk par pēdējo <ph name="SYSTEM_APP_NAME" /> atjauninājumu.</translation>
 <translation id="6919251195245069855">Nevarēja atpazīt jūsu viedkarti. Mēģiniet vēlreiz.</translation>
+<translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6972754398087986839">Sākt darbu</translation>
 <translation id="6981982820502123353">Pieejamība</translation>
 <translation id="698231206551913481">Visi faili un lokālie dati, kas ir saistīti ar šo lietotāju, tiks neatgriezeniski dzēsti, tiklīdz šis lietotājs tiks noņemts.</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">Privāts tīkls</translation>
 <translation id="8152092012181020186">Lai aizvērtu cilnes lapu, vienlaikus nospiediet taustiņus Ctrl un W.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Šo iestatījumu pārvalda jūsu administrators.</translation>
+<translation id="815598010540052116">Ritināt lejup</translation>
 <translation id="8167567890448493835">Izmantotā valoda: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Pielāgot valodas un ievadi...</translation>
 <translation id="8192202700944119416">Paziņojumi ir paslēpti.</translation>

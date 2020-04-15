@@ -4,9 +4,13 @@
 
 #include "services/network/trust_tokens/trust_token_key_commitments.h"
 
+#include "base/base64.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_command_line.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -120,6 +124,43 @@ TEST(TrustTokenKeyCommitments, MultipleOrigins) {
     ASSERT_TRUE(result);
     EXPECT_TRUE(result.Equals(expectations[i]));
   }
+}
+
+TEST(TrustTokenKeyCommitments, ParseAndSet) {
+  TrustTokenKeyCommitments commitments;
+  commitments.ParseAndSet(
+      R"( { "https://issuer.example": { "srrkey": "aaaa" } } )");
+
+  EXPECT_TRUE(GetCommitmentForOrigin(
+      commitments,
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.example"))));
+}
+
+TEST(TrustTokenKeyCommitments, KeysFromCommandLine) {
+  base::test::ScopedCommandLine command_line;
+  command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      switches::kAdditionalTrustTokenKeyCommitments,
+      R"( { "https://issuer.example": { "srrkey": "aaaa" } } )");
+
+  TrustTokenKeyCommitments commitments;
+
+  EXPECT_TRUE(GetCommitmentForOrigin(
+      commitments,
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.example"))));
+
+  commitments.ParseAndSet(
+      R"( { "https://issuer.example": { "srrkey": "bbbb" } } )");
+
+  // A commitment provided through |Set| should defer to the one passed
+  // through the command line.
+  std::string expected_srrkey;
+  ASSERT_TRUE(base::Base64Decode("aaaa", &expected_srrkey));
+
+  auto result = GetCommitmentForOrigin(
+      commitments,
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.example")));
+  ASSERT_TRUE(result);
+  EXPECT_EQ(result->signed_redemption_record_verification_key, expected_srrkey);
 }
 
 }  // namespace network

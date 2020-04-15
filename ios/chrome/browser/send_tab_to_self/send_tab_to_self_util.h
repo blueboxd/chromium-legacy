@@ -35,11 +35,6 @@ bool AreContentRequirementsMet(const GURL& gurl,
 // Returns true if all conditions are true and shows the option onto the menu.
 bool ShouldOfferFeature(ChromeBrowserState* browser_state, const GURL& url);
 
-// Add a new entry to SendTabToSelfModel when user click "Share to your
-// devices" option.
-void CreateNewEntry(ChromeBrowserState* browser_state,
-                    NSString* target_device_id);
-
 }  // namespace send_tab_to_self
 
 #endif  // IOS_CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_UTIL_H_

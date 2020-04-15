@@ -37,7 +37,7 @@ FAIL Does NOT remove an animation after making a redundant change to its timelin
 PASS Does NOT remove an animation after making a redundant change to another animation's effect's properties
 PASS Does NOT remove an animation after making a redundant change to its effect's properties
 FAIL Updates ALL timelines before checking for replacement promise_test: Unhandled rejection with value: object "TypeError: Cannot assign to read only property 'timeline' of object '#<Animation>'"
-FAIL Dispatches remove events after finish events assert_array_equals: lengths differ, expected array ["animA:finish", "animB:finish", "animA:remove"] length 3, got ["animA:finish", "animB:finish", "animA:remove", "animA:finish"] length 4
+PASS Dispatches remove events after finish events
 FAIL Fires remove event before requestAnimationFrame assert_true: Not expecting event, but got remove event expected true got false
 PASS Queues all remove events before running them
 PASS Performs removal in deeply nested iframes

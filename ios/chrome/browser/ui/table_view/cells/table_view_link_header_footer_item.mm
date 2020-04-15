@@ -17,7 +17,7 @@
 
 namespace {
 // Padding used on the leading and trailing edges of the cell.
-const CGFloat kHorizontalPadding = 24;
+const CGFloat kHorizontalPadding = 16;
 
 // Padding used on the top and bottom edges of the cell.
 const CGFloat kVerticalPadding = 8;

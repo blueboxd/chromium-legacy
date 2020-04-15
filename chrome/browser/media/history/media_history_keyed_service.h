@@ -134,9 +134,26 @@ class MediaHistoryKeyedService : public KeyedService,
   // for waiting for database operations in tests.
   void PostTaskToDBForTest(base::OnceClosure callback);
 
-  // Returns all the rows in the media feeds table.  This is only used for
-  // debugging because it loads all rows in the table.
-  void GetMediaFeedsForDebug(
+  // Returns Media Feeds. If |include_origin_watchtime_percentile_data| is true
+  // then we will return the feeds sorted by audio+video watchtime descending
+  // and we will also populate the |origin_audio_video_watchtime_percentile|
+  // field in |MediaFeedPtr|. If |limit| is specified then we will limit the
+  // number of results to this. If |audio_video_watchtime_min| is specified then
+  // this will require a minimum watchtime for feeds to be returned.
+  struct GetMediaFeedsRequest {
+    GetMediaFeedsRequest(
+        bool include_origin_watchtime_percentile_data,
+        base::Optional<unsigned> limit,
+        base::Optional<base::TimeDelta> audio_video_watchtime_min);
+    GetMediaFeedsRequest();
+    GetMediaFeedsRequest(const GetMediaFeedsRequest& t);
+
+    bool include_origin_watchtime_percentile_data = false;
+    base::Optional<unsigned> limit;
+    base::Optional<base::TimeDelta> audio_video_watchtime_min;
+  };
+  void GetMediaFeeds(
+      const GetMediaFeedsRequest& request,
       base::OnceCallback<void(std::vector<media_feeds::mojom::MediaFeedPtr>)>
           callback);
 

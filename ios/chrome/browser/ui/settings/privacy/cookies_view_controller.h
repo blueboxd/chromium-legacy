@@ -9,7 +9,11 @@
 
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
+#import "ios/chrome/browser/ui/settings/privacy/cookies_consumer.h"
+
 @class PrivacyCookiesViewController;
+
+@protocol PrivacyCookiesCommands;
 
 // Delegate for presentation events related to
 // PrivacyCookiesViewController.
@@ -22,11 +26,15 @@
 @end
 
 // View Controller for displaying the Cookies screen.
-@interface PrivacyCookiesViewController : SettingsRootTableViewController
+@interface PrivacyCookiesViewController
+    : SettingsRootTableViewController <PrivacyCookiesConsumer>
 
 // Presentation delegate.
 @property(nonatomic, weak) id<PrivacyCookiesViewControllerPresentationDelegate>
     presentationDelegate;
+
+// Handler used to update Cookies settings.
+@property(nonatomic, weak) id<PrivacyCookiesCommands> handler;
 
 @end
 

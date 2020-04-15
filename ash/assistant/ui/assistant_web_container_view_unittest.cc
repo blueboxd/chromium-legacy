@@ -4,7 +4,7 @@
 
 #include "ash/assistant/ui/assistant_web_container_view.h"
 
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/assistant_web_ui_controller.h"
 #include "ash/assistant/test/assistant_ash_test_base.h"

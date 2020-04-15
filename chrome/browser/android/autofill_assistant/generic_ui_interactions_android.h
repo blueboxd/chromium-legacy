@@ -67,6 +67,12 @@ void SetViewVisibility(
     const SetViewVisibilityProto& proto,
     std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views);
 
+// Enables or disables a view.
+void SetViewEnabled(
+    base::WeakPtr<UserModel> user_model,
+    const SetViewEnabledProto& proto,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views);
+
 // A simple wrapper around a basic interaction, needed because we can't directly
 // bind a repeating callback to a method with non-void return value.
 void RunConditionalCallback(

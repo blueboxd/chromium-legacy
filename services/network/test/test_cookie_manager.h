@@ -23,7 +23,7 @@ class TestCookieManager : public network::mojom::CookieManager {
   ~TestCookieManager() override;
 
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
-                          const std::string& source_scheme,
+                          const GURL& source_url,
                           const net::CookieOptions& cookie_options,
                           SetCanonicalCookieCallback callback) override;
   void GetAllCookies(GetAllCookiesCallback callback) override {}

@@ -687,7 +687,6 @@
 <translation id="189210018541388520">Megnyitás teljes képernyőn</translation>
 <translation id="1892341345406963517">Üdvözöljük, <ph name="PARENT_NAME" />!</translation>
 <translation id="189358972401248634">Más nyelvek</translation>
-<translation id="1895252664692693738"><ph name="TIME_LEFT" /> maradt</translation>
 <translation id="1895658205118569222">Kikapcsolás</translation>
 <translation id="1895934970388272448">A folyamat befejezéséhez meg kell erősítenie a regisztrációt a nyomtatón – nézze meg most!</translation>
 <translation id="1899826437968063457">A Plugin VM szolgáltatásnak engedélyre van szüksége a futáshoz</translation>
@@ -4002,7 +4001,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6365411474437319296">Családtagok és ismerősök hozzáadása</translation>
 <translation id="636850387210749493">Vállalat rögzítése</translation>
 <translation id="6370021412472292592">Nem sikerült a jegyzék betöltése.</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Jelszó módosítása}other{Jelszavak módosítása}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Próbálja újra</translation>
 <translation id="6377268785556383139">1 találat a következőre: <ph name="SEARCH_TEXT" /></translation>

@@ -62,7 +62,7 @@ class FakeCookieManager : public network::TestCookieManager {
   void InvokePendingSetCanonicalCookieCallback(
       const std::string& expected_cookie_name,
       const std::string& expected_cookie_value,
-      const std::string& expected_source_scheme,
+      const GURL& expected_source_url,
       bool expected_modify_http_only,
       net::CookieOptions::SameSiteCookieContext expect_same_site_context,
       bool success) {
@@ -72,7 +72,7 @@ class FakeCookieManager : public network::TestCookieManager {
 
     EXPECT_EQ(expected_cookie_name, std::get<0>(params).Name());
     EXPECT_EQ(expected_cookie_value, std::get<0>(params).Value());
-    EXPECT_EQ(expected_source_scheme, std::get<1>(params));
+    EXPECT_EQ(expected_source_url, std::get<1>(params));
     EXPECT_EQ(expected_modify_http_only,
               !std::get<2>(params).exclude_httponly());
     EXPECT_EQ(expect_same_site_context,
@@ -103,10 +103,10 @@ class FakeCookieManager : public network::TestCookieManager {
 
   // network::mojom::CookieManager
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
-                          const std::string& source_scheme,
+                          const GURL& source_url,
                           const net::CookieOptions& options,
                           SetCanonicalCookieCallback callback) override {
-    set_canonical_cookie_calls_.emplace_back(cookie, source_scheme, options,
+    set_canonical_cookie_calls_.emplace_back(cookie, source_url, options,
                                              std::move(callback));
   }
 
@@ -117,7 +117,7 @@ class FakeCookieManager : public network::TestCookieManager {
 
  private:
   std::vector<std::tuple<net::CanonicalCookie,
-                         std::string,
+                         GURL,
                          net::CookieOptions,
                          SetCanonicalCookieCallback>>
       set_canonical_cookie_calls_;
@@ -230,7 +230,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     fake_cookie_manager_->InvokePendingSetCanonicalCookieCallback(
         "default_to_persist" /* expected_cookie_name */,
         "true" /* expected_cookie_value */,
-        "https" /* expected_source_scheme */,
+        GURL("https://" + app_url.host()) /* expected_source_url */,
         false /* expected_modify_http_only */,
         net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
         true /* success */);
@@ -292,7 +292,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     fake_cookie_manager_->InvokePendingSetCanonicalCookieCallback(
         "default_to_persist" /* expected_cookie_name */,
         "true" /* expected_cookie_value */,
-        "https" /* expected_source_scheme */,
+        GURL("https://" + app_url.host()) /* expected_source_url */,
         false /* expected_modify_http_only */,
         net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
         true /* success */);
@@ -367,7 +367,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
       fake_cookie_manager_->InvokePendingSetCanonicalCookieCallback(
           "cros_migrated_to" /* expected_cookie_name */,
           migrated_to_app_url.GetContent() /* expected_cookie_value */,
-          "https" /* expected_source_scheme */,
+          GURL("https://" + app_url.host()) /* expected_source_url */,
           false /* expected_modify_http_only */,
           net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
           true /* success */);

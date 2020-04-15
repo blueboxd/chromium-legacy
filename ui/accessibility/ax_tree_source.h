@@ -61,6 +61,13 @@ class AXTreeSource {
   // Serialize one node in the tree.
   virtual void SerializeNode(AXNodeSource node, AXNodeData* out_data) const = 0;
 
+  // Return a string useful for debugging a node.
+  virtual std::string GetDebugString(AXNodeSource node) const {
+    AXNodeData node_data;
+    SerializeNode(node, &node_data);
+    return node_data.ToString();
+  }
+
  protected:
   AXTreeSource() {}
 };

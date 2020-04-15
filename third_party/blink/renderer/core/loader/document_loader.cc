@@ -1384,6 +1384,17 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
                           ? WebFeature::kSignedExchangeInnerResponseInMainFrame
                           : WebFeature::kSignedExchangeInnerResponseInSubFrame);
   }
+
+  if (!response_.HttpHeaderField(http_names::kRequireDocumentPolicy).IsNull())
+    UseCounter::Count(*document, WebFeature::kRequireDocumentPolicyHeader);
+
+  if (was_blocked_by_document_policy_)
+    UseCounter::Count(*document, WebFeature::kDocumentPolicyCausedPageUnload);
+
+  // Required document policy can either come from iframe attribute or HTTP
+  // header 'Require-Document-Policy'.
+  if (!frame_policy_.required_document_policy.empty())
+    UseCounter::Count(*document, WebFeature::kRequiredDocumentPolicy);
 }
 
 void DocumentLoader::WillCommitNavigation() {

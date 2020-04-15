@@ -41,8 +41,8 @@
 #endif
 
 #if BUILDFLAG(USE_GTK)
-#include "ui/gtk/gtk_ui_delegate.h"      // nogncheck
-#include "ui/gtk/gtk_ui_delegate_x11.h"  // nogncheck
+#include "ui/gtk/gtk_ui_delegate.h"        // nogncheck
+#include "ui/gtk/x/gtk_ui_delegate_x11.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(USE_XKBCOMMON)

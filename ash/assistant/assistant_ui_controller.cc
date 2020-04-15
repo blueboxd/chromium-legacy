@@ -5,7 +5,7 @@
 #include "ash/assistant/assistant_ui_controller.h"
 
 #include "ash/ambient/ambient_controller.h"
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/util/assistant_util.h"
@@ -47,7 +47,7 @@ void ShowToast(const std::string& id, int message_id) {
 // AssistantUiController -------------------------------------------------------
 
 AssistantUiController::AssistantUiController(
-    AssistantController* assistant_controller)
+    AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);

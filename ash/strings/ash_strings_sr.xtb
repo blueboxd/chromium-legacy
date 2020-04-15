@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Да бисте видели обавештења на закључаном екрану, откључајте га како бисте променили подешавање</translation>
 <translation id="4144413954005649103">Када кликнете десним татером или притиснете и задржите, Помоћник вам приказује информације на основу онога што изаберете на екрану.</translation>
 <translation id="4146833061457621061">Пусти музику</translation>
-<translation id="4149156641122542261">Уређајем <ph name="DEVICE_TYPE" /> управља <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Језици</translation>
 <translation id="4195877955194704651">Аутоматски кликови на дугмад</translation>
 <translation id="4215497585250573029">Подешавања VPN-а</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">Пречица је искључена</translation>
 <translation id="6910714959251846841">Ово ажурирање захтева да обавите powerwash на уређају. Сазнајте више о најновијем ажурирању за: <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">Нисмо успели да препознамо паметну картицу. Пробајте поново.</translation>
+<translation id="6945221475159498467">Изабери</translation>
 <translation id="6972754398087986839">Започнимо</translation>
 <translation id="6981982820502123353">Приступачност</translation>
 <translation id="698231206551913481">Све датотеке и локални подаци повезани са овим корисником ће бити трајно избрисани када уклоните овог корисника.</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">Приватна мрежа</translation>
 <translation id="8152092012181020186">Притисните Ctrl + W да бисте затворили.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Овим подешавањем управља администратор.</translation>
+<translation id="815598010540052116">Помери надоле</translation>
 <translation id="8167567890448493835">Користи се <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Прилагоди језике и унос...</translation>
 <translation id="8192202700944119416">Обавештења су сакривена.</translation>

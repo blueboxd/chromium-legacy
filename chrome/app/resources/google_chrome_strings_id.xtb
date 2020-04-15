@@ -88,6 +88,7 @@
 <translation id="34857402635545079">Hapus juga data dari Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome memerlukan akses ke lokasi Anda untuk berbagi lokasi dengan situs ini</translation>
 <translation id="3533694711092285624">Tidak ada sandi yang tersimpan. Chrome dapat memeriksa sandi Anda saat menyimpannya.</translation>
+<translation id="3541482654983822893">Chrome tidak dapat memeriksa sandi Anda. Coba lagi setelah 24 jam.</translation>
 <translation id="3576528680708590453">Administrator sistem Anda telah mengonfigurasi Google Chrome untuk membuka browser alternatif guna mengakses <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Menyinkronkan dan mempersonalisasi Chrome di perangkat Anda</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administrator mewajibkan Anda meluncurkan kembali Chrome untuk menerapkan update}=1{Administrator mewajibkan Anda meluncurkan kembali Chrome untuk menerapkan update. Jendela samaran Anda tidak akan dibuka kembali.}other{Administrator mewajibkan Anda meluncurkan kembali Chrome untuk menerapkan update. # jendela samaran Anda tidak akan dibuka kembali.}}</translation>
@@ -105,6 +106,7 @@
 <translation id="4147555960264124640">Anda masuk dengan akun terkelola dan memberikan administratornya kontrol atas profil Google Chrome Anda. Data Chrome Anda, seperti aplikasi, bookmark, histori, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME" />. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Instalatur gagal mendekompresi arsip. Download kembali Google Chrome.</translation>
 <translation id="4191857738314598978">{0,plural, =1{Luncurkan ulang Chrome dalam satu hari}other{Luncurkan ulang Chrome dalam # hari}}</translation>
+<translation id="4205939740494406371">Chrome tidak dapat memeriksa sandi Anda. Coba lagi setelah 24 jam atau <ph name="BEGIN_LINK" />periksa sandi di Akun Google Anda<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Logout dari Chrome?</translation>
 <translation id="4251615635259297716">Tautkan data Chrome Anda ke akun ini?</translation>
 <translation id="4293420128516039005">Login untuk menyinkronkan dan mempersonalisasi Chrome di perangkat Anda</translation>
@@ -227,7 +229,6 @@
 <translation id="8342675569599923794">File ini berbahaya, jadi Chrome telah memblokirnya.</translation>
 <translation id="8370517070665726704">Hak cipta <ph name="YEAR" /> Google LLC. Semua hak dilindungi undang-undang.</translation>
 <translation id="840084489713044809">Google Chrome ingin mengekspor sandi.</translation>
-<translation id="8455999171311319804">Opsional: Bantu Chrome OS menjadi lebih baik dengan mengirimkan data diagnostik dan penggunaan secara otomatis ke Google.</translation>
 <translation id="8498858610309223613">Update keamanan khusus untuk Google Chrome baru saja diterapkan. Mulai ulang Google Chrome sekarang dan kami akan memulihkan tab Anda.</translation>
 <translation id="8521348052903287641">Inbound rule untuk Google Chrome Dev guna mengizinkan traffic mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

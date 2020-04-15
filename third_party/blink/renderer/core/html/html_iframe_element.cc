@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
@@ -299,9 +300,20 @@ void HTMLIFrameElement::ParseAttribute(
 // on iframe attribute.'.
 DocumentPolicy::FeatureState HTMLIFrameElement::ConstructRequiredPolicy()
     const {
-  return DocumentPolicyParser::Parse(required_policy_)
-      .value_or(DocumentPolicy::ParsedDocumentPolicy{})
-      .feature_state;
+  DocumentPolicy::FeatureState new_required_policy =
+      DocumentPolicyParser::Parse(required_policy_)
+          .value_or(DocumentPolicy::ParsedDocumentPolicy{})
+          .feature_state;
+
+  for (const auto& policy_entry : new_required_policy) {
+    mojom::blink::DocumentPolicyFeature feature = policy_entry.first;
+    if (!GetDocument().DocumentPolicyFeatureObserved(feature)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Blink.UseCounter.DocumentPolicy.PolicyAttribute", feature);
+    }
+  }
+
+  return new_required_policy;
 }
 
 ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(

@@ -387,11 +387,12 @@ interface NetworkService {
   // |environment| array.
   SetEnvironment(array<EnvironmentVariable> environment);
 
-  // Sets Trust Tokens key commitment state. |commitments| is a map from issuer
-  // origins to key commitment results (each result contains a collection of
-  // keys and some associated metadata).
-  SetTrustTokenKeyCommitments(
-      map<url.mojom.Origin, TrustTokenKeyCommitmentResult> commitments);
+  // Sets Trust Tokens key commitment state. |raw_commitments| is the
+  // JSON-encoded string representation of a collection of issuers' key
+  // commitments according to the format specified, for now, in the Trust
+  // Tokens design doc:
+  // https://docs.google.com/document/d/1TNnya6B8pyomDK2F1R9CL3dY10OAmqWlnCxsWyOBDVQ/edit#heading=h.z52drgpfgulz.
+  SetTrustTokenKeyCommitments(string raw_commitments) => ();
 
   // Calls base::debug::DumpWithoutCrashing for the network process.
   // TODO(http://crbug.com/934317): Remove this once done debugging renderer

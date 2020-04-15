@@ -39,11 +39,12 @@ NDEFWriter* NDEFWriter::Create(ExecutionContext* context) {
 }
 
 NDEFWriter::NDEFWriter(ExecutionContext* context)
-    : ExecutionContextClient(context) {}
+    : ExecutionContextClient(context), permission_service_(context) {}
 
 void NDEFWriter::Trace(Visitor* visitor) {
-  visitor->Trace(nfc_proxy_);
+  visitor->Trace(permission_service_);
   visitor->Trace(requests_);
+  visitor->Trace(nfc_proxy_);
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }
@@ -98,10 +99,11 @@ ScriptPromise NDEFWriter::write(ScriptState* script_state,
 }
 
 PermissionService* NDEFWriter::GetPermissionService() {
-  if (!permission_service_) {
+  if (!permission_service_.is_bound()) {
     ConnectToPermissionService(
         GetExecutionContext(),
-        permission_service_.BindNewPipeAndPassReceiver());
+        permission_service_.BindNewPipeAndPassReceiver(
+            GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
   return permission_service_.get();
 }

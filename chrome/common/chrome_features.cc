@@ -375,6 +375,12 @@ const base::Feature kHappinessTrackingSurveysForDesktopSettings{
 const base::Feature kHappinessTrackingSurveysForDesktopSettingsPrivacy{
     "HappinessTrackingSurveysForDesktopSettingsPrivacy",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the migration of Happiness Tracking Surveys on Desktop (to the latest
+// version).
+const base::Feature kHappinessTrackingSurveysForDesktopMigration{
+    "HappinessTrackingSurveysForDesktopMigration",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 // Hide CorsLegacyModeEnabled enterprise policy support. This feature and

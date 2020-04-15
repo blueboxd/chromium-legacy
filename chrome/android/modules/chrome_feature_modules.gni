@@ -8,6 +8,8 @@ import(
 import("//chrome/android/features/dev_ui/dev_ui_module.gni")
 import("//chrome/android/features/tab_ui/tab_ui_module.gni")
 import("//chrome/android/modules/buildflags.gni")
+import(
+    "//chrome/android/modules/cablev2_authenticator/cablev2_authenticator_module.gni")
 import("//chrome/android/modules/chime/chime_module.gni")
 import("//chrome/android/modules/extra_icu/extra_icu_module.gni")
 import("//chrome/android/modules/image_editor/image_editor_module.gni")
@@ -69,6 +71,7 @@ if (!disable_autofill_assistant_dfm) {
 if (!disable_tab_ui_dfm) {
   monochrome_module_descs += [ tab_ui_module_desc ]
 }
+monochrome_module_descs += [ cablev2_authenticator_module_desc ]
 
 # Modules shipped in Trichrome (Android Q+).
 trichrome_module_descs = monochrome_module_descs

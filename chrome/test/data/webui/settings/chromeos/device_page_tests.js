@@ -1219,6 +1219,34 @@ cr.define('device_page_tests', function() {
                   .acIdleBehavior_);
         });
 
+        test('set battery idle behavior', function() {
+          return new Promise(function(resolve) {
+                   // Indicate battery presence so that idle settings box while
+                   // on battery is visible.
+                   const batteryStatus = {
+                     present: true,
+                     charging: false,
+                     calculating: false,
+                     percent: 50,
+                     statusText: '5 hours left',
+                   };
+                   cr.webUIListenerCallback(
+                       'battery-status-changed',
+                       Object.assign({}, batteryStatus));
+                   powerPage.async(resolve);
+                 })
+              .then(function() {
+                const batteryIdleSelect =
+                    assert(powerPage.$$('#batteryIdleSelect'));
+                selectValue(
+                    batteryIdleSelect, settings.IdleBehavior.DISPLAY_ON);
+                expectEquals(
+                    settings.IdleBehavior.DISPLAY_ON,
+                    settings.DevicePageBrowserProxyImpl.getInstance()
+                        .batteryIdleBehavior_);
+              });
+        });
+
         test('set lid behavior', function() {
           const sendLid = function(lidBehavior) {
             sendPowerManagementSettings(

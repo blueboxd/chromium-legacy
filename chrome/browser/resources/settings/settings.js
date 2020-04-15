@@ -32,7 +32,7 @@ export {PluralStringProxyImpl} from './plural_string_proxy.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';
 export {CrSettingsPrefs} from './prefs/prefs_types.m.js';
 export {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from './privacy_page/privacy_page_browser_proxy.m.js';
-export {ResetBrowserProxyImpl} from './reset_page/reset_browser_proxy.m.js';
+export {ResetBrowserProxyImpl} from './reset_page/reset_browser_proxy.js';
 export {buildRouter, routes} from './route.m.js';
 export {Route, Router} from './router.m.js';
 export {SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckExtensionsStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from './safety_check_page/safety_check_browser_proxy.m.js';

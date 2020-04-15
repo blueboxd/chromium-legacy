@@ -113,7 +113,7 @@
 <translation id="424864128008805179">Chrome मधून साइन आउट करायचे?</translation>
 <translation id="4251615635259297716">या खात्यावर तुमच्या Chrome डेटा लिंक करायचा?</translation>
 <translation id="4293420128516039005">तुमच्या डिव्हाइसवर Chrome सिंक आणि पर्सनलाइझ करण्यासाठी साइन इन करा</translation>
-<translation id="4328355335528187361">Google Chrome विकासक (mDNS-In)</translation>
+<translation id="4328355335528187361">Google Chrome डेव्हलपर (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">Chrome तुम्हाला डेटा भंग, खराब एक्स्टेंशन आणि बर्‍याच गोष्टींपासून सुरक्षित ठेवण्यात मदत करू शकते</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> हे Chrome मध्‍ये जोडले गेले आहे</translation>
@@ -175,7 +175,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome बीटा</translation>
 <translation id="61852838583753520">&amp;Chrome OS अपडेट करा</translation>
 <translation id="6235018212288296708">mDNS रहदारीस अनुमती देण्यासाठी Google Chrome साठी अंतर्गामी नियम.</translation>
-<translation id="6291089322031436445">Chrome विकासक ॲप</translation>
+<translation id="6291089322031436445">Chrome डेव्हलपर ॲप</translation>
 <translation id="6291549208091401781">तुमच्या कॉंप्युटरवरील सर्व वापरकर्त्यांसाठी Google Chrome आधीच इंस्टॉल केला आहे.</translation>
 <translation id="6338556085225130112">Google Chrome अपडेट होत आहे</translation>
 <translation id="6368958679917195344"> Chrome OS अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />मुक्त स्रोत सॉफ्टवेअर<ph name="END_LINK_CROS_OSS" /> द्वारे शक्य झाले आहे.</translation>
@@ -203,7 +203,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7408085963519505752">Chrome OS अटी</translation>
 <translation id="7419046106786626209">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Chrome OS तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="7486227612705979895">ॲड्रेस बारमध्ये सूचना देण्यासाठी Chrome तुमची ड्राइव्ह ॲक्सेस करेल</translation>
-<translation id="7535429826459677826">Google Chrome विकासक</translation>
+<translation id="7535429826459677826">Google Chrome डेव्हलपर</translation>
 <translation id="7573289029918943991">तुमचे डिव्हाइस अप टू डेट असल्याची खात्री करण्यासाठी <ph name="LINK_BEGIN" />Chrome OS सेटिंग्ज<ph name="LINK_END" /> वर जा</translation>
 <translation id="7589360514048265910">यापुढे Mac OS X 10.9 ला सपोर्ट नसल्यामुळे, या कॉंप्युटरला इथून पुढे Google Chrome चे अपडेट मिळणार नाहीत.</translation>
 <translation id="7592736734348559088">तुमचे खाते साइन इन तपशील कालबाह्य झाल्यामुळे Google Chrome तुमचा डेटा संकालित करू शकले नाही.</translation>
@@ -235,7 +235,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="8342675569599923794">ही फाईल धोकादायक आहे, त्यामुळे Chrome ने ती अवरोधित केली आहे.</translation>
 <translation id="8370517070665726704">कॉपीराइट <ph name="YEAR" /> Google LLC. सर्व हक्क राखीव.</translation>
 <translation id="840084489713044809">Google Chrome ला तुमचे पासवर्ड एक्सपोर्ट करायचे आहेत.</translation>
-<translation id="8455999171311319804">पर्यायी: निदान आणि वापर डेटा Google कडे स्वयंचलितपणे पाठवून Chrome OS ला आणखी चांगले बनविण्‍यात मदत करा.</translation>
 <translation id="8498858610309223613">Google Chrome साठी आत्ताच एक विशिष्ट सुरक्षितता अपडेट लागू करण्यात आला. आता रीस्टार्ट करा आणि आम्ही तुमचे टॅब रिस्टोअर करू.</translation>
 <translation id="8521348052903287641">Google Chrome विकासकाने mDNS रहदारीस अनुमती देण्यासाठी इनबाउंड नियम.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

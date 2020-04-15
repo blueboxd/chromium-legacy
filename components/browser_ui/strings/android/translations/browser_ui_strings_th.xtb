@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">คัดลอกลิงก์</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">ชื่อ</translation>
+<translation id="4259722352634471385">มีการบล็อกการนำทาง: <ph name="URL" /></translation>
 <translation id="4570913071927164677">รายละเอียด</translation>
 <translation id="4645575059429386691">มีการจัดการโดยผู้ปกครอง</translation>
 <translation id="4883854917563148705">รีเซ็ตการตั้งค่าที่มีการจัดการไม่ได้</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">ล้างข้อมูลที่ป้อน</translation>
 <translation id="8725066075913043281">ลองอีกครั้ง</translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>
+<translation id="8959122750345127698">ไม่สามารถเข้าถึงการนำทางได้: <ph name="URL" /></translation>
 <translation id="9019902583201351841">มีการจัดการโดยผู้ปกครอง</translation>
 </translationbundle>

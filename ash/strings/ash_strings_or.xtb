@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">ଆପଣଙ୍କର ଲକ୍ ସ୍କ୍ରିନ୍‌ରେ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ଦେଖିବା ପାଇଁ, ସେଟିଂ ପରିବର୍ତ୍ତନ କରିବା ପାଇଁ ଅନ୍‌ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="4144413954005649103">ବଟନର ଡାହାଣରେ କ୍ଲିକ୍ କରି କିମ୍ବା କିଛି ସମୟ ଦବାଇ ଧରି, Assistant ଆପଣ ସ୍କ୍ରିନରେ ଯାହା ଚୟନ କରିଛନ୍ତି ସେ ସମ୍ବନ୍ଧିତ ସୂଚନା ଆପଣଙ୍କୁ ଦେଖାଏ।</translation>
 <translation id="4146833061457621061">ସଙ୍ଗୀତ ବଜାନ୍ତୁ</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> <ph name="DOMAIN" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି</translation>
 <translation id="4181841719683918333">ଭାଷାସମୂହ</translation>
 <translation id="4195877955194704651">ସ୍ଵଚାଳିତ କ୍ଲିକ୍ ବଟନ୍</translation>
 <translation id="4215497585250573029">VPN ସେଟିଂସ୍</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">ସର୍ଟକଟ୍ ବନ୍ଦ କରାଯାଇଛି</translation>
 <translation id="6910714959251846841">ଏହି ଅପ୍‍‍‍‍‍ଡେଟ୍‍ ଆପଣଙ୍କ ଡିଭାଇସ୍‌କୁ ପାୱାର୍‍ୱାସ୍ ଦେବାକୁ ଆବଶ୍ୟକ କରେ। ନବୀନତମ <ph name="SYSTEM_APP_NAME" /> ଅପ୍‌ଡେଟ୍ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ।</translation>
 <translation id="6919251195245069855">ଆପଣଙ୍କର ସ୍ମାର୍ଟ କାର୍ଡକୁ ଚିହ୍ନଟ କରିପାରୁ ନାହିଁ। ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
+<translation id="6945221475159498467">ଚୟନ କରନ୍ତୁ</translation>
 <translation id="6972754398087986839">ଆରମ୍ଭ କରନ୍ତୁ</translation>
 <translation id="6981982820502123353">ଆକ୍ସେସିବିଲିଟୀ</translation>
 <translation id="698231206551913481">ଥରେ ଏହି ଉପଯୋଗକର୍ତ୍ତାଙ୍କୁ କାଢ଼ିଦେବା ପରେ, ତାଙ୍କର ସମସ୍ତ ଫାଇଲ୍ ଓ ସ୍ଥାନୀୟ ଡାଟାକୁ ସ୍ଥାୟୀ ଭାବେ ଡିଲିଟ୍ କରିଦିଆଯିବ।</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">ବ୍ୟକ୍ତିଗତ ନେଟ୍‍ୱର୍କ</translation>
 <translation id="8152092012181020186">ବନ୍ଦ କରିବାକୁ Ctrl + W ଦବାନ୍ତୁ।</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> ଏହି ସେଟିଂ ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟରଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ ହୁଏ।</translation>
+<translation id="815598010540052116">ତଳକୁ ସ୍କ୍ରୋଲ କରନ୍ତୁ</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />କୁ ବ୍ୟବହାର କରାଯାଉଛି</translation>
 <translation id="8190698733819146287">ଭାଷାଗୁଡ଼ିକୁ ଏବଂ ଇନ୍‌ପୁଟ୍‌କୁ କଷ୍ଟମାଇଜ୍ କରନ୍ତୁ...</translation>
 <translation id="8192202700944119416">ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ଲୁଚାଯାଇଛି।</translation>

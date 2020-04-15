@@ -10,9 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/mock_grammar_check.h"
 #include "content/shell/test_runner/test_runner.h"
-#include "content/shell/test_runner/web_test_delegate.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_text_checking_completion.h"
@@ -28,8 +28,8 @@ SpellCheckClient::SpellCheckClient(TestRunner* test_runner)
 
 SpellCheckClient::~SpellCheckClient() {}
 
-void SpellCheckClient::SetDelegate(WebTestDelegate* delegate) {
-  delegate_ = delegate;
+void SpellCheckClient::SetDelegate(BlinkTestRunner* blink_test_runner) {
+  blink_test_runner_ = blink_test_runner;
 }
 
 void SpellCheckClient::SetEnabled(bool enabled) {
@@ -84,8 +84,8 @@ void SpellCheckClient::RequestCheckingOfText(
   if (spell_check_.HasInCache(text)) {
     FinishLastTextCheck();
   } else {
-    delegate_->PostTask(base::BindOnce(&SpellCheckClient::FinishLastTextCheck,
-                                       weak_factory_.GetWeakPtr()));
+    blink_test_runner_->PostTask(base::BindOnce(
+        &SpellCheckClient::FinishLastTextCheck, weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -123,7 +123,7 @@ void SpellCheckClient::FinishLastTextCheck() {
   RequestResolved();
 
   if (test_runner_->ShouldDumpSpellCheckCallbacks())
-    delegate_->PrintMessage("SpellCheckEvent: FinishLastTextCheck\n");
+    blink_test_runner_->PrintMessage("SpellCheckEvent: FinishLastTextCheck\n");
 }
 
 void SpellCheckClient::SetSpellCheckResolvedCallback(

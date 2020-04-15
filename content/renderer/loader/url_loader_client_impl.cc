@@ -238,6 +238,9 @@ void URLLoaderClientImpl::Bind(
 void URLLoaderClientImpl::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response_head) {
   has_received_response_head_ = true;
+  TRACE_EVENT1("loading", "URLLoaderClientImpl::OnReceiveResponse", "url",
+               last_loaded_url_.possibly_invalid_spec());
+
   if (NeedsStoringMessage()) {
     StoreAndDispatch(
         std::make_unique<DeferredOnReceiveResponse>(std::move(response_head)));

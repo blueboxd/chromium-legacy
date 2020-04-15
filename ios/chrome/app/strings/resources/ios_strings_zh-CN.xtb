@@ -3,6 +3,7 @@
 <translationbundle lang="zh-CN">
 <translation id="1005230401424685968">YYYY</translation>
 <translation id="1016495303386450659">书签已更新</translation>
+<translation id="1044891598689252897">网站将能够正常运行</translation>
 <translation id="1047726139967079566">为此页添加书签...</translation>
 <translation id="1049743911850919806">无痕</translation>
 <translation id="1063454504051558093">使用其他密码…</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860">有<ph name="COUNT" />个书签</translation>
 <translation id="1491277525950327607">点按两次即可切换设置</translation>
 <translation id="1509486075633541495">登录网站</translation>
+<translation id="1509960214886564027">很多网站上的功能可能会无法正常运作</translation>
 <translation id="152234381334907219">一律不保存</translation>
 <translation id="1540800554400757039">地址第1行</translation>
 <translation id="1545749641540134597">扫描 QR 码</translation>
@@ -528,6 +530,7 @@
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7971521879845308059">拦截弹出式窗口</translation>
 <translation id="7982789257301363584">网络</translation>
+<translation id="7993619969781047893">某些网站上的功能可能会无法正常运作</translation>
 <translation id="800361585186029508">在 Google Chrome 中打开输入的网址。</translation>
 <translation id="8007420562015504427">无痕搜索</translation>
 <translation id="8019783059653722575">这样，您就可以保存并上传照片。</translation>

@@ -62,6 +62,16 @@
          24dp is needed to completely round the corners. -->
     <dimen name="modern_toolbar_background_corner_radius">24dp</dimen>
 
+    <!-- Promo cards dimensions -->
+    <dimen name="promo_image_size">24dp</dimen>
+    <dimen name="promo_padding">16dp</dimen>
+    <dimen name="promo_header_margin_vertical">8dp</dimen>
+    <dimen name="promo_close_btn_size">24dp</dimen>
+    <dimen name="promo_title_margin_vertical">8dp</dimen>
+    <dimen name="promo_description_margin_horizontal">8dp</dimen>
+    <dimen name="promo_description_margin_vertical">16dp</dimen>
+    <dimen name="promo_buttons_margin_horizontal">8dp</dimen>
+
     <!-- TextBubble dimensions -->
     <dimen name="text_bubble_margin">4dp</dimen>
     <dimen name="text_bubble_corner_radius">8dp</dimen>
@@ -71,4 +81,11 @@
 
     <!-- Default list dimensions -->
     <dimen name="default_list_row_padding">16dp</dimen>
+
+  <!-- Query tile dimensions -->
+  <dimen name="tile_ideal_width">86dp</dimen>
+
+  <!-- Query tile container dimensions -->
+  <dimen name="tile_grid_inter_tile_padding">12dp</dimen>
+
 </resources>

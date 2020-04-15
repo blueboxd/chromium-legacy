@@ -12,6 +12,9 @@
 
 @class ShareToData;
 
+// Snackbar ID for any services that wish to show snackbars.
+extern NSString* const kActivityServicesSnackbarCategory;
+
 // Controller to show the built-in services (e.g. Copy, Printing) and services
 // offered by iOS App Extensions (Share, Action).
 @interface ActivityServiceController : NSObject<ShareProtocol>

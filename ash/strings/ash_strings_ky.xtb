@@ -213,7 +213,7 @@
 <translation id="3513798432020909783">Аккаунтту башкарган: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Төмөнкүгө кайра өзгөртүү "<ph name="FROM_LOCALE" />" (өчүрүп күйгүзүү керек)</translation>
 <translation id="3576141592585647168">Убакыт алкагын өзгөртүү</translation>
-<translation id="3593646411856133110">Ачылган колдонмолорду көрүү үчүн экранды өйдө сүрүп, коё бербей кармап туруңуз</translation>
+<translation id="3593646411856133110">Ачылган колдонмолорду көрүү үчүн, экранды өйдө сүрүп, коё бербей кармап туруңуз</translation>
 <translation id="3595596368722241419">Батарея толук</translation>
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> иш тактасы түзүлдү</translation>
 <translation id="3606978283550408104">Брайль дисплеи туташты.</translation>
@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Билдирмелерди кулпуланган экранда көрүү максатында өзгөртүү киргизүү үчүн, түзмөгүңүздүн кулпусун ачыңыз</translation>
 <translation id="4144413954005649103">Чычкандын оң баскычын чыкылдатуу же коё бербей басып туруу менен, Жардамчы экранда тандаган нерсеге окшош маалыматты көрсөтөт.</translation>
 <translation id="4146833061457621061">Музыканы ойнотуу</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> түзмөгү <ph name="DOMAIN" /> тарабынан башкарылат</translation>
 <translation id="4181841719683918333">Тилдер</translation>
 <translation id="4195877955194704651">Автоматтык чыкылдатуу баскычы</translation>
 <translation id="4215497585250573029">VPN жөндөөлөрү</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">Ыкчам баскыч өчүрүлдү</translation>
 <translation id="6910714959251846841">Бул жаңыртууну орнотуу үчүн түзмөгүңүздү жууп салуу талап кылынат. <ph name="SYSTEM_APP_NAME" /> колдонмосундагы акыркы жаңыртуу жөнүндө кененирээк маалымат алуу.</translation>
 <translation id="6919251195245069855">Акылдуу картаңыз таанылган жок. Кайталап көрүңүз.</translation>
+<translation id="6945221475159498467">Тандаңыз</translation>
 <translation id="6972754398087986839">Баштоо</translation>
 <translation id="6981982820502123353">Атайын мүмкүнчүлүктөр</translation>
 <translation id="698231206551913481">Колдонуучуга тийиштүү бардык файлдар менен жергиликтүү дайындар көзөмөлдөнгөн колдонуучу чыгарылып салынганда биротоло жок болот.</translation>
@@ -476,7 +476,7 @@
 <translation id="703425375924687388"><ph name="QUERY_NAME" />, Google Жардамчы</translation>
 <translation id="7042322267639375032">Статус аймагын жыйыштыруу</translation>
 <translation id="7066646422045619941">Бул тармакты администраторуңуз өчүргөн.</translation>
-<translation id="7067196344162293536">Авто айлануу</translation>
+<translation id="7067196344162293536">Авто буруу</translation>
 <translation id="7068360136237591149">Файлдарды ачуу</translation>
 <translation id="7076293881109082629">Кирүү</translation>
 <translation id="7088960765736518739">Switch Access функциясы</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">Жеке тармак</translation>
 <translation id="8152092012181020186">Жабуу үчүн Ctrl + W баскычтарын басыңыз.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Бул жөндөөнү администраторуңуз башкарат.</translation>
+<translation id="815598010540052116">Ылдый сыдыруу</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> колдонулууда</translation>
 <translation id="8190698733819146287">Тилдерди жана киргизүү ыкмаларын өзгөчөлөштүрүү…</translation>
 <translation id="8192202700944119416">Билдирмелер жашырылды.</translation>
@@ -586,7 +587,7 @@
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> уюмунун <ph name="FEATURE_NAME" /> функциясы <ph name="FEATURE_STATE" /> абалда.</translation>
 <translation id="8477270416194247200">Өчүрүп коюу үчүн Alt+Search же Shift баскычтарын басыңыз.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> дааналыкты колдоого албайт. Дааналыгы төмөнкүгө өзгөртүлдү: <ph name="FALLBACK_RESOLUTION" />. Өзгөртүүлөрдү сактоо үчүн "Ырастоо" баскычын басыңыз. Мурунку жөндөөлөр <ph name="TIMEOUT_SECONDS" /> кийин калыбына келтирилет.</translation>
-<translation id="8513108775083588393">Авто айлануу</translation>
+<translation id="8513108775083588393">Авто буруу</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> түзмөгүңүз өчүп турганда кубатталбай калышы мүмкүн.</translation>
 <translation id="8563862697512465947">Билдирмелердин жөндөөлөрү</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> менен туташты</translation>
@@ -609,7 +610,7 @@
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> түзмөгүнө туташуу</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8825863694328519386">Артка кайтуу үчүн экраныңыздын сол четинен серпип коюңуз</translation>
+<translation id="8825863694328519386">Артка кайтуу үчүн, экраныңыздын сол четинен серпип коюңуз</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Артка баскычы</translation>
 <translation id="8843682306134542540">Буруу кулпусун өчүрүү/күйгүзүү. <ph name="STATE_TEXT" /></translation>

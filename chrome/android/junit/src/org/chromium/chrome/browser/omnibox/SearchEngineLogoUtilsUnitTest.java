@@ -37,7 +37,7 @@ import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils.Delegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.search_engines.TemplateUrlService;
 
 /**
@@ -63,7 +63,7 @@ public class SearchEngineLogoUtilsUnitTest {
     @Mock
     TemplateUrlService mTemplateUrlService;
     @Mock
-    FaviconFallbackGenerator mFaviconFallbackGenerator;
+    RoundedIconGenerator mRoundedIconGenerator;
 
     Bitmap mBitmap;
 
@@ -80,9 +80,9 @@ public class SearchEngineLogoUtilsUnitTest {
         SearchEngineLogoUtils.resetCacheForTesting();
         SearchEngineLogoUtils.setDelegateForTesting(mDelegate);
         SearchEngineLogoUtils.setFaviconHelperForTesting(mFaviconHelper);
-        SearchEngineLogoUtils.setFaviconFallbackGeneratorForTesting(mFaviconFallbackGenerator);
+        SearchEngineLogoUtils.setRoundedIconGeneratorForTesting(mRoundedIconGenerator);
 
-        when(mFaviconFallbackGenerator.generateIconForText(any())).thenReturn(mBitmap);
+        when(mRoundedIconGenerator.generateIconForText(any())).thenReturn(mBitmap);
         when(mDelegate.isSearchEngineLogoEnabled()).thenReturn(true);
         when(mDelegate.shouldShowSearchEngineLogo(false)).thenReturn(true);
         when(mDelegate.shouldShowRoundedSearchEngineLogo(false)).thenReturn(true);

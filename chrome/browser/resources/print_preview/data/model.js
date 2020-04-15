@@ -108,6 +108,7 @@ export let PolicyEntry;
  * @typedef {{
  *   headerFooter: (PolicyEntry | undefined),
  *   cssBackground: (PolicyEntry | undefined),
+ *   sheets: (number | undefined),
  * }}
  */
 export let PolicySettings;
@@ -482,6 +483,13 @@ Polymer({
 
     /** @type {!Size} */
     pageSize: Object,
+
+    /** @private {number} */
+    maxSheets: {
+      type: Number,
+      value: 0,
+      notify: true,
+    }
   },
 
   observers: [
@@ -1065,6 +1073,14 @@ Polymer({
       const allowedMode = policies[settingName].allowedMode;
       this.configurePolicySetting_(settingName, allowedMode, defaultMode);
     });
+    // <if expr="chromeos">
+    if (policies['sheets']) {
+      if (!this.policySettings_) {
+        this.policySettings_ = {};
+      }
+      this.policySettings_['sheets'] = {value: policies['sheets'].value};
+    }
+    // </if>
   },
 
   applyStickySettings() {
@@ -1121,13 +1137,18 @@ Polymer({
     if (this.policySettings_) {
       for (const [settingName, policy] of Object.entries(
                this.policySettings_)) {
-        if (policy.value !== undefined) {
+        if (settingName !== 'sheets' && policy.value !== undefined) {
           this.setSetting(settingName, policy.value, true);
         }
         if (policy.managed) {
           this.set(`settings.${settingName}.setByPolicy`, true);
         }
       }
+      // <if expr="chromeos">
+      if (this.policySettings_['sheets']) {
+        this.maxSheets = this.policySettings_['sheets'].value;
+      }
+      // </if>
     }
   },
 

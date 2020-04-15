@@ -430,8 +430,7 @@ void V4L2SliceVideoDecoder::ApplyResolutionChange() {
   DVLOGF(3);
   DCHECK(continue_change_resolution_cb_);
 
-  decoder_task_runner_->PostTask(FROM_HERE,
-                                 std::move(continue_change_resolution_cb_));
+  std::move(continue_change_resolution_cb_).Run();
 }
 
 void V4L2SliceVideoDecoder::ContinueChangeResolution(

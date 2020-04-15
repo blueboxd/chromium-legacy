@@ -18,7 +18,7 @@
 
 namespace content {
 
-class WebTestDelegate;
+class BlinkTestRunner;
 class WebTestRuntimeFlags;
 
 class MockContentSettingsClient : public blink::WebContentSettingsClient {
@@ -46,12 +46,12 @@ class MockContentSettingsClient : public blink::WebContentSettingsClient {
       const blink::WebURL& url,
       blink::WebEnabledClientHints* client_hints) const override;
 
-  void SetDelegate(WebTestDelegate* delegate);
+  void SetDelegate(BlinkTestRunner* blink_test_runner);
 
   void ResetClientHintsPersistencyData();
 
  private:
-  WebTestDelegate* delegate_;
+  BlinkTestRunner* blink_test_runner_;
 
   WebTestRuntimeFlags* flags_;
   mojo::Remote<client_hints::mojom::ClientHints> remote_;

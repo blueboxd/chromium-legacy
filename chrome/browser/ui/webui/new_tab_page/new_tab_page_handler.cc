@@ -454,8 +454,13 @@ void NewTabPageHandler::OnLogoAvailable(
         std::move(image_doodle_content));
   } else if (logo->metadata.type ==
              search_provider_logos::LogoType::INTERACTIVE) {
-    doodle->content = new_tab_page::mojom::DoodleContent::NewUrl(
-        logo->metadata.full_page_url);
+    auto interactive_doodle_content =
+        new_tab_page::mojom::InteractiveDoodleContent::New();
+    interactive_doodle_content->url = logo->metadata.full_page_url;
+    interactive_doodle_content->width = logo->metadata.iframe_width_px;
+    interactive_doodle_content->height = logo->metadata.iframe_height_px;
+    doodle->content = new_tab_page::mojom::DoodleContent::NewInteractiveDoodle(
+        std::move(interactive_doodle_content));
   } else {
     std::move(callback).Run(nullptr);
     return;

@@ -26,6 +26,10 @@ class SendTabToSelfSyncServiceFactory : public BrowserStateKeyedServiceFactory {
 
   static SendTabToSelfSyncServiceFactory* GetInstance();
 
+  // Returns the default factory used to build SendTabToSelfSyncService. Can be
+  // registered with SetTestingFactory to use real instances during testing.
+  static TestingFactory GetDefaultFactory();
+
  private:
   friend class base::NoDestructor<SendTabToSelfSyncServiceFactory>;
 

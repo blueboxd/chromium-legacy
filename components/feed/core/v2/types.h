@@ -21,6 +21,9 @@ using ::feed::EphemeralChangeId;
 // it is assigned a new revision number.
 using ContentRevision = util::IdTypeU32<class ContentRevisionClass>;
 
+// ID for a stored pending action.
+using LocalActionId = util::IdType32<class LocalActionIdClass>;
+
 std::string ToString(ContentRevision c);
 ContentRevision ToContentRevision(const std::string& str);
 

@@ -3,6 +3,7 @@
 <translationbundle lang="id">
 <translation id="1005230401424685968">TTTT</translation>
 <translation id="1016495303386450659">Item diperbarui</translation>
+<translation id="1044891598689252897">Situs akan berfungsi secara normal</translation>
 <translation id="1047726139967079566">Bookmark Halaman Ini...</translation>
 <translation id="1049743911850919806">Samaran</translation>
 <translation id="1063454504051558093">Gunakan Sandi Lain...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> item</translation>
 <translation id="1491277525950327607">Ketuk dua kali untuk beralih setelan</translation>
 <translation id="1509486075633541495">Login ke situs</translation>
+<translation id="1509960214886564027">Fitur di banyak situs mungkin error</translation>
 <translation id="152234381334907219">Jangan Pernah Disimpan</translation>
 <translation id="1540800554400757039">Alamat 1</translation>
 <translation id="1545749641540134597">Pindai Kode QR</translation>
@@ -528,6 +530,7 @@ Karena akun Anda dikelola oleh <ph name="HOSTED_DOMAIN" />, data Chrome Anda aka
 <translation id="7961015016161918242">Jangan pernah</translation>
 <translation id="7971521879845308059">Blokir Pop-up</translation>
 <translation id="7982789257301363584">Jaringan</translation>
+<translation id="7993619969781047893">Fitur pada beberapa situs mungkin error</translation>
 <translation id="800361585186029508">Membuka URL yang dimasukkan di Google Chrome.</translation>
 <translation id="8007420562015504427">Penelusuran Rahasia</translation>
 <translation id="8019783059653722575">Hal ini memungkinkan Anda menyimpan dan mengupload foto.</translation>

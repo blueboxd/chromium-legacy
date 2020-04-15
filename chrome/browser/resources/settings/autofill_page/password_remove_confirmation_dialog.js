@@ -9,9 +9,9 @@ Polymer({
 
   properties: {
     /**
-    * The password that is being displayed.
-    * @private {?PasswordManagerProxy.CompromisedCredential}
-    */
+     * The password that is being displayed.
+     * @private {?PasswordManagerProxy.CompromisedCredential}
+     */
     item: Object,
 
   },
@@ -45,7 +45,7 @@ Polymer({
    */
   getRemovePasswordDescription_() {
     return this.i18n(
-      'removeCompromisedPasswordConfirmationDescription',
-      this.item.formattedOrigin);
+        'removeCompromisedPasswordConfirmationDescription',
+        this.item.formattedOrigin, this.item.formattedOrigin);
   }
 });

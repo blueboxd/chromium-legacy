@@ -16,6 +16,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -29,6 +30,7 @@
 #include "pdf/document_loader_impl.h"
 #include "pdf/draw_utils/coordinates.h"
 #include "pdf/draw_utils/shadow.h"
+#include "pdf/pdf_features.h"
 #include "pdf/pdf_transform.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_document.h"
@@ -2709,6 +2711,14 @@ void PDFiumEngine::LoadForm() {
     FPDF_SetFormFieldHighlightColor(form(), FPDF_FORMFIELD_UNKNOWN,
                                     kFormHighlightColor);
     FPDF_SetFormFieldHighlightAlpha(form(), kFormHighlightAlpha);
+
+    if (base::FeatureList::IsEnabled(features::kTabAcrossPDFAnnotations)) {
+      static constexpr FPDF_ANNOTATION_SUBTYPE kFocusableAnnotSubtypes[] = {
+          FPDF_ANNOT_LINK, FPDF_ANNOT_HIGHLIGHT, FPDF_ANNOT_WIDGET};
+      FPDF_BOOL ret = FPDFAnnot_SetFocusableSubtypes(
+          form(), kFocusableAnnotSubtypes, base::size(kFocusableAnnotSubtypes));
+      DCHECK(ret);
+    }
   }
 }
 

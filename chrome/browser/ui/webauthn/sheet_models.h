@@ -417,6 +417,32 @@ class AuthenticatorClientPinTapAgainSheetModel
   base::string16 GetAdditionalDescription() const override;
 };
 
+class AuthenticatorBioEnrollmentSheetModel
+    : public AuthenticatorSheetModelBase {
+ public:
+  explicit AuthenticatorBioEnrollmentSheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorBioEnrollmentSheetModel() override;
+
+  int max_bio_samples() { return dialog_model()->max_bio_samples(); }
+  int bio_samples_remaining() {
+    return dialog_model()->bio_samples_remaining();
+  }
+
+ private:
+  // AuthenticatorSheetModelBase:
+  bool IsActivityIndicatorVisible() const override;
+  const gfx::VectorIcon& GetStepIllustration(
+      ImageColorScheme color_scheme) const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+  bool IsAcceptButtonEnabled() const override;
+  bool IsAcceptButtonVisible() const override;
+  base::string16 GetAcceptButtonLabel() const override;
+  bool IsCancelButtonVisible() const override;
+  base::string16 GetCancelButtonLabel() const override;
+};
+
 class AuthenticatorRetryUvSheetModel : public AuthenticatorSheetModelBase {
  public:
   explicit AuthenticatorRetryUvSheetModel(

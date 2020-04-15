@@ -229,8 +229,8 @@ id<GREYMatcher> SearchIconButton() {
 
 - (void)verifyContextMenuForSingleURL {
   // Verify it shows the context menu.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeContextMenuIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify options on context menu.

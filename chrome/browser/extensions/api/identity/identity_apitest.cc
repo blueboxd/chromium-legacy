@@ -2418,7 +2418,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest,
 }
 
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest,
-                       DISABLED_InteractiveSecondNavigationSuccess) {
+                       InteractiveSecondNavigationSuccess) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(
       "chrome/test/data/extensions/api_test/identity");

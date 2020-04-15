@@ -136,6 +136,11 @@ class WebUIBrowserProxy {
   sendMessage(extensionId, message) {
     NOTIMPLEMENTED();
   }
+
+  /** @override */
+  addDummyHistoryIfNotAvailable() {
+    // no-ops
+  }
 }
 
 export const browserProxy = new WebUIBrowserProxy();

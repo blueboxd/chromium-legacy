@@ -15,6 +15,9 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
+#include "content/public/browser/network_quality_observer_factory.h"
+#include "content/public/browser/network_service_instance.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "weblayer/browser/download_manager_delegate_impl.h"
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/common/weblayer_paths.h"
@@ -40,6 +43,10 @@ BrowserProcess::~BrowserProcess() {
 // static
 BrowserProcess* BrowserProcess::GetInstance() {
   return g_browser_process;
+}
+
+void BrowserProcess::PreMainMessageLoopRun() {
+  CreateNetworkQualityObserver();
 }
 
 void BrowserProcess::StartTearDown() {
@@ -93,9 +100,25 @@ network_time::NetworkTimeTracker* BrowserProcess::GetNetworkTimeTracker() {
   return network_time_tracker_.get();
 }
 
+network::NetworkQualityTracker* BrowserProcess::GetNetworkQualityTracker() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!network_quality_tracker_) {
+    network_quality_tracker_ = std::make_unique<network::NetworkQualityTracker>(
+        base::BindRepeating(&content::GetNetworkService));
+  }
+  return network_quality_tracker_.get();
+}
+
 void BrowserProcess::RegisterPrefs(PrefRegistrySimple* pref_registry) {
   network_time::NetworkTimeTracker::RegisterPrefs(pref_registry);
   pref_registry->RegisterIntegerPref(kDownloadNextIDPref, 0);
+}
+
+void BrowserProcess::CreateNetworkQualityObserver() {
+  DCHECK(!network_quality_observer_);
+  network_quality_observer_ =
+      content::CreateNetworkQualityObserver(GetNetworkQualityTracker());
+  DCHECK(network_quality_observer_);
 }
 
 }  // namespace weblayer

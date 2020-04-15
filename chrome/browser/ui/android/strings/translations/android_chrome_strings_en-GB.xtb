@@ -436,7 +436,6 @@ Only you can see what your camera is looking at. The site can't see your camera'
 <translation id="4242533952199664413">Open settings</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4256782883801055595">Open-source licences</translation>
-<translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copy link address</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Allowed</translation>
@@ -1067,7 +1066,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8942627711005830162">Open in other window</translation>
 <translation id="8951232171465285730">Chrome has saved you <ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">Block cookies for a specific site.</translation>
-<translation id="8959122750345127698">Navigation is unreachable: <ph name="URL" /></translation>
 <translation id="8965591936373831584">pending</translation>
 <translation id="8970887620466824814">Something went wrong.</translation>
 <translation id="8972098258593396643">Download to default folder?</translation>

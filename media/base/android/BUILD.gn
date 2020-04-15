@@ -160,6 +160,7 @@ if (is_android) {
 
   android_library("media_java") {
     deps = [
+      ":display_java",
       ":media_java_resources",
       "//base:base_java",
       "//base:jni_java",
@@ -177,6 +178,7 @@ if (is_android) {
       "java/src/org/chromium/media/BitrateAdjuster.java",
       "java/src/org/chromium/media/CodecProfileLevelList.java",
       "java/src/org/chromium/media/HdrMetadata.java",
+      "java/src/org/chromium/media/MaxAnticipatedResolutionEstimator.java",
       "java/src/org/chromium/media/MediaCodecBridge.java",
       "java/src/org/chromium/media/MediaCodecBridgeBuilder.java",
       "java/src/org/chromium/media/MediaCodecEncoder.java",
@@ -188,7 +190,15 @@ if (is_android) {
       "java/src/org/chromium/media/MediaPlayerBridge.java",
       "java/src/org/chromium/media/MediaPlayerListener.java",
       "java/src/org/chromium/media/MediaServerCrashListener.java",
+      "java/src/org/chromium/media/ScreenResolutionUtil.java",
     ]
+  }
+
+  # TODO (b/146418831): Replace with androidx version
+  android_library("display_java") {
+    sources = [ "java/src/org/chromium/media/DisplayCompat.java" ]
+
+    deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
   }
 
   junit_binary("media_base_junit_tests") {

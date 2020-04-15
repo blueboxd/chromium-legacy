@@ -59,6 +59,18 @@ feedstore::Record RecordForSharedState(feedstore::StreamSharedState shared) {
   return record;
 }
 
+feedstore::Record RecordForAction(feedstore::StoredAction action) {
+  feedstore::Record record;
+  *record.mutable_local_action() = std::move(action);
+  return record;
+}
+
+feedstore::StoredAction MakeAction(int32_t id) {
+  feedstore::StoredAction action;
+  action.set_id(id);
+  return action;
+}
+
 }  // namespace
 
 class FeedStoreTest : public testing::Test {
@@ -429,27 +441,87 @@ TEST_F(FeedStoreTest, ReadNextStreamState) {
   MakeFeedStore({{"N", record}});
 
   // Successful read
-  bool did_successful_read = false;
-  store_->ReadNextStreamState(base::BindLambdaForTesting(
-      [&](std::unique_ptr<feedstore::StreamAndContentState> result) {
-        did_successful_read = true;
-        ASSERT_TRUE(result);
-        EXPECT_TRUE(result->has_stream_data());
-        EXPECT_EQ(result->content_size(), 1);
-        EXPECT_EQ(result->shared_state_size(), 1);
-      }));
+  CallbackReceiver<std::unique_ptr<feedstore::StreamAndContentState>> receiver;
+  store_->ReadNextStreamState(receiver.Bind());
   fake_db_->GetCallback(true);
-  EXPECT_TRUE(did_successful_read);
+  ASSERT_NE(receiver.GetResult(), base::nullopt);
+  feedstore::StreamAndContentState* result = receiver.GetResult()->get();
+  ASSERT_NE(result, nullptr);
+  EXPECT_TRUE(result->has_stream_data());
+  EXPECT_EQ(result->content_size(), 1);
+  EXPECT_EQ(result->shared_state_size(), 1);
 
   // Failed read
-  bool did_failed_read = false;
-  store_->ReadNextStreamState(base::BindLambdaForTesting(
-      [&](std::unique_ptr<feedstore::StreamAndContentState> result) {
-        did_failed_read = true;
-        EXPECT_FALSE(result);
-      }));
+  receiver.GetResult().reset();
+  store_->ReadNextStreamState(receiver.Bind());
   fake_db_->GetCallback(false);
-  EXPECT_TRUE(did_failed_read);
+  EXPECT_NE(receiver.GetResult(), base::nullopt);
+  EXPECT_EQ(receiver.GetResult()->get(), nullptr);
+}
+
+TEST_F(FeedStoreTest, ReadActions) {
+  feedstore::StoredAction action0 = MakeAction(0);
+  feedstore::StoredAction action1 = MakeAction(1);
+  feedstore::StoredAction action2 = MakeAction(2);
+  MakeFeedStore({{"a/0", RecordForAction(action0)},
+                 {"a/1", RecordForAction(action1)},
+                 {"a/2", RecordForAction(action2)}});
+
+  // Successful read
+  CallbackReceiver<std::vector<feedstore::StoredAction>> receiver;
+  store_->ReadActions(receiver.Bind());
+  fake_db_->LoadCallback(true);
+  EXPECT_NE(receiver.GetResult(), base::nullopt);
+  EXPECT_EQ(receiver.GetResult()->size(), 3ul);
+
+  // Failed read
+  receiver.GetResult().reset();
+  store_->ReadActions(receiver.Bind());
+  fake_db_->LoadCallback(false);
+  EXPECT_NE(receiver.GetResult(), base::nullopt);
+  EXPECT_EQ(receiver.GetResult()->size(), 0ul);
+}
+
+TEST_F(FeedStoreTest, WriteActions) {
+  MakeFeedStore({});
+  feedstore::StoredAction action = MakeAction(5);
+
+  CallbackReceiver<bool> receiver;
+  store_->WriteActions({action}, receiver.Bind());
+  fake_db_->UpdateCallback(true);
+  EXPECT_EQ(receiver.GetResult().value(), true);
+  ASSERT_EQ(db_entries_.size(), 1ul);
+  EXPECT_EQ(db_entries_["a/5"].local_action().id(), 5);
+
+  receiver.GetResult().reset();
+  store_->WriteActions({action}, receiver.Bind());
+  fake_db_->UpdateCallback(false);
+  EXPECT_NE(receiver.GetResult(), base::nullopt);
+  EXPECT_EQ(receiver.GetResult().value(), false);
+}
+
+TEST_F(FeedStoreTest, RemoveActions) {
+  feedstore::StoredAction action0 = MakeAction(0);
+  feedstore::StoredAction action1 = MakeAction(1);
+  feedstore::StoredAction action2 = MakeAction(2);
+  MakeFeedStore({{"a/0", RecordForAction(action0)},
+                 {"a/1", RecordForAction(action1)},
+                 {"a/2", RecordForAction(action2)}});
+
+  const std::vector<LocalActionId> ids = {LocalActionId(0), LocalActionId(1),
+                                          LocalActionId(2)};
+
+  CallbackReceiver<bool> receiver;
+  store_->RemoveActions(ids, receiver.Bind());
+  fake_db_->UpdateCallback(true);
+  EXPECT_EQ(receiver.GetResult().value(), true);
+  EXPECT_EQ(db_entries_.size(), 0ul);
+
+  receiver.GetResult().reset();
+  store_->RemoveActions(ids, receiver.Bind());
+  fake_db_->UpdateCallback(false);
+  EXPECT_NE(receiver.GetResult(), base::nullopt);
+  EXPECT_EQ(receiver.GetResult().value(), false);
 }
 
 }  // namespace feed

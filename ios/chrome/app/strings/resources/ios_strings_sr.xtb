@@ -3,6 +3,7 @@
 <translationbundle lang="sr">
 <translation id="1005230401424685968">ГГГГ</translation>
 <translation id="1016495303386450659">Ставка је ажурирана</translation>
+<translation id="1044891598689252897">Сајтови ће нормално радити</translation>
 <translation id="1047726139967079566">Обележи ову страницу...</translation>
 <translation id="1049743911850919806">Без архивирања</translation>
 <translation id="1063454504051558093">Користи другу лозинку...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860">Ставки: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Двапут додирните да бисте укључили/искључили подешавање</translation>
 <translation id="1509486075633541495">Пријавите се на веб-сајт</translation>
+<translation id="1509960214886564027">Функције на многим сајтовима могу да престану са радом</translation>
 <translation id="152234381334907219">Никада се не чува</translation>
 <translation id="1540800554400757039">1. ред за адресу</translation>
 <translation id="1545749641540134597">Скенирајте QR кôд</translation>
@@ -528,6 +530,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7961015016161918242">Никад</translation>
 <translation id="7971521879845308059">Блокирај искачуће прозоре</translation>
 <translation id="7982789257301363584">Мрежа</translation>
+<translation id="7993619969781047893">Функције на неким сајтовима могу да престану са радом</translation>
 <translation id="800361585186029508">Отвара унете URL-ове у Google Chrome-у.</translation>
 <translation id="8007420562015504427">Претрага без архивирања</translation>
 <translation id="8019783059653722575">Ово вам омогућава да чувате и отпремате слике.</translation>

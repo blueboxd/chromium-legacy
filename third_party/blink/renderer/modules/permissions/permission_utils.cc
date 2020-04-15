@@ -6,10 +6,12 @@
 
 #include <utility>
 
+#include "build/build_config.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_camera_device_permission_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_clipboard_permission_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_midi_permission_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_permission_descriptor.h"
@@ -79,6 +81,17 @@ PermissionDescriptorPtr CreateClipboardPermissionDescriptor(
   return descriptor;
 }
 
+PermissionDescriptorPtr CreateVideoCapturePermissionDescriptor(
+    bool pan_tilt_zoom) {
+  auto descriptor =
+      CreatePermissionDescriptor(mojom::blink::PermissionName::VIDEO_CAPTURE);
+  auto camera_device_extension =
+      mojom::blink::CameraDevicePermissionDescriptor::New(pan_tilt_zoom);
+  descriptor->extension = mojom::blink::PermissionDescriptorExtension::New();
+  descriptor->extension->set_camera_device(std::move(camera_device_extension));
+  return descriptor;
+}
+
 PermissionDescriptorPtr ParsePermissionDescriptor(
     ScriptState* script_state,
     const ScriptValue& raw_descriptor,
@@ -94,8 +107,22 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
   const String& name = permission->name();
   if (name == "geolocation")
     return CreatePermissionDescriptor(PermissionName::GEOLOCATION);
-  if (name == "camera")
-    return CreatePermissionDescriptor(PermissionName::VIDEO_CAPTURE);
+  if (name == "camera") {
+#if !defined(OS_ANDROID)
+    CameraDevicePermissionDescriptor* camera_device_permission =
+        NativeValueTraits<CameraDevicePermissionDescriptor>::NativeValue(
+            script_state->GetIsolate(), raw_descriptor.V8Value(),
+            exception_state);
+    if (exception_state.HadException())
+      return nullptr;
+
+    if (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled()) {
+      return CreateVideoCapturePermissionDescriptor(
+          camera_device_permission->panTiltZoom());
+    }
+#endif
+    return CreateVideoCapturePermissionDescriptor(false /* pan_tilt_zoom */);
+  }
   if (name == "microphone")
     return CreatePermissionDescriptor(PermissionName::AUDIO_CAPTURE);
   if (name == "notifications")

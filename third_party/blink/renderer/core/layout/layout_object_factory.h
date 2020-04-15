@@ -17,6 +17,7 @@ class LayoutBlockFlow;
 class LayoutObject;
 enum class LegacyLayout;
 class LayoutProgress;
+class LayoutRubyAsBlock;
 class LayoutTableCaption;
 class LayoutTableCell;
 class LayoutText;
@@ -67,6 +68,9 @@ class LayoutObjectFactory {
   static LayoutProgress* CreateProgress(Node* node,
                                         const ComputedStyle& style,
                                         LegacyLayout legacy);
+  static LayoutRubyAsBlock* CreateRubyAsBlock(Node* node,
+                                              const ComputedStyle& style,
+                                              LegacyLayout legacy);
 };
 
 }  // namespace blink

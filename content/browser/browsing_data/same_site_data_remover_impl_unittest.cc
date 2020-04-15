@@ -18,6 +18,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_storage_partition.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_util.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -216,12 +217,13 @@ TEST_F(SameSiteDataRemoverImplTest, TestCookieRemovalUnaffectedByParameters) {
   net::CookieOptions options;
   options.set_include_httponly();
   bool result_out = false;
+  net::CanonicalCookie cookie1("TestCookie1", "20", "google.com", "/",
+                               base::Time::Now(), base::Time(), base::Time(),
+                               true, true, net::CookieSameSite::NO_RESTRICTION,
+                               net::COOKIE_PRIORITY_HIGH);
   cookie_manager->SetCanonicalCookie(
-      net::CanonicalCookie("TestCookie1", "20", "google.com", "/",
-                           base::Time::Now(), base::Time(), base::Time(), true,
-                           true, net::CookieSameSite::NO_RESTRICTION,
-                           net::COOKIE_PRIORITY_HIGH),
-      "https", options,
+      cookie1, net::cookie_util::SimulatedCookieSource(cookie1, "https"),
+      options,
       base::BindLambdaForTesting(
           [&](net::CanonicalCookie::CookieInclusionStatus result) {
             result_out = result.IsInclude();
@@ -236,12 +238,13 @@ TEST_F(SameSiteDataRemoverImplTest, TestCookieRemovalUnaffectedByParameters) {
           net::CookieOptions::SameSiteCookieContext::ContextType::
               SAME_SITE_LAX));
   result_out = false;
+  net::CanonicalCookie cookie2("TestCookie2", "10", "gmail.google.com", "/",
+                               base::Time(), base::Time::Max(), base::Time(),
+                               false, true, net::CookieSameSite::LAX_MODE,
+                               net::COOKIE_PRIORITY_HIGH);
   cookie_manager->SetCanonicalCookie(
-      net::CanonicalCookie("TestCookie2", "10", "gmail.google.com", "/",
-                           base::Time(), base::Time::Max(), base::Time(), false,
-                           true, net::CookieSameSite::LAX_MODE,
-                           net::COOKIE_PRIORITY_HIGH),
-      "https", options,
+      cookie2, net::cookie_util::SimulatedCookieSource(cookie2, "https"),
+      options,
       base::BindLambdaForTesting(
           [&](net::CanonicalCookie::CookieInclusionStatus result) {
             result_out = result.IsInclude();

@@ -8,6 +8,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
@@ -19,8 +20,9 @@ ProactiveSuggestionsView::ProactiveSuggestionsView(
     AssistantViewDelegate* delegate)
     : views::Button(/*listener=*/this),
       delegate_(delegate),
-      proactive_suggestions_(
-          delegate_->GetSuggestionsModel()->GetProactiveSuggestions()),
+      proactive_suggestions_(AssistantSuggestionsController::Get()
+                                 ->GetModel()
+                                 ->GetProactiveSuggestions()),
       keyboard_workspace_occluded_bounds_(
           keyboard::KeyboardUIController::Get()
               ->GetWorkspaceOccludedBoundsInScreen()) {

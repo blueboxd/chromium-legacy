@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">Копіювати</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Назва</translation>
+<translation id="4259722352634471385">Веб-сторінку <ph name="URL" /> заблоковано</translation>
 <translation id="4570913071927164677">Деталі</translation>
 <translation id="4645575059429386691">Керується одним із батьків</translation>
 <translation id="4883854917563148705">Налаштування, якими керує адміністратор, не можна скинути</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">Видалити введений текст</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8730621377337864115">Готово</translation>
+<translation id="8959122750345127698">Веб-сторінка <ph name="URL" /> недоступна</translation>
 <translation id="9019902583201351841">Керується батьками</translation>
 </translationbundle>

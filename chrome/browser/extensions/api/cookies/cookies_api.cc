@@ -450,7 +450,7 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   DCHECK(!url_.is_empty() && url_.is_valid());
   cookie_manager->SetCanonicalCookie(
-      *cc, url_.scheme(), options,
+      *cc, url_, options,
       base::BindOnce(&CookiesSetFunction::SetCanonicalCookieCallback, this));
   cookies_helpers::GetCookieListFromManager(
       cookie_manager, url_,

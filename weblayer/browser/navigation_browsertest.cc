@@ -4,7 +4,9 @@
 
 #include "weblayer/test/weblayer_browser_test.h"
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/test/bind_test_util.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -20,33 +22,49 @@ namespace weblayer {
 
 namespace {
 
-class StopNavigationObserver : public NavigationObserver {
+// NavigationObserver that allows registering a callback for various
+// NavigationObserver functions.
+class NavigationObserverImpl : public NavigationObserver {
  public:
-  StopNavigationObserver(NavigationController* controller, bool stop_in_start)
-      : controller_(controller), stop_in_start_(stop_in_start) {
+  explicit NavigationObserverImpl(NavigationController* controller)
+      : controller_(controller) {
     controller_->AddObserver(this);
   }
-  ~StopNavigationObserver() override { controller_->RemoveObserver(this); }
+  ~NavigationObserverImpl() override { controller_->RemoveObserver(this); }
 
-  void WaitForNavigation() { run_loop_.Run(); }
+  using Callback = base::OnceCallback<void(Navigation*)>;
+
+  void SetStartedCallback(Callback callback) {
+    started_callback_ = std::move(callback);
+  }
+
+  void SetRedirectedCallback(Callback callback) {
+    redirected_callback_ = std::move(callback);
+  }
+
+  void SetFailedClosure(base::OnceClosure closure) {
+    failed_closure_ = std::move(closure);
+  }
 
   // NavigationObserver:
   void NavigationStarted(Navigation* navigation) override {
-    if (stop_in_start_)
-      controller_->Stop();
+    if (started_callback_)
+      std::move(started_callback_).Run(navigation);
   }
   void NavigationRedirected(Navigation* navigation) override {
-    if (!stop_in_start_)
-      controller_->Stop();
+    if (redirected_callback_)
+      std::move(redirected_callback_).Run(navigation);
   }
-  void NavigationFailed(Navigation* navigation) override { run_loop_.Quit(); }
+  void NavigationFailed(Navigation* navigation) override {
+    if (failed_closure_)
+      std::move(failed_closure_).Run();
+  }
 
  private:
   NavigationController* controller_;
-  // If true Stop() is called in NavigationStarted(), otherwise Stop() is
-  // called in NavigationRedirected().
-  const bool stop_in_start_;
-  base::RunLoop run_loop_;
+  Callback started_callback_;
+  Callback redirected_callback_;
+  base::OnceClosure failed_closure_;
 };
 
 class OneShotNavigationObserver : public NavigationObserver {
@@ -95,13 +113,18 @@ class OneShotNavigationObserver : public NavigationObserver {
 
 }  // namespace
 
-using NavigationBrowserTest = WebLayerBrowserTest;
+class NavigationBrowserTest : public WebLayerBrowserTest {
+ public:
+  NavigationController* GetNavigationController() {
+    return shell()->tab()->GetNavigationController();
+  }
+};
 
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, NoError) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   OneShotNavigationObserver observer(shell());
-  shell()->tab()->GetNavigationController()->Navigate(
+  GetNavigationController()->Navigate(
       embedded_test_server()->GetURL("/simple_page.html"));
 
   observer.WaitForNavigation();
@@ -116,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpClientError) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   OneShotNavigationObserver observer(shell());
-  shell()->tab()->GetNavigationController()->Navigate(
+  GetNavigationController()->Navigate(
       embedded_test_server()->GetURL("/non_existent.html"));
 
   observer.WaitForNavigation();
@@ -131,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpServerError) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   OneShotNavigationObserver observer(shell());
-  shell()->tab()->GetNavigationController()->Navigate(
+  GetNavigationController()->Navigate(
       embedded_test_server()->GetURL("/echo?status=500"));
 
   observer.WaitForNavigation();
@@ -153,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SSLError) {
   ASSERT_TRUE(https_server_mismatched.Start());
 
   OneShotNavigationObserver observer(shell());
-  shell()->tab()->GetNavigationController()->Navigate(
+  GetNavigationController()->Navigate(
       https_server_mismatched.GetURL("/simple_page.html"));
 
   observer.WaitForNavigation();
@@ -169,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpConnectivityError) {
       url, net::ERR_NAME_NOT_RESOLVED);
 
   OneShotNavigationObserver observer(shell());
-  shell()->tab()->GetNavigationController()->Navigate(url);
+  GetNavigationController()->Navigate(url);
 
   observer.WaitForNavigation();
   EXPECT_FALSE(observer.completed());
@@ -179,70 +202,33 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpConnectivityError) {
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, StopInOnStart) {
-  EXPECT_TRUE(embedded_test_server()->Start());
-  StopNavigationObserver observer(shell()->tab()->GetNavigationController(),
-                                  true);
-  shell()->tab()->GetNavigationController()->Navigate(
+  ASSERT_TRUE(embedded_test_server()->Start());
+  base::RunLoop run_loop;
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetStartedCallback(base::BindLambdaForTesting(
+      [&](Navigation*) { GetNavigationController()->Stop(); }));
+  observer.SetFailedClosure(
+      base::BindOnce(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+  GetNavigationController()->Navigate(
       embedded_test_server()->GetURL("/simple_page.html"));
 
-  observer.WaitForNavigation();
+  run_loop.Run();
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, StopInOnRedirect) {
-  EXPECT_TRUE(embedded_test_server()->Start());
-  StopNavigationObserver observer(shell()->tab()->GetNavigationController(),
-                                  false);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  base::RunLoop run_loop;
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetRedirectedCallback(base::BindLambdaForTesting(
+      [&](Navigation*) { GetNavigationController()->Stop(); }));
+  observer.SetFailedClosure(
+      base::BindOnce(&base::RunLoop::Quit, base::Unretained(&run_loop)));
   const GURL original_url = embedded_test_server()->GetURL("/simple_page.html");
-  shell()->tab()->GetNavigationController()->Navigate(
-      embedded_test_server()->GetURL("/server-redirect?" +
-                                     original_url.spec()));
+  GetNavigationController()->Navigate(embedded_test_server()->GetURL(
+      "/server-redirect?" + original_url.spec()));
 
-  observer.WaitForNavigation();
+  run_loop.Run();
 }
-
-namespace {
-
-class HeaderInjectorNavigationObserver : public NavigationObserver {
- public:
-  HeaderInjectorNavigationObserver(Shell* shell,
-                                   const std::string& header_name,
-                                   const std::string& header_value,
-                                   bool inject_in_start)
-      : tab_(shell->tab()),
-        header_name_(header_name),
-        header_value_(header_value),
-        inject_in_start_(inject_in_start) {
-    tab_->GetNavigationController()->AddObserver(this);
-  }
-
-  ~HeaderInjectorNavigationObserver() override {
-    tab_->GetNavigationController()->RemoveObserver(this);
-  }
-
- private:
-  // NavigationObserver implementation:
-  void NavigationStarted(Navigation* navigation) override {
-    if (inject_in_start_)
-      InjectHeaders(navigation);
-  }
-
-  void NavigationRedirected(Navigation* navigation) override {
-    if (!inject_in_start_)
-      InjectHeaders(navigation);
-  }
-
-  void InjectHeaders(Navigation* navigation) {
-    navigation->SetRequestHeader(header_name_, header_value_);
-  }
-
-  Tab* tab_;
-  const std::string header_name_;
-  const std::string header_value_;
-  // If true, header is set in start, otherwise header is set in redirect.
-  const bool inject_in_start_;
-};
-
-}  // namespace
 
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeader) {
   net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
@@ -253,8 +239,11 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeader) {
 
   const std::string header_name = "header";
   const std::string header_value = "value";
-  HeaderInjectorNavigationObserver observer(shell(), header_name, header_value,
-                                            true);
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetRequestHeader(header_name, header_value);
+      }));
 
   shell()->LoadURL(embedded_test_server()->GetURL("/simple_page.html"));
   response_1.WaitForRequest();
@@ -279,8 +268,11 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeaderInRedirect) {
 
   const std::string header_name = "header";
   const std::string header_value = "value";
-  HeaderInjectorNavigationObserver observer(shell(), header_name, header_value,
-                                            false);
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetRedirectedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetRequestHeader(header_name, header_value);
+      }));
   shell()->LoadURL(embedded_test_server()->GetURL("/simple_page.html"));
   response_1.WaitForRequest();
 

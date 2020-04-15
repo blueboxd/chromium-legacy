@@ -44,9 +44,13 @@ QuicClientSessionCache::~QuicClientSessionCache() {
   Flush();
 }
 
-void QuicClientSessionCache::Insert(
-    const quic::QuicServerId& server_id,
-    std::unique_ptr<quic::QuicResumptionState> state) {
+void QuicClientSessionCache::Insert(const quic::QuicServerId& server_id,
+                                    bssl::UniquePtr<SSL_SESSION> session,
+                                    quic::TransportParameters* params,
+                                    std::vector<uint8_t>* application_states) {
+  auto state = std::make_unique<quic::QuicResumptionState>();
+  state->tls_session = std::move(session);
+  // TODO: Do something with TransportParams and application_states.
   cache_.Put(server_id, std::move(state));
 }
 

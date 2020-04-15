@@ -10,7 +10,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 
 namespace network {
 
@@ -70,6 +72,74 @@ ParseKeyResult ParseSingleKeyExceptLabel(
   return ParseKeyResult::kSucceed;
 }
 
+mojom::TrustTokenKeyCommitmentResultPtr ParseSingleIssuer(
+    const base::Value& value) {
+  if (!value.is_dict())
+    return nullptr;
+
+  auto result = mojom::TrustTokenKeyCommitmentResult::New();
+
+  // Confirm that the batchsize field is type-safe, if it's present.
+  if (value.FindKey(kTrustTokenKeyCommitmentBatchsizeField) &&
+      !value.FindIntKey(kTrustTokenKeyCommitmentBatchsizeField)) {
+    return nullptr;
+  }
+  if (base::Optional<int> maybe_batch_size =
+          value.FindIntKey(kTrustTokenKeyCommitmentBatchsizeField)) {
+    result->batch_size =
+        mojom::TrustTokenKeyCommitmentBatchSize::New(*maybe_batch_size);
+  }
+
+  // Confirm that the srrkey field is present and base64-encoded.
+  const std::string* maybe_srrkey =
+      value.FindStringKey(kTrustTokenKeyCommitmentSrrkeyField);
+  if (!maybe_srrkey)
+    return nullptr;
+  if (!base::Base64Decode(*maybe_srrkey,
+                          &result->signed_redemption_record_verification_key)) {
+    return nullptr;
+  }
+
+  // Parse the key commitments in the result (these are exactly the
+  // key-value pairs in the dictionary with dictionary-typed values).
+  for (const auto& kv : value.DictItems()) {
+    const base::Value& item = kv.second;
+    if (!item.is_dict())
+      continue;
+
+    auto key = mojom::TrustTokenVerificationKey::New();
+
+    if (!ParseSingleKeyLabel(kv.first, &key->label))
+      return nullptr;
+
+    switch (ParseSingleKeyExceptLabel(item, key.get())) {
+      case ParseKeyResult::kFail:
+        return nullptr;
+      case ParseKeyResult::kIgnore:
+        continue;
+      case ParseKeyResult::kSucceed:
+        result->keys.push_back(std::move(key));
+    }
+  }
+
+  return result;
+}
+
+// Entry is a convenience struct used as an intermediate representation when
+// parsing multiple issuers. In addition to a parsed canonicalized issuer, it
+// preserves the raw JSON string key (the second entry) in order
+// deterministically to deduplicate entries with keys canonicalizing to the same
+// issuer.
+using Entry = std::tuple<SuitableTrustTokenOrigin,  // canonicalized issuer
+                         std::string,               // raw key from the JSON
+                         mojom::TrustTokenKeyCommitmentResultPtr>;
+SuitableTrustTokenOrigin& canonicalized_issuer(Entry& e) {
+  return std::get<0>(e);
+}
+mojom::TrustTokenKeyCommitmentResultPtr& commitment(Entry& e) {
+  return std::get<2>(e);
+}
+
 }  // namespace
 
 const char kTrustTokenKeyCommitmentBatchsizeField[] = "batchsize";
@@ -101,55 +171,71 @@ mojom::TrustTokenKeyCommitmentResultPtr TrustTokenKeyCommitmentParser::Parse(
   if (!maybe_value)
     return nullptr;
 
+  return ParseSingleIssuer(std::move(*maybe_value));
+}
+
+std::unique_ptr<base::flat_map<SuitableTrustTokenOrigin,
+                               mojom::TrustTokenKeyCommitmentResultPtr>>
+TrustTokenKeyCommitmentParser::ParseMultipleIssuers(
+    base::StringPiece response_body) {
+  base::Optional<base::Value> maybe_value =
+      base::JSONReader::Read(response_body);
+  if (!maybe_value)
+    return nullptr;
+
   if (!maybe_value->is_dict())
     return nullptr;
 
-  auto result = mojom::TrustTokenKeyCommitmentResult::New();
+  // The configuration might contain conflicting lists of keys for issuers with
+  // the same canonicalized URLs but different string representations provided
+  // by the server. In order to handle these deterministically, first transfer
+  // the entries to intermediate storage while maintaining the initial JSON
+  // keys; then deduplicate based on identical entries' JSON keys' lexicographic
+  // value.
 
-  // Confirm that the batchsize field is type-safe, if it's present.
-  if (maybe_value->FindKey(kTrustTokenKeyCommitmentBatchsizeField) &&
-      !maybe_value->FindIntKey(kTrustTokenKeyCommitmentBatchsizeField)) {
-    return nullptr;
-  }
-  if (base::Optional<int> maybe_batch_size =
-          maybe_value->FindIntKey(kTrustTokenKeyCommitmentBatchsizeField)) {
-    result->batch_size =
-        mojom::TrustTokenKeyCommitmentBatchSize::New(*maybe_batch_size);
-  }
+  std::vector<Entry> parsed_entries;
 
-  // Confirm that the srrkey field is present and base64-encoded.
-  const std::string* maybe_srrkey =
-      maybe_value->FindStringKey(kTrustTokenKeyCommitmentSrrkeyField);
-  if (!maybe_srrkey)
-    return nullptr;
-  if (!base::Base64Decode(*maybe_srrkey,
-                          &result->signed_redemption_record_verification_key)) {
-    return nullptr;
-  }
-
-  // Parse the key commitments in the result (these are exactly the
-  // key-value pairs in the dictionary with dictionary-typed values).
   for (const auto& kv : maybe_value->DictItems()) {
-    const base::Value& item = kv.second;
-    if (!item.is_dict())
+    const std::string& raw_key_from_json = kv.first;
+    base::Optional<SuitableTrustTokenOrigin> maybe_issuer =
+        SuitableTrustTokenOrigin::Create(GURL(raw_key_from_json));
+
+    if (!maybe_issuer)
       continue;
 
-    auto key = mojom::TrustTokenVerificationKey::New();
+    mojom::TrustTokenKeyCommitmentResultPtr commitment_result =
+        ParseSingleIssuer(kv.second);
 
-    if (!ParseSingleKeyLabel(kv.first, &key->label))
-      return nullptr;
+    if (!commitment_result)
+      continue;
 
-    switch (ParseSingleKeyExceptLabel(item, key.get())) {
-      case ParseKeyResult::kFail:
-        return nullptr;
-      case ParseKeyResult::kIgnore:
-        continue;
-      case ParseKeyResult::kSucceed:
-        result->keys.push_back(std::move(key));
-    }
+    parsed_entries.emplace_back(Entry(std::move(*maybe_issuer),
+                                      raw_key_from_json,
+                                      std::move(commitment_result)));
   }
 
-  return result;
+  // Deterministically deduplicate entries corresponding to the same issuer,
+  // with the largest JSON key lexicographically winning.
+  std::sort(parsed_entries.begin(), parsed_entries.end(), std::greater<>());
+  parsed_entries.erase(std::unique(parsed_entries.begin(), parsed_entries.end(),
+                                   [](Entry& lhs, Entry& rhs) -> bool {
+                                     return canonicalized_issuer(lhs) ==
+                                            canonicalized_issuer(rhs);
+                                   }),
+                       parsed_entries.end());
+
+  // Finally, discard the raw JSON strings and construct a map to return.
+  std::vector<std::pair<SuitableTrustTokenOrigin,
+                        mojom::TrustTokenKeyCommitmentResultPtr>>
+      map_storage;
+  map_storage.reserve(parsed_entries.size());
+  for (Entry& e : parsed_entries) {
+    map_storage.emplace_back(std::move(canonicalized_issuer(e)),
+                             std::move(commitment(e)));
+  }
+  return std::make_unique<base::flat_map<
+      SuitableTrustTokenOrigin, mojom::TrustTokenKeyCommitmentResultPtr>>(
+      std::move(map_storage));
 }
 
 }  // namespace network

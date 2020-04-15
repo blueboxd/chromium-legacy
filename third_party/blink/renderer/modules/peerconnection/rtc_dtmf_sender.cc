@@ -32,9 +32,9 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_tone_change_event.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
-#include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_platform.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {

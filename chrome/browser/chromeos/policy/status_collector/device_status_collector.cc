@@ -927,14 +927,20 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         }
       }
 
-      const auto& backlight_info = probe_result->backlight_info;
-      if (backlight_info.has_value()) {
-        for (const auto& backlight : backlight_info.value()) {
-          em::BacklightInfo* const backlight_info_out =
-              response_params_.device_status->add_backlight_info();
-          backlight_info_out->set_path(backlight->path);
-          backlight_info_out->set_max_brightness(backlight->max_brightness);
-          backlight_info_out->set_brightness(backlight->brightness);
+      // Process BacklightResult.
+      const auto& backlight_result = probe_result->backlight_result;
+      if (!backlight_result.is_null()) {
+        if (backlight_result->is_error()) {
+          LOG(ERROR) << "cros_healthd: Error getting backlight info: "
+                     << backlight_result->get_error()->msg;
+        } else {
+          for (const auto& backlight : backlight_result->get_backlight_info()) {
+            em::BacklightInfo* const backlight_info_out =
+                response_params_.device_status->add_backlight_info();
+            backlight_info_out->set_path(backlight->path);
+            backlight_info_out->set_max_brightness(backlight->max_brightness);
+            backlight_info_out->set_brightness(backlight->brightness);
+          }
         }
       }
 

@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/main/test_browser_list_observer.h"
-
+#import "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #include "ios/web/public/test/web_task_environment.h"
@@ -26,6 +26,10 @@ class BrowserViewWranglerTest : public PlatformTest {
  protected:
   BrowserViewWranglerTest() {
     TestChromeBrowserState::Builder test_cbs_builder;
+    test_cbs_builder.AddTestingFactory(
+        SendTabToSelfSyncServiceFactory::GetInstance(),
+        SendTabToSelfSyncServiceFactory::GetDefaultFactory());
+
     chrome_browser_state_ = test_cbs_builder.Build();
   }
 

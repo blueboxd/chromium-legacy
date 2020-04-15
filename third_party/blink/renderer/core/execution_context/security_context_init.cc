@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
@@ -135,6 +136,17 @@ void SecurityContextInit::ApplyPendingDataToDocument(Document& document) const {
   }
   if (!report_only_feature_policy_header_.empty())
     UseCounter::Count(document, WebFeature::kFeaturePolicyReportOnlyHeader);
+
+  if (!document_policy_.feature_state.empty())
+    UseCounter::Count(document, WebFeature::kDocumentPolicyHeader);
+
+  if (!report_only_document_policy_.feature_state.empty())
+    UseCounter::Count(document, WebFeature::kDocumentPolicyReportOnlyHeader);
+
+  for (const auto& policy_entry : document_policy_.feature_state) {
+    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.DocumentPolicy.Header",
+                              policy_entry.first);
+  }
 }
 
 void SecurityContextInit::InitializeContentSecurityPolicy(

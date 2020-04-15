@@ -2645,10 +2645,15 @@ void Browser::ProcessPendingUIUpdates() {
           TabChangeType::kAll);
     }
 
-    // Update the bookmark bar. It may happen that the tab is crashed, and if
-    // so, the bookmark bar should be hidden.
-    if (flags & content::INVALIDATE_TYPE_TAB)
+    // Update the bookmark bar and PWA install icon. It may happen that the tab
+    // is crashed, and if so, the bookmark bar and PWA install icon should be
+    // hidden.
+    if (flags & content::INVALIDATE_TYPE_TAB) {
       UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
+      // TODO(crbug.com/1062235): Ideally, we should simply ask the state to
+      // update, and doing that in an appropriate and efficient manner.
+      window()->UpdatePageActionIcon(PageActionIconType::kPwaInstall);
+    }
 
     // We don't need to process INVALIDATE_STATE, since that's not visible.
   }

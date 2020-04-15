@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 """Updates the FeaturePolicyFeature enum in enums.xml file with
-values read from feature_policy.mojom.
+values read from feature_policy_feature.mojom.
 
 If the file was pretty-printed, the updated version is pretty-printed too.
 """

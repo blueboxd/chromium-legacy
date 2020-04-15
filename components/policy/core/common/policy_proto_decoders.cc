@@ -89,7 +89,7 @@ base::Value DecodeJsonProto(const em::StringPolicyProto& proto,
       base::JSONReader::ReadAndReturnValueWithError(
           json, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
 
-  if (value_with_error.error_code != base::JSONReader::JSON_NO_ERROR) {
+  if (!value_with_error.value) {
     // Can't parse as JSON so return it as a string, and leave it to the handler
     // to validate.
     LOG(WARNING) << "Invalid JSON: " << json;

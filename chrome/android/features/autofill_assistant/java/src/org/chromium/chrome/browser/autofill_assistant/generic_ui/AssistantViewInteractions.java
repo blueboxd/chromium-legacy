@@ -117,6 +117,13 @@ public class AssistantViewInteractions {
     }
 
     @CalledByNative
+    private static void setViewEnabled(View view, AssistantValue enabled) {
+        if (enabled.getBooleans() != null && enabled.getBooleans().length == 1) {
+            view.setEnabled(enabled.getBooleans()[0]);
+        }
+    }
+
+    @CalledByNative
     private static boolean setToggleButtonChecked(View view, AssistantValue checked) {
         if (!(view instanceof AssistantToggleButton)) {
             return false;

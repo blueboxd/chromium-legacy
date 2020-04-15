@@ -595,6 +595,7 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
+
   Register(ContentSettingsType::STORAGE_ACCESS, "storage-access",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::SYNCABLE,
            WhitelistedSchemes(), ForceAllowedOrigins(),
@@ -605,6 +606,18 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::INHERIT_IN_INCOGNITO,
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
+
+  Register(ContentSettingsType::CAMERA_PAN_TILT_ZOOM, "camera-pan-tilt-zoom",
+           CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
+           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
+           ForceAllowedOrigins(),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_ASK),
+           WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP,
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
+           ContentSettingsInfo::PERSISTENT,
+           ContentSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
 }
 
 void ContentSettingsRegistry::Register(

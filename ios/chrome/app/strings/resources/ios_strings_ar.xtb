@@ -3,6 +3,7 @@
 <translationbundle lang="ar">
 <translation id="1005230401424685968">سنة</translation>
 <translation id="1016495303386450659">تم تحديث العنصر</translation>
+<translation id="1044891598689252897">ستعمل المواقع الإلكترونية بشكلٍ طبيعي.</translation>
 <translation id="1047726139967079566">وضع إشارة مرجعية على هذه الصفحة...</translation>
 <translation id="1049743911850919806">التصفح المتخفي</translation>
 <translation id="1063454504051558093">استخدام كلمة مرور أخرى...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> من العناصر</translation>
 <translation id="1491277525950327607">انقر مرّتين لتبديل الإعداد</translation>
 <translation id="1509486075633541495">تسجيل الدخول إلى الموقع الإلكتروني</translation>
+<translation id="1509960214886564027">قد تتوقف الميزات عن العمل في العديد من المواقع الإلكترونية.</translation>
 <translation id="152234381334907219">المواقع التي لن تحفظ كلمات المرور أبدًا</translation>
 <translation id="1540800554400757039">العنوان 1</translation>
 <translation id="1545749641540134597">فحص رمز الاستجابة السريعة</translation>
@@ -528,6 +530,7 @@
 <translation id="7961015016161918242">مطلقًا</translation>
 <translation id="7971521879845308059">حظر النوافذ المنبثقة</translation>
 <translation id="7982789257301363584">الشبكة</translation>
+<translation id="7993619969781047893">قد تتوقف الميزات عن العمل في بعض المواقع الإلكترونية.</translation>
 <translation id="800361585186029508">‏فتح عناوين URL التي تم إدخالها في Google Chrome</translation>
 <translation id="8007420562015504427">البحث في وضع التصفح المتخفي</translation>
 <translation id="8019783059653722575">هذا يتيح لك حفظ الصور وتحميلها.</translation>

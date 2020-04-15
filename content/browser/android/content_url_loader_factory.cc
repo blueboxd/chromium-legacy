@@ -194,9 +194,8 @@ class ContentURLLoader : public network::mojom::URLLoader {
 
     if (!head->mime_type.empty()) {
       head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-      head->headers->AddHeader(
-          base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
-                             head->mime_type.c_str()));
+      head->headers->SetHeader(net::HttpRequestHeaders::kContentType,
+                               head->mime_type);
     }
 
     client->OnReceiveResponse(std::move(head));

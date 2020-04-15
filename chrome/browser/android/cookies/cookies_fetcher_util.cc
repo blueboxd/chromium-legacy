@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "net/cookies/cookie_util.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -119,6 +120,6 @@ static void JNI_CookiesFetcher_RestoreCookies(
   options.set_same_site_cookie_context(
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   GetCookieServiceClient()->SetCanonicalCookie(
-      *cookie, "https", options,
-      network::mojom::CookieManager::SetCanonicalCookieCallback());
+      *cookie, net::cookie_util::SimulatedCookieSource(*cookie, "https"),
+      options, network::mojom::CookieManager::SetCanonicalCookieCallback());
 }

@@ -74,6 +74,12 @@ bool SaturatedTimeFromUTCExploded(const base::Time::Exploded& exploded,
   return false;
 }
 
+std::string CookieDomainAsHost(const std::string& cookie_domain) {
+  if (DomainIsHostOnly(cookie_domain))
+    return cookie_domain;
+  return cookie_domain.substr(1);
+}
+
 CookieOptions::SameSiteCookieContext::CrossSchemeness ComputeSchemeChange(
     const GURL& url,
     const SiteForCookies& site_for_cookies) {
@@ -328,6 +334,15 @@ GURL CookieOriginToURL(const std::string& domain, bool is_https) {
   const std::string scheme = is_https ? "https" : "http";
   const std::string host = domain[0] == '.' ? domain.substr(1) : domain;
   return GURL(scheme + "://" + host);
+}
+
+GURL SimulatedCookieSource(const CanonicalCookie& cookie,
+                           const std::string& source_scheme) {
+  if (cookie.Domain().empty() || source_scheme.empty())
+    return GURL();
+
+  return GURL(source_scheme + "://" + CookieDomainAsHost(cookie.Domain()) +
+              cookie.Path());
 }
 
 bool IsDomainMatch(const std::string& domain, const std::string& host) {

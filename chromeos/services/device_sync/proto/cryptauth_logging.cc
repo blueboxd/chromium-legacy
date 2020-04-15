@@ -231,7 +231,8 @@ base::Value EncryptedGroupPrivateKeyToReadableDictionary(
       (key.encrypted_private_key().empty()
            ? "[Empty]"
            : TruncateStringForLogs(Encode(key.encrypted_private_key()))));
-  dict.SetIntKey("Group public key hash", key.group_public_key_hash());
+  dict.SetStringKey("Group public key hash",
+                    base::NumberToString(key.group_public_key_hash()));
   return dict;
 }
 

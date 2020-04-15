@@ -30,7 +30,7 @@ class LayerTreeOwner;
 
 namespace ash {
 
-class AssistantController;
+class AssistantControllerImpl;
 
 class ASH_EXPORT AssistantScreenContextController
     : public mojom::AssistantScreenContextController,
@@ -43,7 +43,7 @@ class ASH_EXPORT AssistantScreenContextController
                               const std::vector<uint8_t>&)>;
 
   explicit AssistantScreenContextController(
-      AssistantController* assistant_controller);
+      AssistantControllerImpl* assistant_controller);
   ~AssistantScreenContextController() override;
 
   void BindReceiver(
@@ -100,7 +100,7 @@ class ASH_EXPORT AssistantScreenContextController
                                     ScreenContextCallback callback,
                                     const std::vector<uint8_t>& screenshot);
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
 
   mojo::Receiver<mojom::AssistantScreenContextController> receiver_{this};
 

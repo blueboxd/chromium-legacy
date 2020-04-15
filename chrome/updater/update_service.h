@@ -69,6 +69,15 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
     kForeground = 2,
   };
 
+  // Scope of the update service invocation.
+  enum class Scope {
+    // The updater is running in the logged in user's scope.
+    kUser = 1,
+
+    // The updater is running in the system's scope.
+    kSystem = 2,
+  };
+
   using StateChangeCallback = base::RepeatingCallback<void(UpdateState)>;
   using Callback = base::OnceCallback<void(Result)>;
 

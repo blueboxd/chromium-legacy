@@ -239,7 +239,7 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="2717722538473713889">E-posadresse</translation>
 <translation id="2728754400939377704">Sorteer volgens werf</translation>
 <translation id="2744248271121720757">Tik op 'n woord om oombliklik te soek of sien verwante handelinge</translation>
-<translation id="2760989362628427051">Skakel Donker-tema aan wanneer jou toestel se Donker-tema of Batterybespaarder aan is</translation>
+<translation id="2760989362628427051">Skakel Donkertema aan wanneer jou toestel se Donkertema of Batterybespaarder aan is</translation>
 <translation id="2762000892062317888">sopas</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekondes oor</translation>
 <translation id="2779651927720337254">misluk</translation>
@@ -436,7 +436,6 @@ Net jy kan sien waarna jou kamera kyk. Hierdie werf kan nie jou kamera se prente
 <translation id="4242533952199664413">Maak instellings oop</translation>
 <translation id="4250229828105606438">Skermkiekie</translation>
 <translation id="4256782883801055595">Oopbronlisensies</translation>
-<translation id="4259722352634471385">Navigasie is geblokkeer: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopieer skakeladres</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Toegelaat</translation>
@@ -887,7 +886,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7572498721684305250">Blokkeer werwe om inligting te stuur en te ontvang wanneer jy op NFC-toestelle tik</translation>
 <translation id="757524316907819857">Blokkeer werwe om beskermde inhoud te speel</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> lêer is afgelaai}other{<ph name="FILES_DOWNLOADED_MANY" /> lêers is afgelaai}}</translation>
-<translation id="7588219262685291874">Skakel donker-tema aan wanneer jou toestel se Batterybespaarder aan is</translation>
+<translation id="7588219262685291874">Skakel donkertema aan wanneer jou toestel se Batterybespaarder aan is</translation>
 <translation id="7589445247086920869">Blokeer vir huidige soekenjin</translation>
 <translation id="7593557518625677601">Maak Android-instellings oop en heraktiveer Android-stelselsinkronisering om Chrome-sinkronisering te begin</translation>
 <translation id="7596558890252710462">Bedryfstelsel</translation>
@@ -1067,7 +1066,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="8942627711005830162">Maak in 'n ander venster oop</translation>
 <translation id="8951232171465285730">Chrome het vir jou <ph name="MEGABYTES" /> MB bespaar</translation>
 <translation id="8958424370300090006">Blokkeer webkoekies vir 'n spesifieke werf.</translation>
-<translation id="8959122750345127698">Navigasie is onbereikbaar: <ph name="URL" /></translation>
 <translation id="8965591936373831584">hangende</translation>
 <translation id="8970887620466824814">Iets is fout.</translation>
 <translation id="8972098258593396643">Laai af na verstekvouer?</translation>

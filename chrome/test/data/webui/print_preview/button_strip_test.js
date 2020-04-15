@@ -29,6 +29,8 @@ suite(button_strip_test.suiteName, function() {
         'FooDevice', DestinationType.GOOGLE, DestinationOrigin.COOKIES,
         'FooName', DestinationConnectionStatus.ONLINE);
     buttonStrip.state = State.READY;
+    // No max sheets limit is specified.
+    buttonStrip.maxSheets = 0;
     document.body.appendChild(buttonStrip);
   });
 

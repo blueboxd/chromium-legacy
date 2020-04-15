@@ -32,7 +32,7 @@ enum ScrollRestoration {"auto", "manual"};
 ] interface History {
     [MeasureAs=HistoryLength, RaisesException] readonly attribute unsigned long length;
     [Measure, RaisesException] attribute ScrollRestoration scrollRestoration;
-    [CachedAttribute=stateChanged, CallWith=Isolate, RaisesException] readonly attribute any state;
+    [CallWith=ScriptState, RaisesException] readonly attribute any state;
     [CallWith=ScriptState, RaisesException] void go(optional long delta = 0);
     [CallWith=ScriptState, RaisesException] void back();
     [CallWith=ScriptState, RaisesException] void forward();

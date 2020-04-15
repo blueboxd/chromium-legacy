@@ -2892,10 +2892,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPassiveDocumentEventListenersName,
      flag_descriptions::kPassiveDocumentEventListenersDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPassiveDocumentEventListeners)},
-    {"document-passive-wheel-event-listeners",
-     flag_descriptions::kPassiveDocumentWheelEventListenersName,
-     flag_descriptions::kPassiveDocumentWheelEventListenersDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kPassiveDocumentWheelEventListeners)},
     {"passive-event-listeners-due-to-fling",
      flag_descriptions::kPassiveEventListenersDueToFlingName,
      flag_descriptions::kPassiveEventListenersDueToFlingDescription, kOsAll,
@@ -3943,6 +3939,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHappinessTrackingSurveysForDesktopDemoDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktopDemo)},
+
+    {"happiness-tracking-surveys-for-desktop-migration",
+     flag_descriptions::kHappinessTrackingSurveysForDesktopMigrationName,
+     flag_descriptions::kHappinessTrackingSurveysForDesktopMigrationDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         features::kHappinessTrackingSurveysForDesktopMigration)},
 
     {"happiness-tracking-surveys-for-desktop-settings",
      flag_descriptions::kHappinessTrackingSurveysForDesktopSettingsName,
@@ -5231,6 +5234,17 @@ const FeatureEntry kFeatureEntries[] = {
     {"app-cache", flag_descriptions::kAppCacheName,
      flag_descriptions::kAppCacheDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kAppCache)},
+    {"enable-autofill-cache-server-card-info",
+     flag_descriptions::kEnableAutofillCacheServerCardInfoName,
+     flag_descriptions::kEnableAutofillCacheServerCardInfoDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillCacheServerCardInfo)},
+
+    {"autofill-enable-sticky-payments-bubble",
+     flag_descriptions::kAutofillEnableStickyPaymentsBubbleName,
+     flag_descriptions::kAutofillEnableStickyPaymentsBubbleDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableStickyPaymentsBubble)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

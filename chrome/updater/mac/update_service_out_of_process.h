@@ -31,7 +31,7 @@ namespace updater {
 // All functions and callbacks must be called on the same sequence.
 class UpdateServiceOutOfProcess : public UpdateService {
  public:
-  UpdateServiceOutOfProcess();
+  explicit UpdateServiceOutOfProcess(UpdateService::Scope scope);
 
   // Overrides for UpdateService.
   void RegisterApp(

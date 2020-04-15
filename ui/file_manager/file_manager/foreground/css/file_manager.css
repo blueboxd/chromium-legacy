@@ -610,8 +610,8 @@ html.focus-outline-visible .dialog-header.files-ng button:not(:active):focus {
   display: none;
 }
 
-.dialog-header:not(.files-ng) button,
-.dialog-header:not(.files-ng) button:hover {
+body:not(.check-select) .dialog-header:not(.files-ng) button,
+body:not(.check-select) .dialog-header:not(.files-ng) button:hover {
   color: white;
 }
 

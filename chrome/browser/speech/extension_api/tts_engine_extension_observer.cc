@@ -23,8 +23,9 @@
 
 namespace {
 
-void UpdateGoogleSpeechSynthesisKeepAliveCount(content::BrowserContext* context,
-                                               bool increment) {
+void UpdateGoogleSpeechSynthesisKeepAliveCountHelper(
+    content::BrowserContext* context,
+    bool increment) {
   extensions::ProcessManager* pm = extensions::ProcessManager::Get(context);
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(context);
@@ -42,6 +43,21 @@ void UpdateGoogleSpeechSynthesisKeepAliveCount(content::BrowserContext* context,
     pm->DecrementLazyKeepaliveCount(
         extension, extensions::Activity::ACCESSIBILITY, std::string());
   }
+}
+
+void UpdateGoogleSpeechSynthesisKeepAliveCount(content::BrowserContext* context,
+                                               bool increment) {
+  // Deal with profiles that are non-off the record and otr. For a given
+  // extension load/unload, we only ever get called for one of the two potential
+  // profile types.
+  Profile* profile = Profile::FromBrowserContext(context);
+  if (!profile)
+    return;
+
+  UpdateGoogleSpeechSynthesisKeepAliveCountHelper(
+      profile->HasOffTheRecordProfile() ? profile->GetOffTheRecordProfile()
+                                        : profile,
+      increment);
 }
 
 }  // namespace

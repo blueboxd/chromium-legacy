@@ -102,6 +102,8 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
     // thumb back to its original position if the pointer moves too far away
     // from the track during a thumb drag.
     drag_state_->scroll_position_at_start_ = scrollbar->current_pos();
+    drag_state_->scroller_length_at_previous_move =
+        scrollbar->scroll_layer_length();
   }
 
   if (!scroll_result.scroll_offset.IsZero()) {
@@ -233,7 +235,7 @@ float ScrollbarController::GetScrollDeltaForAbsoluteJump(
   return delta * GetScrollerToScrollbarRatio(scrollbar);
 }
 
-gfx::ScrollOffset ScrollbarController::GetScrollDeltaForDragPosition(
+int ScrollbarController::GetScrollDeltaForDragPosition(
     const ScrollbarLayerImplBase* scrollbar,
     const gfx::PointF pointer_position_in_widget) {
   const float pointer_delta =
@@ -247,9 +249,7 @@ gfx::ScrollOffset ScrollbarController::GetScrollDeltaForDragPosition(
                              new_offset - scrollbar->current_pos();
 
   // Scroll delta floored to match main thread per pixel behavior
-  return scrollbar->orientation() == ScrollbarOrientation::VERTICAL
-             ? gfx::ScrollOffset(0, floorf(scroll_delta))
-             : gfx::ScrollOffset(floorf(scroll_delta), 0);
+  return floorf(scroll_delta);
 }
 
 // Performs hit test and prepares scroll deltas that will be used by GSU.
@@ -302,9 +302,27 @@ InputHandlerPointerResult ScrollbarController::HandlePointerMove(
   // valid ScrollNode.
   DCHECK(target_node);
 
+  int delta = GetScrollDeltaForDragPosition(scrollbar, position_in_widget);
+  if (drag_state_->scroller_length_at_previous_move !=
+      scrollbar->scroll_layer_length()) {
+    drag_state_->scroller_displacement = delta;
+    drag_state_->scroller_length_at_previous_move =
+        scrollbar->scroll_layer_length();
+
+    // This is done to ensure that, when the scroller length changes mid thumb
+    // drag, the scroller shouldn't jump. We early out because the delta would
+    // be zero in this case anyway (since drag_state_->scroller_displacement =
+    // delta). So that means, in the worst case you'd miss 1 GSU every time the
+    // scroller expands while a thumb drag is in progress.
+    return scroll_result;
+  }
+  delta -= drag_state_->scroller_displacement;
+
   // If scroll_offset can't be consumed, there's no point in continuing on.
-  const gfx::ScrollOffset scroll_offset(
-      GetScrollDeltaForDragPosition(scrollbar, position_in_widget));
+  const gfx::ScrollOffset scroll_offset(scrollbar->orientation() ==
+                                                ScrollbarOrientation::VERTICAL
+                                            ? gfx::ScrollOffset(0, delta)
+                                            : gfx::ScrollOffset(delta, 0));
   const gfx::Vector2dF clamped_scroll_offset(
       layer_tree_host_impl_->ComputeScrollDelta(
           *target_node, ScrollOffsetToVector2dF(scroll_offset)));

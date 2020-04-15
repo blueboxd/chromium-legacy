@@ -24,6 +24,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationParams;
+import org.chromium.components.external_intents.InterceptNavigationDelegateImpl;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;

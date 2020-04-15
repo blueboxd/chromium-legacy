@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.chrome.browser.ui.favicon.IconType;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 
 /**
  * A row view that shows bookmark info in the bookmarks UI.
@@ -23,7 +23,7 @@ import org.chromium.components.favicon.FaviconFallbackGenerator;
 public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
 
     private String mUrl;
-    private FaviconFallbackGenerator mIconGenerator;
+    private RoundedIconGenerator mIconGenerator;
     private final int mMinIconSize;
     private final int mDisplayedIconSize;
 

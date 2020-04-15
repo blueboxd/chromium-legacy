@@ -75,7 +75,7 @@ void SyncedNetworkUpdaterImpl::StartAddOrUpdateOperation(
         existing_network->guid, std::move(config),
         base::BindOnce(&SyncedNetworkUpdaterImpl::OnSetPropertiesResult,
                        weak_ptr_factory_.GetWeakPtr(), change_guid,
-                       existing_network->guid, id));
+                       existing_network->guid, specifics));
     return;
   }
 
@@ -83,7 +83,7 @@ void SyncedNetworkUpdaterImpl::StartAddOrUpdateOperation(
   cros_network_config_->ConfigureNetwork(
       std::move(config), /*shared=*/false,
       base::BindOnce(&SyncedNetworkUpdaterImpl::OnConfigureNetworkResult,
-                     weak_ptr_factory_.GetWeakPtr(), change_guid, id));
+                     weak_ptr_factory_.GetWeakPtr(), change_guid, specifics));
 }
 
 void SyncedNetworkUpdaterImpl::RemoveNetwork(const NetworkIdentifier& id) {
@@ -144,14 +144,19 @@ void SyncedNetworkUpdaterImpl::OnError(const std::string& change_guid,
 
 void SyncedNetworkUpdaterImpl::OnConfigureNetworkResult(
     const std::string& change_guid,
-    const NetworkIdentifier& id,
+    const sync_pb::WifiConfigurationSpecifics& proto,
     const base::Optional<std::string>& network_guid,
     const std::string& error_message) {
+  auto id = NetworkIdentifier::FromProto(proto);
   if (network_guid) {
     NET_LOG(EVENT) << "Successfully configured network "
                    << NetworkGuidId(*network_guid);
-    NetworkHandler::Get()->network_metadata_store()->SetIsConfiguredBySync(
-        *network_guid);
+    NetworkMetadataStore* metadata_store =
+        NetworkHandler::Get()->network_metadata_store();
+    metadata_store->SetIsConfiguredBySync(*network_guid);
+    metadata_store->SetLastConnectedTimestamp(
+        *network_guid,
+        base::TimeDelta::FromMilliseconds(proto.last_connected_timestamp()));
   } else {
     NET_LOG(ERROR) << "Failed to configure network "
                    << NetworkId(NetworkStateFromNetworkIdentifier(id))
@@ -163,19 +168,24 @@ void SyncedNetworkUpdaterImpl::OnConfigureNetworkResult(
 void SyncedNetworkUpdaterImpl::OnSetPropertiesResult(
     const std::string& change_guid,
     const std::string& network_guid,
-    const NetworkIdentifier& id,
+    const sync_pb::WifiConfigurationSpecifics& proto,
     bool is_success,
     const std::string& error_message) {
   if (is_success) {
     NET_LOG(EVENT) << "Successfully updated network  "
                    << NetworkGuidId(network_guid);
-    NetworkHandler::Get()->network_metadata_store()->SetIsConfiguredBySync(
-        network_guid);
+    NetworkMetadataStore* metadata_store =
+        NetworkHandler::Get()->network_metadata_store();
+    metadata_store->SetIsConfiguredBySync(network_guid);
+    metadata_store->SetLastConnectedTimestamp(
+        network_guid,
+        base::TimeDelta::FromMilliseconds(proto.last_connected_timestamp()));
   } else {
     NET_LOG(ERROR) << "Failed to update network "
                    << NetworkGuidId(network_guid);
   }
-  HandleShillResult(change_guid, id, is_success);
+  HandleShillResult(change_guid, NetworkIdentifier::FromProto(proto),
+                    is_success);
 }
 
 void SyncedNetworkUpdaterImpl::OnForgetNetworkResult(

@@ -56,7 +56,7 @@ class SiteDataCountingHelperTest : public testing::Test {
       net::CookieOptions options;
       options.set_include_httponly();
       cookie_manager->SetCanonicalCookie(
-          *cookie, url.scheme(), options,
+          *cookie, url, options,
           base::BindLambdaForTesting(
               [&](net::CanonicalCookie::CookieInclusionStatus status) {
                 if (--tasks == 0)

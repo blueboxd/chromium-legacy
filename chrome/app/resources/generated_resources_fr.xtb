@@ -612,6 +612,11 @@
 <translation id="1805888043020974594">Serveur d'impression</translation>
 <translation id="1805967612549112634">Confirmer le code</translation>
 <translation id="1806335016774576568">Passer à une autre application ouverte</translation>
+<translation id="1809483812148634490">Les applications que vous avez téléchargées depuis Google Play seront supprimées de ce Chromebook.
+    <ph name="LINE_BREAKS1" />
+    De même, les contenus que vous avez achetés, tels que les films, les séries TV, les titres musicaux, les livres ou tout autre achat via une application risquent d'être supprimés.
+    <ph name="LINE_BREAKS2" />
+    En revanche, cette opération n'a pas d'incidence sur les applications ou le contenu figurant sur d'autres appareils.</translation>
 <translation id="1809734401532861917">Ajouter mes favoris, mon historique, mes mots de passe et d'autres paramètres au compte <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">Services</translation>
 <translation id="18139523105317219">Nom de partie EDI</translation>
@@ -682,7 +687,6 @@
 <translation id="189210018541388520">Ouvrir en mode plein écran</translation>
 <translation id="1892341345406963517">Bonjour <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Autres langues</translation>
-<translation id="1895252664692693738">Il reste <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Arrêt.</translation>
 <translation id="1895934970388272448">Vous devez confirmer l'enregistrement de l'imprimante pour terminer ce processus. Merci de vous en assurer dès maintenant.</translation>
 <translation id="1899826437968063457">Plug-in VM a besoin d'une autorisation pour fonctionner</translation>
@@ -1393,6 +1397,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2825848369316359348">Localisez le nom imprimé au dos de votre clé de sécurité</translation>
 <translation id="2828650939514476812">Se connecter au réseau Wi-Fi</translation>
 <translation id="2835294513443818940">Impossible de télécharger ce fichier de manière sécurisée.</translation>
+<translation id="2835547721736623118">Service de reconnaissance vocale</translation>
 <translation id="2836269494620652131">Blocage</translation>
 <translation id="2836635946302913370">Impossible de se connecter avec ce nom d'utilisateur, car il a été désactivé par votre administrateur.</translation>
 <translation id="283669119850230892">Pour utiliser le réseau <ph name="NETWORK_ID" />, finalisez d'abord la connexion à Internet ci-dessous</translation>
@@ -1537,6 +1542,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3019285239893817657">Bouton pour accéder à la sous-page</translation>
 <translation id="3020183492814296499">Raccourcis</translation>
 <translation id="3020990233660977256">Numéro de série : <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">Lorsque l'appareil est sur batterie</translation>
 <translation id="3021066826692793094">Papillon</translation>
 <translation id="3021678814754966447">&amp;Afficher le code source du cadre</translation>
 <translation id="3022978424994383087">Je n'ai pas compris.</translation>
@@ -2733,6 +2739,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4633757335284074492">Sauvegarder dans Google Drive. Restaurez les données ou changez d'appareil facilement et à tout moment. Les données des applications sont également sauvegardées. Les sauvegardes sont importées dans Google et chiffrées à l'aide du mot de passe du compte Google de votre enfant.</translation>
 <translation id="4634771451598206121">Nouvelle connexion...</translation>
 <translation id="4635398712689569051">La page <ph name="PAGE_NAME" /> n'est pas accessible aux utilisateurs invités.</translation>
+<translation id="4635444580397524003">La sauvegarde Linux a bien été restaurée.</translation>
 <translation id="4636930964841734540">Infos</translation>
 <translation id="4637083375689622795">Autres actions, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Activer le débogage ADB</translation>
@@ -2908,6 +2915,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4890773143211625964">Afficher les paramètres d'imprimante avancés</translation>
 <translation id="4891089016822695758">Forum bêta</translation>
 <translation id="4892229439761351791">Le site peut utiliser le Bluetooth</translation>
+<translation id="489258173289528622">Lorsque l'appareil est inactif et fonctionne sur batterie</translation>
 <translation id="4893336867552636863">Cette action aura pour effet de supprimer définitivement vos données de navigation de cet appareil.</translation>
 <translation id="4893522937062257019">Sur l'écran de verrouillage</translation>
 <translation id="489454699928748701">Autoriser les sites à utiliser les capteurs de mouvement</translation>
@@ -3615,6 +3623,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5863445608433396414">Activer les fonctionnalités de débogage</translation>
 <translation id="5864195618110239517">Utiliser une connexion facturée à l'usage</translation>
 <translation id="5864471791310927901">Échec de la vérification DHCP</translation>
+<translation id="5864754048328252126">Lorsque l'appareil est inactif et en charge</translation>
 <translation id="5865508026715185451">L'application <ph name="APP_NAME" /> sera bientôt suspendue</translation>
 <translation id="586567932979200359">Vous exécutez <ph name="PRODUCT_NAME" /> à partir de son image disque. Si vous l'installez sur votre ordinateur, vous pourrez l'utiliser sans image disque et bénéficierez de mises à jour automatiques.</translation>
 <translation id="5865733239029070421">Envoie automatiquement des statistiques d'utilisation et des rapports d'erreur à Google</translation>
@@ -3814,6 +3823,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6120205520491252677">Épingler cette page à l'écran de démarrage…</translation>
 <translation id="6122081475643980456">Une extension a pris le contrôle de votre connexion Internet</translation>
 <translation id="6122095009389448667">Continuer à empêcher ce site de voir le contenu du presse-papiers</translation>
+<translation id="6122831415929794347">Désactiver la navigation sécurisée ?</translation>
 <translation id="6122875415561139701">L'opération d'écriture n'est pas autorisée sur l'appareil <ph name="DEVICE_NAME" />.</translation>
 <translation id="6124650939968185064">Les extensions suivantes dépendent de cette extension :</translation>
 <translation id="6124698108608891449">Ce site a besoin d'autres autorisations.</translation>
@@ -3991,7 +4001,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6365411474437319296">Ajouter des proches</translation>
 <translation id="636850387210749493">Inscription d'entreprise</translation>
 <translation id="6370021412472292592">Impossible de charger le fichier manifeste.</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Modifier le mot de passe}one{Change passwords}other{Modifier les mots de passe}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Réessayer</translation>
 <translation id="6377268785556383139">1 résultat pour "<ph name="SEARCH_TEXT" />"</translation>
@@ -4017,6 +4026,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6408118934673775994">Accéder aux données des sites <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> et <ph name="WEBSITE_3" />, et les modifier</translation>
 <translation id="6410257289063177456">Fichiers image</translation>
 <translation id="6410328738210026208">Changer de version et Powerwash</translation>
+<translation id="6410390304316730527">La fonctionnalité Navigation sécurisée vous protège contre les pirates informatiques qui pourraient vous inciter à effectuer des opérations dangereuses, comme installer des logiciels malveillants ou divulguer des informations personnelles (mots de passe, numéros de téléphone ou numéros de carte de crédit, par exemple). Si vous la désactivez, faites preuve de vigilance lorsque vous consultez des sites Web inconnus ou peu fiables.</translation>
 <translation id="6410668567036790476">Ajouter un moteur de recherche</translation>
 <translation id="641081527798843608">Correspondance d'objet</translation>
 <translation id="6412673304250309937">Il vérifie les URL d'après une liste de sites dangereux stockée dans Chrome. Si un site tente de voler votre mot de passe ou si vous téléchargez un fichier dangereux, Chrome peut également envoyer les URL concernées, y compris des extraits du contenu de pages, à la fonctionnalité de navigation sécurisée.</translation>
@@ -5937,6 +5947,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8951256747718668828">Échec de la restauration en raison d'une erreur</translation>
 <translation id="8951465597020890363">Voulez-vous vraiment quitter le mode Invité ?</translation>
 <translation id="8952831374766033534">Option de configuration non disponible : <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">Lorsque l'appareil est en charge</translation>
 <translation id="895347679606913382">Démarrage...</translation>
 <translation id="8957762313041272117">Sous-titres instantanés</translation>
 <translation id="895944840846194039">Mémoire JavaScript</translation>

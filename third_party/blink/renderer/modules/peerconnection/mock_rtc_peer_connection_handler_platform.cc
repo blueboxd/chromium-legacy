@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
@@ -240,8 +241,9 @@ class MockRTCPeerConnectionHandlerPlatform::DummyRTCRtpTransceiverPlatform
   scoped_refptr<DummyTransceiverInternal> internal_;
 };
 
-MockRTCPeerConnectionHandlerPlatform::MockRTCPeerConnectionHandlerPlatform() =
-    default;
+MockRTCPeerConnectionHandlerPlatform::MockRTCPeerConnectionHandlerPlatform()
+    : RTCPeerConnectionHandler(
+          scheduler::GetSingleThreadTaskRunnerForTesting()) {}
 
 MockRTCPeerConnectionHandlerPlatform::~MockRTCPeerConnectionHandlerPlatform() =
     default;
@@ -397,6 +399,7 @@ MockRTCPeerConnectionHandlerPlatform::CreateDataChannel(
 }
 
 void MockRTCPeerConnectionHandlerPlatform::Stop() {}
+void MockRTCPeerConnectionHandlerPlatform::StopAndUnregister() {}
 
 webrtc::PeerConnectionInterface*
 MockRTCPeerConnectionHandlerPlatform::NativePeerConnection() {
@@ -413,7 +416,7 @@ void MockRTCPeerConnectionHandlerPlatform::
         const char* trace_event_name) {}
 
 void MockRTCPeerConnectionHandlerPlatform::TrackIceConnectionStateChange(
-    RTCPeerConnectionHandlerPlatform::IceConnectionStateVersion version,
+    RTCPeerConnectionHandler::IceConnectionStateVersion version,
     webrtc::PeerConnectionInterface::IceConnectionState state) {}
 
 }  // namespace blink

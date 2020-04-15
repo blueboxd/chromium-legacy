@@ -149,9 +149,12 @@ class MemoryInternalsDOMHandler : public content::WebUIMessageHandler,
   // Hops to the IO thread to enumerate child processes, and back to the UI
   // thread to fill in the renderer processes.
   static void GetChildProcessesOnIOThread(
-      base::WeakPtr<MemoryInternalsDOMHandler> dom_handler);
-  void GetProfiledPids(std::vector<base::Value> children);
-  void ReturnProcessListOnUIThread(std::vector<base::Value> children,
+      base::WeakPtr<MemoryInternalsDOMHandler> dom_handler,
+      const std::string& callback_id);
+  void GetProfiledPids(const std::string& callback_id,
+                       std::vector<base::Value> children);
+  void ReturnProcessListOnUIThread(const std::string& callback_id,
+                                   std::vector<base::Value> children,
                                    std::vector<base::ProcessId> profiled_pids);
 
   // SelectFileDialog::Listener implementation:
@@ -201,22 +204,26 @@ void MemoryInternalsDOMHandler::RegisterMessages() {
 
 void MemoryInternalsDOMHandler::HandleRequestProcessList(
     const base::ListValue* args) {
+  AllowJavascript();
+  std::string callback_id = args->GetList()[0].GetString();
+
   // This is called on the UI thread, the child process iterator must run on
   // the IO thread, while the render process iterator must run on the UI thread.
   base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&MemoryInternalsDOMHandler::GetChildProcessesOnIOThread,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), std::move(callback_id)));
 }
 
 void MemoryInternalsDOMHandler::HandleSaveDump(const base::ListValue* args) {
   base::FilePath default_file = base::FilePath().AppendASCII(
       base::StringPrintf("trace_with_heap_dump.json.gz"));
 
+  AllowJavascript();
+
 #if defined(OS_ANDROID)
   base::Value result("Saving...");
-  AllowJavascript();
-  CallJavascriptFunction("setSaveDumpMessage", result);
+  FireWebUIListener("save-dump-progress", result);
 
   // On Android write to the user data dir.
   // TODO(bug 757115) Does it make sense to show the Android file picker here
@@ -273,7 +280,8 @@ void MemoryInternalsDOMHandler::HandleStartProfiling(
 }
 
 void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(
-    base::WeakPtr<MemoryInternalsDOMHandler> dom_handler) {
+    base::WeakPtr<MemoryInternalsDOMHandler> dom_handler,
+    const std::string& callback_id) {
   std::vector<base::Value> result;
 
   // The only non-renderer child processes that currently support out-of-process
@@ -291,10 +299,11 @@ void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(
 
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(&MemoryInternalsDOMHandler::GetProfiledPids,
-                                dom_handler, std::move(result)));
+                                dom_handler, callback_id, std::move(result)));
 }
 
 void MemoryInternalsDOMHandler::GetProfiledPids(
+    const std::string& callback_id,
     std::vector<base::Value> children) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   heap_profiling::Supervisor* supervisor =
@@ -305,17 +314,18 @@ void MemoryInternalsDOMHandler::GetProfiledPids(
     base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&MemoryInternalsDOMHandler::ReturnProcessListOnUIThread,
-                       weak_factory_.GetWeakPtr(), std::move(children),
-                       std::vector<base::ProcessId>()));
+                       weak_factory_.GetWeakPtr(), callback_id,
+                       std::move(children), std::vector<base::ProcessId>()));
     return;
   }
 
-  supervisor->GetProfiledPids(
-      base::BindOnce(&MemoryInternalsDOMHandler::ReturnProcessListOnUIThread,
-                     weak_factory_.GetWeakPtr(), std::move(children)));
+  supervisor->GetProfiledPids(base::BindOnce(
+      &MemoryInternalsDOMHandler::ReturnProcessListOnUIThread,
+      weak_factory_.GetWeakPtr(), callback_id, std::move(children)));
 }
 
 void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
+    const std::string& callback_id,
     std::vector<base::Value> children,
     std::vector<base::ProcessId> profiled_pids) {
   // This function will be called with the child processes that are not
@@ -364,16 +374,14 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
   result.SetKey("message", base::Value(GetMessageString()));
   result.SetKey("processes", base::Value(std::move(process_list)));
 
-  AllowJavascript();
-  CallJavascriptFunction("returnProcessList", result);
+  ResolveJavascriptCallback(base::Value(callback_id), result);
 }
 
 void MemoryInternalsDOMHandler::FileSelected(const base::FilePath& path,
                                              int index,
                                              void* params) {
   base::Value result("Saving...");
-  AllowJavascript();
-  CallJavascriptFunction("setSaveDumpMessage", result);
+  FireWebUIListener("save-dump-progress", result);
 
   ProfilingProcessHost::GetInstance()->SaveTraceWithHeapDumpToFile(
       path,
@@ -389,8 +397,7 @@ void MemoryInternalsDOMHandler::FileSelectionCanceled(void* params) {
 
 void MemoryInternalsDOMHandler::SaveTraceFinished(bool success) {
   base::Value result(success ? "Save successful." : "Save failure.");
-  AllowJavascript();
-  CallJavascriptFunction("setSaveDumpMessage", result);
+  FireWebUIListener("save-dump-progress", result);
 }
 
 }  // namespace

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider_factory.h"
 
+#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/local_search_service/local_search_service_proxy.h"
 #include "chrome/browser/local_search_service/local_search_service_proxy_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -35,6 +36,7 @@ OsSettingsLocalizedStringsProviderFactory::
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(
       local_search_service::LocalSearchServiceProxyFactory::GetInstance());
+  DependsOn(multidevice_setup::MultiDeviceSetupClientFactory::GetInstance());
 }
 
 OsSettingsLocalizedStringsProviderFactory::

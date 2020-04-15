@@ -25,6 +25,7 @@ void PolicySettings::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kPrintingDuplexDefault, 0);
   registry->RegisterIntegerPref(prefs::kPrintingPinDefault, 0);
   registry->RegisterDictionaryPref(prefs::kPrintingSizeDefault);
+  registry->RegisterIntegerPref(prefs::kPrintingMaxSheetsAllowed, -1);
 #endif
 }
 

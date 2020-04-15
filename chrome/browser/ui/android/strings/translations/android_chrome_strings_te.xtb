@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">సెట్టింగ్‌లను తెరువు</translation>
 <translation id="4250229828105606438">స్క్రీన్‌షాట్</translation>
 <translation id="4256782883801055595">ఓపెన్ సోర్స్ లైసెన్స్‌లు</translation>
-<translation id="4259722352634471385">నావిగేషన్ బ్లాక్ చేయబడింది: <ph name="URL" /></translation>
 <translation id="4269820728363426813">లింక్ చిరునామాను కాపీ చేయి</translation>
 <translation id="4275663329226226506">మీడియా</translation>
 <translation id="4278390842282768270">అనుమతించబడింది</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">ఇక ఎప్పుడు ఎక్కడ బుక్‌మార్క్‌లను సెట్‌ చేసినా ఆటోమాటిక్‌గా మీ అన్ని పరికరాలలో పొందాలనుకుంటే, సమకాలీకరణ ఎంపికని ఆన్ చేయండి</translation>
 <translation id="8110087112193408731">డిజిటల్ సంక్షేమంలో మీ Chrome కార్యకలాపాన్ని చూపించాలా?</translation>
+<translation id="8115259494083109761">ఒక QR కోడ్‌ను స్కాన్ చేయడానికి, మీ కెమెరాను ఉపయోగించడానికి Chromeను అనుమతించండి</translation>
 <translation id="8116925261070264013">మ్యూట్ చేసినవి</translation>
 <translation id="8127542551745560481">హోమ్ పేజీని ఎడిట్ చేయండి</translation>
 <translation id="813082847718468539">సైట్ సమాచారాన్ని చూడండి</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">మరొక విండోలో తెరువు</translation>
 <translation id="8951232171465285730">Chrome మీకు <ph name="MEGABYTES" /> MB ఆదా చేసింది</translation>
 <translation id="8958424370300090006">ఏదైనా ఒక నిర్దిష్ట సైట్‌లో కుక్కీలను బ్లాక్ చేయండి.</translation>
-<translation id="8959122750345127698">దీనికి నావిగేట్ చేయడం సాధ్యపడదు: <ph name="URL" /></translation>
 <translation id="8965591936373831584">పెండింగ్‌లో ఉంది</translation>
 <translation id="8970887620466824814">ఏదో తప్పు జరిగింది.</translation>
 <translation id="8972098258593396643">డిఫాల్ట్ ఫోల్డర్‌కు డౌన్‌లోడ్ చేయాలా?</translation>

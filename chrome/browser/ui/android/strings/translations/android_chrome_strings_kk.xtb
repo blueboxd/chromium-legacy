@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">Параметрлерді ашу</translation>
 <translation id="4250229828105606438">Скриншот</translation>
 <translation id="4256782883801055595">Ашық кодты бағдарлама лицензиялары</translation>
-<translation id="4259722352634471385">Навигация тыйылған: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Сілтеме мекенжайын көшіру</translation>
 <translation id="4275663329226226506">Мультимедиа</translation>
 <translation id="4278390842282768270">Рұқсат етілген</translation>
@@ -965,6 +964,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Бетбелгілерді барлық құрылғылардан пайдалану үшін синхрондау функциясын қосыңыз</translation>
 <translation id="8110087112193408731">Digital Wellbeing қызметінде Chrome браузерін пайдалану деректері көрсетілсін бе?</translation>
+<translation id="8115259494083109761">QR кодын сканерлеу үшін Chrome-ға камера пайдалану рұқсатын беріңіз.</translation>
 <translation id="8116925261070264013">Дыбысы өшірулі</translation>
 <translation id="8127542551745560481">Негізгі бетті өзгерту</translation>
 <translation id="813082847718468539">Сайт ақпаратын көру</translation>
@@ -1066,7 +1066,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8942627711005830162">Басқа терезеде ашу</translation>
 <translation id="8951232171465285730">Chrome браузері <ph name="MEGABYTES" /> МБ деректі сақтады</translation>
 <translation id="8958424370300090006">Белгілі бір сайт үшін cookie файлдарына тыйым салыңыз.</translation>
-<translation id="8959122750345127698"><ph name="URL" /> мекенжайына өту мүмкін емес</translation>
 <translation id="8965591936373831584">күтілуде</translation>
 <translation id="8970887620466824814">Бірдеңе дұрыс болмады.</translation>
 <translation id="8972098258593396643">Әдепкі қалтаға жүктеп алынсын ба?</translation>

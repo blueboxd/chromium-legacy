@@ -1,0 +1,122 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.components.browser_ui.widget.promo;
+
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.SmallTest;
+import android.view.View;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.components.browser_ui.widget.test.R;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.modelutil.PropertyModel;
+
+/**
+ * Basic test for creating, using the promo component with {@link PromoCardCoordinator}.
+ */
+@RunWith(BaseJUnit4ClassRunner.class)
+public class PromoCardCoordinatorTest {
+    private Context mContext;
+    private PropertyModel mModel;
+    private PromoCardCoordinator mPromoCardCoordinator;
+    private PromoCardView mView;
+
+    @Before
+    public void setUp() {
+        mContext = InstrumentationRegistry.getInstrumentation().getContext();
+        mModel = new PropertyModel.Builder(PromoCardProperties.ALL_KEYS).build();
+        mPromoCardCoordinator = new PromoCardCoordinator(mContext, mModel, "test-feature");
+        mView = (PromoCardView) mPromoCardCoordinator.getView();
+
+        Assert.assertNotNull("PromoCardView is null", mView);
+    }
+
+    @Test
+    @SmallTest
+    public void testTextImageBinding() {
+        final Drawable testImage =
+                mContext.getResources().getDrawable(R.drawable.logo_avatar_anonymous);
+        final String titleString = "Some string for title";
+        final String testString = "Some test string";
+        final String primaryButtonString = "Primary button string";
+        final String secondaryButtonString = "Secondary button string";
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(PromoCardProperties.TITLE, titleString);
+            mModel.set(PromoCardProperties.DESCRIPTION, testString);
+            mModel.set(PromoCardProperties.IMAGE, testImage);
+            mModel.set(PromoCardProperties.PRIMARY_BUTTON_TEXT, primaryButtonString);
+            mModel.set(PromoCardProperties.SECONDARY_BUTTON_TEXT, secondaryButtonString);
+        });
+
+        Assert.assertEquals(
+                "Promo image drawable is different.", testImage, mView.mPromoImage.getDrawable());
+        Assert.assertEquals(
+                "Promo title is different.", titleString, mView.mTitle.getText().toString());
+        Assert.assertEquals("Promo description is different.", testString,
+                mView.mDescription.getText().toString());
+        Assert.assertEquals("Promo primary button text is different.", primaryButtonString,
+                mView.mPrimaryButton.getText().toString());
+        Assert.assertEquals("Promo secondary button text is different.", secondaryButtonString,
+                mView.mSecondaryButton.getText().toString());
+
+        // Change the description again
+        final String testString2 = "Some other test string.";
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mModel.set(PromoCardProperties.DESCRIPTION, testString2); });
+        Assert.assertEquals(testString2, mView.mDescription.getText().toString());
+    }
+
+    @Test
+    @SmallTest
+    public void testChangeVisibility() {
+        Assert.assertEquals(mView.getVisibility(), View.VISIBLE);
+        Assert.assertEquals(mView.mSecondaryButton.getVisibility(), View.VISIBLE);
+
+        // Hide the secondary button
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mModel.set(PromoCardProperties.SECONDARY_BUTTON_VISIBLE, false); });
+        Assert.assertEquals("Secondary button is still visible.", View.GONE,
+                mView.mSecondaryButton.getVisibility());
+    }
+
+    @Test
+    @SmallTest
+    public void testActionBinding() throws Exception {
+        final CallbackHelper primaryClickCallback = new CallbackHelper();
+        final CallbackHelper secondaryClickCallback = new CallbackHelper();
+        final CallbackHelper dismissClickCallback = new CallbackHelper();
+
+        mModel.set(PromoCardProperties.PRIMARY_BUTTON_CALLBACK,
+                (v) -> primaryClickCallback.notifyCalled());
+        mModel.set(PromoCardProperties.SECONDARY_BUTTON_CALLBACK,
+                (v) -> secondaryClickCallback.notifyCalled());
+        mModel.set(PromoCardProperties.CLOSE_BUTTON_CALLBACK,
+                (v) -> dismissClickCallback.notifyCalled());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> mView.mPrimaryButton.performClick());
+        primaryClickCallback.waitForCallback("Primary button callback is never called.", 0);
+        Assert.assertEquals(
+                "Primary button should be clicked once.", 1, primaryClickCallback.getCallCount());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> mView.mSecondaryButton.performClick());
+        secondaryClickCallback.waitForCallback("Secondary button callback is never called.", 0);
+        Assert.assertEquals("Secondary button should be clicked once.", 1,
+                secondaryClickCallback.getCallCount());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> mView.mDismissButton.performClick());
+        dismissClickCallback.waitForCallback("Close button callback is never called.", 0);
+        Assert.assertEquals(
+                "Dismissed button should be clicked once.", 1, dismissClickCallback.getCallCount());
+    }
+}

@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Ukuze ubone izaziso kusikrini sakho sokukhiya, vula ukuze uguqule isilungiselelo</translation>
 <translation id="4144413954005649103">Ngokuchofoza ngakwesokudla noma ukucindezela isikhathi eside, Umsizi ukubonisa ukwaziswa okuhambisana nalokho okukhethayo esikrinini.</translation>
 <translation id="4146833061457621061">Dlala umculo</translation>
-<translation id="4149156641122542261">I-<ph name="DEVICE_TYPE" /> iphethwe i-<ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Izilimi</translation>
 <translation id="4195877955194704651">Inkinobho yokuchofoza okuzenzakalelayo</translation>
 <translation id="4215497585250573029">Izilungiselelo ze-VPN</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">Isinqamuleli sivaliwe</translation>
 <translation id="6910714959251846841">Lesi sibuyekezo sidinga i-powerwashing yedivayisi yakho. Funda kabanzi mayelana nesibuyekezo sakamuva se-<ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">Ayikwazanga ukubona ikhadi lakho elisebenza ngobuchwepheshe besimanje. Zama futhi.</translation>
+<translation id="6945221475159498467">Khetha</translation>
 <translation id="6972754398087986839">Qala</translation>
 <translation id="6981982820502123353">Ukufinyeleleka</translation>
 <translation id="698231206551913481">Onke amafayela nedatha yendawo ehlotshaniswa nalo msebenzisi izosuswa ngunaphakade uma lo msebenzisi asuswa.</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">Inethiwekhi eyimfihlo</translation>
 <translation id="8152092012181020186">Cindezela ku-Ctrl + W ukuze uvale.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Lesi silungiselelo siphethwe umlawuli wakho.</translation>
+<translation id="815598010540052116">Skrolela phansi</translation>
 <translation id="8167567890448493835">Usebenzisa i-<ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Yenza ngokwezifiso izilimi nokokufaka...</translation>
 <translation id="8192202700944119416">Izaziso zifihlakele.</translation>

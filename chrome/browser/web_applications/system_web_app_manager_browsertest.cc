@@ -39,6 +39,7 @@
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_navigation_handle.h"
+#include "content/public/test/test_launcher.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -820,6 +821,64 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAdditionalSearchTermsTest,
                   update.AdditionalSearchTerms());
       });
 }
+
+// These tests use the App Service which is only enabled on Chrome OS.
+#if defined(OS_CHROMEOS)
+// Tests that SWA-specific data is correctly migrated to Web Apps without
+// Extensions.
+class SystemWebAppManagerMigrationTest
+    : public SystemWebAppManagerBrowserTestBase {
+ public:
+  SystemWebAppManagerMigrationTest()
+      : SystemWebAppManagerBrowserTestBase(/*install_mock=*/false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppWithAdditionalSearchTerms();
+    maybe_installation_->set_update_policy(
+        SystemWebAppManager::UpdatePolicy::kOnVersionChange);
+
+    if (content::IsPreTest()) {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    } else {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    }
+  }
+  ~SystemWebAppManagerMigrationTest() override = default;
+
+ protected:
+  std::vector<std::string> GetAppAdditionalSearchTerms() {
+    AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
+
+    std::vector<std::string> additional_search_terms;
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+    const bool app_found = proxy->AppRegistryCache().ForOneApp(
+        app_id, [&additional_search_terms](const apps::AppUpdate& update) {
+          additional_search_terms = update.AdditionalSearchTerms();
+        });
+    CHECK(app_found);
+
+    return additional_search_terms;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(SystemWebAppManagerMigrationTest,
+                       PRE_ExtraDataIsMigrated) {
+  WaitForTestSystemAppInstall();
+  EXPECT_EQ(std::vector<std::string>({"Security"}),
+            GetAppAdditionalSearchTerms());
+}
+
+IN_PROC_BROWSER_TEST_F(SystemWebAppManagerMigrationTest, ExtraDataIsMigrated) {
+  WaitForTestSystemAppInstall();
+  EXPECT_EQ(std::vector<std::string>({"Security"}),
+            GetAppAdditionalSearchTerms());
+}
+#endif  // defined(OS_CHROMEOS)
 
 class SystemWebAppManagerChromeUntrustedTest
     : public SystemWebAppManagerBrowserTest {

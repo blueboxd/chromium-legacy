@@ -13,6 +13,7 @@
 #include "components/autofill_assistant/browser/actions/configure_bottom_sheet_action.h"
 #include "components/autofill_assistant/browser/actions/expect_navigation_action.h"
 #include "components/autofill_assistant/browser/actions/focus_element_action.h"
+#include "components/autofill_assistant/browser/actions/generate_password_for_form_field_action.h"
 #include "components/autofill_assistant/browser/actions/highlight_element_action.h"
 #include "components/autofill_assistant/browser/actions/navigate_action.h"
 #include "components/autofill_assistant/browser/actions/popup_message_action.h"
@@ -320,6 +321,11 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
       }
       case ActionProto::ActionInfoCase::kShowGenericUi: {
         client_action = std::make_unique<ShowGenericUiAction>(delegate, action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kGeneratePasswordForFormField: {
+        client_action = std::make_unique<GeneratePasswordForFormFieldAction>(
+            delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {

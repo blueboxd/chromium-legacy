@@ -196,15 +196,18 @@ class MediaHistoryStoreUnitTest
   }
 
   std::vector<media_feeds::mojom::MediaFeedPtr> GetMediaFeedsSync(
-      MediaHistoryKeyedService* service) {
+      MediaHistoryKeyedService* service,
+      const MediaHistoryKeyedService::GetMediaFeedsRequest& request =
+          MediaHistoryKeyedService::GetMediaFeedsRequest()) {
     base::RunLoop run_loop;
     std::vector<media_feeds::mojom::MediaFeedPtr> out;
 
-    service->GetMediaFeedsForDebug(base::BindLambdaForTesting(
-        [&](std::vector<media_feeds::mojom::MediaFeedPtr> rows) {
-          out = std::move(rows);
-          run_loop.Quit();
-        }));
+    service->GetMediaFeeds(
+        request, base::BindLambdaForTesting(
+                     [&](std::vector<media_feeds::mojom::MediaFeedPtr> rows) {
+                       out = std::move(rows);
+                       run_loop.Quit();
+                     }));
 
     run_loop.Run();
     return out;
@@ -1119,6 +1122,20 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_MultipleFeeds) {
     // The OTR service should have the same data.
     EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id_b));
   }
+
+  {
+    // Check the feeds limit function works.
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
+                       false, 1, base::nullopt));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      ASSERT_EQ(1u, feeds.size());
+      EXPECT_EQ(feed_id_a, feeds[0]->id);
+    }
+  }
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_BadType) {
@@ -1586,6 +1603,232 @@ TEST_P(MediaHistoryStoreFeedsTest, SafeSearchCheck) {
   {
     // The pending item list should be empty.
     EXPECT_TRUE(GetPendingSafeSearchCheckMediaFeedItemsSync(service()).empty());
+  }
+}
+
+TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
+  // We add 111 origins with watchtime and feeds for all but one of these.
+  const unsigned kNumberOfOrigins = 111;
+  const unsigned kNumberOfFeeds = 110;
+
+  // The starting percentile always has one percentage value taken off. This
+  // is because we have one extra origin with the highest watchtime that does
+  // not have a feed.
+  const double kPercentageValue = 100.0 / kNumberOfOrigins;
+  const double kStartingPercentile = 100 - kPercentageValue;
+
+  // Generate a bunch of media feeds.
+  std::set<GURL> feeds;
+  for (unsigned i = 0; i < kNumberOfOrigins; i++) {
+    GURL url(base::StringPrintf("https://www.google%i.com/feed", i));
+    feeds.insert(url);
+
+    // Each origin will have a ascending amount of watchtime from 0 to
+    // |kNumberOfOrigins|.
+    auto watchtime = base::TimeDelta::FromMinutes(i);
+    content::MediaPlayerWatchTime watch_time(url, url.GetOrigin(), watchtime,
+                                             base::TimeDelta(), true, true);
+
+    service()->SavePlayback(watch_time);
+
+    if (i < kNumberOfFeeds)
+      service()->DiscoverMediaFeed(url);
+  }
+
+  WaitForDB();
+
+  {
+    // Check the feeds and origins were stored.
+    auto feeds = GetMediaFeedsSync(service());
+    auto origins = GetOriginRowsSync(service());
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+      EXPECT_TRUE(origins.empty());
+    } else {
+      EXPECT_EQ(kNumberOfFeeds, feeds.size());
+      EXPECT_EQ(kNumberOfOrigins, origins.size());
+
+      int i = 0;
+      for (auto& origin : origins) {
+        auto watchtime = base::TimeDelta::FromMinutes(i);
+
+        EXPECT_EQ(watchtime, origin->cached_audio_video_watchtime);
+        EXPECT_EQ(watchtime, origin->actual_audio_video_watchtime);
+
+        i++;
+      }
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(feeds, GetMediaFeedsSync(otr_service()));
+    EXPECT_EQ(origins, GetOriginRowsSync(otr_service()));
+  }
+
+  {
+    // Check the media feed sorting by sort_by_audio_video_watchtime_desc works.
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
+                       true, base::nullopt, base::nullopt));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      EXPECT_EQ(kNumberOfFeeds, feeds.size());
+
+      unsigned count = kNumberOfFeeds;
+      double percentile = kStartingPercentile;
+      double last_percentile = 101.0;
+      for (auto& feed : feeds) {
+        GURL url(
+            base::StringPrintf("https://www.google%i.com/feed", count - 1));
+
+        EXPECT_EQ(count, feed->id);
+        EXPECT_EQ(url, feed->url);
+        EXPECT_FALSE(feed->last_fetch_time.has_value());
+        EXPECT_EQ(media_feeds::mojom::FetchResult::kNone,
+                  feed->last_fetch_result);
+        EXPECT_EQ(0, feed->fetch_failed_count);
+        EXPECT_FALSE(feed->last_fetch_time_not_cache_hit.has_value());
+        EXPECT_EQ(0, feed->last_fetch_item_count);
+        EXPECT_EQ(0, feed->last_fetch_play_next_count);
+        EXPECT_EQ(0, feed->last_fetch_content_types);
+        EXPECT_TRUE(feed->logos.empty());
+        EXPECT_TRUE(feed->display_name.empty());
+        EXPECT_NEAR(percentile, feed->origin_audio_video_watchtime_percentile,
+                    1);
+        EXPECT_GT(last_percentile,
+                  feed->origin_audio_video_watchtime_percentile);
+
+        last_percentile = feed->origin_audio_video_watchtime_percentile;
+        percentile = percentile - kPercentageValue;
+        count--;
+      }
+    }
+  }
+
+  {
+    // Check the media feed sorting by sort_by_audio_video_watchtime_desc works
+    // with a limit applied.
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
+                       true, 10, base::nullopt));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      EXPECT_EQ(10u, feeds.size());
+
+      unsigned count = kNumberOfFeeds;
+      double percentile = kStartingPercentile;
+      double last_percentile = 101.0;
+      for (auto& feed : feeds) {
+        GURL url(
+            base::StringPrintf("https://www.google%i.com/feed", count - 1));
+
+        EXPECT_EQ(count, feed->id);
+        EXPECT_EQ(url, feed->url);
+        EXPECT_NEAR(percentile, feed->origin_audio_video_watchtime_percentile,
+                    1);
+        EXPECT_GT(last_percentile,
+                  feed->origin_audio_video_watchtime_percentile);
+
+        last_percentile = feed->origin_audio_video_watchtime_percentile;
+        percentile = percentile - kPercentageValue;
+        count--;
+      }
+    }
+  }
+
+  {
+    // Check the media feed sorting by sort_by_audio_video_watchtime_desc works
+    // with a minimum watchtime requirement and ranking.
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
+                       true, base::nullopt, base::TimeDelta::FromMinutes(30)));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      EXPECT_EQ(79u, feeds.size());
+
+      unsigned count = kNumberOfFeeds;
+      double percentile = kStartingPercentile;
+      double last_percentile = 101.0;
+      for (auto& feed : feeds) {
+        GURL url(
+            base::StringPrintf("https://www.google%i.com/feed", count - 1));
+
+        EXPECT_EQ(count, feed->id);
+        EXPECT_EQ(url, feed->url);
+        EXPECT_NEAR(percentile, feed->origin_audio_video_watchtime_percentile,
+                    1);
+        EXPECT_GT(last_percentile,
+                  feed->origin_audio_video_watchtime_percentile);
+
+        last_percentile = feed->origin_audio_video_watchtime_percentile;
+        percentile = percentile - kPercentageValue;
+        count--;
+      }
+    }
+  }
+
+  {
+    // Check the media feed sorting by sort_by_audio_video_watchtime_desc works
+    // with a minimum watchtime requirement, ranking and limit.
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
+                       true, 10, base::TimeDelta::FromMinutes(30)));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      EXPECT_EQ(10u, feeds.size());
+
+      unsigned count = kNumberOfFeeds;
+      double percentile = kStartingPercentile;
+      double last_percentile = 101.0;
+      for (auto& feed : feeds) {
+        GURL url(
+            base::StringPrintf("https://www.google%i.com/feed", count - 1));
+
+        EXPECT_EQ(count, feed->id);
+        EXPECT_EQ(url, feed->url);
+        EXPECT_NEAR(percentile, feed->origin_audio_video_watchtime_percentile,
+                    1);
+        EXPECT_GT(last_percentile,
+                  feed->origin_audio_video_watchtime_percentile);
+
+        last_percentile = feed->origin_audio_video_watchtime_percentile;
+        percentile = percentile - kPercentageValue;
+        count--;
+      }
+    }
+  }
+
+  {
+    // Check the media feed minimum watchtime ranking works without the
+    // percentile data.
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
+                       false, base::nullopt, base::TimeDelta::FromMinutes(30)));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      EXPECT_EQ(79u, feeds.size());
+
+      unsigned count = 32;
+      for (auto& feed : feeds) {
+        GURL url(
+            base::StringPrintf("https://www.google%i.com/feed", count - 1));
+
+        EXPECT_EQ(count, feed->id);
+        EXPECT_EQ(url, feed->url);
+
+        count++;
+      }
+    }
   }
 }
 

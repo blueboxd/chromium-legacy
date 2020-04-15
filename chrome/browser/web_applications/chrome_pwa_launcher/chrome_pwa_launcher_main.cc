@@ -25,23 +25,16 @@ enum LaunchResult {
   kSuccess = 0,
   kStarted = 1,
   kError = 2,
-  kMaxValue = kStarted
+  kMaxValue = kError
 };
-
-// Returns the current executable's path, with capitalization preserved. If
-// getting the current path fails, the launcher crashes.
-base::FilePath GetCurrentExecutablePath() {
-  base::FilePath current_path;
-  CHECK(base::PathService::Get(base::FILE_EXE, &current_path));
-  base::NormalizeFilePath(current_path, &current_path);
-  return current_path;
-}
 
 // Returns the path to chrome.exe stored in the "Last Browser" file. If the file
 // is not found, can't be read, or does not contain a valid path, the launcher
 // crashes.
-base::FilePath GetChromePathFromLastBrowserFile(
-    const base::FilePath& current_path) {
+base::FilePath GetChromePathFromLastBrowserFile() {
+  base::FilePath current_path;
+  CHECK(base::PathService::Get(base::FILE_EXE, &current_path));
+
   // The Last Browser file is expected to be in the User Data directory, which
   // is the great-grandparent of the current directory (User Data\<profile>\Web
   // Applications\<app ID>).
@@ -99,8 +92,7 @@ int WINAPI wWinMain(HINSTANCE instance,
   logging_settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(logging_settings);
 
-  base::FilePath current_path = GetCurrentExecutablePath();
-  base::FilePath chrome_path = GetChromePathFromLastBrowserFile(current_path);
+  const base::FilePath chrome_path = GetChromePathFromLastBrowserFile();
   install_static::InstallDetails::SetForProcess(
       install_static::MakeProductDetails(chrome_path.value()));
 

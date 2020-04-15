@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">ቅንብሮችን ክፈት</translation>
 <translation id="4250229828105606438">ቅጽበታዊ ገጽ እይታ</translation>
 <translation id="4256782883801055595">የክፍት ምንጭ ፍቃዶች</translation>
-<translation id="4259722352634471385">ዳሰሳ ታግዷል፦ <ph name="URL" /></translation>
 <translation id="4269820728363426813">የአገናኝ አድራሻ ቅዳ</translation>
 <translation id="4275663329226226506">ማህደረ መረጃ</translation>
 <translation id="4278390842282768270">ተፈቅዷል</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">የእርስዎን ዕልባቶች በሁሉም መሣሪያዎችዎ ላይ ስምረትን ማብራት ለማግኘት</translation>
 <translation id="8110087112193408731">በዲጂታል ብቁ መሆን ውስጥ የChrome እንቅስቃሴዎ ይታይ?</translation>
+<translation id="8115259494083109761">አንድ QR ኮድ ለመቃኘት Chrome ካሜራዎን ይጠቀም።</translation>
 <translation id="8116925261070264013">ድምፀ ከል ተደርጓል</translation>
 <translation id="8127542551745560481">መነሻ ገጽን ያርትዑ</translation>
 <translation id="813082847718468539">የጣቢያ መረጃን ይመልከቱ</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">በሌላ መስኮት ውስጥ ክፈት</translation>
 <translation id="8951232171465285730">Chrome <ph name="MEGABYTES" /> ሜባ ቆጥቦልዎታል</translation>
 <translation id="8958424370300090006">የአንድ የተወሰነ ጣቢያ ኩኪዎችን ያግዱ።</translation>
-<translation id="8959122750345127698">ዳሰሳ ሊደረስበት አይችልም፦ <ph name="URL" /></translation>
 <translation id="8965591936373831584">በመጠበቅ ላይ</translation>
 <translation id="8970887620466824814">የሆነ ችግር ተፈጥሯል።</translation>
 <translation id="8972098258593396643">ወደ ነባሪው አቃፊ ይውረድ?</translation>

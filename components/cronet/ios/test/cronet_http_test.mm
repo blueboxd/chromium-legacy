@@ -267,6 +267,27 @@ TEST_F(HttpTest, SetUserAgentIsExact) {
                base::SysNSStringToUTF8([delegate_ responseBody]).c_str());
 }
 
+TEST_F(HttpTest, SetUserAgentIsAllowed) {
+  NSURL* url =
+      net::NSURLWithGURL(GURL(TestServer::GetEchoHeaderURL("User-Agent")));
+  NSMutableURLRequest* mutableRequest =
+      [[NSURLRequest requestWithURL:url] mutableCopy];
+  [mutableRequest addValue:@"foo,bar" forHTTPHeaderField:@"User-Agent"];
+  NSURLSessionDataTask* task = [session_ dataTaskWithRequest:mutableRequest];
+  StartDataTaskAndWaitForCompletion(task);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_TRUE([[delegate_ responseBody] containsString:@"foo,bar"]);
+
+  // Now check to see if the User-Agent string is restored to default when
+  // creating a new task from a request.
+  mutableRequest = [[NSURLRequest requestWithURL:url] mutableCopy];
+  task = [session_ dataTaskWithRequest:mutableRequest];
+  StartDataTaskAndWaitForCompletion(task);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_STREQ(kUserAgent,
+               base::SysNSStringToUTF8([delegate_ responseBody]).c_str());
+}
+
 TEST_F(HttpTest, SetCookie) {
   const char kCookieHeader[] = "Cookie";
   NSString* cookieName =

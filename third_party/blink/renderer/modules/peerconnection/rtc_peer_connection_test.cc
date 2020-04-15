@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_platform.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
-#include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
@@ -403,7 +402,7 @@ class RTCPeerConnectionTest : public testing::Test {
                                      scope.GetExceptionState());
   }
 
-  virtual std::unique_ptr<RTCPeerConnectionHandlerPlatform>
+  virtual std::unique_ptr<RTCPeerConnectionHandler>
   CreateRTCPeerConnectionHandler() {
     return std::make_unique<MockRTCPeerConnectionHandlerPlatform>();
   }
@@ -775,8 +774,8 @@ class FakeRTCPeerConnectionHandlerPlatform
 //
 class RTCPeerConnectionCallSetupStateTest : public RTCPeerConnectionTest {
  public:
-  std::unique_ptr<RTCPeerConnectionHandlerPlatform>
-  CreateRTCPeerConnectionHandler() override {
+  std::unique_ptr<RTCPeerConnectionHandler> CreateRTCPeerConnectionHandler()
+      override {
     auto handler = std::make_unique<FakeRTCPeerConnectionHandlerPlatform>();
     handler_ = handler.get();
     return handler;
@@ -1179,8 +1178,7 @@ class SchedulingAffectingWebRTCFeaturesTest : public SimTest {
     return result;
   }
 
-  std::unique_ptr<RTCPeerConnectionHandlerPlatform>
-  CreateRTCPeerConnectionHandler() {
+  std::unique_ptr<RTCPeerConnectionHandler> CreateRTCPeerConnectionHandler() {
     return std::make_unique<MockRTCPeerConnectionHandlerPlatform>();
   }
 };

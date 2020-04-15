@@ -654,6 +654,7 @@ blink_core_tests("unit_tests") {
     "parser/media_condition_test.cc",
     "parser/sizes_attribute_parser_test.cc",
     "parser/sizes_math_function_parser_test.cc",
+    "properties/computed_style_utils_test.cc",
     "properties/css_exposure_test.cc",
     "properties/css_parsing_utils_test.cc",
     "properties/css_property_ref_test.cc",

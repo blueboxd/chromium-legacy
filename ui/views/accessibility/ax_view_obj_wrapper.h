@@ -35,6 +35,7 @@ class AXViewObjWrapper : public AXAuraObjWrapper, public ViewObserver {
   void Serialize(ui::AXNodeData* out_node_data) override;
   int32_t GetUniqueId() const final;
   bool HandleAccessibleAction(const ui::AXActionData& action) override;
+  std::string ToString() const override;
 
   // ViewObserver overrides.
   void OnViewIsDeleting(View* observed_view) override;

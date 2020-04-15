@@ -6,23 +6,77 @@
 
 #include "base/auto_reset.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/extensions/extension_install_ui_default.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
+
+namespace {
+
+// Helper class to wait for a views::Widget to become visible.
+// TODO(devlin): Move this to a common place, and hunt down other similar
+// functionality.
+class WidgetVisibleWaiter : public views::WidgetObserver {
+ public:
+  explicit WidgetVisibleWaiter(views::Widget* widget) : widget_(widget) {}
+  ~WidgetVisibleWaiter() override = default;
+
+  void Wait() {
+    if (!widget_->IsVisible()) {
+      widget_observer_.Add(widget_);
+      run_loop_.Run();
+    }
+  }
+
+  // WidgetObserver:
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override {
+    DCHECK_EQ(widget_, widget);
+    if (visible)
+      run_loop_.Quit();
+  }
+
+  void OnWidgetDestroying(views::Widget* widget) override {
+    DCHECK_EQ(widget_, widget);
+    ADD_FAILURE() << "Widget destroying before it became visible!";
+    // Even though the test failed, be polite and remove the observer so we
+    // don't crash with a UAF in the destructor.
+    widget_observer_.Remove(widget);
+  }
+
+ private:
+  views::Widget* const widget_;
+  base::RunLoop run_loop_;
+  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
+};
+
+}  // namespace
 
 class ExtensionInstalledBubbleViewsBrowserTest
-    : public SupportsTestDialog<extensions::ExtensionBrowserTest> {
+    : public SupportsTestDialog<extensions::ExtensionBrowserTest>,
+      public testing::WithParamInterface<bool> {
  public:
   ExtensionInstalledBubbleViewsBrowserTest()
       : disable_animations_(&ToolbarActionsBar::disable_animations_for_testing_,
-                            true) {}
+                            true) {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kExtensionsToolbarMenu);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kExtensionsToolbarMenu);
+    }
+  }
   ~ExtensionInstalledBubbleViewsBrowserTest() override = default;
 
   void ShowUi(const std::string& name) override;
@@ -58,6 +112,7 @@ class ExtensionInstalledBubbleViewsBrowserTest
     return extension;
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::AutoReset<bool> disable_animations_;
   views::Widget* bubble_widget_;
 };
@@ -76,6 +131,12 @@ void ExtensionInstalledBubbleViewsBrowserTest::ShowUi(const std::string& name) {
                       std::inserter(added_widgets, added_widgets.begin()));
   ASSERT_EQ(added_widgets.size(), 1u);
   bubble_widget_ = *added_widgets.begin();
+
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    // With the toolbar menu, the extension slides out of the menu before the
+    // bubble shows. Wait for the bubble to become visible.
+    WidgetVisibleWaiter(bubble_widget_).Wait();
+  }
 }
 
 bool ExtensionInstalledBubbleViewsBrowserTest::VerifyUi() {
@@ -105,27 +166,31 @@ void ExtensionInstalledBubbleViewsBrowserTest::WaitForUserDismissal() {
 #define MAYBE_InvokeUi_Omnibox InvokeUi_Omnibox
 #endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleViewsBrowserTest,
+IN_PROC_BROWSER_TEST_P(ExtensionInstalledBubbleViewsBrowserTest,
                        MAYBE_InvokeUi_default) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleViewsBrowserTest,
+IN_PROC_BROWSER_TEST_P(ExtensionInstalledBubbleViewsBrowserTest,
                        MAYBE_InvokeUi_BrowserAction) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleViewsBrowserTest,
+IN_PROC_BROWSER_TEST_P(ExtensionInstalledBubbleViewsBrowserTest,
                        MAYBE_InvokeUi_PageAction) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleViewsBrowserTest,
+IN_PROC_BROWSER_TEST_P(ExtensionInstalledBubbleViewsBrowserTest,
                        MAYBE_InvokeUi_SignInPromo) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleViewsBrowserTest,
+IN_PROC_BROWSER_TEST_P(ExtensionInstalledBubbleViewsBrowserTest,
                        MAYBE_InvokeUi_Omnibox) {
   ShowAndVerifyUi();
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ExtensionInstalledBubbleViewsBrowserTest,
+                         testing::Bool());

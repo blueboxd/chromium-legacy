@@ -951,6 +951,10 @@
       name: "LayoutNGLineCache",
     },
     {
+      name: "LayoutNGRuby",
+      depends_on: ["LayoutNG"],
+    },
+    {
       name: "LayoutNGTable",
     },
     {
@@ -1286,10 +1290,6 @@
     },
     {
       name: "PassiveDocumentEventListeners",
-      status: "stable",
-    },
-    {
-      name: "PassiveDocumentWheelEventListeners",
       status: "stable",
     },
     {

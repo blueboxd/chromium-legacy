@@ -34,6 +34,7 @@ constexpr char kPrefLastStartupEviction[] =
     "cached_image_fetcher_last_startup_eviction_time";
 constexpr char kImageFetcherEventHistogramName[] = "ImageFetcher.Events";
 constexpr char kImageUrl[] = "http://gstatic.img.com/foo.jpg";
+constexpr char kOtherImageUrl[] = "http://gstatic.img.com/bar.jpg";
 constexpr char kImageUrlHashed[] = "3H7UODDH3WKDWK6FQ3IZT3LQMVBPYJ4M";
 constexpr char kImageData[] = "data";
 const int kOverMaxCacheSize = 65 * 1024 * 1024;
@@ -107,6 +108,17 @@ class CachedImageFetcherImageCacheTest : public testing::Test {
       db()->UpdateCallback(true);
     }
 
+    RunUntilIdle();
+  }
+
+  // Loads the image and verify the data callback.
+  void LoadImage(const std::string& url, const std::string& expected_data) {
+    EXPECT_CALL(*this, DataCallback(false, expected_data));
+    image_cache()->LoadImage(
+        false, url,
+        base::BindOnce(&CachedImageFetcherImageCacheTest::DataCallback,
+                       base::Unretained(this)));
+    db()->LoadCallback(true);
     RunUntilIdle();
   }
 
@@ -193,14 +205,7 @@ TEST_F(CachedImageFetcherImageCacheTest, SanityTest) {
                            /* expiration_interval */ base::nullopt);
   RunUntilIdle();
 
-  EXPECT_CALL(*this, DataCallback(false, kImageData));
-  image_cache()->LoadImage(
-      false, kImageUrl,
-      base::BindOnce(&CachedImageFetcherImageCacheTest::DataCallback,
-                     base::Unretained(this)));
-  db()->LoadCallback(true);
-  RunUntilIdle();
-
+  LoadImage(kImageUrl, kImageData);
   image_cache()->DeleteImage(kImageUrl);
   RunUntilIdle();
 
@@ -233,14 +238,7 @@ TEST_F(CachedImageFetcherImageCacheTest, Save) {
   image_cache()->SaveImage(kImageUrl, kImageData,
                            /* needs_transcoding */ false,
                            /* expiration_interval */ base::nullopt);
-
-  EXPECT_CALL(*this, DataCallback(false, kImageData));
-  image_cache()->LoadImage(
-      false, kImageUrl,
-      base::BindOnce(&CachedImageFetcherImageCacheTest::DataCallback,
-                     base::Unretained(this)));
-  db()->LoadCallback(true);
-  RunUntilIdle();
+  LoadImage(kImageUrl, kImageData);
 }
 
 TEST_F(CachedImageFetcherImageCacheTest, Load) {
@@ -248,13 +246,7 @@ TEST_F(CachedImageFetcherImageCacheTest, Load) {
   auto metadata_before = GetMetadata(kImageUrlHashed);
 
   clock()->SetNow(clock()->Now() + base::TimeDelta::FromHours(1));
-  EXPECT_CALL(*this, DataCallback(false, kImageData));
-  image_cache()->LoadImage(
-      false, kImageUrl,
-      base::BindOnce(&CachedImageFetcherImageCacheTest::DataCallback,
-                     base::Unretained(this)));
-  db()->LoadCallback(true);
-  RunUntilIdle();
+  LoadImage(kImageUrl, kImageData);
   db()->LoadCallback(true);
   db()->UpdateCallback(true);
   RunUntilIdle();
@@ -268,13 +260,7 @@ TEST_F(CachedImageFetcherImageCacheTest, LoadReadOnly) {
   auto metadata_before = GetMetadata(kImageUrlHashed);
 
   clock()->SetNow(clock()->Now() + base::TimeDelta::FromHours(1));
-  EXPECT_CALL(*this, DataCallback(false, kImageData));
-  image_cache()->LoadImage(
-      true, kImageUrl,
-      base::BindOnce(&CachedImageFetcherImageCacheTest::DataCallback,
-                     base::Unretained(this)));
-  db()->LoadCallback(true);
-  RunUntilIdle();
+  LoadImage(kImageUrl, kImageData);
 
   auto metadata_after = GetMetadata(kImageUrlHashed);
   ASSERT_TRUE(IsMetadataEqual(metadata_before, metadata_after));
@@ -283,24 +269,11 @@ TEST_F(CachedImageFetcherImageCacheTest, LoadReadOnly) {
 TEST_F(CachedImageFetcherImageCacheTest, Delete) {
   PrepareImageCache(false);
 
-  EXPECT_CALL(*this, DataCallback(false, kImageData));
-  image_cache()->LoadImage(
-      false, kImageUrl,
-      base::BindOnce(&CachedImageFetcherImageCacheTest::DataCallback,
-                     base::Unretained(this)));
-  db()->LoadCallback(true);
-  RunUntilIdle();
-
+  LoadImage(kImageUrl, kImageData);
   image_cache()->DeleteImage(kImageUrl);
   RunUntilIdle();
 
-  EXPECT_CALL(*this, DataCallback(false, std::string()));
-  image_cache()->LoadImage(
-      false, kImageUrl,
-      base::BindOnce(&CachedImageFetcherImageCacheTest::DataCallback,
-                     base::Unretained(this)));
-  db()->LoadCallback(true);
-  RunUntilIdle();
+  LoadImage(kImageUrl, "");
 }
 
 TEST_F(CachedImageFetcherImageCacheTest, Eviction) {
@@ -310,20 +283,32 @@ TEST_F(CachedImageFetcherImageCacheTest, Eviction) {
   RunEvictionOnStartup(/* success */ true);
   ASSERT_EQ(clock()->Now(), prefs()->GetTime(kPrefLastStartupEviction));
 
-  EXPECT_CALL(*this, DataCallback(false, std::string()));
-  image_cache()->LoadImage(
-      false, kImageUrl,
-      base::BindOnce(&CachedImageFetcherImageCacheTest::DataCallback,
-                     base::Unretained(this)));
-  db()->LoadCallback(true);
-  RunUntilIdle();
-
+  LoadImage(kImageUrl, "");
   histogram_tester().ExpectBucketCount(
       kImageFetcherEventHistogramName,
       ImageFetcherEvent::kCacheStartupEvictionStarted, 1);
   histogram_tester().ExpectBucketCount(
       kImageFetcherEventHistogramName,
       ImageFetcherEvent::kCacheStartupEvictionFinished, 1);
+}
+
+// Verifies eviction for CacheStrategy::HOLD_UNTIL_EXPIRED.
+TEST_F(CachedImageFetcherImageCacheTest, EvictionHoldUtilExpires) {
+  PrepareImageCache(false);
+  clock()->SetNow(clock()->Now() + base::TimeDelta::FromDays(2));
+
+  image_cache()->SaveImage(kImageUrl, "image_data", false,
+                           base::TimeDelta::FromDays(10));
+
+  image_cache()->SaveImage(kOtherImageUrl, "other_image_data", false,
+                           base::TimeDelta::FromHours(1));
+  RunUntilIdle();
+
+  // Forward the clock to make image with |kOtherImageUrl| expired.
+  clock()->SetNow(clock()->Now() + base::TimeDelta::FromHours(3));
+  RunEvictionOnStartup(/* success */ true);
+  LoadImage(kImageUrl, "image_data");
+  LoadImage(kOtherImageUrl, "");
 }
 
 TEST_F(CachedImageFetcherImageCacheTest, EvictionWhenFull) {
@@ -333,13 +318,7 @@ TEST_F(CachedImageFetcherImageCacheTest, EvictionWhenFull) {
   RunEvictionWhenFull(/* success */ true);
 
   // The data should be removed because it's over the allowed limit.
-  EXPECT_CALL(*this, DataCallback(false, ""));
-  image_cache()->LoadImage(
-      false, kImageUrl,
-      base::BindOnce(&CachedImageFetcherImageCacheTest::DataCallback,
-                     base::Unretained(this)));
-  db()->LoadCallback(true);
-  RunUntilIdle();
+  LoadImage(kImageUrl, "");
 }
 
 TEST_F(CachedImageFetcherImageCacheTest, EvictionTooSoon) {
@@ -348,13 +327,7 @@ TEST_F(CachedImageFetcherImageCacheTest, EvictionTooSoon) {
   clock()->SetNow(clock()->Now() + base::TimeDelta::FromDays(6));
   RunEvictionOnStartup(/* success */ true);
 
-  EXPECT_CALL(*this, DataCallback(false, kImageData));
-  image_cache()->LoadImage(
-      false, kImageUrl,
-      base::BindOnce(&CachedImageFetcherImageCacheTest::DataCallback,
-                     base::Unretained(this)));
-  db()->LoadCallback(true);
-  RunUntilIdle();
+  LoadImage(kImageUrl, kImageData);
 }
 
 TEST_F(CachedImageFetcherImageCacheTest, EvictionWhenEvictionAlreadyPerformed) {
@@ -364,14 +337,7 @@ TEST_F(CachedImageFetcherImageCacheTest, EvictionWhenEvictionAlreadyPerformed) {
                    clock()->Now());
   clock()->SetNow(clock()->Now() + base::TimeDelta::FromHours(23));
   RunEvictionOnStartup(/* success */ false);
-
-  EXPECT_CALL(*this, DataCallback(false, kImageData));
-  image_cache()->LoadImage(
-      false, kImageUrl,
-      base::BindOnce(&CachedImageFetcherImageCacheTest::DataCallback,
-                     base::Unretained(this)));
-  db()->LoadCallback(true);
-  RunUntilIdle();
+  LoadImage(kImageUrl, kImageData);
 }
 
 TEST_F(CachedImageFetcherImageCacheTest, Reconciliation) {
@@ -384,13 +350,7 @@ TEST_F(CachedImageFetcherImageCacheTest, Reconciliation) {
   RunReconciliation();
 
   // Data should be gone.
-  EXPECT_CALL(*this, DataCallback(false, std::string()));
-  image_cache()->LoadImage(
-      false, "foo",
-      base::BindOnce(&CachedImageFetcherImageCacheTest::DataCallback,
-                     base::Unretained(this)));
-  db()->LoadCallback(true);
-  RunUntilIdle();
+  LoadImage("foo", "");
 
   // Metadata should be gone.
   ASSERT_FALSE(IsMetadataPresent("bar"));
@@ -407,13 +367,7 @@ TEST_F(CachedImageFetcherImageCacheTest, ReconciliationMismatchData) {
   RunReconciliation();
 
   // Data should be gone.
-  EXPECT_CALL(*this, DataCallback(false, std::string()));
-  image_cache()->LoadImage(
-      false, "bar",
-      base::BindOnce(&CachedImageFetcherImageCacheTest::DataCallback,
-                     base::Unretained(this)));
-  db()->LoadCallback(true);
-  RunUntilIdle();
+  LoadImage("bar", "");
 }
 
 TEST_F(CachedImageFetcherImageCacheTest, ReconciliationMismatchMetadata) {

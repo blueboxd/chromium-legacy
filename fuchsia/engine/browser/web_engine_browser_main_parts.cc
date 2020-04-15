@@ -5,12 +5,15 @@
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/main_function_params.h"
 #include "fuchsia/base/legacymetrics_client.h"
@@ -28,6 +31,20 @@ namespace {
 
 constexpr base::TimeDelta kMetricsReportingInterval =
     base::TimeDelta::FromMinutes(1);
+
+constexpr base::TimeDelta kChildProcessHistogramFetchTimeout =
+    base::TimeDelta::FromSeconds(10);
+
+// Merge child process' histogram deltas into the browser process' histograms.
+void FetchHistogramsFromChildProcesses(
+    base::OnceCallback<void(std::vector<fuchsia::legacymetrics::Event>)>
+        done_cb) {
+  content::FetchHistogramsAsynchronously(
+      base::ThreadTaskRunnerHandle::Get(),
+      base::BindOnce(std::move(done_cb),
+                     std::vector<fuchsia::legacymetrics::Event>()),
+      kChildProcessHistogramFetchTimeout);
+}
 
 }  // namespace
 
@@ -74,6 +91,12 @@ void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
           switches::kUseLegacyMetricsService)) {
     legacy_metrics_client_ =
         std::make_unique<cr_fuchsia::LegacyMetricsClient>();
+
+    // Add a hook to asynchronously pull metrics from child processes just prior
+    // to uploading.
+    legacy_metrics_client_->SetReportAdditionalMetricsCallback(
+        base::BindRepeating(&FetchHistogramsFromChildProcesses));
+
     legacy_metrics_client_->Start(kMetricsReportingInterval);
   }
 

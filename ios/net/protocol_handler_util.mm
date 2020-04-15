@@ -179,13 +179,10 @@ void CopyHttpHeaders(NSURLRequest* in_request, URLRequest* out_request) {
       out_request->set_referrer_policy(URLRequest::NEVER_CLEAR_REFERRER);
       continue;
     }
-    if (![key isEqualToString:@"User-Agent"]) {
-      // The user agent string is added by the network stack, and might be
-      // different from the one provided by UIWebView. Do not copy it.
-      NSString* value = [headers objectForKey:key];
-      net_headers.SetHeader(base::SysNSStringToUTF8(key),
-                            base::SysNSStringToUTF8(value));
-    }
+    // Copy over all headers that were set on NSURLRequest
+    NSString* value = [headers objectForKey:key];
+    net_headers.SetHeader(base::SysNSStringToUTF8(key),
+                          base::SysNSStringToUTF8(value));
   }
   // Set default values for some missing headers.
   // The "Accept" header is defined by Webkit on the desktop version.

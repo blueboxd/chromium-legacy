@@ -364,7 +364,6 @@ struct GPU_GLES2_EXPORT ContextState {
 
   // Which samplers are bound to each texture unit;
   std::vector<scoped_refptr<Sampler>> sampler_units;
-  mutable bool sampler_units_in_ground_state = true;
 
   // We create a transform feedback as the default one per ES3 enabled context
   // instead of using GL's default one to make context switching easier.

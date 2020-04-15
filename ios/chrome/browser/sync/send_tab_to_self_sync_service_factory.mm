@@ -20,34 +20,8 @@
 
 using send_tab_to_self::SendTabToSelfSyncService;
 
-// static
-SendTabToSelfSyncServiceFactory*
-SendTabToSelfSyncServiceFactory::GetInstance() {
-  static base::NoDestructor<SendTabToSelfSyncServiceFactory> instance;
-  return instance.get();
-}
-
-// static
-SendTabToSelfSyncService* SendTabToSelfSyncServiceFactory::GetForBrowserState(
-    ChromeBrowserState* browser_state) {
-  return static_cast<SendTabToSelfSyncService*>(
-      GetInstance()->GetServiceForBrowserState(browser_state, true));
-}
-
-SendTabToSelfSyncServiceFactory::SendTabToSelfSyncServiceFactory()
-    : BrowserStateKeyedServiceFactory(
-          "SendTabToSelfSyncService",
-          BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(ModelTypeStoreServiceFactory::GetInstance());
-  DependsOn(ios::HistoryServiceFactory::GetInstance());
-  DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
-}
-
-SendTabToSelfSyncServiceFactory::~SendTabToSelfSyncServiceFactory() {}
-
-std::unique_ptr<KeyedService>
-SendTabToSelfSyncServiceFactory::BuildServiceInstanceFor(
-    web::BrowserState* context) const {
+std::unique_ptr<KeyedService> BuildSendTabToSelfService(
+    web::BrowserState* context) {
   ChromeBrowserState* browser_state =
       ChromeBrowserState::FromBrowserState(context);
 
@@ -66,4 +40,41 @@ SendTabToSelfSyncServiceFactory::BuildServiceInstanceFor(
   return std::make_unique<SendTabToSelfSyncService>(
       GetChannel(), std::move(store_factory), history_service,
       device_info_tracker);
+}
+
+// static
+SendTabToSelfSyncServiceFactory*
+SendTabToSelfSyncServiceFactory::GetInstance() {
+  static base::NoDestructor<SendTabToSelfSyncServiceFactory> instance;
+  return instance.get();
+}
+
+// static
+SendTabToSelfSyncService* SendTabToSelfSyncServiceFactory::GetForBrowserState(
+    ChromeBrowserState* browser_state) {
+  return static_cast<SendTabToSelfSyncService*>(
+      GetInstance()->GetServiceForBrowserState(browser_state, true));
+}
+
+// static
+BrowserStateKeyedServiceFactory::TestingFactory
+SendTabToSelfSyncServiceFactory::GetDefaultFactory() {
+  return base::BindRepeating(&BuildSendTabToSelfService);
+}
+
+SendTabToSelfSyncServiceFactory::SendTabToSelfSyncServiceFactory()
+    : BrowserStateKeyedServiceFactory(
+          "SendTabToSelfSyncService",
+          BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(ModelTypeStoreServiceFactory::GetInstance());
+  DependsOn(ios::HistoryServiceFactory::GetInstance());
+  DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
+}
+
+SendTabToSelfSyncServiceFactory::~SendTabToSelfSyncServiceFactory() {}
+
+std::unique_ptr<KeyedService>
+SendTabToSelfSyncServiceFactory::BuildServiceInstanceFor(
+    web::BrowserState* context) const {
+  return BuildSendTabToSelfService(context);
 }

@@ -523,7 +523,7 @@ void StackedNotificationBar::OnNotificationAdded(const std::string& id) {
 void StackedNotificationBar::OnNotificationRemoved(const std::string& id,
                                                    bool by_user) {
   const StackedNotificationBarIcon* icon = GetIconFromId(id);
-  if (icon) {
+  if (icon && !icon->is_animating_out()) {
     delete icon;
     stacked_notification_count_--;
   }

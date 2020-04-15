@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">Պատճենել հղումը</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Վերնագիր</translation>
+<translation id="4259722352634471385">Նավարկումն արգելափակված է՝ <ph name="URL" /></translation>
 <translation id="4570913071927164677">Մանրամասներ</translation>
 <translation id="4645575059429386691">Կառավարվում է ձեր ծնողի կողմից</translation>
 <translation id="4883854917563148705">Կառավարվող կարգավորումները հնարավոր չէ վերակայել</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">Մաքրել ներածումը</translation>
 <translation id="8725066075913043281">Փորձել կրկին</translation>
 <translation id="8730621377337864115">Պատրաստ է</translation>
+<translation id="8959122750345127698">Նավարկումն անհասանելի է՝ <ph name="URL" /></translation>
 <translation id="9019902583201351841">Կառավարվում է ձեր ծնողների կողմից</translation>
 </translationbundle>

@@ -3,6 +3,7 @@
 <translationbundle lang="fr-CA">
 <translation id="1005230401424685968">AAAA</translation>
 <translation id="1016495303386450659">Élément mis à jour</translation>
+<translation id="1044891598689252897">Les sites fonctionneront normalement</translation>
 <translation id="1047726139967079566">Ajouter cette page aux favoris...</translation>
 <translation id="1049743911850919806">Navigation privée</translation>
 <translation id="1063454504051558093">Utiliser un autre mot de passe…</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> éléments</translation>
 <translation id="1491277525950327607">Touchez deux fois pour activer ou désactiver le paramètre</translation>
 <translation id="1509486075633541495">Connexion au site Web</translation>
+<translation id="1509960214886564027">Des fonctionnalités sur de nombreux sites risquent de ne pas fonctionner</translation>
 <translation id="152234381334907219">Jamais enregistrés</translation>
 <translation id="1540800554400757039">Ligne adresse 1</translation>
 <translation id="1545749641540134597">Scannez le code QR</translation>
@@ -528,6 +530,7 @@ Comme votre compte est géré par <ph name="HOSTED_DOMAIN" />, vos données Chro
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7971521879845308059">Bloq fen contex</translation>
 <translation id="7982789257301363584">Réseau</translation>
+<translation id="7993619969781047893">Des fonctionnalités sur certains sites risquent de ne pas fonctionner</translation>
 <translation id="800361585186029508">Ouvre les URL entrées dans Google Chrome.</translation>
 <translation id="8007420562015504427">Recherche en mode de navigation privée</translation>
 <translation id="8019783059653722575">Ceci vous permet d'enregistrer et de téléverser des photos.</translation>

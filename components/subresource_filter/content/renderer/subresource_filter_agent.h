@@ -58,9 +58,7 @@ class SubresourceFilterAgent
   virtual bool HasDocumentLoader();
 
   // Injects the provided subresource |filter| into the DocumentLoader
-  // orchestrating the most recently created document. If this method is called
-  // as the result of a new document element instead of a new document (e.g.
-  // due to a document.write), we reuse the previous DocumentLoader.
+  // orchestrating the most recently created document.
   virtual void SetSubresourceFilterForCurrentDocument(
       std::unique_ptr<blink::WebDocumentSubresourceFilter> filter);
 
@@ -79,6 +77,10 @@ class SubresourceFilterAgent
   // True if the frame has been heuristically determined to be an ad subframe.
   virtual bool IsAdSubframe();
   virtual void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type);
+
+  void SetFirstDocument(bool first_document) {
+    first_document_ = first_document;
+  }
 
   // mojom::SubresourceFilterAgent:
   void ActivateForNextCommittedLoad(
@@ -106,8 +108,6 @@ class SubresourceFilterAgent
   void DidFailProvisionalLoad() override;
   void DidFinishLoad() override;
   void WillCreateWorkerFetchContext(blink::WebWorkerFetchContext*) override;
-
-  void MaybeCreateFilterForDocument(bool should_use_parent_activation);
 
   // Owned by the ChromeContentRendererClient and outlives us.
   UnverifiedRulesetDealer* ruleset_dealer_;

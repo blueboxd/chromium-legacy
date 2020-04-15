@@ -95,14 +95,6 @@ crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.
 
 crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag.https.html [ Timeout ]
 
-# Tests temporarily disabled until the video.requestAnimationFrame =>
-# video.requestVideoFrameCallback rename is completed. See crbug.com/1012063.
-
-external/wpt/video-rvfc/video-request-animation-frame.html [ Failure ]
-external/wpt/video-rvfc/video-request-animation-frame-parallel.html [ Failure ]
-external/wpt/video-rvfc/video-request-animation-frame-repeating.html [ Failure ]
-external/wpt/video-raf/idlharness.window.html [ Failure ]
-
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
 # TODO(lukasza, alexmos): Burn down this list.
 crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
@@ -2199,6 +2191,9 @@ crbug.com/745905 external/wpt/css/css-overflow/text-overflow-scroll-vertical-lr-
 crbug.com/745905 external/wpt/css/css-overflow/text-overflow-scroll-vertical-rl-001.html [ Failure ]
 crbug.com/745905 external/wpt/css/css-overflow/text-overflow-scroll-vertical-rl-rtl-001.html [ Failure ]
 
+crbug.com/1067031 external/wpt/css/css-overflow/text-overflow-ellipsis-002.html [ Failure ]
+crbug.com/1067031 external/wpt/css/css-overflow/webkit-line-clamp-035.html [ Failure ]
+
 crbug.com/424365 external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-024.html [ Failure ]
 crbug.com/441840 [ Win ] external/wpt/css/css-shapes/shape-outside/values/shape-margin-001.html [ Failure ]
 crbug.com/441840 external/wpt/css/css-shapes/shape-outside/values/shape-outside-circle-004.html [ Failure ]
@@ -2277,6 +2272,11 @@ crbug.com/1052717 external/wpt/css/css-text/line-break/line-break-strict-hyphens
 # Link event firing
 crbug.com/922618 external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
 crbug.com/922618 external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-load-events.html [ Timeout ]
+
+# WeakRefs are under development and run in a virtual test suite
+crbug.com/1016767 js/weakrefs/finalization-registry-basic.html [ Skip ]
+crbug.com/1016767 js/weakrefs/finalization-registry-microtasks.html [ Skip ]
+crbug.com/1016767 js/weakrefs/finalization-registry-onerror.html [ Skip ]
 
 # Sheriff 2020-02-06
 # Flaking on Linux Leak
@@ -3151,20 +3151,18 @@ crbug.com/1067277 external/wpt/css/css-content/element-replacement-on-replaced-e
 crbug.com/1069300 external/wpt/css/css-pseudo/active-selection-063.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/webxr/hit-test/ar_hittest_subscription_refSpaces.https.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/webxr/hit-test/ar_hittest_subscription_refSpaces.https.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/webxr/hit-test/ar_hittest_subscription_refSpaces.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/webxr/hit-test/ar_hittest_subscription_transientInputSources.https.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/webxr/hit-test/ar_hittest_subscription_transientInputSources.https.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/webxr/hit-test/ar_hittest_subscription_transientInputSources.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/webxr/hit-test/ar_hittest_subscription_inputSources.https.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/webxr/hit-test/ar_hittest_subscription_inputSources.https.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/webxr/hit-test/ar_hittest_subscription_inputSources.https.html [ Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/svg/painting/reftests/display-none-mask.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/svg/painting/reftests/display-none-mask.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/svg/painting/reftests/display-none-mask.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/html/cross-origin-embedder-policy/no-secure-context.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/html/cross-origin-embedder-policy/no-secure-context.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/html/cross-origin-embedder-policy/no-secure-context.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw-from-coop.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Win ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-normal-015a.xht [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-normal-015a.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-normal-015a.xht [ Failure ]
@@ -3180,12 +3178,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-normal-
 crbug.com/626703 [ Mac10.14 ] external/wpt/preload/onload-event.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/storage/estimate-indexeddb.https.any.worker.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/fetch/origin/assorted.window.html [ Failure Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-overflow/text-overflow-ellipsis-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-overflow/text-overflow-ellipsis-002.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-overflow/text-overflow-ellipsis-002.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-overflow/webkit-line-clamp-035.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-overflow/webkit-line-clamp-035.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-overflow/webkit-line-clamp-035.html [ Failure ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/preload/download-resources.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/threaded/external/wpt/requestidlecallback/callback-invoked.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/web-components-v0-disabled/external/wpt/html/semantics/forms/the-input-element/input-type-checkbox.html [ Timeout ]
@@ -3277,9 +3269,6 @@ crbug.com/626703 [ Win ] external/wpt/content-dpr/content-dpr-various-elements.h
 crbug.com/626703 [ Linux ] external/wpt/websockets/opening-handshake/005.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/websockets/opening-handshake/005.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/websockets/opening-handshake/005.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/blob-data.https.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/blob-data.https.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/blob-data.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Timeout ]
 crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/abrupt-completion.html [ Timeout ]
 crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/workers/abrupt-completion.html [ Timeout ]
@@ -6146,7 +6135,8 @@ crbug.com/1006759 http/tests/devtools/editor/php-highlighter.js [ Pass Failure ]
 crbug.com/1029941 [ Linux ] external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
 crbug.com/1029941 [ Linux ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 crbug.com/1029941 [ Linux ] virtual/cascade/external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
-crbug.com/1029941 [ Linux ] virtual/exotic-color-space/images/yuv-decode-eligible/color-profile-layer-filter.html [ Failure ]
+#Temporarily superceded by suppression for skbug.com/10139
+#crbug.com/1029941 [ Linux ] virtual/exotic-color-space/images/yuv-decode-eligible/color-profile-layer-filter.html [ Failure ]
 crbug.com/1029941 [ Linux ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
 
 # Disabled for three-way merge after https://crrev.com/c/devtools/devtools-frontend/+/1934218 is submitted
@@ -6593,6 +6583,9 @@ crbug.com/1058137 virtual/threaded/http/tests/devtools/tracing/timeline-paint/ti
 # Ecosystem-Infra Sheriff 2020-03-04
 crbug.com/1058403 external/wpt/webaudio/the-audio-api/the-audioworklet-interface/suspended-context-messageport.https.html [ Failure ]
 
+# Ecosystem-Infra Sheriff 2020-04-15
+crbug.com/1070995 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/blob-data.https.html [ Pass Failure Timeout ]
+
 crbug.com/1057020 [ Fuchsia ] http/tests/streams/chromium/get-reader-byob.html [ Pass Timeout ]
 
 # Sheriff 2020-03-05
@@ -6668,6 +6661,7 @@ skbug.com/10139 media/color-profile-video-seek-filter.html [ Pass Timeout Failur
 skbug.com/10139 virtual/audio-service/media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
 skbug.com/10139 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
 skbug.com/10139 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
+skbug.com/10139 virtual/exotic-color-space/images/yuv-decode-eligible/color-profile-layer-filter.html [ Pass Failure ]
 
 # Test flakes
 crbug.com/1066716 http/tests/cache/zero-length-xhr.html [ Pass Timeout ]
@@ -6684,3 +6678,6 @@ crbug.com/1069714 [ Mac10.13 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.htt
 
 # Sheriff 2020-04-10
 crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html [ Pass Failure Timeout ]
+
+# QUIC reordered versions to prefer IETF QUIC
+crbug.com/1070747 external/wpt/webrtc-quic/* [ Skip ]

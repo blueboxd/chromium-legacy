@@ -91,7 +91,7 @@
 <translation id="1670399744444387456">मूलभूत</translation>
 <translation id="1671236975893690980">डाउनलोड प्रलंबित आहे</translation>
 <translation id="1672586136351118594">पुन्हा दाखवू नका</translation>
-<translation id="1692118695553449118">संकालन चालू आहे</translation>
+<translation id="1692118695553449118">संकालन सुरू आहे</translation>
 <translation id="169515064810179024">साइटना मोशन सेन्सर ॲक्सेसपासून ब्लॉक करा</translation>
 <translation id="1717218214683051432">मोशन सेन्सर</translation>
 <translation id="1718835860248848330">शेवटच्या तासामधील</translation>
@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">सेटिंग्ज उघडा</translation>
 <translation id="4250229828105606438">स्क्रीनशॉट</translation>
 <translation id="4256782883801055595">मुक्त स्रोत परवाने</translation>
-<translation id="4259722352634471385">नेव्हिगेशन अवरोधित केले आहे: <ph name="URL" /></translation>
 <translation id="4269820728363426813">लिंकचा पत्ता कॉपी करा</translation>
 <translation id="4275663329226226506">माध्यम</translation>
 <translation id="4278390842282768270">अनुमत</translation>
@@ -1067,7 +1066,6 @@
 <translation id="8942627711005830162">इतर विंडोमध्ये उघडा</translation>
 <translation id="8951232171465285730">Chrome ने तुमच्यासाठी <ph name="MEGABYTES" /> MB सेव्ह केले</translation>
 <translation id="8958424370300090006">विशिष्ट साइटसाठी कुकी ब्लॉक करा.</translation>
-<translation id="8959122750345127698">नेव्हिगेशन आवाक्याबाहेर आहे: <ph name="URL" /></translation>
 <translation id="8965591936373831584">प्रलंबित</translation>
 <translation id="8970887620466824814">काहीतरी चूक झाली.</translation>
 <translation id="8972098258593396643">डीफॉल्ट फोल्डरमध्ये डाउनलोड करायचे?</translation>

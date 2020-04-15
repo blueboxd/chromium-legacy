@@ -175,7 +175,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
     base::RunLoop run_loop;
     cookie_manager->SetCanonicalCookie(
-        *cookie, url.scheme(), net::CookieOptions::MakeAllInclusive(),
+        *cookie, url, net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(&ClearSiteDataHandlerBrowserTest::AddCookieCallback,
                        run_loop.QuitClosure()));
     run_loop.Run();

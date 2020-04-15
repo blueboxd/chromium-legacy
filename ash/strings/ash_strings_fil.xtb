@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Para makakita ng mga notification sa iyong screen ng lock, i-unlock para baguhin ang setting</translation>
 <translation id="4144413954005649103">Sa pamamagitan ng pag-right click o matagal na pagpindot, magpapakita sa iyo ang Assistant ng impormasyong kaugnay ng pipiliin mo sa screen.</translation>
 <translation id="4146833061457621061">Mag-play ng musika</translation>
-<translation id="4149156641122542261">Pinapamahalaan ng <ph name="DOMAIN" /> ang <ph name="DEVICE_TYPE" /></translation>
 <translation id="4181841719683918333">Mga Wika</translation>
 <translation id="4195877955194704651">Button ng mga awtomatikong pag-click</translation>
 <translation id="4215497585250573029">Mga setting ng VPN</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">Naka-off ang shortcut</translation>
 <translation id="6910714959251846841">Kinakailangang i-powerwash ang iyong device para sa update na ito. Matuto pa tungkol sa pinakabagong update sa <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">Hindi makilala ang iyong smart card. Subukan ulit.</translation>
+<translation id="6945221475159498467">Pumili</translation>
 <translation id="6972754398087986839">Magsimula</translation>
 <translation id="6981982820502123353">Pagiging Accessible</translation>
 <translation id="698231206551913481">Permanenteng made-delete ang lahat ng file at lokal na data na nauugnay sa user na ito kapag inalis na ang user na ito.</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">Pribadong network</translation>
 <translation id="8152092012181020186">Pindutin ang Ctrl + W para isara ito.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Pinapamahalaan ng iyong administrator ang setting na ito.</translation>
+<translation id="815598010540052116">Mag-scroll Pababa</translation>
 <translation id="8167567890448493835">Gamit ang <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">I-customize ang mga wika at input...</translation>
 <translation id="8192202700944119416">Nakatago ang mga notification.</translation>

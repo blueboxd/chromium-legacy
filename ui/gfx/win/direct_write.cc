@@ -38,7 +38,7 @@ void CreateDWriteFactory(IDWriteFactory** factory) {
   Microsoft::WRL::ComPtr<IUnknown> factory_unknown;
   HRESULT hr =
       DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
-                          factory_unknown.GetAddressOf());
+                          &factory_unknown);
   if (FAILED(hr)) {
     base::debug::Alias(&hr);
     CHECK(false);
@@ -55,7 +55,7 @@ void InitializeDirectWrite() {
   TRACE_EVENT0("fonts", "gfx::InitializeDirectWrite");
 
   Microsoft::WRL::ComPtr<IDWriteFactory> factory;
-  CreateDWriteFactory(factory.GetAddressOf());
+  CreateDWriteFactory(&factory);
   CHECK(!!factory);
   SetDirectWriteFactory(factory.Get());
 

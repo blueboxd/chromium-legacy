@@ -66,11 +66,10 @@ struct GreasemonkeyApiJsString {
 // The below constructor, monstrous as it is, just makes a WebScriptSource from
 // the GreasemonkeyApiJs resource.
 GreasemonkeyApiJsString::GreasemonkeyApiJsString() {
-  base::StringPiece source_piece =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_GREASEMONKEY_API_JS);
-  source_ =
-      blink::WebString::FromUTF8(source_piece.data(), source_piece.length());
+  std::string greasemonky_api_js(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          IDR_GREASEMONKEY_API_JS));
+  source_ = blink::WebString::FromUTF8(greasemonky_api_js);
 }
 
 blink::WebScriptSource GreasemonkeyApiJsString::GetSource() const {

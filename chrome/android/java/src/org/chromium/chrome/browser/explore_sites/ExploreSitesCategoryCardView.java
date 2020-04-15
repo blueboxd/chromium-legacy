@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.tile.TileGridLayout;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -43,7 +43,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     private final ExploreSitesSiteViewBinder mSiteViewBinder;
     private TextView mTitleView;
     private TileGridLayout mTileView;
-    private FaviconFallbackGenerator mIconGenerator;
+    private RoundedIconGenerator mIconGenerator;
     private ContextMenuManager mContextMenuManager;
     private NativePageNavigationDelegate mNavigationDelegate;
     private Profile mProfile;
@@ -209,7 +209,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     }
 
     public void setCategory(ExploreSitesCategory category, int categoryCardIndex,
-            FaviconFallbackGenerator iconGenerator, ContextMenuManager contextMenuManager,
+            RoundedIconGenerator iconGenerator, ContextMenuManager contextMenuManager,
             NativePageNavigationDelegate navigationDelegate, Profile profile) {
         mIconGenerator = iconGenerator;
         mContextMenuManager = contextMenuManager;

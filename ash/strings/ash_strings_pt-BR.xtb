@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Para ver as notificações na sua tela de bloqueio, desbloqueie a tela e altere a configuração</translation>
 <translation id="4144413954005649103">Com um clique com o botão direito ou ao tocar a tela e mantê-la pressionada, o Assistente mostra informações relacionadas ao que você selecionou na tela.</translation>
 <translation id="4146833061457621061">Ouvir música</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> gerenciado por <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botão de cliques automáticos</translation>
 <translation id="4215497585250573029">Configurações de VPN</translation>
@@ -413,7 +412,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6267036997247669271"><ph name="NAME" />: Ativando...</translation>
 <translation id="6283712521836204486">O "Não perturbe" está desativado.</translation>
 <translation id="6284232397434400372">Resolução alterada</translation>
-<translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> pode ser adicionado novamente com a permissão de um pai/mãe.</translation>
+<translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> pode ser adicionado novamente com a permissão do pai/mãe.</translation>
 <translation id="6297287540776456956">Use a stylus para selecionar uma região</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> foi substituída por <ph name="ROTATION" /></translation>
 <translation id="6376931439017688372">Bluetooth ativado</translation>
@@ -468,6 +467,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6878400149835617132">Atalho desativado</translation>
 <translation id="6910714959251846841">Esta atualização requer o powerwash do seu dispositivo. Saiba mais sobre a última atualização do <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">Não foi possível reconhecer seu cartão inteligente. Tente novamente.</translation>
+<translation id="6945221475159498467">Selecionar</translation>
 <translation id="6972754398087986839">Primeiros passos</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="698231206551913481">Todos os arquivos e dados locais associados a este usuário serão excluídos permanentemente quando o usuário for removido.</translation>
@@ -558,6 +558,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8142699993796781067">Rede privada</translation>
 <translation id="8152092012181020186">Pressione Ctrl + W para fechar.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Essas configurações são gerenciadas pelo administrador.</translation>
+<translation id="815598010540052116">Percorrer para baixo</translation>
 <translation id="8167567890448493835">Usando <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizar idiomas e entrada...</translation>
 <translation id="8192202700944119416">As notificações estão ocultas.</translation>

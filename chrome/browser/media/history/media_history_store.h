@@ -125,7 +125,8 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
   std::vector<mojom::MediaHistoryPlaybackRowPtr>
   GetMediaHistoryPlaybackRowsForDebug();
 
-  std::vector<media_feeds::mojom::MediaFeedPtr> GetMediaFeedsForDebug();
+  std::vector<media_feeds::mojom::MediaFeedPtr> GetMediaFeeds(
+      const MediaHistoryKeyedService::GetMediaFeedsRequest& request);
 
   void SavePlaybackSession(
       const GURL& url,

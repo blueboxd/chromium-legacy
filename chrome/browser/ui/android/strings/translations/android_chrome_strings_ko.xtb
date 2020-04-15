@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">설정 열기</translation>
 <translation id="4250229828105606438">스크린샷</translation>
 <translation id="4256782883801055595">오픈소스 라이선스</translation>
-<translation id="4259722352634471385">탐색이 차단됨: <ph name="URL" /></translation>
 <translation id="4269820728363426813">링크 주소 복사</translation>
 <translation id="4275663329226226506">미디어</translation>
 <translation id="4278390842282768270">허용</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">어느 기기에서나 내 북마크를 사용하려면 동기화를 사용 설정하세요.</translation>
 <translation id="8110087112193408731">디지털 웰빙에서 Chrome 활동을 표시할까요?</translation>
+<translation id="8115259494083109761">QR 코드를 스캔하려면 Chrome에서 카메라를 사용할 수 있도록 허용하세요.</translation>
 <translation id="8116925261070264013">음소거됨</translation>
 <translation id="8127542551745560481">홈페이지 수정</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">다른 창에서 열기</translation>
 <translation id="8951232171465285730">Chrome을 통해 <ph name="MEGABYTES" />MB를 절약했습니다.</translation>
 <translation id="8958424370300090006">특정 사이트의 쿠키를 차단합니다.</translation>
-<translation id="8959122750345127698">탐색할 수 없음: <ph name="URL" /></translation>
 <translation id="8965591936373831584">보류 중</translation>
 <translation id="8970887620466824814">문제 발생</translation>
 <translation id="8972098258593396643">기본 폴더에 다운로드하시겠습니까?</translation>

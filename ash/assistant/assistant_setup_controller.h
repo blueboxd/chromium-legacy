@@ -16,12 +16,13 @@
 
 namespace ash {
 
-class AssistantController;
+class AssistantControllerImpl;
 
 class AssistantSetupController : public AssistantControllerObserver,
                                  public AssistantViewDelegateObserver {
  public:
-  explicit AssistantSetupController(AssistantController* assistant_controller);
+  explicit AssistantSetupController(
+      AssistantControllerImpl* assistant_controller);
   ~AssistantSetupController() override;
 
   // AssistantControllerObserver:
@@ -39,7 +40,7 @@ class AssistantSetupController : public AssistantControllerObserver,
  private:
   void OnOptInFlowFinished(bool relaunch, bool completed);
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
 
   base::WeakPtrFactory<AssistantSetupController> weak_ptr_factory_{this};
 

@@ -23,6 +23,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "content/shell/common/web_test/web_test_constants.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
+#include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
 #include "content/shell/test_runner/mock_web_document_subresource_filter.h"
@@ -32,7 +33,6 @@
 #include "content/shell/test_runner/test_preferences.h"
 #include "content/shell/test_runner/test_runner_for_specific_view.h"
 #include "content/shell/test_runner/web_frame_test_proxy.h"
-#include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "gin/arguments.h"
@@ -1438,7 +1438,7 @@ void TestRunner::WorkQueue::ProcessWorkSoon() {
   // We delay processing queued work to avoid recursion problems, and to avoid
   // running tasks in the middle of a navigation call stack, where blink and
   // content may have inconsistent states halfway through being updated.
-  controller_->delegate_->PostTask(base::BindOnce(
+  controller_->blink_test_runner_->PostTask(base::BindOnce(
       &TestRunner::WorkQueue::ProcessWork, weak_factory_.GetWeakPtr()));
 }
 
@@ -1465,8 +1465,8 @@ void TestRunner::WorkQueue::ProcessWork() {
 
   while (!queue_.empty()) {
     finished_loading_ = false;  // Watch for loading finishing inside Run().
-    bool started_load =
-        queue_.front()->Run(controller_->delegate_, controller_->main_view_);
+    bool started_load = queue_.front()->Run(controller_->blink_test_runner_,
+                                            controller_->main_view_);
     delete queue_.front();
     queue_.pop_front();
 
@@ -1513,10 +1513,10 @@ void TestRunner::Install(
       frame);
 }
 
-void TestRunner::SetDelegate(WebTestDelegate* delegate) {
-  delegate_ = delegate;
-  mock_content_settings_client_->SetDelegate(delegate);
-  spellcheck_->SetDelegate(delegate);
+void TestRunner::SetDelegate(BlinkTestRunner* blink_test_runner) {
+  blink_test_runner_ = blink_test_runner;
+  mock_content_settings_client_->SetDelegate(blink_test_runner);
+  spellcheck_->SetDelegate(blink_test_runner);
 }
 
 void TestRunner::SetMainView(blink::WebView* web_view) {
@@ -1538,17 +1538,17 @@ void TestRunner::Reset() {
   blink::WebFontRenderStyle::SetSubpixelPositioning(false);
 #endif
 
-  if (delegate_) {
+  if (blink_test_runner_) {
     // Reset the default quota for each origin.
-    delegate_->SetDatabaseQuota(content::kDefaultDatabaseQuota);
-    delegate_->SetDeviceColorSpace("reset");
-    delegate_->SetDeviceScaleFactor(GetDefaultDeviceScaleFactor());
-    delegate_->SetBlockThirdPartyCookies(false);
-    delegate_->SetLocale("");
-    delegate_->ResetAutoResizeMode();
-    delegate_->DeleteAllCookies();
-    delegate_->SetBluetoothManualChooser(false);
-    delegate_->ResetPermissions();
+    blink_test_runner_->SetDatabaseQuota(content::kDefaultDatabaseQuota);
+    blink_test_runner_->SetDeviceColorSpace("reset");
+    blink_test_runner_->SetDeviceScaleFactor(GetDefaultDeviceScaleFactor());
+    blink_test_runner_->SetBlockThirdPartyCookies(false);
+    blink_test_runner_->SetLocale("");
+    blink_test_runner_->ResetAutoResizeMode();
+    blink_test_runner_->DeleteAllCookies();
+    blink_test_runner_->SetBluetoothManualChooser(false);
+    blink_test_runner_->ResetPermissions();
   }
 
   dump_as_audio_ = false;
@@ -1571,8 +1571,8 @@ void TestRunner::Reset() {
   weak_factory_.InvalidateWeakPtrs();
   work_queue_.Reset();
 
-  if (close_remaining_windows_ && delegate_)
-    delegate_->CloseRemainingWindows();
+  if (close_remaining_windows_ && blink_test_runner_)
+    blink_test_runner_->CloseRemainingWindows();
   else
     close_remaining_windows_ = true;
 
@@ -1827,7 +1827,7 @@ void TestRunner::RemoveLoadingFrame(blink::WebFrame* frame) {
   web_test_runtime_flags_.set_have_loading_frame(false);
   OnWebTestRuntimeFlagsChanged();
 
-  web_history_item_count_ = delegate_->NavigationEntryCount();
+  web_history_item_count_ = blink_test_runner_->NavigationEntryCount();
 
   // No more new work after the first complete load.
   work_queue_.set_frozen(true);
@@ -1880,7 +1880,7 @@ void TestRunner::FinishTestIfReady() {
 
   // No tasks left to run, all frames are done loading from previous tasks,
   // and we're not waiting for NotifyDone(), so the test is done.
-  delegate_->TestFinished();
+  blink_test_runner_->TestFinished();
 }
 
 blink::WebFrame* TestRunner::MainFrame() const {
@@ -1889,7 +1889,7 @@ blink::WebFrame* TestRunner::MainFrame() const {
 
 void TestRunner::PolicyDelegateDone() {
   DCHECK(web_test_runtime_flags_.wait_until_done());
-  delegate_->TestFinished();
+  blink_test_runner_->TestFinished();
   web_test_runtime_flags_.set_wait_until_done(false);
   OnWebTestRuntimeFlagsChanged();
 }
@@ -1932,19 +1932,19 @@ void TestRunner::SetV8CacheDisabled(bool disabled) {
 }
 
 void TestRunner::NavigateSecondaryWindow(const GURL& url) {
-  delegate_->NavigateSecondaryWindow(url);
+  blink_test_runner_->NavigateSecondaryWindow(url);
 }
 
 void TestRunner::InspectSecondaryWindow() {
-  delegate_->InspectSecondaryWindow();
+  blink_test_runner_->InspectSecondaryWindow();
 }
 
 class WorkItemBackForward : public TestRunner::WorkItem {
  public:
   explicit WorkItemBackForward(int distance) : distance_(distance) {}
 
-  bool Run(WebTestDelegate* delegate, blink::WebView*) override {
-    delegate->GoToOffset(distance_);
+  bool Run(BlinkTestRunner* blink_test_runner, blink::WebView*) override {
+    blink_test_runner->GoToOffset(distance_);
     return true;  // FIXME: Did it really start a navigation?
   }
 
@@ -1967,8 +1967,8 @@ void TestRunner::QueueForwardNavigation(int how_far_forward) {
 
 class WorkItemReload : public TestRunner::WorkItem {
  public:
-  bool Run(WebTestDelegate* delegate, blink::WebView*) override {
-    delegate->Reload();
+  bool Run(BlinkTestRunner* blink_test_runner, blink::WebView*) override {
+    blink_test_runner->Reload();
     return true;
   }
 };
@@ -1981,7 +1981,7 @@ class WorkItemLoadingScript : public TestRunner::WorkItem {
  public:
   explicit WorkItemLoadingScript(const std::string& script) : script_(script) {}
 
-  bool Run(WebTestDelegate*, blink::WebView* web_view) override {
+  bool Run(BlinkTestRunner*, blink::WebView* web_view) override {
     blink::WebFrame* main_frame = web_view->MainFrame();
     if (!main_frame->IsWebLocalFrame()) {
       CHECK(false) << "This function cannot be called if the main frame is not "
@@ -2006,7 +2006,7 @@ class WorkItemNonLoadingScript : public TestRunner::WorkItem {
   explicit WorkItemNonLoadingScript(const std::string& script)
       : script_(script) {}
 
-  bool Run(WebTestDelegate*, blink::WebView* web_view) override {
+  bool Run(BlinkTestRunner*, blink::WebView* web_view) override {
     blink::WebFrame* main_frame = web_view->MainFrame();
     if (!main_frame->IsWebLocalFrame()) {
       CHECK(false) << "This function cannot be called if the main frame is not "
@@ -2031,8 +2031,8 @@ class WorkItemLoad : public TestRunner::WorkItem {
   WorkItemLoad(const blink::WebURL& url, const std::string& target)
       : url_(url), target_(target) {}
 
-  bool Run(WebTestDelegate* delegate, blink::WebView*) override {
-    delegate->LoadURLForFrame(url_, target_);
+  bool Run(BlinkTestRunner* blink_test_runner, blink::WebView*) override {
+    blink_test_runner->LoadURLForFrame(url_, target_);
     return true;  // FIXME: Did it really start a navigation?
   }
 
@@ -2147,14 +2147,14 @@ void TestRunner::EnableAutoResizeMode(int min_width,
     return;
   blink::WebSize min_size(min_width, min_height);
   blink::WebSize max_size(max_width, max_height);
-  delegate_->EnableAutoResizeMode(min_size, max_size);
+  blink_test_runner_->EnableAutoResizeMode(min_size, max_size);
 }
 
 void TestRunner::DisableAutoResizeMode(int new_width, int new_height) {
   if (new_width <= 0 || new_height <= 0)
     return;
   blink::WebSize new_size(new_width, new_height);
-  delegate_->DisableAutoResizeMode(new_size);
+  blink_test_runner_->DisableAutoResizeMode(new_size);
 }
 
 MockScreenOrientationClient* TestRunner::GetMockScreenOrientationClient() {
@@ -2183,7 +2183,7 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
           mock_screen_orientation_client_.UpdateDeviceOrientation(
               main_frame->ToWebLocalFrame(), orientation);
       if (screen_orientation_changed)
-        delegate_->SetScreenOrientationChanged();
+        blink_test_runner_->SetScreenOrientationChanged();
     }
   }
 }
@@ -2193,17 +2193,18 @@ void TestRunner::DisableMockScreenOrientation() {
 }
 
 void TestRunner::SetPopupBlockingEnabled(bool block_popups) {
-  delegate_->SetPopupBlockingEnabled(block_popups);
+  blink_test_runner_->SetPopupBlockingEnabled(block_popups);
 }
 
 void TestRunner::SetJavaScriptCanAccessClipboard(bool can_access) {
-  delegate_->Preferences()->java_script_can_access_clipboard = can_access;
-  delegate_->ApplyPreferences();
+  blink_test_runner_->Preferences()->java_script_can_access_clipboard =
+      can_access;
+  blink_test_runner_->ApplyPreferences();
 }
 
 void TestRunner::SetAllowFileAccessFromFileURLs(bool allow) {
-  delegate_->Preferences()->allow_file_access_from_file_urls = allow;
-  delegate_->ApplyPreferences();
+  blink_test_runner_->Preferences()->allow_file_access_from_file_urls = allow;
+  blink_test_runner_->ApplyPreferences();
 }
 
 void TestRunner::OverridePreference(gin::Arguments* args) {
@@ -2218,7 +2219,7 @@ void TestRunner::OverridePreference(gin::Arguments* args) {
     return;
   }
 
-  TestPreferences* prefs = delegate_->Preferences();
+  TestPreferences* prefs = blink_test_runner_->Preferences();
   if (key == "WebKitDefaultFontSize") {
     ConvertAndSet(args, &prefs->default_font_size);
   } else if (key == "WebKitMinimumFontSize") {
@@ -2258,7 +2259,7 @@ void TestRunner::OverridePreference(gin::Arguments* args) {
   } else {
     args->ThrowTypeError("Invalid name for preference: " + key);
   }
-  delegate_->ApplyPreferences();
+  blink_test_runner_->ApplyPreferences();
 }
 
 std::string TestRunner::GetAcceptLanguages() const {
@@ -2277,8 +2278,8 @@ void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
 }
 
 void TestRunner::SetPluginsEnabled(bool enabled) {
-  delegate_->Preferences()->plugins_enabled = enabled;
-  delegate_->ApplyPreferences();
+  blink_test_runner_->Preferences()->plugins_enabled = enabled;
+  blink_test_runner_->ApplyPreferences();
 }
 
 void TestRunner::DumpEditingCallbacks() {
@@ -2502,74 +2503,74 @@ bool TestRunner::IsChooserShown() {
 }
 
 void TestRunner::ClearAllDatabases() {
-  delegate_->ClearAllDatabases();
+  blink_test_runner_->ClearAllDatabases();
 }
 
 void TestRunner::SetDatabaseQuota(int quota) {
-  delegate_->SetDatabaseQuota(quota);
+  blink_test_runner_->SetDatabaseQuota(quota);
 }
 
 void TestRunner::SetBlockThirdPartyCookies(bool block) {
-  delegate_->SetBlockThirdPartyCookies(block);
+  blink_test_runner_->SetBlockThirdPartyCookies(block);
 }
 
 void TestRunner::SetFocus(blink::WebView* web_view, bool focus) {
   if (focus) {
     if (previously_focused_view_ != web_view) {
-      delegate_->SetFocus(previously_focused_view_, false);
-      delegate_->SetFocus(web_view, true);
+      blink_test_runner_->SetFocus(previously_focused_view_, false);
+      blink_test_runner_->SetFocus(web_view, true);
       previously_focused_view_ = web_view;
     }
   } else {
     if (previously_focused_view_ == web_view) {
-      delegate_->SetFocus(web_view, false);
+      blink_test_runner_->SetFocus(web_view, false);
       previously_focused_view_ = nullptr;
     }
   }
 }
 
 std::string TestRunner::PathToLocalResource(const std::string& path) {
-  return delegate_->PathToLocalResource(path);
+  return blink_test_runner_->PathToLocalResource(path);
 }
 
 void TestRunner::SetPermission(const std::string& name,
                                const std::string& value,
                                const GURL& origin,
                                const GURL& embedding_origin) {
-  delegate_->SetPermission(name, value, origin, embedding_origin);
+  blink_test_runner_->SetPermission(name, value, origin, embedding_origin);
 }
 
 void TestRunner::ResolveBeforeInstallPromptPromise(
     const std::string& platform) {
-  delegate_->ResolveBeforeInstallPromptPromise(platform);
+  blink_test_runner_->ResolveBeforeInstallPromptPromise(platform);
 }
 
 void TestRunner::SetPOSIXLocale(const std::string& locale) {
-  delegate_->SetLocale(locale);
+  blink_test_runner_->SetLocale(locale);
 }
 
 void TestRunner::SimulateWebNotificationClick(
     const std::string& title,
     const base::Optional<int>& action_index,
     const base::Optional<base::string16>& reply) {
-  delegate_->SimulateWebNotificationClick(title, action_index, reply);
+  blink_test_runner_->SimulateWebNotificationClick(title, action_index, reply);
 }
 
 void TestRunner::SimulateWebNotificationClose(const std::string& title,
                                               bool by_user) {
-  delegate_->SimulateWebNotificationClose(title, by_user);
+  blink_test_runner_->SimulateWebNotificationClose(title, by_user);
 }
 
 void TestRunner::SimulateWebContentIndexDelete(const std::string& id) {
-  delegate_->SimulateWebContentIndexDelete(id);
+  blink_test_runner_->SimulateWebContentIndexDelete(id);
 }
 
 base::FilePath TestRunner::GetWritableDirectory() {
-  return delegate_->GetWritableDirectory();
+  return blink_test_runner_->GetWritableDirectory();
 }
 
 void TestRunner::SetFilePathForMockFileDialog(const base::FilePath& path) {
-  delegate_->SetFilePathForMockFileDialog(path);
+  blink_test_runner_->SetFilePathForMockFileDialog(path);
 }
 
 void TestRunner::SetAnimationRequiresRaster(bool do_raster) {
@@ -2582,7 +2583,7 @@ void TestRunner::OnWebTestRuntimeFlagsChanged() {
   if (!test_is_running_)
     return;
 
-  delegate_->OnWebTestRuntimeFlagsChanged(
+  blink_test_runner_->OnWebTestRuntimeFlagsChanged(
       web_test_runtime_flags_.tracked_dictionary().changed_values());
   web_test_runtime_flags_.tracked_dictionary().ResetChangeTracking();
 }
@@ -2617,7 +2618,7 @@ void TestRunner::CheckResponseMimeType() {
 void TestRunner::NotifyDone() {
   if (web_test_runtime_flags_.wait_until_done() && loading_frames_.empty() &&
       work_queue_.is_empty())
-    delegate_->TestFinished();
+    blink_test_runner_->TestFinished();
   web_test_runtime_flags_.set_wait_until_done(false);
   did_notify_done_ = true;
   OnWebTestRuntimeFlagsChanged();

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/feedback/system_logs/about_system_logs_fetcher.h"
 
+#include <memory>
+
 #include "build/build_config.h"
 #include "chrome/browser/feedback/system_logs/log_sources/chrome_internal_log_source.h"
 #include "chrome/browser/feedback/system_logs/log_sources/memory_details_log_source.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/chromeos/system_logs/debug_daemon_log_source.h"
 #include "chrome/browser/chromeos/system_logs/device_event_log_source.h"
 #include "chrome/browser/chromeos/system_logs/touch_log_source.h"
+#include "chrome/browser/chromeos/system_logs/ui_hierarchy_log_source.h"
 #endif
 
 namespace system_logs {
@@ -32,6 +35,7 @@ SystemLogsFetcher* BuildAboutSystemLogsFetcher() {
   fetcher->AddSource(std::make_unique<DBusLogSource>());
   fetcher->AddSource(std::make_unique<DeviceEventLogSource>());
   fetcher->AddSource(std::make_unique<TouchLogSource>());
+  fetcher->AddSource(std::make_unique<UiHierarchyLogSource>());
 
   // Debug Daemon data source - currently only this data source supports
   // the scrub_data parameter.

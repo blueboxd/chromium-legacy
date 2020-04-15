@@ -103,8 +103,12 @@ class BrowsingDataRemover {
     // TODO(crbug.com/798760): Remove when fixed.
     DATA_TYPE_AVOID_CLOSING_CONNECTIONS = 1 << 15,
 
+    // Trust Token API (https://github.com/wicg/trust-token-api) persistent
+    // storage.
+    DATA_TYPE_TRUST_TOKENS = 1 << 16,
+
     // Embedders can add more datatypes beyond this point.
-    DATA_TYPE_CONTENT_END = DATA_TYPE_AVOID_CLOSING_CONNECTIONS,
+    DATA_TYPE_CONTENT_END = DATA_TYPE_TRUST_TOKENS,
   };
 
   enum OriginType {

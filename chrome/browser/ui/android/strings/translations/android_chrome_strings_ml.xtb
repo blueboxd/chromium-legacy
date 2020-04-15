@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">ക്രമീകരണം തുറക്കുക</translation>
 <translation id="4250229828105606438">സ്‌ക്രീൻഷോട്ട്</translation>
 <translation id="4256782883801055595">ഓപ്പൺ സോഴ്‌സ് ലൈസൻസുകൾ</translation>
-<translation id="4259722352634471385">നാവിഗേഷൻ തടഞ്ഞിരിക്കുന്നു: <ph name="URL" /></translation>
 <translation id="4269820728363426813">ലിങ്ക് വിലാസം പകർത്തുക</translation>
 <translation id="4275663329226226506">മീഡിയ</translation>
 <translation id="4278390842282768270">അനുവദനീയം</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും ബുക്ക്‌മാർക്കുകൾ ലഭിക്കാൻ, സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="8110087112193408731">ഡിജിറ്റൽ ആരോഗ്യത്തിൽ നിങ്ങളുടെ Chrome ആക്റ്റിവിറ്റി കാണിക്കണോ?</translation>
+<translation id="8115259494083109761">QR കോഡ് സ്‌കാൻ ചെയ്യാൻ, Chrome-നെ നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കാൻ അനുവദിക്കുക</translation>
 <translation id="8116925261070264013">മ്യൂട്ടുചെയ്‌തു</translation>
 <translation id="8127542551745560481">ഹോംപേജ് എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="813082847718468539">സൈറ്റ് വിവരങ്ങള്‍ കാണുക</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">മറ്റൊരു വിൻഡോയിൽ തുറക്കുക</translation>
 <translation id="8951232171465285730">Chrome നിങ്ങളുടെ <ph name="MEGABYTES" /> MB ലാഭിച്ചു</translation>
 <translation id="8958424370300090006">ഒരു പ്രത്യേക സൈറ്റിനായി കുക്കികൾ ബ്ലോക്ക് ചെയ്യുക.</translation>
-<translation id="8959122750345127698">നാവിഗേഷൻ ലഭ്യമല്ല: <ph name="URL" /></translation>
 <translation id="8965591936373831584">തീർച്ചപ്പെടുത്താത്തവ</translation>
 <translation id="8970887620466824814">എന്തോ കുഴപ്പമുണ്ടായി.</translation>
 <translation id="8972098258593396643">ഡിഫോൾട്ട് ഫോൾഡറിലേക്ക് ഡൗൺലോഡ് ചെയ്യണോ?</translation>

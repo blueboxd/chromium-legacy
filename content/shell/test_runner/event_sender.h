@@ -41,7 +41,7 @@ namespace content {
 
 class TestInterfaces;
 class WebWidgetTestProxy;
-class WebTestDelegate;
+class BlinkTestRunner;
 
 // Key event location code introduced in DOM Level 3.
 // See also: http://www.w3.org/TR/DOM-Level-3-Events/#events-keyboardevents
@@ -255,7 +255,7 @@ class EventSender {
 
   WebWidgetTestProxy* web_widget_test_proxy_;
   TestInterfaces* interfaces();
-  WebTestDelegate* delegate();
+  BlinkTestRunner* blink_test_runner();
   const blink::WebView* view() const;
   blink::WebView* view();
   blink::WebWidget* widget();

@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">要想在锁定屏幕上看到通知，请解锁设备以更改设置</translation>
 <translation id="4144413954005649103">右键点击或长按，Google 助理即会为您显示与屏幕上的所选项相关的信息。</translation>
 <translation id="4146833061457621061">播放音乐</translation>
-<translation id="4149156641122542261">此 <ph name="DEVICE_TYPE" /> 由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="4181841719683918333">语言</translation>
 <translation id="4195877955194704651">“自动点击”按钮</translation>
 <translation id="4215497585250573029">VPN 设置</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">快捷方式已关闭</translation>
 <translation id="6910714959251846841">必须对您的设备执行 Powerwash 才能安装这项更新。详细了解最新的 <ph name="SYSTEM_APP_NAME" />更新。</translation>
 <translation id="6919251195245069855">无法识别您的智能卡，请重试。</translation>
+<translation id="6945221475159498467">选择</translation>
 <translation id="6972754398087986839">开始使用</translation>
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="698231206551913481">移除该用户后，与其关联的所有文件和本地数据都会被永久删除。</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">专用网络</translation>
 <translation id="8152092012181020186">按 Ctrl + W 即可关闭。</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" />：此设置由您的管理员管理。</translation>
+<translation id="815598010540052116">向下滚动</translation>
 <translation id="8167567890448493835">目前使用的是“<ph name="LOCALE_NAME" />”</translation>
 <translation id="8190698733819146287">自定义语言和输入法...</translation>
 <translation id="8192202700944119416">已隐藏通知。</translation>

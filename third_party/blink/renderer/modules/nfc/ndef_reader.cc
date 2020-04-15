@@ -92,24 +92,21 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  // TODO(https://crbug.com/520391): With the note in
+  // With the note in
   // https://w3c.github.io/web-nfc/#the-ndefreader-and-ndefwriter-objects,
   // successive invocations of NDEFReader.scan() with new options should replace
-  // existing filters. For now we just reject this new scan() when there is an
-  // ongoing filter active.
+  // existing filters. So stop current reading for this case.
   if (GetNfcProxy()->IsReading(this)) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "There is already a scan() operation ongoing.");
-    return ScriptPromise();
+    Abort(signal_.Get());
   }
 
   resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   // 8. If reader.[[Signal]] is not null, then add the following abort steps to
   // reader.[[Signal]]:
   if (options->hasSignal()) {
-    options->signal()->AddAlgorithm(
-        WTF::Bind(&NDEFReader::Abort, WrapPersistent(this)));
+    signal_ = options->signal();
+    signal_->AddAlgorithm(WTF::Bind(&NDEFReader::Abort, WrapPersistent(this),
+                                    WrapPersistent(options->signal())));
   }
 
   GetPermissionService()->RequestPermission(
@@ -173,6 +170,7 @@ void NDEFReader::OnScanRequestCompleted(
 
 void NDEFReader::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
+  visitor->Trace(signal_);
   EventTargetWithInlineData::Trace(visitor);
   ActiveScriptWrappable::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
@@ -216,7 +214,14 @@ void NDEFReader::ContextDestroyed() {
   GetNfcProxy()->StopReading(this);
 }
 
-void NDEFReader::Abort() {
+void NDEFReader::Abort(AbortSignal* signal) {
+  // In the case of successive invocations of NDEFReader.scan() with
+  // different signals, we should make sure aborting on previous signal
+  // won't abort current reading.
+  // If this is not triggered by the current signal, just ignore it.
+  if (signal && signal != signal_)
+    return;
+
   if (resolver_) {
     resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kAbortError, "The NFC operation was cancelled."));

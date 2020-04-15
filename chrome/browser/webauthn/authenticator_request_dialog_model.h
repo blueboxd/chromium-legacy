@@ -96,6 +96,7 @@ class AuthenticatorRequestDialogModel {
     kClientPinErrorAuthenticatorRemoved,
 
     // Authenticator Internal User Verification
+    kInlineBioEnrollment,
     kRetryInternalUserVerification,
 
     // Confirm user consent to create a resident credential. Used prior to
@@ -417,6 +418,11 @@ class AuthenticatorRequestDialogModel {
   }
   base::Optional<int> pin_attempts() const { return pin_attempts_; }
 
+  void StartInlineBioEnrollment(int max_bio_samples);
+  void OnSampleCollected(int bio_samples_remaining);
+  int max_bio_samples() { return *max_bio_samples_; }
+  int bio_samples_remaining() { return *bio_samples_remaining_; }
+
   // Flags the authenticator's internal user verification as locked.
   void set_internal_uv_locked() { uv_attempts_ = 0; }
   base::Optional<int> uv_attempts() const { return uv_attempts_; }
@@ -514,6 +520,9 @@ class AuthenticatorRequestDialogModel {
   BlePairingCallback ble_pairing_callback_;
   base::RepeatingClosure bluetooth_adapter_power_on_callback_;
   BleDevicePairedCallback ble_device_paired_callback_;
+
+  base::Optional<int> max_bio_samples_;
+  base::Optional<int> bio_samples_remaining_;
 
   base::OnceCallback<void(std::string)> pin_callback_;
   base::Optional<int> pin_attempts_;

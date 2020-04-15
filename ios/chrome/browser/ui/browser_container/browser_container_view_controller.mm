@@ -5,10 +5,22 @@
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 
 #include "base/logging.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+@interface BrowserContainerViewController ()
+// BrowserContainerConsumer backing properties.
+@property(nonatomic, strong) UIView* contentView;
+@property(nonatomic, strong) UIViewController* contentViewController;
+@property(nonatomic, strong)
+    UIViewController* webContentsOverlayContainerViewController;
+@property(nonatomic, assign, getter=isContentBlocked) BOOL contentBlocked;
+// The view inserted into the hierarchy when self.contentBlocked is set to YES.
+@property(nonatomic, strong) UIView* contentBlockingView;
+@end
 
 @implementation BrowserContainerViewController
 
@@ -77,6 +89,38 @@
 
   if (contentView)
     [self.view insertSubview:contentView atIndex:0];
+}
+
+- (void)setContentBlocked:(BOOL)contentBlocked {
+  if (_contentBlocked == contentBlocked)
+    return;
+  if (_contentBlocked) {
+    // If the content was previously blocked, remove the blocking view before
+    // resetting to |contentBlocked|.
+    [self.contentBlockingView removeFromSuperview];
+    self.contentBlockingView = nil;
+  }
+  _contentBlocked = contentBlocked;
+  if (_contentBlocked) {
+    // Install the blocking view.
+    self.contentBlockingView = [[UIView alloc] initWithFrame:CGRectZero];
+    if (@available(iOS 13, *)) {
+      self.contentBlockingView.backgroundColor =
+          [UIColor secondarySystemBackgroundColor];
+    } else {
+      self.contentBlockingView.backgroundColor = [UIColor whiteColor];
+    }
+    UIView* overlayContainerView =
+        self.webContentsOverlayContainerViewController.view;
+    if (overlayContainerView) {
+      [self.view insertSubview:self.contentBlockingView
+                  belowSubview:overlayContainerView];
+    } else {
+      [self.view addSubview:self.contentBlockingView];
+    }
+    self.contentBlockingView.translatesAutoresizingMaskIntoConstraints = NO;
+    AddSameConstraints(self.contentBlockingView, self.view);
+  }
 }
 
 #pragma mark - Private

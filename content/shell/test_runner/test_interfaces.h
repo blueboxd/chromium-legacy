@@ -18,9 +18,9 @@ class WebView;
 }
 
 namespace content {
+class BlinkTestRunner;
 class GamepadController;
 class TestRunner;
-class WebTestDelegate;
 class WebViewTestProxy;
 
 class TestInterfaces {
@@ -29,8 +29,7 @@ class TestInterfaces {
   ~TestInterfaces();
 
   void SetMainView(blink::WebView* web_view);
-  void SetDelegate(WebTestDelegate* delegate);
-  void BindTo(blink::WebLocalFrame* frame);
+  void Install(blink::WebLocalFrame* frame);
   void ResetTestHelperControllers();
   void ResetAll();
   bool TestIsRunning();
@@ -41,8 +40,14 @@ class TestInterfaces {
   void WindowOpened(WebViewTestProxy* proxy);
   void WindowClosed(WebViewTestProxy* proxy);
 
+  // This returns the BlinkTestRunner from the oldest created WebViewTestProxy.
+  // TODO(lukasza): Using the first BlinkTestRunner as the main BlinkTestRunner
+  // is wrong, but it is difficult to change because this behavior has been
+  // baked for a long time into test assumptions (i.e. which PrintMessage gets
+  // delivered to the browser depends on this).
+  BlinkTestRunner* GetFirstBlinkTestRunner();
+
   TestRunner* GetTestRunner();
-  WebTestDelegate* GetDelegate();
   // TODO(danakj): This is a list of all RenderViews not of all windows. There
   // will be a RenderView for each frame tree fragment in the process, not just
   // one per window. We should only return the RenderViews with a local main
@@ -52,16 +57,8 @@ class TestInterfaces {
   const std::vector<WebViewTestProxy*>& GetWindowList();
 
  private:
-  // Called when a WebTestDelegate is destroyed, if it is the currently used
-  // delegate, switch to another delegate in window_list_ as there might be
-  // WebFrameTestClients that require it.
-  // If window_list_ is empty set delegate_ to nullptr, a new one will be
-  // assigned the next time a WebViewTestProxy is built.
-  void DelegateDestroyed(WebTestDelegate* delegate);
-
   std::unique_ptr<GamepadController> gamepad_controller_;
   std::unique_ptr<TestRunner> test_runner_;
-  WebTestDelegate* delegate_ = nullptr;
 
   std::vector<WebViewTestProxy*> window_list_;
   blink::WebView* main_view_ = nullptr;

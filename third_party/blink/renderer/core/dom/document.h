@@ -344,6 +344,9 @@ class CORE_EXPORT Document : public ContainerNode,
   bool FeaturePolicyFeatureObserved(
       mojom::blink::FeaturePolicyFeature feature) override;
 
+  bool DocumentPolicyFeatureObserved(
+      mojom::blink::DocumentPolicyFeature feature);
+
   SecurityContext& GetSecurityContext() { return security_context_; }
   const SecurityContext& GetSecurityContext() const {
     return security_context_;
@@ -2278,6 +2281,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // them multiple times.
   // The size of this vector is 0 until FeaturePolicyFeatureObserved is called.
   Vector<bool> parsed_feature_policies_;
+
+  Vector<bool> parsed_document_policies_;
 
   AtomicString override_last_modified_;
 

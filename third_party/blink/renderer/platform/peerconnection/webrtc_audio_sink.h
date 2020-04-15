@@ -22,6 +22,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_level_calculator.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/pc/media_stream_track.h"
 #include "third_party/webrtc/rtc_base/time_utils.h"

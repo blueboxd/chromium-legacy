@@ -6,6 +6,10 @@
 #include "base/memory/ptr_util.h"
 #include "ios/web/public/navigation/navigation_manager.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 const char kIOSLiveTabWebStateUserDataKey[] = "ios_live_tab";
 }

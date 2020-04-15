@@ -15,6 +15,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -145,9 +146,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
       << message_;
 }
 
-// Tests chrome.runtime.reload
+// Tests that an extension calling chrome.runtime.reload() repeatedly
+// will eventually be disabled.
 // This test is flaky: crbug.com/366181
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeRuntimeReload) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeRuntimeReloadDisable) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   const char kManifest[] =
       "{"
@@ -191,6 +193,50 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeRuntimeReload) {
   }
   ASSERT_TRUE(
       registry->GetExtensionById(extension_id, ExtensionRegistry::TERMINATED));
+}
+
+// Tests chrome.runtime.reload
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeReload) {
+  static constexpr char kManifest[] = R"(
+      {
+        "name": "reload",
+        "version": "1.0",
+        "background": {
+          "scripts": ["background.js"]
+        },
+        "manifest_version": 2
+      })";
+
+  static constexpr char kScript[] = R"(
+    chrome.test.sendMessage('ready', function(response) {
+      if (response == 'reload') {
+        chrome.runtime.reload();
+      } else if (response == 'done') {
+        chrome.test.notifyPass();
+      }
+    });
+  )";
+
+  TestExtensionDir dir;
+  dir.WriteManifest(kManifest);
+  dir.WriteFile(FILE_PATH_LITERAL("background.js"), kScript);
+
+  // This listener will respond to the initial load of the extension
+  // and tell the script to do the reload.
+  ExtensionTestMessageListener ready_listener_reload("ready", true);
+  const Extension* extension = LoadExtension(dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  const std::string extension_id = extension->id();
+  EXPECT_TRUE(ready_listener_reload.WaitUntilSatisfied());
+
+  // This listener will respond to the ready message from the
+  // reloaded extension and tell the script to finish the test.
+  ExtensionTestMessageListener ready_listener_done("ready", true);
+  ResultCatcher reload_catcher;
+  ready_listener_reload.Reply("reload");
+  EXPECT_TRUE(ready_listener_done.WaitUntilSatisfied());
+  ready_listener_done.Reply("done");
+  EXPECT_TRUE(reload_catcher.GetNextResult());
 }
 
 // Tests that updating a terminated extension sends runtime.onInstalled event

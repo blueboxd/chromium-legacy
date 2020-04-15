@@ -88,6 +88,7 @@
 <translation id="34857402635545079">一并清除 Chrome (<ph name="URL" />) 中的数据</translation>
 <translation id="3503306920980160878">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站</translation>
 <translation id="3533694711092285624">尚未保存任何密码。您需要先保存密码才能使用 Chrome 的密码检查功能。</translation>
+<translation id="3541482654983822893">Chrome 无法检查您的密码。请过 24 小时再试。</translation>
 <translation id="3576528680708590453">您的系统管理员已将 Google Chrome 配置为使用备用浏览器访问 <ph name="TARGET_URL_HOSTNAME" />。</translation>
 <translation id="3582972582564653026">在您的所有设备上同步并个性化设置 Chrome</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{您的管理员要求您重新启动 Chrome 以应用一项更新}=1{您的管理员要求您重新启动 Chrome 以应用一项更新。您的无痕式窗口不会重新打开。}other{您的管理员要求您重新启动 Chrome 以应用一项更新。您的 # 个无痕式窗口不会重新打开。}}</translation>
@@ -105,6 +106,7 @@
 <translation id="4147555960264124640">您目前登录的帐号是一个托管帐号，该帐号的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐号信息中心删除这些数据，但无法将这些数据与其他帐号相关联。<ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">安装程序无法解压缩存档文件。请重新下载 Google Chrome。</translation>
 <translation id="4191857738314598978">{0,plural, =1{请于 1 天内重新启动 Chrome}other{请于 # 天内重新启动 Chrome}}</translation>
+<translation id="4205939740494406371">Chrome 无法检查您的密码。请过 24 小时再试，或者<ph name="BEGIN_LINK" />检查您的 Google 帐号中的密码<ph name="END_LINK" />。</translation>
 <translation id="424864128008805179">退出 Chrome？</translation>
 <translation id="4251615635259297716">是否将您的 Chrome 数据与此帐号相关联？</translation>
 <translation id="4293420128516039005">登录即可在您的所有设备上同步并个性化设置 Chrome</translation>
@@ -227,7 +229,6 @@
 <translation id="8342675569599923794">此文件存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="8370517070665726704">版权所有 <ph name="YEAR" /> Google LLC. 保留所有权利。</translation>
 <translation id="840084489713044809">Google Chrome 想导出您的密码。</translation>
-<translation id="8455999171311319804">可选：将诊断数据和使用情况数据自动发送给 Google，协助我们改进 Chrome 操作系统。</translation>
 <translation id="8498858610309223613">Google Chrome 刚刚应用了一项特殊的安全更新。请立即重启，以便系统恢复您的标签页。</translation>
 <translation id="8521348052903287641">Google Chrome 开发者版的入站规则，允许 mDNS 流量。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

@@ -422,6 +422,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // control.
   bool pending_pause_;
   bool pending_play_;
+  // Indicates finish notification queued but not processed.
   bool pending_finish_notification_;
   bool has_queued_microtask_;
 
@@ -429,7 +430,11 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // has changed by means other than the ordinary progression of time
   bool outdated_;
 
+  // Indicates the animation is no longer active. Cancelled animation is marked
+  // as finished_.
   bool finished_;
+  // Indicates finish notification has been handled.
+  bool committed_finish_notification_;
   // Holds a 'finished' event queued for asynchronous dispatch via the
   // ScriptedAnimationController. This object remains active until the
   // event is actually dispatched.

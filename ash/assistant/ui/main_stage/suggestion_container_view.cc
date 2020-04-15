@@ -17,6 +17,7 @@
 #include "ash/assistant/ui/main_stage/element_animator.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "base/bind.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -93,15 +94,13 @@ SuggestionContainerView::SuggestionContainerView(
   SetID(AssistantViewID::kSuggestionContainer);
   InitLayout();
 
-  // The AssistantViewDelegate should outlive SuggestionContainerView.
-  delegate->AddSuggestionsModelObserver(this);
+  AssistantSuggestionsController::Get()->AddModelObserver(this);
   delegate->AddUiModelObserver(this);
 }
 
 SuggestionContainerView::~SuggestionContainerView() {
   delegate()->RemoveUiModelObserver(this);
-  delegate()->RemoveSuggestionsModelObserver(this);
-  delegate()->RemoveInteractionModelObserver(this);
+  AssistantSuggestionsController::Get()->RemoveModelObserver(this);
 }
 
 const char* SuggestionContainerView::GetClassName() const {
@@ -207,8 +206,9 @@ void SuggestionContainerView::OnUiVisibilityChanged(
       entry_point.value() != AssistantEntryPoint::kLauncherSearchResult) {
     // Show conversation starters at the start of a new Assistant session except
     // when the user already started a query in Launcher quick search box (QSB).
-    OnConversationStartersChanged(
-        delegate()->GetSuggestionsModel()->GetConversationStarters());
+    OnConversationStartersChanged(AssistantSuggestionsController::Get()
+                                      ->GetModel()
+                                      ->GetConversationStarters());
     return;
   }
 

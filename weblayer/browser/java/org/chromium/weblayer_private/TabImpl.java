@@ -9,8 +9,11 @@ import android.os.Build;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
+import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.ViewStructure;
+import android.view.autofill.AutofillValue;
 import android.webkit.ValueCallback;
 
 import org.chromium.base.Callback;
@@ -23,6 +26,7 @@ import org.chromium.components.autofill.AutofillProviderImpl;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
+import org.chromium.components.external_intents.InterceptNavigationDelegateImpl;
 import org.chromium.components.find_in_page.FindInPageBridge;
 import org.chromium.components.find_in_page.FindMatchRectsDetails;
 import org.chromium.components.find_in_page.FindResultBar;
@@ -96,6 +100,7 @@ public final class TabImpl extends ITab.Stub {
     private FindResultBar mFindResultBar;
     // See usage note in {@link #onFindResultAvailable}.
     boolean mWaitingForMatchRects;
+    private InterceptNavigationDelegateClientImpl mInterceptNavigationDelegateClient;
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
 
     private static class InternalAccessDelegateImpl
@@ -178,8 +183,10 @@ public final class TabImpl extends ITab.Stub {
         mConstraintsUpdatedCallback = (constraints) -> onBrowserControlsStateUpdated(constraints);
         mBrowserControlsVisibility.addObserver(mConstraintsUpdatedCallback);
 
-        mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl(this);
-
+        mInterceptNavigationDelegateClient = new InterceptNavigationDelegateClientImpl(this);
+        mInterceptNavigationDelegate =
+                new InterceptNavigationDelegateImpl(mInterceptNavigationDelegateClient);
+        mInterceptNavigationDelegateClient.initializeWithDelegate(mInterceptNavigationDelegate);
         sTabMap.put(mId, this);
     }
 
@@ -207,6 +214,9 @@ public final class TabImpl extends ITab.Stub {
         mViewAndroidDelegate.setContainerView(mBrowser.getViewAndroidDelegateContainerView());
         updateWebContentsVisibility();
 
+        boolean attached = (mBrowser.getContext() != null);
+        mInterceptNavigationDelegateClient.onActivityAttachmentChanged(attached);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             SelectionPopupController selectionController =
                     SelectionPopupController.fromWebContents(mWebContents);
@@ -227,6 +237,16 @@ public final class TabImpl extends ITab.Stub {
 
             TabImplJni.get().onAutofillProviderChanged(mNativeTab, mAutofillProvider);
         }
+    }
+
+    public void onProvideAutofillVirtualStructure(ViewStructure structure, int flags) {
+        if (mAutofillProvider == null) return;
+        mAutofillProvider.onProvideAutoFillVirtualStructure(structure, flags);
+    }
+
+    public void autofill(final SparseArray<AutofillValue> values) {
+        if (mAutofillProvider == null) return;
+        mAutofillProvider.autofill(values);
     }
 
     public BrowserImpl getBrowser() {
@@ -302,10 +322,6 @@ public final class TabImpl extends ITab.Stub {
 
     public WebContents getWebContents() {
         return mWebContents;
-    }
-
-    public AutofillProvider getAutofillProvider() {
-        return mAutofillProvider;
     }
 
     long getNativeTab() {
@@ -546,7 +562,7 @@ public final class TabImpl extends ITab.Stub {
             mNewTabCallbackProxy = null;
         }
 
-        mInterceptNavigationDelegate.onTabDestroyed();
+        mInterceptNavigationDelegateClient.destroy();
         mInterceptNavigationDelegate = null;
 
         mMediaStreamManager.destroy();

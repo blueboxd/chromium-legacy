@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">Холбоосыг хуулах</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Гарчиг</translation>
+<translation id="4259722352634471385">Навигацыг хориглосон байна: <ph name="URL" /></translation>
 <translation id="4570913071927164677">Дэлгэрэнгүй</translation>
 <translation id="4645575059429386691">Эцэг, эх нь хариуцаж байна</translation>
 <translation id="4883854917563148705">Хяналттай тохиргоог шинэчлэх боломжгүй</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">Оролтыг цэвэрлэх</translation>
 <translation id="8725066075913043281">Дахин оролдож үзнэ үү.</translation>
 <translation id="8730621377337864115">хийсэн</translation>
+<translation id="8959122750345127698">Навигацтай холбогдох боломжгүй байна: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Эцэг, эх нь хариуцан удирдаж байна</translation>
 </translationbundle>

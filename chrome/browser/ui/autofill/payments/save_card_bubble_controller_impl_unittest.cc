@@ -1545,6 +1545,25 @@ TEST_F(SaveCardBubbleControllerImplTest,
   EXPECT_TRUE(controller()->ShouldRequestExpirationDateFromUser());
 }
 
+// Ensures the bubble should still stick around even if the time since bubble
+// showing is longer than kCardBubbleSurviveNavigationTime (5 seconds) when the
+// feature is enabled.
+TEST_F(SaveCardBubbleControllerImplTest,
+       StickyBubble_ShouldNotDismissUponNavigation) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillEnableStickyPaymentsBubble);
+
+  ShowLocalBubble();
+  base::HistogramTester histogram_tester;
+  test_clock_.Advance(base::TimeDelta::FromSeconds(10));
+  controller()->SimulateNavigation();
+
+  histogram_tester.ExpectTotalCount(
+      "Autofill.SaveCreditCardPrompt.Local.FirstShow", 0);
+  EXPECT_NE(nullptr, controller()->GetSaveCardBubbleView());
+}
+
 // TODO(crbug.com/932818): Delete (manage card) or move (sign in promo) below
 // tests when feature is fully launched.
 class SaveCardBubbleControllerImplTestWithoutStatusChip

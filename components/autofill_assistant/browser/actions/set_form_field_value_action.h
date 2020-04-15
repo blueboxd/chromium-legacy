@@ -16,11 +16,6 @@
 #include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "components/autofill_assistant/browser/user_data.h"
 
-namespace autofill {
-struct FormData;
-struct FormFieldData;
-}  // namespace autofill
-
 namespace autofill_assistant {
 
 // An action to set the value of a form input element.
@@ -34,16 +29,16 @@ class SetFormFieldValueAction : public Action {
   FRIEND_TEST_ALL_PREFIXES(SetFormFieldValueActionTest,
                            PasswordIsClearedFromMemory);
 
+  // TODO(b/154067717): Remove PasswordValueType enum.
   // Helper enum for |FieldInput| to describe the passwords-related actions.
-  enum class PasswordValueType { NOT_SET, STORED_PASSWORD, GENERATED_PASSWORD };
+  enum class PasswordValueType { NOT_SET, STORED_PASSWORD };
 
   // A field input as extracted from the proto, but already checked for
   // validity.
   struct FieldInput {
     explicit FieldInput(std::unique_ptr<std::vector<UChar32>> keyboard_input);
     explicit FieldInput(std::string value);
-    explicit FieldInput(PasswordValueType password_type,
-                        const std::string& memory_key = std::string());
+    explicit FieldInput(PasswordValueType password_type);
     FieldInput(FieldInput&& other);
     ~FieldInput();
 
@@ -53,10 +48,6 @@ class SetFormFieldValueAction : public Action {
     // If the action is about passwords, the field describes whether the
     // password should be retrieved from storage or generated.
     PasswordValueType password_type = PasswordValueType::NOT_SET;
-    // Iff |password_type == GENERATED_PASSWORD|, the field contains a memory
-    // key to store the generated password for confirmation field filling and
-    // updating the password store.
-    std::string memory_key;
     // The string to input (for all other cases).
     std::string value;
   };
@@ -78,18 +69,6 @@ class SetFormFieldValueAction : public Action {
                                        const ClientStatus& status);
 
   void OnGetStoredPassword(int field_index, bool success, std::string password);
-
-  void OnGetFormAndFieldDataForGeneration(
-      int field_index,
-      const std::string memory_key,
-      const ClientStatus& status,
-      const autofill::FormData& form_data,
-      const autofill::FormFieldData& field_data);
-
-  void StoreGeneratedPasswordToUserData(const std::string memory_key,
-                                        const std::string generated_password,
-                                        UserData* user_data,
-                                        UserData::FieldChange* field_change);
 
   void EndAction(const ClientStatus& status);
 

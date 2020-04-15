@@ -359,6 +359,9 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   base::flat_map<RenderPassId, ScopedRenderPassTexture> render_pass_textures_;
 
+  // A map from RenderPass id to backdrop filter cache texture.
+  base::flat_map<RenderPassId, sk_sp<SkImage>> render_pass_backdrop_textures_;
+
   // OverlayTextures that are free to be used in the next frame.
   std::vector<std::unique_ptr<OverlayTexture>> available_overlay_textures_;
   // OverlayTextures that have been set up for use but are waiting for

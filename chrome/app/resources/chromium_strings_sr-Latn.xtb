@@ -41,7 +41,6 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 <translation id="2799223571221894425">Ponovo pokreni</translation>
 <translation id="2805036593126168338">Chromium OS nije uspeo da sinhronizuje lozinke. Rešite problem.</translation>
 <translation id="2847479871509788944">Ukloni iz Chromium-a...</translation>
-<translation id="2886012850691518054">Opcionalno: Pomozite da poboljšamo Chromium tako što ćete Google-u automatski slati statistiku korišćenja i izveštaje o otkazivanju.</translation>
 <translation id="2910007522516064972">O &amp;Chromium-u</translation>
 <translation id="2977470724722393594">Chromium je ažuriran</translation>
 <translation id="2983934633046890458">Chromium pokušava da izmeni lozinke.</translation>
@@ -60,6 +59,7 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 <translation id="328888136576916638">Nedostaju šifre za Google API. Neke funkcije Chromium-a će biti onemogućene.</translation>
 <translation id="3296368748942286671">Nastavi sa pokretanjem aplikacija u pozadini kada se Chromium zatvori</translation>
 <translation id="331951419404882060">Chromium OS ne može da sinhronizuje podatke zbog greške pri prijavljivanju.</translation>
+<translation id="347328004046849135">Chromium će vas obavestiti kada se prijavite pomoću ugrožene lozinke</translation>
 <translation id="3474745554856756813">Ovim ćete izbrisati <ph name="ITEMS_COUNT" /> stavke(i) sa ovog uređaja. Da biste kasnije vratili podatke, prijavite se u Chromium kao <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Zatvorite sve Chromium prozore i pokušajte ponovo.</translation>
 <translation id="3575459661164320785">Na računaru postoji štetan softver. Chromium može da ga ukloni, vrati podešavanja i onemogući dodatke da bi pregledač mogao ponovo da radi uobičajeno.</translation>
@@ -95,11 +95,13 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 <translation id="4746050847053251315">Želite li ipak da zatvorite Chromium?</translation>
 <translation id="4748217263233248895">Posebno bezbednosno ažuriranje za Chromium je upravo primenjeno. Restartujte ga i vratićemo vam kartice.</translation>
 <translation id="4750035648288509542">Skoro je ažuriran! Ponovo pokrenite Chromium da biste dovršili ažuriranje. Prozori bez arhiviranja se neće ponovo otvoriti.</translation>
+<translation id="4788777615168560705">Chromium ne može da vam proverava lozinke. Probajte ponovo posle 24 sata ili <ph name="BEGIN_LINK" />proverite lozinke na Google nalogu<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Koristi istu proveru pravopisa kao Google pretraga. Tekst koji unesete u pregledač se šalje Google-u. To uvek možete da promenite u podešavanjima.</translation>
 <translation id="4888717733111232871">Pravilo za dolazni saobraćaj za Chromium da bi se omogućio mDNS saobraćaj.</translation>
 <translation id="4943838377383847465">Chromium je u pozadinskom režimu.</translation>
 <translation id="4987820182225656817">Gosti mogu da koriste Chromium a da ne ostavljaju nikakve tragove.</translation>
 <translation id="4994636714258228724">Dodajte sebe u Chromium</translation>
+<translation id="5224391634244552924">Nema sačuvanih lozinki. Chromium može da proverava lozinke kada ih sačuvate.</translation>
 <translation id="5277894862589591112">Da biste primenili promene, ponovo pokrenite Chromium</translation>
 <translation id="5358375970380395591">Prijavljujete se pomoću naloga kojim se upravlja i dajete njegovom administratoru kontrolu nad Chromium profilom. Chromium podaci, kao što su aplikacije, obeleživači, istorija, lozinke i druga podešavanja, biće trajno povezani sa nalogom <ph name="USER_NAME" />. Moći ćete da izbrišete te podatke preko Kontrolne table Google naloga, ali nećete moći da ih povežete sa nekim drugim nalogom. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Ažuriranje Chromium-a (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -166,6 +168,7 @@ Neke funkcije će možda biti nedostupne. Navedite drugi direktorijum profila i
 <translation id="7066436765290594559">Chromium OS ne može da sinhronizuje podatke. Ažurirajte pristupnu frazu za Sinhronizaciju.</translation>
 <translation id="7067091210845072982">Ako slika nema koristan opis, Chromium će probati da vam ga pruži. Slike se šalju Google-u radi pravljenja opisa.</translation>
 <translation id="7196312274710523067">Nije moguće pokrenuti Chromium. Pokušajte ponovo.</translation>
+<translation id="7197677400338048821">Chromium ne može da vam proverava lozinke. Probajte ponovo za 24 sata.</translation>
 <translation id="7205698830395646142">Sakrij u Chromium meniju</translation>
 <translation id="7223968959479464213">Menadžer zadataka – Chromium</translation>
 <translation id="731644333568559921">Ažuriraj &amp;Chromium OS</translation>
@@ -224,7 +227,7 @@ Chromium ne može da vrati podešavanja.</translation>
 <translation id="8803635938069941624">Chromium OS uslovi</translation>
 <translation id="8821041990367117597">Chromium ne može da sinhronizuje podatke zato što su podaci za prijavljivanje na nalog zastareli.</translation>
 <translation id="8862326446509486874">Nemate odgovarajuća prava za instalaciju na nivou sistema. Probajte ponovo da pokrenete program za instalaciju, ovoga puta kao administrator.</translation>
-<translation id="8897323336392112261">Kontroliše i stranicu koja se prikazuje kada pokrenete Chromium ili kliknete na dugme Početna.</translation>
+<translation id="8897323336392112261">Kontroliše i stranicu koja se prikazuje kada pokrenete Chromium ili kliknete na dugme Početak.</translation>
 <translation id="8907580949721785412">Chromium pokušava da prikaže lozinke. Unesite lozinku za Windows da biste to omogućili.</translation>
 <translation id="8941642502866065432">Ne možete da ažurirate Chromium</translation>
 <translation id="8974095189086268230">Chromium OS omogućava dodatni <ph name="BEGIN_LINK_CROS_OSS" />softver otvorenog koda<ph name="END_LINK_CROS_OSS" />.</translation>

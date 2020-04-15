@@ -92,6 +92,7 @@
 <translation id="34857402635545079">በተጨማሪ ከ Chrome (<ph name="URL" />) ውሂብን አጽዳ</translation>
 <translation id="3503306920980160878">Chrome አካባቢዎን ለዚህ ጣቢያ ለማጋራት የአካባቢዎ መዳረሻ ያስፈልገዋል</translation>
 <translation id="3533694711092285624">ምንም የተቀመጡ የይለፍ ቃላት የሉም። Chrome እርስዎ ሲያስቀምጧቸው የእርስዎን የይለፍ ቃላት መፈተሽ ይችላል።</translation>
+<translation id="3541482654983822893">Chrome የእርስዎን የይለፍ ቃላት መፈተሽ አይችልም። ከ24 ሰዓቶች በኋላ እንደገና ይሞክሩ።</translation>
 <translation id="3576528680708590453">የእርስዎ የስርዓት አስተዳዳሪ <ph name="TARGET_URL_HOSTNAME" />ን ለመድረስ Google Chrome ተለዋጭ አሳሽ እንዲከፍት አዋቅሮታል።</translation>
 <translation id="3582972582564653026">Chromeን በመላ መሣሪያዎችዎ ላይ ያስምሩ እና ግላዊነት ያላብሱ</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{አንድ ዝማኔ ለመተግበር አስተዳዳሪዎ Chromeን ዳግም እንዲያስጀምሩት ይፈልግብዎታል}=1{አንድ ዝማኔ ለመተግበር አስተዳዳሪዎ Chromeን ዳግም እንዲያስጀምሩት ይፈልግብዎታል። የእርስዎ ማንነት የማያሳውቅ መስኮት ዳግም አይከፈትም}one{አንድ ዝማኔ ለመተግበር አስተዳዳሪዎ Chromeን ዳግም እንዲያስጀምሩት ይፈልግብዎታል። የእርስዎ # ማንነት የማያሳውቁ መስኮቶች ዳግም አይከፈቱም}other{አንድ ዝማኔ ለመተግበር አስተዳዳሪዎ Chromeን ዳግም እንዲያስጀምሩት ይፈልግብዎታል። የእርስዎ # ማንነት የማያሳውቁ መስኮቶች ዳግም አይከፈቱም}}</translation>
@@ -109,6 +110,7 @@
 <translation id="4147555960264124640">በሚተዳደር መለያ እየገቡ ነው፣ እና አስተዳዳሪው በእርስዎ Google Chrome መገለጫ ላይ ቁጥጥር እየሰጡት ነው። እንደ የእርስዎ መተግበሪያዎች፣ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ያሉ የእርስዎ Chrome ውሂብ እስከ መጨረሻው ከ<ph name="USER_NAME" /> ጋር የተያያዙ ይሆናሉ። ይህን ውሂብ በGoogle የመለያዎች Dashboard አማካኝነት ሊሰርዙት ይችላሉ፣ ነገር ግን ይህን ውሂብ ከሌላ መለያ ጋር ሊያጎዳኙት አይችሉም። <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">ጫኝው መዝገብ ለመበተን አልቻለም። እባክዎ Google Chromeን እንደገና ያውርዱ።</translation>
 <translation id="4191857738314598978">{0,plural, =1{በአንድ ቀን ውስጥ Chromeን ዳግም አስጀምር}one{በ# ቀኖች ውስጥ Chromeን ዳግም አስጀምር}other{በ# ቀኖች ውስጥ Chromeን ዳግም አስጀምር}}</translation>
+<translation id="4205939740494406371">Chrome የእርስዎን የይለፍ ቃላት መፈተሽ አይችልም። ከ24 ሰዓቶች በኋላ እንደገና ይሞክሩ ወይም <ph name="BEGIN_LINK" />በGoogle መለያዎ ውስጥ የይለፍ ቃላትን ይፈትሹ<ph name="END_LINK" />።</translation>
 <translation id="424864128008805179">ከChrome ተዘግቶ ይወጣ?</translation>
 <translation id="4251615635259297716">የChrome ውሂብዎ ከዚህ መለያ ጋር ይገናኝ?</translation>
 <translation id="4293420128516039005">Chromeን በመላ መሣሪያዎችዎ ላይ ለማሳመር እና ግላዊነት ለማላበስ</translation>
@@ -235,7 +237,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="8342675569599923794">ይህ ፋይል አደገኛ ስለሆነ Chrome አግዶታል።</translation>
 <translation id="8370517070665726704">የቅጂ መብት <ph name="YEAR" /> Google LLC. ሁሉም መብቶች በህግ የተጠበቁ ናቸው።</translation>
 <translation id="840084489713044809">Google Chrome የእርስዎን የይለፍ ቃላት ወደ ውጭ መላክ ይፈልጋል።</translation>
-<translation id="8455999171311319804">ከተፈለገ፦ የምርመራ እና የአጠቃቀም ውሂብ ወደ Google በራስ-ሰር በመላክ Chrome OS የተሻለ እንዲሆን ያግዙ።</translation>
 <translation id="8498858610309223613">ለGoogle Chrome ልዩ የደህንነት ዝማኔ አሁን ተጭኗል። አሁን እንደገና ያስጀምሩ እና የእርስዎን ትሮች እንደነበሩ እንመልሳቸዋለን።</translation>
 <translation id="8521348052903287641">የmDNS ትራፊክን ለመፍቀድ የGoogle Chrome ገንቢ የውስጥ ደንብ።</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

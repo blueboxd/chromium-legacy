@@ -82,10 +82,6 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
     should_offer_webauthn_ = should;
   }
 
-  void SetCreditCardForTesting(CreditCard card) {
-    CardUnmaskPromptControllerImpl::SetCreditCardForTesting(card);
-  }
-
   base::WeakPtr<TestCardUnmaskPromptController> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -107,17 +103,7 @@ class CardUnmaskPromptControllerImplGenericTest {
         base::BindOnce(
             &CardUnmaskPromptControllerImplGenericTest::GetCardUnmaskPromptView,
             base::Unretained(this)),
-        test::GetMaskedServerCard(), AutofillClient::UNMASK_FOR_AUTOFILL,
-        delegate_->GetWeakPtr());
-  }
-
-  void ShowPromptAmex() {
-    controller_->ShowPrompt(
-        base::BindOnce(
-            &CardUnmaskPromptControllerImplGenericTest::GetCardUnmaskPromptView,
-            base::Unretained(this)),
-        test::GetMaskedServerCardAmex(), AutofillClient::UNMASK_FOR_AUTOFILL,
-        delegate_->GetWeakPtr());
+        card_, AutofillClient::UNMASK_FOR_AUTOFILL, delegate_->GetWeakPtr());
   }
 
   void ShowPromptAndSimulateResponse(bool should_store_pan,
@@ -137,6 +123,9 @@ class CardUnmaskPromptControllerImplGenericTest {
                               value);
   }
 
+  void SetCreditCardForTesting(CreditCard card) { card_ = card; }
+
+  CreditCard card_ = test::GetMaskedServerCard();
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestCardUnmaskPromptView> test_unmask_prompt_view_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
@@ -467,6 +456,90 @@ TEST_F(CardUnmaskPromptControllerImplTest,
       "Autofill.UnmaskPrompt.UnmaskingDuration.Failure", 1);
 }
 
+// Ensures the card information is shown correctly in the instruction message on
+// iOS and in the title on other platforms.
+TEST_F(CardUnmaskPromptControllerImplTest, DisplayCardInformation) {
+  ShowPrompt();
+#if defined(OS_IOS)
+  EXPECT_TRUE(base::UTF16ToUTF8(controller_->GetInstructionsMessage())
+                  .find("Mastercard  " + test::ObfuscatedCardDigitsAsUTF8(
+                                             "2109")) != std::string::npos);
+#else
+  EXPECT_TRUE(base::UTF16ToUTF8(controller_->GetWindowTitle())
+                  .find("Mastercard  " + test::ObfuscatedCardDigitsAsUTF8(
+                                             "2109")) != std::string::npos);
+#endif
+}
+
+// Ensures to fallback to network name in the instruction message on iOS and in
+// the title on other platforms when the experiment is disabled, even though the
+// nickname is valid.
+TEST_F(CardUnmaskPromptControllerImplTest, Nickname_ExpOffNicknameValid) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillEnableSurfacingServerCardNickname);
+  SetCreditCardForTesting(test::GetMaskedServerCardWithNickname());
+  ShowPrompt();
+#if defined(OS_IOS)
+  EXPECT_TRUE(
+      base::UTF16ToUTF8(controller_->GetInstructionsMessage()).find("Visa") !=
+      std::string::npos);
+  EXPECT_FALSE(base::UTF16ToUTF8(controller_->GetInstructionsMessage())
+                   .find("Test nickname") != std::string::npos);
+#else
+  EXPECT_TRUE(base::UTF16ToUTF8(controller_->GetWindowTitle()).find("Visa") !=
+              std::string::npos);
+  EXPECT_FALSE(
+      base::UTF16ToUTF8(controller_->GetWindowTitle()).find("Test nickname") !=
+      std::string::npos);
+#endif
+}
+
+// Ensures to fallback to network name in the instruction message on iOS and in
+// the title on other platforms when the nickname is invalid.
+TEST_F(CardUnmaskPromptControllerImplTest, Nickname_ExpOnNicknameInvalid) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableSurfacingServerCardNickname);
+  SetCreditCardForTesting(test::GetMaskedServerCardWithInvalidNickname());
+  ShowPrompt();
+#if defined(OS_IOS)
+  EXPECT_TRUE(
+      base::UTF16ToUTF8(controller_->GetInstructionsMessage()).find("Visa") !=
+      std::string::npos);
+  EXPECT_FALSE(base::UTF16ToUTF8(controller_->GetInstructionsMessage())
+                   .find("Invalid nickname which is too long") !=
+               std::string::npos);
+#else
+  EXPECT_TRUE(base::UTF16ToUTF8(controller_->GetWindowTitle()).find("Visa") !=
+              std::string::npos);
+  EXPECT_FALSE(base::UTF16ToUTF8(controller_->GetWindowTitle())
+                   .find("Invalid nickname which is too long") !=
+               std::string::npos);
+#endif
+}
+
+// Ensures the nickname is displayed (instead of network) in the instruction
+// message on iOS and in the title on other platforms when experiment is enabled
+// and the nickname is valid.
+TEST_F(CardUnmaskPromptControllerImplTest, Nickname_ExpOnNicknameValid) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableSurfacingServerCardNickname);
+  SetCreditCardForTesting(test::GetMaskedServerCardWithNickname());
+  ShowPrompt();
+#if defined(OS_IOS)
+  EXPECT_FALSE(
+      base::UTF16ToUTF8(controller_->GetInstructionsMessage()).find("Visa") !=
+      std::string::npos);
+  EXPECT_TRUE(base::UTF16ToUTF8(controller_->GetInstructionsMessage())
+                  .find("Test nickname") != std::string::npos);
+#else
+  EXPECT_FALSE(base::UTF16ToUTF8(controller_->GetWindowTitle()).find("Visa") !=
+               std::string::npos);
+  EXPECT_TRUE(
+      base::UTF16ToUTF8(controller_->GetWindowTitle()).find("Test nickname") !=
+      std::string::npos);
+#endif
+}
+
 struct CvcCase {
   const char* input;
   bool valid;
@@ -537,7 +610,8 @@ class CvcInputAmexValidationTest
 
 TEST_P(CvcInputAmexValidationTest, CvcInputValidation) {
   auto cvc_case_amex = GetParam();
-  ShowPromptAmex();
+  SetCreditCardForTesting(test::GetMaskedServerCardAmex());
+  ShowPrompt();
   EXPECT_EQ(cvc_case_amex.valid,
             controller_->InputCvcIsValid(ASCIIToUTF16(cvc_case_amex.input)));
   if (!cvc_case_amex.valid)

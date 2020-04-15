@@ -84,5 +84,4 @@
         <item name="android:windowEnterAnimation">@anim/textbubble_in</item>
         <item name="android:windowExitAnimation">@anim/textbubble_out</item>
     </style>
-
 </resources>

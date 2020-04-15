@@ -90,6 +90,7 @@
 <translation id="34857402635545079">Đồng thời xóa dữ liệu khỏi Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome cần quyền truy cập vào vị trí của bạn để chia sẻ thông tin vị trí với trang web này</translation>
 <translation id="3533694711092285624">Bạn chưa lưu mật khẩu nào. Chrome có thể kiểm tra các mật khẩu của bạn khi bạn lưu các mật khẩu đó.</translation>
+<translation id="3541482654983822893">Chrome không thể kiểm tra mật khẩu của bạn. Hãy thử lại sau 24 giờ.</translation>
 <translation id="3576528680708590453">Quản trị viên hệ thống của bạn đã định cấu hình Google Chrome để mở một trình duyệt thay thế khi truy cập vào <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Đồng bộ hóa và cá nhân hóa Chrome trên các thiết bị của bạn</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Quản trị viên của bạn yêu cầu bạn chạy lại Chrome để áp dụng bản cập nhật}=1{Quản trị viên của bạn yêu cầu bạn chạy lại Chrome để áp dụng bản cập nhật. Cửa sổ ẩn danh của bạn sẽ không mở lại.}other{Quản trị viên của bạn yêu cầu bạn chạy lại Chrome để áp dụng bản cập nhật. # cửa sổ ẩn danh của bạn sẽ không mở lại.}}</translation>
@@ -107,6 +108,7 @@
 <translation id="4147555960264124640">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình trên Google Chrome của bạn. Dữ liệu Chrome của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME" />. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Trình cài đặt không thể giải nén lưu trữ được. Vui lòng tải xuống lại Google Chrome.</translation>
 <translation id="4191857738314598978">{0,plural, =1{Khởi động lại Chrome trong vòng một ngày}other{Khởi động lại Chrome trong vòng # ngày}}</translation>
+<translation id="4205939740494406371">Chrome không thể kiểm tra mật khẩu của bạn. Hãy thử lại sau 24 giờ hoặc <ph name="BEGIN_LINK" />kiểm tra các mật khẩu trong Tài khoản Google của bạn<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Đăng xuất khỏi Chrome?</translation>
 <translation id="4251615635259297716">Bạn muốn liên kết dữ liệu Chrome của bạn với tài khoản này?</translation>
 <translation id="4293420128516039005">Đăng nhập để đồng bộ hóa và cá nhân hóa Chrome trên các thiết bị của bạn</translation>
@@ -231,7 +233,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="8342675569599923794">Tệp này nguy hiểm, do đó Chrome đã chặn tệp.</translation>
 <translation id="8370517070665726704">Bản quyền <ph name="YEAR" /> Google LLC. Mọi quyền được bảo lưu.</translation>
 <translation id="840084489713044809">Google Chrome muốn xuất các mật khẩu của bạn.</translation>
-<translation id="8455999171311319804">Tùy chọn: Giúp cải thiện Chrome OS bằng cách tự động gửi dữ liệu chẩn đoán và dữ liệu sử dụng cho Google.</translation>
 <translation id="8498858610309223613">Google Chrome vừa áp dụng một bản cập nhật bảo mật đặc biệt. Vui lòng khởi động lại ngay bây giờ và chúng tôi sẽ khôi phục các tab của bạn.</translation>
 <translation id="8521348052903287641">Quy tắc kết nối để Google Chrome Dev cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

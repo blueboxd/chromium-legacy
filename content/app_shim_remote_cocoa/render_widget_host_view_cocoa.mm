@@ -120,78 +120,6 @@ SkColor SkColorFromNSColor(NSColor* color) {
          base::ClampToRange(static_cast<int>(lroundf(255.0f * b)), 0, 255);
 }
 
-// TODO(bokan): Added temporarily to debug https://crbug.com/1039833.
-// Needed only in temporary method below.
-CommandDispatcher* GetCommandDispatcher(NSWindow* theWindow) {
-  if ([theWindow conformsToProtocol:@protocol(CommandDispatchingWindow)]) {
-    return [static_cast<NSObject<CommandDispatchingWindow>*>(theWindow)
-        commandDispatcher];
-  }
-  return nil;
-}
-
-// TODO(bokan): Added temporarily to debug https://crbug.com/1039833.
-// Returns a string with class names of each ancestor view of this one
-// (inclusive).
-std::string GetViewHierarchyString(NSView* thisView) {
-  std::string ret = "";
-  NSView* view = thisView;
-  while (view) {
-    ret += base::SysNSStringToUTF8(NSStringFromClass([view class])) + "->";
-    view = [view superview];
-  }
-
-  return ret;
-}
-
-// TODO(bokan): Added temporarily to debug https://crbug.com/1039833.
-// Returns a string with information about all the app's windows and current
-// event redispatch state of this window and the event's window.
-std::string GetWindowInfoString(NSWindow* thisWindow, NSEvent* theEvent) {
-  std::string windowInfoStr = "[";
-  NSArray* windows = [NSApp windows];
-  bool foundEventWindow = false;
-  for (unsigned int i = 0; i < [windows count]; ++i) {
-    NSWindow* window = windows[i];
-    if (thisWindow == window)
-      windowInfoStr += "SELF-";
-    if ([NSApp keyWindow] == window)
-      windowInfoStr += "KEY-";
-    if ([NSApp mainWindow] == window)
-      windowInfoStr += "MAIN-";
-    if ([theEvent windowNumber] == [window windowNumber]) {
-      foundEventWindow = true;
-      windowInfoStr += "EVENT-";
-    }
-
-    std::string className =
-        base::SysNSStringToUTF8(NSStringFromClass([window class]));
-    NSRect rect = [window frame];
-    windowInfoStr += base::StringPrintf(
-        "%ld<%s - %dx%d>, ", static_cast<long>([window windowNumber]),
-        className.c_str(), static_cast<int>(NSWidth(rect)),
-        static_cast<int>(NSHeight(rect)));
-  }
-  windowInfoStr += "]";
-
-  if (!foundEventWindow)
-    windowInfoStr += base::StringPrintf(
-        " Event: %ld", static_cast<long>([theEvent windowNumber]));
-
-  windowInfoStr += base::StringPrintf(
-      " isRedispatch[this:%d event:%d]",
-      GetCommandDispatcher(thisWindow) == nil
-          ? -1
-          : static_cast<int>(
-                [GetCommandDispatcher(thisWindow) isRedispatchingKeyEvent]),
-      GetCommandDispatcher([theEvent window]) == nil
-          ? -1
-          : static_cast<int>([GetCommandDispatcher([theEvent window])
-                isRedispatchingKeyEvent]));
-
-  return windowInfoStr;
-}
-
 // Extract underline information from an attributed string. Mostly copied from
 // third_party/WebKit/Source/WebKit/mac/WebView/WebHTMLView.mm
 void ExtractUnderlines(NSAttributedString* string,
@@ -995,16 +923,6 @@ void ExtractUnderlines(NSAttributedString* string,
 
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv {
   TRACE_EVENT0("browser", "RenderWidgetHostViewCocoa::keyEvent");
-  // TODO(bokan): Added temporarily to debug https://crbug.com/1039833.
-  static auto* windowInfoKey = base::debug::AllocateCrashKeyString(
-      "window-info", base::debug::CrashKeySize::Size256);
-  static auto* viewInfoKey = base::debug::AllocateCrashKeyString(
-      "view-info", base::debug::CrashKeySize::Size256);
-  base::debug::ScopedCrashKeyString scopedKeyWindow(
-      windowInfoKey, GetWindowInfoString([self window], theEvent));
-  base::debug::ScopedCrashKeyString scopedKeyView(viewInfoKey,
-                                                  GetViewHierarchyString(self));
-
   NSEventType eventType = [theEvent type];
   NSEventModifierFlags modifierFlags = [theEvent modifierFlags];
   int keyCode = [theEvent keyCode];

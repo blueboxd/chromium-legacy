@@ -171,6 +171,15 @@ struct MemoryInfo {
   uint32 page_faults_since_last_boot;
 };
 
+// Backlight probe result. Can either be populated with the BacklightInfo or an
+// error retrieving the information.
+union BacklightResult {
+  // Valid BacklightInfo.
+  array<BacklightInfo> backlight_info;
+  // The error that occurred attempting to retrieve the BacklightInfo.
+  ProbeError error;
+};
+
 // Backlight information.
 struct BacklightInfo {
   // Path to this backlight on the system. Useful if the caller needs to
@@ -226,7 +235,7 @@ struct TelemetryInfo {
   MemoryResult? memory_result;
   // Information about all of the device's backlights. Only present when
   // kBacklight was included in the categories input to ProbeTelemetryInfo.
-  array<BacklightInfo>? backlight_info;
+  BacklightResult? backlight_result;
   // Information about each of the device's fans. Only present when kFan was
   // included in the categories input to ProbeTelemetryInfo.
   FanResult? fan_result;

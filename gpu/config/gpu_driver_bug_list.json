@@ -3545,18 +3545,6 @@
       ]
     },
     {
-      "id": 333,
-      "cr_bugs": [1042615],
-      "description": "Disable Qcomm_tiled_rendering extension for webview",
-      "os": {
-        "type": "android"
-      },
-      "gl_vendor": "Qualcomm.*",
-      "features": [
-        "disable_qcomm_tiled_rendering"
-      ]
-    },
-    {
       "id": 334,
       "description": "NVidia drivers seem corrupt memory when all siblings of eglImage are destroyed",
       "cr_bugs": [1052114],

@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import androidx.preference.Preference;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
@@ -21,6 +22,7 @@ import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
  * A SiteSettingsClient instance that contains Chrome-specific Site Settings logic.
  */
 public class ChromeSiteSettingsClient implements SiteSettingsClient {
+    private ChromeNotificationSettingsClient mChromeNotificationSettingsClient;
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
     @Override
@@ -40,6 +42,14 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
     public void launchHelpAndFeedbackActivity(Activity currentActivity, String helpContext) {
         HelpAndFeedback.getInstance().show(
                 currentActivity, helpContext, Profile.getLastUsedRegularProfile(), null);
+    }
+
+    @Override
+    public NotificationSettingsClient getNotificationSettingsClient() {
+        if (mChromeNotificationSettingsClient == null) {
+            mChromeNotificationSettingsClient = new ChromeNotificationSettingsClient();
+        }
+        return mChromeNotificationSettingsClient;
     }
 
     @Override
@@ -78,5 +88,10 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
             mFaviconHelper.destroy();
             mCallback.onResult(image);
         }
+    }
+
+    @Override
+    public boolean isQuietNotificationPromptsFeatureEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.QUIET_NOTIFICATION_PROMPTS);
     }
 }

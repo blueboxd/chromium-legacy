@@ -304,8 +304,7 @@ button.shutter {
   z-index: 1;  /* On top of transforming switch-mode buttons. */
 }
 
-body.video:not(.taking) #start-recordvideo,
-body.video.taking #stop-recordvideo,
+body.video #recordvideo,
 body:not(.taking):not(.video) #start-takephoto,
 body:not(.timer):not(.video) #start-takephoto,
 body.taking.timer:not(.video) #stop-takephoto {
@@ -332,20 +331,75 @@ body.taking.timer:not(.video) #stop-takephoto {
   background-image: url(../images/camera_shutter_photo_stop_hover.svg);
 }
 
-#start-recordvideo {
-  background-image: url(../images/camera_shutter_video_start.svg);
+#recordvideo {
+  --curve: cubic-bezier(0.4, 0, 0.2, 1);
+  --dot-size: 25%;
+  --durtaion: 180ms;
+  --red: #f44336;
+  --size: 60px;
+  --square-delay: 45ms;
+  --square-size: calc(100% / 3);
+  --white: #ffffff;
+
+  background: var(--white);
+  border-radius: 50%;
+  height: var(--size);
+  /* match the position of photo shutter button */
+  margin: calc((72px - var(--size)) / 2);
+  position: relative;
+  width: var(--size);
 }
 
-#start-recordvideo:hover {
-  background-image: url(../images/camera_shutter_video_start_hover.svg);
+#recordvideo:hover {
+  --red: #f44336;
+  --white: #e8eaed;
 }
 
-#stop-recordvideo {
-  background-image: url(../images/camera_shutter_video_stop.svg);
+body.taking.video #recordvideo:hover {
+  --red: #d93025;
 }
 
-#stop-recordvideo:hover {
-  background-image: url(../images/camera_shutter_video_stop_hover.svg);
+/* red dot */
+#recordvideo::before {
+  background: var(--red);
+  border-radius: 50%;
+  box-sizing: border-box;
+  content: '';
+  height: var(--dot-size);
+  left: calc(50% - var(--dot-size) / 2);
+  position: absolute;
+  top: calc(50% - var(--dot-size) / 2);
+  transition: var(--durtaion) var(--curve);
+  width: var(--dot-size);
+}
+
+body.taking.video #recordvideo::before {
+  height: var(--size);
+  left: 0;
+  top: 0;
+  width: var(--size);
+}
+
+/* white square */
+#recordvideo::after {
+  background: var(--white);
+  border-radius: 2px;
+  content: '';
+  height: 0;
+  left: 50%;
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  transition: var(--durtaion) var(--square-delay) var(--curve);
+  width: 0;
+}
+
+body.taking.video #recordvideo::after {
+  height: var(--square-size);
+  left: calc(50% - var(--square-size) / 2);
+  opacity: 1;
+  top: calc(50% - var(--square-size) / 2);
+  width: var(--square-size);
 }
 
 body:not(.video) #toggle-mic,

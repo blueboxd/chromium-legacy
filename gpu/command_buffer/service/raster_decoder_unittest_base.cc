@@ -172,6 +172,9 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
       .WillOnce(SetArgPointee<1>(8u))
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, _))
+      .WillOnce(SetArgPointee<1>(8u))
+      .RetiresOnSaturation();
   ContextStateTestHelpers::SetupInitState(gl_.get(), feature_info(),
                                           gfx::Size(1, 1));
 

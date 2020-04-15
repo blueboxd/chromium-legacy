@@ -118,8 +118,6 @@ void SetAnimationUpdateIfNeeded(StyleResolverState& state, Element& element) {
         state.AnimationUpdate());
     if (state.HasImportantOverrides())
       element_animations.SetHasImportantOverrides();
-    if (state.HasFontAffectingAnimation())
-      element_animations.SetHasFontAffectingAnimation();
   }
 }
 
@@ -788,6 +786,14 @@ static const ComputedStyle* CachedAnimationBaseComputedStyle(
     return nullptr;
   }
 
+  if (CSSAnimations::IsAnimatingFontAffectingProperties(element_animations)) {
+    state.SetHasFontAffectingAnimation();
+    if (element_animations->BaseComputedStyle() &&
+        element_animations->BaseComputedStyle()->HasFontRelativeUnits()) {
+      return nullptr;
+    }
+  }
+
   return element_animations->BaseComputedStyle();
 }
 
@@ -798,7 +804,9 @@ static void UpdateAnimationBaseComputedStyle(StyleResolverState& state) {
   ElementAnimations* element_animations =
       state.GetAnimatingElement()->GetElementAnimations();
   if (element_animations) {
-    if (state.IsAnimatingCustomProperties() || state.IsAnimatingRevert()) {
+    if (state.IsAnimatingCustomProperties() || state.IsAnimatingRevert() ||
+        (state.HasFontAffectingAnimation() &&
+         state.Style()->HasFontRelativeUnits())) {
       element_animations->ClearBaseComputedStyle();
     } else {
       element_animations->UpdateBaseComputedStyle(state.Style());

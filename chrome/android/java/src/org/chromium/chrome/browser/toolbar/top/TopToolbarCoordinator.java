@@ -72,7 +72,7 @@ public class TopToolbarCoordinator implements Toolbar {
     private @Nullable StartSurfaceToolbarCoordinator mStartSurfaceToolbarCoordinator;
 
     private final IdentityDiscController mIdentityDiscController;
-    private final OptionalBrowsingModeButtonController mOptionalButtonController;
+    private OptionalBrowsingModeButtonController mOptionalButtonController;
 
     private HomepageManager.HomepageStateListener mHomepageStateListener =
             new HomepageManager.HomepageStateListener() {
@@ -202,6 +202,11 @@ public class TopToolbarCoordinator implements Toolbar {
             mTabSwitcherModeCoordinatorPhone.destroy();
         } else if (mStartSurfaceToolbarCoordinator != null) {
             mStartSurfaceToolbarCoordinator.destroy();
+        }
+
+        if (mOptionalButtonController != null) {
+            mOptionalButtonController.destroy();
+            mOptionalButtonController = null;
         }
     }
 

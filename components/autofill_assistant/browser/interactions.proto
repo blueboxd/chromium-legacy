@@ -38,6 +38,7 @@ message CallbackProto {
     SetTextProto set_text = 8;
     ToggleUserActionProto toggle_user_action = 9;
     SetViewVisibilityProto set_view_visibility = 11;
+    SetViewEnabledProto set_view_enabled = 12;
   }
   // Optional model identifier pointing to a single boolean. If set, the
   // callback will only be invoked if the condition is true.
@@ -275,4 +276,14 @@ message SetViewVisibilityProto {
   optional ValueReferenceProto visible = 3;
 
   reserved 2;
+}
+
+// Enables or disables a view. Note that disabled views won't react to click
+// events.
+message SetViewEnabledProto {
+  // The view to modify.
+  optional string view_identifier = 1;
+
+  // Whether the view should be enabled or not. Must point to a single boolean.
+  optional ValueReferenceProto enabled = 2;
 }

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_platform.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -20,8 +20,9 @@ namespace blink {
 // TODO(https://crbug.com/908461): This is currently implemented as NO-OPs or to
 // create dummy objects whose methods return default values. Consider renaming
 // the class, changing it to be GMOCK friendly or deleting it.
-class MockRTCPeerConnectionHandlerPlatform
-    : public RTCPeerConnectionHandlerPlatform {
+// TODO(https://crbug.com/787254): Remove "Platform" from the name of this
+// class.
+class MockRTCPeerConnectionHandlerPlatform : public RTCPeerConnectionHandler {
  public:
   MockRTCPeerConnectionHandlerPlatform();
   ~MockRTCPeerConnectionHandlerPlatform() override;
@@ -29,6 +30,8 @@ class MockRTCPeerConnectionHandlerPlatform
   bool Initialize(const webrtc::PeerConnectionInterface::RTCConfiguration&,
                   const MediaConstraints&,
                   WebLocalFrame*) override;
+  void Stop() override;
+  void StopAndUnregister() override;
 
   Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest*,
@@ -74,7 +77,6 @@ class MockRTCPeerConnectionHandlerPlatform
   scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const String& label,
       const webrtc::DataChannelInit&) override;
-  void Stop() override;
   webrtc::PeerConnectionInterface* NativePeerConnection() override;
   void RunSynchronousOnceClosureOnSignalingThread(
       CrossThreadOnceClosure closure,
@@ -83,7 +85,7 @@ class MockRTCPeerConnectionHandlerPlatform
       const base::RepeatingClosure& closure,
       const char* trace_event_name) override;
   void TrackIceConnectionStateChange(
-      RTCPeerConnectionHandlerPlatform::IceConnectionStateVersion version,
+      RTCPeerConnectionHandler::IceConnectionStateVersion version,
       webrtc::PeerConnectionInterface::IceConnectionState state) override;
 
  private:

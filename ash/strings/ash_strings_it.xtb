@@ -93,7 +93,7 @@
 <translation id="2050339315714019657">Verticale</translation>
 <translation id="2067602449040652523">Luminosità della tastiera</translation>
 <translation id="209965399369889474">Nessuna connessione alla rete</translation>
-<translation id="2126242104232412123">Nuovo desktop</translation>
+<translation id="2126242104232412123">Nuova scrivania</translation>
 <translation id="2127372758936585790">Caricabatterie a basso consumo</translation>
 <translation id="2135456203358955318">Lente d'ingrandimento ancorata</translation>
 <translation id="2144487987174258011">Riavvia per aggiornare Adobe Flash Player</translation>
@@ -109,7 +109,7 @@
 <translation id="2298170939937364391">Ingrandimento a schermo intero attivato. Premi di nuovo CTRL + tasto per la ricerca + M per disattivarlo.</translation>
 <translation id="2302092602801625023">Questo account è gestito da Family Link</translation>
 <translation id="2303600792989757991">Attiva/disattiva panoramica finestra</translation>
-<translation id="2339073806695260576">Tocca il pulsante dello stilo nella shelf per creare note, acquisire screenshot, usare il puntatore laser o la lente d'ingrandimento.</translation>
+<translation id="2339073806695260576">Tocca il pulsante dello stilo nello shelf per creare note, acquisire screenshot, usare il puntatore laser o la lente d'ingrandimento.</translation>
 <translation id="2341729377289034582">Bloccata in verticale</translation>
 <translation id="2352467521400612932">Impostazioni di stilo</translation>
 <translation id="2354174487190027830">Attivazione di <ph name="NAME" /></translation>
@@ -150,7 +150,7 @@
 <translation id="2865888419503095837">Informazioni di rete</translation>
 <translation id="2872961005593481000">Spegni</translation>
 <translation id="2878884018241093801">Nessun elemento recente</translation>
-<translation id="2903844815300039659">Connesso a <ph name="NAME" />, <ph name="STRENGTH" /></translation>
+<translation id="2903844815300039659">Connesso a <ph name="NAME" />, <ph name="STRENGTH" />.</translation>
 <translation id="2942350706960889382">Lente d'ingrandimento ancorata</translation>
 <translation id="2942516765047364088">Posizione shelf</translation>
 <translation id="2946119680249604491">Aggiungi connessione</translation>
@@ -196,7 +196,7 @@
 <translation id="332587331255250389">Sostituisci la batteria</translation>
 <translation id="3351879221545518001">Al momento stai trasmettendo lo schermo.</translation>
 <translation id="3364721542077212959">Strumenti per stilo</translation>
-<translation id="3368922792935385530">Connessa</translation>
+<translation id="3368922792935385530">Connesso</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta anteriore destra)</translation>
 <translation id="3386978599540877378">la lente d'ingrandimento a schermo intero</translation>
 <translation id="3400357268283240774">Impostazioni aggiuntive</translation>
@@ -258,7 +258,6 @@
 <translation id="4129129681837227511">Se vuoi vedere le notifiche nella schermata di blocco, sblocca il dispositivo per cambiare l'impostazione</translation>
 <translation id="4144413954005649103">Se fai clic con il pulsante destro del mouse o con una pressione prolungata, l'assistente ti mostra le informazioni relative agli elementi che selezioni sulla schermata.</translation>
 <translation id="4146833061457621061">Fammi ascoltare musica</translation>
-<translation id="4149156641122542261">Dispositivo <ph name="DEVICE_TYPE" /> gestito da <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Lingue</translation>
 <translation id="4195877955194704651">Pulsante Clic automatici</translation>
 <translation id="4215497585250573029">Impostazioni VPN</translation>
@@ -370,7 +369,7 @@
 <translation id="574392208103952083">Medio</translation>
 <translation id="5744083938413354016">Trascinamento al tocco</translation>
 <translation id="5745612484876805746">La funzione Luminosità notturna viene attivata automaticamente al tramonto</translation>
-<translation id="5750765938512549687">Bluetooth non attivo</translation>
+<translation id="5750765938512549687">Bluetooth non attivo.</translation>
 <translation id="576453121877257266">Luminosità notturna attiva.</translation>
 <translation id="5769373120130404283">Schermata sulla privacy</translation>
 <translation id="5777841717266010279">Interrompere la condivisione dello schermo?</translation>
@@ -416,7 +415,7 @@
 <translation id="6288235558961782912">L'indirizzo <ph name="USER_EMAIL_ADDRESS" /> potrà essere aggiunto di nuovo in un secondo momento con l'autorizzazione di un genitore.</translation>
 <translation id="6297287540776456956">Utilizza lo stilo per selezionare un'area</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> è stato ruotato a <ph name="ROTATION" /></translation>
-<translation id="6376931439017688372">Bluetooth attivo</translation>
+<translation id="6376931439017688372">Bluetooth attivo.</translation>
 <translation id="6381109794406942707">Per sbloccare il dispositivo, inserisci il PIN.</translation>
 <translation id="639644700271529076">Funzione BLOC MAIUSC non attiva</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -468,6 +467,7 @@
 <translation id="6878400149835617132">Scorciatoia disattivata</translation>
 <translation id="6910714959251846841">Questo aggiornamento richiede il powerwash del dispositivo. Leggi ulteriori informazioni sull'ultimo aggiornamento di <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">Impossibile riconoscere la smart card. Riprova.</translation>
+<translation id="6945221475159498467">Seleziona</translation>
 <translation id="6972754398087986839">Inizia</translation>
 <translation id="6981982820502123353">Accessibilità</translation>
 <translation id="698231206551913481">Tutti i file e i dati locali associati a questo utente verranno eliminati definitivamente in seguito alla rimozione dell'utente.</translation>
@@ -550,7 +550,7 @@
 <translation id="8054466585765276473">Calcolo della durata della batteria.</translation>
 <translation id="8061464966246066292">Contrasto elevato</translation>
 <translation id="8098591350844501178">Interrompi la trasmissione dello schermo su <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">On, tutte le app</translation>
+<translation id="8113423164597455979">Tutte le app</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8132793192354020517">Connesso a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inizializzazione...</translation>
@@ -558,6 +558,7 @@
 <translation id="8142699993796781067">Rete privata</translation>
 <translation id="8152092012181020186">Premi CTRL + W per chiudere.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Questa impostazione è gestita dall'amministratore.</translation>
+<translation id="815598010540052116">Scorri verso il basso</translation>
 <translation id="8167567890448493835">In uso: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizza lingue e immissione...</translation>
 <translation id="8192202700944119416">Le notifiche sono nascoste.</translation>
@@ -598,14 +599,14 @@
 <translation id="8652175077544655965">Chiudi impostazioni</translation>
 <translation id="8653151467777939995">Mostra impostazioni di notifica. Le notifiche sono attive</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, intensità del segnale <ph name="SIGNAL_STRENGTH" /></translation>
-<translation id="8664753092453405566">Mostra elenco di reti. <ph name="STATE_TEXT" /></translation>
+<translation id="8664753092453405566">Mostra elenco di reti. <ph name="STATE_TEXT" />.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Caricabatterie a basso consumo collegato</translation>
 <translation id="8683506306463609433">Traccia delle prestazioni attiva</translation>
 <translation id="8712637175834984815">Fatto</translation>
 <translation id="8721053961083920564">Attiva/disattiva volume. <ph name="STATE_TEXT" /></translation>
 <translation id="8734991477317290293">Potrebbe essere un tentativo di rubare i tasti premuti</translation>
-<translation id="8735953464173050365">Mostra impostazioni tastiera. La selezione attiva è <ph name="KEYBOARD_NAME" /></translation>
+<translation id="8735953464173050365">Mostra impostazioni tastiera. Selezione attiva: <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Mostra impostazioni VPN</translation>
 <translation id="8785070478575117577">Connetti a <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
@@ -616,7 +617,7 @@
 <translation id="8843682306134542540">Attiva/disattiva blocco rotazione. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Tasto di ricerca+ESC</translation>
 <translation id="8870509716567206129">L'app non supporta la modalità Schermo diviso.</translation>
-<translation id="8874184842967597500">Non connessa</translation>
+<translation id="8874184842967597500">Non connesso</translation>
 <translation id="8877788021141246043">Imposta un promemoria</translation>
 <translation id="8878886163241303700">Estensione schermo</translation>
 <translation id="890616557918890486">Cambia origine</translation>

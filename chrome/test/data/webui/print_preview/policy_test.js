@@ -15,6 +15,7 @@ policy_tests.suiteName = 'PolicyTest';
 policy_tests.TestNames = {
   HeaderFooterPolicy: 'header/footer policy',
   CssBackgroundPolicy: 'css background policy',
+  SheetsPolicy: 'sheets policy',
 };
 
 suite(policy_tests.suiteName, function() {
@@ -61,7 +62,7 @@ suite(policy_tests.suiteName, function() {
    * @return {!Promise} A Promise that resolves once initial settings are done
    *     loading.
    */
-  function doPolicySetup(
+  function doAllowedDefaultModePolicySetup(
       settingName, serializedSettingName, allowedMode, defaultMode) {
     const initialSettings = getDefaultInitialSettings();
 
@@ -81,6 +82,25 @@ suite(policy_tests.suiteName, function() {
         version: 2,
         [serializedSettingName]: !defaultMode,
       });
+    }
+    return loadInitialSettings(initialSettings);
+  }
+
+  /**
+   * Sets up the Print Preview app, and loads initial settings with the
+   * given policy.
+   * @param {string} settingName Name of the setting to set up.
+   * @param {string} serializedSettingName Name of the serialized setting.
+   * @param {*} allowedMode Allowed value for the given setting.
+   * @param {*} defaultMode Default value for the given setting.
+   * @return {!Promise} A Promise that resolves once initial settings are
+   *     done loading.
+   */
+  function doValuePolicySetup(settingName, value) {
+    const initialSettings = getDefaultInitialSettings();
+    if (value !== undefined) {
+      const policy = {value: value};
+      initialSettings.policies = {[settingName]: policy};
     }
     return loadInitialSettings(initialSettings);
   }
@@ -137,7 +157,7 @@ suite(policy_tests.suiteName, function() {
       }
     ];
     for (const subtestParams of tests) {
-      await doPolicySetup(
+      await doAllowedDefaultModePolicySetup(
           'headerFooter', 'isHeaderFooterEnabled', subtestParams.allowedMode,
           subtestParams.defaultMode);
       toggleMoreSettings();
@@ -189,13 +209,74 @@ suite(policy_tests.suiteName, function() {
       }
     ];
     for (const subtestParams of tests) {
-      await doPolicySetup(
+      await doAllowedDefaultModePolicySetup(
           'cssBackground', 'isCssBackgroundEnabled', subtestParams.allowedMode,
           subtestParams.defaultMode);
       toggleMoreSettings();
       const checkbox = getCheckbox('cssBackground');
       assertEquals(subtestParams.expectedDisabled, checkbox.disabled);
       assertEquals(subtestParams.expectedChecked, checkbox.checked);
+    }
+  });
+
+  test(assert(policy_tests.TestNames.SheetsPolicy), async () => {
+    const tests = [
+      {
+        // No policy.
+        maxSheets: 0,
+        pages: [1, 2, 3],
+        expectedDisabled: false,
+        expectedHidden: true,
+        expectedErrorMessage: '',
+      },
+      {
+        // Policy is set, actual pages are not calculated yet.
+        maxSheets: 3,
+        pages: [],
+        expectedDisabled: true,
+        expectedHidden: true,
+        expectedErrorMessage: '',
+      },
+      {
+        // Policy is set, but the limit is not hit.
+        maxSheets: 3,
+        pages: [1, 2],
+        expectedDisabled: false,
+        expectedHidden: true,
+        expectedErrorMessage: '',
+      },
+      {
+        // Policy is set, the limit is hit, singular form is used.
+        maxSheets: 1,
+        pages: [1, 2],
+        expectedDisabled: true,
+        expectedHidden: false,
+        expectedErrorMessage: 'Exceeds limit of 1 sheet of paper',
+      },
+      {
+        // Policy is set, the limit is hit, plural form is used.
+        maxSheets: 2,
+        pages: [1, 2, 3],
+        expectedDisabled: true,
+        expectedHidden: false,
+        expectedErrorMessage: 'Exceeds limit of 2 sheets of paper',
+      }
+    ];
+    for (const subtestParams of tests) {
+      await doValuePolicySetup('sheets', subtestParams.maxSheets);
+      page.setSetting('pages', subtestParams.pages);
+      const printButton = page.$$('print-preview-sidebar')
+                              .$$('print-preview-button-strip')
+                              .$$('cr-button.action-button');
+      const errorMessage = page.$$('print-preview-sidebar')
+                               .$$('print-preview-button-strip')
+                               .$$('div.error-message');
+      assertEquals(subtestParams.expectedDisabled, printButton.disabled);
+      assertEquals(subtestParams.expectedHidden, errorMessage.hidden);
+      if (!errorMessage.hidden) {
+        assertEquals(
+            subtestParams.expectedErrorMessage, errorMessage.innerText);
+      }
     }
   });
 });

@@ -20,7 +20,7 @@ namespace qrcode_generator {
 static const int kModuleSizePixels = 10;
 
 // Allow each dino tile to render as this many pixels.
-static const int kDinoTileSizePixels = 5;
+static const int kDinoTileSizePixels = 4;
 
 // Size of a QR locator, in modules.
 static const int kLocatorSizeModules = 7;
@@ -234,6 +234,20 @@ void QRCodeGeneratorServiceImpl::GenerateQRCode(
     return;
   }
 
+  // TODO(skare): Use a higher QR code vdersion. Until then, use the size
+  // from the common encoder.
+  const gfx::Size qr_output_data_size = {QRCodeGenerator::kSize,
+                                         QRCodeGenerator::kSize};
+  // TODO(skare): cap string length with message in the UI.
+  uint8_t input[QRCodeGenerator::kInputBytes + 1] = {0};
+  base::strlcpy(reinterpret_cast<char*>(input), request->data.c_str(),
+                QRCodeGenerator::kInputBytes);
+  // Pad with spaces rather than null for better reader compatibility.
+  // This will go away when supporting multiple versions/data length.
+  for (size_t i = request->data.length(); i < QRCodeGenerator::kInputBytes; i++)
+    input[i] = 0x20;
+  input[QRCodeGenerator::kInputBytes] = 0;
+
   QRCodeGenerator qr;
   auto qr_data_span = qr.Generate(base::span<const uint8_t>(
       reinterpret_cast<const uint8_t*>(request->data.data()),
@@ -245,8 +259,6 @@ void QRCodeGeneratorServiceImpl::GenerateQRCode(
     qr_data_span[i] &= 1;
   }
 
-  const gfx::Size qr_output_data_size = {QRCodeGenerator::kSize,
-                                         QRCodeGenerator::kSize};
   response->data.insert(response->data.begin(), qr_data_span.begin(),
                         qr_data_span.end());
   response->data_size = qr_output_data_size;

@@ -436,7 +436,6 @@ Vous seul voyez les images de votre caméra. Le site n'y a pas accès.</translat
 <translation id="4242533952199664413">Ouvrir les paramètres</translation>
 <translation id="4250229828105606438">Capture d'écran</translation>
 <translation id="4256782883801055595">Licences Open Source</translation>
-<translation id="4259722352634471385">La navigation sur <ph name="URL" /> est bloquée.</translation>
 <translation id="4269820728363426813">Copier l'adresse du lien</translation>
 <translation id="4275663329226226506">Médias</translation>
 <translation id="4278390842282768270">Autorisé</translation>
@@ -965,6 +964,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Activez la synchronisation pour accéder à vos favoris sur tous vos appareils</translation>
 <translation id="8110087112193408731">Afficher votre activité Chrome dans Bien-être numérique ?</translation>
+<translation id="8115259494083109761">Pour scanner un code QR, autorisez Chrome à utiliser votre appareil photo</translation>
 <translation id="8116925261070264013">Son coupé</translation>
 <translation id="8127542551745560481">Modifier la page d'accueil</translation>
 <translation id="813082847718468539">Afficher des informations à propos du site</translation>
@@ -1066,7 +1066,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8942627711005830162">Ouvrir dans une autre fenêtre</translation>
 <translation id="8951232171465285730">Chrome vous a permis de gagner <ph name="MEGABYTES" /> Mo</translation>
 <translation id="8958424370300090006">Bloquez les cookies pour un site spécifique.</translation>
-<translation id="8959122750345127698">Impossible d'accéder à <ph name="URL" />.</translation>
 <translation id="8965591936373831584">en attente</translation>
 <translation id="8970887620466824814">Un problème est survenu</translation>
 <translation id="8972098258593396643">Télécharger dans le dossier par défaut ?</translation>

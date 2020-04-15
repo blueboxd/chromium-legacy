@@ -89,6 +89,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="34857402635545079">Tiež vymazať údaje z Chromu (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome potrebuje prístup k vašej polohe, aby ju mohol zdieľať s týmto webom</translation>
 <translation id="3533694711092285624">Žiadne uložené heslá. Chrome môže skontrolovať heslá, keď ich uložíte.</translation>
+<translation id="3541482654983822893">Chrome nemôže skontrolovať heslá. Skúste to znova o 24 hodín.</translation>
 <translation id="3576528680708590453">Správca systému nakonfiguroval Google Chrome, aby web <ph name="TARGET_URL_HOSTNAME" /> otváral v alternatívnom prehliadači.</translation>
 <translation id="3582972582564653026">Synchronizujte a prispôsobte si Chrome v rôznych zariadeniach</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Správca požaduje nové spustenie Chromu, aby sa použila aktualizácia}=1{Správca požaduje nové spustenie Chromu, aby sa použila aktualizácia. Vaše okno inkognito sa neotvorí.}few{Správca požaduje nové spustenie Chromu, aby sa použila aktualizácia. Vaše # okná inkognito sa neotvoria.}many{Správca požaduje nové spustenie Chromu, aby sa použila aktualizácia. Your # Incognito windows won't reopen.}other{Správca požaduje nové spustenie Chromu, aby sa použila aktualizácia. Vašich # okien inkognito sa neotvorí.}}</translation>
@@ -106,6 +107,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4147555960264124640">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom prehliadača Chrome. Vaše údaje prehliadača Chrome, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME" />. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Inštalátor pri dekomprimovaní archívu zlyhal. Stiahnite prehliadač Google Chrome znova.</translation>
 <translation id="4191857738314598978">{0,plural, =1{Chrome znova spustite do jedného dňa}few{Chrome znova spustite do # dní}many{Chrome znova spustite do # dňa}other{Chrome znova spustite do # dní}}</translation>
+<translation id="4205939740494406371">Chrome nemôže skontrolovať heslá. Skúste to znova o 24 hodín alebo <ph name="BEGIN_LINK" />skontrolujte heslá vo svojom účte Google<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Odhlásiť sa z Chromu?</translation>
 <translation id="4251615635259297716">Chcete prepojiť údaje prehliadača Chrome s týmto účtom?</translation>
 <translation id="4293420128516039005">Po prihlásení budete môcť Chrome synchronizovať a prispôsobiť v rôznych zariadeniach.</translation>
@@ -231,7 +233,6 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="8342675569599923794">Tento súbor je nebezpečný, a preto ho Chrome zablokoval.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Všetky práva vyhradené.</translation>
 <translation id="840084489713044809">Google Chrome sa pokúša exportovať vaše heslá.</translation>
-<translation id="8455999171311319804">Voliteľné: Pomáhať s vylepšením systému Chrome OS automatickým odosielaním diagnostík a údajov o využívaní Googlu.</translation>
 <translation id="8498858610309223613">Práve bola použitá mimoriadna bezpečnostná aktualizácia pre prehliadač Google Chrome. Po reštartovaní obnovíme vaše karty.</translation>
 <translation id="8521348052903287641">Pravidlo pre prichádzajúce prenosy pre prehliadač Google Chrome verzie pre vývojárov, ktoré povoľuje prenos dát mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

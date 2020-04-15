@@ -45,7 +45,10 @@ namespace {
 
 const char kPerfettoTestDataSourceName[] =
     "org.chromium.chrome_integration_unittest";
-const char kPerfettoProducerName[] = "org.chromium.perfetto_producer.123";
+  
+std::string GetPerfettoProducerName() {
+  return base::StrCat({mojom::kPerfettoProducerNamePrefix, "123"});
+}
 
 std::string RandomASCII(size_t length) {
   std::string tmp;
@@ -322,7 +325,7 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
         }
       });
   auto local_producer_host = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName, local_service(),
+      GetPerfettoProducerName(), kPerfettoTestDataSourceName, local_service(),
       **local_producer_client);
 
   system_consumer.WaitForAllDataSourcesStopped();
@@ -397,7 +400,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
           local_data_source_enabled_runloop.QuitClosure(),
           local_data_source_disabled_runloop.QuitClosure());
   auto local_producer_host = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName, local_service(),
+      GetPerfettoProducerName(), kPerfettoTestDataSourceName, local_service(),
       **local_producer_client);
 
   local_data_source_enabled_runloop.Run();
@@ -528,7 +531,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
           local_data_source_enabled_runloop.QuitClosure(),
           local_data_source_disabled_runloop.QuitClosure());
   auto local_producer_host = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName, local_service(),
+      GetPerfettoProducerName(), kPerfettoTestDataSourceName, local_service(),
       **local_producer_client);
   MockConsumer local_consumer(
       {kPerfettoTestDataSourceName,
@@ -623,7 +626,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
           local_data_source_enabled_runloop.QuitClosure(),
           local_data_source_disabled_runloop.QuitClosure());
   auto local_producer_host = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName, local_service(),
+      GetPerfettoProducerName(), kPerfettoTestDataSourceName, local_service(),
       **local_producer_client);
   MockConsumer local_consumer(
       {kPerfettoTestDataSourceName,
@@ -762,7 +765,7 @@ TEST_F(SystemPerfettoTest, SystemTraceWhileLocalStartupTracing) {
         }
       }));
   auto local_producer_host = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, mojom::kTraceEventDataSourceName, local_service(),
+      GetPerfettoProducerName(), mojom::kTraceEventDataSourceName, local_service(),
       **local_producer);
   local_data_source_enabled_runloop.Run();
   local_consumer->WaitForAllDataSourcesStarted();

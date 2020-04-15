@@ -38,10 +38,15 @@ struct ClipboardPermissionDescriptor {
   bool allowWithoutSanitization;
 };
 
+struct CameraDevicePermissionDescriptor {
+  bool panTiltZoom;
+};
+
 // Union of possible extensions to the base PermissionDescriptor type.
 union PermissionDescriptorExtension {
   MidiPermissionDescriptor midi;
   ClipboardPermissionDescriptor clipboard;
+  CameraDevicePermissionDescriptor camera_device;
 };
 
 // This struct roughly corresponds to the PermissionDescriptor dictionary as

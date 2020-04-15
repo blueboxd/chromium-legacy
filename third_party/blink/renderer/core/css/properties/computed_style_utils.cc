@@ -1738,72 +1738,42 @@ CSSValue* ComputedStyleUtils::ValueForBorderRadiusCorner(
       CSSValuePair::kDropIdenticalValues);
 }
 
-CSSValue* ComputedStyleUtils::ValueForMatrixTransform(
-    const TransformationMatrix& transform_param,
-    const ComputedStyle& style) {
-  // Take TransformationMatrix by reference and then copy it because VC++
-  // doesn't guarantee alignment of function parameters.
-  TransformationMatrix transform = transform_param;
-  CSSFunctionValue* transform_value = nullptr;
-  transform.Zoom(1 / style.EffectiveZoom());
-  if (transform.IsAffine()) {
-    transform_value =
-        MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix);
-
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.A(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.B(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.C(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.D(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.E(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.F(), CSSPrimitiveValue::UnitType::kNumber));
+CSSValue* ComputedStyleUtils::ValueForTransformationMatrix(
+    const TransformationMatrix& matrix,
+    float zoom,
+    bool force_matrix3d) {
+  if (matrix.IsAffine() && !force_matrix3d) {
+    auto* result = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix);
+    // CSS matrix values are returned in column-major order.
+    double values[6] = {matrix.A(), matrix.B(),  //
+                        matrix.C(), matrix.D(),  //
+                        // E and F are pixel lengths so unzoom
+                        matrix.E() / zoom, matrix.F() / zoom};
+    for (double value : values) {
+      result->Append(*CSSNumericLiteralValue::Create(
+          value, CSSPrimitiveValue::UnitType::kNumber));
+    }
+    return result;
   } else {
-    transform_value =
+    CSSFunctionValue* result =
         MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix3d);
-
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M11(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M12(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M13(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M14(), CSSPrimitiveValue::UnitType::kNumber));
-
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M21(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M22(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M23(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M24(), CSSPrimitiveValue::UnitType::kNumber));
-
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M31(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M32(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M33(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M34(), CSSPrimitiveValue::UnitType::kNumber));
-
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M41(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M42(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M43(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSNumericLiteralValue::Create(
-        transform.M44(), CSSPrimitiveValue::UnitType::kNumber));
+    // CSS matrix values are returned in column-major order.
+    double values[16] = {
+        // Note that the transformation matrix operates on (Length^3 * R).
+        // Each column contains 3 scalars followed by a reciprocal length
+        // (with a value in 1/px) which must be unzoomed accordingly.
+        matrix.M11(), matrix.M12(), matrix.M13(), matrix.M14() * zoom,
+        matrix.M21(), matrix.M22(), matrix.M23(), matrix.M24() * zoom,
+        matrix.M31(), matrix.M32(), matrix.M33(), matrix.M34() * zoom,
+        // Last column has 3 pixel lengths and a scalar
+        matrix.M41() / zoom, matrix.M42() / zoom, matrix.M43() / zoom,
+        matrix.M44()};
+    for (double value : values) {
+      result->Append(*CSSNumericLiteralValue::Create(
+          value, CSSPrimitiveValue::UnitType::kNumber));
+    }
+    return result;
   }
-
-  return transform_value;
 }
 
 // We collapse functions like translateX into translate, since we will reify
@@ -1908,39 +1878,14 @@ CSSValue* ComputedStyleUtils::ValueForTransformOperation(
     }
     case TransformOperation::kMatrix: {
       const auto& matrix = To<MatrixTransformOperation>(operation).Matrix();
-      auto* result =
-          MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix);
-      // CSS matrix values are returned in column-major order.
-      double values[6] = {matrix.A(), matrix.B(),  //
-                          matrix.C(), matrix.D(),  //
-                          // E and F are pixel lengths so unzoom
-                          matrix.E() / zoom, matrix.F() / zoom};
-      for (double value : values) {
-        result->Append(*CSSNumericLiteralValue::Create(
-            value, CSSPrimitiveValue::UnitType::kNumber));
-      }
-      return result;
+      return ValueForTransformationMatrix(matrix, zoom,
+                                          /*force_matrix3d=*/false);
     }
     case TransformOperation::kMatrix3D: {
       const auto& matrix = To<Matrix3DTransformOperation>(operation).Matrix();
-      CSSFunctionValue* result =
-          MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix3d);
-      // CSS matrix values are returned in column-major order.
-      double values[16] = {
-          // Note that the transformation matrix operates on (Length^3 * R).
-          // Each column contains 3 scalars followed by a reciprocal length
-          // (with a value in 1/px) which must be unzoomed accordingly.
-          matrix.M11(), matrix.M12(), matrix.M13(), matrix.M14() * zoom,
-          matrix.M21(), matrix.M22(), matrix.M23(), matrix.M24() * zoom,
-          matrix.M31(), matrix.M32(), matrix.M33(), matrix.M34() * zoom,
-          // Last column has 3 pixel lengths and a scalar
-          matrix.M41() / zoom, matrix.M42() / zoom, matrix.M43() / zoom,
-          matrix.M44()};
-      for (double value : values) {
-        result->Append(*CSSNumericLiteralValue::Create(
-            value, CSSPrimitiveValue::UnitType::kNumber));
-      }
-      return result;
+      // Force matrix3d serialization
+      return ValueForTransformationMatrix(matrix, zoom,
+                                          /*force_matrix3d=*/true);
     }
     case TransformOperation::kInterpolated:
       // TODO(816803): The computed value in this case is not fully spec'd
@@ -1984,7 +1929,8 @@ CSSValue* ComputedStyleUtils::ComputedTransform(
   // FIXME: Need to print out individual functions
   // (https://bugs.webkit.org/show_bug.cgi?id=23924)
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*ValueForMatrixTransform(transform, style));
+  list->Append(*ValueForTransformationMatrix(transform, style.EffectiveZoom(),
+                                             /*force_matrix3d=*/false));
 
   return list;
 }

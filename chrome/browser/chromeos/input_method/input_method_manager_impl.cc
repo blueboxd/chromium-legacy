@@ -29,9 +29,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/chromeos/input_method/assistive_window_controller.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
-#include "chrome/browser/chromeos/input_method/suggestion_window_controller.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -885,7 +885,7 @@ void InputMethodManagerImpl::ReconfigureIMFramework(
   // indicator is used by only keyboard layout input methods.
   if (state_.get() == state) {
     MaybeInitializeCandidateWindowController();
-    MaybeInitializeSuggestionWindowController();
+    MaybeInitializeAssistiveWindowController();
   }
 }
 
@@ -902,7 +902,7 @@ void InputMethodManagerImpl::SetState(
     // candidate window, infolist and mode indicator.  Note, mode
     // indicator is used by only keyboard layout input methods.
     MaybeInitializeCandidateWindowController();
-    MaybeInitializeSuggestionWindowController();
+    MaybeInitializeAssistiveWindowController();
 
     // Always call ChangeInputMethodInternal even when the input method id
     // remain unchanged, because onActivate event needs to be sent to IME
@@ -1000,8 +1000,8 @@ void InputMethodManagerImpl::SetUISessionState(UISessionState new_ui_session) {
   if (ui_session_ == STATE_TERMINATING) {
     if (candidate_window_controller_.get())
       candidate_window_controller_.reset();
-    if (suggestion_window_controller_.get())
-      suggestion_window_controller_.reset();
+    if (assistive_window_controller_.get())
+      assistive_window_controller_.reset();
   }
 }
 
@@ -1221,9 +1221,9 @@ void InputMethodManagerImpl::SetCandidateWindowControllerForTesting(
   candidate_window_controller_->AddObserver(this);
 }
 
-void InputMethodManagerImpl::SetSuggestionWindowControllerForTesting(
-    SuggestionWindowController* suggestion_window_controller) {
-  suggestion_window_controller_.reset(suggestion_window_controller);
+void InputMethodManagerImpl::SetAssistiveWindowControllerForTesting(
+    AssistiveWindowController* assistive_window_controller) {
+  assistive_window_controller_.reset(assistive_window_controller);
 }
 
 void InputMethodManagerImpl::SetImeKeyboardForTesting(ImeKeyboard* keyboard) {
@@ -1287,12 +1287,12 @@ void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
   candidate_window_controller_->AddObserver(this);
 }
 
-void InputMethodManagerImpl::MaybeInitializeSuggestionWindowController() {
-  if (suggestion_window_controller_.get())
+void InputMethodManagerImpl::MaybeInitializeAssistiveWindowController() {
+  if (assistive_window_controller_.get())
     return;
 
-  suggestion_window_controller_.reset(
-      SuggestionWindowController::CreateSuggestionWindowController());
+  assistive_window_controller_.reset(
+      AssistiveWindowController::CreateAssistiveWindowController());
 }
 
 void InputMethodManagerImpl::NotifyImeMenuItemsChanged(

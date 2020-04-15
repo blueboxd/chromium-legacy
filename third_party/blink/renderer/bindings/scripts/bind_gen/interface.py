@@ -211,11 +211,11 @@ def bind_blink_api_arguments(code_node, cg_context):
                                    cg_context.attribute.idl_type))
         return
 
-    for index, argument in enumerate(cg_context.function_like.arguments, 1):
-        name = name_style.arg_f("arg{}_{}", index, argument.identifier)
+    for index, argument in enumerate(cg_context.function_like.arguments):
+        name = name_style.arg_f("arg{}_{}", index + 1, argument.identifier)
         if argument.is_variadic:
             code_node.register_code_symbol(
-                make_v8_to_blink_value_variadic(name, "${info}", index - 1,
+                make_v8_to_blink_value_variadic(name, "${info}", index,
                                                 argument.idl_type))
         else:
             v8_value = "${{info}}[{}]".format(argument.index)
@@ -732,6 +732,9 @@ def make_check_argument_length(cg_context):
     elif cg_context.function_like:
         num_of_required_args = (
             cg_context.function_like.num_of_required_arguments)
+    elif isinstance(cg_context.property_, web_idl.OverloadGroup):
+        num_of_required_args = (
+            cg_context.property_.min_num_of_required_arguments)
     else:
         assert False
 
@@ -1142,6 +1145,7 @@ def make_overload_dispatcher(cg_context):
     return SequenceNode([
         branches,
         EmptyNode(),
+        make_check_argument_length(cg_context),
         T("${exception_state}.ThrowTypeError"
           "(\"Overload resolution failed.\");\n"
           "return;"),
@@ -1241,8 +1245,11 @@ auto&& v8_private_cached_attribute =
     V8PrivateProperty::GetSymbol(${isolate}, kPrivatePropertyCachedAttribute);
 if (!${blink_receiver}->""" + pred + """()) {
   v8::Local<v8::Value> v8_value;
-  if (v8_private_cached_attribute.GetOrUndefined(${v8_receiver})
-          .ToLocal(&v8_value) && !v8_value->IsUndefined()) {
+  if (!v8_private_cached_attribute.GetOrUndefined(${v8_receiver})
+           .ToLocal(&v8_value)) {
+    return;
+  }
+  if (!v8_value->IsUndefined()) {
     bindings::V8SetReturnValue(${info}, v8_value);
     return;
   }
@@ -1256,8 +1263,11 @@ auto&& v8_private_save_same_object =
     V8PrivateProperty::GetSymbol(${isolate}, kPrivatePropertySaveSameObject);
 {
   v8::Local<v8::Value> v8_value;
-  if (v8_private_save_same_object.GetOrUndefined(${v8_receiver})
-          .ToLocal(&v8_value) && !v8_value->IsUndefined()) {
+  if (!v8_private_save_same_object.GetOrUndefined(${v8_receiver})
+           .ToLocal(&v8_value)) {
+    return;
+  }
+  if (!v8_value->IsUndefined()) {
     bindings::V8SetReturnValue(${info}, v8_value);
     return;
   }
@@ -5784,6 +5794,11 @@ def _collect_include_headers(interface):
 
         type_def_obj = idl_type.type_definition_object
         if type_def_obj is not None:
+            if (type_def_obj.identifier in (
+                    "OnErrorEventHandlerNonNull",
+                    "OnBeforeUnloadEventHandlerNonNull")):
+                raise StopIteration(idl_type.syntactic_form)
+
             headers.add(PathManager(type_def_obj).api_path(ext="h"))
             if isinstance(type_def_obj, web_idl.Interface):
                 headers.add(PathManager(type_def_obj).blink_path(ext="h"))

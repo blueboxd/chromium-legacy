@@ -123,7 +123,13 @@ void PersistentWindowController::MaybeRestorePersistentWindowBounds() {
     persistent_window_bounds.Offset(offset);
 
     window->SetBoundsInScreen(persistent_window_bounds, display);
-    // Reset persistent window info everytime the window bounds have restored.
+    if (persistent_window_info.restore_bounds_in_screen) {
+      gfx::Rect restore_bounds =
+          *persistent_window_info.restore_bounds_in_screen;
+      restore_bounds.Offset(offset);
+      window_state->SetRestoreBoundsInScreen(restore_bounds);
+    }
+    // Reset persistent window info every time the window bounds have restored.
     window_state->ResetPersistentWindowInfo();
 
     ++window_restored_count;

@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace cookie_helper {
@@ -36,7 +37,8 @@ void AddSigninCookie(Profile* profile) {
 
   base::RunLoop run_loop;
   cookie_manager->SetCanonicalCookie(
-      cookie, "https", net::CookieOptions(),
+      cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
+      net::CookieOptions(),
       base::BindLambdaForTesting(
           [&run_loop](net::CanonicalCookie::CookieInclusionStatus) {
             run_loop.Quit();

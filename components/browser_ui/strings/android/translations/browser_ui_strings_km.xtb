@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">ចម្លងតំណ</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">ចំណងជើង</translation>
+<translation id="4259722352634471385">ការរុករកត្រូវបានរារាំង៖ <ph name="URL" /></translation>
 <translation id="4570913071927164677">ព័ត៌មាន​លម្អិត</translation>
 <translation id="4645575059429386691">គ្រប់គ្រងដោយឪពុកម្តាយរបស់អ្នក</translation>
 <translation id="4883854917563148705">មិនអាច​កំណត់​ការកំណត់​ដែលស្ថិតក្រោម​ការគ្រប់គ្រង​ឡើងវិញ​បានទេ</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">ជម្រះការបញ្ចូល</translation>
 <translation id="8725066075913043281">ព្យាយាមម្តងទៀត</translation>
 <translation id="8730621377337864115">រួចរាល់</translation>
+<translation id="8959122750345127698">ការុករកមិនអាចភ្ជាប់បានទេ៖ <ph name="URL" /></translation>
 <translation id="9019902583201351841">គ្រប់គ្រងដោយឪពុកម្តាយរបស់អ្នក</translation>
 </translationbundle>

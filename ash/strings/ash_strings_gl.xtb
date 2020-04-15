@@ -258,7 +258,6 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4129129681837227511">Para ver notificacións na pantalla de bloqueo, desbloquea o dispositivo e cambia a opción de configuración correspondente</translation>
 <translation id="4144413954005649103">Se fas clic co botón dereito ou realizas unha pulsación longa, o Asistente móstrache información relacionada co que seleccionaches na pantalla.</translation>
 <translation id="4146833061457621061">Reproducir música</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> (dispositivo xestionado por <ph name="DOMAIN" />)</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botón de clics automáticos</translation>
 <translation id="4215497585250573029">Configuración de VPN</translation>
@@ -413,7 +412,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: activando...</translation>
 <translation id="6283712521836204486">Está desactivado o modo Non molestar.</translation>
 <translation id="6284232397434400372">Cambiouse a resolución</translation>
-<translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> pode engadirse de novo máis tarde co permiso dun pai ou nai.</translation>
+<translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> pode engadirse de novo máis adiante co permiso da súa nai ou do seu pai.</translation>
 <translation id="6297287540776456956">Utiliza o lapis óptico para seleccionar unha área</translation>
 <translation id="6310121235600822547">A rotación de <ph name="DISPLAY_NAME" /> cambiou a <ph name="ROTATION" /></translation>
 <translation id="6376931439017688372">O Bluetooth está activado</translation>
@@ -468,6 +467,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="6878400149835617132">Desactivouse o atallo</translation>
 <translation id="6910714959251846841">Esta actualización require executar a función Powerwash do dispositivo. Consulta máis información sobre a última actualización de <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">Non se puido recoñecer a tarxeta intelixente. Téntao de novo.</translation>
+<translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6972754398087986839">Introdución</translation>
 <translation id="6981982820502123353">Accesibilidade</translation>
 <translation id="698231206551913481">En canto se borre este usuario, eliminaranse permanentemente os ficheiros e os datos locais asociados con el.</translation>
@@ -558,6 +558,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="8142699993796781067">Rede privada</translation>
 <translation id="8152092012181020186">Preme Ctrl+W para pechar.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> O teu administrador xestiona esta opción de configuración.</translation>
+<translation id="815598010540052116">Desprazarse cara abaixo</translation>
 <translation id="8167567890448493835">Usando: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizar idiomas e introdución de texto...</translation>
 <translation id="8192202700944119416">As notificacións están ocultas.</translation>

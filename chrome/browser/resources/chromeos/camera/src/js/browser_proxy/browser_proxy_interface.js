@@ -117,4 +117,9 @@ export class BrowserProxy {
    * @abstract
    */
   sendMessage(extensionId, message) {}
+
+  /**
+   * @abstract
+   */
+  addDummyHistoryIfNotAvailable() {}
 }

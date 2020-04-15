@@ -28,6 +28,7 @@
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
+#include "chrome/browser/media/feeds/media_feeds_service.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/media_storage_id_salt.h"
@@ -1043,6 +1044,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   accessibility_prefs::RegisterInvertBubbleUserPrefs(registry);
   RegisterBrowserViewProfilePrefs(registry);
 #endif
+
+  media_feeds::MediaFeedsService::RegisterProfilePrefs(registry);
 
   RegisterProfilePrefsForMigration(registry);
 }

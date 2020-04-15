@@ -548,6 +548,10 @@ WebAXObject BlinkAXTreeSource::GetNull() const {
   return WebAXObject();
 }
 
+std::string BlinkAXTreeSource::GetDebugString(blink::WebAXObject node) const {
+  return node.ToString().Utf8();
+}
+
 void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                                       AXContentNodeData* dst) const {
 #if DCHECK_IS_ON()

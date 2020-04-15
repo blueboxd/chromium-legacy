@@ -92,6 +92,7 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 <translation id="34857402635545079">Obriši podatke i iz Chrome-a (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome traži pristup vašoj lokaciji da biste je delili sa ovim sajtom</translation>
 <translation id="3533694711092285624">Nema sačuvanih lozinki. Chrome može da proverava lozinke kada ih sačuvate.</translation>
+<translation id="3541482654983822893">Chrome ne može da vam proverava lozinke. Probajte ponovo za 24 sata.</translation>
 <translation id="3576528680708590453">Administrator sistema je konfigurisao Chrome da otvara alternativni pregledač za pristup URL-u <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sinhronizujte i personalizujte Chrome na svim uređajima</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administrator zahteva da ponovo pokrenete Chrome da biste primenili ažuriranje}=1{Administrator zahteva da ponovo pokrenete Chrome da biste primenili ažuriranje. Prozor bez arhiviranja se neće ponovo otvoriti.}one{Administrator zahteva da ponovo pokrenete Chrome da biste primenili ažuriranje. # prozor bez arhiviranja se neće ponovo otvoriti.}few{Administrator zahteva da ponovo pokrenete Chrome da biste primenili ažuriranje. # prozora bez arhiviranja se neće ponovo otvoriti.}other{Administrator zahteva da ponovo pokrenete Chrome da biste primenili ažuriranje. # prozora bez arhiviranja se neće ponovo otvoriti.}}</translation>
@@ -109,6 +110,7 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 <translation id="4147555960264124640">Prijavljujete se pomoću naloga kojim se upravlja i dajete njegovom administratoru kontrolu nad Google Chrome profilom. Chrome podaci, kao što su aplikacije, obeleživači, istorija, lozinke i druga podešavanja, biće trajno povezani sa nalogom <ph name="USER_NAME" />. Moći ćete da izbrišete te podatke preko Kontrolne table Google naloga, ali nećete moći da ih povežete sa nekim drugim nalogom. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Program za instalaciju nije uspeo da dekomprimuje arhivu. Preuzmite Google Chrome ponovo.</translation>
 <translation id="4191857738314598978">{0,plural, =1{Ponovo pokrenite Chrome za jedan dan}one{Ponovo pokrenite Chrome za # dan}few{Ponovo pokrenite Chrome za # dana}other{Ponovo pokrenite Chrome za # dana}}</translation>
+<translation id="4205939740494406371">Chrome ne može da vam proverava lozinke. Probajte ponovo posle 24 sata ili <ph name="BEGIN_LINK" />proverite lozinke na Google nalogu<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Želite li da se odjavite iz Chrome-a?</translation>
 <translation id="4251615635259297716">Želite li da povežete Chrome podatke sa ovim nalogom?</translation>
 <translation id="4293420128516039005">Prijavite se da biste sinhronizovali i personalizovali Chrome na svim uređajima</translation>
@@ -235,7 +237,6 @@ Google Chrome ne može da vrati podešavanja.</translation>
 <translation id="8342675569599923794">Ova datoteka je opasna, pa ju je Chrome blokirao.</translation>
 <translation id="8370517070665726704">Autorska prava <ph name="YEAR" />. Google LLC. Sva prava zadržana.</translation>
 <translation id="840084489713044809">Google Chrome želi da izveze lozinke.</translation>
-<translation id="8455999171311319804">Opcionalno: Pomozite nam da poboljšamo Chrome OS tako što ćete automatski slati Google-u dijagnostiku i podatke o korišćenju.</translation>
 <translation id="8498858610309223613">Posebno bezbednosno ažuriranje za Google Chrome je upravo primenjeno. Restartujte ga i vratićemo vam kartice.</translation>
 <translation id="8521348052903287641">Pravilo za dolazni saobraćaj za programersku verziju Google Chrome-a da biste omogućili mDNS saobraćaj.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -249,7 +250,7 @@ Google Chrome ne može da vrati podešavanja.</translation>
 <translation id="873133009373065397">Google Chrome ne može da odredi ni da podesi podrazumevani pregledač</translation>
 <translation id="8823341990149967727">Chrome je zastareo</translation>
 <translation id="8834965163890861871">Google Chrome pokušava da izmeni lozinke. Unesite lozinku za Windows da biste to omogućili.</translation>
-<translation id="884296878221830158">Kontroliše i stranicu koja se prikazuje kada pokrenete Chrome ili kliknete na dugme Početna.</translation>
+<translation id="884296878221830158">Kontroliše i stranicu koja se prikazuje kada pokrenete Chrome ili kliknete na dugme Početak.</translation>
 <translation id="8862326446509486874">Nemate odgovarajuća prava za instalaciju na nivou sistema. Probajte ponovo da pokrenete program za instalaciju, ovoga puta kao administrator.</translation>
 <translation id="8914504000324227558">Ponovo pokreni Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Ažuriranje za Chrome je dostupno}=1{Ažuriranje za Chrome je dostupno}one{Ažuriranje za Chrome je dostupno već # dan}few{Ažuriranje za Chrome je dostupno već # dana}other{Ažuriranje za Chrome je dostupno već # dana}}</translation>

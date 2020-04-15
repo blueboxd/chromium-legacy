@@ -131,15 +131,17 @@ void InstallablePaymentAppCrawler::OnPaymentMethodManifestDownloaded(
 
   number_of_payment_method_manifest_to_parse_++;
   parser_->ParsePaymentMethodManifest(
-      method_manifest_url, content, base::BindOnce(
-                   &InstallablePaymentAppCrawler::OnPaymentMethodManifestParsed,
-                   weak_ptr_factory_.GetWeakPtr(), method_manifest_url,
-                   method_manifest_url_after_redirects));
+      method_manifest_url, content,
+      base::BindOnce(
+          &InstallablePaymentAppCrawler::OnPaymentMethodManifestParsed,
+          weak_ptr_factory_.GetWeakPtr(), method_manifest_url,
+          method_manifest_url_after_redirects, content));
 }
 
 void InstallablePaymentAppCrawler::OnPaymentMethodManifestParsed(
     const GURL& method_manifest_url,
     const GURL& method_manifest_url_after_redirects,
+    const std::string& content,
     const std::vector<GURL>& default_applications,
     const std::vector<url::Origin>& supported_origins,
     bool all_origins_supported) {
@@ -182,6 +184,14 @@ void InstallablePaymentAppCrawler::OnPaymentMethodManifestParsed(
 
     number_of_web_app_manifest_to_download_++;
     downloaded_web_app_manifests_.insert(web_app_manifest_url);
+
+    if (method_manifest_url_after_redirects == web_app_manifest_url) {
+      OnPaymentWebAppManifestDownloaded(
+          method_manifest_url, web_app_manifest_url, web_app_manifest_url,
+          content, /*error_message=*/"");
+      continue;
+    }
+
     downloader_->DownloadWebAppManifest(
         url::Origin::Create(method_manifest_url_after_redirects),
         web_app_manifest_url,

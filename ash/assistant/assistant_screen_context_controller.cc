@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/public/cpp/assistant/assistant_client.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
@@ -180,7 +180,7 @@ ax::mojom::AssistantStructurePtr CloneAssistantStructure(
 }  // namespace
 
 AssistantScreenContextController::AssistantScreenContextController(
-    AssistantController* assistant_controller)
+    AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
   assistant_controller_->AddObserver(this);
 }

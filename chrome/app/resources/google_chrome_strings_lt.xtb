@@ -92,6 +92,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="34857402635545079">Taip pat išvalyti duomenis iš „Chrome“ (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">„Chrome“ reikia leidimo, kad galėtų naudoti vietovės informaciją ir bendrinti ją su šia svetaine</translation>
 <translation id="3533694711092285624">Nėra išsaugotų slaptažodžių. „Chrome“ gali tikrinti jūsų slaptažodžius, kai juos išsaugote.</translation>
+<translation id="3541482654983822893">„Chrome“ negali patikrinti jūsų slaptažodžių. Bandykite dar kartą po 24 val.</translation>
 <translation id="3576528680708590453">Sistemos administratorius sukonfigūravo „Google Chrome“ atidaryti alternatyvią naršyklę, norint pasiekti <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sinchronizuokite ir suasmeninkite „Chrome“ skirtinguose įrenginiuose</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administratorius reikalauja paleisti „Chrome“ iš naujo, kad būtų galima pritaikyti naujinį}=1{Administratorius reikalauja paleisti „Chrome“ iš naujo, kad būtų galima pritaikyti naujinį. Inkognito langas nebus atidarytas iš naujo.}one{Administratorius reikalauja paleisti „Chrome“ iš naujo, kad būtų galima pritaikyti naujinį. # inkognito langas nebus atidarytas iš naujo.}few{Administratorius reikalauja paleisti „Chrome“ iš naujo, kad būtų galima pritaikyti naujinį. # inkognito langai nebus atidaryti iš naujo.}many{Administratorius reikalauja paleisti „Chrome“ iš naujo, kad būtų galima pritaikyti naujinį. # inkognito lango nebus atidaryta iš naujo.}other{Administratorius reikalauja paleisti „Chrome“ iš naujo, kad būtų galima pritaikyti naujinį. # inkognito langų nebus atidaryta iš naujo.}}</translation>
@@ -109,6 +110,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4147555960264124640">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Google Chrome“ profilį. „Chrome“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME" />. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Diegimo programai nepavyko išpakuoti archyvo. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="4191857738314598978">{0,plural, =1{„Chrome“ paleidimas iš naujo po dienos}one{„Chrome“ paleidimas iš naujo po # dienos}few{„Chrome“ paleidimas iš naujo po # dienų}many{„Chrome“ paleidimas iš naujo po # dienos}other{„Chrome“ paleidimas iš naujo po # dienų}}</translation>
+<translation id="4205939740494406371">„Chrome“ negali patikrinti jūsų slaptažodžių. Bandykite dar kartą po 24 val. arba <ph name="BEGIN_LINK" />patikrinkite slaptažodžius „Google“ paskyroje<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Atsijungti nuo „Chrome“?</translation>
 <translation id="4251615635259297716">Susisieti „Chrome“ duomenis su šia paskyra?</translation>
 <translation id="4293420128516039005">Prisijunkite, kad galėtumėte sinchronizuoti ir suasmeninti „Chrome“ skirtinguose įrenginiuose</translation>
@@ -235,7 +237,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8342675569599923794">Šis failas pavojingas, todėl „Chrome“ jį užblokavo.</translation>
 <translation id="8370517070665726704">Autorių teisės „Google LLC.“, <ph name="YEAR" /> m. Visos teisės saugomos.</translation>
 <translation id="840084489713044809">„Google Chrome“ nori eksportuoti jūsų slaptažodžius.</translation>
-<translation id="8455999171311319804">Pasirenkama: padėkite patobulinti „Chrome“ OS automatiškai siųsdami diagnostikos ir naudojimo duomenis į sistemą „Google“.</translation>
 <translation id="8498858610309223613">Ką tik pritaikytas specialus „Google Chrome“ skirtas saugos naujinys. Dabar paleiskite naršyklę iš naujo ir atkursime visus skirtukus.</translation>
 <translation id="8521348052903287641">„Dev“ versijos „Google Chrome“ skirta taisyklė, pagal kurią leidžiamas gaunamas mDNS srautas.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

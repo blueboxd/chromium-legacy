@@ -66,8 +66,7 @@ void TrialGroupChecker::OnRequestComplete(
   base::JSONReader::ValueWithError membership_info =
       base::JSONReader::ReadAndReturnValueWithError(*response_body,
                                                     base::JSON_PARSE_RFC);
-  if (membership_info.error_code != base::JSONReader::JSON_NO_ERROR ||
-      !membership_info.value->is_dict()) {
+  if (!membership_info.value || !membership_info.value->is_dict()) {
     std::move(callback_).Run(false);
     return;
   }

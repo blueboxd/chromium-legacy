@@ -3,6 +3,7 @@
 <translationbundle lang="my">
 <translation id="1005230401424685968">နှစ်</translation>
 <translation id="1016495303386450659">အကောင်းအရာ မွမ်းမံပြီးပါပြီ</translation>
+<translation id="1044891598689252897">ဝဘ်ဆိုက်များ ပုံမှန်အလုပ်လုပ်ပါမည်</translation>
 <translation id="1047726139967079566">ဒီစာမျက်နှာကို စာညှပ်ပေးရန်</translation>
 <translation id="1049743911850919806">ရုပ်ဖျက်</translation>
 <translation id="1063454504051558093">အခြားစကားဝှက်ကို သုံးပါ...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> အကြောင်းအရာများ</translation>
 <translation id="1491277525950327607">ဆက်တင်ကို ကစားကြည့်ရန် နှစ်ချက်တို့ပါ</translation>
 <translation id="1509486075633541495">ဝဘ်ဆိုက်သို့ လက်မှတ်ထိုးဝင်ရန်</translation>
+<translation id="1509960214886564027">ဝဘ်ဆိုက်အတော်များများရှိ ဝန်ဆောင်မှုများ ရပ်သွားနိုင်သည်</translation>
 <translation id="152234381334907219">ဘယ်တော့မှ သိမ်းဆည်းခြင်းမပြုပါ</translation>
 <translation id="1540800554400757039">လိပ်စာ: 1</translation>
 <translation id="1545749641540134597">QR ကုဒ်ကို ဖတ်ပါ</translation>
@@ -527,6 +529,7 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="7961015016161918242">ဘယ်သောအခါမှ</translation>
 <translation id="7971521879845308059">ပေါ့အာပ်များ ပိတ်ဆို့မည်</translation>
 <translation id="7982789257301363584">ကွန်ရက်</translation>
+<translation id="7993619969781047893">အချို့ဝဘ်ဆိုက်များပေါ်ရှိ ဝန်ဆောင်မှုများ ရပ်သွားနိုင်ပါသည်</translation>
 <translation id="800361585186029508">ထည့်သွင်းလိုက်သော URL များကို Google Chrome တွင် ဖွင့်သည်။</translation>
 <translation id="8007420562015504427">ရုပ်ဖျက်မုဒ်ဖြင့် ရှာရန်</translation>
 <translation id="8019783059653722575">၎င်းသည် ဓာတ်ပုံသိမ်းဆည်းရန်နှင့် အပ်လုဒ်လုပ်ရန် ခွင့်ပြုပါသည်။</translation>

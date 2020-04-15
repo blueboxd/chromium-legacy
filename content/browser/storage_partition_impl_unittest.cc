@@ -149,7 +149,7 @@ class RemoveCookieTester {
         net::CanonicalCookie::Create(origin.GetURL(), "A=1", base::Time::Now(),
                                      base::nullopt /* server_time */, &status));
     storage_partition_->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
-        *cc, origin.scheme(), net::CookieOptions::MakeAllInclusive(),
+        *cc, origin.GetURL(), net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(&RemoveCookieTester::SetCookieCallback,
                        base::Unretained(this)));
     await_completion_.BlockUntilNotified();

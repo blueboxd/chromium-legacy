@@ -52,6 +52,11 @@ bool FakeFormFetcher::IsBlacklisted() const {
   return is_blacklisted_;
 }
 
+bool FakeFormFetcher::IsMovingBlocked(const autofill::GaiaIdHash& destination,
+                                      const base::string16& username) const {
+  return false;
+}
+
 const std::vector<const PasswordForm*>& FakeFormFetcher::GetAllRelevantMatches()
     const {
   return non_federated_same_scheme_;

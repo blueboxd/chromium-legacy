@@ -12,18 +12,17 @@
 
 namespace ash {
 
-class AssistantController;
+class AssistantControllerImpl;
 
 class AssistantViewDelegateImpl : public AssistantViewDelegate {
  public:
-  AssistantViewDelegateImpl(AssistantController* assistant_controller);
+  AssistantViewDelegateImpl(AssistantControllerImpl* assistant_controller);
   ~AssistantViewDelegateImpl() override;
 
   // AssistantViewDelegate:
   const AssistantAlarmTimerModel* GetAlarmTimerModel() const override;
   const AssistantInteractionModel* GetInteractionModel() const override;
   const AssistantNotificationModel* GetNotificationModel() const override;
-  const AssistantSuggestionsModel* GetSuggestionsModel() const override;
   const AssistantUiModel* GetUiModel() const override;
   void AddObserver(AssistantViewDelegateObserver* observer) override;
   void RemoveObserver(AssistantViewDelegateObserver* observer) override;
@@ -39,10 +38,6 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
       AssistantNotificationModelObserver* observer) override;
   void RemoveNotificationModelObserver(
       AssistantNotificationModelObserver* observer) override;
-  void AddSuggestionsModelObserver(
-      AssistantSuggestionsModelObserver* observer) override;
-  void RemoveSuggestionsModelObserver(
-      AssistantSuggestionsModelObserver* observer) override;
   void AddUiModelObserver(AssistantUiModelObserver* observer) override;
   void RemoveUiModelObserver(AssistantUiModelObserver* observer) override;
   void DownloadImage(
@@ -65,7 +60,7 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void OpenUrlFromView(const GURL& url) override;
 
  private:
-  AssistantController* const assistant_controller_;
+  AssistantControllerImpl* const assistant_controller_;
   base::ObserverList<AssistantViewDelegateObserver> view_delegate_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantViewDelegateImpl);

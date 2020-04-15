@@ -298,12 +298,6 @@
 <translation id="1427655258943162134">Adres of URL van proxyserver</translation>
 <translation id="1435659902881071157">Netwerkconfiguratie op apparaatniveau</translation>
 <translation id="1438739959477268107">Standaardinstelling voor het genereren van sleutels</translation>
-<translation id="1455804070656338445">Stel de URL voor wachtwoordwijzigingen in (alleen HTTP en HTTPS). De wachtwoordbeveiligingsservice leidt gebruikers naar deze URL om hun wachtwoord te wijzigen nadat ze een waarschuwing in de browser hebben gezien.
-      Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> vingerafdrukken van wachtwoorden correct vastlegt op de pagina voor wachtwoordwijzigingen, moet je ervoor zorgen dat je pagina voor wachtwoordwijzigingen de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms volgt.
-
-      Als deze instelling ingeschakeld is, leidt de wachtwoordbeveiligingsservice gebruikers naar deze URL om hun wachtwoord te wijzigen nadat ze een waarschuwing in hun browser hebben gezien.
-      Als deze instelling uitgeschakeld of niet ingesteld is, leidt de wachtwoordbeveiligingsservice gebruikers naar https://myaccount.google.com om hun wachtwoord te wijzigen.
-      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />-clients):</translation>
 <translation id="1464848559468748897">Bepaal het gebruikersgedrag tijdens een sessie met meerdere profielen op <ph name="PRODUCT_OS_NAME" />-apparaten.
 
@@ -598,12 +592,6 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
       Als dit beleid is ingesteld op 'False', wordt de rapportage van statistieken en diagnostische gegevens uitgeschakeld.
 
       Als dit beleid niet is ingesteld, wordt de rapportage van statistieken en diagnostische gegevens op niet-beheerde apparaten uitgeschakeld en op beheerde apparaten ingeschakeld.</translation>
-<translation id="1907431809333268751">Configureer de lijst met zakelijke login-URL's (alleen HTTP- en HTTPS-schema's). De vingerafdruk van het wachtwoord wordt op deze URL's vastgelegd, zodat hergebruik van het wachtwoord kan worden gedetecteerd.
-      Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> vingerafdrukken van wachtwoorden correct vastlegt, moet je ervoor zorgen dat je inlogpagina's voldoen aan de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Als deze instelling ingeschakeld is, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord vast op deze URL's om hergebruik van het wachtwoord te kunnen detecteren.
-      Als deze instelling uitgeschakeld of niet ingesteld is, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord alleen vast op https://accounts.google.com.
-      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="1910704279188129272">Hiermee kun je per app gebruiksbeperkingen instellen.
         Gebruiksbeperkingen kunnen worden toegepast op de apps die voor de betreffende gebruiker in <ph name="PRODUCT_OS_NAME" /> zijn geïnstalleerd.
         Beperkingen moeten worden doorgegeven in de lijst |app_limits|. Er is slechts één item per app toegestaan. Apps die niet op de lijst voorkomen, hebben geen beperkingen.
@@ -3346,7 +3334,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
           Als er geen instelling is opgegeven, gebruikt <ph name="PRODUCT_NAME" /> een standaard bibliotheeknaam.</translation>
 <translation id="5783009211970309878">Kop- en voetteksten afdrukken</translation>
-<translation id="5783576706065107606">Schakel <ph name="CORS" />-controlebeperkingen voor de nieuwe <ph name="CORS" />-implementatie in, waardoor extensies geschikt gedrag kunnen behouden en <ph name="PRODUCT_NAME" /> toestemming heeft om opgegeven headers te verzenden zonder <ph name="CORS" />-controle.
+<translation id="5783576706065107606">Schakel <ph name="CORS" />-controlebeperkingen voor de nieuwe <ph name="CORS" />-implementatie in, waardoor extensies geschikt gedrag kunnen behouden en <ph name="PRODUCT_NAME" /> toestemming heeft om opgegeven headers te versturen zonder <ph name="CORS" />-controle.
 
       Als deze lijst leeg is, probeert <ph name="PRODUCT_NAME" /> extensies op geschikte manieren uit te voeren en worden er geen <ph name="API" />-wijzingen geïntroduceerd voor <ph name="PRODUCT_NAME" /> 79, zoals uitgelegd in <ph name="WEB_REQUEST_API_MANUAL" />.
 
@@ -3807,7 +3795,7 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
       Dit beleid kan worden overschreven door EnabledPlugins en DisabledPluginsExceptions.
 
       Als dit beleid niet is ingesteld, kan de gebruiker elke op het systeem geïnstalleerde plug-in gebruiken, behalve hardgecodeerde ongeschikte, verouderde of gevaarlijke plug-ins.</translation>
-<translation id="6571871508154591774">De functies van de camera, browserinstellingen en de OS-instellingen configureren die moeten worden uitgeschakeld</translation>
+<translation id="6571871508154591774">De camera, browserinstellingen en de OS-instellingen uitschakelen</translation>
 <translation id="6573305661369899995">Een externe bron voor URL-beperkingen instellen</translation>
 <translation id="6583851521569686409">Hiermee wordt een lijst met printers geconfigureerd.
 
@@ -4023,13 +4011,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als dit beleid niet is ingesteld, kan de gebruiker worden gevraagd of deze wil importeren, of wordt er automatisch geïmporteerd.</translation>
 <translation id="7003746348783715221">Voorkeuren voor <ph name="PRODUCT_NAME" /></translation>
-<translation id="7007671350884342624">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME" /> gebruikt voor het opslaan van gebruikersgegevens.
-
-      Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> deze directory, ongeacht of de gebruiker de optie voor '--user-data-dir' heeft ingesteld. Als je gegevensverlies of andere onverwachte fouten wilt voorkomen, moet dit beleid niet worden ingesteld op de hoofddirectory van een volume of op een directory die wordt gebruikt voor andere doeleinden, omdat <ph name="PRODUCT_NAME" /> de content ervan beheert.
-
-      Raadpleeg https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.
-
-      Als dit beleid niet wordt ingesteld, wordt de standaardcachedirectory gebruikt en kan de gebruiker deze overschrijven met de opdrachtregelmarkering '--user-data-dir'.</translation>
 <translation id="7008308728445338159">Controles voor DNS-onderschepping ingeschakeld</translation>
 <translation id="7027785306666625591">Energiebeheer in <ph name="PRODUCT_OS_NAME" /> configureren.
 
@@ -4950,7 +4931,6 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 <translation id="8424255554404582727">Standaard displayrotatie instellen, wordt telkens toegepast na opnieuw opstarten</translation>
 <translation id="8426231401662877819">Scherm 90 graden met de klok mee draaien</translation>
 <translation id="8433186206711564395">Netwerkinstellingen</translation>
-<translation id="8433423491036718210">Configureer de lijst met zakelijke login-URL's waar de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord moet vastleggen.</translation>
 <translation id="8445576299806775661">Na elke grote versie-update maakt Chrome een momentopname van bepaalde gedeelten van de browsergegevens van de gebruiker. Deze momentopname kan worden gebruikt voor een latere noodrollback van de versie. Als er een noodrollback wordt uitgevoerd naar een versie waarvoor een gebruiker een bijbehorende momentopname heeft, worden de gegevens in de momentopname hersteld. Zo kunnen gebruikers instellingen als bookmarks en gegevens voor automatisch aanvullen behouden.
 
       Als dit beleid niet is ingesteld, wordt de standaardwaarde 3 gebruikt.

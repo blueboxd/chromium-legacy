@@ -75,7 +75,7 @@ void SetCookieDirect(WebContentsImpl* tab,
   BrowserContext::GetDefaultStoragePartition(tab->GetBrowserContext())
       ->GetCookieManagerForBrowserProcess()
       ->SetCanonicalCookie(
-          *cookie_obj, url.scheme(), options,
+          *cookie_obj, url, options,
           base::BindLambdaForTesting(
               [&](net::CanonicalCookie::CookieInclusionStatus status) {
                 run_loop.Quit();

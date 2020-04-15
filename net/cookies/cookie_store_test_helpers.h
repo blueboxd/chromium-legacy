@@ -54,7 +54,7 @@ class DelayedCookieMonster : public CookieStore {
   // Post a delayed task to invoke the original callback with the results.
 
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
-                               std::string source_scheme,
+                               const GURL& source_url,
                                const CookieOptions& options,
                                SetCookiesCallback callback) override;
 

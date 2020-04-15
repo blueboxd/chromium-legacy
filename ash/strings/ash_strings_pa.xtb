@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">ਆਪਣੀ ਲਾਕ ਸਕ੍ਰੀਨ 'ਤੇ ਸੂਚਨਾਵਾਂ ਦੇਖਣ ਲਈ, ਅਣਲਾਕ ਕਰਕੇ ਸੈਟਿੰਗ ਬਦਲੋ</translation>
 <translation id="4144413954005649103">ਸੱਜੇ-ਕਲਿੱਕ ਜਾਂ ਦਬਾਈ ਰੱਖਣ ਨਾਲ, Assistant ਵੱਲੋਂ ਸਕ੍ਰੀਨ 'ਤੇ ਤੁਹਾਡੀ ਚੋਣ ਨਾਲ ਸੰਬੰਧਿਤ ਜਾਣਕਾਰੀ ਤੁਹਾਨੂੰ ਦਿਖਾਈ ਜਾਵੇਗੀ।</translation>
 <translation id="4146833061457621061">ਸੰਗੀਤ ਚਲਾਓ</translation>
-<translation id="4149156641122542261"><ph name="DOMAIN" /> ਡੋਮੇਨ <ph name="DEVICE_TYPE" /> ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਦਾ ਹੈ</translation>
 <translation id="4181841719683918333">ਭਾਸ਼ਾਵਾਂ</translation>
 <translation id="4195877955194704651">ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਕਲਿੱਕ ਕਰਨ ਲਈ ਬਟਨ</translation>
 <translation id="4215497585250573029">VPN ਸੈਟਿੰਗਾਂ</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">ਸ਼ਾਰਟਕੱਟ ਬੰਦ ਹੈ</translation>
 <translation id="6910714959251846841">ਇਸ ਅੱਪਡੇਟ ਲਈ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਨੂੰ ਪਾਵਰਵਾਸ਼ ਕੀਤੇ ਜਾਣ ਦੀ ਲੋੜ ਹੈ। ਨਵੀਨਤਮ <ph name="SYSTEM_APP_NAME" /> ਅੱਪਡੇਟ ਬਾਰੇ ਹੋਰ ਜਾਣੋ।</translation>
 <translation id="6919251195245069855">ਤੁਹਾਡਾ ਸਮਾਰਟ ਕਾਰਡ ਪਛਾਣਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
+<translation id="6945221475159498467">ਚੁਣੋ</translation>
 <translation id="6972754398087986839">ਸ਼ੁਰੂ ਕੀਤਾ</translation>
 <translation id="6981982820502123353">ਪਹੁੰਚਯੋਗਤਾ</translation>
 <translation id="698231206551913481">ਇਸ ਵਰਤੋਂਕਾਰ ਦੇ ਹਟਾਏ ਜਾਣ ਤੋਂ ਬਾਅਦ ਇਸ ਵਰਤੋਂਕਾਰ ਨਾਲ ਸਬੰਧਿਤ ਸਾਰੀਆਂ ਫ਼ਾਈਲਾਂ ਅਤੇ ਸਥਾਨਕ ਡਾਟੇ ਨੂੰ ਸਥਾਈ ਤੌਰ 'ਤੇ ਮਿਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ।</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">ਨਿੱਜੀ ਨੈੱਟਵਰਕ</translation>
 <translation id="8152092012181020186">ਬੰਦ ਕਰਨ ਲਈ Ctrl + W ਦਬਾਓ।</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> ਤੁਹਾਡਾ ਪ੍ਰਸ਼ਾਸਕ ਇਸ ਸੈਟਿੰਗ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਦਾ ਹੈ।</translation>
+<translation id="815598010540052116">ਸਕ੍ਰੌਲ ਡਾਊਨ</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> ਦੀ ਵਰਤੋਂ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
 <translation id="8190698733819146287">ਭਾਸ਼ਾਵਾਂ ਅਤੇ ਇਨਪੁਟ ਨੂੰ ਵਿਉਂਤਬੱਧ ਕਰੋ...</translation>
 <translation id="8192202700944119416">ਸੂਚਨਾਵਾਂ ਲੁਕੀਆਂ ਹੋਈਆਂ ਹਨ।</translation>

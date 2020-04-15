@@ -78,10 +78,6 @@ copy("chrome_camera_app_images") {
     "src/images/camera_shutter_photo_start_hover.svg",
     "src/images/camera_shutter_photo_stop.svg",
     "src/images/camera_shutter_photo_stop_hover.svg",
-    "src/images/camera_shutter_video_start.svg",
-    "src/images/camera_shutter_video_start_hover.svg",
-    "src/images/camera_shutter_video_stop.svg",
-    "src/images/camera_shutter_video_stop_hover.svg",
     "src/images/settings_button_back.svg",
     "src/images/settings_button_expand.svg",
     "src/images/settings_feedback.svg",
@@ -140,8 +136,8 @@ copy("chrome_camera_app_js_device") {
 
 copy("chrome_camera_app_js_lib") {
   sources = [
+    "src/js/lib/analytics.js",
     "src/js/lib/comlink.js",
-    "src/js/lib/google-analytics-bundle.js",
   ]
 
   outputs = [ "$chrome_camera_app_dir/js/lib/{{source_file_part}}" ]

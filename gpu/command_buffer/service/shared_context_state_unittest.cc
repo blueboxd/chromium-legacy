@@ -74,6 +74,9 @@ TEST_F(SharedContextStateTest, InitFailsIfLostContext) {
   EXPECT_CALL(gl_interface, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
       .WillOnce(SetArgPointee<1>(8u))
       .RetiresOnSaturation();
+  EXPECT_CALL(gl_interface, GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, _))
+      .WillOnce(SetArgPointee<1>(8u))
+      .RetiresOnSaturation();
   ContextStateTestHelpers::SetupInitState(&gl_interface, feature_info.get(),
                                           gfx::Size(1, 1));
 

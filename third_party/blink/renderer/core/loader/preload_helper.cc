@@ -581,12 +581,14 @@ void PreloadHelper::LoadLinksFromHeader(
       continue;
 
     LinkLoadParameters params(header, base_url);
+    bool change_rel_to_prefetch = false;
+
     if (params.rel.IsLinkPreload() && recursive_prefetch_token) {
       // Only preload headers are expected to have a recursive prefetch token
       // In response to that token's existence, we treat the request as a
       // prefetch.
       params.recursive_prefetch_token = *recursive_prefetch_token;
-      params.rel = LinkRelAttribute("prefetch");
+      change_rel_to_prefetch = true;
     }
 
     if (alternate_resource_info && params.rel.IsLinkPreload()) {
@@ -629,9 +631,13 @@ void PreloadHelper::LoadLinksFromHeader(
         // navigation, but can only populate things in the cache that can be
         // used by the next navigation only when they requested the same URL
         // with the same association mapping.
-        params.rel = LinkRelAttribute("prefetch");
+        change_rel_to_prefetch = true;
       }
     }
+
+    if (change_rel_to_prefetch)
+      params.rel = LinkRelAttribute("prefetch");
+
     // Sanity check to avoid re-entrancy here.
     if (params.href == base_url)
       continue;

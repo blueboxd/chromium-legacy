@@ -28,7 +28,7 @@ enum class AlarmTimerAction;
 }  // namespace util
 }  // namespace assistant
 
-class AssistantController;
+class AssistantControllerImpl;
 
 // The AssistantAlarmTimerController is a sub-controller of AssistantController
 // tasked with tracking alarm/timer state and providing alarm/timer APIs.
@@ -39,7 +39,7 @@ class AssistantAlarmTimerController
       public AssistantAlarmTimerModelObserver {
  public:
   explicit AssistantAlarmTimerController(
-      AssistantController* assistant_controller);
+      AssistantControllerImpl* assistant_controller);
   ~AssistantAlarmTimerController() override;
 
   void BindReceiver(
@@ -80,7 +80,7 @@ class AssistantAlarmTimerController
                                const std::string& alarm_timer_id,
                                const base::Optional<base::TimeDelta>& duration);
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
 
   mojo::Receiver<mojom::AssistantAlarmTimerController> receiver_{this};
 

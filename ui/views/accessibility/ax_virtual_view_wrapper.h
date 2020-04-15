@@ -31,6 +31,7 @@ class AXVirtualViewWrapper : public AXAuraObjWrapper {
   void Serialize(ui::AXNodeData* out_node_data) override;
   int32_t GetUniqueId() const override;
   bool HandleAccessibleAction(const ui::AXActionData& action) override;
+  std::string ToString() const override;
 
  private:
   // Weak.

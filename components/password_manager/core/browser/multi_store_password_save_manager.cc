@@ -237,7 +237,9 @@ void MultiStorePasswordSaveManager::MoveCredentialsToAccountStore() {
     // store, 1) to avoid unnecessary sync cycles, 2) to avoid potential
     // last_used_date update.
     if (!AccountStoreMatchesContainForm(account_store_matches, *match)) {
-      account_store_form_saver_->Save(*match, account_store_matches,
+      PasswordForm match_copy = *match;
+      match_copy.moving_blocked_for_list.clear();
+      account_store_form_saver_->Save(match_copy, account_store_matches,
                                       /*old_password=*/base::string16());
     }
     form_saver_->Remove(*match);

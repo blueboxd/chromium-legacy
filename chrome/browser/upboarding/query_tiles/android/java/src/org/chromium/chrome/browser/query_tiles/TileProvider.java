@@ -20,7 +20,7 @@ public interface TileProvider {
      * @param callback The {@link Callback} to be notified on completion. Returns an empty list if
      *         no tiles are found.
      */
-    void getQueryTiles(Callback<List<Tile>> callback);
+    void getQueryTiles(Callback<List<QueryTile>> callback);
 
     /**
      * Called to retrieve visuals for the given tile id.

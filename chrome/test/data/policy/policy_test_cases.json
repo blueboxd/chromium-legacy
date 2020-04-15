@@ -463,6 +463,16 @@
     ]
   },
 
+  "PrintingMaxSheetsAllowed": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"PrintingMaxSheetsAllowed": 10},
+        "prefs": { "printing.max_sheets_allowed": {} }
+      }
+    ]
+  },
+
   "PrintJobHistoryExpirationPeriod": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

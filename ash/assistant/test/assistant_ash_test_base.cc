@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/test/test_assistant_client.h"
 #include "ash/assistant/test/test_assistant_setup.h"
 #include "ash/assistant/test/test_assistant_web_view_factory.h"

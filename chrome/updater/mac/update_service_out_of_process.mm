@@ -17,6 +17,7 @@
 #import "chrome/updater/mac/xpc_service_names.h"
 #import "chrome/updater/server/mac/service_protocol.h"
 #import "chrome/updater/server/mac/update_service_wrappers.h"
+#include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_version.h"
 #include "components/update_client/update_client_errors.h"
 
@@ -25,6 +26,8 @@ using base::SysUTF8ToNSString;
 // Interface to communicate with the XPC Updater Service.
 @interface CRUUpdateServiceOutOfProcessImpl : NSObject <CRUUpdateChecking>
 
+- (instancetype)initPrivileged;
+
 @end
 
 @implementation CRUUpdateServiceOutOfProcessImpl {
@@ -32,10 +35,18 @@ using base::SysUTF8ToNSString;
 }
 
 - (instancetype)init {
+  return [self initWithConnectionOptions:0];
+}
+
+- (instancetype)initPrivileged {
+  return [self initWithConnectionOptions:NSXPCConnectionPrivileged];
+}
+
+- (instancetype)initWithConnectionOptions:(NSXPCConnectionOptions)options {
   if ((self = [super init])) {
     _xpcConnection.reset([[NSXPCConnection alloc]
         initWithMachServiceName:updater::GetGoogleUpdateServiceMachName().get()
-                        options:0]);
+                        options:options]);
 
     _xpcConnection.get().remoteObjectInterface = updater::GetXpcInterface();
 
@@ -110,8 +121,18 @@ using base::SysUTF8ToNSString;
 
 namespace updater {
 
-UpdateServiceOutOfProcess::UpdateServiceOutOfProcess() {
-  client_.reset([[CRUUpdateServiceOutOfProcessImpl alloc] init]);
+UpdateServiceOutOfProcess::UpdateServiceOutOfProcess(
+    UpdateService::Scope scope) {
+  switch (scope) {
+    case UpdateService::Scope::kSystem:
+      client_.reset([[CRUUpdateServiceOutOfProcessImpl alloc] initPrivileged]);
+      break;
+    case UpdateService::Scope::kUser:
+      client_.reset([[CRUUpdateServiceOutOfProcessImpl alloc] init]);
+      break;
+    default:
+      CHECK(false) << "Unexpected value for UpdateService::Scope";
+  }
   callback_runner_ = base::SequencedTaskRunnerHandle::Get();
 }
 

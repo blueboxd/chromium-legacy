@@ -436,7 +436,6 @@ Vain sinä voit nähdä, mitä kamera kuvaa. Sivusto ei voi nähdä kamerasi kuv
 <translation id="4242533952199664413">Avaa asetukset</translation>
 <translation id="4250229828105606438">Kuvakaappaus</translation>
 <translation id="4256782883801055595">Avoimen lähdekoodin käyttöluvat</translation>
-<translation id="4259722352634471385">Kohde on estetty: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopioi linkin osoite</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Sallittu</translation>
@@ -1067,7 +1066,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8942627711005830162">Avaa uudessa ikkunassa</translation>
 <translation id="8951232171465285730">Chrome on säästänyt <ph name="MEGABYTES" /> Mt tilaa</translation>
 <translation id="8958424370300090006">Estä evästeet tietyltä sivustolta.</translation>
-<translation id="8959122750345127698">Kohde ei ole saatavilla: <ph name="URL" /></translation>
 <translation id="8965591936373831584">odottaa</translation>
 <translation id="8970887620466824814">Tapahtui virhe.</translation>
 <translation id="8972098258593396643">Ladataanko tiedosto oletuskansioon?</translation>

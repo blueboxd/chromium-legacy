@@ -70,7 +70,6 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
  protected:
   // Exposed for testing.
   CardUnmaskPromptView* view() { return card_unmask_view_; }
-  void SetCreditCardForTesting(CreditCard test_card) { card_ = test_card; }
 
  private:
   bool AllowsRetry(AutofillClient::PaymentsRpcResult result);

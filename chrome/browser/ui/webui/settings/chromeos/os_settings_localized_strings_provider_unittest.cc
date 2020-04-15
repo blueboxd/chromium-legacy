@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
 
 #include "base/run_loop.h"
+#include "chrome/browser/local_search_service/local_search_service_proxy.h"
+#include "chrome/browser/local_search_service/local_search_service_proxy_factory.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -32,13 +35,17 @@ class OsSettingsLocalizedStringsProviderTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
+    TestingProfile* profile =
+        profile_manager_.CreateTestingProfile("TestingProfile");
 
-    provider_ = std::make_unique<OsSettingsLocalizedStringsProvider>(
-        profile_manager_.CreateTestingProfile("TestingProfile"),
-        &local_search_service_);
+    provider_ =
+        OsSettingsLocalizedStringsProviderFactory::GetForProfile(profile);
 
-    index_ = local_search_service_.GetIndexImpl(
-        local_search_service::IndexId::kCrosSettings);
+    index_ =
+        local_search_service::LocalSearchServiceProxyFactory::GetForProfile(
+            profile)
+            ->GetLocalSearchServiceImpl()
+            ->GetIndexImpl(local_search_service::IndexId::kCrosSettings);
 
     // Allow asynchronous networking code to complete (networking functionality
     // is tested below).
@@ -49,8 +56,7 @@ class OsSettingsLocalizedStringsProviderTest : public testing::Test {
   TestingProfileManager profile_manager_;
   chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
   local_search_service::IndexImpl* index_;
-  local_search_service::LocalSearchServiceImpl local_search_service_;
-  std::unique_ptr<OsSettingsLocalizedStringsProvider> provider_;
+  OsSettingsLocalizedStringsProvider* provider_;
 };
 
 // To prevent this from becoming a change-detector test, this test simply

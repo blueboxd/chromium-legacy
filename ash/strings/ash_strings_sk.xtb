@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Ak chcete, aby sa na uzamknutej obrazovke zobrazovali upozornenia, odomknite zariadenie a zmeňte nastavenie</translation>
 <translation id="4144413954005649103">Po kliknutí pravým tlačidlom alebo dlhom stlačení zobrazí Asistent informácie súvisiace s výberom na obrazovke.</translation>
 <translation id="4146833061457621061">Prehrať hudbu</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> spravuje <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Jazyky</translation>
 <translation id="4195877955194704651">Tlačidlo automatického kliknutia</translation>
 <translation id="4215497585250573029">Nastavenia VPN</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">Skratka je vypnutá</translation>
 <translation id="6910714959251846841">Táto aktualizácia vyžaduje vykonať v zariadení obnovenie Powerwash. Prečítajte si ďalšie informácie o najnovšej aktualizácii aplikácie <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">Inteligentnú kartu sa nepodarilo rozpoznať. Skúste to znova.</translation>
+<translation id="6945221475159498467">Vybrať</translation>
 <translation id="6972754398087986839">Začať</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
 <translation id="698231206551913481">Všetky súbory a miestne údaje priradené k tomuto používateľovi budú po jeho odstránení natrvalo vymazané.</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">Súkromná sieť</translation>
 <translation id="8152092012181020186">Zavriete stlačením kombinácie klávesov Ctrl + W.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Toto nastavenie ovláda váš správca.</translation>
+<translation id="815598010540052116">Rolovať nadol</translation>
 <translation id="8167567890448493835">Práve sa používa <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Prebieha prispôsobenie jazykov a vstupu...</translation>
 <translation id="8192202700944119416">Upozornenia sú skryté.</translation>

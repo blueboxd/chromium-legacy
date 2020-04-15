@@ -4,9 +4,11 @@
 
 #include "pdf/pdfium/pdfium_engine.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "pdf/document_layout.h"
 #include "pdf/document_metadata.h"
+#include "pdf/pdf_features.h"
 #include "pdf/pdfium/pdfium_page.h"
 #include "pdf/pdfium/pdfium_test_base.h"
 #include "pdf/test/test_client.h"
@@ -257,6 +259,62 @@ class PDFiumEngineTabbingTest : public PDFiumTestBase {
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 };
+
+TEST_F(PDFiumEngineTabbingTest, TabbingSupportedAnnots) {
+  /*
+   * Document structure
+   * Document
+   * ++ Page 1
+   * ++++ Widget annotation
+   * ++++ Widget annotation
+   * ++++ Highlight annotation
+   * ++++ Link annotation
+   */
+
+  // Enable feature flag.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chrome_pdf::features::kTabAcrossPDFAnnotations);
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("annots.pdf"));
+  ASSERT_TRUE(engine);
+
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  ASSERT_EQ(PDFiumEngine::FocusElementType::kNone,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(-1, GetLastFocusedPage(engine.get()));
+
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kDocument,
+            GetFocusedElementType(engine.get()));
+
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(0, GetLastFocusedPage(engine.get()));
+
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(0, GetLastFocusedPage(engine.get()));
+
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(0, GetLastFocusedPage(engine.get()));
+
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(0, GetLastFocusedPage(engine.get()));
+
+  ASSERT_FALSE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kNone,
+            GetFocusedElementType(engine.get()));
+}
 
 TEST_F(PDFiumEngineTabbingTest, TabbingForwardTest) {
   /*

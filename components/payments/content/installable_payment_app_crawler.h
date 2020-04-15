@@ -29,7 +29,7 @@ class GURL;
 namespace content {
 class RenderFrameHost;
 class WebContents;
-}
+}  // namespace content
 
 namespace payments {
 
@@ -82,6 +82,7 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
   void OnPaymentMethodManifestParsed(
       const GURL& method_manifest_url,
       const GURL& method_manifest_url_after_redirects,
+      const std::string& content,
       const std::vector<GURL>& default_applications,
       const std::vector<url::Origin>& supported_origins,
       bool all_origins_supported);

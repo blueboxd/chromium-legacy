@@ -45,17 +45,7 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
 
   auto* render_view_proxy = new WebViewTestProxy(compositor_deps, params);
-
-  auto blink_test_runner = std::make_unique<BlinkTestRunner>(render_view_proxy);
-  // TODO(lukasza): Using the first BlinkTestRunner as the main delegate is
-  // wrong, but it is difficult to change because this behavior has been baked
-  // for a long time into test assumptions (i.e. which PrintMessage gets
-  // delivered to the browser depends on this).
-  if (!interfaces->GetDelegate()) {
-    interfaces->SetDelegate(blink_test_runner.get());
-  }
-
-  render_view_proxy->Initialize(interfaces, std::move(blink_test_runner));
+  render_view_proxy->Initialize(interfaces);
   return render_view_proxy;
 }
 

@@ -84,6 +84,7 @@ class Controller;
 
 namespace system {
 class DarkResumeController;
+class BreakpadConsentWatcher;
 }  // namespace system
 
 // ChromeBrowserMainParts implementation for chromeos specific code.
@@ -194,6 +195,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
       login_screen_extensions_storage_cleaner_;
 
   std::unique_ptr<GnubbyNotification> gnubby_notification_;
+  std::unique_ptr<system::BreakpadConsentWatcher> breakpad_consent_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

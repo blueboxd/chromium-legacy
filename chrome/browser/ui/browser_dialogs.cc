@@ -21,10 +21,6 @@ base::OnceClosure ShowDeviceChooserDialog(
   NOTIMPLEMENTED();
   return base::DoNothing();
 }
-bool IsDeviceChooserShowingForTesting() {
-  NOTIMPLEMENTED();
-  return false;
-}
 #endif
 
 }  // namespace chrome

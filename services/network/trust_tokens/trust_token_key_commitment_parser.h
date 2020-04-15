@@ -9,6 +9,7 @@
 
 #include "base/strings/string_piece_forward.h"
 #include "services/network/public/mojom/trust_tokens.mojom-forward.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_controller.h"
 
 namespace network {
@@ -46,6 +47,30 @@ class TrustTokenKeyCommitmentParser
   //   epoch) storing a time in the future.
   mojom::TrustTokenKeyCommitmentResultPtr Parse(
       base::StringPiece response_body) override;
+
+  // Like |Parse|, except that the input is expected to be of the form
+  // { "https://some-issuer.example": <JSON in the form expected by |Parse|>
+  //   "https://some-other-issuer.example":
+  //     <JSON in the form expected by |Parse|>,
+  //   ...  }
+  //
+  // Returns nullptr if the input is not a dictionary.
+  //
+  // WARNING: If there are multiple keys that are exactly equal strings,
+  // deduplicates these entries arbitrarily (due to the behavior of
+  // base::JSONReader). For instance, if these keys are arriving through the
+  // component updater, you might want to guarantee that the server-side logic
+  // producing these structures guarantees no duplicate keys.
+  //
+  // If there are multiple keys that are not exact duplicates but correspond to
+  // the same issuer, drops all but the entry with the largest key
+  // lexicographically.
+  //
+  // Skips key-value pairs where the key is not a suitable Trust Tokens origin
+  // or the value fails to parse.
+  std::unique_ptr<base::flat_map<SuitableTrustTokenOrigin,
+                                 mojom::TrustTokenKeyCommitmentResultPtr>>
+  ParseMultipleIssuers(base::StringPiece response_body);
 };
 
 }  // namespace network

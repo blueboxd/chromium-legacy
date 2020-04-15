@@ -115,13 +115,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
   static Symbol GetCachedAccessor(v8::Isolate* isolate,
                                   CachedAccessor symbol_id);
 
-  // This is a hack for PopStateEvent to get the same private property of
-  // History, named State.
-  static Symbol GetHistoryStateSymbol(v8::Isolate* isolate) {
-    static const SymbolKey kPrivatePropertyKey;
-    return GetSymbol(isolate, kPrivatePropertyKey);
-  }
-
   // Returns a Symbol to access a private property. Symbol instances from same
   // |key| are guaranteed to access the same property.
   static Symbol GetSymbol(v8::Isolate* isolate, const SymbolKey& key);

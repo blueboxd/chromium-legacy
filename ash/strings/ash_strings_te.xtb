@@ -258,7 +258,6 @@
 <translation id="4129129681837227511">మీ లాక్ స్క్రీన్‌లో నోటిఫికేషన్‌లను చూడటానికి, సెట్టింగ్‌ను మార్చేందుకు అన్‌లాక్ చేయండి</translation>
 <translation id="4144413954005649103">కుడి క్లిక్ చేస్తే లేదా ఎక్కువ సేపు నొక్కి ఉంచితే, మీరు స్క్రీన్‌పై ఎంచుకునే సమాచారానికి సంబంధించిన అంశాలను Assistant చూపుతుంది.</translation>
 <translation id="4146833061457621061">సంగీతాన్ని ప్లే చేయి</translation>
-<translation id="4149156641122542261"><ph name="DOMAIN" /> ద్వారా <ph name="DEVICE_TYPE" /> మేనేజ్ అవుతోంది</translation>
 <translation id="4181841719683918333">భాషలు</translation>
 <translation id="4195877955194704651">ఆటోమేటిక్ క్లిక్‌ల బటన్</translation>
 <translation id="4215497585250573029">VPN సెట్టింగ్‌లు</translation>
@@ -468,6 +467,7 @@
 <translation id="6878400149835617132">షార్ట్‌కట్ ఆఫ్ చేయబడింది</translation>
 <translation id="6910714959251846841">ఈ అప్‌డేట్ కోసం మీ పరికరాన్ని పవర్‌వాష్ చేయాలి. తాజా <ph name="SYSTEM_APP_NAME" /> అప్‌డేట్ గురించి మరింత తెలుసుకోండి.</translation>
 <translation id="6919251195245069855">మీ స్మార్ట్ కార్డ్‌ను గుర్తించడం సాధ్యం కాలేదు. మళ్ళీ ప్రయత్నించండి.</translation>
+<translation id="6945221475159498467">ఎంచుకోండి</translation>
 <translation id="6972754398087986839">ప్రారంభించండి</translation>
 <translation id="6981982820502123353">యాక్సెస్‌</translation>
 <translation id="698231206551913481">ఈ వినియోగదారును తీసివేసిన తర్వాత ఈ వినియోగదారుతో అనుబంధించిన అన్ని ఫైల్‌లు మరియు స్థానిక డేటా శాశ్వతంగా తొలగించబడతాయి.</translation>
@@ -558,6 +558,7 @@
 <translation id="8142699993796781067">ప్రైవేట్ నెట్‌వర్క్</translation>
 <translation id="8152092012181020186">మూసివేయడానికి Ctrl + W నొక్కండి.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> ఈ సెట్టింగ్ మీ నిర్వాహకుడి ద్వారా నిర్వహించబడుతుంది.</translation>
+<translation id="815598010540052116">కిందికి స్క్రోల్ చేయి</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />ని ఉపయోగిస్తోంది</translation>
 <translation id="8190698733819146287">భాషలు మరియు ఇన్‌పుట్ పద్ధతిని అనుకూలీకరించండి...</translation>
 <translation id="8192202700944119416">నోటిఫికేషన్‌లు దాచబడ్డాయి.</translation>

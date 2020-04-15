@@ -436,7 +436,6 @@ Csak Ön láthatja, hogy mi van a kamera látóterében. A webhely nem látja a 
 <translation id="4242533952199664413">Beállítások megnyitása</translation>
 <translation id="4250229828105606438">Képernyőkép</translation>
 <translation id="4256782883801055595">Nyílt forráskódú licencek</translation>
-<translation id="4259722352634471385">Le van tiltva az ide vezető navigáció: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Link másolása</translation>
 <translation id="4275663329226226506">Média</translation>
 <translation id="4278390842282768270">Engedélyezve</translation>
@@ -1067,7 +1066,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8942627711005830162">Megnyitás másik ablakban</translation>
 <translation id="8951232171465285730">A Chrome <ph name="MEGABYTES" /> MB-ot spórolt meg Önnek</translation>
 <translation id="8958424370300090006">Adott webhely cookie-jainak letiltása.</translation>
-<translation id="8959122750345127698">Nem érhető el az ide vezető navigáció: <ph name="URL" /></translation>
 <translation id="8965591936373831584">függőben</translation>
 <translation id="8970887620466824814">Hiba történt.</translation>
 <translation id="8972098258593396643">Letölti az alapértelmezett mappába?</translation>

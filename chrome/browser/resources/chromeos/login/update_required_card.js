@@ -36,6 +36,14 @@ Polymer({
     ui_state: {type: String},
   },
 
+  onBeforeShow() {
+    this.behaviors.forEach((behavior) => {
+      if (behavior.onBeforeShow)
+        behavior.onBeforeShow.call(this);
+    });
+    this.$['checking-downloading-update'].onBeforeShow();
+  },
+
   /** Called after resources are updated. */
   updateLocalizedContent() {
     this.i18nUpdateLocale();

@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Če si želite ogledati obvestila na zaklenjenem zaslonu, ga odklenite in spremenite nastavitev</translation>
 <translation id="4144413954005649103">Če kliknete z desnim gumbom ali pridržite, vam Pomočnik pokaže informacije, povezane z izborom na zaslonu.</translation>
 <translation id="4146833061457621061">Predvajaj glasbo</translation>
-<translation id="4149156641122542261">Napravo <ph name="DEVICE_TYPE" /> upravlja domena <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Jeziki</translation>
 <translation id="4195877955194704651">Gumb za samodejne klike</translation>
 <translation id="4215497585250573029">Nastavitve VPN-ja</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">Bližnjica je izklopljena</translation>
 <translation id="6910714959251846841">Pred namestitvijo te posodobitve morate uporabiti funkcijo Powerwash. Preberite več o najnovejši posodobitvi za <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">Pametne kartice ni bilo mogoče prepoznati. Poskusite znova.</translation>
+<translation id="6945221475159498467">Izberi</translation>
 <translation id="6972754398087986839">Začnite</translation>
 <translation id="6981982820502123353">Dostopnost</translation>
 <translation id="698231206551913481">Vse datoteke in lokalni podatki, povezani s tem uporabnikom, bodo trajno izbrisani, ko odstranite uporabnika.</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">Zasebno omrežje</translation>
 <translation id="8152092012181020186">Pritisnite Ctrl + W, če ga želite zapreti.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> To nastavitev upravlja skrbnik.</translation>
+<translation id="815598010540052116">Pomik dol</translation>
 <translation id="8167567890448493835">Uporaba jezika <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Prilagajanje jezikov in vnosa ...</translation>
 <translation id="8192202700944119416">Obvestila so skrita.</translation>

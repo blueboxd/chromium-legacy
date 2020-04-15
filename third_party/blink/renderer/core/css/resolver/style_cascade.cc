@@ -383,9 +383,6 @@ void StyleCascade::ApplyInterpolation(
     To<TransitionInterpolation>(interpolation).Apply(state_);
   }
 
-  if (property.AffectsFont())
-    state_.SetHasFontAffectingAnimation();
-
   // Applying a color property interpolation will also unconditionally apply
   // the -internal-visited- counterpart (see CSSColorInterpolationType::
   // ApplyStandardPropertyValue). To make sure !important rules in :visited

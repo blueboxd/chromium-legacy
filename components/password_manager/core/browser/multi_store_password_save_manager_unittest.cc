@@ -670,6 +670,8 @@ TEST_F(MultiStorePasswordSaveManagerTest,
        MoveCredentialsFromProfileToAccountStoreWhenExistsOnlyInProfileStore) {
   PasswordForm saved_match_in_profile_store(saved_match_);
   saved_match_in_profile_store.in_store = PasswordForm::Store::kProfileStore;
+  saved_match_in_profile_store.moving_blocked_for_list.push_back(
+      autofill::GaiaIdHash::FromGaiaId("user@gmail.com"));
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_in_profile_store});
 
   password_save_manager()->CreatePendingCredentials(
@@ -677,9 +679,13 @@ TEST_F(MultiStorePasswordSaveManagerTest,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
+  PasswordForm saved_match_without_moving_blocked_list(
+      saved_match_in_profile_store);
+  saved_match_without_moving_blocked_list.moving_blocked_for_list.clear();
+
   EXPECT_CALL(*mock_profile_form_saver(), Remove(saved_match_in_profile_store));
   EXPECT_CALL(*mock_account_form_saver(),
-              Save(saved_match_in_profile_store, _, _));
+              Save(saved_match_without_moving_blocked_list, _, _));
 
   password_save_manager()->MoveCredentialsToAccountStore();
 }

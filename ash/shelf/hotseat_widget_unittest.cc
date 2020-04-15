@@ -5,7 +5,7 @@
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/focus_cycler.h"
 #include "ash/home_screen/drag_window_from_shelf_controller_test_api.h"
 #include "ash/home_screen/home_screen_controller.h"

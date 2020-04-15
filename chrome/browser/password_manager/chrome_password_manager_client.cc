@@ -220,6 +220,9 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       password_generation_driver_receivers_(web_contents, this),
       observer_(nullptr),
       credentials_filter_(this, base::BindRepeating(&GetSyncService, profile_)),
+#if !defined(OS_ANDROID)
+      account_storage_auth_helper_(profile_),
+#endif
       helper_(this) {
   ContentPasswordManagerDriverFactory::CreateForWebContents(web_contents, this,
                                                             autofill_client);
@@ -575,41 +578,15 @@ void ChromePasswordManagerClient::TriggerReauthForAccount(
 #if defined(OS_ANDROID)
   std::move(reauth_callback).Run(ReauthSucceeded(false));
 #else   // !defined(OS_ANDROID)
-  Browser* browser = chrome::FindBrowserWithProfile(profile_);
-  if (!browser) {
-    std::move(reauth_callback).Run(ReauthSucceeded(false));
-    return;
-  }
-  SigninViewController* signin_view_controller =
-      browser->signin_view_controller();
-  if (!signin_view_controller) {
-    std::move(reauth_callback).Run(ReauthSucceeded(false));
-    return;
-  }
-  signin_view_controller->ShowReauthPrompt(
-      account_id,
-      base::BindOnce(
-          [](base::OnceCallback<void(ReauthSucceeded)> reauth_callback,
-             signin::ReauthResult result) {
-            std::move(reauth_callback)
-                .Run(ReauthSucceeded(result == signin::ReauthResult::kSuccess));
-          },
-          std::move(reauth_callback)));
+  account_storage_auth_helper_.TriggerOptInReauth(account_id,
+                                                  std::move(reauth_callback));
 #endif  // defined(OS_ANDROID)
 }
 
 void ChromePasswordManagerClient::TriggerSignIn() {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  Browser* browser = chrome::FindBrowserWithProfile(profile_);
-  if (!browser)
-    return;
-  if (SigninViewController* signin_controller =
-          browser->signin_view_controller()) {
-    signin_controller->ShowDiceAddAccountTab(
-        signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN,
-        std::string());
-  }
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if !defined(OS_ANDROID)
+  account_storage_auth_helper_.TriggerSignIn();
+#endif
 }
 
 bool ChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {

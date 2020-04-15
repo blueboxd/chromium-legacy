@@ -5,6 +5,7 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_IMPL_H_
 #define BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_IMPL_H_
 
+#include <deque>
 #include <list>
 #include <map>
 #include <memory>
@@ -12,7 +13,6 @@
 #include <set>
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "base/atomic_sequence_num.h"
 #include "base/cancelable_callback.h"
@@ -302,7 +302,9 @@ class BASE_EXPORT SequenceManagerImpl
     bool nesting_observer_registered_ = false;
 
     // Due to nested runloops more than one task can be executing concurrently.
-    std::vector<ExecutingTask> task_execution_stack;
+    // Note that this uses std::deque for pointer stability, since pointers to
+    // objects in this container are stored in TLS.
+    std::deque<ExecutingTask> task_execution_stack;
 
     Observer* observer = nullptr;  // NOT OWNED
 

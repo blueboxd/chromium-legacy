@@ -12,12 +12,17 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/file_handlers/directory_util.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
@@ -65,6 +70,56 @@ std::set<std::string> GetUniqueMimeTypes(
   return mime_types;
 }
 
+// Returns whether |url| is a RAW image file according to its extension. Note
+// that since none of the extensions of interest are "known" mime types (per
+// net/mime_util.cc), it's enough to simply check the extension rather than
+// using MimeTypeCollector. TODO(crbug/1030935): Remove this.
+bool IsRawImage(const FileSystemURL& url) {
+  constexpr const char* kRawExtensions[] = {".arw", ".cr2", ".dng", ".nef",
+                                            ".nrw", ".orf", ".raf", ".rw2"};
+  return base::Contains(kRawExtensions, url.path().Extension());
+}
+
+// Intercepts usage of executeTask(..) that wants to invoke the old "Gallery"
+// chrome app. If the media app is enabled, substitute it.
+// TODO(crbug/1030935): Remove this when the gallery app is properly removed and
+// the camera app has a new API (not fileManagerPrivate) to invoke its
+// "Camera Roll" viewer.
+void MaybeAdjustTaskForGalleryAppRemoval(
+    file_manager::file_tasks::TaskDescriptor* task,
+    const std::vector<FileSystemURL>& urls,
+    Profile* profile) {
+  if (!base::FeatureList::IsEnabled(chromeos::features::kMediaApp))
+    return;
+  if (task->app_id != file_manager::kGalleryAppId)
+    return;
+
+  DCHECK_EQ(task->task_type, file_manager::file_tasks::TASK_TYPE_FILE_HANDLER);
+
+  // Filter out any request with a RAW image type of a kind that the Gallery
+  // is known to register as a handler. Although from a product perspective, the
+  // Gallery should be entirely hidden, we still direct RAW images to Gallery
+  // until chrome://media-app supports them.
+  if (std::find_if(urls.begin(), urls.end(), &IsRawImage) != urls.end())
+    return;
+
+  auto* provider = web_app::WebAppProvider::Get(profile);
+  DCHECK(provider);
+
+  base::Optional<web_app::AppId> optional_app_id =
+      provider->system_web_app_manager().GetAppIdForSystemApp(
+          web_app::SystemAppType::MEDIA);
+  DCHECK(optional_app_id);
+
+  // Even if the flag is enabled, app installation can sometimes fail. Don't
+  // crash in that case. See https://crbug.com/1024042.
+  if (!optional_app_id)
+    return;
+
+  task->task_type = file_manager::file_tasks::TASK_TYPE_WEB_APP;
+  task->app_id = *optional_app_id;
+}
+
 }  // namespace
 
 FileManagerPrivateInternalExecuteTaskFunction::
@@ -102,6 +157,9 @@ FileManagerPrivateInternalExecuteTaskFunction::Run() {
     }
     urls.push_back(url);
   }
+
+  MaybeAdjustTaskForGalleryAppRemoval(&task, urls,
+                                      chrome_details_.GetProfile());
 
   const bool result = file_manager::file_tasks::ExecuteFileTask(
       chrome_details_.GetProfile(), source_url(), task, urls,

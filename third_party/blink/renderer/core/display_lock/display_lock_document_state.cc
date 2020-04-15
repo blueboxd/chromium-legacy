@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 
@@ -128,6 +129,47 @@ bool DisplayLockDocumentState::ActivatableDisplayLocksForced() const {
 void DisplayLockDocumentState::NotifySelectionRemoved() {
   for (auto context : display_lock_contexts_)
     context->NotifySubtreeLostSelection();
+}
+
+void DisplayLockDocumentState::BeginNodeForcedScope(
+    const Node* node,
+    bool self_was_forced,
+    DisplayLockUtilities::ScopedChainForcedUpdate* scope) {
+  forced_node_info_.emplace_back(node, self_was_forced, scope);
+}
+
+void DisplayLockDocumentState::EndNodeForcedScope(
+    DisplayLockUtilities::ScopedChainForcedUpdate* scope) {
+  for (wtf_size_t i = 0; i < forced_node_info_.size(); ++i) {
+    if (forced_node_info_[i].scope == scope) {
+      forced_node_info_.EraseAt(i);
+      return;
+    }
+  }
+  // We should always find a scope to erase.
+  NOTREACHED();
+}
+
+void DisplayLockDocumentState::ForceLockIfNeeded(Element* element) {
+  DCHECK(element->GetDisplayLockContext());
+  for (wtf_size_t i = 0; i < forced_node_info_.size(); ++i)
+    ForceLockIfNeededForInfo(element, &forced_node_info_[i]);
+}
+
+void DisplayLockDocumentState::ForceLockIfNeededForInfo(
+    Element* element,
+    ForcedNodeInfo* forced_node_info) {
+  auto ancestor_view =
+      forced_node_info->self_forced
+          ? FlatTreeTraversal::InclusiveAncestorsOf(*forced_node_info->node)
+          : FlatTreeTraversal::AncestorsOf(*forced_node_info->node);
+  for (Node& ancestor : ancestor_view) {
+    if (element == &ancestor) {
+      forced_node_info->scope->AddScopedForcedUpdate(
+          element->GetDisplayLockContext());
+      break;
+    }
+  }
 }
 
 // ScopedForcedActivatableDisplayLocks implementation -----------

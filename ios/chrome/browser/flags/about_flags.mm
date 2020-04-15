@@ -596,6 +596,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"managed-bookmarks-ios", flag_descriptions::kManagedBookmarksIOSName,
      flag_descriptions::kManagedBookmarksIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kManagedBookmarksIOS)},
+    {"enable-autofill-cache-server-card-info",
+     flag_descriptions::kEnableAutofillCacheServerCardInfoName,
+     flag_descriptions::kEnableAutofillCacheServerCardInfoDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillCacheServerCardInfo)},
 };
 
 // Add all switches from experimental flags to |command_line|.

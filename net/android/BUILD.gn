@@ -33,7 +33,7 @@ android_library("net_java") {
     "//base:base_java",
     "//base:jni_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/jsr-305:jsr_305_javalib",
+    "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   srcjar_deps = [

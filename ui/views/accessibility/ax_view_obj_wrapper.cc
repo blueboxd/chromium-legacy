@@ -92,6 +92,10 @@ bool AXViewObjWrapper::HandleAccessibleAction(const ui::AXActionData& action) {
   return view_ ? view_->HandleAccessibleAction(action) : false;
 }
 
+std::string AXViewObjWrapper::ToString() const {
+  return std::string(view_ ? view_->GetClassName() : "Null view");
+}
+
 void AXViewObjWrapper::OnViewIsDeleting(View* observed_view) {
   observer_.RemoveAll();
   view_ = nullptr;

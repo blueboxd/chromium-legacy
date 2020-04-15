@@ -63,7 +63,7 @@ js_library("gallerybutton") {
 js_library("metrics") {
   deps = [
     ":state",
-    "externs:chrome_platform_analytics",
+    "externs:universal_analytics_api",
   ]
 }
 

@@ -61,6 +61,7 @@ namespace http://www.w3.org/1999/xhtml
     property ariaRowIndex
     property ariaRowSpan
     property ariaSelected
+    property ariaSetSize
     property ariaSort
     property ariaValueMax
     property ariaValueMin
@@ -1218,6 +1219,7 @@ namespace http://www.w3.org/2000/svg
     property ariaRowIndex
     property ariaRowSpan
     property ariaSelected
+    property ariaSetSize
     property ariaSort
     property ariaValueMax
     property ariaValueMin

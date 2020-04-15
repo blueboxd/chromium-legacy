@@ -174,11 +174,15 @@ DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
 
 DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
     const Node* node,
-    bool include_self) {
+    bool include_self)
+    : node_(node) {
   if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
     return;
 
   CreateParentFrameScopeIfNeeded(node);
+
+  node->GetDocument().GetDisplayLockDocumentState().BeginNodeForcedScope(
+      node, include_self, this);
 
   if (node->GetDocument()
           .GetDisplayLockDocumentState()
@@ -211,8 +215,14 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
     if (!ancestor_node)
       continue;
     if (auto* context = ancestor_node->GetDisplayLockContext())
-      scoped_update_forced_list_.push_back(context->GetScopedForcedUpdate());
+      scoped_update_forced_map_.Set(context, context->GetScopedForcedUpdate());
   }
+}
+
+DisplayLockUtilities::ScopedChainForcedUpdate::~ScopedChainForcedUpdate() {
+  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+    return;
+  node_->GetDocument().GetDisplayLockDocumentState().EndNodeForcedScope(this);
 }
 
 void DisplayLockUtilities::ScopedChainForcedUpdate::
@@ -220,6 +230,14 @@ void DisplayLockUtilities::ScopedChainForcedUpdate::
   auto* owner_node = GetFrameOwnerNode(node);
   if (owner_node)
     parent_frame_scope_.reset(new ScopedChainForcedUpdate(owner_node, true));
+}
+
+void DisplayLockUtilities::ScopedChainForcedUpdate::AddScopedForcedUpdate(
+    DisplayLockContext* context) {
+  auto it = scoped_update_forced_map_.find(context);
+  if (it != scoped_update_forced_map_.end())
+    return;
+  scoped_update_forced_map_.Set(context, context->GetScopedForcedUpdate());
 }
 
 const Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(

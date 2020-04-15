@@ -35,7 +35,6 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_values.h"
 
-using base::StringPiece;
 using base::Time;
 using base::TimeDelta;
 
@@ -327,14 +326,13 @@ void HttpResponseHeaders::MergeWithHeaders(const std::string& raw_headers,
   Parse(new_raw_headers);
 }
 
-void HttpResponseHeaders::RemoveHeader(const std::string& name) {
+void HttpResponseHeaders::RemoveHeader(base::StringPiece name) {
   // Copy up to the null byte.  This just copies the status line.
   std::string new_raw_headers(raw_headers_.c_str());
   new_raw_headers.push_back('\0');
 
-  std::string lowercase_name = base::ToLowerASCII(name);
   HeaderSet to_remove;
-  to_remove.insert(lowercase_name);
+  to_remove.insert(base::ToLowerASCII(name));
   MergeWithHeaders(new_raw_headers, to_remove);
 }
 
@@ -420,7 +418,7 @@ void HttpResponseHeaders::AddHeader(base::StringPiece name,
 
 void HttpResponseHeaders::SetHeader(base::StringPiece name,
                                     base::StringPiece value) {
-  RemoveHeader(name.as_string());
+  RemoveHeader(name);
   AddHeader(name, value);
 }
 
@@ -515,7 +513,7 @@ void HttpResponseHeaders::Parse(const std::string& raw_input) {
   DCHECK_EQ('\0', raw_headers_[raw_headers_.size() - 1]);
 }
 
-bool HttpResponseHeaders::GetNormalizedHeader(const std::string& name,
+bool HttpResponseHeaders::GetNormalizedHeader(base::StringPiece name,
                                               std::string* value) const {
   // If you hit this assertion, please use EnumerateHeader instead!
   DCHECK(!HttpUtil::IsNonCoalescingHeader(name));
@@ -593,7 +591,7 @@ bool HttpResponseHeaders::EnumerateHeaderLines(size_t* iter,
 }
 
 bool HttpResponseHeaders::EnumerateHeader(size_t* iter,
-                                          const base::StringPiece& name,
+                                          base::StringPiece name,
                                           std::string* value) const {
   size_t i;
   if (!iter || !*iter) {
@@ -618,8 +616,8 @@ bool HttpResponseHeaders::EnumerateHeader(size_t* iter,
   return true;
 }
 
-bool HttpResponseHeaders::HasHeaderValue(const base::StringPiece& name,
-                                         const base::StringPiece& value) const {
+bool HttpResponseHeaders::HasHeaderValue(base::StringPiece name,
+                                         base::StringPiece value) const {
   // The value has to be an exact match.  This is important since
   // 'cache-control: no-cache' != 'cache-control: no-cache="foo"'
   size_t iter = 0;
@@ -631,7 +629,7 @@ bool HttpResponseHeaders::HasHeaderValue(const base::StringPiece& name,
   return false;
 }
 
-bool HttpResponseHeaders::HasHeader(const base::StringPiece& name) const {
+bool HttpResponseHeaders::HasHeader(base::StringPiece name) const {
   return FindHeader(0, name) != std::string::npos;
 }
 
@@ -737,7 +735,7 @@ void HttpResponseHeaders::ParseStatusLine(
   }
   raw_headers_.push_back(' ');
   raw_headers_.append(code, p);
-  base::StringToInt(StringPiece(code, p), &response_code_);
+  base::StringToInt(base::StringPiece(code, p), &response_code_);
 
   // Skip whitespace.
   while (p < line_end && *p == ' ')
@@ -755,7 +753,7 @@ void HttpResponseHeaders::ParseStatusLine(
 }
 
 size_t HttpResponseHeaders::FindHeader(size_t from,
-                                       const base::StringPiece& search) const {
+                                       base::StringPiece search) const {
   for (size_t i = from; i < parsed_.size(); ++i) {
     if (parsed_[i].is_continuation())
       continue;
@@ -767,9 +765,9 @@ size_t HttpResponseHeaders::FindHeader(size_t from,
   return std::string::npos;
 }
 
-bool HttpResponseHeaders::GetCacheControlDirective(const StringPiece& directive,
+bool HttpResponseHeaders::GetCacheControlDirective(base::StringPiece directive,
                                                    TimeDelta* result) const {
-  StringPiece name("cache-control");
+  base::StringPiece name("cache-control");
   std::string value;
 
   size_t directive_size = directive.size();
@@ -782,7 +780,7 @@ bool HttpResponseHeaders::GetCacheControlDirective(const StringPiece& directive,
         value[directive_size] == '=') {
       int64_t seconds;
       base::StringToInt64(
-          StringPiece(value.begin() + directive_size + 1, value.end()),
+          base::StringPiece(value.begin() + directive_size + 1, value.end()),
           &seconds);
       *result = TimeDelta::FromSeconds(seconds);
       return true;
@@ -1372,7 +1370,7 @@ bool HttpResponseHeaders::IsChunkEncoded() const {
          HasHeaderValue("Transfer-Encoding", "chunked");
 }
 
-bool HttpResponseHeaders::IsCookieResponseHeader(StringPiece name) {
+bool HttpResponseHeaders::IsCookieResponseHeader(base::StringPiece name) {
   for (const char* cookie_header : kCookieResponseHeaders) {
     if (base::EqualsCaseInsensitiveASCII(cookie_header, name))
       return true;

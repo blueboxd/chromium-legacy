@@ -147,6 +147,7 @@ enum class AppListSearchResultType {
   kDriveQuickAccess,       // Drive QuickAccess results.
   kFileChip,               // Local file results in suggestion chips.
   kDriveQuickAccessChip,   // Drive file results in suggestion chips.
+  kAssistantChip,          // Assistant results in suggestion chips.
   // Add new values here.
 };
 

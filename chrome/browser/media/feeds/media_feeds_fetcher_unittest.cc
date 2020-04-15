@@ -84,7 +84,7 @@ class MediaFeedsFetcherTest : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(cc.get());
 
     cookie_manager->SetCanonicalCookie(
-        *cc.get(), url.scheme(), net::CookieOptions::MakeAllInclusive(),
+        *cc.get(), url, net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(
             [](bool* result, base::RunLoop* run_loop,
                net::CanonicalCookie::CookieInclusionStatus set_cookie_status) {

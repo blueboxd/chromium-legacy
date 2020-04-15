@@ -31,7 +31,9 @@ class NET_EXPORT_PRIVATE QuicClientSessionCache : public quic::SessionCache {
   ~QuicClientSessionCache() override;
 
   void Insert(const quic::QuicServerId& server_id,
-              std::unique_ptr<quic::QuicResumptionState> state) override;
+              bssl::UniquePtr<SSL_SESSION> session,
+              quic::TransportParameters* params,
+              std::vector<uint8_t>* application_states) override;
 
   std::unique_ptr<quic::QuicResumptionState> Lookup(
       const quic::QuicServerId& server_id,

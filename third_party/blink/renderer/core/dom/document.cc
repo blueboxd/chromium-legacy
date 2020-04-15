@@ -1027,6 +1027,21 @@ bool Document::FeaturePolicyFeatureObserved(
   return false;
 }
 
+bool Document::DocumentPolicyFeatureObserved(
+    mojom::blink::DocumentPolicyFeature feature) {
+  wtf_size_t feature_index = static_cast<wtf_size_t>(feature);
+  if (parsed_document_policies_.size() == 0) {
+    parsed_document_policies_.resize(
+        static_cast<wtf_size_t>(
+            mojom::blink::DocumentPolicyFeature::kMaxValue) +
+        1);
+  } else if (parsed_document_policies_[feature_index]) {
+    return true;
+  }
+  parsed_document_policies_[feature_index] = true;
+  return false;
+}
+
 const SecurityOrigin* Document::GetSecurityOrigin() const {
   return GetSecurityContext().GetSecurityOrigin();
 }
@@ -8529,6 +8544,14 @@ void Document::ReportDocumentPolicyViolation(
   auto* reporting_context = ReportingContext::From(domWindow());
   const base::Optional<std::string> endpoint =
       relevant_document_policy->GetFeatureEndpoint(feature);
+
+  if (is_report_only) {
+    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.DocumentPolicy.ReportOnly",
+                              feature);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.DocumentPolicy.Enforced",
+                              feature);
+  }
 
   reporting_context->QueueReport(
       report, endpoint ? Vector<String>{endpoint->c_str()} : Vector<String>{});

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
@@ -1230,25 +1231,25 @@ TEST_F(NetworkServiceTestWithService, SetsTrustTokenKeyCommitments) {
   ASSERT_TRUE(service_->trust_token_key_commitments());
 
   auto expectation = mojom::TrustTokenKeyCommitmentResult::New();
-  expectation->batch_size = mojom::TrustTokenKeyCommitmentBatchSize::New(5);
+  ASSERT_TRUE(base::Base64Decode(
+      "aaaa", &expectation->signed_redemption_record_verification_key));
 
-  url::Origin issuer_origin =
-      url::Origin::Create(GURL("https://issuer.example"));
-
-  base::flat_map<url::Origin, mojom::TrustTokenKeyCommitmentResultPtr> to_set;
-  to_set.insert_or_assign(issuer_origin, expectation.Clone());
-  network_service_->SetTrustTokenKeyCommitments(std::move(to_set));
-  network_service_.FlushForTesting();
+  base::RunLoop run_loop;
+  network_service_->SetTrustTokenKeyCommitments(
+      R"( { "https://issuer.example": { "srrkey": "aaaa" } } )",
+      run_loop.QuitClosure());
+  run_loop.Run();
 
   mojom::TrustTokenKeyCommitmentResultPtr result;
   bool ran = false;
 
   service_->trust_token_key_commitments()->Get(
-      issuer_origin, base::BindLambdaForTesting(
-                         [&](mojom::TrustTokenKeyCommitmentResultPtr ptr) {
-                           result = std::move(ptr);
-                           ran = true;
-                         }));
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.example")),
+      base::BindLambdaForTesting(
+          [&](mojom::TrustTokenKeyCommitmentResultPtr ptr) {
+            result = std::move(ptr);
+            ran = true;
+          }));
 
   ASSERT_TRUE(ran);
 

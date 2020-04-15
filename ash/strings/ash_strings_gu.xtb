@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">તમારી લૉક સ્ક્રીન પર નોટિફિકેશન જોવા માટે, સેટિંગને બદલવા માટે અનલૉક કરો</translation>
 <translation id="4144413954005649103">બટનને રાઇટ ક્લિક કરવાથી અથવા થોડીવાર દબાવી રાખવાથી, Assistant તમને તમે સ્ક્રીન પર જે પસંદ કર્યુ છે તેનાથી સંબંધિત માહિતી બતાવે છે.</translation>
 <translation id="4146833061457621061">મ્યુઝિક વગાડો</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> <ph name="DOMAIN" /> દ્વારા મેનેજ કરવામાં આવે છે</translation>
 <translation id="4181841719683918333">ભાષાઓ</translation>
 <translation id="4195877955194704651">ઑટોમૅટિક ક્લિક બટન</translation>
 <translation id="4215497585250573029">VPN સેટિંગ</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">શૉર્ટકટ બંધ કર્યો</translation>
 <translation id="6910714959251846841">આ અપડેટ માટે તમારા ઉપકરણને પાવરવોશ કરવું જરૂરી છે. નવીનતમ <ph name="SYSTEM_APP_NAME" /> અપડેટ વિશે વધુ જાણો.</translation>
 <translation id="6919251195245069855">તમારું સ્માર્ટ કાર્ડ ઓળખી શક્યાં નથી. ફરી પ્રયાસ કરો.</translation>
+<translation id="6945221475159498467">પસંદ કરો</translation>
 <translation id="6972754398087986839">પ્રારંભ કરો</translation>
 <translation id="6981982820502123353">ઍક્સેસિબિલિટી</translation>
 <translation id="698231206551913481">આ વપરાશકર્તા દૂર કરી દેવામાં આવે તે પછી આ વપરાશકર્તા સાથે સંકળાયેલ તમામ ફાઇલો અને સ્થાનિક ડેટા કાયમીરૂપે કાઢી નાખવામાં આવશે.</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">ખાનગી નેટવર્ક</translation>
 <translation id="8152092012181020186">બંધ કરવા માટે Ctrl + W દબાવો.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> આ સેટિંગને તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે.</translation>
+<translation id="815598010540052116">નીચે સ્ક્રોલ કરો</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />નો ઉપયોગ કરી રહ્યા છે</translation>
 <translation id="8190698733819146287">ભાષાઓ અને ઇનપુટને કસ્ટમાઇઝ કરો...</translation>
 <translation id="8192202700944119416">નોટિફિકેશન છુપાવેલા છે.</translation>

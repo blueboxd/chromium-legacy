@@ -925,6 +925,62 @@ AuthenticatorClientPinTapAgainSheetModel::GetAdditionalDescription() const {
   return PossibleResidentKeyWarning(dialog_model());
 }
 
+// AuthenticatorBioEnrollmentSheetModel ----------------------------------
+
+AuthenticatorBioEnrollmentSheetModel::AuthenticatorBioEnrollmentSheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {}
+
+AuthenticatorBioEnrollmentSheetModel::~AuthenticatorBioEnrollmentSheetModel() =
+    default;
+
+bool AuthenticatorBioEnrollmentSheetModel::IsActivityIndicatorVisible() const {
+  return !IsAcceptButtonVisible();
+}
+
+const gfx::VectorIcon&
+AuthenticatorBioEnrollmentSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return color_scheme == ImageColorScheme::kDark ? kWebauthnFingerprintDarkIcon
+                                                 : kWebauthnFingerprintIcon;
+}
+
+base::string16 AuthenticatorBioEnrollmentSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(
+      IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ADD_TITLE);
+}
+
+base::string16 AuthenticatorBioEnrollmentSheetModel::GetStepDescription()
+    const {
+  return IsAcceptButtonVisible()
+             ? l10n_util::GetStringUTF16(
+                   IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLING_COMPLETE_LABEL)
+             : l10n_util::GetStringUTF16(
+                   IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLING_LABEL);
+}
+
+bool AuthenticatorBioEnrollmentSheetModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+bool AuthenticatorBioEnrollmentSheetModel::IsAcceptButtonVisible() const {
+  return dialog_model()->bio_samples_remaining() <= 0;
+}
+
+base::string16 AuthenticatorBioEnrollmentSheetModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_NEXT);
+}
+
+bool AuthenticatorBioEnrollmentSheetModel::IsCancelButtonVisible() const {
+  return !IsAcceptButtonVisible();
+}
+
+base::string16 AuthenticatorBioEnrollmentSheetModel::GetCancelButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_INLINE_ENROLLMENT_CANCEL_LABEL);
+}
+
 // AuthenticatorRetryUvSheetModel -------------------------------------
 
 AuthenticatorRetryUvSheetModel::AuthenticatorRetryUvSheetModel(

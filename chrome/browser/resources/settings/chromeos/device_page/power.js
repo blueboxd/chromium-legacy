@@ -205,7 +205,7 @@ Polymer({
   /** @private */
   onAcIdleSelectChange_() {
     const behavior = /** @type {settings.IdleBehavior} */
-        (parseInt(this.$.acIdleSelect.value, 10));
+        (parseInt(this.$$('#acIdleSelect').value, 10));
     this.browserProxy_.setIdleBehavior(behavior, true /* whenOnAc */);
     settings.recordSettingChange();
   },
@@ -213,7 +213,7 @@ Polymer({
   /** @private */
   onBatteryIdleSelectChange_() {
     const behavior = /** @type {settings.IdleBehavior} */
-        (parseInt(this.$.batteryIdleSelect.value, 10));
+        (parseInt(this.$$('#batteryIdleSelect').value, 10));
     this.browserProxy_.setIdleBehavior(behavior, false /* whenOnAc */);
     settings.recordSettingChange();
   },

@@ -27,6 +27,8 @@ EnableDebuggingScreen::~EnableDebuggingScreen() {
 }
 
 void EnableDebuggingScreen::OnExit(bool success) {
+  if (is_hidden())
+    return;
   exit_callback_.Run();
 }
 

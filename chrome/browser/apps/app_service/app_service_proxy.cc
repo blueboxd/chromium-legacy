@@ -335,6 +335,7 @@ void AppServiceProxy::UnpauseApps(const std::set<std::string>& app_ids) {
       continue;
     }
 
+    pending_pause_requests_.MaybeRemoveApp(app_id);
     app_service_->UnpauseApps(app_type, app_id);
   }
 }
@@ -663,7 +664,9 @@ void AppServiceProxy::OnLoadIconForPauseDialog(
 
 void AppServiceProxy::OnPauseDialogClosed(apps::mojom::AppType app_type,
                                           const std::string& app_id) {
-  app_service_->PauseApp(app_type, app_id);
+  if (pending_pause_requests_.IsPaused(app_id)) {
+    app_service_->PauseApp(app_type, app_id);
+  }
 }
 #endif  // OS_CHROMEOS
 

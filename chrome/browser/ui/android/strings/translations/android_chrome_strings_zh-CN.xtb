@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">打开“设置”</translation>
 <translation id="4250229828105606438">屏幕截图</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
-<translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
 <translation id="4269820728363426813">复制链接地址</translation>
 <translation id="4275663329226226506">媒体</translation>
 <translation id="4278390842282768270">允许</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">要将您的书签同步到您的所有设备上，请开启同步功能</translation>
 <translation id="8110087112193408731">在“数字健康”应用中显示您的 Chrome 活动记录？</translation>
+<translation id="8115259494083109761">如需扫描二维码，请允许 Chrome 使用您的摄像头</translation>
 <translation id="8116925261070264013">已静音的网站</translation>
 <translation id="8127542551745560481">修改主页</translation>
 <translation id="813082847718468539">查看网站信息</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">在其他窗口中打开</translation>
 <translation id="8951232171465285730">Chrome 已为您保存的数据量：<ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">阻止特定网站使用 Cookie。</translation>
-<translation id="8959122750345127698">无法访问 <ph name="URL" /></translation>
 <translation id="8965591936373831584">待下载</translation>
 <translation id="8970887620466824814">出了点问题。</translation>
 <translation id="8972098258593396643">是否下载到默认文件夹？</translation>

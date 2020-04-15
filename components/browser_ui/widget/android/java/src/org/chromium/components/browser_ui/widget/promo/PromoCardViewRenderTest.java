@@ -1,0 +1,103 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.components.browser_ui.widget.promo;
+
+import android.app.Activity;
+import android.support.test.filters.SmallTest;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.params.BaseJUnit4RunnerDelegate;
+import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
+import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.base.test.util.Feature;
+import org.chromium.components.browser_ui.widget.test.R;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.test.util.NightModeTestUtils;
+import org.chromium.ui.test.util.RenderTestRule;
+import org.chromium.ui.widget.ButtonCompat;
+
+import java.util.List;
+
+/**
+ * Render test for {@link PromoCardView}.
+ */
+@RunWith(ParameterizedRunner.class)
+@UseRunnerDelegate(BaseJUnit4RunnerDelegate.class)
+public class PromoCardViewRenderTest extends DummyUiActivityTestCase {
+    @ClassParameter
+    private static List<ParameterSet> sClassParams =
+            new NightModeTestUtils.NightModeParams().getParameters();
+
+    @Rule
+    public RenderTestRule mRenderTestRule =
+            new RenderTestRule("chrome/test/data/android/render_tests");
+
+    public PromoCardViewRenderTest(boolean nightModeEnabled) {
+        NightModeTestUtils.setUpNightModeForDummyUiActivity(nightModeEnabled);
+        mRenderTestRule.setNightModeEnabled(nightModeEnabled);
+    }
+
+    private PromoCardCoordinator mPromoCardCoordinator;
+    private PropertyModel mModel;
+
+    @Override
+    public void setUpTest() throws Exception {
+        super.setUpTest();
+        Activity activity = getActivity();
+        mModel =
+                new PropertyModel.Builder(PromoCardProperties.ALL_KEYS)
+                        .with(PromoCardProperties.IMAGE, activity, R.drawable.logo_avatar_anonymous)
+                        .with(PromoCardProperties.TITLE, "Title for Promo Card.")
+                        .with(PromoCardProperties.DESCRIPTION, "Description for Promo Card.")
+                        .with(PromoCardProperties.PRIMARY_BUTTON_TEXT, "Primary button")
+                        .with(PromoCardProperties.SECONDARY_BUTTON_TEXT, "Secondary button")
+                        .build();
+        mPromoCardCoordinator = new PromoCardCoordinator(activity, mModel, "render-test");
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Set the content and add the promo card into the window
+            LinearLayout content = new LinearLayout(activity);
+            activity.setContentView(content);
+            content.addView(mPromoCardCoordinator.getView(),
+                    new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT));
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    public void testDefault() throws Exception {
+        mRenderTestRule.render(mPromoCardCoordinator.getView(), "promo_card_default");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    public void testHideSecondaryButton() throws Exception {
+        mModel.set(PromoCardProperties.SECONDARY_BUTTON_VISIBLE, false);
+
+        CriteriaHelper.pollUiThread(Criteria.equals(View.GONE, () -> {
+            ButtonCompat secondaryButton =
+                    mPromoCardCoordinator.getView().findViewById(R.id.promo_secondary_button);
+            return secondaryButton.getVisibility();
+        }));
+
+        mRenderTestRule.render(mPromoCardCoordinator.getView(), "promo_card_secondary_hidden");
+    }
+}

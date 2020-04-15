@@ -269,7 +269,7 @@ function boundingForce(graphHeight) {
       const node = nodes[i];
       const yOld = node.y;
       const yNew = Math.max(bound[0], Math.min(yOld, bound[1]));
-      if (yOld != yNew) {
+      if (yOld !== yNew) {
         node.y = yNew;
         // Zero the velocity of clamped nodes.
         node.vy = 0;
@@ -446,8 +446,8 @@ class Graph {
    */
   removeNodeLinks_(node) {
     // Filter away any links to or from the deleted node.
-    this.links_ =
-        this.links_.filter(link => link.source != node && link.target != node);
+    this.links_ = this.links_.filter(
+        link => link.source !== node && link.target !== node);
   }
 
   /**

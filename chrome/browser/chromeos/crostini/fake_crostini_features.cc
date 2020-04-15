@@ -15,6 +15,26 @@ FakeCrostiniFeatures::~FakeCrostiniFeatures() {
   CrostiniFeatures::SetForTesting(original_features_);
 }
 
+void FakeCrostiniFeatures::SetAll(bool flag) {
+  allowed_ = flag;
+  ui_allowed_ = flag;
+  enabled_ = flag;
+  export_import_ui_allowed_ = flag;
+  root_access_allowed_ = flag;
+  container_upgrade_ui_allowed_ = flag;
+  can_change_adb_sideloading_ = flag;
+}
+
+void FakeCrostiniFeatures::ClearAll() {
+  allowed_ = base::nullopt;
+  ui_allowed_ = base::nullopt;
+  enabled_ = base::nullopt;
+  export_import_ui_allowed_ = base::nullopt;
+  root_access_allowed_ = base::nullopt;
+  container_upgrade_ui_allowed_ = base::nullopt;
+  can_change_adb_sideloading_ = base::nullopt;
+}
+
 bool FakeCrostiniFeatures::IsAllowed(Profile* profile) {
   if (allowed_.has_value())
     return *allowed_;

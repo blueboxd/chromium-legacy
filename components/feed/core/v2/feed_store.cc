@@ -55,6 +55,10 @@ std::string SharedStateKey(const feedwire::ContentId& content_id) {
   return KeyForContentId("s/", content_id);
 }
 
+std::string LocalActionKey(int32_t id) {
+  return kLocalActionPrefix + base::NumberToString(id);
+}
+
 std::string KeyForRecord(const feedstore::Record& record) {
   switch (record.data_case()) {
     case feedstore::Record::kStreamData:
@@ -66,8 +70,7 @@ std::string KeyForRecord(const feedstore::Record& record) {
     case feedstore::Record::kContent:
       return ContentKey(record.content().content_id());
     case feedstore::Record::kLocalAction:
-      return kLocalActionPrefix +
-             base::NumberToString(record.local_action().id());
+      return LocalActionKey(record.local_action().id());
     case feedstore::Record::kSharedState:
       return SharedStateKey(record.shared_state().content_id());
     case feedstore::Record::kNextStreamState:
@@ -81,6 +84,11 @@ std::string KeyForRecord(const feedstore::Record& record) {
 bool FilterByKey(const base::flat_set<std::string>& key_set,
                  const std::string& key) {
   return key_set.contains(key);
+}
+
+bool ActionsFilter(const std::string& key) {
+  return key.size() >= 2 && key[0] == kLocalActionPrefix[0] &&
+         key[1] == kLocalActionPrefix[1];
 }
 
 feedstore::Record MakeRecord(feedstore::Content content) {
@@ -361,6 +369,56 @@ void FeedStore::OnReadNextStreamStateFinished(
 
   std::move(callback).Run(
       base::WrapUnique(record->release_next_stream_state()));
+}
+
+void FeedStore::ReadActions(
+    base::OnceCallback<void(std::vector<feedstore::StoredAction>)> callback) {
+  database_->LoadEntriesWithFilter(
+      base::BindRepeating(&ActionsFilter),
+      base::BindOnce(&FeedStore::OnReadActionsFinished,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FeedStore::OnReadActionsFinished(
+    base::OnceCallback<void(std::vector<feedstore::StoredAction>)> callback,
+    bool success,
+    std::unique_ptr<std::vector<feedstore::Record>> records) {
+  if (!success || !records) {
+    std::move(callback).Run({});
+    return;
+  }
+
+  std::vector<feedstore::StoredAction> actions;
+  actions.reserve(records->size());
+  for (auto& record : *records) {
+    actions.push_back(std::move(record.local_action()));
+  }
+  std::move(callback).Run(std::move(actions));
+}
+
+void FeedStore::WriteActions(std::vector<feedstore::StoredAction> actions,
+                             base::OnceCallback<void(bool)> callback) {
+  std::vector<feedstore::Record> records;
+  records.reserve(actions.size());
+  for (auto& action : actions) {
+    feedstore::Record record;
+    *record.mutable_local_action() = std::move(action);
+    records.push_back(record);
+  }
+  Write(std::move(records), std::move(callback));
+}
+
+void FeedStore::RemoveActions(std::vector<LocalActionId> ids,
+                              base::OnceCallback<void(bool)> callback) {
+  auto keys = std::make_unique<std::vector<std::string>>();
+  keys->reserve(ids.size());
+  for (LocalActionId id : ids)
+    keys->push_back(LocalActionKey(id.GetUnsafeValue()));
+
+  database_->UpdateEntries(
+      /*entries_to_save=*/std::make_unique<
+          std::vector<std::pair<std::string, feedstore::Record>>>(),
+      /*key_to_remove=*/std::move(keys), std::move(callback));
 }
 
 void FeedStore::Write(std::vector<feedstore::Record> records,

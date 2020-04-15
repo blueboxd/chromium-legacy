@@ -3,6 +3,7 @@
 <translationbundle lang="sl">
 <translation id="1005230401424685968">LLLL</translation>
 <translation id="1016495303386450659">Item updated</translation>
+<translation id="1044891598689252897">Spletna mesta bodo delovala normalno</translation>
 <translation id="1047726139967079566">Zaznamek za to stran ...</translation>
 <translation id="1049743911850919806">Način brez beleženja zgodovine</translation>
 <translation id="1063454504051558093">Uporaba drugega gesla …</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860">Št. elementov: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Dvakrat se dotaknite, da preklopite nastavitev</translation>
 <translation id="1509486075633541495">Prijavite se na spletnem mestu</translation>
+<translation id="1509960214886564027">Funkcije na številnih spletnih mestih morda ne bodo delovale</translation>
 <translation id="152234381334907219">Nikoli shranjeno</translation>
 <translation id="1540800554400757039">Naslov 1</translation>
 <translation id="1545749641540134597">Scan QR Code</translation>
@@ -528,6 +530,7 @@ Ker vaš račun upravlja <ph name="HOSTED_DOMAIN" />, bodo podatki v Chromu ob o
 <translation id="7961015016161918242">Nikoli</translation>
 <translation id="7971521879845308059">Blokiraj pojavna okna</translation>
 <translation id="7982789257301363584">Omrežje</translation>
+<translation id="7993619969781047893">Funkcije na nekaterih spletnih mestih morda ne bodo delovale</translation>
 <translation id="800361585186029508">Odpre vnesene URL-je v Google Chromu.</translation>
 <translation id="8007420562015504427">Iskanje brez beleženja zgodovine</translation>
 <translation id="8019783059653722575">S tem je mogoče shranjevati in nalagati fotografije.</translation>

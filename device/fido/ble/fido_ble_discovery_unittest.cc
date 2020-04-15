@@ -181,10 +181,6 @@ TEST_F(FidoBleDiscoveryTest, FidoBleDiscoveryNoAdapter) {
 }
 
 TEST_F(BluetoothTest, FidoBleDiscoveryFindsKnownDevice) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
 
   SimulateLowEnergyDevice(4);  // This device should be ignored.
@@ -210,10 +206,6 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsKnownDevice) {
 }
 
 TEST_F(BluetoothTest, FidoBleDiscoveryFindsNewDevice) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
 
   FidoBleDiscovery discovery;
@@ -253,10 +245,6 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsNewDevice) {
 // that the device supports the FIDO service, the observer should be notified of
 // a new FidoBleDevice.
 TEST_F(BluetoothTest, FidoBleDiscoveryFindsUpdatedDevice) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
 
   SimulateLowEnergyDevice(3);
@@ -301,10 +289,6 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsUpdatedDevice) {
 }
 
 TEST_F(BluetoothTest, FidoBleDiscoveryRejectsCableDevice) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
 
   FidoBleDiscovery discovery;

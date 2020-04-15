@@ -89,12 +89,7 @@ class CrostiniBrowserTestChromeBrowserMainExtraParts
 CrostiniDialogBrowserTest::CrostiniDialogBrowserTest(bool register_termina)
     : register_termina_(register_termina) {
   scoped_feature_list_.InitAndEnableFeature(features::kCrostini);
-  fake_crostini_features_.set_allowed(true);
-  fake_crostini_features_.set_ui_allowed(true);
-  fake_crostini_features_.set_enabled(true);
-  fake_crostini_features_.set_export_import_ui_allowed(true);
-  fake_crostini_features_.set_root_access_allowed(true);
-  fake_crostini_features_.set_container_upgrade_ui_allowed(true);
+  fake_crostini_features_.SetAll(true);
 }
 
 CrostiniDialogBrowserTest::~CrostiniDialogBrowserTest() = default;

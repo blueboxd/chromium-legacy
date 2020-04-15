@@ -61,25 +61,16 @@ source_set("factory") {
 if (is_android) {
   android_library("public_java") {
     sources = [
-      "android/java/src/org/chromium/chrome/browser/query_tiles/QueryTileCoordinator.java",
-      "android/java/src/org/chromium/chrome/browser/query_tiles/QueryTileCoordinatorFactory.java",
-      "android/java/src/org/chromium/chrome/browser/query_tiles/Tile.java",
+      "android/java/src/org/chromium/chrome/browser/query_tiles/QueryTile.java",
       "android/java/src/org/chromium/chrome/browser/query_tiles/TileProvider.java",
       "android/java/src/org/chromium/chrome/browser/query_tiles/bridges/TileProviderBridge.java",
-      "android/java/src/org/chromium/chrome/browser/query_tiles/list/QueryTileCoordinatorImpl.java",
-      "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileListModel.java",
-      "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileListProperties.java",
-      "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileListPropertyViewBinder.java",
-      "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileListView.java",
-      "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileSizeSupplier.java",
-      "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileViewHolder.java",
-      "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileViewHolderFactory.java",
     ]
 
     deps = [
       ":chrome_upboarding_query_tiles_java_resources",
       "//base:base_java",
       "//base:jni_java",
+      "//components/browser_ui/widget/android:java",
       "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
       "//ui/android:ui_java",
     ]
@@ -94,12 +85,7 @@ if (is_android) {
   }
 
   android_resources("chrome_upboarding_query_tiles_java_resources") {
-    sources = [
-      "android/java/res/drawable/query_tile_overlay.xml",
-      "android/java/res/layout/query_tile_view.xml",
-      "android/java/res/values/dimens.xml",
-      "android/java/res/values/styles.xml",
-    ]
+    sources = []
     custom_package = "org.chromium.chrome.query_tiles"
   }
 

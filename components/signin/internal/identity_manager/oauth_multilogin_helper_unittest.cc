@@ -135,9 +135,14 @@ MATCHER_P3(CookieMatcher, name, value, domain, "") {
          arg.Path() == "/" && arg.IsSecure() && !arg.IsHttpOnly();
 }
 
+// Checks that the argument (a GURL) is secure and has the given hostname.
+MATCHER_P(CookieSourceMatcher, cookie_host, "") {
+  return arg.is_valid() && arg.scheme() == "https" && arg.host() == cookie_host;
+}
+
 void RunSetCookieCallbackWithSuccess(
     const net::CanonicalCookie&,
-    const std::string&,
+    const GURL&,
     const net::CookieOptions&,
     network::mojom::CookieManager::SetCanonicalCookieCallback callback) {
   std::move(callback).Run(net::CanonicalCookie::CookieInclusionStatus());
@@ -148,7 +153,7 @@ class MockCookieManager
  public:
   MOCK_METHOD4(SetCanonicalCookie,
                void(const net::CanonicalCookie& cookie,
-                    const std::string& source_scheme,
+                    const GURL& source_url,
                     const net::CookieOptions& cookie_options,
                     SetCanonicalCookieCallback callback));
 };
@@ -250,10 +255,10 @@ TEST_F(OAuthMultiloginHelperTest, Success) {
   // Configure mock cookie manager:
   // - check that the cookie is the expected one
   // - immediately invoke the callback
-  EXPECT_CALL(
-      *cookie_manager(),
-      SetCanonicalCookie(CookieMatcher("SID", "SID_value", ".google.fr"),
-                         "https", testing::_, testing::_))
+  EXPECT_CALL(*cookie_manager(),
+              SetCanonicalCookie(
+                  CookieMatcher("SID", "SID_value", ".google.fr"),
+                  CookieSourceMatcher("google.fr"), testing::_, testing::_))
       .WillOnce(::testing::Invoke(RunSetCookieCallbackWithSuccess));
 
   // Issue access token.
@@ -279,15 +284,15 @@ TEST_F(OAuthMultiloginHelperTest, MultipleCookies) {
   // Configure mock cookie manager:
   // - check that the cookie is the expected one
   // - immediately invoke the callback
-  EXPECT_CALL(
-      *cookie_manager(),
-      SetCanonicalCookie(CookieMatcher("SID", "SID_value", ".google.fr"),
-                         "https", testing::_, testing::_))
+  EXPECT_CALL(*cookie_manager(),
+              SetCanonicalCookie(
+                  CookieMatcher("SID", "SID_value", ".google.fr"),
+                  CookieSourceMatcher("google.fr"), testing::_, testing::_))
       .WillOnce(::testing::Invoke(RunSetCookieCallbackWithSuccess));
-  EXPECT_CALL(
-      *cookie_manager(),
-      SetCanonicalCookie(CookieMatcher("FOO", "FOO_value", ".google.com"),
-                         "https", testing::_, testing::_))
+  EXPECT_CALL(*cookie_manager(),
+              SetCanonicalCookie(
+                  CookieMatcher("FOO", "FOO_value", ".google.com"),
+                  CookieSourceMatcher("google.com"), testing::_, testing::_))
       .WillOnce(::testing::Invoke(RunSetCookieCallbackWithSuccess));
 
   // Issue access token.
@@ -314,15 +319,15 @@ TEST_F(OAuthMultiloginHelperTest, SuccessWithExternalCcResult) {
   // Configure mock cookie manager:
   // - check that the cookie is the expected one
   // - immediately invoke the callback
-  EXPECT_CALL(
-      *cookie_manager(),
-      SetCanonicalCookie(CookieMatcher("SID", "SID_value", ".youtube.com"),
-                         "https", testing::_, testing::_))
+  EXPECT_CALL(*cookie_manager(),
+              SetCanonicalCookie(
+                  CookieMatcher("SID", "SID_value", ".youtube.com"),
+                  CookieSourceMatcher("youtube.com"), testing::_, testing::_))
       .WillOnce(::testing::Invoke(RunSetCookieCallbackWithSuccess));
-  EXPECT_CALL(
-      *cookie_manager(),
-      SetCanonicalCookie(CookieMatcher("FOO", "FOO_value", ".google.com"),
-                         "https", testing::_, testing::_))
+  EXPECT_CALL(*cookie_manager(),
+              SetCanonicalCookie(
+                  CookieMatcher("FOO", "FOO_value", ".google.com"),
+                  CookieSourceMatcher("google.com"), testing::_, testing::_))
       .WillOnce(::testing::Invoke(RunSetCookieCallbackWithSuccess));
 
   // Issue access token.
@@ -364,10 +369,10 @@ TEST_F(OAuthMultiloginHelperTest, OneAccountTransientMultiloginError) {
   // Configure mock cookie manager:
   // - check that the cookie is the expected one
   // - immediately invoke the callback
-  EXPECT_CALL(
-      *cookie_manager(),
-      SetCanonicalCookie(CookieMatcher("SID", "SID_value", ".google.fr"),
-                         "https", testing::_, testing::_))
+  EXPECT_CALL(*cookie_manager(),
+              SetCanonicalCookie(
+                  CookieMatcher("SID", "SID_value", ".google.fr"),
+                  CookieSourceMatcher("google.fr"), testing::_, testing::_))
       .WillOnce(::testing::Invoke(RunSetCookieCallbackWithSuccess));
 
   // Issue access token.
@@ -446,10 +451,10 @@ TEST_F(OAuthMultiloginHelperTest, InvalidTokenError) {
   // Configure mock cookie manager:
   // - check that the cookie is the expected one
   // - immediately invoke the callback
-  EXPECT_CALL(
-      *cookie_manager(),
-      SetCanonicalCookie(CookieMatcher("SID", "SID_value", ".google.fr"),
-                         "https", testing::_, testing::_))
+  EXPECT_CALL(*cookie_manager(),
+              SetCanonicalCookie(
+                  CookieMatcher("SID", "SID_value", ".google.fr"),
+                  CookieSourceMatcher("google.fr"), testing::_, testing::_))
       .WillOnce(::testing::Invoke(RunSetCookieCallbackWithSuccess));
 
   // The failed access token should be invalidated.

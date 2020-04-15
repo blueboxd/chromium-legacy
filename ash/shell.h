@@ -91,7 +91,7 @@ class AshFocusRules;
 class AppListControllerImpl;
 class NativeCursorManagerAsh;
 class AshTouchTransformController;
-class AssistantController;
+class AssistantControllerImpl;
 class AutoclickController;
 class BackGestureEventHandler;
 class BacklightsForcedOffSetter;
@@ -313,7 +313,9 @@ class ASH_EXPORT Shell : public SessionObserver,
     return app_list_controller_.get();
   }
   AmbientController* ambient_controller() { return ambient_controller_.get(); }
-  AssistantController* assistant_controller();
+  AssistantControllerImpl* assistant_controller() {
+    return assistant_controller_.get();
+  }
   AutoclickController* autoclick_controller() {
     return autoclick_controller_.get();
   }
@@ -641,7 +643,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   // May be null in tests or when running on linux-chromeos.
   scoped_refptr<dbus::Bus> dbus_bus_;
   std::unique_ptr<AshDBusServices> ash_dbus_services_;
-  std::unique_ptr<AssistantController> assistant_controller_;
+  std::unique_ptr<AssistantControllerImpl> assistant_controller_;
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;

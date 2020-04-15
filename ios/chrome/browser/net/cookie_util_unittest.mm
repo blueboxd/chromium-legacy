@@ -99,8 +99,8 @@ TEST_F(CookieUtilTest, CreateCookieStore) {
   auto canonical_cookie =
       net::CanonicalCookie::Create(test_url, cookie_line, base::Time::Now(),
                                    base::nullopt /* server_time */);
-  cookie_store->SetCanonicalCookieAsync(std::move(canonical_cookie),
-                                        test_url.scheme(), options,
+  cookie_store->SetCanonicalCookieAsync(std::move(canonical_cookie), test_url,
+                                        options,
                                         net::CookieStore::SetCookiesCallback());
 
   __block NSArray<NSHTTPCookie*>* result_cookies = nil;

@@ -712,9 +712,10 @@ void NetworkService::SetEnvironment(
 }
 
 void NetworkService::SetTrustTokenKeyCommitments(
-    base::flat_map<url::Origin, mojom::TrustTokenKeyCommitmentResultPtr>
-        commitments) {
-  trust_token_key_commitments_->Set(std::move(commitments));
+    const std::string& raw_commitments,
+    base::OnceClosure done) {
+  trust_token_key_commitments_->ParseAndSet(raw_commitments);
+  std::move(done).Run();
 }
 
 #if defined(OS_ANDROID)

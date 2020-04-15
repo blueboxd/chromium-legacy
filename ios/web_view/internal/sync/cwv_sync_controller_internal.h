@@ -17,20 +17,15 @@ namespace signin {
 class IdentityManager;
 }  // namespace signin
 
-class SigninErrorController;
+class PrefService;
 
 @interface CWVSyncController ()
 
 // All dependencies must out live this class.
-- (instancetype)
-       initWithSyncService:(syncer::SyncService*)syncService
-           identityManager:(signin::IdentityManager*)identityManager
-     signinErrorController:(SigninErrorController*)signinErrorController
+- (instancetype)initWithSyncService:(syncer::SyncService*)syncService
+                    identityManager:(signin::IdentityManager*)identityManager
+                        prefService:(PrefService*)prefService
     NS_DESIGNATED_INITIALIZER;
-
-// Called by the associated CWVWebViewConfiguration in order to shut
-// down cleanly. See CWVWebViewConfiguration's |shutDown| method for more info.
-- (void)shutDown;
 
 @end
 

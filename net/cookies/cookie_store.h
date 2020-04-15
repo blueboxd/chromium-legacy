@@ -62,14 +62,14 @@ class NET_EXPORT CookieStore {
   virtual ~CookieStore();
 
   // Set the cookie on the cookie store.  |cookie.IsCanonical()| must
-  // be true.  |source_scheme| denotes the scheme of the resource setting this.
+  // be true.  |source_url| denotes the url of the resource setting this.
   //
   // |options| is used to determine the context the operation is run in, and
   // which cookies it can alter (e.g. http only, or same site).
   //
   // The current time will be used in place of a null creation time.
   virtual void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
-                                       std::string source_scheme,
+                                       const GURL& source_url,
                                        const CookieOptions& options,
                                        SetCookiesCallback callback) = 0;
 

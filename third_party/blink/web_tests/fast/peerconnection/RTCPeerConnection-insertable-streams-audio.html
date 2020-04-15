@@ -22,7 +22,10 @@ function areArrayBuffersEqual(buffer1, buffer2)
 }
 
 function areFrameInfosEqual(frame1, frame2) {
-  return areArrayBuffersEqual(frame1.data, frame2.data);
+  return frame1.type === frame2.type &&
+          frame1.synchronizationSource === frame2.synchronizationSource &&
+          frame1.timestamp === frame2.timestamp &&
+          areArrayBuffersEqual(frame1.data, frame2.data);
 }
 
 async function doInverseSignalingHandshake(pc1, pc2) {
@@ -98,7 +101,12 @@ async function testAudioFlow(t, negotiationFunction) {
   // Pass frames as they come from the encoder.
   for (let i = 0; i < numFramesPassthrough; i++) {
     const result = await senderReader.read()
-    frameInfos.push({data: result.value.data});
+    frameInfos.push({
+      data: result.value.data,
+      synchronizationSource: result.value.synchronizationSource,
+      timestamp: result.value.timestamp,
+      type: result.value.type,
+    });
     senderWriter.write(result.value);
   }
 
@@ -111,7 +119,12 @@ async function testAudioFlow(t, negotiationFunction) {
     int8View.fill(i);
 
     result.value.data = buffer;
-    frameInfos.push({data: result.value.data});
+    frameInfos.push({
+      data: result.value.data,
+      synchronizationSource: result.value.synchronizationSource,
+      timestamp: result.value.timestamp,
+      type: result.value.type,
+    });
     senderWriter.write(result.value);
   }
 
@@ -121,7 +134,12 @@ async function testAudioFlow(t, negotiationFunction) {
     const int8View = new Int8Array(result.value.data);
     int8View.fill(i);
 
-    frameInfos.push({data: result.value.data});
+    frameInfos.push({
+      data: result.value.data,
+      synchronizationSource: result.value.synchronizationSource,
+      timestamp: result.value.timestamp,
+      type: result.value.type,
+    });
     senderWriter.write(result.value);
   }
 

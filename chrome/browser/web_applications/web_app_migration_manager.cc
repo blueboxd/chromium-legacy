@@ -167,6 +167,12 @@ bool WebAppMigrationManager::CanMigrateBookmarkApp(const AppId& app_id) const {
   if (!bookmark_app_registrar_.IsInstalled(app_id))
     return false;
 
+  // SystemWebAppManager will re-install these.
+  if (bookmark_app_registrar_.HasExternalAppWithInstallSource(
+          app_id, ExternalInstallSource::kSystemInstalled)) {
+    return false;
+  }
+
   GURL launch_url = bookmark_app_registrar_.GetAppLaunchURL(app_id);
   return GenerateAppIdFromURL(launch_url) == app_id;
 }

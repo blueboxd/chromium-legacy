@@ -5,11 +5,16 @@
 #include "chrome/browser/performance_manager/graph/policies/background_tab_loading_policy.h"
 
 #include "base/system/sys_info.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/policies/background_tab_loading_policy_helpers.h"
 #include "chrome/browser/performance_manager/mechanisms/page_loader.h"
+#include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/public/decorators/tab_properties_decorator.h"
+#include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/policies/background_tab_loading_policy.h"
 #include "components/performance_manager/public/performance_manager.h"
+#include "content/public/common/url_constants.h"
 
 namespace performance_manager {
 
@@ -60,7 +65,10 @@ void ScheduleLoadForRestoredTabs(
 }
 
 BackgroundTabLoadingPolicy::BackgroundTabLoadingPolicy()
-    : page_loader_(std::make_unique<mechanism::PageLoader>()) {
+    : memory_pressure_listener_(
+          base::BindRepeating(&BackgroundTabLoadingPolicy::OnMemoryPressure,
+                              base::Unretained(this))),
+      page_loader_(std::make_unique<mechanism::PageLoader>()) {
   DCHECK(!g_background_tab_loading_policy);
   g_background_tab_loading_policy = this;
   max_simultaneous_tab_loads_ = CalculateMaxSimultaneousTabLoads(
@@ -95,7 +103,7 @@ void BackgroundTabLoadingPolicy::OnIsLoadingChanged(const PageNode* page_node) {
   // from the set of PageNodes for which a load needs to be initiated and from
   // the set of PageNodes for which a load has been initiated but hasn't
   // started.
-  base::Erase(page_nodes_to_load_, page_node);
+  ErasePageNodeToLoadData(page_node);
   base::Erase(page_nodes_load_initiated_, page_node);
 
   // Keep track of all PageNodes that are loading, even when the load isn't
@@ -117,12 +125,17 @@ void BackgroundTabLoadingPolicy::ScheduleLoadForRestoredTabs(
     std::vector<PageNode*> page_nodes) {
   for (auto* page_node : page_nodes) {
     // Put the |page_node| in the queue for loading.
-    DCHECK(!base::Contains(page_nodes_to_load_, page_node));
-    page_nodes_to_load_.push_back(page_node);
+    DCHECK(!FindPageNodeToLoadData(page_node));
     DCHECK(
         TabPropertiesDecorator::Data::FromPageNode(page_node)->IsInTabStrip());
+
+    page_nodes_to_load_.push_back(
+        std::make_unique<PageNodeToLoadData>(page_node));
   }
-  MaybeLoadSomeTabs();
+
+  for (auto& page_node_to_load_data : page_nodes_to_load_) {
+    SetUsedInBackgroundAsync(page_node_to_load_data.get());
+  }
 }
 
 void BackgroundTabLoadingPolicy::SetMockLoaderForTesting(
@@ -148,6 +161,19 @@ BackgroundTabLoadingPolicy* BackgroundTabLoadingPolicy::GetInstance() {
   return g_background_tab_loading_policy;
 }
 
+BackgroundTabLoadingPolicy::PageNodeToLoadData::PageNodeToLoadData(
+    PageNode* page_node)
+    : page_node(page_node) {}
+BackgroundTabLoadingPolicy::PageNodeToLoadData::~PageNodeToLoadData() = default;
+
+struct BackgroundTabLoadingPolicy::ScoredTabComparator {
+  bool operator()(const std::unique_ptr<PageNodeToLoadData>& tab0,
+                  const std::unique_ptr<PageNodeToLoadData>& tab1) {
+    // Greater scores sort first.
+    return tab0->score > tab1->score;
+  }
+};
+
 bool BackgroundTabLoadingPolicy::ShouldLoad(const PageNode* page_node) {
   if (tab_loads_started_ < kMinTabsToLoad)
     return true;
@@ -166,16 +192,105 @@ bool BackgroundTabLoadingPolicy::ShouldLoad(const PageNode* page_node) {
     return false;
   }
 
-  // TODO: Enforce the site engagement score for tabs that don't make use of
-  // background communication mechanisms.
+  // TODO(crbug.com/1071100): Enforce the site engagement score for tabs that
+  // don't make use of background communication mechanisms.
   return true;
+}
+
+void BackgroundTabLoadingPolicy::OnUsedInBackgroundAvailable(
+    base::WeakPtr<PageNode> page_node) {
+  if (!page_node) {
+    // Ignore the value if the PageNode was deleted.
+    return;
+  }
+  PageNodeToLoadData* page_node_to_load_data =
+      FindPageNodeToLoadData(page_node.get());
+  if (!page_node_to_load_data) {
+    // Ignore the value if the PageNode is no longer in the list of PageNodes to
+    // load (it may already have started loading).
+    return;
+  }
+
+  // TODO(crbug.com/1071100): Use real |used_in_bg| data from the database.
+  DCHECK(!page_node_to_load_data->used_in_bg.has_value());
+  page_node_to_load_data->used_in_bg = false;
+  ++tabs_scored_;
+  ScoreTab(page_node_to_load_data);
+  DispatchNotifyAllTabsScoredIfNeeded();
+}
+
+void BackgroundTabLoadingPolicy::StopLoadingTabs() {
+  // Clear out the remaining tabs to load and clean ourselves up.
+  page_nodes_to_load_.clear();
+  tabs_scored_ = 0;
+
+  // TODO(crbug.com/1071077): Interrupt all ongoing loads.
+}
+
+void BackgroundTabLoadingPolicy::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  switch (memory_pressure_level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      StopLoadingTabs();
+      break;
+  }
+}
+
+void BackgroundTabLoadingPolicy::ScoreTab(
+    PageNodeToLoadData* page_node_to_load_data) {
+  DCHECK_EQ(page_node_to_load_data->score, 0.0f);
+  float score = 0.0f;
+
+  // Give higher priorities to tabs used in the background, and lowest
+  // priority to internal tabs. Apps and pinned tabs are simply treated as
+  // normal tabs.
+  if (page_node_to_load_data->used_in_bg == true) {
+    score = 2;
+  } else if (!page_node_to_load_data->page_node->GetMainFrameUrl().SchemeIs(
+                 content::kChromeUIScheme)) {
+    score = 1;
+  }
+
+  // Refine the score using the age of the tab. More recently used tabs have
+  // higher scores.
+  score += CalculateAgeScore(
+      page_node_to_load_data->page_node->GetTimeSinceLastVisibilityChange()
+          .InSecondsF());
+
+  page_node_to_load_data->score = score;
+}
+
+void BackgroundTabLoadingPolicy::SetUsedInBackgroundAsync(
+    PageNodeToLoadData* page_node_to_load_data) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &BackgroundTabLoadingPolicy::OnUsedInBackgroundAvailable,
+          weak_factory_.GetWeakPtr(),
+          std::move(PageNodeImpl::FromNode(page_node_to_load_data->page_node))
+              ->GetWeakPtr()));
+}
+
+void BackgroundTabLoadingPolicy::DispatchNotifyAllTabsScoredIfNeeded() {
+  if (tabs_scored_ == page_nodes_to_load_.size()) {
+    NotifyAllTabsScored();
+  }
+}
+
+void BackgroundTabLoadingPolicy::NotifyAllTabsScored() {
+  std::stable_sort(page_nodes_to_load_.begin(), page_nodes_to_load_.end(),
+                   ScoredTabComparator());
+  MaybeLoadSomeTabs();
 }
 
 void BackgroundTabLoadingPolicy::InitiateLoad(const PageNode* page_node) {
   // Mark |page_node| as load initiated. Ensure that InitiateLoad is only called
   // for a PageNode that is tracked by the policy.
-  size_t num_removed = base::Erase(page_nodes_to_load_, page_node);
-  DCHECK_EQ(num_removed, 1U);
+  ErasePageNodeToLoadData(page_node);
+  DCHECK(!FindPageNodeToLoadData(page_node));
   page_nodes_load_initiated_.push_back(page_node);
   tab_loads_started_++;
 
@@ -184,7 +299,7 @@ void BackgroundTabLoadingPolicy::InitiateLoad(const PageNode* page_node) {
 }
 
 void BackgroundTabLoadingPolicy::RemovePageNode(const PageNode* page_node) {
-  base::Erase(page_nodes_to_load_, page_node);
+  ErasePageNodeToLoadData(page_node);
   base::Erase(page_nodes_load_initiated_, page_node);
   base::Erase(page_nodes_loading_, page_node);
 }
@@ -223,7 +338,7 @@ void BackgroundTabLoadingPolicy::LoadNextTab() {
 
   // Find the next PageNode to load.
   while (!page_nodes_to_load_.empty()) {
-    const PageNode* page_node = page_nodes_to_load_.front();
+    const PageNode* page_node = page_nodes_to_load_.front()->page_node;
     if (ShouldLoad(page_node)) {
       InitiateLoad(page_node);
       return;
@@ -231,7 +346,7 @@ void BackgroundTabLoadingPolicy::LoadNextTab() {
 
     // |page_node| should not be loaded at this time. Remove |page_node| from
     // the policy.
-    base::Erase(page_nodes_to_load_, page_node);
+    ErasePageNodeToLoadData(page_node);
   }
 }
 
@@ -243,6 +358,37 @@ size_t BackgroundTabLoadingPolicy::GetFreePhysicalMemoryMib() const {
       base::SysInfo::AmountOfAvailablePhysicalMemory() / kMibibytesInBytes;
   DCHECK_GE(free_mem, 0);
   return free_mem;
+}
+
+void BackgroundTabLoadingPolicy::ErasePageNodeToLoadData(
+    const PageNode* page_node) {
+  for (auto& page_node_to_load_data : page_nodes_to_load_) {
+    if (page_node_to_load_data->page_node == page_node) {
+      if (page_node_to_load_data->used_in_bg.has_value()) {
+        // If the PageNode has already been scored, remove it from the
+        // |tabs_scored_| count.
+        --tabs_scored_;
+        base::Erase(page_nodes_to_load_, page_node_to_load_data);
+      } else {
+        base::Erase(page_nodes_to_load_, page_node_to_load_data);
+
+        // If the PageNode has not been scored yet, then removing it may trigger
+        // all tabs scored notification.
+        DispatchNotifyAllTabsScoredIfNeeded();
+      }
+      return;
+    }
+  }
+}
+
+BackgroundTabLoadingPolicy::PageNodeToLoadData*
+BackgroundTabLoadingPolicy::FindPageNodeToLoadData(const PageNode* page_node) {
+  for (auto& page_node_to_load_data : page_nodes_to_load_) {
+    if (page_node_to_load_data->page_node == page_node) {
+      return page_node_to_load_data.get();
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace policies

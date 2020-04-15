@@ -114,6 +114,9 @@ extern const char kAutofillEnableCompanyNameDescription[];
 extern const char kAutofillEnableLocalCardMigrationForNonSyncUserName[];
 extern const char kAutofillEnableLocalCardMigrationForNonSyncUserDescription[];
 
+extern const char kAutofillEnableStickyPaymentsBubbleName[];
+extern const char kAutofillEnableStickyPaymentsBubbleDescription[];
+
 extern const char kAutofillEnableSurfacingServerCardNicknameName[];
 extern const char kAutofillEnableSurfacingServerCardNicknameDescription[];
 
@@ -281,6 +284,9 @@ extern const char kEnableAudioFocusEnforcementDescription[];
 
 extern const char kEnableAutofillAccountWalletStorageName[];
 extern const char kEnableAutofillAccountWalletStorageDescription[];
+
+extern const char kEnableAutofillCacheServerCardInfoName[];
+extern const char kEnableAutofillCacheServerCardInfoDescription[];
 
 extern const char kEnableAutofillCreditCardAblationExperimentDisplayName[];
 extern const char kEnableAutofillCreditCardAblationExperimentDescription[];
@@ -1600,6 +1606,9 @@ extern const char kHappinessTrackingSurveysForDesktopSettingsDescription[];
 extern const char kHappinessTrackingSurveysForDesktopSettingsPrivacyName[];
 extern const char
     kHappinessTrackingSurveysForDesktopSettingsPrivacyDescription[];
+
+extern const char kHappinessTrackingSurveysForDesktopMigrationName[];
+extern const char kHappinessTrackingSurveysForDesktopMigrationDescription[];
 
 extern const char kIntentPickerName[];
 extern const char kIntentPickerDescription[];

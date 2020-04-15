@@ -41,7 +41,6 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="2799223571221894425">Nis sërish</translation>
 <translation id="2805036593126168338">Sistemi operativ Chromium nuk mund t'i sinkronizonte fjalëkalimet e tua. Rregulloje tani.</translation>
 <translation id="2847479871509788944">Hiqe nga Chromium...</translation>
-<translation id="2886012850691518054">Opsionale: Ndihmo në përmirësimin e Chromium duke i dërguar automatikisht Google statistika përdorimi dhe raporte të ndërprerjeve aksidentale.</translation>
 <translation id="2910007522516064972">Rreth &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium është i përditësuar</translation>
 <translation id="2983934633046890458">Chromium po përpiqet t'i modifikojë fjalëkalimet.</translation>
@@ -60,6 +59,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="328888136576916638">Çelësat API të Google mungojnë. Disa funksione të Chromium do të çaktivizohen.</translation>
 <translation id="3296368748942286671">Vazhdo funksionimin e aplikacioneve në sfond kur Chromium është i mbyllur</translation>
 <translation id="331951419404882060">Sistemi operativ i Chromium nuk mundi të sinkronizonte të dhënat e tua për shkak të një gabimi në identifikim.</translation>
+<translation id="347328004046849135">Chromium do të të njoftojë kur të identifikohesh me një fjalëkalim të komprometuar</translation>
 <translation id="3474745554856756813">Kjo do të fshijë <ph name="ITEMS_COUNT" /> artikuj nga kjo pajisje. Për t'i marrë më vonë të dhënat, identifikohu te Chromium si <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Mbyll të gjitha dritaret e Chromium dhe provo sërish.</translation>
 <translation id="3575459661164320785">Ka një softuer keqdashës në kompjuterin tënd. Chromium mund ta heqë atë, të restaurojë cilësimet e tua dhe të çaktivizojë shtesat për të bërë që shfletuesi yt të punojë përsëri si normalisht.</translation>
@@ -95,11 +95,13 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="4746050847053251315">Dëshiron ta mbyllësh Chromium gjithsesi?</translation>
 <translation id="4748217263233248895">Sapo është zbatuar një përditësim special i sigurisë për Chromium. Rinise tani dhe do të restaurojmë skedat e tua.</translation>
 <translation id="4750035648288509542">Pothuajse u përditësua! Hap përsëri Chromium për të përfunduar përditësimin. Dritaret "e fshehta" nuk do të hapen.</translation>
+<translation id="4788777615168560705">Chromium nuk mund t'i kontrollojë fjalëkalimet e tua. Provo përsëri pas 24 orësh ose <ph name="BEGIN_LINK" />kontrollo fjalëkalimet në "Llogarinë tënde të Google"<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Kjo përdor të njëjtin kontrollues drejtshkrimor që përdoret në kërkimin e Google. Teksti që shkruan në shfletues dërgohet te Google. Mund ta ndryshosh këtë sjellje gjithmonë te cilësimet.</translation>
 <translation id="4888717733111232871">Rregulli hyrës për Chromium për të lejuar trafikun mDNS.</translation>
 <translation id="4943838377383847465">Chromium është në modalitetin e sfondit.</translation>
 <translation id="4987820182225656817">Vizitorët mund të përdorin Chromium pa lënë asgjë prapa.</translation>
 <translation id="4994636714258228724">Shtoje veten te Chromium</translation>
+<translation id="5224391634244552924">Nuk ka asnjë fjalëkalim të ruajtur. Chromium mund t'i kontrollojë fjalëkalimet e tua kur ti i ruan ato.</translation>
 <translation id="5277894862589591112">Për të zbatuar ndryshimet, rinis Chromium</translation>
 <translation id="5358375970380395591">Po identifikohesh me një llogari të menaxhuar dhe po i jep administratorit të saj kontroll mbi profilin tënd të Chromium. Të dhënat e tua të Chromium, siç janë aplikacionet, faqeshënuesit, fjalëkalimet dhe cilësime të tjera do të lidhen në mënyrë të përhershme me <ph name="USER_NAME" />. Ti do të jesh në gjendje t'i fshish këto të dhëna përmes Panelit të llogarive të Google, por nuk do të jesh në gjendje t'i shoqërosh këto të dhëna me një llogari tjetër. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Po përditëson Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -166,6 +168,7 @@ Disa funksione mund të mos ofrohen. Specifiko një direktori tjetër profili os
 <translation id="7066436765290594559">Sistemi operativ Chromium nuk mund t'i sinkronizonte të dhënat e tua. Përditëso frazën tënde të kalimit për Sinkronizimin.</translation>
 <translation id="7067091210845072982">Nëse një imazh nuk ka një përshkrim të dobishëm, Chromium do të përpiqet të të japë një përshkrim. Për të krijuar përshkrime, imazhet dërgohen te Google.</translation>
 <translation id="7196312274710523067">Chromium nuk mund të hapej. Provo përsëri.</translation>
+<translation id="7197677400338048821">Chromium nuk mund t'i kontrollojë fjalëkalimet e tua. Provo përsëri pas 24 orësh.</translation>
 <translation id="7205698830395646142">Fshih në Menynë e Chromium-it</translation>
 <translation id="7223968959479464213">Menaxheri i detyrave - Chromium</translation>
 <translation id="731644333568559921">Përditëso sistemin operativ Chromium</translation>

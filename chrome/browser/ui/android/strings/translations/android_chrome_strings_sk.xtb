@@ -436,7 +436,6 @@ Iba vy vidíte, čo je v zábere fotoaparátu. Tomuto webu sa nezobrazujú obr�
 <translation id="4242533952199664413">Otvoriť nastavenia</translation>
 <translation id="4250229828105606438">Snímka obrazovky</translation>
 <translation id="4256782883801055595">Licencie open source</translation>
-<translation id="4259722352634471385">Navigácia je zablokovaná: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopírovať adresu odkazu</translation>
 <translation id="4275663329226226506">Médiá</translation>
 <translation id="4278390842282768270">Povolené</translation>
@@ -965,6 +964,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Ak chcete získať záložky vo všetkých zariadeniach, zapnite synchronizáciu</translation>
 <translation id="8110087112193408731">Chcete v digitálnej rovnováhe zobrazovať svoju aktivitu v Chrome?</translation>
+<translation id="8115259494083109761">Ak chcete nasnímať QR kód, povoľte Chromu prístup ku kamere</translation>
 <translation id="8116925261070264013">Zvuk bol vypnutý</translation>
 <translation id="8127542551745560481">Upraviť domovskú stránku</translation>
 <translation id="813082847718468539">Zobraziť informácie o stránkach</translation>
@@ -1066,7 +1066,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8942627711005830162">Otvoriť v ďalšom okne</translation>
 <translation id="8951232171465285730">Chrome ušetril <ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">Blokovanie súborov cookie konkrétneho webu</translation>
-<translation id="8959122750345127698">Navigácia je nedostupná: <ph name="URL" /></translation>
 <translation id="8965591936373831584">nespracované</translation>
 <translation id="8970887620466824814">Vyskytol sa problém.</translation>
 <translation id="8972098258593396643">Stiahnuť do predvoleného priečinka?</translation>

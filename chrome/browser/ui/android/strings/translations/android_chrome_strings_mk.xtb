@@ -229,7 +229,7 @@
 <translation id="2621115761605608342">Дозволи JavaScript за одреден сајт.</translation>
 <translation id="2625189173221582860">Лозинката е копирана</translation>
 <translation id="2631006050119455616">Заштедено</translation>
-<translation id="2647434099613338025">Додај јазик</translation>
+<translation id="2647434099613338025">Додајте јазик</translation>
 <translation id="2650751991977523696">Дали да се преземе датотеката повторно?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиодатотека}one{# аудиодатотека}other{# аудиодатотеки}}</translation>
 <translation id="2687403674020088961">Блокирај ги сите колачиња (не се препорачува)</translation>
@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">Отвори ги поставките</translation>
 <translation id="4250229828105606438">Слика од екран</translation>
 <translation id="4256782883801055595">Лиценци за отворен код</translation>
-<translation id="4259722352634471385">Навигацијата е блокирана: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Копирај адреса на врска</translation>
 <translation id="4275663329226226506">Медиуми</translation>
 <translation id="4278390842282768270">Дозволено</translation>
@@ -901,7 +900,7 @@
 <translation id="7641339528570811325">Исчисти податоци од прелистување…</translation>
 <translation id="7648422057306047504">Шифрирај ги лозинките со акредитиви на Google</translation>
 <translation id="7658239707568436148">Откажи</translation>
-<translation id="7665369617277396874">Додај сметка</translation>
+<translation id="7665369617277396874">Додајте сметка</translation>
 <translation id="766587987807204883">Статиите се појавуваат тука, а може да се читаат кога сте офлајн</translation>
 <translation id="7682724950699840886">Испробајте ги следниве совети: проверете дали има доволно простор на уредот, обидете се да ги извезете повторно.</translation>
 <translation id="7698359219371678927">Создајте е-пошта во <ph name="APP_NAME" /></translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">За да ги добиете обележувачите на сите ваши уреди, вклучете ја синхронизацијата</translation>
 <translation id="8110087112193408731">Да се прикажува вашата активност на Chrome во „Дигитална благосостојба“?</translation>
+<translation id="8115259494083109761">За да скенирате QR-код, дозволете Chrome да ја користи камерата</translation>
 <translation id="8116925261070264013">Со исклучен звук</translation>
 <translation id="8127542551745560481">Изменете ја почетната страница</translation>
 <translation id="813082847718468539">Прикажи информации за локација</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">Отвори во друг прозорец</translation>
 <translation id="8951232171465285730">Chrome ви заштеди <ph name="MEGABYTES" /> мб</translation>
 <translation id="8958424370300090006">Блокирајте колачиња за одреден сајт.</translation>
-<translation id="8959122750345127698">Навигацијата е недостапна: <ph name="URL" /></translation>
 <translation id="8965591936373831584">чека на ред</translation>
 <translation id="8970887620466824814">Нешто тргна наопаку.</translation>
 <translation id="8972098258593396643">Дали да се преземе во стандардната папка?</translation>

@@ -186,7 +186,7 @@
 <translation id="1235458158152011030">Zināmie tīkli</translation>
 <translation id="123578888592755962">Disks ir pilns.</translation>
 <translation id="1238191093934674082">Atvērt VPN</translation>
-<translation id="1239439601391236986">Rādīt teksta ievadei paredzētus personas informācijas ieteikumus</translation>
+<translation id="1239439601391236986">Rādīt personas informācijas ievades ieteikumus</translation>
 <translation id="1239594683407221485">Pārlūkojiet ierīces saturu lietotnē Faili.</translation>
 <translation id="124116460088058876">Citas valodas…</translation>
 <translation id="1241753985463165747">Lasīt un mainīt visus jūsu datus pašreizējā vietnē, kad aktivizēts</translation>
@@ -687,7 +687,6 @@
 <translation id="189210018541388520">Atvērt pilnekrāna režīmu</translation>
 <translation id="1892341345406963517">Sveiki, <ph name="PARENT_NAME" />!</translation>
 <translation id="189358972401248634">Citas valodas</translation>
-<translation id="1895252664692693738">Atlikušais laiks: <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Izslēgšana</translation>
 <translation id="1895934970388272448">Lai pabeigtu procesu, jums ir jāapstiprina reģistrācija savā printerī. Pārbaudiet to tagad!</translation>
 <translation id="1899826437968063457">Lai Plugin VM varētu darboties, ir nepieciešama atļauja</translation>
@@ -2335,7 +2334,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4036778507053569103">No servera lejupielādētā politika nav derīga.</translation>
 <translation id="4037084878352560732">Zirgs</translation>
 <translation id="4037889604535939429">Personas informācijas rediģēšana</translation>
-<translation id="4042863763121826131">{NUM_PAGES,plural, =1{Izejas lapa}zero{Izejas lapas}one{Izejas lapas}other{Izejas lapas}}</translation>
+<translation id="4042863763121826131">{NUM_PAGES,plural, =1{Iziet no lapas}zero{Iziet no lapām}one{Iziet no lapām}other{Iziet no lapām}}</translation>
 <translation id="4044612648082411741">Ievadiet sertifikāta paroli</translation>
 <translation id="404493185430269859">Noklusējuma meklētājprogramma</translation>
 <translation id="4046013316139505482">Šiem paplašinājumiem nav nepieciešams skatīt un mainīt informāciju šajā vietnē.</translation>
@@ -4001,7 +4000,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6365411474437319296">Ģimenes un draugu pievienošana</translation>
 <translation id="636850387210749493">Uzņēmuma palaide</translation>
 <translation id="6370021412472292592">Nevarēja ielādēt manifestu.</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Mainīt paroli}zero{Mainīt paroles}one{Mainīt paroles}other{Mainīt paroles}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Mēģināt vēlreiz</translation>
 <translation id="6377268785556383139">1 rezultāts vaicājumam “<ph name="SEARCH_TEXT" />”</translation>
@@ -4603,7 +4601,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7201118060536064622">Vienums “<ph name="DELETED_ITEM_NAME" />” ir izdzēsts.</translation>
 <translation id="7201420661433230412">Skatīt failus</translation>
 <translation id="7206693748120342859">Notiek spraudņa <ph name="PLUGIN_NAME" /> lejupielāde...</translation>
-<translation id="720715819012336933">{NUM_PAGES,plural, =1{Izejas lapa}zero{Izejas lapas}one{Izejas lapas}other{Izejas lapas}}</translation>
+<translation id="720715819012336933">{NUM_PAGES,plural, =1{Iziet no lapas}zero{Iziet no lapām}one{Iziet no lapām}other{Iziet no lapām}}</translation>
 <translation id="7207457272187520234">Lietojuma un diagnostikas datu sūtīšana. Pašlaik dati par šo ierīci un ierīces diagnostikas un lietotņu lietojuma dati tiek automātiski sūtīti uzņēmumam Google. Šī informācija palīdzēs uzlabot sistēmas un lietotņu stabilitāti un daudz ko citu. Noteiktus apkopotus datus izmantos arī Google lietotņu izstrādātāji un partneri, piemēram, Android izstrādātāji. Šo iestatījumu ir noteicis īpašnieks. Ja ir ieslēgts iestatījums “papildu darbības tīmeklī un lietotnēs”, šie dati var tikt saglabāti jūsu Google kontā.</translation>
 <translation id="7207631048330366454">Meklēt lietotnes</translation>
 <translation id="7210499381659830293">Paplašinājuma printeri</translation>

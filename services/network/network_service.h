@@ -175,9 +175,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #endif
   void SetEnvironment(
       std::vector<mojom::EnvironmentVariablePtr> environment) override;
-  void SetTrustTokenKeyCommitments(
-      base::flat_map<url::Origin, mojom::TrustTokenKeyCommitmentResultPtr>
-          commitments) override;
+  void SetTrustTokenKeyCommitments(const std::string& raw_commitments,
+                                   base::OnceClosure done) override;
 
 #if defined(OS_ANDROID)
   void DumpWithoutCrashing(base::Time dump_request_time) override;

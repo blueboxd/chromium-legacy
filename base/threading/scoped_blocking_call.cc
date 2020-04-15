@@ -27,7 +27,10 @@ LazyInstance<ThreadLocalBoolean>::Leaky tls_construction_in_progress =
 
 ScopedBlockingCall::ScopedBlockingCall(const Location& from_here,
                                        BlockingType blocking_type)
-    : UncheckedScopedBlockingCall(from_here, blocking_type) {
+    : UncheckedScopedBlockingCall(
+          from_here,
+          blocking_type,
+          UncheckedScopedBlockingCall::BlockingCallType::kRegular) {
 #if DCHECK_IS_ON()
   DCHECK(!tls_construction_in_progress.Get().Get());
   tls_construction_in_progress.Get().Set(true);
@@ -51,7 +54,10 @@ namespace internal {
 ScopedBlockingCallWithBaseSyncPrimitives::
     ScopedBlockingCallWithBaseSyncPrimitives(const Location& from_here,
                                              BlockingType blocking_type)
-    : UncheckedScopedBlockingCall(from_here, blocking_type) {
+    : UncheckedScopedBlockingCall(
+          from_here,
+          blocking_type,
+          UncheckedScopedBlockingCall::BlockingCallType::kBaseSyncPrimitives) {
 #if DCHECK_IS_ON()
   DCHECK(!tls_construction_in_progress.Get().Get());
   tls_construction_in_progress.Get().Set(true);

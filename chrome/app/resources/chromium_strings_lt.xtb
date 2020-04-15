@@ -41,7 +41,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2799223571221894425">Paleisti iš naujo</translation>
 <translation id="2805036593126168338">„Chromium“ OS nepavyko sinchronizuoti jūsų slaptažodžių. Ištaisykite dabar.</translation>
 <translation id="2847479871509788944">Pašalinti iš „Chromium“...</translation>
-<translation id="2886012850691518054">Pasirenkama: padėkite tobulinti „Chromium“ automatiškai siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
 <translation id="2910007522516064972">Apie &amp;„Chromium“</translation>
 <translation id="2977470724722393594">„Chromium“ naujausios versijos</translation>
 <translation id="2983934633046890458">„Chromium“ bando redaguoti slaptažodžius.</translation>
@@ -60,6 +59,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="328888136576916638">Trūksta „Google“ API raktų. Bus išjungtos kai kurios „Chromium“ funkcijos.</translation>
 <translation id="3296368748942286671">Toliau vykdyti fonines programas, kai „Chromium“ uždaroma</translation>
 <translation id="331951419404882060">„Chromium“ OS negali sinchronizuoti duomenų, nes prisijungiant įvyko klaida.</translation>
+<translation id="347328004046849135">„Chromium“ praneš jums, kai prisijungsite naudodami pažeistą slaptažodį</translation>
 <translation id="3474745554856756813">Atlikus šį veiksmą iš šio įrenginio bus ištrinti elementai (<ph name="ITEMS_COUNT" />). Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Uždarykite visus „Chromium“ langus ir bandykite dar kartą.</translation>
 <translation id="3575459661164320785">Kompiuteryje yra kenkėjiškos programinės įrangos. „Chromium“ gali ją pašalinti, atkurti nustatymus ir išjungti plėtinius, kad naršyklė vėl veiktų įprastai.</translation>
@@ -95,11 +95,13 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4746050847053251315">Vis tiek išeiti iš „Chromium“?</translation>
 <translation id="4748217263233248895">Ką tik pritaikytas specialus „Chromium“ skirtas saugos naujinys. Paleiskite naršyklę iš naujo ir atkursime visus skirtukus.</translation>
 <translation id="4750035648288509542">Beveik atnaujinta! Paleiskite „Chromium“ iš naujo, kad būtų užbaigtas naujinimas. Inkognito langai nebus atidaryti iš naujo.</translation>
+<translation id="4788777615168560705">„Chromium“ negali patikrinti jūsų slaptažodžių. Bandykite dar kartą po 24 val. arba <ph name="BEGIN_LINK" />patikrinkite slaptažodžius „Google“ paskyroje<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Naudojamas tas pats rašybos tikrinimas kaip ir „Google“ paieškoje. Tekstas, kurį įvedate naršyklėje, nusiunčiamas „Google“. Šį veikimą visada galite pakeisti nustatymuose.</translation>
 <translation id="4888717733111232871">„Chromium“ skirta taisyklė, pagal kurią leidžiamas mDNS srautas.</translation>
 <translation id="4943838377383847465">„Chromium“ veikia fono režimu.</translation>
 <translation id="4987820182225656817">Svečiai gali naudoti „Chromium“ nepalikdami jokių duomenų.</translation>
 <translation id="4994636714258228724">Pridėkite save prie „Chromium“</translation>
+<translation id="5224391634244552924">Nėra išsaugotų slaptažodžių. „Chromium“ gali tikrinti jūsų slaptažodžius, kai juos išsaugote.</translation>
 <translation id="5277894862589591112">Norėdami pritaikyti pakeitimus, paleiskite „Chromium“ iš naujo</translation>
 <translation id="5358375970380395591">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Chromium“ profilį. „Chromium“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME" />. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Atnaujinama „Chromium“ (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -166,6 +168,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7066436765290594559">„Chromium“ OS negali sinchronizuoti duomenų. Atnaujinkite sinchronizavimo slaptafrazę.</translation>
 <translation id="7067091210845072982">Jei nebus naudingo vaizdo aprašo, „Chromium“ bandys jums jį pateikti. Kad būtų galima kurti aprašus, vaizdai siunčiami į sistemą „Google“.</translation>
 <translation id="7196312274710523067">Nepavyko paleisti „Chromium“. Bandykite dar kartą.</translation>
+<translation id="7197677400338048821">„Chromium“ negali patikrinti jūsų slaptažodžių. Bandykite dar kartą po 24 val.</translation>
 <translation id="7205698830395646142">Paslėpti „Chromium“ meniu elementą</translation>
 <translation id="7223968959479464213">Užduočių tvarkytuvė – „Chromium“</translation>
 <translation id="731644333568559921">&amp;„Chromium“ OS naujinys</translation>

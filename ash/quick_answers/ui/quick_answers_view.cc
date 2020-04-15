@@ -5,6 +5,7 @@
 #include "ash/quick_answers/ui/quick_answers_view.h"
 
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/quick_answers/quick_answers_ui_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"

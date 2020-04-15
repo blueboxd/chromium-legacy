@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/test/local_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/session_flags_manager.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/account_id/account_id.h"
@@ -25,7 +26,8 @@ class UserContext;
 // initializes user manager with a list of pre-registered users.
 // The mixin will mark the OOBE flow as complete during test setup, so it's not
 // suitable for OOBE tests.
-class LoginManagerMixin : public InProcessBrowserTestMixin {
+class LoginManagerMixin : public InProcessBrowserTestMixin,
+                          public LocalStateMixin::Delegate {
  public:
   // Represents test user.
   struct TestUserInfo {
@@ -87,10 +89,11 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
 
   // InProcessBrowserTestMixin:
   bool SetUpUserDataDirectory() override;
-  void CreatedBrowserMainParts(
-      content::BrowserMainParts* browser_main_parts) override;
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
+
+  // LocalStateMixin::Delegate:
+  void SetUpLocalState() override;
 
   // Starts login attempt for a user, using the stub authenticator provided by
   // |authenticator_builder|.
@@ -125,6 +128,7 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
   // Whether the user session manager should skip browser launch steps for
   // testing.
   bool should_launch_browser_ = false;
+  LocalStateMixin local_state_mixin_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerMixin);
 };

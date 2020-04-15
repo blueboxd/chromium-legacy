@@ -397,8 +397,10 @@ public class ExternalNavigationTest {
      * Tests the following flow:
      * - The user clicks on a link
      * - This link goes to a page that loads a handleable intent in onload()
-     * This flow should result in the external intent being launched rather than blocked,
-     * because the initial navigation to the page did not occur via user typing.
+     * This flow should result in (a) the external intent being launched rather than blocked,
+     * because the initial navigation to the page did not occur via user typing, and (b) WebLayer
+     * eliminating the navigation entry that launched the intent, so that the user is back on the
+     * original URL (i.e., the URL before they clicked the link).
      */
     @Test
     @SmallTest
@@ -430,8 +432,9 @@ public class ExternalNavigationTest {
 
         intentInterceptor.waitForIntent();
 
-        // The current URL should not have changed, and the intent should have been launched.
-        Assert.assertEquals(finalUrl, mActivityTestRule.getCurrentDisplayUrl());
+        // The intent should have been launched, and the user should now be back on the original
+        // URL.
+        Assert.assertEquals(url, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
         Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());

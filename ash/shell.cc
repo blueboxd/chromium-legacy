@@ -21,7 +21,7 @@
 #include "ash/accessibility/key_accessibility_enabler.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
@@ -358,10 +358,6 @@ int Shell::GetOpenSystemModalWindowContainerId() {
 // static
 bool Shell::IsSystemModalWindowOpen() {
   return GetOpenSystemModalWindowContainerId() >= 0;
-}
-
-AssistantController* Shell::assistant_controller() {
-  return assistant_controller_.get();
 }
 
 display::DisplayConfigurator* Shell::display_configurator() {
@@ -1072,7 +1068,7 @@ void Shell::Init(
 
   magnification_controller_ = std::make_unique<MagnificationController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
-  assistant_controller_ = std::make_unique<AssistantController>();
+  assistant_controller_ = std::make_unique<AssistantControllerImpl>();
   quick_answers_controller_ = std::make_unique<QuickAnswersControllerImpl>();
 
   // |assistant_controller_| is put before |ambient_controller_| as it will be

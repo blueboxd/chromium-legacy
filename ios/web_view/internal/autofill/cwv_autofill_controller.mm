@@ -44,6 +44,7 @@
 #import "ios/web_view/internal/autofill/cwv_credit_card_verifier_internal.h"
 #include "ios/web_view/internal/autofill/web_view_autocomplete_history_manager_factory.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
+#import "ios/web_view/internal/autofill/web_view_autofill_log_router_factory.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/autofill/web_view_strike_database_factory.h"
 #import "ios/web_view/internal/passwords/cwv_password_controller.h"
@@ -117,18 +118,19 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 @synthesize delegate = _delegate;
 
 - (instancetype)initWithWebState:(web::WebState*)webState
+                  autofillClient:
+                      (std::unique_ptr<autofill::WebViewAutofillClientIOS>)
+                          autofillClient
                    autofillAgent:(AutofillAgent*)autofillAgent
                JSAutofillManager:(JsAutofillManager*)JSAutofillManager
              JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
-              passwordController:(CWVPasswordController*)passwordController {
+              passwordController:(CWVPasswordController*)passwordController
+               applicationLocale:(const std::string&)applicationLocale {
   self = [super init];
   if (self) {
     DCHECK(webState);
     _webState = webState;
 
-    ios_web_view::WebViewBrowserState* browserState =
-        ios_web_view::WebViewBrowserState::FromBrowserState(
-            _webState->GetBrowserState());
     _autofillAgent = autofillAgent;
 
     _webStateObserverBridge =
@@ -138,22 +140,11 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
     _formActivityObserverBridge =
         std::make_unique<autofill::FormActivityObserverBridge>(webState, self);
 
-    _autofillClient.reset(new autofill::WebViewAutofillClientIOS(
-        browserState->GetPrefs(),
-        ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
-            browserState->GetRecordingBrowserState()),
-        ios_web_view::WebViewAutocompleteHistoryManagerFactory::
-            GetForBrowserState(browserState),
-        _webState, self,
-        ios_web_view::WebViewIdentityManagerFactory::GetForBrowserState(
-            browserState->GetRecordingBrowserState()),
-        ios_web_view::WebViewStrikeDatabaseFactory::GetForBrowserState(
-            browserState->GetRecordingBrowserState()),
-        ios_web_view::WebViewProfileSyncServiceFactory::GetForBrowserState(
-            browserState)));
+    _autofillClient = std::move(autofillClient);
+    _autofillClient->set_bridge(self);
+
     autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
-        _webState, _autofillClient.get(), self,
-        ios_web_view::ApplicationContext::GetInstance()->GetApplicationLocale(),
+        _webState, _autofillClient.get(), self, applicationLocale,
         autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
     _JSAutofillManager = JSAutofillManager;
@@ -314,20 +305,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   }
 }
 
-- (BOOL)removeSuggestion:(CWVAutofillSuggestion*)suggestion {
-  // Identifier is greater than 0 for Autofill suggestions.
-  DCHECK_LT(0, suggestion.formSuggestion.identifier);
-
-  web::WebFrame* frame = web::GetWebFrameWithId(
-      _webState, base::SysNSStringToUTF8(suggestion.frameID));
-  autofill::AutofillManager* manager = [self autofillManagerForFrame:frame];
-  if (!manager) {
-    return NO;
-  }
-  return manager->RemoveAutofillProfileOrCreditCard(
-      suggestion.formSuggestion.identifier);
-}
-
 - (void)focusPreviousField {
   [_JSSuggestionManager
       selectPreviousElementInFrameWithID:_lastFocusFormActivityWebFrameID];
@@ -344,16 +321,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
       fetchPreviousAndNextElementsPresenceInFrameWithID:
           _lastFocusFormActivityWebFrameID
                                       completionHandler:completionHandler];
-}
-
-#pragma mark - Utility Methods
-
-- (autofill::AutofillManager*)autofillManagerForFrame:(web::WebFrame*)frame {
-  if (!_webState || !frame) {
-    return nil;
-  }
-  return autofill::AutofillDriverIOS::FromWebStateAndWebFrame(_webState, frame)
-      ->autofill_manager();
 }
 
 #pragma mark - CWVAutofillClientIOSBridge

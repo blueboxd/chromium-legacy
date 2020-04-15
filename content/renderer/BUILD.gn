@@ -667,6 +667,13 @@ target(link_target_type, "renderer") {
     deps += [ "//sandbox:sandbox_buildflags" ]
   }
 
+  if (is_chromeos) {
+    deps += [
+      "//chromeos:chromeos_export",
+      "//chromeos/system:system",
+    ]
+  }
+
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }

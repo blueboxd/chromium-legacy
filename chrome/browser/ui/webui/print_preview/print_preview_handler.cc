@@ -254,6 +254,12 @@ const char kHeaderFooter[] = "headerFooter";
 // Name of a dictionary pref holding the policy value for the background
 // graphics checkbox.
 const char kCssBackground[] = "cssBackground";
+#if defined(OS_CHROMEOS)
+// Name of a dictionary field holding policy value for the setting.
+const char kValue[] = "value";
+// Name of a dictionary pref holding the policy value for the sheets number.
+const char kSheets[] = "sheets";
+#endif  // defined(OS_CHROMEOS)
 // Name of a dictionary field indicating whether the 'Save to PDF' destination
 // is disabled.
 const char kPdfPrinterDisabled[] = "pdfPrinterDisabled";
@@ -472,6 +478,15 @@ base::Value GetPolicies(const PrefService& prefs) {
   if (!background_graphics_policy.DictEmpty())
     policies.SetKey(kCssBackground, std::move(background_graphics_policy));
 
+#if defined(OS_CHROMEOS)
+  if (prefs.HasPrefPath(prefs::kPrintingMaxSheetsAllowed)) {
+    base::Value sheets_policy(base::Value::Type::DICTIONARY);
+    sheets_policy.SetIntKey(kValue,
+                            prefs.GetInteger(prefs::kPrintingMaxSheetsAllowed));
+    policies.SetKey(kSheets, std::move(sheets_policy));
+  }
+#endif  // defined(OS_CHROMEOS)
+
   return policies;
 }
 
@@ -588,12 +603,11 @@ void PrintPreviewHandler::RegisterMessages() {
       base::BindRepeating(
           &PrintPreviewHandler::HandleGrantExtensionPrinterAccess,
           base::Unretained(this)));
-#if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "openPrinterSettings",
       base::BindRepeating(&PrintPreviewHandler::HandleOpenPrinterSettings,
                           base::Unretained(this)));
-
+#if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "getEulaUrl", base::BindRepeating(&PrintPreviewHandler::HandleGetEulaUrl,
                                         base::Unretained(this)));
@@ -1023,13 +1037,21 @@ void PrintPreviewHandler::HandleClosePreviewDialog(
       regenerate_preview_request_count_);
 }
 
-#if defined(OS_CHROMEOS)
 void PrintPreviewHandler::HandleOpenPrinterSettings(
     const base::ListValue* args) {
+#if defined(OS_CHROMEOS)
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       Profile::FromWebUI(web_ui()), chrome::kNativePrintingSettingsSubPage);
+#else
+  GURL url(chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage));
+  content::OpenURLParams params(url, content::Referrer(),
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                ui::PAGE_TRANSITION_LINK, false);
+  preview_web_contents()->OpenURL(params);
+#endif
 }
 
+#if defined(OS_CHROMEOS)
 void PrintPreviewHandler::HandleGetEulaUrl(const base::ListValue* args) {
   CHECK_EQ(2U, args->GetSize());
 

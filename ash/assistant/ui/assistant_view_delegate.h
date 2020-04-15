@@ -23,8 +23,6 @@ class AssistantInteractionModel;
 class AssistantInteractionModelObserver;
 class AssistantNotificationModel;
 class AssistantNotificationModelObserver;
-class AssistantSuggestionsModel;
-class AssistantSuggestionsModelObserver;
 class AssistantUiModel;
 class AssistantUiModelObserver;
 enum class AssistantButtonId;
@@ -83,9 +81,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // Gets the notification model.
   virtual const AssistantNotificationModel* GetNotificationModel() const = 0;
 
-  // Gets the suggestions model.
-  virtual const AssistantSuggestionsModel* GetSuggestionsModel() const = 0;
-
   // Gets the ui model.
   virtual const AssistantUiModel* GetUiModel() const = 0;
 
@@ -110,12 +105,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
       AssistantNotificationModelObserver* observer) = 0;
   virtual void RemoveNotificationModelObserver(
       AssistantNotificationModelObserver* observer) = 0;
-
-  // Adds/removes the suggestions model observer.
-  virtual void AddSuggestionsModelObserver(
-      AssistantSuggestionsModelObserver* observer) = 0;
-  virtual void RemoveSuggestionsModelObserver(
-      AssistantSuggestionsModelObserver* observer) = 0;
 
   // Adds/removes the ui model observer.
   virtual void AddUiModelObserver(AssistantUiModelObserver* observer) = 0;

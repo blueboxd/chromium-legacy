@@ -69,7 +69,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/content_settings_agent.mojom.h"
 #include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/web_application_info.h"
@@ -77,6 +76,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/certificate_transparency/pref_names.h"
+#include "components/content_settings/common/content_settings_agent.mojom.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -3664,7 +3664,7 @@ class SSLUIWorkerFetchTest
   void SetAllowRunningInsecureContent() {
     content::RenderFrameHost* render_frame_host =
         browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-    mojo::AssociatedRemote<chrome::mojom::ContentSettingsAgent> agent;
+    mojo::AssociatedRemote<content_settings::mojom::ContentSettingsAgent> agent;
     render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&agent);
     agent->SetAllowRunningInsecureContent();
   }

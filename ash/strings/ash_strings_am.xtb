@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">በማያ ገጽ መቆለፊያዎ ላይ ማሳወቂያዎችን ለማየት ቅንብሩችን ለመቀየር ይክፈቱ</translation>
 <translation id="4144413954005649103">በቀኝ ጠቅ በማድረግ ወይም ተጭነው በመያዝ ረዳት በማያ ገጽ ላይ እርስዎ ምን እንደመረጡ ጋር ግንኙነት ያለው መረጃ ያሳይዎታል።</translation>
 <translation id="4146833061457621061">Play ሙዚቃ</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> በ<ph name="DOMAIN" /> የሚተዳደር ነው</translation>
 <translation id="4181841719683918333">ቋንቋዎች</translation>
 <translation id="4195877955194704651">ራስሰር ጠቅታዎች አዝራር</translation>
 <translation id="4215497585250573029">የቪፒኤን ቅንብሮች</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">አቋራጭ ጠፍቷል</translation>
 <translation id="6910714959251846841">ይህ ዝማኔ የመሣሪያዎን powerwashing ይጠይቃል። ስለቅርብ ጊዜው <ph name="SYSTEM_APP_NAME" /> ዝማኔ የበለጠ ይረዱ።</translation>
 <translation id="6919251195245069855">የእርስዎን ዘመናዊ ካርድ ለይቶ ማወቅ አልተቻለም። እንደገና ይሞክሩ።</translation>
+<translation id="6945221475159498467">ይምረጡ</translation>
 <translation id="6972754398087986839">አስጀማሪ መመሪያ</translation>
 <translation id="6981982820502123353">ተደራሽነት</translation>
 <translation id="698231206551913481">አንዴ ይህ ተጠቃሚ ከተወገደ በኋላ ከዚህ ተጠቃሚ ጋር የተጎዳኙ ሁሉም ፋይሎች እና አካባቢያዊ ውሂብ በቋሚነት ይሰረዛሉ።</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">የግል አውታረ መረብ</translation>
 <translation id="8152092012181020186">ለመዝጋት Ctrl + W ይጫኑ።</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> ይህ ቅንብር በአስተዳዳሪዎ የሚቀናበር ነው።</translation>
+<translation id="815598010540052116">ወደ ታች ሸብልል</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />ን በመጠቀም ላይ</translation>
 <translation id="8190698733819146287">ቋንቋዎችን እና ግብአቶችን አብጅ...</translation>
 <translation id="8192202700944119416">ማሳወቂያዎች ተደብቀዋል</translation>

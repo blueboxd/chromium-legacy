@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
 #include "net/cookies/canonical_cookie.h"
@@ -21,16 +22,11 @@ constexpr char HatsSurveyStatusChecker::kHatsSurveyDataPath[];
 constexpr char HatsSurveyStatusChecker::kReasonHeader[];
 constexpr char HatsSurveyStatusChecker::kReasonOverCapacity[];
 
-HatsSurveyStatusChecker::HatsSurveyStatusChecker(Profile* profile)
-    : otr_profile_registration_(
-          IndependentOTRProfileManager::GetInstance()
-              ->CreateFromOriginalProfile(
-                  profile,
-                  base::BindOnce(
-                      &HatsSurveyStatusChecker::OnOriginalProfileDestroyed,
-                      base::Unretained(this)))) {
-  DCHECK(
-      otr_profile_registration_->profile()->IsIndependentOffTheRecordProfile());
+HatsSurveyStatusChecker::HatsSurveyStatusChecker(Profile* profile) {
+  Profile::OTRProfileID otr_profile_id =
+      Profile::OTRProfileID::CreateUnique("HaTS::SurveyStatusChecker");
+  otr_profile_ = profile->GetOffTheRecordProfile(otr_profile_id);
+  otr_profile_->AddObserver(this);
 
   // HaTS client first downloads a javascript library from
   // https://www.google.com/insights/consumersurveys/async_survey?site=<site_id>.
@@ -41,20 +37,29 @@ HatsSurveyStatusChecker::HatsSurveyStatusChecker(Profile* profile)
   // info doesn't meet requirements. However, the cookie's value is not checked.
   // To fetch the survey status directly, we need to set the cookie, but it is
   // ok to use a non-conforming value.
+  GURL cookie_url = GURL("https://www.google.com");
   auto survey_cookie = net::CanonicalCookie::Create(
-      GURL("https://www.google.com"), "PAIDCONTENT=0", base::Time::Now(),
-      base::nullopt);
-  content::StoragePartition* partition =
-      content::BrowserContext::GetDefaultStoragePartition(
-          otr_profile_registration_->profile());
+      cookie_url, "PAIDCONTENT=0", base::Time::Now(), base::nullopt);
   network::mojom::CookieManager* cookie_manager =
-      partition->GetCookieManagerForBrowserProcess();
-  cookie_manager->SetCanonicalCookie(*survey_cookie, "https",
+      GetStoragePartition()->GetCookieManagerForBrowserProcess();
+  cookie_manager->SetCanonicalCookie(*survey_cookie, cookie_url,
                                      net::CookieOptions::MakeAllInclusive(),
                                      base::DoNothing());
 }
 
-HatsSurveyStatusChecker::~HatsSurveyStatusChecker() = default;
+HatsSurveyStatusChecker::~HatsSurveyStatusChecker() {
+  if (otr_profile_) {
+    otr_profile_->RemoveObserver(this);
+    ProfileDestroyer::DestroyProfileWhenAppropriate(otr_profile_);
+    otr_profile_ = nullptr;
+  }
+}
+
+content::StoragePartition* HatsSurveyStatusChecker::GetStoragePartition()
+    const {
+  DCHECK(otr_profile_);
+  return content::BrowserContext::GetDefaultStoragePartition(otr_profile_);
+}
 
 void HatsSurveyStatusChecker::CheckSurveyStatus(
     const std::string& site_id,
@@ -101,11 +106,8 @@ void HatsSurveyStatusChecker::CheckSurveyStatus(
           policy_exception_justification:
             "Not implemented."
         })"));
-  content::StoragePartition* partition =
-      content::BrowserContext::GetDefaultStoragePartition(
-          otr_profile_registration_->profile());
   url_loader_->DownloadHeadersOnly(
-      partition->GetURLLoaderFactoryForBrowserProcess().get(),
+      GetStoragePartition()->GetURLLoaderFactoryForBrowserProcess().get(),
       base::BindOnce(&HatsSurveyStatusChecker::OnURLLoadComplete,
                      base::Unretained(this)));
   request_timer_.Start(FROM_HERE,
@@ -130,11 +132,8 @@ int HatsSurveyStatusChecker::SurveyCheckTimeoutSecs() {
   return kTimeoutSecs;
 }
 
-void HatsSurveyStatusChecker::OnOriginalProfileDestroyed(Profile* profile) {
-  if (otr_profile_registration_ &&
-      profile == otr_profile_registration_->profile()) {
-    otr_profile_registration_.reset();
-  }
+void HatsSurveyStatusChecker::OnProfileWillBeDestroyed(Profile* profile) {
+  otr_profile_ = nullptr;
 }
 
 void HatsSurveyStatusChecker::OnURLLoadComplete(

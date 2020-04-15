@@ -287,12 +287,6 @@
 <translation id="1427655258943162134">Proxy sunucunun adresi veya URL'si</translation>
 <translation id="1435659902881071157">Cihaz düzeyinde ağ yapılandırması</translation>
 <translation id="1438739959477268107">Varsayılan anahtar oluşturma ayarı</translation>
-<translation id="1455804070656338445">Şifre değiştirme URL'sini yapılandırın (yalnızca HTTP ve HTTPS şemaları). Şifre koruma hizmeti, tarayıcıda bir uyarı gördükten sonra şifrelerini değiştirmeleri için kullanıcıları bu URL'ye gönderir.
-      <ph name="PRODUCT_NAME" /> ürününün bu şifre değiştirme sayfasında yeni şifre parmak izini doğru bir şekilde yakalayabilmesi için lütfen şifre değiştirme sayfanızın https://www.chromium.org/developers/design-documents/create-amazing-password-forms adresinde belirtilen yönergelere uygun olduğundan emin olun.
-
-      Bu ayar etkinleştirilirse şifre koruma hizmeti, tarayıcıda bir uyarı gördükten sonra şifrelerini değiştirmeleri için kullanıcıları bu URL'ye gönderir.
-      Bu ayar devre dışı bırakılır veya ayarlanmazsa şifre koruma hizmeti, şifrelerini değiştirmeleri için kullanıcıları https://myaccount.google.com adresine gönderir.
-      Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" /> istemcileri):</translation>
 <translation id="1464848559468748897"><ph name="PRODUCT_OS_NAME" /> cihazlarda çoklu profil içeren oturumdaki kullanıcı davranışını denetle.
 
@@ -597,12 +591,6 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
       Yanlış (false) değerine ayarlanırsa, ölçüm ve teşhis verilerini raporlama işlevi devre dışı olur.
 
       Yapılandırılmazsa, ölçüm ve teşhis verileri yönetilmeyen cihazlarda devre dışı bırakılır, yönetilen cihazlarda etkinleştirilir.</translation>
-<translation id="1907431809333268751">Kurumsal giriş URL'lerinin listesini yapılandırır (yalnızca HTTP ve HTTPS şemaları). Bu URL'lerde şifrelerin dijital parmak izleri yakalanır ve şifrenin tekrar kullanımını algılamak için bu dijital parmak izlerinden yararlanılır.
-      <ph name="PRODUCT_NAME" /> ürününün şifrelerin dijital parmak izlerini doğru bir şekilde yakalayabilmesi için lütfen giriş sayfalarınızın https://www.chromium.org/developers/design-documents/create-amazing-password-forms adresinde belirtilen yönergelere uygun olduğundan emin olun.
-
-      Bu ayar etkinleştirilirse şifre koruma hizmeti, şifre yeniden kullanımı algılaması için bu URL'lerdeki şifrelerin dijital parmak izlerini yakalar.
-      Bu ayar devre dışı bırakılırsa veya ayarlanmazsa, şifre koruma hizmeti yalnızca https://accounts.google.com adresindeki şifrelerin dijital parmak izlerini yakalar.
-      Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
 <translation id="1910704279188129272">Uygulama başına kullanım kısıtlamaları ayarlamaya olanak tanır.
         Kullanım kısıtlamaları, belirtilen kullanıcı için <ph name="PRODUCT_OS_NAME" /> üzerinde yüklü uygulamalarda geçerli olabilir.
         Kısıtlamalar |app_limits| listesine dahil edilmelidir. Uygulama başına yalnızca bir girişe izin verilir. Listede bulunmayan uygulamaların kısıtlamaları yoktur.
@@ -3355,13 +3343,13 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
       Bu liste boş değere ayarlanırsa <ph name="PRODUCT_NAME" />, Uzantıları uyumlu şekillerde çalıştırmayı dener ve <ph name="WEB_REQUEST_API_MANUAL" /> içinde açıklanan <ph name="PRODUCT_NAME" /> 79 için <ph name="API" /> değişikliklerini uygulamaz.
 
-      Bu liste <ph name="HTTP" /> istek üst bilgi adlarına sahip olacak şekilde ayarlanırsa <ph name="CORS" /> incelemesi, Uzantılar için çözüm sağlamaya ek olarak listelenen üst bilgileri de yoksayar.
+      Bu liste <ph name="HTTP" /> istek üstbilgi adlarına sahip olacak şekilde ayarlanırsa <ph name="CORS" /> incelemesi, Uzantılar için çözüm sağlamaya ek olarak listelenen üstbilgileri de yoksayar.
 
       Bu liste ayarlanmazsa yukarıda açıklanan çözümlerin ikisi de uygulanmaz.
 
       <ph name="CORS" /> ile ilgili ayrıntılar için şu adresi ziyaret edin: <ph name="CORS_HELP_URL" />.
 
-      Bu politikanın <ph name="PRODUCT_NAME" /> sürüm 82'de kaldırılacağı duyurulmuştu, ancak planlardaki değişiklik nedeniyle sürüm 84'de kaldırılacağını belirtmek isteriz.</translation>
+      Bu politikanın <ph name="PRODUCT_NAME" /> sürüm 82'de kaldırılacağı duyurulmuştu, ancak planlardaki değişiklik nedeniyle sürüm 84'te kaldırılacağını belirtmek isteriz.</translation>
 <translation id="5790763087505467169">Yönetilen misafir oturumu otomatik başlatma bildirimlerini azaltma</translation>
 <translation id="5806128552675651249">Yalnızca arka plan grafikleri olmadan yazdırmaya izin ver</translation>
 <translation id="5809210507920527553">Linux kapsayıcı (Crostini) ile ilgili ayarları kontrol eder.</translation>
@@ -3435,7 +3423,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
       <ph name="CORS" /> ile ilgili ayrıntılar için şu adresi ziyaret edin: <ph name="CORS_HELP_URL" />.
 
-      Bu politikanın <ph name="PRODUCT_NAME" /> sürüm 82'de kaldırılacağı duyurulmuştu, ancak planlardaki değişiklik nedeniyle sürüm 84'de kaldırılacağını belirtmek isteriz.</translation>
+      Bu politikanın <ph name="PRODUCT_NAME" /> sürüm 82'de kaldırılacağı duyurulmuştu, ancak planlardaki değişiklik nedeniyle sürüm 84'te kaldırılacağını belirtmek isteriz.</translation>
 <translation id="5893553533827140852">Bu ayar etkinleştirilirse gnubby kimlik doğrulama isteklerinde uzaktan ana bilgisayar bağlantısı üzerinden proxy kullanılır.
 
           Bu ayar devre dışı bırakılır veya yapılandırılmazsa gnubby kimlik doğrulama isteklerinde proxy kullanılmaz.</translation>
@@ -4031,13 +4019,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşir.</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> tercihleri</translation>
-<translation id="7007671350884342624"><ph name="PRODUCT_NAME" /> uygulamasının kullanıcı verilerini depolamak için kullanacağı dizini yapılandırır.
-
-      Bu politikayı ayarlarsanız <ph name="PRODUCT_NAME" />, kullanıcının "--user-data-dir" belirtmiş olup olmamasına bakmaksızın sağlanan dizini kullanır. Veri kaybını veya diğer beklenmeyen hataları önlemek için bu politika, bir birimin kök dizinine veya başka amaçlar için kullanılan bir dizine ayarlanmamalıdır; çünkü <ph name="PRODUCT_NAME" />, dizinin içeriğini yönetir.
-
-      Kullanılabilecek değişkenlerin bir listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
-
-      Bu politika ayarlanmadan bırakılırsa varsayılan profil yolu kullanılır ve kullanıcı, "--user-data-dir" komut satırı bayrağıyla bunu geçersiz kılabilir.</translation>
 <translation id="7008308728445338159">DNS müdahale kontrolü etkin</translation>
 <translation id="7027785306666625591"><ph name="PRODUCT_OS_NAME" /> sisteminde güç yönetimini yapılandırın.
 
@@ -4959,7 +4940,6 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="8424255554404582727">Her yeniden başlatmada tekrar uygulanacak varsayılan ekran döndürmesini ayarla</translation>
 <translation id="8426231401662877819">Ekranı saat yönünde 90 derece döndür</translation>
 <translation id="8433186206711564395">Ağ ayarları</translation>
-<translation id="8433423491036718210">Şifrenin parmak izinin şifre koruma hizmeti tarafından yakalanması gerektiği kurumsal giriş URL'lerinin listesini yapılandırın.</translation>
 <translation id="8445576299806775661">Her büyük sürüm güncellemesinin ardından Chrome, daha sonra bir acil sürüm geri alma durumunda kullanılmak üzere kullanıcının tarama verilerinin belirli bölümlerinin anlık görüntüsünü oluşturur. Kullanıcının karşılık gelen anlık görüntüsüne sahip olduğu bir sürümde acil durum geri alma gerçekleştirilirse anlık görüntüdeki veriler geri yüklenir. Bu, kullanıcıların yer işaretleri ve otomatik doldurma verileri gibi ayarları saklamasına olanak tanır.
 
       Bu politika ayarlanmazsa varsayılan değer olan 3 değeri kullanılır

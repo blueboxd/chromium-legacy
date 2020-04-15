@@ -436,7 +436,6 @@ Samo vi možete vidjeti prikaz kamere. Web lokacija ne može vidjeti slike kamer
 <translation id="4242533952199664413">Otvori postavke</translation>
 <translation id="4250229828105606438">Snimak ekrana</translation>
 <translation id="4256782883801055595">Licence otvorenog koda</translation>
-<translation id="4259722352634471385">Navigacija je blokirana: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiraj adresu linka</translation>
 <translation id="4275663329226226506">Mediji</translation>
 <translation id="4278390842282768270">Dozvoljeno</translation>
@@ -1067,7 +1066,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="8942627711005830162">Otvori u drugom prozoru</translation>
 <translation id="8951232171465285730">Chrome vam je uštedio <ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">Blokiranje kolačića za određenu web lokaciju.</translation>
-<translation id="8959122750345127698">Navigacija je nedostupna: <ph name="URL" /></translation>
 <translation id="8965591936373831584">na čekanju</translation>
 <translation id="8970887620466824814">Nešto nije uredu.</translation>
 <translation id="8972098258593396643">Želite li preuzeti u zadanu mapu?</translation>

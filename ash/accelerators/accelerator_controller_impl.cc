@@ -15,7 +15,7 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/debug.h"

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
@@ -25,6 +25,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -113,7 +114,7 @@ void IncrementNumWarmerWelcomeTriggered() {
 // AssistantInteractionController ----------------------------------------------
 
 AssistantInteractionController::AssistantInteractionController(
-    AssistantController* assistant_controller)
+    AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
@@ -524,7 +525,7 @@ void AssistantInteractionController::OnSuggestionChipPressed(
     // receive a deleted pointer.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&AssistantController::OpenUrl,
+        base::BindOnce(&AssistantControllerImpl::OpenUrl,
                        assistant_controller_->GetWeakPtr(),
                        suggestion->action_url, /*in_background=*/false,
                        /*from_server=*/false));
@@ -884,13 +885,12 @@ void AssistantInteractionController::OnUiVisible(
     // been cached on the client. To avoid jank, we need to post a task to start
     // our interaction to give the Assistant UI a chance to initialize itself.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&AssistantInteractionController::
-                           StartProactiveSuggestionsInteraction,
-                       weak_factory_.GetWeakPtr(),
-                       assistant_controller_->suggestions_controller()
-                           ->model()
-                           ->GetProactiveSuggestions()));
+        FROM_HERE, base::BindOnce(&AssistantInteractionController::
+                                      StartProactiveSuggestionsInteraction,
+                                  weak_factory_.GetWeakPtr(),
+                                  AssistantSuggestionsController::Get()
+                                      ->GetModel()
+                                      ->GetProactiveSuggestions()));
     return;
   }
 

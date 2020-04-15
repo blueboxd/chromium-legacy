@@ -541,7 +541,7 @@ void WebApps::SetShowInFields(apps::mojom::AppPtr& app,
   app->show_in_launcher = show;
   app->show_in_search = show;
   app->show_in_management =
-      web_app->IsSystemApp() ? show : apps::mojom::OptionalBool::kFalse;
+      web_app->IsSystemApp() ? apps::mojom::OptionalBool::kFalse : show;
 }
 
 void WebApps::PopulatePermissions(const web_app::WebApp* web_app,

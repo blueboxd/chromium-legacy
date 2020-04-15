@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Du kan se notifikationer på din låseskærm ved at låse skærmen op og ændre indstillingen</translation>
 <translation id="4144413954005649103">Når du højreklikker eller laver et langt tryk, viser Assistent dig oplysninger, som er relateret til det, du har valgt på skærmen.</translation>
 <translation id="4146833061457621061">Spil musik</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> administreres af <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Sprog</translation>
 <translation id="4195877955194704651">Knap til automatisk klik</translation>
 <translation id="4215497585250573029">VPN-indstillinger</translation>
@@ -468,6 +467,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6878400149835617132">Genvejen er deaktiveret</translation>
 <translation id="6910714959251846841">Denne opdatering kræver, at der udføres en powerwash på din enhed. Få flere oplysninger om den nyeste <ph name="SYSTEM_APP_NAME" />-opdatering.</translation>
 <translation id="6919251195245069855">Dit chipkort blev ikke genkendt. Prøv igen.</translation>
+<translation id="6945221475159498467">Vælg</translation>
 <translation id="6972754398087986839">Kom godt i gang</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="698231206551913481">Alle filer og lokale data, der er knyttet til denne bruger, slettes permanent, når brugeren fjernes.</translation>
@@ -558,6 +558,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8142699993796781067">Privat netværk</translation>
 <translation id="8152092012181020186">Tryk på Ctrl+W for at lukke.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Denne indstilling administreres af din administrator.</translation>
+<translation id="815598010540052116">Scroll Down</translation>
 <translation id="8167567890448493835">Bruger <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
 <translation id="8192202700944119416">Notifikationer er skjult.</translation>

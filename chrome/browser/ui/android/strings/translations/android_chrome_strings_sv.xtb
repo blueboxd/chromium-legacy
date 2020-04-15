@@ -436,7 +436,6 @@ Det är endast du som kan se det kameran avbildar. Bilderna från kameran visas 
 <translation id="4242533952199664413">Öppna Inställningar</translation>
 <translation id="4250229828105606438">Skärmdump</translation>
 <translation id="4256782883801055595">Licenser för öppen källkod</translation>
-<translation id="4259722352634471385">Webbadressen har blockerats: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiera länkadress</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Tillåts</translation>
@@ -1067,7 +1066,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8942627711005830162">Öppna i ett annat fönster</translation>
 <translation id="8951232171465285730">Du har sparat <ph name="MEGABYTES" /> MB med Chrome</translation>
 <translation id="8958424370300090006">Blockera cookies för en enskild webbplats.</translation>
-<translation id="8959122750345127698">Det går inte att nå webbadressen: <ph name="URL" /></translation>
 <translation id="8965591936373831584">väntar</translation>
 <translation id="8970887620466824814">Något gick fel.</translation>
 <translation id="8972098258593396643">Vill du ladda ned till standardmappen?</translation>

@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">設定を開く</translation>
 <translation id="4250229828105606438">スクリーンショット</translation>
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
-<translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
 <translation id="4269820728363426813">リンクアドレスをコピー</translation>
 <translation id="4275663329226226506">メディア</translation>
 <translation id="4278390842282768270">許可</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">お使いのどのデバイスでも同じブックマークを使用するには、同期を有効にします</translation>
 <translation id="8110087112193408731">Chrome のアクティビティを Digital Wellbeing で表示しますか？</translation>
+<translation id="8115259494083109761">QR コードをスキャンするには、Chrome にカメラの使用を許可してください</translation>
 <translation id="8116925261070264013">ミュート中</translation>
 <translation id="8127542551745560481">ホームページを編集</translation>
 <translation id="813082847718468539">サイト情報を表示</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">別のウィンドウで開く</translation>
 <translation id="8951232171465285730">Chrome で <ph name="MEGABYTES" /> MB の容量を節約しました</translation>
 <translation id="8958424370300090006">特定のサイトの Cookie をブロックします。</translation>
-<translation id="8959122750345127698"><ph name="URL" /> にアクセスできません</translation>
 <translation id="8965591936373831584">保留中</translation>
 <translation id="8970887620466824814">エラーが発生しました。</translation>
 <translation id="8972098258593396643">デフォルトのフォルダにダウンロードしますか？</translation>

@@ -50,11 +50,9 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
 // Snackbar category for activity services.
 NSString* const kActivityServicesSnackbarCategory =
     @"ActivityServicesSnackbarCategory";
-}  // namespace
 
 @interface ActivityServiceController () {
   BOOL _active;

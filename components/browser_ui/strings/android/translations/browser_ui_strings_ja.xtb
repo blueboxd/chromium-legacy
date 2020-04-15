@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">リンクのコピー</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ？</translation>
 <translation id="4002066346123236978">タイトル</translation>
+<translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
 <translation id="4570913071927164677">詳細</translation>
 <translation id="4645575059429386691">保護者により管理されています</translation>
 <translation id="4883854917563148705">管理者による設定はリセットできません</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">入力内容を消去</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8730621377337864115">完了</translation>
+<translation id="8959122750345127698"><ph name="URL" /> にアクセスできません</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
 </translationbundle>

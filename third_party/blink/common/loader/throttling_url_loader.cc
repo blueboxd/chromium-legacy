@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
@@ -529,6 +530,8 @@ void ThrottlingURLLoader::OnReceiveResponse(
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_completed_);
   DCHECK(deferring_throttles_.empty());
+  TRACE_EVENT1("loading", "ThrottlingURLLoader::OnReceiveResponse", "url",
+               response_url_.possibly_invalid_spec());
 
   // Dispatch BeforeWillProcessResponse().
   if (!throttles_.empty()) {
@@ -672,6 +675,8 @@ void ThrottlingURLLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_completed_);
+  TRACE_EVENT1("loading", "ThrottlingURLLoader::OnStartLoadingResponseBody",
+               "url", response_url_.possibly_invalid_spec());
 
   forwarding_client_->OnStartLoadingResponseBody(std::move(body));
 }

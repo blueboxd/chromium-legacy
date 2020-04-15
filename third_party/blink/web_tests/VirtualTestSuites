@@ -731,5 +731,10 @@
     "prefix": "trust-tokens",
     "bases": [ "external/wpt/trust-tokens/end-to-end", "http/tests/loading/trust-tokens" ],
     "args": [ "--enable-features=TrustTokens" ]
+  },
+  {
+    "prefix": "weakrefs",
+    "bases": [ "js/weakrefs" ],
+    "args": [ "--js-flags=--harmony-weak-refs" ]
   }
 ]

@@ -10,8 +10,27 @@
  * circumstances. See triggered_profile_resetter.h for when the triggered
  * variant will be used.
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/js/action_link.js';
+import 'chrome://resources/cr_elements/action_link_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import '../settings_shared_css.m.js';
+
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {routes} from '../route.m.js';
+import {Router} from '../router.m.js';
+
+import {ResetBrowserProxy, ResetBrowserProxyImpl} from './reset_browser_proxy.js';
+
 Polymer({
   is: 'settings-reset-profile-dialog',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [WebUIListenerBehavior],
 
@@ -41,7 +60,7 @@ Polymer({
     },
   },
 
-  /** @private {?settings.ResetBrowserProxy} */
+  /** @private {?ResetBrowserProxy} */
   browserProxy_: null,
 
   /**
@@ -70,7 +89,7 @@ Polymer({
 
   /** @override */
   ready() {
-    this.browserProxy_ = settings.ResetBrowserProxyImpl.getInstance();
+    this.browserProxy_ = ResetBrowserProxyImpl.getInstance();
 
     this.addEventListener('cancel', () => {
       this.browserProxy_.onHideResetProfileDialog();
@@ -89,8 +108,8 @@ Polymer({
   },
 
   show() {
-    this.isTriggered_ = settings.Router.getInstance().getCurrentRoute() ==
-        settings.routes.TRIGGERED_RESET_DIALOG;
+    this.isTriggered_ =
+        Router.getInstance().getCurrentRoute() == routes.TRIGGERED_RESET_DIALOG;
     if (this.isTriggered_) {
       this.browserProxy_.getTriggeredResetToolName().then(name => {
         this.resetRequestOrigin_ = 'triggeredreset';
@@ -103,7 +122,7 @@ Polymer({
       // with the startup URL chrome://settings/resetProfileSettings#cct.
       const origin = window.location.hash.slice(1).toLowerCase() == 'cct' ?
           'cct' :
-          settings.Router.getInstance().getQueryParameters().get('origin');
+          Router.getInstance().getQueryParameters().get('origin');
       this.resetRequestOrigin_ = origin || '';
       this.showDialog_();
     }

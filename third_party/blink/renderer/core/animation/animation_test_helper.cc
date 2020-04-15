@@ -36,6 +36,31 @@ void SetV8ObjectPropertyAsNumber(v8::Isolate* isolate,
       .ToChecked();
 }
 
+KeyframeEffect* CreateSimpleKeyframeEffectForTest(Element* target,
+                                                  CSSPropertyID property,
+                                                  String value_start,
+                                                  String value_end) {
+  Timing timing;
+  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1000);
+
+  StringKeyframe* start_keyframe = MakeGarbageCollected<StringKeyframe>();
+  start_keyframe->SetOffset(0.0);
+  start_keyframe->SetCSSPropertyValue(
+      property, value_start, SecureContextMode::kSecureContext, nullptr);
+
+  StringKeyframe* end_keyframe = MakeGarbageCollected<StringKeyframe>();
+  end_keyframe->SetOffset(1.0);
+  end_keyframe->SetCSSPropertyValue(property, value_end,
+                                    SecureContextMode::kSecureContext, nullptr);
+
+  StringKeyframeVector keyframes;
+  keyframes.push_back(start_keyframe);
+  keyframes.push_back(end_keyframe);
+
+  auto* model = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
+  return MakeGarbageCollected<KeyframeEffect>(target, model, timing);
+}
+
 void EnsureInterpolatedValueCached(const ActiveInterpolations& interpolations,
                                    Document& document,
                                    Element* element) {

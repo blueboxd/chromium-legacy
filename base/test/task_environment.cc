@@ -427,12 +427,7 @@ void TaskEnvironment::InitializeThreadPool() {
          "someone has explicitly disabled it with "
          "DisableCheckForLeakedGlobals().";
 
-  // Instantiate a ThreadPoolInstance with 4 workers per thread group. Having
-  // multiple threads prevents deadlocks should some blocking APIs not use
-  // ScopedBlockingCall. It also allows enough concurrency to allow TSAN to spot
-  // data races.
-  constexpr int kMaxThreads = 4;
-  ThreadPoolInstance::InitParams init_params(kMaxThreads);
+  ThreadPoolInstance::InitParams init_params(kNumForegroundThreadPoolThreads);
   init_params.suggested_reclaim_time = TimeDelta::Max();
 #if defined(OS_WIN)
   if (thread_pool_com_environment_ == ThreadPoolCOMEnvironment::COM_MTA) {

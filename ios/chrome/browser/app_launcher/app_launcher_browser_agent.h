@@ -6,10 +6,10 @@
 #define IOS_CHROME_BROWSER_APP_LAUNCHER_APP_LAUNCHER_BROWSER_AGENT_H_
 
 #include "base/scoped_observer.h"
+#import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
-#import "ios/chrome/browser/main/browser_observer.h"
 #import "ios/chrome/browser/main/browser_user_data.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
+#import "ios/chrome/browser/tabs/tab_helper_delegate_installer.h"
 
 class OverlayRequestQueue;
 
@@ -49,57 +49,11 @@ class AppLauncherBrowserAgent
     WebStateList* web_state_list_ = nullptr;
   };
 
-  // Helper object that sets up the delegates for all AppLauncherTabHelpers in
-  // the Browser's WebStateList.
-  class TabHelperDelegateInstaller : public WebStateListObserver {
-   public:
-    TabHelperDelegateInstaller(AppLauncherTabHelperDelegate* delegate,
-                               WebStateList* web_state_list);
-    ~TabHelperDelegateInstaller() override;
-
-   private:
-    // WebStateListObserver:
-    void WebStateInsertedAt(WebStateList* web_state_list,
-                            web::WebState* web_state,
-                            int index,
-                            bool activating) override;
-    void WebStateReplacedAt(WebStateList* web_state_list,
-                            web::WebState* old_web_state,
-                            web::WebState* new_web_state,
-                            int index) override;
-    void WillDetachWebStateAt(WebStateList* web_state_list,
-                              web::WebState* web_state,
-                              int index) override;
-
-    // The delegate that is installed for each WebState in the WebStateList.
-    AppLauncherTabHelperDelegate* delegate_ = nullptr;
-  };
-
-  // Helper object that unhooks the delegate installer when the Browser is
-  // destroyed.
-  class BrowserShutdownHelper : public BrowserObserver {
-   public:
-    BrowserShutdownHelper(Browser* browser,
-                          WebStateListObserver* web_state_list_observer);
-    ~BrowserShutdownHelper() override;
-
-   private:
-    // BrowserObserver:
-    void BrowserDestroyed(Browser* browser) override;
-
-    // The WebStateListObserver to detach upon destruction.
-    WebStateListObserver* web_state_list_observer_ = nullptr;
-    // Scoped observer for the Browser.
-    ScopedObserver<Browser, BrowserObserver> scoped_observer_{this};
-  };
-
   // Handler for app launches in the Browser.
   TabHelperDelegate tab_helper_delegate_;
-  // Installer for tab helper delegates.
-  TabHelperDelegateInstaller tab_helper_delegate_installer_;
-  // Helper object for cleaning up the BrowserAgent when the Browser is
-  // destroyed.
-  BrowserShutdownHelper shutdown_helper_;
+  // The tab helper delegate installer.
+  TabHelperDelegateInstaller<AppLauncherTabHelper, AppLauncherTabHelperDelegate>
+      tab_helper_delegate_installer_;
   // BrowserUserData key.
   BROWSER_USER_DATA_KEY_DECL();
 };

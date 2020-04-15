@@ -74,6 +74,7 @@
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
@@ -109,13 +110,14 @@ void InjectCookie(content::StoragePartition* storage_partition) {
   storage_partition->GetNetworkContext()->GetCookieManager(
       cookie_manager.BindNewPipeAndPassReceiver());
 
+  net::CanonicalCookie cookie(
+      kTestCookieName, kTestCookieValue, kTestCookieHost, "/", base::Time(),
+      base::Time(), base::Time(), true /* secure */, false /* httponly*/,
+      net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM);
   base::RunLoop run_loop;
   cookie_manager->SetCanonicalCookie(
-      net::CanonicalCookie(
-          kTestCookieName, kTestCookieValue, kTestCookieHost, "/", base::Time(),
-          base::Time(), base::Time(), true /* secure */, false /* httponly*/,
-          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
-      "https", net::CookieOptions(),
+      cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
+      net::CookieOptions(),
       base::Bind(&InjectCookieDoneCallback, run_loop.QuitClosure()));
   run_loop.Run();
 }

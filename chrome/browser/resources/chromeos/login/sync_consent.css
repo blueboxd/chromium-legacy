@@ -42,8 +42,11 @@
 }
 
 #splitSettingsSyncConsentDialog .overview-list-item-icon {
-  margin-top: 2px;
   padding-inline-end: 16px;
+}
+
+#splitSettingsSyncConsentDialog .overview-list-item-title {
+  margin-top: 4px;
 }
 
 #splitSettingsSyncConsentDialog cr-checkbox {

@@ -200,6 +200,7 @@ TestSystemWebAppInstallation::CreateWebAppProvider(SystemAppInfo info,
   auto provider = std::make_unique<TestWebAppProvider>(profile);
   auto system_web_app_manager = std::make_unique<SystemWebAppManager>(profile);
   system_web_app_manager->SetSystemAppsForTesting({{type_, info}});
+  system_web_app_manager->SetUpdatePolicyForTesting(update_policy_);
   provider->SetSystemWebAppManager(std::move(system_web_app_manager));
   provider->Start();
   return provider;

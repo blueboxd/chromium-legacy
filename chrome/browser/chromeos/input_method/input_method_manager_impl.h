@@ -15,9 +15,9 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/chromeos/input_method/assistive_window_controller.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/ime_service_connector.h"
-#include "chrome/browser/chromeos/input_method/suggestion_window_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
@@ -235,9 +235,9 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Sets |candidate_window_controller_|.
   void SetCandidateWindowControllerForTesting(
       CandidateWindowController* candidate_window_controller);
-  // Sets |suggestion_window_controller_|.
-  void SetSuggestionWindowControllerForTesting(
-      SuggestionWindowController* suggestion_window_controller);
+  // Sets |assistive_window_controller_|.
+  void SetAssistiveWindowControllerForTesting(
+      AssistiveWindowController* assistive_window_controller);
   // Sets |keyboard_|.
   void SetImeKeyboardForTesting(ImeKeyboard* keyboard);
   // Initialize |component_extension_manager_|.
@@ -255,9 +255,9 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Creates and initializes |candidate_window_controller_| if it hasn't been
   // done.
   void MaybeInitializeCandidateWindowController();
-  // Creates and initializes |suggestion_window_controller_| if it hasn't been
+  // Creates and initializes |assistive_window_controller_| if it hasn't been
   // done.
-  void MaybeInitializeSuggestionWindowController();
+  void MaybeInitializeAssistiveWindowController();
 
   // Returns Input Method that best matches given id.
   const InputMethodDescriptor* LookupInputMethod(
@@ -305,9 +305,9 @@ class InputMethodManagerImpl : public InputMethodManager,
   // The candidate window.  This will be deleted when the APP_TERMINATING
   // message is sent.
   std::unique_ptr<CandidateWindowController> candidate_window_controller_;
-  // The suggestion window.  This will be deleted when the APP_TERMINATING
+  // The assistive window.  This will be deleted when the APP_TERMINATING
   // message is sent.
-  std::unique_ptr<SuggestionWindowController> suggestion_window_controller_;
+  std::unique_ptr<AssistiveWindowController> assistive_window_controller_;
 
   // An object which provides miscellaneous input method utility functions. Note
   // that |util_| is required to initialize |keyboard_|.

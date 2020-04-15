@@ -7,6 +7,7 @@ package org.chromium.media;
 import android.media.MediaFormat;
 import android.os.Build;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.media.MediaCodecUtil.MimeTypes;
 
 import java.nio.ByteBuffer;
@@ -63,14 +64,21 @@ class MediaFormatBuilder {
     private static void addInputSizeInfoToFormat(
             MediaFormat format, boolean allowAdaptivePlayback) {
         if (allowAdaptivePlayback) {
-            // The max size is a hint to the codec, and causes it to allocate more memory up front.
-            // It still supports higher resolutions if they arrive. So, we try to ask only for the
-            // initial size.
-            // TODO(sanfin): The above statement that it supports higher resolutions if they arrive
-            // is false on some platforms. Provide a better hint.
-            format.setInteger(MediaFormat.KEY_MAX_WIDTH, format.getInteger(MediaFormat.KEY_WIDTH));
-            format.setInteger(
-                    MediaFormat.KEY_MAX_HEIGHT, format.getInteger(MediaFormat.KEY_HEIGHT));
+            if (DisplayCompat.isTv(ContextUtils.getApplicationContext())) {
+                // For now, only set max width and height to native resolution on TVs.
+                // Some decoders on TVs interpret max width / height quite literally,
+                // and a crash can occur if these are exceeded.
+                MaxAnticipatedResolutionEstimator.Resolution resolution =
+                        MaxAnticipatedResolutionEstimator.getScreenResolution(format);
+
+                format.setInteger(MediaFormat.KEY_MAX_WIDTH, resolution.getWidth());
+                format.setInteger(MediaFormat.KEY_MAX_HEIGHT, resolution.getHeight());
+            } else {
+                format.setInteger(
+                        MediaFormat.KEY_MAX_WIDTH, format.getInteger(MediaFormat.KEY_WIDTH));
+                format.setInteger(
+                        MediaFormat.KEY_MAX_HEIGHT, format.getInteger(MediaFormat.KEY_HEIGHT));
+            }
         }
         if (format.containsKey(android.media.MediaFormat.KEY_MAX_INPUT_SIZE)) {
             // Already set. The source of the format may know better, so do nothing.

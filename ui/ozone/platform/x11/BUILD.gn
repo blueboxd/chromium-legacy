@@ -79,7 +79,7 @@ source_set("x11") {
   }
 
   if (use_gtk) {
-    deps += [ "//ui/gtk:x" ]
+    deps += [ "//ui/gtk/x" ]
   }
 
   if (use_xkbcommon) {

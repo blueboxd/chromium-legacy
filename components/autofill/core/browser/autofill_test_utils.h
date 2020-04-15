@@ -136,6 +136,7 @@ CreditCard GetIncompleteCreditCard();
 CreditCard GetMaskedServerCard();
 CreditCard GetMaskedServerCardAmex();
 CreditCard GetMaskedServerCardWithNickname();
+CreditCard GetMaskedServerCardWithInvalidNickname();
 
 // Returns a full server card full of dummy info.
 CreditCard GetFullServerCard();

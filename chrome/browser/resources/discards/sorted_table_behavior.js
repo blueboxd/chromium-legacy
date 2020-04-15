@@ -50,7 +50,7 @@ export const SortedTableBehavior = {
     }
 
     const newSortKey = e.currentTarget.dataset.sortKey;
-    if (newSortKey == this.sortKey) {
+    if (newSortKey === this.sortKey) {
       this.sortReverse = !this.sortReverse;
     } else {
       this.setSortKey(newSortKey);

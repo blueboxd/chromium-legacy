@@ -3,6 +3,7 @@
 <translationbundle lang="gl">
 <translation id="1005230401424685968">AAAA</translation>
 <translation id="1016495303386450659">Actualizouse o elemento</translation>
+<translation id="1044891598689252897">Os sitios funcionarán con normalidade</translation>
 <translation id="1047726139967079566">Engadir esta páxina aos marcadores...</translation>
 <translation id="1049743911850919806">Modo de incógnito</translation>
 <translation id="1063454504051558093">Utilizar outro contrasinal…</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> elementos</translation>
 <translation id="1491277525950327607">Toca dúas veces para activar ou desactivar a configuración</translation>
 <translation id="1509486075633541495">Iniciar sesión no sitio web</translation>
+<translation id="1509960214886564027">As funcións de moitos sitios poden deixar de funcionar</translation>
 <translation id="152234381334907219">Contrasinais que non se gardan nunca</translation>
 <translation id="1540800554400757039">Enderezo 1</translation>
 <translation id="1545749641540134597">Escanear código QR</translation>
@@ -528,6 +530,7 @@ Ademais, dado que a conta está xestionada por <ph name="HOSTED_DOMAIN" />, os t
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7971521879845308059">Bloq. ventás em.</translation>
 <translation id="7982789257301363584">Rede</translation>
+<translation id="7993619969781047893">As funcións dalgúns sitios poden deixar de funcionar</translation>
 <translation id="800361585186029508">Abre os URL introducidos en Google Chrome.</translation>
 <translation id="8007420562015504427">Busca do modo de incógnito</translation>
 <translation id="8019783059653722575">Permíteche gardar e cargar fotos.</translation>

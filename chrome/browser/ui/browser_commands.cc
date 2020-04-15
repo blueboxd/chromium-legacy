@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+#include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/status_bubble.h"
@@ -1105,6 +1106,16 @@ void SendTabToSelfFromPageAction(Browser* browser) {
       send_tab_to_self::SendTabToSelfBubbleController::
           CreateOrGetFromWebContents(web_contents);
   controller->ShowBubble();
+}
+
+void GenerateQRCodeFromPageAction(Browser* browser) {
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  qrcode_generator::QRCodeGeneratorBubbleController* controller =
+      qrcode_generator::QRCodeGeneratorBubbleController::Get(web_contents);
+  content::NavigationEntry* entry =
+      web_contents->GetController().GetLastCommittedEntry();
+  controller->ShowBubble(entry->GetURL());
 }
 
 void SavePage(Browser* browser) {

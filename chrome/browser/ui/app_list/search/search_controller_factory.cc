@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/app_list/search/arc/arc_app_reinstall_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
+#include "chrome/browser/ui/app_list/search/assistant_search_provider.h"
 #include "chrome/browser/ui/app_list/search/drive_quick_access_provider.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/ui/app_list/search/zero_state_file_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "components/arc/arc_util.h"
 
 namespace app_list {
@@ -60,6 +62,10 @@ constexpr size_t kMaxPlayStoreResults = 12;
 // TODO(warx): Need UX spec.
 constexpr size_t kMaxAppDataResults = 4;
 constexpr size_t kMaxAppShortcutResults = 4;
+
+// Assistant provides a single search result when launcher chip integration is
+// enabled from its internal cache of conversation starters.
+constexpr size_t kMaxAssistantResults = 1;
 
 // TODO(wutao): Need UX spec.
 constexpr size_t kMaxSettingsShortcutResults = 6;
@@ -106,6 +112,15 @@ std::unique_ptr<SearchController> CreateSearchController(
     controller->AddProvider(answer_card_group_id,
                             std::make_unique<AnswerCardSearchProvider>(
                                 profile, model_updater, list_controller));
+  }
+
+  // The Assistant search provider currently only contributes search results
+  // when launcher chip integration is enabled.
+  if (chromeos::assistant::features::IsLauncherChipIntegrationEnabled()) {
+    size_t assistant_group_id = controller->AddGroup(
+        kMaxAssistantResults, /*multiplier=*/1.0, kBoostOfApps);
+    controller->AddProvider(assistant_group_id,
+                            std::make_unique<AssistantSearchProvider>());
   }
 
   // LauncherSearchProvider is added only when not in guest

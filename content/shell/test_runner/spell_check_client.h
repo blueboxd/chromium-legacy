@@ -20,16 +20,15 @@ class WebTextCheckingCompletion;
 }  // namespace blink
 
 namespace content {
-
+class BlinkTestRunner;
 class TestRunner;
-class WebTestDelegate;
 
 class SpellCheckClient : public blink::WebTextCheckClient {
  public:
   explicit SpellCheckClient(TestRunner* test_runner);
   ~SpellCheckClient() override;
 
-  void SetDelegate(WebTestDelegate* delegate);
+  void SetDelegate(BlinkTestRunner* blink_test_runner);
   void SetEnabled(bool enabled);
 
   // Sets a callback that will be invoked after each request is revoled.
@@ -70,7 +69,7 @@ class SpellCheckClient : public blink::WebTextCheckClient {
   v8::Persistent<v8::Function> resolved_callback_;
 
   TestRunner* test_runner_;
-  WebTestDelegate* delegate_;
+  BlinkTestRunner* blink_test_runner_;
 
   base::WeakPtrFactory<SpellCheckClient> weak_factory_{this};
 

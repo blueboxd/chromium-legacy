@@ -2024,6 +2024,7 @@ interface Element : Node
     getter ariaRowIndex
     getter ariaRowSpan
     getter ariaSelected
+    getter ariaSetSize
     getter ariaSort
     getter ariaValueMax
     getter ariaValueMin
@@ -2167,6 +2168,7 @@ interface Element : Node
     setter ariaRowIndex
     setter ariaRowSpan
     setter ariaSelected
+    setter ariaSetSize
     setter ariaSort
     setter ariaValueMax
     setter ariaValueMin
@@ -2235,6 +2237,7 @@ interface ElementInternals
     getter ariaRowIndex
     getter ariaRowSpan
     getter ariaSelected
+    getter ariaSetSize
     getter ariaSort
     getter ariaValueMax
     getter ariaValueMin
@@ -2292,6 +2295,7 @@ interface ElementInternals
     setter ariaRowIndex
     setter ariaRowSpan
     setter ariaSelected
+    setter ariaSetSize
     setter ariaSort
     setter ariaValueMax
     setter ariaValueMin

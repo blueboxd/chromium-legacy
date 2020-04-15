@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">Нээлттэй тохиргоо</translation>
 <translation id="4250229828105606438">Дэлгэцийн агшин</translation>
 <translation id="4256782883801055595">Source licenses-г нээх</translation>
-<translation id="4259722352634471385">Навигацыг хориглосон байна: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Холбоосын хаягийг хуулах</translation>
 <translation id="4275663329226226506">Медиа</translation>
 <translation id="4278390842282768270">Зөвшөөрөгдсөн</translation>
@@ -964,6 +963,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Хавчуургаа бүх төхөөрөмждөө авахын тулд синкийг асаана уу</translation>
 <translation id="8110087112193408731">Chrome-н үйл ажиллагаагаа Дижитал хэрэглээнд харуулах уу?</translation>
+<translation id="8115259494083109761">Хурдан хариу үйлдлийн кодыг скан хийхийн тулд Chrome-д таны камерыг ашиглахыг зөвшөөрнө үү</translation>
 <translation id="8116925261070264013">Дууг хаасан</translation>
 <translation id="8127542551745560481">Нүүр хуудсыг засах</translation>
 <translation id="813082847718468539">Сайтын мэдээллийг үзэх</translation>
@@ -1065,7 +1065,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="8942627711005830162">Өөр цонхонд нээх</translation>
 <translation id="8951232171465285730">Chrome <ph name="MEGABYTES" /> мегабайтыг хэмнэсэн</translation>
 <translation id="8958424370300090006">Күүкиг тодорхой сайтад хориглоно уу.</translation>
-<translation id="8959122750345127698">Навигацтай холбогдох боломжгүй байна: <ph name="URL" /></translation>
 <translation id="8965591936373831584">хүлээгдэж байна</translation>
 <translation id="8970887620466824814">Алдаа гарлаа.</translation>
 <translation id="8972098258593396643">Өгөгдмөл фолдерт татаж авах уу?</translation>

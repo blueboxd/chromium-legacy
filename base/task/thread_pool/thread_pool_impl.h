@@ -119,6 +119,13 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   // advances faster than the real-time delay on ServiceThread).
   void ProcessRipeDelayedTasksForTesting();
 
+  // Requests that all threads started by future ThreadPoolImpls in this process
+  // have a synchronous start (if |enabled|; cancels this behavior otherwise).
+  // Must be called while no ThreadPoolImpls are alive in this process. This is
+  // exposed here on this internal API rather than as a ThreadPoolInstance
+  // configuration param because only one internal test truly needs this.
+  static void SetSynchronousThreadStartForTesting(bool enabled);
+
  private:
   // Invoked after |num_fences_| or |num_best_effort_fences_| is updated. Sets
   // the CanRunPolicy in TaskTracker and wakes up workers as appropriate.

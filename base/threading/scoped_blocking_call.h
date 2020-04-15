@@ -6,7 +6,9 @@
 #define BASE_THREADING_SCOPED_BLOCKING_CALL_H
 
 #include "base/base_export.h"
+#include "base/callback_forward.h"
 #include "base/location.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/scoped_blocking_call_internal.h"
 
 namespace base {
@@ -110,6 +112,18 @@ class BASE_EXPORT ScopedBlockingCallWithBaseSyncPrimitives
 };
 
 }  // namespace internal
+
+using IOJankReportingCallback =
+    RepeatingCallback<void(int janky_intervals_per_minute,
+                           int total_janks_per_minute)>;
+// Enables IO jank monitoring and reporting for this process. Should be called
+// at most once per process and only if
+// base::TimeTicks::IsConsistentAcrossProcesses() (the algorithm is unsafe
+// otherwise). |reporting_callback| will be invoked each time a monitoring
+// window completes, see internal::~IOJankMonitoringWindow() for details (must
+// be thread-safe).
+void BASE_EXPORT
+EnableIOJankMonitoringForProcess(IOJankReportingCallback reporting_callback);
 
 }  // namespace base
 

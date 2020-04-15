@@ -225,6 +225,49 @@ TEST(CookieUtilTest, TestRequestCookieParsing) {
   }
 }
 
+TEST(CookieUtilTest, SimulatedCookieSource) {
+  GURL secure_url("https://b.a.com");
+  GURL insecure_url("http://b.a.com");
+
+  struct {
+    std::string cookie;
+    std::string source_scheme;
+    std::string expected_simulated_source;
+  } kTests[]{
+      {"cookie=foo", "http", "http://b.a.com/"},
+      {"cookie=foo", "https", "https://b.a.com/"},
+      {"cookie=foo", "wss", "wss://b.a.com/"},
+      {"cookie=foo", "file", "file://b.a.com/"},
+      {"cookie=foo; Domain=b.a.com", "https", "https://b.a.com/"},
+      {"cookie=foo; Domain=a.com", "https", "https://a.com/"},
+      {"cookie=foo; Domain=.b.a.com", "https", "https://b.a.com/"},
+      {"cookie=foo; Domain=.a.com", "https", "https://a.com/"},
+      {"cookie=foo; Path=/", "https", "https://b.a.com/"},
+      {"cookie=foo; Path=/bar", "https", "https://b.a.com/bar"},
+      {"cookie=foo; Domain=b.a.com; Path=/", "https", "https://b.a.com/"},
+      {"cookie=foo; Domain=b.a.com; Path=/bar", "https", "https://b.a.com/bar"},
+      {"cookie=foo; Domain=a.com; Path=/", "https", "https://a.com/"},
+      {"cookie=foo; Domain=a.com; Path=/bar", "https", "https://a.com/bar"},
+  };
+
+  for (const auto& test : kTests) {
+    std::vector<std::unique_ptr<CanonicalCookie>> cookies;
+    // It shouldn't depend on the cookie's secureness or actual source scheme.
+    cookies.push_back(CanonicalCookie::Create(
+        insecure_url, test.cookie, base::Time::Now(), base::nullopt));
+    cookies.push_back(CanonicalCookie::Create(
+        secure_url, test.cookie, base::Time::Now(), base::nullopt));
+    cookies.push_back(
+        CanonicalCookie::Create(secure_url, test.cookie + "; Secure",
+                                base::Time::Now(), base::nullopt));
+    for (const auto& cookie : cookies) {
+      GURL simulated_source =
+          cookie_util::SimulatedCookieSource(*cookie, test.source_scheme);
+      EXPECT_EQ(GURL(test.expected_simulated_source), simulated_source);
+    }
+  }
+}
+
 TEST(CookieUtilTest, TestGetEffectiveDomain) {
   // Note: registry_controlled_domains::GetDomainAndRegistry is tested in its
   // own unittests.

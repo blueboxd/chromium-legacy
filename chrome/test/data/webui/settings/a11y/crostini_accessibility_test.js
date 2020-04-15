@@ -15,6 +15,7 @@ GEN_INCLUDE([
 ]);
 
 GEN('#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"');
+GEN('#include "chrome/browser/chromeos/crostini/fake_crostini_features.h"');
 GEN('#include "chrome/browser/profiles/profile.h"');
 GEN('#include "chrome/browser/ui/browser.h"');
 GEN('#include "chrome/common/chrome_features.h"');
@@ -37,5 +38,7 @@ var CrostiniAccessibilityTest = class extends PolymerTest {
   testGenPreamble() {
     GEN('  browser()->profile()->GetPrefs()->SetBoolean(');
     GEN('      crostini::prefs::kCrostiniEnabled, true);');
+    GEN('  crostini::FakeCrostiniFeatures fake_crostini_features;');
+    GEN('  fake_crostini_features.SetAll(true);');
   }
 };

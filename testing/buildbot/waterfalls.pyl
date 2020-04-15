@@ -816,6 +816,17 @@
           'isolated_scripts': 'marshmallow_pie_isolated_scripts_with_proguard',
         }
       },
+      'android-weblayer-pie-x86-fyi-rel': {
+        'mixins': [
+          'pie-x86-emulator',
+          'linux-xenial',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_weblayer_x86_gtests',
+        }
+      },
     },
   },
   {

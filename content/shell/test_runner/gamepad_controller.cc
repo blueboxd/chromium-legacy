@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/shell/test_runner/web_test_delegate.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -250,7 +249,7 @@ GamepadController::GamepadController() {
   Reset();
 }
 
-GamepadController::~GamepadController() {}
+GamepadController::~GamepadController() = default;
 
 void GamepadController::Reset() {
   memset(gamepads_, 0, sizeof(*gamepads_));

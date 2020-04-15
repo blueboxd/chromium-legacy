@@ -3,6 +3,7 @@
 <translationbundle lang="tr">
 <translation id="1005230401424685968">YYYY</translation>
 <translation id="1016495303386450659">Öğe güncellendi</translation>
+<translation id="1044891598689252897">Siteler normal şekilde çalışır</translation>
 <translation id="1047726139967079566">Bu Sayfaya Yer İşareti Koy...</translation>
 <translation id="1049743911850919806">Gizli mod</translation>
 <translation id="1063454504051558093">Diğer Şifreyi Kullan...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> öğe</translation>
 <translation id="1491277525950327607">Ayarı açıp kapatmak için iki kez dokunun</translation>
 <translation id="1509486075633541495">Web sitesinde oturum açın</translation>
+<translation id="1509960214886564027">Birçok sitedeki özellikler bozulabilir</translation>
 <translation id="152234381334907219">Hiç Kaydedilmeyenler</translation>
 <translation id="1540800554400757039">Adres 1</translation>
 <translation id="1545749641540134597">QR Kodunu Tara</translation>
@@ -528,6 +530,7 @@ Hesabınız <ph name="HOSTED_DOMAIN" /> tarafından yönetildiği için oturumun
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
 <translation id="7971521879845308059">Pop-up'ları Engelle</translation>
 <translation id="7982789257301363584">Ağ</translation>
+<translation id="7993619969781047893">Bazı sitelerdeki özellikler bozulabilir</translation>
 <translation id="800361585186029508">Girilen URL'leri Google Chrome'da açar.</translation>
 <translation id="8007420562015504427">Gizli Arama</translation>
 <translation id="8019783059653722575">Böylece, fotoğrafları kaydedebilir ve yükleyebilirsiniz.</translation>

@@ -17,7 +17,7 @@ import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.suggestions.tile.TileWithTextView;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 
 /**
  * View for a category name and site tiles.
@@ -27,7 +27,7 @@ public class ExploreSitesTileView extends TileWithTextView {
     private final int mIconCornerRadius;
 
     // Used to generate textual icons.
-    private FaviconFallbackGenerator mIconGenerator;
+    private RoundedIconGenerator mIconGenerator;
 
     public ExploreSitesTileView(Context ctx, AttributeSet attrs) {
         super(ctx, attrs);
@@ -38,7 +38,7 @@ public class ExploreSitesTileView extends TileWithTextView {
         styleAttrs.recycle();
     }
 
-    public void initialize(FaviconFallbackGenerator generator) {
+    public void initialize(RoundedIconGenerator generator) {
         mIconGenerator = generator;
     }
 

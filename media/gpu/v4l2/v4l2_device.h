@@ -726,6 +726,10 @@ class MEDIA_GPU_EXPORT V4L2Device
   // whether the operation succeeded.
   bool SetExtCtrls(uint32_t ctrl_class, std::vector<V4L2ExtCtrl> ctrls);
 
+  // Get the value of a single control, or base::nullopt of the control is not
+  // exposed by the device.
+  base::Optional<struct v4l2_ext_control> GetCtrl(uint32_t ctrl_id);
+
  protected:
   friend class base::RefCountedThreadSafe<V4L2Device>;
   V4L2Device();

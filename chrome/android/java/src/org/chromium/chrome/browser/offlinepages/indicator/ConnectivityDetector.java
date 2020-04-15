@@ -228,6 +228,10 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
         detect();
     }
 
+    public void destroy() {
+        NetworkChangeNotifier.removeConnectionTypeObserver(this);
+    }
+
     public void detect() {
         onConnectionTypeChanged(NetworkChangeNotifier.getInstance().getCurrentConnectionType());
     }

@@ -44,7 +44,7 @@ Polymer({
    * @private
    */
   selectedChanged_(newValue, oldValue) {
-    if (oldValue != undefined) {
+    if (oldValue !== undefined) {
       // The first tab is special-cased to the empty path.
       const defaultTab = this.tabs[0].toLowerCase();
       const tabName = this.tabs[newValue].toLowerCase();

@@ -38,7 +38,6 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#include "ios/chrome/browser/send_tab_to_self/send_tab_to_self_client_service_factory.h"
 #include "ios/chrome/browser/signin/about_signin_internals_factory.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
@@ -121,7 +120,6 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ModelTypeStoreServiceFactory::GetInstance();
   ProfileSyncServiceFactory::GetInstance();
   ReadingListModelFactory::GetInstance();
-  send_tab_to_self::SendTabToSelfClientServiceFactory::GetInstance();
   SigninBrowserStateInfoUpdaterFactory::GetInstance();
   SigninClientFactory::GetInstance();
   SnapshotCacheFactory::GetInstance();

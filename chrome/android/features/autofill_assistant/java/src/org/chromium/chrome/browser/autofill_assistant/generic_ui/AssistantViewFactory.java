@@ -41,7 +41,7 @@ public class AssistantViewFactory {
     public static void setViewAttributes(View view, Context context, int paddingStart,
             int paddingTop, int paddingEnd, int paddingBottom,
             @Nullable AssistantDrawable background, @Nullable String contentDescription,
-            boolean visible) {
+            boolean visible, boolean enabled) {
         view.setPaddingRelative(AssistantDimension.getPixelSizeDp(context, paddingStart),
                 AssistantDimension.getPixelSizeDp(context, paddingTop),
                 AssistantDimension.getPixelSizeDp(context, paddingEnd),
@@ -55,6 +55,7 @@ public class AssistantViewFactory {
         }
         setAccessibility(view, contentDescription);
         view.setVisibility(visible ? View.VISIBLE : View.GONE);
+        view.setEnabled(enabled);
     }
 
     /**

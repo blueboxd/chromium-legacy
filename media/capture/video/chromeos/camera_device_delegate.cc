@@ -875,11 +875,9 @@ void CameraDeviceDelegate::OnConstructedDefaultPreviewRequestSettings(
   }
 
   if (camera_app_device_) {
-    camera_app_device_->GetFpsRange(
-        chrome_capture_params_.requested_format.frame_size,
-        media::BindToCurrentLoop(
-            base::BindOnce(&CameraDeviceDelegate::OnGotFpsRange, GetWeakPtr(),
-                           std::move(settings))));
+    OnGotFpsRange(std::move(settings),
+                  camera_app_device_->GetFpsRange(
+                      chrome_capture_params_.requested_format.frame_size));
   } else {
     OnGotFpsRange(std::move(settings), {});
   }

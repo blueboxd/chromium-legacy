@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/local_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -20,16 +21,23 @@
 
 namespace chromeos {
 
-IN_PROC_BROWSER_TEST_F(OobeBaseTest, PRE_InterruptedAutoStartEnrollment) {
-  StartupUtils::MarkOobeCompleted();
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kDeviceEnrollmentAutoStart, true);
-  prefs->SetBoolean(prefs::kDeviceEnrollmentCanExit, false);
-}
+class InterruptedAutoStartEnrollmentTest : public OobeBaseTest,
+                                           public LocalStateMixin::Delegate {
+ public:
+  InterruptedAutoStartEnrollmentTest() = default;
+  ~InterruptedAutoStartEnrollmentTest() override = default;
+
+  void SetUpLocalState() override {
+    StartupUtils::MarkOobeCompleted();
+    PrefService* prefs = g_browser_process->local_state();
+    prefs->SetBoolean(prefs::kDeviceEnrollmentAutoStart, true);
+    prefs->SetBoolean(prefs::kDeviceEnrollmentCanExit, false);
+  }
+};
 
 // Tests that the default first screen is the welcome screen after OOBE
 // when auto enrollment is enabled and device is not yet enrolled.
-IN_PROC_BROWSER_TEST_F(OobeBaseTest, InterruptedAutoStartEnrollment) {
+IN_PROC_BROWSER_TEST_F(InterruptedAutoStartEnrollmentTest, ShowsWelcome) {
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 }
 

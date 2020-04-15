@@ -55,6 +55,7 @@ if (!is_ios) {
   }
 } else {
   source_set("sessions") {
+    configs += [ "//build/config/compiler:enable_arc" ]
     sources = [
       "ios/ios_live_tab.h",
       "ios/ios_live_tab.mm",

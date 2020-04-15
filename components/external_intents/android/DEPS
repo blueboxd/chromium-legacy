@@ -1,5 +1,7 @@
 include_rules = [
   "+components/embedder_support/android",
+  "+components/navigation_interception",
+  "+content/public/browser",
 
   "-content/public/android/java",
   "+content/public/android/java/src/org/chromium/content_public",

@@ -3,6 +3,7 @@
 <translationbundle lang="en-GB">
 <translation id="1005230401424685968">YYYY</translation>
 <translation id="1016495303386450659">Item updated</translation>
+<translation id="1044891598689252897">Sites will work normally</translation>
 <translation id="1047726139967079566">Bookmark This Page...</translation>
 <translation id="1049743911850919806">Incognito</translation>
 <translation id="1063454504051558093">Use other password...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> items</translation>
 <translation id="1491277525950327607">Double tap to toggle setting</translation>
 <translation id="1509486075633541495">Sign in to website</translation>
+<translation id="1509960214886564027">Features on many sites may break</translation>
 <translation id="152234381334907219">Never Saved</translation>
 <translation id="1540800554400757039">Address 1</translation>
 <translation id="1545749641540134597">Scan QR Code</translation>
@@ -528,6 +530,7 @@ Because your account is managed by <ph name="HOSTED_DOMAIN" />, your Chrome data
 <translation id="7961015016161918242">Never</translation>
 <translation id="7971521879845308059">Block Pop-ups</translation>
 <translation id="7982789257301363584">Network</translation>
+<translation id="7993619969781047893">Features on some sites may break</translation>
 <translation id="800361585186029508">Opens the inputted URLs in Google Chrome.</translation>
 <translation id="8007420562015504427">Incognito Search</translation>
 <translation id="8019783059653722575">This lets you save and upload photos.</translation>

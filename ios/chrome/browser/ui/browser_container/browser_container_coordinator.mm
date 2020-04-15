@@ -6,8 +6,11 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter.h"
+#import "ios/chrome/browser/ui/browser_container/browser_container_mediator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/overlays/overlay_container_coordinator.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -16,6 +19,11 @@
 @interface BrowserContainerCoordinator ()
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
+// Redefine property as readwrite.
+@property(nonatomic, strong, readwrite)
+    BrowserContainerViewController* viewController;
+// The mediator used to configure the BrowserContainerConsumer.
+@property(nonatomic, strong) BrowserContainerMediator* mediator;
 // The overlay container coordinator for OverlayModality::kWebContentArea.
 @property(nonatomic, strong)
     OverlayContainerCoordinator* webContentAreaOverlayContainerCoordinator;
@@ -31,17 +39,21 @@
   self.started = YES;
   DCHECK(self.browser);
   DCHECK(!_viewController);
-  BrowserContainerViewController* viewController =
-      [[BrowserContainerViewController alloc] init];
+  self.viewController = [[BrowserContainerViewController alloc] init];
   self.webContentAreaOverlayContainerCoordinator =
       [[OverlayContainerCoordinator alloc]
-          initWithBaseViewController:viewController
+          initWithBaseViewController:self.viewController
                              browser:self.browser
                             modality:OverlayModality::kWebContentArea];
   [self.webContentAreaOverlayContainerCoordinator start];
-  viewController.webContentsOverlayContainerViewController =
+  self.viewController.webContentsOverlayContainerViewController =
       self.webContentAreaOverlayContainerCoordinator.viewController;
-  _viewController = viewController;
+  OverlayPresenter* overlayPresenter = OverlayPresenter::FromBrowser(
+      self.browser, OverlayModality::kWebContentArea);
+  self.mediator = [[BrowserContainerMediator alloc]
+                initWithWebStateList:self.browser->GetWebStateList()
+      webContentAreaOverlayPresenter:overlayPresenter];
+  self.mediator.consumer = self.viewController;
 
   [super start];
 }
@@ -51,7 +63,8 @@
     return;
   self.started = NO;
   [self.webContentAreaOverlayContainerCoordinator stop];
-  _viewController = nil;
+  self.viewController = nil;
+  self.mediator = nil;
   [super stop];
 }
 

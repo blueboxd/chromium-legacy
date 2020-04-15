@@ -146,6 +146,12 @@ bool FormFetcherImpl::IsBlacklisted() const {
   return is_blacklisted_;
 }
 
+bool FormFetcherImpl::IsMovingBlocked(const autofill::GaiaIdHash& destination,
+                                      const base::string16& username) const {
+  NOTREACHED();
+  return false;
+}
+
 const std::vector<const PasswordForm*>& FormFetcherImpl::GetAllRelevantMatches()
     const {
   return non_federated_same_scheme_;

@@ -685,7 +685,6 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="189210018541388520">To‘liq ekran rejimida ochish</translation>
 <translation id="1892341345406963517">Salom, <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Boshqa tillar</translation>
-<translation id="1895252664692693738"><ph name="TIME_LEFT" /> qoldi</translation>
 <translation id="1895658205118569222">Ishni tamomlash</translation>
 <translation id="1895934970388272448">Bu jarayonni tugallash uchun registratsiyani printerda tasdiqlashingiz kerak - hoziroq tekshiring.</translation>
 <translation id="1899826437968063457">Plugin VM ishga tushishiga ruxsat berilmagan</translation>
@@ -816,7 +815,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2090165459409185032">Hisob ma’lumotini tiklash uchun bu yerga o‘ting: google.com/accounts/recovery</translation>
 <translation id="2090876986345970080">Tizim xavfsizlik sozlamasi</translation>
 <translation id="2091887806945687916">Tovush</translation>
-<translation id="2096478741073211388">Shaxsiy axborot takliflari maxsus soʻzlarni kiritayotganingizda ism, manzil yoki telefon raqam taklif qilish orqali tezkor yozishga yordam beradi. Faqat siz hisobingiz uchun maxfiy, moslashtirilgan takliflarni koʻrishingiz mumkin.</translation>
+<translation id="2096478741073211388">Shaxsiy axborot takliflari maxsus soʻzlarni kiritayotganingizda ism, manzil yoki telefon raqamini taklif qilish orqali tezkor yozishga yordam beradi. Faqat siz hisobingiz uchun maxfiy, moslashtirilgan takliflarni koʻrishingiz mumkin.</translation>
 <translation id="2096715839409389970">Tashqi cookie fayllarni tozalash</translation>
 <translation id="2097372108957554726">Yangi qurilmani ro‘yxatdan o‘tkazish uchun Chrome hisobingizga kiring</translation>
 <translation id="2099172618127234427">Siz Chrome OS tuzatish xususiyatlarini ishga tushirmoqdasiz, ular debugging features which sshd xizmatini o‘rnatib, USB disklardan yuklanishni xususiyatini yoqadi.</translation>
@@ -1687,7 +1686,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> konnektori ishdan chiqdi. Qayta ishga tushirilsinmi?</translation>
 <translation id="3222066309010235055">Oldindan ishlov berish: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3223531857777746191">Asliga qaytarish tugmasi</translation>
-<translation id="3225084153129302039">Standart binafsharang avatar</translation>
+<translation id="3225084153129302039">Standart siyohrang avatar</translation>
 <translation id="3225319735946384299">Kodni imzolash</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3228679360002431295">Aloqa o‘rnatilmoqda va tekshirilmoqda<ph name="ANIMATED_ELLIPSIS" /></translation>
@@ -3999,7 +3998,6 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6365411474437319296">Oila a’zolaringiz va do‘stlaringizni qo‘shing</translation>
 <translation id="636850387210749493">Korporativ domen ro‘yxatidan o‘tish</translation>
 <translation id="6370021412472292592">Aniqlovchi faylni yuklab bo‘lmadi.</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Parolni almashtirish}other{Parollarni almashtirish}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Qaytadan</translation>
 <translation id="6377268785556383139">“<ph name="SEARCH_TEXT" />” uchun bitta natija</translation>

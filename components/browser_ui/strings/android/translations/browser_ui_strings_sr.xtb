@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">Копирај линк</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Наслов</translation>
+<translation id="4259722352634471385">Навигација је блокирана: <ph name="URL" /></translation>
 <translation id="4570913071927164677">Детаљи</translation>
 <translation id="4645575059429386691">Овим управља твој родитељ</translation>
 <translation id="4883854917563148705">Подешавања којима се управља не могу да се ресетују</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">Обриши унос</translation>
 <translation id="8725066075913043281">Пробајте поново</translation>
 <translation id="8730621377337864115">Готово</translation>
+<translation id="8959122750345127698">Навигација је недоступна: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Овим управљају твоји родитељи</translation>
 </translationbundle>

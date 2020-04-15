@@ -36,7 +36,7 @@ import org.chromium.chrome.browser.ui.favicon.IconType;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.components.browser_ui.util.ConversionUtils;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +57,7 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
             extends ArrayAdapter<String> implements AdapterView.OnItemClickListener {
         private final String[] mDomains;
         private final int mFaviconSize;
-        private FaviconFallbackGenerator mIconGenerator;
+        private RoundedIconGenerator mIconGenerator;
 
         private ClearBrowsingDataAdapter(
                 String[] domains, String[] faviconURLs, Resources resources) {

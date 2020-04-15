@@ -108,10 +108,16 @@ void PrintLayerHierarchyImp(const Layer* layer,
 
 void PrintLayerHierarchy(const Layer* layer, const gfx::Point& mouse_location) {
   std::ostringstream out;
-  out << "Layer hierarchy:\n";
-  PrintLayerHierarchyImp(layer, 0, mouse_location, &out);
+  PrintLayerHierarchy(layer, mouse_location, &out);
   // Error so logs can be collected from end-users.
   LOG(ERROR) << out.str();
+}
+
+void PrintLayerHierarchy(const Layer* layer,
+                         const gfx::Point& mouse_location,
+                         std::ostringstream* out) {
+  *out << "Layer hierarchy:\n";
+  PrintLayerHierarchyImp(layer, 0, mouse_location, out);
 }
 
 }  // namespace ui

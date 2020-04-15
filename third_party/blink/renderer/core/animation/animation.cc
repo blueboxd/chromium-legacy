@@ -37,7 +37,9 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
+#include "third_party/blink/renderer/core/animation/css/css_animation.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
+#include "third_party/blink/renderer/core/animation/css/css_transition.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
@@ -214,6 +216,7 @@ Animation::Animation(ExecutionContext* execution_context,
       has_queued_microtask_(false),
       outdated_(false),
       finished_(true),
+      committed_finish_notification_(false),
       compositor_state_(nullptr),
       compositor_pending_(false),
       compositor_group_(0),
@@ -493,10 +496,10 @@ bool Animation::HasLowerCompositeOrdering(
     const Animation* animation1,
     const Animation* animation2,
     CompareAnimationsOrdering compare_animation_type) {
-  AnimationClassPriority priority1 = AnimationPriority(*animation1);
-  AnimationClassPriority priority2 = AnimationPriority(*animation2);
-  if (priority1 != priority2)
-    return priority1 < priority2;
+  AnimationClassPriority anim_priority1 = AnimationPriority(*animation1);
+  AnimationClassPriority anim_priority2 = AnimationPriority(*animation2);
+  if (anim_priority1 != anim_priority2)
+    return anim_priority1 < anim_priority2;
 
   // If the the animation class is CssAnimation or CssTransition, then first
   // compare the owning element of animation1 and animation2, sort two of them
@@ -504,7 +507,7 @@ bool Animation::HasLowerCompositeOrdering(
   // The specs:
   // https://drafts.csswg.org/css-animations-2/#animation-composite-order
   // https://drafts.csswg.org/css-transitions-2/#animation-composite-order
-  if (priority1 != kDefaultPriority && animation1->effect() &&
+  if (anim_priority1 != kDefaultPriority && animation1->effect() &&
       animation2->effect()) {
     // TODO(crbug.com/1043778): Implement and use OwningElement on CSSAnimation
     // and CSSTransition.
@@ -513,7 +516,7 @@ bool Animation::HasLowerCompositeOrdering(
     Element* target1 = effect1->target();
     Element* target2 = effect2->target();
 
-    // The tree position comparison would take a longer time, thus affec the
+    // The tree position comparison would take a longer time, thus affect the
     // performance. We only do it when it comes to getAnimation.
     if (*target1 != *target2) {
       if (compare_animation_type == CompareAnimationsOrdering::kTreeOrder) {
@@ -542,11 +545,13 @@ bool Animation::HasLowerCompositeOrdering(
     if (priority1 == kOther && pseudo1 != pseudo2)
       return CodeUnitCompareLessThan(pseudo1, pseudo2);
 
-    // For two animatiions with the same target (including the pseudo-element
-    // selector) compare the SequenceNumber for now.
-    // TODO(crbug.com/1045835): Sort animation1 and animation2 based on their
-    // position in the computed value of "animation-name" property for
-    // CSSAnimations and transition property for CSSTransitions.
+    if (anim_priority1 == kCssAnimationPriority) {
+      // When comparing two CSSAnimations with the same owning element, we sort
+      // A and B based on their position in the computed value of the
+      // animation-name property of the (common) owning element.
+      return To<CSSAnimation>(animation1)->AnimationIndex() <
+             To<CSSAnimation>(animation2)->AnimationIndex();
+    }
     return animation1->SequenceNumber() < animation2->SequenceNumber();
   }
   // If the anmiations are not-CSS WebAnimation just compare them via generation
@@ -1167,6 +1172,7 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
   // 8. Schedule a task to run as soon as animation is ready.
   pending_play_ = true;
   finished_ = false;
+  committed_finish_notification_ = false;
   SetOutdated();
   SetCompositorPending(/*effect_changed=*/false);
 
@@ -1312,15 +1318,18 @@ void Animation::UpdateFinishedState(UpdateType update_type,
   // 4. Set the current finished state.
   AnimationPlayState play_state = CalculateAnimationPlayState();
   if (play_state == kFinished) {
-    // 5. Setup finished notification.
-    if (notification_type == NotificationType::kSync)
-      CommitFinishNotification();
-    else
-      ScheduleAsyncFinish();
+    if (!committed_finish_notification_) {
+      // 5. Setup finished notification.
+      if (notification_type == NotificationType::kSync)
+        CommitFinishNotification();
+      else
+        ScheduleAsyncFinish();
+    }
   } else {
     // 6. If not finished but the current finished promise is already resolved,
     //    create a new promise.
-    finished_ = pending_finish_notification_ = false;
+    finished_ = pending_finish_notification_ = committed_finish_notification_ =
+        false;
     if (finished_promise_ &&
         finished_promise_->GetState() == AnimationPromise::kResolved) {
       finished_promise_->Reset();
@@ -1359,6 +1368,9 @@ void Animation::AsyncFinishMicrotask() {
 // Refer to 'finished notification steps' in
 // https://drafts.csswg.org/web-animations-1/#updating-the-finished-state
 void Animation::CommitFinishNotification() {
+  if (committed_finish_notification_)
+    return;
+
   pending_finish_notification_ = false;
 
   // 1. If animation’s play state is not equal to finished, abort these steps.
@@ -1373,6 +1385,8 @@ void Animation::CommitFinishNotification() {
 
   // 3. Create an AnimationPlaybackEvent, finishEvent.
   QueueFinishedEvent();
+
+  committed_finish_notification_ = true;
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-playback-rate-of-an-animation
@@ -1824,7 +1838,12 @@ bool Animation::Update(TimingUpdateReason reason) {
   DCHECK(!outdated_);
   NotifyProbe();
 
-  return !finished_ || TimeToEffectChange();
+  return !finished_ || TimeToEffectChange() ||
+         // Always return true for not idle animations attached to not
+         // monotonically increasing timelines even if the animation is
+         // finished. This is required to accommodate cases where timeline ticks
+         // back in time.
+         (!idle && !timeline_->IsMonotonicallyIncreasing());
 }
 
 void Animation::QueueFinishedEvent() {
@@ -2170,7 +2189,7 @@ bool Animation::IsReplaceable() {
     return false;
 
   // 4. The animation is associated with a monotonically increasing timeline.
-  if (!timeline_ || timeline_->IsScrollTimeline())
+  if (!timeline_ || !timeline_->IsMonotonicallyIncreasing())
     return false;
 
   // 5. The animation has an associated effect.

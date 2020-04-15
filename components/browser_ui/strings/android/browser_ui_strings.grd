@@ -404,6 +404,14 @@
       <message name="IDS_DOWNLOAD_UI_GB" desc="String indicating the size of a downloaded file (in progress or complete), in gigabytes.">
         <ph name="gigabytes">%1$3.2f<ex>12.5</ex></ph> GB
       </message>
+
+      <!-- Override URL -->
+      <message name="IDS_BLOCKED_NAVIGATION_WARNING" desc="Warning message added to dev tools console when navigation to a given URL is blocked.">
+        Navigation is blocked: <ph name="URL">%1$s<ex>intent://abcd</ex></ph>
+      </message>
+      <message name="IDS_UNREACHABLE_NAVIGATION_WARNING" desc="Warning message added to dev tools console when navigation to a given URL is unreachable.">
+        Navigation is unreachable: <ph name="URL">%1$s<ex>intent://abcd</ex></ph>
+      </message>
     </messages>
   </release>
 </grit>

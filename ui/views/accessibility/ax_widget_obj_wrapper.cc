@@ -62,6 +62,10 @@ int32_t AXWidgetObjWrapper::GetUniqueId() const {
   return unique_id_.Get();
 }
 
+std::string AXWidgetObjWrapper::ToString() const {
+  return "Widget";
+}
+
 void AXWidgetObjWrapper::OnWidgetDestroying(Widget* widget) {
   aura_obj_cache_->Remove(widget);
 }

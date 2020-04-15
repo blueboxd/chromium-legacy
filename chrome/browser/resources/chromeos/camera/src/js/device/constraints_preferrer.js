@@ -572,31 +572,47 @@ export class PhotoConstraintsPreferrer extends ConstraintsPreferrer {
       }
 
       /**
-       * @param {!ResolutionList} rs
+       * @param {!ResolutionList} resolutions
        * @return {!ResolutionList}
        */
-      const sortPreview = (rs) => {
-        if (rs.length === 0) {
+      const sortPreview = (resolutions) => {
+        if (resolutions.length === 0) {
           return [];
         }
-        rs = [...rs].sort((r1, r2) => r2.width - r1.width);
 
-        // Promote resolution slightly larger than screen size to the first.
-        const /** number */ screenW =
-            Math.floor(window.screen.width * window.devicePixelRatio);
-        const /** number */ screenH =
-            Math.floor(window.screen.height * window.devicePixelRatio);
-        let /** ?number */ minIdx = null;
-        rs.forEach(({width, height}, idx) => {
-          if (width >= screenW && height >= screenH) {
-            minIdx = idx;
-          }
-        });
-        if (minIdx !== null) {
-          rs.unshift(...rs.splice(minIdx, 1));
+        // Sorts the preview resolution (Rp) according to the capture resolution
+        // (Rc) and the screen size (Rs) with the following orders:
+        // If |Rc| <= |Rs|:
+        //   1. All |Rp| <= |Rc|, and the larger, the better.
+        //   2. All |Rp| > |Rc|, and the smaller, the better.
+        //
+        // If |Rc| > |Rs|:
+        //   1. All |Rp| where |Rs| <= |Rp| <= |Rc|, and the smaller, the
+        //   better.
+        //   2. All |Rp| < |Rs|, and the larger, the better.
+        //   3. All |Rp| > |Rc|, and the smaller, the better.
+        //
+        const Rs = Math.floor(window.screen.width * window.devicePixelRatio);
+        const Rc = captureR.width;
+        const cmpDescending = (r1, r2) => r2.width - r1.width;
+        const cmpAscending = (r1, r2) => r1.width - r2.width;
+
+        if (Rc <= Rs) {
+          const notLargerThanRc =
+              resolutions.filter((r) => r.width <= Rc).sort(cmpDescending);
+          const largerThanRc =
+              resolutions.filter((r) => r.width > Rc).sort(cmpAscending);
+          return notLargerThanRc.concat(largerThanRc);
+        } else {
+          const betweenRsRc =
+              resolutions.filter((r) => Rs <= r.width && r.width <= Rc)
+                  .sort(cmpAscending);
+          const smallerThanRs =
+              resolutions.filter((r) => r.width < Rs).sort(cmpDescending);
+          const largerThanRc =
+              resolutions.filter((r) => r.width > Rc).sort(cmpAscending);
+          return betweenRsRc.concat(smallerThanRs).concat(largerThanRc);
         }
-
-        return rs;
       };
 
       const /** !Array<!MediaStreamConstraints> */ previewCandidates =

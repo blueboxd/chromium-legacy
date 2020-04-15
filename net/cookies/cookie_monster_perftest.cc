@@ -99,7 +99,7 @@ class SetCookieCallback : public CookieTestCallback {
     auto cookie = CanonicalCookie::Create(gurl, cookie_line, base::Time::Now(),
                                           base::nullopt /* server_time */);
     cm->SetCanonicalCookieAsync(
-        std::move(cookie), gurl.scheme(), options_,
+        std::move(cookie), gurl, options_,
         base::BindOnce(&SetCookieCallback::Run, base::Unretained(this)));
     WaitForCallback();
   }

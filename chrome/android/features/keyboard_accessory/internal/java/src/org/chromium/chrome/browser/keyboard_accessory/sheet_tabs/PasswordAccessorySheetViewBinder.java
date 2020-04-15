@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetT
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.ui.HorizontalListDividerDrawable;
 import org.chromium.ui.modelutil.ListModel;
 
@@ -200,7 +200,7 @@ class PasswordAccessorySheetViewBinder {
      */
     static class FaviconHelper {
         private final Resources mResources;
-        private final FaviconFallbackGenerator mIconGenerator;
+        private final RoundedIconGenerator mIconGenerator;
         private final int mDesiredSize;
 
         /**

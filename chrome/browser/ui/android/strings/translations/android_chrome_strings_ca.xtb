@@ -436,7 +436,6 @@ Només tu pots veure allò que la càmera veu. El lloc web no pot veure les imat
 <translation id="4242533952199664413">Obre la configuració</translation>
 <translation id="4250229828105606438">Captura de pantalla</translation>
 <translation id="4256782883801055595">Llicències de programari lliure</translation>
-<translation id="4259722352634471385">S'ha bloquejat la navegació: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copia l'adreça de l'enllaç</translation>
 <translation id="4275663329226226506">Multimèdia</translation>
 <translation id="4278390842282768270">Permès</translation>
@@ -1067,7 +1066,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8942627711005830162">Obre en una altra finestra</translation>
 <translation id="8951232171465285730">Chrome t'ha estalviat <ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">Bloqueja les galetes d'un lloc web concret.</translation>
-<translation id="8959122750345127698">No es pot accedir a la navegació: <ph name="URL" /></translation>
 <translation id="8965591936373831584">pendent</translation>
 <translation id="8970887620466824814">S'ha produït un error.</translation>
 <translation id="8972098258593396643">Vols baixar el fitxer a la carpeta predeterminada?</translation>

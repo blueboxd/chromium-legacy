@@ -436,7 +436,6 @@ Vetëm ti mund të shohësh se çfarë po shikon kamera. Sajti nuk mund të shik
 <translation id="4242533952199664413">Hap cilësimet</translation>
 <translation id="4250229828105606438">Pamje e ekranit</translation>
 <translation id="4256782883801055595">Licencat me burim të hapur</translation>
-<translation id="4259722352634471385">Lundrimi është bllokuar: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopjo adresën e lidhjes</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Të lejuara</translation>
@@ -965,6 +964,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Për të marrë faqeshënuesit e tu në të gjitha pajisjet e tua, aktivizo sinkronizimin</translation>
 <translation id="8110087112193408731">Dëshiron të shfaqësh aktivitetin tënd të Chrome te "Mirëqenia dixhitale"?</translation>
+<translation id="8115259494083109761">Për të skanuar një kod QR, lejo që Chrome të përdorë kamerën tënde</translation>
 <translation id="8116925261070264013">Zëri i çaktivizuar</translation>
 <translation id="8127542551745560481">Modifiko faqen bazë</translation>
 <translation id="813082847718468539">Shiko informacionin rreth faqes</translation>
@@ -1066,7 +1066,6 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="8942627711005830162">Hap në një dritare tjetër</translation>
 <translation id="8951232171465285730">Chrome të ka kursyer <ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">Blloko kukit për një sajt specifik.</translation>
-<translation id="8959122750345127698">Lundrimi është i paarritshëm: <ph name="URL" /></translation>
 <translation id="8965591936373831584">në pritje</translation>
 <translation id="8970887620466824814">Ndodhi një gabim.</translation>
 <translation id="8972098258593396643">Të shkarkohet në dosjen e parazgjedhur?</translation>

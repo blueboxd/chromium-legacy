@@ -1814,15 +1814,23 @@ def _ParseArgs(parser, from_wrapper_script, is_bundle):
   return parser.parse_args(argv)
 
 
-def _RunInternal(parser, output_directory=None, bundle_generation_info=None):
+def _RunInternal(parser,
+                 output_directory=None,
+                 additional_apk_paths=None,
+                 bundle_generation_info=None):
   colorama.init()
   parser.set_defaults(
-      additional_apk_paths=None, output_directory=output_directory)
+      additional_apk_paths=additional_apk_paths,
+      output_directory=output_directory)
   from_wrapper_script = bool(output_directory)
   args = _ParseArgs(parser, from_wrapper_script, bool(bundle_generation_info))
   run_tests_helper.SetLogLevel(args.verbose_count)
   if bundle_generation_info:
     args.command.RegisterBundleGenerationInfo(bundle_generation_info)
+  if args.additional_apk_paths:
+    for path in additional_apk_paths:
+      if not path or not os.path.exists(path):
+        raise Exception('Invalid additional APK path "{}"'.format(path))
   args.command.ProcessArgs(args)
   args.command.Run()
   # Incremental install depends on the cache being cleared when uninstalling.
@@ -1838,17 +1846,16 @@ def Run(output_directory, apk_path, additional_apk_paths, incremental_json,
   parser = argparse.ArgumentParser()
   exists_or_none = lambda p: p if p and os.path.exists(p) else None
 
-  for path in additional_apk_paths:
-    if not path or not os.path.exists(path):
-      raise Exception('Invalid additional APK path "{}"'.format(path))
   parser.set_defaults(
       command_line_flags_file=command_line_flags_file,
       target_cpu=target_cpu,
       apk_path=exists_or_none(apk_path),
-      additional_apk_paths=additional_apk_paths,
       incremental_json=exists_or_none(incremental_json),
       proguard_mapping_path=proguard_mapping_path)
-  _RunInternal(parser, output_directory=output_directory)
+  _RunInternal(
+      parser,
+      output_directory=output_directory,
+      additional_apk_paths=additional_apk_paths)
 
 
 def RunForBundle(output_directory, bundle_path, bundle_apks_path,
@@ -1887,23 +1894,22 @@ def RunForBundle(output_directory, bundle_path, bundle_apks_path,
       keystore_alias=keystore_alias,
       system_image_locales=system_image_locales)
 
-  for path in additional_apk_paths:
-    if not path or not os.path.exists(path):
-      raise Exception('Invalid additional APK path "{}"'.format(path))
   parser = argparse.ArgumentParser()
   parser.set_defaults(
-      additional_apk_paths=additional_apk_paths,
       package_name=package_name,
       command_line_flags_file=command_line_flags_file,
       proguard_mapping_path=proguard_mapping_path,
       target_cpu=target_cpu)
-  _RunInternal(parser, output_directory=output_directory,
-               bundle_generation_info=bundle_generation_info)
+  _RunInternal(
+      parser,
+      output_directory=output_directory,
+      additional_apk_paths=additional_apk_paths,
+      bundle_generation_info=bundle_generation_info)
 
 
 def main():
   devil_chromium.Initialize()
-  _RunInternal(argparse.ArgumentParser(), output_directory=None)
+  _RunInternal(argparse.ArgumentParser())
 
 
 if __name__ == '__main__':

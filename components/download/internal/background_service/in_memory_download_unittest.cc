@@ -216,7 +216,7 @@ TEST_F(InMemoryDownloadTest, RedirectResponseHeaders) {
   // Add some random header.
   auto response_head = network::mojom::URLResponseHead::New();
   response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  response_head->headers->AddHeader("X-Random-Test-Header: 123");
+  response_head->headers->SetHeader("X-Random-Test-Header", "123");
 
   // The size must match for download as stream from SimpleUrlLoader.
   network::URLLoaderCompletionStatus status;

@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">ലിങ്ക് പകർത്തുക</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">ശീർഷകം</translation>
+<translation id="4259722352634471385">നാവിഗേഷൻ തടഞ്ഞിരിക്കുന്നു: <ph name="URL" /></translation>
 <translation id="4570913071927164677">വിശദാംശങ്ങൾ</translation>
 <translation id="4645575059429386691">നിങ്ങളുടെ രക്ഷിതാവ് നിയന്ത്രിക്കുന്നു</translation>
 <translation id="4883854917563148705">മാനേജ് ചെയ്യുന്ന ക്രമീകരണം പുനഃസജ്ജീകരിക്കാനാവില്ല</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">ഇൻപുട്ട് മായ്‌ക്കുക</translation>
 <translation id="8725066075913043281">വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="8730621377337864115">പൂർത്തിയാക്കി</translation>
+<translation id="8959122750345127698">നാവിഗേഷൻ ലഭ്യമല്ല: <ph name="URL" /></translation>
 <translation id="9019902583201351841">നിങ്ങളുടെ രക്ഷിതാക്കൾ നിയന്ത്രിക്കുന്നു</translation>
 </translationbundle>

@@ -1884,7 +1884,7 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
   response_head.ssl_info->connection_status = 0x300039;
 
   const std::string kHTTPHeaderLine("HTTP/1.1 200 OK\n\n");
-  const std::string kOriginTrial("Origin-Trial: ");
+  const std::string kOriginTrial("Origin-Trial");
   // Token for Feature1 which expires 2033-05-18.
   // generate_token.py valid.example.com Feature1 --expire-timestamp=2000000000
   // TODO(horo): Generate this sample token during the build.
@@ -1913,10 +1913,10 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
       "ol2RFf+4Sdm1hQ4AAABYeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5leGFtcGxlLmNvbTo0"
       "NDMiLCAiZmVhdHVyZSI6ICJGZWF0dXJlMyIsICJleHBpcnkiOiAxMDAwMDAwMDAwfQ==");
   response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  response_head.headers->AddHeader(kOriginTrial + kFeature1Token);
-  response_head.headers->AddHeader(kOriginTrial + kFeature2Token1);
-  response_head.headers->AddHeader(kOriginTrial + kFeature2Token2);
-  response_head.headers->AddHeader(kOriginTrial + kFeature3ExpiredToken);
+  response_head.headers->AddHeader(kOriginTrial, kFeature1Token);
+  response_head.headers->AddHeader(kOriginTrial, kFeature2Token1);
+  response_head.headers->AddHeader(kOriginTrial, kFeature2Token2);
+  response_head.headers->AddHeader(kOriginTrial, kFeature3ExpiredToken);
   version->SetMainScriptResponse(
       std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
           response_head));

@@ -55,7 +55,6 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
@@ -80,7 +79,6 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/help_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
-#import "ios/chrome/browser/ui/commands/send_tab_to_self_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
@@ -684,12 +682,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // ------------
 // Adds the given url to the reading list.
 - (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title;
-
-// Send Tab To Self
-// ----------------
-// Sends the current tab to the target device.
-- (void)sendTabToSelfTargetDeviceID:(NSString*)targetDeviceID
-                   targetDeviceName:(NSString*)targetDeviceName;
 
 @end
 
@@ -2685,20 +2677,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                          IDS_IOS_READING_LIST_SNACKBAR_MESSAGE)];
 }
 
-#pragma mark - Private Methods: Send Tab To Self
-
-- (void)sendTabToSelfTargetDeviceID:(NSString*)targetDeviceID
-                   targetDeviceName:(NSString*)targetDeviceName {
-  send_tab_to_self::CreateNewEntry(self.browserState, targetDeviceID);
-
-  [self.dispatcher triggerToolsMenuButtonAnimation];
-
-  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
-  [self showSnackbar:l10n_util::GetNSStringF(
-                         IDS_IOS_SEND_TAB_TO_SELF_SNACKBAR_MESSAGE,
-                         base::SysNSStringToUTF16(targetDeviceName))];
-}
-
 #pragma mark - ** Protocol Implementations and Helpers **
 
 #pragma mark - BubblePresenterDelegate
@@ -4058,11 +4036,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                 image, ios::TemplateURLServiceFactory::GetForBrowserState(
                            self.browserState))
                               inNewTab:NO];
-}
-
-- (void)sendTabToSelf:(SendTabToSelfCommand*)command {
-  [self sendTabToSelfTargetDeviceID:[command targetDeviceID]
-                   targetDeviceName:[command targetDeviceName]];
 }
 
 - (void)showActivityOverlay:(BOOL)show {

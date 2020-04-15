@@ -186,7 +186,7 @@
 <translation id="1235458158152011030">Redes coñecidas</translation>
 <translation id="123578888592755962">Disco cheo</translation>
 <translation id="1238191093934674082">Abrir VPN</translation>
-<translation id="1239439601391236986">Mostrar suxestións de información persoal</translation>
+<translation id="1239439601391236986">Mostrar suxestións de información persoal ao escribir</translation>
 <translation id="1239594683407221485">Explora o contido do dispositivo na aplicación Ficheiros.</translation>
 <translation id="124116460088058876">Máis idiomas</translation>
 <translation id="1241753985463165747">Ler e cambiar todos os teus datos no sitio web actual cando se invoque</translation>
@@ -686,7 +686,6 @@
 <translation id="189210018541388520">Abrir pantalla completa</translation>
 <translation id="1892341345406963517">Ola, <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Outros idiomas</translation>
-<translation id="1895252664692693738">Tempo restante: <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Apagar</translation>
 <translation id="1895934970388272448">Debes confirmar o rexistro na impresora para finalizar este proceso. Compróbao agora.</translation>
 <translation id="1899826437968063457">Plugin VM necesita permiso para executarse</translation>
@@ -817,7 +816,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2090165459409185032">Para recuperar a información da túa conta, accede  a: google.com/accounts/recovery</translation>
 <translation id="2090876986345970080">Configuración de seguranza do sistema</translation>
 <translation id="2091887806945687916">Son</translation>
-<translation id="2096478741073211388">As suxestións de información persoal axúdanche a escribir máis rápido ao suxerirche o nome, enderezo ou número de teléfono cando escribes algunhas palabras específicas. Só ti podes ver as túas propias suxestións privadas e personalizadas para a túa conta.</translation>
+<translation id="2096478741073211388">As suxestións de información persoal axúdanche a escribir máis rápido ao suxerirche o teu nome, enderezo ou número de teléfono cando escribes algunhas palabras específicas. Só ti podes ver as túas propias suxestións privadas e personalizadas para a túa conta.</translation>
 <translation id="2096715839409389970">Borrar cookies de terceiros</translation>
 <translation id="2097372108957554726">Tes que iniciar sesión en Chrome para rexistrar novos dispositivos</translation>
 <translation id="2099172618127234427">Vas activar as funcións de depuración de Chrome OS que configurarán o daemon sshd e activarán o arranque desde unidades USB.</translation>
@@ -4000,7 +3999,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6365411474437319296">Engadir familia e amigos</translation>
 <translation id="636850387210749493">Inscrición corporativa</translation>
 <translation id="6370021412472292592">Erro ao cargar o manifesto.</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Cambiar contrasinal}other{Cambiar contrasinais}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Tentar de novo</translation>
 <translation id="6377268785556383139">1 resultado para "<ph name="SEARCH_TEXT" />"</translation>

@@ -371,8 +371,9 @@ void RenderViewContextMenuViews::Show() {
                            ->GetSubmenu();
   if (submenu_view) {
     for (auto& observer : observers_) {
-      observer.OnContextMenuShown(
-          params_, submenu_view->host()->GetWindowBoundsInScreen());
+      if (submenu_view->host())
+        observer.OnContextMenuShown(
+            params_, submenu_view->host()->GetWindowBoundsInScreen());
     }
 
     submenu_view_observer_ =

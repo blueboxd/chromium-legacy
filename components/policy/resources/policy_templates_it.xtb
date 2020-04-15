@@ -285,12 +285,6 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 <translation id="1427655258943162134">Indirizzo o URL del server proxy</translation>
 <translation id="1435659902881071157">Configurazione di rete a livello di dispositivo</translation>
 <translation id="1438739959477268107">Impostazione generazione di chiavi predefinite</translation>
-<translation id="1455804070656338445">Consente di configurare l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password indirizzerà gli utenti a questo URL dopo la visualizzazione di un avviso nel browser per modificare la loro password.
-      Per consentire a <ph name="PRODUCT_NAME" /> di acquisire correttamente l'impronta digitale della nuova password in questa pagina di modifica della password, assicurati che tale pagina rispetti le linee guida disponibili all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se questa impostazione è attiva, il servizio di protezione tramite password indirizza gli utenti a questo URL per modificare la password, dopo la visualizzazione di un avviso nel browser.
-      Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password indirizzerà gli utenti alla pagina https://myaccount.google.com per modificare la loro password.
-      Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" />, così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="1456822151187621582">Windows (client <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1464848559468748897">Consente di controllare il comportamento degli utenti in una sessione multiprofilo su dispositivi <ph name="PRODUCT_OS_NAME" />.
 
@@ -348,6 +342,7 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
           Se la norma "EnableMediaRouter" è impostata su False, allora il valore di questa norma non produrrà alcun effetto.</translation>
 <translation id="1509692106376861764">Questa norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Attiva <ph name="PRODUCT_NAME" /></translation>
+<translation id="1515230621229117540">Attiva il menu Accessibilità mobile</translation>
 <translation id="1515824657887788963">Consenti a una pagina di fare richieste XHR sincrone durante l'uscita dalla pagina</translation>
 <translation id="1522425503138261032">Consenti ai siti di monitorare la posizione fisica degli utenti</translation>
 <translation id="1523774894176285446">Browser alternativo da aprire per i siti web configurati.</translation>
@@ -574,12 +569,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se viene impostata su false, i rapporti sulle metriche e sui dati diagnostici verranno disattivati.
 
       Se non viene configurata, i rapporti sulle metriche e sui dati diagnostici verranno disattivati sui dispositivi non gestiti e attivati sui dispositivi gestiti.</translation>
-<translation id="1907431809333268751">Consente di configurare l'elenco di URL di accesso aziendale (solo schemi HTTP e HTTPS). L'impronta digitale della password sarà acquisita su questi URL e utilizzata successivamente per il rilevamento del riutilizzo della password.
-      Affinché <ph name="PRODUCT_NAME" /> possa acquisire correttamente le impronte digitali delle password, assicurati che le pagine di accesso rispettino le linee guida all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se questa impostazione è attiva, il servizio di protezione tramite password acquisisce l'impronta della password su questi URL ai fini del rilevamento del riutilizzo della password.
-      Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password acquisirà l'impronta della password solo all'indirizzo https://accounts.google.com.
-      Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="1910704279188129272">Consente di impostare limiti di utilizzo per app.
         I limiti di utilizzo possono essere applicati alle app installate su <ph name="PRODUCT_OS_NAME" /> per l'utente in questione.
         I limiti devono essere impostati tramite un elenco |app_limits|. È consentita una sola voce per app. Le app non incluse nell'elenco non hanno limiti.
@@ -3256,6 +3245,17 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
           Se non viene fornita alcuna impostazione, <ph name="PRODUCT_NAME" /> dovrà ricorrere a un nome di libreria predefinito.</translation>
 <translation id="5783009211970309878">Stampa intestazioni e piè di pagina</translation>
+<translation id="5783576706065107606">Consente di attivare le mitigazioni dei controlli <ph name="CORS" /> nella nuova implementazione <ph name="CORS" />, consentendo alle estensioni di mantenere un comportamento compatibile e a <ph name="PRODUCT_NAME" /> di inviare le intestazioni specificate senza controlli <ph name="CORS" />.
+
+      Se questo elenco viene lasciato vuoto, <ph name="PRODUCT_NAME" /> prova a eseguire le estensioni in modalità compatibili e non introduce modifiche <ph name="API" /> per la versione 79 di <ph name="PRODUCT_NAME" />, come spiegato all'indirizzo <ph name="WEB_REQUEST_API_MANUAL" />.
+
+      Se per questo elenco vengono impostati nomi di intestazioni di richieste <ph name="HTTP" />, il controllo <ph name="CORS" /> ignorerà le intestazioni elencate e attiverà la mitigazione per le estensioni.
+
+      Se questo elenco non viene impostato, entrambe le mitigazioni spiegate sopra non vengono applicate.
+
+      Per informazioni dettagliate su <ph name="CORS" />, visita la pagina <ph name="CORS_HELP_URL" />.
+
+      Tieni presente che, nonostante sia stato annunciato che questo criterio sarebbe stato rimosso nella versione 82 di <ph name="PRODUCT_NAME" />, le cose sono cambiate e verrà rimosso nella versione 84.</translation>
 <translation id="5790763087505467169">Riduci notifiche sull'avvio automatico della sessione Ospite gestita</translation>
 <translation id="5806128552675651249">Consenti solo la stampa senza immagini di sfondo</translation>
 <translation id="5809210507920527553">Consente di gestire le impostazioni relative al container Linux (Crostini).</translation>
@@ -3319,6 +3319,17 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
           Se questa impostazione è disabilitata o non è impostata, verrà utilizzato il nome di dominio predefinito di TalkGadget ("chromoting-host.talkgadget.google.com") per tutti gli host.
 
           I client di accesso remoto non sono interessati da questa impostazione e utilizzeranno sempre "chromoting-client.talkgadget.google.com" per accedere a TalkGadget.</translation>
+<translation id="5888171512889380367">Consente di usare l'implementazione <ph name="CORS" /> legacy anziché la nuova implementazione <ph name="CORS" />.
+
+      Se questo criterio è impostato su vero, viene usata l'implementazione legacy, che dovrebbe essere compatibile con le versioni precedenti.
+
+      Se questo criterio è impostato su falso o non è impostato, viene usata la nuova implementazione, che potrebbe causare problemi di compatibilità per le aziende.
+
+      Questo criterio verrà rimosso dopo un paio di aggiornamenti.
+
+      Per informazioni dettagliate su <ph name="CORS" />, visita la pagina <ph name="CORS_HELP_URL" />.
+
+      Tieni presente che, nonostante sia stato annunciato che questo criterio sarebbe stato rimosso nella versione 82 di <ph name="PRODUCT_NAME" />, le cose sono cambiate e verrà rimosso nella versione 84.</translation>
 <translation id="5893553533827140852">Se questa impostazione è attivata, le richieste di autenticazione Gnubby verranno trasferite al proxy attraverso una connessione host remota.
 
           Se questa impostazione è disattivata o non configurata, le richieste di autenticazione Gnubby non verranno trasferite al proxy.</translation>
@@ -3600,6 +3611,11 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
           Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="6417265370957905582">Assistente Google</translation>
+<translation id="6422575351619065453">In modalità kiosk, consente di controllare se visualizzare o meno il menu Accessibilità mobile.
+
+      Se il criterio è abilitato, il menu Accessibilità mobile verrà mostrato sempre.
+
+      Se il criterio è disattivato o non è impostato, il menu Accessibilità mobile non verrà mai mostrato.</translation>
 <translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">Non è possibile imporre l'utilizzo di un proxy alle app Android. Viene messo a disposizione un sottoinsieme di impostazioni proxy che le app Android possono decidere se rispettare o meno.
 
@@ -3912,13 +3928,6 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       Se selezioni l'opzione "U2F_EXTENDED", l'autenticazione a due fattori integrata fornirà le funzioni U2F più alcune estensioni per la singola attestazione.</translation>
 <translation id="7003334574344702284">Se è attiva, questa norma impone l'importazione delle password salvate dal browser predefinito precedente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, le password salvate non vengono importate. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="7003746348783715221">Preferenze di <ph name="PRODUCT_NAME" /></translation>
-<translation id="7007671350884342624">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per memorizzare i dati utente.
-
-      Se la norma viene impostata, <ph name="PRODUCT_NAME" /> utilizza la directory fornita, indipendentemente dal fatto che l'utente abbia specificato o meno il flag "--user-data-dir". Per evitare perdite di dati o altri errori imprevisti, la norma non deve essere impostata su una directory radice del volume o su una directory utilizzata per altri scopi, poiché <ph name="PRODUCT_NAME" /> gestisce i relativi contenuti.
-
-      Vai alla pagina https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco delle variabili che possono essere utilizzate.
-
-      Se la norma non viene impostata, viene utilizzato il percorso profilo predefinito e l'utente può ignorarla con il flag della riga di comando "--user-data-dir".</translation>
 <translation id="7008308728445338159">Controlli intercettazione DNS attivi</translation>
 <translation id="7027785306666625591">Configura la gestione dell'alimentazione in <ph name="PRODUCT_OS_NAME" />.
 
@@ -4822,7 +4831,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8424255554404582727">Imposta la rotazione predefinita dello schermo, riapplicata a ogni riavvio</translation>
 <translation id="8426231401662877819">Ruota lo schermo in senso orario di 90°</translation>
 <translation id="8433186206711564395">Impostazioni di rete</translation>
-<translation id="8433423491036718210">Configura l'elenco di URL di accesso aziendale in cui il servizio di protezione tramite password deve acquisire l'impronta della password.</translation>
 <translation id="8445576299806775661">Dopo ogni importante aggiornamento della versione, Chrome crea un'istantanea di alcune parti dei dati di navigazione dell'utente da usare in caso di un successivo rollback di versione di emergenza. Se viene eseguito un rollback di emergenza a una versione di cui l'utente ha un'istantanea corrispondente, vengono ripristinati i dati nell'istantanea. In questo modo gli utenti possono mantenere impostazioni quali preferiti e dati di compilazione automatica.
 
       Se questo criterio non viene impostato, viene usato il valore predefinito 3.

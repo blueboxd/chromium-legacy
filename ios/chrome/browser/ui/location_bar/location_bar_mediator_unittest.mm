@@ -112,7 +112,7 @@ TEST_F(LocationBarMediatorTest, HTTPAuthDialog) {
       web_state, OverlayModality::kWebContentArea);
   queue->AddRequest(
       OverlayRequest::CreateWithConfig<HTTPAuthOverlayRequestConfig>(
-          kMessage, kDefaultUsername));
+          kUrl, kMessage, kDefaultUsername));
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_LOCATION_BAR_SIGN_IN),
               consumer_.locationText);
   EXPECT_FALSE(consumer_.icon);

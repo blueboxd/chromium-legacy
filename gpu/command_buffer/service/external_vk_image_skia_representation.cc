@@ -11,6 +11,7 @@
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_util.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 
@@ -24,8 +25,9 @@ ExternalVkImageSkiaRepresentation::ExternalVkImageSkiaRepresentation(
 }
 
 ExternalVkImageSkiaRepresentation::~ExternalVkImageSkiaRepresentation() {
-  DCHECK_EQ(access_mode_, kNone) << "Previoud access hasn't end yet";
+  DCHECK_EQ(access_mode_, kNone) << "Previoud access hasn't end yet.";
   DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
+  surface_ = nullptr;
 }
 
 sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
@@ -33,31 +35,59 @@ sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
     const SkSurfaceProps& surface_props,
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores) {
-  DCHECK_EQ(access_mode_, kNone) << "Previous access hasn't ended yet";
-  DCHECK(!surface_);
+  auto* gr_context = backing_impl()->context_state()->gr_context();
+  if (gr_context->abandoned()) {
+    LOG(ERROR) << "GrContext is abandonded.";
+    return nullptr;
+  }
+
+  if (access_mode_ != kNone) {
+    LOG(DFATAL) << "Previous access hasn't ended yet. mode=" << access_mode_;
+    return nullptr;
+  }
 
   auto promise_texture =
       BeginAccess(false /* readonly */, begin_semaphores, end_semaphores);
-  if (!promise_texture)
+  if (!promise_texture) {
+    LOG(ERROR) << "BeginAccess failed";
     return nullptr;
-  SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
-      true /* gpu_compositing */, format());
-  surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
-      backing_impl()->context_state()->gr_context(),
-      promise_texture->backendTexture(), kTopLeft_GrSurfaceOrigin,
-      final_msaa_count, sk_color_type,
-      backing_impl()->color_space().ToSkColorSpace(), &surface_props);
+  }
+
+  // If surface properties are different from the last access, then we cannot
+  // reuse the cached SkSurface.
+  if (!surface_ || surface_props != surface_->props() ||
+      final_msaa_count != surface_msaa_count_) {
+    SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
+        true /* gpu_compositing */, format());
+    surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
+        gr_context, promise_texture->backendTexture(), kTopLeft_GrSurfaceOrigin,
+        final_msaa_count, sk_color_type,
+        backing_impl()->color_space().ToSkColorSpace(), &surface_props);
+    if (!surface_) {
+      LOG(ERROR) << "MakeFromBackendTextureAsRenderTarget() failed.";
+      return nullptr;
+    }
+    surface_msaa_count_ = final_msaa_count;
+  }
+
+  int count = surface_->getCanvas()->save();
+  DCHECK_EQ(count, 1);
+  ALLOW_UNUSED_LOCAL(count);
+
   access_mode_ = kWrite;
   return surface_;
 }
 
 void ExternalVkImageSkiaRepresentation::EndWriteAccess(
     sk_sp<SkSurface> surface) {
-  DCHECK_EQ(access_mode_, kWrite)
-      << "EndWriteAccess is called before BeginWriteAccess";
-  DCHECK(surface_);
+  if (access_mode_ != kWrite) {
+    LOG(DFATAL) << "BeginWriteAccess is not called mode=" << access_mode_;
+    return;
+  }
 
-  surface_ = nullptr;
+  surface = nullptr;
+  DCHECK(surface_->unique());
+  surface_->getCanvas()->restoreToCount(1);
   EndAccess(false /* readonly */);
   access_mode_ = kNone;
 }
@@ -65,21 +95,26 @@ void ExternalVkImageSkiaRepresentation::EndWriteAccess(
 sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores) {
-  // TODO(penghuang): provide begin and end semaphores.
-  DCHECK_EQ(access_mode_, kNone) << "Previous access hasn't ended yet";
-  DCHECK(!surface_);
+  if (access_mode_ != kNone) {
+    LOG(DFATAL) << "Previous access is not finished. mode=" << access_mode_;
+    return nullptr;
+  }
 
   auto promise_texture =
       BeginAccess(true /* readonly */, begin_semaphores, end_semaphores);
-  if (!promise_texture)
+  if (!promise_texture) {
+    LOG(ERROR) << "BeginAccess failed";
     return nullptr;
+  }
   access_mode_ = kRead;
   return promise_texture;
 }
 
 void ExternalVkImageSkiaRepresentation::EndReadAccess() {
-  DCHECK_EQ(access_mode_, kRead)
-      << "EndReadAccess is called before BeginReadAccess";
+  if (access_mode_ != kRead) {
+    LOG(DFATAL) << "BeginReadAccess is not called. mode=" << access_mode_;
+    return;
+  }
 
   EndAccess(true /* readonly */);
   access_mode_ = kNone;

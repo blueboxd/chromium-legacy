@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/qr_generation_commands.h"
 #import "ios/chrome/browser/ui/qr_generator/qr_generator_view_controller.h"
+#import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -57,6 +58,8 @@
   self.qrGeneratorViewController = [[QRGeneratorViewController alloc] init];
   self.qrGeneratorViewController.handler =
       HandlerForProtocol(self.dispatcher, QRGenerationCommands);
+
+  [self.qrGeneratorViewController setPageURL:net::NSURLWithGURL(_URL)];
 
   self.viewController = [[UINavigationController alloc]
       initWithRootViewController:self.qrGeneratorViewController];

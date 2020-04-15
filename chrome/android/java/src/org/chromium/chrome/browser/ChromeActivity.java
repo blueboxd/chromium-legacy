@@ -779,29 +779,43 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return getActivityTab() == null || !getActivityTab().isLoading();
     }
 
+    private void onActivityShown() {
+        maybeRemoveWindowBackground();
+
+        Tab tab = getActivityTab();
+        if (tab != null) {
+            if (tab.isHidden()) {
+                tab.show(TabSelectionType.FROM_USER);
+            } else {
+                // The visible Tab's renderer process may have died after the activity was
+                // paused. Ensure that it's restored appropriately.
+                tab.loadIfNeeded();
+            }
+        }
+        VrModuleProvider.getDelegate().onActivityShown(this);
+    }
+
+    private void onActivityHidden() {
+        VrModuleProvider.getDelegate().onActivityHidden(this);
+        Tab tab = getActivityTab();
+        if (tab != null) tab.hide(TabHidingType.ACTIVITY_HIDDEN);
+    }
+
+    private boolean useWindowFocusForVisibility() {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q;
+    }
+
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
-        maybeRemoveWindowBackground();
-
-        Tab tab = getActivityTab();
-        if (hasFocus) {
-            if (tab != null) {
-                if (tab.isHidden()) {
-                    tab.show(TabSelectionType.FROM_USER);
-                } else {
-                    // The visible Tab's renderer process may have died after the activity was
-                    // paused. Ensure that it's restored appropriately.
-                    tab.loadIfNeeded();
+        if (useWindowFocusForVisibility()) {
+            if (hasFocus) {
+                onActivityShown();
+            } else {
+                if (ApplicationStatus.getStateForActivity(this) == ActivityState.STOPPED) {
+                    onActivityHidden();
                 }
-            }
-            VrModuleProvider.getDelegate().onActivityShown(this);
-        } else {
-            boolean stopped = ApplicationStatus.getStateForActivity(this) == ActivityState.STOPPED;
-            if (stopped) {
-                VrModuleProvider.getDelegate().onActivityHidden(this);
-                if (tab != null) tab.hide(TabHidingType.ACTIVITY_HIDDEN);
             }
         }
 
@@ -926,12 +940,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     public void onStopWithNative() {
-        Tab tab = getActivityTab();
-        if (!hasWindowFocus()) {
-            VrModuleProvider.getDelegate().onActivityHidden(this);
-            if (tab != null) tab.hide(TabHidingType.ACTIVITY_HIDDEN);
-        }
-
         if (GSAState.getInstance(this).isGsaAvailable() && !SysUtils.isLowEndDevice()) {
             GSAAccountChangeListener.getInstance().disconnect();
         }
@@ -1092,6 +1100,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
         super.onStart();
 
+        if (!useWindowFocusForVisibility()) {
+            onActivityShown();
+        }
+
         if (mPartnerBrowserRefreshNeeded) {
             mPartnerBrowserRefreshNeeded = false;
             PartnerBrowserCustomizations.getInstance().initializeAsync(getApplicationContext());
@@ -1121,6 +1133,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Override
     public void onStop() {
         super.onStop();
+
+        if (useWindowFocusForVisibility()) {
+            if (!hasWindowFocus()) onActivityHidden();
+        } else {
+            onActivityHidden();
+        }
 
         // We want to refresh partner browser provider every onStart().
         mPartnerBrowserRefreshNeeded = true;

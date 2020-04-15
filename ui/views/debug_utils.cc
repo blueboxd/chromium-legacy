@@ -144,10 +144,14 @@ std::string PrintViewGraphImpl(const View* view) {
 
 void PrintViewHierarchy(const View* view) {
   std::ostringstream out;
-  out << "View hierarchy:\n";
-  PrintViewHierarchyImp(view, 0, &out);
+  PrintViewHierarchy(view, &out);
   // Error so users in the field can generate and upload logs.
   LOG(ERROR) << out.str();
+}
+
+void PrintViewHierarchy(const View* view, std::ostringstream* out) {
+  *out << "View hierarchy:\n";
+  PrintViewHierarchyImp(view, 0, out);
 }
 
 void PrintFocusHierarchy(const View* view) {

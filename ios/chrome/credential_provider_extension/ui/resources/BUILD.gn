@@ -8,6 +8,7 @@ import("//build/config/ios/rules.gni")
 group("resources") {
   deps = [
     ":consent_illustration",
+    ":default_world_favicon",
     ":empty_credentials_illustration",
     ":password_hide_icon",
     ":password_reveal_icon",
@@ -52,5 +53,14 @@ imageset("password_hide_icon") {
     "password_hide_icon.imageset/Contents.json",
     "password_hide_icon.imageset/password_hide_icon@2x.png",
     "password_hide_icon.imageset/password_hide_icon@3x.png",
+  ]
+}
+
+imageset("default_world_favicon") {
+  sources = [
+    "default_world_favicon.imageset/Contents.json",
+    "default_world_favicon.imageset/default_world_favicon.png",
+    "default_world_favicon.imageset/default_world_favicon@2x.png",
+    "default_world_favicon.imageset/default_world_favicon@3x.png",
   ]
 }

@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">સેટિંગ્સ ખોલો</translation>
 <translation id="4250229828105606438">સ્ક્રીનશૉટ</translation>
 <translation id="4256782883801055595">ઓપન સોર્સ લાઇસન્સ</translation>
-<translation id="4259722352634471385">નેવિગેશન અવરોધિત છે: <ph name="URL" /></translation>
 <translation id="4269820728363426813">લિંક સરનામું કૉપિ કરો</translation>
 <translation id="4275663329226226506">મીડિયા</translation>
 <translation id="4278390842282768270">મંજૂર</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">તમારા બધા ઉપકરણો પર તમારા બુકમાર્ક મેળવવા માટે, સિંક કરવાનું ચાલુ કરો</translation>
 <translation id="8110087112193408731">શું તમારી Chromeની પ્રવૃત્તિ ડિજિટલ લાઇફસ્ટાઇલમાં બતાવીએ?</translation>
+<translation id="8115259494083109761">કોઈ QR કોડને સ્કૅન કરવા માટે, Chromeને તમારા કૅમેરાનો ઉપયોગ કરવા દો</translation>
 <translation id="8116925261070264013">મ્યૂટ કરેલ</translation>
 <translation id="8127542551745560481">હોમપેજમાં ફેરફાર કરો</translation>
 <translation id="813082847718468539">સ્થાન માહિતી જુઓ</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">અન્ય વિંડોમાં ખોલો</translation>
 <translation id="8951232171465285730">Chrome એ તમારો <ph name="MEGABYTES" /> MB ડેટા બચાવ્યો</translation>
 <translation id="8958424370300090006">કોઈ ચોક્કસ સાઇટ માટે કુકીને બ્લૉક કરો.</translation>
-<translation id="8959122750345127698">નેવિગેશન બિનપહોંચ યોગ્ય છે: <ph name="URL" /></translation>
 <translation id="8965591936373831584">બાકી</translation>
 <translation id="8970887620466824814">કંઈક ખોટું થયું.</translation>
 <translation id="8972098258593396643">ડિફૉલ્ટ ફોલ્ડરમાં ડાઉનલોડ કરીએ?</translation>

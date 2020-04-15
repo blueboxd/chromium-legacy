@@ -64,4 +64,10 @@ void AddResourcePathsBulk(content::WebUIDataSource* source,
     source->AddResourcePath(path.path, path.id);
 }
 
+void AddResourcePathsBulk(content::WebUIDataSource* source,
+                          base::span<const GritResourceMap> resources) {
+  for (const auto& resource : resources)
+    source->AddResourcePath(resource.name, resource.value);
+}
+
 }  // namespace webui

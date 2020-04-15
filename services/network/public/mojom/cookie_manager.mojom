@@ -280,14 +280,14 @@ interface CookieManager {
       => (array<CookieWithStatus> cookies,
           array<CookieWithStatus> excluded_cookies);
 
-  // Set a cookie.  |source_scheme| is used to check whether existing secure
+  // Set a cookie.  |source_url| is used to check whether existing secure
   // cookies can be overwritten (secure cookies may be created from a
-  // non-secure source), and whether the scheme is permitted to use cookies in
-  // the first place.  |cookie_options| indicates whether http_only
+  // non-secure source), and whether the URL's scheme is permitted to use
+  // cookies in the first place.  |cookie_options| indicates whether http_only
   // or SameSite cookies may be overwritten. If a cookie is not permitted to be
   // set, |status| will indicate why it was blocked. If the cookie is permitted,
   // |status| will be set to INCLUDE.
-  SetCanonicalCookie(CanonicalCookie cookie, string source_scheme,
+  SetCanonicalCookie(CanonicalCookie cookie, url.mojom.Url source_url,
                      CookieOptions cookie_options)
       => (CookieInclusionStatus status);
 

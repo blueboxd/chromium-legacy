@@ -372,8 +372,12 @@ void RestrictedCookieManager::SetCanonicalCookie(
 
   net::CookieOptions options =
       MakeOptionsForSet(role_, url, site_for_cookies, cookie_settings());
+  // TODO(chlily): |url| is validated to be the same origin as |origin_|, but
+  // the path is not checked. If we ever decide to enforce the path constraint
+  // for setting a cookie, we would need to validate the path of |url| somehow
+  // and pass |url| instead of |origin_.GetURL()|.
   cookie_store_->SetCanonicalCookieAsync(
-      std::move(sanitized_cookie), origin_.scheme(), options,
+      std::move(sanitized_cookie), origin_.GetURL(), options,
       base::BindOnce(&RestrictedCookieManager::SetCanonicalCookieResult,
                      weak_ptr_factory_.GetWeakPtr(), url, site_for_cookies,
                      cookie_copy, options, std::move(callback)));

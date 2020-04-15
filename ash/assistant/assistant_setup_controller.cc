@@ -4,7 +4,7 @@
 
 #include "ash/assistant/assistant_setup_controller.h"
 
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/i18n_util.h"
@@ -24,7 +24,7 @@ constexpr char kGSuiteAdministratorInstructionsUrl[] =
 namespace ash {
 
 AssistantSetupController::AssistantSetupController(
-    AssistantController* assistant_controller)
+    AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
   assistant_controller_->AddObserver(this);
 }

@@ -167,7 +167,7 @@
 <translation id="2381733276052567791">Ovozli bildirgilarni yoqish yoki o‘chirib qo‘yish</translation>
 <translation id="2390264819538553347">Davom etish uchun “Enter” tugmasini, ortga qaytish uchun esa “Backspace” tugmasini bosing.</translation>
 <translation id="2398579267367951220">Sahifada qidirish uchun soʻrovni kiriting. Natijaga sakrash uchun Enter tugmasini, natijalarni qarab chiqish uchun yuqoriga yoki pastga strelkalarini bosing. Qidiruvni oʻzgartirish uchun soʻrovni kiritishda davom eting yoki bekor qilish uchun escape tugmasini bosing.</translation>
-<translation id="240709722712693803">Koʻkimtir binafsharang</translation>
+<translation id="240709722712693803">Koʻkimtir siyohrang</translation>
 <translation id="2416512023405990736">Belgilanmagan katakcha</translation>
 <translation id="2417569100218200841">Kontent haqida ma’lumot</translation>
 <translation id="2417948780551741035">Yakuniy izohlar</translation>
@@ -238,7 +238,7 @@
 <translation id="2909584066358367921">Keyingi tugma mavjud emas</translation>
 <translation id="2911433807131383493">ChromeVox qo‘llanmasini ochish</translation>
 <translation id="2937799153569150791">Bundan keyin boshqa 2-darajali sarlavha mavjud emas</translation>
-<translation id="2942710183375260152">Koʻkimtir binafsharang</translation>
+<translation id="2942710183375260152">Koʻkimtir siyohrang</translation>
 <translation id="2943596527105977722">Xira jigarrang</translation>
 <translation id="2964026537669811554">Sarlavhani guruhlash</translation>
 <translation id="2968634799764242930">Koʻkimtir yashil</translation>
@@ -372,7 +372,7 @@
 <translation id="3930383913623796990">Och bahoriy yashil</translation>
 <translation id="3930498801443296724">Iqtibos</translation>
 <translation id="3935615366277838204">Katta <ph name="LETTER" /></translation>
-<translation id="3936394396199829062">Oqimtir binafsharang</translation>
+<translation id="3936394396199829062">Oqimtir siyohrang</translation>
 <translation id="3943857333388298514">Joylash</translation>
 <translation id="3962990492275676168">Joriy joydan o‘qishni boshlash</translation>
 <translation id="3970951409746498040">Toʻq qumrang</translation>
@@ -665,7 +665,7 @@
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Avvalgi sarlavha</translation>
 <translation id="6376999910001533545">Toʻq qizgʻish</translation>
-<translation id="6378394210114975876">Och binafsharang</translation>
+<translation id="6378394210114975876">Och siyohrang</translation>
 <translation id="6385591741672306837">ustun</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6393014464788431702">Barcha hodisalar filtrlarini faolsizlashtirish</translation>
@@ -679,7 +679,7 @@
 <translation id="6493991254603208962">Yorqinlikni pasaytirish</translation>
 <translation id="6501595918865591267">Feruzarang</translation>
 <translation id="6508059270146105198">Breyl ekranini sahifa tepasiga joylash</translation>
-<translation id="6521550811716689390">Toʻq binafsharang</translation>
+<translation id="6521550811716689390">Toʻq siyohrang</translation>
 <translation id="6536157907112457272">Durrarang</translation>
 <translation id="6540201937398578274">ChromeVox funksiyasida “Search” tugmasi modifikator tugma hisoblanadi. Ko‘plab ChromeVox tezkor tugmalari “Search” tugmasi bilan boshlanadi. Shuningdek strelka tugmalari navigatsiya amallarini bajarishda foydalaniladi.</translation>
 <translation id="6544923685317771506">Oq tuproqrang</translation>
@@ -703,7 +703,7 @@
 <translation id="6730312624811567147">Home yoki End tugmalari oʻrniga Search va Chapga yoki Oʻngga, Control Home yoki End tugmalari oʻrniga Search Control va Chapga yoki Oʻngga, Page Up yoki Down tugmalari oʻrniga Search va Tepaga yoki Pastga strelkalardan foydalaning</translation>
 <translation id="6736510033526053669">yangi ichki oyna ochildi</translation>
 <translation id="675895815784134693">pgbar</translation>
-<translation id="67862343314499040">Binafsharang</translation>
+<translation id="67862343314499040">Siyohrang</translation>
 <translation id="6786800275320335305">Maqola</translation>
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6815255864998354418">Och limonrang</translation>
@@ -750,7 +750,7 @@
 <translation id="7140168702531682811">Ustki satr</translation>
 <translation id="7143034430156387447">6 yoki 8 nuqtali yozuvlar o‘rtasida almashish</translation>
 <translation id="7143207342074048698">Ulanmoqda</translation>
-<translation id="7153618581592392745">Och binafsharang</translation>
+<translation id="7153618581592392745">Och siyohrang</translation>
 <translation id="7157306005867877619">Annotatsiya</translation>
 <translation id="7161771961008409533">Qalqib chiquvchi tugma</translation>
 <translation id="7167657087543110">harflarning aytilishi</translation>
@@ -950,7 +950,7 @@
 <translation id="8851136666856101339">main</translation>
 <translation id="8882002077197914455">Satr sarlavhasi</translation>
 <translation id="8883850400338911892">url tahrir 8nuqta</translation>
-<translation id="8896479570570613387">Oʻrtacha binafsharang</translation>
+<translation id="8896479570570613387">Oʻrtacha siyohrang</translation>
 <translation id="8897030325301866860"><ph name="FONT_FAMILY" /> shrifti</translation>
 <translation id="8898516272131543774">Imloni qayta e’lon qilish</translation>
 <translation id="8908714597367957477">colhdr</translation>

@@ -102,14 +102,17 @@ TEST_F(LegacyMetricsClientTest, ReportIntervalBoundary) {
 }
 
 void PopulateAdditionalEvents(
-    std::vector<fuchsia::legacymetrics::Event>* events) {
+    base::OnceCallback<void(std::vector<fuchsia::legacymetrics::Event>)>
+        callback) {
   fuchsia::legacymetrics::ImplementationDefinedEvent impl_event;
   impl_event.set_name("baz");
 
   fuchsia::legacymetrics::Event event;
   event.set_impl_defined_event(std::move(impl_event));
 
-  events->emplace_back(std::move(event));
+  std::vector<fuchsia::legacymetrics::Event> events;
+  events.push_back(std::move(event));
+  std::move(callback).Run(std::move(events));
 }
 
 TEST_F(LegacyMetricsClientTest, AllTypes) {
@@ -182,6 +185,35 @@ TEST_F(LegacyMetricsClientTest, MetricsChannelDisconnected) {
   client_.Start(kReportInterval);
   service_binding_.reset();
   task_environment_.FastForwardBy(kReportInterval);
+}
+
+TEST_F(LegacyMetricsClientTest, Batching) {
+  client_.Start(kReportInterval);
+
+  // Log enough actions that the list will be split across multiple batches.
+  // Batches are read out in reverse order, so even though it is being logged
+  // first, it will be emitted in the final batch.
+  base::RecordComputedAction("batch2");
+
+  for (size_t i = 0; i < LegacyMetricsClient::kMaxBatchSize; ++i)
+    base::RecordComputedAction("batch1");
+
+  task_environment_.FastForwardBy(kReportInterval);
+  EXPECT_TRUE(test_recorder_.IsRecordInFlight());
+
+  // First batch.
+  auto events = test_recorder_.WaitForEvents();
+  EXPECT_EQ(LegacyMetricsClient::kMaxBatchSize, events.size());
+  for (const auto& event : events)
+    EXPECT_EQ(event.user_action_event().name(), "batch1");
+  test_recorder_.SendAck();
+
+  // Second batch (remainder).
+  events = test_recorder_.WaitForEvents();
+  EXPECT_EQ(1u, events.size());
+  for (const auto& event : events)
+    EXPECT_EQ(event.user_action_event().name(), "batch2");
+  test_recorder_.SendAck();
 }
 
 }  // namespace

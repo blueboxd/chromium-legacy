@@ -289,12 +289,6 @@
 <translation id="1427655258943162134">Proxy 伺服器的地址或網址</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
 <translation id="1438739959477268107">預設金鑰產生設定</translation>
-<translation id="1455804070656338445">設定變更密碼網址 (僅限 HTTP 和 HTTPS 配置)。當密碼保護服務偵測到瀏覽器中出現警告訊息後，就會將使用者導向至這個網址，讓他們變更密碼。
-      為了讓 <ph name="PRODUCT_NAME" /> 能在這個變更密碼頁面中正確擷取新的密碼指紋，請確認變更密碼頁面符合以下網址所述的規範：https://www.chromium.org/developers/design-documents/create-amazing-password-forms.。
-
-      如果啟用這項設定，當密碼保護服務偵測到瀏覽器中出現警告訊息後，就會將使用者導向至這個網址，讓他們變更密碼。
-      如果停用這項設定或不予設定，則密碼保護服務會將使用者導向至 https://myaccount.google.com，讓他們變更密碼。
-      這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />用戶端)：</translation>
 <translation id="1464848559468748897">針對使用者在 <ph name="PRODUCT_OS_NAME" /> 裝置多重設定檔工作階段中的行為進行控制。
 
@@ -587,11 +581,6 @@
       如果設為 false，指標和診斷資料回報功能就會停用。
 
       如果未設定，指標和診斷資料回報功能會在未受管理的裝置上停用，並且在受管理的裝置上啟用。</translation>
-<translation id="1907431809333268751">設定企業登入網址清單 (僅限 HTTP 和 HTTPS 配置)。系統會針對這些網址擷取密碼指紋，並使用這些指紋偵測密碼重複使用情形。
-      為了讓 <ph name="PRODUCT_NAME" /> 能正確擷取密碼指紋，請確認登入頁面符合相關規範，網址是：https://www.chromium.org/developers/design-documents/create-amazing-password-forms。
-      如果啟用這項設定，密碼保護服務會針對這些網址擷取密碼指紋，並使用這些指紋偵測密碼重複使用情形。
-      如果停用這項設定或不予設定，密碼保護服務就只會針對 https://accounts.google.com 擷取密碼指紋。
-      這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="1910704279188129272">可讓你設定個別應用程式的使用限制。
         使用限制可套用到指定使用者在 <ph name="PRODUCT_OS_NAME" />上安裝的應用程式。
         你必須透過 |app_limits| 清單指定限制。每個應用程式只能設定一個項目。不在清單中的應用程式不會受到限制。
@@ -3259,13 +3248,13 @@
 
            如未設定這項政策，<ph name="PRODUCT_NAME" /> 會改用預設程式庫名稱。</translation>
 <translation id="5783009211970309878">列印頁首和頁尾</translation>
-<translation id="5783576706065107606">在新版 <ph name="CORS" /> 模式中啟用 <ph name="CORS" /> 檢查安全防護措施，讓擴充功能保持相容行為，並允許 <ph name="PRODUCT_NAME" /> 不需經過 <ph name="CORS" /> 檢查即可傳送指定標頭。
+<translation id="5783576706065107606">在新版 <ph name="CORS" /> 模式中啟用緩和措施來放寬 <ph name="CORS" /> 檢查標準，讓擴充功能保持相容行為，並允許 <ph name="PRODUCT_NAME" /> 不需經過 <ph name="CORS" /> 檢查即可傳送指定標頭。
 
       如果將這份清單設為空白，<ph name="PRODUCT_NAME" /> 會嘗試以相容方式執行擴充功能，且不會採用 <ph name="PRODUCT_NAME" /> 第 79 版的 <ph name="API" /> 變更，詳情請參閱 <ph name="WEB_REQUEST_API_MANUAL" />。
 
-      如果將這份清單設為具有 <ph name="HTTP" /> 要求標頭名稱，則 <ph name="CORS" /> 檢查將忽略此處列出的標頭，並啟用擴充功能的安全防護措施。
+      如果在這份清單中納入 <ph name="HTTP" /> 要求標頭名稱，則 <ph name="CORS" /> 檢查將忽略此處列出的標頭，並針對擴充功能啟用緩和措施。
 
-      如果未設定這份清單，則不會套用上述兩種安全防護措施。
+      如果未設定這份清單，則不會套用上述兩種緩和措施。
 
       如要進一步瞭解 <ph name="CORS" />，請前往：<ph name="CORS_HELP_URL" />。
 
@@ -3928,13 +3917,6 @@
       如果選取 [U2F_EXTENDED]，整合式雙重驗證會為個人認證提供 U2F 功能和一些擴充功能。</translation>
 <translation id="7003334574344702284">如果啟用這項政策，則會強制從之前的預設瀏覽器匯入儲存的密碼，並影響匯入對話方塊。如果停用這項政策，則不會匯入儲存的密碼。如果未設定這項政策，系統會自動匯入儲存的密碼，或詢問使用者是否要匯入儲存的密碼。</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> 偏好設定</translation>
-<translation id="7007671350884342624">設定 <ph name="PRODUCT_NAME" /> 在儲存使用者資料時所使用的目錄。
-
-      如果設定這項政策，無論使用者是否指定「--user-data-dir」標記，<ph name="PRODUCT_NAME" /> 都會使用您所提供的目錄。請勿將這項政策設為磁碟區的根目錄或用於其他用途的目錄 (因為 <ph name="PRODUCT_NAME" /> 會管理相關內容)，以免遺失資料或發生其他未預期的錯誤。
-
-      如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
-
-      如果未設定這項政策，系統會使用預設的設定檔目錄，日後使用者可以自行透過「'--user-data-dir」命令列標記覆寫這個目錄。</translation>
 <translation id="7008308728445338159">已啟用 DNS 攔截檢查功能</translation>
 <translation id="7027785306666625591">設定 <ph name="PRODUCT_OS_NAME" /> 的電源管理。
 
@@ -4831,7 +4813,6 @@
 <translation id="8424255554404582727">設定畫面旋轉預設值 (每次重新啟動皆重新套用)</translation>
 <translation id="8426231401662877819">將畫面以順時針方向旋轉 90 度</translation>
 <translation id="8433186206711564395">網路設定</translation>
-<translation id="8433423491036718210">設定企業登入網址清單，以便密碼保護服務從這些網址擷取密碼指紋。</translation>
 <translation id="8445576299806775661">Chrome 會在每次更新主要版本時，為一部分的使用者瀏覽資料建立快照，以便日後需要執行緊急版本復原作業時使用。如果使用者要緊急復原的目標版本有相應快照，系統會復原快照中的資料。這種做法可讓使用者保留書籤和自動填入資料等設定。
 
       如果不設定這項政策，系統會使用預設值 3

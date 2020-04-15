@@ -12,7 +12,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.query_tiles.Tile;
+import org.chromium.chrome.browser.query_tiles.QueryTile;
 import org.chromium.chrome.browser.query_tiles.TileProvider;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ public class TileProviderBridge implements TileProvider {
     }
 
     @Override
-    public void getQueryTiles(Callback<List<Tile>> callback) {
+    public void getQueryTiles(Callback<List<QueryTile>> callback) {
         if (mNativeTileProviderBridge == 0) return;
         TileProviderBridgeJni.get().getQueryTiles(mNativeTileProviderBridge, this, callback);
     }
@@ -52,14 +52,16 @@ public class TileProviderBridge implements TileProvider {
     }
 
     @CalledByNative
-    private static List<Tile> createList() {
+    private static List<QueryTile> createList() {
         return new ArrayList<>();
     }
 
     @CalledByNative
-    private static Tile createTileAndMaybeAddToList(@Nullable List<Tile> list, String tileId,
-            String displayTitle, String accessibilityText, String queryText, List<Tile> children) {
-        Tile tile = new Tile(tileId, displayTitle, accessibilityText, queryText, children);
+    private static QueryTile createTileAndMaybeAddToList(@Nullable List<QueryTile> list,
+            String tileId, String displayTitle, String accessibilityText, String queryText,
+            List<QueryTile> children) {
+        QueryTile tile =
+                new QueryTile(tileId, displayTitle, accessibilityText, queryText, children);
         if (list != null) list.add(tile);
         return tile;
     }
@@ -67,7 +69,7 @@ public class TileProviderBridge implements TileProvider {
     @NativeMethods
     interface Natives {
         void getQueryTiles(long nativeTileProviderBridge, TileProviderBridge caller,
-                Callback<List<Tile>> callback);
+                Callback<List<QueryTile>> callback);
         void getVisuals(long nativeTileProviderBridge, TileProviderBridge caller, String id,
                 Callback<List<Bitmap>> callback);
     }

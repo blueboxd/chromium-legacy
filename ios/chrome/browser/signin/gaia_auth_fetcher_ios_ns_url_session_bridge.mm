@@ -14,6 +14,7 @@
 #include "ios/net/cookies/system_cookie_util.h"
 #include "ios/web/common/features.h"
 #include "ios/web/public/browser_state.h"
+#import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -122,8 +123,7 @@ void GaiaAuthFetcherIOSNSURLSessionBridge::SetCanonicalCookiesFromResponse(
         net::CookieOptions::SameSiteCookieContext::MakeInclusive());
     cookie_manager->SetCanonicalCookie(
         net::CanonicalCookieFromSystemCookie(cookie, base::Time::Now()),
-        base::SysNSStringToUTF8(response.URL.scheme), options,
-        base::DoNothing());
+        net::GURLWithNSURL(response.URL), options, base::DoNothing());
   }
 }
 

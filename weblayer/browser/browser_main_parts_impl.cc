@@ -145,6 +145,8 @@ void BrowserMainPartsImpl::PreMainMessageLoopRun() {
   content::WebUIControllerFactory::RegisterFactory(
       WebUIControllerFactory::GetInstance());
 
+  BrowserProcess::GetInstance()->PreMainMessageLoopRun();
+
   if (main_function_params_.ui_task) {
     std::move(*main_function_params_.ui_task).Run();
     delete main_function_params_.ui_task;

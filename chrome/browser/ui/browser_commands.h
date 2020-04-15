@@ -147,6 +147,7 @@ void CloseSaveLocalCardSignInPromo(Browser* browser);
 void Translate(Browser* browser);
 void ManagePasswordsForPage(Browser* browser);
 void SendTabToSelfFromPageAction(Browser* browser);
+void GenerateQRCodeFromPageAction(Browser* browser);
 void SavePage(Browser* browser);
 bool CanSavePage(const Browser* browser);
 void Print(Browser* browser);

@@ -44,13 +44,6 @@ GetTLSSequenceManagerImpl() {
 
 }  // namespace
 
-// This controls how big the the initial for
-// |MainThreadOnly::task_execution_stack| should be. We don't expect to see
-// depths of more than 2 unless cooperative scheduling is used on Blink, where
-// we might get up to 6. Anyway 10 was chosen because it's a round number
-// greater than current anticipated usage.
-static constexpr const size_t kInitialTaskExecutionStackReserveCount = 10;
-
 std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThread(
     SequenceManager::Settings settings) {
   return internal::SequenceManagerImpl::CreateOnCurrentThread(
@@ -252,7 +245,6 @@ SequenceManagerImpl::MainThreadOnly::MainThreadOnly(
     random_generator = std::mt19937_64(RandUint64());
     uniform_distribution = std::uniform_real_distribution<double>(0.0, 1.0);
   }
-  task_execution_stack.reserve(kInitialTaskExecutionStackReserveCount);
 }
 
 SequenceManagerImpl::MainThreadOnly::~MainThreadOnly() = default;

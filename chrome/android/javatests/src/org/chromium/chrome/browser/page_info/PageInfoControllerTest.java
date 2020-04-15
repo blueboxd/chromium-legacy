@@ -89,8 +89,7 @@ public class PageInfoControllerTest {
             PageInfoController pageInfo = new PageInfoController(mActivityTestRule.getActivity(),
                     tab.getWebContents(), ConnectionSecurityLevel.NONE, /*offlinePageUrl=*/null,
                     /*offlinePageCreationDate=*/null,
-                    PageInfoController.OfflinePageState.NOT_OFFLINE_PAGE,
-                    PageInfoController.PreviewPageState.NOT_PREVIEW, /*publisher=*/null,
+                    PageInfoController.OfflinePageState.NOT_OFFLINE_PAGE, /*publisher=*/null,
                     /*offlinePageLoadUrlDelegate=*/
                     new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab),
                     new ChromePageInfoControllerDelegate(

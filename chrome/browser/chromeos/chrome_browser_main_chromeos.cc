@@ -111,6 +111,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/shutdown_policy_forwarder.h"
 #include "chrome/browser/chromeos/startup_settings_cache.h"
+#include "chrome/browser/chromeos/system/breakpad_consent_watcher.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/user_removal_manager.h"
 #include "chrome/browser/chromeos/system_token_cert_db_initializer.h"
@@ -590,6 +591,19 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // policy connector is started.
   bulk_printers_calculator_factory_ =
       std::make_unique<BulkPrintersCalculatorFactory>();
+
+  // StatsReportingController is created in
+  // ChromeBrowserMainParts::PreCreateThreads, so this must come afterwards.
+  chromeos::StatsReportingController* stats_controller =
+      chromeos::StatsReportingController::Get();
+  // |stats_controller| can be nullptr if ChromeBrowserMainParts's
+  // browser_process_->GetApplicationLocale() returns empty. We're trying to
+  // show an error message in that case, so don't just crash. (See
+  // ChromeBrowserMainParts::PreCreateThreadsImpl()).
+  if (stats_controller != nullptr) {
+    breakpad_consent_watcher_ =
+        system::BreakpadConsentWatcher::Initialize(stats_controller);
+  }
 
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }

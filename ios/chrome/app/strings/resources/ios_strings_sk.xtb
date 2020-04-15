@@ -3,6 +3,7 @@
 <translationbundle lang="sk">
 <translation id="1005230401424685968">RRRR</translation>
 <translation id="1016495303386450659">Položka bola aktualizovaná</translation>
+<translation id="1044891598689252897">Weby budú fungovať normálne</translation>
 <translation id="1047726139967079566">Pridať stránku medzi záložky…</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="1063454504051558093">Použiť iné heslo…</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860">Počet položiek: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Nastavenie môžete prepnúť dvojitým klepnutím</translation>
 <translation id="1509486075633541495">Prihláste sa na webe</translation>
+<translation id="1509960214886564027">Funkcie na mnohých weboch môžu zlyhávať</translation>
 <translation id="152234381334907219">Nikdy neukladať</translation>
 <translation id="1540800554400757039">Adresa 1</translation>
 <translation id="1545749641540134597">Naskenovať kód QR</translation>
@@ -528,6 +530,7 @@ Váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, takže vaše údaje C
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7971521879845308059">Blokov. okien</translation>
 <translation id="7982789257301363584">Sieť</translation>
+<translation id="7993619969781047893">Funkcie na niektorých weboch môžu zlyhávať</translation>
 <translation id="800361585186029508">Otvorí zadané webové adresy v prehliadači Google Chrome.</translation>
 <translation id="8007420562015504427">Anonymné vyhľadávanie</translation>
 <translation id="8019783059653722575">Umožňuje uložiť a nahrať fotky.</translation>

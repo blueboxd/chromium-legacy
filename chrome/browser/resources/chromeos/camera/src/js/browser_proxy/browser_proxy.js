@@ -124,6 +124,13 @@ class ChromeAppBrowserProxy {
   sendMessage(extensionId, message) {
     chrome.runtime.sendMessage(extensionId, message);
   }
+
+  /** @override */
+  addDummyHistoryIfNotAvailable() {
+    // Since GA will use history.length to generate hash but it is not available
+    // in platform apps, set it to 1 manually.
+    window.history.length = 1;
+  }
 }
 
 export const browserProxy = new ChromeAppBrowserProxy();

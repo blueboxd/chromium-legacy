@@ -609,6 +609,11 @@
 <translation id="1805888043020974594">打印服务器</translation>
 <translation id="1805967612549112634">确认 PIN 码</translation>
 <translation id="1806335016774576568">切换到另一个已打开的应用</translation>
+<translation id="1809483812148634490">系统会从这台 Chromebook 中删除您从 Google Play 下载的应用。
+    <ph name="LINE_BREAKS1" />
+    可能还会删除您购买的内容，例如电影、电视节目、音乐、图书或其他应用内购商品。
+    <ph name="LINE_BREAKS2" />
+    其他设备上的应用或内容均不受影响。</translation>
 <translation id="1809734401532861917">将我的书签、历史记录、密码和其他设置添加至 <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">服务</translation>
 <translation id="18139523105317219">EDI 参与方名称</translation>
@@ -679,7 +684,6 @@
 <translation id="189210018541388520">以全屏模式打开</translation>
 <translation id="1892341345406963517"><ph name="PARENT_NAME" />，您好！</translation>
 <translation id="189358972401248634">其他语言</translation>
-<translation id="1895252664692693738">还剩 <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">关机</translation>
 <translation id="1895934970388272448">您必须在自己的打印机上确认注册才能完成此进程 - 立即查看。</translation>
 <translation id="1899826437968063457">Plugin VM 需要权限才能运行</translation>
@@ -1389,6 +1393,7 @@
 <translation id="2825848369316359348">找到印在安全密钥背面的名称</translation>
 <translation id="2828650939514476812">连接到 Wi-Fi 网络</translation>
 <translation id="2835294513443818940">无法安全地下载此文件。</translation>
+<translation id="2835547721736623118">语音识别服务</translation>
 <translation id="2836269494620652131">崩溃</translation>
 <translation id="2836635946302913370">管理员已禁止使用此用户名登录。</translation>
 <translation id="283669119850230892">要使用网络“<ph name="NETWORK_ID" />”，请先在下方连接互联网。</translation>
@@ -1533,6 +1538,7 @@
 <translation id="3019285239893817657">子页面按钮</translation>
 <translation id="3020183492814296499">快捷键</translation>
 <translation id="3020990233660977256">序列号：<ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">使用电池时</translation>
 <translation id="3021066826692793094">蝴蝶</translation>
 <translation id="3021678814754966447">查看框架的源代码(&amp;V)</translation>
 <translation id="3022978424994383087">无法解析您所说的内容。</translation>
@@ -2728,6 +2734,7 @@
 <translation id="4633757335284074492">备份到 Google 云端硬盘。您随时可以轻松地恢复数据或更换设备。此类备份内容包含应用数据。备份内容将上传到 Google 并使用您孩子的 Google 帐号密码进行加密。</translation>
 <translation id="4634771451598206121">重新登录...</translation>
 <translation id="4635398712689569051">访客用户无法使用“<ph name="PAGE_NAME" />”页面。</translation>
+<translation id="4635444580397524003">已成功恢复 Linux 备份。</translation>
 <translation id="4636930964841734540">信息</translation>
 <translation id="4637083375689622795">更多操作，<ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">启用 ADB 调试</translation>
@@ -2903,6 +2910,7 @@
 <translation id="4890773143211625964">显示高级打印机选项</translation>
 <translation id="4891089016822695758">Chrome（测试版）论坛</translation>
 <translation id="4892229439761351791">此网站可能会使用蓝牙</translation>
+<translation id="489258173289528622">使用电池时的闲置操作</translation>
 <translation id="4893336867552636863">这会将您的浏览数据从这台设备上永久删除。</translation>
 <translation id="4893522937062257019">屏幕锁定时</translation>
 <translation id="489454699928748701">允许网站使用动态传感器</translation>
@@ -3609,6 +3617,7 @@
 <translation id="5863445608433396414">启用调试功能</translation>
 <translation id="5864195618110239517">使用按流量计费的网络连接</translation>
 <translation id="5864471791310927901">DHCP 查找失败</translation>
+<translation id="5864754048328252126">充电时的闲置操作</translation>
 <translation id="5865508026715185451">“<ph name="APP_NAME" />”即将暂停</translation>
 <translation id="586567932979200359">您正在通过磁盘映像运行 <ph name="PRODUCT_NAME" />。您只需在计算机上安装该软件，即可在没有磁盘映像的情况下运行它，并可确保使用最新版本。</translation>
 <translation id="5865733239029070421">自动将使用情况统计信息和崩溃报告发送至 Google</translation>
@@ -3808,6 +3817,7 @@
 <translation id="6120205520491252677">将此网页固定到“开始”屏幕...</translation>
 <translation id="6122081475643980456">您的互联网连接受到控制</translation>
 <translation id="6122095009389448667">继续禁止此网站查看剪贴板</translation>
+<translation id="6122831415929794347">要关闭“安全浏览”功能吗？</translation>
 <translation id="6122875415561139701">禁止在“<ph name="DEVICE_NAME" />”上执行写入操作。</translation>
 <translation id="6124650939968185064">需先安装此扩展程序，下列扩展程序才能正常使用：</translation>
 <translation id="6124698108608891449">此网站需要更多权限。</translation>
@@ -3985,7 +3995,6 @@
 <translation id="6365411474437319296">添加亲朋好友</translation>
 <translation id="636850387210749493">企业注册</translation>
 <translation id="6370021412472292592">无法加载清单。</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{更改密码}other{更改密码}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">重试</translation>
 <translation id="6377268785556383139">1 个与“<ph name="SEARCH_TEXT" />”相符的搜索结果</translation>
@@ -4011,6 +4020,7 @@
 <translation id="6408118934673775994">读取和更改您在<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />和<ph name="WEBSITE_3" />上的数据</translation>
 <translation id="6410257289063177456">图片文件</translation>
 <translation id="6410328738210026208">变更版本并执行 Powerwash</translation>
+<translation id="6410390304316730527">“安全浏览”功能可保护您免受攻击者诱骗，以防做出一些危险操作，例如安装恶意软件或泄露个人信息（如密码、电话号码或信用卡信息）。如果关闭此功能，当浏览不熟悉或信誉不佳的网站时，请一定多加小心。</translation>
 <translation id="6410668567036790476">添加搜索引擎</translation>
 <translation id="641081527798843608">主题匹配</translation>
 <translation id="6412673304250309937">将网址与存储在 Chrome 中的不安全网站列表进行比对。如果某个网站企图窃取您的密码，或者您下载了有害的文件，Chrome 可能还会将相应网址连同少量网页内容发送给“安全浏览”功能。</translation>
@@ -5930,6 +5940,7 @@
 <translation id="8951256747718668828">发生错误，因此无法完成恢复</translation>
 <translation id="8951465597020890363">仍要退出访客模式？</translation>
 <translation id="8952831374766033534">有配置选项不受支持：<ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">充电时</translation>
 <translation id="895347679606913382">即将开始下载...</translation>
 <translation id="8957762313041272117">实时字幕</translation>
 <translation id="895944840846194039">JavaScript 使用的内存</translation>

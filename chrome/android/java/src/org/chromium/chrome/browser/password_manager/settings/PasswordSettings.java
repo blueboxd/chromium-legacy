@@ -35,7 +35,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.webauth.authenticator.CableAuthenticatorUIFactory;
+import org.chromium.chrome.modules.cablev2_authenticator.CableAuthenticatorModuleProvider;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
@@ -266,8 +266,7 @@ public class PasswordSettings
         resetList(PREF_KEY_CATEGORY_SAVED_PASSWORDS);
         resetNoEntriesTextMessage();
 
-        if (CableAuthenticatorUIFactory.isAvailable()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_AUTH_PHONE_SUPPORT)) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_AUTH_PHONE_SUPPORT)) {
             displaySecurityKeyLink();
         }
 
@@ -500,7 +499,7 @@ public class PasswordSettings
             mSecurityKey.setTitle(R.string.phone_as_security_key_text);
             mSecurityKey.setOnPreferenceClickListener(preference -> {
                 SettingsLauncher.getInstance().launchSettingsPage(
-                        getActivity(), CableAuthenticatorUIFactory.getFragmentClass(), null);
+                        getActivity(), CableAuthenticatorModuleProvider.class, null);
                 return true;
             });
             mSecurityKey.setOrder(ORDER_SECURITY_KEY);

@@ -436,7 +436,6 @@ Ikaw lang ang makakakita kung ano ang tinitingnan ng iyong camera. Hindi makikit
 <translation id="4242533952199664413">Buksan ang mga setting</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4256782883801055595">Mga lisensya ng open source</translation>
-<translation id="4259722352634471385">Naka-block ang navigation: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopyahin ang address ng link</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Pinapayagan</translation>
@@ -965,6 +964,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Para makuha ang iyong mga bookmark sa lahat ng device mo, i-on ang pag-sync</translation>
 <translation id="8110087112193408731">Ipakita sa Digital Wellness ang aktibidad mo sa Chrome?</translation>
+<translation id="8115259494083109761">Para mag-scan ng QR code, hayaang gamitin ng Chrome ang iyong camera</translation>
 <translation id="8116925261070264013">Naka-mute</translation>
 <translation id="8127542551745560481">I-edit ang homepage</translation>
 <translation id="813082847718468539">Tingnan ang impormasyon ng site</translation>
@@ -1066,7 +1066,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8942627711005830162">Buksan sa ibang window</translation>
 <translation id="8951232171465285730">Nag-save ang Chrome ng <ph name="MEGABYTES" /> MB para sa iyo</translation>
 <translation id="8958424370300090006">Mag-block ng cookies para sa isang partikular na site.</translation>
-<translation id="8959122750345127698">Hindi gumagana ang navigation: <ph name="URL" /></translation>
 <translation id="8965591936373831584">nakabinbin</translation>
 <translation id="8970887620466824814">Nagkaproblema.</translation>
 <translation id="8972098258593396643">I-download sa default na folder?</translation>

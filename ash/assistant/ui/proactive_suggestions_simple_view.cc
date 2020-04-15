@@ -9,7 +9,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
-#include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "net/base/escape.h"

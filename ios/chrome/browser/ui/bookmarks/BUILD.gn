@@ -246,13 +246,17 @@ source_set("eg2_tests") {
     "bookmarks_folders_egtest.mm",
     "bookmarks_promo_egtest.mm",
     "bookmarks_search_egtest.mm",
+    "managed_bookmarks_egtest.mm",
   ]
   deps = [
     ":bookmarks_ui",
     ":eg_test_support+eg2",
     "//base/test:test_support",
+    "//components/policy:generated",
     "//components/strings",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser:utils",
+    "//ios/chrome/browser/policy:eg_test_support+eg2",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/table_view:feature_flags",

@@ -39,7 +39,6 @@
 <translation id="2799223571221894425">Chạy lại</translation>
 <translation id="2805036593126168338">Chromium OS không thể đồng bộ hóa mật khẩu của bạn. Khắc phục ngay.</translation>
 <translation id="2847479871509788944">Xóa khỏi Chromium...</translation>
-<translation id="2886012850691518054">Tùy chọn: giúp cải thiện Chromium bằng cách tự động gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="2910007522516064972">Giới thiệu về &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium đã được cập nhật</translation>
 <translation id="2983934633046890458">Chromium đang cố gắng chỉnh sửa mật khẩu.</translation>
@@ -58,6 +57,7 @@
 <translation id="328888136576916638">Khóa API của Google bị thiếu. Một số chức năng của Chromium sẽ bị tắt.</translation>
 <translation id="3296368748942286671">Tiếp tục chạy các ứng dụng dưới nền khi Chromium bị đóng</translation>
 <translation id="331951419404882060">Chromium OS không thể đồng bộ hóa dữ liệu của bạn do lỗi khi đăng nhập.</translation>
+<translation id="347328004046849135">Chromium sẽ thông báo cho bạn khi bạn đăng nhập bằng mật khẩu bị lộ</translation>
 <translation id="3474745554856756813">Thao tác này sẽ xóa <ph name="ITEMS_COUNT" /> mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Hãy đóng tất cả cửa sổ Chromium và thử lại.</translation>
 <translation id="3575459661164320785">Máy tính của bạn có phần mềm độc hại. Chromium có thể xóa phần mềm này, khôi phục các tùy chọn cài đặt của bạn và tắt tiện ích để giúp trình duyệt hoạt động lại bình thường.</translation>
@@ -93,11 +93,13 @@
 <translation id="4746050847053251315">Bạn vẫn muốn thoát khỏi Chromium?</translation>
 <translation id="4748217263233248895">Chromium vừa áp dụng một bản cập nhật bảo mật đặc biệt. Vui lòng khởi động lại ngay bây giờ và chúng tôi sẽ khôi phục các tab của bạn.</translation>
 <translation id="4750035648288509542">Sắp cập nhật xong rồi! Hãy chạy lại Chromium để hoàn tất quá trình cập nhật. Các cửa sổ ẩn danh sẽ không mở lại.</translation>
+<translation id="4788777615168560705">Chromium không thể kiểm tra mật khẩu của bạn. Hãy thử lại sau 24 giờ hoặc <ph name="BEGIN_LINK" />kiểm tra các mật khẩu trong Tài khoản Google của bạn<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Dịch vụ này sử dụng cùng một trình kiểm tra chính tả dùng trong Google Tìm kiếm. Thông tin bạn nhập vào trình duyệt sẽ được gửi tới Google. Bạn luôn có thể thay đổi hành động này trong phần cài đặt.</translation>
 <translation id="4888717733111232871">Quy tắc kết nối để Chromium cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="4943838377383847465">Chromium đang chạy trong nền.</translation>
 <translation id="4987820182225656817">Khách có thể sử dụng Chromium mà không phải thoát khỏi bất cứ nội dung nào.</translation>
 <translation id="4994636714258228724">Thêm chính bạn vào Chromium</translation>
+<translation id="5224391634244552924">Bạn chưa lưu mật khẩu nào. Chromium có thể kiểm tra các mật khẩu của bạn khi bạn lưu các mật khẩu đó.</translation>
 <translation id="5277894862589591112">Để áp dụng các mục thay đổi của bạn, hãy chạy lại Chromium</translation>
 <translation id="5358375970380395591">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình Chromium của bạn. Dữ liệu Chromium của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME" />. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Đang cập nhật Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -164,6 +166,7 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="7066436765290594559">Chromium OS không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
 <translation id="7067091210845072982">Chromium sẽ cố gắng mô tả cho bạn những hình ảnh không có nội dung mô tả hữu ích. Để tạo nội dung mô tả, các hình ảnh sẽ được gửi đến Google.</translation>
 <translation id="7196312274710523067">Không thể mở Chromium. Hãy thử lại.</translation>
+<translation id="7197677400338048821">Chromium không thể kiểm tra mật khẩu của bạn. Hãy thử lại sau 24 giờ.</translation>
 <translation id="7205698830395646142">Ẩn trong menu Chromium</translation>
 <translation id="7223968959479464213">Trình quản lý tác vụ - Chromium</translation>
 <translation id="731644333568559921">Cập nhật &amp;Chromium OS</translation>

@@ -296,12 +296,6 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 <translation id="1427655258943162134">Dirección o URL de servidor proxy</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivos</translation>
 <translation id="1438739959477268107">Configuración predeterminada de la generación de claves</translation>
-<translation id="1455804070656338445">Configura la URL de cambio de contraseña (solo esquemas HTTP y HTTPS). El servicio de protección de contraseña enviará a los usuarios a esta URL para que cambien sus contraseñas cuando hayan visto una advertencia en el navegador.
-      Para que <ph name="PRODUCT_NAME" /> capture correctamente la nueva huella digital de la contraseña en esta página de cambio de contraseña, la página debe seguir las directrices incluidas en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si se habilita esta opción, el servicio de protección de contraseñas enviará a los usuarios a esta URL para que cambien su contraseña después de que se les haya mostrado una advertencia en el navegador.
-      Si se inhabilita esta opción o no se define, el servicio de protección de contraseñas enviará a los usuarios a la página https://myaccount.google.com para que cambien su contraseña.
-      Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
 <translation id="1456822151187621582">Windows (clientes de <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1464848559468748897">Controla el comportamiento del usuario en una sesión de varios perfiles en dispositivos <ph name="PRODUCT_OS_NAME" />.
 
@@ -356,6 +350,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
           Si se le asigna el valor "False" a la política "EnableMediaRouter", el valor de esta política no tendrá ningún efecto.</translation>
 <translation id="1509692106376861764">Esta política no está disponible desde la versión 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Habilitar <ph name="PRODUCT_NAME" /></translation>
+<translation id="1515230621229117540">Habilita el menú de accesibilidad flotante</translation>
 <translation id="1515824657887788963">Permite que las páginas realicen solicitudes XHR síncronas durante el cierre de la página.</translation>
 <translation id="1522425503138261032">Permitir que los sitios puedan hacer un seguimiento de la ubicación física de los usuarios</translation>
 <translation id="1523774894176285446">Navegador alternativo donde se abren los sitios web configurados.</translation>
@@ -599,12 +594,6 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       Si se le asigna el valor "False", se inhabilitará el envío de informes sobre métricas y datos de diagnóstico.
 
       Si no se configura, se inhabilitarán los informes sobre métricas y datos de diagnóstico en los dispositivos no administrados y se habilitará en los dispositivos administrados.</translation>
-<translation id="1907431809333268751">Configura la lista de las URL de acceso de empresa (solo esquemas HTTP y HTTPS). En estas URL se capturará la huella digital de la contraseña, que se utilizará para detectar si se reutiliza la contraseña.
-      Para que <ph name="PRODUCT_NAME" /> pueda capturar correctamente las huellas digitales de las contraseñas, tus páginas de inicio de sesión deben seguir las directrices incluidas en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si se habilita esta opción, el servicio de protección de contraseñas capturará la huella digital de la contraseña en estas URL para detectar si la contraseña se reutiliza.
-      Si se inhabilita esta opción o no se configura, el servicio de protección de contraseñas solo capturará la huella digital en la página https://accounts.google.com.
-      Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
 <translation id="1910704279188129272">Permite especificar restricciones de uso por aplicación.
         Se pueden aplicar restricciones de uso a las aplicaciones instaladas en <ph name="PRODUCT_OS_NAME" /> para un usuario determinado.
         Las restricciones se deben especificar en la lista |app_limits|. Solo se permite una entrada por aplicación. Las aplicaciones no incluidas en la lista no tienen restricciones.
@@ -3371,6 +3360,17 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Si no se proporciona ningún parámetro, <ph name="PRODUCT_NAME" /> volverá a utilizar un nombre de biblioteca predeterminado.</translation>
 <translation id="5783009211970309878">Imprimir encabezados y pies de página</translation>
+<translation id="5783576706065107606">Habilita las mitigaciones de comprobación de <ph name="CORS" /> en la nueva implementación de <ph name="CORS" />. Así, las extensiones continúan siendo compatibles y <ph name="PRODUCT_NAME" /> puede enviar encabezados definidos sin comprobaciones de <ph name="CORS" />.
+
+      Si esta lista se deja vacía, <ph name="PRODUCT_NAME" /> intentará ejecutar las extensiones de forma compatible y no introducirá cambios de <ph name="API" /> en <ph name="PRODUCT_NAME" /> 79, tal y como se explica en <ph name="WEB_REQUEST_API_MANUAL" />.
+
+      Si la lista se configura para que tenga nombres de encabezado de solicitud <ph name="HTTP" />, la comprobación de <ph name="CORS" /> ignorará los encabezados de la lista y habilitará la mitigación en el caso de las extensiones.
+
+      Si no se establece esta lista, no se aplicará ninguna de las dos mitigaciones explicadas arriba.
+
+      Para consultar más información sobre <ph name="CORS" />, visita <ph name="CORS_HELP_URL" />.
+
+      Ten en cuenta que se anunció que esta política se eliminaría en la versión 82 de <ph name="PRODUCT_NAME" />, pero el plan ha cambiado y se eliminará en la versión 84.</translation>
 <translation id="5790763087505467169">Reducir las notificaciones de inicio automático de las sesiones de invitado administradas</translation>
 <translation id="5806128552675651249">Permitir imprimir solo sin gráficos de fondo</translation>
 <translation id="5809210507920527553">Controla la configuración del contenedor de Linux (Crostini).</translation>
@@ -3434,6 +3434,17 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si se inhabilita o no se configura esta opción, se utilizará el nombre de dominio predeterminado de TalkGadget (chromoting-host.talkgadget.google.com) para todos los hosts.
 
           La configuración de esta política no afecta a los clientes de acceso remoto, ya que siempre utilizan "chromoting-client.talkgadget.google.com" para acceder a TalkGadget.</translation>
+<translation id="5888171512889380367">Permite usar la implementación antigua de <ph name="CORS" /> en vez de la nueva implementación de <ph name="CORS" />.
+
+      Si se asigna el valor Verdadero a esta política, se usará la implementación antigua, la cual debería ser compatible con las versiones anteriores.
+
+      Si se le asigna el valor Falso o no se establece, se usará la nueva implementación, lo que podría causar distintos problemas de compatibilidad según la empresa.
+
+      Esta política se eliminará después de dos hitos.
+
+      Para consultar más información sobre <ph name="CORS" />, visita <ph name="CORS_HELP_URL" />.
+
+      Ten en cuenta que se anunció que esta política se eliminaría en la versión 82 de <ph name="PRODUCT_NAME" />, pero el plan ha cambiado y se eliminará en la versión 84.</translation>
 <translation id="5893553533827140852">Si esta opción está habilitada, las solicitudes de autenticación gnubby se representarán a través de una conexión de host remota.
 
           Si esta opción está inhabilitada o no está configurada, no se representarán solicitudes de autenticación gnubby.</translation>
@@ -3723,6 +3734,11 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 
           Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
 <translation id="6417265370957905582">Asistente de Google</translation>
+<translation id="6422575351619065453">En modo kiosco, permite controlar si se muestra el menú de accesibilidad flotante.
+
+      Si se habilita esta política, el menú de accesibilidad flotante se mostrará siempre.
+
+      Si se inhabilita esta política o no se establece, el menú de accesibilidad flotante no se mostrará nunca.</translation>
 <translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">No puedes forzar a las aplicaciones de Android para que utilicen un proxy. Hay un subconjunto de opciones de proxy disponibles para las aplicaciones de Android y estas pueden aceptarlas voluntariamente:
 
@@ -4040,13 +4056,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 
       Si no se establece, es posible que se le pida al usuario que haga la importación o que las contraseñas guardadas se importen automáticamente.</translation>
 <translation id="7003746348783715221">Preferencias de <ph name="PRODUCT_NAME" /></translation>
-<translation id="7007671350884342624">Configura el directorio que <ph name="PRODUCT_NAME" /> utilizará para almacenar datos de usuario.
-
-      Si se establece esta política, <ph name="PRODUCT_NAME" /> utilizará el directorio proporcionado, independientemente de que el usuario haya especificado el indicador "--user-data-dir". Para evitar la pérdida de datos u otros errores inesperados, esta política no debe establecerse en el directorio raíz del volumen o en un directorio utilizado para otros fines, ya que <ph name="PRODUCT_NAME" /> administra sus contenidos.
-
-      Para consultar una lista de variables que se pueden utilizar, accede a la página https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Si no se establece esta política, se utilizará la ruta de perfil predeterminada y el usuario podrá anularla con el indicador de línea de comando "--user-data-dir".</translation>
 <translation id="7008308728445338159">Comprobaciones de interceptación de DNS habilitadas</translation>
 <translation id="7027785306666625591">Configura la administración de energía en <ph name="PRODUCT_OS_NAME" />.
 
@@ -4968,7 +4977,6 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="8424255554404582727">Establecer rotación de pantalla predeterminada y volver a aplicarla cada vez que se reinicie el dispositivo</translation>
 <translation id="8426231401662877819">Rotar la pantalla 90 grados hacia la derecha</translation>
 <translation id="8433186206711564395">Configuración de red</translation>
-<translation id="8433423491036718210">Configura la lista de las URL de acceso empresarial en las que el servicio de protección de contraseña debe capturar la huella digital de la contraseña.</translation>
 <translation id="8445576299806775661">Después de cada actualización importante de versión, Chrome creará una instantánea de algunos datos de navegación del usuario para usarla en caso de que se realice una restauración de versión de emergencia posteriormente. Si se realiza una restauración de emergencia y se instala una versión de la que el usuario tiene la instantánea correspondiente, se restaurarán los datos de dicha instantánea. Esto permite a los usuarios conservar ajustes como los marcadores y los datos de Autocompletar.
 
       Si no se establece esta política, se usará el valor predeterminado, que es "3".

@@ -5301,6 +5301,21 @@
             ]
         }
     ],
+    "ShareButtonInTopToolbar": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ShareButtonInTopToolbar"
+                    ]
+                }
+            ]
+        }
+    ],
     "SharedClipboard": [
         {
             "platforms": [

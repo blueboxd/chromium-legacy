@@ -317,33 +317,30 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   // Register SVG images that are purposefully not inlined in the HTML bundle
   // above.
-  html_source->AddResourcePath("images/cookies_banner.svg",
-                               IDR_SETTINGS_IMAGES_COOKIES_BANNER_SVG);
-  html_source->AddResourcePath("images/cookies_banner_dark.svg",
-                               IDR_SETTINGS_IMAGES_COOKIES_BANNER_DARK_SVG);
-  html_source->AddResourcePath("images/permissions_banner.svg",
-                               IDR_SETTINGS_IMAGES_PERMISSIONS_BANNER_SVG);
-  html_source->AddResourcePath("images/permissions_banner_dark.svg",
-                               IDR_SETTINGS_IMAGES_PERMISSIONS_BANNER_DARK_SVG);
-  html_source->AddResourcePath("images/safe_browsing_banner.svg",
-                               IDR_SETTINGS_IMAGES_SAFE_BROWSING_BANNER_SVG);
-  html_source->AddResourcePath(
-      "images/safe_browsing_banner_dark.svg",
-      IDR_SETTINGS_IMAGES_SAFE_BROWSING_BANNER_DARK_SVG);
-  html_source->AddResourcePath("images/sync_banner.svg",
-                               IDR_SETTINGS_IMAGES_SYNC_BANNER_SVG);
-  html_source->AddResourcePath("images/sync_banner_dark.svg",
-                               IDR_SETTINGS_IMAGES_SYNC_BANNER_DARK_SVG);
-  html_source->AddResourcePath("images/password_check_neutral.svg",
-                               IDR_SETTINGS_IMAGES_PASSWORD_CHECK_NEUTRAL_SVG);
-  html_source->AddResourcePath(
-      "images/password_check_neutral_dark.svg",
-      IDR_SETTINGS_IMAGES_PASSWORD_CHECK_NEUTRAL_DARK_SVG);
-  html_source->AddResourcePath("images/password_check_positive.svg",
-                               IDR_SETTINGS_IMAGES_PASSWORD_CHECK_POSITIVE_SVG);
-  html_source->AddResourcePath(
-      "images/password_check_positive_dark.svg",
-      IDR_SETTINGS_IMAGES_PASSWORD_CHECK_POSITIVE_DARK_SVG);
+  static constexpr webui::ResourcePath kSvgResources[] = {
+      {"images/cookies_banner.svg", IDR_SETTINGS_IMAGES_COOKIES_BANNER_SVG},
+      {"images/cookies_banner_dark.svg",
+       IDR_SETTINGS_IMAGES_COOKIES_BANNER_DARK_SVG},
+      {"images/permissions_banner.svg",
+       IDR_SETTINGS_IMAGES_PERMISSIONS_BANNER_SVG},
+      {"images/permissions_banner_dark.svg",
+       IDR_SETTINGS_IMAGES_PERMISSIONS_BANNER_DARK_SVG},
+      {"images/safe_browsing_banner.svg",
+       IDR_SETTINGS_IMAGES_SAFE_BROWSING_BANNER_SVG},
+      {"images/safe_browsing_banner_dark.svg",
+       IDR_SETTINGS_IMAGES_SAFE_BROWSING_BANNER_DARK_SVG},
+      {"images/sync_banner.svg", IDR_SETTINGS_IMAGES_SYNC_BANNER_SVG},
+      {"images/sync_banner_dark.svg", IDR_SETTINGS_IMAGES_SYNC_BANNER_DARK_SVG},
+      {"images/password_check_neutral.svg",
+       IDR_SETTINGS_IMAGES_PASSWORD_CHECK_NEUTRAL_SVG},
+      {"images/password_check_neutral_dark.svg",
+       IDR_SETTINGS_IMAGES_PASSWORD_CHECK_NEUTRAL_DARK_SVG},
+      {"images/password_check_positive.svg",
+       IDR_SETTINGS_IMAGES_PASSWORD_CHECK_POSITIVE_SVG},
+      {"images/password_check_positive_dark.svg",
+       IDR_SETTINGS_IMAGES_PASSWORD_CHECK_POSITIVE_DARK_SVG},
+  };
+  webui::AddResourcePathsBulk(html_source, kSvgResources);
 
 #else
   webui::SetupWebUIDataSource(

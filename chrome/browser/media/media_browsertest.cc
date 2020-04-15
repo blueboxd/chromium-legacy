@@ -30,11 +30,6 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(
       switches::kAutoplayPolicy,
       switches::autoplay::kNoUserGestureRequiredPolicy);
-#if defined(OS_LINUX)
-  // Due to problems with PulseAudio failing to start, use a fake audio
-  // stream. crbug.com/1047655#c70
-  command_line->AppendSwitch(switches::kDisableAudioOutput);
-#endif
 
   std::vector<base::Feature> enabled_features = {
 #if defined(OS_ANDROID)
@@ -46,6 +41,12 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
     // Disable fallback after decode error to avoid unexpected test pass on
     // the fallback path.
     media::kFallbackAfterDecodeError,
+
+#if defined(OS_LINUX)
+    // Disable out of process audio on Linux due to process spawn
+    // failures. http://crbug.com/986021
+    features::kAudioServiceOutOfProcess,
+#endif
   };
 
   scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);

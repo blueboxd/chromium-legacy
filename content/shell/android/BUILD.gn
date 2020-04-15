@@ -144,7 +144,7 @@ android_library("content_shell_apk_java") {
     "//content/public/android:content_java",
     "//media/capture/video/android:capture_java",
     "//net/android:net_java",
-    "//third_party/jsr-305:jsr_305_javalib",
+    "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//ui/android:ui_java",
   ]
 

@@ -88,6 +88,7 @@
 <translation id="34857402635545079">Chrome のデータ（<ph name="URL" />）も消去する</translation>
 <translation id="3503306920980160878">このサイトで現在地を共有するには、Chrome で位置情報の使用を許可する必要があります</translation>
 <translation id="3533694711092285624">保存されているパスワードがありません。パスワードを保存すると Chrome で確認できるようになります。</translation>
+<translation id="3541482654983822893">Chrome でパスワードを確認できません。24 時間後にもう一度お試しください。</translation>
 <translation id="3576528680708590453">システム管理者が、<ph name="TARGET_URL_HOSTNAME" /> へのアクセスに代替ブラウザを開くよう Google Chrome を設定しています。</translation>
 <translation id="3582972582564653026">同期してカスタマイズした Chrome をどのデバイスでも使用できます</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{管理者が、アップデートを適用するために Chrome を再起動するよう求めています}=1{管理者が、アップデートを適用するために Chrome を再起動するよう求めています。シークレット ウィンドウは、再起動後は自動的には開きません。}other{管理者が、アップデートを適用するために Chrome を再起動するよう求めています。現在開いている # 個のシークレット ウィンドウは、再起動後は自動的には開きません。}}</translation>
@@ -105,6 +106,7 @@
 <translation id="4147555960264124640">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">インストーラー アーカイブを解凍できませんでした。Google Chrome をダウンロードし直してください。</translation>
 <translation id="4191857738314598978">{0,plural, =1{1 日以内に Chrome を再起動してください}other{# 日以内に Chrome を再起動してください}}</translation>
+<translation id="4205939740494406371">Chrome でパスワードを確認できません。24 時間後にもう一度お試しいただくか、<ph name="BEGIN_LINK" />Google アカウントでパスワードをご確認ください<ph name="END_LINK" />。</translation>
 <translation id="424864128008805179">Chrome からログアウトしますか？</translation>
 <translation id="4251615635259297716">Chrome データをこのアカウントにリンクしますか？</translation>
 <translation id="4293420128516039005">ログインすると、同期してカスタマイズした Chrome をどのデバイスでも使用できます</translation>
@@ -227,7 +229,6 @@
 <translation id="8342675569599923794">このファイルは危険なファイルであるため、Chrome でブロックしました。</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
 <translation id="840084489713044809">Google Chrome からパスワードをエクスポートするための許可を求められています。</translation>
-<translation id="8455999171311319804">オプション: 診断と使用状況のデータを Google に自動送信して Chrome OS の機能向上に役立てる。</translation>
 <translation id="8498858610309223613">Google Chrome の特別なセキュリティ アップデートが適用されました。今すぐ再起動してください。タブは復元されます。</translation>
 <translation id="8521348052903287641">mDNS トラフィックを許可する Google Chrome Dev のインバウンド ルールです。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

@@ -624,7 +624,9 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 
   // ConversionHost takes a weak ref on |this|, so it must be created outside of
   // the initializer list.
-  conversion_host_ = std::make_unique<ConversionHost>(this);
+  if (base::FeatureList::IsEnabled(features::kConversionMeasurement)) {
+    conversion_host_ = std::make_unique<ConversionHost>(this);
+  }
 }
 
 WebContentsImpl::~WebContentsImpl() {

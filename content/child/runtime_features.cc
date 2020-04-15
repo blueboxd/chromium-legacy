@@ -218,8 +218,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      features::kUserActivationSameOriginVisibility, kUseFeatureState},
     {wf::EnablePassiveDocumentEventListeners,
      features::kPassiveDocumentEventListeners, kUseFeatureState},
-    {wf::EnablePassiveDocumentWheelEventListeners,
-     features::kPassiveDocumentWheelEventListeners, kUseFeatureState},
     {wf::EnableExpensiveBackgroundTimerThrottling,
      features::kExpensiveBackgroundTimerThrottling, kUseFeatureState},
     {wf::EnableTimerThrottlingForHiddenFrames,

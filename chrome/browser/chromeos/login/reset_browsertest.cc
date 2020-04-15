@@ -8,12 +8,12 @@
 #include "base/command_line.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/local_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
@@ -113,65 +113,16 @@ void ExpectConfirmationDialogClosed() {
       "open", {kResetScreen, kConfirmationDialog, kHelpDialog});
 }
 
-// Helper class that tracks whether 'login-prompt-visible' signal was requested
-// from the session manager service.
-class LoginPromptVisibleObserver : public SessionManagerClient::Observer {
- public:
-  explicit LoginPromptVisibleObserver(
-      SessionManagerClient* session_manager_client) {
-    observer_.Add(session_manager_client);
-  }
-  ~LoginPromptVisibleObserver() override = default;
-
-  bool signal_emitted() const { return signal_emitted_; }
-
-  // SessionManagerClient::Observer:
-  void EmitLoginPromptVisibleCalled() override {
-    ASSERT_FALSE(signal_emitted_);
-    signal_emitted_ = true;
-  }
-
- private:
-  bool signal_emitted_ = false;
-
-  ScopedObserver<SessionManagerClient, SessionManagerClient::Observer>
-      observer_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LoginPromptVisibleObserver);
-};
-
 }  // namespace
 
-class ResetTest : public MixinBasedInProcessBrowserTest {
+class ResetTest : public OobeBaseTest, public LocalStateMixin::Delegate {
  public:
   ResetTest() = default;
   ~ResetTest() override = default;
 
-  // LoginManagerTest overrides:
-  void SetUpInProcessBrowserTestFixture() override {
-    std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-    update_engine_client_ = new FakeUpdateEngineClient;
-    dbus_setter->SetUpdateEngineClient(
-        std::unique_ptr<UpdateEngineClient>(update_engine_client_));
-
-    SessionManagerClient::InitializeFakeInMemory();
-    login_prompt_visible_observer_ =
-        std::make_unique<LoginPromptVisibleObserver>(
-            SessionManagerClient::Get());
-
-    MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
-  void TearDownOnMainThread() override {
-    login_prompt_visible_observer_.reset();
-    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
-  }
-
   // Simulates reset screen request from views based login.
   void InvokeResetScreen() {
     chromeos::LoginDisplayHost::default_host()->ShowResetScreen();
-    EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
     OobeScreenWaiter(ResetView::kScreenId).Wait();
     test::OobeJS()
         .CreateVisibilityWaiter(true /* visible */, {kResetScreen})
@@ -180,8 +131,9 @@ class ResetTest : public MixinBasedInProcessBrowserTest {
     ExpectConfirmationDialogClosed();
   }
 
-  FakeUpdateEngineClient* update_engine_client_ = nullptr;
-  std::unique_ptr<LoginPromptVisibleObserver> login_prompt_visible_observer_;
+  void SetUpLocalState() override {}
+
+  LocalStateMixin local_state_mixin_{&mixin_host_, this};
 
  private:
   LoginManagerMixin::TestUserInfo test_user_{
@@ -223,25 +175,19 @@ class ResetFirstAfterBootTest : public ResetTest {
     command_line->AppendSwitch(switches::kFirstExecAfterBoot);
   }
 
-  void SetUpOnMainThread() override {
-    DBusThreadManager::Get()
-        ->GetShillManagerClient()
-        ->GetTestInterface()
-        ->SetupDefaultEnvironment();
+  void SetUpLocalState() override {
+    PrefService* prefs = g_browser_process->local_state();
+    prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   }
 };
 
-class ResetFirstAfterBootTestWithRollback : public ResetTest {
+class ResetFirstAfterBootTestWithRollback : public ResetFirstAfterBootTest {
  public:
   ~ResetFirstAfterBootTestWithRollback() override = default;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ResetTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kFirstExecAfterBoot);
-  }
   void SetUpInProcessBrowserTestFixture() override {
-    ResetTest::SetUpInProcessBrowserTestFixture();
-    update_engine_client_->set_can_rollback_check_result(true);
+    ResetFirstAfterBootTest::SetUpInProcessBrowserTestFixture();
+    update_engine_client()->set_can_rollback_check_result(true);
   }
 };
 
@@ -297,6 +243,15 @@ class ResetTestWithTpmFirmwareUpdate : public ResetTest {
       tpm_firmware_update_checker_callback_;
 };
 
+class ResetTestWithTpmFirmwareUpdateRequested
+    : public ResetTestWithTpmFirmwareUpdate {
+ public:
+  void SetUpLocalState() override {
+    PrefService* prefs = g_browser_process->local_state();
+    prefs->SetBoolean(prefs::kFactoryResetRequested, true);
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(ResetTest, ShowAndCancel) {
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
   InvokeResetScreen();
@@ -345,26 +300,13 @@ IN_PROC_BROWSER_TEST_F(ResetOobeTest, RequestAndCancleResetOnWelcomeScreen) {
   EXPECT_EQ(0, update_engine_client()->rollback_call_count());
 }
 
-// TODO(http://crbug.com/990362): Times out on MSAN buildbots.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_PRE_ViewsLogic DISABLED_PRE_ViewsLogic
-#else
-#define MAYBE_PRE_ViewsLogic PRE_ViewsLogic
-#endif
-
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, MAYBE_PRE_ViewsLogic) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-  update_engine_client_->set_can_rollback_check_result(false);
-}
-
 // See http://crbug.com/990362 for details.
 // TODO(crbug.com/1049789): Re-enable this test.
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, DISABLED_ViewsLogic) {
   PrefService* prefs = g_browser_process->local_state();
 
   // Rollback unavailable. Show and cancel.
-  update_engine_client_->set_can_rollback_check_result(false);
+  update_engine_client()->set_can_rollback_check_result(false);
   InvokeResetScreen();
   CloseResetScreenAndWait();
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
@@ -385,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, DISABLED_ViewsLogic) {
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   // Rollback available. Show and cancel from confirmation screen.
-  update_engine_client_->set_can_rollback_check_result(true);
+  update_engine_client()->set_can_rollback_check_result(true);
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   InvokeResetScreen();
   InvokeRollbackOption();
@@ -401,14 +343,8 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, DISABLED_ViewsLogic) {
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 }
 
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ShowAfterBootIfRequested) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-}
-
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ShowAfterBootIfRequested) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
-  EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   test::OobeJS().CreateVisibilityWaiter(true, {kResetScreen})->Wait();
@@ -417,23 +353,18 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ShowAfterBootIfRequested) {
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 }
 
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_RollbackUnavailable) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-}
-
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackUnavailable) {
   InvokeResetScreen();
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  EXPECT_EQ(0, update_engine_client_->rollback_call_count());
+  EXPECT_EQ(0, update_engine_client()->rollback_call_count());
   InvokeRollbackOption();  // No changes
   ClickToConfirmButton();
   ClickResetButton();
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(1, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  EXPECT_EQ(0, update_engine_client_->rollback_call_count());
+  EXPECT_EQ(0, update_engine_client()->rollback_call_count());
   CloseResetScreenAndWait();
 
   // Next invocation leads to rollback view.
@@ -444,14 +375,8 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackUnavailable) {
   ClickResetButton();
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(2, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  EXPECT_EQ(0, update_engine_client_->rollback_call_count());
+  EXPECT_EQ(0, update_engine_client()->rollback_call_count());
   CloseResetScreenAndWait();
-}
-
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
-                       PRE_RollbackAvailable) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
 }
 
 // TODO(http://crbug.com/990362): Times out on MSAN buildbots.
@@ -464,17 +389,16 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
   OobeScreenWaiter(ResetView::kScreenId).Wait();
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
-  EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  EXPECT_EQ(0, update_engine_client_->rollback_call_count());
+  EXPECT_EQ(0, update_engine_client()->rollback_call_count());
   ClickToConfirmButton();
   ClickResetButton();
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(1, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  EXPECT_EQ(0, update_engine_client_->rollback_call_count());
+  EXPECT_EQ(0, update_engine_client()->rollback_call_count());
   CloseResetScreenAndWait();
 
   // Next invocation leads to simple reset, not rollback view.
@@ -491,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
   ClickResetButton();
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(2, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  EXPECT_EQ(0, update_engine_client_->rollback_call_count());
+  EXPECT_EQ(0, update_engine_client()->rollback_call_count());
   CloseResetScreenAndWait();
 
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
@@ -501,23 +425,16 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
   ClickResetButton();
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(2, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  EXPECT_EQ(1, update_engine_client_->rollback_call_count());
-}
-
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
-                       PRE_ErrorOnRollbackRequested) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
+  EXPECT_EQ(1, update_engine_client()->rollback_call_count());
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
                        ErrorOnRollbackRequested) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
-  EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  EXPECT_EQ(0, update_engine_client_->rollback_call_count());
+  EXPECT_EQ(0, update_engine_client()->rollback_call_count());
   test::OobeJS().ExpectHasNoClass("revert-promise-view", {kResetScreen});
 
   InvokeRollbackOption();
@@ -526,12 +443,12 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  EXPECT_EQ(1, update_engine_client_->rollback_call_count());
+  EXPECT_EQ(1, update_engine_client()->rollback_call_count());
   test::OobeJS().ExpectHasClass("revert-promise-view", {kResetScreen});
 
   update_engine::StatusResult error_update_status;
   error_update_status.set_current_operation(update_engine::Operation::ERROR);
-  update_engine_client_->NotifyObserversThatStatusChanged(error_update_status);
+  update_engine_client()->NotifyObserversThatStatusChanged(error_update_status);
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
 
   // Clicking 'ok' on the error screen will either show the previous OOBE screen
@@ -542,22 +459,15 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
   OobeWindowVisibilityWaiter(false).Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
-                       PRE_RevertAfterCancel) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-}
-
 // TODO(http://crbug.com/1025926): Times out on MSAN buildbots.
 // TODO(http://crbug.com/990362): Flaky failures.
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
                        DISABLED_RevertAfterCancel) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
-  EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  EXPECT_EQ(0, update_engine_client_->rollback_call_count());
+  EXPECT_EQ(0, update_engine_client()->rollback_call_count());
 
   test::OobeJS().ExpectVisible(kResetScreen);
   test::OobeJS().ExpectHasNoClass("rollback-proposal-view", {kResetScreen});
@@ -591,7 +501,6 @@ IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
 IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
                        ResetFromSigninWithFirmwareUpdate) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
-  EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
 
   ASSERT_TRUE(HasPendingTpmFirmwareUpdateCheck());
   FinishPendingTpmFirmwareUpdateCheck({tpm_firmware_update::Mode::kPowerwash});
@@ -619,16 +528,9 @@ IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
             FakeSessionManagerClient::Get()->last_tpm_firmware_update_mode());
 }
 
-IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
-                       PRE_TpmFirmwareUpdateAvailableButNotSelected) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-}
-
-IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
+IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdateRequested,
                        TpmFirmwareUpdateAvailableButNotSelected) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
-  EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
 
   ASSERT_TRUE(HasPendingTpmFirmwareUpdateCheck());
   FinishPendingTpmFirmwareUpdateCheck({tpm_firmware_update::Mode::kPowerwash});
@@ -646,17 +548,20 @@ IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
   EXPECT_FALSE(HasPendingTpmFirmwareUpdateCheck());
 }
 
-IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
-                       PRE_ResetWithTpmCleanUp) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-  prefs->SetInteger(prefs::kFactoryResetTPMFirmwareUpdateMode,
-                    static_cast<int>(tpm_firmware_update::Mode::kCleanup));
-}
+class ResetTestWithTpmFirmwareUpdateCleanup
+    : public ResetTestWithTpmFirmwareUpdate {
+ public:
+  void SetUpLocalState() override {
+    PrefService* prefs = g_browser_process->local_state();
+    prefs->SetBoolean(prefs::kFactoryResetRequested, true);
+    prefs->SetInteger(prefs::kFactoryResetTPMFirmwareUpdateMode,
+                      static_cast<int>(tpm_firmware_update::Mode::kCleanup));
+  }
+};
 
-IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate, ResetWithTpmCleanUp) {
+IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdateCleanup,
+                       ResetWithTpmCleanUp) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
-  EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
 
   EXPECT_FALSE(HasPendingTpmFirmwareUpdateCheck());
   test::OobeJS()
@@ -680,19 +585,21 @@ IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate, ResetWithTpmCleanUp) {
             FakeSessionManagerClient::Get()->last_tpm_firmware_update_mode());
 }
 
-IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
-                       PRE_ResetWithTpmUpdatePreservingDeviceState) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-  prefs->SetInteger(
-      prefs::kFactoryResetTPMFirmwareUpdateMode,
-      static_cast<int>(tpm_firmware_update::Mode::kPreserveDeviceState));
-}
+class ResetTestWithTpmFirmwareUpdatePreserve
+    : public ResetTestWithTpmFirmwareUpdate {
+ public:
+  void SetUpLocalState() override {
+    PrefService* prefs = g_browser_process->local_state();
+    prefs->SetBoolean(prefs::kFactoryResetRequested, true);
+    prefs->SetInteger(
+        prefs::kFactoryResetTPMFirmwareUpdateMode,
+        static_cast<int>(tpm_firmware_update::Mode::kPreserveDeviceState));
+  }
+};
 
-IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
+IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdatePreserve,
                        ResetWithTpmUpdatePreservingDeviceState) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
-  EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
 
   EXPECT_FALSE(HasPendingTpmFirmwareUpdateCheck());
   test::OobeJS()
@@ -718,21 +625,23 @@ IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
             FakeSessionManagerClient::Get()->last_tpm_firmware_update_mode());
 }
 
-IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
-                       PRE_TpmFirmwareUpdateRequestedBeforeShowNotEditable) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-  prefs->SetInteger(prefs::kFactoryResetTPMFirmwareUpdateMode,
-                    static_cast<int>(tpm_firmware_update::Mode::kPowerwash));
-}
+class ResetTestWithTpmFirmwareUpdatePowerwash
+    : public ResetTestWithTpmFirmwareUpdate {
+ public:
+  void SetUpLocalState() override {
+    PrefService* prefs = g_browser_process->local_state();
+    prefs->SetBoolean(prefs::kFactoryResetRequested, true);
+    prefs->SetInteger(prefs::kFactoryResetTPMFirmwareUpdateMode,
+                      static_cast<int>(tpm_firmware_update::Mode::kPowerwash));
+  }
+};
 
 // Tests that clicking TPM firmware update checkbox is no-op if the update was
 // requested before the Reset screen was shown (e.g. on previous boot in
 // settings, or by policy).
-IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
+IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdatePowerwash,
                        TpmFirmwareUpdateRequestedBeforeShowNotEditable) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
-  EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
 
   EXPECT_FALSE(HasPendingTpmFirmwareUpdateCheck());
   test::OobeJS()
@@ -760,18 +669,9 @@ IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
             FakeSessionManagerClient::Get()->last_tpm_firmware_update_mode());
 }
 
-IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
-                       PRE_AvailableTpmUpdateModesChangeDuringRequest) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-  prefs->SetInteger(prefs::kFactoryResetTPMFirmwareUpdateMode,
-                    static_cast<int>(tpm_firmware_update::Mode::kPowerwash));
-}
-
-IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
+IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdatePowerwash,
                        AvailableTpmUpdateModesChangeDuringRequest) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
-  EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
 
   EXPECT_FALSE(HasPendingTpmFirmwareUpdateCheck());
   test::OobeJS()

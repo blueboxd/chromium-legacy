@@ -64,7 +64,7 @@ class MockRTCPeerConnectionHandlerClient
   MOCK_METHOD1(DidAddRemoteDataChannel,
                void(scoped_refptr<webrtc::DataChannelInterface>));
   MOCK_METHOD1(DidNoteInterestingUsage, void(int));
-  MOCK_METHOD0(ReleasePeerConnectionHandler, void());
+  MOCK_METHOD0(UnregisterPeerConnectionHandler, void());
 
   // Move-only arguments do not play nicely with MOCK, the workaround is to
   // EXPECT_CALL with these instead.

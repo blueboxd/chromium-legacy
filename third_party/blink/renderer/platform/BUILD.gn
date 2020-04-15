@@ -1286,7 +1286,6 @@ jumbo_component("platform") {
     "peerconnection/rtc_offer_options_platform.h",
     "peerconnection/rtc_peer_connection_handler_client.cc",
     "peerconnection/rtc_peer_connection_handler_client.h",
-    "peerconnection/rtc_peer_connection_handler_platform.h",
     "peerconnection/rtc_rtp_receiver_platform.cc",
     "peerconnection/rtc_rtp_receiver_platform.h",
     "peerconnection/rtc_rtp_sender_platform.cc",

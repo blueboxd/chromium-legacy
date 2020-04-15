@@ -158,6 +158,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "credential_manager_unittest.mm",
+    "ios_chrome_password_manager_client_unittest.mm",
     "js_credential_manager_unittest.mm",
     "password_controller_js_unittest.mm",
     "password_controller_unittest.mm",

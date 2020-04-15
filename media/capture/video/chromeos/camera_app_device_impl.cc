@@ -107,16 +107,15 @@ void CameraAppDeviceImpl::ConsumeReprocessOptions(
   std::move(consumption_callback).Run(std::move(result_task_queue));
 }
 
-void CameraAppDeviceImpl::GetFpsRange(const gfx::Size& resolution,
-                                      GetFpsRangeCallback callback) {
+base::Optional<gfx::Range> CameraAppDeviceImpl::GetFpsRange(
+    const gfx::Size& resolution) {
   base::AutoLock lock(fps_ranges_lock_);
 
   auto it = resolution_fps_range_map_.find(resolution);
   if (it == resolution_fps_range_map_.end()) {
-    std::move(callback).Run({});
-    return;
+    return {};
   }
-  std::move(callback).Run(it->second);
+  return it->second;
 }
 
 cros::mojom::CaptureIntent CameraAppDeviceImpl::GetCaptureIntent() {
@@ -142,19 +141,6 @@ void CameraAppDeviceImpl::OnShutterDone() {
   for (auto& observer : camera_event_observers_) {
     observer.second->OnShutterDone();
   }
-}
-
-void CameraAppDeviceImpl::SetReprocessResult(
-    SetReprocessOptionCallback callback,
-    const int32_t status,
-    media::mojom::BlobPtr blob) {
-  auto callback_on_mojo_thread = base::BindOnce(
-      [](const int32_t status, media::mojom::BlobPtr blob,
-         SetReprocessOptionCallback callback) {
-        std::move(callback).Run(status, std::move(blob));
-      },
-      status, std::move(blob), std::move(callback));
-  task_runner_->PostTask(FROM_HERE, std::move(callback_on_mojo_thread));
 }
 
 void CameraAppDeviceImpl::GetCameraInfo(GetCameraInfoCallback callback) {
@@ -292,6 +278,19 @@ void CameraAppDeviceImpl::DisableEeNr(ReprocessTask* task) {
       cros::mojom::AndroidNoiseReductionMode::ANDROID_NOISE_REDUCTION_MODE_OFF);
   task->extra_metadata.push_back(std::move(ee_entry));
   task->extra_metadata.push_back(std::move(nr_entry));
+}
+
+void CameraAppDeviceImpl::SetReprocessResult(
+    SetReprocessOptionCallback callback,
+    const int32_t status,
+    media::mojom::BlobPtr blob) {
+  auto callback_on_mojo_thread = base::BindOnce(
+      [](const int32_t status, media::mojom::BlobPtr blob,
+         SetReprocessOptionCallback callback) {
+        std::move(callback).Run(status, std::move(blob));
+      },
+      status, std::move(blob), std::move(callback));
+  task_runner_->PostTask(FROM_HERE, std::move(callback_on_mojo_thread));
 }
 
 }  // namespace media

@@ -7,7 +7,9 @@
 #include "build/build_config.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/test/gl_image_bind_test_template.h"
 #include "ui/gl/test/gl_image_test_template.h"
+#include "ui/gl/test/gl_image_zero_initialize_test_template.h"
 
 namespace gl {
 namespace {

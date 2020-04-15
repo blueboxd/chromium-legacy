@@ -398,7 +398,7 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
-  if (value_with_error.error_code != base::JSONReader::JSON_NO_ERROR) {
+  if (!value_with_error.value) {
     LOG(ERROR) << "Invalid JSON blob: " << value_with_error.error_message;
     return false;
   }

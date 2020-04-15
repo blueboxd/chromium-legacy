@@ -133,6 +133,11 @@ void DisplayLockContext::SetRequestedState(ESubtreeVisibility state) {
   // Note that we call this here since the |state_| change is a render affecting
   // state, but is tracked independently.
   NotifyRenderAffectingStateChanged();
+
+  // Since our state changed, check if we need to create a scoped force update
+  // object.
+  element_->GetDocument().GetDisplayLockDocumentState().ForceLockIfNeeded(
+      element_.Get());
 }
 
 void DisplayLockContext::AdjustElementStyle(ComputedStyle* style) const {
@@ -1007,6 +1012,13 @@ DisplayLockContext::ScopedForcedUpdate::ScopedForcedUpdate(
 DisplayLockContext::ScopedForcedUpdate::~ScopedForcedUpdate() {
   if (context_)
     context_->NotifyForcedUpdateScopeEnded();
+}
+
+DisplayLockContext::ScopedForcedUpdate&
+DisplayLockContext::ScopedForcedUpdate::operator=(ScopedForcedUpdate&& other) {
+  context_ = other.context_;
+  other.context_ = nullptr;
+  return *this;
 }
 
 }  // namespace blink

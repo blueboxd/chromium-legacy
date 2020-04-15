@@ -17,9 +17,9 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/gfx/x/x11_types.h"          // nogncheck
-#include "ui/gtk/gtk_ui_delegate.h"      // nogncheck
-#include "ui/gtk/gtk_ui_delegate_x11.h"  // nogncheck
+#include "ui/gfx/x/x11_types.h"            // nogncheck
+#include "ui/gtk/gtk_ui_delegate.h"        // nogncheck
+#include "ui/gtk/x/gtk_ui_delegate_x11.h"  // nogncheck
 #endif
 
 namespace {

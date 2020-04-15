@@ -65,6 +65,20 @@ Font& Font::operator=(const Font& other) {
   return *this;
 }
 
+namespace {
+
+bool FontFallbackListVersionEqual(const FontFallbackList* first,
+                                  const FontFallbackList* second) {
+  if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled())
+    return true;
+  return (first ? first->FontSelectorVersion() : 0) ==
+             (second ? second->FontSelectorVersion() : 0) &&
+         (first ? first->Generation() : 0) ==
+             (second ? second->Generation() : 0);
+}
+
+}  // namespace
+
 bool Font::operator==(const Font& other) const {
   FontSelector* first =
       font_fallback_list_ ? font_fallback_list_->GetFontSelector() : nullptr;
@@ -73,15 +87,8 @@ bool Font::operator==(const Font& other) const {
                              : nullptr;
 
   return first == second && font_description_ == other.font_description_ &&
-         (font_fallback_list_
-              ? font_fallback_list_->FontSelectorVersion()
-              : 0) == (other.font_fallback_list_
-                           ? other.font_fallback_list_->FontSelectorVersion()
-                           : 0) &&
-         (font_fallback_list_ ? font_fallback_list_->Generation() : 0) ==
-             (other.font_fallback_list_
-                  ? other.font_fallback_list_->Generation()
-                  : 0);
+         FontFallbackListVersionEqual(font_fallback_list_.get(),
+                                      other.font_fallback_list_.get());
 }
 
 namespace {

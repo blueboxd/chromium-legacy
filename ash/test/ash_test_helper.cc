@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "ash/app_list/test/app_list_test_helper.h"
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/test/test_assistant_service.h"
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_ash.h"

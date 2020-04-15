@@ -647,6 +647,14 @@ ci.android_fyi_builder(
 )
 
 ci.android_fyi_builder(
+    name = 'android-weblayer-pie-x86-fyi-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'weblayer',
+        short_name = 'p-x86-rel',
+    ),
+)
+
+ci.android_fyi_builder(
     name = 'Android WebView P Blink-CORS FYI (rel)',
     console_view_entry = ci.console_view_entry(
         category = 'webview',
@@ -2991,6 +2999,9 @@ ci.mac_ios_builder(
         short_name = 'dev',
     ),
     executable = 'recipe:chromium',
+    # We don't have necessary capacity to run this configuration in CQ, but it
+    # is part of the main waterfall
+    main_console_view = 'main',
 )
 
 ci.mac_ios_builder(
@@ -2999,6 +3010,9 @@ ci.mac_ios_builder(
         category = 'ios|default',
         short_name = 'non',
     ),
+    # We don't have necessary capacity to run this configuration in CQ, but it
+    # is part of the main waterfall
+    main_console_view = 'main',
 )
 
 

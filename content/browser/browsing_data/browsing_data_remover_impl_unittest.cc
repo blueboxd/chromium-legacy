@@ -1518,9 +1518,8 @@ TEST_F(BrowsingDataRemoverImplTest, ClearsTrustTokens) {
 
   EXPECT_CALL(context, ClearTrustTokenData(_, _)).WillOnce(RunOnceClosure<1>());
 
-  // Trust Tokens storage is cleared whenever cookies are cleared.
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
-                                BrowsingDataRemover::DATA_TYPE_COOKIES,
+                                BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
                                 /*include_protected_origins=*/false);
 }
 
@@ -1528,10 +1527,10 @@ TEST_F(BrowsingDataRemoverImplTest, PreservesTrustTokens) {
   StrictMock<MockNetworkContext> context;
   set_network_context_override(&context);
 
-  // When cookies aren't cleared, Trust Tokens state shouldn't be.
+  // When DATA_TYPE_TRUST_TOKENS isn't cleared, Trust Tokens state shouldn't be.
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
-      BrowsingDataRemover::DATA_TYPE_CACHE,  // arbitrary non-cookie type
+      BrowsingDataRemover::DATA_TYPE_CACHE,  // arbitrary non-Trust Tokens type
       /*include_protected_origins=*/false);
 
   // (The strict mock will fail the test if its mocked method is called.)
@@ -1557,10 +1556,8 @@ TEST_F(BrowsingDataRemoverImplTest, ClearsTrustTokensForSite) {
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
   builder->AddRegisterableDomain("host1.com");
 
-  // Trust Tokens storage is cleared whenever cookies are cleared: when clearing
-  // cookies for a site, we should clear Trust Tokens state for the site.
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
-                              BrowsingDataRemover::DATA_TYPE_COOKIES,
+                              BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
                               std::move(builder));
 }
 
@@ -1584,15 +1581,12 @@ TEST_F(BrowsingDataRemoverImplTest, ClearsTrustTokensForSiteDespiteTimeRange) {
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
   builder->AddRegisterableDomain("host1.com");
 
-  // Trust Tokens storage is cleared whenever cookies are cleared: when clearing
-  // cookies for a site, we should clear Trust Tokens state for the site.
-  //
   // Since Trust Tokens data is not associated with particular timestamps, we
   // should observe the same clearing behavior with a non-default time range as
   // with the default time range.
   BlockUntilOriginDataRemoved(
       base::Time(), base::Time() + base::TimeDelta::FromSeconds(1),
-      BrowsingDataRemover::DATA_TYPE_COOKIES, std::move(builder));
+      BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS, std::move(builder));
 }
 
 }  // namespace content

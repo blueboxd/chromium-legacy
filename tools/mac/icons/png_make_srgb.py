@@ -10,6 +10,7 @@
 # conflict with the sRGB. Obviously, only use this if it's desirable for the
 # png file to be treated as sRGB.
 
+import binascii
 import struct
 import sys
 
@@ -51,8 +52,23 @@ def make_srgb(path):
         remainder = file.read()
         file.seek(after_ihdr)
 
-        # Length, type, data, CRC
-        file.write(b'\x00\x00\x00\x01sRGB\x00\xae\xce\x1c\xe9')
+        # Note that a value of 0 is a perceptual rendering intent (e.g.
+        # photographs) while a value of 1 is a relative colorimetric rendering
+        # intent (e.g. icons). Every macOS icon that has an 'sRGB' chunk uses 0
+        # so that is what is used here. Please forgive us, UX.
+        #
+        # Reference:
+        #   http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html#C.sRGB
+        srgb_chunk_type = struct.pack('>4s', b'sRGB')
+        srgb_chunk_data = struct.pack('>b', 0)  # Perceptual
+        srgb_chunk_length = struct.pack('>I', len(srgb_chunk_data))
+        srgb_chunk_crc = struct.pack(
+            '>I',
+            binascii.crc32(srgb_chunk_type + srgb_chunk_data) & 0xffffffff)
+        srgb_chunk = (
+            srgb_chunk_length + srgb_chunk_type + srgb_chunk_data +
+            srgb_chunk_crc)
+        file.write(srgb_chunk)
 
         file.write(remainder)
 

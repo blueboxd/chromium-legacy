@@ -943,6 +943,22 @@ void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttached(Node* node) {
   // we need an AXLayoutObject, because it was reparented to a location outside
   // of a canvas.
   AXObject* obj = Get(node);
+
+  // Process any relation attributes that can affect ax objects already created.
+
+  // Force computation of aria-owns, so that original parents that already
+  // computed their children get the aria-owned children removed.
+  Element* element = DynamicTo<Element>(node);
+  if (!element)
+    return;
+
+  if (element->FastHasAttribute(html_names::kAriaOwnsAttr) ||
+      element->HasExplicitlySetAttrAssociatedElements(
+          html_names::kAriaOwnsAttr)) {
+    HandleAttributeChanged(html_names::kAriaOwnsAttr, element);
+  }
+
+  // Process cases where relationships are pointing to this node.
   MaybeNewRelationTarget(node, obj);
 }
 

@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/data_channel_interface.h"
@@ -1063,6 +1064,7 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     : initialize_called_(false),
       client_(client),
       is_closed_(false),
+      is_unregistered_(false),
       dependency_factory_(dependency_factory),
       track_adapter_map_(
           base::MakeRefCounted<blink::WebRtcMediaStreamTrackAdapterMap>(
@@ -1078,7 +1080,20 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
   GetPeerConnectionHandlers()->insert(this);
 }
 
+// Constructor to be used for creating mocks only.
+RTCPeerConnectionHandler::RTCPeerConnectionHandler(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : client_(nullptr),
+      dependency_factory_(nullptr),
+      task_runner_(std::move(task_runner)) {}
+
 RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
+  if (!is_unregistered_) {
+    StopAndUnregister();
+  }
+}
+
+void RTCPeerConnectionHandler::StopAndUnregister() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   Stop();
@@ -1089,6 +1104,10 @@ RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
 
   UMA_HISTOGRAM_COUNTS_10000("WebRTC.NumDataChannelsPerPeerConnection",
                              num_data_channels_created_);
+  // Clear the pointer to client_ so that it does not interfere with
+  // garbage collection.
+  client_ = nullptr;
+  is_unregistered_ = true;
 }
 
 bool RTCPeerConnectionHandler::Initialize(
@@ -2190,6 +2209,10 @@ void RTCPeerConnectionHandler::OnSignalingChange(
       peer_connection_tracker_->TrackSignalingStateChange(this, stable_state);
     if (!is_closed_)
       client_->DidChangeSignalingState(stable_state);
+    // The callback may have closed the PC. If so, do not continue.
+    if (is_closed_ || !client_) {
+      return;
+    }
   }
   previous_signaling_state_ = new_state;
   if (peer_connection_tracker_)
@@ -2231,16 +2254,16 @@ void RTCPeerConnectionHandler::OnIceConnectionChange(
 }
 
 void RTCPeerConnectionHandler::TrackIceConnectionStateChange(
-    RTCPeerConnectionHandlerPlatform::IceConnectionStateVersion version,
+    RTCPeerConnectionHandler::IceConnectionStateVersion version,
     webrtc::PeerConnectionInterface::IceConnectionState state) {
   if (!peer_connection_tracker_)
     return;
   switch (version) {
-    case RTCPeerConnectionHandlerPlatform::IceConnectionStateVersion::kLegacy:
+    case RTCPeerConnectionHandler::IceConnectionStateVersion::kLegacy:
       peer_connection_tracker_->TrackLegacyIceConnectionStateChange(this,
                                                                     state);
       break;
-    case RTCPeerConnectionHandlerPlatform::IceConnectionStateVersion::kDefault:
+    case RTCPeerConnectionHandler::IceConnectionStateVersion::kDefault:
       peer_connection_tracker_->TrackIceConnectionStateChange(this, state);
       break;
   }

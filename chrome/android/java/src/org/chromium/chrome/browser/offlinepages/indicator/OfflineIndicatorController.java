@@ -86,8 +86,12 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
      * Initializes the singleton once.
      */
     public static void initialize() {
-        // No need to create the singleton if the feature is not enabled.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_INDICATOR)) return;
+        // No need to create the singleton if the feature is not enabled. Also, if V2 is enabled,
+        // this version will be disabled.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_INDICATOR)
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_INDICATOR_V2)) {
+            return;
+        }
 
         if (sInstance == null) {
             sInstance = new OfflineIndicatorController();

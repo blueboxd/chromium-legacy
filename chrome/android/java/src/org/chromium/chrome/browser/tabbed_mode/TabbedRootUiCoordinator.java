@@ -4,14 +4,9 @@
 
 package org.chromium.chrome.browser.tabbed_mode;
 
-import android.graphics.drawable.Drawable;
-import android.os.Handler;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -33,7 +28,7 @@ import org.chromium.chrome.browser.language.LanguageAskPrompt;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
-import org.chromium.chrome.browser.offlinepages.indicator.ConnectivityDetector;
+import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorControllerV2;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
@@ -57,15 +52,13 @@ import org.chromium.ui.base.WindowAndroid;
 public class TabbedRootUiCoordinator extends RootUiCoordinator implements NativeInitObserver {
     private static boolean sEnableStatusIndicatorForTests;
 
-    private static final int STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS = 2000;
-
     private final ObservableSupplierImpl<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier;
     private TabbedSystemUiCoordinator mSystemUiCoordinator;
     private @Nullable EmptyBackgroundViewWrapper mEmptyBackgroundViewWrapper;
 
     private StatusIndicatorCoordinator mStatusIndicatorCoordinator;
     private StatusIndicatorCoordinator.StatusIndicatorObserver mStatusIndicatorObserver;
-    private ConnectivityDetector mConnectivityDetector;
+    private OfflineIndicatorControllerV2 mOfflineIndicatorController;
     private @Nullable ToolbarButtonInProductHelpController mToolbarButtonInProductHelpController;
     private boolean mIntentWithEffect;
 
@@ -93,6 +86,10 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     public void destroy() {
         if (mSystemUiCoordinator != null) mSystemUiCoordinator.destroy();
         if (mEmptyBackgroundViewWrapper != null) mEmptyBackgroundViewWrapper.destroy();
+
+        if (mOfflineIndicatorController != null) {
+            mOfflineIndicatorController.destroy();
+        }
 
         if (mStatusIndicatorCoordinator != null) {
             mStatusIndicatorCoordinator.removeObserver(mStatusIndicatorObserver);
@@ -231,44 +228,13 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         mStatusIndicatorCoordinator.addObserver(mStatusIndicatorObserver);
         mStatusIndicatorCoordinator.addObserver(mActivity.getStatusBarColorController());
 
-        // Don't listen to the ConnectivityDetector if the feature is disabled.
+        // Don't initialize the offline indicator controller if the feature is disabled.
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_INDICATOR_V2)) {
             return;
         }
-        // TODO(sinansahin): Move to a separate class in /offlinepages/indicator.
-        mConnectivityDetector = new ConnectivityDetector((state) -> {
-            final boolean offline = state != ConnectivityDetector.ConnectionState.VALIDATED;
-            if (offline) {
-                final int backgroundColor = ApiCompatibilityUtils.getColor(
-                        mActivity.getResources(), R.color.offline_indicator_offline_color);
-                final int textColor = ApiCompatibilityUtils.getColor(
-                        mActivity.getResources(), R.color.default_text_color_light);
-                final Drawable statusIcon = VectorDrawableCompat.create(mActivity.getResources(),
-                        R.drawable.ic_cloud_offline_24dp, mActivity.getTheme());
-                final int iconTint = ApiCompatibilityUtils.getColor(
-                        mActivity.getResources(), R.color.default_icon_color_light);
-                mStatusIndicatorCoordinator.show(
-                        mActivity.getString(R.string.offline_indicator_v2_offline_text), statusIcon,
-                        backgroundColor, textColor, iconTint);
-            } else {
-                final int backgroundColor = ApiCompatibilityUtils.getColor(
-                        mActivity.getResources(), R.color.offline_indicator_back_online_color);
-                final int textColor = ApiCompatibilityUtils.getColor(
-                        mActivity.getResources(), R.color.default_text_color_inverse);
-                final Drawable statusIcon = VectorDrawableCompat.create(
-                        mActivity.getResources(), R.drawable.ic_globe_24dp, mActivity.getTheme());
-                final int iconTint = ApiCompatibilityUtils.getColor(
-                        mActivity.getResources(), R.color.default_icon_color_inverse);
-                Runnable hide = () -> {
-                    final Handler handler = new Handler();
-                    handler.postDelayed(() -> mStatusIndicatorCoordinator.hide(),
-                            STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS);
-                };
-                mStatusIndicatorCoordinator.updateContent(
-                        mActivity.getString(R.string.offline_indicator_v2_back_online_text),
-                        statusIcon, backgroundColor, textColor, iconTint, hide);
-            }
-        });
+
+        mOfflineIndicatorController =
+                new OfflineIndicatorControllerV2(mActivity, mStatusIndicatorCoordinator);
     }
 
     @VisibleForTesting

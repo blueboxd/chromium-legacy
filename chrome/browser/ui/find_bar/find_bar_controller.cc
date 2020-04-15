@@ -51,27 +51,37 @@ void FindBarController::Show(bool find_next, bool forward_direction) {
   find_bar_->SetFocusAndSelection();
 
   base::string16 find_text;
-  if (!find_next && !has_user_modified_text_) {
-    base::string16 selected_text = GetSelectedText();
-    if (selected_text.length() <= 250)
-      find_text = selected_text;
-  }
 
 #if defined(OS_MACOSX)
-  // We always want to search for the current contents of the find bar on
-  // OS X. For regular profile it's always the current find pboard. For
-  // Incognito window it's the newest value of the find pboard content and
-  // user-typed text.
-  find_text = find_bar_->GetFindText();
+  if (find_next) {
+    // For macOS, we always want to search for the current contents of the find
+    // bar on OS X, rather than the behavior we'd get with empty find_text
+    // (see FindBarState::GetSearchPrepopulateText).
+    find_text = find_bar_->GetFindText();
+  }
 #endif
 
-  if (!find_text.empty() || find_next) {
-    // Don't update the local input if we're using the global pasteboard.
-    if (!find_bar_->HasGlobalFindPasteboard())
+  if (!find_next && !has_user_modified_text_) {
+    base::string16 selected_text = GetSelectedText();
+    auto selected_length = selected_text.length();
+    if (selected_length > 0 && selected_length <= 250) {
+      find_text = selected_text;
       find_bar_->SetFindTextAndSelectedRange(find_text,
                                              gfx::Range(0, find_text.length()));
-    find_tab_helper->StartFinding(find_text, forward_direction, false);
+      if (web_contents_) {
+        // Collapse the selection to its start, so we can run a find_next and
+        // make it find the selection. This is a no-op in terms of what ends
+        // up selected, but initializes the rest of the find machinery (like
+        // showing how many matches there are in the document).
+        web_contents_->AdjustSelectionByCharacterOffset(0, -selected_length,
+                                                        false);
+        find_next = true;
+      }
+    }
   }
+
+  if (find_next)
+    find_tab_helper->StartFinding(find_text, forward_direction, false);
 }
 
 void FindBarController::EndFindSession(

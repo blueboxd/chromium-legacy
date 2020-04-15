@@ -33,10 +33,12 @@
 #include "third_party/blink/renderer/core/layout/layout_ruby_base.h"
 #include "third_party/blink/renderer/core/layout/layout_ruby_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_run.h"
 
 namespace blink {
 
-LayoutRubyRun::LayoutRubyRun() : LayoutBlockFlow(nullptr) {
+LayoutRubyRun::LayoutRubyRun(Element* element) : LayoutBlockFlow(nullptr) {
+  DCHECK(!element);
   SetInline(true);
   SetIsAtomicInlineLevel(true);
 }
@@ -103,7 +105,7 @@ void LayoutRubyRun::AddChild(LayoutObject* child, LayoutObject* before_child) {
       DCHECK_EQ(before_child->Parent(), this);
       LayoutObject* ruby = Parent();
       DCHECK(ruby->IsRuby());
-      LayoutBlock* new_run = StaticCreateRubyRun(ruby);
+      LayoutBlock* new_run = StaticCreateRubyRun(ruby, *ContainingBlock());
       ruby->AddChild(new_run, NextSibling());
       // Add the new ruby text and move the old one to the new run
       // Note: Doing it in this order and not using LayoutRubyRun's methods,
@@ -117,7 +119,7 @@ void LayoutRubyRun::AddChild(LayoutObject* child, LayoutObject* before_child) {
       // In this case we need insert a new run before the current one and split
       // the base.
       LayoutObject* ruby = Parent();
-      LayoutRubyRun* new_run = StaticCreateRubyRun(ruby);
+      LayoutRubyRun* new_run = StaticCreateRubyRun(ruby, *ContainingBlock());
       ruby->AddChild(new_run, this);
       new_run->AddChild(child);
 
@@ -192,10 +194,17 @@ LayoutRubyBase* LayoutRubyRun::CreateRubyBase() const {
 }
 
 LayoutRubyRun* LayoutRubyRun::StaticCreateRubyRun(
-    const LayoutObject* parent_ruby) {
+    const LayoutObject* parent_ruby,
+    const LayoutBlock& containing_block) {
   DCHECK(parent_ruby);
   DCHECK(parent_ruby->IsRuby());
-  LayoutRubyRun* rr = new LayoutRubyRun();
+  LayoutRubyRun* rr;
+  if (RuntimeEnabledFeatures::LayoutNGRubyEnabled() &&
+      containing_block.IsLayoutNGObject()) {
+    rr = new LayoutNGRubyRun();
+  } else {
+    rr = new LayoutRubyRun(nullptr);
+  }
   rr->SetDocumentForAnonymous(&parent_ruby->GetDocument());
   scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent_ruby->StyleRef(),

@@ -295,12 +295,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 <translation id="1427655258943162134">Adresse oder URL des Proxyservers</translation>
 <translation id="1435659902881071157">Netzwerkkonfiguration auf Geräteebene</translation>
 <translation id="1438739959477268107">Standardeinstellung für die Schlüsselgenerierung</translation>
-<translation id="1455804070656338445">Mit dieser Richtlinie wird die URL zur Passwortänderung konfiguriert (nur HTTP- und HTTPS-Schemas). Nutzer, in deren Browser eine Warnung angezeigt wurde, werden vom Passwortschutzdienst an diese URL weitergeleitet, damit sie ihr Passwort ändern können.
-      Ihre Passwortänderungsseite muss den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Fingerabdrücke zur Autorisierung in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
-
-      Wenn diese Einstellung aktiviert ist, leitet der Passwortschutzdienst Nutzer, in deren Browser eine Warnung angezeigt wurde, an diese URL weiter, damit sie ihr Passwort ändern können.
-      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, leitet der Passwortschutzdienst Nutzer an https://myaccount.google.com weiter, damit sie ihr Passwort ändern können.
-      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />-Clients):</translation>
 <translation id="1464848559468748897">Steuert das Nutzerverhalten in einer Sitzung mit mehreren Profilen auf Geräten mit <ph name="PRODUCT_OS_NAME" />
 
@@ -593,12 +587,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Ist die Richtlinie auf "false" festgelegt, ist das Senden solcher Berichte deaktiviert.
 
       Ist die Richtlinie nicht konfiguriert, ist das Senden solcher Berichte auf nicht verwalteten Geräten deaktiviert und auf verwalteten Geräten aktiviert.</translation>
-<translation id="1907431809333268751">Hiermit wird die Liste der URLs für die Unternehmensanmeldung konfiguriert (nur HTTP- und HTTPS-Schemas). Der Fingerabdruck für die Autorisierung wird unter diesen URLs registriert und für die Prüfung der Wiederverwendung von Passwörtern genutzt.
-      Ihre Anmeldeseiten müssen den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Fingerabdrücke zur Autorisierung in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
-
-      Wenn diese Einstellung aktiviert ist, erfasst der Passwortschutzdienst den Fingerabdruck zur Autorisierung auf diesen URLs, der dann zur Prüfung der Wiederverwendung von Passwörtern genutzt wird.
-      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, erfasst der Passwortschutzdienst den Fingerabdruck zur Autorisierung nur auf https://accounts.google.com.
-      Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
 <translation id="1910704279188129272">Mit dieser Richtlinie können Sie Nutzungsbeschränkungen für Apps hinzufügen.
         Nutzungsbeschränkungen können für die unter <ph name="PRODUCT_OS_NAME" /> installierten Apps für den jeweiligen Nutzer angewendet werden.
         Die Beschränkungen sollten in die |app_limits|-Liste übernommen werden. Pro App ist nur ein Eintrag zulässig. Für Apps außerhalb der Liste gelten keine Beschränkungen.
@@ -3965,13 +3953,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Wenn "U2F_EXTENDED" ausgewählt ist, sind durch die integrierte Hardware die U2F-Funktionen plus einige Erweiterungen zur individuellen Bestätigung verfügbar.</translation>
 <translation id="7003334574344702284">Diese Richtlinie erzwingt, sofern aktiv, den Import von gespeicherten Passwörtern aus dem vorherigen Standardbrowser. Bei einer Aktivierung wirkt sich die Richtlinie auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import der gespeicherten Passwörter. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="7003746348783715221">Einstellungen für <ph name="PRODUCT_NAME" /></translation>
-<translation id="7007671350884342624">Konfiguriert das Verzeichnis, das von <ph name="PRODUCT_NAME" /> zur Speicherung von Nutzerdaten verwendet wird.
-
-Wenn Sie diese Richtlinie konfigurieren, wird das angegebene Verzeichnis auch dann von <ph name="PRODUCT_NAME" /> verwendet, wenn der Nutzer die Markierung "--user-data-dir" angibt. Um Datenverluste oder andere unerwartete Fehler zu vermeiden, darf diese Richtlinie nicht auf das Stammverzeichnis eines Datenträgers oder auf ein Verzeichnis, das für andere Zwecke verwendet wird, festgelegt werden, da <ph name="PRODUCT_NAME" /> die entsprechenden Inhalte verwaltet.
-
-Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-finden Sie eine Liste mit Variablen, die verwendet werden können.
-
-Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad verwendet und der Nutzer kann ihn mit der Befehlszeilenmarkierung "--user-data-dir" ändern.</translation>
 <translation id="7008308728445338159">DNS-Abfangprüfungen aktiviert</translation>
 <translation id="7027785306666625591">Hiermit wird die Energieverwaltung in <ph name="PRODUCT_OS_NAME" /> konfiguriert.
 
@@ -4875,7 +4856,6 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 <translation id="8424255554404582727">Standarddrehung des Bildschirms festlegen, die bei jedem Neustart erneut angewendet wird</translation>
 <translation id="8426231401662877819">Bildschirm um 90 Grad im Uhrzeigersinn drehen</translation>
 <translation id="8433186206711564395">Netzwerkeinstellungen</translation>
-<translation id="8433423491036718210">Hiermit wird die Liste der URLs für die Unternehmensanmeldung konfiguriert, für die der Passwortschutzdienst den Fingerabdruck für die Autorisierung registrieren soll.</translation>
 <translation id="8445576299806775661">Nach jedem größeren Versionsupdate erstellt Chrome für den Fall eines Notfall-Rollbacks einen Snapshot bestimmter Browserdaten des Nutzers. Falls ein Notfall-Rollback für eine Version durchgeführt wird, für die der Nutzer einen passenden Snapshot hat, werden die darin gespeicherten Daten wiederhergestellt. Hierdurch verliert der Nutzer seine Einstellungen wie beispielsweise Lesezeichen und AutoFill-Daten nicht.
 
       Ist diese Richtlinie nicht konfiguriert, wird der Standardwert "3" verwendet.

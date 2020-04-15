@@ -1564,6 +1564,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Features.DisableFeatures({ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE})
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1071080")
     public void testLongPressGestureFollowedByScrollMaintainsSelection() throws TimeoutException {
         longPressNode("intelligence");
         waitForPanelToPeek();

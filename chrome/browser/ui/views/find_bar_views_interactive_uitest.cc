@@ -619,8 +619,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_CtrlEnter) {
   observer.Wait();
 }
 
-// FindInPage on Mac doesn't use prepopulated values. Search there is global.
-#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(FindInPageTest, SelectionDuringFind) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Make sure Chrome is in the foreground, otherwise sending input
@@ -645,12 +643,14 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, SelectionDuringFind) {
   browser()->GetFindBarController()->Show();
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
-  // verify the text matches the selection
+  // Verify the text matches the selection
   EXPECT_EQ(ASCIIToUTF16("text"), GetFindBarText());
   find_in_page::FindNotificationDetails details = WaitForFindResult();
-  EXPECT_TRUE(details.number_of_matches() > 0);
+  // Verify the correct match is highlighted (the one corresponding to the
+  // text that was selected). See http://crbug.com/1043550
+  EXPECT_EQ(2, details.active_match_ordinal());
+  EXPECT_EQ(5, details.number_of_matches());
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(FindInPageTest, GlobalEscapeClosesFind) {
   ASSERT_TRUE(embedded_test_server()->Start());

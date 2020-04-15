@@ -35,6 +35,7 @@ class ChromeBrowserMainExtraPartsMetrics : public ChromeBrowserMainExtraParts,
   void PreProfileInit() override;
   void PreBrowserStart() override;
   void PostBrowserStart() override;
+  void PreMainMessageLoopRun() override;
 
  private:
 #if defined(OS_MACOSX)

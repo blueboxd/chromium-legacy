@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">За да виждате известия на заключения екран, отключете устройството и променете настройката</translation>
 <translation id="4144413954005649103">Когато кликнете с десния бутон на мишката или натиснете продължително, Асистент ви показва информация относно избраното на екрана.</translation>
 <translation id="4146833061457621061">„Play music“ („Пусни музика“)</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> се управлява от <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Езици</translation>
 <translation id="4195877955194704651">Бутон за менюто за автоматични кликвания</translation>
 <translation id="4215497585250573029">Настройки за VPN</translation>
@@ -467,6 +466,7 @@
 <translation id="6878400149835617132">Прекият път е изключен</translation>
 <translation id="6910714959251846841">Тази актуализация изисква Powerwash на устройството ви. Научете повече за най-новата актуализация на <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">Смарткартата ви не бе разпозната. Опитайте отново.</translation>
+<translation id="6945221475159498467">Избиране</translation>
 <translation id="6972754398087986839">Първи стъпки</translation>
 <translation id="6981982820502123353">Достъпност</translation>
 <translation id="698231206551913481">След като този потребител бъде премахнат, всички свързани с него файлове и локални данни ще се изтрият за постоянно.</translation>
@@ -557,6 +557,7 @@
 <translation id="8142699993796781067">Частна мрежа</translation>
 <translation id="8152092012181020186">Натиснете Ctrl + W за затваряне.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Тази настройка се управлява от администратора ви.</translation>
+<translation id="815598010540052116">Превъртане надолу</translation>
 <translation id="8167567890448493835">Използвате <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Персонализиране на езиците и въвеждането...</translation>
 <translation id="8192202700944119416">Известията са скрити.</translation>

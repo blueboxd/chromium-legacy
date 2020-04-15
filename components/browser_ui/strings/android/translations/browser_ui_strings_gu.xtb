@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">લિંક કૉપિ કરો</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">શીર્ષક</translation>
+<translation id="4259722352634471385">નેવિગેશન અવરોધિત છે: <ph name="URL" /></translation>
 <translation id="4570913071927164677">વિગતો</translation>
 <translation id="4645575059429386691">તમારા માતાપિતા દ્વારા સંચાલિત</translation>
 <translation id="4883854917563148705">મેનેજ કરવામાં આવેલા સેટિંગને રીસેટ કરી શકાતા નથી</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">ઇનપુટ સાફ કરો</translation>
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
 <translation id="8730621377337864115">થઈ ગયું</translation>
+<translation id="8959122750345127698">નેવિગેશન બિનપહોંચ યોગ્ય છે: <ph name="URL" /></translation>
 <translation id="9019902583201351841">તમારા માતાપિતા દ્વારા સંચાલિત</translation>
 </translationbundle>

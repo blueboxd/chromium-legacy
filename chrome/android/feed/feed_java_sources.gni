@@ -15,9 +15,9 @@ if (enable_feed_in_chrome) {
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/android_deps:androidx_swiperefreshlayout_swiperefreshlayout_java",
     "//third_party/android_deps:com_android_support_interpolator_java",
+    "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     "//third_party/android_deps:javax_inject_javax_inject_java",
-    "//third_party/jsr-305:jsr_305_javalib",
   ]
 
   feed_java_sources = [

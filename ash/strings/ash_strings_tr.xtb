@@ -257,7 +257,6 @@
 <translation id="4129129681837227511">Kilit ekranınızda bildirim göstermek için cihazın kilidini açarak ayarı değiştirin</translation>
 <translation id="4144413954005649103">Sağ tıkladığınızda veya uzun bastığınızda Asistan ekranda yaptığınız seçimlerle alakalı bilgiler gösterir.</translation>
 <translation id="4146833061457621061">Müzik çal</translation>
-<translation id="4149156641122542261"><ph name="DEVICE_TYPE" />, <ph name="DOMAIN" /> tarafından yönetilmektedir</translation>
 <translation id="4181841719683918333">Diller</translation>
 <translation id="4195877955194704651">Otomatik tıklamalar düğmesi</translation>
 <translation id="4215497585250573029">VPN Ayarları</translation>
@@ -468,6 +467,7 @@
 <translation id="6878400149835617132">Kısayol kapalı</translation>
 <translation id="6910714959251846841">Bu güncelleme, cihazınızda powerwash işlemi yapılmasını gerektiriyor. En yeni <ph name="SYSTEM_APP_NAME" /> güncellemesi ile ilgili daha fazla bilgi edinin.</translation>
 <translation id="6919251195245069855">Akıllı kartınız tanınamadı. Tekrar deneyin.</translation>
+<translation id="6945221475159498467">Seç</translation>
 <translation id="6972754398087986839">Başlarken</translation>
 <translation id="6981982820502123353">Erişilebilirlik</translation>
 <translation id="698231206551913481">Bu kullanıcıyla ilişkilendirilen tüm dosyalar ve yerel veriler, bu kullanıcı kaldırıldıktan sonra kalıcı olarak silinir.</translation>
@@ -558,6 +558,7 @@
 <translation id="8142699993796781067">Özel ağ</translation>
 <translation id="8152092012181020186">Kapatmak için Ctrl + W tuşlarına basın.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Bu ayar, yöneticiniz tarafından yönetilir.</translation>
+<translation id="815598010540052116">Aşağı Kaydır</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> kullanılıyor</translation>
 <translation id="8190698733819146287">Dilleri ve girişi özelleştir...</translation>
 <translation id="8192202700944119416">Bildirimler gizlendi.</translation>

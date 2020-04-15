@@ -229,7 +229,7 @@ void CookieStoreIOS::SetMetricsEnabled() {
 
 void CookieStoreIOS::SetCanonicalCookieAsync(
     std::unique_ptr<net::CanonicalCookie> cookie,
-    std::string source_scheme,
+    const GURL& source_url,
     const net::CookieOptions& options,
     SetCookiesCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -243,8 +243,7 @@ void CookieStoreIOS::SetCanonicalCookieAsync(
   // engine.
   DCHECK(!options.exclude_httponly());
 
-  bool secure_source =
-      GURL::SchemeIsCryptographic(base::ToLowerASCII(source_scheme));
+  bool secure_source = source_url.SchemeIsCryptographic();
 
   if (cookie->IsSecure() && !secure_source) {
     if (!callback.is_null())

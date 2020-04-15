@@ -263,7 +263,7 @@ const ExecutionContext* CSSParserContext::GetExecutionContext() const {
 
 void CSSParserContext::ReportLayoutAnimationsViolationIfNeeded(
     const StyleRuleKeyframe& rule) const {
-  if (!document_)
+  if (!document_ || !document_->GetExecutionContext())
     return;
   for (size_t i = 0; i < rule.Properties().PropertyCount(); ++i) {
     const CSSProperty& property = rule.Properties().PropertyAt(i).Property();

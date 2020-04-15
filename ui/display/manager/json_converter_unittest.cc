@@ -49,9 +49,8 @@ TEST(JsonConverterTest, JsonFromToDisplayLayout) {
       "}";
   base::JSONReader::ValueWithError result =
       base::JSONReader::ReadAndReturnValueWithError(data, 0);
-  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, result.error_code)
-      << result.error_message << " at " << result.error_line << ":"
-      << result.error_column;
+  ASSERT_TRUE(result.value) << result.error_message << " at "
+                            << result.error_line << ":" << result.error_column;
   EXPECT_EQ(value, result.value.value());
 
   DisplayLayout read_layout;
@@ -71,9 +70,8 @@ TEST(JsonConverterTest, OldJsonToDisplayLayout) {
       "}";
   base::JSONReader::ValueWithError result =
       base::JSONReader::ReadAndReturnValueWithError(data, 0);
-  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, result.error_code)
-      << result.error_message << " at " << result.error_line << ":"
-      << result.error_column;
+  ASSERT_TRUE(result.value) << result.error_message << " at "
+                            << result.error_line << ":" << result.error_column;
 
   DisplayLayout read_layout;
   EXPECT_TRUE(JsonToDisplayLayout(result.value.value(), &read_layout));

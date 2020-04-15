@@ -2376,11 +2376,10 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
   DCHECK(output_buffer_map_.empty());
 
   // Number of output buffers we need.
-  struct v4l2_control ctrl;
-  memset(&ctrl, 0, sizeof(ctrl));
-  ctrl.id = V4L2_CID_MIN_BUFFERS_FOR_CAPTURE;
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_G_CTRL, &ctrl);
-  output_dpb_size_ = ctrl.value;
+  auto ctrl = device_->GetCtrl(V4L2_CID_MIN_BUFFERS_FOR_CAPTURE);
+  if (!ctrl)
+    return false;
+  output_dpb_size_ = ctrl->value;
 
   // Output format setup in Initialize().
 

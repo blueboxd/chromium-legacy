@@ -39,6 +39,8 @@ KioskAutolaunchScreen::~KioskAutolaunchScreen() {
 }
 
 void KioskAutolaunchScreen::OnExit(bool confirmed) {
+  if (is_hidden())
+    return;
   exit_callback_.Run(confirmed ? Result::COMPLETED : Result::CANCELED);
 }
 

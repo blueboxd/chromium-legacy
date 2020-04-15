@@ -133,6 +133,11 @@ void SVGUseElement::RemovedFrom(ContainerNode& root_parent) {
   }
 }
 
+void SVGUseElement::DidMoveToNewDocument(Document& old_document) {
+  SVGGraphicsElement::DidMoveToNewDocument(old_document);
+  UpdateTargetReference();
+}
+
 static void TransferUseWidthAndHeightIfNeeded(
     const SVGUseElement& use,
     SVGElement& shadow_element,
@@ -190,7 +195,7 @@ void SVGUseElement::UpdateTargetReference() {
   const String& url_string = HrefString();
   element_url_ = GetDocument().CompleteURL(url_string);
   element_url_is_local_ = url_string.StartsWith('#');
-  if (!IsStructurallyExternal()) {
+  if (!IsStructurallyExternal() || !GetDocument().IsActive()) {
     ClearResource();
     return;
   }

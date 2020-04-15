@@ -338,7 +338,7 @@ TEST_F(CookieStoreIOSTest, GetAllCookies) {
       kTestCookieURLFooBar, "a=b", base::Time::Now(),
       base::nullopt /* server_time */);
   cookie_store->SetCanonicalCookieAsync(std::move(canonical_cookie),
-                                        kTestCookieURLFooBar.scheme(),
+                                        kTestCookieURLFooBar,
                                         net::CookieOptions::MakeAllInclusive(),
                                         net::CookieStore::SetCookiesCallback());
   // Check we can get the cookie.

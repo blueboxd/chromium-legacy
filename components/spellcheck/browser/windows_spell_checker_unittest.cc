@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -30,20 +31,29 @@ namespace {
 class WindowsSpellCheckerTest : public testing::Test {
  public:
   WindowsSpellCheckerTest() {
-    if (spellcheck::WindowsVersionSupportsSpellchecker()) {
-      feature_list_.InitAndEnableFeature(
-          spellcheck::kWinUseBrowserSpellChecker);
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+    // Force hybrid spellchecking to be enabled.
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
+                              spellcheck::kWinUseHybridSpellChecker},
+        /*disabled_features=*/{});
+#else
+    feature_list_.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
-      win_spell_checker_ = std::make_unique<WindowsSpellChecker>(
-          base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()}));
+    // The WindowsSpellchecker object can be created even on Windows versions
+    // that don't support platform spellchecking. However, the spellcheck
+    // factory won't be instantiated and the result returned in the
+    // CreateSpellChecker callback will be false.
+    win_spell_checker_ = std::make_unique<WindowsSpellChecker>(
+        base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()}));
 
-      win_spell_checker_->CreateSpellChecker(
-          "en-US", base::BindOnce(
-                       &WindowsSpellCheckerTest::SetLanguageCompletionCallback,
+    win_spell_checker_->CreateSpellChecker(
+        "en-US",
+        base::BindOnce(&WindowsSpellCheckerTest::SetLanguageCompletionCallback,
                        base::Unretained(this)));
 
-      RunUntilResultReceived();
-    }
+    RunUntilResultReceived();
   }
 
   void RunUntilResultReceived() {
@@ -82,6 +92,17 @@ class WindowsSpellCheckerTest : public testing::Test {
   }
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
+  void RetrieveSpellcheckLanguagesCompletionCallback(
+      const std::vector<std::string>& spellcheck_languages) {
+    callback_finished_ = true;
+    spellcheck_languages_ = spellcheck_languages;
+    DVLOG(2) << "RetrieveSpellcheckLanguagesCompletionCallback: Dictionary "
+                "found for following language tags: "
+             << base::JoinString(spellcheck_languages_, ", ");
+    if (quit_)
+      std::move(quit_).Run();
+  }
+
  protected:
   std::unique_ptr<WindowsSpellChecker> win_spell_checker_;
 
@@ -94,17 +115,15 @@ class WindowsSpellCheckerTest : public testing::Test {
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
   spellcheck::PerLanguageSuggestions per_language_suggestions_;
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  std::vector<std::string> spellcheck_languages_;
 
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI};
 };
 
 TEST_F(WindowsSpellCheckerTest, RequestTextCheck) {
-  if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
-    return;
-  }
-
-  ASSERT_TRUE(set_language_result_);
+  ASSERT_EQ(set_language_result_,
+            spellcheck::WindowsVersionSupportsSpellchecker());
 
   static const struct {
     const char* text_to_check;
@@ -131,6 +150,13 @@ TEST_F(WindowsSpellCheckerTest, RequestTextCheck) {
                        base::Unretained(this)));
     RunUntilResultReceived();
 
+    if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
+      // On Windows versions that don't support platform spellchecking, the
+      // returned vector of results should be empty.
+      ASSERT_TRUE(spell_check_results_.empty());
+      continue;
+    }
+
     ASSERT_EQ(1u, spell_check_results_.size())
         << "RequestTextCheckTests case " << i << ": Wrong number of results";
 
@@ -149,13 +175,52 @@ TEST_F(WindowsSpellCheckerTest, RequestTextCheck) {
   }
 }
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-TEST_F(WindowsSpellCheckerTest, GetPerLanguageSuggestions) {
+TEST_F(WindowsSpellCheckerTest, RetrieveSpellcheckLanguages) {
+  // Test retrieval of real dictionary on system (useful for debug logging
+  // other registered dictionaries).
+  win_spell_checker_->RetrieveSpellcheckLanguages(base::BindOnce(
+      &WindowsSpellCheckerTest::RetrieveSpellcheckLanguagesCompletionCallback,
+      base::Unretained(this)));
+
+  RunUntilResultReceived();
+
   if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
+    // On Windows versions that don't support platform spellchecking, the
+    // returned vector of results should be empty.
+    ASSERT_TRUE(spellcheck_languages_.empty());
     return;
   }
 
-  ASSERT_TRUE(set_language_result_);
+  ASSERT_LE(1u, spellcheck_languages_.size());
+  ASSERT_TRUE(base::Contains(spellcheck_languages_, "en-US"));
+}
+
+TEST_F(WindowsSpellCheckerTest, RetrieveSpellcheckLanguagesFakeDictionaries) {
+  // Test retrieval of fake dictionaries added using
+  // AddSpellcheckLanguagesForTesting. If fake dictionaries are used,
+  // instantiation of the spellchecker factory is not required for
+  // RetrieveSpellcheckLanguages, so the test should pass even on Windows
+  // versions that don't support platform spellchecking.
+  std::vector<std::string> spellcheck_languages_for_testing = {
+      "ar-SA", "es-419", "fr-CA"};
+  win_spell_checker_->AddSpellcheckLanguagesForTesting(
+      spellcheck_languages_for_testing);
+
+  DVLOG(2) << "Calling RetrieveSpellcheckLanguages after fake dictionaries "
+              "added using AddSpellcheckLanguagesForTesting...";
+  win_spell_checker_->RetrieveSpellcheckLanguages(base::BindOnce(
+      &WindowsSpellCheckerTest::RetrieveSpellcheckLanguagesCompletionCallback,
+      base::Unretained(this)));
+
+  RunUntilResultReceived();
+
+  ASSERT_EQ(spellcheck_languages_for_testing, spellcheck_languages_);
+}
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+TEST_F(WindowsSpellCheckerTest, GetPerLanguageSuggestions) {
+  ASSERT_EQ(set_language_result_,
+            spellcheck::WindowsVersionSupportsSpellchecker());
 
   win_spell_checker_->GetPerLanguageSuggestions(
       base::ASCIIToUTF16("tihs"),
@@ -163,6 +228,13 @@ TEST_F(WindowsSpellCheckerTest, GetPerLanguageSuggestions) {
           &WindowsSpellCheckerTest::PerLanguageSuggestionsCompletionCallback,
           base::Unretained(this)));
   RunUntilResultReceived();
+
+  if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
+    // On Windows versions that don't support platform spellchecking, the
+    // returned vector of results should be empty.
+    ASSERT_TRUE(per_language_suggestions_.empty());
+    return;
+  }
 
   ASSERT_EQ(per_language_suggestions_.size(), 1u);
   ASSERT_GT(per_language_suggestions_[0].size(), 0u);

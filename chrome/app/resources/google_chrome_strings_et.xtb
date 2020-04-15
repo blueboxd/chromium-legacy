@@ -90,6 +90,7 @@
 <translation id="34857402635545079">Kustuta andmed ka Chrome'ist (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome vajab juurdepääsu teie asukohale, et seda selle saidiga jagada</translation>
 <translation id="3533694711092285624">Salvestatud paroole ei ole. Chrome saab teie paroole kontrollida, kui olete need salvestanud.</translation>
+<translation id="3541482654983822893">Chrome ei saa teie paroole kontrollida. Proovige uuesti 24 tunni pärast.</translation>
 <translation id="3576528680708590453">Teie süsteemiadministraator on konfigureerinud Google Chrome'i avama alternatiivset brauserit, et saada juurdepääs lehele <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sünkroonige ja isikupärastage Chrome kõigis oma seadmetes</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administraator nõuab, et käivitaksite Chrome'i värskenduse rakendamiseks uuesti}=1{Administraator nõuab, et käivitaksite Chrome'i värskenduse rakendamiseks uuesti. Teie inkognito akent ei avata uuesti.}other{Administraator nõuab, et käivitaksite Chrome'i värskenduse rakendamiseks uuesti. Teie # inkognito akent ei avata uuesti.}}</translation>
@@ -107,6 +108,7 @@
 <translation id="4147555960264124640">Logite sisse hallatud kontoga ja annate selle administraatorile üle Google Chrome'i profiili juhtimise. Teie Chrome'i andmed, nagu rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME" />. Saate need andmed Google'i kontode juhtpaneeli kaudu kustutada, kuid te ei saa neid seostada teise kontoga. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Installijal ei õnnestunud arhiivi lahti pakkida. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="4191857738314598978">{0,plural, =1{Käivitage Chrome uuesti päeva jooksul}other{Käivitage Chrome uuesti # päeva jooksul}}</translation>
+<translation id="4205939740494406371">Chrome ei saa teie paroole kontrollida. Proovige uuesti 24 tunni pärast või <ph name="BEGIN_LINK" />kontrollige oma Google'i kontol paroole<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Kas logida Chrome'ist välja?</translation>
 <translation id="4251615635259297716">Kas soovite linkida Chrome'i andmed selle kontoga?</translation>
 <translation id="4293420128516039005">Logige sisse, et Chrome kõigis oma seadmetes sünkroonida ja isikupärastada</translation>
@@ -231,7 +233,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8342675569599923794">Chrome blokeeris faili, kuna see on ohtlik.</translation>
 <translation id="8370517070665726704">Autoriõigus <ph name="YEAR" /> Google LLC. Kõik õigused on kaitstud.</translation>
 <translation id="840084489713044809">Google Chrome soovib teie paroole eksportida.</translation>
-<translation id="8455999171311319804">Valikuline: aitate Chrome OS-i täiustada, kui lubate diagnostika- ja kasutusandmete automaatse saatmise Google'ile.</translation>
 <translation id="8498858610309223613">Äsja rakendati Google Chrome'i spetsiaalne turvavärskendus. Taaskäivitage brauser, misjärel taastame teie vahelehed.</translation>
 <translation id="8521348052903287641">Sissetuleku reegel Google Chrome Devile mDNS-liikluse lubamiseks.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

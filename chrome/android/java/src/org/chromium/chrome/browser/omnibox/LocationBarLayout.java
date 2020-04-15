@@ -66,7 +66,6 @@ import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
-import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -730,14 +729,8 @@ public class LocationBarLayout extends FrameLayout
         // When we restore tabs, we focus the selected tab so the URL of the page shows.
     }
 
-    /**
-     * Performs a search query on the current {@link Tab}.  This calls
-     * {@link TemplateUrlService#getUrlForSearchQuery(String)} to get a url based on {@code query}
-     * and loads that url in the current {@link Tab}.
-     * @param query The {@link String} that represents the text query that should be searched for.
-     */
-    @VisibleForTesting
-    public void performSearchQueryForTest(String query) {
+    @Override
+    public void performSearchQuery(String query) {
         if (TextUtils.isEmpty(query)) return;
 
         String queryUrl = TemplateUrlServiceFactory.get().getUrlForSearchQuery(query);

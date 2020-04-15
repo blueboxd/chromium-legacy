@@ -87,7 +87,7 @@ class WebWidgetTestProxy : public content::RenderWidget {
 
   EventSender* event_sender() { return &event_sender_; }
   void Reset();
-  void BindTo(blink::WebLocalFrame* frame);
+  void Install(blink::WebLocalFrame* frame);
 
   void EndSyntheticGestures();
 

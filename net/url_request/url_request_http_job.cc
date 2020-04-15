@@ -732,7 +732,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     }
 
     request_->context()->cookie_store()->SetCanonicalCookieAsync(
-        std::move(cookie), request_->url().scheme(), options,
+        std::move(cookie), request_->url(), options,
         base::BindOnce(&URLRequestHttpJob::OnSetCookieResult,
                        weak_factory_.GetWeakPtr(), options, cookie_to_return,
                        cookie_string));

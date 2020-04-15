@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">Copier lien</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Titre</translation>
+<translation id="4259722352634471385">Navigation bloquée : <ph name="URL" /></translation>
 <translation id="4570913071927164677">Détails</translation>
 <translation id="4645575059429386691">Géré par l’un de tes parents</translation>
 <translation id="4883854917563148705">Les paramètres gérés ne peuvent pas être réinitialisés</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">Effacer l'entrée</translation>
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8730621377337864115">Terminé</translation>
+<translation id="8959122750345127698">Navigation inaccessible : <ph name="URL" /></translation>
 <translation id="9019902583201351841">Géré par tes parents</translation>
 </translationbundle>

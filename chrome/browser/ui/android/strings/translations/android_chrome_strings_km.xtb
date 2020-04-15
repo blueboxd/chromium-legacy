@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">បើកការកំណត់</translation>
 <translation id="4250229828105606438">ថតអេក្រង់</translation>
 <translation id="4256782883801055595">អាជ្ញាប័ណ្ណប្រភពបើកចំហ</translation>
-<translation id="4259722352634471385">ការរុករកត្រូវបានរារាំង៖ <ph name="URL" /></translation>
 <translation id="4269820728363426813">ចម្លងអាសយដ្ឋានតំណ</translation>
 <translation id="4275663329226226506">កំសាន្ត</translation>
 <translation id="4278390842282768270">បានអនុញ្ញាត</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">ដើម្បី​ទទួលបាន​ចំណាំរបស់អ្នកនៅលើឧបករណ៍​ទាំងអស់​របស់អ្នក សូម​បើក​សមកាលកម្ម</translation>
 <translation id="8110087112193408731">បង្ហាញសកម្មភាព Chrome របស់អ្នក​នៅក្នុងសុខុមាលភាព​ឌីជីថល?</translation>
+<translation id="8115259494083109761">ដើម្បី​ស្កេនកូដ QR សូមអនុញ្ញាត​ឱ្យ Chrome ប្រើ​កាមេរ៉ារបស់អ្នក</translation>
 <translation id="8116925261070264013">បានបិទសំឡេង</translation>
 <translation id="8127542551745560481">កែទំព័រដើម</translation>
 <translation id="813082847718468539">មើលព័ត៌មានគេហទំព័រ</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">បើកនៅក្នុងផ្ទាំងវិនដូផ្សេងទៀត</translation>
 <translation id="8951232171465285730">Chrome សន្សំឲ្យអ្នកបាន <ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">ទប់ស្កាត់​ខូគីសម្រាប់​គេហទំព័រ​ជាក់លាក់។</translation>
-<translation id="8959122750345127698">ការុករកមិនអាចភ្ជាប់បានទេ៖ <ph name="URL" /></translation>
 <translation id="8965591936373831584">មិនទាន់សម្រេច</translation>
 <translation id="8970887620466824814">មានអ្វីមួយ​ខុសប្រក្រតី។</translation>
 <translation id="8972098258593396643">ទាញយក​ទៅថត​លំនាំដើម​មែនទេ?</translation>

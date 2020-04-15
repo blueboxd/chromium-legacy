@@ -3,6 +3,7 @@
 <translationbundle lang="it">
 <translation id="1005230401424685968">AAAA</translation>
 <translation id="1016495303386450659">Elemento aggiornato</translation>
+<translation id="1044891598689252897">I siti funzioneranno normalmente</translation>
 <translation id="1047726139967079566">Aggiungi questa pagina ai Preferiti...</translation>
 <translation id="1049743911850919806">In incognito</translation>
 <translation id="1063454504051558093">Utilizza un'altra password…</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> elementi</translation>
 <translation id="1491277525950327607">Tocca due volte per attivare/disattivare l'impostazione</translation>
 <translation id="1509486075633541495">Accedi al sito web</translation>
+<translation id="1509960214886564027">Le funzionalità su molti siti potrebbero non essere disponibili</translation>
 <translation id="152234381334907219">Mai salvate</translation>
 <translation id="1540800554400757039">Indirizzo 1</translation>
 <translation id="1545749641540134597">Scansiona codice QR</translation>
@@ -528,6 +530,7 @@ Poiché il tuo account è gestito da <ph name="HOSTED_DOMAIN" />, i tuoi dati di
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7971521879845308059">Blocca popup</translation>
 <translation id="7982789257301363584">Rete</translation>
+<translation id="7993619969781047893">Le funzionalità su alcuni siti potrebbero non essere disponibili</translation>
 <translation id="800361585186029508">Consente di aprire gli URL inseriti in Google Chrome.</translation>
 <translation id="8007420562015504427">Ricerca in incognito</translation>
 <translation id="8019783059653722575">In questo modo puoi salvare e caricare foto.</translation>

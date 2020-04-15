@@ -27,7 +27,6 @@ import android.widget.RelativeLayout;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.compat.ApiHelperForO;
-import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.SmartClipProvider;
@@ -50,8 +49,8 @@ public class ContentView extends RelativeLayout
     public static final int DEFAULT_MEASURE_SPEC =
             MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
 
+    private TabImpl mTab;
     private WebContents mWebContents;
-    private AutofillProvider mAutofillProvider;
     private final ObserverList<OnHierarchyChangeListener> mHierarchyChangeListeners =
             new ObserverList<>();
     private final ObserverList<OnSystemUiVisibilityChangeListener> mSystemUiChangeListeners =
@@ -127,25 +126,22 @@ public class ContentView extends RelativeLayout
                 : null;
     }
 
-    protected AutofillProvider getAutofillProvider() {
-        return mAutofillProvider;
+    protected TabImpl getTab() {
+        return mTab;
     }
 
-    public void setWebContents(WebContents webContents) {
+    public void setTab(TabImpl tab) {
+        mTab = tab;
         boolean wasFocused = isFocused();
         boolean wasWindowFocused = hasWindowFocus();
         boolean wasAttached = isAttachedToWindow();
         if (wasFocused) onFocusChanged(false, View.FOCUS_FORWARD, null);
         if (wasWindowFocused) onWindowFocusChanged(false);
         if (wasAttached) onDetachedFromWindow();
-        mWebContents = webContents;
+        mWebContents = mTab != null ? mTab.getWebContents() : null;
         if (wasFocused) onFocusChanged(true, View.FOCUS_FORWARD, null);
         if (wasWindowFocused) onWindowFocusChanged(true);
         if (wasAttached) onAttachedToWindow();
-    }
-
-    public void setAutofillProvider(AutofillProvider autofillProvider) {
-        mAutofillProvider = autofillProvider;
     }
 
     @Override
@@ -522,21 +518,21 @@ public class ContentView extends RelativeLayout
         public void onProvideAutofillVirtualStructure(ViewStructure structure, int flags) {
             // A new (virtual) View has been entered, and the autofill system-level
             // infrastructure wants us to populate |structure| with the autofill structure of the
-            // (virtual) View. Forward this on to AutofillProvider to accomplish.
-            AutofillProvider autofillProvider = getAutofillProvider();
-            if (autofillProvider != null) {
-                autofillProvider.onProvideAutoFillVirtualStructure(structure, flags);
+            // (virtual) View. Forward this on to TabImpl to accomplish.
+            TabImpl tab = getTab();
+            if (tab != null) {
+                tab.onProvideAutofillVirtualStructure(structure, flags);
             }
         }
 
         @Override
         public void autofill(final SparseArray<AutofillValue> values) {
             // The autofill system-level infrastructure has information that we can use to
-            // autofill the current (virtual) View. Forward this on to AutofillProvider to
+            // autofill the current (virtual) View. Forward this on to TabImpl to
             // accomplish.
-            AutofillProvider autofillProvider = getAutofillProvider();
-            if (autofillProvider != null) {
-                autofillProvider.autofill(values);
+            TabImpl tab = getTab();
+            if (tab != null) {
+                tab.autofill(values);
             }
         }
     }

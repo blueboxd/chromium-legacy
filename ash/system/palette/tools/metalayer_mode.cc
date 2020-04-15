@@ -4,7 +4,7 @@
 
 #include "ash/system/palette/tools/metalayer_mode.h"
 
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/public/cpp/toast_data.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"

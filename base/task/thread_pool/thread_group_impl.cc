@@ -185,6 +185,8 @@ class ThreadGroupImpl::ScopedCommandsExecutor
     // and is woken up immediately after.
     workers_to_start_.ForEachWorker([&](WorkerThread* worker) {
       worker->Start(outer_->after_start().worker_thread_observer);
+      if (outer_->worker_started_for_testing_)
+        outer_->worker_started_for_testing_->Wait();
     });
 
     if (must_schedule_adjust_max_tasks_)
@@ -413,6 +415,7 @@ void ThreadGroupImpl::Start(
     scoped_refptr<SequencedTaskRunner> service_thread_task_runner,
     WorkerThreadObserver* worker_thread_observer,
     WorkerEnvironment worker_environment,
+    bool synchronous_thread_start_for_testing,
     Optional<TimeDelta> may_block_threshold) {
   DCHECK(!replacement_thread_group_);
 
@@ -446,6 +449,14 @@ void ThreadGroupImpl::Start(
 #if DCHECK_IS_ON()
   in_start().initialized = true;
 #endif
+
+  if (synchronous_thread_start_for_testing) {
+    worker_started_for_testing_.emplace(WaitableEvent::ResetPolicy::AUTOMATIC);
+    // Don't emit a ScopedBlockingCallWithBaseSyncPrimitives from this
+    // WaitableEvent or it defeats the purpose of having threads start without
+    // externally visible side-effects.
+    worker_started_for_testing_->declare_only_used_while_idle();
+  }
 
   EnsureEnoughWorkersLockRequired(&executor);
 }
@@ -611,6 +622,14 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainEntry(
 
   outer_->BindToCurrentThread();
   SetBlockingObserverForCurrentThread(this);
+
+  if (outer_->worker_started_for_testing_) {
+    // When |worker_started_for_testing_| is set, the thread that starts workers
+    // should wait for a worker to have started before starting the next one,
+    // and there should only be one thread that wakes up workers at a time.
+    DCHECK(!outer_->worker_started_for_testing_->IsSignaled());
+    outer_->worker_started_for_testing_->Signal();
+  }
 }
 
 RegisteredTaskSource ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(

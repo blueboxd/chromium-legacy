@@ -24,7 +24,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BundleTestRule;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -438,7 +437,6 @@ public class VrBrowserWebInputEditingTest {
     @Test
     @MediumTest
     @Feature({"Browser", "RenderTest"})
-    @DisabledTest(message = "https://crbug.com/1041904")
     public void testFullscreenVideoControls()
             throws InterruptedException, TimeoutException, IOException {
         // There's occasionally slight AA differences along the play button, so tolerate a small

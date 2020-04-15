@@ -72,14 +72,17 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // |worker_environment| specifies the environment in which tasks are executed.
   // |may_block_threshold| is the timeout after which a task in a MAY_BLOCK
   // ScopedBlockingCall is considered blocked (the thread group will choose an
-  // appropriate value if none is specified). Can only be called once. CHECKs on
-  // failure.
+  // appropriate value if none is specified).
+  // |synchronous_thread_start_for_testing| is true if this ThreadGroupImpl
+  // should synchronously wait for OnMainEntry() after starting each worker. Can
+  // only be called once. CHECKs on failure.
   void Start(int max_tasks,
              int max_best_effort_tasks,
              TimeDelta suggested_reclaim_time,
              scoped_refptr<SequencedTaskRunner> service_thread_task_runner,
              WorkerThreadObserver* worker_thread_observer,
              WorkerEnvironment worker_environment,
+             bool synchronous_thread_start_for_testing = false,
              Optional<TimeDelta> may_block_threshold = Optional<TimeDelta>());
 
   // Destroying a ThreadGroupImpl returned by Create() is not allowed in
@@ -329,6 +332,11 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
 
   // Set at the start of JoinForTesting().
   bool join_for_testing_started_ GUARDED_BY(lock_) = false;
+
+  // Null-opt unless |synchronous_thread_start_for_testing| was true at
+  // construction. In that case, it's signaled each time
+  // WorkerThreadDelegateImpl::OnMainEntry() completes.
+  Optional<WaitableEvent> worker_started_for_testing_;
 
   // Cached HistogramBase pointers, can be accessed without
   // holding |lock_|. If |lock_| is held, add new samples using

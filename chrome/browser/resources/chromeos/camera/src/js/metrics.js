@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {browserProxy} from './browser_proxy/browser_proxy.js';
+import {assert} from './chrome_util.js';
 // eslint-disable-next-line no-unused-vars
 import {Intent} from './intent.js';
 // eslint-disable-next-line no-unused-vars
@@ -16,74 +17,105 @@ import {
 } from './type.js';
 
 /**
- * Event builder for basic metrics.
- * @type {?analytics.EventBuilder}
+ * @type {?Map<number, Object>}
  */
-let base = null;
-
-/* global analytics */
+let baseDimen = null;
 
 /**
- * Fixes analytics.EventBuilder's dimension() method.
- * @param {number} i
- * @param {string} v
- * @return {!analytics.EventBuilder}
+ * @type {?Promise}
  */
-analytics.EventBuilder.prototype.dimen = function(i, v) {
-  return this.dimension({index: i, value: v});
-};
+let ready = null;
 
 /**
- * Google Analytics tracker.
- * @type {?Promise<analytics.Tracker>}
+ * Send the event to GA backend.
+ * @param {!ga.Fields} event The event to send.
+ * @param {Map<number, Object>=} dimen Optional object contains dimension
+ *     information.
  */
-let ga = null;
-
-/**
- * Creates Google Analytics tracker object.
- * @param {boolean} isTesting
- * @return {!Promise<analytics.Tracker>}
- * @suppress {checkTypes}
- */
-function createGA(isTesting) {
-  const id = 'UA-134822711-1';
-  const service = analytics.getService('chrome-camera-app');
-
-  const getConfig = () =>
-      new Promise((resolve) => service.getConfig().addCallback(resolve));
-  const initBuilder = async () => {
-    const board = await browserProxy.getBoard();
-    const boardName = /^(x86-)?(\w*)/.exec(board)[0];
-    const match = navigator.appVersion.match(/CrOS\s+\S+\s+([\d.]+)/);
-    const osVer = match ? match[1] : '';
-    base = analytics.EventBuilder.builder().dimen(1, boardName).dimen(2, osVer);
+function sendEvent(event, dimen = null) {
+  const assignDimension = (e, d) => {
+    d.forEach((value, key) => e[`dimension${key}`] = value);
   };
 
-  return Promise
-      .all([getConfig(), browserProxy.isCrashReportingEnabled(), initBuilder()])
-      .then(([config, enabled]) => {
-        enabled = enabled && !isTesting;
-        config.setTrackingPermitted(enabled);
-        return service.getTracker(id);
-      });
+  assert(baseDimen !== null);
+  assignDimension(event, baseDimen);
+  if (dimen !== null) {
+    assignDimension(event, dimen);
+  }
+  window.ga('send', 'event', event);
 }
 
 /**
  * Initializes metrics with parameters.
- * @param {boolean} isTesting Whether is collecting logs for running testing.
+ * @param {!boolean} isTesting Whether is collecting logs for running
+ *     testing.
  */
 export function initMetrics(isTesting) {
-  ga = createGA(isTesting);
+  ready = (async () => {
+    const GA_ID = 'UA-134822711-1';
+    const canSendMetrics =
+        !isTesting && await browserProxy.isCrashReportingEnabled();
+    window[`ga-disable-${GA_ID}`] = !canSendMetrics;
+
+    browserProxy.addDummyHistoryIfNotAvailable();
+
+    // GA initialization function which is mostly copied from
+    // https://developers.google.com/analytics/devguides/collection/analyticsjs.
+    (function(i, s, o, g, r) {
+      i['GoogleAnalyticsObject'] = r;
+      i[r] = i[r] || function(...args) {
+        (i[r].q = i[r].q || []).push(args);
+      }, i[r].l = 1 * new Date();
+      const a = s.createElement(o);
+      const m = s.getElementsByTagName(o)[0];
+      a.async = 1;
+      a.src = g;
+      m.parentNode.insertBefore(a, m);
+    })(window, document, 'script', '../js/lib/analytics.js', 'ga');
+
+    const board = await browserProxy.getBoard();
+    const boardName = /^(x86-)?(\w*)/.exec(board)[0];
+    const match = navigator.appVersion.match(/CrOS\s+\S+\s+([\d.]+)/);
+    const osVer = match ? match[1] : '';
+    baseDimen = new Map([
+      [1, boardName],
+      [2, osVer],
+    ]);
+
+    // By default GA stores the user ID in cookies. Change to store in local
+    // storage instead.
+    const GA_LOCAL_STORAGE_KEY = 'google-analytics.analytics.user-id';
+    const gaLocalStorage =
+        await browserProxy.localStorageGet({[GA_LOCAL_STORAGE_KEY]: null});
+    window.ga('create', GA_ID, {
+      'storage': 'none',
+      'clientId': gaLocalStorage[GA_LOCAL_STORAGE_KEY] || null,
+    });
+    window.ga(
+        (tracker) => browserProxy.localStorageSet(
+            {[GA_LOCAL_STORAGE_KEY]: tracker.get('clientId')}));
+
+    // By default GA uses a dummy image and sets its source to the target URL to
+    // record metrics. Since requesting remote image violates the policy of
+    // a platform app, use navigator.sendBeacon() instead.
+    window.ga('set', 'transport', 'beacon');
+
+    // By default GA only accepts "http://" and "https://" protocol. Bypass the
+    // check here since we are "chrome-extension://".
+    window.ga('set', 'checkProtocolTask', null);
+  })();
 }
 
 /**
- * Returns event builder for the metrics type: launch.
+ * Sends launch type event.
  * @param {boolean} ackMigrate Whether acknowledged to migrate during launch.
- * @return {!analytics.EventBuilder}
  */
-function launchType(ackMigrate) {
-  return base.category('launch').action('start').label(
-      ackMigrate ? 'ack-migrate' : '');
+function sendLaunchEvent(ackMigrate) {
+  sendEvent({
+    eventCategory: 'launch',
+    eventAction: 'start',
+    eventLabel: ackMigrate ? 'ack-migrate' : '',
+  });
 }
 
 /**
@@ -97,14 +129,13 @@ export const IntentResultType = {
 };
 
 /**
- * Returns event builder for the metrics type: capture.
+ * Sends capture type event.
  * @param {!Facing} facingMode Camera facing-mode of the capture.
  * @param {number} length Length of 1 minute buckets for captured video.
  * @param {!Resolution} resolution Capture resolution.
  * @param {!IntentResultType} intentResult
- * @return {!analytics.EventBuilder}
  */
-function captureType(facingMode, length, resolution, intentResult) {
+function sendCaptureEvent(facingMode, length, resolution, intentResult) {
   /**
    * @param {!Array<state.StateUnion>} states
    * @param {state.StateUnion=} cond
@@ -122,80 +153,96 @@ function captureType(facingMode, length, resolution, intentResult) {
   };
 
   const State = state.State;
-  return base.category('capture')
-      .action(condState(Object.values(Mode)))
-      .label(facingMode)
-      // Skips 3rd dimension for obsolete 'sound' state.
-      .dimen(4, condState([State.MIRROR]))
-      .dimen(
+  sendEvent(
+      {
+        eventCategory: 'capture',
+        eventAction: condState(Object.values(Mode)),
+        eventLabel: facingMode,
+        eventValue: length || 0,
+      },
+      new Map([
+        // Skips 3rd dimension for obsolete 'sound' state.
+        [4, condState([State.MIRROR])],
+        [
           5,
           condState(
-              [State.GRID_3x3, State.GRID_4x4, State.GRID_GOLDEN], State.GRID))
-      .dimen(6, condState([State.TIMER_3SEC, State.TIMER_10SEC], State.TIMER))
-      .dimen(7, condState([State.MIC], Mode.VIDEO, true))
-      .dimen(8, condState([State.MAX_WND]))
-      .dimen(9, condState([State.TALL]))
-      .dimen(10, resolution.toString())
-      .dimen(11, condState([State.FPS_30, State.FPS_60], Mode.VIDEO, true))
-      .dimen(12, intentResult)
-      .value(length || 0);
+              [State.GRID_3x3, State.GRID_4x4, State.GRID_GOLDEN], State.GRID),
+        ],
+        [6, condState([State.TIMER_3SEC, State.TIMER_10SEC], State.TIMER)],
+        [7, condState([State.MIC], Mode.VIDEO, true)],
+        [8, condState([State.MAX_WND])],
+        [9, condState([State.TALL])],
+        [10, resolution.toString()],
+        [11, condState([State.FPS_30, State.FPS_60], Mode.VIDEO, true)],
+        [12, intentResult],
+      ]));
 }
 
 /**
- * Returns event builder for the metrics type: perf.
+ * Sends perf type event.
  * @param {PerfEvent} event The target event type.
  * @param {number} duration The duration of the event in ms.
  * @param {Object=} extras Optional information for the event.
- * @return {!analytics.EventBuilder}
  */
-function perfType(event, duration, extras = {}) {
+function sendPerfEvent(event, duration, extras = {}) {
   const {resolution = '', facing = ''} = extras;
-  return base.category('perf')
-      .action(event)
-      .label(facing)
-      // Round the duration here since GA expects that the value is an integer.
-      // Reference: https://support.google.com/analytics/answer/1033068
-      .value(Math.round(duration))
-      .dimen(10, `${resolution}`);
+  sendEvent(
+      {
+        eventCategory: 'perf',
+        eventAction: event,
+        eventLabel: facing,
+        // Round the duration here since GA expects that the value is an
+        // integer. Reference:
+        // https://support.google.com/analytics/answer/1033068
+        eventValue: Math.round(duration),
+      },
+      new Map([
+        [10, `${resolution}`],
+      ]));
 }
 
 /**
- * Returns event builder for the metrics type: intent.
+ * Sends intent type event.
  * @param {!Intent} intent Intent to be logged.
  * @param {!IntentResultType} intentResult
- * @return {!analytics.EventBuilder}
  */
-function intentType(intent, intentResult) {
+function sendIntentEvent(intent, intentResult) {
   const getBoolValue = (b) => b ? '1' : '0';
-  return base.category('intent')
-      .action(intent.mode)
-      .label(intentResult)
-      .dimen(12, intentResult)
-      .dimen(13, getBoolValue(intent.shouldHandleResult))
-      .dimen(14, getBoolValue(intent.shouldDownScale))
-      .dimen(15, getBoolValue(intent.isSecure));
+  sendEvent(
+      {
+        eventCategory: 'intent',
+        eventAction: intent.mode,
+        eventLabel: intentResult,
+      },
+      new Map([
+        [12, intentResult],
+        [13, getBoolValue(intent.shouldHandleResult)],
+        [14, getBoolValue(intent.shouldDownScale)],
+        [15, getBoolValue(intent.isSecure)],
+      ]));
 }
 
 /**
  * Metrics types.
- * @enum {function(...): !analytics.EventBuilder}
+ * @enum {function(...)}
  */
 export const Type = {
-  LAUNCH: launchType,
-  CAPTURE: captureType,
-  PERF: perfType,
-  INTENT: intentType,
+  LAUNCH: sendLaunchEvent,
+  CAPTURE: sendCaptureEvent,
+  PERF: sendPerfEvent,
+  INTENT: sendIntentEvent,
 };
 
 /**
  * Logs the given metrics.
  * @param {!Type} type Metrics type.
  * @param {...*} args Optional rest parameters for logging metrics.
+ * @return {!Promise}
  */
-export function log(type, ...args) {
-  if (ga === null) {
-    console.error('log() should not be called before metrics initialization.');
-    ga = createGA(false);
-  }
-  ga.then((tracker) => tracker.send(type(...args)));
+export async function log(type, ...args) {
+  assert(window.ga !== null);
+  assert(ready !== null);
+
+  await ready;
+  type(...args);
 }

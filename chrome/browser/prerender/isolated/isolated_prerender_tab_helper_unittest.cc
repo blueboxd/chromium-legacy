@@ -208,11 +208,12 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
     return std::string();
   }
 
-  void MakeResponseAndWait(net::HttpStatusCode http_status,
-                           net::Error net_error,
-                           const std::string& mime_type,
-                           std::vector<std::string> headers,
-                           const std::string& body) {
+  void MakeResponseAndWait(
+      net::HttpStatusCode http_status,
+      net::Error net_error,
+      const std::string& mime_type,
+      std::vector<std::pair<std::string, std::string>> headers,
+      const std::string& body) {
     network::TestURLLoaderFactory::PendingRequest* request =
         test_url_loader_factory_.GetPendingRequest(0);
     ASSERT_TRUE(request);
@@ -230,8 +231,8 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
         base::TimeDelta::FromMilliseconds(kConnectTimeDuration);
 
     head->mime_type = mime_type;
-    for (const std::string& header : headers) {
-      head->headers->AddHeader(header);
+    for (const auto& header : headers) {
+      head->headers->AddHeader(header.first, header.second);
     }
     network::URLLoaderCompletionStatus status(net_error);
     test_url_loader_factory_.AddResponse(request->request.url, std::move(head),
@@ -262,7 +263,7 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
     options.set_same_site_cookie_context(
         net::CookieOptions::SameSiteCookieContext::MakeInclusive());
     cookie_manager->SetCanonicalCookie(
-        *cc.get(), url.scheme(), options,
+        *cc.get(), url, options,
         base::BindOnce(
             [](bool* result, base::RunLoop* run_loop,
                net::CanonicalCookie::CookieInclusionStatus set_cookie_status) {
@@ -733,7 +734,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
 
   network::ResourceRequest request = VerifyCommonRequestState(prediction_url);
   MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType,
-                      {"X-Testing: Hello World"}, kHTMLBody);
+                      {{"X-Testing", "Hello World"}}, kHTMLBody);
 
   std::unique_ptr<PrefetchedMainframeResponseContainer> resp =
       tab_helper()->TakePrefetchResponse(prediction_url);
@@ -1165,10 +1166,11 @@ class IsolatedPrerenderTabHelperRedirectTest
     ClearResponses();
   }
 
-  void MakeFinalResponse(const GURL& final_url,
-                         net::HttpStatusCode final_status,
-                         std::vector<std::string> final_headers,
-                         const std::string& final_body) {
+  void MakeFinalResponse(
+      const GURL& final_url,
+      net::HttpStatusCode final_status,
+      std::vector<std::pair<std::string, std::string>> final_headers,
+      const std::string& final_body) {
     auto final_head = network::CreateURLResponseHead(final_status);
 
     final_head->response_time = base::Time::Now();
@@ -1184,8 +1186,8 @@ class IsolatedPrerenderTabHelperRedirectTest
 
     final_head->mime_type = kHTMLMimeType;
 
-    for (const std::string& header : final_headers) {
-      final_head->headers->AddHeader(header);
+    for (const auto& header : final_headers) {
+      final_head->headers->AddHeader(header.first, header.second);
     }
     network::TestURLLoaderFactory::PendingRequest* request =
         test_url_loader_factory_.GetPendingRequest(0);
@@ -1279,7 +1281,7 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
   VerifyCommonRequestState(prediction_url);
 
   WalkRedirectChainUntilFinalRequest({prediction_url, redirect_url});
-  MakeFinalResponse(redirect_url, net::HTTP_OK, {"X-Testing: Hello World"},
+  MakeFinalResponse(redirect_url, net::HTTP_OK, {{"X-Testing", "Hello World"}},
                     kHTMLBody);
 
   std::unique_ptr<PrefetchedMainframeResponseContainer> resp =

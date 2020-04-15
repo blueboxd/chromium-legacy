@@ -38,7 +38,7 @@ void error_exit(const char* error, int code) {
 }
 
 inline char* string_data(std::string* s) {
-  return s->empty() ? 0 : &*s->begin();
+  return s->empty() ? nullptr : &*s->begin();
 }
 
 struct Data {
@@ -99,7 +99,7 @@ const char* zlib_wrapper_name(zlib_wrapper type) {
   if (type == kWrapperZRAW)
     return "RAW";
   error_exit("bad wrapper type", int(type));
-  return 0;
+  return nullptr;
 }
 
 static int zlib_strategy = Z_DEFAULT_STRATEGY;
@@ -114,7 +114,7 @@ const char* zlib_level_strategy_name(int compression_level) {
   if (zlib_strategy == Z_DEFAULT_STRATEGY)
     return "";
   error_exit("bad strategy", zlib_strategy);
-  return 0;
+  return nullptr;
 }
 
 static int zlib_compression_level = Z_DEFAULT_COMPRESSION;
@@ -296,8 +296,8 @@ static int argn = 1;
 
 char* get_option(int argc, char* argv[], const char* option) {
   if (argn < argc)
-    return !strcmp(argv[argn], option) ? argv[argn++] : 0;
-  return 0;
+    return !strcmp(argv[argn], option) ? argv[argn++] : nullptr;
+  return nullptr;
 }
 
 bool get_compression(int argc, char* argv[], int* value) {

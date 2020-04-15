@@ -19,6 +19,7 @@ const char kCrashHandlerSwitch[] = "crash-handler";
 const char kInstallSwitch[] = "install";
 const char kUninstallSwitch[] = "uninstall";
 const char kUpdateAppsSwitch[] = "ua";
+const char kSystemSwitch[] = "system";
 const char kTestSwitch[] = "test";
 const char kInitDoneNotifierSwitch[] = "init-done-notifier";
 const char kNoRateLimitSwitch[] = "no-rate-limit";

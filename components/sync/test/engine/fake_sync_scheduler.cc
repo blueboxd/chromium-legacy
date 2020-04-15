@@ -39,8 +39,6 @@ void FakeSyncScheduler::SetNotificationsEnabled(bool notifications_enabled) {}
 
 void FakeSyncScheduler::OnCredentialsUpdated() {}
 
-void FakeSyncScheduler::OnCredentialsInvalidated() {}
-
 void FakeSyncScheduler::OnConnectionStatusChange(
     network::mojom::ConnectionType type) {}
 

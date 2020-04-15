@@ -231,8 +231,8 @@ class SignedExchangeCertFetcherTest : public testing::Test {
     auto response_head = network::mojom::URLResponseHead::New();
     response_head->headers =
         base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-    response_head->headers->AddHeader(
-        "Content-Type: application/cert-chain+cbor");
+    response_head->headers->SetHeader("Content-Type",
+                                      "application/cert-chain+cbor");
     response_head->mime_type = "application/cert-chain+cbor";
     mock_loader_factory_.client_remote()->OnReceiveResponse(
         std::move(response_head));
@@ -482,7 +482,7 @@ TEST_F(SignedExchangeCertFetcherTest, WrongMimeType) {
   auto response_head = network::mojom::URLResponseHead::New();
   response_head->headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-  response_head->headers->AddHeader("Content-Type: application/octet-stream");
+  response_head->headers->SetHeader("Content-Type", "application/octet-stream");
   response_head->mime_type = "application/octet-stream";
   mock_loader_factory_.client_remote()->OnReceiveResponse(
       std::move(response_head));

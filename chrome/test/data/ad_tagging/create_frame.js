@@ -74,12 +74,12 @@ function createFrameWithWindowStopAbortedLoad(name) {
   frame.contentDocument.head.appendChild(script1);
 
   let script2 = document.createElement('script');
-  script1.async = false;
+  script2.async = false;
   script2.src = 'ad_script.js';
   frame.contentDocument.head.appendChild(script2);
 
   let script3 = document.createElement('script');
-  script1.async = false;
+  script3.async = false;
   script3.src = 'ad_script_2.js';
   // Set title so we know when all scripts have loaded.
   script3.onload = function() {

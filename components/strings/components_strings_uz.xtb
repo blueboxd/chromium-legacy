@@ -1351,7 +1351,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="6757797048963528358">Qurilma uyqu rejimiga o‘tib qoldi.</translation>
 <translation id="6768213884286397650">Hagaki (Postcard)</translation>
 <translation id="6775759552199460396">JIS B2</translation>
-<translation id="67862343314499040">Binafsharang</translation>
+<translation id="67862343314499040">Siyohrang</translation>
 <translation id="6786747875388722282">Kengaytmalar</translation>
 <translation id="6790428901817661496">Ijro etish</translation>
 <translation id="679355240208270552">E’tiborsiz qoldiriladi, chunki qoidada asosiy qidiruv tizimi berilmagan</translation>
@@ -1428,7 +1428,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="714064300541049402">Tasvirning orqa tomondagi X oʻqidagi siljish</translation>
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> va yana <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ta}other{<ph name="PAYMENT_METHOD_PREVIEW" /> va yana <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ta}}</translation>
-<translation id="7153618581592392745">Och binafsharang</translation>
+<translation id="7153618581592392745">Och siyohrang</translation>
 <translation id="7156870133441232244">Server TLS 1.2 yoki undan yuqori versiyaga yangilanishi lozim.</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">Birlashtirildi</translation>

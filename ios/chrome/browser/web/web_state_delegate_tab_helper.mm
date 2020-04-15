@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
 #include "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
 #import "ios/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -44,7 +45,8 @@ void WebStateDelegateTabHelper::OnAuthRequired(
     default_username = base::SysNSStringToUTF8(proposed_credential.user);
   std::unique_ptr<OverlayRequest> request =
       OverlayRequest::CreateWithConfig<HTTPAuthOverlayRequestConfig>(
-          message, default_username);
+          nsurlprotectionspace_util::RequesterOrigin(protection_space), message,
+          default_username);
   request->GetCallbackManager()->AddCompletionCallback(
       base::BindOnce(&WebStateDelegateTabHelper::OnHTTPAuthOverlayFinished,
                      weak_factory_.GetWeakPtr(), callback));

@@ -3,6 +3,7 @@
 <translationbundle lang="ky">
 <translation id="1005230401424685968">ЖЖЖЖ</translation>
 <translation id="1016495303386450659">Нерсе жаңырды</translation>
+<translation id="1044891598689252897">Сайттар кадимкидей иштейт</translation>
 <translation id="1047726139967079566">Бул баракты кыстарып коюу…</translation>
 <translation id="1049743911850919806">Жашыруун</translation>
 <translation id="1063454504051558093">Башка сырсөздү колдонуу…</translation>
@@ -45,8 +46,9 @@
 <translation id="1436290164580597469">Шайкештирип баштоо үчүн, өткөрүүчү сүйлөмдү киргизиңиз.</translation>
 <translation id="1449835205994625556">Сырсөздү жашыруу</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> нерсе</translation>
-<translation id="1491277525950327607">Жөндөөнү которуштуруу үчүн эки жолу таптаңыз</translation>
+<translation id="1491277525950327607">Жөндөөнү которуштуруу үчүн, эки жолу таптаңыз</translation>
 <translation id="1509486075633541495">Вебсайтка кирүү</translation>
+<translation id="1509960214886564027">Функциялар көпчүлүк сайттарда туура иштебеши мүмкүн.</translation>
 <translation id="152234381334907219">Эч качан сакталбайт</translation>
 <translation id="1540800554400757039">1-дарек</translation>
 <translation id="1545749641540134597">QR кодун скандоо</translation>
@@ -528,6 +530,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="7961015016161918242">Эч качан</translation>
 <translation id="7971521879845308059">Калк чыкмл бөгт</translation>
 <translation id="7982789257301363584">Тармак</translation>
+<translation id="7993619969781047893">Функциялар айрым сайттарда туура иштебеши мүмкүн</translation>
 <translation id="800361585186029508">URL'дерди Google Chrome'до ачат.</translation>
 <translation id="8007420562015504427">Жашыруун издөө</translation>
 <translation id="8019783059653722575">Бул сүрөттөрдү сактап жана жүктөп берүүгө жол ачат.</translation>

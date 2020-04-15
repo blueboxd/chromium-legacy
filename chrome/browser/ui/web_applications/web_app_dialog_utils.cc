@@ -67,24 +67,30 @@ void OnWebAppInstalled(WebAppInstalledCallback callback,
 }  // namespace
 
 bool CanCreateWebApp(const Browser* browser) {
+  // Check whether user is allowed to install web app.
+  if (!WebAppProvider::Get(browser->profile()) ||
+      !AreWebAppsUserInstallable(browser->profile()))
+    return false;
+
+  // Check whether we're able to install the current page as an app.
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  if (!WebAppProvider::GetForWebContents(web_contents))
+  if (!IsValidWebAppUrl(web_contents->GetLastCommittedURL()) ||
+      web_contents->IsCrashed())
     return false;
   content::NavigationEntry* entry =
       web_contents->GetController().GetLastCommittedEntry();
-  bool is_error_page =
-      entry && entry->GetPageType() == content::PAGE_TYPE_ERROR;
-  Profile* web_contents_profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (entry && entry->GetPageType() == content::PAGE_TYPE_ERROR)
+    return false;
+
+  // Check whether the app is externally installed.
   banners::AppBannerManager* app_banner_manager =
       banners::AppBannerManager::FromWebContents(web_contents);
-  bool externally_installed =
-      app_banner_manager && app_banner_manager->IsExternallyInstalledWebApp();
 
-  return AreWebAppsUserInstallable(web_contents_profile) &&
-         IsValidWebAppUrl(web_contents->GetLastCommittedURL()) &&
-         !is_error_page && !externally_installed;
+  if (app_banner_manager && app_banner_manager->IsExternallyInstalledWebApp())
+    return false;
+
+  return true;
 }
 
 bool CanPopOutWebApp(Profile* profile) {

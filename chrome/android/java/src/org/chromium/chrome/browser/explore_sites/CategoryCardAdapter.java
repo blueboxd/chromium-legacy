@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.widget.LoadingView;
-import org.chromium.components.favicon.FaviconFallbackGenerator;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.ui.modelutil.ForwardingListObservable;
 import org.chromium.ui.modelutil.ListObservable.ListObserver;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -44,7 +44,7 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
         int ERROR = 2;
     }
 
-    private final FaviconFallbackGenerator mIconGenerator;
+    private final RoundedIconGenerator mIconGenerator;
     private final ContextMenuManager mContextMenuManager;
     private final NativePageNavigationDelegate mNavDelegate;
     private final Profile mProfile;
@@ -56,7 +56,7 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
     private PropertyModel mCategoryModel;
 
     CategoryCardAdapter(PropertyModel model, StableScrollLayoutManager layoutManager,
-            FaviconFallbackGenerator iconGenerator, ContextMenuManager contextMenuManager,
+            RoundedIconGenerator iconGenerator, ContextMenuManager contextMenuManager,
             NativePageNavigationDelegate navDelegate, Profile profile) {
         mCategoryModel = model;
         mCategoryModel.addObserver(this);

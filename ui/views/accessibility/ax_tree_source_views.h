@@ -54,6 +54,7 @@ class VIEWS_EXPORT AXTreeSourceViews
   bool IsValid(AXAuraObjWrapper* node) const override;
   bool IsEqual(AXAuraObjWrapper* node1, AXAuraObjWrapper* node2) const override;
   AXAuraObjWrapper* GetNull() const override;
+  std::string GetDebugString(AXAuraObjWrapper* node) const override;
   void SerializeNode(AXAuraObjWrapper* node,
                      ui::AXNodeData* out_data) const override;
 

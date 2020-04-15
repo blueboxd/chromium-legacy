@@ -231,7 +231,6 @@ static_library("arc_base") {
   deps = [
     "//ash/public/cpp",
     "//base",
-    "//chromeos",
     "//chromeos/constants",
     "//chromeos/cryptohome",
     "//chromeos/dbus:common",
@@ -240,6 +239,7 @@ static_library("arc_base") {
     "//chromeos/dbus/session_manager",
     "//chromeos/dbus/session_manager:login_manager_proto",
     "//chromeos/dbus/upstart",
+    "//chromeos/memory:memory",
     "//chromeos/system:system",
     "//components/account_id",
     "//components/keyed_service/content",

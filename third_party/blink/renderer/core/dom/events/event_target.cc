@@ -366,11 +366,9 @@ void EventTarget::SetDefaultAddEventListenerOptions(
             executing_window->document(),
             WebFeature::kAddDocumentLevelPassiveDefaultWheelEventListener);
       }
-      if (RuntimeEnabledFeatures::PassiveDocumentWheelEventListenersEnabled()) {
-        options->setPassive(true);
-        options->SetPassiveForcedForDocumentTarget(true);
-        return;
-      }
+      options->setPassive(true);
+      options->SetPassiveForcedForDocumentTarget(true);
+      return;
     }
   }
 

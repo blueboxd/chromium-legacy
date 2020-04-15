@@ -19,6 +19,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth_multilogin_result.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "net/cookies/cookie_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace signin {
@@ -202,7 +203,8 @@ void OAuthMultiloginHelper::StartSettingCookies(
       options.set_same_site_cookie_context(
           net::CookieOptions::SameSiteCookieContext::MakeInclusive());
       cookie_manager->SetCanonicalCookie(
-          cookie, "https", options,
+          cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
+          options,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(
               std::move(callback),
               net::CanonicalCookie::CookieInclusionStatus(

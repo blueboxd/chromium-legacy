@@ -114,13 +114,7 @@ void ElementAnimations::Trace(Visitor* visitor) {
 }
 
 bool ElementAnimations::IsBaseComputedStyleUsable() const {
-  if (has_important_overrides_)
-    return false;
-  if (has_font_affecting_animation_ && base_computed_style_ &&
-      base_computed_style_->HasFontRelativeUnits()) {
-    return false;
-  }
-  return true;
+  return !has_important_overrides_;
 }
 
 const ComputedStyle* ElementAnimations::BaseComputedStyle() const {

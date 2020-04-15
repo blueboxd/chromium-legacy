@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">இணைப்பை நகலெடு</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">தலைப்பு</translation>
+<translation id="4259722352634471385">செல்வது தடுக்கப்பட்டது: <ph name="URL" /></translation>
 <translation id="4570913071927164677">விவரங்கள்</translation>
 <translation id="4645575059429386691">உங்கள் பெற்றோரால் நிர்வகிக்கப்படுகிறது</translation>
 <translation id="4883854917563148705">நிர்வகிக்கப்பட்ட அமைப்புகளை மீட்டமைக்க முடியாது</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">உள்ளீட்டை அழி</translation>
 <translation id="8725066075913043281">மீண்டும் முயற்சிக்கவும்</translation>
 <translation id="8730621377337864115">முடிந்தது</translation>
+<translation id="8959122750345127698">செல்ல முடியவில்லை: <ph name="URL" /></translation>
 <translation id="9019902583201351841">உங்கள் பெற்றோரால் நிர்வகிக்கப்படுகிறது</translation>
 </translationbundle>

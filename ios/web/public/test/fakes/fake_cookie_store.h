@@ -24,7 +24,7 @@ class FakeCookieStore : public net::CookieStore {
   // necessary.
 
   void SetCanonicalCookieAsync(std::unique_ptr<net::CanonicalCookie> cookie,
-                               std::string source_scheme,
+                               const GURL& source_url,
                                const net::CookieOptions& options,
                                SetCookiesCallback callback) override;
   void GetCookieListWithOptionsAsync(const GURL& url,

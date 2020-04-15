@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_bubble.h"
 #include "chrome/browser/ui/autofill/test/test_autofill_bubble_handler.h"
@@ -19,6 +20,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -272,6 +274,25 @@ TEST_F(LocalCardMigrationBubbleControllerImplTest,
       ElementsAre(
           Bucket(AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_REQUESTED, 1),
           Bucket(AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_SHOWN, 1)));
+}
+
+// Ensures the bubble should still stick around even if the time since bubble
+// showing is longer than kCardBubbleSurviveNavigationTime (5 seconds) when the
+// feature is enabled.
+TEST_F(LocalCardMigrationBubbleControllerImplTest,
+       StickyBubble_ShouldNotDismissUponNavigation) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillEnableStickyPaymentsBubble);
+
+  ShowBubble();
+  base::HistogramTester histogram_tester;
+  controller()->set_elapsed(base::TimeDelta::FromSeconds(10));
+  controller()->SimulateNavigation();
+
+  histogram_tester.ExpectTotalCount(
+      "Autofill.LocalCardMigrationBubbleOffer.FirstShow", 0);
+  EXPECT_NE(nullptr, controller()->local_card_migration_bubble_view());
 }
 
 }  // namespace autofill

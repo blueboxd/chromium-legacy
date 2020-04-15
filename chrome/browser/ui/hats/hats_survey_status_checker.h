@@ -10,13 +10,12 @@
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
-#include "chrome/browser/profiles/independent_otr_profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
-class Profile;
-
-class HatsSurveyStatusChecker {
+class HatsSurveyStatusChecker : public ProfileObserver {
  public:
   enum class Status {
     kSuccess,
@@ -35,7 +34,7 @@ class HatsSurveyStatusChecker {
 
   explicit HatsSurveyStatusChecker(Profile* profile);
   HatsSurveyStatusChecker(const HatsSurveyStatusChecker&) = delete;
-  virtual ~HatsSurveyStatusChecker();
+  ~HatsSurveyStatusChecker() override;
 
   HatsSurveyStatusChecker& operator=(const HatsSurveyStatusChecker&) = delete;
 
@@ -58,15 +57,17 @@ class HatsSurveyStatusChecker {
   virtual int SurveyCheckTimeoutSecs();
 
  private:
-  void OnOriginalProfileDestroyed(Profile* profile);
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override;
 
   // Callbacks for survey capacity checking.
   void OnURLLoadComplete(scoped_refptr<net::HttpResponseHeaders> headers);
   void OnTimeout();
 
+  content::StoragePartition* GetStoragePartition() const;
+
   // The off the record profile used for fetching survey status.
-  std::unique_ptr<IndependentOTRProfileManager::OTRProfileRegistration>
-      otr_profile_registration_;
+  Profile* otr_profile_ = nullptr;
 
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
   base::OnceClosure on_success_;

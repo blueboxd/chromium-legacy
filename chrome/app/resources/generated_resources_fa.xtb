@@ -609,6 +609,11 @@
 <translation id="1805888043020974594">سرور چاپ</translation>
 <translation id="1805967612549112634">تأیید پین</translation>
 <translation id="1806335016774576568">رفتن به برنامه باز دیگر</translation>
+<translation id="1809483812148634490">‏برنامه‌هایی که از Google Play بارگیری کردید، از این Chromebook حذف می‌شوند.
+    <ph name="LINE_BREAKS1" />
+    محتوایی که خریداری کرده‌اید (مثل فیلم، نمایش تلویزیونی، موسیقی، کتاب، یا خریدهای درون‌برنامه دیگر) نیز ممکن است حذف شوند.
+    <ph name="LINE_BREAKS2" />
+    این فرآیند بر برنامه‌ها یا محتوای موجود در دستگاه‌های دیگر تأثیری نمی‌گذارد.</translation>
 <translation id="1809734401532861917">نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتم به <ph name="USER_EMAIL_ADDRESS" /> اضافه شود</translation>
 <translation id="1813278315230285598">سرویس‌ها</translation>
 <translation id="18139523105317219">‏نام طرف EDI</translation>
@@ -679,7 +684,6 @@
 <translation id="189210018541388520">باز کردن تمام صفحه</translation>
 <translation id="1892341345406963517">سلام <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">زبان‌های دیگر</translation>
-<translation id="1895252664692693738"><ph name="TIME_LEFT" /> باقی مانده</translation>
 <translation id="1895658205118569222">بسته شدن</translation>
 <translation id="1895934970388272448">برای تکمیل این فرآیند باید ثبت را در چاپگرتان تأیید کنید - اکنون آن را بررسی نمایید.</translation>
 <translation id="1899826437968063457">‏افزایه VM برای اجرا به مجوز نیاز دارد</translation>
@@ -1390,6 +1394,7 @@
 <translation id="2825848369316359348">نام چاپ‌شده در پشت کلید امنیتی‌تان را پیدا کنید</translation>
 <translation id="2828650939514476812">‏اتصال به شبکه Wi-Fi</translation>
 <translation id="2835294513443818940">نمی‌توان این فایل را به‌طور ایمن بارگیری کرد.</translation>
+<translation id="2835547721736623118">سرویس تشخیص گفتار</translation>
 <translation id="2836269494620652131">خرابی</translation>
 <translation id="2836635946302913370">ورود به سیستم با این نام کاربری توسط سرپرست شما غیرفعال شده است.</translation>
 <translation id="283669119850230892">برای استفاده از شبکه <ph name="NETWORK_ID" />، ابتدا اتصال به اینترنت را در زیر تکمیل کنید.</translation>
@@ -1534,6 +1539,7 @@
 <translation id="3019285239893817657">دکمه صفحه فرعی</translation>
 <translation id="3020183492814296499">میان‌برها</translation>
 <translation id="3020990233660977256">شمارهٔ سریال: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021065318976393105">هنگام استفاده از باتری</translation>
 <translation id="3021066826692793094">پروانه</translation>
 <translation id="3021678814754966447">&amp;نمای منبع قاب</translation>
 <translation id="3022978424994383087">متوجه نشدم.</translation>
@@ -2730,6 +2736,7 @@
 <translation id="4633757335284074492">‏در Google Drive پشتیبان‌گیری کنید. به‌آسانی داده‌ها را بازیابی کنید یا هرزمان خواستید دستگاه را عوض کنید. این نسخه پشتیبان حاوی داده‌های برنامه است. پشتیبان‌ها در Google بارگذاری می‌شوند و با گذرواژه «حساب Google» فرزندتان رمزگذاری می‌شوند.</translation>
 <translation id="4634771451598206121">ورود مجدد به سیستم...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> برای کاربران مهمان دردسترس نیست.</translation>
+<translation id="4635444580397524003">‏پشتیبان Linux باموفقیت بازیابی شد.</translation>
 <translation id="4636930964841734540">اطلاعات</translation>
 <translation id="4637083375689622795">کنش‌های دیگر، <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">‏فعال‌سازی اشکال‌زدایی ADB (پل اشکال‌زدایی Android)</translation>
@@ -2905,6 +2912,7 @@
 <translation id="4890773143211625964">نمایش گزینه‌های چاپگر پیشرفته</translation>
 <translation id="4891089016822695758">تالار گفتمان بتا</translation>
 <translation id="4892229439761351791">سایت می‌تواند از بلوتوث استفاده کند</translation>
+<translation id="489258173289528622">کنش راکد هنگام استفاده از باتری</translation>
 <translation id="4893336867552636863">این کار داده مرور شما را برای همیشه از روی این دستگاه حذف می‌کند.</translation>
 <translation id="4893522937062257019">در صفحه قفل</translation>
 <translation id="489454699928748701">سایت‌ها می‌توانند از حسگرهای حرکتی استفاده کنند</translation>
@@ -3611,6 +3619,7 @@
 <translation id="5863445608433396414">فعال کردن ویژگی‌های رفع اشکال</translation>
 <translation id="5864195618110239517">استفاده از اتصال محدود</translation>
 <translation id="5864471791310927901">‏بررسی DHCP انجام نشد</translation>
+<translation id="5864754048328252126">کنش راکد هنگام شارژ شدن</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> به‌زودی متوقف می‌شود</translation>
 <translation id="586567932979200359">شما <ph name="PRODUCT_NAME" /> را از تصویر دیسک آن اجرا می‌کنید. با نصب آن روی رایانه می‌توانید آن را بدون تصویر دیسک اجرا کنید، و مطمئن شوید که به روز نگه داشته خواهد شد.</translation>
 <translation id="5865733239029070421">‏به‌طور خودکار آمار کاربرد و گزارش‌های خرابی را به Google ارسال می‌کند</translation>
@@ -3810,6 +3819,7 @@
 <translation id="6120205520491252677">پین کردن این صفحه به صفحه شروع…</translation>
 <translation id="6122081475643980456">اتصال اینترنت شما کنترل می‌شود</translation>
 <translation id="6122095009389448667">دسترسی این سایت به بریده‌دان همچنان مسدود باشد</translation>
+<translation id="6122831415929794347">«مرور ایمن» خاموش شود؟</translation>
 <translation id="6122875415561139701">عملیات نوشتن در این دستگاه مجاز نیست: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="6124650939968185064">افزودنه‌های زیر به این برنامه افزودنی وابسته هستند:</translation>
 <translation id="6124698108608891449">این سایت به مجوزهای بیشتری نیاز دارد.</translation>
@@ -3987,7 +3997,6 @@
 <translation id="6365411474437319296">افزودن خانواده و دوستان</translation>
 <translation id="636850387210749493">ثبت‌نام شرکت</translation>
 <translation id="6370021412472292592">مانیفیست بارگیری نشد.</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{تغییر گذرواژه}one{تغییر گذرواژه‌ها}other{تغییر گذرواژه‌ها}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">دوباره امتحان کنید</translation>
 <translation id="6377268785556383139">۱ نتیجه برای «<ph name="SEARCH_TEXT" />»</translation>
@@ -4013,6 +4022,7 @@
 <translation id="6408118934673775994">خواندن و تغییر داده‌هایتان در <ph name="WEBSITE_1" />، ‏<ph name="WEBSITE_2" /> و <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">فایل‌های تصویری</translation>
 <translation id="6410328738210026208">تغییر کانال و پاکسازی</translation>
+<translation id="6410390304316730527">«مرور ایمن» از شما در برابر مهاجمانی محافظت می‌کند که ممکن است فریبتان دهند تا کارهای خطرناکی انجام دهید؛ ازجمله نصب نرم‌افزار مخرب یا افشای اطلاعات شخصی مثل گذرواژه‌ها، شماره‌های تماس، یا کارت‌های اعتباری. اگر «مرور ایمن» را خاموش می‌کنید، هنگام مرور کردن در سایت‌های ناآشنا یا نامعتبر احتیاط کنید.</translation>
 <translation id="6410668567036790476">افزودن موتور جستجو</translation>
 <translation id="641081527798843608">مطابقت موضوع</translation>
 <translation id="6412673304250309937">‏نشانی‌های وب را با فهرست سایت‌های ناامنی که در Chrome ذخیره شده است مقایسه می‌کند. اگر سایتی تلاش کند گذرواژه شما را به‌سرقت ببرد، یا وقتی فایل مخربی بارگیری می‌کنید، Chrome ممکن است نشانی‌های وب را نیز به همراه بخش‌های کوچکی از محتوای صفحه، به «مرور ایمن» ارسال کند.</translation>
@@ -5933,6 +5943,7 @@
 <translation id="8951256747718668828">خطایی رخ داد و بازیابی کامل نشد</translation>
 <translation id="8951465597020890363">درهرصورت از حالت مهمان خارج می‌شوید؟</translation>
 <translation id="8952831374766033534">گزینه پیکربندی پشتیبانی نمی‌شود: <ph name="ERROR_LINE" /></translation>
+<translation id="8953476467359856141">هنگام شارژ شدن</translation>
 <translation id="895347679606913382">در حال شروع...</translation>
 <translation id="8957762313041272117">زیرنویس زنده</translation>
 <translation id="895944840846194039">حافطه جاوا اسکریپت</translation>

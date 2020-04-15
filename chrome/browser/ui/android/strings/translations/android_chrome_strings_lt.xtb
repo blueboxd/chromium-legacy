@@ -436,7 +436,6 @@ Tik jūs galite matyti vaizdą iš fotoaparato. Svetainė negali matyti fotoapar
 <translation id="4242533952199664413">Atidaryti nustatymus</translation>
 <translation id="4250229828105606438">Ekrano kopija</translation>
 <translation id="4256782883801055595">Atvirojo šaltinio licencijos</translation>
-<translation id="4259722352634471385">Naršymas užblokuotas: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopijuoti nuorodos adresą</translation>
 <translation id="4275663329226226506">Medija</translation>
 <translation id="4278390842282768270">Leidžiama</translation>
@@ -965,6 +964,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Jei norite pasiekti žymes visuose įrenginiuose, įjunkite sinchronizavimą</translation>
 <translation id="8110087112193408731">Rodyti „Chrome“ veiklą Skaitmeninės gerovės programoje?</translation>
+<translation id="8115259494083109761">Jei norite nuskaityti QR kodą, leiskite „Chrome“ naudoti jūsų kamerą</translation>
 <translation id="8116925261070264013">Išjungta</translation>
 <translation id="8127542551745560481">Redaguoti pagrindinį puslapį</translation>
 <translation id="813082847718468539">Žiūrėti svetainės informaciją</translation>
@@ -1066,7 +1066,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="8942627711005830162">Atidaryti kitame lange</translation>
 <translation id="8951232171465285730">„Chrome“ sutaupė jums <ph name="MEGABYTES" /> MB</translation>
 <translation id="8958424370300090006">Blokuoti konkrečios svetainės slapukus.</translation>
-<translation id="8959122750345127698">Naršymas nepasiekiamas: <ph name="URL" /></translation>
 <translation id="8965591936373831584">laukiama</translation>
 <translation id="8970887620466824814">Kažkas ne taip.</translation>
 <translation id="8972098258593396643">Atsisiųsti į numatytąjį aplanką?</translation>

@@ -1643,13 +1643,13 @@ TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
   auto cookie1 = CanonicalCookie::Create(url, "AlreadySetCookie=1;Secure",
                                          base::Time::Now(),
                                          base::nullopt /* server_time */);
-  delayed_cm->SetCanonicalCookieAsync(std::move(cookie1), url.scheme(),
+  delayed_cm->SetCanonicalCookieAsync(std::move(cookie1), url,
                                       net::CookieOptions::MakeAllInclusive(),
                                       CookieStore::SetCookiesCallback());
   auto cookie2 = CanonicalCookie::Create(url, "AlreadySetCookie=1;Secure",
                                          base::Time::Now(),
                                          base::nullopt /* server_time */);
-  cm->SetCanonicalCookieAsync(std::move(cookie2), url.scheme(),
+  cm->SetCanonicalCookieAsync(std::move(cookie2), url,
                               net::CookieOptions::MakeAllInclusive(),
                               CookieStore::SetCookiesCallback());
 
@@ -6951,7 +6951,7 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
     base::RunLoop run_loop;
     CanonicalCookie::CookieInclusionStatus status;
     cm.SetCanonicalCookieAsync(
-        std::move(cookie1), url.scheme(), CookieOptions::MakeAllInclusive(),
+        std::move(cookie1), url, CookieOptions::MakeAllInclusive(),
         base::BindLambdaForTesting(
             [&](CanonicalCookie::CookieInclusionStatus result) {
               status = result;
@@ -6995,7 +6995,7 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
     // Note: cookie1 from the previous testcase is still in the cookie store.
     CanonicalCookie::CookieInclusionStatus status;
     cm.SetCanonicalCookieAsync(
-        std::move(cookie2), url.scheme(), CookieOptions::MakeAllInclusive(),
+        std::move(cookie2), url, CookieOptions::MakeAllInclusive(),
         base::BindLambdaForTesting(
             [&](CanonicalCookie::CookieInclusionStatus result) {
               status = result;
@@ -7139,7 +7139,7 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
         url_requiring_auth_wo_cookies, "another_cookie=true", base::Time::Now(),
         base::nullopt /* server_time */);
     cm->SetCanonicalCookieAsync(std::move(another_cookie),
-                                url_requiring_auth_wo_cookies.scheme(),
+                                url_requiring_auth_wo_cookies,
                                 net::CookieOptions::MakeAllInclusive(),
                                 CookieStore::SetCookiesCallback());
     context.set_cookie_store(cm.get());
@@ -7171,7 +7171,7 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
         url_requiring_auth_wo_cookies, "one_more_cookie=true",
         base::Time::Now(), base::nullopt /* server_time */);
     cm->SetCanonicalCookieAsync(std::move(one_more_cookie),
-                                url_requiring_auth_wo_cookies.scheme(),
+                                url_requiring_auth_wo_cookies,
                                 net::CookieOptions::MakeAllInclusive(),
                                 CookieStore::SetCookiesCallback());
 
@@ -7549,8 +7549,7 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     auto another_cookie = CanonicalCookie::Create(
         original_url, "another_cookie=true", base::Time::Now(),
         base::nullopt /* server_time */);
-    cm->SetCanonicalCookieAsync(std::move(another_cookie),
-                                original_url.scheme(),
+    cm->SetCanonicalCookieAsync(std::move(another_cookie), original_url,
                                 net::CookieOptions::MakeAllInclusive(),
                                 CookieStore::SetCookiesCallback());
     context.set_cookie_store(cm.get());
@@ -7580,7 +7579,7 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
         original_url_wo_cookie, "one_more_cookie=true", base::Time::Now(),
         base::nullopt /* server_time */);
     cm->SetCanonicalCookieAsync(std::move(one_more_cookie),
-                                original_url_wo_cookie.scheme(),
+                                original_url_wo_cookie,
                                 net::CookieOptions::MakeAllInclusive(),
                                 CookieStore::SetCookiesCallback());
 

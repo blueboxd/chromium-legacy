@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
@@ -167,7 +167,7 @@ chromeos::assistant::mojom::AssistantNotificationPtr CreateTimerNotification(
 // AssistantAlarmTimerController -----------------------------------------------
 
 AssistantAlarmTimerController::AssistantAlarmTimerController(
-    AssistantController* assistant_controller)
+    AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);

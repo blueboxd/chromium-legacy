@@ -3,6 +3,7 @@
 <translationbundle lang="lv">
 <translation id="1005230401424685968">GGGG</translation>
 <translation id="1016495303386450659">Vienums atjaunināts</translation>
+<translation id="1044891598689252897">Vietnes darbosies normāli</translation>
 <translation id="1047726139967079566">Saglabāt šo lapu kā grāmatzīmi...</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="1063454504051558093">Izmantot citu paroli</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> vienumi</translation>
 <translation id="1491277525950327607">Veiciet dubultskārienu, lai pārslēgtu iestatījumu.</translation>
 <translation id="1509486075633541495">Pierakstieties tīmekļa vietnē</translation>
+<translation id="1509960214886564027">Daudzās vietnēs funkcijas var nedarboties</translation>
 <translation id="152234381334907219">Jaunākie saglabātie</translation>
 <translation id="1540800554400757039">1. adrese</translation>
 <translation id="1545749641540134597">Skenējiet QR kodu</translation>
@@ -528,6 +530,7 @@ Tā kā jūsu kontu pārvalda <ph name="HOSTED_DOMAIN" />, jūsu Chrome dati tik
 <translation id="7961015016161918242">Nekad</translation>
 <translation id="7971521879845308059">Bl. uzn. logus</translation>
 <translation id="7982789257301363584">Tīkls</translation>
+<translation id="7993619969781047893">Noteiktās vietnēs funkcijas var nedarboties</translation>
 <translation id="800361585186029508">Ievadītie vietrāži URL tiek atvērti pārlūkā Google Chrome.</translation>
 <translation id="8007420562015504427">Meklēt inkognito režīmā</translation>
 <translation id="8019783059653722575">Varat saglabāt un augšupielādēt fotoattēlus.</translation>

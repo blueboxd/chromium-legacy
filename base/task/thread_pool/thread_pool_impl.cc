@@ -28,6 +28,7 @@
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/thread_group_impl.h"
+#include "base/task/thread_pool/worker_thread.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
@@ -60,6 +61,12 @@ bool HasDisableBestEffortTasksSwitch() {
          CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableBestEffortTasks);
 }
+
+// A global variable that can be set from test fixtures while no
+// ThreadPoolInstance is active. Global instead of being a member variable to
+// avoid having to add a public API to ThreadPoolInstance::InitParams for this
+// internal edge case.
+bool g_synchronous_thread_start_for_testing = false;
 
 }  // namespace
 
@@ -151,6 +158,8 @@ void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
 #endif
   service_thread_options.timer_slack = TIMER_SLACK_MAXIMUM;
   CHECK(service_thread_->StartWithOptions(service_thread_options));
+  if (g_synchronous_thread_start_for_testing)
+    service_thread_->WaitUntilThreadStarted();
 
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
   // Needs to happen after starting the service thread to get its
@@ -203,7 +212,8 @@ void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
     static_cast<ThreadGroupImpl*>(foreground_thread_group_.get())
         ->Start(init_params.max_num_foreground_threads, max_best_effort_tasks,
                 suggested_reclaim_time, service_thread_task_runner,
-                worker_thread_observer, worker_environment);
+                worker_thread_observer, worker_environment,
+                g_synchronous_thread_start_for_testing);
   }
 
   if (background_thread_group_) {
@@ -217,7 +227,8 @@ void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
             ? ThreadGroup::WorkerEnvironment::NONE
             :
 #endif
-            worker_environment);
+            worker_environment,
+        g_synchronous_thread_start_for_testing);
   }
 
   started_ = true;
@@ -278,6 +289,12 @@ Optional<TimeTicks> ThreadPoolImpl::NextScheduledRunTimeForTesting() const {
 
 void ThreadPoolImpl::ProcessRipeDelayedTasksForTesting() {
   delayed_task_manager_.ProcessRipeTasks();
+}
+
+// static
+void ThreadPoolImpl::SetSynchronousThreadStartForTesting(bool enabled) {
+  DCHECK(!ThreadPoolInstance::Get());
+  g_synchronous_thread_start_for_testing = enabled;
 }
 
 int ThreadPoolImpl::GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(

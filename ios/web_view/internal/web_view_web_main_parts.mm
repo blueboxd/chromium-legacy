@@ -11,7 +11,6 @@
 #include "base/strings/string_util.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
@@ -72,9 +71,6 @@ void WebViewWebMainParts::PreCreateThreads() {
 
 void WebViewWebMainParts::PreMainMessageLoopRun() {
   WebViewTranslateService::GetInstance()->Initialize();
-
-  ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
-      /*schemes=*/nullptr, 0);
 
   web::WebUIIOSControllerFactory::RegisterFactory(
       WebViewWebUIIOSControllerFactory::GetInstance());

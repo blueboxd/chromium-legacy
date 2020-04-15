@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">ସେଟିଂସ୍‌ ଖୋଲନ୍ତୁ</translation>
 <translation id="4250229828105606438">ସ୍କ୍ରିନ୍‍ସଟ୍</translation>
 <translation id="4256782883801055595">ମୁକ୍ତ ଉତ୍ସ ଲାଇସେନ୍ସ</translation>
-<translation id="4259722352634471385">ନାଭିଗେସନ୍ ଅବରୋଧ କରାଯାଇଛି: <ph name="URL" /></translation>
 <translation id="4269820728363426813">ଲିଙ୍କ୍ ଠିକଣା କପି କରନ୍ତୁ</translation>
 <translation id="4275663329226226506">ମିଡିଆ</translation>
 <translation id="4278390842282768270">ଅନୁମୋଦିତ</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">ଆପଣଙ୍କ ସମସ୍ତ ଡିଭାଇସ୍‍‍ରେ ଆପଣଙ୍କର ବୁକ୍‍ମାର୍କଗୁଡ଼ିକୁ ପ୍ରାପ୍ତ କରିବା ପାଇଁ, ସିଙ୍କ୍‍କୁ ଚାଲୁ କରନ୍ତୁ</translation>
 <translation id="8110087112193408731">ଡିଜିଟାଲ୍ ୱେଲ୍‍ବିଂରେ ଆପଣଙ୍କର Chrome କାର୍ଯ୍ୟକଳାପ ଦେଖାଇବେ?</translation>
+<translation id="8115259494083109761">ଏକ QR କୋଡ୍ ସ୍କାନ୍ କରିବାକୁ, Chromeକୁ ଆପଣଙ୍କ କ୍ୟାମେରା ବ୍ୟବହାର କରିବାକୁ ଦିଅନ୍ତୁ</translation>
 <translation id="8116925261070264013">ମ୍ୟୁଟ୍‍ କରାଗଲା</translation>
 <translation id="8127542551745560481">ମୂଳପୃଷ୍ଠାକୁ ସମ୍ପାଦନ କରନ୍ତୁ</translation>
 <translation id="813082847718468539">ସାଇଟ୍‍ର ସୂଚନା ଦେଖନ୍ତୁ</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">ଅନ୍ୟ ୱିଣ୍ଡୋରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="8951232171465285730">Chrome ଆପଣଙ୍କର <ph name="MEGABYTES" /> MB ସେଭ୍ କରିଛି</translation>
 <translation id="8958424370300090006">ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ ସାଇଟ୍ ପାଇଁ କୁକୀଗୁଡ଼ିକୁ ଅବରୋଧ କରନ୍ତୁ।</translation>
-<translation id="8959122750345127698">ନାଭିଗେସନ୍‌ରେ ପହଞ୍ଚି ହେଉନାହିଁ: <ph name="URL" /></translation>
 <translation id="8965591936373831584">ବାକି ଅଛି</translation>
 <translation id="8970887620466824814">କିଛି ଭୁଲ ହୋଇଗଲା।</translation>
 <translation id="8972098258593396643">ଡିଫଲ୍ଟ ଫୋଲ୍ଡର୍‍କୁ ଡାଉନ୍‍‍ଲୋଡ୍ କରିବେ କି?</translation>

@@ -8,7 +8,7 @@
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy_helper.h"
+#include "third_party/blink/renderer/core/feature_policy/policy_helper.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {

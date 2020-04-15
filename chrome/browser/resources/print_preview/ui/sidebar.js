@@ -100,6 +100,8 @@ Polymer({
       computed: 'computeControlsDisabled_(state)',
     },
 
+    maxSheets: Number,
+
     /** @private {number} */
     sheetCount_: {
       type: Number,

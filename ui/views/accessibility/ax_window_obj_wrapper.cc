@@ -66,6 +66,13 @@ void FireLocationChangesRecursively(aura::Window* window,
     FireLocationChangesRecursively(child, cache);
 }
 
+std::string GetWindowName(aura::Window* window) {
+  std::string class_name = window->GetName();
+  if (class_name.empty())
+    class_name = "aura::Window";
+  return class_name;
+}
+
 }  // namespace
 
 AXWindowObjWrapper::AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache,
@@ -136,15 +143,16 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
                                       *child_ax_tree_id_ptr);
   }
 
-  std::string class_name = window_->GetName();
-  if (class_name.empty())
-    class_name = "aura::Window";
   out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
-                                    class_name);
+                                    GetWindowName(window_));
 }
 
 int32_t AXWindowObjWrapper::GetUniqueId() const {
   return unique_id_.Get();
+}
+
+std::string AXWindowObjWrapper::ToString() const {
+  return GetWindowName(window_);
 }
 
 void AXWindowObjWrapper::OnWindowDestroyed(aura::Window* window) {

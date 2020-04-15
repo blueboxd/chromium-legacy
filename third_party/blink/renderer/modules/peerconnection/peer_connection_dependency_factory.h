@@ -38,7 +38,7 @@ class IpcPacketSocketFactory;
 class MdnsResponderAdapter;
 class P2PSocketDispatcher;
 class RTCPeerConnectionHandlerClient;
-class RTCPeerConnectionHandlerPlatform;
+class RTCPeerConnectionHandler;
 class StunProberTrial;
 class WebLocalFrame;
 class WebRtcAudioDeviceImpl;
@@ -51,10 +51,8 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
 
   static PeerConnectionDependencyFactory* GetInstance();
 
-  // Create a RTCPeerConnectionHandler object that implements the
-  // WebKit RTCPeerConnectionHandlerPlatform interface.
-  std::unique_ptr<RTCPeerConnectionHandlerPlatform>
-  CreateRTCPeerConnectionHandler(
+  // Create a RTCPeerConnectionHandler object.
+  std::unique_ptr<RTCPeerConnectionHandler> CreateRTCPeerConnectionHandler(
       RTCPeerConnectionHandlerClient* client,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       bool force_encoded_audio_insertable_streams,

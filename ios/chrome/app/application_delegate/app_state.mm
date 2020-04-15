@@ -429,9 +429,13 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   _appIsTerminating = YES;
 
   // Cancel any in-flight distribution notifications.
-  ios::GetChromeBrowserProvider()
-      ->GetAppDistributionProvider()
-      ->CancelDistributionNotifications();
+  base::UmaHistogramBoolean("IOS.ProviderIsValidOnShutdown",
+                            ios::GetChromeBrowserProvider());
+  if (ios::GetChromeBrowserProvider()) {
+    ios::GetChromeBrowserProvider()
+        ->GetAppDistributionProvider()
+        ->CancelDistributionNotifications();
+  }
 
   // Halt the tabs, so any outstanding requests get cleaned up, without actually
   // closing the tabs. Set the BVC to inactive to cancel all the dialogs.

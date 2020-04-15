@@ -42,7 +42,6 @@
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
 #import "ios/web_view/internal/sync/web_view_gcm_profile_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
@@ -186,7 +185,6 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewAccountPasswordStoreFactory::GetInstance();
   WebViewPasswordStoreFactory::GetInstance();
   WebViewSigninClientFactory::GetInstance();
-  WebViewSigninErrorControllerFactory::GetInstance();
   WebViewIdentityManagerFactory::GetInstance();
   WebViewGCMProfileServiceFactory::GetInstance();
   WebViewProfileInvalidationProviderFactory::GetInstance();

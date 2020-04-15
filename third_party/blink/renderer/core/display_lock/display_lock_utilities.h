@@ -23,7 +23,7 @@ class CORE_EXPORT DisplayLockUtilities {
     DISALLOW_COPY_AND_ASSIGN(ScopedChainForcedUpdate);
 
    public:
-    ~ScopedChainForcedUpdate() = default;
+    ~ScopedChainForcedUpdate();
 
    private:
     // It is important not to create multiple ScopedChainForcedUpdate scopes.
@@ -38,13 +38,22 @@ class CORE_EXPORT DisplayLockUtilities {
     friend void Document::EnsurePaintLocationDataValidForNode(
         const Node* node,
         DocumentUpdateReason reason);
+    friend class DisplayLockDocumentState;
 
     explicit ScopedChainForcedUpdate(const Node* node,
                                      bool include_self = false);
 
+    // Create a scope for the parent frame recursively.
     void CreateParentFrameScopeIfNeeded(const Node* node);
 
-    Vector<DisplayLockContext::ScopedForcedUpdate> scoped_update_forced_list_;
+    // Adds another display-lock scope to this chain. Added when a new lock is
+    // created in the ancestor chain of this chain's node.
+    void AddScopedForcedUpdate(DisplayLockContext*);
+
+    UntracedMember<const Node> node_;
+    HashMap<UntracedMember<DisplayLockContext>,
+            DisplayLockContext::ScopedForcedUpdate>
+        scoped_update_forced_map_;
     std::unique_ptr<ScopedChainForcedUpdate> parent_frame_scope_;
   };
   // Activates all the nodes within a find-in-page match |range|.

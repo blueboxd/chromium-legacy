@@ -399,13 +399,13 @@ MediaHistoryStore::GetMediaHistoryPlaybackRowsForDebug() {
   return playback_table_->GetPlaybackRows();
 }
 
-std::vector<media_feeds::mojom::MediaFeedPtr>
-MediaHistoryStore::GetMediaFeedsForDebug() {
+std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryStore::GetMediaFeeds(
+    const MediaHistoryKeyedService::GetMediaFeedsRequest& request) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!CanAccessDatabase() || !feeds_table_)
     return std::vector<media_feeds::mojom::MediaFeedPtr>();
 
-  return feeds_table_->GetRows();
+  return feeds_table_->GetRows(request);
 }
 
 int MediaHistoryStore::GetTableRowCount(const std::string& table_name) {

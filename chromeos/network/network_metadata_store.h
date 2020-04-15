@@ -63,9 +63,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   // Records that the network was added by sync.
   void SetIsConfiguredBySync(const std::string& network_guid);
 
-  // Returns the number of milliseconds since EPOCH when the network was last
-  // connected to, or -1 if it has never had a successful connection
+  // Returns the timestamp when the network was last connected to, or 0 if it
+  // has never had a successful connection.
   base::TimeDelta GetLastConnectedTimestamp(const std::string& network_guid);
+  void SetLastConnectedTimestamp(const std::string& network_guid,
+                                 const base::TimeDelta& timestamp);
 
   // Networks which were added directly from sync data will return true.
   bool GetIsConfiguredBySync(const std::string& network_guid);
@@ -84,7 +86,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
  private:
   void RemoveNetworkFromPref(const std::string& network_guid,
                              PrefService* pref_service);
-  void UpdateLastConnectedTimestamp(const std::string& network_guid);
   void SetPref(const std::string& network_guid,
                const std::string& key,
                base::Value value);

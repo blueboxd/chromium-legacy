@@ -111,15 +111,10 @@ std::vector<CapturedSiteParams> GetCapturedSites(
     JSONReader::ValueWithError value_with_error =
         JSONReader().ReadAndReturnValueWithError(
             json_text, JSONParserOptions::JSON_PARSE_RFC);
-    if (value_with_error.error_code !=
-        JSONReader::JsonParseError::JSON_NO_ERROR) {
+    if (!value_with_error.value) {
       LOG(WARNING) << "Could not load test config from json file: "
                    << "`testcases.json` because: "
                    << value_with_error.error_message;
-      return sites;
-    }
-    if (!value_with_error.value) {
-      LOG(WARNING) << "JSON Reader could not any object from `testcases.json`";
       return sites;
     }
     root_node = std::move(value_with_error.value.value());

@@ -7,10 +7,31 @@
  * 'settings-reset-page' is the settings page containing reset
  * settings.
  */
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import './reset_profile_dialog.js';
+import '../settings_page/settings_animated_pages.m.js';
+import '../settings_shared_css.m.js';
+
+// <if expr="_google_chrome and is_win">
+import '../chrome_cleanup_page/chrome_cleanup_page.m.js';
+import '../incompatible_applications_page/incompatible_applications_page.m.js';
+// </if>
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {routes} from '../route.m.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+
+
 Polymer({
   is: 'settings-reset-page',
 
-  behaviors: [settings.RouteObserverBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [RouteObserverBehavior],
 
   properties: {
     /** Preferences state. */
@@ -28,16 +49,16 @@ Polymer({
   },
 
   /**
-   * settings.RouteObserverBehavior
-   * @param {!settings.Route} route
+   * RouteObserverBehavior
+   * @param {!Route} route
    * @protected
    */
   currentRouteChanged(route) {
     const lazyRender =
         /** @type {!CrLazyRenderElement} */ (this.$.resetProfileDialog);
 
-    if (route == settings.routes.TRIGGERED_RESET_DIALOG ||
-        route == settings.routes.RESET_DIALOG) {
+    if (route == routes.TRIGGERED_RESET_DIALOG ||
+        route == routes.RESET_DIALOG) {
       /** @type {!SettingsResetProfileDialogElement} */ (lazyRender.get())
           .show();
     } else {
@@ -51,26 +72,25 @@ Polymer({
 
   /** @private */
   onShowResetProfileDialog_() {
-    settings.Router.getInstance().navigateTo(
-        settings.routes.RESET_DIALOG, new URLSearchParams('origin=userclick'));
+    Router.getInstance().navigateTo(
+        routes.RESET_DIALOG, new URLSearchParams('origin=userclick'));
   },
 
   /** @private */
   onResetProfileDialogClose_() {
-    settings.Router.getInstance().navigateToPreviousRoute();
-    cr.ui.focusWithoutInk(assert(this.$.resetProfile));
+    Router.getInstance().navigateToPreviousRoute();
+    focusWithoutInk(assert(this.$.resetProfile));
   },
 
   // <if expr="_google_chrome and is_win">
   /** @private */
   onChromeCleanupTap_() {
-    settings.Router.getInstance().navigateTo(settings.routes.CHROME_CLEANUP);
+    Router.getInstance().navigateTo(routes.CHROME_CLEANUP);
   },
 
   /** @private */
   onIncompatibleApplicationsTap_() {
-    settings.Router.getInstance().navigateTo(
-        settings.routes.INCOMPATIBLE_APPLICATIONS);
+    Router.getInstance().navigateTo(routes.INCOMPATIBLE_APPLICATIONS);
   },
   // </if>
 });

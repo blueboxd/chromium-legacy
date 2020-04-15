@@ -25,6 +25,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/ip_endpoint.h"
@@ -1676,6 +1677,8 @@ void URLLoader::DeleteSelf() {
 }
 
 void URLLoader::SendResponseToClient() {
+  TRACE_EVENT1("loading", "network::URLLoader::SendResponseToClient", "url",
+               url_request_->url().possibly_invalid_spec());
   url_loader_client_->OnReceiveResponse(std::move(response_));
 
   net::IOBufferWithSize* metadata =

@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(ChildProcessLauncherBrowserTest, ChildSpawnFail) {
   NavigationEntry* last_entry =
       shell()->web_contents()->GetController().GetLastCommittedEntry();
   // Make sure we didn't navigate.
-  CHECK(!last_entry);
+  EXPECT_FALSE(last_entry);
 
   // Navigate again and let the process spawn correctly.
   TestNavigationObserver nav_observer2(window->web_contents(), 1);
@@ -78,8 +78,9 @@ IN_PROC_BROWSER_TEST_F(ChildProcessLauncherBrowserTest, ChildSpawnFail) {
   nav_observer2.Wait();
   last_entry = shell()->web_contents()->GetController().GetLastCommittedEntry();
   // Make sure that we navigated to the proper URL.
-  CHECK(last_entry && last_entry->GetPageType() == PAGE_TYPE_NORMAL);
-  CHECK(shell()->web_contents()->GetLastCommittedURL() == url);
+  ASSERT_TRUE(last_entry);
+  EXPECT_EQ(last_entry->GetPageType(), PAGE_TYPE_NORMAL);
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), url);
 
   // Navigate again, using the same renderer.
   url = GURL("data:text/html,dataurl");
@@ -88,8 +89,9 @@ IN_PROC_BROWSER_TEST_F(ChildProcessLauncherBrowserTest, ChildSpawnFail) {
   nav_observer3.Wait();
   last_entry = shell()->web_contents()->GetController().GetLastCommittedEntry();
   // Make sure that we navigated to the proper URL.
-  CHECK(last_entry && last_entry->GetPageType() == PAGE_TYPE_NORMAL);
-  CHECK(shell()->web_contents()->GetLastCommittedURL() == url);
+  ASSERT_TRUE(last_entry);
+  EXPECT_EQ(last_entry->GetPageType(), PAGE_TYPE_NORMAL);
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), url);
 }
 
 }  // namespace content

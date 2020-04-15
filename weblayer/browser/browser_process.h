@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -33,18 +34,33 @@ class BrowserProcess {
 
   static BrowserProcess* GetInstance();
 
+  // Called after the threads have been created but before the message loops
+  // starts running. Allows the browser process to do any initialization that
+  // requires all threads running.
+  void PreMainMessageLoopRun();
+
   // Does cleanup that needs to occur before threads are torn down.
   void StartTearDown();
 
   PrefService* GetLocalState();
   scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory();
   network_time::NetworkTimeTracker* GetNetworkTimeTracker();
+  network::NetworkQualityTracker* GetNetworkQualityTracker();
 
  private:
   void RegisterPrefs(PrefRegistrySimple* pref_registry);
+  void CreateNetworkQualityObserver();
 
   std::unique_ptr<PrefService> local_state_;
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
+  std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker_;
+
+  // Listens to NetworkQualityTracker and sends network quality updates to the
+  // renderer.
+  std::unique_ptr<
+      network::NetworkQualityTracker::RTTAndThroughputEstimatesObserver>
+      network_quality_observer_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);

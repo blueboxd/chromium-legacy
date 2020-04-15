@@ -24,6 +24,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Consumer;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordUserAction;
@@ -32,15 +33,12 @@ import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils.OfflinePageLoadUrlDelegate;
-import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
-import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.site_settings.CookieControlsBridge;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlUtilities;
-import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.components.page_info.ConnectionInfoPopup;
@@ -64,9 +62,6 @@ import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.text.NoUnderlineClickableSpan;
-import org.chromium.ui.text.SpanApplier;
-import org.chromium.ui.text.SpanApplier.SpanInfo;
 import org.chromium.url.URI;
 
 import java.lang.annotation.Retention;
@@ -98,15 +93,6 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         int UNTRUSTED_OFFLINE_PAGE = 3;
     }
 
-    @IntDef({PreviewPageState.NOT_PREVIEW, PreviewPageState.SECURE_PAGE_PREVIEW,
-            PreviewPageState.INSECURE_PAGE_PREVIEW})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface PreviewPageState {
-        int NOT_PREVIEW = 1;
-        int SECURE_PAGE_PREVIEW = 2;
-        int INSECURE_PAGE_PREVIEW = 3;
-    }
-
     private final WindowAndroid mWindowAndroid;
     private final WebContents mWebContents;
     private final OfflinePageLoadUrlDelegate mOfflinePageLoadUrlDelegate;
@@ -136,9 +122,6 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     // Creation date of an offline copy, if web contents contains an offline page.
     private String mOfflinePageCreationDate;
 
-    // The state of the preview of the page (not preview, preview on a [in]secure page).
-    private @PreviewPageState int mPreviewPageState;
-
     // The state of offline page in the web contents (not offline page, trusted/untrusted offline
     // page).
     private @OfflinePageState int mOfflinePageState;
@@ -156,6 +139,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     // Bridge updating the CookieControlsView when cookie settings change.
     private CookieControlsBridge mBridge;
 
+    private Consumer<Runnable> mRunAfterDismissConsumer;
+
     /**
      * Creates the PageInfoController, but does not display it. Also initializes the corresponding
      * C++ object and saves a pointer to it.
@@ -165,24 +150,28 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      * @param offlinePageUrl           URL that the offline page claims to be generated from.
      * @param offlinePageCreationDate  Date when the offline page was created.
      * @param offlinePageState         State of the WebContents showing offline page.
-     * @param previewPageState         State of the WebContents showing the preview.
      * @param publisher                The name of the content publisher, if any.
-     * @param offlinePageLoadUrlDelegate      {@link OfflinePageLoadUrlDelegate}
-     *         defined by the caller.
+     * @param offlinePageLoadUrlDelegate      {@link OfflinePageLoadUrlDelegate} defined by the
+     *                                 caller.
      * @param delegate                 The PageInfoControllerDelegate used to provide
-     *         embedder-specific info.
+     *                                 embedder-specific info.
      */
     protected PageInfoController(Activity activity, WebContents webContents, int securityLevel,
             String offlinePageUrl, String offlinePageCreationDate,
-            @OfflinePageState int offlinePageState, @PreviewPageState int previewPageState,
-            String publisher, OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate,
+            @OfflinePageState int offlinePageState, String publisher,
+            OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate,
             PageInfoControllerDelegate delegate) {
         mOfflinePageLoadUrlDelegate = offlinePageLoadUrlDelegate;
         mWebContents = webContents;
         mSecurityLevel = securityLevel;
         mOfflinePageState = offlinePageState;
-        mPreviewPageState = previewPageState;
         mDelegate = delegate;
+        mRunAfterDismissConsumer = new Consumer<Runnable>() {
+            @Override
+            public void accept(Runnable r) {
+                runAfterDismiss(r);
+            }
+        };
         PageInfoViewParams viewParams = new PageInfoViewParams();
 
         if (mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE) {
@@ -256,7 +245,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             viewParams.cookieControlsShown = false;
         }
 
-        initPreviewUiParams(activity, viewParams);
+        mDelegate.initPreviewUiParams(viewParams, mRunAfterDismissConsumer);
 
         if (isShowingOfflinePage() && OfflinePageUtils.isConnected()) {
             viewParams.openOnlineButtonClickCallback = () -> {
@@ -272,9 +261,9 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         }
 
         InstantAppsHandler instantAppsHandler = InstantAppsHandler.getInstance();
-        if (!mIsInternalPage && !isShowingOfflinePage() && !isShowingPreview()
+        if (!mIsInternalPage && !isShowingOfflinePage() && !mDelegate.isShowingPreview()
                 && instantAppsHandler.isInstantAppAvailable(mFullUrl, false /* checkHoldback */,
-                           false /* includeUserPrefersBrowser */)) {
+                        false /* includeUserPrefersBrowser */)) {
             final Intent instantAppIntent = instantAppsHandler.getInstantAppIntentForUrl(mFullUrl);
             viewParams.instantAppButtonClickCallback = () -> {
                 try {
@@ -339,47 +328,10 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     }
 
     /**
-     * Initializes the state in viewParams with respect to showing the previews UI.
-     *
-     * @param context The context in which PageInfoController is triggered.
-     * @param viewParams The PageInfoViewParams to set state on.
-     */
-    private void initPreviewUiParams(Context context, PageInfoViewParams viewParams) {
-        final PreviewsAndroidBridge bridge = PreviewsAndroidBridge.getInstance();
-        viewParams.previewSeparatorShown =
-                mPreviewPageState == PreviewPageState.INSECURE_PAGE_PREVIEW;
-        viewParams.previewUIShown = isShowingPreview();
-        if (isShowingPreview()) {
-            viewParams.urlTitleShown = false;
-            viewParams.connectionMessageShown = false;
-
-            viewParams.previewShowOriginalClickCallback = () -> {
-                runAfterDismiss(() -> {
-                    PreviewsUma.recordOptOut(bridge.getPreviewsType(mWebContents));
-                    bridge.loadOriginal(mWebContents);
-                });
-            };
-            final String previewOriginalHost =
-                    bridge.getOriginalHost(mWebContents.getVisibleUrlString());
-            final String loadOriginalText = context.getString(
-                    R.string.page_info_preview_load_original, previewOriginalHost);
-            final SpannableString loadOriginalSpan = SpanApplier.applySpans(loadOriginalText,
-                    new SpanInfo("<link>", "</link>",
-                            // The callback given to NoUnderlineClickableSpan is overridden in
-                            // PageInfoView so use previewShowOriginalClickCallback (above) instead
-                            // because the entire TextView will be clickable.
-                            new NoUnderlineClickableSpan(context.getResources(), (view) -> {})));
-            viewParams.previewLoadOriginalMessage = loadOriginalSpan;
-
-            viewParams.previewStaleTimestamp = bridge.getStalePreviewTimestamp(mWebContents);
-        }
-    }
-
-    /**
      * Whether to show a 'Details' link to the connection info popup.
      */
     private boolean isConnectionDetailsLinkVisible() {
-        return mContentPublisher == null && !isShowingOfflinePage() && !isShowingPreview()
+        return mContentPublisher == null && !isShowingOfflinePage() && !mDelegate.isShowingPreview()
                 && !mIsInternalPage;
     }
 
@@ -419,10 +371,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         if (mContentPublisher != null) {
             messageBuilder.append(
                     context.getString(R.string.page_info_domain_hidden, mContentPublisher));
-        } else if (isShowingPreview()) {
-            if (mPreviewPageState == PreviewPageState.INSECURE_PAGE_PREVIEW) {
-                connectionInfoParams.summary = summary;
-            }
+        } else if (mDelegate.isShowingPreview() && mDelegate.isPreviewPageInsecure()) {
+            connectionInfoParams.summary = summary;
         } else if (mOfflinePageState == OfflinePageState.TRUSTED_OFFLINE_PAGE) {
             messageBuilder.append(
                     String.format(context.getString(R.string.page_info_connection_offline),
@@ -478,7 +428,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     @Override
     public void onSystemSettingsActivityRequired(Intent intentOverride) {
         runAfterDismiss(() -> {
-            Context context = mWindowAndroid.getActivity().get();
+            Context context = mWindowAndroid.getContext().get();
             assert context != null;
             Intent settingsIntent;
             if (intentOverride != null) {
@@ -523,17 +473,11 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     }
 
     /**
-     * Whether website dialog is displayed for a preview.
-     */
-    private boolean isShowingPreview() {
-        return mPreviewPageState != PreviewPageState.NOT_PREVIEW;
-    }
-
-    /**
      * Whether website dialog is displayed for an offline page.
      */
     private boolean isShowingOfflinePage() {
-        return mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE && !isShowingPreview();
+        return mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE
+                && !mDelegate.isShowingPreview();
     }
 
     private boolean isSheet(Context context) {
@@ -579,19 +523,6 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             assert false : "Invalid source passed";
         }
 
-        final int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(webContents);
-
-        @PreviewPageState
-        int previewPageState = PreviewPageState.NOT_PREVIEW;
-        final PreviewsAndroidBridge bridge = PreviewsAndroidBridge.getInstance();
-        if (bridge.shouldShowPreviewUI(webContents)) {
-            previewPageState = securityLevel == ConnectionSecurityLevel.SECURE
-                    ? PreviewPageState.SECURE_PAGE_PREVIEW
-                    : PreviewPageState.INSECURE_PAGE_PREVIEW;
-
-            PreviewsUma.recordPageInfoOpened(bridge.getPreviewsType(webContents));
-            delegate.getTracker().notifyEvent(EventConstants.PREVIEWS_VERBOSE_STATUS_OPENED);
-        }
 
         String offlinePageUrl = null;
         String offlinePageCreationDate = null;
@@ -617,8 +548,9 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             }
         }
 
-        new PageInfoController(activity, webContents, securityLevel, offlinePageUrl,
-                offlinePageCreationDate, offlinePageState, previewPageState, contentPublisher,
+        new PageInfoController(activity, webContents,
+                SecurityStateModel.getSecurityLevelForWebContents(webContents), offlinePageUrl,
+                offlinePageCreationDate, offlinePageState, contentPublisher,
                 offlinePageLoadUrlDelegate, delegate);
     }
 

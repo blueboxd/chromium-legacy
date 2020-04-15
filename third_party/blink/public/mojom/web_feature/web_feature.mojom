@@ -2562,6 +2562,12 @@ enum WebFeature {
   kLegacyLayoutByVTTCue = 3222,
   kLegacyLayoutByWebkitBoxWithoutVerticalLineClamp = 3223,
   kLegacyLayoutByTableFlexGridBlockInNGFragmentationContext = 3224,
+  kDocumentPolicyHeader = 3225,
+  kDocumentPolicyReportOnlyHeader = 3226,
+  kRequireDocumentPolicyHeader = 3227,
+  kDocumentPolicyIframePolicyAttribute = 3228,
+  kDocumentPolicyCausedPageUnload = 3229,
+  kRequiredDocumentPolicy = 3230,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

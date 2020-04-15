@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">Жөндөөлөрдү ачуу</translation>
 <translation id="4250229828105606438">Скриншот</translation>
 <translation id="4256782883801055595">Ачык программа уруксаттамалары</translation>
-<translation id="4259722352634471385">Чабыттоо бөгөттөлгөн: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Шилтеме дарегин көчүрүү</translation>
 <translation id="4275663329226226506">Медиа</translation>
 <translation id="4278390842282768270">Уруксат берилген</translation>
@@ -588,7 +587,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5342314432463739672">Уруксат сурамдары</translation>
 <translation id="534295439873310000">NFC түзмөктөрү</translation>
 <translation id="5357811892247919462">Өтмөк алынды</translation>
-<translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ачык өтмөк, өтмөктөрдү которуштуруу үчүн таптап коюңуз}other{<ph name="OPEN_TABS_MANY" /> ачык өтмөк, өтмөктөрдү которуштуруу үчүн таптап коюңуз}}</translation>
+<translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ачык өтмөк, өтмөктөрдү которуштуруу үчүн, таптап коюңуз}other{<ph name="OPEN_TABS_MANY" /> ачык өтмөк, өтмөктөрдү которуштуруу үчүн, таптап коюңуз}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ дагы 1)}other{(+ дагы #)}}</translation>
 <translation id="5403592356182871684">Ысымдар</translation>
 <translation id="5403644198645076998">Белгилүү сайттарга гана кирүүгө уруксат</translation>
@@ -755,7 +754,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6534565668554028783">Google'дун жооп берүүсү өтө узакка созулуп кетти</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> Гб жүктөлүп алынды</translation>
 <translation id="6539092367496845964">Бир жерден ката кетти. Бир аздан кийин кайталап көрүңүз.</translation>
-<translation id="6545017243486555795">Бардык дайындарды тазалоо</translation>
+<translation id="6545017243486555795">Бардык дайын-даректерди өчүрүү</translation>
 <translation id="6545864417968258051">Bluetooth түзмөктөрүн издөө</translation>
 <translation id="6560414384669816528">Sogou менен издөө</translation>
 <translation id="656065428026159829">Дагы көрүү</translation>
@@ -965,6 +964,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Кыстармаларды бардык түзмөктөрүңүздө колдонуу үчүн шайкештирүүнү күйгүзүңүз</translation>
 <translation id="8110087112193408731">Chrome'ду колдонуу дайын-даректериңиз Санариптик бакубаттык кызматында көрсөтүлсүнбү?</translation>
+<translation id="8115259494083109761">QR кодун скандоо үчүн Chrome'го камераңызды колдонууга уруксат бериңиз</translation>
 <translation id="8116925261070264013">Үнсүз кылынган</translation>
 <translation id="8127542551745560481">Башкы бетти түзөтүү</translation>
 <translation id="813082847718468539">Сайттын маалыматын карап көрүү</translation>
@@ -1066,7 +1066,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="8942627711005830162">Башка терезеде ачуу</translation>
 <translation id="8951232171465285730">Chrome сизге <ph name="MEGABYTES" /> Мб үнөмдөп берди</translation>
 <translation id="8958424370300090006">Белгилүү бир сайттын cookie файлдарын бөгөттөө.</translation>
-<translation id="8959122750345127698">Чабыттоо жеткиликсиз: <ph name="URL" /></translation>
 <translation id="8965591936373831584">күтүүдө</translation>
 <translation id="8970887620466824814">Бир жерден ката кетти.</translation>
 <translation id="8972098258593396643">Демейки папкага жүктөлүп алынсынбы?</translation>

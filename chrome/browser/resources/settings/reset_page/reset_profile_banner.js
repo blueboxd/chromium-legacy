@@ -7,9 +7,21 @@
  * 'settings-reset-profile-banner' is the banner shown for prompting the user to
  * clear profile settings.
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {routes} from '../route.m.js';
+import {Router} from '../router.m.js';
+
+import {ResetBrowserProxyImpl} from './reset_browser_proxy.js';
+
 Polymer({
   // TODO(dpapad): Rename to settings-reset-warning-dialog.
   is: 'settings-reset-profile-banner',
+
+  _template: html`{__html_template__}`,
 
   listeners: {
     'cancel': 'onCancel_',
@@ -27,12 +39,12 @@ Polymer({
 
   /** @private */
   onCancel_() {
-    settings.ResetBrowserProxyImpl.getInstance().onHideResetProfileBanner();
+    ResetBrowserProxyImpl.getInstance().onHideResetProfileBanner();
   },
 
   /** @private */
   onResetTap_() {
     this.$.dialog.close();
-    settings.Router.getInstance().navigateTo(settings.routes.RESET_DIALOG);
+    Router.getInstance().navigateTo(routes.RESET_DIALOG);
   },
 });

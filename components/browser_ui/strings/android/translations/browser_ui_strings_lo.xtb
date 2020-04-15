@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">ອັດ​ສຳ​ເນົາລິ້ງເຊື່ອມໂຍງ</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">ຫົວຂໍ້</translation>
+<translation id="4259722352634471385">ການນໍາທາງຖືກບລັອກໄວ້: <ph name="URL" /></translation>
 <translation id="4570913071927164677">ລາຍລະອຽດ</translation>
 <translation id="4645575059429386691">ຈັດ​ການ​ໂດຍ​ຜູ້​ປົກ​ຄອງ​ຂອງ​ທ່ານ</translation>
 <translation id="4883854917563148705">ບໍ່ສາມາດຣີເຊັດການຕັ້ງຄ່າທີ່ມີການຈັດການໄດ້</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">ລຶບການປ້ອນເຂົ້າ</translation>
 <translation id="8725066075913043281">ລອງໃໝ່ອີກ</translation>
 <translation id="8730621377337864115">ສໍາເລັດ</translation>
+<translation id="8959122750345127698">ການນຳທາງແມ່ນບໍ່ສາມາດເຂົ້າເຖິງໄດ້: <ph name="URL" /></translation>
 <translation id="9019902583201351841">ຈັດ​ການ​ໂດຍ​ຜູ້​ປົກ​ຄອງ​ຂອງ​ທ່ານ</translation>
 </translationbundle>

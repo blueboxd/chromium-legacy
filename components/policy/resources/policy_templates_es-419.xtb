@@ -298,12 +298,6 @@
 <translation id="1427655258943162134">Dirección o dirección URL del servidor proxy</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivo</translation>
 <translation id="1438739959477268107">Configuración predeterminada de generación de claves</translation>
-<translation id="1455804070656338445">Configura la URL de cambio de contraseña (solo esquemas HTTP y HTTPS). El servicio de protección de contraseñas enviará a los usuarios a esta URL para que cambien sus contraseñas en el caso de que vean una advertencia en el navegador.
-      Para que <ph name="PRODUCT_NAME" /> capture la nueva huella digital de contraseña correctamente en esta página de cambio de contraseña, asegúrate de que la página cumpla con los lineamientos que se indican en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si se habilita esta configuración, el servicio de protección de contraseñas enviará a los usuarios a esta URL para que cambien sus contraseñas en el caso de que vean una advertencia en el navegador.
-      Si se inhabilita esta configuración o no se establece, el servicio de protección de contraseñas enviará a los usuarios a https://myaccount.google.com para que cambien sus contraseñas.
-      Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="1456822151187621582">Windows (clientes de <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1464848559468748897">Controla el comportamiento del usuario durante una sesión de perfiles múltiples en dispositivos con <ph name="PRODUCT_OS_NAME" />.
 
@@ -361,6 +355,7 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
           Si la política "EnableMediaRouter" se establece como falsa, el valor de esta política no tendrá efecto.</translation>
 <translation id="1509692106376861764">Esta política se eliminó a partir de la versión 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Habilitar <ph name="PRODUCT_NAME" /></translation>
+<translation id="1515230621229117540">Habilitar el menú de accesibilidad flotante</translation>
 <translation id="1515824657887788963">Permite que una página realice solicitudes XHR síncronas cuando el usuario la abandona</translation>
 <translation id="1522425503138261032">Permitir a los sitios que rastreen la ubicación física de los usuarios.</translation>
 <translation id="1523774894176285446">Navegador alternativo que se inicia para sitios web configurados</translation>
@@ -595,12 +590,6 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
       Si el valor se establece como falso, se inhabilitará el envío de datos de diagnóstico y métricas.
 
       Si esta política no se configura, el envío de datos de diagnóstico y métricas se inhabilitará en los dispositivos no administrados y se habilitará en los dispositivos administrados.</translation>
-<translation id="1907431809333268751">Configura la lista de las URL de acceso empresariales (solo en esquemas HTTP y HTTPS). Se capturará la huella digital de la contraseña en estas URL y se usará para detectar la reutilización de contraseñas.
-      Para que <ph name="PRODUCT_NAME" /> capture las huellas digitales de contraseñas correctamente, asegúrate de que tus páginas de acceso cumplan con los lineamientos que se indican en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si se habilita esta configuración, el servicio de protección de contraseñas capturará la huella digital de la contraseña en estas URL para detectar la reutilización de contraseñas.
-      Si se inhabilita esta configuración o no se establece, el servicio de protección de contraseñas solo capturará la huella digital de la contraseña en https://accounts.google.com.
-      Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="1910704279188129272">Permite establecer restricciones de uso según la app.
         Se pueden aplicar restricciones de uso a las apps instaladas en <ph name="PRODUCT_OS_NAME" /> para un usuario determinado.
         Las restricciones se deben especificar en la lista |app_limits|. Solo se permite una entrada por app. Las apps que no se incluyan en la lista no tendrán restricciones.
@@ -1333,7 +1322,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="2872961005593481000">Cerrar</translation>
 <translation id="2873651257716068683">Anula el tamaño predeterminado para la página de impresión. Si el tamaño de la página no está disponible, se ignorará esta política.</translation>
 <translation id="2874209944580848064">Nota para dispositivos <ph name="PRODUCT_OS_NAME" /> compatibles con apps de Android:</translation>
-<translation id="2874901846804525128">Impide que el usuario use apps de Android de fuentes no confiables.</translation>
+<translation id="2874901846804525128">Impide que el usuario use apps para Android de fuentes no confiables.</translation>
 <translation id="2875192972412983412">Especifica el subconjunto de servidores de impresión que se consultará para las impresoras de servidor.
 
       Si se usa esta política, el usuario solo podrá acceder a las impresoras de servidor con ID que coincidan con los valores en esta política.
@@ -2937,7 +2926,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           Si está configurada en verdadero o si no está configurada, este usuario podrá crear y administrar usuarios supervisados.</translation>
 <translation id="5369937289900051171">Solo impresión a color</translation>
 <translation id="5370279767682621504">Habilitar la compatibilidad con HTTP/0.9 en puertos no predeterminados</translation>
-<translation id="5377606826822211923">Controlar la forma en que el usuario usa las apps de Android de fuentes no confiables</translation>
+<translation id="5377606826822211923">Controla la forma en que el usuario usa las apps para Android de fuentes no confiables</translation>
 <translation id="5378985487213287085">Te permite configurar si los sitios web pueden mostrar notificaciones de escritorio. Esto se puede permitir de manera predeterminada, se puede denegar de manera predeterminada o se le puede preguntar al usuario cada vez que un sitio web quiera mostrar notificaciones de escritorio. Si esta política no se configura, se usará "AskNotifications" y el usuario podrá cambiarlo.</translation>
 <translation id="5380329473151894945">Establece el estado predeterminado de la función de accesibilidad del cursor grande en la pantalla de acceso.
 
@@ -3284,6 +3273,17 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
           Si no se ofrece ninguna configuración, <ph name="PRODUCT_NAME" /> recurrirá a un nombre de biblioteca predeterminado.</translation>
 <translation id="5783009211970309878">Imprimir encabezados y pies de página</translation>
+<translation id="5783576706065107606">Habilita las mitigaciones de comprobación de <ph name="CORS" /> en la nueva implementación de <ph name="CORS" />, lo que permite que las extensiones mantengan su compatibilidad y que <ph name="PRODUCT_NAME" /> envíe encabezados específicos sin la necesidad de comprobaciones de <ph name="CORS" />.
+
+      Si se establece esta lista como vacía, <ph name="PRODUCT_NAME" /> intentará ejecutar las extensiones de forma compatible y no introducirá cambios de <ph name="API" /> para <ph name="PRODUCT_NAME" /> 79, como se explica en el <ph name="WEB_REQUEST_API_MANUAL" />.
+
+      Si se establece que en esta lista <ph name="HTTP" /> solicita nombres de encabezado, la inspección de <ph name="CORS" /> ignorará los encabezados enumerados y habilitará la mitigación para las extensiones.
+
+      Si no se establece, no se aplicarán las mitigaciones que explicaron anteriormente.
+
+      Para obtener más información sobre <ph name="CORS" />, visita la siguiente página web: <ph name="CORS_HELP_URL" />.
+
+      Ten en cuenta que se había anunciado que esta política se quitaría en la versión 82 de <ph name="PRODUCT_NAME" />; sin embargo, se quitará en la versión 84, según la nueva planificación.</translation>
 <translation id="5790763087505467169">Reducir la cantidad de notificaciones de inicio automático de la sesión de invitado administrada</translation>
 <translation id="5806128552675651249">Habilitar la impresión solo sin los gráficos de fondo</translation>
 <translation id="5809210507920527553">Controla la configuración para el contenedor de Linux (Crostini).</translation>
@@ -3347,6 +3347,17 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           Si esta configuración está inhabilitada o no está establecida, el nombre de dominio de TalkGadget predeterminado ("chromoting-host.talkgadget.google.com") se utilizará para todos los hosts.
 
           La configuración de esta política no afecta a los clientes de acceso remoto. Ellos siempre utilizarán "chromoting-client.talkgadget.google.com" para acceder a TalkGadget.</translation>
+<translation id="5888171512889380367">Utiliza la implementación heredada de <ph name="CORS" /> en lugar de la nueva implementación de <ph name="CORS" />.
+
+      Si se establece esta configuración como verdadera, se utilizará la implementación heredada, la cual debe ser compatible con las versiones anteriores.
+
+      Si se establece como falsa o no se establece, se utilizará la nueva implementación; es posible que esto genere problemas de compatibilidad específicos en empresas.
+
+      Después de algunos hitos, se quitará esta política.
+
+      Para obtener más información sobre <ph name="CORS" />, visita la siguiente página web: <ph name="CORS_HELP_URL" />.
+
+      Ten en cuenta que se había anunciado que esta política se quitaría en la versión 82 de <ph name="PRODUCT_NAME" />; sin embargo, se quitará en la versión 84, según la nueva planificación.</translation>
 <translation id="5893553533827140852">Si esta opción está habilitada, las solicitudes de autenticación gnubby se representarán a través de una conexión de host remota.
 
           Si esta opción está inhabilitada o no está configurada, no se representarán solicitudes de autenticación gnubby.</translation>
@@ -3634,6 +3645,11 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
           Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="6417265370957905582">Asistente de Google</translation>
+<translation id="6422575351619065453">En el modo kiosko, esta política controla si se muestra el menú de accesibilidad flotante.
+
+      Si esta política se configura como habilitada, siempre se mostrará el menú de accesibilidad flotante.
+
+      Si esta política se configura como habilitada o no se configura, nunca se mostrará el menú de accesibilidad flotante.</translation>
 <translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">No puedes forzar las apps de Android a que usen un proxy. Las apps de Android tienen a su disposición un subgrupo de opciones de configuración de proxy que pueden respetar de forma voluntaria:
 
@@ -3732,7 +3748,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Ten en cuenta que se puede anular esta política con las políticas EnabledPlugins y DisabledPluginsExceptions.
 
       Si no se configura esta política, el usuario podrá usar cualquier complemento instalado en el sistema, excepto aquellos que sean peligrosos, obsoletos o incompatibles por el código.</translation>
-<translation id="6571871508154591774">Inhabilitar la cámara y la configuración del navegador y del SO</translation>
+<translation id="6571871508154591774">Inhabilita la cámara y la configuración del navegador y del SO</translation>
 <translation id="6573305661369899995">Establece una fuente externa de restrcicciones de URL</translation>
 <translation id="6583851521569686409">Configura una lista de impresoras.
 
@@ -3809,7 +3825,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="6731757988219967594">Aplicar filtros de contenido para adultos a los sitios principales (pero no a los iframes incorporados)</translation>
 <translation id="6734521799274931721">Controlar la disponibilidad de "Network File Shares" para el Sistema operativo Chrome</translation>
 <translation id="6735701345096330595">Habilitar la corrección ortográfica de idiomas</translation>
-<translation id="6737677282967014160">Permite que el usuario utilice apps de Android de fuentes no confiables.</translation>
+<translation id="6737677282967014160">Permite que el usuario utilice apps para Android de fuentes no confiables.</translation>
 <translation id="6757613329154374267">Se habilitó la funcionalidad de copia de seguridad y restablecimiento</translation>
 <translation id="6758659208493449452">Esta política controla si los usuarios inscritos en el Programa de Protección Avanzada reciben protección adicional. Es posible que algunas de estas funciones compartan datos con Google (por ejemplo, los usuarios de la Protección avanzada podrán enviar sus descargas a Google para comprobar que no incluyan software malicioso). Si se establece como verdadera o no se establece, los usuarios inscritos recibirán protección adicional. Si se establece como falsa, los usuarios de la Protección avanzada solo recibirán las funciones estándar para el consumidor.</translation>
 <translation id="6762235610019366960">Permite controlar la presentación en pestaña completa de contenido educativo o promocional en <ph name="PRODUCT_NAME" />.
@@ -3947,13 +3963,6 @@ Si se selecciona "U2F", el segundo factor integrado se comportará de acuerdo co
 Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará funciones de U2F además de algunas extensiones para la atestación individual.</translation>
 <translation id="7003334574344702284">Esta política, si se habilita, fuerza la importación de las contraseñas guardadas del navegador predeterminado anterior. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importan las contraseñas guardadas. Si no se configura, se le puede preguntar al usuario si desea importar las contraseñas guardadas o la importación puede realizarse de forma automática.</translation>
 <translation id="7003746348783715221">Preferencias de <ph name="PRODUCT_NAME" /></translation>
-<translation id="7007671350884342624">Configura el directorio que <ph name="PRODUCT_NAME" /> usará para almacenar datos del usuario.
-
-      Si estableces esta política, <ph name="PRODUCT_NAME" /> usará el directorio proporcionado más allá de que el usuario haya especificado la marca '--user-data-dir' o no. Para evitar la pérdida de datos u otros errores inesperados, no debes configurar un directorio con otro uso o el directorio raíz de un volumen en esta política, porque <ph name="PRODUCT_NAME" /> administra su contenido.
-
-      Consulta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para obtener una lista de las variables que se pueden usar.
-
-      Si no estableces esta política, se usará la ruta de perfil predeterminada, y el usuario podrá anularlo con la marca '--user-data-dir' en la línea de comandos.</translation>
 <translation id="7008308728445338159">Revisiones habilitadas de la intercepción de DNS</translation>
 <translation id="7027785306666625591">Configura la administración de energía en <ph name="PRODUCT_OS_NAME" />.
 
@@ -4338,7 +4347,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Los patrones de URL deben tener un formato conforme a lo especificado en la política "URLBlacklist", documentada en https://www.chromium.org/administrators/url-blacklist-filter-format.
       </translation>
 <translation id="7566878661979235378">Tipo de autenticación del acceso SAML</translation>
-<translation id="7567373982693549834">Esta política controla la forma en cada usuario usa las apps de Android de fuentes no seguras (que no provienen de Google Play Store).
+<translation id="7567373982693549834">Esta política controla la forma en que cada usuario usa las apps para Android de fuentes no seguras (que no provienen de Google Play Store).
 
       Si no se establece el valor para esta política, no se permitirá la funcionalidad.
 
@@ -4868,7 +4877,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="8424255554404582727">Establecer la rotación predeterminada de la pantalla que se volverá a aplicar en cada reinicio</translation>
 <translation id="8426231401662877819">Rotar la pantalla hacia la derecha 90 grados</translation>
 <translation id="8433186206711564395">Opciones de red</translation>
-<translation id="8433423491036718210">Configura la lista de las URL de acceso empresariales donde el servicio de protección de contraseñas debe capturar una huella digital de la contraseña.</translation>
 <translation id="8445576299806775661">Después de cada actualización importante de la versión, Chrome creará una instantánea de ciertas porciones de los datos de navegación del usuario en caso de tener que realizar una reversión de emergencia en el futuro. Si se realiza una reversión de emergencia a una versión para la cual el usuario tiene una instantánea correspondiente, se restablecerán los datos de esa instantánea. Esto permitirá que los usuarios conserven opciones de configuración como los favoritos y los datos de la función Autocompletar.
 
       Si no se establece esta política, se usará el valor predeterminado "3".

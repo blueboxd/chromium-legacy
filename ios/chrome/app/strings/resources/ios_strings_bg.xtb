@@ -3,6 +3,7 @@
 <translationbundle lang="bg">
 <translation id="1005230401424685968">ГГГГ</translation>
 <translation id="1016495303386450659">Елементът е актуализиран</translation>
+<translation id="1044891598689252897">Сайтовете ще работят нормално</translation>
 <translation id="1047726139967079566">Запазване на отметка към тази страница...</translation>
 <translation id="1049743911850919806">„Инкогнито“</translation>
 <translation id="1063454504051558093">Използване на друга парола...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> елемента</translation>
 <translation id="1491277525950327607">Докоснете двукратно за превключване на настройката</translation>
 <translation id="1509486075633541495">Вход в уебсайта</translation>
+<translation id="1509960214886564027">Функциите в много сайтове може да не работят правилно</translation>
 <translation id="152234381334907219">Незапазвани никога</translation>
 <translation id="1540800554400757039">Адрес 1</translation>
 <translation id="1545749641540134597">Сканирайте код за бърза реакция</translation>
@@ -528,6 +530,7 @@
 <translation id="7961015016161918242">Никога</translation>
 <translation id="7971521879845308059">Изск. прозорци: Блокиране</translation>
 <translation id="7982789257301363584">Мрежа</translation>
+<translation id="7993619969781047893">Функциите в някои сайтове може да не работят правилно</translation>
 <translation id="800361585186029508">Въведените URL адреси се отварят в Google Chrome.</translation>
 <translation id="8007420562015504427">Търсене в режим „инкогнито“</translation>
 <translation id="8019783059653722575">Това ви позволява да запазвате и качвате снимки.</translation>

@@ -26,6 +26,7 @@
 <translation id="3987993985790029246">Kopiér linket</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Titel</translation>
+<translation id="4259722352634471385">Navigationen er blokeret: <ph name="URL" /></translation>
 <translation id="4570913071927164677">Info</translation>
 <translation id="4645575059429386691">Administreret af en af dine forældre</translation>
 <translation id="4883854917563148705">Administrerede indstillinger kan ikke nulstilles</translation>
@@ -73,5 +74,6 @@
 <translation id="8676374126336081632">Ryd indtastning</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="8730621377337864115">Udfør</translation>
+<translation id="8959122750345127698">Navigationen er ikke mulig: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Administreret af dine forældre</translation>
 </translationbundle>

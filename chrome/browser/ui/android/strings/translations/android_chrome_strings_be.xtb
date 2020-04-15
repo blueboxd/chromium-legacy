@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">Адкрыць налады</translation>
 <translation id="4250229828105606438">Здымак экрана</translation>
 <translation id="4256782883801055595">Ліцэнзіі на ПЗ з адкрытым зыходным кодам</translation>
-<translation id="4259722352634471385">Пераход па наступным адрасе заблакіраваны: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Капіраваць спасылку</translation>
 <translation id="4275663329226226506">Мультымедыя</translation>
 <translation id="4278390842282768270">Дазволена</translation>
@@ -965,6 +964,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Каб мець свае закладкі на ўсіх прыладах, уключыце сінхранізацыю</translation>
 <translation id="8110087112193408731">Паказваць у службе лічбавага камфорту вашы дзеянні ў Chrome?</translation>
+<translation id="8115259494083109761">Каб сканіраваць QR-код, дазвольце браўзеру Chrome выкарыстоўваць камеру</translation>
 <translation id="8116925261070264013">Без гуку</translation>
 <translation id="8127542551745560481">Змяніць галоўную старонку</translation>
 <translation id="813082847718468539">Прагляд звестак пра сайт</translation>
@@ -1066,7 +1066,6 @@
 <translation id="8942627711005830162">Адкрыць у іншым акне</translation>
 <translation id="8951232171465285730">Chrome сэканоміў вам <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8958424370300090006">Блакіраваць файлы cookie для пэўнага сайта.</translation>
-<translation id="8959122750345127698">Пераход па наступным адрасе недаступны: <ph name="URL" /></translation>
 <translation id="8965591936373831584">у стане чакання</translation>
 <translation id="8970887620466824814">Нешта пайшло не так.</translation>
 <translation id="8972098258593396643">Спампаваць у стандартную папку?</translation>

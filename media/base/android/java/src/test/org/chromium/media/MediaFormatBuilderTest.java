@@ -11,10 +11,13 @@ import static org.junit.Assert.assertTrue;
 import android.media.MediaCodecInfo.CodecCapabilities;
 import android.media.MediaFormat;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.nio.ByteBuffer;
@@ -54,6 +57,11 @@ public class MediaFormatBuilderTest {
         public void addMetadataToFormat(MediaFormat format) {
             was_called = true;
         }
+    }
+
+    @Before
+    public void setUp() {
+        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
     }
 
     @Test

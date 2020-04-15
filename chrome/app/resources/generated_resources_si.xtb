@@ -684,7 +684,6 @@
 <translation id="189210018541388520">සම්පූර්ණ තිරය විවෘත කරන්න</translation>
 <translation id="1892341345406963517">ආයුබෝවන් <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">වෙනත් භාෂා</translation>
-<translation id="1895252664692693738"><ph name="TIME_LEFT" /> ඉතුරුයි</translation>
 <translation id="1895658205118569222">වසා දමන්න</translation>
 <translation id="1895934970388272448">ඔබ මෙම ක්‍රියාවලිය අවසන් කිරීමට ඔබගේ මුද්‍රකයෙහි ලියාපදිංචිය තහවුරු කළ යුතුයි - එය දැන් පරික්ෂා කරන්න.</translation>
 <translation id="1899826437968063457">Plugin VM හට ධාවන වීමට අවසරය අවශ්‍යයි</translation>
@@ -4000,7 +3999,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6365411474437319296">පවුල සහ මිතුරන් එක් කරන්න</translation>
 <translation id="636850387210749493">ව්‍යාපාරික බඳවාගැනීම</translation>
 <translation id="6370021412472292592">ලේඛනය පැටවිය නොහැකි විය.</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{මුරපදය වෙනස් කරන්න}one{මුරපද වෙනස් කරන්න}other{මුරපද වෙනස් කරන්න}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">නැවත උත්සහ කරන්න</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' සඳහා 1 ප්‍රතිඵලයක්</translation>

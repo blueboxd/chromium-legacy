@@ -74,9 +74,7 @@ void LaunchExternalApp(const GURL url, bool user_accepted = true) {
 
 AppLauncherBrowserAgent::AppLauncherBrowserAgent(Browser* browser)
     : tab_helper_delegate_(browser->GetWebStateList()),
-      tab_helper_delegate_installer_(&tab_helper_delegate_,
-                                     browser->GetWebStateList()),
-      shutdown_helper_(browser, &tab_helper_delegate_installer_) {}
+      tab_helper_delegate_installer_(&tab_helper_delegate_, browser) {}
 
 AppLauncherBrowserAgent::~AppLauncherBrowserAgent() = default;
 
@@ -158,73 +156,4 @@ AppLauncherBrowserAgent::TabHelperDelegate::GetQueueForAppLaunchDialog(
   }
   return OverlayRequestQueue::FromWebState(queue_web_state,
                                            OverlayModality::kWebContentArea);
-}
-
-#pragma mark - AppLauncherBrowserAgent::TabHelperDelegateInstaller
-
-AppLauncherBrowserAgent::TabHelperDelegateInstaller::TabHelperDelegateInstaller(
-    AppLauncherTabHelperDelegate* delegate,
-    WebStateList* web_state_list)
-    : delegate_(delegate) {
-  DCHECK(delegate_);
-  DCHECK(web_state_list);
-  for (int i = 0; i < web_state_list->count(); ++i) {
-    AppLauncherTabHelper::FromWebState(web_state_list->GetWebStateAt(i))
-        ->SetDelegate(delegate_);
-  }
-}
-
-AppLauncherBrowserAgent::TabHelperDelegateInstaller::
-    ~TabHelperDelegateInstaller() = default;
-
-#pragma mark WebStateListObserver
-
-void AppLauncherBrowserAgent::TabHelperDelegateInstaller::WebStateInsertedAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index,
-    bool activating) {
-  AppLauncherTabHelper::FromWebState(web_state)->SetDelegate(delegate_);
-}
-
-void AppLauncherBrowserAgent::TabHelperDelegateInstaller::WebStateReplacedAt(
-    WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int index) {
-  AppLauncherTabHelper::FromWebState(old_web_state)->SetDelegate(nullptr);
-  AppLauncherTabHelper::FromWebState(new_web_state)->SetDelegate(delegate_);
-}
-
-void AppLauncherBrowserAgent::TabHelperDelegateInstaller::WillDetachWebStateAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index) {
-  AppLauncherTabHelper::FromWebState(web_state)->SetDelegate(nullptr);
-}
-
-#pragma mark - AppLauncherBrowserAgent::BrowserShutdownHelper
-
-AppLauncherBrowserAgent::BrowserShutdownHelper::BrowserShutdownHelper(
-    Browser* browser,
-    WebStateListObserver* web_state_list_observer)
-    : web_state_list_observer_(web_state_list_observer) {
-  DCHECK(browser);
-  DCHECK(web_state_list_observer_);
-  scoped_observer_.Add(browser);
-  browser->GetWebStateList()->AddObserver(web_state_list_observer_);
-}
-
-AppLauncherBrowserAgent::BrowserShutdownHelper::~BrowserShutdownHelper() {
-  // The WebStateListObserver must be detached before destruction.
-  DCHECK(!web_state_list_observer_);
-}
-
-#pragma mark BrowserObserver
-
-void AppLauncherBrowserAgent::BrowserShutdownHelper::BrowserDestroyed(
-    Browser* browser) {
-  scoped_observer_.Remove(browser);
-  browser->GetWebStateList()->RemoveObserver(web_state_list_observer_);
-  web_state_list_observer_ = nullptr;
 }

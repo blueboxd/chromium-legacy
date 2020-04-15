@@ -47,6 +47,13 @@ constexpr char KMeteredNetworkAcceptButton[] =
     "cellular-permission-accept-button";
 constexpr char KNoNetworkDialog[] = "update-required-no-network-dialog";
 
+// Elements in checking-downloading-update
+constexpr char kUpdateProcessChecking[] = "checking-for-updates-dialog";
+constexpr char kUpdateProcessUpdating[] = "updating-dialog";
+constexpr char kUpdateProcessComplete[] = "update-complete-dialog";
+constexpr char kCheckingForUpdatesMessage[] = "checkingForUpdatesMsg";
+constexpr char kUpdatingProgress[] = "updating-progress";
+
 constexpr char kWifiServicePath[] = "/service/wifi2";
 constexpr char kCellularServicePath[] = "/service/cellular1";
 
@@ -405,6 +412,57 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest,
   SetUpdateEngineStatus(update_engine::Operation::UPDATE_AVAILABLE);
   SetUpdateEngineStatus(update_engine::Operation::DOWNLOADING);
   SetUpdateEngineStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
+  // UpdateStatusChanged(status) calls RebootAfterUpdate().
+  EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
+}
+
+// This tests the update process initiated from update required screen.
+IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestUpdateProcess) {
+  // Wifi is connected, show update required screen.
+  ShowUpdateRequiredScreen();
+  test::OobeJS().ExpectVisiblePath(
+      {kUpdateRequiredScreen, kUpdateRequiredDialog});
+
+  // Click to start update process.
+  test::OobeJS().ClickOnPath(
+      {kUpdateRequiredScreen, kUpdateRequiredUpdateButton});
+
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {kUpdateRequiredScreen, kUpdateProcess})
+      ->Wait();
+  test::OobeJS().ExpectHiddenPath(
+      {kUpdateRequiredScreen, kUpdateRequiredDialog});
+
+  SetUpdateEngineStatus(update_engine::Operation::CHECKING_FOR_UPDATE);
+  // Wait for the content of the dialog to be rendered.
+  test::OobeJS()
+      .CreateDisplayedWaiter(true, {kUpdateRequiredScreen, kUpdateProcess,
+                                    kCheckingForUpdatesMessage})
+      ->Wait();
+  test::OobeJS().ExpectVisiblePath(
+      {kUpdateRequiredScreen, kUpdateProcess, kUpdateProcessChecking});
+  test::OobeJS().ExpectHiddenPath(
+      {kUpdateRequiredScreen, kUpdateProcess, kUpdateProcessUpdating});
+  test::OobeJS().ExpectHiddenPath(
+      {kUpdateRequiredScreen, kUpdateProcess, kUpdateProcessComplete});
+
+  SetUpdateEngineStatus(update_engine::Operation::DOWNLOADING);
+  // Wait for the content of the dialog to be rendered.
+  test::OobeJS()
+      .CreateDisplayedWaiter(
+          true, {kUpdateRequiredScreen, kUpdateProcess, kUpdatingProgress})
+      ->Wait();
+  test::OobeJS().ExpectHiddenPath(
+      {kUpdateRequiredScreen, kUpdateProcess, kUpdateProcessChecking});
+
+  SetUpdateEngineStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
+  test::OobeJS()
+      .CreateVisibilityWaiter(
+          true, {kUpdateRequiredScreen, kUpdateProcess, kUpdateProcessComplete})
+      ->Wait();
+  test::OobeJS().ExpectHiddenPath(
+      {kUpdateRequiredScreen, kUpdateProcess, kUpdateProcessUpdating});
+
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
   EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
 }

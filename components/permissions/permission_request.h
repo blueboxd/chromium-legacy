@@ -54,6 +54,7 @@ enum class PermissionRequestType {
   PERMISSION_VR = 21,
   PERMISSION_AR = 22,
   PERMISSION_STORAGE_ACCESS = 23,
+  PERMISSION_CAMERA_PAN_TILT_ZOOM = 24,
   // NUM must be the last value in the enum.
   NUM
 };

@@ -299,12 +299,6 @@
 <translation id="1427655258943162134">Adresse ou URL du serveur proxy</translation>
 <translation id="1435659902881071157">Configuration réseau au niveau de l'appareil</translation>
 <translation id="1438739959477268107">Paramètre de génération de clé par défaut</translation>
-<translation id="1455804070656338445">Permet de configurer l'URL de modification de mot de passe (protocoles HTTP et HTTPS uniquement). Le service de protection par mot de passe dirige les utilisateurs vers cette URL afin que ces derniers modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
-      Afin que <ph name="PRODUCT_NAME" /> enregistre correctement la nouvelle empreinte numérique du mot de passe sur la page de modification de ce dernier, vérifiez si cette page respecte bien les consignes indiquées à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si ce paramètre est activé, le service de protection par mot de passe dirige les utilisateurs vers cette URL afin que ces derniers modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
-      Si ce paramètre est désactivé ou n'est pas défini, le service de protection par mot de passe dirige les utilisateurs vers la page https://myaccount.google.com afin que ces derniers modifient leur mot de passe.
-      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows 10 Entreprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="1456822151187621582">Windows (clients <ph name="PRODUCT_OS_NAME" />) :</translation>
 <translation id="1464848559468748897">Contrôle le comportement des utilisateurs dans une session multiprofil sur des appareils <ph name="PRODUCT_OS_NAME" />.
 
@@ -363,6 +357,7 @@ Si vous la désactivez, le défilement des pages Web vers des fragments de texte
           Si la règle "EnableMediaRouter" est définie sur "False", la valeur de la règle "MediaRouterCastAllowAIIIPs" n'a aucune incidence.</translation>
 <translation id="1509692106376861764">Cette règle a été supprimée à partir de la version 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Activer <ph name="PRODUCT_NAME" /></translation>
+<translation id="1515230621229117540">Permet d'activer le menu d'accessibilité flottant</translation>
 <translation id="1515824657887788963">Autoriser une page à exécuter des requêtes XHR synchrones pendant sa fermeture.</translation>
 <translation id="1522425503138261032">Autoriser les sites à suivre la position géographique des utilisateurs</translation>
 <translation id="1523774894176285446">Navigateur secondaire à lancer pour les sites Web configurés.</translation>
@@ -608,12 +603,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si elle est définie sur "false", les rapports sur les statistiques et les données de diagnostic ne sont pas envoyés.
 
       Si cette règle n'est pas configurée, les rapports sur les statistiques et les données de diagnostic ne sont pas envoyés sur les appareils non gérés, mais sont transmis sur les appareils gérés.</translation>
-<translation id="1907431809333268751">Permet de configurer la liste des URL de connexion d'entreprise (protocoles HTTP et HTTPS uniquement). L'empreinte numérique du mot de passe est enregistrée au niveau de ces URL et sert à détecter les mots de passe réutilisés.
-      Afin que <ph name="PRODUCT_NAME" /> enregistre correctement les empreintes numériques de vos mots de passe, vérifiez que vos pages de connexion respectent bien les consignes indiquées à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si cette règle est activée, le service de protection par mot de passe enregistre l'empreinte numérique du mot de passe au niveau de ces URL afin de détecter les mots de passe réutilisés.
-      Si cette règle est désactivée ou n'est pas configurée, le service de protection par mot de passe n'enregistre l'empreinte numérique du mot de passe que sur https://accounts.google.com.
-      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="1910704279188129272">Permet de configurer des restrictions d'utilisation spécifiques pour chaque application.
         Vous pouvez appliquer des restrictions d'utilisation aux applications installées sur <ph name="PRODUCT_OS_NAME" /> pour l'utilisateur concerné.
         Les restrictions doivent être saisies dans la liste |app_limits|. Seule une entrée par application est autorisée. Les applications ne figurant pas dans cette liste ne sont pas restreintes.
@@ -3366,6 +3355,17 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
           Si vous ne fournissez aucun paramètre, <ph name="PRODUCT_NAME" /> utilisera un nom de bibliothèque par défaut.</translation>
 <translation id="5783009211970309878">Imprimer les en-têtes et les pieds de page</translation>
+<translation id="5783576706065107606">Atténuer les vérifications <ph name="CORS" /> dans la nouvelle mise en œuvre de <ph name="CORS" />, ce qui permet aux extensions de conserver un comportement compatible, et à <ph name="PRODUCT_NAME" /> d'envoyer les en-têtes spécifiés sans vérifications <ph name="CORS" />.
+
+      Si la liste est vide, <ph name="PRODUCT_NAME" /> essaie d'exécuter les extensions de manière compatible, et n'introduit pas de modifications de l'<ph name="API" /> pour <ph name="PRODUCT_NAME" /> 79 (comme indiqué à la page <ph name="WEB_REQUEST_API_MANUAL" />).
+
+      Si la liste contient des en-têtes de requêtes <ph name="HTTP" />, ces en-têtes sont ignorés lors des contrôles <ph name="CORS" />. Les contrôles sont en outre atténués pour les extensions.
+
+      Si cette liste n'est pas configurée, les deux mesures d'atténuation ci-dessous ne sont pas appliquées.
+
+      Pour en savoir plus sur <ph name="CORS" />, consultez la page <ph name="CORS_HELP_URL" />.
+
+      Notez que cette règle était programmée pour être supprimée dans la version 82 de <ph name="PRODUCT_NAME" />, mais que sa suppression a été finalement reportée à la version 84.</translation>
 <translation id="5790763087505467169">Réduire les notifications de lancement automatique des sessions Invité gérées</translation>
 <translation id="5806128552675651249">Autoriser l'impression uniquement sans images de fond</translation>
 <translation id="5809210507920527553">Contrôle les paramètres du conteneur Linux (Crostini).</translation>
@@ -3429,6 +3429,17 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
           En cas de désactivation ou de non-configuration de ce paramètre, le nom de domaine TalkGadget par défaut ("chromoting-host.talkgadget.google.com") est utilisé pour tous les hôtes.
 
           Les clients d'accès à distance ne sont pas concernés par la configuration de cette règle. Ils utilisent toujours "chromoting-client.talkgadget.google.com" pour accéder à TalkGadget.</translation>
+<translation id="5888171512889380367">Permet d'utiliser l'ancienne mise en œuvre de <ph name="CORS" /> plutôt que la nouvelle mise en œuvre de <ph name="CORS" />.
+
+      Si cette règle est définie sur "True", l'ancienne mise en œuvre doit être compatible avec les versions précédentes.
+
+      Si cette règle est définie sur "False" ou si elle n'est pas configurée, la nouvelle mise en œuvre utilisée peut causer des problèmes de compatibilité spécifiques à l'entreprise.
+
+      Cette règle sera supprimée après quelques versions intermédiaires.
+
+      Pour en savoir plus sur <ph name="CORS" />, consultez la page <ph name="CORS_HELP_URL" />.
+
+      Notez que cette règle était programmée pour être supprimée dans la version 82 de <ph name="PRODUCT_NAME" />, mais que sa suppression a été finalement reportée à la version 84.</translation>
 <translation id="5893553533827140852">Si ce paramètre est activé, les demandes d'authentification gnubby seront envoyées par un proxy via une connexion hôte à distance.
 
           S'il est désactivé ou n'est pas configuré, ces demandes ne seront pas envoyées par un proxy.</translation>
@@ -3718,6 +3729,11 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 
           Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="6417265370957905582">Assistant Google</translation>
+<translation id="6422575351619065453">En mode Kiosque, cette règle permet de déterminer si le menu d'accessibilité flottant est affiché.
+
+      Si cette règle est activée, le menu d'accessibilité flottant sera toujours affiché.
+
+      Si elle est désactivée ou n'est pas définie, le menu d'accessibilité flottant ne sera jamais affiché.</translation>
 <translation id="6424485010103067949"><ph name="OMA_URI" /> :</translation>
 <translation id="6426205278746959912">Vous ne pouvez pas forcer les applications Android à utiliser un proxy. Celles-ci disposent d'un sous-ensemble de paramètres proxy qu'elles peuvent choisir d'utiliser ou non :
 
@@ -4030,13 +4046,6 @@ Si elle est désactivée, les mots de passe enregistrés ne sont pas importés.
 
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="7003746348783715221">Préférences de <ph name="PRODUCT_NAME" /></translation>
-<translation id="7007671350884342624">Cette règle permet de configurer le répertoire utilisé par <ph name="PRODUCT_NAME" /> pour le stockage des données de l'utilisateur.
-
-      Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilisera le répertoire fourni, que l'utilisateur ait ou non spécifié l'indicateur "--user-data-dir". Pour éviter la perte de données ou d'autres erreurs inattendues, ne définissez pas cette règle sur le répertoire racine d'un volume ni sur un répertoire utilisé à d'autres fins, car <ph name="PRODUCT_NAME" /> pourra gérer son contenu.
-
-      Consultez la page https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables pour obtenir la liste des variables pouvant être utilisées.
-
-      Si cette règle n'est pas définie, le chemin de profil par défaut sera utilisé, et l'utilisateur pourra le remplacer avec l'indicateur de ligne de commande "--user-data-dir".</translation>
 <translation id="7008308728445338159">Contrôles d'interception des requêtes DNS activés</translation>
 <translation id="7027785306666625591">Configurer la gestion de l'alimentation dans <ph name="PRODUCT_OS_NAME" />
 
@@ -4959,7 +4968,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8424255554404582727">Définir la rotation de l'écran par défaut (réappliquée à chaque redémarrage)</translation>
 <translation id="8426231401662877819">Faire pivoter l'écran vers la droite de 90 degrés</translation>
 <translation id="8433186206711564395">Paramètres réseau</translation>
-<translation id="8433423491036718210">Configurez la liste des URL de connexion d'entreprise pour lesquelles le service de protection par mot de passe doit capturer l'empreinte numérique du mot de passe.</translation>
 <translation id="8445576299806775661">Après chaque mise à jour de version majeure, Chrome crée un instantané de certaines portions des données de navigation de l'utilisateur en prévision d'un éventuel rollback de version d'urgence. Si un rollback d'urgence a lieu et que Chrome dispose de l'instantané correspondant, les données de cet instantané sont restaurées. L'utilisateur récupérera ainsi ses favoris et ses données de saisie automatique, entre autres.
 
       Si la règle n'est pas définie, la valeur par défaut 3 est utilisée.

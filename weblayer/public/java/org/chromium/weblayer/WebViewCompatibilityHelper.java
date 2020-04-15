@@ -9,6 +9,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.Pair;
 
@@ -43,9 +44,18 @@ final class WebViewCompatibilityHelper {
                 libraryPaths[i] = "/." + libraryPaths[i];
             }
         }
-        ClassLoader classLoader = new PathClassLoader(getAllApkPaths(info.applicationInfo),
-                TextUtils.join(File.pathSeparator, libraryPaths),
-                ClassLoader.getSystemClassLoader());
+
+        // TODO(cduvall): PathClassLoader may call stat on the library paths, consider moving this
+        // to a background thread.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        ClassLoader classLoader;
+        try {
+            classLoader = new PathClassLoader(getAllApkPaths(info.applicationInfo),
+                    TextUtils.join(File.pathSeparator, libraryPaths),
+                    ClassLoader.getSystemClassLoader());
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
         return Pair.create(classLoader, WebLayer.WebViewCompatibilityResult.SUCCESS);
     }
 

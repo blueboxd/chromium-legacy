@@ -58,6 +58,13 @@ void LaunchApp(Profile* profile, std::string app_id) {
       apps::AppServiceProxyFactory::GetForProfile(profile);
   DCHECK(proxy);
 
+  // Any user for whom the Help app launches after OOBE should see the getting
+  // started module.
+  profile->GetPrefs()->SetBoolean(prefs::kHelpAppShouldShowGetStarted, true);
+  // This is only used by the getting started module, so we can set it here.
+  profile->GetPrefs()->SetBoolean(prefs::kHelpAppTabletModeDuringOobe,
+                                  ash::TabletMode::Get()->InTabletMode());
+
   proxy->Launch(app_id, ui::EventFlags::EF_NONE,
                 apps::mojom::LaunchSource::kFromChromeInternal,
                 display::kInvalidDisplayId);
@@ -107,6 +114,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // users will always see the welcome app on a new device.
   // See crbug.com/752361
   registry->RegisterBooleanPref(prefs::kFirstRunTutorialShown, false);
+  registry->RegisterBooleanPref(prefs::kHelpAppShouldShowGetStarted, false);
+  registry->RegisterBooleanPref(prefs::kHelpAppTabletModeDuringOobe, false);
 }
 
 bool ShouldLaunchHelpApp(Profile* profile) {

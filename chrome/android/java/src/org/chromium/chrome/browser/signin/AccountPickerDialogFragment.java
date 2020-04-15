@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.accounts.Account;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -28,6 +29,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
 
 import java.lang.annotation.Retention;
@@ -213,7 +215,7 @@ public class AccountPickerDialogFragment extends DialogFragment {
     private final AccountsChangeObserver mAccountsChangeObserver = this::updateAccounts;
     private final ProfileDataCache.Observer mProfileDataObserver = accountId -> updateProfileData();
     private ProfileDataCache mProfileDataCache;
-    private List<String> mAccounts;
+    private List<String> mAccountNames;
     private Adapter mAdapter;
     private Callback mCallback;
 
@@ -296,21 +298,22 @@ public class AccountPickerDialogFragment extends DialogFragment {
     }
 
     private void updateAccounts() {
+        List<Account> accounts;
         try {
-            mAccounts = AccountManagerFacadeProvider.getInstance().getGoogleAccountNames();
+            accounts = AccountManagerFacadeProvider.getInstance().getGoogleAccounts();
         } catch (AccountManagerDelegateException ex) {
             Log.e(TAG, "Can't get account list", ex);
             dismissAllowingStateLoss();
             return;
         }
-
-        mProfileDataCache.update(mAccounts);
+        mAccountNames = AccountUtils.toAccountNames(accounts);
+        mProfileDataCache.update(mAccountNames);
         updateProfileData();
     }
 
     private void updateProfileData() {
         List<DisplayableProfileData> profileDataList = new ArrayList<>();
-        for (String accountName : mAccounts) {
+        for (String accountName : mAccountNames) {
             profileDataList.add(mProfileDataCache.getProfileDataOrDefault(accountName));
         }
         mAdapter.setProfileDataList(profileDataList);

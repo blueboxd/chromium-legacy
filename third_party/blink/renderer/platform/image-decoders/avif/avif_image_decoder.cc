@@ -257,11 +257,10 @@ void AVIFImageDecoder::InitializeNewFrame(size_t index) {
 
   buffer.SetOriginalFrameRect(IntRect(IntPoint(), Size()));
 
-  // TODO(wtc): libavif provides only the current frame's duration. But when
-  // this method is called, we have not decoded any frames. Change libavif to
-  // provide all frames' durations after avifDecoderParse(). Then call
-  // buffer.SetDuration() here and remove the buffer.SetDuration() call in
-  // Decode().
+  avifImageTiming timing;
+  auto ret = avifDecoderNthImageTiming(decoder_.get(), index, &timing);
+  DCHECK_EQ(ret, AVIF_RESULT_OK);
+  buffer.SetDuration(base::TimeDelta::FromSecondsD(timing.duration));
 
   // TODO(wtc): Find out if disposal method and alpha blend source are specified
   // in the file format.
@@ -334,8 +333,6 @@ void AVIFImageDecoder::Decode(size_t index) {
       return;
     }
 
-    buffer.SetDuration(
-        base::TimeDelta::FromSecondsD(decoder_->imageTiming.duration));
     buffer.SetPixelsChanged(true);
     buffer.SetStatus(ImageFrame::kFrameComplete);
   }
@@ -387,11 +384,9 @@ void AVIFImageDecoder::MaybeCreateDemuxer() {
 }
 
 bool AVIFImageDecoder::DecodeImage(size_t index) {
-  if (!pending_decoded_image_ || decoder_->imageIndex != int{index}) {
-    auto ret = (decoder_->imageIndex + 1 == int{index})
-                   ? avifDecoderNextImage(decoder_.get())
-                   : avifDecoderNthImage(decoder_.get(), index);
-    if (ret != AVIF_RESULT_OK || !decoder_->image) {
+  if (!pending_decoded_image_) {
+    auto ret = avifDecoderNthImage(decoder_.get(), index);
+    if (ret != AVIF_RESULT_OK) {
       // We shouldn't be called more times than specified in
       // DecodeFrameCount(); possibly this should truncate if the initial
       // count is wrong?

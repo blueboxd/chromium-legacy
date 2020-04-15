@@ -28,12 +28,14 @@ class NewCSSAnimation {
  public:
   NewCSSAnimation(AtomicString name,
                   size_t name_index,
+                  size_t position_index,
                   const InertEffect& effect,
                   Timing timing,
                   StyleRuleKeyframes* style_rule,
                   const Vector<EAnimPlayState>& play_state_list)
       : name(name),
         name_index(name_index),
+        position_index(position_index),
         effect(effect),
         timing(timing),
         style_rule(style_rule),
@@ -47,6 +49,7 @@ class NewCSSAnimation {
 
   AtomicString name;
   size_t name_index;
+  size_t position_index;
   Member<const InertEffect> effect;
   Timing timing;
   Member<StyleRuleKeyframes> style_rule;
@@ -109,13 +112,14 @@ class CORE_EXPORT CSSAnimationUpdate final {
 
   void StartAnimation(const AtomicString& animation_name,
                       size_t name_index,
+                      wtf_size_t position_index,
                       const InertEffect& effect,
                       const Timing& timing,
                       StyleRuleKeyframes* style_rule,
                       const Vector<EAnimPlayState>& play_state_list) {
     new_animations_.push_back(NewCSSAnimation(animation_name, name_index,
-                                              effect, timing, style_rule,
-                                              play_state_list));
+                                              position_index, effect, timing,
+                                              style_rule, play_state_list));
   }
   void CancelAnimation(wtf_size_t index, const Animation& animation) {
     cancelled_animation_indices_.push_back(index);

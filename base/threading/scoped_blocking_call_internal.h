@@ -8,10 +8,18 @@
 #include "base/base_export.h"
 #include "base/debug/activity_tracker.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/optional.h"
+#include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
+#include "base/time/time.h"
 
 namespace base {
 
+// Forward-declare types from scoped_blocking_call.h to break cyclic dependency.
 enum class BlockingType;
+using IOJankReportingCallback = RepeatingCallback<void(int, int)>;
+void BASE_EXPORT EnableIOJankMonitoringForProcess(IOJankReportingCallback);
 
 // Implementation details of types in scoped_blocking_call.h and classes for a
 // few key //base types to observe and react to blocking calls.
@@ -44,16 +52,124 @@ BASE_EXPORT void SetBlockingObserverForCurrentThread(
 
 BASE_EXPORT void ClearBlockingObserverForCurrentThread();
 
+// An IOJankMonitoringWindow instruments 1-minute of runtime. Any I/O jank > 1
+// second happening during that period will be reported to it. It will then
+// report via the IOJankReportingCallback in |reporting_callback_storage()| if
+// it's non-null. https://bit.ly/chrome-io-jank-metric.
+class BASE_EXPORT IOJankMonitoringWindow
+    : public RefCountedThreadSafe<IOJankMonitoringWindow> {
+ public:
+  explicit IOJankMonitoringWindow(TimeTicks start_time);
+
+  IOJankMonitoringWindow(const IOJankMonitoringWindow&) = delete;
+  IOJankMonitoringWindow& operator=(const IOJankMonitoringWindow&) = delete;
+
+  // Cancels monitoring and clears this class' static state.
+  static void CancelMonitoringForTesting();
+
+  class ScopedMonitoredCall {
+   public:
+    // Stores a ref to the current IOJankMonitoringWindow if monitoring is
+    // active, keeping it alive at least until the monitored call completes or
+    // Cancel() is invoked.
+    ScopedMonitoredCall();
+
+    // Reports to |assigned_jank_window_| if it's non-null.
+    ~ScopedMonitoredCall();
+
+    ScopedMonitoredCall(const ScopedMonitoredCall&) = delete;
+    ScopedMonitoredCall& operator=(const ScopedMonitoredCall&) = delete;
+
+    // Cancels monitoring of this call.
+    void Cancel();
+
+   private:
+    const TimeTicks call_start_;
+    scoped_refptr<IOJankMonitoringWindow> assigned_jank_window_;
+  };
+
+  static constexpr TimeDelta kIOJankInterval = TimeDelta::FromSeconds(1);
+  static constexpr TimeDelta kMonitoringWindow = TimeDelta::FromMinutes(1);
+  static constexpr TimeDelta kTimeDiscrepancyTimeout = kIOJankInterval * 10;
+  static constexpr int kNumIntervals = kMonitoringWindow / kIOJankInterval;
+
+ private:
+  friend class base::RefCountedThreadSafe<IOJankMonitoringWindow>;
+  friend void base::EnableIOJankMonitoringForProcess(IOJankReportingCallback);
+
+  // No-op if reporting_callback_storage() is null (i.e. unless
+  // EnableIOJankMonitoringForProcess() was called).
+  // When reporting_callback_storage() is non-null : Ensures that there's an
+  // active IOJankMonitoringWindow for Now(), connects it via |next_| to the
+  // previous IOJankMonitoringWindow to let ScopedMonitoredCalls that span
+  // multiple windows report to each window they cover. In the event that Now()
+  // is farther ahead than expected (> 10s), the previous window is |canceled_|
+  // as it was likely interrupted by a system sleep and a new
+  // IOJankMonitoringWindow chain is started from Now(). In all cases, returns a
+  // live reference to the current (old or new) IOJankMonitoringWindow as a
+  // helper so callers that need it don't need to re-acquire
+  // current_jank_window_lock() after calling this.
+  // |recent_now| is a recent sampling of TimeTicks::Now(), avoids
+  // double-sampling Now() from most callers.
+  static scoped_refptr<IOJankMonitoringWindow> MonitorNextJankWindowIfNecessary(
+      TimeTicks recent_now);
+
+  // An IOJankMonitoringWindow is destroyed when all refs to it are gone, i.e.:
+  //  1) The window it covers has elapsed and MonitorNextJankWindowIfNecessary()
+  //     has replaced it.
+  //  2) All pending ScopedMonitoredCall's in their range have completed
+  //     (including the ones that transitively have it in their |next_| chain).
+  ~IOJankMonitoringWindow();
+
+  // Called from ~ScopedMonitoredCall().
+  void OnBlockingCallCompleted(TimeTicks call_start, TimeTicks call_end);
+
+  // Helper for OnBlockingCallCompleted(). Records |num_janky_intervals|
+  // starting at |local_jank_start_index|. Having this logic separately helps
+  // sane management of |intervals_lock_| when recursive calls through |next_|
+  // pointers are necessary.
+  void AddJank(int local_jank_start_index, int num_janky_intervals);
+
+  static Lock& current_jank_window_lock();
+  static scoped_refptr<IOJankMonitoringWindow>& current_jank_window_storage()
+      EXCLUSIVE_LOCKS_REQUIRED(current_jank_window_lock());
+
+  // Storage for callback used to report monitoring results.
+  // NullCallback if monitoring was not enabled for this process.
+  static IOJankReportingCallback& reporting_callback_storage()
+      EXCLUSIVE_LOCKS_REQUIRED(current_jank_window_lock());
+
+  Lock intervals_lock_;
+  size_t intervals_jank_count_[kNumIntervals] GUARDED_BY(intervals_lock_) = {};
+
+  const TimeTicks start_time_;
+
+  // Set only once per window, in MonitorNextJankWindowIfNecessary(). Any read
+  // of this value must be ordered after that call in memory and in time.
+  scoped_refptr<IOJankMonitoringWindow> next_;
+
+  // Set to true if ~IOJankMonitoringWindow() shouldn't record metrics.
+  // Modifications of this variable must be synchronized with each other and
+  // happen-before ~IOJankMonitoringWindow().
+  bool canceled_ = false;
+};
+
 // Common implementation class for both ScopedBlockingCall and
 // ScopedBlockingCallWithBaseSyncPrimitives without assertions.
 class BASE_EXPORT UncheckedScopedBlockingCall {
  public:
+  enum class BlockingCallType {
+    kRegular,
+    kBaseSyncPrimitives,
+  };
+
   explicit UncheckedScopedBlockingCall(const Location& from_here,
-                                       BlockingType blocking_type);
+                                       BlockingType blocking_type,
+                                       BlockingCallType blocking_call_type);
   ~UncheckedScopedBlockingCall();
 
  private:
-  internal::BlockingObserver* const blocking_observer_;
+  BlockingObserver* const blocking_observer_;
 
   // Previous ScopedBlockingCall instantiated on this thread.
   UncheckedScopedBlockingCall* const previous_scoped_blocking_call_;
@@ -63,6 +179,10 @@ class BASE_EXPORT UncheckedScopedBlockingCall {
   const bool is_will_block_;
 
   base::debug::ScopedActivity scoped_activity_;
+
+  // Non-nullopt for non-nested blocking calls of type MAY_BLOCK on foreground
+  // threads which we monitor for I/O jank.
+  Optional<IOJankMonitoringWindow::ScopedMonitoredCall> monitored_call_;
 
   DISALLOW_COPY_AND_ASSIGN(UncheckedScopedBlockingCall);
 };

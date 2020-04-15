@@ -41,7 +41,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2799223571221894425">Reiniciar</translation>
 <translation id="2805036593126168338">Chromium OS no ha podido sincronizar las contraseñas. Soluciónalo ahora.</translation>
 <translation id="2847479871509788944">Desinstalar de Chromium...</translation>
-<translation id="2886012850691518054">Opcional: ayudar a mejorar Chromium enviando automáticamente a Google estadísticas de uso e informes de errores</translation>
 <translation id="2910007522516064972">Información de &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium está actualizado</translation>
 <translation id="2983934633046890458">Chromium está intentando cambiar contraseñas.</translation>
@@ -60,6 +59,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="328888136576916638">Faltan las claves de la API de Google. Se inhabilitarán algunas funciones de Chromium.</translation>
 <translation id="3296368748942286671">Seguir ejecutando aplicaciones en segundo plano al cerrar Chromium</translation>
 <translation id="331951419404882060">Chromium OS no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>
+<translation id="347328004046849135">Chromium te avisará cuando inicies sesión con una contraseña vulnerada</translation>
 <translation id="3474745554856756813">Se eliminarán <ph name="ITEMS_COUNT" /> elementos de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Cierra todas las ventanas de Chromium e inténtalo de nuevo.</translation>
 <translation id="3575459661164320785">Se ha detectado software dañino en tu ordenador. Chromium puede eliminarlo, restaurar tu configuración y desactivar las extensiones para que el navegador vuelva a funcionar con normalidad.</translation>
@@ -95,11 +95,13 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4746050847053251315">¿Quieres cerrar Chromium de todas formas?</translation>
 <translation id="4748217263233248895">Se acaba de instalar una actualización de seguridad especial para Chromium. Reinicia ahora y restauraremos las pestañas.</translation>
 <translation id="4750035648288509542">La actualización ya casi ha terminado. Reinicia Chromium para completar la actualización. Las ventanas de incógnito no se volverán a abrir.</translation>
+<translation id="4788777615168560705">Chromium no puede comprobar tus contraseñas. Vuelve a intentarlo en 24 horas o <ph name="BEGIN_LINK" />comprueba las contraseñas en tu cuenta de Google<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Utiliza el mismo corrector ortográfico que se usa en la Búsqueda de Google. El texto que escribas en el navegador se enviará a Google. Puedes cambiar esta opción en cualquier momento desde los ajustes.</translation>
 <translation id="4888717733111232871">Regla entrante para que Chromium permita tráfico mDNS.</translation>
 <translation id="4943838377383847465">Chromium está en modo de segundo plano.</translation>
 <translation id="4987820182225656817">Los invitados pueden utilizar Chromium sin dejar nada atrás.</translation>
 <translation id="4994636714258228724">Añadirte a Chromium</translation>
+<translation id="5224391634244552924">No hay ninguna contraseña guardada. Chromium puede comprobar tus contraseñas si las guardas.</translation>
 <translation id="5277894862589591112">Reinicia Chromium para aplicar los cambios</translation>
 <translation id="5358375970380395591">Vas a iniciar sesión con una cuenta gestionada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Chromium. Tus datos de Chromium como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociarlos a otra cuenta. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Actualizando Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -166,6 +168,7 @@ Es posible que algunas funciones no estén disponibles. Especifica un directorio
 <translation id="7066436765290594559">Chromium OS no ha podido sincronizar tus datos. Actualiza tu frase de contraseña de sincronización.</translation>
 <translation id="7067091210845072982">Si una imagen no tiene ninguna descripción útil, Chromium intentará proporcionártela. Para crear las descripciones, las imágenes se envían a Google.</translation>
 <translation id="7196312274710523067">No se ha podido iniciar Chromium. Inténtalo de nuevo.</translation>
+<translation id="7197677400338048821">Chromium no puede comprobar tus contraseñas. Vuelve a intentarlo en 24 horas.</translation>
 <translation id="7205698830395646142">Ocultar en el menú de Chromium</translation>
 <translation id="7223968959479464213">Administrador de tareas - Chromium</translation>
 <translation id="731644333568559921">Actualizar &amp;Chromium OS</translation>

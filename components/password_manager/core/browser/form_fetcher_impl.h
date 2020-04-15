@@ -53,6 +53,9 @@ class FormFetcherImpl : public FormFetcher,
   std::vector<const autofill::PasswordForm*> GetFederatedMatches()
       const override;
   bool IsBlacklisted() const override;
+  bool IsMovingBlocked(const autofill::GaiaIdHash& destination,
+                       const base::string16& username) const override;
+
   const std::vector<const autofill::PasswordForm*>& GetAllRelevantMatches()
       const override;
   const std::vector<const autofill::PasswordForm*>& GetBestMatches()
@@ -70,6 +73,14 @@ class FormFetcherImpl : public FormFetcher,
       std::vector<std::unique_ptr<autofill::PasswordForm>> forms) override;
 
  protected:
+  // Processes password form results and forwards them to the |consumers_|.
+  void ProcessPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
+
+  // Splits |results| into |federated_|, |non_federated_| and |blacklisted_|.
+  virtual void SplitResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
+
   // PasswordStore results will be fetched for this description.
   const PasswordStore::FormDigest form_digest_;
 
@@ -83,15 +94,6 @@ class FormFetcherImpl : public FormFetcher,
   // password store returning results in the meantime.
   bool need_to_refetch_ = false;
 
-  // Processes password form results and forwards them to the |consumers_|.
-  void ProcessPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
-
-  // Splits |results| into |federated_|, |non_federated_| and |blacklisted_|.
-  virtual void SplitResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
-
- private:
   // Results obtained from PasswordStore:
   std::vector<std::unique_ptr<autofill::PasswordForm>> non_federated_;
 
@@ -100,6 +102,7 @@ class FormFetcherImpl : public FormFetcher,
   // non-federated matches.
   std::vector<std::unique_ptr<autofill::PasswordForm>> federated_;
 
+ private:
   // Non-federated credentials of the same scheme as the observed form.
   std::vector<const autofill::PasswordForm*> non_federated_same_scheme_;
 

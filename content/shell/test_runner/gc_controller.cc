@@ -5,8 +5,6 @@
 #include "content/shell/test_runner/gc_controller.h"
 
 #include "base/bind.h"
-#include "content/shell/test_runner/test_interfaces.h"
-#include "content/shell/test_runner/web_test_delegate.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -19,8 +17,7 @@ namespace content {
 gin::WrapperInfo GCController::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 // static
-void GCController::Install(TestInterfaces* interfaces,
-                           blink::WebLocalFrame* frame) {
+void GCController::Install(blink::WebLocalFrame* frame) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = frame->MainWorldScriptContext();
@@ -30,7 +27,7 @@ void GCController::Install(TestInterfaces* interfaces,
   v8::Context::Scope context_scope(context);
 
   gin::Handle<GCController> controller =
-      gin::CreateHandle(isolate, new GCController(interfaces));
+      gin::CreateHandle(isolate, new GCController(frame));
   if (controller.IsEmpty())
     return;
   v8::Local<v8::Object> global = context->Global();
@@ -40,8 +37,7 @@ void GCController::Install(TestInterfaces* interfaces,
       .Check();
 }
 
-GCController::GCController(TestInterfaces* interfaces)
-    : interfaces_(interfaces) {}
+GCController::GCController(blink::WebLocalFrame* frame) : frame_(frame) {}
 
 GCController::~GCController() = default;
 
@@ -75,15 +71,16 @@ void GCController::AsyncCollectAll(const gin::Arguments& args) {
         "v8::Function.");
     return;
   }
-
-  v8::UniquePersistent<v8::Function> func(
+  v8::UniquePersistent<v8::Function> js_callback(
       args.isolate(), v8::Local<v8::Function>::Cast(args.PeekNext()));
 
-  CHECK(interfaces_->GetDelegate());
-  CHECK(!func.IsEmpty());
-  interfaces_->GetDelegate()->PostTask(
+  // Bind the js callback into a OnceClosure that will be run asynchronously in
+  // a fresh call stack.
+  base::OnceClosure run_async =
       base::BindOnce(&GCController::AsyncCollectAllWithEmptyStack,
-                     base::Unretained(this), std::move(func)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(js_callback));
+  frame_->GetTaskRunner(blink::TaskType::kInternalTest)
+      ->PostTask(FROM_HERE, std::move(run_async));
 }
 
 void GCController::AsyncCollectAllWithEmptyStack(

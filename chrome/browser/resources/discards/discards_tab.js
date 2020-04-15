@@ -19,7 +19,7 @@ import {SortedTableBehavior} from './sorted_table_behavior.js';
  *     attribute of the table headers for valid sort-keys.
  * @param {boolean|number|string} a The first value being compared.
  * @param {boolean|number|string} b The second value being compared.
- * @return {number} A negative number if a < b, 0 if a == b, and a positive
+ * @return {number} A negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
 export function compareTabDiscardsInfos(sortKey, a, b) {
@@ -27,10 +27,10 @@ export function compareTabDiscardsInfos(sortKey, a, b) {
   let val2 = b[sortKey];
 
   // Compares strings.
-  if (sortKey == 'title' || sortKey == 'tabUrl') {
+  if (sortKey === 'title' || sortKey === 'tabUrl') {
     val1 = val1.toLowerCase();
     val2 = val2.toLowerCase();
-    if (val1 == val2) {
+    if (val1 === val2) {
       return 0;
     }
     return val1 > val2 ? 1 : -1;
@@ -38,17 +38,17 @@ export function compareTabDiscardsInfos(sortKey, a, b) {
 
   // Compares boolean fields.
   if (['canFreeze', 'isAutoDiscardable'].includes(sortKey)) {
-    if (val1 == val2) {
+    if (val1 === val2) {
       return 0;
     }
     return val1 ? 1 : -1;
   }
 
   // Compare lifecycle state. This is actually a compound key.
-  if (sortKey == 'state') {
+  if (sortKey === 'state') {
     // If the keys are discarding state, then break ties using the discard
     // reason.
-    if (val1 == val2 && val1 == mojom.LifecycleUnitState.DISCARDED) {
+    if (val1 === val2 && val1 === mojom.LifecycleUnitState.DISCARDED) {
       val1 = a['discardReason'];
       val2 = b['discardReason'];
     }
@@ -113,7 +113,7 @@ Polymer({
    * @param {boolean} sortReverse True if sorting is reversed.
    * @return {function({Object}, {Object}): number}
    *     A comparison function that compares two tab infos, returns
-   *     negative number if a < b, 0 if a == b, and a positive
+   *     negative number if a < b, 0 if a === b, and a positive
    *     number if a > b.
    * @private
    */
@@ -225,12 +225,12 @@ Polymer({
         return 'frozen';
       case mojom.LifecycleUnitState.DISCARDED:
         return 'discarded (' + this.discardReasonToString_(reason) + ')' +
-            ((reason == mojom.LifecycleUnitDiscardReason.URGENT) ? ' at ' +
+            ((reason === mojom.LifecycleUnitDiscardReason.URGENT) ? ' at ' +
                      // Must convert since Date constructor takes
                      // milliseconds.
                      (new Date(stateChangeTime.microseconds / 1000))
                          .toLocaleString() :
-                                                                   '');
+                                                                    '');
       case mojom.LifecycleUnitState.PENDING_UNFREEZE:
         return 'frozen (pending unfreeze)';
     }
@@ -299,7 +299,7 @@ Polymer({
    * @private
    */
   getLifeCycleState_(item) {
-    if (item.loadingState != mojom.LifecycleUnitLoadingState.UNLOADED ||
+    if (item.loadingState !== mojom.LifecycleUnitLoadingState.UNLOADED ||
         item.discardCount > 0) {
       return this.lifecycleStateToString_(
           item.state, item.discardReason, item.visibility, item.hasFocus,
@@ -338,7 +338,7 @@ Polymer({
    * @private
    */
   hasCannotFreezeReasons_(item) {
-    return item.cannotFreezeReasons.length != 0;
+    return item.cannotFreezeReasons.length !== 0;
   },
   /**
    * Tests whether an item has reasons why it cannot be discarded.
@@ -348,7 +348,7 @@ Polymer({
    * @private
    */
   hasCannotDiscardReasons_(item) {
-    return item.cannotDiscardReasons.length != 0;
+    return item.cannotDiscardReasons.length !== 0;
   },
 
   /**
@@ -358,7 +358,7 @@ Polymer({
    * @private
    */
   canLoad_(item) {
-    return item.loadingState == mojom.LifecycleUnitLoadingState.UNLOADED;
+    return item.loadingState === mojom.LifecycleUnitLoadingState.UNLOADED;
   },
 
   /**
@@ -368,8 +368,8 @@ Polymer({
    * @private
    */
   canFreeze_(item) {
-    if (item.visibility == discards.mojom.LifecycleUnitVisibility.HIDDEN ||
-        item.visibility == discards.mojom.LifecycleUnitVisibility.OCCLUDED) {
+    if (item.visibility === discards.mojom.LifecycleUnitVisibility.HIDDEN ||
+        item.visibility === discards.mojom.LifecycleUnitVisibility.OCCLUDED) {
       // Only tabs that aren't visible can be frozen for now.
       switch (item.state) {
         case mojom.LifecycleUnitState.DISCARDED:
@@ -389,8 +389,8 @@ Polymer({
    * @private
    */
   canDiscard_(item) {
-    if (item.visibility == discards.mojom.LifecycleUnitVisibility.HIDDEN ||
-        item.visibility == discards.mojom.LifecycleUnitVisibility.OCCLUDED) {
+    if (item.visibility === discards.mojom.LifecycleUnitVisibility.HIDDEN ||
+        item.visibility === discards.mojom.LifecycleUnitVisibility.OCCLUDED) {
       // Only tabs that aren't visible can be discarded for now.
       switch (item.state) {
         case mojom.LifecycleUnitState.DISCARDED:

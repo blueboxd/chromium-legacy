@@ -289,7 +289,7 @@ TEST_F(GraphImplTest, NodeDataDescribers) {
   NodeDataDescriberRegistry* registry = graph()->GetNodeDataDescriberRegistry();
 
   // No describers->no description.
-  base::Value descr = registry->DescribeFrameNodeData(mock_graph.frame.get());
+  base::Value descr = registry->DescribeNodeData(mock_graph.frame.get());
   EXPECT_TRUE(descr.is_none());
 
   // Test that the default impl does nothing.
@@ -300,26 +300,25 @@ TEST_F(GraphImplTest, NodeDataDescribers) {
   TestNodeDataDescriber d1("d1");
   registry->RegisterDescriber(&d1, "d1");
 
-  descr = registry->DescribeFrameNodeData(mock_graph.frame.get());
+  descr = registry->DescribeNodeData(mock_graph.frame.get());
   AssertDictValueContainsListKey(descr, "d1", "d1", "FrameNode");
   EXPECT_EQ(1u, descr.DictSize());
 
-  descr = registry->DescribePageNodeData(mock_graph.page.get());
+  descr = registry->DescribeNodeData(mock_graph.page.get());
   AssertDictValueContainsListKey(descr, "d1", "d1", "PageNode");
   EXPECT_EQ(1u, descr.DictSize());
 
-  descr = registry->DescribeProcessNodeData(mock_graph.process.get());
+  descr = registry->DescribeNodeData(mock_graph.process.get());
   AssertDictValueContainsListKey(descr, "d1", "d1", "ProcessNode");
   EXPECT_EQ(1u, descr.DictSize());
 
-  descr =
-      registry->DescribeSystemNodeData(graph()->FindOrCreateSystemNodeImpl());
+  descr = registry->DescribeNodeData(graph()->FindOrCreateSystemNodeImpl());
   AssertDictValueContainsListKey(descr, "d1", "d1", "SystemNode");
   EXPECT_EQ(1u, descr.DictSize());
 
   auto worker = CreateNode<WorkerNodeImpl>(WorkerNode::WorkerType::kDedicated,
                                            mock_graph.process.get());
-  descr = registry->DescribeWorkerNodeData(worker.get());
+  descr = registry->DescribeNodeData(worker.get());
   AssertDictValueContainsListKey(descr, "d1", "d1", "WorkerNode");
   EXPECT_EQ(1u, descr.DictSize());
 
@@ -331,7 +330,7 @@ TEST_F(GraphImplTest, NodeDataDescribers) {
   TestNodeDataDescriber d2("d2");
   registry->RegisterDescriber(&d2, "d2");
 
-  descr = registry->DescribeFrameNodeData(mock_graph.frame.get());
+  descr = registry->DescribeNodeData(mock_graph.frame.get());
   EXPECT_EQ(2u, descr.DictSize());
   AssertDictValueContainsListKey(descr, "d1", "d1", "FrameNode");
   AssertDictValueContainsListKey(descr, "d2", "d2", "FrameNode");
@@ -340,7 +339,7 @@ TEST_F(GraphImplTest, NodeDataDescribers) {
   registry->UnregisterDescriber(&d1);
 
   // No describers after unregistration->no description.
-  descr = registry->DescribeFrameNodeData(mock_graph.frame.get());
+  descr = registry->DescribeNodeData(mock_graph.frame.get());
   EXPECT_TRUE(descr.is_none());
 }
 

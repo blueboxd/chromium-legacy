@@ -78,6 +78,12 @@ public class NewTabPageView extends FrameLayout {
         void focusSearchBox(boolean beginVoiceSearch, String pastedText);
 
         /**
+         * Performs a search query on the current {@link Tab}.
+         * @param query The {@link String} representing the query text.
+         */
+        void performSearchQuery(String query);
+
+        /**
          * @return whether the {@link NewTabPage} associated with this manager is the current page
          * displayed to the user.
          */

@@ -4,26 +4,49 @@
 
 package org.chromium.components.page_info;
 
-import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.base.Consumer;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
+import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
 /**
  * Interface that provides embedder-level information to PageInfoController.
  */
 public interface PageInfoControllerDelegate {
-    // Returns the tracker.
-    Tracker getTracker();
-
-    // Create an AutoCompleteClassifier.
+    /**
+     * Creates an AutoCompleteClassifier.
+     */
     AutocompleteSchemeClassifier createAutocompleteSchemeClassifier();
 
-    // Whether cookie controls should be shown in Page Info UI.
+    /**
+     * Whether cookie controls should be shown in Page Info UI.
+     */
     boolean cookieControlsShown();
 
-    // Return the ModalDialogManager to be used.
+    /**
+     * Return the ModalDialogManager to be used.
+     */
     ModalDialogManager getModalDialogManager();
 
-    // Whether Page Info UI should use dark colors.
+    /**
+     * Whether Page Info UI should use dark colors.
+     */
     boolean useDarkColors();
+
+    /**
+     * Initialize viewParams with Preview UI info, if any.
+     * @param viewParams The params to be initialized with Preview UI info.
+     * @param runAfterDismiss Used to set "show original" callback on Previews UI.
+     */
+    void initPreviewUiParams(PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss);
+
+    /**
+     * Whether website dialog is displayed for a preview.
+     */
+    boolean isShowingPreview();
+
+    /**
+     * Whether Preview page state is INSECURE.
+     */
+    boolean isPreviewPageInsecure();
 }

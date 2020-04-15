@@ -8,6 +8,7 @@
 #include "net/base/net_export.h"
 
 NET_EXPORT_PRIVATE extern bool spdy_enable_granular_decompress_errors;
+NET_EXPORT_PRIVATE extern bool spdy_hpack_use_indexed_name;
 
 inline bool GetSpdyReloadableFlagImpl(bool flag) {
   return flag;

@@ -5,7 +5,7 @@
 #include "content/shell/test_runner/text_input_controller.h"
 
 #include "base/macros.h"
-#include "content/shell/test_runner/web_test_delegate.h"
+#include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
@@ -402,7 +402,7 @@ void TextInputController::ForceTextInputStateUpdate() {
   CHECK(view()->MainFrame()->IsWebLocalFrame())
       << "WebView does not have a local main frame and"
          " cannot handle input method controller tasks.";
-  web_view_test_proxy_->delegate()->ForceTextInputStateUpdate(
+  web_view_test_proxy_->blink_test_runner()->ForceTextInputStateUpdate(
       view()->MainFrame()->ToWebLocalFrame());
 }
 

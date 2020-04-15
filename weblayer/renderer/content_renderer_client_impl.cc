@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
+#include "components/content_settings/renderer/content_settings_agent_impl.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "weblayer/common/features.h"
@@ -78,6 +79,9 @@ void ContentRendererClientImpl::RenderFrameCreated(
           render_frame, render_frame_observer->associated_interfaces());
   new autofill::AutofillAgent(render_frame, password_autofill_agent, nullptr,
                               render_frame_observer->associated_interfaces());
+  new content_settings::ContentSettingsAgentImpl(
+      render_frame, false /* should_whitelist */,
+      std::make_unique<content_settings::ContentSettingsAgentImpl::Delegate>());
 
 #if defined(OS_ANDROID)
   // |SpellCheckProvider| manages its own lifetime (and destroys itself when the

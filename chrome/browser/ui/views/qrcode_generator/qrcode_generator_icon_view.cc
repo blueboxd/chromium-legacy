@@ -53,10 +53,12 @@ void QRCodeGeneratorIconView::UpdateImpl() {
   if (!omnibox_view)
     return;
 
-  if (!GetVisible() && omnibox_view->model()->has_focus()) {
-    // TODO(skare): Finch variation params here.
-    // TODO(skare): Check if this is feature-gated.
-    SetVisible(true);
+  // TODO(skare): Fix show and re-hide conditions.
+  // Need this queried in more cases.
+  if (omnibox_view->model()->has_focus() &&
+      !omnibox_view->model()->user_input_in_progress()) {
+    if (!GetVisible())
+      SetVisible(true);
   }
 }
 
@@ -74,6 +76,10 @@ const char* QRCodeGeneratorIconView::GetClassName() const {
 base::string16 QRCodeGeneratorIconView::GetTextForTooltipAndAccessibleName()
     const {
   return l10n_util::GetStringUTF16(IDS_OMNIBOX_QRCODE_GENERATOR_ICON_TOOLTIP);
+}
+
+bool QRCodeGeneratorIconView::ShouldShowLabel() const {
+  return false;
 }
 
 }  // namespace qrcode_generator

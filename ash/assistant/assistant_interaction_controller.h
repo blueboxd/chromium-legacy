@@ -24,7 +24,7 @@
 
 namespace ash {
 
-class AssistantController;
+class AssistantControllerImpl;
 class AssistantInteractionModelObserver;
 class ProactiveSuggestions;
 enum class AssistantButtonId;
@@ -55,7 +55,7 @@ class AssistantInteractionController
       chromeos::assistant::mojom::AssistantSuggestionType;
 
   explicit AssistantInteractionController(
-      AssistantController* assistant_controller);
+      AssistantControllerImpl* assistant_controller);
   ~AssistantInteractionController() override;
 
   // Provides a pointer to the |assistant| owned by AssistantController.
@@ -154,7 +154,7 @@ class AssistantInteractionController
   AssistantVisibility GetVisibility() const;
   bool IsVisible() const;
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
 
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;

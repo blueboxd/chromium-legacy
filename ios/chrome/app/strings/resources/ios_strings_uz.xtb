@@ -3,6 +3,7 @@
 <translationbundle lang="uz">
 <translation id="1005230401424685968">YYYY</translation>
 <translation id="1016495303386450659">Yangilandi</translation>
+<translation id="1044891598689252897">Saytlar xatosiz ishlaydi</translation>
 <translation id="1047726139967079566">Bu sahifani xatcho‘plarga qo‘shish</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="1063454504051558093">Boshqa parol ishlatish...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> ta xatcho‘p</translation>
 <translation id="1491277525950327607">Almashtirish uchun ikki marta bosing</translation>
 <translation id="1509486075633541495">Saytga kirish</translation>
+<translation id="1509960214886564027">Aksariyat saytlardagi funksiyalar ishalamay qolishi mumkin</translation>
 <translation id="152234381334907219">Parollar saqlanmaydigan saytlar</translation>
 <translation id="1540800554400757039">Manzil, 1-qator</translation>
 <translation id="1545749641540134597">QR kodni skanerlash</translation>
@@ -528,6 +530,7 @@ Hisobingiz <ph name="HOSTED_DOMAIN" /> domenida boshqariladi, undan chiqsangiz, 
 <translation id="7961015016161918242">Hech qachon</translation>
 <translation id="7971521879845308059">Qalqib chiquvchi oynalarni bloklash</translation>
 <translation id="7982789257301363584">Tarmoq</translation>
+<translation id="7993619969781047893">Ayrim saytlardagi funksiyalar ishalamay qolishi mumkin</translation>
 <translation id="800361585186029508">Kiritiladigan URL manzillarni Google Chrome orqali ochadi.</translation>
 <translation id="8007420562015504427">Inkognito qidiruvi</translation>
 <translation id="8019783059653722575">Rasmlarni saqlash va internetga yuklash imkonini beradi.</translation>

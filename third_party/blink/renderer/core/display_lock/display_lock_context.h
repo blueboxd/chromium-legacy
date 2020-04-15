@@ -80,11 +80,15 @@ class CORE_EXPORT DisplayLockContext final
     DISALLOW_NEW();
 
    public:
+    ScopedForcedUpdate() = default;
     ScopedForcedUpdate(ScopedForcedUpdate&&);
     ~ScopedForcedUpdate();
 
+    ScopedForcedUpdate& operator=(ScopedForcedUpdate&&);
+
    private:
     friend class DisplayLockContext;
+    friend class DisplayLockDocumentState;
 
     ScopedForcedUpdate(DisplayLockContext*);
 

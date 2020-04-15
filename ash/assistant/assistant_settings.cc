@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/assistant/assistant_settings.h"
 
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/shell.h"
 

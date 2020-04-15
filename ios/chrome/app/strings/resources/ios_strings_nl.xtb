@@ -3,6 +3,7 @@
 <translationbundle lang="nl">
 <translation id="1005230401424685968">JJJJ</translation>
 <translation id="1016495303386450659">Item geüpdated</translation>
+<translation id="1044891598689252897">Sites werken naar behoren</translation>
 <translation id="1047726139967079566">Bladwijzer instellen voor deze pagina...</translation>
 <translation id="1049743911850919806">Incognito</translation>
 <translation id="1063454504051558093">Ander wachtwoord gebruiken...</translation>
@@ -47,6 +48,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> items</translation>
 <translation id="1491277525950327607">Dubbeltik om de instelling in of uit te schakelen</translation>
 <translation id="1509486075633541495">Inloggen op website</translation>
+<translation id="1509960214886564027">Functies op veel sites werken mogelijk niet meer</translation>
 <translation id="152234381334907219">Nooit opgeslagen</translation>
 <translation id="1540800554400757039">Adres 1</translation>
 <translation id="1545749641540134597">QR-code scannen</translation>
@@ -528,6 +530,7 @@ Aangezien je account wordt beheerd door <ph name="HOSTED_DOMAIN" />, worden je C
 <translation id="7961015016161918242">Nooit</translation>
 <translation id="7971521879845308059">Pop-ups blokkeren</translation>
 <translation id="7982789257301363584">Netwerk</translation>
+<translation id="7993619969781047893">Functies op bepaalde sites werken mogelijk niet meer</translation>
 <translation id="800361585186029508">Hiermee worden de ingevoerde URL's geopend in Google Chrome.</translation>
 <translation id="8007420562015504427">Incognito zoeken</translation>
 <translation id="8019783059653722575">Hiermee kun je foto's opslaan en uploaden.</translation>

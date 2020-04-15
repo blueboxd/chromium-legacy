@@ -436,7 +436,6 @@
 <translation id="4242533952199664413">ছেটিংসমূহ খোলক</translation>
 <translation id="4250229828105606438">স্ক্রীণশ্বট</translation>
 <translation id="4256782883801055595">মুক্ত উত্‍সৰ অনুজ্ঞাপত্ৰ</translation>
-<translation id="4259722352634471385">নেভিগে’শ্বন অৱৰোধ কৰা আছে: <ph name="URL" /></translation>
 <translation id="4269820728363426813">লিংকৰ ঠিকনাটো প্ৰতিলিপি কৰক</translation>
 <translation id="4275663329226226506">মিডিয়া</translation>
 <translation id="4278390842282768270">অনুমতি দিয়া হৈছে</translation>
@@ -963,6 +962,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">আপোনাৰ বুকমাৰ্কসমূহ নিজৰ সকলো ডিভাইচতে পাবলৈ ছিংক অন কৰক</translation>
 <translation id="8110087112193408731">আপুনি Chromeত কৰা কাৰ্যকলাপ ডিজিটেল ৱেলবিইঙ-ত দেখুৱাবনে?</translation>
+<translation id="8115259494083109761">কোনো কিউআৰ ক’ড স্কেন কৰিবলৈ, Chromeক আপোনাৰ কেমেৰা ব্যৱহাৰ কৰিবলৈ দিয়ক</translation>
 <translation id="8116925261070264013">মিউট আছে</translation>
 <translation id="8127542551745560481">গৃহপৃষ্ঠা সম্পাদনা কৰক</translation>
 <translation id="813082847718468539">ছাইটৰ তথ্য চাওক</translation>
@@ -1063,7 +1063,6 @@
 <translation id="8942627711005830162">অন্য উইণ্ড’ত খোলক</translation>
 <translation id="8951232171465285730">Chromeএ আপোনাৰ <ph name="MEGABYTES" /> এমবি ডেটা ৰাহি কৰিছে</translation>
 <translation id="8958424370300090006">কোনো বিশেষ ছাইটৰ বাবে কুকিসমূহ অৱৰোধ কৰক।</translation>
-<translation id="8959122750345127698">ইয়ালৈ নেভিগেশ্বন পাব পৰা অৱস্থাত নাই: <ph name="URL" /></translation>
 <translation id="8965591936373831584">বিবেচনাধীন হৈ আছে</translation>
 <translation id="8970887620466824814">কিবা ভুল হ’ল।</translation>
 <translation id="8972098258593396643">ডিফ’ল্ট ফ’ল্ডাৰলৈ ডাউনল’ড কৰিবনে?</translation>

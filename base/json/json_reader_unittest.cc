@@ -20,6 +20,21 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+// MSan will do a better job detecting over-read errors if the input is not
+// nul-terminated on the heap. This will copy |input| to a new buffer owned by
+// |owner|, returning a base::StringPiece to |owner|.
+base::StringPiece MakeNotNullTerminatedInput(const char* input,
+                                             std::unique_ptr<char[]>* owner) {
+  size_t str_len = strlen(input);
+  owner->reset(new char[str_len]);
+  memcpy(owner->get(), input, str_len);
+  return base::StringPiece(owner->get(), str_len);
+}
+
+}  // namespace
+
 namespace base {
 
 TEST(JSONReaderTest, Whitespace) {
@@ -730,7 +745,7 @@ TEST(JSONReaderTest, InvalidSanity) {
 }
 
 TEST(JSONReaderTest, IllegalTrailingNull) {
-  const char json[] = { '"', 'n', 'u', 'l', 'l', '"', '\0' };
+  const char json[] = {'"', 'n', 'u', 'l', 'l', '"', '\0'};
   std::string json_string(json, sizeof(json));
   JSONReader reader;
   EXPECT_FALSE(reader.ReadToValue(json_string));
@@ -754,6 +769,160 @@ TEST(JSONReaderTest, MaxNesting) {
   std::string json(R"({"outer": { "inner": {"foo": true}}})");
   EXPECT_FALSE(JSONReader::Read(json, JSON_PARSE_RFC, 3));
   EXPECT_TRUE(JSONReader::Read(json, JSON_PARSE_RFC, 4));
+}
+
+TEST(JSONReaderTest, Decode4ByteUtf8Char) {
+  // kUtf8Data contains a 4 byte unicode character (a smiley!) that JSONReader
+  // should be able to handle. The UTF-8 encoding of U+1F607 SMILING FACE WITH
+  // HALO is "\xF0\x9F\x98\x87".
+  const char kUtf8Data[] = "[\"😇\",[],[],[],{\"google:suggesttype\":[]}]";
+  Optional<Value> root = JSONReader::Read(kUtf8Data, JSON_PARSE_RFC);
+  ASSERT_TRUE(root);
+  ASSERT_TRUE(root->is_list());
+  Value::ListView lv = root->GetList();
+  ASSERT_EQ(5u, lv.size());
+  ASSERT_TRUE(lv[0].is_string());
+  EXPECT_EQ("\xF0\x9F\x98\x87", lv[0].GetString());
+}
+
+TEST(JSONReaderTest, DecodeUnicodeNonCharacter) {
+  // Tests Unicode code points (encoded as escaped UTF-16) that are not valid
+  // characters.
+  EXPECT_TRUE(JSONReader::Read("[\"\\uFDD0\"]"));         // U+FDD0
+  EXPECT_TRUE(JSONReader::Read("[\"\\uFDDF\"]"));         // U+FDDF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uFDEF\"]"));         // U+FDEF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uFFFE\"]"));         // U+FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uFFFF\"]"));         // U+FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD83F\\uDFFE\"]"));  // U+01FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD83F\\uDFFF\"]"));  // U+01FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD87F\\uDFFE\"]"));  // U+02FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD87F\\uDFFF\"]"));  // U+02FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD8BF\\uDFFE\"]"));  // U+03FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD8BF\\uDFFF\"]"));  // U+03FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD8FF\\uDFFE\"]"));  // U+04FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD8FF\\uDFFF\"]"));  // U+04FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD93F\\uDFFE\"]"));  // U+05FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD93F\\uDFFF\"]"));  // U+05FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD97F\\uDFFE\"]"));  // U+06FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD97F\\uDFFF\"]"));  // U+06FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD9BF\\uDFFE\"]"));  // U+07FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD9BF\\uDFFF\"]"));  // U+07FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD9FF\\uDFFE\"]"));  // U+08FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD9FF\\uDFFF\"]"));  // U+08FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDA3F\\uDFFE\"]"));  // U+09FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDA3F\\uDFFF\"]"));  // U+09FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDA7F\\uDFFE\"]"));  // U+0AFFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDA7F\\uDFFF\"]"));  // U+0AFFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDABF\\uDFFE\"]"));  // U+0BFFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDABF\\uDFFF\"]"));  // U+0BFFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDAFF\\uDFFE\"]"));  // U+0CFFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDAFF\\uDFFF\"]"));  // U+0CFFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDB3F\\uDFFE\"]"));  // U+0DFFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDB3F\\uDFFF\"]"));  // U+0DFFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDB7F\\uDFFE\"]"));  // U+0EFFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDB7F\\uDFFF\"]"));  // U+0EFFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDBBF\\uDFFE\"]"));  // U+0FFFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDBBF\\uDFFF\"]"));  // U+0FFFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDBFF\\uDFFE\"]"));  // U+10FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDBFF\\uDFFF\"]"));  // U+10FFFF
+}
+
+TEST(JSONReaderTest, DecodeNegativeEscapeSequence) {
+  EXPECT_FALSE(JSONReader::Read("[\"\\x-A\"]"));
+  EXPECT_FALSE(JSONReader::Read("[\"\\u-00A\"]"));
+}
+
+// Verifies invalid code points are replaced.
+TEST(JSONReaderTest, ReplaceInvalidCharacters) {
+  // U+D800 is a lone surrogate.
+  const std::string invalid = "\"\xED\xA0\x80\"";
+  Optional<Value> value =
+      JSONReader::Read(invalid, JSON_REPLACE_INVALID_CHARACTERS);
+  ASSERT_TRUE(value);
+  ASSERT_TRUE(value->is_string());
+  // Expect three U+FFFD (one for each UTF-8 byte in the invalid code point).
+  EXPECT_EQ("\xEF\xBF\xBD\xEF\xBF\xBD\xEF\xBF\xBD", value->GetString());
+}
+
+TEST(JSONReaderTest, ReplaceInvalidUTF16EscapeSequence) {
+  // U+D800 is a lone surrogate.
+  const std::string invalid = "\"_\\uD800_\"";
+  Optional<Value> value =
+      JSONReader::Read(invalid, JSON_REPLACE_INVALID_CHARACTERS);
+  ASSERT_TRUE(value);
+  ASSERT_TRUE(value->is_string());
+  EXPECT_EQ("_\xEF\xBF\xBD_", value->GetString());
+}
+
+TEST(JSONReaderTest, ParseNumberErrors) {
+  const struct {
+    const char* input;
+    bool parse_success;
+    double value;
+  } kCases[] = {
+      // clang-format off
+      {"1", true, 1},
+      {"2.", false, 0},
+      {"42", true, 42},
+      {"6e", false, 0},
+      {"43e2", true, 4300},
+      {"43e-", false, 0},
+      {"9e-3", true, 0.009},
+      {"2e+", false, 0},
+      {"2e+2", true, 200},
+      // clang-format on
+  };
+
+  for (unsigned int i = 0; i < base::size(kCases); ++i) {
+    auto test_case = kCases[i];
+    SCOPED_TRACE(StringPrintf("case %u: \"%s\"", i, test_case.input));
+
+    std::unique_ptr<char[]> input_owner;
+    StringPiece input =
+        MakeNotNullTerminatedInput(test_case.input, &input_owner);
+
+    Optional<Value> result = JSONReader::Read(input);
+    EXPECT_EQ(test_case.parse_success, result.has_value());
+
+    if (!result)
+      continue;
+
+    ASSERT_TRUE(result->is_double() || result->is_int());
+    EXPECT_EQ(test_case.value, result->GetDouble());
+  }
+}
+
+TEST(JSONReaderTest, UnterminatedInputs) {
+  const char* const kCases[] = {
+      // clang-format off
+      "/",
+      "//",
+      "/*",
+      "\"xxxxxx",
+      "\"",
+      "{   ",
+      "[\t",
+      "tru",
+      "fals",
+      "nul",
+      "\"\\x",
+      "\"\\x2",
+      "\"\\u123",
+      "\"\\uD803\\u",
+      "\"\\",
+      "\"\\/",
+      // clang-format on
+  };
+
+  for (unsigned int i = 0; i < base::size(kCases); ++i) {
+    auto* test_case = kCases[i];
+    SCOPED_TRACE(StringPrintf("case %u: \"%s\"", i, test_case));
+
+    std::unique_ptr<char[]> input_owner;
+    StringPiece input = MakeNotNullTerminatedInput(test_case, &input_owner);
+
+    EXPECT_FALSE(JSONReader::Read(input));
+  }
 }
 
 }  // namespace base

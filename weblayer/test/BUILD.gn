@@ -90,6 +90,7 @@ test("weblayer_browsertests") {
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/core/common",
+    "//components/content_settings/core/browser",
     "//components/network_time",
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/sessions:test_support",
@@ -106,6 +107,7 @@ test("weblayer_browsertests") {
   sources = [
     "../browser/autofill_browsertest.cc",
     "../browser/client_hints_browsertest.cc",
+    "../browser/content_settings_browsertest.cc",
     "../browser/cookie_manager_browsertest.cc",
     "../browser/download_browsertest.cc",
     "../browser/errorpage_browsertest.cc",

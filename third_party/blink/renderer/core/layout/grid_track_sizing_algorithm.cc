@@ -941,8 +941,6 @@ GridTrackSize GridTrackSizingAlgorithm::CalculateGridTrackSize(
 
   GridLength min_track_breadth = track_size.MinTrackBreadth();
   GridLength max_track_breadth = track_size.MaxTrackBreadth();
-  if (strategy_->IsComputingSizeContainment())
-    return GridTrackSize(min_track_breadth, max_track_breadth);
 
   // If the logical width/height of the grid container is indefinite, percentage
   // values are treated as <auto>.
@@ -971,11 +969,14 @@ GridTrackSize GridTrackSizingAlgorithm::CalculateGridTrackSize(
 LayoutUnit GridTrackSizingAlgorithm::InitialBaseSize(
     const GridTrackSize& track_size) const {
   const GridLength& grid_length = track_size.MinTrackBreadth();
-  if (grid_length.IsFlex())
-    return LayoutUnit();
+
+  // TODO(obrufau): https://github.com/w3c/csswg-drafts/issues/2611 may allow
+  // flexible lengths to be used as min track sizing functions.
+  DCHECK(!grid_length.IsFlex());
 
   const Length& track_length = grid_length.length();
   if (track_length.IsSpecified()) {
+    DCHECK(!grid_length.HasPercentage() || AvailableSpace());
     return ValueForLength(track_length,
                           AvailableSpace().value_or(LayoutUnit()));
   }
@@ -994,6 +995,7 @@ LayoutUnit GridTrackSizingAlgorithm::InitialGrowthLimit(
 
   const Length& track_length = grid_length.length();
   if (track_length.IsSpecified()) {
+    DCHECK(!grid_length.HasPercentage() || AvailableSpace());
     return ValueForLength(track_length,
                           AvailableSpace().value_or(LayoutUnit()));
   }

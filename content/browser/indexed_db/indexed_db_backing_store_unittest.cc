@@ -1974,5 +1974,98 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV3ToV4) {
   EXPECT_TRUE(CheckBlobInfoMatches(result_value.external_objects));
 }
 
+// This tests that external objects are deleted when ClearObjectStore is called.
+// See: http://crbug.com/488851
+// TODO(enne): we could use more comprehensive testing for ClearObjectStore.
+TEST_P(IndexedDBBackingStoreTestWithExternalObjects, ClearObjectStoreObjects) {
+  const std::vector<IndexedDBKey> keys = {
+      IndexedDBKey(ASCIIToUTF16("key0")), IndexedDBKey(ASCIIToUTF16("key1")),
+      IndexedDBKey(ASCIIToUTF16("key2")), IndexedDBKey(ASCIIToUTF16("key3"))};
+
+  const int64_t database_id = 777;
+  const int64_t object_store_id = 999;
+
+  // Create two object stores, to verify that only one gets deleted.
+  for (size_t i = 0; i < 2; ++i) {
+    const int64_t write_object_store_id = object_store_id + i;
+
+    std::vector<IndexedDBExternalObject> external_objects;
+    for (size_t j = 0; j < 4; ++j) {
+      std::string type = "type " + base::NumberToString(j);
+      external_objects.push_back(CreateBlobInfo(base::UTF8ToUTF16(type), 1));
+    }
+
+    std::vector<IndexedDBValue> values = {
+        IndexedDBValue("value0", {external_objects[0]}),
+        IndexedDBValue("value1", {external_objects[1]}),
+        IndexedDBValue("value2", {external_objects[2]}),
+        IndexedDBValue("value3", {external_objects[3]}),
+    };
+    ASSERT_GE(keys.size(), values.size());
+
+    // Initiate transaction1 - write records.
+    std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1 =
+        std::make_unique<IndexedDBBackingStore::Transaction>(
+            backing_store()->AsWeakPtr(),
+            blink::mojom::IDBTransactionDurability::Relaxed,
+            blink::mojom::IDBTransactionMode::ReadWrite);
+    transaction1->Begin(CreateDummyLock());
+    IndexedDBBackingStore::RecordIdentifier record;
+    for (size_t i = 0; i < values.size(); ++i) {
+      EXPECT_TRUE(backing_store()
+                      ->PutRecord(transaction1.get(), database_id,
+                                  write_object_store_id, keys[i], &values[i],
+                                  &record)
+                      .ok());
+    }
+
+    // Start committing transaction1.
+    bool succeeded = false;
+    EXPECT_TRUE(
+        transaction1->CommitPhaseOne(CreateBlobWriteCallback(&succeeded)).ok());
+    task_environment_.RunUntilIdle();
+
+    // Finish committing transaction1.
+
+    EXPECT_TRUE(succeeded);
+    EXPECT_TRUE(transaction1->CommitPhaseTwo().ok());
+  }
+
+  // Initiate transaction 2 - delete object store
+  std::unique_ptr<IndexedDBBackingStore::Transaction> transaction2 =
+      std::make_unique<IndexedDBBackingStore::Transaction>(
+          backing_store()->AsWeakPtr(),
+          blink::mojom::IDBTransactionDurability::Relaxed,
+          blink::mojom::IDBTransactionMode::ReadWrite);
+  transaction2->Begin(CreateDummyLock());
+  IndexedDBValue result_value;
+  EXPECT_TRUE(
+      backing_store()
+          ->ClearObjectStore(transaction2.get(), database_id, object_store_id)
+          .ok());
+
+  // Start committing transaction2.
+  bool succeeded = false;
+  EXPECT_TRUE(
+      transaction2->CommitPhaseOne(CreateBlobWriteCallback(&succeeded)).ok());
+  task_environment_.RunUntilIdle();
+
+  // Finish committing transaction2.
+
+  EXPECT_TRUE(succeeded);
+  EXPECT_TRUE(transaction2->CommitPhaseTwo().ok());
+
+  // Verify blob removals.
+  ASSERT_EQ(4UL, backing_store()->removals().size());
+  EXPECT_EQ(blob_context_->writes()[0].path, backing_store()->removals()[0]);
+  EXPECT_EQ(blob_context_->writes()[1].path, backing_store()->removals()[1]);
+  EXPECT_EQ(blob_context_->writes()[2].path, backing_store()->removals()[2]);
+  EXPECT_EQ(blob_context_->writes()[3].path, backing_store()->removals()[3]);
+
+  // Clean up on the IDB sequence.
+  transaction2.reset();
+  task_environment_.RunUntilIdle();
+}
+
 }  // namespace indexed_db_backing_store_unittest
 }  // namespace content

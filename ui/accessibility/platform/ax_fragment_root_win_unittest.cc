@@ -430,4 +430,34 @@ TEST_F(AXFragmentRootTest, TestUIAMultipleFragmentRoots) {
       test_fragment.Get());
 }
 
+TEST_F(AXFragmentRootTest, TestFragmentRootMap) {
+  AXNodeData root;
+  Init(root);
+
+  // There should be nothing in the map before we create a fragment root.
+  // Call GetForAcceleratedWidget() first to ensure that querying for a
+  // fragment root doesn't inadvertently create an empty entry in the map
+  // (https://crbug.com/1071185).
+  EXPECT_EQ(nullptr, AXFragmentRootWin::GetForAcceleratedWidget(
+                         gfx::kMockAcceleratedWidget));
+  EXPECT_EQ(nullptr, AXFragmentRootWin::GetFragmentRootParentOf(
+                         GetRootIAccessible().Get()));
+
+  // After initializing a fragment root, we should be able to retrieve it using
+  // its accelerated widget, or as the parent of its child.
+  InitFragmentRoot();
+  EXPECT_EQ(ax_fragment_root_.get(), AXFragmentRootWin::GetForAcceleratedWidget(
+                                         gfx::kMockAcceleratedWidget));
+  EXPECT_EQ(ax_fragment_root_.get(), AXFragmentRootWin::GetFragmentRootParentOf(
+                                         GetRootIAccessible().Get()));
+
+  // After deleting a fragment root, it should no longer be reachable from the
+  // map.
+  ax_fragment_root_.reset();
+  EXPECT_EQ(nullptr, AXFragmentRootWin::GetForAcceleratedWidget(
+                         gfx::kMockAcceleratedWidget));
+  EXPECT_EQ(nullptr, AXFragmentRootWin::GetFragmentRootParentOf(
+                         GetRootIAccessible().Get()));
+}
+
 }  // namespace ui

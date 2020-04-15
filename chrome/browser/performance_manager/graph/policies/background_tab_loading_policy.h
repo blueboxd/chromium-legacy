@@ -18,6 +18,10 @@ namespace mechanism {
 class PageLoader;
 }  // namespace mechanism
 
+FORWARD_DECLARE_TEST(BackgroundTabLoadingBrowserTest,
+                     RestoredTabsAreLoadedGradually);
+class BackgroundTabLoadingBrowserTest;
+
 namespace policies {
 
 // This policy manages loading of background tabs created by session restore. It
@@ -52,6 +56,8 @@ class BackgroundTabLoadingPolicy : public GraphOwned,
   static BackgroundTabLoadingPolicy* GetInstance();
 
  private:
+  friend class ::performance_manager::BackgroundTabLoadingBrowserTest;
+
   // Holds a handful of data about a tab which is used to prioritize it during
   // session restore.
   struct PageNodeToLoadData {
@@ -204,6 +210,9 @@ class BackgroundTabLoadingPolicy : public GraphOwned,
                            ShouldLoad_FreeMemory);
   FRIEND_TEST_ALL_PREFIXES(BackgroundTabLoadingPolicyTest, ShouldLoad_OldTab);
   FRIEND_TEST_ALL_PREFIXES(BackgroundTabLoadingPolicyTest, OnMemoryPressure);
+  FRIEND_TEST_ALL_PREFIXES(
+      ::performance_manager::BackgroundTabLoadingBrowserTest,
+      RestoredTabsAreLoadedGradually);
 };
 
 }  // namespace policies

@@ -238,6 +238,9 @@ void BrowserContextImpl::RegisterPrefs(
   permissions::GeolocationPermissionContextAndroid::RegisterProfilePrefs(
       pref_registry);
 #endif
+
+  BrowserContextDependencyManager::GetInstance()
+      ->RegisterProfilePrefsForServices(pref_registry);
 }
 
 class BrowserContextImpl::WebLayerVariationsClient

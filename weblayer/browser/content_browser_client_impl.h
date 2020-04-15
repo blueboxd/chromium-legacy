@@ -89,6 +89,9 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
       override;
+  void BindHostReceiverForRenderer(
+      content::RenderProcessHost* render_process_host,
+      mojo::GenericPendingReceiver receiver) override;
   void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
   scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext()
       override;

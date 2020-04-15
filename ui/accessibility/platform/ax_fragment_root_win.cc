@@ -204,8 +204,12 @@ class AXFragmentRootMapWin {
 
   void RemoveFragmentRoot(gfx::AcceleratedWidget widget) { map_.erase(widget); }
 
-  ui::AXFragmentRootWin* GetFragmentRoot(gfx::AcceleratedWidget widget) {
-    return map_[widget];
+  ui::AXFragmentRootWin* GetFragmentRoot(gfx::AcceleratedWidget widget) const {
+    const auto& entry = map_.find(widget);
+    if (entry != map_.end())
+      return entry->second;
+
+    return nullptr;
   }
 
   ui::AXFragmentRootWin* GetFragmentRootParentOf(

@@ -22,6 +22,7 @@
 #include "services/service_manager/embedder/result_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "weblayer/browser/browser_process.h"
+#include "weblayer/browser/cookie_settings_factory.h"
 #include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/permissions/weblayer_permissions_client.h"
@@ -68,6 +69,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   HostContentSettingsMapFactory::GetInstance();
   StatefulSSLHostStateDelegateFactory::GetInstance();
+  CookieSettingsFactory::GetInstance();
 }
 
 void StopMessageLoop(base::OnceClosure quit_closure) {

@@ -50,8 +50,7 @@ class BackgroundTabLoadingPolicyTest : public GraphTestHarness {
     mock_loader_ = mock_loader.get();
     policy_->SetMockLoaderForTesting(std::move(mock_loader));
 
-    // Set a value explicitly for MaxSimultaneousLoad threshold to avoid a
-    // dependency on the number of cores of the machine on which the test runs.
+    // Set a value explicitly for thresholds that depends on system information.
     policy_->SetMaxSimultaneousLoadsForTesting(4);
     policy_->SetFreeMemoryForTesting(150);
   }

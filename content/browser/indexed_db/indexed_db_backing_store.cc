@@ -1297,18 +1297,34 @@ Status IndexedDBBackingStore::ClearObjectStore(
   IDB_TRACE("IndexedDBBackingStore::ClearObjectStore");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return InvalidDBKeyStatus();
-  const std::string start_key =
-      KeyPrefix(database_id, object_store_id).Encode();
-  const std::string stop_key =
-      KeyPrefix(database_id, object_store_id + 1).Encode();
-  Status s = transaction->transaction()->RemoveRange(
-      start_key, stop_key,
-      LevelDBScopeDeletionMode::kImmediateWithRangeEndExclusive);
+
+  Status s =
+      DeleteBlobsInObjectStore(transaction, database_id, object_store_id);
   if (!s.ok()) {
     INTERNAL_WRITE_ERROR(CLEAR_OBJECT_STORE);
     return s;
   }
-  return DeleteBlobsInObjectStore(transaction, database_id, object_store_id);
+
+  // Don't delete the BlobEntryKeys so that they can be read and deleted
+  // via CollectBlobFilesToRemove.
+  // TODO(enne): This process could be optimized by storing the blob ids
+  // in DeleteBlobsInObjectStore rather than re-reading them later.
+  const std::string start_key1 =
+      KeyPrefix(database_id, object_store_id).Encode();
+  const std::string stop_key1 =
+      BlobEntryKey::EncodeMinKeyForObjectStore(database_id, object_store_id);
+  const std::string start_key2 =
+      BlobEntryKey::EncodeStopKeyForObjectStore(database_id, object_store_id);
+  const std::string stop_key2 =
+      KeyPrefix(database_id, object_store_id + 1).Encode();
+  s = transaction->transaction()->RemoveRange(
+      start_key1, stop_key1,
+      LevelDBScopeDeletionMode::kImmediateWithRangeEndExclusive);
+  if (!s.ok())
+    return s;
+  return transaction->transaction()->RemoveRange(
+      start_key2, stop_key2,
+      LevelDBScopeDeletionMode::kImmediateWithRangeEndExclusive);
 }
 
 Status IndexedDBBackingStore::DeleteRecord(

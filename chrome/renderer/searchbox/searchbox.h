@@ -231,6 +231,11 @@ class SearchBox : public content::RenderFrameObserver,
                              bool meta_key,
                              bool shift_key);
 
+  // Tells the browser to allow suggestions with the given suggestion group ID
+  // to appear in the results if they currently are not allowed to or to prevent
+  // them from appearing in the results if they are currently permitted to.
+  void ToggleSuggestionGroupIdVisibility(int32_t suggestion_group_id);
+
   bool is_focused() const { return is_focused_; }
   bool is_input_in_progress() const { return is_input_in_progress_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }

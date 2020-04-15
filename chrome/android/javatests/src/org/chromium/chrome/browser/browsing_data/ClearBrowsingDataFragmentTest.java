@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataFragment.Dialo
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
@@ -72,6 +73,13 @@ public class ClearBrowsingDataFragmentTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
+    @Rule
+    public SettingsActivityTestRule<ClearBrowsingDataFragmentAdvanced> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(ClearBrowsingDataFragmentAdvanced.class);
+    @Rule
+    public SettingsActivityTestRule<ClearBrowsingDataTabsFragment>
+            mSettingsActivityTabFragmentTestRule =
+                    new SettingsActivityTestRule<>(ClearBrowsingDataTabsFragment.class);
 
     @Rule
     public JniMocker mJniMocker = new JniMocker();
@@ -143,11 +151,9 @@ public class ClearBrowsingDataFragmentTest {
     }
 
     private SettingsActivity startPreferences() {
-        SettingsActivity settingsActivity = mActivityTestRule.startSettingsActivity(
-                ClearBrowsingDataFragmentAdvanced.class.getName());
+        SettingsActivity settingsActivity = mSettingsActivityTestRule.startSettingsActivity();
         ClearBrowsingDataFetcher fetcher = new ClearBrowsingDataFetcher();
-        ClearBrowsingDataFragment fragment =
-                (ClearBrowsingDataFragment) settingsActivity.getMainFragment();
+        ClearBrowsingDataFragment fragment = mSettingsActivityTestRule.getFragment();
         fragment.setClearBrowsingDataFetcher(fetcher);
         TestThreadUtils.runOnUiThreadBlocking(fetcher::fetchImportantSites);
         return settingsActivity;
@@ -163,10 +169,9 @@ public class ClearBrowsingDataFragmentTest {
         // Set "Advanced" as the user's cached preference.
         when(mBrowsingDataBridgeMock.getLastClearBrowsingDataTab(any())).thenReturn(1);
 
-        SettingsActivity settingsActivity = mActivityTestRule.startSettingsActivity(
-                ClearBrowsingDataTabsFragment.class.getName());
+        mSettingsActivityTabFragmentTestRule.startSettingsActivity();
         final ClearBrowsingDataTabsFragment preferences =
-                (ClearBrowsingDataTabsFragment) settingsActivity.getMainFragment();
+                mSettingsActivityTabFragmentTestRule.getFragment();
 
         // Verify tab preference is loaded.
         verify(mBrowsingDataBridgeMock).getLastClearBrowsingDataTab(any());

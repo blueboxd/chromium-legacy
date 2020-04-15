@@ -230,6 +230,15 @@ class FrameNodeObserver {
   virtual void OnNonPersistentNotificationCreated(
       const FrameNode* frame_node) = 0;
 
+  // Invoked when the frame has had a first contentful paint, as defined here:
+  // https://developers.google.com/web/tools/lighthouse/audits/first-contentful-paint
+  // This may not fire for all frames, depending on if the load is interrupted
+  // or if the content is even visible. It will fire at most once for a given
+  // frame. It will only fire for main-frame nodes.
+  virtual void OnFirstContentfulPaint(
+      const FrameNode* frame_node,
+      base::TimeDelta time_since_navigation_start) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameNodeObserver);
 };
@@ -263,6 +272,9 @@ class FrameNode::ObserverDefaultImpl : public FrameNodeObserver {
   void OnHadFormInteractionChanged(const FrameNode* frame_node) override {}
   void OnNonPersistentNotificationCreated(
       const FrameNode* frame_node) override {}
+  void OnFirstContentfulPaint(
+      const FrameNode* frame_node,
+      base::TimeDelta time_since_navigation_start) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);

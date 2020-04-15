@@ -32,8 +32,9 @@ namespace android_webview {
 
 namespace {
 
-const char kResponseHeaderViaShouldInterceptRequest[] =
-    "Client-Via: shouldInterceptRequest";
+const char kResponseHeaderViaShouldInterceptRequestName[] = "Client-Via";
+const char kResponseHeaderViaShouldInterceptRequestValue[] =
+    "shouldInterceptRequest";
 const char kHTTPOkText[] = "OK";
 const char kHTTPNotFoundText[] = "Not Found";
 
@@ -237,12 +238,8 @@ void AndroidStreamReaderURLLoader::HeadersComplete(
                                    &head.charset);
 
     if (expected_content_size_ != -1) {
-      std::string content_length_header(
-          net::HttpRequestHeaders::kContentLength);
-      content_length_header.append(": ");
-      content_length_header.append(
-          base::NumberToString(expected_content_size_));
-      head.headers->AddHeader(content_length_header);
+      head.headers->SetHeader(net::HttpRequestHeaders::kContentLength,
+                              base::NumberToString(expected_content_size_));
       head.content_length = expected_content_size_;
     }
 
@@ -251,10 +248,7 @@ void AndroidStreamReaderURLLoader::HeadersComplete(
             env, resource_request_.url,
             input_stream_reader_wrapper_->input_stream(), &mime_type) &&
         !mime_type.empty()) {
-      std::string content_type_header(net::HttpRequestHeaders::kContentType);
-      content_type_header.append(": ");
-      content_type_header.append(mime_type);
-      head.headers->AddHeader(content_type_header);
+      head.headers->SetHeader(net::HttpRequestHeaders::kContentType, mime_type);
       head.mime_type = mime_type;
     }
   }
@@ -264,7 +258,8 @@ void AndroidStreamReaderURLLoader::HeadersComplete(
   // Indicate that the response had been obtained via shouldInterceptRequest.
   // TODO(jam): why is this added for protocol handler (e.g. content scheme and
   // file resources?). The old path does this as well.
-  head.headers->AddHeader(kResponseHeaderViaShouldInterceptRequest);
+  head.headers->SetHeader(kResponseHeaderViaShouldInterceptRequestName,
+                          kResponseHeaderViaShouldInterceptRequestValue);
 
   SendBody();
 }

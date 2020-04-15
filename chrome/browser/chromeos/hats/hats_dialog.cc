@@ -62,9 +62,9 @@ enum class DeviceInfoKey : unsigned int {
 // URL.
 std::string LoadLocalHtmlAsString(const std::string& site_id,
                                   const std::string& site_context) {
-  std::string html_data(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_HATS_HTML));
+  std::string html_data =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          IDR_HATS_HTML);
 
   size_t pos = html_data.find(kScriptSrcReplacementToken);
   html_data.replace(pos, strlen(kScriptSrcReplacementToken),

@@ -83,7 +83,8 @@ public class BottomSheetController implements Destroyable {
      */
     @IntDef({StateChangeReason.NONE, StateChangeReason.SWIPE, StateChangeReason.BACK_PRESS,
             StateChangeReason.TAP_SCRIM, StateChangeReason.NAVIGATION,
-            StateChangeReason.COMPOSITED_UI, StateChangeReason.VR, StateChangeReason.MAX_VALUE})
+            StateChangeReason.COMPOSITED_UI, StateChangeReason.VR, StateChangeReason.PROMOTE_TAB,
+            StateChangeReason.MAX_VALUE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface StateChangeReason {
         int NONE = 0;
@@ -93,7 +94,8 @@ public class BottomSheetController implements Destroyable {
         int NAVIGATION = 4;
         int COMPOSITED_UI = 5;
         int VR = 6;
-        int MAX_VALUE = VR;
+        int PROMOTE_TAB = 7;
+        int MAX_VALUE = PROMOTE_TAB;
     }
 
     /** The initial capacity for the priority queue handling pending content show requests. */
@@ -611,8 +613,10 @@ public class BottomSheetController implements Destroyable {
      * request to show it.
      * @param content The content to be hidden.
      * @param animate Whether the sheet should animate when hiding.
+     * @param hideReason The reason that the content is being hidden.
      */
-    public void hideContent(BottomSheetContent content, boolean animate) {
+    public void hideContent(
+            BottomSheetContent content, boolean animate, @StateChangeReason int hideReason) {
         if (mBottomSheet == null) return;
 
         if (content != mBottomSheet.getCurrentSheetContent()) {
@@ -628,8 +632,20 @@ public class BottomSheetController implements Destroyable {
             showNextContent(animate);
         } else {
             mIsProcessingHideRequest = true;
-            mBottomSheet.setSheetState(SheetState.HIDDEN, animate);
+            mBottomSheet.setSheetState(SheetState.HIDDEN, animate, hideReason);
         }
+    }
+
+    /**
+     * Hide content shown in the bottom sheet. If the content is not showing, this call retracts the
+     * request to show it.
+     * Supply a close reason if possible: hideContent(BottomSheetContent, boolean, int).
+     * @param content The content to be hidden.
+     * @param animate Whether the sheet should animate when hiding.
+     * @see #hideContent(BottomSheetContent, boolean, int) method.
+     */
+    public void hideContent(BottomSheetContent content, boolean animate) {
+        hideContent(content, animate, StateChangeReason.NONE);
     }
 
     /**

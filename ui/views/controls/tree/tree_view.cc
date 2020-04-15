@@ -895,7 +895,7 @@ void TreeView::PopulateAccessibilityData(InternalNode* node,
 
   } else {
     // !IsRoot(node)) && node->parent() != nullptr.
-    if (node->parent()->is_expanded()) {
+    if (IsExpanded(node->parent()->model_node())) {
       int depth = 0;
       row = GetRowForInternalNode(node, &depth);
       if (depth >= 0) {

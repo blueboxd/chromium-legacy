@@ -133,8 +133,7 @@ TEST_F(WallClockTimerTest, UseTimerTwiceInRow) {
 
 TEST_F(WallClockTimerTest, Stop) {
   ::testing::StrictMock<base::MockOnceClosure> callback;
-  const auto start_time = base::Time::Now();
-  clock_.SetNow(start_time);
+  clock_.SetNow(base::Time::Now());
 
   // Set up a WallClockTimer.
   WallClockTimer wall_clock_timer(&clock_,
@@ -155,6 +154,65 @@ TEST_F(WallClockTimerTest, Stop) {
 
   // Timer won't fire when desired run time is reached.
   FastForwardBy(delay - past_time * 2);
+  ::testing::Mock::VerifyAndClearExpectations(&callback);
+}
+
+TEST_F(WallClockTimerTest, RestartRunningTimer) {
+  ::testing::StrictMock<base::MockOnceClosure> first_callback;
+  ::testing::StrictMock<base::MockOnceClosure> second_callback;
+  constexpr auto delay = base::TimeDelta::FromMinutes(1);
+
+  // Set up a WallClockTimer that will invoke |first_callback| in one minute.
+  clock_.SetNow(base::Time::Now());
+  WallClockTimer wall_clock_timer(&clock_,
+                                  task_environment_.GetMockTickClock());
+  wall_clock_timer.Start(FROM_HERE, clock_.Now() + delay, first_callback.Get());
+
+  // After 30 seconds, replace the timer with |second_callback| with new one
+  // minute delay.
+  constexpr auto past_time = delay / 2;
+  FastForwardBy(past_time);
+  wall_clock_timer.Start(FROM_HERE, clock_.Now() + delay,
+                         second_callback.Get());
+
+  // |first_callback| is due but it won't be called because it's replaced.
+  FastForwardBy(past_time);
+  ::testing::Mock::VerifyAndClearExpectations(&first_callback);
+  ::testing::Mock::VerifyAndClearExpectations(&second_callback);
+
+  // Timer invokes the |second_callback|.
+  EXPECT_CALL(second_callback, Run());
+  FastForwardBy(past_time);
+  ::testing::Mock::VerifyAndClearExpectations(&first_callback);
+  ::testing::Mock::VerifyAndClearExpectations(&second_callback);
+}
+
+TEST_F(WallClockTimerTest, DoubleStop) {
+  ::testing::StrictMock<base::MockOnceClosure> callback;
+  clock_.SetNow(base::Time::Now());
+
+  // Set up a WallClockTimer.
+  WallClockTimer wall_clock_timer(&clock_,
+                                  task_environment_.GetMockTickClock());
+  constexpr auto delay = base::TimeDelta::FromMinutes(1);
+  wall_clock_timer.Start(FROM_HERE, clock_.Now() + delay, callback.Get());
+
+  // After 15 seconds, timer is stopped.
+  constexpr auto past_time = delay / 4;
+  FastForwardBy(past_time);
+  EXPECT_TRUE(wall_clock_timer.IsRunning());
+  wall_clock_timer.Stop();
+  EXPECT_FALSE(wall_clock_timer.IsRunning());
+
+  // And timer is stopped again later. The second stop should be a no-op.
+  FastForwardBy(past_time);
+  EXPECT_FALSE(wall_clock_timer.IsRunning());
+  wall_clock_timer.Stop();
+  EXPECT_FALSE(wall_clock_timer.IsRunning());
+
+  // Timer won't fire after stop.
+  FastForwardBy(past_time, /*with_power=*/false);
+  FastForwardBy(delay - past_time * 3);
   ::testing::Mock::VerifyAndClearExpectations(&callback);
 }
 

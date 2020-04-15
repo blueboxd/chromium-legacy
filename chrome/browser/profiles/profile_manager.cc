@@ -350,6 +350,17 @@ bool IsProfileEphemeral(ProfileAttributesStorage* storage,
 }
 #endif
 
+// Helper function that deletes entries from the kProfilesLastActive pref list.
+// It is called when every ephemeral profile is handled.
+void RemoveFromLastActiveProfilesPrefList(base::FilePath path) {
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  ListPrefUpdate update(local_state, prefs::kProfilesLastActive);
+  base::ListValue* profile_list = update.Get();
+  base::Value entry_value = base::Value(path.BaseName().MaybeAsASCII());
+  profile_list->EraseListValue(entry_value);
+}
+
 #if defined(OS_CHROMEOS)
 bool IsLoggedIn() {
   return user_manager::UserManager::IsInitialized() &&
@@ -896,6 +907,7 @@ void ProfileManager::CleanUpEphemeralProfiles() {
     base::FilePath profile_path = entry->GetPath();
     if (entry->IsEphemeral()) {
       profiles_to_delete.push_back(profile_path);
+      RemoveFromLastActiveProfilesPrefList(profile_path);
       if (profile_path.BaseName().MaybeAsASCII() == last_used_profile)
         last_active_profile_deleted = true;
     } else if (new_profile_path.empty()) {
@@ -1922,6 +1934,8 @@ void ProfileManager::ScheduleForcedEphemeralProfileForDeletion(
       found_entry_loaded = entry_loaded;
     }
   }
+
+  RemoveFromLastActiveProfilesPrefList(profile_dir);
 
   const base::FilePath new_active_profile_dir =
       found_entry ? found_entry->GetPath() : GenerateNextProfileDirectoryPath();

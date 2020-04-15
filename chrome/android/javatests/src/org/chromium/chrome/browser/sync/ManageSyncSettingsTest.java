@@ -31,6 +31,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
@@ -76,6 +77,9 @@ public class ManageSyncSettingsTest {
 
     @Rule
     public SyncTestRule mSyncTestRule = new SyncTestRule();
+    @Rule
+    public SettingsActivityTestRule<ManageSyncSettings> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(ManageSyncSettings.class);
 
     @After
     public void tearDown() {
@@ -437,9 +441,8 @@ public class ManageSyncSettingsTest {
     }
 
     private ManageSyncSettings startManageSyncPreferences() {
-        mSettingsActivity = mSyncTestRule.startSettingsActivity(ManageSyncSettings.class.getName());
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        return (ManageSyncSettings) mSettingsActivity.getMainFragment();
+        mSettingsActivity = mSettingsActivityTestRule.startSettingsActivity();
+        return mSettingsActivityTestRule.getFragment();
     }
 
     private void closeFragment(ManageSyncSettings fragment) {

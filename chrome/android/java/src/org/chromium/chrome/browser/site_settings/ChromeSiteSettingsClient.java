@@ -5,12 +5,16 @@
 package org.chromium.chrome.browser.site_settings;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 
 import androidx.preference.Preference;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
+import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
+import org.chromium.chrome.browser.ui.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 
 /**
@@ -36,5 +40,43 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
     public void launchHelpAndFeedbackActivity(Activity currentActivity, String helpContext) {
         HelpAndFeedback.getInstance().show(
                 currentActivity, helpContext, Profile.getLastUsedRegularProfile(), null);
+    }
+
+    @Override
+    public void getLocalFaviconImageForURL(
+            String faviconUrl, int faviconSizePx, Callback<Bitmap> callback) {
+        new FaviconLoader(faviconUrl, faviconSizePx, callback);
+    }
+
+    /**
+     * A helper class that groups a FaviconHelper with its corresponding Callback.
+     *
+     * This object is kept alive by being passed to the native
+     * FaviconHelper.getLocalFaviconImageForURL. Its reference will be released after the callback
+     * has been called.
+     */
+    private static class FaviconLoader implements FaviconImageCallback {
+        // Loads the favicons asynchronously.
+        private final FaviconHelper mFaviconHelper;
+        private final Callback<Bitmap> mCallback;
+
+        private FaviconLoader(String faviconUrl, int faviconSizePx, Callback<Bitmap> callback) {
+            mCallback = callback;
+            mFaviconHelper = new FaviconHelper();
+
+            // TODO(https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+            // incognito profile) instead of always using regular profile. It works correctly now,
+            // but it is not safe.
+            if (!mFaviconHelper.getLocalFaviconImageForURL(
+                        Profile.getLastUsedRegularProfile(), faviconUrl, faviconSizePx, this)) {
+                onFaviconAvailable(/*image=*/null, faviconUrl);
+            }
+        }
+
+        @Override
+        public void onFaviconAvailable(Bitmap image, String iconUrl) {
+            mFaviconHelper.destroy();
+            mCallback.onResult(image);
+        }
     }
 }

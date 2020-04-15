@@ -96,7 +96,7 @@ int CompareLexicalNumberStrings(
   return 0;
 }
 
-bool isOldIntelDriver(const std::vector<std::string>& version) {
+bool IsOldIntelDriver(const std::vector<std::string>& version) {
   DCHECK_EQ(4u, version.size());
   unsigned value = 0;
   bool valid = base::StringToUint(version[2], &value);
@@ -264,20 +264,21 @@ bool GpuControlList::DriverInfo::Contains(const GPUInfo& gpu_info,
         valid = ProcessVersionString(driver_version.value2, '.', &ref_version2);
         DCHECK(valid);
       }
-      // If either of the two versions doesn't match the Intel driver version                                                                                                                                     +      // schema, or they belong to different generation of version schema, they
+      // If either of the two versions doesn't match the Intel driver version
+      // schema, or they belong to different generation of version schema, they
       // should not be compared.
       if (version.size() != 4 || ref_version.size() != 4)
         return false;
-      if (isOldIntelDriver(version) != isOldIntelDriver(ref_version))
+      if (IsOldIntelDriver(version) != IsOldIntelDriver(ref_version))
         return false;
       if (!ref_version2.empty()) {
         if (ref_version2.size() != 4
-            || isOldIntelDriver(ref_version) != isOldIntelDriver(ref_version2))
+            || IsOldIntelDriver(ref_version) != IsOldIntelDriver(ref_version2))
           return false;
       }
 
       std::string build_num, ref_build_num, ref_build_num2;
-      if (isOldIntelDriver(version)) {
+      if (IsOldIntelDriver(version)) {
         build_num = version[3];
         ref_build_num = ref_version[3];
         if (!ref_version2.empty())

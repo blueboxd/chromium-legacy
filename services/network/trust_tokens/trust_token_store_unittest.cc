@@ -642,5 +642,28 @@ TEST(TrustTokenStore, RemovesDataForInvertedFilters) {
   EXPECT_FALSE(store->RetrieveNonstaleRedemptionRecord(issuer, toplevel));
 }
 
+TEST(TrustTokenStore, RemovesDataForNullFilter) {
+  // A null filter is a "clear all data" wildcard.
+
+  auto store = TrustTokenStore::CreateInMemory();
+  auto issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://www.issuer.com"));
+  auto toplevel =
+      *SuitableTrustTokenOrigin::Create(GURL("https://www.toplevel.com"));
+
+  // Add some issuer-keyed state,
+  store->AddTokens(issuer, std::vector<std::string>{"token"}, "key");
+  // some top level-keyed state,
+  ASSERT_TRUE(store->SetAssociation(issuer, toplevel));
+  // and some (issuer, top level) pair-keyed state.
+  store->SetRedemptionRecord(issuer, toplevel,
+                             SignedTrustTokenRedemptionRecord{});
+
+  EXPECT_TRUE(store->ClearDataForFilter(nullptr));
+  EXPECT_FALSE(store->CountTokens(issuer));
+  EXPECT_FALSE(store->IsAssociated(issuer, toplevel));
+  EXPECT_FALSE(store->RetrieveNonstaleRedemptionRecord(issuer, toplevel));
+}
+
 }  // namespace trust_tokens
 }  // namespace network

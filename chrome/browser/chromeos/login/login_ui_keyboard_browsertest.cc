@@ -10,11 +10,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_persistence.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -33,6 +35,11 @@ constexpr char kTestUser2[] = "test-user2@gmail.com";
 constexpr char kTestUser2GaiaId[] = "2222222222";
 constexpr char kTestUser3[] = "test-user3@gmail.com";
 constexpr char kTestUser3GaiaId[] = "3333333333";
+
+void Append_en_US_InputMethod(std::vector<std::string>* out) {
+  out->push_back("xkb:us::eng");
+  chromeos::input_method::InputMethodManager::Get()->MigrateInputMethods(out);
+}
 
 void Append_en_US_InputMethods(std::vector<std::string>* out) {
   out->push_back("xkb:us::eng");
@@ -87,6 +94,70 @@ class LoginUIKeyboardTest : public chromeos::LoginManagerTest {
   std::vector<AccountId> test_users_;
 };
 
+class LoginUIUserAddingKeyboardTest : public LoginUIKeyboardTest {
+ public:
+  LoginUIUserAddingKeyboardTest() {
+    test_users_.push_back(
+        AccountId::FromUserEmailGaiaId(kTestUser3, kTestUser3GaiaId));
+  }
+
+ protected:
+  void FocusUserPod(const AccountId& account_id) {
+    test::ExecuteOobeJS(
+        base::StringPrintf(R"($('pod-row').focusPod($('pod-row'))"
+                           R"(.getPodWithUsername_('%s'), true))",
+                           account_id.Serialize().c_str()));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(LoginUIUserAddingKeyboardTest, PRE_CheckPODSwitches) {
+  RegisterUser(test_users_[0]);
+  RegisterUser(test_users_[1]);
+  RegisterUser(test_users_[2]);
+  InitUserLastInputMethod();
+  StartupUtils::MarkOobeCompleted();
+}
+
+IN_PROC_BROWSER_TEST_F(LoginUIUserAddingKeyboardTest, CheckPODSwitches) {
+  EXPECT_EQ(
+      lock_screen_utils::GetUserLastInputMethod(test_users_[2].GetUserEmail()),
+      std::string());
+  LoginUser(test_users_[2]);
+  UserAddingScreen::Get()->Start();
+  OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
+
+  std::vector<std::string> expected_input_methods;
+  expected_input_methods.push_back(user_input_methods[0]);
+  // Append just one.
+  Append_en_US_InputMethod(&expected_input_methods);
+
+  EXPECT_EQ(expected_input_methods, input_method::InputMethodManager::Get()
+                                        ->GetActiveIMEState()
+                                        ->GetActiveInputMethodIds());
+
+  EXPECT_EQ(user_input_methods[0], input_method::InputMethodManager::Get()
+                                       ->GetActiveIMEState()
+                                       ->GetCurrentInputMethod()
+                                       .id());
+
+  FocusUserPod(test_users_[1]);
+  EXPECT_EQ(user_input_methods[1], input_method::InputMethodManager::Get()
+                                       ->GetActiveIMEState()
+                                       ->GetCurrentInputMethod()
+                                       .id());
+
+  FocusUserPod(test_users_[0]);
+  EXPECT_EQ(user_input_methods[0], input_method::InputMethodManager::Get()
+                                       ->GetActiveIMEState()
+                                       ->GetCurrentInputMethod()
+                                       .id());
+
+  // Check that logged in user settings did not change.
+  EXPECT_EQ(
+      lock_screen_utils::GetUserLastInputMethod(test_users_[2].GetUserEmail()),
+      std::string());
+}
+
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, PRE_CheckPODScreenDefault) {
   RegisterUser(test_users_[0]);
   RegisterUser(test_users_[1]);
@@ -138,6 +209,13 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, CheckPODScreenWithUsers) {
   EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[1]));
 
   EXPECT_EQ(user_input_methods[1], input_method::InputMethodManager::Get()
+                                       ->GetActiveIMEState()
+                                       ->GetCurrentInputMethod()
+                                       .id());
+
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[0]));
+
+  EXPECT_EQ(user_input_methods[0], input_method::InputMethodManager::Get()
                                        ->GetActiveIMEState()
                                        ->GetCurrentInputMethod()
                                        .id());

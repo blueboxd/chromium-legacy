@@ -74,6 +74,9 @@ void LayoutSVGRect::UpdateShapeFromElement() {
     }
   }
 
+  if (!use_path_fallback_)
+    ClearPath();
+
   fill_bounding_box_ = FloatRect(
       length_context.ResolveLengthPair(svg_style.X(), svg_style.Y(), style),
       bounding_box_size);

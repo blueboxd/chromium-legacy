@@ -35,8 +35,6 @@ static_library("core") {
     "dom_distiller_switches.h",
     "experiments.cc",
     "experiments.h",
-    "feedback_reporter.cc",
-    "feedback_reporter.h",
     "page_features.cc",
     "page_features.h",
     "pref_names.cc",

@@ -1680,7 +1680,7 @@ void PersonalDataManager::LoadCreditCardCloudTokenData() {
 }
 
 void PersonalDataManager::LoadUpiIds() {
-  if (!database_helper_->GetServerDatabase())
+  if (!database_helper_->GetLocalDatabase())
     return;
 
   CancelPendingLocalQuery(&pending_upi_ids_query_);
@@ -2057,7 +2057,7 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
       // Otherwise the label is the card number, or if that is empty the
       // cardholder name. The label should never repeat the value.
       if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
-        suggestion->value = credit_card->NetworkAndLastFourDigits();
+        suggestion->value = credit_card->NicknameOrNetworkAndLastFourDigits();
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
         suggestion->label = credit_card->GetInfo(

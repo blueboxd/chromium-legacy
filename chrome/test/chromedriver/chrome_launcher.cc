@@ -37,6 +37,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_result_codes.h"
+#include "chrome/common/chrome_version.h"
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_finder.h"
@@ -48,7 +49,6 @@
 #include "chrome/test/chromedriver/chrome/embedded_automation_extension.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/user_data_dir.h"
-#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/log_replay/chrome_replay_impl.h"
@@ -265,14 +265,13 @@ Status WaitForDevToolsAndCheckVersion(
     LOG(WARNING) << "You are using an unsupported command-line switch: "
                     "--disable-build-check. Please don't report bugs that "
                     "cannot be reproduced with this switch removed.";
-  } else if (browser_info->major_version != kSupportedBrowserMajorVersion) {
+  } else if (browser_info->major_version != CHROME_VERSION_MAJOR) {
     if (browser_info->major_version == 0) {
       // TODO(https://crbug.com/932013): Content Shell doesn't report a version
       // number. Skip version checking with a warning.
       LOG(WARNING) << "Unable to retrieve " << kBrowserShortName
                    << " version. Unable to verify browser compatibility.";
-    } else if (browser_info->major_version ==
-               kSupportedBrowserMajorVersion + 1) {
+    } else if (browser_info->major_version == CHROME_VERSION_MAJOR + 1) {
       // TODO(https://crbug.com/chromedriver/2656): Since we don't currently
       // release ChromeDriver for dev or canary channels, allow using
       // ChromeDriver version n (e.g., Beta) with Chrome version n+1 (e.g., Dev
@@ -286,7 +285,7 @@ Status WaitForDevToolsAndCheckVersion(
           kSessionNotCreated,
           base::StringPrintf("This version of %s only supports %s version %d",
                              kChromeDriverProductFullName, kBrowserShortName,
-                             kSupportedBrowserMajorVersion));
+                             CHROME_VERSION_MAJOR));
     }
   }
 

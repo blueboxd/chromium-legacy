@@ -234,6 +234,13 @@
       ],
     },
   },
+  'fuchsia_system_log': {
+    '$mixin_append': {
+      'args': [
+        '--enable-fuchsia-system-log',
+      ],
+    },
+  },
   'gpu_pool': {
     'swarming': {
       'dimensions': {
@@ -799,6 +806,22 @@
       'named_caches': [
         {
           'name': 'xcode_ios_11c29',
+          'path': 'Xcode.app',
+        },
+      ],
+    },
+  },
+  'xcode_11e146': {
+    '$mixin_append': {
+      'args': [
+        '--xcode-build-version',
+        '11e146'
+      ],
+    },
+    'swarming': {
+      'named_caches': [
+        {
+          'name': 'xcode_ios_11e146',
           'path': 'Xcode.app',
         },
       ],

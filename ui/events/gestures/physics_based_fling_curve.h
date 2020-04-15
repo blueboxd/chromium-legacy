@@ -21,10 +21,15 @@ namespace ui {
 // suitable for touch screen-based flings.
 class EVENTS_BASE_EXPORT PhysicsBasedFlingCurve : public GestureCurve {
  public:
-  PhysicsBasedFlingCurve(const gfx::Vector2dF& velocity,
-                         base::TimeTicks start_timestamp,
-                         const gfx::Vector2dF& pixels_per_inch,
-                         const gfx::Size& viewport);
+  PhysicsBasedFlingCurve(
+      const gfx::Vector2dF& velocity,
+      base::TimeTicks start_timestamp,
+      const gfx::Vector2dF& pixels_per_inch,
+      // Multiplier for fling distance based on fling boosting
+      const float boost_multiplier,
+      // Maximum fling distance subject to boost_multiplier and default
+      // bounds multiplier
+      const gfx::Size& bounding_size);
   ~PhysicsBasedFlingCurve() override;
 
   // GestureCurve implementation.
@@ -35,6 +40,9 @@ class EVENTS_BASE_EXPORT PhysicsBasedFlingCurve : public GestureCurve {
   float curve_duration() const { return curve_duration_; }
   const gfx::PointF& p1_for_testing() const { return p1_; }
   const gfx::PointF& p2_for_testing() const { return p2_; }
+  static int default_bounds_multiplier_for_testing() {
+    return kDefaultBoundsMultiplier;
+  }
 
  private:
   // Time when fling curve is generated.
@@ -50,6 +58,12 @@ class EVENTS_BASE_EXPORT PhysicsBasedFlingCurve : public GestureCurve {
   // crrev.com/c/1865928 is merged.
   // crbug.com/1028501
   const float curve_duration_;
+
+  // Default value used to scale the viewport when it is passed in as a
+  // parameter in the generation of a physics based fling curve. This value
+  // increases the upper bound of the scroll distance for a fling.
+  constexpr static int kDefaultBoundsMultiplier = 3;
+
   const gfx::CubicBezier bezier_;
   base::TimeDelta previous_time_delta_;
   gfx::Vector2dF cumulative_scroll_;

@@ -1892,6 +1892,7 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   inputs[1].SetServerStatus(CreditCard::EXPIRED);
   base::string16 nickname = ASCIIToUTF16("Grocery card");
   inputs[1].SetNickname(nickname);
+  inputs[1].set_card_issuer(CreditCard::Issuer::GOOGLE);
 
   test::SetServerCreditCards(table_.get(), inputs);
 
@@ -1919,6 +1920,9 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
 
   EXPECT_TRUE(outputs[0]->nickname().empty());
   EXPECT_EQ(nickname, outputs[1]->nickname());
+
+  EXPECT_EQ(CreditCard::Issuer::ISSUER_UNKNOWN, outputs[0]->card_issuer());
+  EXPECT_EQ(CreditCard::Issuer::GOOGLE, outputs[1]->card_issuer());
 }
 
 TEST_F(AutofillTableTest, SetGetRemoveServerCardMetadata) {

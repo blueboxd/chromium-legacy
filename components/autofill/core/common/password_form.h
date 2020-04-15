@@ -13,6 +13,7 @@
 
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/gaia_id_hash.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -306,6 +307,11 @@ struct PasswordForm {
     kAccountStore = 2
   };
   Store in_store = Store::kNotSet;
+
+  // Vector of hashes of the gaia id for users who prefer not to move this
+  // password form to their account. This list is used to suppress the move
+  // prompt for those users.
+  std::vector<GaiaIdHash> moving_blocked_for_list;
 
   // Return true if we consider this form to be a change password form.
   // We use only client heuristics, so it could include signup forms.

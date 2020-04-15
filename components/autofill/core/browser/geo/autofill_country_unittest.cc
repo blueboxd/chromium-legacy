@@ -14,6 +14,7 @@
 #include "base/android/build_info.h"
 #endif
 
+using autofill::CountryDataMap;
 using base::ASCIIToUTF16;
 
 namespace autofill {
@@ -29,6 +30,11 @@ TEST(AutofillCountryTest, AutofillCountry) {
   AutofillCountry united_states_es("US", "es");
   EXPECT_EQ("US", united_states_es.country_code());
   EXPECT_EQ(ASCIIToUTF16("Estados Unidos"), united_states_es.name());
+
+  AutofillCountry great_britain_uk_alias("UK", "en_GB");
+  EXPECT_EQ("GB", great_britain_uk_alias.country_code());
+  EXPECT_EQ("GB", great_britain_uk_alias.country_code());
+  EXPECT_EQ(ASCIIToUTF16("United Kingdom"), great_britain_uk_alias.name());
 
   AutofillCountry canada_en("CA", "en_US");
   EXPECT_EQ("CA", canada_en.country_code());
@@ -72,6 +78,29 @@ TEST(AutofillCountryTest, AllCountryCodesHaveCountryName) {
     EXPECT_NE(ASCIIToUTF16(country_code),
               AutofillCountry(country_code, "en").name());
   }
+}
+
+// Test alias mappings for falsely existing country codes.
+TEST(AutofillCountryTest, AliasMappingsForCountryData) {
+  CountryDataMap* country_data_map = CountryDataMap::GetInstance();
+
+  // There should be country data for the "GB".
+  EXPECT_TRUE(country_data_map->HasCountryData("GB"));
+
+  // Check the correctness of the alias definitions.
+  EXPECT_TRUE(country_data_map->HasCountryCodeAlias("UK"));
+  EXPECT_FALSE(country_data_map->HasCountryCodeAlias("does_not_exist"));
+
+  // Query not existing mapping.
+  auto expected_country_code = std::string();
+  auto actual_country_code =
+      country_data_map->GetCountryCodeForAlias("does_not_exist");
+  EXPECT_EQ(expected_country_code, actual_country_code);
+
+  // GB should map the UK.
+  expected_country_code = "GB";
+  actual_country_code = country_data_map->GetCountryCodeForAlias("UK");
+  EXPECT_EQ(expected_country_code, actual_country_code);
 }
 
 }  // namespace autofill

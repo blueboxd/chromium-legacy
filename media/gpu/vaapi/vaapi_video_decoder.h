@@ -54,7 +54,7 @@ class VaapiVideoDecoder : public DecoderInterface,
                   const OutputCB& output_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure reset_cb) override;
-  void OnPipelineFlushed() override;
+  void ApplyResolutionChange() override;
 
   // DecodeSurfaceHandler<VASurface> implementation.
   scoped_refptr<VASurface> CreateSurface() override;

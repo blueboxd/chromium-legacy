@@ -82,9 +82,6 @@ const base::Feature kAssistantRoutines{"AssistantRoutines",
 const base::Feature kAssistantTimersV2{"AssistantTimersV2",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kInAssistantNotifications{
-    "InAssistantNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kEnableClearCutLog{"EnableClearCutLog",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -149,10 +146,6 @@ bool IsDspHotwordEnabled() {
 
 bool IsFeedbackUiEnabled() {
   return base::FeatureList::IsEnabled(kAssistantFeedbackUi);
-}
-
-bool IsInAssistantNotificationsEnabled() {
-  return base::FeatureList::IsEnabled(kInAssistantNotifications);
 }
 
 bool IsMediaSessionIntegrationEnabled() {

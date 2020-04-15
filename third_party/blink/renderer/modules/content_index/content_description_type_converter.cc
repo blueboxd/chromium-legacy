@@ -59,7 +59,7 @@ blink::mojom::blink::ContentDescriptionPtr TypeConverter<
     result->icons.push_back(blink::mojom::blink::ContentIconDefinition::New(
         icon->src(), icon->sizes(), icon->type()));
   }
-  result->launch_url = description->launchUrl();
+  result->launch_url = description->url();
 
   return result;
 }
@@ -85,7 +85,7 @@ TypeConverter<blink::ContentDescription*,
   }
   result->setIcons(blink_icons);
 
-  result->setLaunchUrl(description->launch_url);
+  result->setUrl(description->launch_url);
   return result;
 }
 

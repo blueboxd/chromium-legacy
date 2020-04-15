@@ -29,43 +29,76 @@ mojom("mojom") {
     "//ui/gfx/geometry/mojom",
   ]
 
-  buffer_types_shared_cpp_typemap = {
-    types = [
-      {
-        mojom = "gfx.mojom.BufferFormat"
-        cpp = "::gfx::BufferFormat"
-      },
-      {
-        mojom = "gfx.mojom.BufferUsage"
-        cpp = "::gfx::BufferUsage"
-      },
-      {
-        mojom = "gfx.mojom.BufferUsageAndFormat"
-        cpp = "::gfx::BufferUsageAndFormat"
-      },
-      {
-        mojom = "gfx.mojom.GpuMemoryBufferHandle"
-        cpp = "::gfx::GpuMemoryBufferHandle"
-        move_only = true
-        nullable_is_same_type = true
-      },
-      {
-        mojom = "gfx.mojom.GpuMemoryBufferId"
-        cpp = "::gfx::GpuMemoryBufferId"
-        copyable_pass_by_value = true
-      },
-      {
-        mojom = "gfx.mojom.GpuMemoryBufferType"
-        cpp = "::gfx::GpuMemoryBufferType"
-      },
-    ]
+  shared_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "gfx.mojom.BufferFormat"
+          cpp = "::gfx::BufferFormat"
+        },
+        {
+          mojom = "gfx.mojom.BufferUsage"
+          cpp = "::gfx::BufferUsage"
+        },
+        {
+          mojom = "gfx.mojom.BufferUsageAndFormat"
+          cpp = "::gfx::BufferUsageAndFormat"
+        },
+        {
+          mojom = "gfx.mojom.GpuMemoryBufferHandle"
+          cpp = "::gfx::GpuMemoryBufferHandle"
+          move_only = true
+          nullable_is_same_type = true
+        },
+        {
+          mojom = "gfx.mojom.GpuMemoryBufferId"
+          cpp = "::gfx::GpuMemoryBufferId"
+          copyable_pass_by_value = true
+        },
+        {
+          mojom = "gfx.mojom.GpuMemoryBufferType"
+          cpp = "::gfx::GpuMemoryBufferType"
+        },
+      ]
 
-    traits_headers = [ "buffer_types_mojom_traits.h" ]
-    traits_public_deps = [ ":shared_mojom_traits" ]
-  }
+      traits_headers = [ "buffer_types_mojom_traits.h" ]
+      traits_public_deps = [ ":shared_mojom_traits" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gfx.mojom.ColorSpace"
+          cpp = "::gfx::ColorSpace"
+        },
+      ]
+      traits_headers = [ "color_space_mojom_traits.h" ]
+      traits_public_deps = [ ":color_space_mojom_support" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gfx.mojom.GpuFenceHandle"
+          cpp = "::gfx::GpuFenceHandle"
+        },
+      ]
+      traits_headers = [ "gpu_fence_handle_mojom_traits.h" ]
+      traits_public_deps = [ ":shared_mojom_traits" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gfx.mojom.Transform"
+          cpp = "::gfx::Transform"
+        },
+      ]
+      traits_headers = [ "transform_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/gfx" ]
+    },
+  ]
 
-  cpp_typemaps = [ buffer_types_shared_cpp_typemap ]
-  blink_cpp_typemaps = [ buffer_types_shared_cpp_typemap ]
+  cpp_typemaps = []
+  cpp_typemaps = shared_cpp_typemaps
+  blink_cpp_typemaps = shared_cpp_typemaps
 }
 
 mojom("native_handle_types") {
@@ -136,6 +169,8 @@ component("shared_mojom_traits") {
   sources = [
     "buffer_types_mojom_traits.cc",
     "buffer_types_mojom_traits.h",
+    "gpu_fence_handle_mojom_traits.cc",
+    "gpu_fence_handle_mojom_traits.h",
   ]
   public_deps = [
     ":mojom_shared",

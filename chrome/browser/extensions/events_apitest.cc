@@ -208,10 +208,16 @@ IN_PROC_BROWSER_TEST_F(EventsApiTest,
   }
 }
 
-// Disabled due to flaky timeouts. https://crbug.com/833854
+// This test is OK on Windows, but times out on other platforms.
+// https://crbug.com/833854
+#if defined(OS_WIN)
+#define MAYBE_NewlyIntroducedListener NewlyIntroducedListener
+#else
+#define MAYBE_NewlyIntroducedListener DISABLED_NewlyIntroducedListener
+#endif
 // Tests that if an extension's updated version has a new lazy listener, it
 // fires properly after the update.
-IN_PROC_BROWSER_TEST_F(EventsApiTest, DISABLED_NewlyIntroducedListener) {
+IN_PROC_BROWSER_TEST_F(EventsApiTest, MAYBE_NewlyIntroducedListener) {
   std::vector<ExtensionCRXData> data;
   data.emplace_back("v1");
   data.emplace_back("v2");

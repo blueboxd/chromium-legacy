@@ -1036,9 +1036,11 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   TryClearForm();
 }
 
+// TODO(crbug.com/967588): Disabled due to flakiness
 // Test that multiple autofillings work.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       FillChangeSecondFieldRefillSecondFieldClearFirst) {
+IN_PROC_BROWSER_TEST_F(
+    AutofillInteractiveTest,
+    DISABLED_FillChangeSecondFieldRefillSecondFieldClearFirst) {
   CreateTestProfile();
 
   // Load the test page.

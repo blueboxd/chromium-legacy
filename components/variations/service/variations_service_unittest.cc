@@ -535,13 +535,13 @@ TEST_F(VariationsServiceTest, InstanceManipulations) {
     bool gzip_compressed;
     bool seed_stored;
   } cases[] = {
-    {"", false, false, true},
-    {"IM:gzip", false, true, true},
-    {"IM:x-bm", true, false, true},
-    {"IM:x-bm,gzip", true, true, true},
-    {"IM: x-bm, gzip", true, true, true},
-    {"IM:gzip,x-bm", false, false, false},
-    {"IM:deflate,x-bm,gzip", false, false, false},
+      {"", false, false, true},
+      {"gzip", false, true, true},
+      {"x-bm", true, false, true},
+      {"x-bm,gzip", true, true, true},
+      {" x-bm, gzip", true, true, true},
+      {"gzip,x-bm", false, false, false},
+      {"deflate,x-bm,gzip", false, false, false},
   };
 
   std::string serialized_seed = SerializeSeed(CreateTestSeed());
@@ -558,7 +558,7 @@ TEST_F(VariationsServiceTest, InstanceManipulations) {
     head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(headers));
     if (!cases[i].im.empty())
-      head->headers->AddHeader(cases[i].im);
+      head->headers->SetHeader("IM", cases[i].im);
     network::URLLoaderCompletionStatus status;
     status.decoded_body_length = serialized_seed.size();
     service.test_url_loader_factory()->AddResponse(
@@ -587,7 +587,7 @@ TEST_F(VariationsServiceTest, CountryHeader) {
   auto head = network::mojom::URLResponseHead::New();
   head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  head->headers->AddHeader("X-Country: test");
+  head->headers->SetHeader("X-Country", "test");
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = serialized_seed.size();
   service.test_url_loader_factory()->AddResponse(
@@ -888,14 +888,12 @@ TEST_F(VariationsServiceTest, SafeMode_SuccessfulFetchClearsFailureStreaks) {
 
   std::string response;
   ASSERT_TRUE(base::Base64Decode(kBase64SeedData, &response));
-  const std::string seed_signature_header =
-      std::string("X-Seed-Signature:") + kBase64SeedSignature;
 
   std::string headers("HTTP/1.1 200 OK\n\n");
   auto head = network::mojom::URLResponseHead::New();
   head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  head->headers->AddHeader(seed_signature_header);
+  head->headers->SetHeader("X-Seed-Signature", kBase64SeedSignature);
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = response.size();
   service.test_url_loader_factory()->AddResponse(
@@ -1058,8 +1056,6 @@ TEST_F(VariationsServiceTest, NullResponseReceivedWithHTTPOk) {
 
   std::string response;
   ASSERT_TRUE(base::Base64Decode(kBase64SeedData, &response));
-  const std::string seed_signature_header =
-      std::string("X-Seed-Signature:") + kBase64SeedSignature;
 
   std::string headers("HTTP/1.1 200 OK\n\n");
   auto head = network::mojom::URLResponseHead::New();
@@ -1067,7 +1063,7 @@ TEST_F(VariationsServiceTest, NullResponseReceivedWithHTTPOk) {
       net::HttpUtil::AssembleRawHeaders(headers));
   head->headers = http_response_headers;
   EXPECT_EQ(net::HTTP_OK, http_response_headers->response_code());
-  http_response_headers->AddHeader(seed_signature_header);
+  http_response_headers->SetHeader("X-Seed-Signature", kBase64SeedSignature);
   // Set ERR_FAILED status code despite the 200 response code.
   network::URLLoaderCompletionStatus status(net::ERR_FAILED);
   status.decoded_body_length = response.size();

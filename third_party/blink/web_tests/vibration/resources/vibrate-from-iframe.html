@@ -9,12 +9,9 @@
 
 function startTest() {
   if (window.eventSender) {
-    var iframes = window.parent.document.getElementsByTagName('iframe');
-    // The last iframe.
-    var iframe = iframes[iframes.length-1];
     // Simulates a user click for vibrate to be allowed.
     var element = document.getElementById("test");
-    simulateUserClick(element.offsetLeft + iframe.offsetLeft + 4, element.offsetTop + iframe.offsetTop + 4);
+    simulateUserClick(element.offsetLeft, element.offsetTop);
   }
 }
 

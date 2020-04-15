@@ -198,6 +198,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void GetHasTrustTokensAnswerer(
       mojo::PendingReceiver<mojom::HasTrustTokensAnswerer> receiver,
       const url::Origin& top_frame_origin) override;
+  void ClearTrustTokenData(mojom::ClearDataFilterPtr filter,
+                           base::OnceClosure done) override;
   void ClearNetworkingHistorySince(
       base::Time time,
       base::OnceClosure completion_callback) override;

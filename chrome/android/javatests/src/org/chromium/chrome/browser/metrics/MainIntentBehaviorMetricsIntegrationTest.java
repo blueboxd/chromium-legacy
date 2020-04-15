@@ -36,7 +36,9 @@ import org.chromium.chrome.browser.history.HistoryActivity;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.settings.DummySettingsForTest;
 import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -64,6 +66,9 @@ public class MainIntentBehaviorMetricsIntegrationTest {
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    @Rule
+    public SettingsActivityTestRule<DummySettingsForTest> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(DummySettingsForTest.class);
 
     private UserActionTester mActionTester;
 
@@ -250,7 +255,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
 
             mActivityTestRule.startMainActivityFromLauncher();
 
-            SettingsActivity settingsActivity = mActivityTestRule.startSettingsActivity(null);
+            SettingsActivity settingsActivity = mSettingsActivityTestRule.startSettingsActivity();
             settingsActivity.finish();
             ChromeActivityTestRule.waitForActivityNativeInitializationComplete(
                     ChromeActivityTestRule.waitFor(ChromeTabbedActivity.class));

@@ -7689,6 +7689,7 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Navigation"/>
   <int value="5" label="Composited UI"/>
   <int value="6" label="VR"/>
+  <int value="7" label="PROMOTE_TAB"/>
 </enum>
 
 <enum name="BrokenAlternateProtocolLocation">
@@ -34930,6 +34931,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="IntelGpuGeneration">
   <int value="0" label="Not Intel"/>
   <int value="1" label="Unknown Intel"/>
+  <int value="4" label="4th Gen"/>
+  <int value="5" label="5th Gen"/>
   <int value="6" label="6th Gen"/>
   <int value="7" label="7th Gen"/>
   <int value="8" label="8th Gen"/>
@@ -34959,6 +34962,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="13" label="Intel CometLake"/>
   <int value="14" label="Intel CannonLake"/>
   <int value="15" label="Intel IceLake"/>
+  <int value="16" label="Intel Broadwater"/>
+  <int value="17" label="Intel EagleLake"/>
+  <int value="18" label="Intel IronLake"/>
+  <int value="19" label="Intel ElkhartLake"/>
+  <int value="20" label="Intel JaspterLake"/>
+  <int value="21" label="Intel TigerLake"/>
 </enum>
 
 <enum name="IntelMaxMicroArchitecture">
@@ -37550,6 +37559,7 @@ from previous Chrome versions.
   <int value="-2134244069" label="HttpFormWarning:enabled"/>
   <int value="-2133892372" label="ResamplingInputEvents:disabled"/>
   <int value="-2133277113" label="CCTModuleCustomHeader:disabled"/>
+  <int value="-2133276662" label="EduCoexistenceConsentLog:disabled"/>
   <int value="-2132591642" label="enable-input-view"/>
   <int value="-2132161378" label="SendTabToSelfHistory:disabled"/>
   <int value="-2131746498"
@@ -38885,6 +38895,7 @@ from previous Chrome versions.
   <int value="-649956990" label="enable-harfbuzz-rendertext"/>
   <int value="-648925189" label="ExploreSites:enabled"/>
   <int value="-645455405" label="MacViewsNativeDialogs:enabled"/>
+  <int value="-643217597" label="EduCoexistenceConsentLog:enabled"/>
   <int value="-641820371" label="EnableCustomMacPaperSizes:enabled"/>
   <int value="-641719457" label="disable-compositor-touch-hit-testing"/>
   <int value="-640191786" label="DesktopPWAsWithoutExtensions:enabled"/>

@@ -72,4 +72,9 @@ void DocumentResourceCoordinator::SetHadFormInteraction() {
   had_form_interaction_ = true;
 }
 
+void DocumentResourceCoordinator::OnFirstContentfulPaint(
+    base::TimeDelta time_since_navigation_start) {
+  service_->OnFirstContentfulPaint(time_since_navigation_start);
+}
+
 }  // namespace blink

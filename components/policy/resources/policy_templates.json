@@ -11747,7 +11747,7 @@
           'caption': '''Disable all variations''',
         },
       ],
-      'supported_on': ['chrome.*:82-'],
+      'supported_on': ['chrome.*:83-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -11792,7 +11792,7 @@
           'caption': '''Disable all variations''',
         },
       ],
-      'supported_on': ['chrome_os:82-'],
+      'supported_on': ['chrome_os:83-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -20246,7 +20246,7 @@
       'device_only': True,
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:82-'],
+      'supported_on': ['chrome_os:83-'],
       'features': {
         'can_be_mandatory' : True,
         'can_be_recommended': False,
@@ -20272,7 +20272,7 @@ If this policy is left unset, the privacy screen is disabled initially, but rema
       'owners': ['lamzin@google.com', 'gildekel@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:82-'],
+      'supported_on': ['chrome_os:83-'],
       'features': {
         'can_be_mandatory' : True,
         'can_be_recommended': False,

@@ -529,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(
 // This test is flaky. See crbug.com/1069346.
 IN_PROC_BROWSER_TEST_F(
     AdTaggingBrowserTest,
-    DISABLED_ChildrenOfFrameWithWindowStopAbortedLoad_StillCorrectlyTagged) {
+    ChildrenOfFrameWithWindowStopAbortedLoad_StillCorrectlyTagged) {
   TestSubresourceFilterObserver observer(web_contents());
 
   // Main frame.

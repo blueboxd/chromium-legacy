@@ -64,6 +64,9 @@ public class MainSettingsFragmentTest {
     public HomepageTestRule mHomepageTestRule = new HomepageTestRule();
     @Rule
     public SyncTestRule mSyncTestRule = new SyncTestRule();
+    @Rule
+    public SettingsActivityTestRule<MainSettings> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(MainSettings.class);
 
     @Mock
     public TemplateUrlService mMockTemplateUrlService;
@@ -92,10 +95,8 @@ public class MainSettingsFragmentTest {
     }
 
     private void launchSettingsActivity() {
-        SettingsActivity activity =
-                mSyncTestRule.startSettingsActivity(MainSettings.class.getName());
-
-        mMainSettings = (MainSettings) activity.getMainFragment();
+        mSettingsActivityTestRule.startSettingsActivity();
+        mMainSettings = mSettingsActivityTestRule.getFragment();
         Assert.assertNotNull("SettingsActivity failed to launch.", mMainSettings);
     }
 

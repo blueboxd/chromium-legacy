@@ -45,7 +45,10 @@ Polymer({
    */
   selectedChanged_(newValue, oldValue) {
     if (oldValue != undefined) {
-      this.path = '/' + this.tabs[newValue].toLowerCase();
+      // The first tab is special-cased to the empty path.
+      const defaultTab = this.tabs[0].toLowerCase();
+      const tabName = this.tabs[newValue].toLowerCase();
+      this.path = '/' + (tabName === defaultTab ? '' : tabName);
     }
   },
 

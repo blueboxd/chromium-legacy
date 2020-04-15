@@ -153,8 +153,8 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
  private:
   static const base::TimeDelta kNotificationCountUpdateDelay;
 
+  friend class SystemTrayTestApi;
   friend class UnifiedSystemTrayTest;
-  friend class UnifiedSystemTrayTestApi;
 
   // Private class implements MessageCenterUiDelegate.
   class UiDelegate;

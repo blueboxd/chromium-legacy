@@ -128,42 +128,6 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor) {
   render_widget->SetDeviceScaleFactorForTesting(factor);
 }
 
-std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
-    WebWidgetTestProxy* web_widget_test_proxy,
-    const blink::WebInputEvent& event) {
-  DCHECK(web_widget_test_proxy);
-
-  // Compute the scale from window (dsf-independent) to blink (dsf-dependent
-  // under UseZoomForDSF).
-  blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
-  web_widget_test_proxy->ConvertWindowToViewport(&rect);
-  float scale = rect.width;
-
-  blink::WebRect view_rect = web_widget_test_proxy->ViewRect();
-  gfx::Vector2d delta(-view_rect.x, -view_rect.y);
-
-  // The coordinates are given in terms of the root widget, so adjust for the
-  // position of the main frame.
-  // TODO(sgilhuly): This doesn't work for events sent to OOPIFs because the
-  // main frame is remote, and doesn't have a corresponding RenderWidget.
-  // Currently none of those tests are run out of headless mode.
-  // TODO(danakj): In a frame, the ViewRect is the same in every local root
-  // and this would just remove and add it back, so this should be fine in
-  // OOPIFs, we should only do the ViewRect() translation for popup widgets,
-  // just as RenderWidget does.
-  RenderFrameImpl* main_frame =
-      web_widget_test_proxy->GetWebViewTestProxy()->GetMainRenderFrame();
-  if (main_frame) {
-    RenderWidget* root_widget = main_frame->GetLocalRootRenderWidget();
-
-    blink::WebRect root_rect = root_widget->ViewRect();
-    gfx::Vector2d root_delta(root_rect.x, root_rect.y);
-    delta.Add(root_delta);
-  }
-
-  return ui::TranslateAndScaleWebInputEvent(event, delta, scale);
-}
-
 void SetDeviceColorSpace(RenderView* render_view,
                          const gfx::ColorSpace& color_space) {
   RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);

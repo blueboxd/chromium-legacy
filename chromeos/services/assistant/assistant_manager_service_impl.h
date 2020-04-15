@@ -86,6 +86,9 @@ enum class AssistantQueryResponseType {
 // Since LibAssistant is a standalone library, all callbacks come from it
 // running on threads not owned by Chrome. Thus we need to post the callbacks
 // onto the main thread.
+// NOTE: this class may start/stop LibAssistant multiple times throughout its
+// lifetime. This may occur, for example, if the user manually toggles Assistant
+// enabled/disabled in settings or switches to a non-primary profile.
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
     : public AssistantManagerService,
       public ::chromeos::assistant::action::AssistantActionObserver,
@@ -154,7 +157,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void NotifyEntryIntoAssistantUi(
       mojom::AssistantEntryPoint entry_point) override;
   void AddTimeToTimer(const std::string& id, base::TimeDelta duration) override;
-  void StopAlarmTimerRinging() override;
+  void RemoveAlarmTimer(const std::string& id) override;
 
   // AssistantActionObserver overrides:
   void OnScheduleWait(int id, int time_ms) override;

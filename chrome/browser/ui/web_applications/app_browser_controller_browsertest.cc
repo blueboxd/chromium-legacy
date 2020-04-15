@@ -223,6 +223,12 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest,
   InstallAndLaunchMockPopup();
   EXPECT_EQ(BrowserList::GetInstance()->size(), 2u);
 }
+
+IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest,
+                       NoExtensionsContainerExists) {
+  InstallAndLaunchMockPopup();
+  EXPECT_EQ(app_browser_->window()->GetExtensionsContainer(), nullptr);
+}
 #endif
 
 #if defined(OS_CHROMEOS)

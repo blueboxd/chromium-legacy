@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
 import androidx.preference.Preference;
@@ -18,7 +17,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
@@ -36,6 +35,9 @@ public class SyncAndServicesSettingsWithFakeProfileSyncServiceTest {
             return new FakeProfileSyncService();
         }
     };
+    @Rule
+    public SettingsActivityTestRule<SyncAndServicesSettings> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(SyncAndServicesSettings.class);
 
     @Test
     @LargeTest
@@ -54,10 +56,8 @@ public class SyncAndServicesSettingsWithFakeProfileSyncServiceTest {
     }
 
     private SyncAndServicesSettings startSyncAndServicesPreferences() {
-        SettingsActivity settingsActivity =
-                mSyncTestRule.startSettingsActivity(SyncAndServicesSettings.class.getName());
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        return (SyncAndServicesSettings) settingsActivity.getMainFragment();
+        mSettingsActivityTestRule.startSettingsActivity();
+        return mSettingsActivityTestRule.getFragment();
     }
 
     private Preference getSyncErrorCard(SyncAndServicesSettings fragment) {

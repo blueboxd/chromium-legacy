@@ -120,7 +120,8 @@ class UI_BASE_EXPORT ResourceBundle {
   };
 
   // Initialize the ResourceBundle for this process. Does not take ownership of
-  // the |delegate| value. Returns the language selected.
+  // the |delegate| value. Returns the language selected or an empty string if
+  // initialization failed (e.g. resource bundle not found or corrupted).
   // NOTE: Mac ignores this and always loads up resources for the language
   // defined by the Cocoa UI (i.e., NSBundle does the language work).
   //
@@ -194,11 +195,12 @@ class UI_BASE_EXPORT ResourceBundle {
                                    ScaleFactor scale_factor);
 
   // Changes the locale for an already-initialized ResourceBundle, returning the
-  // name of the newly-loaded locale.  Future calls to get strings will return
-  // the strings for this new locale.  This has no effect on existing or future
-  // image resources.  |locale_resources_data_| is protected by a lock for the
-  // duration of the swap, as GetLocalizedString() may be concurrently invoked
-  // on another thread.
+  // name of the newly-loaded locale, or an empty string if initialization
+  // failed (e.g. resource bundle not found or corrupted). Future calls to get
+  // strings will return the strings for this new locale. This has no effect on
+  // existing or future image resources. |locale_resources_data_| is protected
+  // by a lock for the duration of the swap, as GetLocalizedString() may be
+  // concurrently invoked on another thread.
   std::string ReloadLocaleResources(const std::string& pref_locale);
 
   // Gets image with the specified resource_id from the current module data.

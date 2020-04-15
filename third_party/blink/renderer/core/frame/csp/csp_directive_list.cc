@@ -171,13 +171,6 @@ CSPDirectiveList* CSPDirectiveList::Create(ContentSecurityPolicy* policy,
     directives->SetEvalDisabledErrorMessage(message);
   }
 
-  if (directives->IsReportOnly() &&
-      source != ContentSecurityPolicySource::kMeta &&
-      directives->ReportEndpoints().IsEmpty()) {
-    policy->ReportMissingReportURI(
-        String(begin, static_cast<wtf_size_t>(end - begin)));
-  }
-
   return directives;
 }
 

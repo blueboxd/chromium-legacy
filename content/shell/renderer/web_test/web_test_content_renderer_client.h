@@ -29,7 +29,7 @@ class WebTestContentRendererClient : public ShellContentRendererClient {
   bool IsIdleMediaSuspendEnabled() override;
 
  private:
-  std::unique_ptr<WebTestRenderThreadObserver> shell_observer_;
+  std::unique_ptr<WebTestRenderThreadObserver> render_thread_observer_;
 };
 
 }  // namespace content

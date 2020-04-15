@@ -27,10 +27,10 @@ TEST_F(DeepLinkUtilTest, CreateAlarmTimerDeeplink) {
       CreateAlarmTimerDeepLink(AlarmTimerAction::kAddTimeToTimer, "1",
                                base::TimeDelta::FromMinutes(1))
           .value());
-  ASSERT_EQ("googleassistant://alarm-timer?action=stopAlarmTimerRinging",
-            CreateAlarmTimerDeepLink(AlarmTimerAction::kStopRinging,
-                                     base::nullopt, base::nullopt)
-                .value());
+  ASSERT_EQ(
+      "googleassistant://alarm-timer?action=removeAlarmTimer&id=1",
+      CreateAlarmTimerDeepLink(AlarmTimerAction::kRemove, "1", base::nullopt)
+          .value());
 
   // For invalid deeplink params, we will hit DCHECK since this API isn't meant
   // to be used in such cases. We'll use a |ScopedLogAssertHandler| to safely
@@ -40,14 +40,15 @@ TEST_F(DeepLinkUtilTest, CreateAlarmTimerDeeplink) {
          const base::StringPiece stack_trace) {}));
 
   ASSERT_EQ(base::nullopt,
-            CreateAlarmTimerDeepLink(AlarmTimerAction::kStopRinging, "1",
+            CreateAlarmTimerDeepLink(AlarmTimerAction::kRemove, base::nullopt,
                                      base::nullopt));
-  ASSERT_EQ(base::nullopt, CreateAlarmTimerDeepLink(
-                               AlarmTimerAction::kStopRinging, base::nullopt,
-                               base::TimeDelta::FromMinutes(1)));
   ASSERT_EQ(base::nullopt,
-            CreateAlarmTimerDeepLink(AlarmTimerAction::kStopRinging, "1",
+            CreateAlarmTimerDeepLink(AlarmTimerAction::kRemove, base::nullopt,
                                      base::TimeDelta::FromMinutes(1)));
+  ASSERT_EQ(base::nullopt,
+            CreateAlarmTimerDeepLink(AlarmTimerAction::kRemove, "1",
+                                     base::TimeDelta::FromMinutes(1)));
+
   ASSERT_EQ(base::nullopt,
             CreateAlarmTimerDeepLink(AlarmTimerAction::kAddTimeToTimer, "1",
                                      base::nullopt));
@@ -175,8 +176,8 @@ TEST_F(DeepLinkUtilTest, GetDeepLinkParamAsAlarmTimerAction) {
   // Case: Deep link parameter present, well formed.
   params["action"] = "addTimeToTimer";
   AssertDeepLinkParamEq(AlarmTimerAction::kAddTimeToTimer);
-  params["action"] = "stopAlarmTimerRinging";
-  AssertDeepLinkParamEq(AlarmTimerAction::kStopRinging);
+  params["action"] = "removeAlarmTimer";
+  AssertDeepLinkParamEq(AlarmTimerAction::kRemove);
 
   // Case: Deep link parameter present, non AlarmTimerAction value.
   params["action"] = "true";

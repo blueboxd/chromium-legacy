@@ -51,6 +51,10 @@ bool GaiaIdHash::IsValid() const {
   return gaia_id_hash_.size() == crypto::kSHA256Length;
 }
 
+bool operator<(const GaiaIdHash& lhs, const GaiaIdHash& rhs) {
+  return lhs.gaia_id_hash_ < rhs.gaia_id_hash_;
+}
+
 bool operator==(const GaiaIdHash& lhs, const GaiaIdHash& rhs) {
   return lhs.gaia_id_hash_ == rhs.gaia_id_hash_;
 }
@@ -58,5 +62,9 @@ bool operator==(const GaiaIdHash& lhs, const GaiaIdHash& rhs) {
 bool operator!=(const GaiaIdHash& lhs, const GaiaIdHash& rhs) {
   return !(lhs == rhs);
 }
+
+GaiaIdHash& GaiaIdHash::operator=(const GaiaIdHash& form) = default;
+
+GaiaIdHash& GaiaIdHash::operator=(GaiaIdHash&& form) = default;
 
 }  // namespace autofill

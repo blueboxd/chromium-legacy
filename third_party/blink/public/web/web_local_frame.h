@@ -746,6 +746,10 @@ class WebLocalFrame : public WebFrame {
   // empty ((0,0), (0,0)).
   virtual WebRect GetSelectionBoundsRectForTesting() const = 0;
 
+  // Returns the position of the frame's origin relative to the viewport (ie the
+  // local root).
+  virtual gfx::Point GetPositionInViewportForTesting() const = 0;
+
   virtual void SetLifecycleState(mojom::FrameLifecycleState state) = 0;
 
   virtual void WasHidden() = 0;

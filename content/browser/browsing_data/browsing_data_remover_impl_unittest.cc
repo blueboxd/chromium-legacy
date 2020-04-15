@@ -28,6 +28,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task/post_task.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
@@ -55,6 +56,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/test/test_network_context.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -72,6 +74,7 @@
 #include "net/reporting/reporting_test_util.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+using base::test::RunOnceClosure;
 using testing::_;
 using testing::ByRef;
 using testing::Eq;
@@ -84,6 +87,8 @@ using testing::MatchResultListener;
 using testing::Not;
 using testing::Return;
 using testing::SizeIs;
+using testing::StrictMock;
+using testing::Truly;
 using testing::UnorderedElementsAre;
 using testing::WithArgs;
 using CookieDeletionFilterPtr = network::mojom::CookieDeletionFilterPtr;
@@ -145,7 +150,9 @@ net::CanonicalCookie CreateCookieWithHost(const url::Origin& origin) {
 class StoragePartitionRemovalTestStoragePartition
     : public TestStoragePartition {
  public:
-  StoragePartitionRemovalTestStoragePartition() = default;
+  StoragePartitionRemovalTestStoragePartition() {
+    set_network_context(&network_context_);
+  }
   ~StoragePartitionRemovalTestStoragePartition() override = default;
 
   void ClearDataForOrigin(uint32_t remove_mask,
@@ -206,6 +213,7 @@ class StoragePartitionRemovalTestStoragePartition
 
  private:
   StoragePartitionRemovalData storage_partition_removal_data_;
+  network::TestNetworkContext network_context_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionRemovalTestStoragePartition);
 };
@@ -326,9 +334,13 @@ class BrowsingDataRemoverImplTest : public testing::Test {
                                      const base::Time& delete_end,
                                      int remove_mask,
                                      bool include_protected_origins) {
+    // TODO(msramek): Consider moving |storage_partition| to the test fixture.
     StoragePartitionRemovalTestStoragePartition storage_partition;
-    network::TestNetworkContext nop_network_context;
-    storage_partition.set_network_context(&nop_network_context);
+
+    if (network_context_override_) {
+      storage_partition.set_network_context(network_context_override_);
+    }
+
     remover_->OverrideStoragePartitionForTesting(&storage_partition);
 
     int origin_type_mask = BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
@@ -351,6 +363,11 @@ class BrowsingDataRemoverImplTest : public testing::Test {
       int remove_mask,
       std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) {
     StoragePartitionRemovalTestStoragePartition storage_partition;
+
+    if (network_context_override_) {
+      storage_partition.set_network_context(network_context_override_);
+    }
+
     remover_->OverrideStoragePartitionForTesting(&storage_partition);
 
     BrowsingDataRemoverCompletionObserver completion_observer(remover_);
@@ -392,6 +409,10 @@ class BrowsingDataRemoverImplTest : public testing::Test {
     return mock_policy_.get();
   }
 
+  void set_network_context_override(network::mojom::NetworkContext* context) {
+    network_context_override_ = context;
+  }
+
   bool Match(const GURL& origin,
              int mask,
              storage::SpecialStoragePolicy* policy) {
@@ -405,6 +426,8 @@ class BrowsingDataRemoverImplTest : public testing::Test {
 
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<BrowserContext> browser_context_;
+
+  network::mojom::NetworkContext* network_context_override_ = nullptr;
 
   StoragePartitionRemovalData storage_partition_removal_data_;
 
@@ -1477,6 +1500,99 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasksInQuickSuccession) {
       BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
 
   EXPECT_FALSE(remover->IsRemovingForTesting());
+}
+
+namespace {
+class MockNetworkContext : public network::TestNetworkContext {
+ public:
+  MOCK_METHOD2(
+      ClearTrustTokenData,
+      void(network::mojom::ClearDataFilterPtr,
+           network::mojom::NetworkContext::ClearTrustTokenDataCallback));
+};
+}  // namespace
+
+TEST_F(BrowsingDataRemoverImplTest, ClearsTrustTokens) {
+  MockNetworkContext context;
+  set_network_context_override(&context);
+
+  EXPECT_CALL(context, ClearTrustTokenData(_, _)).WillOnce(RunOnceClosure<1>());
+
+  // Trust Tokens storage is cleared whenever cookies are cleared.
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                BrowsingDataRemover::DATA_TYPE_COOKIES,
+                                /*include_protected_origins=*/false);
+}
+
+TEST_F(BrowsingDataRemoverImplTest, PreservesTrustTokens) {
+  StrictMock<MockNetworkContext> context;
+  set_network_context_override(&context);
+
+  // When cookies aren't cleared, Trust Tokens state shouldn't be.
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      BrowsingDataRemover::DATA_TYPE_CACHE,  // arbitrary non-cookie type
+      /*include_protected_origins=*/false);
+
+  // (The strict mock will fail the test if its mocked method is called.)
+}
+
+TEST_F(BrowsingDataRemoverImplTest, ClearsTrustTokensForSite) {
+  MockNetworkContext context;
+  set_network_context_override(&context);
+
+  auto expected = network::mojom::ClearDataFilter::New();
+  expected->domains = {"host1.com"};
+
+  EXPECT_CALL(
+      context,
+      ClearTrustTokenData(
+          Truly([&expected](const network::mojom::ClearDataFilterPtr& filter) {
+            return mojo::Equals(filter, expected);
+          }),
+          _))
+      .WillOnce(RunOnceClosure<1>());
+
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  builder->AddRegisterableDomain("host1.com");
+
+  // Trust Tokens storage is cleared whenever cookies are cleared: when clearing
+  // cookies for a site, we should clear Trust Tokens state for the site.
+  BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
+                              BrowsingDataRemover::DATA_TYPE_COOKIES,
+                              std::move(builder));
+}
+
+TEST_F(BrowsingDataRemoverImplTest, ClearsTrustTokensForSiteDespiteTimeRange) {
+  MockNetworkContext context;
+  set_network_context_override(&context);
+
+  auto expected = network::mojom::ClearDataFilter::New();
+  expected->domains = {"host1.com"};
+
+  EXPECT_CALL(
+      context,
+      ClearTrustTokenData(
+          Truly([&expected](const network::mojom::ClearDataFilterPtr& filter) {
+            return mojo::Equals(filter, expected);
+          }),
+          _))
+      .WillOnce(RunOnceClosure<1>());
+
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  builder->AddRegisterableDomain("host1.com");
+
+  // Trust Tokens storage is cleared whenever cookies are cleared: when clearing
+  // cookies for a site, we should clear Trust Tokens state for the site.
+  //
+  // Since Trust Tokens data is not associated with particular timestamps, we
+  // should observe the same clearing behavior with a non-default time range as
+  // with the default time range.
+  BlockUntilOriginDataRemoved(
+      base::Time(), base::Time() + base::TimeDelta::FromSeconds(1),
+      BrowsingDataRemover::DATA_TYPE_COOKIES, std::move(builder));
 }
 
 }  // namespace content

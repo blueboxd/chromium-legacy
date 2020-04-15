@@ -22,6 +22,11 @@ enum XRVisibilityState {
   "hidden",
 };
 
+enum XRInteractionMode {
+  "screen-space",
+  "world-space"
+};
+
 [
     ActiveScriptWrappable,
     SecureContext,
@@ -29,6 +34,7 @@ enum XRVisibilityState {
     RuntimeEnabled=WebXR
 ] interface XRSession : EventTarget {
   [RuntimeEnabled=WebXRARModule] readonly attribute XREnvironmentBlendMode environmentBlendMode;
+  [RuntimeEnabled=WebXRARModule] readonly attribute XRInteractionMode interactionMode;
   readonly attribute XRVisibilityState visibilityState;
   [SameObject] readonly attribute XRRenderState renderState;
   [MeasureAs=XRSessionGetInputSources, SameObject] readonly attribute XRInputSourceArray inputSources;

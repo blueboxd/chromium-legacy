@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.page_info;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -27,16 +28,12 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils.OfflinePageLoadUrlDelegate;
-import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.site_settings.CookieControlsBridge;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -44,11 +41,12 @@ import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.feature_engagement.EventConstants;
-import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.components.page_info.ConnectionInfoPopup;
 import org.chromium.components.page_info.CookieControlsStatus;
 import org.chromium.components.page_info.CookieControlsView;
+import org.chromium.components.page_info.PageInfoControllerDelegate;
 import org.chromium.components.page_info.PageInfoDialog;
 import org.chromium.components.page_info.PageInfoView;
 import org.chromium.components.page_info.PageInfoView.ConnectionInfoParams;
@@ -113,6 +111,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     private final WebContents mWebContents;
     private final OfflinePageLoadUrlDelegate mOfflinePageLoadUrlDelegate;
     private final PermissionParamsListBuilder mPermissionParamsListBuilder;
+    private final PageInfoControllerDelegate mDelegate;
 
     // A pointer to the C++ object for this UI.
     private long mNativePageInfoController;
@@ -170,17 +169,20 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      * @param publisher                The name of the content publisher, if any.
      * @param offlinePageLoadUrlDelegate      {@link OfflinePageLoadUrlDelegate}
      *         defined by the caller.
+     * @param delegate                 The PageInfoControllerDelegate used to provide
+     *         embedder-specific info.
      */
-    protected PageInfoController(ChromeActivity activity, WebContents webContents,
-            int securityLevel, String offlinePageUrl, String offlinePageCreationDate,
+    protected PageInfoController(Activity activity, WebContents webContents, int securityLevel,
+            String offlinePageUrl, String offlinePageCreationDate,
             @OfflinePageState int offlinePageState, @PreviewPageState int previewPageState,
-            String publisher, OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate) {
+            String publisher, OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate,
+            PageInfoControllerDelegate delegate) {
         mOfflinePageLoadUrlDelegate = offlinePageLoadUrlDelegate;
         mWebContents = webContents;
         mSecurityLevel = securityLevel;
         mOfflinePageState = offlinePageState;
         mPreviewPageState = previewPageState;
-        Profile profile = Profile.fromWebContents(webContents);
+        mDelegate = delegate;
         PageInfoViewParams viewParams = new PageInfoViewParams();
 
         if (mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE) {
@@ -218,12 +220,12 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             displayUrl = UrlUtilities.stripScheme(mFullUrl);
         }
         SpannableStringBuilder displayUrlBuilder = new SpannableStringBuilder(displayUrl);
-        ChromeAutocompleteSchemeClassifier chromeAutocompleteSchemeClassifier =
-                new ChromeAutocompleteSchemeClassifier(profile);
+        AutocompleteSchemeClassifier autocompleteSchemeClassifier =
+                delegate.createAutocompleteSchemeClassifier();
         if (mSecurityLevel == ConnectionSecurityLevel.SECURE) {
             OmniboxUrlEmphasizer.EmphasizeComponentsResponse emphasizeResponse =
                     OmniboxUrlEmphasizer.parseForEmphasizeComponents(
-                            displayUrlBuilder.toString(), chromeAutocompleteSchemeClassifier);
+                            displayUrlBuilder.toString(), autocompleteSchemeClassifier);
             if (emphasizeResponse.schemeLength > 0) {
                 displayUrlBuilder.setSpan(
                         new TextAppearanceSpan(activity, R.style.TextAppearance_RobotoMediumStyle),
@@ -231,14 +233,14 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             }
         }
 
-        final boolean useDarkColors = !activity.getNightModeStateProvider().isInNightMode();
+        final boolean useDarkColors = delegate.useDarkColors();
         OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, activity.getResources(),
-                chromeAutocompleteSchemeClassifier, mSecurityLevel, mIsInternalPage, useDarkColors,
+                autocompleteSchemeClassifier, mSecurityLevel, mIsInternalPage, useDarkColors,
                 /*emphasizeScheme=*/true);
         viewParams.url = displayUrlBuilder;
         viewParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
-                displayUrlBuilder.toString(), chromeAutocompleteSchemeClassifier);
-        chromeAutocompleteSchemeClassifier.destroy();
+                displayUrlBuilder.toString(), autocompleteSchemeClassifier);
+        autocompleteSchemeClassifier.destroy();
 
         if (SiteSettingsHelper.isSiteSettingsAvailable(webContents)) {
             viewParams.siteSettingsButtonClickCallback = () -> {
@@ -248,7 +250,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                     SiteSettingsHelper.showSiteSettings(activity, mFullUrl);
                 });
             };
-            viewParams.cookieControlsShown = CookieControlsBridge.isCookieControlsEnabled(profile);
+            viewParams.cookieControlsShown = delegate.cookieControlsShown();
         } else {
             viewParams.siteSettingsButtonShown = false;
             viewParams.cookieControlsShown = false;
@@ -332,7 +334,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
         mDialog = new PageInfoDialog(activity, mView,
                 webContents.getViewAndroidDelegate().getContainerView(), isSheet(activity),
-                activity.getModalDialogManager(), this);
+                delegate.getModalDialogManager(), this);
         mDialog.show();
     }
 
@@ -412,7 +414,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
         // Display the appropriate connection message.
         SpannableStringBuilder messageBuilder = new SpannableStringBuilder();
-        ChromeActivity context = (ChromeActivity) mWindowAndroid.getActivity().get();
+        Context context = mWindowAndroid.getActivity().get();
         assert context != null;
         if (mContentPublisher != null) {
             messageBuilder.append(
@@ -465,7 +467,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                     if (!mWebContents.isDestroyed()) {
                         recordAction(PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
                         ConnectionInfoPopup.show(context, mWebContents,
-                                context.getModalDialogManager(), VrModuleProvider.getDelegate());
+                                mDelegate.getModalDialogManager(), VrModuleProvider.getDelegate());
                     }
                 });
             };
@@ -555,10 +557,12 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      * @param source Determines the source that triggered the popup.
      * @param offlinePageLoadUrlDelegate {@link OfflinePageLoadUrlDelegate} defined by the
      *         caller.
+     * @param delegate The PageInfoControllerDelegate used to provide embedder-specific info.
      */
-    public static void show(final ChromeActivity activity, WebContents webContents,
+    public static void show(final Activity activity, WebContents webContents,
             final String contentPublisher, @OpenedFromSource int source,
-            OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate) {
+            OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate,
+            PageInfoControllerDelegate delegate) {
         // If the activity's decor view is not attached to window, we don't show the dialog because
         // the window manager might have revoked the window token for this activity. See
         // https://crbug.com/921450.
@@ -586,9 +590,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                     : PreviewPageState.INSECURE_PAGE_PREVIEW;
 
             PreviewsUma.recordPageInfoOpened(bridge.getPreviewsType(webContents));
-            Tracker tracker =
-                    TrackerFactory.getTrackerForProfile(Profile.fromWebContents(webContents));
-            tracker.notifyEvent(EventConstants.PREVIEWS_VERBOSE_STATUS_OPENED);
+            delegate.getTracker().notifyEvent(EventConstants.PREVIEWS_VERBOSE_STATUS_OPENED);
         }
 
         String offlinePageUrl = null;
@@ -617,7 +619,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
         new PageInfoController(activity, webContents, securityLevel, offlinePageUrl,
                 offlinePageCreationDate, offlinePageState, previewPageState, contentPublisher,
-                offlinePageLoadUrlDelegate);
+                offlinePageLoadUrlDelegate, delegate);
     }
 
     @Override

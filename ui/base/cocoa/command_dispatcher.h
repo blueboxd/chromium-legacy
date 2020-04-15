@@ -58,6 +58,9 @@ UI_BASE_EXPORT
 - (void)dispatchUsingKeyModifiers:(id)sender
                        forHandler:(id<UserInterfaceItemCommandHandler>)handler;
 
+// TODO(bokan): Temporary to help debug https://crbug.com/1039833.
+- (BOOL)isRedispatchingKeyEvent;
+
 @end
 
 // If the NSWindow's firstResponder implements CommandDispatcherTarget, then

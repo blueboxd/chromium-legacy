@@ -9,10 +9,14 @@
 
 #include "ash/drag_drop/drag_drop_tracker.h"
 #include "ash/drag_drop/drag_image_view.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/pickle.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/capture_client.h"
@@ -22,6 +26,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/hit_test.h"
@@ -466,6 +472,9 @@ void DragDropController::DragUpdate(aura::Window* target,
         cursor = ui::mojom::CursorType::kAlias;
       else if (op & ui::DragDropTypes::DRAG_MOVE)
         cursor = ui::mojom::CursorType::kGrabbing;
+
+      // TODO(https://crbug.com/1069869): don't show kNoDrop cursor for
+      // a tab drag that can drop into a new window.
       Shell::Get()->cursor_manager()->SetCursor(cursor);
     }
   }
@@ -503,15 +512,24 @@ void DragDropController::Drop(aura::Window* target,
   aura::client::DragDropDelegate* delegate =
       aura::client::GetDragDropDelegate(target);
   if (delegate) {
+    const bool is_chrome_tab_drag = IsChromeTabDrag();
+
     ui::DropTargetEvent e(*drag_data_.get(), event.location_f(),
                           event.root_location_f(), drag_operation_);
     e.set_flags(event.flags());
     ui::Event::DispatcherApi(&e).set_target(target);
+
+    ui::OSExchangeData copied_data(drag_data_->provider().Clone());
     drag_operation_ = delegate->OnPerformDrop(e, std::move(drag_data_));
-    if (drag_operation_ == 0)
+    if (drag_operation_ == 0 && is_chrome_tab_drag) {
+      Shell::Get()->shell_delegate()->CreateBrowserForTabDrop(
+          drag_source_window_, copied_data);
       StartCanceledAnimation(kCancelAnimationDuration);
-    else
+    } else if (drag_operation_ == 0) {
+      StartCanceledAnimation(kCancelAnimationDuration);
+    } else {
       drag_image_.reset();
+    }
   } else {
     drag_image_.reset();
   }
@@ -618,6 +636,39 @@ void DragDropController::Cleanup() {
   // Cleanup can be called again while deleting DragDropTracker, so delete
   // the pointer with a local variable to avoid double free.
   std::unique_ptr<DragDropTracker> holder = std::move(drag_drop_tracker_);
+}
+
+bool DragDropController::IsChromeTabDrag() {
+  if (!features::IsWebUITabStripTabDragIntegrationEnabled())
+    return false;
+
+  if (!drag_data_)
+    return false;
+  base::Pickle pickle;
+  drag_data_->GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
+                             &pickle);
+  base::PickleIterator iter(pickle);
+
+  uint32_t entry_count = 0;
+  if (!iter.ReadUInt32(&entry_count))
+    return false;
+
+  for (uint32_t i = 0; i < entry_count; ++i) {
+    base::StringPiece16 type;
+    base::StringPiece16 data;
+    if (!iter.ReadStringPiece16(&type) || !iter.ReadStringPiece16(&data)) {
+      return false;
+    }
+
+    // TODO(https://crbug.com/1069869): share this constant between Ash
+    // and Chrome instead of hardcoding it in both places.
+    static const base::string16 chrome_tab_type =
+        base::ASCIIToUTF16("application/vnd.chromium.tab");
+    if (type == chrome_tab_type)
+      return true;
+  }
+
+  return false;
 }
 
 }  // namespace ash

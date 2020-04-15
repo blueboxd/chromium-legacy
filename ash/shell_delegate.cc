@@ -6,6 +6,12 @@
 
 namespace ash {
 
+bool ShellDelegate::CreateBrowserForTabDrop(
+    gfx::NativeWindow source_window,
+    const ui::OSExchangeData& drop_data) {
+  return false;
+}
+
 media_session::mojom::MediaSessionService*
 ShellDelegate::GetMediaSessionService() {
   return nullptr;

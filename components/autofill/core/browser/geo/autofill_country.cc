@@ -25,13 +25,28 @@ const size_t kLocaleCapacity =
 
 AutofillCountry::AutofillCountry(const std::string& country_code,
                                  const std::string& locale) {
-  auto result =
-      CountryDataMap::GetInstance()->country_data().find(country_code);
-  DCHECK(result != CountryDataMap::GetInstance()->country_data().end());
-  const CountryData& data = result->second;
+  CountryDataMap* country_data_map = CountryDataMap::GetInstance();
 
-  country_code_ = country_code;
-  name_ = l10n_util::GetDisplayNameForCountry(country_code, locale);
+  // If the country code is an alias (e.g. "GB" for "UK") expand the country
+  // code.
+  country_code_ = country_data_map->HasCountryCodeAlias(country_code)
+                      ? country_data_map->GetCountryCodeForAlias(country_code)
+                      : country_code;
+
+  // If there is no entry in the |CountryDataMap| for the
+  // |country_code_for_country_data| use the country code  derived from the
+  // locale. This reverts to US.
+  country_data_map->HasCountryData(country_code_)
+      ? country_code_
+      : CountryCodeForLocale(locale);
+
+  // Acquire the country address data.
+  const CountryData& data = country_data_map->GetCountryData(country_code_);
+
+  // Translate the country name by the supplied local.
+  name_ = l10n_util::GetDisplayNameForCountry(country_code_, locale);
+
+  // Get the localized strings associate with the address fields.
   postal_code_label_ = l10n_util::GetStringUTF16(data.postal_code_label_id);
   state_label_ = l10n_util::GetStringUTF16(data.state_label_id);
   address_required_fields_ = data.address_required_fields;

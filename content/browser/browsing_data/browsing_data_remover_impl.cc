@@ -466,6 +466,23 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     RenderFrameHostImpl::ClearAllPrefetchedSignedExchangeCache();
   }
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Prototype Trust Token API (https://github.com/wicg/trust-token-api).
+
+  // We don't support clearing data for specific time ranges because much Trust
+  // Tokens state (e.g. issuers associated with each top-level origin) has no
+  // notion of associated creation time. Consequently, like for reporting and
+  // network error logging below, a data removal request for certain
+  // sites/origins that has the Trust Tokens type in scope will clear all Trust
+  // Tokens data associated with the requested sites/origins.
+  if (remove_mask & DATA_TYPE_COOKIES) {
+    network::mojom::NetworkContext* network_context =
+        storage_partition->GetNetworkContext();
+    network_context->ClearTrustTokenData(
+        filter_builder->BuildNetworkServiceFilter(),
+        CreateTaskCompletionClosureForMojo(TracingDataType::kTrustTokens));
+  }
+
 #if BUILDFLAG(ENABLE_REPORTING)
   //////////////////////////////////////////////////////////////////////////////
   // Reporting cache.

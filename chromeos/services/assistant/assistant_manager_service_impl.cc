@@ -1464,13 +1464,6 @@ void AssistantManagerServiceImpl::OnDeviceAppsEnabled(bool enabled) {
       assistant::features::IsAppSupportEnabled() && enabled);
 }
 
-void AssistantManagerServiceImpl::StopAlarmTimerRinging() {
-  if (!assistant_manager_internal_)
-    return;
-
-  assistant_manager_internal_->GetAlarmTimerManager()->StopRinging();
-}
-
 void AssistantManagerServiceImpl::AddTimeToTimer(const std::string& id,
                                                  base::TimeDelta duration) {
   if (!assistant_manager_internal_)
@@ -1478,6 +1471,11 @@ void AssistantManagerServiceImpl::AddTimeToTimer(const std::string& id,
 
   assistant_manager_internal_->GetAlarmTimerManager()->AddTimeToTimer(
       id, duration.InSeconds());
+}
+
+void AssistantManagerServiceImpl::RemoveAlarmTimer(const std::string& id) {
+  if (assistant_manager_internal_)
+    assistant_manager_internal_->GetAlarmTimerManager()->RemoveEvent(id);
 }
 
 void AssistantManagerServiceImpl::NotifyEntryIntoAssistantUi(

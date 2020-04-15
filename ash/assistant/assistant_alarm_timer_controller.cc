@@ -31,6 +31,8 @@ namespace ash {
 
 namespace {
 
+using assistant::util::AlarmTimerAction;
+
 // Grouping key and ID prefix for timer notifications.
 constexpr char kTimerNotificationGroupingKey[] = "assistant/timer";
 constexpr char kTimerNotificationIdPrefix[] = "assistant/timer";
@@ -116,26 +118,15 @@ chromeos::assistant::mojom::AssistantNotificationPtr CreateTimerNotification(
   const std::string message = CreateTimerNotificationMessage(timer);
 
   base::Optional<GURL> stop_alarm_timer_action_url =
-      assistant::util::CreateAlarmTimerDeepLink(
-          assistant::util::AlarmTimerAction::kStopRinging,
-          /*alarm_timer_id=*/base::nullopt,
-          /*duration=*/base::nullopt);
+      assistant::util::CreateAlarmTimerDeepLink(AlarmTimerAction::kRemove,
+                                                timer.id);
 
   base::Optional<GURL> add_time_to_timer_action_url =
       assistant::util::CreateAlarmTimerDeepLink(
-          assistant::util::AlarmTimerAction::kAddTimeToTimer, timer.id,
-          kOneMin);
+          AlarmTimerAction::kAddTimeToTimer, timer.id, kOneMin);
 
   AssistantNotificationPtr notification = AssistantNotification::New();
-
-  // If in-Assistant notifications are supported, we'll allow alarm/timer
-  // notifications to show in either Assistant UI or the Message Center.
-  // Otherwise, we'll only allow the notification to show in the Message Center.
-  notification->type =
-      chromeos::assistant::features::IsInAssistantNotificationsEnabled()
-          ? AssistantNotificationType::kPreferInAssistant
-          : AssistantNotificationType::kSystem;
-
+  notification->type = AssistantNotificationType::kSystem;
   notification->title = title;
   notification->message = message;
   notification->client_id = CreateTimerNotificationId(timer);
@@ -209,11 +200,9 @@ void AssistantAlarmTimerController::SetAssistant(
 
 void AssistantAlarmTimerController::OnAssistantControllerConstructed() {
   assistant_controller_->state_controller()->AddObserver(this);
-  assistant_controller_->ui_controller()->AddModelObserver(this);
 }
 
 void AssistantAlarmTimerController::OnAssistantControllerDestroying() {
-  assistant_controller_->ui_controller()->RemoveModelObserver(this);
   assistant_controller_->state_controller()->RemoveObserver(this);
 }
 
@@ -226,21 +215,22 @@ void AssistantAlarmTimerController::OnDeepLinkReceived(
   if (type != DeepLinkType::kAlarmTimer)
     return;
 
-  const base::Optional<assistant::util::AlarmTimerAction>& action =
+  const base::Optional<AlarmTimerAction>& action =
       assistant::util::GetDeepLinkParamAsAlarmTimerAction(params);
   if (!action.has_value())
     return;
 
-  // Timer ID is optional. Only used for adding time to timer.
   const base::Optional<std::string>& alarm_timer_id =
       assistant::util::GetDeepLinkParam(params, DeepLinkParam::kId);
+  if (!alarm_timer_id.has_value())
+    return;
 
   // Duration is optional. Only used for adding time to timer.
   const base::Optional<base::TimeDelta>& duration =
       assistant::util::GetDeepLinkParamAsTimeDelta(params,
                                                    DeepLinkParam::kDurationMs);
 
-  PerformAlarmTimerAction(action.value(), alarm_timer_id, duration);
+  PerformAlarmTimerAction(action.value(), alarm_timer_id.value(), duration);
 }
 
 void AssistantAlarmTimerController::OnAssistantStatusChanged(
@@ -320,43 +310,22 @@ void AssistantAlarmTimerController::OnAllTimersRemoved() {
                                         /*from_server=*/false);
 }
 
-void AssistantAlarmTimerController::OnUiVisibilityChanged(
-    AssistantVisibility new_visibility,
-    AssistantVisibility old_visibility,
-    base::Optional<AssistantEntryPoint> entry_point,
-    base::Optional<AssistantExitPoint> exit_point) {
-  // When the Assistant UI transitions from a visible state, we'll dismiss any
-  // ringing alarms or timers (assuming certain conditions have been met).
-  if (old_visibility != AssistantVisibility::kVisible)
-    return;
-
-  // We only do this if in-Assistant notifications are enabled, as in-Assistant
-  // alarm/timer notifications only live as long the Assistant UI. Per UX
-  // requirement, when Assistant UI dismisses with an in-Assistant timer
-  // notification showing, any ringing alarms/timers should be stopped.
-  if (!chromeos::assistant::features::IsInAssistantNotificationsEnabled())
-    return;
-
-  assistant_->StopAlarmTimerRinging();
-}
-
 void AssistantAlarmTimerController::PerformAlarmTimerAction(
-    const assistant::util::AlarmTimerAction& action,
-    const base::Optional<std::string>& alarm_timer_id,
+    const AlarmTimerAction& action,
+    const std::string& alarm_timer_id,
     const base::Optional<base::TimeDelta>& duration) {
   DCHECK(assistant_);
 
   switch (action) {
-    case assistant::util::AlarmTimerAction::kAddTimeToTimer:
-      if (!alarm_timer_id.has_value() || !duration.has_value()) {
-        LOG(ERROR) << "Ignore add time to timer action without timer ID or "
-                   << "duration.";
+    case AlarmTimerAction::kAddTimeToTimer:
+      if (!duration.has_value()) {
+        LOG(ERROR) << "Ignoring add time to timer action duration.";
         return;
       }
-      assistant_->AddTimeToTimer(alarm_timer_id.value(), duration.value());
+      assistant_->AddTimeToTimer(alarm_timer_id, duration.value());
       break;
-    case assistant::util::AlarmTimerAction::kStopRinging:
-      assistant_->StopAlarmTimerRinging();
+    case AlarmTimerAction::kRemove:
+      assistant_->RemoveAlarmTimer(alarm_timer_id);
       break;
   }
 }

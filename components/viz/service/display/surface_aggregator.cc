@@ -988,9 +988,13 @@ void SurfaceAggregator::CopyQuadsToPass(
   // If the current frame has copy requests or cached render passes, then
   // aggregate the entire thing, as otherwise parts of the copy requests may be
   // ignored and we could cache partially drawn render pass.
+  // If there are pixel-moving backdrop filters then the damage rect might be
+  // expanded later, so we can't drop quads that are outside the current damage
+  // rect safely.
   const bool ignore_undamaged =
       aggregate_only_damaged_ && !has_copy_requests_ &&
-      !has_cached_render_passes_ && !moved_pixel_passes_.count(dest_pass->id);
+      !has_cached_render_passes_ && !has_pixel_moving_backdrop_filter_ &&
+      !moved_pixel_passes_.count(dest_pass->id);
   // Damage rect in the quad space of the current shared quad state.
   // TODO(jbauman): This rect may contain unnecessary area if
   // transform isn't axis-aligned.
@@ -1247,6 +1251,7 @@ void SurfaceAggregator::FindChildSurfaces(
   base::AutoReset<bool> reset_is_visited(&current_pass_entry->is_visited, true);
   RenderPass* render_pass = current_pass_entry->render_pass;
   if (current_pass_entry->has_pixel_moving_backdrop_filter) {
+    has_pixel_moving_backdrop_filter_ = true;
     // If the render pass has a backdrop filter that moves pixels, its entire
     // bounds, with proper transform applied, may be added to the damage
     // rect if it intersects.
@@ -1799,6 +1804,7 @@ CompositorFrame SurfaceAggregator::Aggregate(
 
   valid_surfaces_.clear();
   has_cached_render_passes_ = false;
+  has_pixel_moving_backdrop_filter_ = false;
   damage_ranges_.clear();
   damage_rects_union_of_surfaces_on_top_ = gfx::Rect();
   new_surfaces_.clear();

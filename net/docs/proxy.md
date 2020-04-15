@@ -540,8 +540,8 @@ proxy settings are externally controllable, as when using PAC scripts.
 
 Historical support in Chrome:
 
-* Prior to M71 there were no implicit proxy bypass rules (except if using
-  `--winhttp-proxy-resolver`)
+* Prior to M71 there were no implicit proxy bypass rules, except if using
+  [`--winhttp-proxy-resolver`](#winhttp_proxy_resolver-command-line-switch).
 * In M71 Chrome applied implicit proxy bypass rules to PAC scripts
 * In M72 Chrome generalized the implicit proxy bypass rules to manually
   configured proxies
@@ -975,8 +975,8 @@ _capture ended_.
 
 Skim through the Import tab and look for relevant command line flags and active
 field trials. A find-in-page for `proxy` is a good starting point. Be on the lookout for
-`--winhttp-proxy-resolver` which has [known
-problems](https://bugs.chromium.org/p/chromium/issues/detail?id=644030).
+[`--winhttp-proxy-resolver`](#winhttp_proxy_resolver-command-line-switch) which
+has [known problems](https://bugs.chromium.org/p/chromium/issues/detail?id=644030).
 
 ### Events tab
 
@@ -1036,3 +1036,29 @@ each of the suffixes in the search list:
    private suffixes used by an enterprise can become publicly registerable.
    See also [WPAD Name Collision
    Vulnerability](https://www.us-cert.gov/ncas/alerts/TA16-144A)
+
+## --winhttp-proxy-resolver command line switch
+
+Passing the `--winhttp-proxy-resolver` command line argument instructs Chrome
+to use the system libraries for *one narrow part of proxy resolution*: evaluating
+a given PAC script.
+
+Use of this flag is NOT a supported mode, and has [known
+problems](https://bugs.chromium.org/p/chromium/issues/detail?id=644030): It
+can break Chrome extensions (`chrome.proxy` API), the interpretation of
+Proxy policies, hurt performance, and doesn't ensure full fidelity
+interpretation of system proxy settings.
+
+Another oddity of this switch is that it actually gets interpreted with a
+smilar meaning on other platforms (macOS), despite its Windows-specific naming.
+
+This flag was historically exposed for debugging, and to mitigate unresolved
+policy differences in PAC execution. In the future this switch [will be
+removed](https://bugs.chromium.org/p/chromium/issues/detail?id=644030).
+
+Although Chrome would like full fidelity with Windows proxy settings, there are
+limits to those integrations. Dependencies like NRPT for proxy
+resolution necessitate using Windows proxy resolution libraries directly
+instead of Chrome's. We hope these less common use cases will be fully
+addressed by [this
+feature](https://bugs.chromium.org/p/chromium/issues/detail?id=1032820)

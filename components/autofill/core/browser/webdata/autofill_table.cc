@@ -1229,7 +1229,8 @@ bool AutofillTable::GetServerCreditCards(
       "exp_year,"                     // 9
       "metadata.billing_address_id,"  // 10
       "bank_name,"                    // 11
-      "nickname "                     // 12
+      "nickname,"                     // 12
+      "card_issuer "                  // 13
       "FROM masked_credit_cards masked "
       "LEFT OUTER JOIN unmasked_credit_cards USING (id) "
       "LEFT OUTER JOIN server_card_metadata metadata USING (id)"));
@@ -1273,6 +1274,8 @@ bool AutofillTable::GetServerCreditCards(
     card->set_billing_address_id(s.ColumnString(index++));
     card->set_bank_name(s.ColumnString(index++));
     card->SetNickname(s.ColumnString16(index++));
+    card->set_card_issuer(
+        static_cast<CreditCard::Issuer>(s.ColumnInt(index++)));
     credit_cards->push_back(std::move(card));
   }
   return s.Succeeded();
@@ -1531,8 +1534,9 @@ void AutofillTable::SetServerCardsData(
                               "exp_month,"     // 5
                               "exp_year,"      // 6
                               "bank_name,"     // 7
-                              "nickname)"      // 8
-                              "VALUES (?,?,?,?,?,?,?,?,?)"));
+                              "nickname,"      // 8
+                              "card_issuer)"   // 9
+                              "VALUES (?,?,?,?,?,?,?,?,?,?)"));
   int index;
   for (const CreditCard& card : credit_cards) {
     DCHECK_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
@@ -1548,6 +1552,7 @@ void AutofillTable::SetServerCardsData(
                                card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
     masked_insert.BindString(index++, card.bank_name());
     masked_insert.BindString16(index++, card.nickname());
+    masked_insert.BindInt(index++, static_cast<int>(card.card_issuer()));
     masked_insert.Run();
     masked_insert.Reset(true);
   }
@@ -2962,8 +2967,9 @@ void AutofillTable::AddMaskedCreditCards(
                               "exp_month,"     // 5
                               "exp_year,"      // 6
                               "bank_name,"     // 7
-                              "nickname)"      // 8
-                              "VALUES (?,?,?,?,?,?,?,?,?)"));
+                              "nickname,"      // 8
+                              "card_issuer)"   // 9
+                              "VALUES (?,?,?,?,?,?,?,?,?,?)"));
   int index;
   for (const CreditCard& card : credit_cards) {
     DCHECK_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
@@ -2979,6 +2985,7 @@ void AutofillTable::AddMaskedCreditCards(
                                card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
     masked_insert.BindString(index++, card.bank_name());
     masked_insert.BindString16(index++, card.nickname());
+    masked_insert.BindInt(index++, static_cast<int>(card.card_issuer()));
     masked_insert.Run();
     masked_insert.Reset(true);
 

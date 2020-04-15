@@ -80,6 +80,8 @@ class XRSession final
     kBlendModeAlphaBlend
   };
 
+  enum InteractionMode { kInteractionModeScreen = 0, kInteractionModeWorld };
+
   struct MetricsReporter {
     explicit MetricsReporter(
         mojo::Remote<device::mojom::blink::XRSessionMetricsRecorder> recorder);
@@ -101,6 +103,7 @@ class XRSession final
                 client_receiver,
             device::mojom::blink::XRSessionMode mode,
             EnvironmentBlendMode environment_blend_mode,
+            InteractionMode interaction_mode,
             bool uses_input_eventing,
             bool sensorless_session,
             XRSessionFeatureSet enabled_features);
@@ -108,6 +111,7 @@ class XRSession final
 
   XRSystem* xr() const { return xr_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
+  const String& interactionMode() const { return interaction_mode_string_; }
   XRDOMOverlayState* domOverlayState() const { return dom_overlay_state_; }
   const String visibilityState() const;
   XRRenderState* renderState() const { return render_state_; }
@@ -371,6 +375,7 @@ class XRSession final
   const device::mojom::blink::XRSessionMode mode_;
   const bool environment_integration_;
   String blend_mode_string_;
+  String interaction_mode_string_;
   XRVisibilityState device_visibility_state_ = XRVisibilityState::VISIBLE;
   XRVisibilityState visibility_state_ = XRVisibilityState::VISIBLE;
   String visibility_state_string_;

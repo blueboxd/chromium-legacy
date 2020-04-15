@@ -224,10 +224,7 @@ if (!is_android) {
     if (optimize_webui) {
       source = "settings/settings_resources_vulcanized.grd"
 
-      deps = [
-        "//chrome/browser/resources/settings:build",
-        "//chrome/browser/resources/settings:build_polymer3",
-      ]
+      deps = [ "//chrome/browser/resources/settings:build_polymer3" ]
     } else {
       source = "settings/settings_resources.grd"
       deps = [ "//chrome/browser/resources/settings:polymer3_elements" ]

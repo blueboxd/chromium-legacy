@@ -271,8 +271,8 @@ public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
         for (int i = 0; i < mSites.size() && i < mObjectInfos.size(); ++i) {
             Website site = mSites.get(i);
             ChosenObjectInfo info = mObjectInfos.get(i);
-            WebsitePreference preference =
-                    new WebsitePreference(getStyledContext(), site, mCategory);
+            WebsitePreference preference = new WebsitePreference(
+                    getStyledContext(), getSiteSettingsClient(), site, mCategory);
 
             preference.getExtras().putSerializable(SingleWebsiteSettings.EXTRA_SITE, site);
             preference.setFragment(SingleWebsiteSettings.class.getCanonicalName());

@@ -65,16 +65,21 @@ function createFrameWithWindowStopAbortedLoad(name) {
   document.body.appendChild(frame);
   frame.contentWindow.stop();
 
-  // We load the scripts in frame_factory.html to allow subframe creation.
+  // We load the scripts in frame_factory.html to allow subframe creation. We
+  // set the async attribute to false to ensure that these scripts are loaded in
+  // insertion order.
   let script1 = document.createElement('script');
+  script1.async = false;
   script1.src = 'create_frame.js';
   frame.contentDocument.head.appendChild(script1);
 
   let script2 = document.createElement('script');
+  script1.async = false;
   script2.src = 'ad_script.js';
   frame.contentDocument.head.appendChild(script2);
 
   let script3 = document.createElement('script');
+  script1.async = false;
   script3.src = 'ad_script_2.js';
   // Set title so we know when all scripts have loaded.
   script3.onload = function() {

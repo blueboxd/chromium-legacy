@@ -290,7 +290,7 @@ void CompositorFrameReporter::OnAbortBeginMainFrame(base::TimeTicks timestamp) {
 }
 
 void CompositorFrameReporter::OnDidNotProduceFrame() {
-  did_not_produce_frame_ = true;
+  did_not_produce_frame_time_ = base::TimeTicks::Now();
 }
 
 void CompositorFrameReporter::SetBlinkBreakdown(

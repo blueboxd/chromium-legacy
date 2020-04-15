@@ -224,7 +224,7 @@ struct MediaFeedItem {
   mojo_base.mojom.String16 name;
 
   // The author that created the content.
-  Author author;
+  Author? author;
 
   // The date/time this feed item was published.
   mojo_base.mojom.Time date_published;

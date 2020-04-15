@@ -37,12 +37,10 @@ class TestCompositorFrameReportingController
   TestCompositorFrameReportingController& operator=(
       const TestCompositorFrameReportingController& controller) = delete;
 
-  std::unique_ptr<CompositorFrameReporter>* reporters() { return reporters_; }
-
   int ActiveReporters() {
     int count = 0;
     for (int i = 0; i < PipelineStage::kNumPipelineStages; ++i) {
-      if (reporters_[i])
+      if (reporters()[i])
         ++count;
     }
     return count;

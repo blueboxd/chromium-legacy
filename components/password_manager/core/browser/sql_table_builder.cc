@@ -196,10 +196,16 @@ unsigned SQLTableBuilder::SealVersion() {
   return ++sealed_version_;
 }
 
-bool SQLTableBuilder::MigrateFrom(unsigned old_version,
-                                  sql::Database* db) const {
+bool SQLTableBuilder::MigrateFrom(
+    unsigned old_version,
+    sql::Database* db,
+    const base::RepeatingCallback<bool(sql::Database*, unsigned)>&
+        post_migration_step_callback) const {
   for (; old_version < sealed_version_; ++old_version) {
     if (!MigrateToNextFrom(old_version, db))
+      return false;
+    if (post_migration_step_callback &&
+        !post_migration_step_callback.Run(db, old_version + 1))
       return false;
   }
 

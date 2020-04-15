@@ -5,13 +5,15 @@
 #ifndef UI_GFX_MOJOM_GPU_FENCE_HANDLE_MOJOM_TRAITS_H_
 #define UI_GFX_MOJOM_GPU_FENCE_HANDLE_MOJOM_TRAITS_H_
 
+#include "base/component_export.h"
 #include "ui/gfx/gpu_fence_handle.h"
-#include "ui/gfx/mojom/gpu_fence_handle.mojom.h"
+#include "ui/gfx/mojom/gpu_fence_handle.mojom-shared.h"
 
 namespace mojo {
 
 template <>
-struct EnumTraits<gfx::mojom::GpuFenceHandleType, gfx::GpuFenceHandleType> {
+struct COMPONENT_EXPORT(GFX_SHARED_MOJOM_TRAITS)
+    EnumTraits<gfx::mojom::GpuFenceHandleType, gfx::GpuFenceHandleType> {
   static gfx::mojom::GpuFenceHandleType ToMojom(gfx::GpuFenceHandleType type) {
     switch (type) {
       case gfx::GpuFenceHandleType::kEmpty:
@@ -38,7 +40,8 @@ struct EnumTraits<gfx::mojom::GpuFenceHandleType, gfx::GpuFenceHandleType> {
 };
 
 template <>
-struct StructTraits<gfx::mojom::GpuFenceHandleDataView, gfx::GpuFenceHandle> {
+struct COMPONENT_EXPORT(GFX_SHARED_MOJOM_TRAITS)
+    StructTraits<gfx::mojom::GpuFenceHandleDataView, gfx::GpuFenceHandle> {
   static gfx::GpuFenceHandleType type(const gfx::GpuFenceHandle& handle) {
     return handle.type;
   }

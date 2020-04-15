@@ -886,7 +886,8 @@ base::Optional<struct v4l2_format> V4L2Queue::SetFormat(uint32_t fourcc,
 }
 
 std::pair<base::Optional<struct v4l2_format>, int> V4L2Queue::GetFormat() {
-  struct v4l2_format format = {};
+  struct v4l2_format format;
+  memset(&format, 0, sizeof(format));
   format.type = type_;
   if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
     VPQLOGF(2) << "Failed to get format";

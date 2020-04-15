@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -49,6 +50,9 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 public class SyncAndServicesSettingsTest {
     @Rule
     public SyncTestRule mSyncTestRule = new SyncTestRule();
+    @Rule
+    public SettingsActivityTestRule<SyncAndServicesSettings> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(SyncAndServicesSettings.class);
 
     private SettingsActivity mSettingsActivity;
 
@@ -359,8 +363,7 @@ public class SyncAndServicesSettingsTest {
     }
 
     private SyncAndServicesSettings startSyncAndServicesPreferences() {
-        mSettingsActivity =
-                mSyncTestRule.startSettingsActivity(SyncAndServicesSettings.class.getName());
+        mSettingsActivity = mSettingsActivityTestRule.startSettingsActivity();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         return (SyncAndServicesSettings) mSettingsActivity.getMainFragment();
     }

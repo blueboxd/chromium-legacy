@@ -69,6 +69,19 @@ void LayoutSVGShape::StyleDidChange(StyleDifference diff,
       TransformHelper::DependsOnReferenceBox(StyleRef());
   LayoutSVGModelObject::StyleDidChange(diff, old_style);
   SVGResources::UpdatePaints(*GetElement(), old_style, StyleRef());
+
+  // Most of the stroke attributes (caps, joins, miters, width, etc.) will cause
+  // a re-layout which will clear the stroke-path cache; however, there are a
+  // couple of additional properties that *won't* cause a layout, but are
+  // significant enough to require invalidating the cache.
+  if (!diff.NeedsFullLayout() && old_style && stroke_path_cache_) {
+    const auto& old_svg_style = old_style->SvgStyle();
+    const auto& svg_style = StyleRef().SvgStyle();
+    if (old_svg_style.StrokeDashOffset() != svg_style.StrokeDashOffset() ||
+        *old_svg_style.StrokeDashArray() != *svg_style.StrokeDashArray()) {
+      stroke_path_cache_.reset();
+    }
+  }
 }
 
 void LayoutSVGShape::WillBeDestroyed() {
@@ -76,10 +89,20 @@ void LayoutSVGShape::WillBeDestroyed() {
   LayoutSVGModelObject::WillBeDestroyed();
 }
 
+void LayoutSVGShape::ClearPath() {
+  path_.reset();
+  stroke_path_cache_.reset();
+}
+
 void LayoutSVGShape::CreatePath() {
   if (!path_)
     path_ = std::make_unique<Path>();
   *path_ = To<SVGGeometryElement>(GetElement())->AsPath();
+
+  // When the path changes, we need to ensure the stale stroke path cache is
+  // cleared. Because this is done in all callsites, we can just DCHECK that it
+  // has been cleared here.
+  DCHECK(!stroke_path_cache_);
 }
 
 float LayoutSVGShape::DashScaleFactor() const {
@@ -150,24 +173,33 @@ FloatRect LayoutSVGShape::HitTestStrokeBoundingBox() const {
 
 bool LayoutSVGShape::ShapeDependentStrokeContains(
     const HitTestLocation& location) {
-  // In case the subclass didn't create path during UpdateShapeFromElement()
-  // for optimization but still calls this method.
-  if (!HasPath())
-    CreatePath();
+  if (!stroke_path_cache_) {
+    // In case the subclass didn't create path during UpdateShapeFromElement()
+    // for optimization but still calls this method.
+    if (!HasPath())
+      CreatePath();
 
-  StrokeData stroke_data;
-  SVGLayoutSupport::ApplyStrokeStyleToStrokeData(stroke_data, StyleRef(), *this,
-                                                 DashScaleFactor());
+    StrokeData stroke_data;
+    SVGLayoutSupport::ApplyStrokeStyleToStrokeData(stroke_data, StyleRef(),
+                                                   *this, DashScaleFactor());
 
-  if (HasNonScalingStroke()) {
-    // The reason is similar to the above code about HasPath().
-    if (!rare_data_)
-      UpdateNonScalingStrokeData();
-    return NonScalingStrokePath().StrokeContains(
-        NonScalingStrokeTransform().MapPoint(location.TransformedPoint()),
-        stroke_data);
+    if (HasNonScalingStroke()) {
+      // The reason is similar to the above code about HasPath().
+      if (!rare_data_)
+        UpdateNonScalingStrokeData();
+      stroke_path_cache_ = std::make_unique<Path>(
+          NonScalingStrokePath().StrokePath(stroke_data));
+    } else {
+      stroke_path_cache_ =
+          std::make_unique<Path>(path_->StrokePath(stroke_data));
+    }
   }
-  return path_->StrokeContains(location.TransformedPoint(), stroke_data);
+
+  DCHECK(stroke_path_cache_);
+  auto point = location.TransformedPoint();
+  if (HasNonScalingStroke())
+    point = NonScalingStrokeTransform().MapPoint(point);
+  return stroke_path_cache_->Contains(point);
 }
 
 bool LayoutSVGShape::ShapeDependentFillContains(
@@ -216,6 +248,10 @@ void LayoutSVGShape::UpdateLayout() {
   // Invalidate all resources of this client if our layout changed.
   if (EverHadLayout() && SelfNeedsLayout())
     SVGResourcesCache::ClientLayoutChanged(*this);
+
+  // The cached stroke may be affected by the ancestor transform, and so needs
+  // to be cleared regardless of whether the shape or bounds have changed.
+  stroke_path_cache_.reset();
 
   bool update_parent_boundaries = false;
   bool bbox_changed = false;

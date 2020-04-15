@@ -267,9 +267,6 @@ class VIEWS_EXPORT Label : public View,
   // Create a single RenderText instance to actually be painted.
   virtual std::unique_ptr<gfx::RenderText> CreateRenderText() const;
 
-  // Draw a focus ring. The default implementation does nothing.
-  virtual void PaintFocusRing(gfx::Canvas* canvas) const;
-
   // Returns the preferred size and position of the text in local coordinates,
   // which may exceed the local bounds of the label.
   gfx::Rect GetTextBounds() const;

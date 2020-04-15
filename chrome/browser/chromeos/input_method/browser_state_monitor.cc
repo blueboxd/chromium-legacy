@@ -58,6 +58,8 @@ void BrowserStateMonitor::OnSessionStateChanged() {
     SetUiSessionState(InputMethodManager::STATE_BROWSER_SCREEN);
   } else if (session_state == session_manager::SessionState::LOCKED) {
     SetUiSessionState(InputMethodManager::STATE_LOCK_SCREEN);
+  } else if (session_state == session_manager::SessionState::LOGIN_SECONDARY) {
+    SetUiSessionState(InputMethodManager::STATE_SECONDARY_LOGIN_SCREEN);
   }
 }
 

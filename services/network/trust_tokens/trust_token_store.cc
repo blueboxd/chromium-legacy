@@ -268,16 +268,20 @@ TrustTokenStore::RetrieveNonstaleRedemptionRecord(
 }
 
 bool TrustTokenStore::ClearDataForFilter(mojom::ClearDataFilterPtr filter) {
-  DCHECK(filter);
+  if (!filter) {
+    return persister_->DeleteForOrigins(base::BindRepeating(
+        [](const SuitableTrustTokenOrigin&) { return true; }));
+  }
 
   // Returns whether |storage_key|'s data should be deleted, based on the logic
-  // |filter| specifies.
+  // |filter| specifies. (Default to deleting everything, because a null
+  // |filter| is a wildcard.)
   auto matcher = base::BindRepeating(
       [](const mojom::ClearDataFilter& filter,
          const SuitableTrustTokenOrigin& storage_key) -> bool {
         // Match an origin if
-        // - it is an eTLD+1 (aka "domain and registry") match with anything on
-        // |filter|'s domain list, or
+        // - it is an eTLD+1 (aka "domain and registry") match with anything
+        // on |filter|'s domain list, or
         // - it is an origin match with anything on |filter|'s origin list.
         bool is_match = base::Contains(filter.origins, storage_key.origin());
 

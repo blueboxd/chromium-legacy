@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.tab.Tab;
@@ -246,11 +247,12 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         } else if (id == R.id.info_menu_id) {
             Tab tab = getTabModelSelector().getCurrentTab();
             if (tab == null) return false;
-            PageInfoController.show(this, tab.getWebContents(),
-                    getToolbarManager().getContentPublisher(),
+            WebContents webContents = tab.getWebContents();
+            PageInfoController.show(this, webContents, getToolbarManager().getContentPublisher(),
                     PageInfoController.OpenedFromSource.MENU,
                     /*offlinePageLoadUrlDelegate=*/
-                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab));
+                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab),
+                    new ChromePageInfoControllerDelegate(this, webContents));
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);

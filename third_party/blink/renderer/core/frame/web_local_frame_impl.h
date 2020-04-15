@@ -295,6 +295,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void WaitForDebuggerWhenShown() override;
   void PrintPagesForTesting(cc::PaintCanvas*, const WebSize&) override;
   WebRect GetSelectionBoundsRectForTesting() const override;
+  gfx::Point GetPositionInViewportForTesting() const override;
   void SetLifecycleState(mojom::FrameLifecycleState state) override;
   void WasHidden() override;
   void WasShown() override;

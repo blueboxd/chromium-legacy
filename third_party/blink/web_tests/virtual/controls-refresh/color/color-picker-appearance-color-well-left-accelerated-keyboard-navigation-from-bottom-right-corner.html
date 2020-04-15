@@ -23,7 +23,8 @@ t.step(() => {
     const popupDocument = popupWindow.document;
     const colorWell = popupDocument.querySelector('color-well');
     const colorWellRect = colorWell.getBoundingClientRect();
-    eventSender.mouseMoveTo(colorWellRect.right - 1, colorWellRect.bottom);
+    eventSender.mouseMoveTo(Math.floor(colorWellRect.right) - 1,
+                            Math.floor(colorWellRect.bottom));
     eventSender.mouseDown();
     eventSender.mouseUp();
     for (let i = 0; i < 5; i++) {

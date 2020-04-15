@@ -87,8 +87,8 @@ std::string InitResourceBundleAndDetermineLocale(PrefService* local_state,
   // method InitSharedInstance is ignored.
   std::string actual_locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
       preferred_locale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
-  if (actual_locale.empty())
-    return actual_locale;
+  CHECK(!actual_locale.empty())
+      << "Locale could not be found for " << preferred_locale;
 
   // First run prefs needs data from the ResourceBundle, so load it now.
   {

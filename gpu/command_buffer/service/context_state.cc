@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include "base/numerics/ranges.h"
+#include "base/optional.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
@@ -333,18 +334,26 @@ void ContextState::RestoreSamplerBinding(GLuint unit,
                                          const ContextState* prev_state) const {
   if (!feature_info_->IsES3Capable())
     return;
-  const scoped_refptr<Sampler>& cur_sampler = sampler_units[unit];
-  GLuint cur_id = cur_sampler ? cur_sampler->service_id() : 0;
-  GLuint prev_id = 0;
-  if (prev_state && prev_state->track_texture_and_sampler_units) {
-    const scoped_refptr<Sampler>& prev_sampler =
-        prev_state->sampler_units[unit];
-    prev_id = prev_sampler ? prev_sampler->service_id() : 0;
+  DCHECK(track_texture_and_sampler_units || unit == 0);
+
+  GLuint cur_id = 0u;
+  if (track_texture_and_sampler_units) {
+    if (const auto& cur_sampler = sampler_units[unit])
+      cur_id = cur_sampler->service_id();
   }
-  if (!prev_state || !prev_state->sampler_units_in_ground_state ||
-      cur_id != prev_id) {
+
+  base::Optional<GLuint> prev_id;
+  if (prev_state) {
+    if (prev_state->track_texture_and_sampler_units) {
+      const auto& prev_sampler = prev_state->sampler_units[unit];
+      prev_id.emplace(prev_sampler ? prev_sampler->service_id() : 0);
+    } else if (prev_state->sampler_units_in_ground_state) {
+      prev_id.emplace(0);
+    }
+  }
+
+  if (!prev_id || cur_id != *prev_id)
     api()->glBindSamplerFn(unit, cur_id);
-  }
 }
 
 void ContextState::PushTextureUnpackState() const {
@@ -462,15 +471,10 @@ void ContextState::RestoreAllTextureUnitAndSamplerBindings(
           break;
         }
       }
-
-      // If the current gl texture units are not in ground state, then we do
-      // need reset texture unit 0.
-      if (texture_units_in_ground_state)
-        RestoreTextureUnitBindings(0, prev_state);
-
       sampler_units_in_ground_state = true;
-      for (auto& sampler : prev_state->sampler_units) {
-        if (sampler) {
+      for (size_t i = 1; i < prev_state->sampler_units.size(); ++i) {
+        const auto& sampler = prev_state->sampler_units[i];
+        if (sampler && sampler->service_id() != 0) {
           sampler_units_in_ground_state = false;
           break;
         }
@@ -479,6 +483,10 @@ void ContextState::RestoreAllTextureUnitAndSamplerBindings(
       texture_units_in_ground_state = false;
       sampler_units_in_ground_state = false;
     }
+    // Even if |track_texture_and_sampler_units| is false, we still need to
+    // reset texture unit 0 and sampler unit 0 to ground state.
+    RestoreTextureUnitBindings(0, prev_state);
+    RestoreSamplerBinding(0, prev_state);
   } else {
     // Restore Texture state.
     for (size_t i = 0; i < texture_units.size(); ++i) {

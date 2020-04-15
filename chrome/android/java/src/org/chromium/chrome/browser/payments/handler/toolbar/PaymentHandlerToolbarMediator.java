@@ -11,6 +11,7 @@ import androidx.annotation.DrawableRes;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -134,6 +135,7 @@ import org.chromium.ui.modelutil.PropertyModel;
         PageInfoController.show(mChromeActivity, mWebContentsRef, null,
                 PageInfoController.OpenedFromSource.TOOLBAR,
                 /*offlinePageLoadUrlDelegate=*/
-                new OfflinePageUtils.WebContentsOfflinePageLoadUrlDelegate(mWebContentsRef));
+                new OfflinePageUtils.WebContentsOfflinePageLoadUrlDelegate(mWebContentsRef),
+                new ChromePageInfoControllerDelegate(mChromeActivity, mWebContentsRef));
     };
 }

@@ -357,6 +357,9 @@ def ci_builder(
   # (e.g. bucket) occurs before we try to use it
   ret = builders.builder(
       name = name,
+      resultdb_settings = resultdb.settings(
+          enable = True,
+      ),
       **kwargs
   )
 
@@ -509,11 +512,6 @@ def fyi_builder(
       execution_timeout = execution_timeout,
       goma_backend = goma_backend,
       mastername = 'chromium.fyi',
-      # TODO(crbug.com/1027762): Move this kwarg to ci.builder(), after this is
-      # shown to work as expected for fyi builders.
-      resultdb_settings = resultdb.settings(
-          enable = True,
-      ),
       **kwargs
   )
 
@@ -557,6 +555,7 @@ def fyi_ios_builder(
     caches = None,
     executable='recipe:ios/unified_builder_tester',
     goma_backend=builders.goma.backend.RBE_PROD,
+    os = builders.os.MAC_ANY,
     **kwargs):
 
   if not caches:
@@ -567,7 +566,7 @@ def fyi_ios_builder(
       caches = caches,
       cores = None,
       executable = executable,
-      os = builders.os.MAC_ANY,
+      os = os,
       **kwargs
   )
 

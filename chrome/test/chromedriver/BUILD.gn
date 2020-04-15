@@ -154,8 +154,6 @@ source_set("automation_client_lib") {
     "chrome/ui_events.h",
     "chrome/util.cc",
     "chrome/util.h",
-    "chrome/version.cc",
-    "chrome/version.h",
     "chrome/web_view.h",
     "chrome/web_view_impl.cc",
     "chrome/web_view_impl.h",

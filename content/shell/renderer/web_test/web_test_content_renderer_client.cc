@@ -67,7 +67,8 @@ WebTestContentRendererClient::~WebTestContentRendererClient() = default;
 
 void WebTestContentRendererClient::RenderThreadStarted() {
   ShellContentRendererClient::RenderThreadStarted();
-  shell_observer_ = std::make_unique<WebTestRenderThreadObserver>();
+
+  render_thread_observer_ = std::make_unique<WebTestRenderThreadObserver>();
 
 #if defined(OS_FUCHSIA) || defined(OS_MACOSX)
   // On these platforms, fonts are set up in the renderer process. Other

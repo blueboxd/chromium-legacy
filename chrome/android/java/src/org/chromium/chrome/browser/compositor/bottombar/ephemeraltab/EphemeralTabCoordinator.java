@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.favicon.FaviconFallbackGenerator;
@@ -203,7 +204,8 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
 
     private void openInNewTab() {
         if (mCanPromoteToNewTab.get() && mUrl != null) {
-            mBottomSheetController.hideContent(mSheetContent, /* animate= */ true);
+            mBottomSheetController.hideContent(
+                    mSheetContent, /* animate= */ true, StateChangeReason.PROMOTE_TAB);
             mTabCreator.get().createNewTab(new LoadUrlParams(mUrl, PageTransition.LINK),
                     TabLaunchType.FROM_LINK, mTabProvider.get());
             mMetrics.recordOpenInNewTab();

@@ -48,6 +48,10 @@ const char kCheckDamageEarly[] = "check-damage-early";
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[] = "enable-gpu-benchmarking";
 
+// Disables LayerTreeHost::OnMemoryPressure
+const char kDisableLayerTreeHostMemoryPressure[] =
+    "disable-layer-tree-host-memory-pressure";
+
 // Renders a border around compositor layers to help debug and study
 // layer compositing.
 const char kShowCompositedLayerBorders[] = "show-composited-layer-borders";

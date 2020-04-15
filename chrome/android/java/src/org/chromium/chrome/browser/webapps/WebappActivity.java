@@ -76,7 +76,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     private TabObserverRegistrar mTabObserverRegistrar;
     private CustomTabDelegateFactory mDelegateFactory;
 
-    private boolean mIsInitialized;
     private Integer mBrandColor;
 
     private static Integer sOverrideCoreCountForTesting;
@@ -146,7 +145,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         if (newWebappInfo == null) {
             Log.e(TAG, "Failed to parse new Intent: " + intent);
             ApiCompatibilityUtils.finishAndRemoveTask(this);
-        } else if (newWebappInfo.shouldForceNavigation() && mIsInitialized) {
+        } else if (newWebappInfo.shouldForceNavigation()) {
             mCustomTabIntentHandler.onNewIntent(newWebappInfo.getProvider());
         }
     }
@@ -335,7 +334,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
         getFullscreenManager().setTab(getActivityTab());
         super.finishNativeInitialization();
-        mIsInitialized = true;
     }
 
     @Override

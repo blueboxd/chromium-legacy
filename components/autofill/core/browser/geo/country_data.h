@@ -58,10 +58,23 @@ class CountryDataMap {
  public:
   static CountryDataMap* GetInstance();
 
-  const std::map<std::string, CountryData>& country_data() {
-    return country_data_;
-  }
+  // Returns true if a |CountryData| entry for the supplied |country_code|
+  // exists.
+  bool HasCountryData(const std::string& country_code) const;
 
+  // Returns true if there is a country code alias for |country_code|.
+  bool HasCountryCodeAlias(const std::string& country_code_alias) const;
+
+  // Returns the country code for a country code alias. If no alias definition
+  // is present return an empty string.
+  const std::string GetCountryCodeForAlias(
+      const std::string& country_code_alias) const;
+
+  // Lookup the |CountryData| for the supplied |country_code|. If no entry
+  // exists, return the data for the US as a best guess.
+  const CountryData& GetCountryData(const std::string& country_code) const;
+
+  // Return a constant reference to a vector of all country codes.
   const std::vector<std::string>& country_codes() { return country_codes_; }
 
  private:
@@ -70,6 +83,7 @@ class CountryDataMap {
   friend struct base::DefaultSingletonTraits<CountryDataMap>;
 
   const std::map<std::string, CountryData> country_data_;
+  const std::map<std::string, std::string> country_code_aliases_;
   const std::vector<std::string> country_codes_;
 
   DISALLOW_COPY_AND_ASSIGN(CountryDataMap);

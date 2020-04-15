@@ -307,22 +307,13 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  if (base::FeatureList::IsEnabled(features::kSettingsPolymer3)) {
-    webui::SetupBundledWebUIDataSource(html_source, "settings.js",
-                                       IDR_SETTINGS_SETTINGS_ROLLUP_JS,
-                                       IDR_SETTINGS_SETTINGS_V3_HTML);
-    html_source->AddResourcePath("shared.rollup.js",
-                                 IDR_SETTINGS_SHARED_ROLLUP_JS);
-    html_source->AddResourcePath("lazy_load.js",
-                                 IDR_SETTINGS_LAZY_LOAD_ROLLUP_JS);
-  } else {
-    html_source->AddResourcePath("crisper.js", IDR_SETTINGS_CRISPER_JS);
-    html_source->AddResourcePath("lazy_load.crisper.js",
-                                 IDR_SETTINGS_LAZY_LOAD_CRISPER_JS);
-    html_source->AddResourcePath("lazy_load.html",
-                                 IDR_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
-    html_source->SetDefaultResource(IDR_SETTINGS_VULCANIZED_HTML);
-  }
+  webui::SetupBundledWebUIDataSource(html_source, "settings.js",
+                                     IDR_SETTINGS_SETTINGS_ROLLUP_JS,
+                                     IDR_SETTINGS_SETTINGS_V3_HTML);
+  html_source->AddResourcePath("shared.rollup.js",
+                               IDR_SETTINGS_SHARED_ROLLUP_JS);
+  html_source->AddResourcePath("lazy_load.js",
+                               IDR_SETTINGS_LAZY_LOAD_ROLLUP_JS);
 
   // Register SVG images that are purposefully not inlined in the HTML bundle
   // above.
@@ -357,10 +348,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #else
   webui::SetupWebUIDataSource(
       html_source, base::make_span(kSettingsResources, kSettingsResourcesSize),
-      kGeneratedPath,
-      base::FeatureList::IsEnabled(features::kSettingsPolymer3)
-          ? IDR_SETTINGS_SETTINGS_V3_HTML
-          : IDR_SETTINGS_SETTINGS_HTML);
+      kGeneratedPath, IDR_SETTINGS_SETTINGS_V3_HTML);
 #endif
 
   AddBrowserLocalizedStrings(html_source, profile, web_ui->GetWebContents());

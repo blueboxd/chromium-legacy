@@ -1,6 +1,6 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.  Use of this source
-// code is governed by a BSD-style license that can be found in the LICENSE
-// file.
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SQL_TABLE_BUILDER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SQL_TABLE_BUILDER_H_
@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 
@@ -87,7 +88,17 @@ class SQLTableBuilder {
   // Assuming that the database connected through |db| contains a table called
   // |table_name_| in a state described by version |old_version|, migrates it to
   // the current version, which must be sealed. Returns true on success.
-  bool MigrateFrom(unsigned old_version, sql::Database* db) const;
+  // |post_migration_step_callback| is executed after each migration step in to
+  // allow the calling site to inject custom logic to run upon each migration
+  // step from |old_version| to the current version. The passed parameter
+  // corresponds to database to be migrated and the new version number that has
+  // been reached after the migration step. |post_migration_step_callback|
+  // returns true on success, otherwise the migration is aborted.
+  bool MigrateFrom(
+      unsigned old_version,
+      sql::Database* db,
+      const base::RepeatingCallback<bool(sql::Database*, unsigned)>&
+          post_migration_step_callback = base::NullCallback()) const;
 
   // If |db| connects to a database where table |table_name_| already exists,
   // this is a no-op and returns true. Otherwise, |table_name_| is created in a

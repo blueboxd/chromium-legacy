@@ -57,7 +57,7 @@ void CompileRulesFromData(const std::string& data_string,
                           CompiledRuleVector* compiled_rules) {
   base::StringPiece data = data_string;
   re2::RE2::Options options;
-  options.set_utf8(true);
+  options.set_encoding(RE2::Options::EncodingUTF8);
   options.set_word_boundary(true);
 
   size_t token_end = 0;

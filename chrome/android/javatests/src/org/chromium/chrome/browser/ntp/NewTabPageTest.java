@@ -214,8 +214,7 @@ public class NewTabPageTest {
     }
 
     @Test
-    @DisabledTest(message = "https://crbug.com/888129")
-    @SmallTest
+    @MediumTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testRender_FocusFakeBox(boolean interestFeedEnabled) throws Exception {

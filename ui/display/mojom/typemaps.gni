@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//ui/display/mojom/display.typemap",
   "//ui/display/mojom/display_constants.typemap",
   "//ui/display/mojom/display_layout.typemap",
   "//ui/display/mojom/display_mode.typemap",

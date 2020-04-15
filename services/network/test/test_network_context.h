@@ -89,6 +89,8 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojom::ClearDataFilterPtr filter,
       DomainReliabilityClearMode mode,
       ClearDomainReliabilityCallback callback) override {}
+  void ClearTrustTokenData(mojom::ClearDataFilterPtr filter,
+                           ClearTrustTokenDataCallback callback) override {}
   void GetDomainReliabilityJSON(
       GetDomainReliabilityJSONCallback callback) override {}
   void QueueReport(const std::string& type,

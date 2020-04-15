@@ -200,6 +200,9 @@ class TrustTokenStore {
   // matching the filter. (In particular, this will still delete data keyed by
   // a pair of origins, one of which matches and one of which does not.)
   //
+  // |filter| is allowed to be null: nullptr is a wildcard filter indicating
+  // that all data should be cleared.
+  //
   // Returns whether any data was deleted.
   WARN_UNUSED_RESULT virtual bool ClearDataForFilter(
       mojom::ClearDataFilterPtr filter);

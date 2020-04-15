@@ -117,7 +117,7 @@ void FakeAssistantManagerServiceImpl::AddTimeToTimer(const std::string& id,
                                                      base::TimeDelta duration) {
 }
 
-void FakeAssistantManagerServiceImpl::StopAlarmTimerRinging() {}
+void FakeAssistantManagerServiceImpl::RemoveAlarmTimer(const std::string& id) {}
 
 void FakeAssistantManagerServiceImpl::SetStateAndInformObservers(
     State new_state) {

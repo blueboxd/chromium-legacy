@@ -246,6 +246,7 @@ body.hide-fakebox #fakebox {
   display: none;
   left: 0;
   overflow: hidden;
+  padding-bottom: 8px;
   padding-top: var(--searchbox-height);
   position: absolute;
   right: 0;
@@ -264,6 +265,7 @@ body.hide-fakebox #fakebox {
 }
 
 #realbox-matches a {
+  display: block;
   font-size: 16px;
   line-height: 1;
   outline: none;
@@ -276,6 +278,29 @@ body.hide-fakebox #fakebox {
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+#realbox-matches .header {
+  color: rgb(var(--GG700-rgb));
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+  padding-inline-start: 12px;
+  text-transform: uppercase;
+}
+
+#realbox-matches .header .remove-icon {
+  -webkit-mask-image: url(chevron.svg);
+  -webkit-transform: rotate(180deg);
+  background-color: var(--search-box-icon, rgb(var(--GG900-rgb)));
+}
+
+#realbox-matches .collapsed .header .remove-icon {
+  -webkit-transform: none;
+}
+
+#realbox-matches .collapsed a:not(.header) {
+  display: none;
 }
 
 [dir=rtl] #realbox-matches a {
@@ -302,10 +327,6 @@ body.hide-fakebox #fakebox {
 
 #realbox-matches.removable a {
   padding-inline-end: 48px;
-}
-
-#realbox-matches a:last-of-type {
-  margin-bottom: 8px;  /* Last result is tight with border-radius. */
 }
 
 #realbox-matches a:-webkit-any(:focus-within, .selected) .match-icon {

@@ -22,7 +22,6 @@ js2gtest("interactive_ui_tests_js_webui") {
     "history/history_focus_test.js",
     "new_tab_page/new_tab_page_interactive_test.js",
     "print_preview/print_preview_interactive_ui_tests.js",
-    "settings/cr_settings_interactive_ui_tests.js",
     "settings/cr_settings_v3_interactive_ui_tests.js",
   ]
 
@@ -97,16 +96,8 @@ js2gtest("browser_tests_js_webui") {
     "resources/webui_resources_browsertest.js",
     "resources/webui_resources_v3_browsertest.js",
     "sandboxstatus_browsertest.js",
-    "settings/a11y/about_a11y_test.js",
-    "settings/a11y/accessibility_a11y_test.js",
-    "settings/a11y/basic_a11y_test.js",
-    "settings/a11y/edit_dictionary_a11y_test.js",
-    "settings/a11y/passwords_a11y_test.js",
     "settings/a11y/v3_a11y_browsertest.js",
-    "settings/cr_settings_browsertest.js",
     "settings/cr_settings_v3_browsertest.js",
-    "settings/help_page_browsertest.js",
-    "settings/settings_idle_load_browsertest.js",
     "settings/settings_idle_load_v3_browsertest.js",
     "text_defaults_browsertest.js",
     "webui_resource_async_browsertest.js",
@@ -158,8 +149,6 @@ js2gtest("browser_tests_js_webui") {
     ]
   } else {
     sources += [
-      "settings/a11y/manage_profile_a11y_test.js",
-      "settings/a11y/sign_out_a11y_test.js",
       "signin/signin_browsertest.js",
       "user_manager/user_manager_browsertest.js",
       "welcome/a11y_tests.js",

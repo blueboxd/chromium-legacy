@@ -144,14 +144,9 @@ class SessionService : public sessions::CommandStorageManagerDelegate,
                       const SessionID& tab_id,
                       bool is_pinned);
 
-  // Notification that a tab has been closed. |closed_by_user_gesture| comes
-  // from |WebContents::closed_by_user_gesture|; see it for details.
-  //
   // Note: this is invoked from the NavigationController's destructor, which is
   // after the actual tab has been removed.
-  void TabClosed(const SessionID& window_id,
-                 const SessionID& tab_id,
-                 bool closed_by_user_gesture);
+  void TabClosed(const SessionID& window_id, const SessionID& tab_id);
 
   // Notification a window has opened.
   void WindowOpened(Browser* browser);
@@ -375,6 +370,12 @@ class SessionService : public sessions::CommandStorageManagerDelegate,
 
   // Are there any open trackable browsers?
   bool has_open_trackable_browsers_;
+
+  // Used to override HasOpenTrackableBrowsers()
+  bool has_open_trackable_browser_for_test_ = true;
+
+  // Use to override IsOnlyOneTableft()
+  bool is_only_one_tab_left_for_test_ = false;
 
   // If true and a new tabbed browser is created and there are no opened tabbed
   // browser (has_open_trackable_browsers_ is false), then the current session

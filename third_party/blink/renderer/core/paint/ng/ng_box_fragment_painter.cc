@@ -58,6 +58,10 @@ LayoutRectOutsets BoxStrutToLayoutRectOutsets(
       LayoutUnit(box_strut.bottom), LayoutUnit(box_strut.left));
 }
 
+inline bool HasSelection(const LayoutObject* layout_object) {
+  return layout_object->GetSelectionState() != SelectionState::kNone;
+}
+
 inline bool IsVisibleToPaint(const NGPhysicalFragment& fragment,
                              const ComputedStyle& style) {
   return !fragment.IsHiddenForPaint() &&
@@ -1364,7 +1368,8 @@ void NGBoxFragmentPainter::PaintInlineChildren(
     if (!paint_info.IntersectsCullRect(child->InkOverflow(),
                                        paint_offset + child->Offset()) &&
         // Don't skip empty size text in order to paint selection for <br>.
-        !(child_fragment.IsText() && child_fragment.Size().IsEmpty()))
+        !(child_fragment.IsText() && child_fragment.Size().IsEmpty() &&
+          HasSelection(child_fragment.GetLayoutObject())))
       continue;
 
     if (child_fragment.Type() == NGPhysicalFragment::kFragmentText) {
@@ -1437,7 +1442,7 @@ void NGBoxFragmentPainter::PaintTextItem(const NGInlineCursor& cursor,
   if (!paint_info.IntersectsCullRect(
           item.InkOverflow(), paint_offset + item.OffsetInContainerBlock()) &&
       // Don't skip <br>, it doesn't have ink but need to paint selection.
-      !item.IsLineBreak())
+      !(item.IsLineBreak() && HasSelection(item.GetLayoutObject())))
     return;
 
   NGTextFragmentPainter<NGInlineCursor> text_painter(cursor, parent_offset);

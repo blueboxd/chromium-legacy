@@ -1,4 +1,4 @@
-load('//lib/builders.star', 'cpu', 'goma', 'os')
+load('//lib/builders.star', 'cpu', 'goma', 'os', 'xcode_cache')
 load('//lib/try.star', 'try_')
 
 # Defaults that apply to all branch versions of the bucket
@@ -611,6 +611,11 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = 'ios13-sdk-simulator',
     executable = 'recipe:chromium_trybot',
+    caches = [xcode_cache.x11e146],
+    os = os.MAC_10_15,
+    properties = {
+        'xcode_build_version': '11e146'
+    }
 )
 
 try_.chromium_win_builder(

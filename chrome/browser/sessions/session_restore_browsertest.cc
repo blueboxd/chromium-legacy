@@ -1353,6 +1353,99 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClosedTabStaysClosed) {
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
+// Closes the one and only tab and verifies it is not restored.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, CloseSingleTabRestoresNothing) {
+  ui_test_utils::NavigateToURL(browser(), url1_);
+
+  Profile* profile = browser()->profile();
+  std::unique_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
+      KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED));
+
+  chrome::CloseTab(browser());
+  ui_test_utils::WaitForBrowserToClose(browser());
+
+  ui_test_utils::AllBrowserTabAddedWaiter tab_waiter;
+  SessionRestoreTestHelper restore_observer;
+
+  // Ensure the session service factory is started, even if it was explicitly
+  // shut down.
+  SessionServiceTestHelper helper(
+      SessionServiceFactory::GetForProfileForSessionRestore(profile));
+  helper.SetForceBrowserNotAliveWithNoWindows(true);
+  helper.ReleaseService();
+
+  chrome::NewEmptyWindow(profile);
+
+  Browser* new_browser = chrome::FindBrowserWithWebContents(tab_waiter.Wait());
+
+  restore_observer.Wait();
+  WaitForTabsToLoad(new_browser);
+
+  keep_alive.reset();
+
+  AssertOneWindowWithOneTab(new_browser);
+  EXPECT_EQ(chrome::kChromeUINewTabURL,
+            new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+// Verifies that launching with no previous session to a url which closes itself
+// results in no session being restored on the next launch.
+// Regression test for http://crbug.com/1052096
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
+                       AutoClosedSingleTabDoesNotGetRestored) {
+  Profile* profile = browser()->profile();
+  std::unique_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
+      KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED));
+
+  // First close the original browser to clear the session information (as
+  // verified by CloseSingleTabRestoresNothing).
+  chrome::CloseTab(browser());
+  ui_test_utils::WaitForBrowserToClose(browser());
+
+  SessionRestoreTestHelper restore_observer;
+
+  // Ensure the session service factory is started, even if it was explicitly
+  // shut down.
+  SessionServiceTestHelper helper(
+      SessionServiceFactory::GetForProfileForSessionRestore(profile));
+  helper.SetForceBrowserNotAliveWithNoWindows(true);
+  helper.ReleaseService();
+
+  // Create a new browser by navigating to the test page.
+  GURL url = ui_test_utils::GetTestUrl(
+      base::FilePath().AppendASCII("session_restore"),
+      base::FilePath().AppendASCII("close_onload.html"));
+  NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
+  Navigate(&params);
+
+  ui_test_utils::BrowserChangeObserver browser_removed_observer(
+      params.browser,
+      ui_test_utils::BrowserChangeObserver::ChangeType::kRemoved);
+
+  restore_observer.Wait();
+
+  // Wait for the browser to close as a result of the single tab closing
+  // itself.
+  browser_removed_observer.Wait();
+
+  ui_test_utils::AllBrowserTabAddedWaiter tab_waiter;
+  SessionRestoreTestHelper restore_observer2;
+
+  // Create a new browser from scratch and verify the tab is not restored.
+  chrome::NewEmptyWindow(profile);
+
+  Browser* new_browser = chrome::FindBrowserWithWebContents(tab_waiter.Wait());
+
+  restore_observer2.Wait();
+  WaitForTabsToLoad(new_browser);
+
+  keep_alive.reset();
+
+  AssertOneWindowWithOneTab(new_browser);
+  EXPECT_EQ(chrome::kChromeUINewTabURL,
+            new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
 // Ensures active tab properly restored when tabs before it closed.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ActiveIndexUpdatedAtClose) {
   ui_test_utils::NavigateToURL(browser(), url1_);

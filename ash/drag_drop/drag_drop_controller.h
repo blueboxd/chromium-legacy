@@ -111,6 +111,8 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   // Helper method to reset everything.
   void Cleanup();
 
+  bool IsChromeTabDrag();
+
   bool enabled_ = false;
   std::unique_ptr<DragImageView> drag_image_;
   gfx::Vector2d drag_image_offset_;

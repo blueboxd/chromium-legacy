@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_label.h"
 
-#include "ui/gfx/canvas.h"
+#include "ui/views/controls/focus_ring.h"
 
 AppInfoLabel::AppInfoLabel(const base::string16& text)
     : AppInfoLabel(text,
                    views::style::CONTEXT_LABEL,
                    views::style::STYLE_PRIMARY) {}
+
+AppInfoLabel::~AppInfoLabel() = default;
 
 AppInfoLabel::AppInfoLabel(const base::string16& text,
                            int text_context,
@@ -21,20 +23,5 @@ AppInfoLabel::AppInfoLabel(const base::string16& text,
   // still needs to be able to tab-navigate them and get screen reader feedback.
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
-}
-
-void AppInfoLabel::PaintFocusRing(gfx::Canvas* canvas) const {
-  gfx::Rect focus_ring_bounds = GetTextBounds();
-  focus_ring_bounds.Intersect(GetLocalBounds());
-  canvas->DrawFocusRect(focus_ring_bounds);
-}
-
-void AppInfoLabel::OnFocus() {
-  Label::OnFocus();
-  SchedulePaint();
-}
-
-void AppInfoLabel::OnBlur() {
-  Label::OnBlur();
-  SchedulePaint();
+  focus_ring_ = views::FocusRing::Install(this);
 }

@@ -161,6 +161,7 @@ class LayoutThemeMacRefresh final : public LayoutThemeDefault {
       return [[NSFileManager defaultManager] displayNameAtPath:file.GetPath()];
     return file.name();
   }
+  bool PopsMenuByArrowKeys() const override;
 
  protected:
   // Controls color values returned from FocusRingColor().
@@ -375,6 +376,10 @@ Color LayoutThemeMacRefresh::FocusRingColor() const {
 
 bool LayoutThemeMacRefresh::UsesTestModeFocusRingColor() const {
   return WebTestSupport::IsRunningWebTest();
+}
+
+bool LayoutThemeMacRefresh::PopsMenuByArrowKeys() const {
+  return true;
 }
 
 static FontSelectionValue ToFontWeight(NSInteger app_kit_font_weight) {

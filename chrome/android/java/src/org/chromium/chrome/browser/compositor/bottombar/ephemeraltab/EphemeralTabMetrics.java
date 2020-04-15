@@ -25,8 +25,12 @@ public class EphemeralTabMetrics {
     /** The timestamp when the panel entered the opened state for the first time. */
     private long mPanelOpenedNanoseconds;
 
+    /** Whether the panel is in any visible state. */
+    private boolean mIsVisible;
+
     /** Records metrics for the peeked panel state. */
     public void recordMetricsForPeeked() {
+        mIsVisible = true;
         startPeekTimer();
         // Could be returning to Peek from Open.
         finishOpenTimer();
@@ -34,22 +38,26 @@ public class EphemeralTabMetrics {
 
     /** Records metrics when the panel has been fully opened. */
     public void recordMetricsForOpened() {
+        mIsVisible = true;
         startOpenTimer();
         finishPeekTimer();
     }
 
     /** Records metrics when the panel has been closed. */
     public void recordMetricsForClosed(@StateChangeReason int stateChangeReason) {
+        if (!mIsVisible) return;
+
         finishPeekTimer();
         finishOpenTimer();
         RecordHistogram.recordBooleanHistogram("EphemeralTab.Ctr", mDidRecordFirstOpen);
         RecordHistogram.recordEnumeratedHistogram("EphemeralTab.BottomSheet.CloseReason",
                 stateChangeReason, StateChangeReason.MAX_VALUE + 1);
-        resetTimers();
+        reset();
     }
 
     /** Records a user action that promotes the ephemeral tab to a full tab. */
     public void recordOpenInNewTab() {
+        recordMetricsForClosed(StateChangeReason.PROMOTE_TAB);
         RecordUserAction.record("EphemeralTab.OpenInNewTab");
     }
 
@@ -58,12 +66,13 @@ public class EphemeralTabMetrics {
         RecordUserAction.record("EphemeralTab.NavigateLink");
     }
 
-    /** Resets the metrics used by the timers. */
-    private void resetTimers() {
+    /** Resets all internal state including metrics and timers. */
+    private void reset() {
         mDidRecordFirstPeek = false;
         mPanelPeekedNanoseconds = 0;
         mDidRecordFirstOpen = false;
         mPanelOpenedNanoseconds = 0;
+        mIsVisible = false;
     }
 
     /** Starts timing the peek state if it's not already been started. */

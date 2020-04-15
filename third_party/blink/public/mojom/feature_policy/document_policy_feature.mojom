@@ -6,7 +6,7 @@ module blink.mojom;
 
 // These values map to the features which can be controlled by Document Policy.
 enum DocumentPolicyFeature {
-  kNotFound = 0,
+  kDefault = 0,
   // Controls access to font-display attribute in @font-face CSS rule
   kFontDisplay = 1,
   // Takes a parameter, |bpp|, i.e. byte-per-pixel ratio, that images

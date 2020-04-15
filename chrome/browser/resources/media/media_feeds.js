@@ -279,7 +279,8 @@ class MediaFeedsTableDelegate {
         sortKey === 'userStatus' || sortKey === 'lastFetchResult' ||
         sortKey === 'fetchFailedCount' || sortKey === 'lastFetchItemCount' ||
         sortKey === 'lastFetchPlayNextCount' ||
-        sortKey === 'lastFetchContentTypes' || sortKey === 'safeSearchResult') {
+        sortKey === 'lastFetchContentTypes' || sortKey === 'safeSearchResult' ||
+        sortKey === 'type') {
       return val1 > val2 ? 1 : -1;
     } else if (
         sortKey === 'lastDiscoveryTime' || sortKey === 'lastFetchTime' ||

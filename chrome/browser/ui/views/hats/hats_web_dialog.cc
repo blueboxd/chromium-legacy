@@ -54,8 +54,8 @@ constexpr char kBaseFormatUrl[] = "%s/async_survey?site=%s&force_https=1&sc=%s";
 // survey feedback to the HaTS server.
 std::string LoadLocalHtmlAsString(const std::string& site_id,
                                   const std::string& site_context) {
-  base::StringPiece raw_html =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+  std::string raw_html =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           IDR_DESKTOP_HATS_HTML);
   ui::TemplateReplacements replacements;
   replacements[kScriptSrcReplacementToken] = base::StringPrintf(

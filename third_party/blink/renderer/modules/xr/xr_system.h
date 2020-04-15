@@ -379,6 +379,7 @@ class XRSystem final : public EventTargetWithInlineData,
   XRSession* CreateSession(
       device::mojom::blink::XRSessionMode mode,
       XRSession::EnvironmentBlendMode blend_mode,
+      XRSession::InteractionMode interaction_mode,
       mojo::PendingReceiver<device::mojom::blink::XRSessionClient>
           client_receiver,
       device::mojom::blink::VRDisplayInfoPtr display_info,

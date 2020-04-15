@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/base64.h"
+#include "base/containers/flat_map.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -68,7 +69,9 @@
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/omnibox/browser/search_suggestion_parser.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -97,6 +100,22 @@
 
 namespace {
 
+base::flat_map<int32_t, chrome::mojom::SuggestionGroupPtr>
+CreateSuggestionGroupsMap(
+    PrefService* prefs,
+    const SearchSuggestionParser::HeadersMap& headers_map) {
+  base::flat_map<int32_t, chrome::mojom::SuggestionGroupPtr> result_map;
+  for (const auto& pair : headers_map) {
+    chrome::mojom::SuggestionGroupPtr suggestion_group =
+        chrome::mojom::SuggestionGroup::New();
+    suggestion_group->header = pair.second;
+    suggestion_group->hidden =
+        omnibox::IsSuggestionGroupIdHidden(prefs, pair.first);
+    result_map.emplace(pair.first, std::move(suggestion_group));
+  }
+  return result_map;
+}
+
 std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
     const AutocompleteResult& result) {
   std::vector<chrome::mojom::AutocompleteMatchPtr> matches;
@@ -118,6 +137,7 @@ std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
                                                     description_class.style));
     }
     mojom_match->destination_url = match.destination_url.spec();
+    mojom_match->suggestion_group_id = match.suggestion_group_id.value_or(0);
     mojom_match->icon_url =
         SearchTabHelper::AutocompleteMatchVectorIconToResourceName(
             match.GetVectorIcon(false));
@@ -533,6 +553,9 @@ void SearchTabHelper::OnResultChanged(AutocompleteController* controller,
 
   ipc_router_.AutocompleteResultChanged(chrome::mojom::AutocompleteResult::New(
       autocomplete_controller_->input().text(),
+      CreateSuggestionGroupsMap(
+          profile()->GetPrefs(),
+          autocomplete_controller_->result().headers_map()),
       CreateAutocompleteMatches(autocomplete_controller_->result())));
 
   BitmapFetcherService* bitmap_fetcher_service =
@@ -823,6 +846,15 @@ void SearchTabHelper::StopAutocomplete(bool clear_result) {
 
   if (clear_result)
     time_of_first_autocomplete_query_ = base::TimeTicks();
+}
+
+void SearchTabHelper::ToggleSuggestionGroupIdVisibility(
+    int32_t suggestion_group_id) {
+  if (!autocomplete_controller_)
+    return;
+
+  omnibox::ToggleSuggestionGroupIdVisibility(profile()->GetPrefs(),
+                                             suggestion_group_id);
 }
 
 void SearchTabHelper::LogCharTypedToRepaintLatency(uint32_t latency_ms) {

@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chromeos/constants/chromeos_switches.h"
 
@@ -119,6 +120,9 @@ const base::Feature kHideShelfControlsInTabletMode{
 
 const base::Feature kSystemTrayMicGainSetting{
     "SystemTrayMicGainSetting", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kWebUITabStripTabDragIntegration{
+    "WebUITabStripTabDragIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
@@ -246,6 +250,10 @@ bool IsSystemTrayMicGainSettingEnabled() {
 
 bool IsDisplayIdentificationEnabled() {
   return base::FeatureList::IsEnabled(kDisplayIdentification);
+}
+
+bool IsWebUITabStripTabDragIntegrationEnabled() {
+  return base::FeatureList::IsEnabled(kWebUITabStripTabDragIntegration);
 }
 
 namespace {

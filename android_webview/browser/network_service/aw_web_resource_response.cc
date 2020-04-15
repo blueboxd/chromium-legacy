@@ -104,10 +104,7 @@ bool AwWebResourceResponse::GetResponseHeaders(
                                       &header_values);
   DCHECK_EQ(header_values.size(), header_names.size());
   for (size_t i = 0; i < header_names.size(); ++i) {
-    std::string header_line(header_names[i]);
-    header_line.append(": ");
-    header_line.append(header_values[i]);
-    headers->AddHeader(header_line);
+    headers->AddHeader(header_names[i], header_values[i]);
   }
   return true;
 }

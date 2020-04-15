@@ -883,6 +883,12 @@ interface NetworkContext {
       pending_receiver<HasTrustTokensAnswerer> has_trust_tokens_answerer,
       url.mojom.Origin top_frame_origin);
 
+  // Clears persistent Trust Tokens data keyed by the origins in |filter|, and
+  // by origins corresponding to the domains in |filter|.
+  //
+  // A null |filter| indicates that all Trust Tokens data should be cleared.
+  ClearTrustTokenData(ClearDataFilter? filter) => ();
+
   // Clears network objects with implicit URL history information. Data related
   // to events that happened prior to |start_time| may be retained. Only applies
   // to network objects without more specific methods (Cookies,

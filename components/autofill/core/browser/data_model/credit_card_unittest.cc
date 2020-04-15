@@ -92,6 +92,12 @@ TEST(CreditCardTest, GetObfuscatedStringForCardDigits) {
 // of different possible summary strings.  Variations occur based on the
 // existence of credit card number, month, and year fields.
 TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  base::string16 valid_nickname = ASCIIToUTF16("My Visa Card");
+  // Enable the flag.
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillEnableSurfacingServerCardNickname);
+
   // Case 0: empty credit card.
   CreditCard credit_card0(base::GenerateGUID(), "https://www.example.com/");
   base::string16 summary0 = credit_card0.Label();
@@ -142,7 +148,7 @@ TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
                         test::ObfuscatedCardDigitsAsUTF8("5100")),
             obfuscated3);
 
-  // Case 4: Have everything.
+  // Case 4: Have everything except nickname.
   CreditCard credit_card4(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(&credit_card4, "John Dillinger",
                           "5105 1051 0510 5100", "01", "2010", "1");
@@ -169,6 +175,33 @@ TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
   EXPECT_EQ(UTF8ToUTF16(std::string("Card  ") +
                         test::ObfuscatedCardDigitsAsUTF8("5100")),
             obfuscated5);
+
+  // Case 6: Have everything including nickname.
+  CreditCard credit_card6(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card6, "John Dillinger",
+                          "5105 1051 0510 5100", "01", "2010", "1");
+  credit_card6.SetNickname(valid_nickname);
+  base::string16 summary6 = credit_card6.Label();
+  EXPECT_EQ(
+      valid_nickname +
+          UTF8ToUTF16(std::string("  ") +
+                      test::ObfuscatedCardDigitsAsUTF8("5100") + ", 01/2010"),
+      summary6);
+
+  // Case 7: Have everything including nickname but flag is off.
+  // Reset and disable the feature flag.
+  scoped_feature_list.Reset();
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillEnableSurfacingServerCardNickname);
+  CreditCard credit_card7(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card7, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2010",
+                          "1");
+  credit_card7.SetNickname(valid_nickname);
+  base::string16 summary7 = credit_card7.Label();
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100") + ", 01/2010"),
+            summary7);
 }
 
 TEST(CreditCardTest, NicknameAndLastFourDigitsStrings) {
@@ -675,6 +708,11 @@ TEST(CreditCardTest, Compare) {
   a.set_record_type(MASKED_SERVER_CARD);
   b.set_record_type(LOCAL_CARD);
   EXPECT_LT(0, a.Compare(b));
+
+  // Card with UNKNOWN_ISSUER is different from GOOGLE issued card.
+  a.set_card_issuer(CreditCard::ISSUER_UNKNOWN);
+  b.set_card_issuer(CreditCard::GOOGLE);
+  EXPECT_GT(0, a.Compare(b));
 
   // Different values produce non-zero results.
   test::SetCreditCardInfo(&a, "Jimmy", nullptr, nullptr, nullptr, "");

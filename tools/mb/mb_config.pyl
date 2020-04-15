@@ -511,6 +511,18 @@
       'chromeos-kevin-builder-perf-fyi': 'chromeos_kevin',
     },
 
+    'chromium.pgo': {
+      'mac-pgo-beta': 'official_goma_mac_pgo',
+      'mac-pgo-stable': 'official_goma_mac_pgo',
+      'mac-pgo-trunk': 'official_goma_mac_pgo',
+      'win32-pgo-beta': 'official_goma_x86_pgo',
+      'win32-pgo-stable': 'official_goma_x86_pgo',
+      'win32-pgo-trunk': 'official_goma_x86_pgo',
+      'win64-pgo-beta': 'official_goma_x64_pgo',
+      'win64-pgo-stable': 'official_goma_x64_pgo',
+      'win64-pgo-trunk': 'official_goma_x64_pgo',
+    },
+
     'chromium.swangle': {
       'linux-swangle-chromium-x64': 'gpu_tests_release_trybot',
       'linux-swangle-tot-angle-x64': 'angle_deqp_release_trybot',
@@ -1971,6 +1983,10 @@
       'official', 'goma', 'no_keystone_registration_framework',
     ],
 
+    'official_goma_mac_pgo': [
+      'official', 'goma', 'no_keystone_registration_framework', 'static', 'no_symbols', 'disable_nacl', 'pgo_phase_1'
+    ],
+
     'official_goma_perf': [
       'official', 'goma', 'no_gnome_keyring',
     ],
@@ -1999,8 +2015,16 @@
       'official', 'goma', 'minimal_symbols', 'android', 'thin_lto_opt', 'arm64',
     ],
 
+    'official_goma_x64_pgo': [
+      'official', 'goma', 'x64', 'static', 'no_symbols', 'disable_nacl', 'pgo_phase_1'
+    ],
+
     'official_goma_x86': [
       'official', 'goma', 'x86',
+    ],
+
+    'official_goma_x86_pgo': [
+      'official', 'goma', 'x86', 'static', 'no_symbols', 'disable_nacl', 'pgo_phase_1'
     ],
 
     'ozone_linux_release_bot': [
@@ -2615,6 +2639,11 @@
       'gn_args': 'pdf_enable_xfa=true',
     },
 
+    'pgo_phase_1': {
+      'mixins': ['use_clang_profiling', 'strip_absolute_paths_from_debug_symbols'],
+      'gn_args': 'chrome_pgo_phase=1'
+    },
+
     # Note: This is probably not what you want to use. Instead use one of the
     # chrome_with_codecs or chromeos_with_codecs mixins.
     'proprietary_codecs': {
@@ -2673,6 +2702,10 @@
       'gn_args': 'strip_debug_info=true',
     },
 
+    'strip_absolute_paths_from_debug_symbols': {
+      'gn_args': 'strip_absolute_paths_from_debug_symbols=true'
+    },
+
     'system_gbm_libdrm': {
       'gn_args': 'use_system_libdrm=true use_system_minigbm=true',
     },
@@ -2708,6 +2741,10 @@
 
     'use_clang_coverage': {
       'gn_args': 'use_clang_coverage=true',
+    },
+
+    'use_clang_profiling': {
+      'gn_args': 'use_clang_profiling=true'
     },
 
     'use_cxx11': {

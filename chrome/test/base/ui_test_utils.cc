@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -161,50 +160,6 @@ class AppModalDialogWaiter : public javascript_dialogs::AppModalDialogObserver {
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogWaiter);
 };
 
-class BrowserChangeObserver : public BrowserListObserver {
- public:
-  enum class ChangeType {
-    kAdded,
-    kRemoved,
-  };
-
-  BrowserChangeObserver(Browser* browser, ChangeType type)
-      : browser_(browser), type_(type) {
-    BrowserList::AddObserver(this);
-  }
-
-  ~BrowserChangeObserver() override { BrowserList::RemoveObserver(this); }
-
-  Browser* Wait() {
-    run_loop_.Run();
-    return browser_;
-  }
-
-  // BrowserListObserver:
-  void OnBrowserAdded(Browser* browser) override {
-    if (type_ == ChangeType::kAdded) {
-      browser_ = browser;
-      run_loop_.Quit();
-    }
-  }
-
-  void OnBrowserRemoved(Browser* browser) override {
-    if (browser_ && browser_ != browser)
-      return;
-
-    if (type_ == ChangeType::kRemoved) {
-      browser_ = browser;
-      run_loop_.Quit();
-    }
-  }
-
- private:
-  Browser* browser_;
-  ChangeType type_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserChangeObserver);
-};
 
 class AutocompleteChangeObserver : public AutocompleteController::Observer {
  public:
@@ -661,6 +616,37 @@ void AllBrowserTabAddedWaiter::OnTabStripModelChanged(
 
 void AllBrowserTabAddedWaiter::OnBrowserAdded(Browser* browser) {
   browser->tab_strip_model()->AddObserver(this);
+}
+
+BrowserChangeObserver::BrowserChangeObserver(Browser* browser, ChangeType type)
+    : browser_(browser), type_(type) {
+  BrowserList::AddObserver(this);
+}
+
+BrowserChangeObserver::~BrowserChangeObserver() {
+  BrowserList::RemoveObserver(this);
+}
+
+Browser* BrowserChangeObserver::Wait() {
+  run_loop_.Run();
+  return browser_;
+}
+
+void BrowserChangeObserver::OnBrowserAdded(Browser* browser) {
+  if (type_ == ChangeType::kAdded) {
+    browser_ = browser;
+    run_loop_.Quit();
+  }
+}
+
+void BrowserChangeObserver::OnBrowserRemoved(Browser* browser) {
+  if (browser_ && browser_ != browser)
+    return;
+
+  if (type_ == ChangeType::kRemoved) {
+    browser_ = browser;
+    run_loop_.Quit();
+  }
 }
 
 }  // namespace ui_test_utils

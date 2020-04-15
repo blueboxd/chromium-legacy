@@ -20,6 +20,7 @@ public class ChromeAutocompleteSchemeClassifier extends AutocompleteSchemeClassi
         super(ChromeAutocompleteSchemeClassifierJni.get().createAutocompleteClassifier(profile));
     }
 
+    @Override
     public void destroy() {
         ChromeAutocompleteSchemeClassifierJni.get().deleteAutocompleteClassifier(
                 super.getNativePtr());

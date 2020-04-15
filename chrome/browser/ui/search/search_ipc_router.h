@@ -182,6 +182,9 @@ class SearchIPCRouter : public content::WebContentsObserver,
                                        bool shift_key) = 0;
 
     virtual void DeleteAutocompleteMatch(uint8_t line) = 0;
+
+    virtual void ToggleSuggestionGroupIdVisibility(
+        int32_t suggestion_group_id) = 0;
   };
 
   // An interface to be implemented by consumers of SearchIPCRouter objects to
@@ -230,6 +233,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessOpenExtensionsPage() = 0;
     virtual bool ShouldProcessOpenAutocompleteMatch(bool is_active_tab) = 0;
     virtual bool ShouldProcessDeleteAutocompleteMatch() = 0;
+    virtual bool ShouldProcessToggleSuggestionGroupIdVisibility() = 0;
   };
 
   // Creates chrome::mojom::EmbeddedSearchClient connections on request.
@@ -363,6 +367,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
                              bool meta_key,
                              bool shift_key) override;
   void DeleteAutocompleteMatch(uint8_t line) override;
+  void ToggleSuggestionGroupIdVisibility(int32_t suggestion_group_id) override;
   void set_embedded_search_client_factory_for_testing(
       std::unique_ptr<EmbeddedSearchClientFactory> factory) {
     embedded_search_client_factory_ = std::move(factory);

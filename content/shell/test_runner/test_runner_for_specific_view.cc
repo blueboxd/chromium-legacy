@@ -18,6 +18,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "content/common/widget_messages.h"
 #include "content/public/common/isolated_world_ids.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
@@ -399,14 +400,8 @@ void TestRunnerForSpecificView::SetBackingScaleFactor(
   v8::UniquePersistent<v8::Function> global_callback(blink::MainThreadIsolate(),
                                                      callback);
   v8::Local<v8::Value> arg = v8::Boolean::New(
-      blink::MainThreadIsolate(), delegate()->IsUseZoomForDSFEnabled());
+      blink::MainThreadIsolate(), content::IsUseZoomForDSFEnabled());
   PostV8CallbackWithArgs(std::move(global_callback), 1, &arg);
-}
-
-void TestRunnerForSpecificView::EnableUseZoomForDSF(
-    v8::Local<v8::Function> callback) {
-  delegate()->EnableUseZoomForDSF();
-  PostV8Callback(callback);
 }
 
 void TestRunnerForSpecificView::SetColorProfile(

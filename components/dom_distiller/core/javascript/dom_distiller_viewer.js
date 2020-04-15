@@ -80,14 +80,10 @@ function useTheme(theme) {
   updateToolbarColor(theme);
 }
 
-function getClassFromElement(element, classList) {
-  let foundClass = classList[0];
-  classList.forEach((cls) => {
-    if (element.classList.contains(cls)) {
-      foundClass = cls;
-    }
-  });
-  return foundClass;
+function getPageTheme() {
+  const cls = Array.from(document.body.classList)
+                  .find((cls) => themeClasses.includes(cls));
+  return cls ? cls : themeClasses[0];
 }
 
 function updateToolbarColor(theme) {
@@ -166,7 +162,9 @@ class FontSizeSlider {
 const fontSizeSlider = new FontSizeSlider(
     $('font-size-selection'), [14, 15, 16, 18, 20, 24, 28, 32, 40, 48]);
 
-updateToolbarColor(getClassFromElement(document.body, themeClasses));
+// Set the toolbar color to match the page's theme.
+updateToolbarColor(getPageTheme());
+
 maybeSetWebFont();
 
 // The zooming speed relative to pinching speed.

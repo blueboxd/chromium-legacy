@@ -16,6 +16,8 @@ public class AutocompleteSchemeClassifier {
         this.mNativePtr = nativePtr;
     }
 
+    public void destroy() {}
+
     @CalledByNative
     protected long getNativePtr() {
         return mNativePtr;

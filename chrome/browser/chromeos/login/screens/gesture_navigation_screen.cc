@@ -104,6 +104,7 @@ void GestureNavigationScreen::OnUserAction(const std::string& action_id) {
         ash::prefs::kGestureEducationNotificationShown, true);
 
     RecordPageShownTimeMetrics();
+    was_shown_ = true;
     exit_callback_.Run(Result::NEXT);
   } else {
     BaseScreen::OnUserAction(action_id);

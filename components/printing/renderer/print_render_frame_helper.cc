@@ -1289,10 +1289,6 @@ void PrintRenderFrameHelper::PrintPreview(base::Value settings) {
 
 void PrintRenderFrameHelper::OnPrintPreviewDialogClosed() {
   ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
-  // TODO(jschettler): Remove these CHECKs when finished investigating
-  // https://crbug.com/1019847.
-  CHECK(!render_frame_gone_);
-  CHECK(print_preview_context_.source_frame());
   print_preview_context_.source_frame()->DispatchAfterPrintEvent();
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -2637,9 +2633,7 @@ void PrintRenderFrameHelper::PrintPreviewContext::set_error(
 
 blink::WebLocalFrame*
 PrintRenderFrameHelper::PrintPreviewContext::source_frame() {
-  // TODO(jschettler): Change this back to DCHECK when finished investigating
-  // https://crbug.com/1019847.
-  CHECK(state_ != UNINITIALIZED);
+  DCHECK(state_ != UNINITIALIZED);
   return source_frame_.GetFrame();
 }
 

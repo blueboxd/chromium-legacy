@@ -200,6 +200,19 @@ TEST_F(SchemaOrgExtractorTest, DoubleValue) {
   EXPECT_EQ(expected, extracted);
 }
 
+TEST_F(SchemaOrgExtractorTest, StringValueRepresentingLong) {
+  EntityPtr extracted =
+      Extract("{\"@type\": \"VideoObject\",\"copyrightYear\": \"1999\"}");
+
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+  expected->properties.push_back(CreateLongProperty("copyrightYear", 1999));
+
+  EXPECT_EQ(expected, extracted);
+}
+
 TEST_F(SchemaOrgExtractorTest, StringValueRepresentingDouble) {
   EntityPtr extracted =
       Extract("{\"@type\": \"VideoObject\",\"copyrightYear\": \"1999.5\"}");

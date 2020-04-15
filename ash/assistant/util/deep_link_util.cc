@@ -40,7 +40,7 @@ constexpr char kVeIdParamKey[] = "veId";
 
 // Supported alarm/timer action deep link param values.
 constexpr char kAddTimeToTimer[] = "addTimeToTimer";
-constexpr char kStopAlarmTimerRinging[] = "stopAlarmTimerRinging";
+constexpr char kRemoveAlarmTimer[] = "removeAlarmTimer";
 
 // Supported proactive suggestions action deep link param values.
 constexpr char kCardClick[] = "cardClick";
@@ -89,12 +89,12 @@ base::Optional<GURL> CreateAlarmTimerDeepLink(
       url = net::AppendOrReplaceQueryParameter(url, kActionParamKey,
                                                kAddTimeToTimer);
       break;
-    case assistant::util::AlarmTimerAction::kStopRinging:
-      DCHECK(!alarm_timer_id.has_value() && !duration.has_value());
-      if (alarm_timer_id.has_value() || duration.has_value())
+    case assistant::util::AlarmTimerAction::kRemove:
+      DCHECK(alarm_timer_id.has_value() && !duration.has_value());
+      if (!alarm_timer_id.has_value() || duration.has_value())
         return base::nullopt;
       url = net::AppendOrReplaceQueryParameter(url, kActionParamKey,
-                                               kStopAlarmTimerRinging);
+                                               kRemoveAlarmTimer);
       break;
   }
 
@@ -108,6 +108,7 @@ base::Optional<GURL> CreateAlarmTimerDeepLink(
         url, kDurationMsParamKey,
         base::NumberToString(duration->InMilliseconds()));
   }
+
   return url;
 }
 
@@ -184,8 +185,8 @@ base::Optional<AlarmTimerAction> GetDeepLinkParamAsAlarmTimerAction(
   if (action_string_value.value() == kAddTimeToTimer)
     return AlarmTimerAction::kAddTimeToTimer;
 
-  if (action_string_value.value() == kStopAlarmTimerRinging)
-    return AlarmTimerAction::kStopRinging;
+  if (action_string_value.value() == kRemoveAlarmTimer)
+    return AlarmTimerAction::kRemove;
 
   return base::nullopt;
 }

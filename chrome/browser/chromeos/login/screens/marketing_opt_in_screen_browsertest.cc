@@ -54,9 +54,8 @@ class MarketingOptInScreenTest : public OobeBaseTest {
   void SetUpOnMainThread() override {
     ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
-    MarketingOptInScreen* marketing_screen = static_cast<MarketingOptInScreen*>(
-        WizardController::default_controller()->screen_manager()->GetScreen(
-            MarketingOptInScreenView::kScreenId));
+    MarketingOptInScreen* marketing_screen = MarketingOptInScreen::Get(
+        WizardController::default_controller()->screen_manager());
     marketing_screen->set_exit_callback_for_testing(base::BindRepeating(
         &MarketingOptInScreenTest::HandleScreenExit, base::Unretained(this)));
 
@@ -78,6 +77,12 @@ class MarketingOptInScreenTest : public OobeBaseTest {
     test::OobeJS().TapOnPath(
         {"marketing-opt-in", "marketing-opt-in-next-button"});
     WaitForScreenExit();
+  }
+
+  void ShowAccessibilityButtonForTest() {
+    MarketingOptInScreen* marketing_screen = MarketingOptInScreen::Get(
+        WizardController::default_controller()->screen_manager());
+    marketing_screen->SetA11yButtonVisibilityForTest(true /* shown */);
   }
 
   void WaitForScreenExit() {
@@ -245,6 +250,7 @@ IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, OptInFlowWhenDefaultIsOptIn) {
 // the screen.
 IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, EnableShelfNavigationButtons) {
   ShowMarketingOptInScreen();
+  ShowAccessibilityButtonForTest();
   OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
 
   // Tap on accessibility settings link, and wait for the accessibility settings
@@ -286,6 +292,7 @@ IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, EnableShelfNavigationButtons) {
 // Tests that the user can exit the screen from the accessibility page.
 IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, ExitScreenFromA11yPage) {
   ShowMarketingOptInScreen();
+  ShowAccessibilityButtonForTest();
   OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
 
   // Tap on accessibility settings link, and wait for the accessibility settings

@@ -67,7 +67,9 @@ public class PageInfoControllerTest {
             PageInfoController.show(mActivityTestRule.getActivity(), tab.getWebContents(), null,
                     PageInfoController.OpenedFromSource.MENU,
                     /*offlinePageLoadUrlDelegate=*/
-                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab));
+                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab),
+                    new ChromePageInfoControllerDelegate(
+                            mActivityTestRule.getActivity(), tab.getWebContents()));
         });
     }
 
@@ -90,7 +92,9 @@ public class PageInfoControllerTest {
                     PageInfoController.OfflinePageState.NOT_OFFLINE_PAGE,
                     PageInfoController.PreviewPageState.NOT_PREVIEW, /*publisher=*/null,
                     /*offlinePageLoadUrlDelegate=*/
-                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab));
+                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab),
+                    new ChromePageInfoControllerDelegate(
+                            mActivityTestRule.getActivity(), tab.getWebContents()));
             PageInfoView pageInfoView = pageInfo.getPageInfoViewForTesting();
             // Test that the title contains the Unicode hostname rather than strict equality, as
             // the test server will be bound to a random port.

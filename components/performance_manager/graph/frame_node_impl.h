@@ -77,8 +77,10 @@ class FrameNodeImpl
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) override;
   void SetOriginTrialFreezePolicy(mojom::InterventionPolicy policy) override;
   void SetIsAdFrame() override;
-  void OnNonPersistentNotificationCreated() override;
   void SetHadFormInteraction() override;
+  void OnNonPersistentNotificationCreated() override;
+  void OnFirstContentfulPaint(
+      base::TimeDelta time_since_navigation_start) override;
   const RenderFrameHostProxy& GetRenderFrameHostProxy() const override;
 
   // Partial FrameNodbase::TimeDelta time_since_navigatione implementation:

@@ -80,6 +80,12 @@ void MarketingOptInScreenHandler::Hide() {
     a11y_nav_buttons_toggle_metrics_reporter_timer_.FireNow();
 }
 
+void MarketingOptInScreenHandler::UpdateA11ySettingsButtonVisibility(
+    bool shown) {
+  CallJS("login.MarketingOptInScreen.updateA11ySettingsButtonVisibility",
+         shown);
+}
+
 void MarketingOptInScreenHandler::UpdateA11yShelfNavigationButtonToggle(
     bool enabled) {
   CallJS("login.MarketingOptInScreen.updateA11yNavigationButtonToggle",

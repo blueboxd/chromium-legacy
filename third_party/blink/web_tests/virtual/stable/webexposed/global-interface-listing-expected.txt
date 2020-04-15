@@ -9117,6 +9117,7 @@ interface XRSession : EventTarget
     getter domOverlayState
     getter environmentBlendMode
     getter inputSources
+    getter interactionMode
     getter onend
     getter oninputsourceschange
     getter onselect

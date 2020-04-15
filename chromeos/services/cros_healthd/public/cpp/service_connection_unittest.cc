@@ -117,16 +117,16 @@ mojom::CpuResultPtr MakeCpuResult() {
   return mojom::CpuResult::NewCpuInfo(std::move(cpu_info));
 }
 
-mojom::TimezoneInfoPtr MakeTimezoneInfo() {
-  return mojom::TimezoneInfo::New("MST7MDT,M3.2.0,M11.1.0" /* posix */,
-                                  "America/Denver" /* region */);
+mojom::TimezoneResultPtr MakeTimezoneResult() {
+  return mojom::TimezoneResult::NewTimezoneInfo(mojom::TimezoneInfo::New(
+      "MST7MDT,M3.2.0,M11.1.0" /* posix */, "America/Denver" /* region */));
 }
 
-mojom::MemoryInfoPtr MakeMemoryInfo() {
-  return mojom::MemoryInfo::New(987123 /* total_memory_kib */,
-                                346432 /* free_memory_kib */,
-                                45863 /* available_memory_kib */,
-                                43264 /* page_faults_since_last_boot */);
+mojom::MemoryResultPtr MakeMemoryResult() {
+  return mojom::MemoryResult::NewMemoryInfo(mojom::MemoryInfo::New(
+      987123 /* total_memory_kib */, 346432 /* free_memory_kib */,
+      45863 /* available_memory_kib */,
+      43264 /* page_faults_since_last_boot */));
 }
 
 base::Optional<std::vector<mojom::BacklightInfoPtr>> MakeBacklightInfo() {
@@ -138,11 +138,11 @@ base::Optional<std::vector<mojom::BacklightInfoPtr>> MakeBacklightInfo() {
   return backlight_info;
 }
 
-base::Optional<std::vector<mojom::FanInfoPtr>> MakeFanInfo() {
-  std::vector<mojom::FanInfoPtr> fan_info;
-  fan_info.push_back(mojom::FanInfo::New(1200 /* speed_rpm */));
-  fan_info.push_back(mojom::FanInfo::New(2650 /* speed_rpm */));
-  return fan_info;
+mojom::FanResultPtr MakeFanResult() {
+  std::vector<mojom::FanInfoPtr> fan_vector;
+  fan_vector.push_back(mojom::FanInfo::New(1200 /* speed_rpm */));
+  fan_vector.push_back(mojom::FanInfo::New(2650 /* speed_rpm */));
+  return mojom::FanResult::NewFanInfo(std::move(fan_vector));
 }
 
 mojom::TelemetryInfoPtr MakeTelemetryInfo() {
@@ -150,9 +150,9 @@ mojom::TelemetryInfoPtr MakeTelemetryInfo() {
       MakeBatteryInfo() /* battery_info */,
       MakeNonRemovableBlockDeviceInfo() /* block_device_info */,
       MakeCachedVpdInfo() /* vpd_info */, MakeCpuResult() /* cpu_result */,
-      MakeTimezoneInfo() /* timezone_info */,
-      MakeMemoryInfo() /* memory_info */,
-      MakeBacklightInfo() /* backlight_info */, MakeFanInfo() /* fan_info */
+      MakeTimezoneResult() /* timezone_result */,
+      MakeMemoryResult() /* memory_result */,
+      MakeBacklightInfo() /* backlight_info */, MakeFanResult() /* fan_result */
   );
 }
 

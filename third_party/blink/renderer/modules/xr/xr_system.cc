@@ -1250,15 +1250,25 @@ void XRSystem::OnRequestSessionReturned(
   if (environment_integration)
     blend_mode = XRSession::kBlendModeAlphaBlend;
 
+  // TODO(https://crbug.com/1069350): The runtime should be the one to
+  // communicate the interaction mode, but for the moment we're going to use
+  // session mode and assume all AR is phone AR.
+  XRSession::InteractionMode interaction_mode =
+      XRSession::kInteractionModeWorld;
+  if (query->mode() == device::mojom::blink::XRSessionMode::kInline ||
+      query->mode() == device::mojom::blink::XRSessionMode::kImmersiveAr)
+    interaction_mode = XRSession::kInteractionModeScreen;
+
   XRSessionFeatureSet enabled_features;
   for (const auto& feature : session_ptr->enabled_features) {
     enabled_features.insert(feature);
   }
 
-  XRSession* session = CreateSession(
-      query->mode(), blend_mode, std::move(session_ptr->client_receiver),
-      std::move(session_ptr->display_info), session_ptr->uses_input_eventing,
-      enabled_features);
+  XRSession* session =
+      CreateSession(query->mode(), blend_mode, interaction_mode,
+                    std::move(session_ptr->client_receiver),
+                    std::move(session_ptr->display_info),
+                    session_ptr->uses_input_eventing, enabled_features);
 
   frameProvider()->OnSessionStarted(session, std::move(session_ptr));
 
@@ -1354,6 +1364,7 @@ void XRSystem::ContextDestroyed() {
 XRSession* XRSystem::CreateSession(
     device::mojom::blink::XRSessionMode mode,
     XRSession::EnvironmentBlendMode blend_mode,
+    XRSession::InteractionMode interaction_mode,
     mojo::PendingReceiver<device::mojom::blink::XRSessionClient>
         client_receiver,
     device::mojom::blink::VRDisplayInfoPtr display_info,
@@ -1361,8 +1372,8 @@ XRSession* XRSystem::CreateSession(
     XRSessionFeatureSet enabled_features,
     bool sensorless_session) {
   XRSession* session = MakeGarbageCollected<XRSession>(
-      this, std::move(client_receiver), mode, blend_mode, uses_input_eventing,
-      sensorless_session, std::move(enabled_features));
+      this, std::move(client_receiver), mode, blend_mode, interaction_mode,
+      uses_input_eventing, sensorless_session, std::move(enabled_features));
   if (display_info)
     session->SetXRDisplayInfo(std::move(display_info));
   sessions_.insert(session);
@@ -1372,12 +1383,14 @@ XRSession* XRSystem::CreateSession(
 XRSession* XRSystem::CreateSensorlessInlineSession() {
   // TODO(https://crbug.com/944936): The blend mode could be "additive".
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
-  return CreateSession(device::mojom::blink::XRSessionMode::kInline, blend_mode,
-                       mojo::NullReceiver() /* client receiver */,
-                       nullptr /* display_info */,
-                       false /* uses_input_eventing */,
-                       {device::mojom::XRSessionFeature::REF_SPACE_VIEWER},
-                       true /* sensorless_session */);
+  XRSession::InteractionMode interaction_mode =
+      XRSession::kInteractionModeScreen;
+  return CreateSession(
+      device::mojom::blink::XRSessionMode::kInline, blend_mode,
+      interaction_mode, mojo::NullReceiver() /* client receiver */,
+      nullptr /* display_info */, false /* uses_input_eventing */,
+      {device::mojom::XRSessionFeature::REF_SPACE_VIEWER},
+      true /* sensorless_session */);
 }
 
 void XRSystem::Dispose(DisposeType dispose_type) {

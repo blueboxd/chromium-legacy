@@ -13,6 +13,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
@@ -31,6 +32,7 @@
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
+#include "cc/base/switches.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/input/browser_controls_offset_manager.h"
@@ -370,9 +372,12 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       this, settings.top_controls_show_threshold,
       settings.top_controls_hide_threshold);
 
-  memory_pressure_listener_.reset(
-      new base::MemoryPressureListener(base::BindRepeating(
-          &LayerTreeHostImpl::OnMemoryPressure, base::Unretained(this))));
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableLayerTreeHostMemoryPressure)) {
+    memory_pressure_listener_.reset(
+        new base::MemoryPressureListener(base::BindRepeating(
+            &LayerTreeHostImpl::OnMemoryPressure, base::Unretained(this))));
+  }
 
   SetDebugState(settings.initial_debug_state);
 }

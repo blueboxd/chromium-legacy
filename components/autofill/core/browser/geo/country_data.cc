@@ -19,6 +19,17 @@ struct StaticCountryData {
   CountryData country_data;
 };
 
+// Alias definitions record for CountryData requests.  A request for
+// |country_code_alias| is served with the |CountryData| for
+// |country_code_target|.
+struct StaticCountryCodeAliasData {
+  char country_code_alias[3];
+  char country_code_target[3];
+};
+
+// Alias definitions.
+const StaticCountryCodeAliasData kCountryCodeAliases[] = {{"UK", "GB"}};
+
 // Maps country codes to localized label string identifiers. Keep this sorted
 // by country code.
 // This list is comprized of countries appearing in both
@@ -790,7 +801,7 @@ std::vector<std::string> GetCountryCodes() {
   return country_codes;
 }
 
-std::map<std::string, CountryData> GetCountryData() {
+std::map<std::string, CountryData> GetCountryDataMap() {
   std::map<std::string, CountryData> country_data;
   // Add all the countries we have explicit data for.
   for (const auto& static_data : kCountryData) {
@@ -813,6 +824,18 @@ std::map<std::string, CountryData> GetCountryData() {
   return country_data;
 }
 
+std::map<std::string, std::string> GetCountryCodeAliasMap() {
+  std::map<std::string, std::string> country_code_aliases;
+  // Create mappings for the aliases defined in |kCountryCodeAliases|.
+  for (const auto& static_alias_data : kCountryCodeAliases) {
+    // Insert the alias.
+    country_code_aliases.insert(
+        std::make_pair(std::string(static_alias_data.country_code_alias),
+                       std::string(static_alias_data.country_code_target)));
+  }
+  return country_code_aliases;
+}
+
 }  // namespace
 
 // static
@@ -821,8 +844,38 @@ CountryDataMap* CountryDataMap::GetInstance() {
 }
 
 CountryDataMap::CountryDataMap()
-    : country_data_(GetCountryData()), country_codes_(GetCountryCodes()) {}
+    : country_data_(GetCountryDataMap()),
+      country_code_aliases_(GetCountryCodeAliasMap()),
+      country_codes_(GetCountryCodes()) {}
 
 CountryDataMap::~CountryDataMap() = default;
+
+bool CountryDataMap::HasCountryData(const std::string& country_code) const {
+  return country_data_.count(country_code) > 0;
+}
+
+const CountryData& CountryDataMap::GetCountryData(
+    const std::string& country_code) const {
+  auto lookup = country_data_.find(country_code);
+  if (lookup != country_data_.end())
+    return lookup->second;
+  // If there is no entry for country_code return the entry for the US.
+  return country_data_.find("US")->second;
+}
+
+bool CountryDataMap::HasCountryCodeAlias(
+    const std::string& country_code_alias) const {
+  return country_code_aliases_.count(country_code_alias) > 0;
+}
+
+const std::string CountryDataMap::GetCountryCodeForAlias(
+    const std::string& country_code_alias) const {
+  auto lookup = country_code_aliases_.find(country_code_alias);
+  if (lookup != country_code_aliases_.end()) {
+    DCHECK(HasCountryData(lookup->second));
+    return lookup->second;
+  }
+  return std::string();
+}
 
 }  // namespace autofill

@@ -10,6 +10,7 @@
 #include "ui/views/view.h"
 
 class OmniboxResultView;
+class PrefService;
 
 // The View that's a direct child of the OmniboxPopupContentsView, one per row.
 // This, in turn, has a child OmniboxResultView and an optional header that is
@@ -20,7 +21,8 @@ class OmniboxResultView;
 //  - It's the header for multiple matches, it's just painted above this row.
 class OmniboxRowView : public views::View {
  public:
-  explicit OmniboxRowView(std::unique_ptr<OmniboxResultView> result_view);
+  OmniboxRowView(std::unique_ptr<OmniboxResultView> result_view,
+                 PrefService* pref_service);
 
   // Sets the header that appears above this row. Also shows the header.
   void ShowHeader(int suggestion_group_id, const base::string16& header_text);
@@ -41,6 +43,10 @@ class OmniboxRowView : public views::View {
 
   // Non-owning pointer to the result view for this row. This is never nullptr.
   OmniboxResultView* result_view_;
+
+  // Non-owning pointer to the preference service used for toggling headers.
+  // May be nullptr in tests.
+  PrefService* const pref_service_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_ROW_VIEW_H_

@@ -939,13 +939,11 @@ InputMethodManagerImpl::InputMethodManagerImpl(
   const InputMethodDescriptors& descriptors =
       component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor();
   util_.ResetInputMethods(descriptors);
-  chromeos::UserAddingScreen::Get()->AddObserver(this);
 }
 
 InputMethodManagerImpl::~InputMethodManagerImpl() {
   if (candidate_window_controller_.get())
     candidate_window_controller_->RemoveObserver(this);
-  chromeos::UserAddingScreen::Get()->RemoveObserver(this);
 }
 
 void InputMethodManagerImpl::RecordInputMethodUsage(
@@ -1005,16 +1003,6 @@ void InputMethodManagerImpl::SetUISessionState(UISessionState new_ui_session) {
     if (suggestion_window_controller_.get())
       suggestion_window_controller_.reset();
   }
-}
-
-void InputMethodManagerImpl::OnUserAddingStarted() {
-  if (ui_session_ == STATE_BROWSER_SCREEN)
-    SetUISessionState(STATE_SECONDARY_LOGIN_SCREEN);
-}
-
-void InputMethodManagerImpl::OnUserAddingFinished() {
-  if (ui_session_ == STATE_SECONDARY_LOGIN_SCREEN)
-    SetUISessionState(STATE_BROWSER_SCREEN);
 }
 
 std::unique_ptr<InputMethodDescriptors>

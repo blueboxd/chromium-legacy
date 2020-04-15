@@ -11,14 +11,17 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
+import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -195,10 +198,13 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlTextChang
         }
 
         Tab tab = mToolbarDataProvider.getTab();
-        PageInfoController.show(((TabImpl) tab).getActivity(), tab.getWebContents(), null,
+        ChromeActivity activity = ((TabImpl) tab).getActivity();
+        WebContents webContents = tab.getWebContents();
+        PageInfoController.show(activity, webContents, null,
                 PageInfoController.OpenedFromSource.TOOLBAR,
                 /*offlinePageLoadUrlDelegate=*/
-                new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab));
+                new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab),
+                new ChromePageInfoControllerDelegate(activity, webContents));
     }
 
     /**

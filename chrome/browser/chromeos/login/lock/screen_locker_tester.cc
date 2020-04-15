@@ -96,6 +96,17 @@ void ScreenLockerTester::Lock() {
   base::RunLoop().RunUntilIdle();
 }
 
+void ScreenLockerTester::WaitForUnlock() {
+  content::WindowedNotificationObserver lock_state_observer(
+      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+      content::NotificationService::AllSources());
+  if (IsLocked())
+    lock_state_observer.Wait();
+  ASSERT_TRUE(!IsLocked());
+  ASSERT_EQ(session_manager::SessionState::ACTIVE,
+            session_manager::SessionManager::Get()->session_state());
+}
+
 void ScreenLockerTester::SetUnlockPassword(const AccountId& account_id,
                                            const std::string& password) {
   UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,

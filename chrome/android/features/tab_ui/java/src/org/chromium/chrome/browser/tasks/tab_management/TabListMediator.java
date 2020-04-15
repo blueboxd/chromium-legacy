@@ -1365,6 +1365,16 @@ class TabListMediator {
         if (modelIndex == Tab.INVALID_TAB_ID) return;
         List<Tab> relatedTabList = getRelatedTabsForId(pseudoTab.getId());
 
+        Callback<Drawable> faviconCallback = drawable -> {
+            assert drawable != null;
+            // Need to re-get the index because the original index can be stale when callback is
+            // triggered.
+            int index = mModel.indexFromId(pseudoTab.getId());
+            if (index != TabModel.INVALID_TAB_INDEX && drawable != null) {
+                mModel.get(index).model.set(TabProperties.FAVICON, drawable);
+            }
+        };
+
         if (mActionsOnAllRelatedTabs && relatedTabList.size() > 1) {
             if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
                 // For tab group card in grid tab switcher, the favicon is set to be null.
@@ -1382,10 +1392,7 @@ class TabListMediator {
 
             // For tab group card in grid tab switcher, the favicon is the composed favicon.
             mTabListFaviconProvider.getComposedFaviconImageAsync(
-                    urls, pseudoTab.isIncognito(), (drawable) -> {
-                        assert drawable != null;
-                        mModel.get(modelIndex).model.set(TabProperties.FAVICON, drawable);
-                    });
+                    urls, pseudoTab.isIncognito(), faviconCallback);
 
             return;
         }
@@ -1400,15 +1407,7 @@ class TabListMediator {
             mModel.get(modelIndex).model.set(TabProperties.FAVICON, drawable);
             return;
         }
-        Callback<Drawable> faviconCallback = drawable -> {
-            assert drawable != null;
-            // Need to re-get the index because the original index can be stale when callback is
-            // triggered.
-            int index = mModel.indexFromId(pseudoTab.getId());
-            if (index != Tab.INVALID_TAB_ID && drawable != null) {
-                mModel.get(index).model.set(TabProperties.FAVICON, drawable);
-            }
-        };
+
         mTabListFaviconProvider.getFaviconForUrlAsync(
                 pseudoTab.getUrl(), pseudoTab.isIncognito(), faviconCallback);
     }

@@ -571,6 +571,9 @@ def write_intel_gpu_series_list(entry_id, is_exception, exception_id,
     data_helper_file.write('const IntelGpuSeriesType %s[%d] = {\n' %
                            (var_name, len(intel_gpu_series_list)))
     intel_gpu_series_map = {
+      'broadwater': 'kBroadwater',
+      'eaglelake': 'kEaglelake',
+      'ironlake': 'kIronlake',
       'sandybridge': 'kSandybridge',
       'baytrail': 'kBaytrail',
       'ivybridge': 'kIvybridge',
@@ -585,7 +588,10 @@ def write_intel_gpu_series_list(entry_id, is_exception, exception_id,
       'whiskeylake': 'kWhiskeylake',
       'cometlake': 'kCometlake',
       'cannonlake': 'kCannonlake',
-      'icelake': 'kIcelake'
+      'icelake': 'kIcelake',
+      'elkhartlake': 'kElkhartlake',
+      'jasperlake': 'kJasperlake',
+      'tigerlake': 'kTigerlake'
     }
     for series in intel_gpu_series_list:
       assert series in intel_gpu_series_map

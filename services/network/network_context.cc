@@ -663,6 +663,21 @@ bool NetworkContext::SkipReportingPermissionCheck() const {
   return params_ && params_->skip_reporting_send_permission_check;
 }
 
+void NetworkContext::ClearTrustTokenData(mojom::ClearDataFilterPtr filter,
+                                         base::OnceClosure done) {
+  if (!trust_token_store_) {
+    std::move(done).Run();
+    return;
+  }
+  trust_token_store_->ExecuteOrEnqueue(base::BindOnce(
+      [](mojom::ClearDataFilterPtr filter, base::OnceClosure done,
+         TrustTokenStore* store) {
+        ignore_result(store->ClearDataForFilter(std::move(filter)));
+        std::move(done).Run();
+      },
+      std::move(filter), std::move(done)));
+}
+
 void NetworkContext::ClearNetworkingHistorySince(
     base::Time time,
     base::OnceClosure completion_callback) {

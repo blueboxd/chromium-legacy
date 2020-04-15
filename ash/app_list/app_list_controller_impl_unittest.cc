@@ -27,6 +27,7 @@
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/system_tray_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -34,7 +35,6 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/system/unified/unified_system_tray_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -451,7 +451,7 @@ TEST_F(AppListControllerImplTest, CloseNotificationWithAppListShown) {
       1u, message_center::MessageCenter::Get()->GetPopupNotifications().size());
 
   // Calculate the drag start point and end point.
-  UnifiedSystemTrayTestApi test_api(GetPrimaryUnifiedSystemTray());
+  SystemTrayTestApi test_api;
   message_center::MessagePopupView* popup_view =
       test_api.GetPopupViewForNotificationID(notification_id);
   ASSERT_TRUE(popup_view);

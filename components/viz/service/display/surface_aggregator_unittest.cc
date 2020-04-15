@@ -4285,7 +4285,8 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
   }
 
   // Render passes with pixel-moving filters will increase the damage only if
-  // the damage of the contents will overlap the render pass.
+  // the damage of the contents will overlap the render pass. Since one of the
+  // render passes has a pixel-moving backdrop filter no quads are ignored.
   {
     int root_pass_ids[] = {1, 2};
     const gfx::Size pass_with_filter_size(5, 5);
@@ -4332,7 +4333,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     EXPECT_EQ(1u, aggregated_pass_list[0]->quad_list.size());
 
     EXPECT_EQ(gfx::Rect(1, 1), aggregated_pass_list[1]->damage_rect);
-    EXPECT_EQ(0u, aggregated_pass_list[1]->quad_list.size());
+    EXPECT_EQ(1u, aggregated_pass_list[1]->quad_list.size());
 
     // First render pass draw quad overlaps with damage rect and has background
     // filter, so it should be damaged. SurfaceDrawQuad is after background
@@ -4342,7 +4343,8 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
   }
 
   // If the render pass with background filters does not intersect the damage
-  // rect, the damage won't be expanded to cover the render pass.
+  // rect, the damage won't be expanded to cover the render pass. Since one of
+  // the render passes has a pixel-moving backdrop filter no quads are ignored.
   {
     int root_pass_ids[] = {1, 2};
     const gfx::Size pass_with_filter_size(5, 5);
@@ -4384,7 +4386,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
 
     // Pass 0 has background blur filter but does NOT overlap with damage rect.
     EXPECT_EQ(gfx::Rect(), aggregated_pass_list[0]->damage_rect);
-    EXPECT_EQ(0u, aggregated_pass_list[0]->quad_list.size());
+    EXPECT_EQ(1u, aggregated_pass_list[0]->quad_list.size());
 
     EXPECT_EQ(gfx::Rect(1, 1, 3, 3), aggregated_pass_list[1]->damage_rect);
     EXPECT_EQ(1u, aggregated_pass_list[1]->quad_list.size());
@@ -4393,7 +4395,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     // drawn. SurfaceDrawQuad is after background filter, so corresponding
     // RenderPassDrawQuad should be drawn.
     EXPECT_EQ(gfx::Rect(6, 6, 3, 3), aggregated_pass_list[2]->damage_rect);
-    EXPECT_EQ(1u, aggregated_pass_list[2]->quad_list.size());
+    EXPECT_EQ(2u, aggregated_pass_list[2]->quad_list.size());
   }
 }
 

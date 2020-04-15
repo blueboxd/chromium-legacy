@@ -1615,6 +1615,54 @@ TEST_F(MessageLoopTest, PostImmediateTaskFromSystemPump) {
 // https://crrev.com/c/1455266/9/base/message_loop/message_pump_win.cc#125 This
 // is the delayed task equivalent of the above PostImmediateTaskFromSystemPump
 // test.
+//
+// As a reminder of how this works, here's the sequence of events in this test:
+//  1) Test start:
+//       work_deduplicator.cc(24): BindToCurrentThread
+//       work_deduplicator.cc(34): OnWorkRequested
+//       thread_controller_with_message_pump_impl.cc(237) : DoWork
+//       work_deduplicator.cc(50): OnWorkStarted
+//  2) SubPumpFunc entered:
+//       message_loop_unittest.cc(278): SubPumpFunc
+//  3) ScopedNestableTaskAllower triggers nested ScheduleWork:
+//       work_deduplicator.cc(34): OnWorkRequested
+//  4) Nested system loop starts and pumps internal kMsgHaveWork:
+//       message_loop_unittest.cc(282): SubPumpFunc : Got Message
+//       message_pump_win.cc(302): HandleWorkMessage
+//       thread_controller_with_message_pump_impl.cc(237) : DoWork
+//  5) Attempt to DoWork(), there's nothing to do, NextWorkInfo indicates delay.
+//       work_deduplicator.cc(50): OnWorkStarted
+//       work_deduplicator.cc(58): WillCheckForMoreWork
+//       work_deduplicator.cc(67): DidCheckForMoreWork
+//  6) Return control to HandleWorkMessage() which schedules native timer
+//     and goes to sleep (no kMsgHaveWork in native queue).
+//       message_pump_win.cc(328): HandleWorkMessage ScheduleNativeTimer
+//  7) Native timer fires and posts the delayed application task:
+//       message_loop_unittest.cc(282): SubPumpFunc : Got Message
+//       message_loop_unittest.cc(1581): DelayedQuitOnSystemTimer
+//  !! This is the critical step verified by this test. Since the
+//     ThreadController is idle after (6), it won't be invoked again and thus
+//     won't get a chance to return a NextWorkInfo that indicates the next
+//     delay. A native timer is thus required to have SubPumpFunc handle it.
+//       work_deduplicator.cc(42): OnDelayedWorkRequested
+//       message_pump_win.cc(129): ScheduleDelayedWork
+//  9) The scheduled native timer fires and runs application task binding
+//     ::PostQuitMessage :
+//       message_loop_unittest.cc(282) SubPumpFunc : Got Message
+//       work_deduplicator.cc(50): OnWorkStarted
+//       thread_controller_with_message_pump_impl.cc(237) : DoWork
+//  10) SequenceManager updates delay to none and notifies
+//      (TODO(scheduler-dev): Could remove this step but WorkDeduplicator knows
+//                            to ignore at least):
+//       work_deduplicator.cc(42): OnDelayedWorkRequested
+//  11) Nested application task completes and SubPumpFunc unwinds:
+//       work_deduplicator.cc(58): WillCheckForMoreWork
+//       work_deduplicator.cc(67): DidCheckForMoreWork
+//  12) ~ScopedNestableTaskAllower() makes sure WorkDeduplicator knows we're
+//      back in DoWork() (not relevant in this test but important overall).
+//       work_deduplicator.cc(50): OnWorkStarted
+//  13) Application task which ran SubPumpFunc completes and test finishes.
+//       work_deduplicator.cc(67): DidCheckForMoreWork
 TEST_F(MessageLoopTest, PostDelayedTaskFromSystemPump) {
   MessageLoop message_loop(MessagePumpType::UI);
 

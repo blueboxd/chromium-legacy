@@ -331,6 +331,7 @@ test("printing_unittests") {
     "page_range_unittest.cc",
     "page_setup_unittest.cc",
     "print_settings_conversion_unittest.cc",
+    "print_settings_unittest.cc",
     "printing_test.h",
     "printing_utils_unittest.cc",
     "units_unittest.cc",

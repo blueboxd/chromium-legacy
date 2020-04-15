@@ -236,8 +236,9 @@ class AvdConfig(object):
       avd_dir = os.path.join(android_avd_home, '%s.avd' % self._config.avd_name)
       config_ini = os.path.join(avd_dir, 'config.ini')
 
-      with open(root_ini, 'a') as root_ini_file:
-        root_ini_file.write('path.rel=avd/%s.avd\n' % self._config.avd_name)
+      if os.path.exists(root_ini):
+        with open(root_ini, 'a') as root_ini_file:
+          root_ini_file.write('path.rel=avd/%s.avd\n' % self._config.avd_name)
 
       if os.path.exists(config_ini):
         with open(config_ini) as config_ini_file:
@@ -263,7 +264,10 @@ class AvdConfig(object):
       self._Initialize()
       instance = _AvdInstance(self._emulator_path, self._emulator_home,
                               self._config)
-      instance.Start(read_only=False, snapshot_save=snapshot)
+      # Enable debug for snapshot when it is set to True
+      debug_tags = 'snapshot' if snapshot else None
+      instance.Start(
+          read_only=False, snapshot_save=snapshot, debug_tags=debug_tags)
       device_utils.DeviceUtils(instance.serial).WaitUntilFullyBooted(
           timeout=180, retries=0)
       instance.Stop()
@@ -496,7 +500,8 @@ class _AvdInstance(object):
             read_only=True,
             snapshot_save=False,
             window=False,
-            writable_system=False):
+            writable_system=False,
+            debug_tags=None):
     """Starts the emulator running an instance of the given AVD."""
 
     with tempfile_ext.TemporaryFileName() as socket_path, (contextlib.closing(
@@ -517,6 +522,8 @@ class _AvdInstance(object):
         emulator_cmd.append('-no-snapshot-save')
       if writable_system:
         emulator_cmd.append('-writable-system')
+      if debug_tags:
+        emulator_cmd.extend(['-debug', debug_tags])
 
       emulator_env = {}
       if self._emulator_home:
@@ -531,11 +538,14 @@ class _AvdInstance(object):
 
       sock.listen(1)
 
-      logging.info('Starting emulator.')
+      logging.info('Starting emulator with commands: %s',
+                   ' '.join(emulator_cmd))
 
       # TODO(jbudorick): Add support for logging emulator stdout & stderr at
       # higher logging levels.
-      self._sink = open('/dev/null', 'w')
+      # Enable the emulator log when debug_tags is set.
+      if not debug_tags:
+        self._sink = open('/dev/null', 'w')
       self._emulator_proc = cmd_helper.Popen(
           emulator_cmd, stdout=self._sink, stderr=self._sink, env=emulator_env)
 

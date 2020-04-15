@@ -19,9 +19,6 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
-import org.chromium.chrome.browser.ui.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
 import org.chromium.components.favicon.FaviconFallbackGenerator;
 
@@ -31,14 +28,12 @@ import org.chromium.components.favicon.FaviconFallbackGenerator;
  * of the preference. See {@link ChromeImageViewPreference} for more details on how this icon
  * can be used.
  */
-class WebsitePreference extends ChromeImageViewPreference implements FaviconImageCallback {
+class WebsitePreference extends ChromeImageViewPreference {
+    private final SiteSettingsClient mSiteSettingsClient;
     private final Website mSite;
     private final SiteSettingsCategory mCategory;
 
     private static final int TEXT_SIZE_SP = 13;
-
-    // Loads the favicons asynchronously.
-    private FaviconHelper mFaviconHelper;
 
     // Whether the favicon has been fetched already.
     private boolean mFaviconFetched;
@@ -53,8 +48,10 @@ class WebsitePreference extends ChromeImageViewPreference implements FaviconImag
 
     private int mFaviconSizePx;
 
-    WebsitePreference(Context context, Website site, SiteSettingsCategory category) {
+    WebsitePreference(Context context, SiteSettingsClient siteSettingsClient, Website site,
+            SiteSettingsCategory category) {
         super(context);
+        mSiteSettingsClient = siteSettingsClient;
         mSite = site;
         mCategory = category;
         setWidgetLayoutResource(R.layout.website_features);
@@ -83,26 +80,6 @@ class WebsitePreference extends ChromeImageViewPreference implements FaviconImag
      */
     public Website site() {
         return mSite;
-    }
-
-    @Override
-    public void onFaviconAvailable(Bitmap image, String iconUrl) {
-        mFaviconHelper.destroy();
-        mFaviconHelper = null;
-        Resources resources = getContext().getResources();
-        if (image == null) {
-            // Invalid favicon, produce a generic one.
-            float density = resources.getDisplayMetrics().density;
-            int faviconSizeDp = Math.round(mFaviconSizePx / density);
-            FaviconFallbackGenerator faviconGenerator =
-                    new FaviconFallbackGenerator(resources, faviconSizeDp, faviconSizeDp,
-                            Math.round(FAVICON_CORNER_RADIUS_FRACTION * faviconSizeDp),
-                            FAVICON_BACKGROUND_COLOR,
-                            Math.round(FAVICON_TEXT_SIZE_FRACTION * faviconSizeDp));
-            image = faviconGenerator.generateIconForUrl(faviconUrl());
-        }
-
-        setIcon(new BitmapDrawable(resources, image));
     }
 
     /**
@@ -166,14 +143,8 @@ class WebsitePreference extends ChromeImageViewPreference implements FaviconImag
 
         if (!mFaviconFetched) {
             // Start the favicon fetching. Will respond in onFaviconAvailable.
-            mFaviconHelper = new FaviconHelper();
-            // TODO(https://crbug.com/1048632): Use the current profile (i.e., regular profile or
-            // incognito profile) instead of always using regular profile. It works correctly now,
-            // but it is not safe.
-            if (!mFaviconHelper.getLocalFaviconImageForURL(
-                        Profile.getLastUsedRegularProfile(), faviconUrl(), mFaviconSizePx, this)) {
-                onFaviconAvailable(null, null);
-            }
+            mSiteSettingsClient.getLocalFaviconImageForURL(
+                    faviconUrl(), mFaviconSizePx, this::onFaviconAvailable);
             mFaviconFetched = true;
         }
 
@@ -181,5 +152,22 @@ class WebsitePreference extends ChromeImageViewPreference implements FaviconImag
         int iconPadding = Math.round(FAVICON_PADDING_DP * density);
         View iconView = holder.findViewById(android.R.id.icon);
         iconView.setPadding(iconPadding, iconPadding, iconPadding, iconPadding);
+    }
+
+    private void onFaviconAvailable(Bitmap image) {
+        Resources resources = getContext().getResources();
+        if (image == null) {
+            // Invalid favicon, produce a generic one.
+            float density = resources.getDisplayMetrics().density;
+            int faviconSizeDp = Math.round(mFaviconSizePx / density);
+            FaviconFallbackGenerator faviconGenerator =
+                    new FaviconFallbackGenerator(resources, faviconSizeDp, faviconSizeDp,
+                            Math.round(FAVICON_CORNER_RADIUS_FRACTION * faviconSizeDp),
+                            FAVICON_BACKGROUND_COLOR,
+                            Math.round(FAVICON_TEXT_SIZE_FRACTION * faviconSizeDp));
+            image = faviconGenerator.generateIconForUrl(faviconUrl());
+        }
+
+        setIcon(new BitmapDrawable(resources, image));
     }
 }

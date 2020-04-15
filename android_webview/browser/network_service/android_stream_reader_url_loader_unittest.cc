@@ -136,10 +136,7 @@ class TestResponseDelegate
       return;
     }
     headers->ReplaceStatusLine(custom_status_);
-    std::string header_line(custom_header_name_);
-    header_line.append(": ");
-    header_line.append(custom_header_value_);
-    headers->AddHeader(header_line);
+    headers->AddHeader(custom_header_name_, custom_header_value_);
   }
 
  private:

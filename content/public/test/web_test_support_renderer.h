@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 
 namespace blink {
-class WebInputEvent;
 struct WebSize;
 class WebURL;
 }  // namespace blink
@@ -51,14 +50,6 @@ void ForceResizeRenderView(RenderView* render_view,
 
 // Set the device scale factor and force the compositor to resize.
 void SetDeviceScaleFactor(RenderView* render_view, float factor);
-
-// Converts |event| from screen coordinates to coordinates used by the widget
-// associated with the |web_widget_test_proxy|.  Returns nullptr if no
-// transformation was necessary (e.g. for a keyboard event OR if widget requires
-// no scaling and has coordinates starting at (0,0)).
-std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
-    WebWidgetTestProxy* web_widget_test_proxy,
-    const blink::WebInputEvent& event);
 
 // Set the device color space.
 void SetDeviceColorSpace(RenderView* render_view,

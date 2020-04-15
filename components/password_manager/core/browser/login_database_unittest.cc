@@ -38,6 +38,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
+using autofill::GaiaIdHash;
 using autofill::PasswordForm;
 using autofill::ValueElementPair;
 using autofill::ValueElementVector;
@@ -89,6 +90,8 @@ void GenerateExamplePasswordForm(PasswordForm* form) {
       url::Origin::Create(GURL("https://accounts.google.com/"));
   form->skip_zero_click = true;
   form->in_store = PasswordForm::Store::kProfileStore;
+  form->moving_blocked_for_list.push_back(GaiaIdHash::FromGaiaId("user1"));
+  form->moving_blocked_for_list.push_back(GaiaIdHash::FromGaiaId("user2"));
 }
 
 // Helper functions to read the value of the first column of an executed
@@ -181,6 +184,8 @@ MATCHER(IsBasicAuthAccount, "") {
 // Serialization routines for vectors implemented in login_database.cc.
 base::Pickle SerializeValueElementPairs(const ValueElementVector& vec);
 ValueElementVector DeserializeValueElementPairs(const base::Pickle& pickle);
+base::Pickle SerializeGaiaIdHashVector(const std::vector<GaiaIdHash>& hashes);
+std::vector<GaiaIdHash> DeserializeGaiaIdHashVector(const base::Pickle& p);
 
 class LoginDatabaseTest : public testing::Test {
  protected:
@@ -1148,6 +1153,23 @@ TEST_F(LoginDatabaseTest, VectorSerialization) {
   EXPECT_THAT(output, Eq(vec));
 }
 
+TEST_F(LoginDatabaseTest, GaiaIdHashVectorSerialization) {
+  // Empty vector.
+  std::vector<GaiaIdHash> vec;
+  base::Pickle temp = SerializeGaiaIdHashVector(vec);
+  std::vector<GaiaIdHash> output = DeserializeGaiaIdHashVector(temp);
+  EXPECT_THAT(output, Eq(vec));
+
+  // Normal data.
+  vec.push_back(GaiaIdHash::FromGaiaId("first"));
+  vec.push_back(GaiaIdHash::FromGaiaId("second"));
+  vec.push_back(GaiaIdHash::FromGaiaId("third"));
+
+  temp = SerializeGaiaIdHashVector(vec);
+  output = DeserializeGaiaIdHashVector(temp);
+  EXPECT_THAT(output, Eq(vec));
+}
+
 TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   std::vector<std::unique_ptr<PasswordForm>> result;
   // Verify the database is empty.
@@ -1337,6 +1359,7 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.federation_origin =
       url::Origin::Create(GURL("https://accounts.google.com/"));
   form.skip_zero_click = true;
+  form.moving_blocked_for_list.push_back(GaiaIdHash::FromGaiaId("gaia_id"));
 
   PasswordStoreChangeList changes = db().UpdateLogin(form);
   EXPECT_EQ(UpdateChangeForForm(form, /*passwordchanged=*/true), changes);

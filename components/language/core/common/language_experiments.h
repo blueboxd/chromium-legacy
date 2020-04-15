@@ -36,10 +36,6 @@ extern const base::Feature kNotifySyncOnLanguageDetermined;
 // This feature uses the existing UI for translate bubble.
 extern const base::Feature kUseButtonTranslateBubbleUi;
 
-// These feature params controls what translate bubble UI to display.
-extern const char kTranslateUIBubbleKey[];
-extern const char kTranslateUIBubbleTabValue[];
-
 enum class OverrideLanguageModel {
   DEFAULT,
   FLUENT,

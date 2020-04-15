@@ -19,6 +19,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -40,6 +41,9 @@ public class ManageSyncSettingsWithFakeProfileSyncServiceTest {
             return new FakeProfileSyncService();
         }
     };
+    @Rule
+    public SettingsActivityTestRule<ManageSyncSettings> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(ManageSyncSettings.class);
 
     private SettingsActivity mSettingsActivity;
 
@@ -80,9 +84,8 @@ public class ManageSyncSettingsWithFakeProfileSyncServiceTest {
     }
 
     private ManageSyncSettings startManageSyncPreferences() {
-        mSettingsActivity = mSyncTestRule.startSettingsActivity(ManageSyncSettings.class.getName());
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        return (ManageSyncSettings) mSettingsActivity.getMainFragment();
+        mSettingsActivity = mSettingsActivityTestRule.startSettingsActivity();
+        return mSettingsActivityTestRule.getFragment();
     }
 
     private void clickPreference(final Preference pref) {

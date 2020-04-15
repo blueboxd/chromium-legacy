@@ -39,7 +39,7 @@ class BASE_EXPORT MachLogMessage : public logging::LogMessage {
                  int line,
                  LogSeverity severity,
                  mach_error_t mach_err);
-  ~MachLogMessage();
+  ~MachLogMessage() override;
 
  private:
   mach_error_t mach_err_;
@@ -106,7 +106,7 @@ class BASE_EXPORT BootstrapLogMessage : public logging::LogMessage {
                       int line,
                       LogSeverity severity,
                       kern_return_t bootstrap_err);
-  ~BootstrapLogMessage();
+  ~BootstrapLogMessage() override;
 
  private:
   kern_return_t bootstrap_err_;

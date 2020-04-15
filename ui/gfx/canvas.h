@@ -151,9 +151,6 @@ class GFX_EXPORT Canvas {
   // Canvas::TEXT_ALIGN_RIGHT.
   static int DefaultCanvasTextAlignment();
 
-  // Draws a dashed rectangle of the specified color.
-  void DrawDashedRect(const RectF& rect, SkColor color);
-
   // Unscales by the image scale factor (aka device scale factor), and returns
   // that factor.  This is useful when callers want to draw directly in the
   // native scale.
@@ -380,14 +377,6 @@ class GFX_EXPORT Canvas {
                                SkColor color,
                                const Rect& display_rect,
                                int flags);
-
-  // Draws a dotted gray rectangle used for focus purposes.
-  // DEPRECATED in favor of the RectF version below.
-  // TODO(funkysidd): Remove this (http://crbug.com/553726)
-  void DrawFocusRect(const Rect& rect);
-
-  // Draws a dotted gray rectangle used for focus purposes.
-  void DrawFocusRect(const RectF& rect);
 
   // Draws a |rect| in the specified region with the specified |color|. The
   // width of the stroke is |thickness| dip, but the actual pixel width will be

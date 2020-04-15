@@ -38,7 +38,7 @@ WTF::String ValidateDescription(const ContentDescription& description,
   if (description.description().IsEmpty())
     return "Description cannot be empty";
 
-  if (description.launchUrl().IsEmpty())
+  if (description.url().IsEmpty())
     return "Invalid launch URL provided";
 
   for (const auto& icon : description.icons()) {
@@ -51,7 +51,7 @@ WTF::String ValidateDescription(const ContentDescription& description,
   }
 
   KURL launch_url =
-      registration->GetExecutionContext()->CompleteURL(description.launchUrl());
+      registration->GetExecutionContext()->CompleteURL(description.url());
   auto* security_origin =
       registration->GetExecutionContext()->GetSecurityOrigin();
   if (!security_origin->CanRequest(launch_url))

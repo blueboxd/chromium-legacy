@@ -8,6 +8,7 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -121,6 +122,12 @@ void InputMethodPersistence::InputMethodChanged(InputMethodManager* manager,
                                                 Profile* profile,
                                                 bool show_message) {
   DCHECK_EQ(input_method_manager_, manager);
+  // We might get here during the locking process. When locker is already
+  // created but session state has not changed yet.
+  if (ScreenLocker::default_screen_locker()) {
+    // We use a special set of input methods on the lock screen. Do not update.
+    return;
+  }
   const std::string current_input_method =
       manager->GetActiveIMEState()->GetCurrentInputMethod().id();
   // Save the new input method id depending on the current browser state.

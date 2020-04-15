@@ -69,6 +69,11 @@ using signin_metrics::PromoAction;
 - (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
                  completion:(ProceduralBlock)completion {
   if (self.userSigninCoordinator) {
+    DCHECK(!self.identityInteractionManager);
+    // When interrupting |self.userSigninCoordinator|,
+    // |self.userSigninCoordinator.signinCompletion| is called. This callback
+    // is in charge to call |[self runCompletionCallbackWithSigninResult:
+    // identity:showAdvancedSettingsSignin:].
     [self.userSigninCoordinator interruptWithAction:action
                                          completion:completion];
     return;
@@ -90,6 +95,9 @@ using signin_metrics::PromoAction;
       [self.identityInteractionManager cancelAndDismissAnimated:NO];
       break;
   }
+  [self runCompletionCallbackWithSigninResult:SigninCoordinatorResultInterrupted
+                                     identity:nil
+                   showAdvancedSettingsSignin:NO];
   if (completion) {
     completion();
   }

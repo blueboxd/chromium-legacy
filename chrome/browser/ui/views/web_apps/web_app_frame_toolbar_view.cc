@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/views/web_apps/web_app_menu_button.h"
 #include "chrome/browser/ui/views/web_apps/web_app_origin_text.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/features.h"
@@ -646,33 +647,38 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
   params.page_action_icon_delegate = this;
   page_action_icon_controller_->Init(params, this);
 
-  // Extensions toolbar area with pinned extensions is lower priority than, for
-  // example, the menu button or other toolbar buttons, and pinned extensions
-  // should hide before other toolbar buttons.
-  constexpr int kLowPriorityFlexOrder = 2;
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    extensions_container_ =
-        AddChildView(std::make_unique<ExtensionsToolbarContainer>(
-            browser_view_->browser(),
-            ExtensionsToolbarContainer::DisplayMode::kCompact));
-    extensions_container_->SetProperty(
-        views::kFlexBehaviorKey,
-        views::FlexSpecification(
-            extensions_container_->animating_layout_manager()
-                ->GetDefaultFlexRule())
-            .WithOrder(kLowPriorityFlexOrder));
-    views::SetHitTestComponent(extensions_container_,
-                               static_cast<int>(HTCLIENT));
-  } else {
-    browser_actions_container_ =
-        AddChildView(std::make_unique<BrowserActionsContainer>(
-            browser_view_->browser(), nullptr, this, false /* interactive */));
-    browser_actions_container_->SetProperty(
-        views::kFlexBehaviorKey,
-        views::FlexSpecification(browser_actions_container_->GetFlexRule())
-            .WithOrder(kLowPriorityFlexOrder));
-    views::SetHitTestComponent(browser_actions_container_,
-                               static_cast<int>(HTCLIENT));
+  // Do not create the extensions or browser actions container if it is a
+  // System Web App.
+  if (!web_app::IsSystemWebApp(browser_view_->browser())) {
+    // Extensions toolbar area with pinned extensions is lower priority than,
+    // for example, the menu button or other toolbar buttons, and pinned
+    // extensions should hide before other toolbar buttons.
+    constexpr int kLowPriorityFlexOrder = 2;
+    if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+      extensions_container_ =
+          AddChildView(std::make_unique<ExtensionsToolbarContainer>(
+              browser_view_->browser(),
+              ExtensionsToolbarContainer::DisplayMode::kCompact));
+      extensions_container_->SetProperty(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(
+              extensions_container_->animating_layout_manager()
+                  ->GetDefaultFlexRule())
+              .WithOrder(kLowPriorityFlexOrder));
+      views::SetHitTestComponent(extensions_container_,
+                                 static_cast<int>(HTCLIENT));
+    } else {
+      browser_actions_container_ =
+          AddChildView(std::make_unique<BrowserActionsContainer>(
+              browser_view_->browser(), nullptr, this,
+              false /* interactive */));
+      browser_actions_container_->SetProperty(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(browser_actions_container_->GetFlexRule())
+              .WithOrder(kLowPriorityFlexOrder));
+      views::SetHitTestComponent(browser_actions_container_,
+                                 static_cast<int>(HTCLIENT));
+    }
   }
 
   if (app_controller->HasTitlebarMenuButton()) {

@@ -82,6 +82,7 @@ class PLATFORM_EXPORT Path {
   bool Contains(const FloatPoint&) const;
   bool Contains(const FloatPoint&, WindRule) const;
   bool StrokeContains(const FloatPoint&, const StrokeData&) const;
+  SkPath StrokePath(const StrokeData&) const;
 
   FloatRect BoundingRect() const;
   FloatRect StrokeBoundingRect(const StrokeData&) const;
@@ -192,7 +193,6 @@ class PLATFORM_EXPORT Path {
                   float radius_y,
                   float start_angle,
                   float end_angle);
-  SkPath StrokePath(const StrokeData&) const;
 
   SkPath path_;
 };

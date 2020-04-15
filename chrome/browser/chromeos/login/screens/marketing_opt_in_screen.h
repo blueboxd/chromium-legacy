@@ -48,6 +48,8 @@ class MarketingOptInScreen : public BaseScreen {
   // On "Get Started" button pressed.
   void OnGetStarted(bool chromebook_email_opt_in);
 
+  void SetA11yButtonVisibilityForTest(bool shown);
+
   void set_exit_callback_for_testing(
       const base::RepeatingClosure& exit_callback) {
     exit_callback_ = exit_callback;

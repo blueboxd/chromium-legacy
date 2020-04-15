@@ -12,6 +12,10 @@ class Browser;
 class Profile;
 class TabGroupModel;
 
+namespace ui {
+class OSExchangeData;
+}
+
 namespace tab_strip_ui {
 
 base::Optional<tab_groups::TabGroupId> GetTabGroupIdFromString(
@@ -26,6 +30,15 @@ void MoveTabAcrossWindows(
     Browser* target_browser,
     int to_index,
     base::Optional<tab_groups::TabGroupId> to_group_id = base::nullopt);
+
+// Handles dropping tabs not destined for an existing tab strip.
+// |new_browser| should be the newly created Browser with no tabs, and
+// must have the same profile as the drag source. |drop_data| must have
+// originated from a drag in a WebUI tab strip. If successful, the tabs
+// reflected in |drop_data| will be moved from the source browser to
+// |new_browser|.
+bool DropTabsInNewBrowser(Browser* new_browser,
+                          const ui::OSExchangeData& drop_data);
 
 }  // namespace tab_strip_ui
 

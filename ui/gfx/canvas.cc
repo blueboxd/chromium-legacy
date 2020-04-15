@@ -98,34 +98,6 @@ int Canvas::DefaultCanvasTextAlignment() {
   return base::i18n::IsRTL() ? TEXT_ALIGN_RIGHT : TEXT_ALIGN_LEFT;
 }
 
-void Canvas::DrawDashedRect(const RectF& inrect, SkColor color) {
-  if (inrect.IsEmpty())
-    return;
-  RectF rect = inrect;
-
-  cc::PaintFlags flags;
-  flags.setColor(color);
-  SkScalar intervals[] = {1.f, 1.f};
-  flags.setStrokeWidth(1.f);
-  flags.setStyle(cc::PaintFlags::kStroke_Style);
-  rect.Inset(gfx::InsetsF(0.5f));
-
-  flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
-
-  // Top-left to top-right.
-  canvas_->drawLine(rect.x() - 0.5f, rect.y(), rect.right() + 0.5f, rect.y(),
-                    flags);
-  // Top-left to bottom-left.
-  canvas_->drawLine(rect.right() + 0.5f, rect.bottom(), rect.x() - 0.5f,
-                    rect.bottom(), flags);
-  // Bottom-right to bottom-left.
-  canvas_->drawLine(rect.x(), rect.y() - 0.5f, rect.x(), rect.bottom() + 0.5f,
-                    flags);
-  // Bottom-right to top-right.
-  canvas_->drawLine(rect.right(), rect.bottom() + 0.5f, rect.right(),
-                    rect.y() - 0.5f, flags);
-}
-
 float Canvas::UndoDeviceScaleFactor() {
   SkScalar scale_factor = 1.0f / image_scale_;
   canvas_->scale(scale_factor, scale_factor);
@@ -307,14 +279,6 @@ void Canvas::DrawRoundRect(const RectF& rect,
 
 void Canvas::DrawPath(const SkPath& path, const cc::PaintFlags& flags) {
   canvas_->drawPath(path, flags);
-}
-
-void Canvas::DrawFocusRect(const Rect& rect) {
-  DrawFocusRect(RectF(rect));
-}
-
-void Canvas::DrawFocusRect(const RectF& rect) {
-  DrawDashedRect(rect, SK_ColorGRAY);
 }
 
 void Canvas::DrawSolidFocusRect(RectF rect, SkColor color, int thickness) {

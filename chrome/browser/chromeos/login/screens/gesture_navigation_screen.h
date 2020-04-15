@@ -37,6 +37,9 @@ class GestureNavigationScreen : public BaseScreen {
     return exit_callback_;
   }
 
+  // Returns whether the gesture screen was shown.
+  bool was_shown() const { return was_shown_; }
+
   // Called when the currently shown page is changed.
   void GesturePageChange(const std::string& new_page);
 
@@ -65,6 +68,9 @@ class GestureNavigationScreen : public BaseScreen {
 
   // The starting time for the most recently shown page.
   base::TimeTicks start_time_;
+
+  // Whether the gesture screen was shown.
+  bool was_shown_ = false;
 };
 
 }  // namespace chromeos

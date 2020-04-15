@@ -33,12 +33,15 @@ class GaiaIdHash {
 
   bool IsValid() const;
 
+  friend bool operator<(const GaiaIdHash& lhs, const GaiaIdHash& rhs);
   friend bool operator==(const GaiaIdHash& lhs, const GaiaIdHash& rhs);
   friend bool operator!=(const GaiaIdHash& lhs, const GaiaIdHash& rhs);
+  GaiaIdHash& operator=(const GaiaIdHash& form);
+  GaiaIdHash& operator=(GaiaIdHash&& form);
 
  private:
   explicit GaiaIdHash(const std::string& gaia_id_hash);
-  const std::string gaia_id_hash_;
+  std::string gaia_id_hash_;
 };
 
 }  // namespace autofill

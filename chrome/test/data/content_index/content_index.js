@@ -22,7 +22,7 @@ async function AddContent(id) {
     icons: [{
       src: '/anchor_download_test.png',
     }],
-    launchUrl: '/content_index/content_index.html?launch',
+    url: '/content_index/content_index.html?launch',
   });
 }
 

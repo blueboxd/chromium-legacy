@@ -101,7 +101,7 @@ class EventSender {
 
     SavedEventType type;
     blink::WebMouseEvent::Button button_type;  // For MouseUp.
-    gfx::Point pos;                            // For MouseMove.
+    gfx::PointF pos;                           // For MouseMove.
     int milliseconds;                          // For LeapForward.
     int modifiers;
   };
@@ -149,19 +149,19 @@ class EventSender {
 
   void AddTouchPoint(float x, float y, gin::Arguments* args);
 
-  void GestureScrollBegin(gin::Arguments* args);
-  void GestureScrollEnd(gin::Arguments* args);
-  void GestureScrollUpdate(gin::Arguments* args);
-  void GestureTap(gin::Arguments* args);
-  void GestureTapDown(gin::Arguments* args);
-  void GestureShowPress(gin::Arguments* args);
-  void GestureTapCancel(gin::Arguments* args);
-  void GestureLongPress(gin::Arguments* args);
-  void GestureLongTap(gin::Arguments* args);
-  void GestureTwoFingerTap(gin::Arguments* args);
+  void GestureScrollBegin(blink::WebLocalFrame* frame, gin::Arguments* args);
+  void GestureScrollEnd(blink::WebLocalFrame* frame, gin::Arguments* args);
+  void GestureScrollUpdate(blink::WebLocalFrame* frame, gin::Arguments* args);
+  void GestureTap(blink::WebLocalFrame* frame, gin::Arguments* args);
+  void GestureTapDown(blink::WebLocalFrame* frame, gin::Arguments* args);
+  void GestureShowPress(blink::WebLocalFrame* frame, gin::Arguments* args);
+  void GestureTapCancel(blink::WebLocalFrame* frame, gin::Arguments* args);
+  void GestureLongPress(blink::WebLocalFrame* frame, gin::Arguments* args);
+  void GestureLongTap(blink::WebLocalFrame* frame, gin::Arguments* args);
+  void GestureTwoFingerTap(blink::WebLocalFrame* frame, gin::Arguments* args);
 
   void MouseScrollBy(gin::Arguments* args, MouseScrollType scroll_type);
-  void MouseMoveTo(gin::Arguments* args);
+  void MouseMoveTo(blink::WebLocalFrame* frame, gin::Arguments* args);
   void MouseLeave(blink::WebPointerProperties::PointerType, int pointerId);
   void ScheduleAsynchronousClick(int button_number, int modifiers);
   void ScheduleAsynchronousKeyDown(const std::string& code_str,
@@ -178,7 +178,9 @@ class EventSender {
   uint32_t GetUniqueTouchEventId(gin::Arguments* args);
   void SendCurrentTouchEvent(blink::WebInputEvent::Type, gin::Arguments* args);
 
-  void GestureEvent(blink::WebInputEvent::Type, gin::Arguments*);
+  void GestureEvent(blink::WebInputEvent::Type,
+                    blink::WebLocalFrame* frame,
+                    gin::Arguments* args);
 
   void UpdateClickCountForButton(blink::WebMouseEvent::Button);
 
@@ -201,9 +203,6 @@ class EventSender {
 
   void SendGesturesForMouseWheelEvent(
       const blink::WebMouseWheelEvent wheel_event);
-
-  std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
-      const blink::WebInputEvent& event);
 
   void UpdateLifecycleToPrePaint();
 
@@ -260,7 +259,7 @@ class EventSender {
   const blink::WebView* view() const;
   blink::WebView* view();
   blink::WebWidget* widget();
-  blink::WebFrameWidget* mainFrameWidget();
+  blink::WebFrameWidget* MainFrameWidget();
 
   bool force_layout_on_events_;
 
@@ -289,7 +288,7 @@ class EventSender {
     int current_buttons_;
 
     // Location of last mouseMoveTo event of this pointer.
-    gfx::Point last_pos_;
+    gfx::PointF last_pos_;
 
     int modifiers_;
 
@@ -309,7 +308,7 @@ class EventSender {
 
   // Time and place of the last mouse up event.
   base::TimeTicks last_click_time_;
-  gfx::Point last_click_pos_;
+  gfx::PointF last_click_pos_;
 
   // The last button number passed to mouseDown and mouseUp.
   // Used to determine whether the click count continues to increment or not.

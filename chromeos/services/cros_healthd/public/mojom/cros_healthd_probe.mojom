@@ -38,6 +38,8 @@ enum ErrorType {
   kFileReadError,
   // An error parsing data into a consumable form.
   kParseError,
+  // An error using a system utility.
+  kSystemUtilityError,
 };
 
 // Structure that contains error information for a telemetry probe.
@@ -131,12 +133,30 @@ struct CpuInfo {
   uint32 max_clock_speed_khz;
 };
 
+// Timezone probe result. Can either be populated with the TimezoneInfo or an
+// error retrieving the information.
+union TimezoneResult {
+  // Valid TimezoneInfo.
+  TimezoneInfo timezone_info;
+  // The error that occurred attempting to retrieve the TimezoneInfo.
+  ProbeError error;
+};
+
 // Timezone information.
 struct TimezoneInfo {
   // The timezone of the device in POSIX standard.
   string posix;
   // The timezone region of the device.
   string region;
+};
+
+// Memory probe result. Can either be populated with the MemoryInfo or an
+// error retrieving the information.
+union MemoryResult {
+  // Valid MemoryInfo.
+  MemoryInfo memory_info;
+  // The error that occurred attempting to retrieve the MemoryInfo.
+  ProbeError error;
 };
 
 // Memory information.
@@ -160,6 +180,15 @@ struct BacklightInfo {
   uint32 max_brightness;
   // Current brightness of the backlight, between 0 and max_brightness.
   uint32 brightness;
+};
+
+// Fan probe result. Can either be populated with the FanInfo or an error
+// retrieving the information
+union FanResult {
+  // A list of valid FanInfo.
+  array<FanInfo> fan_info;
+  // The error that occurred attempting to retrieve the FanInfo.
+  ProbeError error;
 };
 
 // Fan information.
@@ -191,14 +220,14 @@ struct TelemetryInfo {
   CpuResult? cpu_result;
   // Information about the device's timezone. Only present when kTimezone was
   // included in the categories input to ProbeTelemetryInfo.
-  TimezoneInfo? timezone_info;
+  TimezoneResult? timezone_result;
   // Information about the system's memory. Only present when kMemory was
   // included in the categories input to ProbeTelemetryInfo.
-  MemoryInfo? memory_info;
+  MemoryResult? memory_result;
   // Information about all of the device's backlights. Only present when
   // kBacklight was included in the categories input to ProbeTelemetryInfo.
   array<BacklightInfo>? backlight_info;
   // Information about each of the device's fans. Only present when kFan was
   // included in the categories input to ProbeTelemetryInfo.
-  array<FanInfo>? fan_info;
+  FanResult? fan_result;
 };

@@ -76,6 +76,12 @@ bool ParseStringValue(const std::string& property_type,
   schema_org::property::PropertyConfiguration prop_config =
       schema_org::property::GetPropertyConfiguration(property_type);
   if (prop_config.number) {
+    int64_t l;
+    bool parsed_long = base::StringToInt64(value, &l);
+    if (parsed_long) {
+      values->long_values.push_back(l);
+      return true;
+    }
     double d;
     bool parsed_double = base::StringToDouble(value, &d);
     if (parsed_double) {

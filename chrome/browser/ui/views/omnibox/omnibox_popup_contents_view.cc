@@ -301,13 +301,16 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     }
   } else {
     base::Optional<int> previous_row_group_id = base::nullopt;
+    PrefService* pref_service = nullptr;
+    if (location_bar_view_->profile())
+      pref_service = location_bar_view_->profile()->GetPrefs();
     for (size_t i = 0; i < result_size; ++i) {
       // Create child views lazily.  Since especially the first result view may
       // be expensive to create due to loading font data, this saves time and
       // memory during browser startup. https://crbug.com/1021323
       if (children().size() == i) {
         AddChildView(std::make_unique<OmniboxRowView>(
-            std::make_unique<OmniboxResultView>(this, i)));
+            std::make_unique<OmniboxResultView>(this, i), pref_service));
       }
 
       OmniboxRowView* const row_view =

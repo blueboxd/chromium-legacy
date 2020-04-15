@@ -7,7 +7,9 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/vector_icons.h"
+#include "components/prefs/pref_service.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/button.h"
@@ -20,7 +22,7 @@
 class OmniboxRowView::HeaderView : public views::View,
                                    public views::ButtonListener {
  public:
-  HeaderView() {
+  explicit HeaderView(PrefService* pref_service) : pref_service_(pref_service) {
     views::BoxLayout* layout =
         SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal));
@@ -37,6 +39,11 @@ class OmniboxRowView::HeaderView : public views::View,
   void SetHeader(int suggestion_group_id, const base::string16& header_text) {
     suggestion_group_id_ = suggestion_group_id;
     header_text_->SetText(header_text);
+
+    if (pref_service_) {
+      hide_button_->SetToggled(omnibox::IsSuggestionGroupIdHidden(
+          pref_service_, suggestion_group_id_));
+    }
   }
 
   // views::View:
@@ -59,7 +66,13 @@ class OmniboxRowView::HeaderView : public views::View,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK_EQ(sender, hide_button_);
 
-    // TODO(tommycli): Implement toggling the pref here.
+    if (!pref_service_)
+      return;
+
+    omnibox::ToggleSuggestionGroupIdVisibility(pref_service_,
+                                               suggestion_group_id_);
+    hide_button_->SetToggled(omnibox::IsSuggestionGroupIdHidden(
+        pref_service_, suggestion_group_id_));
   }
 
  private:
@@ -89,6 +102,10 @@ class OmniboxRowView::HeaderView : public views::View,
     SetBackground(OmniboxResultView::GetPopupCellBackground(this, part_state));
   }
 
+  // Non-owning pointer to the preference service used for toggling headers.
+  // May be nullptr in tests.
+  PrefService* const pref_service_;
+
   // The Label containing the header text. This is never nullptr.
   views::Label* header_text_;
 
@@ -99,8 +116,11 @@ class OmniboxRowView::HeaderView : public views::View,
   int suggestion_group_id_ = 0;
 };
 
-OmniboxRowView::OmniboxRowView(std::unique_ptr<OmniboxResultView> result_view) {
+OmniboxRowView::OmniboxRowView(std::unique_ptr<OmniboxResultView> result_view,
+                               PrefService* pref_service)
+    : pref_service_(pref_service) {
   DCHECK(result_view);
+  DCHECK(pref_service);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
@@ -111,8 +131,10 @@ OmniboxRowView::OmniboxRowView(std::unique_ptr<OmniboxResultView> result_view) {
 void OmniboxRowView::ShowHeader(int suggestion_group_id,
                                 const base::string16& header_text) {
   // Create the header (at index 0) if it doesn't exist.
-  if (header_view_ == nullptr)
-    header_view_ = AddChildViewAt(std::make_unique<HeaderView>(), 0);
+  if (header_view_ == nullptr) {
+    header_view_ =
+        AddChildViewAt(std::make_unique<HeaderView>(pref_service_), 0);
+  }
 
   header_view_->SetHeader(suggestion_group_id, header_text);
   header_view_->SetVisible(true);

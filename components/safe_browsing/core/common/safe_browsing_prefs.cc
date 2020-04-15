@@ -146,12 +146,14 @@ SafeBrowsingState GetSafeBrowsingState(const PrefService& prefs) {
 }
 
 bool IsSafeBrowsingEnabled(const PrefService& prefs) {
-  return prefs.GetBoolean(prefs::kSafeBrowsingEnabled) ||
-         IsEnhancedProtectionEnabled(prefs);
+  return prefs.GetBoolean(prefs::kSafeBrowsingEnabled);
 }
 
 bool IsEnhancedProtectionEnabled(const PrefService& prefs) {
+  // SafeBrowsingEnabled is checked too due to devices being out
+  // of sync or not on a version that includes SafeBrowsingEnhanced pref.
   return prefs.GetBoolean(prefs::kSafeBrowsingEnhanced) &&
+         IsSafeBrowsingEnabled(prefs) &&
          base::FeatureList::IsEnabled(kEnhancedProtection);
 }
 
@@ -251,6 +253,9 @@ void SetExtendedReportingPref(PrefService* prefs, bool value) {
 }
 
 void SetEnhancedProtectionPref(PrefService* prefs, bool value) {
+  // SafeBrowsingEnabled pref needs to be turned on in order for enhanced
+  // protection pref to be turned on. This method is only used for tests.
+  prefs->SetBoolean(prefs::kSafeBrowsingEnabled, value);
   prefs->SetBoolean(prefs::kSafeBrowsingEnhanced, value);
 }
 

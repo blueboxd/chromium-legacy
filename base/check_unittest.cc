@@ -87,9 +87,10 @@ TEST_F(CheckTest, Basics) {
   EXPECT_CHECK("Check failed: false. foo", CHECK(false) << "foo");
 
   double a = 2, b = 1;
-  EXPECT_CHECK("Check failed: a < b (2 vs. 1)", CHECK_LT(a, b));
+  EXPECT_CHECK("Check failed: a < b (2.000000 vs. 1.000000)", CHECK_LT(a, b));
 
-  EXPECT_CHECK("Check failed: a < b (2 vs. 1)foo", CHECK_LT(a, b) << "foo");
+  EXPECT_CHECK("Check failed: a < b (2.000000 vs. 1.000000)foo",
+               CHECK_LT(a, b) << "foo");
 }
 
 TEST_F(CheckTest, PCheck) {

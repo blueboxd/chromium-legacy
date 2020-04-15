@@ -19,7 +19,7 @@ declare_args() {
   system_webview_package_name = "com.android.webview"
 
   # Whether to enable standalone and trichrome WebView bundle build targets.
-  enable_webview_bundles = false
+  enable_webview_bundles = true
 }
 
 template("system_webview_apk_or_module_tmpl") {

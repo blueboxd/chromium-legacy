@@ -7,11 +7,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/test/mock_callback.h"
 #include "sql/database.h"
 #include "sql/statement.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::Return;
 using ::testing::UnorderedElementsAre;
 
 namespace password_manager {
@@ -308,6 +310,28 @@ TEST_F(SQLTableBuilderTest, MigrateFrom_AddPrimaryKey) {
   EXPECT_TRUE(
       db()->GetSchema().find("pk_1 INTEGER PRIMARY KEY AUTOINCREMENT") !=
       std::string::npos);
+}
+
+TEST_F(SQLTableBuilderTest, MigrateFromWithSuccessfulCallback) {
+  EXPECT_EQ(0u, builder()->SealVersion());
+  EXPECT_EQ(1u, builder()->SealVersion());
+
+  base::MockCallback<base::RepeatingCallback<bool(sql::Database*, unsigned)>>
+      migation_callback;
+
+  EXPECT_CALL(migation_callback, Run(db(), 1u)).WillOnce(Return(true));
+  EXPECT_TRUE(builder()->MigrateFrom(0, db(), migation_callback.Get()));
+}
+
+TEST_F(SQLTableBuilderTest, MigrateFromWithUnsuccessfulCallback) {
+  EXPECT_EQ(0u, builder()->SealVersion());
+  EXPECT_EQ(1u, builder()->SealVersion());
+
+  base::MockCallback<base::RepeatingCallback<bool(sql::Database*, unsigned)>>
+      migation_callback;
+
+  EXPECT_CALL(migation_callback, Run(db(), 1u)).WillOnce(Return(false));
+  EXPECT_FALSE(builder()->MigrateFrom(0, db(), migation_callback.Get()));
 }
 
 }  // namespace password_manager

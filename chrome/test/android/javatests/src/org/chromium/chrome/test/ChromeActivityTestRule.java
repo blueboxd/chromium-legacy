@@ -7,7 +7,6 @@ package org.chromium.chrome.test;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -40,8 +39,6 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
-import org.chromium.chrome.browser.settings.SettingsActivity;
-import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -598,22 +595,6 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
                 return InfoBarContainer.get(currentTab).getInfoBarsForTesting();
             }
         });
-    }
-
-    /**
-     * Launches the settings activity with the specified fragment.
-     * Returns the activity that was started.
-     *
-     * TODO(chouinard): This seems like mostly a duplicate of {@link
-     * SettingsActivityTest#startSettingsActivity}, try to consolidate to one.
-     */
-    public SettingsActivity startSettingsActivity(String fragmentName) {
-        Context context = InstrumentationRegistry.getTargetContext();
-        Intent intent =
-                SettingsLauncher.getInstance().createIntentForSettingsPage(context, fragmentName);
-        Activity activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
-        Assert.assertTrue(activity instanceof SettingsActivity);
-        return (SettingsActivity) activity;
     }
 
     /**

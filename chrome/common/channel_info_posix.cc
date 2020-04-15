@@ -70,6 +70,13 @@ std::string GetChannelSuffixForDataDir() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 std::string GetDesktopName(base::Environment* env) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Google Chrome packaged as a snap is a special case: the application name
+  // is always "google-chrome", regardless of the channel (channels are built
+  // in to snapd, switching between them or doing parallel installs does not
+  // require distinct application names).
+  std::string snap_name;
+  if (env->GetVar("SNAP_NAME", &snap_name) && snap_name == "google-chrome")
+    return "google-chrome.desktop";
   version_info::Channel product_channel(GetChannel());
   switch (product_channel) {
     case version_info::Channel::DEV:

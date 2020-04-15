@@ -52,12 +52,13 @@
 #include "url/origin.h"
 #include "url/url_constants.h"
 
+using autofill::GaiaIdHash;
 using autofill::PasswordForm;
 
 namespace password_manager {
 
 // The current version number of the login database schema.
-const int kCurrentVersionNumber = 26;
+const int kCurrentVersionNumber = 27;
 // The oldest version of the schema such that a legacy Chrome client using that
 // version can still read/write the current database.
 const int kCompatibleVersionNumber = 19;
@@ -85,6 +86,23 @@ autofill::ValueElementVector DeserializeValueElementPairs(
     ret.push_back(autofill::ValueElementPair(value, field_name));
   }
   return ret;
+}
+
+base::Pickle SerializeGaiaIdHashVector(const std::vector<GaiaIdHash>& hashes) {
+  base::Pickle p;
+  for (const auto& hash : hashes)
+    p.WriteString(hash.ToBinary());
+  return p;
+}
+
+std::vector<GaiaIdHash> DeserializeGaiaIdHashVector(const base::Pickle& p) {
+  std::vector<GaiaIdHash> hashes;
+  std::string hash;
+
+  base::PickleIterator iterator(p);
+  while (iterator.ReadString(&hash))
+    hashes.push_back(GaiaIdHash::FromBinary(hash));
+  return hashes;
 }
 
 namespace {
@@ -131,6 +149,7 @@ enum LoginDatabaseTableColumns {
   COLUMN_POSSIBLE_USERNAME_PAIRS,
   COLUMN_ID,
   COLUMN_DATE_LAST_USED,
+  COLUMN_MOVING_BLOCKED_FOR,
   COLUMN_NUM  // Keep this last.
 };
 
@@ -198,6 +217,10 @@ void BindAddStatement(const PasswordForm& form, sql::Statement* s) {
               usernames_pickle.size());
   s->BindInt64(COLUMN_DATE_LAST_USED,
                form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  base::Pickle moving_blocked_for_pickle =
+      SerializeGaiaIdHashVector(form.moving_blocked_for_list);
+  s->BindBlob(COLUMN_MOVING_BLOCKED_FOR, moving_blocked_for_pickle.data(),
+              moving_blocked_for_pickle.size());
 }
 
 // Output parameter is the first one because of binding order.
@@ -387,9 +410,61 @@ void InitializeBuilders(SQLTableBuilders builders) {
   // Version 26 is the first version where the id is AUTOINCREMENT.
   SealVersion(builders, /*expected_version=*/26u);
 
+  // Version 27. Add the moving_blocked_for column to contain serialized list of
+  // gaia id hashes for users that prefer not to move this credential to their
+  // account store.
+  builders.logins->AddColumn("moving_blocked_for", "BLOB");
+  SealVersion(builders, /*expected_version=*/27u);
+
   DCHECK_EQ(static_cast<size_t>(COLUMN_NUM), builders.logins->NumberOfColumns())
       << "Adjust LoginDatabaseTableColumns if you change column definitions "
          "here.";
+}
+
+// Callback called upon each migration step of the logins table. It's used to
+// inject custom schema migration logic not covered by the generic
+// SQLTableBuilder migration. |new_version| indicates how far
+// SQLTableBuilder is in the migration process.
+bool LoginsTablePostMigrationStepCallback(sql::Database* db,
+                                          unsigned new_version) {
+  // In version 26, the primary key of the logins table became an
+  // AUTOINCREMENT field. Since SQLite doesn't allow changing the column type,
+  // the only way is to actually create a temp table with the primary key
+  // properly set as an AUTOINCREMENT field, and move the data there. The code
+  // has been adjusted such that newly created tables have the primary key
+  // properly set as AUTOINCREMENT.
+  if (new_version == 26) {
+    // This statement creates the logins database similar to version 26 with
+    // the primary key column set to AUTOINCREMENT.
+    const char temp_table_create_statement_version_26[] =
+        "CREATE TABLE logins_temp (origin_url VARCHAR NOT NULL,action_url "
+        "VARCHAR,username_element VARCHAR,username_value "
+        "VARCHAR,password_element VARCHAR,password_value BLOB,submit_element "
+        "VARCHAR,signon_realm VARCHAR NOT NULL,preferred INTEGER NOT "
+        "NULL,date_created INTEGER NOT NULL,blacklisted_by_user INTEGER NOT "
+        "NULL,scheme INTEGER NOT NULL,password_type INTEGER,times_used "
+        "INTEGER,form_data BLOB,date_synced INTEGER,display_name "
+        "VARCHAR,icon_url VARCHAR,federation_url VARCHAR,skip_zero_click "
+        "INTEGER,generation_upload_status INTEGER,possible_username_pairs "
+        "BLOB,id INTEGER PRIMARY KEY AUTOINCREMENT,date_last_used "
+        "INTEGER,UNIQUE (origin_url, username_element, username_value, "
+        "password_element, signon_realm))";
+    const char move_data_statement[] =
+        "INSERT INTO logins_temp SELECT * from logins";
+    const char drop_table_statement[] = "DROP TABLE logins";
+    const char rename_table_statement[] =
+        "ALTER TABLE logins_temp RENAME TO logins";
+
+    sql::Transaction transaction(db);
+    if (!(transaction.Begin() &&
+          db->Execute(temp_table_create_statement_version_26) &&
+          db->Execute(move_data_statement) &&
+          db->Execute(drop_table_statement) &&
+          db->Execute(rename_table_statement) && transaction.Commit())) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Call this after having called InitializeBuilders(), to migrate the database
@@ -397,7 +472,9 @@ void InitializeBuilders(SQLTableBuilders builders) {
 bool MigrateLogins(unsigned current_version,
                    SQLTableBuilders builders,
                    sql::Database* db) {
-  if (!builders.logins->MigrateFrom(current_version, db))
+  if (!builders.logins->MigrateFrom(
+          current_version, db,
+          base::BindRepeating(&LoginsTablePostMigrationStepCallback)))
     return false;
 
   if (!builders.sync_entities_metadata->MigrateFrom(current_version, db))
@@ -451,45 +528,6 @@ bool MigrateLogins(unsigned current_version,
     preferred_stmt.BindInt64(0, base::TimeDelta::FromDays(1).InMicroseconds());
     if (!preferred_stmt.Run())
       return false;
-  }
-
-  // In version 26, the primary key of the logins table became an AUTOINCREMENT
-  // field. Since SQLite doesn't allow changing the column type, the only way is
-  // to actually create a temp table with the primary key propely set as an
-  // AUTOINCREMENT field, and move the data there. The code has been adjusted
-  // such that newly created tables have the primary key properly set as
-  // AUTOINCREMENT.
-  if (current_version < 26) {
-    // This statement creates the logins database similar to version 26 with the
-    // primary key column set to AUTOINCREMENT.
-    std::string temp_table_create_statement_version_26 =
-        "CREATE TABLE logins_temp (origin_url VARCHAR NOT NULL,action_url "
-        "VARCHAR,username_element VARCHAR,username_value "
-        "VARCHAR,password_element VARCHAR,password_value BLOB,submit_element "
-        "VARCHAR,signon_realm VARCHAR NOT NULL,preferred INTEGER NOT "
-        "NULL,date_created INTEGER NOT NULL,blacklisted_by_user INTEGER NOT "
-        "NULL,scheme INTEGER NOT NULL,password_type INTEGER,times_used "
-        "INTEGER,form_data BLOB,date_synced INTEGER,display_name "
-        "VARCHAR,icon_url VARCHAR,federation_url VARCHAR,skip_zero_click "
-        "INTEGER,generation_upload_status INTEGER,possible_username_pairs "
-        "BLOB,id INTEGER PRIMARY KEY AUTOINCREMENT,date_last_used "
-        "INTEGER,UNIQUE (origin_url, username_element, username_value, "
-        "password_element, signon_realm))";
-    std::string move_data_statement =
-        "INSERT INTO logins_temp SELECT * from logins";
-    std::string drop_table_statement = "DROP TABLE logins";
-    std::string rename_table_statement =
-        "ALTER TABLE logins_temp RENAME TO logins";
-
-    sql::Transaction transaction(db);
-    if (!(transaction.Begin() &&
-          db->Execute(temp_table_create_statement_version_26.c_str()) &&
-          db->Execute(move_data_statement.c_str()) &&
-          db->Execute(drop_table_statement.c_str()) &&
-          db->Execute(rename_table_statement.c_str()) &&
-          transaction.Commit())) {
-      return false;
-    }
   }
 
   return true;
@@ -1115,6 +1153,10 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
   s.BindBlob(next_param++, username_pickle.data(), username_pickle.size());
   s.BindInt64(next_param++,
               form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  base::Pickle moving_blocked_for_pickle =
+      SerializeGaiaIdHashVector(form.moving_blocked_for_list);
+  s.BindBlob(next_param++, moving_blocked_for_pickle.data(),
+             moving_blocked_for_pickle.size());
   // NOTE: Add new fields here unless the field is a part of the unique key.
   // If so, add new field below.
 
@@ -1350,6 +1392,13 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
           generation_upload_status_int);
   form->date_last_used = base::Time::FromDeltaSinceWindowsEpoch(
       base::TimeDelta::FromMicroseconds(s.ColumnInt64(COLUMN_DATE_LAST_USED)));
+  if (s.ColumnByteLength(COLUMN_MOVING_BLOCKED_FOR)) {
+    base::Pickle pickle(
+        static_cast<const char*>(s.ColumnBlob(COLUMN_MOVING_BLOCKED_FOR)),
+        s.ColumnByteLength(COLUMN_MOVING_BLOCKED_FOR));
+    form->moving_blocked_for_list = DeserializeGaiaIdHashVector(pickle);
+  }
+
   DCHECK(autofill::mojom::IsKnownEnumValue(form->generation_upload_status));
   return ENCRYPTION_RESULT_SUCCESS;
 }

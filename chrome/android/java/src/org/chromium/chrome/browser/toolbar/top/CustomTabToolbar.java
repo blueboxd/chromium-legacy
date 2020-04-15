@@ -8,7 +8,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -56,6 +55,7 @@ import org.chromium.chrome.browser.omnibox.UrlBarCoordinator;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
+import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -68,6 +68,7 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.GURLUtils;
 import org.chromium.ui.base.Clipboard;
@@ -594,13 +595,16 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         public void onNativeLibraryReady() {
             mSecurityButton.setOnClickListener(v -> {
                 Tab currentTab = getToolbarDataProvider().getTab();
-                if (currentTab == null || currentTab.getWebContents() == null) return;
-                Activity activity = currentTab.getWindowAndroid().getActivity().get();
+                WebContents webContents = currentTab.getWebContents();
+                if (currentTab == null || webContents == null) return;
+                ChromeActivity activity =
+                        (ChromeActivity) currentTab.getWindowAndroid().getActivity().get();
                 if (activity == null) return;
-                PageInfoController.show((ChromeActivity) activity, currentTab.getWebContents(),
-                        getContentPublisher(), PageInfoController.OpenedFromSource.TOOLBAR,
+                PageInfoController.show(activity, webContents, getContentPublisher(),
+                        PageInfoController.OpenedFromSource.TOOLBAR,
                         /*offlinePageLoadUrlDelegate=*/
-                        new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab));
+                        new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab),
+                        new ChromePageInfoControllerDelegate(activity, webContents));
             });
         }
 

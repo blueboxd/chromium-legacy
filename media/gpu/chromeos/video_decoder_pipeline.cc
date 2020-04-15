@@ -319,7 +319,7 @@ void VideoDecoderPipeline::ResetTask(base::OnceClosure closure) {
   DCHECK(!client_reset_cb_);
   DVLOGF(3);
 
-  need_notify_decoder_flushed_ = false;
+  need_apply_new_resolution = false;
   client_reset_cb_ = std::move(closure);
   decoder_->Reset(
       base::BindOnce(&VideoDecoderPipeline::OnResetDone, decoder_weak_this_));
@@ -431,7 +431,7 @@ void VideoDecoderPipeline::OnFrameConverted(scoped_refptr<VideoFrame> frame) {
 
   // After outputting a frame, flush might be completed.
   CallFlushCbIfNeeded(DecodeStatus::OK);
-  CallOnPipelineFlushedIfNeeded();
+  CallApplyResolutionChangeIfNeeded();
 }
 
 bool VideoDecoderPipeline::HasPendingFrames() const {
@@ -468,19 +468,19 @@ void VideoDecoderPipeline::CallFlushCbIfNeeded(DecodeStatus status) {
 void VideoDecoderPipeline::PrepareChangeResolution() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
-  DCHECK(!need_notify_decoder_flushed_);
+  DCHECK(!need_apply_new_resolution);
 
-  need_notify_decoder_flushed_ = true;
-  CallOnPipelineFlushedIfNeeded();
+  need_apply_new_resolution = true;
+  CallApplyResolutionChangeIfNeeded();
 }
 
-void VideoDecoderPipeline::CallOnPipelineFlushedIfNeeded() {
+void VideoDecoderPipeline::CallApplyResolutionChangeIfNeeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
-  if (need_notify_decoder_flushed_ && !HasPendingFrames()) {
-    need_notify_decoder_flushed_ = false;
-    decoder_->OnPipelineFlushed();
+  if (need_apply_new_resolution && !HasPendingFrames()) {
+    need_apply_new_resolution = false;
+    decoder_->ApplyResolutionChange();
   }
 }
 

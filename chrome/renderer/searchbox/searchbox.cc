@@ -482,6 +482,11 @@ void SearchBox::OpenAutocompleteMatch(uint8_t line,
       alt_key, ctrl_key, meta_key, shift_key);
 }
 
+void SearchBox::ToggleSuggestionGroupIdVisibility(int32_t suggestion_group_id) {
+  embedded_search_service_->ToggleSuggestionGroupIdVisibility(
+      suggestion_group_id);
+}
+
 void SearchBox::SetPageSequenceNumber(int page_seq_no) {
   page_seq_no_ = page_seq_no;
 }

@@ -38,7 +38,52 @@ may need to rebuild it yourself.
 
 ## Crash UI
 
-TODO(http://crbug.com/1058571): document this.
+Crash UI shows recent WebView-caused crashes from apps on the device, similar
+to `chrome://crashes`. You can access it by tapping the "Crashes" option in the
+bottom navigation bar.
+
+*** note
+**Note:**
+You have to opt in android crash collection in order for crash reports to show
+up in the UI. An error message will show up if you haven't opted-in. To opt-in,
+go to the device settings > Google > three-dotted menu > Usage & diagnostics
+and make sure it's enabled. For AOSP builds, you can enable crash collection
+by enabling the `enable-crash-reporter-for-testing` flag from the
+[Flags UI](#Flag-UI).
+***
+
+![WebView crashes UI](images/webview_crashes_ui.png)
+
+Tap a crash entry to expand it for more info and actions for that crash.
+
+*** note
+**Note:** Some types of crashes such as renderer crashes can show up instantly
+in the UI. However, most WebView crashes will require relaunching the
+application where the crash happened so it can be detected and appear in the
+UI.
+***
+
+### Force upload a crash report
+
+Crash reports are automatically reported to WebView's crash collection server.
+Sometimes a crash report may not be automatically uploaded. For instance, when
+the device is not connected to Wifi (will show in the crashes list with
+"pending upload" status). The crash report can also skip upload due to random
+sampling (will appear with "skipped" status). You can force upload that crash
+report by pressing the "Upload this crash report" button. After the crash
+report is uploaded you can then use the upload ID to open a bug report to
+provide more info about that crash.
+
+### Provide more info about a crash
+
+While the crash server has most of the information we need to solve issues, it
+is helpful if you can provide additional details in a bug report, such as steps
+to reproduce the crash. To do so press the "File bug report" button which will
+open [crbug.com](https://bugs.chromium.org/p/chromium/issues/entry?template=Webview+Bugs)
+in the browser. You can use the bug report template to provide additional info
+about the crash for the WebView engineering team. Make sure to fill all the
+relevant fields in the bug report and leave the crash upload ID in the bug
+description so that the WebView team can effectively investigate the crash.
 
 ## Flag UI
 

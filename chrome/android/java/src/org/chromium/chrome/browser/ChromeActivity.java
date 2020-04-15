@@ -110,6 +110,7 @@ import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuButtonState;
 import org.chromium.chrome.browser.omaha.notification.UpdateNotificationController;
 import org.chromium.chrome.browser.omaha.notification.UpdateNotificationControllerFactory;
+import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -1965,10 +1966,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 RecordUserAction.record("MobileMenuReload");
             }
         } else if (id == R.id.info_menu_id) {
-            PageInfoController.show(this, currentTab.getWebContents(), null,
+            WebContents webContents = currentTab.getWebContents();
+            PageInfoController.show(this, webContents, null,
                     PageInfoController.OpenedFromSource.MENU,
                     /*offlinePageLoadUrlDelegate=*/
-                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab));
+                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab),
+                    new ChromePageInfoControllerDelegate(this, webContents));
         } else if (id == R.id.translate_id) {
             RecordUserAction.record("MobileMenuTranslate");
             Tracker tracker = TrackerFactory.getTrackerForProfile(

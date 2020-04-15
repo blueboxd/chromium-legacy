@@ -181,7 +181,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpSpellCheckCallbacks();
   void DumpTitleChanges();
   void DumpUserGestureInFrameLoadCallbacks();
-  void EnableUseZoomForDSF(v8::Local<v8::Function> callback);
   void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
   void ExecCommand(gin::Arguments* args);
   void TriggerTestInspectorIssue(gin::Arguments* args);
@@ -454,8 +453,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::DumpUserGestureInFrameLoadCallbacks)
       .SetMethod("enableAutoResizeMode",
                  &TestRunnerBindings::EnableAutoResizeMode)
-      .SetMethod("enableUseZoomForDSF",
-                 &TestRunnerBindings::EnableUseZoomForDSF)
       .SetMethod("evaluateScriptInIsolatedWorld",
                  &TestRunnerBindings::EvaluateScriptInIsolatedWorld)
       .SetMethod(
@@ -1213,11 +1210,6 @@ void TestRunnerBindings::SetBackingScaleFactor(
   double limited_value = fmin(15, value);
   if (view_runner_)
     view_runner_->SetBackingScaleFactor(limited_value, callback);
-}
-
-void TestRunnerBindings::EnableUseZoomForDSF(v8::Local<v8::Function> callback) {
-  if (view_runner_)
-    view_runner_->EnableUseZoomForDSF(callback);
 }
 
 void TestRunnerBindings::SetColorProfile(const std::string& name,

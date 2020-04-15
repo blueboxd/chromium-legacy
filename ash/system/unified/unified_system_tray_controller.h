@@ -139,6 +139,7 @@ class ASH_EXPORT UnifiedSystemTrayController
   }
 
  private:
+  friend class SystemTrayTestApi;
   friend class UnifiedSystemTrayControllerTest;
   friend class UnifiedMessageCenterBubbleTest;
 

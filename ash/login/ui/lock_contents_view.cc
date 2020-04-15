@@ -38,8 +38,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/system/model/enterprise_domain_model.h"
-#include "ash/system/model/system_tray_model.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
@@ -60,7 +58,6 @@
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
-#include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -507,13 +504,6 @@ LockContentsView::LockContentsView(
       std::move(bottom_status_indicator_layout));
   AddChildView(bottom_status_indicator_);
 
-  std::string entreprise_domain_name = Shell::Get()
-                                           ->system_tray_model()
-                                           ->enterprise_domain()
-                                           ->enterprise_display_domain();
-  if (!entreprise_domain_name.empty())
-    ShowEntrepriseDomainName(entreprise_domain_name);
-
   note_action_ = new NoteActionLaunchButton(initial_note_action_state);
   top_header_->AddChildView(note_action_);
 
@@ -640,21 +630,6 @@ void LockContentsView::FocusPreviousUser() {
       return;
     }
   }
-}
-
-void LockContentsView::ShowEntrepriseDomainName(
-    const std::string& entreprise_domain_name) {
-  bottom_status_indicator_->SetIcon(
-      kLoginScreenEnterpriseIcon,
-      AshColorProvider::ContentLayerType::kIconPrimary);
-  bottom_status_indicator_->SetText(
-      l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_MANAGED_DEVICE_INDICATOR,
-                                 ui::GetChromeOSDeviceName(),
-                                 base::UTF8ToUTF16(entreprise_domain_name)),
-      gfx::kGoogleGrey200);
-  bottom_status_indicator_->set_content_type(
-      BottomStatusIndicator::ContentType::kManagedDevice);
-  UpdateBottomStatusIndicatorVisibility();
 }
 
 void LockContentsView::ShowAdbEnabled() {
@@ -2146,12 +2121,8 @@ bool LockContentsView::GetSystemInfoVisibility() const {
 }
 
 void LockContentsView::UpdateBottomStatusIndicatorVisibility() {
-  bool visible =
-      bottom_status_indicator_->content_type() ==
-          BottomStatusIndicator::ContentType::kAdbSideLoadingEnabled ||
-      (bottom_status_indicator_->content_type() ==
-           BottomStatusIndicator::ContentType::kManagedDevice &&
-       !extension_ui_visible_);
+  bool visible = bottom_status_indicator_->content_type() ==
+                 BottomStatusIndicator::ContentType::kAdbSideLoadingEnabled;
   bottom_status_indicator_->SetVisible(visible);
 }
 

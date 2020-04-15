@@ -1370,7 +1370,12 @@
   {
     "name": "enable-edu-coexistence",
     "owners": [ "anastasiian@chromium.org", "sinhak@chromium.org" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 85
+  },
+  {
+    "name": "enable-edu-coexistence-consent-log",
+    "owners": [ "anastasiian@chromium.org", "sinhak@chromium.org" ],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-encryption-migration",
@@ -3956,11 +3961,6 @@
     "name": "translate-force-trigger-on-english",
     "owners": [ "anthonyvd", "frechette", "chrome-language@google.com" ],
     "expiry_milestone": 78
-  },
-  {
-    "name": "translate-ui-bubble-options",
-    "owners": [ "anthonyvd", "chrome-language@google.com" ],
-    "expiry_milestone": 82
   },
   {
     "name": "treat-unsafe-downloads-as-active-content",

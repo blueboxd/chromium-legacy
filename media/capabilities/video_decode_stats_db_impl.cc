@@ -124,7 +124,7 @@ std::unique_ptr<VideoDecodeStatsDBImpl> VideoDecodeStatsDBImpl::Create(
   auto proto_db = db_provider->GetDB<DecodeStatsProto>(
       leveldb_proto::ProtoDbType::VIDEO_DECODE_STATS_DB, db_dir,
       base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
   return base::WrapUnique(new VideoDecodeStatsDBImpl(std::move(proto_db)));

@@ -1153,15 +1153,6 @@ const FeatureEntry::FeatureVariation kOmniboxMaxURLMatchesVariations[] = {
     {"6 matches", kOmniboxMaxURLMatches6, base::size(kOmniboxMaxURLMatches6),
      nullptr}};
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN) || \
-    defined(OS_CHROMEOS)
-const FeatureEntry::FeatureParam kTranslateBubbleUITab[] = {
-    {language::kTranslateUIBubbleKey, language::kTranslateUIBubbleTabValue}};
-
-const FeatureEntry::FeatureVariation kTranslateBubbleUIVariations[] = {
-    {"Tab", kTranslateBubbleUITab, base::size(kTranslateBubbleUITab), nullptr}};
-#endif  // OS_LINUX || OS_MACOSX || OS_WIN || OS_CHROMEOS
-
 const FeatureEntry::FeatureParam kMarkHttpAsDangerous[] = {
     {security_state::features::kMarkHttpAsFeatureParameterName,
      security_state::features::kMarkHttpAsParameterDangerous}};
@@ -2306,15 +2297,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kTranslateForceTriggerOnEnglishVariations,
                                     "OverrideTranslateTriggerInIndia")},
 #endif  // OS_ANDROID
-
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN) || \
-    defined(OS_CHROMEOS)
-    {"translate-ui-bubble-options", flag_descriptions::kTranslateBubbleUIName,
-     flag_descriptions::kTranslateBubbleUIDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(language::kUseButtonTranslateBubbleUi,
-                                    kTranslateBubbleUIVariations,
-                                    "UseButtonTranslateBubbleUI")},
-#endif  // OS_LINUX || OS_MACOSX || OS_WIN || OS_CHROMEOS
 
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS) && !defined(OS_CHROMEOS)
     {"enable-native-notifications",
@@ -4737,6 +4719,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-edu-coexistence", flag_descriptions::kEnableEduCoexistenceName,
      flag_descriptions::kEnableEduCoexistenceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEduCoexistence)},
+#endif  // OS_CHROMEOS
+
+#if defined(OS_CHROMEOS)
+    {"enable-edu-coexistence-consent-log",
+     flag_descriptions::kEnableEduCoexistenceConsentLogName,
+     flag_descriptions::kEnableEduCoexistenceConsentLogDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEduCoexistenceConsentLog)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)

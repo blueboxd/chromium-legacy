@@ -22,6 +22,8 @@ class ScreenLockerTester {
   // Synchronously lock the device.
   void Lock();
 
+  void WaitForUnlock();
+
   // Injects authenticators that only authenticate with the given password.
   void SetUnlockPassword(const AccountId& account_id,
                          const std::string& password);

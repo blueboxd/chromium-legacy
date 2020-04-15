@@ -26,7 +26,6 @@ class DictionaryValue;
 }  // namespace base
 
 namespace blink {
-class WebInputEvent;
 class WebLocalFrame;
 class WebPlugin;
 struct WebPluginParams;
@@ -35,8 +34,6 @@ class WebView;
 }  // namespace blink
 
 namespace content {
-
-class WebWidgetTestProxy;
 struct TestPreferences;
 
 class WebTestDelegate {
@@ -105,21 +102,6 @@ class WebTestDelegate {
 
   // Controls the device scale factor of the main WebView for hidpi tests.
   virtual void SetDeviceScaleFactor(float factor) = 0;
-
-  // Converts |event| from screen coordinates used by EventSender
-  // into coordinates that are understood by the widget associated with
-  // |web_widget_test_proxy|.  Returns nullptr if no transformation was
-  // necessary (e.g. for a keyboard event OR if widget requires no scaling
-  // and has coordinates starting at (0,0)).
-  virtual std::unique_ptr<blink::WebInputEvent>
-  TransformScreenToWidgetCoordinates(WebWidgetTestProxy* web_widget_test_proxy,
-                                     const blink::WebInputEvent& event) = 0;
-
-  // Enable zoom-for-dsf option.
-  virtual void EnableUseZoomForDSF() = 0;
-
-  // Returns whether or not the use-zoom-for-dsf flag is enabled.
-  virtual bool IsUseZoomForDSFEnabled() = 0;
 
   // Change the device color space while running a web test.
   virtual void SetDeviceColorSpace(const std::string& name) = 0;

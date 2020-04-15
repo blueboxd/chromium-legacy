@@ -59,6 +59,15 @@
         ],
         'identifier': 'iPad Air 2 13.3'
     },
+    'SIM_IPAD_AIR_2_13_4': {
+        'args': [
+            '--platform',
+            'iPad Air 2',
+            '--version',
+            '13.4'
+        ],
+        'identifier': 'iPad Air 2 13.4'
+    },
     'SIM_IPAD_AIR_3RD_GEN_12_4': {
         'args': [
             '--platform',
@@ -131,6 +140,15 @@
         ],
         'identifier': 'iPhone 6s 13.3'
     },
+    'SIM_IPHONE_6S_13_4': {
+        'args': [
+            '--platform',
+            'iPhone 6s',
+            '--version',
+            '13.4',
+        ],
+        'identifier': 'iPhone 6s 13.4'
+    },
     'SIM_IPHONE_6S_PLUS_12_4': {
         'args': [
             '--platform',
@@ -149,6 +167,15 @@
         ],
         'identifier': 'iPhone 6s Plus 13.3'
     },
+    'SIM_IPHONE_6S_PLUS_13_4': {
+        'args': [
+            '--platform',
+            'iPhone 6s Plus',
+            '--version',
+            '13.4',
+        ],
+        'identifier': 'iPhone 6s Plus 13.4'
+    },
     'SIM_IPHONE_7_13_3': {
         'args': [
             '--platform',
@@ -157,6 +184,15 @@
             '13.3',
         ],
         'identifier': 'iPhone 7 13.3'
+    },
+    'SIM_IPHONE_7_13_4': {
+        'args': [
+            '--platform',
+            'iPhone 7',
+            '--version',
+            '13.4',
+        ],
+        'identifier': 'iPhone 7 13.4'
     },
     'SIM_IPHONE_SE_13_3': {
         'args': [
@@ -184,5 +220,14 @@
             '13.3',
         ],
         'identifier': 'iPhone X 13.3'
+    },
+    'SIM_IPHONE_X_13_4': {
+        'args': [
+            '--platform',
+            'iPhone X',
+            '--version',
+            '13.4',
+        ],
+        'identifier': 'iPhone X 13.4'
     },
 }

@@ -55,7 +55,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
                   const OutputCB& output_cb) override;
   void Reset(base::OnceClosure closure) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
-  void OnPipelineFlushed() override;
+  void ApplyResolutionChange() override;
 
   // V4L2VideoDecoderBackend::Client implementation
   void OnBackendError() override;

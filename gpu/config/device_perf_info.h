@@ -18,10 +18,15 @@
 
 namespace gpu {
 
+// These values are persistent to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// This should match enum IntelGpuGeneration in
+//  \tools\metrics\histograms\enums.xml
 enum class IntelGpuGeneration {
   kNonIntel = 0,
   kUnknownIntel = 1,  // Intel GPU, but not one of the following generations.
-  // Don't care about Gen1 ~ Gen5. Detection code starts with Gen6.
+  kGen4 = 4,
+  kGen5 = 5,
   kGen6 = 6,
   kGen7 = 7,
   kGen8 = 8,

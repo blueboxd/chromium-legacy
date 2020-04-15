@@ -407,13 +407,27 @@ bool FlingController::UpdateCurrentFlingState(
     return false;
   }
 
+  gfx::Vector2dF velocity_from_gfs(
+      fling_start_event.data.fling_start.velocity_x,
+      fling_start_event.data.fling_start.velocity_y);
+
+  float max_velocity_from_gfs =
+      std::max(fabs(velocity_from_gfs.x()), fabs(velocity_from_gfs.y()));
+  float max_velocity = std::max(fabs(current_fling_parameters_.velocity.x()),
+                                fabs(current_fling_parameters_.velocity.y()));
+
+  // Scale the default bound multiplier to compute the maximum scroll distance a
+  // fling can travel based on physics based fling curve.
+  float boost_multiplier = max_velocity / max_velocity_from_gfs;
+
   fling_curve_ = std::unique_ptr<blink::WebGestureCurve>(
       ui::WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
           current_fling_parameters_.source_device,
           current_fling_parameters_.velocity,
           gfx::Vector2dF() /*initial_offset*/, false /*on_main_thread*/,
           GetContentClient()->browser()->ShouldUseMobileFlingCurve(),
-          current_fling_parameters_.global_point, root_widget_viewport_size));
+          current_fling_parameters_.global_point, boost_multiplier,
+          root_widget_viewport_size));
   return true;
 }
 

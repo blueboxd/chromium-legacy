@@ -2,8 +2,10 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../appearance_page/appearance_page.html">
 <link rel="import" href="../privacy_page/privacy_page.html">
 <link rel="import" href="../safety_check_page/safety_check_page.html">
@@ -35,7 +37,7 @@
      includes both the basic and advanced settings. -->
 <dom-module id="settings-basic-page">
   <template>
-    <style include="settings-page-styles cr-hidden-style settings-shared">
+    <style include="cr-shared-style settings-page-styles cr-hidden-style iron-flex settings-shared">
       :host([is-subpage-animating]) {
         /* Prevent an unwanted horizontal scrollbar when transitioning back from
          * a sub-page. */
@@ -62,11 +64,9 @@
       }
 
       #osSettingsBanner {
-        align-items: center;
-        background-color: white;
-        border-radius: 2px;
+        background-color: var(--cr-card-background-color);
+        border-radius: var(--cr-card-border-radius);
         box-shadow: var(--cr-card-shadow);
-        display: flex;
         margin-top: 21px;
       }
 
@@ -99,8 +99,9 @@
         </template>
 <if expr="chromeos">
         <template is="dom-if" if="[[showOSSettingsBanner_]]">
-          <div id="osSettingsBanner" class="settings-box">
-            <div class="start" on-click="onOSSettingsBannerClick_">
+          <div id="osSettingsBanner" class="cr-row">
+            <div class="flex cr-padded-text"
+                on-click="onOSSettingsBannerClick_">
               $i18nRaw{osSettingsBannerText}
             </div>
             <cr-icon-button class="icon-clear"

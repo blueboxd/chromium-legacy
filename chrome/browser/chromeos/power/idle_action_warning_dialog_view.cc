@@ -58,8 +58,7 @@ IdleActionWarningDialogView::IdleActionWarningDialogView(
 }
 
 void IdleActionWarningDialogView::CloseDialog() {
-  update_timer_.Stop();
-  CancelDialog();
+  GetWidget()->Close();
 }
 
 void IdleActionWarningDialogView::Update(base::TimeTicks idle_action_time) {
@@ -85,10 +84,6 @@ bool IdleActionWarningDialogView::ShouldShowCloseButton() const {
   return false;
 }
 
-bool IdleActionWarningDialogView::Cancel() {
-  return !update_timer_.IsRunning();
-}
-
 gfx::Size IdleActionWarningDialogView::CalculatePreferredSize() const {
   const int default_width = views::LayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
@@ -97,8 +92,7 @@ gfx::Size IdleActionWarningDialogView::CalculatePreferredSize() const {
       GetLayoutManager()->GetPreferredHeightForWidth(this, default_width));
 }
 
-IdleActionWarningDialogView::~IdleActionWarningDialogView() {
-}
+IdleActionWarningDialogView::~IdleActionWarningDialogView() = default;
 
 void IdleActionWarningDialogView::UpdateTitle() {
   GetWidget()->UpdateWindowTitle();

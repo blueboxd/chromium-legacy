@@ -151,6 +151,9 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
       return;
     }
 
+    // Cross-site prefetches shouldn't include SameSite cookies.
+    resource_request.site_for_cookies = net::SiteForCookies();
+
     // Use the trusted cross-origin prefetch loader factory, and set the
     // request's NetworkIsolationKey suitable for the cross-origin prefetch.
     network_loader_factory_to_use = current_context.cross_origin_factory;
@@ -180,6 +183,9 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
               network::URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
       return;
     }
+
+    // Cross-site prefetches shouldn't include SameSite cookies.
+    resource_request.site_for_cookies = net::SiteForCookies();
 
     resource_request.trusted_params = network::ResourceRequest::TrustedParams();
     resource_request.trusted_params->network_isolation_key =

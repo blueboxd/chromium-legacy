@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -244,6 +245,12 @@ void PaintTiming::SetFirstContentfulPaintSwap(base::TimeTicks stamp) {
       InteractiveDetector::From(*GetSupplementable());
   if (interactive_detector) {
     interactive_detector->OnFirstContentfulPaint(first_contentful_paint_swap_);
+  }
+  auto* coordinator = GetSupplementable()->GetResourceCoordinator();
+  if (coordinator && GetFrame() && GetFrame()->IsMainFrame()) {
+    PerformanceTiming* timing = performance->timing();
+    base::TimeDelta fcp = stamp - timing->NavigationStartAsMonotonicTime();
+    coordinator->OnFirstContentfulPaint(fcp);
   }
 }
 

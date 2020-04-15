@@ -171,3 +171,8 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessOpenAutocompleteMatch(
 bool SearchIPCRouterPolicyImpl::ShouldProcessDeleteAutocompleteMatch() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
+
+bool SearchIPCRouterPolicyImpl::
+    ShouldProcessToggleSuggestionGroupIdVisibility() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}

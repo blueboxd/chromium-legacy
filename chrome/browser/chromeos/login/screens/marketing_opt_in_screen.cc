@@ -22,8 +22,10 @@
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/gesture_navigation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -154,6 +156,14 @@ void MarketingOptInScreen::ShowImpl() {
    */
   view_->SetEmailToggleState(IsDefaultOptInCountry(country_));
 
+  // Only show the link for accessibility settings if the gesture navigation
+  // screen was shown.
+  view_->UpdateA11ySettingsButtonVisibility(
+      static_cast<GestureNavigationScreen*>(
+          WizardController::default_controller()->screen_manager()->GetScreen(
+              GestureNavigationScreenView::kScreenId))
+          ->was_shown());
+
   view_->UpdateA11yShelfNavigationButtonToggle(prefs->GetBoolean(
       ash::prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled));
 
@@ -194,6 +204,10 @@ void MarketingOptInScreen::OnGetStarted(bool chromebook_email_opt_in) {
   }
 
   ExitScreen();
+}
+
+void MarketingOptInScreen::SetA11yButtonVisibilityForTest(bool shown) {
+  view_->UpdateA11ySettingsButtonVisibility(shown);
 }
 
 void MarketingOptInScreen::ExitScreen() {

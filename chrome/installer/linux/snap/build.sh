@@ -53,6 +53,14 @@ LAUNCHER_SCRIPT="${TMPFILEDIR}/chrome.launcher"
 process_template "${SCRIPTDIR}/chrome.launcher.in" "${LAUNCHER_SCRIPT}"
 chmod +x "${LAUNCHER_SCRIPT}"
 process_template "${SCRIPTDIR}/snapcraft.yaml.in" "${TMPFILEDIR}/snapcraft.yaml"
+if [ "$SNAPNAME" = "google-chrome" ]; then
+  LOGO="product_logo_256"
+  if [ "$CHANNEL" = "beta" ]; then
+    sed -i -e "s:$LOGO.png:$LOGO_beta.png:" "${TMPFILEDIR}/snapcraft.yaml"
+  elif [ "$CHANNEL" = "unstable" ]; then
+    sed -i -e "s:$LOGO.png:$LOGO_dev.png:" "${TMPFILEDIR}/snapcraft.yaml"
+  fi
+fi
 
 cd "${TMPFILEDIR}"
 

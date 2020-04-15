@@ -547,6 +547,15 @@ void SearchIPCRouter::DeleteAutocompleteMatch(uint8_t line) {
   delegate_->DeleteAutocompleteMatch(line);
 }
 
+void SearchIPCRouter::ToggleSuggestionGroupIdVisibility(
+    int32_t suggestion_group_id) {
+  if (!policy_->ShouldProcessToggleSuggestionGroupIdVisibility()) {
+    return;
+  }
+
+  delegate_->ToggleSuggestionGroupIdVisibility(suggestion_group_id);
+}
+
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;

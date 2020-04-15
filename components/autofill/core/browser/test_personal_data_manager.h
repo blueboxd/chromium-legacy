@@ -88,6 +88,10 @@ class TestPersonalDataManager : public PersonalDataManager {
   // Adds a cloud token data to |server_credit_card_cloud_token_data_|.
   void AddCloudTokenData(const CreditCardCloudTokenData& cloud_token_data);
 
+  // Sets a local/server card's nickname based on the provided |guid|.
+  void SetNicknameForCardWithGUID(const char* guid,
+                                  const std::string& nickname);
+
   void set_timezone_country_code(const std::string& timezone_country_code) {
     timezone_country_code_ = timezone_country_code;
   }

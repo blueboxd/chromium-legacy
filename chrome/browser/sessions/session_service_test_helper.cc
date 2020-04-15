@@ -132,3 +132,16 @@ bool SessionServiceTestHelper::GetAvailableRange(const SessionID& tab_id,
                                                  std::pair<int, int>* range) {
   return service_->GetAvailableRangeForTest(tab_id, range);
 }
+
+void SessionServiceTestHelper::SetHasOpenTrackableBrowsers(
+    bool has_open_trackable_browsers) {
+  service_->has_open_trackable_browser_for_test_ = has_open_trackable_browsers;
+}
+
+bool SessionServiceTestHelper::GetHasOpenTrackableBrowsers() {
+  return service_->has_open_trackable_browsers_;
+}
+
+void SessionServiceTestHelper::SetIsOnlyOneTabLeft(bool is_only_one_tab_left) {
+  service_->is_only_one_tab_left_for_test_ = is_only_one_tab_left;
+}

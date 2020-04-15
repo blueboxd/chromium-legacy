@@ -21,4 +21,55 @@ mojom("mojom") {
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojom",
   ]
+
+  shared_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "display.mojom.Rotation"
+          cpp = "::display::Display::Rotation"
+        },
+      ]
+      traits_headers = [ "display_mojom_traits.h" ]
+      traits_public_deps = [ ":shared_mojom_traits" ]
+    },
+  ]
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "display.mojom.Display"
+          cpp = "::display::Display"
+        },
+        {
+          mojom = "display.mojom.TouchSupport"
+          cpp = "::display::Display::TouchSupport"
+        },
+        {
+          mojom = "display.mojom.AccelerometerSupport"
+          cpp = "::display::Display::AccelerometerSupport"
+        },
+      ]
+      traits_headers = [ "display_mojom_traits.h" ]
+      traits_public_deps = [ ":shared_mojom_traits" ]
+    },
+  ]
+  cpp_typemaps += shared_cpp_typemaps
+  blink_cpp_typemaps = shared_cpp_typemaps
+}
+
+component("shared_mojom_traits") {
+  output_name = "display_shared_mojom_traits"
+  defines = [ "IS_DISPLAY_SHARED_MOJOM_TRAITS_IMPL" ]
+  sources = [
+    "display_mojom_traits.cc",
+    "display_mojom_traits.h",
+  ]
+  public_deps = [
+    ":mojom_shared",
+    "//base",
+    "//ui/display",
+    "//ui/gfx/mojom",
+  ]
 }

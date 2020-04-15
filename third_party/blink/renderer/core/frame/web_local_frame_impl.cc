@@ -1642,6 +1642,11 @@ WebRect WebLocalFrameImpl::GetSelectionBoundsRectForTesting() const {
              : WebRect();
 }
 
+gfx::Point WebLocalFrameImpl::GetPositionInViewportForTesting() const {
+  LocalFrameView* view = GetFrameView();
+  return view->ConvertToRootFrame(IntPoint());
+}
+
 // WebLocalFrameImpl public --------------------------------------------------
 
 WebLocalFrame* WebLocalFrame::CreateMainFrame(

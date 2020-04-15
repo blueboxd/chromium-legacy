@@ -138,13 +138,37 @@ bool IsDateOrDateTime(const Property& property) {
   return !property.values->date_time_values.empty();
 }
 
-// Gets a number from the property which may be stored as a long or double.
-base::Optional<uint64_t> GetNumber(const Property& property) {
-  if (!property.values->long_values.empty())
-    return property.values->long_values[0];
-  if (!property.values->double_values.empty())
-    return lround(property.values->double_values[0]);
+// Gets a positive integer from the property which may be stored as a long or
+// double.
+base::Optional<uint64_t> GetPositiveIntegerFromProperty(
+    Entity* entity,
+    const std::string& property_name) {
+  auto* property = GetProperty(entity, property_name);
+  if (!property)
+    return base::nullopt;
+
+  if (!property->values->long_values.empty() &&
+      property->values->long_values[0] > 0) {
+    return property->values->long_values[0];
+  }
+
+  if (!property->values->double_values.empty() &&
+      property->values->double_values[0] > 0) {
+    return lround(property->values->double_values[0]);
+  }
+
   return base::nullopt;
+}
+
+// Gets the duration from the property and store the result in item. Returns
+// true if the duration was valid.
+template <typename T>
+bool GetDuration(const Property& property, T* item) {
+  if (property.values->time_values.empty())
+    return false;
+
+  item->duration = property.values->time_values[0];
+  return true;
 }
 
 // Gets a list of media images from the property. The property should have at
@@ -337,9 +361,18 @@ bool GetIdentifiers(const Property& property, T* item) {
     }
 
     auto* value = GetProperty(identifier.get(), schema_org::property::kValue);
-    if (!value || !IsNonEmptyString(*value))
+    if (!value)
       return false;
-    converted_identifier->value = value->values->string_values[0];
+
+    // The value must be a type we can unambiguously store as string.
+    if (!value->values->string_values.empty()) {
+      converted_identifier->value = value->values->string_values[0];
+    } else if (!value->values->long_values.empty()) {
+      converted_identifier->value =
+          base::NumberToString(value->values->long_values[0]);
+    } else {
+      return false;
+    }
 
     item->identifiers.push_back(std::move(converted_identifier));
   }
@@ -387,11 +420,8 @@ bool GetInteractionStatistics(const Property& property,
     if (!type.has_value() || item->interaction_counters.count(type.value()) > 0)
       return false;
 
-    auto* user_interaction_count =
-        GetProperty(stat.get(), schema_org::property::kUserInteractionCount);
-    if (!user_interaction_count)
-      return false;
-    base::Optional<uint64_t> count = GetNumber(*user_interaction_count);
+    base::Optional<uint64_t> count = GetPositiveIntegerFromProperty(
+        stat.get(), schema_org::property::kUserInteractionCount);
     if (!count.has_value())
       return false;
     item->interaction_counters.insert(
@@ -426,10 +456,45 @@ bool GetIsFamilyFriendly(const Property& property, mojom::MediaFeedItem* item) {
   return true;
 }
 
-// Gets the watchAction and actionStatus properties from an embedded entity and
-// stores the result in item. Returns true if both the action and the action
-// status were valid.
-bool GetActionAndStatus(const Property& property, mojom::MediaFeedItem* item) {
+// Gets the action status from embedded in the action property of the entity.
+base::Optional<mojom::MediaFeedItemActionStatus> GetActionStatus(
+    Entity* entity) {
+  auto* action = GetProperty(entity, schema_org::property::kPotentialAction);
+  if (!action || action->values->entity_values.empty())
+    return base::nullopt;
+
+  auto* action_status = GetProperty(action->values->entity_values[0].get(),
+                                    schema_org::property::kActionStatus);
+  if (!action_status)
+    return base::nullopt;
+  if (!IsUrl(*action_status))
+    return base::nullopt;
+
+  auto status = schema_org::enums::CheckValidEnumString(
+      "http://schema.org/ActionStatusType",
+      action_status->values->url_values[0]);
+  switch (status.value()) {
+    case static_cast<int>(
+        schema_org::enums::ActionStatusType::kActiveActionStatus):
+      return mojom::MediaFeedItemActionStatus::kActive;
+    case static_cast<int>(
+        schema_org::enums::ActionStatusType::kPotentialActionStatus):
+
+      return mojom::MediaFeedItemActionStatus::kPotential;
+    case static_cast<int>(
+        schema_org::enums::ActionStatusType::kCompletedActionStatus):
+      return mojom::MediaFeedItemActionStatus::kCompleted;
+  }
+
+  return base::nullopt;
+}
+
+// Gets the watchAction properties from an embedded entity and stores the result
+// in item. Returns true if the action was valid.
+template <typename T>
+bool GetAction(mojom::MediaFeedItemActionStatus action_status,
+               const Property& property,
+               T* item) {
   if (property.values->entity_values.empty())
     return false;
 
@@ -444,71 +509,52 @@ bool GetActionAndStatus(const Property& property, mojom::MediaFeedItem* item) {
     return false;
   item->action->url = target->values->url_values[0];
 
-  auto* action_status =
-      GetProperty(action.get(), schema_org::property::kActionStatus);
-  if (action_status) {
-    if (!IsUrl(*action_status))
-      return false;
+  if (action_status == mojom::MediaFeedItemActionStatus::kUnknown)
+    return false;
 
-    auto status = schema_org::enums::CheckValidEnumString(
-        "http://schema.org/ActionStatusType",
-        action_status->values->url_values[0]);
-    if (status == base::nullopt) {
+  if (action_status == mojom::MediaFeedItemActionStatus::kActive) {
+    auto* start_time =
+        GetProperty(action.get(), schema_org::property::kStartTime);
+    if (!start_time || start_time->values->time_values.empty())
       return false;
-    } else if (status.value() ==
-               static_cast<int>(
-                   schema_org::enums::ActionStatusType::kActiveActionStatus)) {
-      item->action_status = mojom::MediaFeedItemActionStatus::kActive;
-      auto* start_time =
-          GetProperty(action.get(), schema_org::property::kStartTime);
-      if (!start_time || start_time->values->time_values.empty())
-        return false;
-      item->action->start_time = start_time->values->time_values[0];
-    } else if (status.value() ==
-               static_cast<int>(schema_org::enums::ActionStatusType::
-                                    kPotentialActionStatus)) {
-      item->action_status = mojom::MediaFeedItemActionStatus::kPotential;
-    } else if (status.value() ==
-               static_cast<int>(schema_org::enums::ActionStatusType::
-                                    kCompletedActionStatus)) {
-      item->action_status = mojom::MediaFeedItemActionStatus::kCompleted;
-    }
+    item->action->start_time = start_time->values->time_values[0];
   }
+
   return true;
 }
 
+// Represents a candidate for use as the item's main episode or play next
+// candidate.
+struct EpisodeCandidate {
+  Entity* entity;
+  mojom::MediaFeedItemActionStatus action_status;
+  int season_number;
+  int episode_number;
+};
+
 // Gets the TV episode stored in an embedded entity and stores the result in
 // item. Returns true if the TV episode was valid.
-bool GetEpisode(const Property& property, mojom::MediaFeedItem* item) {
-  if (property.values->entity_values.empty())
-    return false;
-
-  EntityPtr& episode = property.values->entity_values[0];
-  if (episode->type != schema_org::entity::kTVEpisode)
-    return false;
-
+bool GetEpisode(const EpisodeCandidate& candidate, mojom::MediaFeedItem* item) {
   if (!item->tv_episode)
     item->tv_episode = mojom::TVEpisode::New();
 
-  auto* episode_number =
-      GetProperty(episode.get(), schema_org::property::kEpisodeNumber);
-  if (!episode_number || !IsPositiveInteger(*episode_number))
-    return false;
-  item->tv_episode->episode_number = episode_number->values->long_values[0];
+  item->tv_episode->episode_number = candidate.episode_number;
+  item->tv_episode->season_number = candidate.season_number;
+  item->action_status = candidate.action_status;
 
-  auto* name = GetProperty(episode.get(), schema_org::property::kName);
+  auto* name = GetProperty(candidate.entity, schema_org::property::kName);
   if (!name || !IsNonEmptyString(*name))
     return false;
   item->tv_episode->name = name->values->string_values[0];
 
   if (!ConvertProperty<mojom::TVEpisode>(
-          episode.get(), item->tv_episode.get(),
+          candidate.entity, item->tv_episode.get(),
           schema_org::property::kIdentifier, false,
           base::BindOnce(&GetIdentifiers<mojom::TVEpisode>))) {
     return false;
   }
 
-  auto* image = GetProperty(episode.get(), schema_org::property::kImage);
+  auto* image = GetProperty(candidate.entity, schema_org::property::kImage);
   if (image) {
     auto converted_images = GetMediaImage(*image);
     if (!converted_images.has_value())
@@ -518,17 +564,207 @@ bool GetEpisode(const Property& property, mojom::MediaFeedItem* item) {
   }
 
   if (!ConvertProperty<mojom::MediaFeedItem>(
-          episode.get(), item, schema_org::property::kPotentialAction, true,
-          base::BindOnce(&GetActionAndStatus))) {
+          candidate.entity, item, schema_org::property::kPotentialAction, true,
+          base::BindOnce(&GetAction<mojom::MediaFeedItem>,
+                         candidate.action_status))) {
     return false;
   }
 
   return true;
 }
 
-// Gets the TV season stored in an embedded entity and stores the result in
-// item. Returns true if the TV season was valid.
-bool GetSeason(const Property& property, mojom::MediaFeedItem* item) {
+// Gets the PlayNextCandidate stored in an embedded entity and stores the result
+// in item. Returns true if the PlayNextCandidate was valid. See the spec for
+// this feature: https://wicg.github.io/media-feeds/#play-next-tv-episodes
+bool GetPlayNextCandidate(const EpisodeCandidate& candidate,
+                          mojom::MediaFeedItem* item) {
+  if (!item->play_next_candidate)
+    item->play_next_candidate = mojom::PlayNextCandidate::New();
+
+  item->play_next_candidate->episode_number = candidate.episode_number;
+  item->play_next_candidate->season_number = candidate.season_number;
+
+  auto* name = GetProperty(candidate.entity, schema_org::property::kName);
+  if (!name || !IsNonEmptyString(*name))
+    return false;
+  item->play_next_candidate->name = name->values->string_values[0];
+
+  if (!ConvertProperty<mojom::PlayNextCandidate>(
+          candidate.entity, item->play_next_candidate.get(),
+          schema_org::property::kIdentifier, false,
+          base::BindOnce(&GetIdentifiers<mojom::PlayNextCandidate>))) {
+    return false;
+  }
+
+  auto* image = GetProperty(candidate.entity, schema_org::property::kImage);
+  if (image) {
+    auto converted_images = GetMediaImage(*image);
+    if (!converted_images.has_value())
+      return false;
+    // TODO(sgbowen): Add an images field to TV episodes and store the converted
+    // images here.
+  }
+
+  if (!ConvertProperty<mojom::PlayNextCandidate>(
+          candidate.entity, item->play_next_candidate.get(),
+          schema_org::property::kPotentialAction, true,
+          base::BindOnce(&GetAction<mojom::PlayNextCandidate>,
+                         candidate.action_status))) {
+    return false;
+  }
+
+  if (!ConvertProperty<mojom::PlayNextCandidate>(
+          candidate.entity, item->play_next_candidate.get(),
+          schema_org::property::kDuration, true,
+          base::BindOnce(&GetDuration<mojom::PlayNextCandidate>))) {
+    return false;
+  }
+
+  return true;
+}
+
+// Converts the entity to an EpisodeCandidate.
+base::Optional<EpisodeCandidate> GetEpisodeCandidate(const EntityPtr& entity) {
+  if (entity->type != schema_org::entity::kTVEpisode)
+    return base::nullopt;
+
+  EpisodeCandidate candidate;
+  candidate.entity = entity.get();
+
+  auto action_status = GetActionStatus(entity.get());
+  if (!action_status)
+    return base::nullopt;
+  candidate.action_status = action_status.value();
+
+  auto episode_number = GetPositiveIntegerFromProperty(
+      entity.get(), schema_org::property::kEpisodeNumber);
+  if (!episode_number.has_value())
+    return base::nullopt;
+  candidate.episode_number = episode_number.value();
+
+  return candidate;
+}
+
+// Converts all the entity values in the property to episode candidates. Returns
+// base::nullopt if any of the entities are not valid episode candidates.
+base::Optional<std::vector<EpisodeCandidate>> GetEpisodeCandidatesFromProperty(
+    Property* property,
+    int season_number) {
+  std::vector<EpisodeCandidate> episodes;
+  if (!property) {
+    return episodes;
+  }
+  for (const EntityPtr& episode : property->values->entity_values) {
+    auto candidate = GetEpisodeCandidate(episode);
+    if (!candidate.has_value())
+      return base::nullopt;
+    candidate.value().season_number = season_number;
+    episodes.push_back(std::move(candidate.value()));
+  }
+  return episodes;
+}
+
+// Gets a list of EpisodeCandidates from the entity. These can be embedded
+// either in the season or episode properties. Returns base::nullopt if any
+// candidates were invalid.
+base::Optional<std::vector<EpisodeCandidate>> GetEpisodeCandidates(
+    Entity* entity) {
+  std::vector<EpisodeCandidate> candidates;
+  auto* seasons = GetProperty(entity, schema_org::property::kContainsSeason);
+  if (seasons) {
+    for (const auto& season : seasons->values->entity_values) {
+      auto season_number = GetPositiveIntegerFromProperty(
+          season.get(), schema_org::property::kSeasonNumber);
+      if (!season_number.has_value())
+        return base::nullopt;
+      auto season_episodes = GetEpisodeCandidatesFromProperty(
+          GetProperty(season.get(), schema_org::property::kEpisode),
+          season_number.value());
+      if (!season_episodes.has_value())
+        return base::nullopt;
+      candidates.insert(candidates.end(), season_episodes.value().begin(),
+                        season_episodes.value().end());
+    }
+  }
+
+  auto embedded_episodes = GetEpisodeCandidatesFromProperty(
+      GetProperty(entity, schema_org::property::kEpisode), 0);
+
+  if (!embedded_episodes.has_value())
+    return base::nullopt;
+
+  candidates.insert(candidates.end(), embedded_episodes.value().begin(),
+                    embedded_episodes.value().end());
+  return candidates;
+}
+
+// Picks the main episode for the item from a list of candidates. Returns
+// base::nullopt if there is no main episode.
+base::Optional<EpisodeCandidate> PickMainEpisode(
+    std::vector<EpisodeCandidate> candidates) {
+  if (candidates.empty())
+    return base::nullopt;
+
+  if (candidates.size() == 1)
+    return candidates[0];
+
+  std::vector<EpisodeCandidate> main_candidates;
+  std::copy_if(
+      candidates.begin(), candidates.end(), std::back_inserter(main_candidates),
+      [](const EpisodeCandidate& e) {
+        return e.action_status == mojom::MediaFeedItemActionStatus::kActive ||
+               e.action_status == mojom::MediaFeedItemActionStatus::kCompleted;
+      });
+
+  if (main_candidates.empty())
+    return base::nullopt;
+
+  return main_candidates[0];
+}
+
+// Picks the play next candidate for the item from a list of candidates. Returns
+// base::nullopt if there is no matching candidate.
+base::Optional<EpisodeCandidate> PickPlayNextCandidate(
+    std::vector<EpisodeCandidate> candidates,
+    const base::Optional<EpisodeCandidate>& main_episode,
+    const std::map<int, int>& number_of_episodes) {
+  if (!main_episode.has_value())
+    return base::nullopt;
+
+  // Try to find the number of episodes for the main episode's season so we know
+  // whether to look in the next season for the next episode. If we don't find
+  // it, just look for the next episode in the main episode's season.
+  auto find_num_episodes =
+      number_of_episodes.find(main_episode.value().season_number);
+  int next_episode = main_episode.value().episode_number + 1;
+  int next_season = main_episode.value().season_number;
+  if (find_num_episodes != number_of_episodes.end() &&
+      next_episode > find_num_episodes->second) {
+    next_episode = 1;
+    next_season++;
+  }
+
+  std::vector<EpisodeCandidate> next_candidates;
+  std::copy_if(
+      candidates.begin(), candidates.end(), std::back_inserter(next_candidates),
+      [](const EpisodeCandidate& e) {
+        return e.action_status == mojom::MediaFeedItemActionStatus::kPotential;
+      });
+  auto it = std::find_if(next_candidates.begin(), next_candidates.end(),
+                         [&](const EpisodeCandidate& e) {
+                           return e.episode_number == next_episode &&
+                                  e.season_number == next_season;
+                         });
+  if (it == next_candidates.end())
+    return base::nullopt;
+  return *it;
+}
+
+// Gets the TV season stored in an embedded entity and updates a map of (season
+// number)->(number of episodes). Returns true if the TV season was valid.
+// Embedded episodes are handled separately and not checked here.
+bool GetSeason(const Property& property,
+               std::map<int, int>* number_of_episodes) {
   if (property.values->entity_values.empty())
     return false;
 
@@ -536,25 +772,18 @@ bool GetSeason(const Property& property, mojom::MediaFeedItem* item) {
   if (season->type != schema_org::entity::kTVSeason)
     return false;
 
-  if (!item->tv_episode)
-    item->tv_episode = mojom::TVEpisode::New();
-
-  auto* season_number =
-      GetProperty(season.get(), schema_org::property::kSeasonNumber);
-  if (!season_number || !IsPositiveInteger(*season_number))
-    return false;
-  item->tv_episode->season_number = season_number->values->long_values[0];
-
-  auto* number_episodes =
-      GetProperty(season.get(), schema_org::property::kNumberOfEpisodes);
-  if (!number_episodes || !IsPositiveInteger(*number_episodes))
+  auto season_number = GetPositiveIntegerFromProperty(
+      season.get(), schema_org::property::kSeasonNumber);
+  if (!season_number.has_value())
     return false;
 
-  if (!ConvertProperty<mojom::MediaFeedItem>(
-          season.get(), item, schema_org::property::kEpisode, false,
-          base::BindOnce(&GetIdentifiers<mojom::MediaFeedItem>))) {
+  auto number_episodes = GetPositiveIntegerFromProperty(
+      season.get(), schema_org::property::kNumberOfEpisodes);
+  if (!number_episodes.has_value())
     return false;
-  }
+
+  number_of_episodes->insert(
+      std::make_pair(season_number.value(), number_episodes.value()));
 
   return true;
 }
@@ -585,16 +814,6 @@ bool GetLiveDetails(const Property& property, mojom::MediaFeedItem* item) {
     item->live->end_time = end_date->values->date_time_values[0];
   }
 
-  return true;
-}
-
-// Gets the duration from the property and store the result in item. Returns
-// true if the duration was valid.
-bool GetDuration(const Property& property, mojom::MediaFeedItem* item) {
-  if (property.values->time_values.empty())
-    return false;
-
-  item->duration = property.values->time_values[0];
   return true;
 }
 
@@ -677,11 +896,6 @@ void GetDataFeedItems(
       }
     }
 
-    if (!convert_property.Run(schema_org::property::kPublication, false,
-                              base::BindOnce(&GetLiveDetails))) {
-      continue;
-    }
-
     if (!convert_property.Run(
             schema_org::property::kIdentifier, false,
             base::BindOnce(&GetIdentifiers<mojom::MediaFeedItem>))) {
@@ -693,40 +907,55 @@ void GetDataFeedItems(
                                 base::BindOnce(&GetMediaItemAuthor))) {
         continue;
       }
-      if (!convert_property.Run(schema_org::property::kDuration,
-                                !converted_item->live,
-                                base::BindOnce(&GetDuration))) {
+      if (!convert_property.Run(
+              schema_org::property::kDuration, !converted_item->live,
+              base::BindOnce(&GetDuration<mojom::MediaFeedItem>))) {
         continue;
       }
-    }
-
-    if (converted_item->type == mojom::MediaFeedItemType::kTVSeries) {
-      auto* num_episodes =
-          GetProperty(item.get(), schema_org::property::kNumberOfEpisodes);
-      if (!num_episodes || !IsPositiveInteger(*num_episodes))
-        continue;
-      auto* num_seasons =
-          GetProperty(item.get(), schema_org::property::kNumberOfSeasons);
-      if (!num_seasons || !IsPositiveInteger(*num_seasons))
-        continue;
-      if (!convert_property.Run(schema_org::property::kEpisode, false,
-                                base::BindOnce(&GetEpisode))) {
+      if (!convert_property.Run(schema_org::property::kPublication, false,
+                                base::BindOnce(&GetLiveDetails))) {
         continue;
       }
-      if (!convert_property.Run(schema_org::property::kContainsSeason, false,
-                                base::BindOnce(&GetSeason))) {
+    } else if (converted_item->type == mojom::MediaFeedItemType::kMovie) {
+      if (!convert_property.Run(schema_org::property::kPublication, false,
+                                base::BindOnce(&GetLiveDetails))) {
+        continue;
+      }
+    } else if (converted_item->type == mojom::MediaFeedItemType::kTVSeries) {
+      std::map<int, int> number_of_episodes;
+      auto* season =
+          GetProperty(item.get(), schema_org::property::kContainsSeason);
+      if (season && !GetSeason(*season, &number_of_episodes))
+        continue;
+      auto episodes = GetEpisodeCandidates(item.get());
+      if (!episodes.has_value())
+        continue;
+      auto main_episode = PickMainEpisode(episodes.value());
+      if (main_episode.has_value() &&
+          !GetEpisode(main_episode.value(), converted_item.get()))
+        continue;
+      auto next_episode = PickPlayNextCandidate(episodes.value(), main_episode,
+                                                number_of_episodes);
+      if (next_episode.has_value() &&
+          !GetPlayNextCandidate(next_episode.value(), converted_item.get())) {
         continue;
       }
     }
 
     bool has_embedded_action =
         item->type == schema_org::entity::kTVSeries && converted_item->action;
-    if (!convert_property.Run(schema_org::property::kPotentialAction,
-                              !has_embedded_action,
-                              base::BindOnce(&GetActionAndStatus))) {
-      continue;
+    if (!has_embedded_action) {
+      auto action_status = GetActionStatus(item.get());
+      if (!action_status.has_value())
+        continue;
+      converted_item->action_status = action_status.value();
+      if (!convert_property.Run(schema_org::property::kPotentialAction,
+                                !has_embedded_action,
+                                base::BindOnce(&GetAction<mojom::MediaFeedItem>,
+                                               action_status.value()))) {
+        continue;
+      }
     }
-
     converted_feed_items->push_back(std::move(converted_item));
   }
 }

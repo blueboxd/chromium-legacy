@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/ime_service_connector.h"
 #include "chrome/browser/chromeos/input_method/suggestion_window_controller.h"
-#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
@@ -37,8 +36,7 @@ class ImeKeyboard;
 
 // The implementation of InputMethodManager.
 class InputMethodManagerImpl : public InputMethodManager,
-                               public CandidateWindowController::Observer,
-                               public UserAddingScreen::Observer {
+                               public CandidateWindowController::Observer {
  public:
   class StateImpl : public InputMethodManager::State {
    public:
@@ -218,10 +216,6 @@ class InputMethodManagerImpl : public InputMethodManager,
       const std::string& extension_id) override;
   void NotifyInputMethodExtensionRemoved(
       const std::string& extension_id) override;
-
-  // chromeos::UserAddingScreen:
-  void OnUserAddingStarted() override;
-  void OnUserAddingFinished() override;
 
   ImeKeyboard* GetImeKeyboard() override;
   InputMethodUtil* GetInputMethodUtil() override;

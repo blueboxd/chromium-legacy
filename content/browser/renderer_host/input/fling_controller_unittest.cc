@@ -6,13 +6,17 @@
 
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/fling_booster.h"
+#include "ui/events/gestures/physics_based_fling_curve.h"
 
 #if defined(OS_WIN)
 #include "ui/display/win/test/scoped_screen_win.h"
@@ -21,6 +25,7 @@
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebMouseWheelEvent;
+using ui::PhysicsBasedFlingCurve;
 
 namespace {
 constexpr double kFrameDelta = 1000.0 / 60.0;
@@ -700,6 +705,136 @@ TEST_P(FlingControllerTest, NoFlingStartAfterWheelEventConsumed) {
   SimulateFlingStart(blink::WebGestureDevice::kTouchpad,
                      gfx::Vector2dF(1000, 0));
   EXPECT_FALSE(FlingInProgress());
+}
+
+class FlingControllerWithPhysicsBasedFlingTest : public FlingControllerTest {
+ public:
+  // testing::Test
+  FlingControllerWithPhysicsBasedFlingTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kExperimentalFlingAnimation);
+  }
+
+  ~FlingControllerWithPhysicsBasedFlingTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(FlingControllerWithPhysicsBasedFlingTest);
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         FlingControllerWithPhysicsBasedFlingTest,
+                         testing::Bool());
+
+// Ensure the bounding distance for boosted physics based flings is increased
+// by a factor of the boost_multiplier and default multiplier
+TEST_P(FlingControllerWithPhysicsBasedFlingTest,
+       ControllerBoostsTouchscreenFling) {
+  // We use a velocity of 4500 in this test because it yields a scroll delta
+  // that is greater than viewport * boost_multiplier * kDefaultBoundsMultiplier
+
+  // Android and Chromecast use Mobile fling curve so they are ignored
+  // for this test
+  bool use_mobile_fling_curve = false;
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMECAST)
+  use_mobile_fling_curve = true;
+#endif
+  if (use_mobile_fling_curve)
+    return;
+
+  SimulateFlingStart(blink::WebGestureDevice::kTouchscreen,
+                     gfx::Vector2dF(4500, 0));
+  EXPECT_TRUE(FlingInProgress());
+  // Fling progress must send GSU events.
+  AdvanceTime();
+  ProgressFling(NowTicks());
+  ASSERT_EQ(WebInputEvent::kGestureScrollUpdate, last_sent_gesture_.GetType());
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum,
+            last_sent_gesture_.data.scroll_update.inertial_phase);
+  EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
+
+  // Now cancel the fling.
+  SimulateFlingCancel(blink::WebGestureDevice::kTouchscreen);
+  EXPECT_FALSE(FlingInProgress());
+
+  // The second GFS can be boosted so it should boost the just deactivated
+  // fling. To test that the correct bounds scale is used, the scroll delta
+  // is accumulated after each frame.
+  SimulateFlingStart(blink::WebGestureDevice::kTouchscreen,
+                     gfx::Vector2dF(4500, 0));
+  EXPECT_TRUE(FlingInProgress());
+  if (NeedsBeginFrameForFlingProgress())
+    ProgressFling(NowTicks());
+  float total_scroll_delta = last_sent_gesture_.data.scroll_update.delta_x;
+  while (true) {
+    if (last_sent_gesture_.GetType() == WebInputEvent::kGestureScrollEnd) {
+      break;
+    }
+    AdvanceTime();
+    ProgressFling(NowTicks());
+    total_scroll_delta += last_sent_gesture_.data.scroll_update.delta_x;
+  }
+
+  // We expect the scroll delta to be the viewport * [boost_multiplier = 2] *
+  // multiplier
+  float expected_delta =
+      2 * PhysicsBasedFlingCurve::default_bounds_multiplier_for_testing() *
+      GetRootWidgetViewportSize().width();
+  EXPECT_EQ(ceilf(total_scroll_delta), roundf(expected_delta));
+}
+
+// Ensure that once a fling finishes, the next fling has a boost_multiplier of 1
+TEST_P(FlingControllerWithPhysicsBasedFlingTest,
+       ControllerDoesntBoostFinishedFling) {
+  // Android and Chromecast use Mobile fling curve so they are ignored
+  // for this test
+  bool use_mobile_fling_curve = false;
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMECAST)
+  use_mobile_fling_curve = true;
+#endif
+  if (use_mobile_fling_curve)
+    return;
+  SimulateFlingStart(blink::WebGestureDevice::kTouchscreen,
+                     gfx::Vector2dF(1000, 0), /*wait_before_processing=*/true);
+  EXPECT_TRUE(FlingInProgress());
+  AdvanceTime();
+  ProgressFling(NowTicks());
+
+  // Fast forward so that the fling ends.
+  double time_to_advance_ms = 1000.0;
+  AdvanceTime(time_to_advance_ms);
+  ProgressFling(NowTicks());
+  ASSERT_EQ(WebInputEvent::kGestureScrollEnd, last_sent_gesture_.GetType())
+      << "Unexpected Last Sent Gesture: "
+      << WebInputEvent::GetName(last_sent_gesture_.GetType());
+  EXPECT_EQ(fling_controller_->CurrentFlingVelocity().x(), 0);
+  EXPECT_FALSE(FlingInProgress());
+
+  // Now send a new fling, ensure boost_multiplier is 1
+  AdvanceTime();
+  SimulateFlingCancel(blink::WebGestureDevice::kTouchscreen);
+
+  SimulateFlingStart(blink::WebGestureDevice::kTouchscreen,
+                     gfx::Vector2dF(10000, 0));
+  EXPECT_TRUE(FlingInProgress());
+  if (NeedsBeginFrameForFlingProgress())
+    ProgressFling(NowTicks());
+  float total_scroll_delta = last_sent_gesture_.data.scroll_update.delta_x;
+  while (true) {
+    if (last_sent_gesture_.GetType() == WebInputEvent::kGestureScrollEnd) {
+      break;
+    }
+    AdvanceTime();
+    ProgressFling(NowTicks());
+    total_scroll_delta += last_sent_gesture_.data.scroll_update.delta_x;
+  }
+
+  // We expect the scroll delta to be the viewport * [boost_multiplier = 1] *
+  // multiplier
+  float expected_delta =
+      PhysicsBasedFlingCurve::default_bounds_multiplier_for_testing() *
+      GetRootWidgetViewportSize().width();
+  EXPECT_EQ(ceilf(total_scroll_delta), roundf(expected_delta));
 }
 
 }  // namespace content

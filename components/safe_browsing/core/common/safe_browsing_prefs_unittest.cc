@@ -135,6 +135,13 @@ TEST_F(SafeBrowsingPrefsTest, EnhancedProtection) {
         safe_browsing::kEnhancedProtection);
     EXPECT_TRUE(IsEnhancedProtectionEnabled(prefs_));
   }
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(
+        safe_browsing::kEnhancedProtection);
+    prefs_.SetBoolean(prefs::kSafeBrowsingEnabled, false);
+    EXPECT_FALSE(IsEnhancedProtectionEnabled(prefs_));
+  }
 }
 
 TEST_F(SafeBrowsingPrefsTest, IsExtendedReportingPolicyManaged) {

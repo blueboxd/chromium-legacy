@@ -598,10 +598,6 @@ std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {
   return render_text;
 }
 
-void Label::PaintFocusRing(gfx::Canvas* canvas) const {
-  // No focus ring by default.
-}
-
 gfx::Rect Label::GetTextBounds() const {
   MaybeBuildDisplayText();
 
@@ -645,8 +641,6 @@ void Label::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 void Label::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
   PaintText(canvas);
-  if (HasFocus())
-    PaintFocusRing(canvas);
 }
 
 void Label::OnThemeChanged() {

@@ -32,8 +32,9 @@ const base::Feature kNotifySyncOnLanguageDetermined{
     "NotifySyncOnLanguageDetermined", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Base feature for Translate desktop UI experiment
+// TODO(crbug.com/1054643): Clean up this flag and old UI code.
 const base::Feature kUseButtonTranslateBubbleUi{
-    "UseButtonTranslateBubbleUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseButtonTranslateBubbleUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Params:
 const char kBackoffThresholdKey[] = "backoff_threshold";
@@ -42,10 +43,6 @@ const char kEnforceRankerKey[] = "enforce_ranker";
 const char kOverrideModelHeuristicValue[] = "heuristic";
 const char kOverrideModelGeoValue[] = "geo";
 const char kOverrideModelDefaultValue[] = "default";
-
-// Params for Translate Desktop UI experiment
-const char kTranslateUIBubbleKey[] = "translate_ui_bubble_style";
-const char kTranslateUIBubbleTabValue[] = "tab";
 
 OverrideLanguageModel GetOverrideLanguageModel() {
   std::map<std::string, std::string> params;
@@ -109,18 +106,10 @@ bool IsForceTriggerBackoffThresholdReached(int force_trigger_count) {
 }
 
 TranslateUIBubbleModel GetTranslateUiBubbleModel() {
-  std::map<std::string, std::string> params;
-  if (base::GetFieldTrialParamsByFeature(language::kUseButtonTranslateBubbleUi,
-                                         &params)) {
-    if (params[language::kTranslateUIBubbleKey] ==
-        language::kTranslateUIBubbleTabValue) {
-      return language::TranslateUIBubbleModel::TAB;
-    } else {
-      return language::TranslateUIBubbleModel::DEFAULT;
-    }
-  } else {
-    return language::TranslateUIBubbleModel::DEFAULT;
+  if (base::FeatureList::IsEnabled(language::kUseButtonTranslateBubbleUi)) {
+    return language::TranslateUIBubbleModel::TAB;
   }
+  return language::TranslateUIBubbleModel::DEFAULT;
 }
 
 }  // namespace language

@@ -60,6 +60,12 @@ class CreditCard : public AutofillDataModel {
     OK,
   };
 
+  // The Issuer for the card.
+  enum Issuer {
+    ISSUER_UNKNOWN = 0,
+    GOOGLE = 1,
+  };
+
   CreditCard(const std::string& guid, const std::string& origin);
 
   // Creates a server card.  The type must be MASKED_SERVER_CARD or
@@ -137,6 +143,9 @@ class CreditCard : public AutofillDataModel {
   // Set the nickname with the processed input (replace all tabs and newlines
   // with whitespaces, and trim leading/trailing whitespaces).
   void SetNickname(const base::string16& nickname);
+
+  Issuer card_issuer() const { return card_issuer_; }
+  void set_card_issuer(Issuer card_issuer) { card_issuer_ = card_issuer; }
 
   // For use in STL containers.
   void operator=(const CreditCard& credit_card);
@@ -227,7 +236,8 @@ class CreditCard : public AutofillDataModel {
 
   // Various display functions.
 
-  // Card preview summary, for example: "Visa - ****1234", ", 01/2020".
+  // Card preview summary, for example: "Nickname/Network - ****1234",
+  // ", 01/2020".
   const std::pair<base::string16, base::string16> LabelPieces() const;
   // Like LabelPieces, but appends the two pieces together.
   const base::string16 Label() const;
@@ -343,6 +353,10 @@ class CreditCard : public AutofillDataModel {
 
   // The nickname of the card. May be empty when nickname is not set.
   base::string16 nickname_;
+
+  // The issuer for the card. This is populated from the sync response. It has a
+  // default value of CreditCard::ISSUER_UNKNOWN.
+  Issuer card_issuer_;
 };
 
 // So we can compare CreditCards with EXPECT_EQ().

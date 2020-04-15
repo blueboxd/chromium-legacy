@@ -12,6 +12,4 @@ typemaps = [
   "//services/viz/public/cpp/compositing/returned_resource.typemap",
   "//services/viz/public/cpp/compositing/surface_id.typemap",
   "//services/viz/public/cpp/compositing/surface_info.typemap",
-  "//ui/display/mojom/display_rotation_for_blink.typemap",
-  "//ui/gfx/mojom/gpu_fence_handle_for_blink.typemap",
 ]

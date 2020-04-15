@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/common/password_form.h"
+
 #include <algorithm>
 #include <ostream>
 #include <sstream>
@@ -11,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/core/common/password_form.h"
 
 namespace autofill {
 
@@ -96,6 +97,13 @@ void PasswordFormToJSON(const PasswordForm& form,
                      form.form_data.is_gaia_with_skip_save_password_form);
   target->SetBoolean("is_new_password_reliable", form.is_new_password_reliable);
   target->SetString("in_store", StoreToString(form.in_store));
+
+  std::vector<std::string> hashes;
+  hashes.reserve(form.moving_blocked_for_list.size());
+  for (const auto& gaia_id_hash : form.moving_blocked_for_list) {
+    hashes.push_back(gaia_id_hash.ToBase64());
+  }
+  target->SetString("moving_blocked_for_list", base::JoinString(hashes, ", "));
 }
 
 }  // namespace
@@ -199,7 +207,8 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          submission_event == form.submission_event &&
          only_for_fallback == form.only_for_fallback &&
          is_new_password_reliable == form.is_new_password_reliable &&
-         in_store == form.in_store;
+         in_store == form.in_store &&
+         moving_blocked_for_list == form.moving_blocked_for_list;
 }
 
 bool PasswordForm::operator!=(const PasswordForm& form) const {

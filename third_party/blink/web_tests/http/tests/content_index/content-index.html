@@ -35,10 +35,10 @@ contentIndexTest(async (t, index) => {
       'Icon could not be loaded');
 
   await expectTypeErrorWithMessage(
-      index.add(createDescription({launchUrl: 'https://other-domain.com/'})),
+      index.add(createDescription({url: 'https://other-domain.com/'})),
       `Failed to execute 'add' on 'ContentIndex': Service Worker cannot request provided launch URL`);
   await expectTypeErrorWithMessage(
-      index.add(createDescription({launchUrl: '/different-scope'})),
+      index.add(createDescription({url: '/different-scope'})),
       `Failed to execute 'add' on 'ContentIndex': Launch URL must belong to the Service Worker's scope`);
 
   await index.add(createDescription({}));

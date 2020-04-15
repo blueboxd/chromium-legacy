@@ -22,6 +22,8 @@ class ChromeShellDelegate : public ash::ShellDelegate {
       ash::BackGestureContextualNudgeController* controller) override;
   void OpenKeyboardShortcutHelpPage() const override;
   bool CanGoBack(gfx::NativeWindow window) const override;
+  bool CreateBrowserForTabDrop(gfx::NativeWindow source_window,
+                               const ui::OSExchangeData& drop_data) override;
   void BindBluetoothSystemFactory(
       mojo::PendingReceiver<device::mojom::BluetoothSystemFactory> receiver)
       override;

@@ -29,10 +29,17 @@
 
 namespace gpu {
 
-// These values are persisted to logs. Entries should not be renumbered and
+// These values are persistent to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+// This should match enum IntelGpuSeriesType in
+//  \tools\metrics\histograms\enums.xml
 enum class IntelGpuSeriesType {
   kUnknown = 0,
+  // Intel 4th gen
+  kBroadwater = 16,
+  kEaglelake = 17,
+  // Intel 5th gen
+  kIronlake = 18,
   // Intel 6th gen
   kSandybridge = 1,
   // Intel 7th gen
@@ -54,8 +61,12 @@ enum class IntelGpuSeriesType {
   kCannonlake = 14,
   // Intel 11th gen
   kIcelake = 15,
+  kElkhartlake = 19,
+  kJasperlake = 20,
+  // Intel 12th gen
+  kTigerlake = 21,
   // Please also update |gpu_series_map| in process_json.py.
-  kMaxValue = kIcelake,
+  kMaxValue = kTigerlake,
 };
 
 // Video profile.  This *must* match media::VideoCodecProfile.

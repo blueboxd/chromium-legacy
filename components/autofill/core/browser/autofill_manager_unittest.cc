@@ -686,8 +686,6 @@ class AutofillManagerTest : public testing::Test {
     credit_card2.set_use_count(5);
     credit_card2.set_use_date(AutofillClock::Now() -
                               base::TimeDelta::FromDays(4));
-    // Set arbitrary nickname to the second card.
-    credit_card2.SetNickname(ASCIIToUTF16(kArbitraryNickname));
     personal_data_.AddCreditCard(credit_card2);
 
     CreditCard credit_card3;
@@ -767,11 +765,12 @@ std::string SuggestionMatchingTest::MakeMobileLabel(
       parts, l10n_util::GetStringUTF8(IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR));
 }
 
-class CreditCardSuggestionMatchingTest
+// Credit card suggestion tests related with keyboard accessary and nickname.
+class CreditCardSuggestionTest
     : public AutofillManagerTest,
       public testing::WithParamInterface<std::tuple<bool, bool>> {
  protected:
-  CreditCardSuggestionMatchingTest()
+  CreditCardSuggestionTest()
       : is_keyboard_accessory_enabled_(std::get<0>(GetParam())),
         is_surfacing_server_card_nickname_enabled_(std::get<1>(GetParam())) {}
 
@@ -1577,16 +1576,59 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_MatchCharacter) {
 }
 
 // Test that we return credit card profile suggestions when the selected form
-// field is not the credit card number field.
-TEST_P(CreditCardSuggestionMatchingTest, GetCreditCardSuggestions_NonCCNumber) {
+// field is the credit card number field.
+TEST_P(CreditCardSuggestionTest, GetCreditCardSuggestions_CCNumber) {
+  // Set nickname with the corresponding guid of the Mastercard 8765.
+  personal_data_.SetNicknameForCardWithGUID(
+      "00000000-0000-0000-0000-000000000005", kArbitraryNickname);
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, true, false);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  const FormFieldData& field = form.fields[0];
-  GetAutofillSuggestions(form, field);
+  const FormFieldData& credit_card_number_field = form.fields[1];
+  GetAutofillSuggestions(form, credit_card_number_field);
+
+  const std::string visa_value =
+      std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456");
+  // Mastercard has a valid nickname. Display nickname + last four in the
+  // suggestion title when feature enabled.
+  const std::string master_card_value =
+      (IsSurfacingServerCardNicknameEnabled() ? kArbitraryNickname + "  "
+                                              : std::string("Mastercard  ")) +
+      test::ObfuscatedCardDigitsAsUTF8("8765");
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
+#else
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
+#endif
+
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion(visa_value, visa_label, kVisaCard,
+                              autofill_manager_->GetPackedCreditCardID(4)),
+                   Suggestion(master_card_value, master_card_label, kMasterCard,
+                              autofill_manager_->GetPackedCreditCardID(5)));
+}
+
+// Test that we return credit card profile suggestions when the selected form
+// field is not the credit card number field.
+TEST_P(CreditCardSuggestionTest, GetCreditCardSuggestions_NonCCNumber) {
+  // Set nickname with the corresponding guid of the Mastercard 8765.
+  personal_data_.SetNicknameForCardWithGUID(
+      "00000000-0000-0000-0000-000000000005", kArbitraryNickname);
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const FormFieldData& cardholder_name_field = form.fields[0];
+  GetAutofillSuggestions(form, cardholder_name_field);
 
   const std::string obfuscated_last_four_digits1 =
       test::ObfuscatedCardDigitsAsUTF8("3456");
@@ -6386,7 +6428,7 @@ TEST_F(AutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
 
 // Verify that typing "dre" matches "Nancy Drew" when substring matching is
 // enabled.
-TEST_P(CreditCardSuggestionMatchingTest,
+TEST_P(CreditCardSuggestionTest,
        DisplayCreditCardSuggestionsWithMatchingTokens) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
@@ -8330,7 +8372,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 // Second bool is to indicate whether AutofillEnableSurfacingServerCardNickname
 // is enabled.
 INSTANTIATE_TEST_SUITE_P(All,
-                         CreditCardSuggestionMatchingTest,
+                         CreditCardSuggestionTest,
                          testing::Combine(testing::Bool(), testing::Bool()));
 
 }  // namespace autofill

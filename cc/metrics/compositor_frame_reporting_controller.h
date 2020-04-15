@@ -65,6 +65,7 @@ class CC_EXPORT CompositorFrameReportingController {
   virtual void DidPresentCompositorFrame(
       uint32_t frame_token,
       const viz::FrameTimingDetails& details);
+  void OnStoppedRequestingBeginFrames();
 
   void SetBlinkBreakdown(std::unique_ptr<BeginMainFrameMetrics> details,
                          base::TimeTicks main_thread_start_time);
@@ -74,7 +75,7 @@ class CC_EXPORT CompositorFrameReportingController {
   virtual void AddActiveTracker(FrameSequenceTrackerType type);
   virtual void RemoveActiveTracker(FrameSequenceTrackerType type);
 
-  base::flat_set<FrameSequenceTrackerType> active_trackers_;
+  std::unique_ptr<CompositorFrameReporter>* reporters() { return reporters_; }
 
  protected:
   struct SubmittedCompositorFrame {
@@ -87,8 +88,8 @@ class CC_EXPORT CompositorFrameReportingController {
     ~SubmittedCompositorFrame();
   };
   base::TimeTicks Now() const;
-  std::unique_ptr<CompositorFrameReporter>
-      reporters_[PipelineStage::kNumPipelineStages];
+
+  bool HasReporterAt(PipelineStage stage) const;
 
  private:
   void AdvanceReporterStage(PipelineStage start, PipelineStage target);
@@ -101,12 +102,16 @@ class CC_EXPORT CompositorFrameReportingController {
   viz::BeginFrameId last_submitted_frame_id_;
 
   bool next_activate_has_invalidation_ = false;
+  base::flat_set<FrameSequenceTrackerType> active_trackers_;
 
   // The latency reporter passed to each CompositorFrameReporter. Owned here
   // because it must be common among all reporters.
   // DO NOT reorder this line and the ones below. The latency_ukm_reporter_ must
   // outlive the objects in |submitted_compositor_frames_|.
   std::unique_ptr<LatencyUkmReporter> latency_ukm_reporter_;
+
+  std::unique_ptr<CompositorFrameReporter>
+      reporters_[PipelineStage::kNumPipelineStages];
 
   // Mapping of frame token to pipeline reporter for submitted compositor
   // frames.

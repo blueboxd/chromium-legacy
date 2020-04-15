@@ -90,6 +90,11 @@ class SessionServiceTestHelper {
                          const std::pair<int, int>& range);
   bool GetAvailableRange(const SessionID& tab_id, std::pair<int, int>* range);
 
+  void SetHasOpenTrackableBrowsers(bool has_open_trackable_browsers);
+  bool GetHasOpenTrackableBrowsers();
+
+  void SetIsOnlyOneTabLeft(bool is_only_one_tab_left);
+
  private:
   std::unique_ptr<SessionService> service_;
 

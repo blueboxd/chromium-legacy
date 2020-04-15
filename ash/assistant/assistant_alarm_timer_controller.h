@@ -12,7 +12,6 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_alarm_timer_model.h"
 #include "ash/assistant/model/assistant_alarm_timer_model_observer.h"
-#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/macros.h"
@@ -37,8 +36,7 @@ class AssistantAlarmTimerController
     : public mojom::AssistantAlarmTimerController,
       public AssistantControllerObserver,
       public AssistantStateObserver,
-      public AssistantAlarmTimerModelObserver,
-      public AssistantUiModelObserver {
+      public AssistantAlarmTimerModelObserver {
  public:
   explicit AssistantAlarmTimerController(
       AssistantController* assistant_controller);
@@ -77,18 +75,10 @@ class AssistantAlarmTimerController
   void OnTimerRemoved(const mojom::AssistantTimer& timer) override;
   void OnAllTimersRemoved() override;
 
-  // AssistantUiModelObserver:
-  void OnUiVisibilityChanged(
-      AssistantVisibility new_visibility,
-      AssistantVisibility old_visibility,
-      base::Optional<AssistantEntryPoint> entry_point,
-      base::Optional<AssistantExitPoint> exit_point) override;
-
  private:
-  void PerformAlarmTimerAction(
-      const assistant::util::AlarmTimerAction& action,
-      const base::Optional<std::string>& alarm_timer_id,
-      const base::Optional<base::TimeDelta>& duration);
+  void PerformAlarmTimerAction(const assistant::util::AlarmTimerAction& action,
+                               const std::string& alarm_timer_id,
+                               const base::Optional<base::TimeDelta>& duration);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 

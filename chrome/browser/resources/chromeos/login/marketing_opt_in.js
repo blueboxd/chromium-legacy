@@ -17,6 +17,15 @@ Polymer({
     },
 
     /**
+     * Whether the accessibility button is shown. This button is only shown
+     * if the gesture EDU screen was shown before the marketing screen.
+     */
+    isA11ySettingsButtonVisible_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Whether the marketing opt in toggles should be shown, which will be the
      * case only if marketing opt in feature is enabled AND if the current user
      * is a non-managed user.
@@ -33,6 +42,7 @@ Polymer({
 
   /** Overridden from LoginScreenBehavior. */
   EXTERNAL_API: [
+    'updateA11ySettingsButtonVisibility',
     'updateA11yNavigationButtonToggle',
     'setOptInVisibility',
     'setEmailToggleState'
@@ -67,6 +77,13 @@ Polymer({
     chrome.send(
         'login.MarketingOptInScreen.onGetStarted',
         [this.$.chromebookUpdatesOption.checked]);
+  },
+
+  /**
+   * @param {boolean} shown Whether the A11y Settings button should be shown.
+   */
+  updateA11ySettingsButtonVisibility(shown) {
+    this.isA11ySettingsButtonVisible_ = shown;
   },
 
   /**

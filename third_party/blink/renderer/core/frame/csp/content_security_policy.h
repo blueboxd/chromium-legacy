@@ -382,7 +382,6 @@ class CORE_EXPORT ContentSecurityPolicy final
   void ReportInvalidSandboxFlags(const String&);
   void ReportInvalidSourceExpression(const String& directive_name,
                                      const String& source);
-  void ReportMissingReportURI(const String&);
   void ReportUnsupportedDirective(const String&);
   void ReportInvalidInReportOnly(const String&);
   void ReportInvalidDirectiveInMeta(const String& directive_name);

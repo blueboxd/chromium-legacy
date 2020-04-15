@@ -720,7 +720,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         // Find origins matching the current search.
         for (Website site : sites) {
             if (mSearch == null || mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
-                websites.add(new WebsitePreference(getStyledContext(), site, mCategory));
+                websites.add(new WebsitePreference(
+                        getStyledContext(), getSiteSettingsClient(), site, mCategory));
             }
         }
 
@@ -1034,11 +1035,18 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     private void configureFourStateCookieToggle(
             FourStateCookieSettingsPreference fourStateCookieToggle) {
         fourStateCookieToggle.setOnPreferenceChangeListener(this);
-        fourStateCookieToggle.setState(mCategory.isManaged(),
-                PrefServiceBridge.getInstance().isManagedPreference(Pref.BLOCK_THIRD_PARTY_COOKIES),
-                WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES),
-                PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES),
-                PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE));
+        FourStateCookieSettingsPreference.Params params =
+                new FourStateCookieSettingsPreference.Params();
+        params.allowCookies =
+                WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES);
+        params.blockThirdPartyCookies =
+                PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES);
+        params.cookieControlsMode =
+                PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE);
+        params.cookiesContentSettingEnforced = mCategory.isManaged();
+        params.thirdPartyBlockingEnforced =
+                PrefServiceBridge.getInstance().isManagedPreference(Pref.BLOCK_THIRD_PARTY_COOKIES);
+        fourStateCookieToggle.setState(params);
     }
 
     private void configureTriStateToggle(

@@ -58,7 +58,7 @@ enum class DeepLinkParam {
 // Enumeration of alarm/timer deep link actions.
 enum class AlarmTimerAction {
   kAddTimeToTimer,
-  kStopRinging,
+  kRemove,
 };
 
 // Enumeration of proactive suggestions deep link actions.
@@ -80,7 +80,7 @@ COMPONENT_EXPORT(ASSISTANT_UTIL)
 base::Optional<GURL> CreateAlarmTimerDeepLink(
     AlarmTimerAction action,
     base::Optional<std::string> alarm_timer_id,
-    base::Optional<base::TimeDelta> duration);
+    base::Optional<base::TimeDelta> duration = base::nullopt);
 
 // Returns a deep link to send an Assistant query.
 COMPONENT_EXPORT(ASSISTANT_UTIL)

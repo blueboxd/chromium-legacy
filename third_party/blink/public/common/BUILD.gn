@@ -130,7 +130,6 @@ source_set("headers") {
     "notifications/notification_resources.h",
     "notifications/platform_notification_data.h",
     "oom_intervention/oom_intervention_types.h",
-    "origin_policy/origin_policy.h",
     "origin_trials/origin_trial_policy.h",
     "origin_trials/trial_token.h",
     "origin_trials/trial_token_validator.h",

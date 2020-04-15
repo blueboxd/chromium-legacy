@@ -2015,9 +2015,11 @@ ci.fyi_ios_builder(
         category = 'iOS|iOS13',
         short_name = 'sim',
     ),
+    caches = [xcode_cache.x11e146],
     executable = 'recipe:chromium',
+    os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11c29'
+        'xcode_build_version': '11e146'
     }
 )
 

@@ -98,9 +98,9 @@ crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag.h
 # Tests temporarily disabled until the video.requestAnimationFrame =>
 # video.requestVideoFrameCallback rename is completed. See crbug.com/1012063.
 
-external/wpt/video-raf/video-request-animation-frame.html [ Failure ]
-external/wpt/video-raf/video-request-animation-frame-parallel.html [ Failure ]
-external/wpt/video-raf/video-request-animation-frame-repeating.html [ Failure ]
+external/wpt/video-rvfc/video-request-animation-frame.html [ Failure ]
+external/wpt/video-rvfc/video-request-animation-frame-parallel.html [ Failure ]
+external/wpt/video-rvfc/video-request-animation-frame-repeating.html [ Failure ]
 external/wpt/video-raf/idlharness.window.html [ Failure ]
 
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
@@ -220,7 +220,6 @@ crbug.com/774873 [ Win ] virtual/exotic-color-space/images/color-profile-border-
 crbug.com/974652 [ Debug ] virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
 crbug.com/974652 [ Debug ] fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
 
-crbug.com/1011060 virtual/gpu/fast/canvas/canvas-getImageData-smooth.html [ Pass Failure ]
 crbug.com/1011060 virtual/gpu/fast/canvas/bug382588.html [ Pass Failure ]
 crbug.com/1011060 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure Crash ]
 
@@ -3158,7 +3157,6 @@ crbug.com/626703 [ Win ] external/wpt/webxr/hit-test/ar_hittest_subscription_ref
 crbug.com/626703 [ Linux ] external/wpt/webxr/hit-test/ar_hittest_subscription_transientInputSources.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/webxr/hit-test/ar_hittest_subscription_transientInputSources.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webxr/hit-test/ar_hittest_subscription_transientInputSources.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/webxr/hit-test/ar_hittest_subscription_inputSources.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/webxr/hit-test/ar_hittest_subscription_inputSources.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webxr/hit-test/ar_hittest_subscription_inputSources.https.html [ Timeout ]
@@ -4864,7 +4862,6 @@ crbug.com/775957 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip 
 # Canvas tests that are affected by change to Skia GPU rect shadow rendering.
 crbug.com/990918 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass Failure ]
 crbug.com/990918 virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Pass Failure ]
-crbug.com/990918 virtual/gpu/fast/canvas/canvas-shadow.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-21
 crbug.com/767469 http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
@@ -4949,9 +4946,6 @@ crbug.com/785179 [ Win7 Debug ] http/tests/devtools/console/console-viewport-sti
 
 # Sheriff failures 2017-11-16
 crbug.com/785980 [ Win ] http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
-
-# Sheriff failures 2017-11-29
-crbug.com/786641 virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing.html [ Pass Failure Timeout ]
 
 # Sheriff failures 2017-12-04
 crbug.com/667560 http/tests/devtools/elements/styles-4/inline-style-sourcemap.js [ Pass Failure ]
@@ -5190,10 +5184,11 @@ crbug.com/824848 [ Mac ] external/wpt/html/semantics/links/following-hyperlinks/
 crbug.com/824848 [ Win ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
 
 # Sheriff 2018-03-26
-crbug.com/825733 [ Win ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
-crbug.com/825733 [ Win ] virtual/audio-service/media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
 crbug.com/754986 media/video-transformed.html [ Pass Failure ]
 crbug.com/754986 virtual/audio-service/media/video-transformed.html [ Pass Failure ]
+# Superceded temporarily by wider suppresseion for skbug.com/10139
+#crbug.com/825733 [ Win ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
+#crbug.com/825733 [ Win ] virtual/audio-service/media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
 
 # Sheriff 2018-03-29
 crbug.com/827209 [ Win ] fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
@@ -5205,7 +5200,6 @@ crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-enviro
 # Sheriff 2018-04-11
 crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
-crbug.com/831496 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Timeout ]
 crbug.com/829952 fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
 
 crbug.com/832274 [ Linux ] fast/forms/search/search-appearance-basic.html [ Pass Failure ]
@@ -5495,7 +5489,6 @@ crbug.com/922951 virtual/text-antialias/international/inline-plaintext-relayout-
 crbug.com/922951 http/tests/cache/subresource-fragment-identifier.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 http/tests/devtools/tracing/timeline-network-received-data.js [ Failure Pass Timeout Crash ]
 crbug.com/922951 http/tests/history/back-to-post.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 http/tests/security/cookies/basic.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 http/tests/webaudio/autoplay-crossorigin.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 media/controls/overflow-menu-hide-on-click-outside-stoppropagation.html [ Failure Pass Timeout Crash ]
@@ -5504,8 +5497,6 @@ crbug.com/922951 media/controls/overflow-menu-toggle-class-for-animation.html [ 
 crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-hide-on-click-outside-stoppropagation.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-hide-on-click-outside.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-toggle-class-for-animation.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 virtual/gpu/fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 virtual/gpu/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/prefer_compositing_to_lcd_text/scrollbars/resize-scales-with-dpi-150.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/scalefactor150/fast/events/synthetic-events/tap-on-scaled-screen.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/frame-model-instrumentation.js [ Failure Pass Timeout Crash ]
@@ -5793,9 +5784,6 @@ crbug.com/971262 http/tests/devtools/profiler/live-line-level-heap-profile.js [ 
 crbug.com/971319 [ Mac ] media/audio-garbage-collect.html [ Pass Timeout ]
 crbug.com/971319 [ Mac ] virtual/audio-service/media/audio-garbage-collect.html [ Pass Timeout ]
 
-# Sheriff 2019-06-06
-crbug.com/971612 fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
-
 # Sheriff 2019-06-13
 crbug.com/973692 [ Mac ] external/wpt/css/css-text/parsing/hyphens-computed.html [ Failure ]
 crbug.com/973726 [ Mac ] fast/css/large-list-of-rules-crash.html [ Pass Timeout ]
@@ -6045,8 +6033,6 @@ crbug.com/1010032 [ Win7 ] fast/writing-mode/Kusa-Makura-background-canvas.html 
 crbug.com/1010170 [ Mac ] media/video-played-reset.html [ Failure ]
 
 # Sheriff 2019-10-02
-crbug.com/1010472 [ Linux Debug ] fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Timeout Pass ]
-crbug.com/1010472 [ Mac Debug ] fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Timeout Pass ]
 crbug.com/1010483 [ Win ] fast/parser/residual-style-dom.html [ Crash Pass ]
 crbug.com/1010483 [ Win ] fast/parser/residual-style-hang.html [ Crash Pass ]
 crbug.com/1010483 [ Win ] fast/selectors/specificity-overflow.html [ Crash Pass ]
@@ -6138,7 +6124,9 @@ crbug.com/1015187 external/wpt/html/cross-origin-embedder-policy/none.https.html
 # Sheriff 2019-11-29
 crbug.com/1019079 virtual/gpu/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
 crbug.com/1019079 fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
-crbug.com/1027434 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
+#crbug.com/1027434 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
+# Temporarily disabled until V8 roll
+crbug.com/793406 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Skip ]
 crbug.com/1027434 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
 
 # Sheriff 2019-12-02
@@ -6464,9 +6452,6 @@ crbug.com/1047420 [ Mac ] http/tests/devtools/persistence/persistence-move-break
 
 crbug.com/1049454 external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Pass Timeout ]
 
-# Sheriff 2020-02-10
-crbug.com/1050306 [ Fuchsia ] virtual/gpu/fast/canvas/canvas-filter-frameless-document.html [ Crash Pass Timeout ]
-
 # Swiftshader issue.
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-innerwidth.html [ Crash Timeout ]
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-screeny.html [ Crash Timeout ]
@@ -6644,8 +6629,6 @@ crbug.com/1061159 [ Fuchsia ] fast/inspector-support/cssURLQuotes.html [ Pass Fa
 crbug.com/1061043 fast/plugins/keypress-event.html [ Pass Failure ]
 crbug.com/1061097 http/tests/security/promise-access-control-allow.htm [ Pass Failure ]
 crbug.com/1061131 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/middle-click-autoscroll-latching-clicked-node.html [ Pass Timeout ]
-crbug.com/1061131 [ Win ] fast/canvas/toBlob-in-detached-document.html [ Pass Crash ]
-crbug.com/1061131 [ Mac ] fast/canvas/toBlob-in-detached-document.html [ Pass Crash ]
 crbug.com/1061131 [ Mac ] editing/selection/replaced-boundaries-1.html [ Pass Failure ]
 
 crbug.com/1058888 [ Linux ] animations/animationworklet/peek-updated-composited-property-on-main.html [ Pass Failure ]
@@ -6678,6 +6661,14 @@ crbug.com/1066122 virtual/threaded-no-composited-antialiasing/animations/events/
 crbug.com/1066732 fast/events/platform-wheelevent-paging-x-in-scrolling-div.html [ Pass Failure ]
 crbug.com/1066732 fast/events/platform-wheelevent-paging-y-in-scrolling-div.html [ Pass Failure ]
 
+#Imperceptible changes to Gaussian blur code in Skia.
+skbug.com/10139 css3/filters/effect-combined-hw.html [ Pass Failure ]
+skbug.com/10139 images/yuv-decode-eligible/color-profile-layer-filter.html [ Pass Failure ]
+skbug.com/10139 media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
+skbug.com/10139 virtual/audio-service/media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
+skbug.com/10139 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
+skbug.com/10139 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
+
 # Test flakes
 crbug.com/1066716 http/tests/cache/zero-length-xhr.html [ Pass Timeout ]
 
@@ -6686,6 +6677,10 @@ crbug.com/1067533 [ Mac10.10 ] external/wpt/shape-detection/idlharness.https.any
 
 crbug.com/1064422 external/wpt/html/user-activation/propagation-crossorigin.sub.tentative.html [ Pass Timeout ]
 crbug.com/1066178 external/wpt/html/user-activation/consumption-crossorigin.sub.tentative.html [ Pass Timeout ]
+
+# Flaky test, happens only on Mac 10.13.
+# The "timeout" was detected by the wpt-importer bot.
+crbug.com/1069714 [ Mac10.13 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Pass Failure Timeout ]
 
 # Sheriff 2020-04-10
 crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html [ Pass Failure Timeout ]

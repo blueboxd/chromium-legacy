@@ -35,6 +35,7 @@ class PLATFORM_EXPORT DocumentResourceCoordinator final {
   void SetIsAdFrame();
   void OnNonPersistentNotificationCreated();
   void SetHadFormInteraction();
+  void OnFirstContentfulPaint(base::TimeDelta time_since_navigation_start);
 
  private:
   explicit DocumentResourceCoordinator(const BrowserInterfaceBrokerProxy&);

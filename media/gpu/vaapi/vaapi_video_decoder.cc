@@ -240,7 +240,7 @@ void VaapiVideoDecoder::HandleDecodeTask() {
     case AcceleratedVideoDecoder::kConfigChange:
       // A new set of output buffers is requested. We either didn't have any
       // output buffers yet or encountered a resolution change.
-      // After the pipeline flushes all frames, OnPipelineFlushed() will be
+      // After the pipeline flushes all frames, ApplyResolutionChange() will be
       // called and we can start changing resolution.
       DCHECK(client_);
       SetState(State::kChangingResolution);
@@ -392,7 +392,7 @@ void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
   output_cb_.Run(std::move(video_frame));
 }
 
-void VaapiVideoDecoder::OnPipelineFlushed() {
+void VaapiVideoDecoder::ApplyResolutionChange() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(state_ == State::kChangingResolution ||
          state_ == State::kWaitingForInput);

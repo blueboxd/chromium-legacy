@@ -539,8 +539,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         if (action == ACTION_IME_ENTER && ACTION_IME_ENTER != 0) {
             if (mWebContents != null) {
                 if (ImeAdapterImpl.fromWebContents(mWebContents) != null) {
+                    // We send an unspecified action to ensure Enter key is hit
                     return ImeAdapterImpl.fromWebContents(mWebContents)
-                            .performEditorAction(EditorInfo.IME_ACTION_NEXT);
+                            .performEditorAction(EditorInfo.IME_ACTION_UNSPECIFIED);
                 }
             }
             return false;

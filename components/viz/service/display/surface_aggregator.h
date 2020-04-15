@@ -408,6 +408,11 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // passes. This is valid during Aggregate after PrewalkTree is called.
   bool has_cached_render_passes_;
 
+  // True if any RenderPasses in the aggregated frame have a backdrop filter
+  // that moves pixels. This is valid during Aggregate after PrewalkTree is
+  // called.
+  bool has_pixel_moving_backdrop_filter_ = false;
+
   // For each FrameSinkId, contains a vector of SurfaceRanges that will damage
   // the display if they're damaged.
   base::flat_map<FrameSinkId, std::vector<SurfaceRange>> damage_ranges_;

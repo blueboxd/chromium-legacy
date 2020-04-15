@@ -38,7 +38,7 @@ class BASE_EXPORT OSStatusLogMessage : public logging::LogMessage {
                      int line,
                      LogSeverity severity,
                      OSStatus status);
-  ~OSStatusLogMessage();
+  ~OSStatusLogMessage() override;
 
  private:
   OSStatus status_;

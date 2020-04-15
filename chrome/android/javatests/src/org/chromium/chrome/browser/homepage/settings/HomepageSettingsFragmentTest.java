@@ -17,15 +17,13 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UserActionTester;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepageTestRule;
 import org.chromium.chrome.browser.homepage.settings.HomepageMetricsEnums.HomepageLocationType;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
-import org.chromium.chrome.browser.settings.SettingsActivity;
-import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
@@ -90,8 +88,8 @@ public class HomepageSettingsFragmentTest {
     private static final String CHROME_NTP = UrlConstants.NTP_NON_NATIVE_URL;
 
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public SettingsActivityTestRule<HomepageSettings> mTestRule =
+            new SettingsActivityTestRule<>(HomepageSettings.class);
 
     @Rule
     public HomepageTestRule mHomepageTestRule = new HomepageTestRule();
@@ -108,9 +106,8 @@ public class HomepageSettingsFragmentTest {
     private RadioButtonWithEditText mCustomUriRadioButton;
 
     private void launchSettingsActivity() {
-        SettingsActivity homepagePreferenceActivity =
-                mTestRule.startSettingsActivity(HomepageSettings.class.getName());
-        HomepageSettings fragment = (HomepageSettings) homepagePreferenceActivity.getMainFragment();
+        mTestRule.startSettingsActivity();
+        HomepageSettings fragment = mTestRule.getFragment();
         Assert.assertNotNull(fragment);
 
         mSwitch = (ChromeSwitchPreference) fragment.findPreference(

@@ -278,23 +278,6 @@ void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
   content::SetDeviceScaleFactor(render_view(), factor);
 }
 
-std::unique_ptr<blink::WebInputEvent>
-BlinkTestRunner::TransformScreenToWidgetCoordinates(
-    WebWidgetTestProxy* web_widget_test_proxy,
-    const blink::WebInputEvent& event) {
-  return content::TransformScreenToWidgetCoordinates(web_widget_test_proxy,
-                                                     event);
-}
-
-void BlinkTestRunner::EnableUseZoomForDSF() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableUseZoomForDSF);
-}
-
-bool BlinkTestRunner::IsUseZoomForDSFEnabled() {
-  return content::IsUseZoomForDSFEnabled();
-}
-
 void BlinkTestRunner::SetDeviceColorSpace(const std::string& name) {
   content::SetDeviceColorSpace(render_view(), GetWebTestColorSpace(name));
 }

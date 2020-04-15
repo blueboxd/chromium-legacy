@@ -15,9 +15,13 @@
 #ifndef CRASHPAD_SNAPSHOT_IOS_PROCESS_SNAPSHOT_IOS_H_
 #define CRASHPAD_SNAPSHOT_IOS_PROCESS_SNAPSHOT_IOS_H_
 
+#include <sys/sysctl.h>
+
 #include <vector>
 
+#include "snapshot/ios/exception_snapshot_ios.h"
 #include "snapshot/ios/module_snapshot_ios.h"
+#include "snapshot/ios/system_snapshot_ios.h"
 #include "snapshot/ios/thread_snapshot_ios.h"
 #include "snapshot/process_snapshot.h"
 #include "snapshot/thread_snapshot.h"
@@ -34,9 +38,26 @@ class ProcessSnapshotIOS final : public ProcessSnapshot {
 
   //! \brief Initializes the object.
   //!
+  //! \param[in] system_data A class containing various system data points.
+  //!
   //! \return `true` if the snapshot could be created, `false` otherwise with
   //!     an appropriate message logged.
-  bool Initialize();
+  bool Initialize(const IOSSystemDataCollector& system_data);
+
+  void SetException(const siginfo_t* siginfo, const ucontext_t* context);
+  //! \brief Sets the value to be returned by ClientID().
+  //!
+  //! On iOS, the client ID is under the control of the snapshot producer,
+  //! which may call this method to set the client ID. If this is not done,
+  //! ClientID() will return an identifier consisting entirely of zeroes.
+  void SetClientID(const UUID& client_id) { client_id_ = client_id; }
+
+  //! \brief Sets the value to be returned by ReportID().
+  //!
+  //! On iOS, the crash report ID is under the control of the snapshot
+  //! producer, which may call this method to set the report ID. If this is not
+  //! done, ReportID() will return an identifier consisting entirely of zeroes.
+  void SetReportID(const UUID& report_id) { report_id_ = report_id; }
 
   // ProcessSnapshot:
   pid_t ProcessID() const override;
@@ -65,8 +86,15 @@ class ProcessSnapshotIOS final : public ProcessSnapshot {
   // Initializes threads_ on behalf of Initialize().
   void InitializeThreads();
 
+  kinfo_proc kern_proc_info_;
+  time_value_t basic_info_user_time_;
+  time_value_t basic_info_system_time_;
+  time_value_t thread_times_user_time_;
+  time_value_t thread_times_system_time_;
+  internal::SystemSnapshotIOS system_;
   std::vector<std::unique_ptr<internal::ThreadSnapshotIOS>> threads_;
   std::vector<std::unique_ptr<internal::ModuleSnapshotIOS>> modules_;
+  std::unique_ptr<internal::ExceptionSnapshotIOS> exception_;
   UUID report_id_;
   UUID client_id_;
   std::map<std::string, std::string> annotations_simple_map_;

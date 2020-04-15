@@ -329,9 +329,9 @@ Response BrowserHandler::FindBrowserContext(
 }
 
 Response BrowserHandler::SetPermission(
-    Maybe<std::string> origin,
     std::unique_ptr<protocol::Browser::PermissionDescriptor> permission,
     const protocol::Browser::PermissionSetting& setting,
+    Maybe<std::string> origin,
     Maybe<std::string> browser_context_id) {
   BrowserContext* browser_context = nullptr;
   Response response = FindBrowserContext(browser_context_id, &browser_context);
@@ -373,9 +373,9 @@ Response BrowserHandler::SetPermission(
 }
 
 Response BrowserHandler::GrantPermissions(
-    Maybe<std::string> origin,
     std::unique_ptr<protocol::Array<protocol::Browser::PermissionType>>
         permissions,
+    Maybe<std::string> origin,
     Maybe<std::string> browser_context_id) {
   BrowserContext* browser_context = nullptr;
   Response response = FindBrowserContext(browser_context_id, &browser_context);

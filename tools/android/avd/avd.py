@@ -99,6 +99,12 @@ def main(raw_args):
       action='store_true',
       default=False,
       help='Enable graphical window display on the emulator.')
+  start_parser.add_argument(
+      '--debug-tags',
+      help='Comma-separated list of debug tags. This can be used to enable or '
+      'disable debug messages from specific parts of the emulator, e.g. '
+      'init, snapshot. See "emulator -help-debug-tags" '
+      'for a full list of tags.')
   add_common_arguments(start_parser)
 
   def start_cmd(args):
@@ -106,7 +112,8 @@ def main(raw_args):
     inst.Start(
         read_only=args.read_only,
         snapshot_save=not args.read_only,
-        window=args.emulator_window)
+        window=args.emulator_window,
+        debug_tags=args.debug_tags)
     print('%s started (pid: %d)' % (str(inst), inst._emulator_proc.pid))
     return 0
 

@@ -24,7 +24,6 @@ class BottomStatusIndicator : public views::View {
  public:
   enum class ContentType {
     kNone,
-    kManagedDevice,
     kAdbSideLoadingEnabled,
   };
 

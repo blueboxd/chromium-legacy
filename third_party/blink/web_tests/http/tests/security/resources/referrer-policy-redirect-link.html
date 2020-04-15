@@ -10,8 +10,7 @@ function receiveMessage(evt) {
             testRunner.notifyDone();
     } else if (typeof(evt.data) == "object" && evt.data.action == "click")  {
         var link = document.getElementById("link");
-        eventSender.mouseMoveTo(link.offsetLeft + evt.data.offsetLeft + 2,
-                                link.offsetTop + evt.data.offsetTop + 2);
+        eventSender.mouseMoveTo(link.offsetLeft + 2, link.offsetTop + 2);
         eventSender.mouseDown();
         eventSender.mouseUp();
     } else {

@@ -30,6 +30,9 @@ class MarketingOptInScreenView {
   // Hides the contents of the screen.
   virtual void Hide() = 0;
 
+  // Sets whether the a11y Settings button is visible.
+  virtual void UpdateA11ySettingsButtonVisibility(bool shown) = 0;
+
   // Sets whether the a11y setting for showing shelf navigation buttons is
   // toggled on or off.
   virtual void UpdateA11yShelfNavigationButtonToggle(bool enabled) = 0;
@@ -58,6 +61,7 @@ class MarketingOptInScreenHandler : public BaseScreenHandler,
   void Bind(MarketingOptInScreen* screen) override;
   void Show() override;
   void Hide() override;
+  void UpdateA11ySettingsButtonVisibility(bool shown) override;
   void UpdateA11yShelfNavigationButtonToggle(bool enabled) override;
   void SetOptInVisibility(bool visible) override;
   void SetEmailToggleState(bool checked) override;

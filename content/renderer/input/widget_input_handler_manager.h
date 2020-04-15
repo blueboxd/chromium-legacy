@@ -243,8 +243,10 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
 
   // Control of UMA. We emit one UMA metric per navigation telling us
   // whether any non-move input arrived before we starting updating the page or
-  // displaying content to the user.
-  bool have_emitted_uma_ = false;
+  // displaying content to the user. It must be atomic because navigation can
+  // occur on the renderer thread (resetting this) coincident with the UMA
+  // being sent on the compositor thread.
+  std::atomic<bool> have_emitted_uma_{false};
 
 #if defined(OS_ANDROID)
   std::unique_ptr<SynchronousCompositorProxyRegistry>

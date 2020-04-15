@@ -10,7 +10,6 @@ import android.support.test.filters.MediumTest;
 import android.view.View;
 
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -32,7 +31,7 @@ import org.chromium.chrome.browser.homepage.settings.HomepageMetricsEnums.Homepa
 import org.chromium.chrome.browser.homepage.settings.HomepageSettings;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -75,6 +74,9 @@ public class HomepagePolicyIntegrationTest {
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    @Rule
+    public SettingsActivityTestRule<HomepageSettings> mSettingsActivityTestRule =
+            new SettingsActivityTestRule<>(HomepageSettings.class);
 
     @Rule
     public HomepageTestRule mHomepageTestRule = new HomepageTestRule();
@@ -177,11 +179,8 @@ public class HomepagePolicyIntegrationTest {
     @DisableFeatures(ChromeFeatureList.HOMEPAGE_SETTINGS_UI_CONVERSION)
     public void testHomepagePreference() {
         // Launch homepage preference page
-        SettingsActivity homepagePreferenceActivity =
-                mActivityTestRule.startSettingsActivity(HomepageSettings.class.getName());
-        PreferenceFragmentCompat fragment =
-                (PreferenceFragmentCompat) homepagePreferenceActivity.getSupportFragmentManager()
-                        .findFragmentById(android.R.id.content);
+        mSettingsActivityTestRule.startSettingsActivity();
+        HomepageSettings fragment = mSettingsActivityTestRule.getFragment();
         Assert.assertNotNull(fragment);
 
         ChromeSwitchPreference homepageSwitch = (ChromeSwitchPreference) fragment.findPreference(

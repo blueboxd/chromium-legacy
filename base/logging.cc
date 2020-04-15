@@ -4,6 +4,13 @@
 
 #include "base/logging.h"
 
+// logging.h is a widely included header and its size has significant impact on
+// build time. Try not to raise this limit unless absolutely necessary. See
+// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
+#ifndef NACL_TC_REV
+#pragma clang max_tokens_here 370000
+#endif  // NACL_TC_REV
+
 #include <limits.h>
 #include <stdint.h>
 
@@ -551,22 +558,6 @@ LogMessageHandlerFunction GetLogMessageHandler() {
   return log_message_handler;
 }
 
-// Explicit instantiations for commonly used comparisons.
-template std::string* MakeCheckOpString<int, int>(
-    const int&, const int&, const char* names);
-template std::string* MakeCheckOpString<unsigned long, unsigned long>(
-    const unsigned long&, const unsigned long&, const char* names);
-template std::string* MakeCheckOpString<unsigned long, unsigned int>(
-    const unsigned long&, const unsigned int&, const char* names);
-template std::string* MakeCheckOpString<unsigned int, unsigned long>(
-    const unsigned int&, const unsigned long&, const char* names);
-template std::string* MakeCheckOpString<std::string, std::string>(
-    const std::string&, const std::string&, const char* name);
-
-void MakeCheckOpValueString(std::ostream* os, std::nullptr_t p) {
-  (*os) << "nullptr";
-}
-
 #if !defined(NDEBUG)
 // Displays a message box to the user with the error message in it.
 // Used for fatal messages, where we close the app simultaneously.
@@ -602,21 +593,6 @@ LogMessage::LogMessage(const char* file, int line, const char* condition)
     : severity_(LOG_FATAL), file_(file), line_(line) {
   Init(file, line);
   stream_ << "Check failed: " << condition << ". ";
-}
-
-LogMessage::LogMessage(const char* file, int line, std::string* result)
-    : severity_(LOG_FATAL), file_(file), line_(line) {
-  Init(file, line);
-  stream_ << "Check failed: " << *result;
-  delete result;
-}
-
-LogMessage::LogMessage(const char* file, int line, LogSeverity severity,
-                       std::string* result)
-    : severity_(severity), file_(file), line_(line) {
-  Init(file, line);
-  stream_ << "Check failed: " << *result;
-  delete result;
 }
 
 LogMessage::~LogMessage() {
@@ -1066,9 +1042,7 @@ Win32ErrorLogMessage::Win32ErrorLogMessage(const char* file,
                                            int line,
                                            LogSeverity severity,
                                            SystemErrorCode err)
-    : err_(err),
-      log_message_(file, line, severity) {
-}
+    : LogMessage(file, line, severity), err_(err) {}
 
 Win32ErrorLogMessage::~Win32ErrorLogMessage() {
   stream() << ": " << SystemErrorCodeToString(err_);
@@ -1082,9 +1056,7 @@ ErrnoLogMessage::ErrnoLogMessage(const char* file,
                                  int line,
                                  LogSeverity severity,
                                  SystemErrorCode err)
-    : err_(err),
-      log_message_(file, line, severity) {
-}
+    : LogMessage(file, line, severity), err_(err) {}
 
 ErrnoLogMessage::~ErrnoLogMessage() {
   stream() << ": " << SystemErrorCodeToString(err_);

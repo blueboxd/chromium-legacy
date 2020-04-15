@@ -154,6 +154,12 @@ ASH_PUBLIC_EXPORT extern const base::Feature kHideShelfControlsInTabletMode;
 // section in the system tray.
 ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayMicGainSetting;
 
+// Enables special handling of Chrome tab drags from a WebUI tab strip.
+// These will be treated similarly to a window drag, showing split view
+// indicators in tablet mode, etc. The functionality is behind a flag
+// right now since it is under development.
+ASH_PUBLIC_EXPORT extern const base::Feature kWebUITabStripTabDragIntegration;
+
 ASH_PUBLIC_EXPORT bool IsAllowAmbientEQEnabled();
 
 ASH_PUBLIC_EXPORT bool IsAltTabLimitedToActiveDesk();
@@ -209,6 +215,8 @@ ASH_PUBLIC_EXPORT bool IsCornerShortcutsEnabled();
 ASH_PUBLIC_EXPORT bool IsSystemTrayMicGainSettingEnabled();
 
 ASH_PUBLIC_EXPORT bool IsDisplayIdentificationEnabled();
+
+ASH_PUBLIC_EXPORT bool IsWebUITabStripTabDragIntegrationEnabled();
 
 // These two functions are supposed to be temporary functions to set or get
 // whether "WebUITabStrip" feature is enabled from Chrome.

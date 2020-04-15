@@ -26,6 +26,12 @@ specific_include_rules = {
   "ash_util\.cc": [
     "+ash/shell.h",
   ],
+  "assistant_timers_browsertest\.cc": [
+    "+ash/shelf",
+    "+ash/shell.h",
+    "+ash/system",
+    "+ui/message_center",
+  ],
   # https://crbug.com/756054
   "chrome_accessibility_delegate.*": [
     "+ash/accessibility/accessibility_delegate.h",

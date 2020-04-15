@@ -23,7 +23,4 @@ typemaps = [
   "//third_party/blink/public/common/mediastream/media_stream.typemap",
   "//third_party/blink/public/common/screen_orientation/screen_orientation_lock_types.typemap",
   "//third_party/blink/public/mojom/bluetooth/bluetooth.typemap",
-  "//ui/gfx/geometry/mojom/geometry.typemap",
-  "//ui/gfx/mojom/color_space.typemap",
-  "//ui/gfx/mojom/transform.typemap",
 ]

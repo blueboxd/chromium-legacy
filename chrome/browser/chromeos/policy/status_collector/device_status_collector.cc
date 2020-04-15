@@ -893,24 +893,40 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         }
       }
 
-      const auto& timezone_info = probe_result->timezone_info;
-      if (!timezone_info.is_null()) {
-        em::TimezoneInfo* const timezone_info_out =
-            response_params_.device_status->mutable_timezone_info();
-        timezone_info_out->set_posix(timezone_info->posix);
-        timezone_info_out->set_region(timezone_info->region);
+      // Process TimezoneResult.
+      const auto& timezone_result = probe_result->timezone_result;
+      if (!timezone_result.is_null()) {
+        if (timezone_result->is_error()) {
+          LOG(ERROR) << "cros_healthd: Error getting timezone info: "
+                     << timezone_result->get_error()->msg;
+        } else {
+          const auto& timezone_info = timezone_result->get_timezone_info();
+          em::TimezoneInfo* const timezone_info_out =
+              response_params_.device_status->mutable_timezone_info();
+          timezone_info_out->set_posix(timezone_info->posix);
+          timezone_info_out->set_region(timezone_info->region);
+        }
       }
-      const auto& memory_info = probe_result->memory_info;
-      if (!memory_info.is_null()) {
-        em::MemoryInfo* const memory_info_out =
-            response_params_.device_status->mutable_memory_info();
-        memory_info_out->set_total_memory_kib(memory_info->total_memory_kib);
-        memory_info_out->set_free_memory_kib(memory_info->free_memory_kib);
-        memory_info_out->set_available_memory_kib(
-            memory_info->available_memory_kib);
-        memory_info_out->set_page_faults_since_last_boot(
-            memory_info->page_faults_since_last_boot);
+
+      // Process MemoryResult.
+      const auto& memory_result = probe_result->memory_result;
+      if (!memory_result.is_null()) {
+        if (memory_result->is_error()) {
+          LOG(ERROR) << "cros_healthd: Error getting memory info: "
+                     << memory_result->get_error()->msg;
+        } else {
+          const auto& memory_info = memory_result->get_memory_info();
+          em::MemoryInfo* const memory_info_out =
+              response_params_.device_status->mutable_memory_info();
+          memory_info_out->set_total_memory_kib(memory_info->total_memory_kib);
+          memory_info_out->set_free_memory_kib(memory_info->free_memory_kib);
+          memory_info_out->set_available_memory_kib(
+              memory_info->available_memory_kib);
+          memory_info_out->set_page_faults_since_last_boot(
+              memory_info->page_faults_since_last_boot);
+        }
       }
+
       const auto& backlight_info = probe_result->backlight_info;
       if (backlight_info.has_value()) {
         for (const auto& backlight : backlight_info.value()) {
@@ -921,12 +937,20 @@ class DeviceStatusCollectorState : public StatusCollectorState {
           backlight_info_out->set_brightness(backlight->brightness);
         }
       }
-      const auto& fan_info = probe_result->fan_info;
-      if (fan_info.has_value()) {
-        for (const auto& fan : fan_info.value()) {
-          em::FanInfo* const fan_info_out =
-              response_params_.device_status->add_fan_info();
-          fan_info_out->set_speed_rpm(fan->speed_rpm);
+
+      // Process FanResult.
+      const auto& fan_result = probe_result->fan_result;
+      if (!fan_result.is_null()) {
+        if (fan_result->is_error()) {
+          LOG(ERROR) << "cros_healthd: Error getting fan info: "
+                     << fan_result->get_error()->msg;
+        } else {
+          const auto& fan_info = fan_result->get_fan_info();
+          for (const auto& fan : fan_info) {
+            em::FanInfo* const fan_info_out =
+                response_params_.device_status->add_fan_info();
+            fan_info_out->set_speed_rpm(fan->speed_rpm);
+          }
         }
       }
 

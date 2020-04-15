@@ -18,15 +18,9 @@
 <dom-module id="settings-date-time-page">
   <template>
     <style include="settings-shared">
-      #timeZoneAutoDetect {
-        padding: 0;
-        width: 100%;
-      }
-      #timeZoneButton {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        width: 100%;
+      #timezoneSelectorContainer {
+        padding-block-end: var(--cr-section-vertical-padding);
+        padding-inline-start: var(--cr-section-indent-padding);
       }
     </style>
     <settings-animated-pages id="pages" section="dateTime"
@@ -35,13 +29,10 @@
         <template is="dom-if"
             if="[[!prefs.cros.flags.fine_grained_time_zone_detection_enabled.value]]"
             restamp>
-          <div class="settings-box first">
-            <settings-toggle-button id="timeZoneAutoDetect"
-                class="hr"
-                label="$i18n{timeZoneGeolocation}"
-                pref="{{prefs.generated.resolve_timezone_by_geolocation_on_off}}">
-            </settings-toggle-button>
-          </div>
+          <settings-toggle-button id="timeZoneAutoDetect"
+              label="$i18n{timeZoneGeolocation}"
+              pref="{{prefs.generated.resolve_timezone_by_geolocation_on_off}}">
+          </settings-toggle-button>
         </template>
         <template is="dom-if"
             if="[[prefs.cros.flags.fine_grained_time_zone_detection_enabled.value]]"
@@ -56,7 +47,7 @@
             </cr-policy-pref-indicator>
           </cr-link-row>
         </template>
-        <div class="settings-box continuation embedded"
+        <div id="timezoneSelectorContainer"
             hidden="[[prefs.cros.flags.fine_grained_time_zone_detection_enabled.value]]">
           <timezone-selector prefs="{{prefs}}"
               active-time-zone-display-name="{{activeTimeZoneDisplayName}}">

@@ -480,10 +480,15 @@ void GetFakeCrosHealthdData(
   base::Optional<std::vector<
       chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr>>
       block_device_info(std::move(storage_vector));
-  chromeos::cros_healthd::mojom::TimezoneInfo timezone_info(kPosixTimezone,
-                                                            kTimezoneRegion);
-  chromeos::cros_healthd::mojom::MemoryInfo memory_info(
-      kFakeTotalMemory, kFakeFreeMemory, kFakeAvailableMemory, kFakePageFaults);
+  auto timezone_result =
+      chromeos::cros_healthd::mojom::TimezoneResult::NewTimezoneInfo(
+          chromeos::cros_healthd::mojom::TimezoneInfo::New(kPosixTimezone,
+                                                           kTimezoneRegion));
+  auto memory_result =
+      chromeos::cros_healthd::mojom::MemoryResult::NewMemoryInfo(
+          chromeos::cros_healthd::mojom::MemoryInfo::New(
+              kFakeTotalMemory, kFakeFreeMemory, kFakeAvailableMemory,
+              kFakePageFaults));
   std::vector<chromeos::cros_healthd::mojom::BacklightInfoPtr> backlight_vector;
   chromeos::cros_healthd::mojom::BacklightInfo backlight_info(
       kFakeBacklightPath, kFakeMaxBrightness, kFakeBrightness);
@@ -491,10 +496,13 @@ void GetFakeCrosHealthdData(
   std::vector<chromeos::cros_healthd::mojom::FanInfoPtr> fan_vector;
   chromeos::cros_healthd::mojom::FanInfo fan_info(kFakeSpeedRpm);
   fan_vector.push_back(fan_info.Clone());
+  auto fan_result = chromeos::cros_healthd::mojom::FanResult::NewFanInfo(
+      std::move(fan_vector));
   chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
       battery_info.Clone(), std::move(block_device_info),
-      cached_vpd_info.Clone(), std::move(cpu_result), timezone_info.Clone(),
-      memory_info.Clone(), std::move(backlight_vector), std::move(fan_vector));
+      cached_vpd_info.Clone(), std::move(cpu_result),
+      std::move(timezone_result), std::move(memory_result),
+      std::move(backlight_vector), std::move(fan_result));
 
   // Create fake SampledData.
   em::CPUTempInfo fake_cpu_temp_sample;

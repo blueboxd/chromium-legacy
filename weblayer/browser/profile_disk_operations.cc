@@ -107,6 +107,10 @@ void MarkProfileAsDeleted(const ProfileInfo& info) {
   CHECK(data_root_path.AppendRelativePath(info.data_path, &marker_path));
   base::File file(marker_path,
                   base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  if (!base::PathExists(marker_path)) {
+    LOG(WARNING) << "Failure in deleting profile data. Profile:" << info.name
+                 << " error:" << static_cast<int>(file.error_details());
+  }
 }
 
 void TryNukeProfileFromDisk(const ProfileInfo& info) {

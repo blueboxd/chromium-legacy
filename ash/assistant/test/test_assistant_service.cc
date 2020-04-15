@@ -283,8 +283,7 @@ void TestAssistantService::AddTimeToTimer(const std::string& id,
                                           base::TimeDelta duration) {
 }
 
-void TestAssistantService::StopAlarmTimerRinging() {
-}
+void TestAssistantService::RemoveAlarmTimer(const std::string& id) {}
 
 void TestAssistantService::StartInteraction(
     chromeos::assistant::mojom::AssistantInteractionType type,

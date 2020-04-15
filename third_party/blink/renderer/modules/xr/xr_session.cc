@@ -306,6 +306,7 @@ XRSession::XRSession(
         client_receiver,
     device::mojom::blink::XRSessionMode mode,
     EnvironmentBlendMode environment_blend_mode,
+    InteractionMode interaction_mode,
     bool uses_input_eventing,
     bool sensorless_session,
     XRSessionFeatureSet enabled_features)
@@ -340,6 +341,15 @@ XRSession::XRSession(
     default:
       NOTREACHED() << "Unknown environment blend mode: "
                    << environment_blend_mode;
+  }
+
+  switch (interaction_mode) {
+    case kInteractionModeScreen:
+      interaction_mode_string_ = "screen-space";
+      break;
+    case kInteractionModeWorld:
+      interaction_mode_string_ = "world-space";
+      break;
   }
 }
 

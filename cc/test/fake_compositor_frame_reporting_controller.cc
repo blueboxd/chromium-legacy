@@ -17,14 +17,14 @@ FakeCompositorFrameReportingController::FakeCompositorFrameReportingController()
 
 void FakeCompositorFrameReportingController::WillBeginMainFrame(
     const viz::BeginFrameArgs& args) {
-  if (!reporters_[PipelineStage::kBeginImplFrame])
+  if (!HasReporterAt(PipelineStage::kBeginImplFrame))
     CompositorFrameReportingController::WillBeginImplFrame(args);
   CompositorFrameReportingController::WillBeginMainFrame(args);
 }
 
 void FakeCompositorFrameReportingController::BeginMainFrameAborted(
     const viz::BeginFrameId& id) {
-  if (!reporters_[PipelineStage::kBeginMainFrame]) {
+  if (!HasReporterAt(PipelineStage::kBeginMainFrame)) {
     viz::BeginFrameArgs args = viz::BeginFrameArgs();
     args.frame_id = id;
     args.frame_time = Now();
@@ -35,7 +35,7 @@ void FakeCompositorFrameReportingController::BeginMainFrameAborted(
 }
 
 void FakeCompositorFrameReportingController::WillCommit() {
-  if (!reporters_[PipelineStage::kBeginMainFrame]) {
+  if (!HasReporterAt(PipelineStage::kBeginMainFrame)) {
     viz::BeginFrameArgs args = viz::BeginFrameArgs();
     args.frame_id = viz::BeginFrameId();
     args.frame_time = Now();
@@ -46,19 +46,19 @@ void FakeCompositorFrameReportingController::WillCommit() {
 }
 
 void FakeCompositorFrameReportingController::DidCommit() {
-  if (!reporters_[PipelineStage::kBeginMainFrame])
+  if (!HasReporterAt(PipelineStage::kBeginMainFrame))
     WillCommit();
   CompositorFrameReportingController::DidCommit();
 }
 
 void FakeCompositorFrameReportingController::WillActivate() {
-  if (!reporters_[PipelineStage::kCommit])
+  if (!HasReporterAt(PipelineStage::kCommit))
     DidCommit();
   CompositorFrameReportingController::WillActivate();
 }
 
 void FakeCompositorFrameReportingController::DidActivate() {
-  if (!reporters_[PipelineStage::kCommit])
+  if (!HasReporterAt(PipelineStage::kCommit))
     WillActivate();
   CompositorFrameReportingController::DidActivate();
 }

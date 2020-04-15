@@ -87,15 +87,22 @@ void FrameNodeImpl::SetIsAdFrame() {
   is_ad_frame_.SetAndMaybeNotify(this, true);
 }
 
+void FrameNodeImpl::SetHadFormInteraction() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  document_.had_form_interaction.SetAndMaybeNotify(this, true);
+}
+
 void FrameNodeImpl::OnNonPersistentNotificationCreated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto* observer : GetObservers())
     observer->OnNonPersistentNotificationCreated(this);
 }
 
-void FrameNodeImpl::SetHadFormInteraction() {
+void FrameNodeImpl::OnFirstContentfulPaint(
+    base::TimeDelta time_since_navigation_start) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  document_.had_form_interaction.SetAndMaybeNotify(this, true);
+  for (auto* observer : GetObservers())
+    observer->OnFirstContentfulPaint(this, time_since_navigation_start);
 }
 
 const RenderFrameHostProxy& FrameNodeImpl::GetRenderFrameHostProxy() const {

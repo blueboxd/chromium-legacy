@@ -1214,15 +1214,29 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kProfileLastUsed, profile_name1);
 
+  // Set the last used profiles.
+  ListPrefUpdate update(local_state, prefs::kProfilesLastActive);
+  base::ListValue* initial_last_active_profile_list = update.Get();
+  initial_last_active_profile_list->Append(
+      std::make_unique<base::Value>(path1.BaseName().MaybeAsASCII()));
+  initial_last_active_profile_list->Append(
+      std::make_unique<base::Value>(path2.BaseName().MaybeAsASCII()));
+
   profile_manager->CleanUpEphemeralProfiles();
   content::RunAllTasksUntilIdle();
+  const base::ListValue* final_last_active_profile_list =
+      local_state->GetList(prefs::kProfilesLastActive);
 
   // The ephemeral profile should be deleted, and the last used profile set to
-  // the other one.
+  // the other one. Also, the ephemeral profile should be removed from the
+  // kProfilesLastActive list.
   EXPECT_FALSE(base::DirectoryExists(path1));
   EXPECT_TRUE(base::DirectoryExists(path2));
   EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
   ASSERT_EQ(1u, storage.GetNumberOfProfiles());
+  ASSERT_EQ(1u, final_last_active_profile_list->GetSize());
+  ASSERT_EQ(path2.BaseName().MaybeAsASCII(),
+            (final_last_active_profile_list->GetList())[0].GetString());
 
   // Mark the remaining profile ephemeral and clean up.
   storage.GetAllProfilesAttributes()[0]->SetIsEphemeral(true);
@@ -1233,6 +1247,7 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   EXPECT_FALSE(base::DirectoryExists(path2));
   EXPECT_EQ(0u, storage.GetNumberOfProfiles());
   EXPECT_EQ("Profile 1", local_state->GetString(prefs::kProfileLastUsed));
+  ASSERT_EQ(0u, final_last_active_profile_list->GetSize());
 }
 
 TEST_F(ProfileManagerTest, CleanUpEphemeralProfilesWithGuestLastUsedProfile) {

@@ -138,6 +138,7 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   // from it. This is the only case where we must install/adjust the native
   // timer from ScheduleDelayedWork() because if we don't, the native loop will
   // go back to sleep, unaware of the new |delayed_work_time|.
+  // See MessageLoopTest.PostDelayedTaskFromSystemPump for an example.
   // TODO(gab): This could potentially be replaced by a ForegroundIdleProc hook
   // if Windows ends up being the only platform requiring ScheduleDelayedWork().
   if (in_native_loop_ && !work_scheduled_) {

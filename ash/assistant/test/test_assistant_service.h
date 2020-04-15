@@ -112,7 +112,7 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
   void NotifyEntryIntoAssistantUi(
       chromeos::assistant::mojom::AssistantEntryPoint entry_point) override;
   void AddTimeToTimer(const std::string& id, base::TimeDelta duration) override;
-  void StopAlarmTimerRinging() override;
+  void RemoveAlarmTimer(const std::string& id) override;
 
  private:
   void StartInteraction(

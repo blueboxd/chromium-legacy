@@ -325,4 +325,20 @@ void TestPersonalDataManager::AddCloudTokenData(
   NotifyPersonalDataObserver();
 }
 
+void TestPersonalDataManager::SetNicknameForCardWithGUID(
+    const char* guid,
+    const std::string& nickname) {
+  for (auto& card : local_credit_cards_) {
+    if (card->guid() == guid) {
+      card->SetNickname(base::ASCIIToUTF16(nickname));
+    }
+  }
+  for (auto& card : server_credit_cards_) {
+    if (card->guid() == guid) {
+      card->SetNickname(base::ASCIIToUTF16(nickname));
+    }
+  }
+  NotifyPersonalDataObserver();
+}
+
 }  // namespace autofill

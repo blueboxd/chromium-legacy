@@ -15,27 +15,6 @@ if (optimize_webui) {
   settings_pak_file = "settings_resources.pak"
   unpak_folder = "settings_resources.unpak"
 
-  optimize_webui("build") {
-    host = "settings"
-    html_in_files = [
-      "settings.html",
-      "lazy_load.html",
-    ]
-    html_out_files = [
-      "vulcanized.html",
-      "lazy_load.vulcanized.html",
-    ]
-    insert_in_head = "<base href=\"chrome://settings\">"
-    input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
-    js_out_files = [
-      "crisper.js",
-      "lazy_load.crisper.js",
-    ]
-    excludes = [ "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom.html" ]
-
-    deps = [ ":unpak" ]
-  }
-
   optimize_webui("build_polymer3") {
     host = "settings"
     input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)

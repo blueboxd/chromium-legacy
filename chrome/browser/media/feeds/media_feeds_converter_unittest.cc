@@ -5,6 +5,7 @@
 #include "chrome/browser/media/feeds/media_feeds_converter.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-forward.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-shared.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
@@ -33,7 +34,8 @@ class MediaFeedsConverterTest : public testing::Test {
   MediaFeedsConverterTest()
       : extractor_({schema_org::entity::kCompleteDataFeed,
                     schema_org::entity::kMovie,
-                    schema_org::entity::kWatchAction}) {}
+                    schema_org::entity::kWatchAction,
+                    schema_org::entity::kTVEpisode}) {}
 
  protected:
   Property* GetProperty(Entity* entity, const std::string& name);
@@ -47,8 +49,10 @@ class MediaFeedsConverterTest : public testing::Test {
   PropertyPtr CreateDoubleProperty(const std::string& name, double value);
   PropertyPtr CreateEntityProperty(const std::string& name, EntityPtr value);
   EntityPtr ConvertJSONToEntityPtr(const std::string& json);
-  EntityPtr ValidWatchAction();
+  EntityPtr ValidActiveWatchAction();
+  EntityPtr ValidPotentialWatchAction();
   EntityPtr ValidMediaFeed();
+  EntityPtr ValidEpisode(int episode_number, EntityPtr action);
   EntityPtr ValidMediaFeedItem();
   mojom::MediaFeedItemPtr ExpectedFeedItem();
   EntityPtr AddItemToFeed(EntityPtr feed, EntityPtr item);
@@ -144,13 +148,25 @@ EntityPtr MediaFeedsConverterTest::ConvertJSONToEntityPtr(
   return extractor_.Extract(json);
 }
 
-EntityPtr MediaFeedsConverterTest::ValidWatchAction() {
+EntityPtr MediaFeedsConverterTest::ValidActiveWatchAction() {
   return extractor_.Extract(
       R"END(
       {
         "@type": "WatchAction",
         "target": "https://www.example.org",
         "actionStatus": "https://schema.org/ActiveActionStatus",
+        "startTime": "01:00:00"
+      }
+    )END");
+}
+
+EntityPtr MediaFeedsConverterTest::ValidPotentialWatchAction() {
+  return extractor_.Extract(
+      R"END(
+      {
+        "@type": "WatchAction",
+        "target": "https://www.example.com",
+        "actionStatus": "https://schema.org/PotentialActionStatus",
         "startTime": "01:00:00"
       }
     )END");
@@ -176,6 +192,28 @@ EntityPtr MediaFeedsConverterTest::ValidMediaFeed() {
       )END");
 }
 
+EntityPtr MediaFeedsConverterTest::ValidEpisode(int episode_number,
+                                                EntityPtr action) {
+  EntityPtr episode = extractor_.Extract(
+      R"END(
+        {
+          "@type": "TVEpisode",
+          "name": "Pilot",
+          "identifier": {
+            "@type": "PropertyValue",
+            "propertyID": "TMS_ROOT_ID",
+            "value": "1"
+          },
+          "duration": "PT1H"
+        }
+      )END");
+  episode->properties.push_back(
+      CreateLongProperty(schema_org::property::kEpisodeNumber, episode_number));
+  episode->properties.push_back(CreateEntityProperty(
+      schema_org::property::kPotentialAction, std::move(action)));
+  return episode;
+}
+
 EntityPtr MediaFeedsConverterTest::ValidMediaFeedItem() {
   EntityPtr item = extractor_.Extract(
       R"END(
@@ -190,7 +228,7 @@ EntityPtr MediaFeedsConverterTest::ValidMediaFeedItem() {
       )END");
 
   item->properties.push_back(CreateEntityProperty(
-      schema_org::property::kPotentialAction, ValidWatchAction()));
+      schema_org::property::kPotentialAction, ValidActiveWatchAction()));
   return item;
 }
 
@@ -679,31 +717,10 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithTVEpisode) {
   // embedded in the TV episode instead.
   GetProperty(item.get(), schema_org::property::kPotentialAction)->name =
       "not an action";
-  item->properties.push_back(
-      CreateLongProperty(schema_org::property::kNumberOfEpisodes, 20));
-  item->properties.push_back(
-      CreateLongProperty(schema_org::property::kNumberOfSeasons, 6));
 
-  {
-    EntityPtr episode = Entity::New();
-    episode->type = schema_org::entity::kTVEpisode;
-    episode->properties.push_back(
-        CreateLongProperty(schema_org::property::kEpisodeNumber, 1));
-    episode->properties.push_back(
-        CreateStringProperty(schema_org::property::kName, "Pilot"));
-    EntityPtr identifier = Entity::New();
-    identifier->type = schema_org::entity::kPropertyValue;
-    identifier->properties.push_back(
-        CreateStringProperty(schema_org::property::kPropertyID, "TMS_ROOT_ID"));
-    identifier->properties.push_back(
-        CreateStringProperty(schema_org::property::kValue, "1"));
-    episode->properties.push_back(CreateEntityProperty(
-        schema_org::property::kIdentifier, std::move(identifier)));
-    episode->properties.push_back(CreateEntityProperty(
-        schema_org::property::kPotentialAction, ValidWatchAction()));
-    item->properties.push_back(CreateEntityProperty(
-        schema_org::property::kEpisode, std::move(episode)));
-  }
+  item->properties.push_back(
+      CreateEntityProperty(schema_org::property::kEpisode,
+                           ValidEpisode(1, ValidPotentialWatchAction())));
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
@@ -716,6 +733,9 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithTVEpisode) {
   identifier->type = mojom::Identifier::Type::kTMSRootId;
   identifier->value = "1";
   expected_item->tv_episode->identifiers.push_back(std::move(identifier));
+  expected_item->action_status = mojom::MediaFeedItemActionStatus::kPotential;
+  expected_item->action->start_time = base::nullopt;
+  expected_item->action->url = GURL("https://www.example.com");
 
   auto result = GetResults(std::move(entity));
 
@@ -740,7 +760,7 @@ TEST_F(MediaFeedsConverterTest, FailsItemWithInvalidTVEpisode) {
   episode->properties.push_back(
       CreateStringProperty(schema_org::property::kName, ""));
   episode->properties.push_back(CreateEntityProperty(
-      schema_org::property::kPotentialAction, ValidWatchAction()));
+      schema_org::property::kPotentialAction, ValidActiveWatchAction()));
   item->properties.push_back(
       CreateEntityProperty(schema_org::property::kEpisode, std::move(episode)));
 
@@ -755,10 +775,6 @@ TEST_F(MediaFeedsConverterTest, FailsItemWithInvalidTVEpisode) {
 TEST_F(MediaFeedsConverterTest, SucceedsItemWithTVSeason) {
   EntityPtr item = ValidMediaFeedItem();
   item->type = schema_org::entity::kTVSeries;
-  item->properties.push_back(
-      CreateLongProperty(schema_org::property::kNumberOfEpisodes, 20));
-  item->properties.push_back(
-      CreateLongProperty(schema_org::property::kNumberOfSeasons, 6));
 
   {
     EntityPtr season = Entity::New();
@@ -775,8 +791,6 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithTVSeason) {
 
   mojom::MediaFeedItemPtr expected_item = ExpectedFeedItem();
   expected_item->type = mojom::MediaFeedItemType::kTVSeries;
-  expected_item->tv_episode = mojom::TVEpisode::New();
-  expected_item->tv_episode->season_number = 1;
 
   auto result = GetResults(std::move(entity));
 
@@ -810,6 +824,196 @@ TEST_F(MediaFeedsConverterTest, FailsItemWithInvalidTVSeason) {
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
+}
+
+TEST_F(MediaFeedsConverterTest, SucceedsItemWithPlayNextTwoSeasons) {
+  EntityPtr item = ValidMediaFeedItem();
+  item->type = schema_org::entity::kTVSeries;
+
+  PropertyPtr property = Property::New();
+  property->name = schema_org::property::kContainsSeason;
+  property->values = Values::New();
+
+  {
+    EntityPtr season = Entity::New();
+    season->type = schema_org::entity::kTVSeason;
+    season->properties.push_back(
+        CreateLongProperty(schema_org::property::kSeasonNumber, 1));
+    season->properties.push_back(
+        CreateLongProperty(schema_org::property::kNumberOfEpisodes, 20));
+    season->properties.push_back(
+        CreateEntityProperty(schema_org::property::kEpisode,
+                             ValidEpisode(20, ValidActiveWatchAction())));
+    property->values->entity_values.push_back(std::move(season));
+  }
+  {
+    EntityPtr season = Entity::New();
+    season->type = schema_org::entity::kTVSeason;
+    season->properties.push_back(
+        CreateLongProperty(schema_org::property::kSeasonNumber, 2));
+    season->properties.push_back(
+        CreateLongProperty(schema_org::property::kNumberOfEpisodes, 20));
+    season->properties.push_back(
+        CreateEntityProperty(schema_org::property::kEpisode,
+                             ValidEpisode(1, ValidPotentialWatchAction())));
+    property->values->entity_values.push_back(std::move(season));
+  }
+  item->properties.push_back(std::move(property));
+
+  EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
+
+  mojom::MediaFeedItemPtr expected_item = ExpectedFeedItem();
+  expected_item->type = mojom::MediaFeedItemType::kTVSeries;
+  {
+    expected_item->tv_episode = mojom::TVEpisode::New();
+    expected_item->tv_episode->episode_number = 20;
+    expected_item->tv_episode->season_number = 1;
+    expected_item->tv_episode->name = "Pilot";
+    mojom::IdentifierPtr identifier = mojom::Identifier::New();
+    identifier->type = mojom::Identifier::Type::kTMSRootId;
+    identifier->value = "1";
+    expected_item->tv_episode->identifiers.push_back(std::move(identifier));
+  }
+  {
+    expected_item->play_next_candidate = mojom::PlayNextCandidate::New();
+    expected_item->play_next_candidate->episode_number = 1;
+    expected_item->play_next_candidate->season_number = 2;
+    expected_item->play_next_candidate->name = "Pilot";
+    mojom::IdentifierPtr identifier = mojom::Identifier::New();
+    identifier->type = mojom::Identifier::Type::kTMSRootId;
+    identifier->value = "1";
+    expected_item->play_next_candidate->identifiers.push_back(
+        std::move(identifier));
+    expected_item->play_next_candidate->duration =
+        base::TimeDelta::FromHours(1);
+    expected_item->play_next_candidate->action = mojom::Action::New();
+    expected_item->play_next_candidate->action->url =
+        GURL("https://www.example.com");
+  }
+
+  auto result = GetResults(std::move(entity));
+
+  EXPECT_TRUE(result.has_value());
+  ASSERT_EQ(result.value().size(), 1u);
+  EXPECT_EQ(expected_item, result.value()[0]);
+}
+
+TEST_F(MediaFeedsConverterTest, SucceedsItemWithPlayNextSameSeason) {
+  EntityPtr item = ValidMediaFeedItem();
+  item->type = schema_org::entity::kTVSeries;
+
+  EntityPtr season = Entity::New();
+  season->type = schema_org::entity::kTVSeason;
+  season->properties.push_back(
+      CreateLongProperty(schema_org::property::kSeasonNumber, 1));
+  season->properties.push_back(
+      CreateLongProperty(schema_org::property::kNumberOfEpisodes, 20));
+
+  PropertyPtr property = Property::New();
+  property->name = schema_org::property::kEpisode;
+  property->values = Values::New();
+  property->values->entity_values.push_back(
+      ValidEpisode(15, ValidActiveWatchAction()));
+  property->values->entity_values.push_back(
+      ValidEpisode(16, ValidPotentialWatchAction()));
+  season->properties.push_back(std::move(property));
+
+  item->properties.push_back(CreateEntityProperty(
+      schema_org::property::kContainsSeason, std::move(season)));
+
+  EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
+
+  mojom::MediaFeedItemPtr expected_item = ExpectedFeedItem();
+  expected_item->type = mojom::MediaFeedItemType::kTVSeries;
+  {
+    expected_item->tv_episode = mojom::TVEpisode::New();
+    expected_item->tv_episode->episode_number = 15;
+    expected_item->tv_episode->season_number = 1;
+    expected_item->tv_episode->name = "Pilot";
+    mojom::IdentifierPtr identifier = mojom::Identifier::New();
+    identifier->type = mojom::Identifier::Type::kTMSRootId;
+    identifier->value = "1";
+    expected_item->tv_episode->identifiers.push_back(std::move(identifier));
+  }
+  {
+    expected_item->play_next_candidate = mojom::PlayNextCandidate::New();
+    expected_item->play_next_candidate->episode_number = 16;
+    expected_item->play_next_candidate->season_number = 1;
+    expected_item->play_next_candidate->name = "Pilot";
+    mojom::IdentifierPtr identifier = mojom::Identifier::New();
+    identifier->type = mojom::Identifier::Type::kTMSRootId;
+    identifier->value = "1";
+    expected_item->play_next_candidate->identifiers.push_back(
+        std::move(identifier));
+    expected_item->play_next_candidate->duration =
+        base::TimeDelta::FromHours(1);
+    expected_item->play_next_candidate->action = mojom::Action::New();
+    expected_item->play_next_candidate->action->url =
+        GURL("https://www.example.com");
+  }
+
+  auto result = GetResults(std::move(entity));
+
+  EXPECT_TRUE(result.has_value());
+  ASSERT_EQ(result.value().size(), 1u);
+  EXPECT_EQ(result.value()[0]->tv_episode, expected_item->tv_episode);
+  EXPECT_EQ(result.value()[0]->play_next_candidate,
+            expected_item->play_next_candidate);
+  EXPECT_EQ(expected_item, result.value()[0]);
+}
+
+TEST_F(MediaFeedsConverterTest, SucceedsItemWithPlayNextNoSeason) {
+  EntityPtr item = ValidMediaFeedItem();
+  item->type = schema_org::entity::kTVSeries;
+
+  PropertyPtr property = Property::New();
+  property->name = schema_org::property::kEpisode;
+  property->values = Values::New();
+  property->values->entity_values.push_back(
+      ValidEpisode(15, ValidActiveWatchAction()));
+  property->values->entity_values.push_back(
+      ValidEpisode(16, ValidPotentialWatchAction()));
+  item->properties.push_back(std::move(property));
+
+  EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
+
+  mojom::MediaFeedItemPtr expected_item = ExpectedFeedItem();
+  expected_item->type = mojom::MediaFeedItemType::kTVSeries;
+  {
+    expected_item->tv_episode = mojom::TVEpisode::New();
+    expected_item->tv_episode->episode_number = 15;
+    expected_item->tv_episode->season_number = 0;
+    expected_item->tv_episode->name = "Pilot";
+    mojom::IdentifierPtr identifier = mojom::Identifier::New();
+    identifier->type = mojom::Identifier::Type::kTMSRootId;
+    identifier->value = "1";
+    expected_item->tv_episode->identifiers.push_back(std::move(identifier));
+  }
+  {
+    expected_item->play_next_candidate = mojom::PlayNextCandidate::New();
+    expected_item->play_next_candidate->episode_number = 16;
+    expected_item->play_next_candidate->season_number = 0;
+    expected_item->play_next_candidate->name = "Pilot";
+    mojom::IdentifierPtr identifier = mojom::Identifier::New();
+    identifier->type = mojom::Identifier::Type::kTMSRootId;
+    identifier->value = "1";
+    expected_item->play_next_candidate->identifiers.push_back(
+        std::move(identifier));
+    expected_item->play_next_candidate->duration =
+        base::TimeDelta::FromHours(1);
+    expected_item->play_next_candidate->action = mojom::Action::New();
+    expected_item->play_next_candidate->action->url =
+        GURL("https://www.example.com");
+  }
+
+  auto result = GetResults(std::move(entity));
+
+  EXPECT_TRUE(result.has_value());
+  ASSERT_EQ(result.value().size(), 1u);
+  EXPECT_EQ(result.value()[0]->tv_episode, expected_item->tv_episode);
+  EXPECT_EQ(result.value()[0]->play_next_candidate,
+            expected_item->play_next_candidate);
+  EXPECT_EQ(expected_item, result.value()[0]);
 }
 
 }  // namespace media_feeds

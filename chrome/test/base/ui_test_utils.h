@@ -350,6 +350,32 @@ class HistoryEnumerator {
   DISALLOW_COPY_AND_ASSIGN(HistoryEnumerator);
 };
 
+class BrowserChangeObserver : public BrowserListObserver {
+ public:
+  enum class ChangeType {
+    kAdded,
+    kRemoved,
+  };
+
+  BrowserChangeObserver(Browser* browser, ChangeType type);
+
+  ~BrowserChangeObserver() override;
+
+  Browser* Wait();
+
+  // BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override;
+
+  void OnBrowserRemoved(Browser* browser) override;
+
+ private:
+  Browser* browser_;
+  ChangeType type_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserChangeObserver);
+};
+
 }  // namespace ui_test_utils
 
 #endif  // CHROME_TEST_BASE_UI_TEST_UTILS_H_

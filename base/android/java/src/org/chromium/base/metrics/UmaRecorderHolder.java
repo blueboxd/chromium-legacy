@@ -19,13 +19,9 @@ public class UmaRecorderHolder {
      * classes {e.g. AnimationFrameTimeHistogram}.
      * <p>
      * Use {@link #setDisabledForTests(boolean)} to set this value.
-     * <p>
-     * TODO(bttk@chromium.org): Fix dependency in AnimationFrameTimeHistogram, make this field
-     *     private and rename to sDisabledForTestBy
      */
-    @VisibleForTesting
     @Nullable
-    public static Throwable sDisabledBy;
+    private static Throwable sDisabledForTest;
 
     /** Lock for {@code sDisabledDelegateForTest}. */
     private static final Object sLock = new Object();
@@ -43,7 +39,7 @@ public class UmaRecorderHolder {
     /** Starts forwarding metrics to the native code. Returns after the cache has been flushed. */
     public static void onLibraryLoaded() {
         synchronized (sLock) {
-            if (sDisabledBy == null) {
+            if (sDisabledForTest == null) {
                 sRecorder.setDelegate(new NativeUmaRecorder());
             } else {
                 // If metrics are disabled for test, use native when metrics get restored.
@@ -54,21 +50,23 @@ public class UmaRecorderHolder {
 
     /**
      * Tests may need to disable metrics. The value should be reset after the test done, to avoid
-     * carrying over state to unrelated tests. <p> In JUnit tests this can be done automatically
-     * using {@link org.chromium.base.metrics.test.DisableHistogramsRule}.
+     * carrying over state to unrelated tests.
+     * <p>
+     * In JUnit tests this can be done automatically using {@link
+     * org.chromium.base.metrics.test.DisableHistogramsRule}.
      */
     @VisibleForTesting
     public static void setDisabledForTests(boolean disabled) {
         synchronized (sLock) {
             if (disabled) {
-                if (sDisabledBy != null) {
+                if (sDisabledForTest != null) {
                     throw new IllegalStateException(
-                            "Histograms are already disabled.", sDisabledBy);
+                            "Histograms are already disabled.", sDisabledForTest);
                 }
-                sDisabledBy = new Throwable();
+                sDisabledForTest = new Throwable();
                 sDisabledDelegateForTest = sRecorder.setDelegate(new NoopUmaRecorder());
             } else {
-                sDisabledBy = null;
+                sDisabledForTest = null;
                 sRecorder.setDelegate(sDisabledDelegateForTest);
                 sDisabledDelegateForTest = null;
             }

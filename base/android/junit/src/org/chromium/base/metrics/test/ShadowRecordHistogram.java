@@ -62,6 +62,12 @@ public class ShadowRecordHistogram {
     }
 
     @Implementation
+    public static void recordTimesHistogram(String name, long durationMs) {
+        Pair<String, Integer> key = Pair.create(name, (int) durationMs);
+        recordSample(key);
+    }
+
+    @Implementation
     public static void recordLongTimesHistogram100(String name, long durationMs) {
         Pair<String, Integer> key = Pair.create(name, (int) durationMs);
         recordSample(key);

@@ -2172,4 +2172,80 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   // We're locked.
   EXPECT_TRUE(inner_context->IsLocked());
 }
+
+TEST_F(DisplayLockContextRenderingTest, ForcedUnlockBookkeeping) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .hidden { subtree-visibility: hidden; }
+      .inline { display: inline; }
+    </style>
+    <div id=target class=hidden></div>
+  )HTML");
+
+  auto* target = GetDocument().getElementById("target");
+  auto* context = target->GetDisplayLockContext();
+
+  ASSERT_TRUE(context);
+  EXPECT_TRUE(context->IsLocked());
+  EXPECT_EQ(
+      GetDocument().GetDisplayLockDocumentState().LockedDisplayLockCount(), 1);
+
+  target->classList().Add("inline");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(context->IsLocked());
+  EXPECT_EQ(
+      GetDocument().GetDisplayLockDocumentState().LockedDisplayLockCount(), 0);
+}
+
+class DisplayLockContextLegacyRenderingTest
+    : public RenderingTest,
+      private ScopedCSSSubtreeVisibilityHiddenMatchableForTest,
+      private ScopedLayoutNGForTest {
+ public:
+  DisplayLockContextLegacyRenderingTest()
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
+        ScopedCSSSubtreeVisibilityHiddenMatchableForTest(true),
+        ScopedLayoutNGForTest(false) {}
+};
+
+TEST_F(DisplayLockContextLegacyRenderingTest,
+       QuirksHiddenParentBlocksChildLayout) {
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .hidden { subtree-visibility: hidden; }
+      #grandparent { height: 100px; }
+      #parent { height: auto; }
+      #item { height: 10%; }
+    </style>
+    <div id=grandparent>
+      <div id=parent>
+        <div>
+          <div id=item></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* grandparent = GetDocument().getElementById("grandparent");
+  auto* parent = GetDocument().getElementById("parent");
+  auto* item = GetDocument().getElementById("item");
+
+  auto* grandparent_box = ToLayoutBox(grandparent->GetLayoutObject());
+  auto* item_box = ToLayoutBox(item->GetLayoutObject());
+
+  ASSERT_TRUE(grandparent_box);
+  ASSERT_TRUE(parent->GetLayoutObject());
+  ASSERT_TRUE(item_box);
+
+  EXPECT_EQ(item_box->PercentHeightContainer(), grandparent_box);
+  parent->classList().Add("hidden");
+  grandparent->setAttribute(html_names::kStyleAttr, "height: 150px");
+
+  // This shouldn't DCHECK. We are allowed to have dirty percent height
+  // descendants in quirks mode since they can cross a display-lock boundary.
+  UpdateAllLifecyclePhasesForTest();
+}
+
 }  // namespace blink

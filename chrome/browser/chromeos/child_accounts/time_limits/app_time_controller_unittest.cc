@@ -47,6 +47,23 @@ constexpr char kApp2Name[] = "App2";
 const AppId kApp1(apps::mojom::AppType::kArc, "1");
 const AppId kApp2(apps::mojom::AppType::kArc, "2");
 
+// Calculate the previous reset time.
+base::Time GetLastResetTime(base::Time timestamp) {
+  base::Time nearest_midnight = timestamp.LocalMidnight();
+  base::Time prev_midnight;
+  if (timestamp > nearest_midnight)
+    prev_midnight = nearest_midnight;
+  else
+    prev_midnight = nearest_midnight - base::TimeDelta::FromHours(24);
+
+  // Reset time is at 6 am for the tests.
+  base::Time reset_time = prev_midnight + base::TimeDelta::FromHours(6);
+  if (reset_time <= timestamp)
+    return reset_time;
+  else
+    return reset_time - base::TimeDelta::FromHours(24);
+}
+
 }  // namespace
 
 class AppTimeControllerTest : public testing::Test {
@@ -407,8 +424,9 @@ TEST_F(AppTimeControllerTest, RestoreLastResetTime) {
   }
 
   // If there was no valid last reset time stored in user pref,
-  // AppTimeController sets it to base::Time::Now().
-  base::Time last_reset_time = base::Time::Now();
+  // AppTimeController sets it to the expected last reset time based on
+  // base::Time::Now().
+  base::Time last_reset_time = GetLastResetTime(base::Time::Now());
   EXPECT_EQ(test_api()->GetLastResetTime(), last_reset_time);
 
   controller()->app_registry()->OnAppActive(kApp1, nullptr, last_reset_time);
@@ -454,7 +472,8 @@ TEST_F(AppTimeControllerTest, RestoreLastResetTime) {
 
   // AppTimeController will realize that the reset boundary has been crossed.
   // Therefore, it will trigger reset and update the last reset time to now.
-  EXPECT_EQ(test_api()->GetLastResetTime(), base::Time::Now());
+  EXPECT_EQ(test_api()->GetLastResetTime(),
+            GetLastResetTime(base::Time::Now()));
 
   EXPECT_EQ(controller()->app_registry()->GetAppState(kApp1),
             AppState::kAvailable);
@@ -516,6 +535,33 @@ TEST_F(AppTimeControllerTest, MetricsTest) {
   DeleteController();
   // There was actually no policy update when the controller was reinstantiated.
   histogram_tester.ExpectBucketCount(kPolicyUpdateCountMetric, 0, 1);
+}
+
+TEST_F(AppTimeControllerTest, SetLastResetTimeTest) {
+  base::Time now = base::Time::Now();
+  base::Time nearest_midnight = now.LocalMidnight();
+  base::Time prev_midnight;
+  if (now > nearest_midnight)
+    prev_midnight = nearest_midnight;
+  else
+    prev_midnight = nearest_midnight - kDay;
+
+  base::Time reset_time = prev_midnight + kSixHours;
+
+  test_api()->SetLastResetTime(prev_midnight);
+  EXPECT_EQ(test_api()->GetLastResetTime(), reset_time - kDay);
+
+  test_api()->SetLastResetTime(prev_midnight + 3 * kOneHour);
+  EXPECT_EQ(test_api()->GetLastResetTime(), reset_time - kDay);
+
+  test_api()->SetLastResetTime(prev_midnight + kSixHours);
+  EXPECT_EQ(test_api()->GetLastResetTime(), reset_time);
+
+  test_api()->SetLastResetTime(prev_midnight + 2 * kSixHours);
+  EXPECT_EQ(test_api()->GetLastResetTime(), reset_time);
+
+  test_api()->SetLastResetTime(prev_midnight + kDay);
+  EXPECT_EQ(test_api()->GetLastResetTime(), reset_time);
 }
 
 }  // namespace app_time

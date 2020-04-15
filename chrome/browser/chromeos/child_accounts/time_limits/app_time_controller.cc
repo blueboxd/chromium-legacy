@@ -518,12 +518,26 @@ void AppTimeController::RestoreLastResetTime() {
 }
 
 void AppTimeController::SetLastResetTime(base::Time timestamp) {
-  last_limits_reset_time_ = timestamp;
+  // |timestamp| needs to be adjusted to ensure that it is happening at the time
+  // specified by policy.
+  const base::Time nearest_midnight = timestamp.LocalMidnight();
+  base::Time prev_midnight;
+  if (timestamp > nearest_midnight)
+    prev_midnight = nearest_midnight;
+  else
+    prev_midnight = nearest_midnight - base::TimeDelta::FromHours(24);
+
+  base::Time reset_time = prev_midnight + limits_reset_time_;
+  if (reset_time <= timestamp)
+    last_limits_reset_time_ = reset_time;
+  else
+    last_limits_reset_time_ = reset_time - base::TimeDelta::FromHours(24);
 
   PrefService* service = profile_->GetPrefs();
   DCHECK(service);
-  service->SetInt64(prefs::kPerAppTimeLimitsLastResetTime,
-                    timestamp.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  service->SetInt64(
+      prefs::kPerAppTimeLimitsLastResetTime,
+      last_limits_reset_time_.ToDeltaSinceWindowsEpoch().InMicroseconds());
   service->CommitPendingWrite();
 }
 

@@ -1392,7 +1392,6 @@ jumbo_component("base") {
       "android/android_image_reader_abi.h",
       "android/android_image_reader_compat.cc",
       "android/android_image_reader_compat.h",
-      "android/animation_frame_time_histogram.cc",
       "android/apk_assets.cc",
       "android/apk_assets.h",
       "android/application_status_listener.cc",
@@ -3203,7 +3202,6 @@ if (enable_nocompile_tests) {
 if (is_android) {
   generate_jni("base_jni_headers") {
     sources = [
-      "android/java/src/org/chromium/base/AnimationFrameTimeHistogram.java",
       "android/java/src/org/chromium/base/ApkAssets.java",
       "android/java/src/org/chromium/base/ApplicationStatus.java",
       "android/java/src/org/chromium/base/BuildInfo.java",
@@ -3287,7 +3285,6 @@ if (is_android) {
 
     sources = [
       "android/java/src/org/chromium/base/ActivityState.java",
-      "android/java/src/org/chromium/base/AnimationFrameTimeHistogram.java",
       "android/java/src/org/chromium/base/ApiCompatibilityUtils.java",
       "android/java/src/org/chromium/base/ApkAssets.java",
       "android/java/src/org/chromium/base/ApplicationStatus.java",
@@ -3628,7 +3625,6 @@ if (is_android) {
   junit_binary("base_junit_tests") {
     skip_jetify = true
     sources = [
-      "android/junit/src/org/chromium/base/AnimationFrameTimeHistogramTest.java",
       "android/junit/src/org/chromium/base/ApplicationStatusTest.java",
       "android/junit/src/org/chromium/base/DiscardableReferencePoolTest.java",
       "android/junit/src/org/chromium/base/FileUtilsTest.java",

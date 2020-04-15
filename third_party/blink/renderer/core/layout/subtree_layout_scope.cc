@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
 
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 
@@ -46,8 +47,29 @@ SubtreeLayoutScope::~SubtreeLayoutScope() {
                                     DisplayLockLifecycleTarget::kChildren));
 
 #if DCHECK_IS_ON()
-  for (auto* layout_object : layout_objects_to_layout_)
-    layout_object->AssertLaidOut();
+  for (auto* layout_object : layout_objects_to_layout_) {
+    // There are situations where the object to layout was never laid out, such
+    // as if there was a display-locked descendant of the root and ancestor of
+    // the object which prevented layout. This can happen in quirks mode, where
+    // an ancestor can mark a descendant as dirty through its
+    // PercentHeightDescendants() list, which will not get cleared because
+    // traversal is blocked by a display lock. This finds such cases and allows
+    // these objects to be dirty.
+    bool object_allowed_to_be_dirty = false;
+    for (auto* ancestor = DisplayLockUtilities::NearestLockedExclusiveAncestor(
+             *layout_object);
+         ancestor;
+         ancestor =
+             DisplayLockUtilities::NearestLockedExclusiveAncestor(*ancestor)) {
+      if (!ancestor->GetDisplayLockContext()->ShouldLayout(
+              DisplayLockLifecycleTarget::kChildren)) {
+        object_allowed_to_be_dirty = true;
+        break;
+      }
+    }
+    if (!object_allowed_to_be_dirty)
+      layout_object->AssertLaidOut();
+  }
 #endif
 }
 

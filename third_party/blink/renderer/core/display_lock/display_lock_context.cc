@@ -532,6 +532,7 @@ void DisplayLockContext::Unlock() {
   MarkForLayoutIfNeeded();
   MarkAncestorsForPrePaintIfNeeded();
   MarkPaintLayerNeedsRepaint();
+  MarkForCompositingUpdatesIfNeeded();
 }
 
 void DisplayLockContext::AddToWhitespaceReattachSet(Element& element) {
@@ -883,7 +884,8 @@ bool DisplayLockContext::ForceUnlockIfNeeded() {
   // commit() isn't in progress, the web author won't know that the element
   // got unlocked. Figure out how to notify the author.
   if (auto* reason = ShouldForceUnlock()) {
-    is_locked_ = false;
+    if (IsLocked())
+      Unlock();
     return true;
   }
   return false;

@@ -50,8 +50,14 @@ class EventListenerMapTest : public ExtensionsTest {
   void SetUp() override {
     ExtensionsTest::SetUp();
 
-    // |process_| will be destroyed by |browser_context()| when it goes away.
     process_ = new content::MockRenderProcessHost(browser_context());
+  }
+
+  void TearDown() override {
+    process_->Cleanup();
+    process_ = nullptr;
+
+    ExtensionsTest::TearDown();
   }
 
   std::unique_ptr<DictionaryValue> CreateHostSuffixFilter(

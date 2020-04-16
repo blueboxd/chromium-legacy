@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/signin_view_controller.h"
+#include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "google_apis/gaia/core_account_id.h"
 
@@ -21,8 +22,12 @@ using ReauthSucceeded =
     password_manager::PasswordManagerClient::ReauthSucceeded;
 }
 
-AccountStorageAuthHelper::AccountStorageAuthHelper(Profile* profile)
-    : profile_(profile) {}
+AccountStorageAuthHelper::AccountStorageAuthHelper(
+    Profile* profile,
+    password_manager::PasswordFeatureManager* password_feature_manager)
+    : profile_(profile), password_feature_manager_(password_feature_manager) {}
+
+AccountStorageAuthHelper::~AccountStorageAuthHelper() = default;
 
 void AccountStorageAuthHelper::TriggerOptInReauth(
     const CoreAccountId& account_id,
@@ -40,25 +45,29 @@ void AccountStorageAuthHelper::TriggerOptInReauth(
   }
   signin_view_controller->ShowReauthPrompt(
       account_id,
-      base::BindOnce(
-          [](base::OnceCallback<void(ReauthSucceeded)> reauth_callback,
-             signin::ReauthResult result) {
-            std::move(reauth_callback)
-                .Run(ReauthSucceeded(result == signin::ReauthResult::kSuccess));
-          },
-          std::move(reauth_callback)));
+      base::BindOnce(&AccountStorageAuthHelper::OnOptInReauthCompleted,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(reauth_callback)));
 }
 
-void AccountStorageAuthHelper::TriggerSignIn() {
+void AccountStorageAuthHelper::TriggerSignIn(
+    signin_metrics::AccessPoint access_point) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   Browser* browser = chrome::FindBrowserWithProfile(profile_);
   if (!browser)
     return;
   if (SigninViewController* signin_controller =
           browser->signin_view_controller()) {
-    signin_controller->ShowDiceAddAccountTab(
-        signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN,
-        std::string());
+    signin_controller->ShowDiceAddAccountTab(access_point, std::string());
   }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+}
+
+void AccountStorageAuthHelper::OnOptInReauthCompleted(
+    base::OnceCallback<void(ReauthSucceeded)> reauth_callback,
+    signin::ReauthResult result) {
+  bool succeeded = result == signin::ReauthResult::kSuccess;
+  if (succeeded)
+    password_feature_manager_->SetAccountStorageOptIn(true);
+  std::move(reauth_callback).Run(ReauthSucceeded(succeeded));
 }

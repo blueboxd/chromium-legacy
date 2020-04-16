@@ -537,10 +537,7 @@ TEST_F(ManagePasswordsUIControllerTest,
   // The bubble gets hidden after the user clicks on save.
   controller()->OnBubbleHidden();
 
-  // Simulate a successful reauth which will cause the opt-in status to be
-  // recorded and the password to be saved.
-  EXPECT_CALL(*client().GetPasswordFeatureManager(),
-              SetAccountStorageOptIn(true));
+  // Simulate a successful reauth which will cause the password to be saved.
   EXPECT_CALL(*test_form_manager_ptr, Save());
   std::move(reauth_callback).Run(ReauthSucceeded(true));
 

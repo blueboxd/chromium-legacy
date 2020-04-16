@@ -707,10 +707,11 @@ namespace nested_test {
 
 #if defined(OS_FUCHSIA)
 
-class TestLogListener : public fuchsia::logger::testing::LogListener_TestBase {
+class TestLogListenerSafe
+    : public fuchsia::logger::testing::LogListenerSafe_TestBase {
  public:
-  TestLogListener() = default;
-  ~TestLogListener() override = default;
+  TestLogListenerSafe() = default;
+  ~TestLogListenerSafe() override = default;
 
   void set_on_dump_logs_done(base::OnceClosure on_dump_logs_done) {
     on_dump_logs_done_ = std::move(on_dump_logs_done);
@@ -728,10 +729,12 @@ class TestLogListener : public fuchsia::logger::testing::LogListener_TestBase {
   }
 
   // LogListener implementation.
-  void LogMany(std::vector<fuchsia::logger::LogMessage> messages) override {
+  void LogMany(std::vector<fuchsia::logger::LogMessage> messages,
+               LogManyCallback callback) override {
     log_messages_.insert(log_messages_.end(),
                          std::make_move_iterator(messages.begin()),
                          std::make_move_iterator(messages.end()));
+    callback();
   }
 
   void Done() override { std::move(on_dump_logs_done_).Run(); }
@@ -741,11 +744,11 @@ class TestLogListener : public fuchsia::logger::testing::LogListener_TestBase {
   }
 
  private:
-  fuchsia::logger::LogListenerPtr log_listener_;
+  fuchsia::logger::LogListenerSafePtr log_listener_;
   std::vector<fuchsia::logger::LogMessage> log_messages_;
   base::OnceClosure on_dump_logs_done_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestLogListener);
+  DISALLOW_COPY_AND_ASSIGN(TestLogListenerSafe);
 };
 
 // Verifies that calling the log macro goes to the Fuchsia system logs.
@@ -753,8 +756,8 @@ TEST_F(LoggingTest, FuchsiaSystemLogging) {
   const char kLogMessage[] = "system log!";
   LOG(ERROR) << kLogMessage;
 
-  TestLogListener listener;
-  fidl::Binding<fuchsia::logger::LogListener> binding(&listener);
+  TestLogListenerSafe listener;
+  fidl::Binding<fuchsia::logger::LogListenerSafe> binding(&listener);
 
   fuchsia::logger::LogMessage logged_message;
 
@@ -778,7 +781,7 @@ TEST_F(LoggingTest, FuchsiaSystemLogging) {
             ->svc()
             ->Connect<fuchsia::logger::Log>();
     listener.set_on_dump_logs_done(dump_logs);
-    logger->DumpLogs(binding.NewBinding(), std::move(options));
+    logger->DumpLogsSafe(binding.NewBinding(), std::move(options));
   });
 
   // Start the first DumpLogs() call.

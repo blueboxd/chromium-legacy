@@ -6,7 +6,16 @@
 #define CHROME_BROWSER_UI_PASSWORDS_ACCOUNT_STORAGE_AUTH_HELPER_H_
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+
+namespace password_manager {
+class PasswordFeatureManager;
+}
+
+namespace signin {
+enum class ReauthResult;
+}
 
 struct CoreAccountId;
 class Profile;
@@ -15,15 +24,17 @@ class Profile;
 // account storage. Used only by desktop.
 class AccountStorageAuthHelper {
  public:
-  explicit AccountStorageAuthHelper(Profile* profile);
-  ~AccountStorageAuthHelper() = default;
+  AccountStorageAuthHelper(
+      Profile* profile,
+      password_manager::PasswordFeatureManager* password_feature_manager);
+  ~AccountStorageAuthHelper();
 
   AccountStorageAuthHelper(const AccountStorageAuthHelper&) = delete;
   AccountStorageAuthHelper& operator=(const AccountStorageAuthHelper&) = delete;
 
-  // Requests a reauth for the given |account_id|. |reauth_callback| is called
+  // Requests a reauth for the given |account_id|. In case of success, sets the
+  // opt in preference for account storage. |reauth_callback| is then called
   // passing whether the reauth succeeded or not.
-  // TODO(crbug.com/1070944): Set the opt-in pref internally and update comment.
   // TODO(crbug.com/1070944): Retrieve the primary account id internally and
   // update method comment.
   void TriggerOptInReauth(
@@ -32,11 +43,20 @@ class AccountStorageAuthHelper {
           void(password_manager::PasswordManagerClient::ReauthSucceeded)>
           reauth_callback);
 
-  // Redirects the user to a sign-in in a new tab.
-  void TriggerSignIn();
+  // Redirects the user to a sign-in in a new tab. |access_point| is used for
+  // metrics recording and represents where the sign-in was triggered.
+  void TriggerSignIn(signin_metrics::AccessPoint access_point);
 
  private:
+  void OnOptInReauthCompleted(
+      base::OnceCallback<
+          void(password_manager::PasswordManagerClient::ReauthSucceeded)>
+          reauth_callback,
+      signin::ReauthResult result);
+
   Profile* const profile_;
+  password_manager::PasswordFeatureManager* const password_feature_manager_;
+  base::WeakPtrFactory<AccountStorageAuthHelper> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_ACCOUNT_STORAGE_AUTH_HELPER_H_

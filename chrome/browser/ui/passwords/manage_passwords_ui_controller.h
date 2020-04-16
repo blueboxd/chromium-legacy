@@ -255,9 +255,9 @@ class ManagePasswordsUIController
 
   // Gets invoked gaia reauth flow is finished. If the reauth was successful,
   // and the |form_manager| is still the same, |username| and |password| are
-  // saved against the current origin, and sets the user to be opted in for
-  // account store. If the reauth was unsuccessful, it changes the default
-  // destination to profle store and reopens the save bubble.
+  // saved against the current origin. If the reauth was unsuccessful, it
+  // changes the default destination to profle store and reopens the save
+  // bubble.
   void AuthenticateUserForAccountStoreOptInCallback(
       const GURL& origin,
       password_manager::PasswordFormManagerForUI* form_manager,

@@ -729,7 +729,6 @@ void ManagePasswordsUIController::AuthenticateUserForAccountStoreOptInCallback(
     const base::string16& password,
     password_manager::PasswordManagerClient::ReauthSucceeded reauth_succeeded) {
   if (reauth_succeeded) {
-    GetPasswordFeatureManager()->SetAccountStorageOptIn(true);
     // Save the password only if it is the same origin and same form manager.
     // Otherwise it can be dangerous (e.g. saving the credentials against
     // another origin).

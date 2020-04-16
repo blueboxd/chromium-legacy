@@ -8,6 +8,7 @@
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/signin/public/base/signin_metrics.h"
 
 namespace password_manager {
 
@@ -65,7 +66,7 @@ void PasswordManagerClient::TriggerReauthForAccount(
   std::move(reauth_callback).Run(ReauthSucceeded(false));
 }
 
-void PasswordManagerClient::TriggerSignIn() {}
+void PasswordManagerClient::TriggerSignIn(signin_metrics::AccessPoint) {}
 
 SyncState PasswordManagerClient::GetPasswordSyncState() const {
   return NOT_SYNCING;

@@ -73,7 +73,6 @@ group("gn_all") {
     "//chrome/installer",
     "//chrome/updater",
     "//components:components_unittests",
-    "//components/gc:gc_unittests",
     "//components/gwp_asan:gwp_asan_unittests",
     "//net:net_unittests",
     "//services:services_unittests",

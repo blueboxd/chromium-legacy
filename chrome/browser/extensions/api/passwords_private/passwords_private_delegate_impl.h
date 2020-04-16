@@ -147,12 +147,6 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   void OnAccountStorageOptInStateChanged();
 
-  // Callback for the reauth flow that is triggered upon the user opting in to
-  // account password storage. Will opt in the user if the reauth succeeded.
-  void SetAccountStorageOptInCallback(
-      password_manager::PasswordManagerClient::ReauthSucceeded
-          reauth_succeeded);
-
   // Triggers an OS-dependent UI to present OS account login challenge and
   // returns true if the user passed that challenge.
   bool OsReauthCall(password_manager::ReauthPurpose purpose);

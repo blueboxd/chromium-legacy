@@ -152,9 +152,6 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
   // PasswordsPrivateEventRouter.
   void SetUpRouters();
 
-  void SetGoogleReauthResponse(PasswordsPrivateDelegateImpl* delegate,
-                               bool should_succeed);
-
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
  protected:
@@ -197,22 +194,6 @@ void PasswordsPrivateDelegateImplTest::SetUpRouters() {
   // factory is set, resulting in nul PasswordsPrivateEventRouter.
   PasswordsPrivateEventRouterFactory::GetInstance()->SetTestingFactory(
       &profile_, base::BindRepeating(&BuildPasswordsPrivateEventRouter));
-}
-
-void PasswordsPrivateDelegateImplTest::SetGoogleReauthResponse(
-    PasswordsPrivateDelegateImpl* delegate,
-    bool should_succeed) {
-  ON_CALL(mock_google_authenticator_, Run)
-      .WillByDefault(
-          [should_succeed](
-              content::WebContents*,
-              PasswordsPrivateDelegateImpl::GoogleReauthCallback callback) {
-            std::move(callback).Run(
-                password_manager::PasswordManagerClient::ReauthSucceeded(
-                    should_succeed));
-          });
-  delegate->set_account_storage_opt_in_reauthenticator(
-      mock_google_authenticator_.Get());
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, GetSavedPasswordsList) {
@@ -322,14 +303,12 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResult) {
       1);
 }
 
-TEST_F(PasswordsPrivateDelegateImplTest, TestShouldOptInIfReauthSucceeds) {
+TEST_F(PasswordsPrivateDelegateImplTest, TestShouldReauthForOptIn) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       password_manager::features::kEnablePasswordsAccountStorage);
 
   PasswordsPrivateDelegateImpl delegate(&profile_);
-
-  SetGoogleReauthResponse(&delegate, true);
 
   auto* test_sync_service = static_cast<syncer::SyncService*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -337,13 +316,15 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestShouldOptInIfReauthSucceeds) {
 
   password_manager_util::SetAccountStorageOptIn(profile_.GetPrefs(),
                                                 test_sync_service, false);
-  delegate.SetAccountStorageOptIn(true, nullptr);
 
-  EXPECT_TRUE(password_manager_util::IsOptedInForAccountStorage(
-      profile_.GetPrefs(), test_sync_service));
+  EXPECT_CALL(mock_google_authenticator_, Run);
+  delegate.set_account_storage_opt_in_reauthenticator(
+      mock_google_authenticator_.Get());
+
+  delegate.SetAccountStorageOptIn(true, nullptr);
 }
 
-TEST_F(PasswordsPrivateDelegateImplTest, TestShouldOptOut) {
+TEST_F(PasswordsPrivateDelegateImplTest, TestShouldNotReauthForOptOut) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       password_manager::features::kEnablePasswordsAccountStorage);
@@ -356,11 +337,12 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestShouldOptOut) {
 
   password_manager_util::SetAccountStorageOptIn(profile_.GetPrefs(),
                                                 test_sync_service, true);
-  delegate.SetAccountStorageOptIn(false, nullptr);
 
   EXPECT_CALL(mock_google_authenticator_, Run).Times(0);
-  EXPECT_FALSE(password_manager_util::IsOptedInForAccountStorage(
-      profile_.GetPrefs(), test_sync_service));
+  delegate.set_account_storage_opt_in_reauthenticator(
+      mock_google_authenticator_.Get());
+
+  delegate.SetAccountStorageOptIn(false, nullptr);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResultFail) {

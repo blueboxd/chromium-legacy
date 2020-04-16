@@ -1,6 +1,17 @@
 <!DOCTYPE html>
-
-<link href="resources/grid.css" rel="stylesheet">
+<title>CSS Grid: auto-fit columns</title>
+<link rel="author" title="Sergio Villar" href="mailto: svillar@igalia.com">
+<link rel="help" href="https://drafts.csswg.org/css-grid-1/#valdef-repeat-auto-fit">
+<link rel="help" href="https://drafts.csswg.org/css-grid-1/#propdef-grid-auto-columns">
+<link rel="help" href="https://drafts.csswg.org/css-grid-1/#propdef-grid-auto-rows">
+<link rel="help" href="https://drafts.csswg.org/css-grid-1/#propdef-grid-template-columns">
+<link rel="help" href="https://drafts.csswg.org/css-grid-1/#propdef-grid-column">
+<link rel="help" href="https://drafts.csswg.org/css-align-3/#propdef-grid-column-gap">
+<link rel="help" href="https://crbug.com/619930">
+<link rel="help" href="https://crbug.com/589460">
+<link rel="help" href="https://crbug.com/645746">
+<meta name="assert" content="Check that auto-fit columns are properly computed in a grid container"/>
+<link href="/css/support/grid.css" rel="stylesheet">
 <style>
 
 .grid {
@@ -27,9 +38,9 @@
 
 </style>
 
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
 
 <body onload="checkLayout('.grid')">
 <div id="log"></div>

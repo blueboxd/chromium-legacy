@@ -42,6 +42,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
@@ -414,7 +415,8 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
     }
   } else if (identifier ==
              autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN) {
-    password_client_->TriggerSignIn();
+    password_client_->TriggerSignIn(
+        signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
   } else if (
       identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
       identifier ==
@@ -747,7 +749,6 @@ void PasswordAutofillManager::OnUnlockReauthCompleted(
     autofill::PopupItemId unlock_item,
     PasswordManagerClient::ReauthSucceeded reauth_succeeded) {
   if (reauth_succeeded) {
-    password_client_->GetPasswordFeatureManager()->SetAccountStorageOptIn(true);
     if (unlock_item ==
         autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE) {
       password_client_->GeneratePassword();

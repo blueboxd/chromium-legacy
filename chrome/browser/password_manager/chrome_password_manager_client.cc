@@ -64,6 +64,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/sessions/content/content_record_password_state.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -221,7 +222,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       observer_(nullptr),
       credentials_filter_(this, base::BindRepeating(&GetSyncService, profile_)),
 #if !defined(OS_ANDROID)
-      account_storage_auth_helper_(profile_),
+      account_storage_auth_helper_(profile_, &password_feature_manager_),
 #endif
       helper_(this) {
   ContentPasswordManagerDriverFactory::CreateForWebContents(web_contents, this,
@@ -583,9 +584,10 @@ void ChromePasswordManagerClient::TriggerReauthForAccount(
 #endif  // defined(OS_ANDROID)
 }
 
-void ChromePasswordManagerClient::TriggerSignIn() {
+void ChromePasswordManagerClient::TriggerSignIn(
+    signin_metrics::AccessPoint access_point) {
 #if !defined(OS_ANDROID)
-  account_storage_auth_helper_.TriggerSignIn();
+  account_storage_auth_helper_.TriggerSignIn(access_point);
 #endif
 }
 

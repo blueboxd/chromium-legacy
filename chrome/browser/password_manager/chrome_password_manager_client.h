@@ -138,7 +138,7 @@ class ChromePasswordManagerClient
   void TriggerReauthForAccount(
       const CoreAccountId& account_id,
       base::OnceCallback<void(ReauthSucceeded)> reauth_callback) override;
-  void TriggerSignIn() override;
+  void TriggerSignIn(signin_metrics::AccessPoint access_point) override;
   bool IsIsolationForPasswordSitesEnabled() const override;
 
   PrefService* GetPrefs() const override;

@@ -448,20 +448,8 @@ void PasswordsPrivateDelegateImpl::SetAccountStorageOptIn(
         ProfileSyncServiceFactory::GetForProfile(profile_), false);
     return;
   }
-  account_storage_opt_in_reauthenticator_.Run(
-      web_contents,
-      base::BindOnce(
-          &PasswordsPrivateDelegateImpl::SetAccountStorageOptInCallback,
-          weak_ptr_factory_.GetWeakPtr()));
-}
-
-void PasswordsPrivateDelegateImpl::SetAccountStorageOptInCallback(
-    password_manager::PasswordManagerClient::ReauthSucceeded reauth_succeeded) {
-  if (reauth_succeeded) {
-    password_manager_util::SetAccountStorageOptIn(
-        profile_->GetPrefs(),
-        ProfileSyncServiceFactory::GetForProfile(profile_), true);
-  }
+  // The opt in pref is automatically set upon successful reauth.
+  account_storage_opt_in_reauthenticator_.Run(web_contents, base::DoNothing());
 }
 
 std::vector<api::passwords_private::CompromisedCredential>

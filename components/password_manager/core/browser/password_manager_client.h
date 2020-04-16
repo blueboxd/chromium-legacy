@@ -47,6 +47,10 @@ namespace signin {
 class IdentityManager;
 }  // namespace signin
 
+namespace signin_metrics {
+enum class AccessPoint;
+}
+
 struct CoreAccountId;
 class GURL;
 
@@ -243,8 +247,9 @@ class PasswordManagerClient {
       const CoreAccountId& account_id,
       base::OnceCallback<void(ReauthSucceeded)> reauth_callback);
 
-  // Redirects the user to a sign-in in a new tab.
-  virtual void TriggerSignIn();
+  // Redirects the user to a sign-in in a new tab. |access_point| is used for
+  // metrics recording and represents where the sign-in was triggered.
+  virtual void TriggerSignIn(signin_metrics::AccessPoint access_point);
 
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;

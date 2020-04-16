@@ -153,7 +153,7 @@ class KeyboardControllerImplTest : public AshTestBase {
 
  protected:
   bool SetContainerType(keyboard::ContainerType container_type,
-                        const base::Optional<gfx::Rect>& target_bounds) {
+                        const gfx::Rect& target_bounds) {
     bool result = false;
     base::RunLoop run_loop;
     keyboard_controller()->SetContainerType(
@@ -302,7 +302,7 @@ TEST_F(KeyboardControllerImplTest, SetContainerType) {
 
   // Setting the container type to the current type should fail.
   EXPECT_FALSE(
-      SetContainerType(keyboard::ContainerType::kFloating, base::nullopt));
+      SetContainerType(keyboard::ContainerType::kFloating, target_bounds));
   EXPECT_EQ(keyboard::ContainerType::kFloating,
             keyboard_ui_controller()->GetActiveContainerType());
 }

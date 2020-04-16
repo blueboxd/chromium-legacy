@@ -61,7 +61,7 @@ class WebAppInstallManager final : public InstallManager,
                                WebappInstallSource install_source,
                                OnceInstallCallback callback) override;
   void InstallBookmarkAppFromSync(
-      const AppId& app_id,
+      const AppId& bookmark_app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) override;
   void UpdateWebAppFromInfo(
@@ -85,6 +85,14 @@ class WebAppInstallManager final : public InstallManager,
   bool has_web_contents_for_testing() const { return web_contents_ != nullptr; }
 
  private:
+  void OnBookmarkAppInstalledAfterSync(
+      const AppId& bookmark_app_id,
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      bool is_locally_installed,
+      OnceInstallCallback callback,
+      const AppId& web_app_id,
+      InstallResultCode code);
+
   void EnqueueTask(std::unique_ptr<WebAppInstallTask> task,
                    base::OnceClosure start_task);
   void MaybeStartQueuedTask();

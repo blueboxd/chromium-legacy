@@ -69,6 +69,10 @@ void BluetoothTestCast::InitWithFakeAdapter() {
   adapter_->SetPowered(true, base::DoNothing(), base::DoNothing());
 }
 
+bool BluetoothTestCast::PlatformSupportsLowEnergy() {
+  return true;
+}
+
 BluetoothDevice* BluetoothTestCast::SimulateLowEnergyDevice(
     int device_ordinal) {
   if (device_ordinal > 7 || device_ordinal < 1)

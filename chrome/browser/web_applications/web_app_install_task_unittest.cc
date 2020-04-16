@@ -66,25 +66,6 @@ namespace web_app {
 
 namespace {
 
-constexpr int kIconSizes[] = {
-    icon_size::k32, icon_size::k64,  icon_size::k48,
-    icon_size::k96, icon_size::k128, icon_size::k256,
-};
-
-bool ContainsOneIconOfEachSize(const WebApplicationInfo& web_app_info) {
-  for (int size_px : kIconSizes) {
-    int num_icons_for_size = std::count_if(
-        web_app_info.icon_bitmaps.begin(), web_app_info.icon_bitmaps.end(),
-        [&size_px](const std::pair<SquareSizePx, SkBitmap>& icon) {
-          return icon.first == size_px;
-        });
-    if (num_icons_for_size != 1)
-      return false;
-  }
-
-  return true;
-}
-
 void TestAcceptDialogCallback(
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebApplicationInfo> web_app_info,
@@ -324,26 +305,6 @@ class WebAppInstallTaskTest : public WebAppTest {
     base::RunLoop run_loop;
     install_task_->InstallWebAppWithParams(
         web_contents(), params, WebappInstallSource::EXTERNAL_DEFAULT,
-        base::BindLambdaForTesting(
-            [&](const AppId& installed_app_id, InstallResultCode code) {
-              ASSERT_EQ(InstallResultCode::kSuccessNewInstall, code);
-              app_id = installed_app_id;
-              run_loop.Quit();
-            }));
-    run_loop.Run();
-    return app_id;
-  }
-
-  AppId LoadAndInstallWebAppFromSync(const GURL& url,
-                                     bool is_locally_installed) {
-    AppId app_id;
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
-    web_app_info->app_url = url;
-
-    base::RunLoop run_loop;
-    install_task_->LoadAndInstallWebAppFromSync(
-        web_contents(), &url_loader(), std::move(web_app_info),
-        is_locally_installed, WebappInstallSource::SYNC,
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {
               ASSERT_EQ(InstallResultCode::kSuccessNewInstall, code);
@@ -609,7 +570,7 @@ TEST_F(WebAppInstallTaskTest, GetIcons) {
       test_install_finalizer().web_app_info();
 
   // Make sure that icons have been generated for all sub sizes.
-  EXPECT_TRUE(ContainsOneIconOfEachSize(*web_app_info));
+  EXPECT_TRUE(ContainsOneIconOfEachSize(web_app_info->icon_bitmaps));
 
   // Generated icons are not considered part of the manifest icons.
   EXPECT_TRUE(web_app_info->icon_infos.empty());
@@ -631,7 +592,7 @@ TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
       test_install_finalizer().web_app_info();
 
   // Make sure that icons have been generated for all sizes.
-  EXPECT_TRUE(ContainsOneIconOfEachSize(*web_app_info));
+  EXPECT_TRUE(ContainsOneIconOfEachSize(web_app_info->icon_bitmaps));
 
   // Generated icons are not considered part of the manifest icons.
   EXPECT_TRUE(web_app_info->icon_infos.empty());
@@ -696,9 +657,9 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
     EXPECT_EQ(color, bitmap.getColor(0, 0));
   }
 
-  EXPECT_EQ(base::size(kIconSizes) + 1UL, written_sizes_px.size());
+  EXPECT_EQ(GetIconSizes().size() + 1UL, written_sizes_px.size());
 
-  for (int size_px : kIconSizes)
+  for (int size_px : GetIconSizes())
     written_sizes_px.erase(size_px);
   written_sizes_px.erase(original_icon_size_px);
 
@@ -890,7 +851,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
                 test_install_finalizer().web_app_info();
 
             // Make sure that icons have been generated for all sub sizes.
-            EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
+            EXPECT_TRUE(
+                ContainsOneIconOfEachSize(final_web_app_info->icon_bitmaps));
 
             // Make sure they're all derived from the yellow icon.
             for (const std::pair<const SquareSizePx, SkBitmap>& icon :
@@ -900,123 +862,6 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
             }
 
             EXPECT_FALSE(final_web_app_info->open_as_window);
-
-            run_loop.Quit();
-          }));
-
-  run_loop.Run();
-}
-
-TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromSync_TwoIcons) {
-  SetInstallFinalizerForTesting();
-
-  const GURL url{"https://example.com/path"};
-  const GURL icon1_url{"https://example.com/path/icon1.png"};
-  const GURL icon2_url{"https://example.com/path/icon2.png"};
-  url_loader().SetNextLoadUrlResult(
-      url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
-
-  CreateDefaultDataToRetrieve(url);
-
-  const AppId app_id = GenerateAppIdFromURL(url);
-
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
-  web_app_info->app_url = url;
-
-  WebApplicationIconInfo icon1_info;
-  icon1_info.url = icon1_url;
-  icon1_info.square_size_px = icon_size::k128;
-  web_app_info->icon_infos.push_back(std::move(icon1_info));
-
-  WebApplicationIconInfo icon2_info;
-  icon2_info.url = icon2_url;
-  icon2_info.square_size_px = icon_size::k256;
-  web_app_info->icon_infos.push_back(std::move(icon2_info));
-
-  IconsMap icons_map;
-  AddIconToIconsMap(icon1_url, icon_size::k128, SK_ColorBLUE, &icons_map);
-  AddIconToIconsMap(icon2_url, icon_size::k256, SK_ColorRED, &icons_map);
-
-  SetIconsMapToRetrieve(std::move(icons_map));
-
-  base::RunLoop run_loop;
-
-  install_task_->LoadAndInstallWebAppFromSync(
-      web_contents(), &url_loader(), std::move(web_app_info),
-      /*is_locally_installed=*/true, WebappInstallSource::SYNC,
-      base::BindLambdaForTesting(
-          [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
-            EXPECT_EQ(app_id, installed_app_id);
-
-            EXPECT_TRUE(test_install_finalizer()
-                            .finalize_options_list()
-                            .at(0)
-                            .locally_installed);
-
-            std::unique_ptr<WebApplicationInfo> final_web_app_info =
-                test_install_finalizer().web_app_info();
-
-            EXPECT_EQ(2U, final_web_app_info->icon_infos.size());
-            EXPECT_EQ(SizesToGenerate().size(),
-                      final_web_app_info->icon_bitmaps.size());
-
-            EXPECT_EQ(icon1_url, final_web_app_info->icon_infos.at(0).url);
-            const auto& icon1 =
-                final_web_app_info->icon_bitmaps[icon_size::k128];
-            EXPECT_FALSE(icon1.drawsNothing());
-            EXPECT_EQ(SK_ColorBLUE, icon1.getColor(0, 0));
-
-            EXPECT_EQ(icon2_url, final_web_app_info->icon_infos.at(1).url);
-            const auto& icon2 =
-                final_web_app_info->icon_bitmaps[icon_size::k256];
-            EXPECT_FALSE(icon2.drawsNothing());
-            EXPECT_EQ(SK_ColorRED, icon2.getColor(0, 0));
-
-            run_loop.Quit();
-          }));
-
-  run_loop.Run();
-}
-
-TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromSync_NoIcons) {
-  SetInstallFinalizerForTesting();
-
-  const GURL url{"https://example.com/path"};
-  url_loader().SetNextLoadUrlResult(
-      url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
-  CreateDefaultDataToRetrieve(url);
-  const AppId app_id = GenerateAppIdFromURL(url);
-
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
-  web_app_info->app_url = url;
-  // All icons will get the E letter drawn into a rounded yellow background.
-  web_app_info->generated_icon_color = SK_ColorYELLOW;
-
-  base::RunLoop run_loop;
-
-  install_task_->LoadAndInstallWebAppFromSync(
-      web_contents(), &url_loader(), std::move(web_app_info),
-      /*is_locally_installed=*/false, WebappInstallSource::SYNC,
-      base::BindLambdaForTesting(
-          [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
-            EXPECT_EQ(app_id, installed_app_id);
-
-            EXPECT_FALSE(test_install_finalizer()
-                             .finalize_options_list()
-                             .at(0)
-                             .locally_installed);
-
-            std::unique_ptr<WebApplicationInfo> final_web_app_info =
-                test_install_finalizer().web_app_info();
-            // Make sure that icons have been generated for all sub sizes.
-            EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
-
-            for (const std::pair<const SquareSizePx, SkBitmap>& icon :
-                 final_web_app_info->icon_bitmaps) {
-              EXPECT_FALSE(icon.second.drawsNothing());
-            }
 
             run_loop.Quit();
           }));
@@ -1043,7 +888,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
             std::unique_ptr<WebApplicationInfo> final_web_app_info =
                 test_install_finalizer().web_app_info();
             // Make sure that icons have been generated for all sub sizes.
-            EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
+            EXPECT_TRUE(
+                ContainsOneIconOfEachSize(final_web_app_info->icon_bitmaps));
             for (const std::pair<const SquareSizePx, SkBitmap>& icon :
                  final_web_app_info->icon_bitmaps) {
               EXPECT_FALSE(icon.second.drawsNothing());
@@ -1162,29 +1008,6 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
 
     EXPECT_EQ(DisplayMode::kStandalone,
               registrar().GetAppById(app_id)->user_display_mode());
-  }
-}
-
-TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromSync_LocallyInstallled) {
-  {
-    const auto url = GURL("https://example.com/");
-    url_loader().SetNextLoadUrlResult(
-        url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
-    CreateDataToRetrieve(url, /*open_as_window*/ false);
-    auto app_id =
-        LoadAndInstallWebAppFromSync(url, /*is_locally_installed*/ false);
-    EXPECT_FALSE(registrar().GetAppById(app_id)->is_locally_installed());
-    EXPECT_EQ(registrar().GetAppDisplayMode(app_id), DisplayMode::kBrowser);
-  }
-  {
-    const auto url = GURL("https://example.org/");
-    url_loader().SetNextLoadUrlResult(
-        url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
-    CreateDataToRetrieve(url, /*open_as_window*/ false);
-    auto app_id =
-        LoadAndInstallWebAppFromSync(url, /*is_locally_installed*/ true);
-    EXPECT_TRUE(registrar().GetAppById(app_id)->is_locally_installed());
-    EXPECT_EQ(registrar().GetAppDisplayMode(app_id), DisplayMode::kBrowser);
   }
 }
 

@@ -36,11 +36,14 @@
 namespace blink {
 
 class LayoutRubyRun;
+template <typename Base>
+class LayoutNGMixin;
 
-class LayoutRubyBase final : public LayoutBlockFlow {
+class LayoutRubyBase : public LayoutBlockFlow {
  public:
   ~LayoutRubyBase() override;
-  static LayoutRubyBase* CreateAnonymous(Document*);
+  static LayoutRubyBase* CreateAnonymous(Document*,
+                                         const LayoutRubyRun& ruby_run);
 
   const char* GetName() const override { return "LayoutRubyBase"; }
 
@@ -51,7 +54,9 @@ class LayoutRubyBase final : public LayoutBlockFlow {
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
  private:
-  LayoutRubyBase();
+  // The argument must be nullptr. It's necessary for the LayoutNGMixin
+  // constructor.
+  explicit LayoutRubyBase(Element*);
 
   ETextAlign TextAlignmentForLine(bool ends_with_soft_break) const override;
   void AdjustInlineDirectionLineBounds(
@@ -66,6 +71,7 @@ class LayoutRubyBase final : public LayoutBlockFlow {
   void MoveBlockChildren(LayoutRubyBase* to_base,
                          LayoutObject* before_child = nullptr);
 
+  friend class LayoutNGMixin<LayoutRubyBase>;
   // Allow LayoutRubyRun to manipulate the children within ruby bases.
   friend class LayoutRubyRun;
 };

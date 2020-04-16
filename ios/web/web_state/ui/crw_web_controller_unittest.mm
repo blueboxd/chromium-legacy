@@ -199,6 +199,8 @@ class CRWWebControllerTest : public WebTestWithWebController {
     OCMStub([result setCustomUserAgent:OCMOCK_ANY]);
     OCMStub([result customUserAgent]);
     OCMStub([static_cast<WKWebView*>(result) loadRequest:OCMOCK_ANY]);
+    OCMStub([static_cast<WKWebView*>(result) loadFileURL:OCMOCK_ANY
+                                 allowingReadAccessToURL:OCMOCK_ANY]);
     OCMStub([result setFrame:GetExpectedWebViewFrame()]);
     OCMStub([result addObserver:OCMOCK_ANY
                      forKeyPath:OCMOCK_ANY
@@ -1042,6 +1044,25 @@ TEST_F(CRWWebControllerPolicyDeciderTest, CancelRequest) {
   FakeWebStatePolicyDecider policy_decider(web_state());
   policy_decider.SetShouldAllowRequest(
       web::WebStatePolicyDecider::PolicyDecision::Cancel());
+
+  NSURL* url = [NSURL URLWithString:@(kTestURLString)];
+  NSMutableURLRequest* url_request = [NSMutableURLRequest requestWithURL:url];
+  EXPECT_TRUE(VerifyDecidePolicyForNavigationAction(
+      url_request, WKNavigationActionPolicyCancel));
+}
+
+// Tests that navigations are cancelled if |ShouldAllowRequest| returns a
+// PolicyDecision which returns true from |ShouldBlockNavigation()|.
+TEST_F(CRWWebControllerPolicyDeciderTest, CancelRequestAndDisplayError) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(web::features::kUseJSForErrorPage);
+
+  FakeWebStatePolicyDecider policy_decider(web_state());
+  NSError* error = [NSError errorWithDomain:@"Error domain"
+                                       code:123
+                                   userInfo:nil];
+  policy_decider.SetShouldAllowRequest(
+      web::WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(error));
 
   NSURL* url = [NSURL URLWithString:@(kTestURLString)];
   NSMutableURLRequest* url_request = [NSMutableURLRequest requestWithURL:url];

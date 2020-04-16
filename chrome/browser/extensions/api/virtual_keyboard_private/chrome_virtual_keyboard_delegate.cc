@@ -259,7 +259,7 @@ bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
 
 bool ChromeVirtualKeyboardDelegate::SetVirtualKeyboardMode(
     int mode_enum,
-    base::Optional<gfx::Rect> target_bounds,
+    gfx::Rect target_bounds,
     OnSetModeCallback on_set_mode_callback) {
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   if (!keyboard_client->is_keyboard_enabled())

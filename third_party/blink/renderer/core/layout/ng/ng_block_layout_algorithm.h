@@ -65,8 +65,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
  private:
   NOINLINE scoped_refptr<const NGLayoutResult>
-  LayoutWithInlineChildLayoutContext();
+  LayoutWithInlineChildLayoutContext(const NGLayoutInputNode& first_child);
   NOINLINE scoped_refptr<const NGLayoutResult> LayoutWithItemsBuilder(
+      const NGInlineNode& first_child,
       NGInlineChildLayoutContext* context);
 
   // Lay out again, this time with a predefined good breakpoint that we

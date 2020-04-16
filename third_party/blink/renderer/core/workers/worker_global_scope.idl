@@ -34,8 +34,7 @@
     readonly attribute WorkerGlobalScope self;
     readonly attribute WorkerLocation location;
 
-    // TODO(foolip): onerror should be an OnErrorEventHandler.
-    attribute EventHandler onerror;
+    attribute OnErrorEventHandler onerror;
     attribute EventHandler onlanguagechange;
     [RuntimeEnabled=TimeZoneChangeEvent] attribute EventHandler ontimezonechange;
     // attribute EventHandler onoffline;

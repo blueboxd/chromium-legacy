@@ -22,7 +22,9 @@ class SystemLogsMemoryHandler : public MemoryDetails {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     auto response = std::make_unique<SystemLogsResponse>();
-    (*response)["mem_usage"] = ToLogString();
+    (*response)["mem_usage"] = ToLogString(/*include_tab_title=*/false);
+    (*response)["mem_usage_with_title"] =
+        ToLogString(/*include_tab_title=*/true);
     DCHECK(!callback_.is_null());
     std::move(callback_).Run(std::move(response));
   }

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.page_info;
 
+import android.content.Intent;
 import android.text.SpannableString;
 
 import androidx.annotation.IntDef;
@@ -12,15 +13,18 @@ import org.chromium.base.Consumer;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.CookieControlsBridge;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.page_info.PageInfoControllerDelegate;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
+import org.chromium.components.page_info.VrHandler;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.WebContents;
@@ -80,26 +84,41 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
         return previewPageState;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public AutocompleteSchemeClassifier createAutocompleteSchemeClassifier() {
         return new ChromeAutocompleteSchemeClassifier(profile());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cookieControlsShown() {
         return CookieControlsBridge.isCookieControlsEnabled(profile());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModalDialogManager getModalDialogManager() {
         return mActivity.getModalDialogManager();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean useDarkColors() {
         return !mActivity.getNightModeStateProvider().isInNightMode();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initPreviewUiParams(
             PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss) {
@@ -133,13 +152,46 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isShowingPreview() {
         return mPreviewPageState != PreviewPageState.NOT_PREVIEW;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isPreviewPageInsecure() {
         return mPreviewPageState == PreviewPageState.INSECURE_PAGE_PREVIEW;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isInstantAppAvailable(String url) {
+        InstantAppsHandler instantAppsHandler = InstantAppsHandler.getInstance();
+        return instantAppsHandler.isInstantAppAvailable(
+                url, false /* checkHoldback */, false /* includeUserPrefersBrowser */);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Intent getInstantAppIntentForUrl(String url) {
+        InstantAppsHandler instantAppsHandler = InstantAppsHandler.getInstance();
+        return instantAppsHandler.getInstantAppIntentForUrl(url);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public VrHandler getVrHandler() {
+        return VrModuleProvider.getDelegate();
     }
 }

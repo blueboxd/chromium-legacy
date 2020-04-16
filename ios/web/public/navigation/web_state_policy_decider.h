@@ -28,11 +28,26 @@ class WebStatePolicyDecider {
     // A policy decision which cancels the navigation.
     static PolicyDecision Cancel();
 
+    // A policy decision which cancels the navigation and displays |error|.
+    // NOTE: The |error| will only be displayed if the associated navigation is
+    // being loaded in the main frame.
+    static PolicyDecision CancelAndDisplayError(NSError* error);
+
     // Whether or not the navigation will continue.
     bool ShouldAllowNavigation() const;
 
     // Whether or not the navigation will be cancelled.
     bool ShouldCancelNavigation() const;
+
+    // Whether or not an error should be displayed. Always returns false if
+    // |ShouldAllowNavigation| is true.
+    // NOTE: Will return true when the receiver is created with
+    // |CancelAndDisplayError| even though an error will only end up being
+    // displayed if the associated navigation is occurring in the main frame.
+    bool ShouldDisplayError() const;
+
+    // The error to display when |ShouldDisplayError| is true.
+    NSError* GetDisplayError() const;
 
    private:
     // The decisions which can be taken for a given navigation.
@@ -41,13 +56,21 @@ class WebStatePolicyDecider {
       kAllow,
 
       // Cancel the navigation.
-      kCancel
+      kCancel,
+
+      // Cancel the navigation and display an error.
+      kCancelAndDisplayError,
     };
 
-    PolicyDecision(Decision decision) : decision(decision) {}
+    PolicyDecision(Decision decision, NSError* error)
+        : decision(decision), error(error) {}
 
     // The decision to be taken for a given navigation.
     Decision decision = Decision::kAllow;
+
+    // An error associated with the navigation. This error will be displayed if
+    // |decision| is |kCancelAndDisplayError|.
+    NSError* error = nil;
   };
 
   // Data Transfer Object for the additional information about navigation

@@ -140,10 +140,8 @@ VirtualKeyboardPrivateSetContainerBehaviorFunction::Run() {
   std::unique_ptr<keyboard::SetContainerBehavior::Params> params =
       keyboard::SetContainerBehavior::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  base::Optional<gfx::Rect> target_bounds(base::nullopt);
-  if (params->options.bounds)
-    target_bounds = KeyboardBoundsToRect(*params->options.bounds);
 
+  gfx::Rect target_bounds = KeyboardBoundsToRect(params->options.bounds);
   if (!delegate()->SetVirtualKeyboardMode(
           params->options.mode, std::move(target_bounds),
           base::BindOnce(&VirtualKeyboardPrivateSetContainerBehaviorFunction::

@@ -115,44 +115,59 @@ void WebAppInstallManager::InstallWebAppWithParams(
 }
 
 void WebAppInstallManager::InstallBookmarkAppFromSync(
-    const AppId& app_id,
+    const AppId& bookmark_app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {
-  if (registrar()->AsWebAppRegistrar()) {
-    // If new Web Applications system is enabled, any legacy sync-initiated
-    // installation requests are ignored for now.
-    // TODO(crbug.com/1020037): If app_id is not installed, migrate bookmark app
-    // to new web app: Enqueue installation as if the user had requested to
-    // install it.
-    return;
-  }
-
   // Skip sync update if app exists.
   // All manifest fields will be set locally via update (see crbug.com/926083)
   // so we must not sync them in order to avoid a device-to-device sync war.
-  if (registrar()->IsInstalled(app_id)) {
-    std::move(callback).Run(app_id,
+  if (registrar()->IsInstalled(bookmark_app_id)) {
+    std::move(callback).Run(bookmark_app_id,
                             InstallResultCode::kSuccessAlreadyInstalled);
     return;
   }
 
-  bool is_locally_installed = registrar()->IsLocallyInstalled(app_id);
+  bool is_locally_installed = false;
 #if defined(OS_CHROMEOS)
   // On Chrome OS, sync always locally installs an app.
   is_locally_installed = true;
 #endif
 
+  // If bookmark_app_id is not installed enqueue full background installation
+  // flow. This install may produce a web app or an extension-based bookmark
+  // app, depending on the BMO flag.
+  GURL launch_url = web_application_info->app_url;
+
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), registrar(), shortcut_manager(), file_handler_manager(),
       finalizer(), data_retriever_factory_.Run());
 
+  task->ExpectAppId(bookmark_app_id);
+
+  InstallParams params;
+  params.user_display_mode = web_application_info->open_as_window
+                                 ? DisplayMode::kStandalone
+                                 : DisplayMode::kBrowser;
+  params.fallback_start_url = launch_url;
+  // If app is not locally installed then no OS integration like OS shortcuts.
+  params.locally_installed = is_locally_installed;
+  params.add_to_applications_menu = is_locally_installed;
+  params.add_to_desktop = is_locally_installed;
+  params.add_to_quick_launch_bar = is_locally_installed;
+  task->SetInstallParams(params);
+
+  OnceInstallCallback task_completed_callback = base::BindOnce(
+      &WebAppInstallManager::OnBookmarkAppInstalledAfterSync,
+      base::Unretained(this), bookmark_app_id, std::move(web_application_info),
+      is_locally_installed, std::move(callback));
+
   base::OnceClosure start_task = base::BindOnce(
-      &WebAppInstallTask::LoadAndInstallWebAppFromSync,
-      base::Unretained(task.get()), EnsureWebContentsCreated(),
-      base::Unretained(url_loader_.get()), std::move(web_application_info),
-      is_locally_installed, WebappInstallSource::SYNC,
+      &WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback,
+      base::Unretained(task.get()), launch_url, EnsureWebContentsCreated(),
+      base::Unretained(url_loader_.get()), WebappInstallSource::SYNC,
       base::BindOnce(&WebAppInstallManager::OnQueuedTaskCompleted,
-                     base::Unretained(this), task.get(), std::move(callback)));
+                     base::Unretained(this), task.get(),
+                     std::move(task_completed_callback)));
 
   EnqueueTask(std::move(task), std::move(start_task));
 }
@@ -229,6 +244,32 @@ void WebAppInstallManager::UninstallWebAppsAfterSync(
 void WebAppInstallManager::SetUrlLoaderForTesting(
     std::unique_ptr<WebAppUrlLoader> url_loader) {
   url_loader_ = std::move(url_loader);
+}
+
+void WebAppInstallManager::OnBookmarkAppInstalledAfterSync(
+    const AppId& bookmark_app_id,
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    bool is_locally_installed,
+    OnceInstallCallback callback,
+    const AppId& web_app_id,
+    InstallResultCode code) {
+  // TODO(loyso): Record |code| for this specific case in
+  // Webapp.BookmarkAppInstalledAfterSyncResult UMA.
+  if (IsSuccess(code)) {
+    DCHECK_EQ(bookmark_app_id, web_app_id);
+    std::move(callback).Run(web_app_id, code);
+  } else {
+    // Install failed. Do the fallback install from info.
+    InstallFinalizer::FinalizeOptions options;
+    options.install_source = WebappInstallSource::SYNC;
+    options.locally_installed = is_locally_installed;
+
+    FilterAndResizeIconsGenerateMissing(web_application_info.get(),
+                                        /*icons_map=*/nullptr);
+
+    finalizer()->FinalizeInstall(*web_application_info, options,
+                                 std::move(callback));
+  }
 }
 
 void WebAppInstallManager::EnqueueTask(std::unique_ptr<WebAppInstallTask> task,

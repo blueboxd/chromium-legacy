@@ -75,6 +75,7 @@ class NodeHighlightTool : public InspectTool {
 
  private:
   bool ForwardEventsToOverlay() override;
+  bool HideOnMouseMove() override;
   bool HideOnHideHighlight() override;
   void Draw(float scale) override;
   void DrawNode();

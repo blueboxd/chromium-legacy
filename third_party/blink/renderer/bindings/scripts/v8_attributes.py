@@ -644,12 +644,14 @@ def setter_expression(interface, attribute, context):
         arguments.append('*impl')
     arguments.extend(extra_arguments)
     idl_type = attribute.idl_type
-    if idl_type.base_type == 'EventHandler':
-        handler_type = 'kEventHandler'
-        if attribute.name == 'onerror':
-            handler_type = 'kOnErrorEventHandler'
-        elif attribute.name == 'onbeforeunload':
+    if idl_type.base_type in ('EventHandler', 'OnBeforeUnloadEventHandler',
+                              'OnErrorEventHandler'):
+        if idl_type.base_type == 'EventHandler':
+            handler_type = 'kEventHandler'
+        elif idl_type.base_type == 'OnBeforeUnloadEventHandler':
             handler_type = 'kOnBeforeUnloadEventHandler'
+        elif idl_type.base_type == 'OnErrorEventHandler':
+            handler_type = 'kOnErrorEventHandler'
         arguments.append('JSEventHandler::CreateOrNull(' + 'v8_value, ' +
                          'JSEventHandler::HandlerType::' + handler_type + ')')
     else:

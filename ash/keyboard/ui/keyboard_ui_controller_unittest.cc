@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/keyboard/ui/container_floating_behavior.h"
 #include "ash/keyboard/ui/container_full_width_behavior.h"
 #include "ash/keyboard/ui/keyboard_layout_manager.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
@@ -567,7 +568,8 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_FALSE(notified_is_visible());
 
   SetModeCallbackInvocationCounter invocation_counter;
-  controller().SetContainerType(ContainerType::kFloating, base::nullopt,
+  controller().SetContainerType(ContainerType::kFloating,
+                                gfx::Rect(0, 0, 400, 200),
                                 invocation_counter.GetInvocationCallback());
   EXPECT_EQ(1, invocation_counter.invocation_count_for_status(true));
   EXPECT_EQ(0, invocation_counter.invocation_count_for_status(false));
@@ -583,7 +585,8 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   // callback should do nothing when container mode is set to the current active
   // container type. An unnecessary call gets registered synchronously as a
   // failure status to the callback.
-  controller().SetContainerType(ContainerType::kFloating, base::nullopt,
+  controller().SetContainerType(ContainerType::kFloating,
+                                gfx::Rect(0, 0, 400, 200),
                                 invocation_counter.GetInvocationCallback());
   EXPECT_EQ(1, invocation_counter.invocation_count_for_status(true));
   EXPECT_EQ(1, invocation_counter.invocation_count_for_status(false));
@@ -600,8 +603,7 @@ TEST_F(KeyboardControllerAnimationTest, ChangeContainerModeWithBounds) {
 
   // Changing the mode to another mode invokes hiding + showing.
   const gfx::Rect target_bounds(0, 0, 1200, 600);
-  controller().SetContainerType(ContainerType::kFloating,
-                                base::make_optional(target_bounds),
+  controller().SetContainerType(ContainerType::kFloating, target_bounds,
                                 invocation_counter.GetInvocationCallback());
   // The container window shouldn't be resized until it's hidden even if the
   // target bounds is passed to |SetContainerType|.
@@ -693,11 +695,25 @@ TEST_F(KeyboardControllerAnimationTest, FloatingKeyboardEnsureCaretInWorkArea) {
     MOCK_METHOD(void, EnsureCaretNotInRect, (const gfx::Rect&), (override));
   };
 
-  // Floating keyboard should call EnsureCaretNotInRect with the empty rect.
-  MockTextInputClient mock_input_client;
-  EXPECT_CALL(mock_input_client, EnsureCaretNotInRect(gfx::Rect())).Times(1);
+  gfx::Rect root_bounds = root_window()->bounds();
+  gfx::Rect target_bounds(0, 0, 400, 200);
 
-  controller().SetContainerType(ContainerType::kFloating, base::nullopt,
+  // Default position of the floating keyboard window
+  gfx::Rect zeroed_occluded_bounds(root_bounds.width() - target_bounds.width() -
+                                       kDefaultDistanceFromScreenRight,
+                                   root_bounds.height() -
+                                       target_bounds.height() -
+                                       kDefaultDistanceFromScreenBottom,
+                                   0, 0);
+
+  // Floating keyboard should call EnsureCaretNotInRect with the empty rect
+  // twice, once when the window bounds change with SetContainerType, and then
+  // once when the animation finishes.
+  MockTextInputClient mock_input_client;
+  EXPECT_CALL(mock_input_client, EnsureCaretNotInRect(zeroed_occluded_bounds))
+      .Times(2);
+
+  controller().SetContainerType(ContainerType::kFloating, target_bounds,
                                 base::DoNothing());
   ASSERT_EQ(ContainerType::kFloating, controller().GetActiveContainerType());
 

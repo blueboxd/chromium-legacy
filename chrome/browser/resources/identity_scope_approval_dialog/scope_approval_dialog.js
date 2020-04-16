@@ -37,13 +37,15 @@ function loadAuthUrlAndShowWindow(url, win) {
   }
 
   webview.src = url;
+  let windowShown = false;
   webview.addEventListener('loadstop', function() {
-    if (win) {
+    if (win && !windowShown) {
       win.show();
       windowId = win.id;
+      windowShown = true;
     }
     webview.executeScript({file: 'inject.js'});
-  }, {once: true});
+  });
 }
 
 chrome.runtime.onMessageExternal.addListener(function(

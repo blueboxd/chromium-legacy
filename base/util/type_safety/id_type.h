@@ -62,7 +62,6 @@ class IdType : public StrongAlias<TypeMarker, WrappedType> {
   class Generator {
    public:
     Generator() = default;
-    ~Generator() = default;
 
     // Generates the next unique ID.
     IdType GenerateNextId() { return FromUnsafeValue(next_id_++); }
@@ -76,15 +75,19 @@ class IdType : public StrongAlias<TypeMarker, WrappedType> {
   };
 
   // Default-construct in the null state.
-  IdType() : StrongAlias<TypeMarker, WrappedType>::StrongAlias(kInvalidValue) {}
+  constexpr IdType()
+      : StrongAlias<TypeMarker, WrappedType>::StrongAlias(kInvalidValue) {}
 
-  bool is_null() const { return this->value() == kInvalidValue; }
+  constexpr bool is_null() const { return this->value() == kInvalidValue; }
+  constexpr explicit operator bool() const { return !is_null(); }
 
   // TODO(mpawlowski) Replace these with constructor/value() getter. The
   // conversions are safe as long as they're explicit (which is taken care of by
   // StrongAlias).
-  static IdType FromUnsafeValue(WrappedType value) { return IdType(value); }
-  WrappedType GetUnsafeValue() const { return this->value(); }
+  constexpr static IdType FromUnsafeValue(WrappedType value) {
+    return IdType(value);
+  }
+  constexpr WrappedType GetUnsafeValue() const { return this->value(); }
 };
 
 // Type aliases for convenience:

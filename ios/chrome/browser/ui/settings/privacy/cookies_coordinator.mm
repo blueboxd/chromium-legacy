@@ -42,7 +42,7 @@
 
 - (void)start {
   self.viewController = [[PrivacyCookiesViewController alloc]
-      initWithStyle:UITableViewStyleGrouped];
+      initWithStyle:UITableViewStylePlain];
 
   DCHECK(self.baseNavigationController);
   [self.baseNavigationController pushViewController:self.viewController

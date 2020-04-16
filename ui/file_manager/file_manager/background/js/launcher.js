@@ -69,10 +69,10 @@ launcher.setInitializationPromise = (promise) => {
  * @param {Object=} opt_appState App state.
  * @param {number=} opt_id Window id.
  * @param {LaunchType=} opt_type Launch type. Default: ALWAYS_CREATE.
- * @param {function(?string)=} opt_callback Completion callback with the App ID.
+ * @return {!Promise<chrome.app.window.AppWindow|string>} Resolved with the App
+ *     ID.
  */
-launcher.launchFileManager =
-    async (opt_appState, opt_id, opt_type, opt_callback) => {
+launcher.launchFileManager = async (opt_appState, opt_id, opt_type) => {
   const type = opt_type || LaunchType.ALWAYS_CREATE;
   opt_appState =
       /**
@@ -89,33 +89,36 @@ launcher.launchFileManager =
 
   await launcher.initializationPromise_;
 
+  const filesWindows =
+      Object.entries(window.appWindows).filter(([key, appWindow]) => {
+        return key.match(FILES_ID_PATTERN);
+      });
+
   // Check if there is already a window with the same URL. If so, then
   // reuse it instead of opening a new one.
   if (opt_appState &&
       (type == LaunchType.FOCUS_SAME_OR_CREATE ||
        type == LaunchType.FOCUS_ANY_OR_CREATE)) {
-    for (const key in window.appWindows) {
-      if (!key.match(FILES_ID_PATTERN)) {
-        continue;
-      }
-      const contentWindow = window.appWindows[key].contentWindow;
+    for (const [key, appWindow] of filesWindows) {
+      const contentWindow = appWindow.contentWindow;
       if (!contentWindow.appState) {
         continue;
       }
+
       // Different current directories.
       if (opt_appState.currentDirectoryURL !==
           contentWindow.appState.currentDirectoryURL) {
         continue;
       }
+
       // Selection URL specified, and it is different.
       if (opt_appState.selectionURL &&
           opt_appState.selectionURL !== contentWindow.appState.selectionURL) {
         continue;
       }
-      window.appWindows[key].focus();
-      if (opt_callback) {
-        opt_callback(key);
-      }
+
+      // Found compatible window.
+      appWindow.focus();
       return Promise.resolve(key);
     }
   }
@@ -123,55 +126,35 @@ launcher.launchFileManager =
   // Focus any window if none is focused. Try restored first.
   if (type == LaunchType.FOCUS_ANY_OR_CREATE) {
     // If there is already a focused window, then finish.
-    for (const key in window.appWindows) {
-      if (!key.match(FILES_ID_PATTERN)) {
-        continue;
-      }
-
+    for (const [key, appWindow] of filesWindows) {
       // The isFocused() method should always be available, but in case
       // the Files app's failed on some error, wrap it with try catch.
       try {
-        if (window.appWindows[key].contentWindow.isFocused()) {
-          if (opt_callback) {
-            opt_callback(key);
-          }
+        if (appWindow.contentWindow.isFocused()) {
           return Promise.resolve(key);
         }
       } catch (e) {
-        console.error(e.message);
+        console.error(e);
       }
     }
-    // Try to focus the first non-minimized window.
-    for (const key in window.appWindows) {
-      if (!key.match(FILES_ID_PATTERN)) {
-        continue;
-      }
 
-      if (!window.appWindows[key].isMinimized()) {
-        window.appWindows[key].focus();
-        if (opt_callback) {
-          opt_callback(key);
-        }
+    // Try to focus the first non-minimized window.
+    for (const [key, appWindow] of filesWindows) {
+      if (!appWindow.isMinimized()) {
+        appWindow.focus();
         return Promise.resolve(key);
       }
     }
-    // Restore and focus any window.
-    for (const key in window.appWindows) {
-      if (!key.match(FILES_ID_PATTERN)) {
-        continue;
-      }
 
-      window.appWindows[key].focus();
-      if (opt_callback) {
-        opt_callback(key);
-      }
+    // Restore and focus any window.
+    for (const [key, appWindow] of filesWindows) {
+      appWindow.focus();
       return Promise.resolve(key);
     }
   }
 
   // Create a new instance in case of ALWAYS_CREATE type, or as a fallback
   // for other types.
-
   const id = opt_id || nextFileManagerWindowID;
   nextFileManagerWindowID = Math.max(nextFileManagerWindowID, id + 1);
   const appId = FILES_ID_PREFIX + id;
@@ -183,16 +166,11 @@ launcher.launchFileManager =
 
   const appWindow = new AppWindowWrapper(
       'main.html', appId, FILE_MANAGER_WINDOW_CREATE_OPTIONS);
-  appWindow.launch(opt_appState || {}, false).then(() => {
-    if (!appWindow.rawAppWindow) {
-      opt_callback && opt_callback(null);
-      return Promise.resolve(null);
-    }
+  await appWindow.launch(opt_appState || {}, false);
+  if (!appWindow.rawAppWindow) {
+    return null;
+  }
 
-    appWindow.rawAppWindow.focus();
-    if (opt_callback) {
-      opt_callback(appId);
-    }
-    return Promise.resolve(appId);
-  });
+  appWindow.rawAppWindow.focus();
+  return appId;
 };

@@ -33,7 +33,7 @@ void OomMemoryDetails::OnDetailsAvailable() {
   base::TimeDelta delta = base::TimeTicks::Now() - start_time_;
   // These logs are collected by user feedback reports.  We want them to help
   // diagnose user-reported problems with frequently discarded tabs.
-  std::string log_string = ToLogString();
+  std::string log_string = ToLogString(/*include_tab_title=*/false);
 #if defined(OS_CHROMEOS)
   base::SystemMemoryInfoKB memory;
   if (base::GetSystemMemoryInfo(&memory) && memory.gem_size != -1) {

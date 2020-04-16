@@ -55,7 +55,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   NGBoxFragmentBuilder container_builder(block_flow, block_flow->Style(),
                                          block_flow->Style()->GetWritingMode(),
                                          block_flow->Style()->Direction());
-  NGFragmentItemsBuilder items_builder(&container_builder);
+  NGFragmentItemsBuilder items_builder(inline_node);
   if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     container_builder.SetItemsBuilder(&items_builder);
     context.SetItemsBuilder(&items_builder);

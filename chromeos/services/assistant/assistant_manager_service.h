@@ -82,6 +82,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
   // Enable/disable ARC play store.
   virtual void SetArcPlayStoreEnabled(bool enabled) = 0;
 
+  // Enable/disable Assistant Context.
+  virtual void SetAssistantContextEnabled(bool enable) = 0;
+
   // Return a pointer of AssistantSettingsManager.
   virtual AssistantSettingsManager* GetAssistantSettingsManager() = 0;
 

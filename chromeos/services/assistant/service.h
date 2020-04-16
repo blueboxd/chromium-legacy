@@ -122,6 +122,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   // ash::AssistantStateObserver overrides:
   void OnAssistantConsentStatusChanged(int consent_status) override;
+  void OnAssistantContextEnabled(bool enabled) override;
   void OnAssistantHotwordAlwaysOn(bool hotword_always_on) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantHotwordEnabled(bool enabled) override;

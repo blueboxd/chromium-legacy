@@ -51,9 +51,9 @@ polymer_modulizer("print_job_entry") {
   html_type = "v3-ready"
 }
 
-polymer_modulizer("scanning_ui") {
-  js_file = "scanning_ui.js"
-  html_file = "scanning_ui.html"
+polymer_modulizer("scanning_page") {
+  js_file = "scanning_page.js"
+  html_file = "scanning_page.html"
   html_type = "v3-ready"
 }
 
@@ -61,6 +61,6 @@ group("polymer3_elements") {
   public_deps = [
     ":print_job_entry_module",
     ":print_management_module",
-    ":scanning_ui_module",
+    ":scanning_page_module",
   ]
 }

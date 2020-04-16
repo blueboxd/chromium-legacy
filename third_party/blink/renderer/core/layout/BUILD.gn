@@ -404,6 +404,8 @@ blink_core_sources("layout") {
     "ng/layout_ng_progress.h",
     "ng/layout_ng_ruby_as_block.cc",
     "ng/layout_ng_ruby_as_block.h",
+    "ng/layout_ng_ruby_base.cc",
+    "ng/layout_ng_ruby_base.h",
     "ng/layout_ng_ruby_run.cc",
     "ng/layout_ng_ruby_run.h",
     "ng/layout_ng_table_caption.cc",

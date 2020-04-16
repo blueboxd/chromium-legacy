@@ -124,8 +124,10 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
   virtual void OnDetailsAvailable() = 0;
 
   // Returns a string summarizing memory usage of the Chrome browser process
-  // and all sub-processes, suitable for logging.
-  std::string ToLogString();
+  // and all sub-processes, suitable for logging.  Tab title may contain PII,
+  // set |include_tab_title| to false to exclude tab titles when there are
+  // privacy concerns.
+  std::string ToLogString(bool include_tab_title);
 
  protected:
   friend class base::RefCountedThreadSafe<MemoryDetails>;

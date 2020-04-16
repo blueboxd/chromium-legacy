@@ -29,13 +29,11 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils.OfflinePageLoadUrlDelegate;
 import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.site_settings.CookieControlsBridge;
-import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -260,11 +258,9 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             viewParams.openOnlineButtonShown = false;
         }
 
-        InstantAppsHandler instantAppsHandler = InstantAppsHandler.getInstance();
         if (!mIsInternalPage && !isShowingOfflinePage() && !mDelegate.isShowingPreview()
-                && instantAppsHandler.isInstantAppAvailable(mFullUrl, false /* checkHoldback */,
-                        false /* includeUserPrefersBrowser */)) {
-            final Intent instantAppIntent = instantAppsHandler.getInstantAppIntentForUrl(mFullUrl);
+                && mDelegate.isInstantAppAvailable(mFullUrl)) {
+            final Intent instantAppIntent = mDelegate.getInstantAppIntentForUrl(mFullUrl);
             viewParams.instantAppButtonClickCallback = () -> {
                 try {
                     activity.startActivity(instantAppIntent);
@@ -417,7 +413,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                     if (!mWebContents.isDestroyed()) {
                         recordAction(PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
                         ConnectionInfoPopup.show(context, mWebContents,
-                                mDelegate.getModalDialogManager(), VrModuleProvider.getDelegate());
+                                mDelegate.getModalDialogManager(), mDelegate.getVrHandler());
                     }
                 });
             };
@@ -482,7 +478,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
     private boolean isSheet(Context context) {
         return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
-                && !VrModuleProvider.getDelegate().isInVr();
+                && !mDelegate.getVrHandler().isInVr();
     }
 
     @VisibleForTesting

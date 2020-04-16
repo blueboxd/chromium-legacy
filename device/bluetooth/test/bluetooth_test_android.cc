@@ -73,6 +73,10 @@ void BluetoothTestAndroid::PostTaskFromJava(
       FROM_HERE, base::BindOnce(&RunJavaRunnable, runnable_ref));
 }
 
+bool BluetoothTestAndroid::PlatformSupportsLowEnergy() {
+  return true;
+}
+
 void BluetoothTestAndroid::InitWithDefaultAdapter() {
   adapter_ = BluetoothAdapterAndroid::Create(
                  BluetoothAdapterWrapper_CreateWithDefaultAdapter())

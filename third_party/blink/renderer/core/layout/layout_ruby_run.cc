@@ -184,7 +184,7 @@ void LayoutRubyRun::RemoveChild(LayoutObject* child) {
 
 LayoutRubyBase* LayoutRubyRun::CreateRubyBase() const {
   LayoutRubyBase* layout_object =
-      LayoutRubyBase::CreateAnonymous(&GetDocument());
+      LayoutRubyBase::CreateAnonymous(&GetDocument(), *this);
   scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(),
                                                      EDisplay::kBlock);

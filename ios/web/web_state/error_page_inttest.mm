@@ -8,10 +8,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "ios/testing/embedded_test_server_handlers.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/navigation/reload_type.h"
+#include "ios/web/public/navigation/web_state_policy_decider.h"
 #include "ios/web/public/security/security_style.h"
 #include "ios/web/public/security/ssl_status.h"
 #include "ios/web/public/test/element_selector.h"
@@ -49,6 +52,42 @@ bool WaitForErrorText(WebState* web_state, const GURL& url) {
                             /*is_post=*/false, /*is_otr=*/false,
                             /*cert_status=*/0));
 }
+
+// The error domain and code presented by |TestWebStatePolicyDecider| for
+// cancelled navigations.
+const char kCancelledNavigationErrorDomain[] = "Error domain";
+const int kCancelledNavigationErrorCode = 123;
+
+// A WebStatePolicyDecider which cancels requests to URLs of the form
+// "/echo-query?blocked" and displays an error.
+class TestWebStatePolicyDecider : public WebStatePolicyDecider {
+ public:
+  explicit TestWebStatePolicyDecider(WebState* web_state)
+      : WebStatePolicyDecider(web_state) {}
+  ~TestWebStatePolicyDecider() override = default;
+
+  // WebStatePolicyDecider overrides
+  PolicyDecision ShouldAllowRequest(NSURLRequest* request,
+                                    const RequestInfo& request_info) override {
+    // Don't block the error page itself.
+    // TODO(crbug.com/1069151): ShouldAllowRequest shouldn't be called for the
+    // presentation of error pages.
+    if ([request.URL.scheme isEqualToString:@"file"]) {
+      return PolicyDecision::Allow();
+    }
+    if ([request.URL.path isEqualToString:@"/echo-query"] &&
+        [request.URL.query isEqualToString:@"blocked"]) {
+      NSError* error =
+          [NSError errorWithDomain:base::SysUTF8ToNSString(
+                                       kCancelledNavigationErrorDomain)
+                              code:kCancelledNavigationErrorCode
+                          userInfo:nil];
+      return PolicyDecision::CancelAndDisplayError(error);
+    }
+    return PolicyDecision::Allow();
+  }
+};
+
 }  // namespace
 
 // Test fixture for error page testing. Error page simply renders the arguments
@@ -340,6 +379,68 @@ TEST_F(ErrorPageTest, URLAndVirtualURLAfterError) {
 
   EXPECT_EQ(url, manager->GetLastCommittedItem()->GetURL());
   EXPECT_EQ(virtual_url, manager->GetLastCommittedItem()->GetVirtualURL());
+}
+
+// Tests that an error page is displayed when a WebStatePolicyDecider returns a
+// PolicyDecision created with PolicyDecision::CancelAndDisplayError() from
+// WebStatePolicyDecider::ShouldAllowRequest() and that the error page loads
+// correctly when navigating forward to the error page.
+TEST_F(ErrorPageTest, ShouldAllowRequestCancelAndDisplayErrorForwardNav) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(web::features::kUseJSForErrorPage);
+
+  TestWebStatePolicyDecider policy_decider(web_state());
+
+  // Load successful page.
+  GURL allowed_url = server_.GetURL("/echo-query?allowed");
+  test::LoadUrl(web_state(), allowed_url);
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "allowed"));
+
+  // Load page which is blocked.
+  GURL blocked_url = server_.GetURL("/echo-query?blocked");
+  test::LoadUrl(web_state(), blocked_url);
+  std::string error_text = testing::GetErrorText(
+      web_state(), blocked_url, kCancelledNavigationErrorDomain,
+      /*error_code=*/kCancelledNavigationErrorCode,
+      /*is_post=*/false, /*is_otr=*/false,
+      /*cert_status=*/0);
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), error_text));
+
+  // Go back/forward to validate going forward to error page.
+  web_state()->GetNavigationManager()->GoBack();
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "allowed"));
+  web_state()->GetNavigationManager()->GoForward();
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), error_text));
+}
+
+// Tests that an error page is displayed when a WebStatePolicyDecider returns a
+// PolicyDecision created with PolicyDecision::CancelAndDisplayError() from
+// WebStatePolicyDecider::ShouldAllowRequest() and that the error page loads
+// correctly when navigating back to the error page.
+TEST_F(ErrorPageTest, ShouldAllowRequestCancelAndDisplayErrorBackNav) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(web::features::kUseJSForErrorPage);
+
+  TestWebStatePolicyDecider policy_decider(web_state());
+
+  // Load page which is blocked.
+  GURL blocked_url = server_.GetURL("/echo-query?blocked");
+  test::LoadUrl(web_state(), blocked_url);
+  std::string error_text = testing::GetErrorText(
+      web_state(), blocked_url, kCancelledNavigationErrorDomain,
+      /*error_code=*/kCancelledNavigationErrorCode,
+      /*is_post=*/false, /*is_otr=*/false,
+      /*cert_status=*/0);
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), error_text));
+
+  // Load successful page.
+  GURL allowed_url = server_.GetURL("/echo-query?allowed");
+  test::LoadUrl(web_state(), allowed_url);
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "allowed"));
+
+  // Go back/forward to validate going back to error page.
+  web_state()->GetNavigationManager()->GoBack();
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), error_text));
 }
 
 }  // namespace web

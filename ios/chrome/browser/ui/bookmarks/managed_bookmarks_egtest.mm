@@ -21,6 +21,8 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::ContextBarCenterButtonWithLabel;
+using chrome_test_util::SearchIconButton;
 using chrome_test_util::BookmarksDeleteSwipeButton;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ContextBarLeadingButtonWithLabel;
@@ -98,6 +100,12 @@ void SwipeBookmarkNodeWithLabel(NSString* bookmark_node_label) {
 void VerifyDeleteSwipeButtonNil() {
   [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
       assertWithMatcher:grey_nil()];
+}
+
+void SearchBookmarksForText(NSString* search_text) {
+  // Search and hide keyboard.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_typeText(search_text)];
 }
 
 }  // namespace
@@ -278,25 +286,39 @@ void VerifyDeleteSwipeButtonNil() {
   VerifyBookmarkContextBarEditButtonDisabled();
 }
 
-// Tests that long press is disabled while inside the top-level managed
-// bookmarks folder and sub-folder.
-- (void)testLongPressDisabled {
+// Tests that long press is disabled for the top-level managed bookmarks folder.
+- (void)testLongPressDisabledForManagedFolders {
+  [BookmarkEarlGreyUI openBookmarks];
+
+  // Top-level managed folder cannot be long-pressed.
+  LongPressBookmarkNodeWithLabel(@"Custom_Folder_Name");
+  VerifyBookmarkContextMenuNil();
+}
+
+// Tests that the context menu for long-press on managed URLs disables the
+// 'edit bookmark' option. For managed folders, 'edit folder' and 'move' are
+// disabled.
+// TODO(crbug.com/1070845): Long press unexpectedly triggers a tap (only in earl
+// grey tests).
+- (void)DISABLED_testContextMenuWithDisabledEditOption {
   [BookmarkEarlGreyUI openBookmarks];
   [self openCustomManagedBookmarksFolder];
 
-  // Test long press on a bookmark URL.
   LongPressBookmarkNodeWithLabel(@"First_Managed_URL");
-  VerifyBookmarkContextMenuNil();
+  [BookmarkEarlGreyUI verifyContextMenuForSingleURLWithEditEnabled:NO];
+  [BookmarkEarlGreyUI dismissContextMenu];
 
   // Test long press on a folder.
   LongPressBookmarkNodeWithLabel(@"Managed_Sub_Folder");
-  VerifyBookmarkContextMenuNil();
+  [BookmarkEarlGreyUI verifyContextMenuForSingleFolderWithEditEnabled:NO];
+  [BookmarkEarlGreyUI dismissContextMenu];
 
   [self openCustomManagedSubFolder];
 
   // Test long press inside sub-folder.
   LongPressBookmarkNodeWithLabel(@"Sub_Folder_First_URL");
-  VerifyBookmarkContextMenuNil();
+  [BookmarkEarlGreyUI verifyContextMenuForSingleURLWithEditEnabled:NO];
+  [BookmarkEarlGreyUI dismissContextMenu];
 }
 
 // Tests that swipe is disabled in managed bookmarks top-level folder and
@@ -320,6 +342,69 @@ void VerifyDeleteSwipeButtonNil() {
 
   SwipeBookmarkNodeWithLabel(@"Sub_Folder_First_URL");
   VerifyDeleteSwipeButtonNil();
+}
+
+// Tests that swiping is disabled on managed bookmark items on search results.
+- (void)testSwipeDisabledOnSearchResults {
+  // TODO(crbug.com/1070676): Earl grey swipe fails on iOS 12.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12.");
+  }
+
+  [BookmarkEarlGreyUI openBookmarks];
+  SearchBookmarksForText(@"URL\n");
+
+  SwipeBookmarkNodeWithLabel(@"First_Managed_URL");
+  VerifyDeleteSwipeButtonNil();
+}
+
+// Tests long presses on managed bookmark items in search results.
+// TODO(crbug.com/1070845): Long press unexpectedly triggers a tap (only in earl
+// grey tests).
+- (void)DISABLED_testLongPressOnSearchResults {
+  [BookmarkEarlGreyUI openBookmarks];
+  SearchBookmarksForText(@"URL\n");
+
+  LongPressBookmarkNodeWithLabel(@"First_Managed_URL");
+  [BookmarkEarlGreyUI verifyContextMenuForSingleURLWithEditEnabled:NO];
+  [BookmarkEarlGreyUI dismissContextMenu];
+}
+
+// Tests that edit is enabled on search results, but managed bookmarks cannot be
+// selected for action.
+- (void)testEditOnSearchResults {
+  [BookmarkEarlGreyUI openBookmarks];
+  SearchBookmarksForText(@"URL\n");
+
+  // Change to edit mode, using context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URL.
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                          @"First_Managed_URL")]
+      performAction:grey_tap()];
+
+  // Delete disabled.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
+      assertWithMatcher:grey_accessibilityTrait(
+                            UIAccessibilityTraitNotEnabled)];
+
+  // More button disabled.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
+      assertWithMatcher:grey_accessibilityTrait(
+                            UIAccessibilityTraitNotEnabled)];
+  // Cancel editing.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarCancelString])]
+      performAction:grey_tap()];
 }
 
 @end

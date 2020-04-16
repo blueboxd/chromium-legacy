@@ -56,4 +56,9 @@ void TestWebAppUrlLoader::LoadUrl(const GURL& url,
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
+void TestWebAppUrlLoader::SetAboutBlankResultLoaded() {
+  SetNextLoadUrlResult(GURL("about:blank"),
+                       WebAppUrlLoader::Result::kUrlLoaded);
+}
+
 }  // namespace web_app

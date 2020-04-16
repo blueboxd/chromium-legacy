@@ -90,6 +90,16 @@ void WebAppInstallTask::ExpectAppId(const AppId& expected_app_id) {
   expected_app_id_ = expected_app_id;
 }
 
+void WebAppInstallTask::SetInstallParams(
+    const InstallManager::InstallParams& install_params) {
+  if (!install_params.locally_installed) {
+    DCHECK(!install_params.add_to_applications_menu);
+    DCHECK(!install_params.add_to_desktop);
+    DCHECK(!install_params.add_to_quick_launch_bar);
+  }
+  install_params_ = install_params;
+}
+
 void WebAppInstallTask::LoadWebAppAndCheckInstallability(
     const GURL& url,
     WebappInstallSource install_source,
@@ -217,42 +227,15 @@ void WebAppInstallTask::InstallWebAppWithParams(
   CheckInstallPreconditions();
 
   Observe(contents);
+  SetInstallParams(install_params);
   install_callback_ = std::move(install_callback);
   install_source_ = install_source;
-  install_params_ = install_params;
   background_installation_ = true;
 
   data_retriever_->GetWebApplicationInfo(
       web_contents(),
       base::BindOnce(&WebAppInstallTask::OnGetWebApplicationInfo,
                      base::Unretained(this), /*force_shortcut_app=*/false));
-}
-
-void WebAppInstallTask::LoadAndInstallWebAppFromSync(
-    content::WebContents* web_contents,
-    WebAppUrlLoader* url_loader,
-    std::unique_ptr<WebApplicationInfo> web_application_info,
-    bool is_locally_installed,
-    WebappInstallSource install_source,
-    InstallManager::OnceInstallCallback callback) {
-  CheckInstallPreconditions();
-
-  Observe(web_contents);
-  install_callback_ = std::move(callback);
-  install_source_ = install_source;
-  background_installation_ = true;
-
-  // Default display mode, used if we fail to load the manifest.
-  web_application_info->display_mode = DisplayMode::kBrowser;
-
-  const GURL launch_url = web_application_info->app_url;
-  url_loader->LoadUrl(
-      launch_url, web_contents,
-      WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
-      base::BindOnce(
-          &WebAppInstallTask::OnWebAppFromSyncUrlLoadedRetrieveManifest,
-          weak_ptr_factory_.GetWeakPtr(), std::move(web_application_info),
-          is_locally_installed));
 }
 
 void WebAppInstallTask::UpdateWebAppFromInfo(
@@ -616,59 +599,6 @@ void WebAppInstallTask::OnDidCheckForIntentToPlayStore(
                      for_installable_site));
 }
 
-void WebAppInstallTask::OnWebAppFromSyncUrlLoadedRetrieveManifest(
-    std::unique_ptr<WebApplicationInfo> web_application_info,
-    bool is_locally_installed,
-    WebAppUrlLoader::Result result) {
-  if (ShouldStopInstall())
-    return;
-
-  if (result != WebAppUrlLoader::Result::kUrlLoaded) {
-    WebAppFromSyncLoadIcons(std::move(web_application_info),
-                            is_locally_installed);
-    return;
-  }
-
-  web_contents()->GetManifest(
-      base::BindOnce(&WebAppInstallTask::OnWebAppFromSyncManifestRetrieved,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(web_application_info), is_locally_installed));
-}
-
-void WebAppInstallTask::OnWebAppFromSyncManifestRetrieved(
-    std::unique_ptr<WebApplicationInfo> web_application_info,
-    bool is_locally_installed,
-    const GURL& manifest_url,
-    const blink::Manifest& manifest) {
-  if (ShouldStopInstall())
-    return;
-
-  if (!manifest.IsEmpty()) {
-    // TODO(crbug.com/1067519): Copy more fields from the manifest.
-    web_application_info->display_mode = manifest.display;
-  }
-
-  WebAppFromSyncLoadIcons(std::move(web_application_info),
-                          is_locally_installed);
-}
-
-void WebAppInstallTask::WebAppFromSyncLoadIcons(
-    std::unique_ptr<WebApplicationInfo> web_application_info,
-    bool is_locally_installed) {
-  std::vector<GURL> icon_urls =
-      GetValidIconUrlsToDownload(*web_application_info);
-
-  // Skip downloading the page favicons as everything in is the URL list.
-  data_retriever_->GetIcons(
-      web_contents(), icon_urls, /*skip_page_fav_icons*/ true,
-      install_source_ == WebappInstallSource::SYNC
-          ? WebAppIconDownloader::Histogram::kForSync
-          : WebAppIconDownloader::Histogram::kForCreate,
-      base::BindOnce(&WebAppInstallTask::OnIconsRetrieved,
-                     base::Unretained(this), std::move(web_application_info),
-                     is_locally_installed));
-}
-
 void WebAppInstallTask::OnIconsRetrieved(
     std::unique_ptr<WebApplicationInfo> web_app_info,
     bool is_locally_installed,
@@ -761,10 +691,13 @@ void WebAppInstallTask::OnDialogCompleted(
   InstallFinalizer::FinalizeOptions finalize_options;
   finalize_options.install_source = install_source_;
   finalize_options.locally_installed = true;
-  if (install_params_ &&
-      install_params_->user_display_mode != DisplayMode::kUndefined) {
-    web_app_info_copy.open_as_window =
-        install_params_->user_display_mode != DisplayMode::kBrowser;
+  if (install_params_) {
+    finalize_options.locally_installed = install_params_->locally_installed;
+
+    if (install_params_->user_display_mode != DisplayMode::kUndefined) {
+      web_app_info_copy.open_as_window =
+          install_params_->user_display_mode != DisplayMode::kBrowser;
+    }
   }
 
   install_finalizer_->FinalizeInstall(

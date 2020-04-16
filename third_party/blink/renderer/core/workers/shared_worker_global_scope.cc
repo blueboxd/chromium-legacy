@@ -60,7 +60,7 @@ SharedWorkerGlobalScope::SharedWorkerGlobalScope(
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
   appcache_host_ = MakeGarbageCollected<ApplicationCacheHostForWorker>(
       appcache_host_id, GetBrowserInterfaceBroker(),
-      GetTaskRunner(TaskType::kInternalLoading));
+      GetTaskRunner(TaskType::kInternalLoading), this);
 }
 
 SharedWorkerGlobalScope::~SharedWorkerGlobalScope() = default;

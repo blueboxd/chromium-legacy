@@ -94,7 +94,11 @@ id<GREYMatcher> SearchIconButton();
 // Must be called after previously calling [BookmarkEarlGreyUI openBookmarks].
 - (void)selectUrlsAndTapOnContextBarButtonWithLabelId:(int)buttonLabelId;
 
-- (void)verifyContextMenuForSingleURL;
+- (void)verifyContextMenuForSingleURLWithEditEnabled:(BOOL)editEnabled;
+
+- (void)verifyContextMenuForSingleFolderWithEditEnabled:(BOOL)editEnabled;
+
+- (void)dismissContextMenu;
 
 - (void)verifyContextBarInDefaultStateWithSelectEnabled:(BOOL)selectEnabled
                                        newFolderEnabled:(BOOL)newFolderEnabled;

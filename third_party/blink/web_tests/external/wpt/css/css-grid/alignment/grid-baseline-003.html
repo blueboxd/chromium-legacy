@@ -1,5 +1,13 @@
 <!DOCTYPE html>
-<link href="resources/grid.css" rel="stylesheet">
+<title>CSS Grid: Grid container baseline</title>
+<link rel="author" title="Manuel Rego" href="mailto:rego@igalia.com">
+<link rel="help" href="https://drafts.csswg.org/css-grid/#grid-baselines">
+<link rel="help" href="https://drafts.csswg.org/css-align-3/#synthesize-baseline">
+<link rel="help" href="https://crbug.com/234191">
+<link rel="match" href="references/grid-baseline-003-ref.html">
+<meta name="assert" content="Check that grid container baseline should be synthesized from the border edges when it has no baseline."/>
+
+<link href="/css/support/grid.css" rel="stylesheet">
 <style>
 .inline-block { display: inline-block; }
 .grid, .inline-grid {
@@ -10,7 +18,6 @@
 .padding { padding: 13px; }
 .margin { margin: 8px 0; }
 </style>
-<p>This test ensures that Baseline Alignment works for 1-dimensional Grid like in Flexible Box, even using margins, paddings and borders.</p>
 
 <div>
 Should align with the bottom

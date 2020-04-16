@@ -4,6 +4,7 @@
 
 #import "ios/chrome/common/credential_provider/constants.h"
 
+#include "base/logging.h"
 #include "ios/chrome/common/ios_app_bundle_id_prefix_buildflags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -29,6 +30,7 @@ NSString* ApplicationGroup() {
 NSURL* CredentialProviderSharedArchivableStoreURL() {
   NSURL* groupURL = [[NSFileManager defaultManager]
       containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
+  DCHECK(groupURL) << "This should never be nil. Maybe check the entitlements.";
   NSURL* credentialProviderURL =
       [groupURL URLByAppendingPathComponent:kCredentialProviderContainer];
   return [credentialProviderURL

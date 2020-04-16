@@ -1003,8 +1003,6 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     container_builder_.PropagateChildrenData(line_box_);
     scoped_refptr<const NGLayoutResult> layout_result =
         container_builder_.ToLineBoxFragment();
-    if (items_builder->TextContent(false).IsNull())
-      items_builder->SetTextContent(Node());
     items_builder->SetCurrentLine(
         To<NGPhysicalLineBoxFragment>(layout_result->PhysicalFragment()),
         std::move(line_box_));

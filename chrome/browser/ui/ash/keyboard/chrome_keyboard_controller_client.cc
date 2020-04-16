@@ -199,7 +199,7 @@ void ChromeKeyboardControllerClient::HideKeyboard(ash::HideReason reason) {
 
 void ChromeKeyboardControllerClient::SetContainerType(
     keyboard::ContainerType container_type,
-    const base::Optional<gfx::Rect>& target_bounds,
+    const gfx::Rect& target_bounds,
     base::OnceCallback<void(bool)> callback) {
   keyboard_controller_->SetContainerType(container_type, target_bounds,
                                          std::move(callback));

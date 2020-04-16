@@ -66,35 +66,33 @@ namespace util {
 template <typename TagType, typename UnderlyingType>
 class StrongAlias {
  public:
-  StrongAlias() = default;
-  explicit StrongAlias(const UnderlyingType& v) : value_(v) {}
-  explicit StrongAlias(UnderlyingType&& v) : value_(std::move(v)) {}
-  ~StrongAlias() = default;
+  constexpr StrongAlias() = default;
+  constexpr explicit StrongAlias(const UnderlyingType& v) : value_(v) {}
+  constexpr explicit StrongAlias(UnderlyingType&& v) : value_(std::move(v)) {}
 
-  StrongAlias(const StrongAlias& other) = default;
-  StrongAlias& operator=(const StrongAlias& other) = default;
-  StrongAlias(StrongAlias&& other) = default;
-  StrongAlias& operator=(StrongAlias&& other) = default;
+  constexpr UnderlyingType& value() & { return value_; }
+  constexpr const UnderlyingType& value() const& { return value_; }
+  constexpr UnderlyingType&& value() && { return std::move(value_); }
+  constexpr const UnderlyingType&& value() const&& { return std::move(value_); }
 
-  const UnderlyingType& value() const { return value_; }
-  explicit operator UnderlyingType() const { return value_; }
+  constexpr explicit operator UnderlyingType() const { return value_; }
 
-  bool operator==(const StrongAlias& other) const {
+  constexpr bool operator==(const StrongAlias& other) const {
     return value_ == other.value_;
   }
-  bool operator!=(const StrongAlias& other) const {
+  constexpr bool operator!=(const StrongAlias& other) const {
     return value_ != other.value_;
   }
-  bool operator<(const StrongAlias& other) const {
+  constexpr bool operator<(const StrongAlias& other) const {
     return value_ < other.value_;
   }
-  bool operator<=(const StrongAlias& other) const {
+  constexpr bool operator<=(const StrongAlias& other) const {
     return value_ <= other.value_;
   }
-  bool operator>(const StrongAlias& other) const {
+  constexpr bool operator>(const StrongAlias& other) const {
     return value_ > other.value_;
   }
-  bool operator>=(const StrongAlias& other) const {
+  constexpr bool operator>=(const StrongAlias& other) const {
     return value_ >= other.value_;
   }
 

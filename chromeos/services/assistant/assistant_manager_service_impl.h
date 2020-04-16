@@ -121,6 +121,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void EnableListening(bool enable) override;
   void EnableHotword(bool enable) override;
   void SetArcPlayStoreEnabled(bool enable) override;
+  void SetAssistantContextEnabled(bool enable) override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
   void AddCommunicationErrorObserver(
       CommunicationErrorObserver* observer) override;
@@ -277,6 +278,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
   void RegisterFallbackMediaHandler();
   void AddMediaControllerObserver();
+  void RemoveMediaControllerObserver();
   void RegisterAlarmsTimersListener();
 
   void FillServerExperimentIds(std::vector<std::string>* server_experiment_ids);
@@ -291,6 +293,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void RecordQueryResponseTypeUMA();
 
   void UpdateMediaState();
+  void ResetMediaState();
 
   std::string NewPendingInteraction(
       mojom::AssistantInteractionType interaction_type,

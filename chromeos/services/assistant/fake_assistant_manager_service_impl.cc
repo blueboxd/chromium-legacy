@@ -47,6 +47,9 @@ void FakeAssistantManagerServiceImpl::EnableAmbientMode(bool enabled) {}
 
 void FakeAssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enabled) {}
 
+void FakeAssistantManagerServiceImpl::SetAssistantContextEnabled(bool enabled) {
+}
+
 AssistantManagerService::State FakeAssistantManagerServiceImpl::GetState()
     const {
   return state_;

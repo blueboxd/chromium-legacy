@@ -95,7 +95,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // This will only be the case if there is actual inline content. Empty nodes
   // or nodes consisting purely of block-level, floats, and/or out-of-flow
   // positioned children will return false.
-  bool IsInlineFormattingContextRoot() const;
+  bool IsInlineFormattingContextRoot(
+      NGLayoutInputNode* first_child_out = nullptr) const;
 
   bool IsInlineLevel() const;
   bool IsAtomicInlineLevel() const;

@@ -18,6 +18,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ui_base_features.h"
@@ -152,7 +153,7 @@ void KeyboardControllerImpl::HideKeyboard(HideReason reason) {
 
 void KeyboardControllerImpl::SetContainerType(
     keyboard::ContainerType container_type,
-    const base::Optional<gfx::Rect>& target_bounds,
+    const gfx::Rect& target_bounds,
     SetContainerTypeCallback callback) {
   keyboard_ui_controller_->SetContainerType(container_type, target_bounds,
                                             std::move(callback));

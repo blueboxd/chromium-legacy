@@ -7,7 +7,6 @@
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/chooser_bubble_testapi.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -59,16 +58,12 @@ IN_PROC_BROWSER_TEST_F(SerialTest, NavigateWithChooserCrossOrigin) {
       web_contents, 1 /* number_of_navigations */,
       content::MessageLoopRunner::QuitMode::DEFERRED);
 
-  auto waiter = test::ChooserBubbleUiWaiter::Create();
-
   EXPECT_TRUE(content::ExecJs(web_contents,
                               R"(navigator.serial.requestPort({});
          document.location.href = "https://google.com";)"));
 
   observer.Wait();
-  EXPECT_TRUE(waiter->has_shown());
-  waiter->WaitForClose();
-  EXPECT_TRUE(waiter->has_closed());
+  EXPECT_FALSE(chrome::IsDeviceChooserShowingForTesting(browser()));
 }
 
 IN_PROC_BROWSER_TEST_F(SerialTest, RemovePort) {

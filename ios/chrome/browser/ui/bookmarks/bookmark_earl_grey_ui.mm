@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
@@ -227,16 +228,21 @@ id<GREYMatcher> SearchIconButton() {
       performAction:grey_tap()];
 }
 
-- (void)verifyContextMenuForSingleURL {
+- (void)verifyContextMenuForSingleURLWithEditEnabled:(BOOL)editEnabled {
   // Verify it shows the context menu.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kBookmarkHomeContextMenuIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify options on context menu.
+  // Verify that the edit menu option is enabled/disabled according to
+  // |editEnabled|.
+  id<GREYMatcher> matcher =
+      editEnabled ? grey_sufficientlyVisible()
+                  : grey_accessibilityTrait(UIAccessibilityTraitNotEnabled);
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      assertWithMatcher:matcher];
 
   [[EarlGrey
       selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -250,6 +256,47 @@ id<GREYMatcher> SearchIconButton() {
 
   [[EarlGrey selectElementWithMatcher:ContextMenuCopyButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+- (void)verifyContextMenuForSingleFolderWithEditEnabled:(BOOL)editEnabled {
+  // Verify it shows the context menu.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeContextMenuIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify options on context menu.
+  // Verify that the edit menu option is enabled/disabled according to
+  // |editEnabled|.
+  id<GREYMatcher> matcher =
+      editEnabled ? grey_sufficientlyVisible()
+                  : grey_accessibilityTrait(UIAccessibilityTraitNotEnabled);
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
+      assertWithMatcher:matcher];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      assertWithMatcher:matcher];
+}
+
+- (void)dismissContextMenu {
+  // Verify it shows the context menu.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeContextMenuIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Dismiss the context menu. On non compact width tap the Bookmarks TableView
+  // to dismiss, since there might not be a cancel button.
+  if ([ChromeEarlGrey isCompactWidth]) {
+    [[EarlGrey
+        selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_CANCEL)]
+        performAction:grey_tap()];
+  } else {
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                            kBookmarkHomeTableViewIdentifier)]
+        performAction:grey_tap()];
+  }
 }
 
 - (void)verifyContextBarInDefaultStateWithSelectEnabled:(BOOL)selectEnabled

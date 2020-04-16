@@ -156,7 +156,7 @@ void MemoryDetails::StartFetch() {
 
 MemoryDetails::~MemoryDetails() {}
 
-std::string MemoryDetails::ToLogString() {
+std::string MemoryDetails::ToLogString(bool include_tab_title) {
   std::string log;
   log.reserve(4096);
   ProcessMemoryInformationList processes = ChromeBrowser()->processes;
@@ -166,7 +166,10 @@ std::string MemoryDetails::ToLogString() {
   for (auto iter1 = processes.rbegin(); iter1 != processes.rend(); ++iter1) {
     log += ProcessMemoryInformation::GetFullTypeNameInEnglish(
             iter1->process_type, iter1->renderer_type);
-    if (!iter1->titles.empty()) {
+    // The title of a renderer may contain PII.
+    if ((iter1->process_type != content::PROCESS_TYPE_RENDERER ||
+         include_tab_title) &&
+        !iter1->titles.empty()) {
       log += " [";
       for (std::vector<base::string16>::const_iterator iter2 =
                iter1->titles.begin();

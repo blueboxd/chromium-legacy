@@ -63,7 +63,7 @@ bool ShellVirtualKeyboardDelegate::IsLanguageSettingsEnabled() {
 
 bool ShellVirtualKeyboardDelegate::SetVirtualKeyboardMode(
     int mode_enum,
-    base::Optional<gfx::Rect> target_bounds,
+    gfx::Rect target_bounds,
     OnSetModeCallback on_set_mode_callback) {
   return false;
 }

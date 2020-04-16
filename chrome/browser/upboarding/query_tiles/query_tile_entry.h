@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/time/time.h"
 #include "url/gurl.h"
 
 namespace upboarding {
@@ -37,7 +37,11 @@ struct QueryTileEntry {
   bool operator!=(const QueryTileEntry& other) const;
 
   QueryTileEntry(const QueryTileEntry& other);
-  QueryTileEntry(QueryTileEntry&& other);
+  QueryTileEntry(QueryTileEntry&& other) noexcept;
+
+  QueryTileEntry& operator=(const QueryTileEntry& other);
+  QueryTileEntry& operator=(QueryTileEntry&& other) noexcept;
+
   // Unique Id for each entry.
   std::string id;
 

@@ -13,8 +13,11 @@
 #include "base/path_service.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
+#import "ios/net/protocol_handler_util.h"
 #include "ios/testing/embedded_test_server_handlers.h"
 #include "ios/web/common/features.h"
 #include "ios/web/navigation/wk_navigation_util.h"
@@ -36,6 +39,7 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
+#import "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -1996,6 +2000,64 @@ TEST_F(WebStateObserverTest, DisallowRequest) {
 
   // Typed URL should be discarded after the navigation is rejected.
   EXPECT_FALSE(web_state()->GetNavigationManager()->GetVisibleItem());
+}
+
+// Tests rejecting the navigation from ShouldAllowRequest with an error. The
+// load should stop, and an error page should be loaded.
+TEST_F(WebStateObserverTest, DisallowRequestAndShowError) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(web::features::kUseJSForErrorPage);
+
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+
+  WebStatePolicyDecider::RequestInfo expected_request_info(
+      ui::PageTransition::PAGE_TRANSITION_TYPED,
+      /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  NSError* error = [NSError errorWithDomain:net::kNSErrorDomain
+                                       code:net::ERR_BLOCKED_BY_ADMINISTRATOR
+                                   userInfo:nil];
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+      .WillOnce(Return(
+          WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(error)));
+
+  // Allow error page to load
+  // TODO(crbug.com/1069151): ShouldAllowRequest shouldn't be called for the
+  // presentation of error pages.
+  WebStatePolicyDecider::RequestInfo expected_request_info_2(
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
+      /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info_2)))
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+      .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
+  // TODO(crbug.com/1071117): DidStartNavigation is over-triggered when
+  // |web::features::kUseJSForErrorPage| is enabled.
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
+
+  GURL url = test_server_->GetURL("/echo");
+  test::LoadUrl(web_state(), url);
+
+  EXPECT_TRUE(test::WaitForWebViewContainingText(
+      web_state(), testing::GetErrorText(web_state(), url,
+                                         base::SysNSStringToUTF8(error.domain),
+                                         /*error_code=*/error.code,
+                                         /*is_post=*/false, /*is_otr=*/false,
+                                         /*cert_status=*/0)));
+  // The URL of the error page should remain the URL of the blocked page.
+  EXPECT_EQ(url.spec(), web_state()->GetVisibleURL());
 }
 
 // Tests rejecting the navigation from ShouldAllowResponse. PageLoaded callback

@@ -4,15 +4,15 @@
 
 // TODO(jschettler): use es6 module for mojo binding (crbug/1004256).
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
-import 'chrome://scanning/scanning_ui.js';
+import 'chrome://print-management/scanning_page.js';
 
-suite('ScanningUITest', () => {
-  /** @type {?ScanningUIElement} */
+suite('ScanningPageTest', () => {
+  /** @type {?ScanningPageElement} */
   let page = null;
 
   setup(function() {
     PolymerTest.clearBody();
-    page = document.createElement('scanning-ui');
+    page = document.createElement('scanning-page');
     document.body.appendChild(page);
   });
 
@@ -22,8 +22,8 @@ suite('ScanningUITest', () => {
   });
 
   test('MainPageLoaded', () => {
-    // TODO(jschettler): Remove this stub test once the UI has more capabilities
-    // to test.
-    assertEquals('Scanning UI', page.$$('#header').textContent);
+    // TODO(jschettler): Remove this stub test once the page has more
+    // capabilities to test.
+    assertEquals('Chrome OS Scanning', page.$$('#header').textContent);
   });
 });

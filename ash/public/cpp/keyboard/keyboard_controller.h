@@ -79,7 +79,7 @@ class ASH_PUBLIC_EXPORT KeyboardController {
   // container type changes (or fails to change).
   using SetContainerTypeCallback = base::OnceCallback<void(bool)>;
   virtual void SetContainerType(keyboard::ContainerType container_type,
-                                const base::Optional<gfx::Rect>& target_bounds,
+                                const gfx::Rect& target_bounds,
                                 SetContainerTypeCallback callback) = 0;
 
   // If |locked| is true, the keyboard remains visible even when no window has

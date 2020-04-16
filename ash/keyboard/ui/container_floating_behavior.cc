@@ -69,23 +69,9 @@ void ContainerFloatingBehavior::InitializeShowAnimationStartingState(
 gfx::Rect ContainerFloatingBehavior::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
     const gfx::Rect& requested_bounds_in_screen) {
-  gfx::Rect keyboard_bounds_in_screen = requested_bounds_in_screen;
-
-  if (!default_position_in_screen_) {
-    // If the keyboard hasn't been shown yet, ignore the request and use
-    // default.
-    gfx::Point default_location = GetPositionForShowingKeyboard(
-        keyboard_bounds_in_screen.size(), display_bounds);
-    keyboard_bounds_in_screen =
-        gfx::Rect(default_location, keyboard_bounds_in_screen.size());
-  } else {
-    // Otherwise, simply make sure that the new bounds are not off the edge of
-    // the screen.
-    keyboard_bounds_in_screen = ContainKeyboardToDisplayBounds(
-        keyboard_bounds_in_screen, display_bounds);
-    SavePosition(keyboard_bounds_in_screen, display_bounds.size());
-  }
-
+  gfx::Rect keyboard_bounds_in_screen = ContainKeyboardToDisplayBounds(
+      requested_bounds_in_screen, display_bounds);
+  SavePosition(keyboard_bounds_in_screen, display_bounds.size());
   return keyboard_bounds_in_screen;
 }
 

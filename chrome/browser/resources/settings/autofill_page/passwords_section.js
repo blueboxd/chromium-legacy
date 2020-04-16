@@ -121,7 +121,7 @@ Polymer({
     shouldShowBanner_: {
       type: Boolean,
       value: true,
-      computed: 'computeShouldShowBanner_(' +
+      computed: 'computeShouldShowBanner_(hasLeakedCredentials_,' +
           'signedIn_, hasNeverCheckedPasswords_, hasStoredPasswords_)',
     },
 
@@ -410,7 +410,7 @@ Polymer({
    */
   computeShouldShowBanner_() {
     return this.signedIn_ && this.hasStoredPasswords_ &&
-        this.hasNeverCheckedPasswords_;
+        this.hasNeverCheckedPasswords_ && !this.hasLeakedCredentials_;
   },
 
   /**

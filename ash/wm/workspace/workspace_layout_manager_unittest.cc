@@ -2010,12 +2010,14 @@ TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
   test_state()->reset_num_system_ui_area_changes();
 
   keyboard_controller->SetContainerType(keyboard::ContainerType::kFloating,
-                                        base::nullopt, base::DoNothing());
+                                        gfx::Rect(0, 0, 400, 200),
+                                        base::DoNothing());
   EXPECT_GE(test_state()->num_system_ui_area_changes(), 1);
   test_state()->reset_num_system_ui_area_changes();
 
   keyboard_controller->SetContainerType(keyboard::ContainerType::kFullWidth,
-                                        base::nullopt, base::DoNothing());
+                                        gfx::Rect(0, 0, 400, 200),
+                                        base::DoNothing());
   EXPECT_GE(test_state()->num_system_ui_area_changes(), 1);
 }
 

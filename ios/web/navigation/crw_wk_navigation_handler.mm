@@ -364,11 +364,17 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // either: 1- Handle the URL it self and return false to stop the controller
   // from proceeding with the navigation if needed. or 2- return true to allow
   // the navigation to be proceeded by the web controller.
-  BOOL allowLoad = YES;
+  web::WebStatePolicyDecider::PolicyDecision policyDecision =
+      web::WebStatePolicyDecider::PolicyDecision::Allow();
   if (web::GetWebClient()->IsAppSpecificURL(requestURL)) {
-    allowLoad = [self shouldAllowAppSpecificURLNavigationAction:action
-                                                     transition:transition];
-    if (allowLoad && !self.webStateImpl->HasWebUI()) {
+    // |policyDecision| is initialized above this conditional to allow loads, so
+    // it only needs to be overwritten if the load should be cancelled.
+    if (![self shouldAllowAppSpecificURLNavigationAction:action
+                                              transition:transition]) {
+      policyDecision = web::WebStatePolicyDecider::PolicyDecision::Cancel();
+    }
+    if (policyDecision.ShouldAllowNavigation() &&
+        !self.webStateImpl->HasWebUI()) {
       [self.delegate navigationHandler:self createWebUIForURL:requestURL];
     }
   }
@@ -380,7 +386,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       requestURL.SchemeIs(url::kAboutScheme) ||
       requestURL.SchemeIs(url::kBlobScheme);
 
-  if (allowLoad) {
+  if (policyDecision.ShouldAllowNavigation()) {
     BOOL userInteractedWithRequestMainFrame =
         self.userInteractionState->HasUserTappedRecently(webView) &&
         net::GURLWithNSURL(action.request.mainDocumentURL) ==
@@ -389,9 +395,9 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         transition, isMainFrameNavigationAction,
         userInteractedWithRequestMainFrame);
 
-    allowLoad =
-        self.webStateImpl->ShouldAllowRequest(action.request, requestInfo)
-            .ShouldAllowNavigation();
+    policyDecision =
+        self.webStateImpl->ShouldAllowRequest(action.request, requestInfo);
+
     // The WebState may have been closed in the ShouldAllowRequest callback.
     if (self.beingDestroyed) {
       decisionHandler(WKNavigationActionPolicyCancel);
@@ -400,10 +406,10 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   }
 
   if (!webControllerCanShow) {
-    allowLoad = NO;
+    policyDecision = web::WebStatePolicyDecider::PolicyDecision::Cancel();
   }
 
-  if (allowLoad) {
+  if (policyDecision.ShouldAllowNavigation()) {
     if ([[action.request HTTPMethod] isEqualToString:@"POST"]) {
       web::NavigationItemImpl* item =
           self.navigationManagerImpl->GetCurrentItemImpl();
@@ -414,6 +420,26 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     }
   } else {
     if (action.targetFrame.mainFrame) {
+      if (!self.beingDestroyed && policyDecision.ShouldDisplayError()) {
+        DCHECK(policyDecision.GetDisplayError());
+
+        // Navigation was blocked by |ShouldProvisionallyFailRequest|. Cancel
+        // load of page.
+        decisionHandler(WKNavigationActionPolicyCancel);
+
+        // Handling presentation of policy decision error is dependent on
+        // |web::features::kUseJSForErrorPage| feature.
+        if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
+          return;
+        }
+
+        [self displayError:policyDecision.GetDisplayError()
+            forCancelledNavigationToURL:action.request.URL
+                              inWebView:webView
+                         withTransition:transition];
+        return;
+      }
+
       [self.pendingNavigationInfo setCancelled:YES];
       if (self.navigationManagerImpl->GetPendingItemIndex() == -1) {
         // Discard the new pending item to ensure that the current URL is not
@@ -447,7 +473,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // displayed in the omnibox, don't try to detect a SafeBrowsing warning for
   // iframe navigations, because the omnibox already shows the correct main
   // frame URL in that case.
-  if (allowLoad && isMainFrameNavigationAction &&
+  if (policyDecision.ShouldAllowNavigation() && isMainFrameNavigationAction &&
       !web::IsSafeBrowsingWarningDisplayedInWebView(webView)) {
     __weak CRWWKNavigationHandler* weakSelf = self;
     __weak WKWebView* weakWebView = webView;
@@ -482,7 +508,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         }));
   }
 
-  if (!allowLoad) {
+  if (policyDecision.ShouldCancelNavigation()) {
     decisionHandler(WKNavigationActionPolicyCancel);
     return;
   }
@@ -1778,31 +1804,11 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   if (item) {
     if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
-      ErrorPageHelper* errorPage =
-          [[ErrorPageHelper alloc] initWithError:error];
-      WKBackForwardListItem* backForwardItem =
-          webView.backForwardList.currentItem;
-      // There are 3 possible scenarios here:
-      //   1. Current nav item is an error page for failed URL;
-      //   2. Current nav item has a failed URL. This may happen when
-      //      back/forward/refresh on a loaded page;
-      //   3. Current nav item is an irrelevant page.
-      // For 1&2, load an empty string to remove existing JS code.
-      // For 3, load error page file to create a new nav item.
-      // The actual error HTML will be loaded in didFinishNavigation callback.
-      WKNavigation* errorNavigation = nil;
-      if (provisionalLoad &&
-          ![errorPage
-              isErrorPageFileURLForFailedNavigationURL:backForwardItem.URL] &&
-          ![backForwardItem.URL isEqual:errorPage.failedNavigationURL]) {
-        errorNavigation = [webView loadFileURL:errorPage.errorPageFileURL
-                       allowingReadAccessToURL:errorPage.errorPageFileURL];
-      } else {
-        errorNavigation = [webView loadHTMLString:@""
-                                          baseURL:backForwardItem.URL];
-      }
-      [self.navigationStates setState:web::WKNavigationState::REQUESTED
-                        forNavigation:errorNavigation];
+      WKNavigation* errorNavigation =
+          [self displayErrorPageWithError:error
+                                inWebView:webView
+                        isProvisionalLoad:provisionalLoad];
+
       std::unique_ptr<web::NavigationContextImpl> originalContext =
           [self.navigationStates removeNavigation:navigation];
       [self.navigationStates setContext:std::move(originalContext)
@@ -1831,6 +1837,91 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   // Don't commit the pending item or call OnNavigationFinished until the
   // placeholder navigation finishes loading.
+}
+
+// Displays an error page with details from |error| in |webView| using JS error
+// pages (associated with the kUseJSForErrorPage flag.) The error page is
+// presented with |transition| and associated with |blockedNSURL|.
+- (void)displayError:(NSError*)error
+    forCancelledNavigationToURL:(NSURL*)blockedNSURL
+                      inWebView:(WKWebView*)webView
+                 withTransition:(ui::PageTransition)transition {
+  DCHECK(base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
+
+  const GURL blockedURL = net::GURLWithNSURL(blockedNSURL);
+
+  // Error page needs the URL string in the error's userInfo for proper
+  // display.
+  if (!error.userInfo[NSURLErrorFailingURLStringErrorKey]) {
+    NSMutableDictionary* updatedUserInfo = [[NSMutableDictionary alloc] init];
+    [updatedUserInfo addEntriesFromDictionary:error.userInfo];
+    [updatedUserInfo setObject:blockedNSURL.absoluteString
+                        forKey:NSURLErrorFailingURLStringErrorKey];
+
+    error = [NSError errorWithDomain:error.domain
+                                code:error.code
+                            userInfo:updatedUserInfo];
+  }
+
+  WKNavigation* errorNavigation = [self displayErrorPageWithError:error
+                                                        inWebView:webView
+                                                isProvisionalLoad:YES];
+
+  // Create pending item.
+  self.navigationManagerImpl->AddPendingItem(
+      blockedURL, web::Referrer(), transition,
+      web::NavigationInitiationType::BROWSER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  // Create context.
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(
+          self.webStateImpl, blockedURL,
+          /*has_user_gesture=*/true, transition,
+          /*is_renderer_initiated=*/false);
+  std::unique_ptr<web::NavigationItemImpl> item =
+      self.navigationManagerImpl->ReleasePendingItem();
+  context->SetNavigationItemUniqueID(item->GetUniqueID());
+  context->SetItem(std::move(item));
+  context->SetError(error);
+
+  [self.navigationStates setContext:std::move(context)
+                      forNavigation:errorNavigation];
+}
+
+// Creates and returns a new WKNavigation to load an error page displaying
+// details of |error| inside |webView|. (Using JS error pages associated with
+// the kUseJSForErrorPage flag.) |provisionalLoad| should be set according to
+// whether or not the error occurred during a provisionalLoad.
+- (WKNavigation*)displayErrorPageWithError:(NSError*)error
+                                 inWebView:(WKWebView*)webView
+                         isProvisionalLoad:(BOOL)provisionalLoad {
+  DCHECK(base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
+
+  ErrorPageHelper* errorPage = [[ErrorPageHelper alloc] initWithError:error];
+  WKBackForwardListItem* backForwardItem = webView.backForwardList.currentItem;
+  // There are 3 possible scenarios here:
+  //   1. Current nav item is an error page for failed URL;
+  //   2. Current nav item has a failed URL. This may happen when
+  //      back/forward/refresh on a loaded page;
+  //   3. Current nav item is an irrelevant page.
+  // For 1&2, load an empty string to remove existing JS code.
+  // For 3, load error page file to create a new nav item.
+  // The actual error HTML will be loaded in didFinishNavigation callback.
+  WKNavigation* errorNavigation = nil;
+  if (provisionalLoad &&
+      ![errorPage
+          isErrorPageFileURLForFailedNavigationURL:backForwardItem.URL] &&
+      ![backForwardItem.URL isEqual:errorPage.failedNavigationURL]) {
+    errorNavigation = [webView loadFileURL:errorPage.errorPageFileURL
+                   allowingReadAccessToURL:errorPage.errorPageFileURL];
+  } else {
+    errorNavigation = [webView loadHTMLString:@"" baseURL:backForwardItem.URL];
+  }
+  [self.navigationStates setState:web::WKNavigationState::REQUESTED
+                    forNavigation:errorNavigation];
+
+  return errorNavigation;
 }
 
 // Handles cancelled load in WKWebView (error with NSURLErrorCancelled code).

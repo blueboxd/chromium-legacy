@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -93,6 +94,11 @@ TYPED_TEST(StrongAliasTest, CanBeMoveConstructed) {
   FooAlias move_assigned;
   move_assigned = std::move(alias2);
   EXPECT_EQ(move_assigned, FooAlias(GetExampleValue<TypeParam>(2)));
+
+  // Check that FooAlias is nothrow move constructible. This matters for
+  // performance when used in std::vectors.
+  static_assert(std::is_nothrow_move_constructible<FooAlias>::value,
+                "Error: Alias is not nothow move constructible");
 }
 
 TYPED_TEST(StrongAliasTest, CanBeConstructedFromMoveOnlyType) {
@@ -105,6 +111,25 @@ TYPED_TEST(StrongAliasTest, CanBeConstructedFromMoveOnlyType) {
   auto bare_value = std::make_unique<TypeParam>(GetExampleValue<TypeParam>(1));
   FooAlias b(std::move(bare_value));
   EXPECT_EQ(*b.value(), GetExampleValue<TypeParam>(1));
+}
+
+TYPED_TEST(StrongAliasTest, MutableValue) {
+  // Note, using a move-only unique_ptr to T:
+  using Ptr = std::unique_ptr<TypeParam>;
+  using FooAlias = StrongAlias<class FooTag, Ptr>;
+
+  FooAlias a(std::make_unique<TypeParam>());
+  FooAlias b(std::make_unique<TypeParam>());
+  EXPECT_TRUE(a.value());
+  EXPECT_TRUE(b.value());
+
+  // Check that both the mutable l-value and r-value overloads work and we can
+  // move out of the aliases.
+  { Ptr ignore(std::move(a).value()); }
+  { Ptr ignore(std::move(b.value())); }
+
+  EXPECT_FALSE(a.value());
+  EXPECT_FALSE(b.value());
 }
 
 TYPED_TEST(StrongAliasTest, CanBeWrittenToOutputStream) {
@@ -124,6 +149,11 @@ TYPED_TEST(StrongAliasTest, IsDefaultConstructible) {
   using FooAlias = StrongAlias<class FooTag, TypeParam>;
   static_assert(std::is_default_constructible<FooAlias>::value,
                 "Should be possible to default-construct a StrongAlias.");
+  static_assert(
+      std::is_trivially_default_constructible<FooAlias>::value ==
+          std::is_trivially_default_constructible<TypeParam>::value,
+      "Should be possible to trivially default-construct a StrongAlias iff the "
+      "underlying type is trivially default constructible.");
 }
 
 TEST(StrongAliasTest, TrivialTypeAliasIsStandardLayout) {
@@ -261,6 +291,30 @@ TYPED_TEST(StrongAliasTest, CanDifferentiateOverloads) {
   };
   EXPECT_EQ("FooAlias", Scope::Overload(FooAlias()));
   EXPECT_EQ("BarAlias", Scope::Overload(BarAlias()));
+}
+
+TEST(StrongAliasTest, EnsureConstexpr) {
+  using FooAlias = StrongAlias<class FooTag, int>;
+
+  // Check constructors.
+  static constexpr FooAlias kZero{};
+  static constexpr FooAlias kOne(1);
+
+  // Check value().
+  static_assert(kZero.value() == 0, "");
+  static_assert(kOne.value() == 1, "");
+
+  // Check explicit conversions to underlying type.
+  static_assert(static_cast<int>(kZero) == 0, "");
+  static_assert(static_cast<int>(kOne) == 1, "");
+
+  // Check comparison operations.
+  static_assert(kZero == kZero, "");
+  static_assert(kZero != kOne, "");
+  static_assert(kZero < kOne, "");
+  static_assert(kZero <= kOne, "");
+  static_assert(kOne > kZero, "");
+  static_assert(kOne >= kZero, "");
 }
 
 }  // namespace util

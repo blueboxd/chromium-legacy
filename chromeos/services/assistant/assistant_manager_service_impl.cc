@@ -283,10 +283,24 @@ void AssistantManagerServiceImpl::WaitUntilStartIsFinishedForTesting() {
 }
 
 void AssistantManagerServiceImpl::AddMediaControllerObserver() {
-  if (features::IsMediaSessionIntegrationEnabled()) {
-    media_controller_->AddObserver(
-        media_controller_observer_receiver_.BindNewPipeAndPassRemote());
-  }
+  if (!features::IsMediaSessionIntegrationEnabled())
+    return;
+
+  if (media_controller_observer_receiver_.is_bound())
+    return;
+
+  media_controller_->AddObserver(
+      media_controller_observer_receiver_.BindNewPipeAndPassRemote());
+}
+
+void AssistantManagerServiceImpl::RemoveMediaControllerObserver() {
+  if (!features::IsMediaSessionIntegrationEnabled())
+    return;
+
+  if (!media_controller_observer_receiver_.is_bound())
+    return;
+
+  media_controller_observer_receiver_.reset();
 }
 
 void AssistantManagerServiceImpl::RegisterAlarmsTimersListener() {
@@ -344,6 +358,21 @@ void AssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enable) {
   // |display_connection_| is thread safe.
   if (assistant::features::IsAppSupportEnabled())
     display_connection_->SetArcPlayStoreEnabled(enable);
+}
+
+void AssistantManagerServiceImpl::SetAssistantContextEnabled(bool enable) {
+  DCHECK(GetState() == State::RUNNING);
+
+  if (enable) {
+    AddMediaControllerObserver();
+  } else {
+    RemoveMediaControllerObserver();
+    ResetMediaState();
+  }
+
+  // Both LibAssistant and Chrome threads may access |display_connection_|.
+  // |display_connection_| is thread safe.
+  display_connection_->SetAssistantContextEnabled(enable);
 }
 
 AssistantSettingsManager*
@@ -1319,7 +1348,8 @@ void AssistantManagerServiceImpl::OnStartFinished() {
   SyncDeviceAppsStatus();
 
   RegisterFallbackMediaHandler();
-  AddMediaControllerObserver();
+
+  SetAssistantContextEnabled(assistant_state()->IsScreenContextAllowed());
 
   auto* media_manager = assistant_manager_->GetMediaManager();
   if (media_manager)
@@ -1610,6 +1640,14 @@ void AssistantManagerServiceImpl::UpdateMediaState() {
   auto* media_manager = assistant_manager_->GetMediaManager();
   if (media_manager)
     media_manager->SetExternalPlaybackState(media_status);
+}
+
+void AssistantManagerServiceImpl::ResetMediaState() {
+  auto* media_manager = assistant_manager_->GetMediaManager();
+  if (media_manager) {
+    MediaStatus media_status;
+    media_manager->SetExternalPlaybackState(media_status);
+  }
 }
 
 std::string AssistantManagerServiceImpl::NewPendingInteraction(

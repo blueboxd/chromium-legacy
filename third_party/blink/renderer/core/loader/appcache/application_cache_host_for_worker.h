@@ -14,7 +14,8 @@ class ApplicationCacheHostForWorker final : public ApplicationCacheHost {
   ApplicationCacheHostForWorker(
       const base::UnguessableToken& appcache_host_id,
       const BrowserInterfaceBrokerProxy& interface_broker_proxy,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      ContextLifecycleNotifier* notifier);
   ~ApplicationCacheHostForWorker() override;
 };
 

@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/application_cache_error_event.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -47,7 +48,9 @@ ApplicationCacheHostForFrame::ApplicationCacheHostForFrame(
     const BrowserInterfaceBrokerProxy& interface_broker_proxy,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::UnguessableToken& appcache_host_id)
-    : ApplicationCacheHost(interface_broker_proxy, std::move(task_runner)),
+    : ApplicationCacheHost(interface_broker_proxy,
+                           std::move(task_runner),
+                           document_loader->GetFrame()->DomWindow()),
       local_frame_(document_loader->GetFrame()),
       document_loader_(document_loader) {
   // PlzNavigate: The browser passes the ID to be used.

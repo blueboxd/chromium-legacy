@@ -10,4 +10,8 @@ BluetoothTestFuchsia::BluetoothTestFuchsia() = default;
 
 BluetoothTestFuchsia::~BluetoothTestFuchsia() = default;
 
+bool BluetoothTestFuchsia::PlatformSupportsLowEnergy() {
+  return true;
+}
+
 }  // namespace device

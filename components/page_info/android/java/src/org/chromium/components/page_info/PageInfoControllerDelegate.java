@@ -4,6 +4,8 @@
 
 package org.chromium.components.page_info;
 
+import android.content.Intent;
+
 import org.chromium.base.Consumer;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
@@ -49,4 +51,19 @@ public interface PageInfoControllerDelegate {
      * Whether Preview page state is INSECURE.
      */
     boolean isPreviewPageInsecure();
+
+    /**
+     * Returns whether or not an instant app is available for |url|.
+     */
+    boolean isInstantAppAvailable(String url);
+
+    /**
+     * Gets the instant app intent for the given URL if one exists.
+     */
+    Intent getInstantAppIntentForUrl(String url);
+
+    /**
+     * Returns a VrHandler for Page Info UI.
+     */
+    public VrHandler getVrHandler();
 }

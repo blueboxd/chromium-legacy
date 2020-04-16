@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "cc/benchmarks/micro_benchmark_impl.h"
-#include "cc/raster/lcd_text_disallowed_reason.h"
 #include "cc/raster/task_graph_runner.h"
 
 namespace cc {
@@ -42,8 +41,8 @@ class RasterizeAndRecordBenchmarkImpl : public MicroBenchmarkImpl {
     int pixels_rasterized;
     int pixels_rasterized_with_non_solid_color;
     int pixels_rasterized_as_opaque;
-    int visible_pixels_by_lcd_text_disallowed_reason
-        [kLCDTextDisallowedReasonCount];
+    int visible_pixels_for_lcd_text;
+    int visible_pixels_for_non_lcd_text;
     base::TimeDelta total_best_time;
     int total_layers;
     int total_picture_layers;

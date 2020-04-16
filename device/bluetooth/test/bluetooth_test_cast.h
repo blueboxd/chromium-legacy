@@ -29,6 +29,7 @@ class BluetoothTestCast : public BluetoothTestBase {
   ~BluetoothTestCast() override;
 
   // BluetoothTestBase overrides:
+  bool PlatformSupportsLowEnergy() override;
   void InitWithFakeAdapter() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
 

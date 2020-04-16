@@ -207,6 +207,8 @@ class CC_EXPORT LayerImpl {
     return performance_properties_;
   }
 
+  bool CanUseLCDText() const;
+
   // Setter for draw_properties_.
   void set_visible_layer_rect(const gfx::Rect& visible_rect) {
     draw_properties_.visible_layer_rect = visible_rect;
@@ -505,12 +507,13 @@ class CC_EXPORT LayerImpl {
 
   DrawMode current_draw_mode_;
   EffectTree& GetEffectTree() const;
+
+ private:
   PropertyTrees* GetPropertyTrees() const;
   ClipTree& GetClipTree() const;
   ScrollTree& GetScrollTree() const;
   TransformTree& GetTransformTree() const;
 
- private:
   ElementId element_id_;
   // Element ID of the document containing this layer.
   ElementId frame_element_id_;

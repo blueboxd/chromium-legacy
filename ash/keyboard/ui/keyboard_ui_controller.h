@@ -229,7 +229,7 @@ class KEYBOARD_EXPORT KeyboardUIController
   // will trigger a hide animation and a subsequent show animation. Otherwise
   // the ContainerBehavior change is synchronous.
   void SetContainerType(ContainerType type,
-                        const base::Optional<gfx::Rect>& target_bounds_in_root,
+                        const gfx::Rect& target_bounds_in_root,
                         base::OnceCallback<void(bool)> callback);
 
   // Sets floating keyboard draggable rect.

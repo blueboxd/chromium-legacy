@@ -343,6 +343,10 @@ void Service::OnAssistantConsentStatusChanged(int consent_status) {
   }
 }
 
+void Service::OnAssistantContextEnabled(bool enabled) {
+  UpdateAssistantManagerState();
+}
+
 void Service::OnAssistantHotwordAlwaysOn(bool hotword_always_on) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // No need to update hotword status if power source is connected.
@@ -457,6 +461,8 @@ void Service::UpdateAssistantManagerState() {
         assistant_manager_service_->EnableHotword(ShouldEnableHotword());
         assistant_manager_service_->SetArcPlayStoreEnabled(
             assistant_state_.arc_play_store_enabled().value());
+        assistant_manager_service_->SetAssistantContextEnabled(
+            assistant_state_.IsScreenContextAllowed());
       } else {
         StopAssistantManagerService();
       }

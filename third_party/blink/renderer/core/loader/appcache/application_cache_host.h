@@ -36,15 +36,17 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -57,7 +59,8 @@ class CORE_EXPORT ApplicationCacheHost
  public:
   ApplicationCacheHost(
       const BrowserInterfaceBrokerProxy& interface_broker_proxy,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      ContextLifecycleNotifier* notifier);
   ~ApplicationCacheHost() override;
   virtual void Detach();
 
@@ -108,10 +111,12 @@ class CORE_EXPORT ApplicationCacheHost
       mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
           url_loader_factory) override {}
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*);
 
  protected:
-  mojo::Remote<mojom::blink::AppCacheHost> backend_host_;
+  HeapMojoRemote<mojom::blink::AppCacheHost,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      backend_host_;
   mojom::blink::AppCacheStatus status_ =
       mojom::blink::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
 
@@ -129,8 +134,13 @@ class CORE_EXPORT ApplicationCacheHost
 
   void GetAssociatedCacheInfo(CacheInfo* info);
 
-  mojo::Receiver<mojom::blink::AppCacheFrontend> receiver_{this};
-  mojo::Remote<mojom::blink::AppCacheBackend> backend_remote_;
+  HeapMojoReceiver<mojom::blink::AppCacheFrontend,
+                   ApplicationCacheHost,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      receiver_;
+  HeapMojoRemote<mojom::blink::AppCacheBackend,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      backend_remote_;
 
   base::UnguessableToken host_id_;
   mojom::blink::AppCacheInfo cache_info_;

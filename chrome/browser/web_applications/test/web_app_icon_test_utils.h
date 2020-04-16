@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
@@ -41,6 +42,11 @@ base::FilePath GetAppIconsDir(Profile* profile, const AppId& app_id);
 bool ReadBitmap(FileUtilsWrapper* utils,
                 const base::FilePath& file_path,
                 SkBitmap* bitmap);
+
+base::span<const int> GetIconSizes();
+
+bool ContainsOneIconOfEachSize(
+    const std::map<SquareSizePx, SkBitmap>& icon_bitmaps);
 
 }  // namespace web_app
 

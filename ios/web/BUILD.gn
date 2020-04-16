@@ -533,6 +533,7 @@ test("ios_web_inttests") {
   deps = [
     ":web",
     "//base/test:test_support",
+    "//ios/net",
     "//ios/testing:embedded_test_server_support",
     "//ios/testing:http_server_bundle_data",
     "//ios/web:resources_grit",

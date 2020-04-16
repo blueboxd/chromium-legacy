@@ -225,7 +225,7 @@ void NGSimplifiedLayoutAlgorithm::HandleOutOfFlowPositioned(
 
 NOINLINE scoped_refptr<const NGLayoutResult>
 NGSimplifiedLayoutAlgorithm::LayoutWithItemsBuilder() {
-  NGFragmentItemsBuilder items_builder(&container_builder_);
+  NGFragmentItemsBuilder items_builder;
   container_builder_.SetItemsBuilder(&items_builder);
   scoped_refptr<const NGLayoutResult> result = Layout();
   // Ensure stack-allocated |NGFragmentItemsBuilder| is not used anymore.

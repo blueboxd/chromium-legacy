@@ -1649,6 +1649,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                            [weakSelf editNode:node];
                          }
                           style:UIAlertActionStyleDefault];
+  // Disable the edit menu option if the node is not editable by user.
+  if (![self isNodeEditableByUser:node]) {
+    // TODO(crbug.com/1070830): Modify AlertCoordinator to allow disabled
+    // actions.
+    coordinator.alertController.actions[0].enabled = NO;
+  }
 
   [coordinator
       addItemWithTitle:l10n_util::GetNSString(
@@ -1703,6 +1709,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                            [weakSelf moveNodes:nodes];
                          }
                           style:UIAlertActionStyleDefault];
+  // Disable the edit and move menu options if the folder is not editable by
+  // user.
+  if (![self isNodeEditableByUser:node]) {
+    // TODO(crbug.com/1070830): Modify AlertCoordinator to allow disabled
+    // actions.
+    coordinator.alertController.actions[0].enabled = NO;
+    coordinator.alertController.actions[1].enabled = NO;
+  }
 
   [coordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
                          action:nil
@@ -1763,12 +1777,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   }
 
   const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
-  // Disable the long press gesture if it is a permanent node (not an URL or
-  // Folder) or if the node is not editable.
-  if (!node || ![self isUrlOrFolder:node] ||
-      ![self isNodeEditableByUser:node]) {
+  // Disable the long press gesture if it is a permanent node, which includes
+  // Bookmarks Bar, Mobile Bookmarks, Other Bookmarks, and Managed Bookmarks.
+  // Permanent nodes do not include descendants of Managed Bookmarks.
+  if (!node || node->is_permanent_node())
     return;
-  }
 
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self
@@ -1889,10 +1902,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (BOOL)tableView:(UITableView*)tableView
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
-  // Filtered results are always a URL and editable.
-  if (self.sharedState.currentlyShowingSearchResults) {
-    return YES;
-  }
   TableViewItem* item =
       [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
   if (item.type != BookmarkHomeItemTypeBookmark) {
@@ -1991,8 +2000,15 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     DCHECK(node);
     // If table is in edit mode, record all the nodes added to edit set.
     if (self.sharedState.currentlyInEditMode) {
-      self.sharedState.editNodes.insert(node);
-      [self handleSelectEditNodes:self.sharedState.editNodes];
+      if ([self isNodeEditableByUser:node]) {
+        // Only add nodes that are editable to the edit set.
+        self.sharedState.editNodes.insert(node);
+        [self handleSelectEditNodes:self.sharedState.editNodes];
+        return;
+      }
+      // If the selected row is not editable, do not add it to the edit set.
+      // Simply deselect the row.
+      [tableView deselectRowAtIndexPath:indexPath animated:YES];
       return;
     }
     [self.sharedState.editingFolderCell stopEdit];

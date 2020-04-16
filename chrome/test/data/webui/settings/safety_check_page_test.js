@@ -252,6 +252,14 @@ suite('SafetyCheckUiTests', function() {
     assertIconStatusWarning(page.$$('#updatesIcon'));
   });
 
+  test('updatesUnknownUiTest', function() {
+    fireSafetyCheckUpdatesEvent(settings.SafetyCheckUpdatesStatus.UNKNOWN);
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
+    assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+    assertIconStatusInfo(page.$$('#updatesIcon'));
+  });
+
   test('passwordsUiTest', function() {
     // Iterate over all states
     for (const state of Object.values(settings.SafetyCheckPasswordsStatus)) {

@@ -639,9 +639,7 @@ void KeyboardUIController::HideAnimationFinished() {
       // The position of the container window will be adjusted shortly in
       // |PopulateKeyboardContent| before showing animation, so we can set the
       // passed bounds directly.
-      if (queued_container_type_->target_bounds())
-        SetKeyboardWindowBounds(
-            queued_container_type_->target_bounds().value());
+      SetKeyboardWindowBounds(queued_container_type_->target_bounds());
       ShowKeyboard(false /* lock */);
     }
 
@@ -1062,7 +1060,7 @@ bool KeyboardUIController::HandleGestureEvent(const ui::GestureEvent& event) {
 
 void KeyboardUIController::SetContainerType(
     ContainerType type,
-    const base::Optional<gfx::Rect>& target_bounds_in_root,
+    const gfx::Rect& target_bounds_in_root,
     base::OnceCallback<void(bool)> callback) {
   if (container_behavior_->GetType() == type) {
     std::move(callback).Run(false);
@@ -1079,8 +1077,7 @@ void KeyboardUIController::SetContainerType(
     // Keyboard is hidden. Switching the container type immediately and invoking
     // the passed callback now.
     SetContainerBehaviorInternal(type);
-    if (target_bounds_in_root)
-      SetKeyboardWindowBounds(*target_bounds_in_root);
+    SetKeyboardWindowBounds(target_bounds_in_root);
     DCHECK_EQ(GetActiveContainerType(), type);
     std::move(callback).Run(true /* change_successful */);
   }

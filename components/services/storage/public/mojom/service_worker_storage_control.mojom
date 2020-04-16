@@ -6,6 +6,7 @@ module storage.mojom;
 
 import "components/services/storage/public/mojom/service_worker_database.mojom";
 import "mojo/public/mojom/base/big_buffer.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
 import "url/mojom/url.mojom";
 
@@ -112,10 +113,23 @@ interface ServiceWorkerStorageControl {
       (ServiceWorkerDatabaseStatus status,
        ServiceWorkerStorageOriginState origin_state);
 
+  // Updates the state of the registration's stored version to active.
+  UpdateToActiveState(int64 registration_id, url.mojom.Url origin) =>
+      (ServiceWorkerDatabaseStatus status);
+  // Updates the last update check time on the storage.
+  UpdateLastUpdateCheckTime(int64 registration_id,
+                            url.mojom.Url origin,
+                            mojo_base.mojom.Time last_update_check_time) =>
+      (ServiceWorkerDatabaseStatus status);
+
   // Returns a new registration id which is guaranteed to be unique in the
   // storage. Returns blink::mojom::kInvalidServiceWorkerRegistrationId if the
   // storage is disabled.
   GetNewRegistrationId() => (int64 registration_id);
+  // Returns a new service worker version id which is guaranteed to be unique
+  // in the storage. Returns blink::mojom::kInvalidServiceWorkerVersionId if
+  // the storage is disabled.
+  GetNewVersionId() => (int64 version_id);
   // Returns a new resource id which is guaranteed to be unique in the storage.
   // Returns blink::mojom::kInvalidServiceWorkerResourceId if the storage
   // is disabled.

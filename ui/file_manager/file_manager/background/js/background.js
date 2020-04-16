@@ -334,7 +334,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
         appState.selectionURL = urls[0];
         launchType = LaunchType.FOCUS_SAME_OR_CREATE;
       }
-      launcher.launchFileManager(appState, undefined, launchType, () => {
+      launcher.launchFileManager(appState, undefined, launchType).then(() => {
         metrics.recordInterval('Load.BackgroundLaunch');
       });
     });
@@ -368,7 +368,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
             const id = Number(match[1]);
             try {
               const appState = /** @type {Object} */ (JSON.parse(items[key]));
-              launcher.launchFileManager(appState, id, undefined, () => {
+              launcher.launchFileManager(appState, id, undefined).then(() => {
                 metrics.recordInterval('Load.BackgroundRestart');
               });
             } catch (e) {

@@ -48,7 +48,7 @@ class ChromeKeyboardControllerClientTestHelper::FakeKeyboardController
   void ShowKeyboard() override { visible_ = true; }
   void HideKeyboard(ash::HideReason reason) override { visible_ = false; }
   void SetContainerType(keyboard::ContainerType container_type,
-                        const base::Optional<gfx::Rect>& target_bounds,
+                        const gfx::Rect& target_bounds,
                         SetContainerTypeCallback callback) override {
     std::move(callback).Run(true);
   }

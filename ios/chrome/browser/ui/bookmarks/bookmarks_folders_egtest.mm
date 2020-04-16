@@ -370,20 +370,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_longPress()];
 
-  // Verify it shows the context menu.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBookmarkHomeContextMenuIdentifier)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Verify options on context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  [BookmarkEarlGreyUI verifyContextMenuForSingleFolderWithEditEnabled:YES];
 
   // Dismiss the context menu. On non compact width tap the Bookmarks TableView
   // to dismiss, since there might not be a cancel button.

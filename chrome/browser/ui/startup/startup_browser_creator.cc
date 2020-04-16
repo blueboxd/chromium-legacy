@@ -259,7 +259,7 @@ bool CanOpenProfileOnStartup(Profile* profile) {
   // Guest or system profiles are not available unless a separate process
   // already has a window open for the profile.
   return (!profile->IsGuestSession() && !profile->IsSystemProfile()) ||
-         (chrome::GetBrowserCount(profile->GetOffTheRecordProfile()) > 0);
+         (chrome::GetBrowserCount(profile->GetPrimaryOTRProfile()) > 0);
 #endif
 }
 
@@ -361,7 +361,7 @@ bool StartupBrowserCreator::LaunchBrowser(
   // is forced.
   if (IncognitoModePrefs::ShouldLaunchIncognito(command_line,
                                                 profile->GetPrefs())) {
-    profile = profile->GetOffTheRecordProfile();
+    profile = profile->GetPrimaryOTRProfile();
   } else if (command_line.HasSwitch(switches::kIncognito)) {
     LOG(WARNING) << "Incognito mode disabled by policy, launching a normal "
                  << "browser session.";
@@ -370,13 +370,13 @@ bool StartupBrowserCreator::LaunchBrowser(
   if (IsGuestModeEnforced(command_line, /* show_warning= */ true)) {
     profile = g_browser_process->profile_manager()
                   ->GetProfile(ProfileManager::GetGuestProfilePath())
-                  ->GetOffTheRecordProfile();
+                  ->GetPrimaryOTRProfile();
   }
 
 #if defined(OS_WIN)
   // Continue with the incognito profile if this is a credential provider logon.
   if (command_line.HasSwitch(credential_provider::kGcpwSigninSwitch))
-    profile = profile->GetOffTheRecordProfile();
+    profile = profile->GetPrimaryOTRProfile();
 #endif
 
   if (!IsSilentLaunchEnabled(command_line, profile)) {
@@ -828,10 +828,9 @@ bool StartupBrowserCreator::LaunchBrowserForLastProfiles(
   // - All of the last opened profiles fail to initialize.
   if (last_opened_profiles.empty() || was_windows_notification_launch) {
     if (CanOpenProfileOnStartup(last_used_profile)) {
-      Profile* profile_to_open =
-          last_used_profile->IsGuestSession()
-              ? last_used_profile->GetOffTheRecordProfile()
-              : last_used_profile;
+      Profile* profile_to_open = last_used_profile->IsGuestSession()
+                                     ? last_used_profile->GetPrimaryOTRProfile()
+                                     : last_used_profile;
 
       return LaunchBrowser(command_line, profile_to_open, cur_dir,
                            is_process_startup, is_first_run);

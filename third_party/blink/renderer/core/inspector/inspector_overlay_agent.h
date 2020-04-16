@@ -95,6 +95,7 @@ class CORE_EXPORT InspectTool : public GarbageCollected<InspectTool> {
   virtual void Trace(Visitor* visitor);
   virtual void Dispose() {}
   virtual bool HideOnHideHighlight();
+  virtual bool HideOnMouseMove();
 
  protected:
   virtual void DoInit() {}

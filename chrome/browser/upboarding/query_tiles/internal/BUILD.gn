@@ -26,6 +26,8 @@ source_set("internal") {
     "query_tile_store.h",
     "query_tile_types.h",
     "store.h",
+    "tile_group.cc",
+    "tile_group.h",
     "tile_info_fetcher.cc",
     "tile_info_fetcher.h",
     "tile_service_impl.cc",
@@ -55,6 +57,7 @@ source_set("unit_tests") {
     "image_decoder_unittest.cc",
     "proto_conversion_unittest.cc",
     "query_tile_store_unittest.cc",
+    "tile_group_unittest.cc",
     "tile_info_fetcher_unittest.cc",
   ]
 

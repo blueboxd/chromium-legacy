@@ -13,6 +13,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 
@@ -28,7 +29,7 @@ class VirtualKeyboardTrayTest : public AshTestBase {
     // These tests only apply to the floating virtual keyboard, as it is the
     // only case where both the virtual keyboard and the shelf are visible.
     keyboard_controller()->SetContainerType(keyboard::ContainerType::kFloating,
-                                            base::nullopt, base::DoNothing());
+                                            gfx::Rect(), base::DoNothing());
   }
 
   keyboard::KeyboardUIController* keyboard_controller() {

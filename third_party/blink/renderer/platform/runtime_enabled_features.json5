@@ -508,7 +508,7 @@
     },
     {
       name: "CSSRevert",
-      status: "test",
+      status: "stable",
       depends_on: ["CSSCascade"],
     },
     {

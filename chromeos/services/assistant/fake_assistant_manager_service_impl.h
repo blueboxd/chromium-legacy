@@ -40,6 +40,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   void EnableHotword(bool enable) override;
   void EnableAmbientMode(bool enabled) override;
   void SetArcPlayStoreEnabled(bool enabled) override;
+  void SetAssistantContextEnabled(bool enable) override;
   State GetState() const override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
   void AddCommunicationErrorObserver(

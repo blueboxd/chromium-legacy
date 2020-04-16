@@ -368,8 +368,9 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // Inline children require an inline child layout context to be
   // passed between siblings. We want to stack-allocate that one, but
   // only on demand, as it's quite big.
-  if (Node().IsInlineFormattingContextRoot())
-    result = LayoutWithInlineChildLayoutContext();
+  NGLayoutInputNode first_child(nullptr);
+  if (Node().IsInlineFormattingContextRoot(&first_child))
+    result = LayoutWithInlineChildLayoutContext(first_child);
   else
     result = Layout(nullptr);
   if (UNLIKELY(result->Status() == NGLayoutResult::kNeedsEarlierBreak)) {
@@ -388,17 +389,19 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 }
 
 NOINLINE scoped_refptr<const NGLayoutResult>
-NGBlockLayoutAlgorithm::LayoutWithInlineChildLayoutContext() {
+NGBlockLayoutAlgorithm::LayoutWithInlineChildLayoutContext(
+    const NGLayoutInputNode& first_child) {
   NGInlineChildLayoutContext context;
   if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
     return Layout(&context);
-  return LayoutWithItemsBuilder(&context);
+  return LayoutWithItemsBuilder(To<NGInlineNode>(first_child), &context);
 }
 
 NOINLINE scoped_refptr<const NGLayoutResult>
 NGBlockLayoutAlgorithm::LayoutWithItemsBuilder(
+    const NGInlineNode& first_child,
     NGInlineChildLayoutContext* context) {
-  NGFragmentItemsBuilder items_builder(&container_builder_);
+  NGFragmentItemsBuilder items_builder(first_child);
   container_builder_.SetItemsBuilder(&items_builder);
   context->SetItemsBuilder(&items_builder);
   scoped_refptr<const NGLayoutResult> result = Layout(context);

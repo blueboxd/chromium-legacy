@@ -35,6 +35,9 @@ class TestWebAppUrlLoader : public WebAppUrlLoader {
                UrlComparison url_comparison,
                ResultCallback callback) override;
 
+  // Sets the result for the next about:blank load to be ok.
+  void SetAboutBlankResultLoaded();
+
  private:
   bool should_save_requests_ = false;
 

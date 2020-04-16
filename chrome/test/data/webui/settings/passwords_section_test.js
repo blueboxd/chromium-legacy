@@ -5,7 +5,7 @@
 /** @fileoverview Runs the Polymer Password Settings tests. */
 
 // clang-format off
-// #import {PasswordManagerProxy, PasswordManagerImpl, routes, Router} from 'chrome://settings/settings.js';
+// #import {PasswordManagerProxy, PasswordManagerImpl, PluralStringProxyImpl, routes, Router} from 'chrome://settings/settings.js';
 // #import {getToastManager} from 'chrome://settings/lazy_load.js';
 // #import {PasswordSectionElementFactory, createExceptionEntry, createPasswordEntry, makeCompromisedCredential, makePasswordCheckStatus} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {runStartExportTest, runExportFlowFastTest, runExportFlowErrorTest, runExportFlowErrorRetryTest, runExportFlowSlowTest, runCancelExportTest, runFireCloseEventAfterExportCompleteTest} from 'chrome://test/settings/passwords_export_test.m.js';
@@ -13,6 +13,7 @@
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // #import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.m.js';
+// #import {TestPluralStringProxy} from 'chrome://test/settings/test_plural_string_proxy.m.js';
 // #import {getSyncAllPrefs, simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
 // #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 // clang-format on
@@ -123,6 +124,9 @@ cr.define('settings_passwords_section', function() {
     /** @type {autofill_test_util.PasswordSectionElementFactory} */
     let elementFactory = null;
 
+    /** @type {TestPluralStringProxy} */
+    let pluaralString = null;
+
     suiteSetup(function() {
       loadTimeData.overrideValues({enablePasswordCheck: true});
     });
@@ -131,6 +135,9 @@ cr.define('settings_passwords_section', function() {
       PolymerTest.clearBody();
       // Override the PasswordManagerImpl for testing.
       passwordManager = new TestPasswordManagerProxy();
+      pluaralString = new TestPluralStringProxy();
+      settings.PluralStringProxyImpl.instance_ = pluaralString;
+
       PasswordManagerImpl.instance_ = passwordManager;
       elementFactory =
           new autofill_test_util.PasswordSectionElementFactory(document);
@@ -829,6 +836,41 @@ cr.define('settings_passwords_section', function() {
                 assertTrue(
                     passwordsSection.$$('#checkPasswordsLinkRow').hidden);
               });
+        });
+
+    test(
+        'showPasswordCheckBannerWhenCanceledCheckedBeforeAndSignedInAndHavePasswords',
+        async function() {
+          // Suppose initial check was canceled, non-empty list of passwords,
+          // signed in.
+          assertEquals(
+              passwordManager.data.checkStatus.elapsedTimeSinceLastCheck,
+              undefined);
+          const passwordList = [
+            autofill_test_util.createPasswordEntry('site1.com', 'luigi'),
+            autofill_test_util.createPasswordEntry('site2.com', 'luigi'),
+          ];
+          passwordManager.data.checkStatus.state = PasswordCheckState.CANCELED;
+          passwordManager.data.leakedCredentials = [
+            autofill_test_util.makeCompromisedCredential(
+                'site1.com', 'luigi', 'LEAKED'),
+          ];
+          pluaralString.text = '1 compromised password';
+
+          const passwordsSection = elementFactory.createPasswordsSection(
+              passwordManager, passwordList, []);
+
+          await passwordManager.whenCalled('getCompromisedCredentials');
+          await pluaralString.whenCalled('getPluralString');
+
+          Polymer.dom.flush();
+          assertTrue(
+              passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
+          assertTrue(passwordsSection.$$('#checkPasswordsButtonRow').hidden);
+          assertFalse(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+          assertEquals(
+              pluaralString.text,
+              passwordsSection.$$('#checkPasswordLeakCount').innerText.trim());
         });
 
     test(

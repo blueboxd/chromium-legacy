@@ -220,7 +220,7 @@ TEST_P(CollisionDetectionUtilsDisplayTest,
 
   auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->SetContainerType(keyboard::ContainerType::kFloating,
-                                        base::nullopt, base::DoNothing());
+                                        gfx::Rect(), base::DoNothing());
   keyboard_controller->ShowKeyboardInDisplay(display);
   ASSERT_TRUE(keyboard::WaitUntilShown());
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();

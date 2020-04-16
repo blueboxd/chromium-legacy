@@ -52,6 +52,28 @@ TEST(IdType, GeneratorWithBigUnsignedInvalidValue) {
   }
 }
 
+TEST(IdType, EnsureConstexpr) {
+  using TestId = IdType32<class TestTag>;
+
+  // Test constructors.
+  static constexpr TestId kZero;
+  static constexpr auto kOne = TestId::FromUnsafeValue(1);
+
+  // Test getting the underlying value.
+  static_assert(kZero.value() == 0, "");
+  static_assert(kOne.value() == 1, "");
+  static_assert(kZero.GetUnsafeValue() == 0, "");
+  static_assert(kOne.GetUnsafeValue() == 1, "");
+
+  // Test is_null().
+  static_assert(kZero.is_null(), "");
+  static_assert(!kOne.is_null(), "");
+
+  // Test operator bool.
+  static_assert(!kZero, "");
+  static_assert(kOne, "");
+}
+
 class IdTypeSpecificValueTest : public ::testing::TestWithParam<int> {
  protected:
   FooId test_id() { return FooId::FromUnsafeValue(GetParam()); }

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
@@ -97,7 +98,8 @@ class InstallManager {
       WebappInstallSource install_source,
       OnceInstallCallback callback) = 0;
 
-  // These params are a subset of ExternalInstallOptions.
+  // See related ExternalInstallOptions struct and
+  // ConvertExternalInstallOptionsToParams function.
   struct InstallParams {
     InstallParams();
     ~InstallParams();
@@ -108,6 +110,8 @@ class InstallManager {
     // URL to be used as start_url if manifest is unavailable.
     GURL fallback_start_url;
 
+    bool locally_installed = true;
+    // These OS shortcut fields can't be true if |locally_installed| is false.
     bool add_to_applications_menu = true;
     bool add_to_desktop = true;
     bool add_to_quick_launch_bar = true;

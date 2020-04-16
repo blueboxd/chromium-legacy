@@ -101,6 +101,8 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     LayoutNGBlockFlowMixin<LayoutRubyAsBlock>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    LayoutNGBlockFlowMixin<LayoutRubyBase>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
     LayoutNGBlockFlowMixin<LayoutRubyRun>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     LayoutNGBlockFlowMixin<LayoutTableCaption>;

@@ -241,7 +241,7 @@ TEST(StartupTabProviderTest, GetNewTabPageTabsForState_Negative) {
 TEST(StartupTabProviderTest, IncognitoProfile) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
-  Profile* incognito = profile.GetOffTheRecordProfile();
+  Profile* incognito = profile.GetPrimaryOTRProfile();
   StartupTabs output = StartupTabProviderImpl().GetOnboardingTabs(incognito);
   EXPECT_TRUE(output.empty());
 }

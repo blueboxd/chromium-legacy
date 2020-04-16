@@ -297,6 +297,10 @@ bool NodeHighlightTool::HideOnHideHighlight() {
   return true;
 }
 
+bool NodeHighlightTool::HideOnMouseMove() {
+  return true;
+}
+
 void NodeHighlightTool::Draw(float scale) {
   DrawNode();
   DrawMatchingSelector();

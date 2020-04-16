@@ -549,8 +549,6 @@ jumbo_source_set("test_support") {
     "value_store/test_value_store_factory.h",
     "value_store/testing_value_store.cc",
     "value_store/testing_value_store.h",
-    "value_store/value_store_unittest.cc",
-    "value_store/value_store_unittest.h",
   ]
 
   deps = [
@@ -570,6 +568,22 @@ jumbo_source_set("test_support") {
 
   public_deps =
       [ "//extensions/browser/api/declarative_net_request:test_support" ]
+}
+
+jumbo_source_set("value_store_test_support") {
+  testonly = true
+  sources = [
+    "value_store/value_store_unittest.cc",
+    "value_store/value_store_unittest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//content/test:test_support",
+    "//extensions/browser",
+    "//testing/gtest",
+  ]
 }
 
 source_set("unit_tests") {
@@ -673,6 +687,7 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     ":test_support",
+    ":value_store_test_support",
     "//base",
     "//base/test:test_support",
     "//components/cast_certificate",

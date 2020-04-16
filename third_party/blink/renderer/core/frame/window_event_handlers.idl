@@ -34,8 +34,7 @@
 ] interface mixin WindowEventHandlers {
     attribute EventHandler onafterprint;
     attribute EventHandler onbeforeprint;
-    // FIXME: onbeforeunload should be an OnBeforeUnloadEventHandler.
-    attribute EventHandler onbeforeunload;
+    attribute OnBeforeUnloadEventHandler onbeforeunload;
     attribute EventHandler onhashchange;
     attribute EventHandler onlanguagechange;
     attribute EventHandler onmessage;

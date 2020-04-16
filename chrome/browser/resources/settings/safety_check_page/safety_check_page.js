@@ -448,6 +448,7 @@ Polymer({
       case settings.SafetyCheckUpdatesStatus.RELAUNCH:
       case settings.SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN:
       case settings.SafetyCheckUpdatesStatus.FAILED_OFFLINE:
+      case settings.SafetyCheckUpdatesStatus.UNKNOWN:
         return ChildUiStatus.INFO;
       case settings.SafetyCheckUpdatesStatus.FAILED:
         return ChildUiStatus.WARNING;

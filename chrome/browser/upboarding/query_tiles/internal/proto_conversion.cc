@@ -10,6 +10,21 @@
 #include "base/strings/utf_string_conversions.h"
 
 namespace upboarding {
+namespace {
+// Helper method to convert base::Time to integer for serialization. Loses
+// precision beyond milliseconds.
+int64_t TimeToMilliseconds(const base::Time& time) {
+  return time.ToDeltaSinceWindowsEpoch().InMilliseconds();
+}
+
+// Helper method to convert serialized time as integer to base::Time for
+// deserialization. Loses precision beyond milliseconds.
+base::Time MillisecondsToTime(int64_t serialized_time_ms) {
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMilliseconds(serialized_time_ms));
+}
+
+}  // namespace
 
 void QueryTileEntryToProto(
     upboarding::QueryTileEntry* entry,
@@ -53,6 +68,29 @@ void QueryTileEntryFromProto(
     auto child = std::make_unique<QueryTileEntry>();
     QueryTileEntryFromProto(&sub_tile_proto, child.get());
     entry->sub_tiles.emplace_back(std::move(child));
+  }
+}
+
+void TileGroupToProto(TileGroup* group,
+                      upboarding::query_tiles::proto::QueryTileGroup* proto) {
+  proto->set_id(group->id);
+  proto->set_locale(group->locale);
+  proto->set_last_updated_time_ms(TimeToMilliseconds(group->last_updated_ts));
+  for (auto& tile : group->tiles) {
+    QueryTileEntryToProto(tile.get(), proto->add_tiles());
+  }
+}
+
+void TileGroupFromProto(upboarding::query_tiles::proto::QueryTileGroup* proto,
+                        TileGroup* group) {
+  group->id = proto->id();
+  group->locale = proto->locale();
+  group->last_updated_ts = MillisecondsToTime(proto->last_updated_time_ms());
+  for (int i = 0; i < proto->tiles().size(); i++) {
+    auto entry_proto = proto->tiles(i);
+    auto child = std::make_unique<QueryTileEntry>();
+    QueryTileEntryFromProto(&entry_proto, child.get());
+    group->tiles.emplace_back(std::move(child));
   }
 }
 

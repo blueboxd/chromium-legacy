@@ -10,11 +10,13 @@
  *     App ID.
  */
 test.util.async.openMainWindow = (appState, callback) => {
-  launcher.launchFileManager(
-      appState,
-      undefined,  // opt_type
-      undefined,  // opt_id
-      callback);
+  launcher
+      .launchFileManager(
+          appState,
+          undefined,  // opt_type
+          undefined,  // opt_id
+          )
+      .then(callback);
 };
 
 /**

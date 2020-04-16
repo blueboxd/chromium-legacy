@@ -32,6 +32,7 @@ class BluetoothTestBlueZ : public BluetoothTestBase {
   void TearDown() override;
 
   // BluetoothTestBase overrides:
+  bool PlatformSupportsLowEnergy() override;
   void InitWithFakeAdapter() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
   BluetoothDevice* SimulateClassicDevice() override;

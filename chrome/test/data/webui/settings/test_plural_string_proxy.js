@@ -18,11 +18,13 @@
     super([
       'getPluralString',
     ]);
+
+    this.text = 'some text';
   }
 
   /** override */
   getPluralString(messageName, itemCount) {
     this.methodCalled('getPluralString', {messageName, itemCount});
-    return Promise.resolve('some text');
+    return Promise.resolve(this.text);
   }
 }

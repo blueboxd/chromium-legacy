@@ -38,7 +38,7 @@ class MockVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
   bool ShowLanguageSettings() override { return false; }
   bool IsLanguageSettingsEnabled() override { return false; }
   bool SetVirtualKeyboardMode(int mode_enum,
-                              base::Optional<gfx::Rect> target_bounds,
+                              gfx::Rect target_bounds,
                               OnSetModeCallback on_set_mode_callback) override {
     return false;
   }

@@ -6588,6 +6588,9 @@ crbug.com/1070995 external/wpt/html/infrastructure/safe-passing-of-structured-da
 
 crbug.com/1057020 [ Fuchsia ] http/tests/streams/chromium/get-reader-byob.html [ Pass Timeout ]
 
+# Ecosystem-Infra Sheriff 2020-04-16
+crbug.com/1071329 fast/peerconnection/statechange-iframe-destroy-parent.html [ Pass Timeout ]
+
 # Sheriff 2020-03-05
 crbug.com/1058073 [ Retina ] virtual/threaded/fast/scroll-snap/snap-to-target-on-layout-change.html [ Pass Failure ]
 crbug.com/1058073 [ Mac10.14 ] accessibility/content-changed-notification-causes-crash.html [ Pass Failure ]

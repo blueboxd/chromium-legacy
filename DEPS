@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '694ec49ed07540b9e1dacc883599a2d3422bc39f',
+  'skia_revision': 'a6fbe4e685f0b7c99f394b955200bd51505f684b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'bf321a1884e860c02e6263624fc5f09aa7fd99a9',
+  'v8_revision': 'd7247aad080b310a3a1bcf3cf3a0d05719a9f460',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '953cd08e70a0eaefa2d21bae9713bf415303e149',
+  'catapult_revision': '159f3561ccfaa7dd400c3ab961d247dfa57f9c5a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'f1eb13a3e3728de0a68fb76a7e728b908301757a',
+  'devtools_frontend_revision': '157451f9900af0c6ccbd510df33be33f2d16ff03',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -282,7 +282,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': 'c018fc6ae667b659c80b4357c20f6016ee3fe961',
+  'spv_tools_revision': '61b7de3c39f01a0eeb717f444c86990547752e26',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1295,7 +1295,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'b4mdctQbsAjpYCqLmhI-lRLzZHRgE1LAEpj2IZpGH1MC'
+              'version': 'EhezeJ40FVbMrY0MGuwSrhYWk9AHY44fCt_3uWVi71AC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',

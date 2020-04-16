@@ -7,8 +7,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/settings/privacy/cookies_commands.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -112,13 +111,15 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   [self.tableViewModel addItem:blockAllCookies
        toSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewLinkHeaderFooterItem* cookiesDescriptionFooter =
-      [[TableViewLinkHeaderFooterItem alloc]
+  // This item is used as a footer. It's currently not possible to have a
+  // separtor without using UITableViewStyleGrouped.
+  TableViewTextLinkItem* cookiesDescriptionFooter =
+      [[TableViewTextLinkItem alloc]
           initWithType:ItemTypeCookiesDescriptionFooter];
   cookiesDescriptionFooter.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_COOKIES_DESCRIPTION);
-  [self.tableViewModel setFooter:cookiesDescriptionFooter
-        forSectionWithIdentifier:SectionIdentifierContent];
+  [self.tableViewModel addItem:cookiesDescriptionFooter
+       toSectionWithIdentifier:SectionIdentifierContent];
 
   // TODO(crbug.com/1064961): Implement this.
 }

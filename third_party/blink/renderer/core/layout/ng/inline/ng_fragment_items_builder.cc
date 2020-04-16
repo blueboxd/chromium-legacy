@@ -11,12 +11,21 @@
 
 namespace blink {
 
-void NGFragmentItemsBuilder::SetTextContent(const NGInlineNode& node) {
+NGFragmentItemsBuilder::NGFragmentItemsBuilder(const NGInlineNode& node) {
   const NGInlineItemsData& items_data = node.ItemsData(false);
   text_content_ = items_data.text_content;
   const NGInlineItemsData& first_line = node.ItemsData(true);
   if (&items_data != &first_line)
     first_line_text_content_ = first_line.text_content;
+
+  // For a very large inline formatting context, the vector reallocation becomes
+  // hot. Estimate the number of items by assuming 40 characters can fit in a
+  // line, and each line contains 3 items; a line box, an inline box, and a
+  // text. If it will require more than one reallocations, make an initial
+  // reservation here.
+  const wtf_size_t estimated_item_count = text_content_.length() / 40 * 3;
+  if (UNLIKELY(estimated_item_count > items_.capacity() * 2))
+    items_.ReserveInitialCapacity(estimated_item_count);
 }
 
 void NGFragmentItemsBuilder::SetCurrentLine(
@@ -255,6 +264,7 @@ void NGFragmentItemsBuilder::ToFragmentItems(WritingMode writing_mode,
                                              TextDirection direction,
                                              const PhysicalSize& outer_size,
                                              void* data) {
+  DCHECK(text_content_);
   ConvertToPhysical(writing_mode, direction, outer_size);
   new (data) NGFragmentItems(this);
 }

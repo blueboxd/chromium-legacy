@@ -6,17 +6,17 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 /**
  * @fileoverview
- * 'scanning-ui' is used to interact with connected scanners.
+ * 'scanning-page' is used to interact with connected scanners.
  */
 Polymer({
-  is: 'scanning-ui',
+  is: 'scanning-page',
 
   _template: html`{__html_template__}`,
 
   /** @override */
   ready() {
     // TODO(jschettler): Remove this once the app has more capabilities.
-    this.$$('#header').textContent = 'Scanning UI';
+    this.$$('#header').textContent = 'Chrome OS Scanning';
   },
 
 });

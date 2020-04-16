@@ -110,7 +110,8 @@ TEST_F(VirtualKeyboardTest, HitTestBoundsAreResetWhenContainerTypeChanges) {
   // the whole keyboard window.
   keyboard_controller->HideKeyboardExplicitlyBySystem();
   keyboard_controller->SetContainerType(keyboard::ContainerType::kFloating,
-                                        base::nullopt, base::DoNothing());
+                                        gfx::Rect(0, 0, 400, 200),
+                                        base::DoNothing());
   keyboard_controller->ShowKeyboard(false);
 
   // (0, 0) should no longer pass through the keyboard window.

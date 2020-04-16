@@ -169,9 +169,30 @@ void ServiceWorkerStorageControlImpl::DeleteRegistration(
       base::BindOnce(&DidDeleteRegistration, std::move(callback)));
 }
 
+void ServiceWorkerStorageControlImpl::UpdateToActiveState(
+    int64_t registration_id,
+    const GURL& origin,
+    UpdateToActiveStateCallback callback) {
+  storage_->UpdateToActiveState(registration_id, origin, std::move(callback));
+}
+
+void ServiceWorkerStorageControlImpl::UpdateLastUpdateCheckTime(
+    int64_t registration_id,
+    const GURL& origin,
+    base::Time last_update_check_time,
+    UpdateLastUpdateCheckTimeCallback callback) {
+  storage_->UpdateLastUpdateCheckTime(
+      registration_id, origin, last_update_check_time, std::move(callback));
+}
+
 void ServiceWorkerStorageControlImpl::GetNewRegistrationId(
     GetNewRegistrationIdCallback callback) {
   storage_->GetNewRegistrationId(std::move(callback));
+}
+
+void ServiceWorkerStorageControlImpl::GetNewVersionId(
+    GetNewVersionIdCallback callback) {
+  storage_->GetNewVersionId(std::move(callback));
 }
 
 void ServiceWorkerStorageControlImpl::GetNewResourceId(

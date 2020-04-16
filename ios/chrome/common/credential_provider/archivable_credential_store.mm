@@ -78,9 +78,20 @@
 
 - (void)saveDataWithCompletion:(void (^)(NSError* error))completion {
   dispatch_barrier_async(self.workingQueue, ^{
+    auto executeCompletionIfPresent = ^(NSError* error) {
+      if (completion) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+          completion(error);
+        });
+      }
+    };
+
     if (!self.fileURL) {
+      // There is no fileURL, store is being used as memory only.
+      executeCompletionIfPresent(nil);
       return;
     }
+
     NSError* error = nil;
     NSData* data =
         [NSKeyedArchiver archivedDataWithRootObject:self.memoryStorage
@@ -88,7 +99,7 @@
                                               error:&error];
     DCHECK(!error) << error.debugDescription.UTF8String;
     if (error) {
-      completion(error);
+      executeCompletionIfPresent(error);
       return;
     }
 
@@ -99,13 +110,13 @@
                               error:&error];
 
     if (error) {
-      completion(error);
+      executeCompletionIfPresent(error);
       return;
     }
 
     [data writeToURL:self.fileURL options:NSDataWritingAtomic error:&error];
     DCHECK(!error) << error.debugDescription.UTF8String;
-    completion(error);
+    executeCompletionIfPresent(error);
   });
 }
 

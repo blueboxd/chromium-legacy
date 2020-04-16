@@ -196,6 +196,10 @@ bool InspectTool::ForwardEventsToOverlay() {
   return true;
 }
 
+bool InspectTool::HideOnMouseMove() {
+  return false;
+}
+
 bool InspectTool::HideOnHideHighlight() {
   return false;
 }
@@ -757,6 +761,11 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
       swallow_next_escape_up_ = true;
       return WebInputEventResult::kHandledSuppressed;
     }
+  }
+
+  if (input_event.GetType() == WebInputEvent::kMouseMove &&
+      inspect_tool_->HideOnMouseMove()) {
+    PickTheRightTool();
   }
 
   return WebInputEventResult::kNotHandled;

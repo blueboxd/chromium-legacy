@@ -337,8 +337,6 @@ static_library("test_support") {
     sources += [
       "../browser/autofill/autofill_uitest_util.cc",
       "../browser/autofill/autofill_uitest_util.h",
-      "../browser/ui/chooser_bubble_testapi.h",
-      "../browser/ui/views/chooser_bubble_testapi_views.cc",
       "../browser/ui/views/desktop_capture/desktop_media_picker_views_test_api.cc",
       "../browser/ui/views/desktop_capture/desktop_media_picker_views_test_api.h",
       "../browser/ui/views/media_router/app_menu_test_api.h",
@@ -1175,7 +1173,6 @@ if (!is_android) {
       "../browser/ui/views/sharing/sharing_browsertest.cc",
       "../browser/ui/views/sharing/sharing_browsertest.h",
       "../browser/ui/views/tabs/tab_strip_browsertest.cc",
-      "../browser/usb/usb_browsertest.cc",
       "../browser/wake_lock/wake_lock_browsertest.cc",
       "../browser/web_components_browsertest.cc",
 
@@ -1377,6 +1374,7 @@ if (!is_android) {
       "../browser/ui/webui/webui_webview_browsertest.cc",
       "../browser/ui/zoom/zoom_controller_browsertest.cc",
       "../browser/unload_browsertest.cc",
+      "../browser/usb/usb_browsertest.cc",
       "../browser/webauthn/authenticator_extension_browsertest.cc",
       "../common/mac/app_mode_chrome_locator_browsertest.mm",
       "../common/mac/mock_launchd.h",
@@ -4839,6 +4837,7 @@ test("unit_tests") {
       "//components/services/unzip:in_process",
       "//extensions:extensions_resources",
       "//extensions/browser:test_support",
+      "//extensions/browser:value_store_test_support",
       "//extensions/common",
       "//extensions/renderer:unit_test_support",
       "//extensions/strings",

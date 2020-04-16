@@ -85,8 +85,7 @@
           },
           "bounds": {
             "$ref": "Bounds",
-            "description": "The bounds of the virtual keyboard after changing mode",
-            "optional": true
+            "description": "The bounds of the virtual keyboard after changing mode"
           }
         }
       }

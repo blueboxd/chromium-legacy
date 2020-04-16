@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ntp/features.h"
 #include "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -136,6 +137,23 @@ void NewTabPageTabHelper::DidFinishNavigation(
   UpdateItem(web_state_->GetNavigationManager()->GetLastCommittedItem());
   DisableIgnoreLoadRequests();
   SetActive(IsNTPURL(web_state->GetLastCommittedURL()));
+}
+
+void NewTabPageTabHelper::DidChangeVisibleSecurityState(
+    web::WebState* web_state) {
+  if (base::FeatureList::IsEnabled(web::features::kSSLCommittedInterstitials))
+    return;
+  // This is the only callback we receive when loading a bad ssl page.
+  if (!IsNTPURL(web_state->GetVisibleURL())) {
+    SetActive(false);
+  }
+}
+
+void NewTabPageTabHelper::DidStartLoading(web::WebState* web_state) {
+  // This is needed to avoid flashing the NTP when loading error pages.
+  if (!IsNTPURL(web_state->GetVisibleURL())) {
+    SetActive(false);
+  }
 }
 
 void NewTabPageTabHelper::DidStopLoading(web::WebState* web_state) {

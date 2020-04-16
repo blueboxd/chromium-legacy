@@ -5,38 +5,46 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_OS_SETTINGS_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_OS_SETTINGS_PROVIDER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
 
 class Profile;
+
+namespace chromeos {
+namespace settings {
+class SearchHandler;
+}
+}  // namespace chromeos
 
 namespace app_list {
 
 // Search results for OS settings.
-// TODO(crbug.com/1068851): This is still a WIP, and needs to integrate with the
-// settings backend.
 class OsSettingsResult : public ChromeSearchResult {
  public:
-  OsSettingsResult(float relevance, Profile* profile);
+  OsSettingsResult(Profile* profile,
+                   const chromeos::settings::mojom::SearchResultPtr& result);
   ~OsSettingsResult() override;
 
   OsSettingsResult(const OsSettingsResult&) = delete;
   OsSettingsResult& operator=(const OsSettingsResult&) = delete;
 
-  // ChromeSearchResult overrides:
+  // ChromeSearchResult:
   void Open(int event_flags) override;
   ash::SearchResultType GetSearchResultType() const override;
 
  private:
-  Profile* const profile_;
+  Profile* profile_;
+  const std::string url_path_;
 };
 
 // Provider results for OS settings based on a search query. No results are
 // provided for zero-state.
-// TODO(crbug.com/1068851): This is still a WIP, and needs to integrate with the
-// settings backend.
 class OsSettingsProvider : public SearchProvider {
  public:
   explicit OsSettingsProvider(Profile* profile);
@@ -45,10 +53,17 @@ class OsSettingsProvider : public SearchProvider {
   OsSettingsProvider(const OsSettingsProvider&) = delete;
   OsSettingsProvider& operator=(const OsSettingsProvider&) = delete;
 
+  // SearchProvider:
   void Start(const base::string16& query) override;
 
  private:
+  void OnSearchReturned(
+      std::vector<chromeos::settings::mojom::SearchResultPtr> results);
+
   Profile* const profile_;
+  chromeos::settings::SearchHandler* const search_handler_;
+
+  base::WeakPtrFactory<OsSettingsProvider> weak_factory_{this};
 };
 
 }  // namespace app_list

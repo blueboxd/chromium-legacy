@@ -31,6 +31,7 @@ class BluetoothTestWin : public BluetoothTestBase,
   ~BluetoothTestWin() override;
 
   // BluetoothTestBase overrides
+  bool PlatformSupportsLowEnergy() override;
   void InitWithDefaultAdapter() override;
   void InitWithoutDefaultAdapter() override;
   void InitWithFakeAdapter() override;
@@ -124,6 +125,7 @@ class BluetoothTestWinrt : public BluetoothTestWin,
   void SimulateSpuriousRadioStateChangedEvent();
 
   // BluetoothTestBase:
+  bool PlatformSupportsLowEnergy() override;
   void InitWithDefaultAdapter() override;
   void InitWithoutDefaultAdapter() override;
   void InitWithFakeAdapter() override;

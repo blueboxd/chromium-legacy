@@ -13,6 +13,9 @@ class BluetoothTestFuchsia : public BluetoothTestBase {
  public:
   BluetoothTestFuchsia();
   ~BluetoothTestFuchsia() override;
+
+  // BluetoothTestBase overrides:
+  bool PlatformSupportsLowEnergy() override;
 };
 
 // Defines common test fixture name. Use TEST_F(BluetoothTest, YourTestName).

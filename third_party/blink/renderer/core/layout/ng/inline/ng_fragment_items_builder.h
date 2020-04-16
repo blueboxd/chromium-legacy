@@ -11,7 +11,6 @@
 
 namespace blink {
 
-class NGBoxFragmentBuilder;
 class NGFragmentItem;
 class NGFragmentItems;
 class NGInlineNode;
@@ -23,7 +22,8 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   STACK_ALLOCATED();
 
  public:
-  NGFragmentItemsBuilder(NGBoxFragmentBuilder* box_builder) {}
+  NGFragmentItemsBuilder() = default;
+  explicit NGFragmentItemsBuilder(const NGInlineNode& node);
 
   wtf_size_t Size() const { return items_.size(); }
 
@@ -38,7 +38,6 @@ class CORE_EXPORT NGFragmentItemsBuilder {
                ? first_line_text_content_
                : text_content_;
   }
-  void SetTextContent(const NGInlineNode& node);
 
   // The caller should create a |ChildList| for a complete line and add to this
   // builder.

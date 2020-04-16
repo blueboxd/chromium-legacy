@@ -119,16 +119,6 @@
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #endif
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/ui/webui/management_ui.h"
-#include "chrome/browser/ui/webui/media_router/media_router_internals_ui.h"
-#include "chrome/browser/ui/webui/web_footer_experiment_ui.h"
-#endif
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/cast/cast_ui.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals_ui.h"
 #include "chrome/browser/ui/webui/offline/offline_internals_ui.h"
@@ -140,18 +130,22 @@
 #include "chrome/browser/ui/webui/feed_internals/feed_internals_ui.h"
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #else   // defined(OS_ANDROID)
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
 #include "chrome/browser/ui/webui/history/history_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/management_ui.h"
+#include "chrome/browser/ui/webui/media_router/media_router_internals_ui.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/page_not_available_for_guest/page_not_available_for_guest_ui.h"
+#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.h"
 #include "chrome/browser/ui/webui/system_info_ui.h"
+#include "chrome/browser/ui/webui/web_footer_experiment_ui.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -191,7 +185,6 @@
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_share_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_ui.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
-#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chromeos/components/help_app_ui/help_app_ui.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/media_app_ui/media_app_guest_ui.h"
@@ -222,7 +215,6 @@
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/browser_switch/browser_switch_ui.h"
-#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_error_ui.h"
 #include "chrome/browser/ui/webui/signin/user_manager_ui.h"
@@ -236,6 +228,10 @@
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 #include "chrome/browser/ui/webui/discards/discards_ui.h"
+#endif
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/cast/cast_ui.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_ANDROID)
@@ -367,7 +363,7 @@ WebUIController* NewWebUI<chromeos::multidevice::ProximityAuthUI>(
           ->GetClient(),
       base::BindRepeating(&BindMultiDeviceSetup, Profile::FromWebUI(web_ui)));
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 template <>
@@ -400,10 +396,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
                                              const GURL& url) {
   // This will get called a lot to check all URLs, so do a quick check of other
   // schemes to filter out most URLs.
-  if (!url.SchemeIs(content::kChromeDevToolsScheme) &&
-      !url.SchemeIs(content::kChromeUIScheme)) {
+  if (!content::HasWebUIScheme(url))
     return nullptr;
-  }
 
   // Please keep this in alphabetical order. If #ifs or special logics are
   // required, add it below in the appropriate section.
@@ -894,8 +888,8 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
       ui::GetSupportedScaleFactors();
 
   std::vector<gfx::Size> candidate_sizes;
-  for (size_t i = 0; i < resource_scale_factors.size(); ++i) {
-    float scale = ui::GetScaleForScaleFactor(resource_scale_factors[i]);
+  for (auto scale_factor : resource_scale_factors) {
+    float scale = ui::GetScaleForScaleFactor(scale_factor);
     // Assume that GetFaviconResourceBytes() returns favicons which are
     // |gfx::kFaviconSize| x |gfx::kFaviconSize| DIP.
     int candidate_edge_size =
@@ -906,8 +900,7 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
   std::vector<size_t> selected_indices;
   SelectFaviconFrameIndices(candidate_sizes, desired_sizes_in_pixel,
                             &selected_indices, nullptr);
-  for (size_t i = 0; i < selected_indices.size(); ++i) {
-    size_t selected_index = selected_indices[i];
+  for (size_t selected_index : selected_indices) {
     ui::ScaleFactor selected_resource_scale =
         resource_scale_factors[selected_index];
 
@@ -958,9 +951,9 @@ bool ChromeWebUIControllerFactory::IsWebUIAllowedToMakeNetworkRequests(
       origin.host() == chrome::kChromeUIDownloadsHost;
 }
 
-ChromeWebUIControllerFactory::ChromeWebUIControllerFactory() {}
+ChromeWebUIControllerFactory::ChromeWebUIControllerFactory() = default;
 
-ChromeWebUIControllerFactory::~ChromeWebUIControllerFactory() {}
+ChromeWebUIControllerFactory::~ChromeWebUIControllerFactory() = default;
 
 base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     const GURL& page_url,

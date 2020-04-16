@@ -34,11 +34,13 @@ pushd third_party/webgpu-cts/src > /dev/null
 
   yarn install --frozen-lockfile
   npx grunt prebuild
+
+  echo 'Regenerating...'
   npx ./tools/gen_wpt_cts_html \
     ../../blink/web_tests/wpt_internal/webgpu/cts.html \
     ../../blink/web_tests/webgpu/ctshtml-template.txt \
     ../../blink/web_tests/webgpu/argsprefixes.txt \
     $expectations \
-    'wpt_internal/webgpu/cts.html' cts
+    'wpt_internal/webgpu/cts.html' webgpu
 
 popd > /dev/null

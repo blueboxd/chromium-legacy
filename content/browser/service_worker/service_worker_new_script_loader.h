@@ -157,10 +157,6 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
   // If not all data are received, it continues to download from network.
   void OnCacheWriterResumed(net::Error error);
 
-#if DCHECK_IS_ON()
-  void CheckVersionStatusBeforeLoad();
-#endif  // DCHECK_IS_ON()
-
   const GURL request_url_;
 
   // This is blink::mojom::ResourceType::kServiceWorker for the main script or

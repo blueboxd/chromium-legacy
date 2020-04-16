@@ -753,6 +753,54 @@ var defaultTests = [
   function setMetricsEnabled() {
     chrome.autotestPrivate.setMetricsEnabled(true, chrome.test.callbackPass());
   },
+  // This test verifies that the API to set window bounds works as expected.
+  function setWindowBoundsTest() {
+    chrome.autotestPrivate.getAppWindowList(function(list) {
+      chrome.test.assertEq(1, list.length);
+      var window = list[0];
+      chrome.test.assertEq(window.stateType, 'Normal');
+      chrome.test.assertTrue(window.isVisible);
+      chrome.test.assertTrue(window.isActive);
+
+      // Test changing the bounds.
+      var newBounds = Object.assign({}, window.boundsInRoot);
+      newBounds.width /= 2;
+      newBounds.height /= 2;
+      chrome.autotestPrivate.setWindowBounds(window.id, newBounds,
+          window.displayId, function(result) {
+            chrome.test.assertNoLastError();
+            chrome.test.assertEq(result.bounds, newBounds);
+            chrome.test.assertEq(result.displayId, window.displayId);
+            // Reset bounds to original.
+            chrome.autotestPrivate.setWindowBounds(window.id,
+                window.boundsInRoot, window.displayId, function(result) {
+                  chrome.test.assertNoLastError();
+                  chrome.test.assertEq(result.bounds, window.boundsInRoot);
+                  chrome.test.assertEq(result.displayId, window.displayId);
+
+                  // Test calling setWindowBounds without changing the bounds
+                  // succeeds.
+                  chrome.autotestPrivate.setWindowBounds(window.id,
+                      window.boundsInRoot, window.displayId, function(result) {
+                        chrome.test.assertNoLastError();
+                        chrome.test.assertEq(result.bounds,
+                            window.boundsInRoot);
+                        chrome.test.assertEq(result.displayId,
+                            window.displayId);
+                        // Test calling setWindowBounds with an invalid display
+                        // fails.
+                        chrome.autotestPrivate.setWindowBounds(window.id,
+                            window.boundsInRoot, '-1', function(result) {
+                              chrome.test.assertLastError(
+                                  'Given display ID does not ' +
+                                  'correspond to a valid display');
+                              chrome.test.succeed();
+                            });
+                      });
+                });
+          });
+    });
+  },
 
   // KEEP |lockScreen()| TESTS AT THE BOTTOM OF THE defaultTests AS IT WILL
   // CHANGE THE SESSION STATE TO LOCKED STATE.

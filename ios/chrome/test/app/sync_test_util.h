@@ -9,6 +9,7 @@
 #include <string>
 
 #include "components/sync/base/model_type.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 #include "url/gurl.h"
 
 namespace chrome_test_util {
@@ -50,7 +51,9 @@ void AddLegacyBookmarkToFakeSyncServer(std::string url,
                                        std::string originator_client_item_id);
 
 // Injects user demographics into the fake sync server.
-void AddUserDemographicsToSyncServer(int birth_year, int gender);
+void AddUserDemographicsToSyncServer(
+    int birth_year,
+    metrics::UserDemographicsProto::Gender gender);
 
 // Injects an autofill profile into the fake sync server with |guid| and
 // |full_name|.

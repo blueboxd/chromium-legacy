@@ -37,14 +37,6 @@ class SyncManager final : public ScriptWrappable {
   enum { kUnregisteredSyncID = -1 };
 
  private:
-  // Returns an initialized
-  // mojo::Remote<mojom::blink::OneShotBackgroundSyncService>. A connection with
-  // the browser's OneShotBackgroundSyncService is created the first time this
-  // method is called.
-  const HeapMojoRemote<mojom::blink::OneShotBackgroundSyncService,
-                       HeapMojoWrapperMode::kWithoutContextObserver>&
-  GetBackgroundSyncServiceRemote();
-
   // Callbacks
   void RegisterCallback(ScriptPromiseResolver*,
                         mojom::blink::BackgroundSyncError,
@@ -55,7 +47,6 @@ class SyncManager final : public ScriptWrappable {
       WTF::Vector<mojom::blink::SyncRegistrationOptionsPtr> registrations);
 
   Member<ServiceWorkerRegistration> registration_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   HeapMojoRemote<mojom::blink::OneShotBackgroundSyncService,
                  HeapMojoWrapperMode::kWithoutContextObserver>
       background_sync_service_;

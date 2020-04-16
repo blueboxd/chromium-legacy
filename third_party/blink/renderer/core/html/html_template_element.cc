@@ -45,13 +45,21 @@ HTMLTemplateElement::HTMLTemplateElement(Document& document)
 
 HTMLTemplateElement::~HTMLTemplateElement() = default;
 
-DocumentFragment* HTMLTemplateElement::content() const {
+DocumentFragment* HTMLTemplateElement::ContentInternal() const {
   if (!content_)
     content_ = MakeGarbageCollected<TemplateContentDocumentFragment>(
         GetDocument().EnsureTemplateDocument(),
         const_cast<HTMLTemplateElement*>(this));
 
   return content_.Get();
+}
+
+DocumentFragment* HTMLTemplateElement::content() const {
+  return IsDeclarativeShadowRoot() ? nullptr : ContentInternal();
+}
+
+DocumentFragment* HTMLTemplateElement::DeclarativeShadowContent() const {
+  return IsDeclarativeShadowRoot() ? ContentInternal() : nullptr;
 }
 
 // https://html.spec.whatwg.org/C/#the-template-element:concept-node-clone-ext

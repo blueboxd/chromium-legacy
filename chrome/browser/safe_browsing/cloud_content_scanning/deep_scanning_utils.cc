@@ -230,22 +230,22 @@ void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
       50);
 }
 
-std::array<const base::FilePath::CharType*, 23> SupportedDlpFileTypes() {
+std::array<const base::FilePath::CharType*, 24> SupportedDlpFileTypes() {
   // Keep sorted for efficient access.
-  static constexpr const std::array<const base::FilePath::CharType*, 23>
+  static constexpr const std::array<const base::FilePath::CharType*, 24>
       kSupportedDLPFileTypes = {
-          FILE_PATH_LITERAL(".7z"),   FILE_PATH_LITERAL(".bzip"),
-          FILE_PATH_LITERAL(".cab"),  FILE_PATH_LITERAL(".csv"),
-          FILE_PATH_LITERAL(".doc"),  FILE_PATH_LITERAL(".docx"),
-          FILE_PATH_LITERAL(".eps"),  FILE_PATH_LITERAL(".gz"),
-          FILE_PATH_LITERAL(".gzip"), FILE_PATH_LITERAL(".odt"),
-          FILE_PATH_LITERAL(".pdf"),  FILE_PATH_LITERAL(".ppt"),
-          FILE_PATH_LITERAL(".pptx"), FILE_PATH_LITERAL(".ps"),
-          FILE_PATH_LITERAL(".rar"),  FILE_PATH_LITERAL(".rtf"),
-          FILE_PATH_LITERAL(".tar"),  FILE_PATH_LITERAL(".txt"),
-          FILE_PATH_LITERAL(".wpd"),  FILE_PATH_LITERAL(".xls"),
-          FILE_PATH_LITERAL(".xlsx"), FILE_PATH_LITERAL(".xps"),
-          FILE_PATH_LITERAL(".zip")};
+          FILE_PATH_LITERAL(".7z"),   FILE_PATH_LITERAL(".bz2"),
+          FILE_PATH_LITERAL(".bzip"), FILE_PATH_LITERAL(".cab"),
+          FILE_PATH_LITERAL(".csv"),  FILE_PATH_LITERAL(".doc"),
+          FILE_PATH_LITERAL(".docx"), FILE_PATH_LITERAL(".eps"),
+          FILE_PATH_LITERAL(".gz"),   FILE_PATH_LITERAL(".gzip"),
+          FILE_PATH_LITERAL(".odt"),  FILE_PATH_LITERAL(".pdf"),
+          FILE_PATH_LITERAL(".ppt"),  FILE_PATH_LITERAL(".pptx"),
+          FILE_PATH_LITERAL(".ps"),   FILE_PATH_LITERAL(".rar"),
+          FILE_PATH_LITERAL(".rtf"),  FILE_PATH_LITERAL(".tar"),
+          FILE_PATH_LITERAL(".txt"),  FILE_PATH_LITERAL(".wpd"),
+          FILE_PATH_LITERAL(".xls"),  FILE_PATH_LITERAL(".xlsx"),
+          FILE_PATH_LITERAL(".xps"),  FILE_PATH_LITERAL(".zip")};
   // TODO: Replace this DCHECK with a static assert once std::is_sorted is
   // constexpr in C++20.
   DCHECK(std::is_sorted(

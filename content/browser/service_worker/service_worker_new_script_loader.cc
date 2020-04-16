@@ -89,7 +89,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
 
   network::ResourceRequest resource_request(original_request);
 #if DCHECK_IS_ON()
-  CheckVersionStatusBeforeLoad();
+  service_worker_loader_helpers::CheckVersionStatusBeforeWorkerScriptLoad(
+      version_->status(), resource_type_);
 #endif  // DCHECK_IS_ON()
 
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -330,25 +331,6 @@ void ServiceWorkerNewScriptLoader::OnComplete(
 }
 
 // End of URLLoaderClient ------------------------------------------------------
-
-#if DCHECK_IS_ON()
-void ServiceWorkerNewScriptLoader::CheckVersionStatusBeforeLoad() {
-  DCHECK(version_);
-
-  // ServiceWorkerNewScriptLoader is used for fetching the service worker main
-  // script (RESOURCE_TYPE_SERVICE_WORKER) during worker startup or
-  // importScripts() (RESOURCE_TYPE_SCRIPT).
-  // TODO(nhiroki): In the current implementation, importScripts() can be called
-  // in any ServiceWorkerVersion::Status except for REDUNDANT, but the spec
-  // defines importScripts() works only on the initial script evaluation and the
-  // install event. Update this check once importScripts() is fixed.
-  // (https://crbug.com/719052)
-  DCHECK((resource_type_ == blink::mojom::ResourceType::kServiceWorker &&
-          version_->status() == ServiceWorkerVersion::NEW) ||
-         (resource_type_ == blink::mojom::ResourceType::kScript &&
-          version_->status() != ServiceWorkerVersion::REDUNDANT));
-}
-#endif  // DCHECK_IS_ON()
 
 void ServiceWorkerNewScriptLoader::WriteHeaders(
     scoped_refptr<HttpResponseInfoIOBuffer> info_buffer) {

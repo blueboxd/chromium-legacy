@@ -120,7 +120,8 @@ metrics::MetricsService* GetMetricsService() {
   return ukm_test_helper.HasUnsentLogs();
 }
 
-+ (BOOL)UKMReportHasBirthYear:(int)year gender:(int)gender {
++ (BOOL)UKMReportHasBirthYear:(int)year
+                       gender:(metrics::UserDemographicsProto::Gender)gender {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   std::unique_ptr<ukm::Report> report = ukm_test_helper.GetUkmReport();
   int noisedBirthYear =
@@ -144,7 +145,8 @@ metrics::MetricsService* GetMetricsService() {
   return metrics::test::HasUnsentLogs(GetMetricsService());
 }
 
-+ (BOOL)UMALogHasBirthYear:(int)year gender:(int)gender {
++ (BOOL)UMALogHasBirthYear:(int)year
+                    gender:(metrics::UserDemographicsProto::Gender)gender {
   if (![self UMALogHasUserDemographics]) {
     return NO;
   }

@@ -621,8 +621,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [ChromeEarlGreyAppInterface stopSync];
 }
 
-- (void)addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
-                                              gender:(int)gender {
+- (void)
+    addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
+                                          gender:
+                                              (metrics::UserDemographicsProto::
+                                                   Gender)gender {
   [ChromeEarlGreyAppInterface
       addUserDemographicsToSyncServerWithBirthYear:rawBirthYear
                                             gender:gender];

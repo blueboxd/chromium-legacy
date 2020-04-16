@@ -63,7 +63,6 @@ class CC_EXPORT RecordingSource {
   int slow_down_raster_scale_factor_for_debug_;
   bool requires_clear_;
   bool is_solid_color_;
-  bool clear_canvas_with_debug_color_;
   SkColor solid_color_;
   SkColor background_color_;
   scoped_refptr<DisplayItemList> display_list_;

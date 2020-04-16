@@ -91,6 +91,15 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
       int64_t registration_id,
       const std::vector<std::string>& key_prefixes,
       ClearUserDataByKeyPrefixesCallback callback) override;
+  void GetUserDataForAllRegistrations(
+      const std::string& key,
+      GetUserDataForAllRegistrationsCallback callback) override;
+  void GetUserDataForAllRegistrationsByKeyPrefix(
+      const std::string& key_prefix,
+      GetUserDataForAllRegistrationsByKeyPrefixCallback callback) override;
+  void ClearUserDataForAllRegistrationsByKeyPrefix(
+      const std::string& key_prefix,
+      ClearUserDataForAllRegistrationsByKeyPrefixCallback callback) override;
 
   const std::unique_ptr<ServiceWorkerStorage> storage_;
 };

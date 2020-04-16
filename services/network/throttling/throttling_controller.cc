@@ -57,6 +57,9 @@ bool ThrottlingController::HasInterceptor(
   // Null |instance_| means there is no network condition registered.
   if (!instance_)
     return false;
+
+  DCHECK_CALLED_ON_VALID_THREAD(instance_->thread_checker_);
+
   return instance_->interceptors_.find(throttling_profile_id) !=
          instance_->interceptors_.end();
 }

@@ -3,15 +3,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This tool rolls the latest WebGPU CTS master branch into Chromium (including
-# the Chromium copy of WPT, which is auto-upstreamed). It does the following:
-#
-#   - Fetches origin/master.
-#   - Updates Chromium's DEPS to the latest commit.
+# This tool rolls:
+#   - The latest webgpu-cts master branch into external/wpt/
+#     (which is auto-upstreamed to WPT)
+#   - The latest webgpu-cts glsl-dependent branch into wpt_internal/
+# It does the following for each branch:
+#   - Updates Chromium's DEPS to the latest origin/{master,glsl-dependent}.
 #   - Runs gclient sync.
 #   - Builds the CTS (requires a local installation of node/npm + yarn).
-#   - Copies the built out-wpt/ directory into external/wpt/webgpu/.
-#   - Adds external/wpt/webgpu/ to the git index
+#   - Copies the built out-wpt/ directory into
+#     {external/wpt,wpt_internal}/webgpu/.
+#   - Adds {external/wpt,wpt_internal}/webgpu/ to the git index
 #     (so that it doesn't drown out other changes).
 #
 # It does NOT regenerate the wpt_internal/webgpu/cts.html file, which is used
@@ -21,35 +23,51 @@ set -e
 
 cd "$(dirname "$0")"/../../../..  # cd to [chromium]/src/
 
-pushd third_party/webgpu-cts/src > /dev/null
+roll_cts_to() {
+  target_ref=$1
 
-  if ! git diff-index --quiet HEAD ; then
-    echo 'third_party/webgpu-cts/src must be clean'
-    exit 1
-  fi
+  pushd third_party/webgpu-cts/src > /dev/null
 
-  git fetch origin
-  hash=$(git show-ref --hash origin/master)
+    if ! git diff-index --quiet HEAD ; then
+      echo 'third_party/webgpu-cts/src must be clean'
+      exit 1
+    fi
 
-popd > /dev/null
+    git fetch origin
+    hash=$(git show-ref --hash "$target_ref")
 
-echo "Rolling to ${hash}"
+    echo
+    echo "** Rolling to ${target_ref}: **"
+    echo
+    git log -1 "${target_ref}"
+    echo
 
-perl -pi -e "s:gpuweb/cts.git' \+ '\@' \+ '[0-9a-f]{40}',$:gpuweb/cts.git' + '\@' + '${hash}',:" DEPS
-gclient sync
+  popd > /dev/null
 
-pushd third_party/webgpu-cts/src > /dev/null
+  perl -pi -e "s:gpuweb/cts.git' \+ '\@' \+ '[0-9a-f]{40}',$:gpuweb/cts.git' + '\@' + '${hash}',:" DEPS
+  gclient sync
 
-  yarn install --frozen-lockfile
-  npx grunt wpt  # build third_party/webgpu-cts/src/out-wpt/
 
-popd > /dev/null
+  pushd third_party/webgpu-cts/src > /dev/null
 
+    yarn install --frozen-lockfile
+    npx grunt wpt  # build third_party/webgpu-cts/src/out-wpt/
+
+  popd > /dev/null
+}
+
+roll_cts_to origin/master
 rsync -au --del --exclude='/OWNERS' \
   third_party/webgpu-cts/src/out-wpt/ \
   third_party/blink/web_tests/external/wpt/webgpu/
-
 git add third_party/blink/web_tests/external/wpt/webgpu/
+
+roll_cts_to origin/glsl-dependent
+rsync -au --del --exclude='/OWNERS' \
+  --exclude '/cts.html' --exclude '/third_party' \
+  third_party/webgpu-cts/src/out-wpt/ \
+  third_party/blink/web_tests/wpt_internal/webgpu/
+git add third_party/blink/web_tests/wpt_internal/webgpu/
 
 cat << EOF
 

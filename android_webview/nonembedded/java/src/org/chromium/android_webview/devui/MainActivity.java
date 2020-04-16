@@ -181,6 +181,24 @@ public class MainActivity extends FragmentActivity {
                                     .build();
             startActivity(new Intent(Intent.ACTION_VIEW, reportUri));
             return true;
+        } else if (item.getItemId() == R.id.options_menu_check_updates) {
+            try {
+                Uri marketUri = new Uri.Builder()
+                                        .scheme("market")
+                                        .authority("details")
+                                        .appendQueryParameter("id", this.getPackageName())
+                                        .build();
+                startActivity(new Intent(Intent.ACTION_VIEW, marketUri));
+            } catch (Exception e) {
+                Uri marketUri = new Uri.Builder()
+                                        .scheme("https")
+                                        .authority("play.google.com")
+                                        .path("/store/apps/details")
+                                        .appendQueryParameter("id", this.getPackageName())
+                                        .build();
+                startActivity(new Intent(Intent.ACTION_VIEW, marketUri));
+            }
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

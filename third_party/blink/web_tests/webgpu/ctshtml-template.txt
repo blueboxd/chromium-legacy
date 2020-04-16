@@ -37,4 +37,4 @@
 </style>
 
 <textarea id=results></textarea>
-<script type=module src=/webgpu/runtime/wpt.js></script>
+<script type=module src=/wpt_internal/webgpu/common/runtime/wpt.js></script>

@@ -88,6 +88,20 @@ void DidGetKeysAndUserData(
   std::move(callback).Run(status, user_data);
 }
 
+void DidGetUserDataForAllRegistrations(
+    ServiceWorkerStorageControlImpl::GetUserDataForAllRegistrationsCallback
+        callback,
+    const std::vector<std::pair<int64_t, std::string>>& user_data,
+    storage::mojom::ServiceWorkerDatabaseStatus status) {
+  // TODO(bashi): Change ServiceWorkerStorage::GetUserDataForAllRegistrations()
+  // to return base::flat_map.
+  base::flat_map<int64_t, std::string> values;
+  for (auto& entry : user_data) {
+    values[entry.first] = entry.second;
+  }
+  std::move(callback).Run(status, std::move(values));
+}
+
 }  // namespace
 
 ServiceWorkerStorageControlImpl::ServiceWorkerStorageControlImpl(
@@ -249,6 +263,30 @@ void ServiceWorkerStorageControlImpl::ClearUserDataByKeyPrefixes(
     ClearUserDataByKeyPrefixesCallback callback) {
   storage_->ClearUserDataByKeyPrefixes(registration_id, key_prefixes,
                                        std::move(callback));
+}
+
+void ServiceWorkerStorageControlImpl::GetUserDataForAllRegistrations(
+    const std::string& key,
+    GetUserDataForAllRegistrationsCallback callback) {
+  storage_->GetUserDataForAllRegistrations(
+      key,
+      base::BindOnce(&DidGetUserDataForAllRegistrations, std::move(callback)));
+}
+
+void ServiceWorkerStorageControlImpl::GetUserDataForAllRegistrationsByKeyPrefix(
+    const std::string& key_prefix,
+    GetUserDataForAllRegistrationsByKeyPrefixCallback callback) {
+  storage_->GetUserDataForAllRegistrationsByKeyPrefix(
+      key_prefix,
+      base::BindOnce(&DidGetUserDataForAllRegistrations, std::move(callback)));
+}
+
+void ServiceWorkerStorageControlImpl::
+    ClearUserDataForAllRegistrationsByKeyPrefix(
+        const std::string& key_prefix,
+        ClearUserDataForAllRegistrationsByKeyPrefixCallback callback) {
+  storage_->ClearUserDataForAllRegistrationsByKeyPrefix(key_prefix,
+                                                        std::move(callback));
 }
 
 }  // namespace content

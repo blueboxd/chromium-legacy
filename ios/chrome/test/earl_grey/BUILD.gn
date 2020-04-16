@@ -328,6 +328,7 @@ source_set("test_support") {
     "//ios/web/public/test/http_server",
     "//net:test_support",
     "//services/metrics/public/cpp:metrics_cpp",
+    "//third_party/metrics_proto",
     "//ui/base",
     "//ui/base:test_support",
     "//url",
@@ -347,6 +348,8 @@ source_set("test_support") {
     "XCTest.framework",
     "IOKit.framework",
   ]
+
+  all_dependent_configs = [ "//third_party/protobuf:protobuf_config" ]
 }
 
 source_set("hooks") {
@@ -492,10 +495,13 @@ source_set("eg_app_support+eg2") {
     "//ios/web/public/test:element_selector",
     "//ios/web/public/test:util",
     "//services/metrics/public/cpp:metrics_cpp",
+    "//third_party/metrics_proto",
     "//ui/base",
     "//ui/base:test_support",
   ]
   libs = [ "IOKit.framework" ]
+
+  all_dependent_configs = [ "//third_party/protobuf:protobuf_config" ]
 }
 
 source_set("eg_test_support+eg2") {
@@ -554,9 +560,12 @@ source_set("eg_test_support+eg2") {
     "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
     "//net:test_support",
+    "//third_party/metrics_proto",
     "//ui/base",
     "//url",
   ]
+
+  all_dependent_configs = [ "//third_party/protobuf:protobuf_config" ]
 }
 
 source_set("chrome_egtest_bundle_main+eg2") {

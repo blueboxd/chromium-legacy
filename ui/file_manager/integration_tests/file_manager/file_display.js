@@ -902,4 +902,7 @@ testcase.fileDisplayStartupError = async () => {
   // Check: opening a Files app window should succeed.
   const appId = await openNewWindow(RootPath.DOWNLOADS);
   chrome.test.assertTrue(null !== appId);
+
+  // The failed attempt logs the error.
+  return IGNORE_APP_ERRORS;
 };

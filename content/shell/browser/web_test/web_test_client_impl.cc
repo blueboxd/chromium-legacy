@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_index_context.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/web_test/blink_test_controller.h"
@@ -28,6 +30,7 @@
 #include "content/test/mock_platform_notification_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/file_system/isolated_context.h"
@@ -97,7 +100,8 @@ WebTestClientImpl::WebTestClientImpl(
     network::mojom::NetworkContext* network_context)
     : render_process_id_(render_process_id),
       quota_manager_(quota_manager),
-      database_tracker_(database_tracker) {
+      database_tracker_(database_tracker),
+      network_context_(network_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   network_context->GetCookieManager(
       cookie_manager_.BindNewPipeAndPassReceiver());
@@ -295,6 +299,18 @@ void WebTestClientImpl::InitiateCaptureDump(bool capture_navigation_history,
     BlinkTestController::Get()->OnInitiateCaptureDump(
         capture_navigation_history, capture_pixels);
   }
+}
+
+void WebTestClientImpl::SetTrustTokenKeyCommitments(
+    const std::string& raw_commitments,
+    base::OnceClosure callback) {
+  GetNetworkService()->SetTrustTokenKeyCommitments(raw_commitments,
+                                                   std::move(callback));
+}
+
+void WebTestClientImpl::ClearTrustTokenState(base::OnceClosure callback) {
+  // nullptr denotes a wildcard filter.
+  network_context_->ClearTrustTokenData(nullptr, std::move(callback));
 }
 
 }  // namespace content

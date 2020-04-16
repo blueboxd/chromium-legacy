@@ -113,6 +113,27 @@ bool ShouldValidateBrowserCacheForScript(
           force_bypass_cache);
 }
 
+#if DCHECK_IS_ON()
+void CheckVersionStatusBeforeWorkerScriptLoad(
+    ServiceWorkerVersion::Status status,
+    blink::mojom::ResourceType resource_type) {
+  switch (resource_type) {
+    // The service worker main script should be fetched during worker startup.
+    case blink::mojom::ResourceType::kServiceWorker:
+      DCHECK_EQ(status, ServiceWorkerVersion::NEW);
+      break;
+    // importScripts() should be called until completion of the install event.
+    case blink::mojom::ResourceType::kScript:
+      DCHECK(status == ServiceWorkerVersion::NEW ||
+             status == ServiceWorkerVersion::INSTALLING);
+      break;
+    default:
+      NOTREACHED() << resource_type;
+      break;
+  }
+}
+#endif  // DCHECK_IS_ON()
+
 }  // namespace service_worker_loader_helpers
 
 }  // namespace content

@@ -102,6 +102,7 @@ class Document;
 class Element;
 class HTMLFormElement;
 class HTMLParserReentryPermit;
+enum class DeclarativeShadowRootType;
 
 class HTMLConstructionSite final {
   DISALLOW_NEW();
@@ -148,6 +149,9 @@ class HTMLConstructionSite final {
   void InsertCommentOnDocument(AtomicHTMLToken*);
   void InsertCommentOnHTMLHtmlElement(AtomicHTMLToken*);
   void InsertHTMLElement(AtomicHTMLToken*);
+  void InsertHTMLTemplateElement(
+      AtomicHTMLToken*,
+      DeclarativeShadowRootType declarative_shadow_root_type);
   void InsertSelfClosingHTMLElementDestroyingToken(AtomicHTMLToken*);
   void InsertFormattingElement(AtomicHTMLToken*);
   void InsertHTMLHeadElement(AtomicHTMLToken*);

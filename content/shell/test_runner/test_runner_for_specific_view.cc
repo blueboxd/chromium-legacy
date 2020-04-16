@@ -670,6 +670,24 @@ void TestRunner::InsertStyleSheet(const std::string& source_code) {
       .InsertStyleSheet(blink::WebString::FromUTF8(source_code));
 }
 
+// Sets the network service-global Trust Tokens key commitments.
+// |raw_commitments| should be JSON-encoded according to the format expected
+// by NetworkService::SetTrustTokenKeyCommitments.
+void TestRunnerForSpecificView::SetTrustTokenKeyCommitments(
+    const std::string& raw_commitments,
+    v8::Local<v8::Function> callback) {
+  blink_test_runner()->SetTrustTokenKeyCommitments(
+      raw_commitments, CreateClosureThatPostsV8Callback(callback));
+}
+
+// Clears persistent Trust Tokens state
+// (https://github.com/wicg/trust-token-api) via a test-only Mojo interface.
+void TestRunnerForSpecificView::ClearTrustTokenState(
+    v8::Local<v8::Function> callback) {
+  blink_test_runner()->ClearTrustTokenState(
+      CreateClosureThatPostsV8Callback(callback));
+}
+
 bool TestRunnerForSpecificView::FindString(
     const std::string& search_text,
     const std::vector<std::string>& options_array) {

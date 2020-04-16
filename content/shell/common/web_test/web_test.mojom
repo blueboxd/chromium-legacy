@@ -9,6 +9,7 @@ import "mojo/public/mojom/base/values.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "third_party/blink/public/mojom/permissions/permission_status.mojom";
 import "url/mojom/url.mojom";
+import "url/mojom/origin.mojom";
 
 // Web test messages sent from the browser process to the renderer.
 interface WebTestControl {
@@ -94,4 +95,12 @@ interface WebTestClient {
 
   // Initialize to dump the main frame with a navigation history or pixels.
   InitiateCaptureDump(bool capture_navigation_history, bool capture_pixels);
+
+  // Sets the network service-global Trust Tokens key commitments.
+  // |raw_commitments| should be JSON-encoded according to the format expected
+  // by NetworkService::SetTrustTokenKeyCommitments.
+  SetTrustTokenKeyCommitments(string raw_commitments) => ();
+
+  // Clears all persistent Trust Tokens state.
+  ClearTrustTokenState() => ();
 };

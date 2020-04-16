@@ -111,8 +111,12 @@ static inline bool IsAllWhitespace(const String& string) {
 }
 
 static inline void Insert(HTMLConstructionSiteTask& task) {
+  // https://html.spec.whatwg.org/multipage/parsing.html#appropriate-place-for-inserting-a-node
+  // 3. If the adjusted insertion location is inside a template element, let it
+  // instead be inside the template element's template contents, after its last
+  // child (if any).
   if (auto* template_element = DynamicTo<HTMLTemplateElement>(*task.parent))
-    task.parent = template_element->content();
+    task.parent = template_element->TemplateContentForHTMLConstructionSite();
 
   // https://html.spec.whatwg.org/C/#insert-a-foreign-element
   // 3.1, (3) Push (pop) an element queue
@@ -702,6 +706,17 @@ void HTMLConstructionSite::InsertHTMLFormElement(AtomicHTMLToken* token,
   open_elements_.Push(MakeGarbageCollected<HTMLStackItem>(form_element, token));
 }
 
+void HTMLConstructionSite::InsertHTMLTemplateElement(
+    AtomicHTMLToken* token,
+    DeclarativeShadowRootType declarative_shadow_root_type) {
+  auto* template_element = To<HTMLTemplateElement>(
+      CreateElement(token, html_names::xhtmlNamespaceURI));
+  template_element->SetDeclarativeShadowRootType(declarative_shadow_root_type);
+  AttachLater(CurrentNode(), template_element);
+  open_elements_.Push(
+      MakeGarbageCollected<HTMLStackItem>(template_element, token));
+}
+
 void HTMLConstructionSite::InsertHTMLElement(AtomicHTMLToken* token) {
   Element* element = CreateElement(token, html_names::xhtmlNamespaceURI);
   AttachLater(CurrentNode(), element);
@@ -780,10 +795,13 @@ void HTMLConstructionSite::InsertTextNode(const StringView& string,
   if (ShouldFosterParent())
     FindFosterSite(dummy_task);
 
-  // FIXME: This probably doesn't need to be done both here and in insert(Task).
+  // TODO(crbug.com/1070669): This can likely be removed, because it is already
+  // handled in Insert().
   if (auto* template_element =
-          DynamicTo<HTMLTemplateElement>(*dummy_task.parent))
-    dummy_task.parent = template_element->content();
+          DynamicTo<HTMLTemplateElement>(*dummy_task.parent)) {
+    dummy_task.parent =
+        template_element->TemplateContentForHTMLConstructionSite();
+  }
 
   // Unclear when parent != case occurs. Somehow we insert text into two
   // separate nodes while processing the same Token. The nextChild !=
@@ -844,8 +862,14 @@ CreateElementFlags HTMLConstructionSite::GetCreateElementFlags() const {
 }
 
 Document& HTMLConstructionSite::OwnerDocumentForCurrentNode() {
-  if (auto* template_element = DynamicTo<HTMLTemplateElement>(*CurrentNode()))
-    return template_element->content()->GetDocument();
+  // TODO(crbug.com/1070667): For <template> elements, many operations need to
+  // be re-targeted to the .content() document of the template. This function is
+  // used in those places. The spec needs to be updated to reflect this
+  // behavior, and when that happens, a link to the spec should be placed here.
+  if (auto* template_element = DynamicTo<HTMLTemplateElement>(*CurrentNode())) {
+    return template_element->TemplateContentForHTMLConstructionSite()
+        ->GetDocument();
+  }
   return CurrentNode()->GetDocument();
 }
 

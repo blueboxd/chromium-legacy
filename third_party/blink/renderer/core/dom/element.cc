@@ -3519,14 +3519,19 @@ void Element::AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
   DCHECK(template_element);
   DCHECK(type == ShadowRootType::kOpen || type == ShadowRootType::kClosed);
   if (!CanAttachShadowRoot()) {
-    // TODO(masonfreed): Eventually, this should be a DOMException.
+    // TODO(1067488): Eventually, this should be a DOMException.
     LOG(ERROR) << "Invalid shadow root host element";
+    return;
+  }
+  if (GetShadowRoot()) {
+    // TODO(1067488): Eventually, this should be a DOMException.
+    LOG(ERROR) << "Shadow root already present!";
     return;
   }
   ShadowRoot* shadow_root = &AttachShadowRootInternal(
       type, focus_delegation == FocusDelegation::kDelegateFocus,
       slot_assignment == SlotAssignmentMode::kManual);
-  shadow_root->appendChild(template_element->content());
+  shadow_root->appendChild(template_element->DeclarativeShadowContent());
   template_element->remove();
 }
 

@@ -623,6 +623,10 @@ void VRServiceImpl::OnExitPresent() {
 
   for (auto& client : session_clients_)
     client->OnExitPresent();
+
+  // Ensure that the client list is erased to avoid "Cannot issue Interface
+  // method calls on an unbound Remote" errors: https://crbug.com/991747
+  session_clients_.Clear();
 }
 
 void VRServiceImpl::OnVisibilityStateChanged(

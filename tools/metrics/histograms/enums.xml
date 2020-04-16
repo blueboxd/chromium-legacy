@@ -22654,6 +22654,7 @@ Called by update_extension_histograms.py.-->
   <int value="1463" label="CRYPTOTOKENPRIVATE_RECORDREGISTERREQUEST"/>
   <int value="1464" label="CRYPTOTOKENPRIVATE_RECORDSIGNREQUEST"/>
   <int value="1465" label="VIRTUALKEYBOARDPRIVATE_SETWINDOWBOUNDSINSCREEN"/>
+  <int value="1466" label="AUTOTESTPRIVATE_SETWINDOWBOUNDS"/>
 </enum>
 
 <enum name="ExtensionIconState">

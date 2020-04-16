@@ -13,6 +13,7 @@
 #import "components/content_settings/core/common/content_settings.h"
 #include "components/sync/base/model_type.h"
 #import "ios/testing/earl_grey/base_eg_test_helper_impl.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 #include "url/gurl.h"
 
 @class ElementSelector;
@@ -158,8 +159,11 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Injects user demographics into the fake sync server. |rawBirthYear| is the
 // true birth year, pre-noise, and the gender corresponds to the proto enum
 // UserDemographicsProto::Gender.
-- (void)addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
-                                              gender:(int)gender;
+- (void)
+    addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
+                                          gender:
+                                              (metrics::UserDemographicsProto::
+                                                   Gender)gender;
 
 // Clears the autofill profile for the given |GUID|.
 - (void)clearAutofillProfileWithGUID:(const std::string&)GUID;

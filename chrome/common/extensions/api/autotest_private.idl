@@ -519,6 +519,20 @@ namespace autotestPrivate {
   // |data| contains the result of the trace in Trace Event JSON format.
   callback TraceCompleteCallback = void (DOMString data);
 
+  // Result of calling setWindowBounds, which returns the actual bounds and
+  // display the window was set to. This may be different than the requested
+  // bounds and display, for example if the window is showing an ARC app and
+  // Android modifies the bounds request. Further, this result may never be
+  // returned in some situations (e.g. Android ignoring a bounds request),
+  // causing a timeout.
+  dictionary SetWindowBoundsResult {
+    // Bounds of the window.
+    Bounds bounds;
+    // Display ID of the display the window is on.
+    DOMString displayId;
+  };
+  callback WindowBoundsCallback = void (SetWindowBoundsResult result);
+
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
     static void initializeEvents();
@@ -969,6 +983,17 @@ namespace autotestPrivate {
     static void getShelfUIInfoForState(
         ShelfState state,
         GetShelfUIInfoForStateCallback callback);
+
+    // Sends a WM event to change a window's bounds and/or the display it is on.
+    // |id|: the id of the window.
+    // |bounds|: bounds the window should be set to.
+    // |displayId|: id of display to move the window to.
+    // |callback|: called when the window bounds are changed.
+    static void setWindowBounds(
+        long id,
+        Bounds bounds,
+        DOMString displayId,
+        WindowBoundsCallback callback);
   };
 
   interface Events {

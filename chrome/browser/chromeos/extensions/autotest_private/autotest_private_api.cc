@@ -540,6 +540,10 @@ api::autotest_private::Bounds ToBoundsDictionary(const gfx::Rect& bounds) {
   return result;
 }
 
+gfx::Rect ToRect(const api::autotest_private::Bounds& result) {
+  return gfx::Rect(result.left, result.top, result.width, result.height);
+}
+
 std::vector<api::autotest_private::Bounds> ToBoundsDictionaryList(
     const std::vector<gfx::Rect>& items_bounds) {
   std::vector<api::autotest_private::Bounds> bounds_list;
@@ -712,6 +716,64 @@ class WindowStateChangeObserver : public aura::WindowObserver {
   base::OnceCallback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowStateChangeObserver);
+};
+
+class WindowBoundsChangeObserver : public aura::WindowObserver {
+ public:
+  WindowBoundsChangeObserver(
+      aura::Window* window,
+      const gfx::Rect& to_bounds,
+      int64_t display_id,
+      base::OnceCallback<void(const gfx::Rect&, int64_t, bool)> callback)
+      : callback_(std::move(callback)) {
+    auto* state = ash::WindowState::Get(window);
+    DCHECK(state);
+    wait_for_bounds_change_ = window->GetBoundsInRootWindow() != to_bounds;
+    wait_for_display_change_ = state->GetDisplay().id() != display_id;
+    DCHECK(wait_for_bounds_change_ || wait_for_display_change_);
+    scoped_observer_.Add(window);
+  }
+  ~WindowBoundsChangeObserver() override = default;
+
+  WindowBoundsChangeObserver(const WindowBoundsChangeObserver&) = delete;
+  WindowBoundsChangeObserver& operator=(const WindowBoundsChangeObserver&) =
+      delete;
+
+  // aura::WindowObserver:
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override {
+    wait_for_bounds_change_ = false;
+    MaybeFinishObserving(window, /*success=*/true);
+  }
+
+  void OnWindowAddedToRootWindow(aura::Window* window) override {
+    wait_for_display_change_ = false;
+    MaybeFinishObserving(window, /*success=*/true);
+  }
+
+  void OnWindowDestroying(aura::Window* window) override {
+    wait_for_display_change_ = false;
+    wait_for_bounds_change_ = false;
+    MaybeFinishObserving(window, /*success=*/false);
+  }
+
+ private:
+  void MaybeFinishObserving(aura::Window* window, bool success) {
+    DCHECK(scoped_observer_.IsObserving(window));
+    if (!wait_for_bounds_change_ && !wait_for_display_change_) {
+      scoped_observer_.RemoveAll();
+      std::move(callback_).Run(window->GetBoundsInRootWindow(),
+                               ash::WindowState::Get(window)->GetDisplay().id(),
+                               success);
+    }
+  }
+
+  ScopedObserver<aura::Window, aura::WindowObserver> scoped_observer_{this};
+  bool wait_for_bounds_change_ = false;
+  bool wait_for_display_change_ = false;
+  base::OnceCallback<void(const gfx::Rect&, int64_t, bool)> callback_;
 };
 
 class EventGenerator : public aura::WindowEventDispatcherObserver {
@@ -4131,6 +4193,98 @@ AutotestPrivateGetShelfUIInfoForStateFunction::Run() {
   }
 
   return RespondNow(OneArgument(shelf_ui_info.ToValue()));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetWindowBoundsFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetWindowBoundsFunction::
+    AutotestPrivateSetWindowBoundsFunction() = default;
+AutotestPrivateSetWindowBoundsFunction::
+    ~AutotestPrivateSetWindowBoundsFunction() = default;
+
+namespace {
+
+std::unique_ptr<base::DictionaryValue> BuildSetWindowBoundsResult(
+    const gfx::Rect& bounds_in_display,
+    int64_t display_id) {
+  auto result = std::make_unique<base::DictionaryValue>();
+  result->SetDictionary("bounds",
+                        ToBoundsDictionary(bounds_in_display).ToValue());
+  result->SetString("displayId", base::NumberToString(display_id));
+  return result;
+}
+
+}  // namespace
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetWindowBoundsFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetWindowBounds::Params> params(
+      api::autotest_private::SetWindowBounds::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  aura::Window* window = FindAppWindowById(params->id);
+  if (!window) {
+    return RespondNow(Error(
+        base::StringPrintf("No app window was found : id=%d", params->id)));
+  }
+
+  auto* state = ash::WindowState::Get(window);
+  if (!state ||
+      ash::ToWindowShowState(state->GetStateType()) != ui::SHOW_STATE_NORMAL) {
+    return RespondNow(
+        Error("Cannot set bounds of window not in normal show state."));
+  }
+
+  int64_t display_id;
+  if (!base::StringToInt64(params->display_id, &display_id)) {
+    return RespondNow(Error(base::StrCat(
+        {"Invalid display_id; expected string with numbers only, got ",
+         params->display_id})));
+  }
+
+  display::Display display;
+  display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id, &display);
+  if (!display.is_valid()) {
+    return RespondNow(
+        Error("Given display ID does not correspond to a valid display"));
+  }
+
+  auto* root_window = ash::Shell::GetRootWindowForDisplayId(display_id);
+  if (!root_window)
+    return RespondNow(Error("Failed to find the root window"));
+
+  gfx::Rect to_bounds = ToRect(params->bounds);
+
+  if (window->GetBoundsInRootWindow() == to_bounds &&
+      state->GetDisplay().id() == display_id) {
+    return RespondNow(
+        OneArgument(BuildSetWindowBoundsResult(to_bounds, display_id)));
+  }
+
+  window_bounds_observer_ = std::make_unique<WindowBoundsChangeObserver>(
+      window, to_bounds, display_id,
+      base::BindOnce(
+          &AutotestPrivateSetWindowBoundsFunction::WindowBoundsChanged, this));
+
+  ::wm::ConvertRectToScreen(root_window, &to_bounds);
+  window->SetBoundsInScreen(to_bounds, display);
+
+  return RespondLater();
+}
+
+void AutotestPrivateSetWindowBoundsFunction::WindowBoundsChanged(
+    const gfx::Rect& bounds_in_display,
+    int64_t display_id,
+    bool success) {
+  if (!success) {
+    Respond(Error(
+        "The app window was destroyed while waiting for bounds to change!"));
+  } else {
+    Respond(
+        OneArgument(BuildSetWindowBoundsResult(bounds_in_display, display_id)));
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

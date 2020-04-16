@@ -13,6 +13,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,9 +21,8 @@
 
 namespace {
 
-// TODO(crbug.com/1066910): Use a proto instead.
-// Corresponds to GENDER_MALE in UserDemographicsProto::Gender.
-const int kTestGender = 1;
+const metrics::UserDemographicsProto::Gender kTestGender =
+    metrics::UserDemographicsProto::GENDER_MALE;
 
 }  // namespace
 
@@ -112,8 +112,11 @@ const int kTestGender = 1;
 // Also, verifies (A) that before adding the demographics, the server has no
 // priority preferences and (B) that after adding the demographics, the server
 // has one priority preference.
-- (void)addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
-                                              gender:(int)gender {
+- (void)
+    addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
+                                          gender:
+                                              (metrics::UserDemographicsProto::
+                                                   Gender)gender {
   GREYAssertEqual(
       [ChromeEarlGrey
           numberOfSyncEntitiesWithType:syncer::PRIORITY_PREFERENCES],

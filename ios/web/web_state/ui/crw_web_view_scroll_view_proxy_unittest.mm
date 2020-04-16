@@ -551,6 +551,42 @@ TEST_F(CRWWebViewScrollViewProxyTest, AddKVObserver) {
                                    forKeyPath:@"contentOffset"];
 }
 
+// Verifies that a key-value observer is kept after the underlying scroll view
+// is set.
+TEST_F(CRWWebViewScrollViewProxyTest,
+       KVObserversAreKeptAfterSettingUnderlyingScrollView) {
+  // Add a key-value observer to a CRWWebViewScrollViewProxy.
+  NSObject* observer = OCMClassMock([NSObject class]);
+  int context = 0;
+  [web_view_scroll_view_proxy_
+      addObserver:observer
+       forKeyPath:@"contentOffset"
+          options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
+          context:&context];
+
+  // Set the underlying scroll view.
+  UIScrollView* underlying_scroll_view = [[UIScrollView alloc] init];
+  underlying_scroll_view.contentOffset = CGPointZero;
+  [web_view_scroll_view_proxy_ setScrollView:underlying_scroll_view];
+
+  // KVO is inherited to the new underlying scroll view.
+  CGPoint new_offset = CGPointMake(10, 20);
+  NSDictionary<NSKeyValueChangeKey, id>* expected_change = @{
+    NSKeyValueChangeKindKey : @(NSKeyValueChangeSetting),
+    NSKeyValueChangeOldKey : @(CGPointZero),
+    NSKeyValueChangeNewKey : @(new_offset)
+  };
+  OCMExpect([observer observeValueForKeyPath:@"contentOffset"
+                                    ofObject:web_view_scroll_view_proxy_
+                                      change:expected_change
+                                     context:&context]);
+  underlying_scroll_view.contentOffset = new_offset;
+
+  EXPECT_OCMOCK_VERIFY(static_cast<id>(observer));
+  [web_view_scroll_view_proxy_ removeObserver:observer
+                                   forKeyPath:@"contentOffset"];
+}
+
 // Verifies that removing a key-value observer from a CRWWebViewScrollViewProxy
 // works as expected.
 TEST_F(CRWWebViewScrollViewProxyTest, RemoveKVObserver) {
@@ -584,6 +620,114 @@ TEST_F(CRWWebViewScrollViewProxyTest, RemoveKVObserver) {
   underlying_scroll_view.contentOffset = new_offset;
 
   EXPECT_OCMOCK_VERIFY(static_cast<id>(observer));
+}
+
+// When -addObserver:forKeyPath:options:context: is called multiple times with
+// the same observer and key path, -removeObserver:forKeyPath: removes the last
+// observation.
+//
+// This matches the (undocumented) behavior of the built-in KVO.
+TEST_F(CRWWebViewScrollViewProxyTest, RemoveKVObserverRemovesLastObservation) {
+  UIScrollView* underlying_scroll_view = [[UIScrollView alloc] init];
+  underlying_scroll_view.contentOffset = CGPointZero;
+  [web_view_scroll_view_proxy_ setScrollView:underlying_scroll_view];
+
+  // Add an observer twice with |context1| and then with |context2|.
+  NSObject* observer = OCMClassMock([NSObject class]);
+  int context1 = 0;
+  int context2 = 0;
+  [web_view_scroll_view_proxy_
+      addObserver:observer
+       forKeyPath:@"contentOffset"
+          options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
+          context:&context1];
+  [web_view_scroll_view_proxy_
+      addObserver:observer
+       forKeyPath:@"contentOffset"
+          options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
+          context:&context2];
+
+  // Remove an observer once. This should remove the observation with
+  // |context2|.
+  [web_view_scroll_view_proxy_ removeObserver:observer
+                                   forKeyPath:@"contentOffset"];
+
+  // The observer should be notified of a change with |context1| but not with
+  // |context2|.
+  CGPoint new_offset = CGPointMake(10, 20);
+  NSDictionary<NSKeyValueChangeKey, id>* expected_change = @{
+    NSKeyValueChangeKindKey : @(NSKeyValueChangeSetting),
+    NSKeyValueChangeOldKey : @(CGPointZero),
+    NSKeyValueChangeNewKey : @(new_offset)
+  };
+  OCMExpect([observer observeValueForKeyPath:@"contentOffset"
+                                    ofObject:web_view_scroll_view_proxy_
+                                      change:expected_change
+                                     context:&context1]);
+  [[static_cast<id>(observer) reject]
+      observeValueForKeyPath:@"contentOffset"
+                    ofObject:web_view_scroll_view_proxy_
+                      change:expected_change
+                     context:&context2];
+
+  underlying_scroll_view.contentOffset = new_offset;
+
+  EXPECT_OCMOCK_VERIFY(static_cast<id>(observer));
+  [web_view_scroll_view_proxy_ removeObserver:observer
+                                   forKeyPath:@"contentOffset"];
+}
+
+// Verifies that removing a key-value observer from a CRWWebViewScrollViewProxy
+// works as expected when given a context.
+TEST_F(CRWWebViewScrollViewProxyTest, RemoveKVObserverWithContext) {
+  UIScrollView* underlying_scroll_view = [[UIScrollView alloc] init];
+  underlying_scroll_view.contentOffset = CGPointZero;
+  [web_view_scroll_view_proxy_ setScrollView:underlying_scroll_view];
+
+  // Add an observer twice with |context1| and then with |context2|.
+  NSObject* observer = OCMClassMock([NSObject class]);
+  int context1 = 0;
+  int context2 = 0;
+  [web_view_scroll_view_proxy_
+      addObserver:observer
+       forKeyPath:@"contentOffset"
+          options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
+          context:&context1];
+  [web_view_scroll_view_proxy_
+      addObserver:observer
+       forKeyPath:@"contentOffset"
+          options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
+          context:&context2];
+
+  // Remove the observation with |context1|.
+  [web_view_scroll_view_proxy_ removeObserver:observer
+                                   forKeyPath:@"contentOffset"
+                                      context:&context1];
+
+  // The observer should be notified of a change with |context2| but not with
+  // |context1|.
+  CGPoint new_offset = CGPointMake(10, 20);
+  NSDictionary<NSKeyValueChangeKey, id>* expected_change = @{
+    NSKeyValueChangeKindKey : @(NSKeyValueChangeSetting),
+    NSKeyValueChangeOldKey : @(CGPointZero),
+    NSKeyValueChangeNewKey : @(new_offset)
+  };
+  OCMExpect([observer observeValueForKeyPath:@"contentOffset"
+                                    ofObject:web_view_scroll_view_proxy_
+                                      change:expected_change
+                                     context:&context2]);
+  [[static_cast<id>(observer) reject]
+      observeValueForKeyPath:@"contentOffset"
+                    ofObject:web_view_scroll_view_proxy_
+                      change:expected_change
+                     context:&context1];
+
+  underlying_scroll_view.contentOffset = new_offset;
+
+  EXPECT_OCMOCK_VERIFY(static_cast<id>(observer));
+  [web_view_scroll_view_proxy_ removeObserver:observer
+                                   forKeyPath:@"contentOffset"
+                                      context:&context2];
 }
 
 // Verifies that properties registered to |propertiesStore| are preserved if:

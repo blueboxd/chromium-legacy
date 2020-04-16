@@ -77,6 +77,9 @@ class WebTestClientImpl : public mojom::WebTestClient {
       const std::vector<base::FilePath>& absolute_filenames,
       RegisterIsolatedFileSystemCallback callback) override;
   void SetFilePathForMockFileDialog(const base::FilePath& path) override;
+  void SetTrustTokenKeyCommitments(const std::string& raw_commitments,
+                                   base::OnceClosure callback) override;
+  void ClearTrustTokenState(base::OnceClosure callback) override;
 
   int render_process_id_;
 
@@ -84,6 +87,7 @@ class WebTestClientImpl : public mojom::WebTestClient {
   scoped_refptr<storage::DatabaseTracker> database_tracker_;
 
   mojo::Remote<network::mojom::CookieManager> cookie_manager_;
+  network::mojom::NetworkContext* const network_context_;
 };
 
 }  // namespace content

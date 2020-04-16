@@ -1,0 +1,55 @@
+{
+  "-- Template --": {
+    "intro": "This file is interpreted by ios/chrome/browser/policy/policy_unittest.cc",
+    "intro": "Tests that policies map to prefs properly.",
+    "intro": "Top-level entries map a policy name to its test parameters, described below. The name of the top level entry should be of the form <policy name>[.suffix]. The optional suffix is used for defining multiple test cases for a single policy.",
+    "intro": "To run tests from this file run ios_chrome_unittests and pass '--gtest_filter=PolicyTest*'.",
+
+
+    "intro": "The schema below is a subset of the schema in chrome/test/data/policy/policy_test_cases.json",
+    "can_be_recommended": "Whether a recommended value may be set for the policy. Defaults to |false| if not specified.",
+    "note": "If the policy affects any preferences, the following array should be specified with one entry per such preference.",
+
+    "policy_pref_mapping_tests": [
+      {
+        "policies": "A policy dictionary that should affect |prefs| when set as mandatory or recommended policy.",
+        "prefs": {
+          "${pref}": {
+            "value": "The value that |pref| should take on. Defaults to the value that the policy was set to.",
+            "expect_default": "Whether or not the pref value should be the default one.",
+            "local_state": "Whether |pref| is registered in local state's PrefService instead of the profile's PrefService. Defaults to |false| if not specified."
+          }
+        }
+      }
+    ]
+  },
+
+  "PasswordManagerEnabled": {
+    "os": [ "ios" ],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "PasswordManagerEnabled": false },
+        "prefs": { "credentials_enable_service": {} }
+      }
+    ]
+  },
+
+  "SearchSuggestEnabled": {
+	"os": [ "ios" ],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "SearchSuggestEnabled": false },
+        "prefs": { "search.suggest_enabled": {} }
+      }
+    ]
+  },
+
+  "DefaultPopupsSetting": {},
+  "DefaultSearchProviderEnabled": {},
+  "DefaultSearchProviderName": {},
+  "ManagedBookmarks": {},
+  "URLBlacklist": {},
+  "URLWhitelist": {}
+}

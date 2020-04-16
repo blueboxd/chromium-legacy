@@ -27,9 +27,16 @@ For Linux:
 
     tools/linux/dump-static-initializers.py out/Release/chrome
 
-For Android:
+For Android (from easiest to hardest):
 
-    build/android/resource_sizes.py --chromium-output-directory out/Release --dump-static-initializers out/Release/apks/MonochromePublic.apk
-    tools/binary_size/diagnose_bloat.py HEAD
+    # Build with: is_official_build=true is_chrome_branded=true
+    # This will dump the list of SI's only when they don't match the expected
+    # number in static_initializers.gni (this is what the bots use).
+    ninja chrome/android:monochrome_static_initializers
+    # or:
+    tools/binary_size/diagnose_bloat.py HEAD  # See README.md for flags.
+    # or:
+    tools/linux/dump-static-initializers.py --toolchain-prefix third_party/android_ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/arm-linux-androideabi- out/Release/libmonochrome.so 
 
-For more information about `diagnose_bloat.py`, refer to its [README.md](../tools/binary_size/README.md)
+* For more information about `diagnose_bloat.py`, refer to its [README.md](/tools/binary_size/README.md#diagnose_bloat.py)
+* List of existing static initializers documented in [static_initializers.gni](/chrome/android/static_initializers.gni)

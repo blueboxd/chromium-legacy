@@ -7,6 +7,7 @@ import("//ios/chrome/features.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//ios/third_party/features.gni")
 import("//testing/test.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 # All tests needs to be listed in that target to be built as part of
 # "gn_all" target (i.e. by the bots).
@@ -98,6 +99,7 @@ source_set("eg_test_support+eg2") {
     "//ios/third_party/earl_grey2:test_lib",
   ]
   libs = [ "XCTest.framework" ]
+  all_dependent_configs = [ "//third_party/protobuf:protobuf_config" ]
 }
 
 source_set("block_cleanup_test") {

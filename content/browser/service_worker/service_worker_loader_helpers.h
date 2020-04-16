@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "content/browser/service_worker/service_worker_version.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -54,6 +55,14 @@ bool ShouldValidateBrowserCacheForScript(
     bool force_bypass_cache,
     blink::mojom::ServiceWorkerUpdateViaCache cache_mode,
     base::TimeDelta time_since_last_check);
+
+#if DCHECK_IS_ON()
+// Checks the consistency between the status of the service worker version and
+// the script resource type to be fetched by the loaders.
+void CheckVersionStatusBeforeWorkerScriptLoad(
+    ServiceWorkerVersion::Status status,
+    blink::mojom::ResourceType resource_type);
+#endif  // DCHECK_IS_ON()
 
 }  // namespace service_worker_loader_helpers
 

@@ -695,16 +695,38 @@ void InputHandler::DispatchMouseEvent(
   mouse_event->click_count = click_count.fromMaybe(0);
   mouse_event->pointer_type = GetPointerType(pointer_type.fromMaybe(""));
 
-  gfx::PointF point;
   RenderWidgetHostImpl* widget_host =
-      FindTargetWidgetHost(CssPixelsToPointF(x, y, page_scale_factor_), &point);
-  if (!widget_host) {
+      host_ ? host_->GetRenderWidgetHost() : nullptr;
+  if (!widget_host || !widget_host->delegate() ||
+      !widget_host->delegate()->GetInputEventRouter() ||
+      !widget_host->GetView()) {
     callback->sendFailure(Response::InternalError());
     return;
   }
+  widget_host->delegate()
+      ->GetInputEventRouter()
+      ->GetRenderWidgetHostAtPointAsynchronously(
+          widget_host->GetView(), CssPixelsToPointF(x, y, page_scale_factor_),
+          base::BindOnce(&InputHandler::OnWidgetForDispatchMouseEvent,
+                         weak_factory_.GetWeakPtr(), std::move(callback),
+                         std::move(mouse_event), wheel_event));
+}
 
-  mouse_event->SetPositionInWidget(point.x(), point.y());
-  mouse_event->SetPositionInScreen(point.x(), point.y());
+void InputHandler::OnWidgetForDispatchMouseEvent(
+    std::unique_ptr<DispatchMouseEventCallback> callback,
+    std::unique_ptr<blink::WebMouseEvent> mouse_event,
+    blink::WebMouseWheelEvent* wheel_event,
+    base::WeakPtr<RenderWidgetHostViewBase> target,
+    base::Optional<gfx::PointF> point) {
+  if (!target || !point.has_value()) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
+  RenderWidgetHostImpl* widget_host =
+      RenderWidgetHostImpl::From(target->GetRenderWidgetHost());
+
+  mouse_event->SetPositionInWidget(point->x(), point->y());
+  mouse_event->SetPositionInScreen(point->x(), point->y());
   if (wheel_event) {
     EnsureInjector(widget_host)
         ->InjectWheelEvent(wheel_event, std::move(callback));
@@ -840,15 +862,39 @@ void InputHandler::DispatchWebTouchEvent(
     return;
   }
 
-  gfx::PointF original(events[0].touches[0].PositionInWidget());
-  gfx::PointF transformed;
   RenderWidgetHostImpl* widget_host =
-      FindTargetWidgetHost(original, &transformed);
-  if (!widget_host) {
+      host_ ? host_->GetRenderWidgetHost() : nullptr;
+  if (!widget_host || !widget_host->delegate() ||
+      !widget_host->delegate()->GetInputEventRouter() ||
+      !widget_host->GetView()) {
     callback->sendFailure(Response::InternalError());
     return;
   }
-  gfx::Vector2dF delta = transformed - original;
+
+  gfx::PointF original(events[0].touches[0].PositionInWidget());
+  widget_host->delegate()
+      ->GetInputEventRouter()
+      ->GetRenderWidgetHostAtPointAsynchronously(
+          widget_host->GetView(), original,
+          base::BindOnce(&InputHandler::OnWidgetForDispatchWebTouchEvent,
+                         weak_factory_.GetWeakPtr(), std::move(callback),
+                         std::move(events)));
+}
+
+void InputHandler::OnWidgetForDispatchWebTouchEvent(
+    std::unique_ptr<DispatchTouchEventCallback> callback,
+    std::vector<blink::WebTouchEvent> events,
+    base::WeakPtr<RenderWidgetHostViewBase> target,
+    base::Optional<gfx::PointF> transformed) {
+  if (!target || !transformed.has_value()) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
+  RenderWidgetHostImpl* widget_host =
+      RenderWidgetHostImpl::From(target->GetRenderWidgetHost());
+
+  gfx::PointF original(events[0].touches[0].PositionInWidget());
+  gfx::Vector2dF delta = *transformed - original;
   for (size_t i = 0; i < events.size(); i++) {
     events[i].dispatch_type =
         events[i].GetType() == blink::WebInputEvent::kTouchCancel
@@ -1378,28 +1424,6 @@ InputHandler::InputInjector* InputHandler::EnsureInjector(
   InputInjector* injector = new InputInjector(this, widget_host);
   injectors_.emplace(injector);
   return injector;
-}
-
-RenderWidgetHostImpl* InputHandler::FindTargetWidgetHost(
-    const gfx::PointF& point,
-    gfx::PointF* transformed) {
-  *transformed = point;
-
-  RenderWidgetHostImpl* widget_host =
-      host_ ? host_->GetRenderWidgetHost() : nullptr;
-  if (!widget_host)
-    return nullptr;
-
-  if (!host_->GetParent() && widget_host->delegate() &&
-      widget_host->delegate()->GetInputEventRouter() &&
-      widget_host->GetView()) {
-    widget_host = widget_host->delegate()
-                      ->GetInputEventRouter()
-                      ->GetRenderWidgetHostAtPoint(widget_host->GetView(),
-                                                   point, transformed);
-  }
-
-  return widget_host;
 }
 
 RenderWidgetHostViewBase* InputHandler::GetRootView() {

@@ -273,6 +273,7 @@ source_set("eg_tests") {
     "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
     "//net:test_support",
+    "//third_party/metrics_proto",
     "//ui/base",
     "//url",
   ]
@@ -413,5 +414,6 @@ source_set("eg_test_support+eg2") {
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
+    "//third_party/metrics_proto",
   ]
 }

@@ -1752,7 +1752,6 @@ TEST_F(PixelInspectTileManagerTest, LowResHasNoImage) {
         FakeRecordingSource::CreateFilledRecordingSource(size);
     recording_source->SetBackgroundColor(SK_ColorTRANSPARENT);
     recording_source->SetRequiresClear(true);
-    recording_source->SetClearCanvasWithDebugColor(false);
     PaintFlags flags;
     flags.setColor(SK_ColorGREEN);
     recording_source->add_draw_rect_with_flags(gfx::Rect(size), flags);

@@ -23,9 +23,10 @@ namespace blink {
 SyncManager::SyncManager(ServiceWorkerRegistration* registration,
                          scoped_refptr<base::SequencedTaskRunner> task_runner)
     : registration_(registration),
-      task_runner_(std::move(task_runner)),
       background_sync_service_(registration->GetExecutionContext()) {
   DCHECK(registration);
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+      background_sync_service_.BindNewPipeAndPassReceiver(task_runner));
 }
 
 ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
@@ -45,7 +46,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
       mojom::blink::SyncRegistrationOptions::New();
   sync_registration->tag = tag;
 
-  GetBackgroundSyncServiceRemote()->Register(
+  background_sync_service_->Register(
       std::move(sync_registration), registration_->RegistrationId(),
       WTF::Bind(&SyncManager::RegisterCallback, WrapPersistent(this),
                 WrapPersistent(resolver)));
@@ -57,22 +58,12 @@ ScriptPromise SyncManager::getTags(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  GetBackgroundSyncServiceRemote()->GetRegistrations(
+  background_sync_service_->GetRegistrations(
       registration_->RegistrationId(),
       WTF::Bind(&SyncManager::GetRegistrationsCallback,
                 WrapPersistent(resolver)));
 
   return promise;
-}
-
-const HeapMojoRemote<mojom::blink::OneShotBackgroundSyncService,
-                     HeapMojoWrapperMode::kWithoutContextObserver>&
-SyncManager::GetBackgroundSyncServiceRemote() {
-  if (!background_sync_service_.is_bound()) {
-    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-        background_sync_service_.BindNewPipeAndPassReceiver(task_runner_));
-  }
-  return background_sync_service_;
 }
 
 void SyncManager::RegisterCallback(
@@ -90,7 +81,7 @@ void SyncManager::RegisterCallback(
       // Let the service know that the registration promise is resolved so that
       // it can fire the event.
 
-      GetBackgroundSyncServiceRemote()->DidResolveRegistration(
+      background_sync_service_->DidResolveRegistration(
           mojom::blink::BackgroundSyncRegistrationInfo::New(
               registration_->RegistrationId(), options->tag,
               mojom::blink::BackgroundSyncType::ONE_SHOT));

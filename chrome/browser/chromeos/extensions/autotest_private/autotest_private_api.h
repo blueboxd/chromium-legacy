@@ -36,6 +36,7 @@ namespace extensions {
 
 class AssistantInteractionHelper;
 class WindowStateChangeObserver;
+class WindowBoundsChangeObserver;
 class EventGenerator;
 
 class AutotestPrivateInitializeEventsFunction : public ExtensionFunction {
@@ -1181,6 +1182,23 @@ class AutotestPrivateGetShelfUIInfoForStateFunction : public ExtensionFunction {
  private:
   ~AutotestPrivateGetShelfUIInfoForStateFunction() override;
   ResponseAction Run() override;
+};
+
+class AutotestPrivateSetWindowBoundsFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateSetWindowBoundsFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setWindowBounds",
+                             AUTOTESTPRIVATE_SETWINDOWBOUNDS)
+
+ private:
+  ~AutotestPrivateSetWindowBoundsFunction() override;
+  ResponseAction Run() override;
+
+  void WindowBoundsChanged(const gfx::Rect& bounds_in_display,
+                           int64_t display_id,
+                           bool success);
+
+  std::unique_ptr<WindowBoundsChangeObserver> window_bounds_observer_;
 };
 
 template <>

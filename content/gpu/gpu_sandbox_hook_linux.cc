@@ -143,6 +143,12 @@ void AddV4L2GpuWhitelist(
   // Device node for V4L2 JPEG encode accelerator drivers.
   static const char kDevJpegEncPath[] = "/dev/jpeg-enc";
   permissions->push_back(BrokerFilePermission::ReadWrite(kDevJpegEncPath));
+
+  if (UseChromecastSandboxWhitelist()) {
+    static const char kAmlogicAvcEncoderPath[] = "/dev/amvenc_avc";
+    permissions->push_back(
+        BrokerFilePermission::ReadWrite(kAmlogicAvcEncoderPath));
+  }
 }
 
 void AddArmMaliGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
@@ -387,6 +393,15 @@ void LoadV4L2Libraries(
   }
 }
 
+void LoadChromecastV4L2Libraries() {
+  for (const char* path : kWhitelistedChromecastPaths) {
+    const std::string library_path(std::string(path) +
+                                   std::string("libvpcodec.so"));
+    if (dlopen(library_path.c_str(), dlopen_flag))
+      break;
+  }
+}
+
 bool LoadLibrariesForGpu(
     const service_manager::SandboxSeccompBPF::Options& options) {
   if (IsChromeOS()) {
@@ -400,6 +415,8 @@ bool LoadLibrariesForGpu(
       return LoadAmdGpuLibraries();
   } else if (UseChromecastSandboxWhitelist() && IsArchitectureArm()) {
     LoadArmGpuLibraries();
+    if (UseV4L2Codec())
+      LoadChromecastV4L2Libraries();
   }
   return true;
 }

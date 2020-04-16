@@ -38,7 +38,6 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/metrics_proto/user_demographics.pb.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -183,10 +182,11 @@ std::string GetSyncCacheGuid() {
   return info_provider->GetLocalDeviceInfo()->guid();
 }
 
-void AddUserDemographicsToSyncServer(int birth_year, int gender) {
+void AddUserDemographicsToSyncServer(
+    int birth_year,
+    metrics::UserDemographicsProto::Gender gender) {
   metrics::test::AddUserBirthYearAndGenderToSyncServer(
-      gSyncFakeServer->AsWeakPtr(), birth_year,
-      static_cast<metrics::UserDemographicsProto::Gender>(gender));
+      gSyncFakeServer->AsWeakPtr(), birth_year, gender);
 }
 
 void AddAutofillProfileToFakeSyncServer(std::string guid,

@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 
 namespace syncher {
 
@@ -65,7 +66,8 @@ const NSTimeInterval kSyncUKMOperationsTimeout = 10.0;
 // Returns YES if the UKM service's report has the expected year and gender.
 // The year is the un-noised birth year, and the gender corresponds to the
 // options in UserDemographicsProto::Gender.
-+ (BOOL)UKMReportHasBirthYear:(int)year gender:(int)gender;
++ (BOOL)UKMReportHasBirthYear:(int)year
+                       gender:(metrics::UserDemographicsProto::Gender)gender;
 
 // Returns YES if the UKM service's report has user demographics.
 + (BOOL)UKMReportHasUserDemographics;
@@ -80,7 +82,8 @@ const NSTimeInterval kSyncUKMOperationsTimeout = 10.0;
 // Returns YES if the UMA log has the expected year and gender. The year is the
 // un-noised birth year, and the gender corresponds to the proto enum
 // UserDemographicsProto::Gender.
-+ (BOOL)UMALogHasBirthYear:(int)year gender:(int)gender;
++ (BOOL)UMALogHasBirthYear:(int)year
+                    gender:(metrics::UserDemographicsProto::Gender)gender;
 
 // Returns YES if the UMA log has user demographics.
 + (BOOL)UMALogHasUserDemographics;

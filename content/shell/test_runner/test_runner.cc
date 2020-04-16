@@ -152,6 +152,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
   void ClearAllDatabases();
   void ClearPrinting();
+  void ClearTrustTokenState(v8::Local<v8::Function> callback);
   void CopyImageAtAndCapturePixelsAsyncThen(int x,
                                             int y,
                                             v8::Local<v8::Function> callback);
@@ -265,6 +266,8 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetTabKeyCyclesThroughElements(bool tab_key_cycles_through_elements);
   void SetTextDirection(const std::string& direction_name);
   void SetTextSubpixelPositioning(bool value);
+  void SetTrustTokenKeyCommitments(const std::string& raw_commitments,
+                                   v8::Local<v8::Function> callback);
   void SetViewSourceForFrame(const std::string& name, bool enabled);
   void SetWillSendRequestClearHeader(const std::string& header);
   void SetWillSendRequestClearReferrer();
@@ -406,6 +409,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("clearAllDatabases", &TestRunnerBindings::ClearAllDatabases)
       .SetMethod("clearBackForwardList", &TestRunnerBindings::NotImplemented)
       .SetMethod("clearPrinting", &TestRunnerBindings::ClearPrinting)
+      .SetMethod("clearTrustTokenState",
+                 &TestRunnerBindings::ClearTrustTokenState)
       .SetMethod("copyImageAtAndCapturePixelsAsyncThen",
                  &TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen)
       .SetMethod("didAcquirePointerLock",
@@ -594,6 +599,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setTextDirection", &TestRunnerBindings::SetTextDirection)
       .SetMethod("setTextSubpixelPositioning",
                  &TestRunnerBindings::SetTextSubpixelPositioning)
+      .SetMethod("setTrustTokenKeyCommitments",
+                 &TestRunnerBindings::SetTrustTokenKeyCommitments)
       .SetMethod("setUseDashboardCompatibilityMode",
                  &TestRunnerBindings::NotImplemented)
       .SetMethod("setViewSourceForFrame",
@@ -877,6 +884,13 @@ void TestRunnerBindings::SetTextSubpixelPositioning(bool value) {
     runner_->SetTextSubpixelPositioning(value);
 }
 
+void TestRunnerBindings::SetTrustTokenKeyCommitments(
+    const std::string& raw_commitments,
+    v8::Local<v8::Function> callback) {
+  if (view_runner_)
+    view_runner_->SetTrustTokenKeyCommitments(raw_commitments, callback);
+}
+
 void TestRunnerBindings::SetPageVisibility(const std::string& new_visibility) {
   if (view_runner_)
     view_runner_->SetPageVisibility(new_visibility);
@@ -1116,6 +1130,12 @@ void TestRunnerBindings::SetPrintingForFrame(const std::string& frame_name) {
 void TestRunnerBindings::ClearPrinting() {
   if (runner_)
     runner_->ClearPrinting();
+}
+
+void TestRunnerBindings::ClearTrustTokenState(
+    v8::Local<v8::Function> callback) {
+  if (view_runner_)
+    view_runner_->ClearTrustTokenState(callback);
 }
 
 void TestRunnerBindings::SetShouldGeneratePixelResults(bool value) {

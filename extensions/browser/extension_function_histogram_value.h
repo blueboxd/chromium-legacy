@@ -1526,6 +1526,7 @@ enum HistogramValue {
   CRYPTOTOKENPRIVATE_RECORDREGISTERREQUEST = 1463,
   CRYPTOTOKENPRIVATE_RECORDSIGNREQUEST = 1464,
   VIRTUALKEYBOARDPRIVATE_SETWINDOWBOUNDSINSCREEN = 1465,
+  AUTOTESTPRIVATE_SETWINDOWBOUNDS = 1466,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

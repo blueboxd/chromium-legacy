@@ -69,19 +69,34 @@ source_set("test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+bundle_data("test_resources") {
+  visibility = [
+    ":unit_tests",
+    ":eg2_tests",
+  ]
+  testonly = true
+  sources = [ "//ios/chrome/test/data/policy/policy_test_cases.json" ]
+  outputs = [
+    "{{bundle_resources_dir}}/ios/chrome/test/data/policy/{{source_file_part}}",
+  ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [ "policy_unittest.mm" ]
   deps = [
     ":policy",
+    ":test_resources",
     ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/password_manager/core/common",
+    "//components/policy/core/browser:test_support",
     "//components/pref_registry",
     "//components/prefs",
     "//components/sync_preferences",
+    "//ios/chrome/browser:chrome_paths",
     "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser:utils",
     "//ios/chrome/browser/prefs",
@@ -105,6 +120,7 @@ source_set("eg2_tests") {
 
   deps = [
     ":eg_test_support+eg2",
+    ":test_resources",
     "//base",
     "//components/password_manager/core/common",
     "//components/policy:generated",

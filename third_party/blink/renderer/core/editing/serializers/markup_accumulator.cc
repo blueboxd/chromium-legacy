@@ -597,10 +597,16 @@ void MarkupAccumulator::SerializeNodesWithNamespaces(
       !(SerializeAsHTML() && ElementCannotHaveEndTag(target_element));
   if (has_end_tag) {
     const Node* parent = &target_element;
-    if (auto* template_element = DynamicTo<HTMLTemplateElement>(target_element))
+    if (auto* template_element =
+            DynamicTo<HTMLTemplateElement>(target_element)) {
+      // Declarative shadow roots that are currently being parsed will have a
+      // null content() - don't serialize contents in this case.
       parent = template_element->content();
-    for (const Node& child : Strategy::ChildrenOf(*parent))
-      SerializeNodesWithNamespaces<Strategy>(child, kIncludeNode);
+    }
+    if (parent) {
+      for (const Node& child : Strategy::ChildrenOf(*parent))
+        SerializeNodesWithNamespaces<Strategy>(child, kIncludeNode);
+    }
 
     // Traverses other DOM tree, i.e., shadow tree.
     std::pair<Node*, Element*> auxiliary_pair =

@@ -66,6 +66,11 @@ struct GetUserKeysAndDataByKeyPrefixResult {
   base::flat_map<std::string, std::string> user_data;
 };
 
+struct GetUserDataForAllRegistrationsResult {
+  DatabaseStatus status;
+  base::flat_map<int64_t, std::string> values;
+};
+
 ReadResponseHeadResult ReadResponseHead(
     storage::mojom::ServiceWorkerResourceReader* reader) {
   ReadResponseHeadResult result;
@@ -377,6 +382,52 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     return return_value;
   }
 
+  GetUserDataForAllRegistrationsResult GetUserDataForAllRegistrations(
+      const std::string& key) {
+    GetUserDataForAllRegistrationsResult result;
+    base::RunLoop loop;
+    storage()->GetUserDataForAllRegistrations(
+        key, base::BindLambdaForTesting(
+                 [&](DatabaseStatus status,
+                     const base::flat_map<int64_t, std::string>& values) {
+                   result.status = status;
+                   result.values = values;
+                   loop.Quit();
+                 }));
+    loop.Run();
+    return result;
+  }
+
+  GetUserDataForAllRegistrationsResult
+  GetUserDataForAllRegistrationsByKeyPrefix(const std::string& key_prefix) {
+    GetUserDataForAllRegistrationsResult result;
+    base::RunLoop loop;
+    storage()->GetUserDataForAllRegistrationsByKeyPrefix(
+        key_prefix,
+        base::BindLambdaForTesting(
+            [&](DatabaseStatus status,
+                const base::flat_map<int64_t, std::string>& values) {
+              result.status = status;
+              result.values = values;
+              loop.Quit();
+            }));
+    loop.Run();
+    return result;
+  }
+
+  DatabaseStatus ClearUserDataForAllRegistrationsByKeyPrefix(
+      const std::string& key_prefix) {
+    DatabaseStatus return_value;
+    base::RunLoop loop;
+    storage()->ClearUserDataForAllRegistrationsByKeyPrefix(
+        key_prefix, base::BindLambdaForTesting([&](DatabaseStatus status) {
+          return_value = status;
+          loop.Quit();
+        }));
+    loop.Run();
+    return return_value;
+  }
+
   // Create a registration with a single resource and stores the registration.
   DatabaseStatus CreateAndStoreRegistration(int64_t registration_id,
                                             const GURL& scope,
@@ -666,7 +717,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, WriteAndReadResource) {
   }
 }
 
-// Tests that storing/getting user data works.
+// Tests that storing/getting user data for a registration work.
 TEST_F(ServiceWorkerStorageControlImplTest, StoreAndGetUserData) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
@@ -821,6 +872,105 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndGetUserDataByKeyPrefix) {
     ASSERT_EQ(result.values.size(), 1UL);
     EXPECT_EQ(result.values[0], "value3");
   }
+}
+
+// Tests that storing/getting user data for multiple registrations work.
+TEST_F(ServiceWorkerStorageControlImplTest,
+       StoreAndGetUserDataForAllRegistrations) {
+  const GURL kScope1("https://www.example.com/foo");
+  const GURL kScriptUrl1("https://www.example.com/foo/sw.js");
+  const GURL kScope2("https://www.example.com/bar");
+  const GURL kScriptUrl2("https://www.example.com/bar/sw.js");
+  const int64_t kScriptSize = 10;
+
+  LazyInitializeForTest();
+
+  // Preparation: Create and store two registrations.
+  DatabaseStatus status;
+  const int64_t registration_id1 = GetNewRegistrationId();
+  status = CreateAndStoreRegistration(registration_id1, kScope1, kScriptUrl1,
+                                      kScriptSize);
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+  const int64_t registration_id2 = GetNewRegistrationId();
+  status = CreateAndStoreRegistration(registration_id2, kScope2, kScriptUrl2,
+                                      kScriptSize);
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+
+  // Preparation: Store some user data to registrations. Both registrations have
+  // "key1" and "prefixA" keys.
+  {
+    std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data;
+    user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
+        "key1", "registration1_value1"));
+    user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
+        "key2", "registration1_value2"));
+    user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
+        "prefix1", "registration1_prefix_value1"));
+    status = StoreUserData(registration_id1, kScope1.GetOrigin(),
+                           std::move(user_data));
+    ASSERT_EQ(status, DatabaseStatus::kOk);
+  }
+  {
+    std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data;
+    user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
+        "key1", "registration2_value1"));
+    user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
+        "key3", "registration2_value3"));
+    user_data.push_back(storage::mojom::ServiceWorkerUserData::New(
+        "prefix2", "registration2_prefix_value2"));
+    status = StoreUserData(registration_id2, kScope2.GetOrigin(),
+                           std::move(user_data));
+    ASSERT_EQ(status, DatabaseStatus::kOk);
+  }
+
+  // Get common user data.
+  GetUserDataForAllRegistrationsResult result;
+  result = GetUserDataForAllRegistrations("key1");
+  ASSERT_EQ(result.status, DatabaseStatus::kOk);
+  ASSERT_EQ(result.values.size(), 2UL);
+  EXPECT_EQ(result.values[registration_id1], "registration1_value1");
+  EXPECT_EQ(result.values[registration_id2], "registration2_value1");
+
+  // Get uncommon user data.
+  result = GetUserDataForAllRegistrations("key2");
+  ASSERT_EQ(result.status, DatabaseStatus::kOk);
+  ASSERT_EQ(result.values.size(), 1UL);
+  EXPECT_EQ(result.values[registration_id1], "registration1_value2");
+
+  result = GetUserDataForAllRegistrations("key3");
+  ASSERT_EQ(result.status, DatabaseStatus::kOk);
+  ASSERT_EQ(result.values.size(), 1UL);
+  EXPECT_EQ(result.values[registration_id2], "registration2_value3");
+
+  // Getting unknown key succeeds but returns an empty value.
+  // TODO(bashi): Make sure this is an intentional behavior. The existing
+  // unittest expects this behavior.
+  result = GetUserDataForAllRegistrations("unknown_key");
+  ASSERT_EQ(result.status, DatabaseStatus::kOk);
+  EXPECT_EQ(result.values.size(), 0UL);
+
+  // Clear common user data from one registration then get it again.
+  // This time only one user data should be found.
+  status = ClearUserData(registration_id1, {"key1"});
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+  result = GetUserDataForAllRegistrations("key1");
+  ASSERT_EQ(result.status, DatabaseStatus::kOk);
+  ASSERT_EQ(result.values.size(), 1UL);
+  EXPECT_EQ(result.values[registration_id2], "registration2_value1");
+
+  // Get prefixed user data.
+  result = GetUserDataForAllRegistrationsByKeyPrefix("prefix");
+  ASSERT_EQ(result.status, DatabaseStatus::kOk);
+  ASSERT_EQ(result.values.size(), 2UL);
+  EXPECT_EQ(result.values[registration_id1], "registration1_prefix_value1");
+  EXPECT_EQ(result.values[registration_id2], "registration2_prefix_value2");
+
+  // Clear prefixed user data.
+  status = ClearUserDataForAllRegistrationsByKeyPrefix("prefix");
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+  result = GetUserDataForAllRegistrationsByKeyPrefix("prefix");
+  ASSERT_EQ(result.status, DatabaseStatus::kOk);
+  EXPECT_EQ(result.values.size(), 0UL);
 }
 
 }  // namespace content

@@ -500,8 +500,11 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   chrome_test_util::TriggerSyncCycle(type);
 }
 
-+ (void)addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
-                                              gender:(int)gender {
++ (void)
+    addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
+                                          gender:
+                                              (metrics::UserDemographicsProto::
+                                                   Gender)gender {
   chrome_test_util::AddUserDemographicsToSyncServer(rawBirthYear, gender);
 }
 

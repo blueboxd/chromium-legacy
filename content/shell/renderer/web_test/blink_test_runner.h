@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -28,6 +29,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "url/origin.h"
 #include "v8/include/v8.h"
 
 class SkBitmap;
@@ -224,6 +226,16 @@ class BlinkTestRunner : public RenderViewObserver,
 
   // Mark the orientation changed for fullscreen layout tests.
   void SetScreenOrientationChanged();
+
+  // Sets the network service-global Trust Tokens key commitments.
+  // |raw_commitments| should be JSON-encoded according to the format expected
+  // by NetworkService::SetTrustTokenKeyCommitments.
+  void SetTrustTokenKeyCommitments(const std::string& raw_commitments,
+                                   base::OnceClosure callback);
+
+  // Clears persistent Trust Token API state
+  // (https://github.com/wicg/trust-token-api).
+  void ClearTrustTokenState(base::OnceClosure callback);
 
   // Message handlers forwarded by WebTestRenderFrameObserver.
   void OnSetTestConfiguration(mojom::ShellTestConfigurationPtr params);

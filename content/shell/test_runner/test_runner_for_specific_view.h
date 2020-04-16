@@ -216,6 +216,16 @@ class TestRunnerForSpecificView {
   std::string SelectionAsMarkup();
   void SetViewSourceForFrame(const std::string& name, bool enabled);
 
+  // Sets the network service-global Trust Tokens key commitments.
+  // |raw_commitments| should be JSON-encoded according to the format expected
+  // by NetworkService::SetTrustTokenKeyCommitments.
+  void SetTrustTokenKeyCommitments(const std::string& raw_commitments,
+                                   v8::Local<v8::Function> callback);
+
+  // Clears persistent Trust Tokens state
+  // (https://github.com/wicg/trust-token-api) via a test-only Mojo interface.
+  void ClearTrustTokenState(v8::Local<v8::Function> callback);
+
   // Many parts of the web test harness assume that the main frame is local.
   // Having all of them go through the helper below makes it easier to catch
   // scenarios that require breaking this assumption.

@@ -597,6 +597,17 @@ void BlinkTestRunner::SetScreenOrientationChanged() {
   GetBlinkTestClientRemote()->SetScreenOrientationChanged();
 }
 
+void BlinkTestRunner::SetTrustTokenKeyCommitments(
+    const std::string& raw_commitments,
+    base::OnceClosure callback) {
+  GetWebTestClientRemote()->SetTrustTokenKeyCommitments(raw_commitments,
+                                                        std::move(callback));
+}
+
+void BlinkTestRunner::ClearTrustTokenState(base::OnceClosure callback) {
+  GetWebTestClientRemote()->ClearTrustTokenState(std::move(callback));
+}
+
 // Public methods - -----------------------------------------------------------
 
 void BlinkTestRunner::CaptureDump(

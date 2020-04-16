@@ -407,7 +407,7 @@ const LogSeverity LOG_0 = LOG_ERROR;
 // Helper macro which avoids evaluating the arguments to a stream if
 // the condition doesn't hold. Condition is evaluated once and only once.
 #define LAZY_STREAM(stream, condition)                                  \
-  !(condition) ? (void) 0 : ::logging::LogMessageVoidify() & (stream)
+  !( (condition) ) ? (void) 0 : ::logging::LogMessageVoidify() & (stream)
 
 // We use the preprocessor's merging operator, "##", so that, e.g.,
 // LOG(INFO) becomes the token COMPACT_GOOGLE_LOG_INFO.  There's some funny
@@ -488,7 +488,7 @@ BASE_EXPORT extern std::ostream* g_swallow_stream;
 // ostream* also is not suitable, because some compilers warn of undefined
 // behavior.
 #define EAT_STREAM_PARAMETERS \
-  true ? (void)0              \
+  (true) ? (void)0              \
        : ::logging::LogMessageVoidify() & (*::logging::g_swallow_stream)
 
 // Definitions for DLOG et al.
@@ -508,7 +508,7 @@ BASE_EXPORT extern std::ostream* g_swallow_stream;
 // (which may reference a variable defined only if DCHECK_IS_ON()).
 // Contrast this with DCHECK et al., which has different behavior.
 
-#define DLOG_IS_ON(severity) false
+#define DLOG_IS_ON(severity) (false)
 #define DLOG_IF(severity, condition) EAT_STREAM_PARAMETERS
 #define DLOG_ASSERT(condition) EAT_STREAM_PARAMETERS
 #define DPLOG_IF(severity, condition) EAT_STREAM_PARAMETERS
@@ -521,7 +521,12 @@ BASE_EXPORT extern std::ostream* g_swallow_stream;
   LAZY_STREAM(LOG_STREAM(severity), DLOG_IS_ON(severity))
 
 #define DPLOG(severity)                                         \
-  LAZY_STREAM(PLOG_STREAM(severity), DLOG_IS_ON(severity))
+_Pragma("clang diagnostic push") \
+_Pragma("clang diagnostic ignored \"-Wunreachable-code\"") \
+_Pragma("clang diagnostic ignored \"-Wtautological-compare\"") \
+_Pragma("clang diagnostic ignored \"-Wundefined-bool-conversion\"") \
+  LAZY_STREAM(PLOG_STREAM(severity), DLOG_IS_ON(severity)) \
+_Pragma("clang diagnostic pop")
 
 #define DVLOG(verboselevel) DVLOG_IF(verboselevel, true)
 
@@ -550,10 +555,10 @@ const LogSeverity LOG_DCHECK = LOG_FATAL;
 // call overhead down to a minimum.
 void LogErrorNotReached(const char* file, int line);
 #define NOTREACHED()                                       \
-  true ? ::logging::LogErrorNotReached(__FILE__, __LINE__) \
+  (true) ? ::logging::LogErrorNotReached(__FILE__, __LINE__) \
        : EAT_STREAM_PARAMETERS
 #else
-#define NOTREACHED() DCHECK(false)
+#define NOTREACHED() DCHECK((false))
 #endif
 
 // Redefine the standard assert to use our nice log files

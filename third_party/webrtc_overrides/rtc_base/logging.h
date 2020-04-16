@@ -97,9 +97,9 @@ bool CheckVlogIsOn(LoggingSeverity severity, const char (&file)[N]) {
 // The RTC_DLOG macros are equivalent to their RTC_LOG counterparts except that
 // they only generate code in debug builds.
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-#define RTC_DLOG_IS_ON 0
+#define RTC_DLOG_IS_ON (false)
 #else
-#define RTC_DLOG_IS_ON 1
+#define RTC_DLOG_IS_ON (true)
 #endif
 
 #if RTC_DLOG_IS_ON
@@ -108,11 +108,16 @@ bool CheckVlogIsOn(LoggingSeverity severity, const char (&file)[N]) {
 #define RTC_DLOG_F(sev) RTC_LOG_F(sev)
 #else
 #define RTC_DLOG_EAT_STREAM_PARAMS(sev) \
-  (true ? true : ((void)(rtc::sev), true)) \
+_Pragma("clang diagnostic push") \
+_Pragma("clang diagnostic ignored \"-Wunreachable-code\"") \
+_Pragma("clang diagnostic ignored \"-Wtautological-compare\"") \
+_Pragma("clang diagnostic ignored \"-Wundefined-bool-conversion\"") \
+  ((true) ? true : ((void)(rtc::sev), true)) \
       ? static_cast<void>(0)          \
       : rtc::LogMessageVoidify() &    \
         rtc::DiagnosticLogMessage(__FILE__, __LINE__, rtc::sev, \
-                                  rtc::ERRCTX_NONE, 0).stream()
+                                  rtc::ERRCTX_NONE, 0).stream() \
+_Pragma("clang diagnostic pop")
 #define RTC_DLOG(sev) RTC_DLOG_EAT_STREAM_PARAMS(sev)
 #define RTC_DLOG_V(sev) RTC_DLOG_EAT_STREAM_PARAMS(sev)
 #define RTC_DLOG_F(sev) RTC_DLOG_EAT_STREAM_PARAMS(sev)

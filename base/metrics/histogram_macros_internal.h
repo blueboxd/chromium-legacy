@@ -248,7 +248,7 @@ struct EnumSizeTraits<
     ScopedHistogramTimer##key() : constructed_(base::TimeTicks::Now()) {}      \
     ~ScopedHistogramTimer##key() {                                             \
       base::TimeDelta elapsed = base::TimeTicks::Now() - constructed_;         \
-      if (is_long) {                                                           \
+      if ((is_long)) {                                                           \
         UMA_HISTOGRAM_LONG_TIMES_100(name, elapsed);                           \
       } else {                                                                 \
         UMA_HISTOGRAM_TIMES(name, elapsed);                                    \

@@ -96,9 +96,19 @@ MessageEvent::MessageEvent(const AtomicString& type,
     : Event(type, initializer),
       data_type_(kDataTypeScriptValue),
       source_(nullptr) {
+  // TODO(crbug.com/1070964): Remove this existence check.  There is a bug that
+  // the current code generator does not initialize a ScriptValue with the
+  // v8::Null value despite that the dictionary member has the default value of
+  // IDL null.  |hasData| guard is necessary here.
   if (initializer->hasData()) {
-    data_as_v8_value_.Set(initializer->data().GetIsolate(),
-                          initializer->data().V8Value());
+    v8::Local<v8::Value> data = initializer->data().V8Value();
+    // TODO(crbug.com/1070871): Remove the following IsNullOrUndefined() check.
+    // This null/undefined check fills the gap between the new and old bindings
+    // code.  The new behavior is preferred in a long term, and we'll switch to
+    // the new behavior once the migration to the new bindings gets settled.
+    if (!data->IsNullOrUndefined()) {
+      data_as_v8_value_.Set(initializer->data().GetIsolate(), data);
+    }
   }
   if (initializer->hasOrigin())
     origin_ = initializer->origin();

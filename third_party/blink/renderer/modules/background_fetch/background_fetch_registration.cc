@@ -28,22 +28,6 @@
 namespace blink {
 
 BackgroundFetchRegistration::BackgroundFetchRegistration(
-    const String& developer_id,
-    uint64_t upload_total,
-    uint64_t uploaded,
-    uint64_t download_total,
-    uint64_t downloaded,
-    mojom::BackgroundFetchResult result,
-    mojom::BackgroundFetchFailureReason failure_reason)
-    : developer_id_(developer_id),
-      upload_total_(upload_total),
-      uploaded_(uploaded),
-      download_total_(download_total),
-      downloaded_(downloaded),
-      result_(result),
-      failure_reason_(failure_reason) {}
-
-BackgroundFetchRegistration::BackgroundFetchRegistration(
     ServiceWorkerRegistration* service_worker_registration,
     mojom::blink::BackgroundFetchRegistrationPtr registration)
     : developer_id_(registration->registration_data->developer_id),
@@ -54,23 +38,8 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
       result_(registration->registration_data->result),
       failure_reason_(registration->registration_data->failure_reason) {
   DCHECK(service_worker_registration);
-  Initialize(service_worker_registration,
-             std::move(registration->registration_interface));
-}
-
-BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
-
-void BackgroundFetchRegistration::Initialize(
-    ServiceWorkerRegistration* registration,
-    mojo::PendingRemote<mojom::blink::BackgroundFetchRegistrationService>
-        registration_service) {
-  DCHECK(!registration_);
-  DCHECK(registration);
-  DCHECK(!registration_service_);
-  DCHECK(registration_service);
-
-  registration_ = registration;
-  registration_service_.Bind(std::move(registration_service));
+  registration_ = service_worker_registration;
+  registration_service_.Bind(std::move(registration->registration_interface));
 
   ExecutionContext* context = GetExecutionContext();
   if (!context || context->IsContextDestroyed())
@@ -80,6 +49,8 @@ void BackgroundFetchRegistration::Initialize(
   registration_service_->AddRegistrationObserver(
       observer_receiver_.BindNewPipeAndPassRemote(task_runner));
 }
+
+BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
 
 void BackgroundFetchRegistration::OnProgress(
     uint64_t upload_total,

@@ -202,9 +202,9 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlTextChang
         WebContents webContents = tab.getWebContents();
         PageInfoController.show(activity, webContents, null,
                 PageInfoController.OpenedFromSource.TOOLBAR,
-                /*offlinePageLoadUrlDelegate=*/
-                new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab),
-                new ChromePageInfoControllerDelegate(activity, webContents));
+                new ChromePageInfoControllerDelegate(activity, webContents,
+                        /*offlinePageLoadUrlDelegate=*/
+                        new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)));
     }
 
     /**

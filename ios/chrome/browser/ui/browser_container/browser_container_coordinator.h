@@ -15,12 +15,6 @@
 // web contents of the browser view.
 @interface BrowserContainerCoordinator : ChromeCoordinator
 
-// The BrowserContainerCoordinator must be constructed with a Browser, so the
-// ChromeBrowserState initializer is unavailable.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // The view controller managing the container view.
 @property(nonatomic, strong, readonly)
     BrowserContainerViewController* viewController;

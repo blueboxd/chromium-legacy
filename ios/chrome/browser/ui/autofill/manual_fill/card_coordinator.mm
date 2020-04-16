@@ -71,7 +71,7 @@
     // OTR browser state.
     _personalDataManager =
         autofill::PersonalDataManagerFactory::GetForBrowserState(
-            super.browserState->GetOriginalChromeBrowserState());
+            super.browser->GetBrowserState()->GetOriginalChromeBrowserState());
     DCHECK(_personalDataManager);
 
     _personalDataManagerObserver.reset(
@@ -91,7 +91,8 @@
     _cardMediator.consumer = _cardViewController;
 
     _cardRequester = [[ManualFillFullCardRequester alloc]
-        initWithBrowserState:super.browserState->GetOriginalChromeBrowserState()
+        initWithBrowserState:super.browser->GetBrowserState()
+                                 ->GetOriginalChromeBrowserState()
                 webStateList:super.browser->GetWebStateList()
               resultDelegate:_cardMediator];
   }

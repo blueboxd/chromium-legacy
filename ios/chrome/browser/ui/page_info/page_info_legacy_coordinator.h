@@ -16,11 +16,6 @@
 // before |-stop| is called.
 @interface PageInfoLegacyCoordinator : ChromeCoordinator
 
-// Use -initWithBaseViewController:browser:
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 //|originPoint| is the midpoint of the UI element from which the page info
 // should start presenting.
 @property(nonatomic, assign) CGPoint originPoint;

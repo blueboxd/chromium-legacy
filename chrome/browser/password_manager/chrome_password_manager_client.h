@@ -38,6 +38,7 @@
 #include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/geometry/rect.h"
+#include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "components/password_manager/core/browser/credential_cache.h"
@@ -123,6 +124,8 @@ class ChromePasswordManagerClient
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>& best_matches,
       bool is_blacklisted) override;
+  void UpdateCacheWithBlacklistedForOrigin(const url::Origin& origin,
+                                           bool is_blacklisted) override;
   void PasswordWasAutofilled(
       const std::vector<const autofill::PasswordForm*>& best_matches,
       const GURL& origin,

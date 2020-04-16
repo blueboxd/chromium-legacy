@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
@@ -16,6 +17,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_utils.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_metrics_util.h"
 #include "chrome/browser/password_manager/password_generation_controller.h"
 #include "chrome/browser/password_manager/password_manager_launcher_android.h"
@@ -31,7 +34,9 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/credential_cache.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -45,6 +50,7 @@ using autofill::FooterCommand;
 using autofill::UserInfo;
 using autofill::mojom::FocusedFieldType;
 using password_manager::CredentialCache;
+using password_manager::PasswordStore;
 using password_manager::UiCredential;
 using BlacklistedStatus =
     password_manager::OriginCredentialStore::BlacklistedStatus;
@@ -142,8 +148,10 @@ void PasswordAccessoryControllerImpl::CreateForWebContents(
 
   if (!FromWebContents(web_contents)) {
     web_contents->SetUserData(
-        UserDataKey(), base::WrapUnique(new PasswordAccessoryControllerImpl(
-                           web_contents, credential_cache)));
+        UserDataKey(),
+        base::WrapUnique(new PasswordAccessoryControllerImpl(
+            web_contents, credential_cache, nullptr,
+            ChromePasswordManagerClient::FromWebContents(web_contents))));
   }
 }
 
@@ -151,15 +159,17 @@ void PasswordAccessoryControllerImpl::CreateForWebContents(
 void PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
     content::WebContents* web_contents,
     password_manager::CredentialCache* credential_cache,
-    base::WeakPtr<ManualFillingController> mf_controller) {
+    base::WeakPtr<ManualFillingController> mf_controller,
+    password_manager::PasswordManagerClient* password_client) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
   DCHECK(!FromWebContents(web_contents)) << "Controller already attached!";
   DCHECK(mf_controller);
+  DCHECK(password_client);
 
   web_contents->SetUserData(
-      UserDataKey(),
-      base::WrapUnique(new PasswordAccessoryControllerImpl(
-          web_contents, credential_cache, std::move(mf_controller))));
+      UserDataKey(), base::WrapUnique(new PasswordAccessoryControllerImpl(
+                         web_contents, credential_cache,
+                         std::move(mf_controller), password_client)));
 }
 
 // static
@@ -214,8 +224,7 @@ void PasswordAccessoryControllerImpl::OnToggleChanged(
     autofill::AccessoryAction toggled_action,
     bool enabled) {
   if (toggled_action == autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS) {
-    // TODO(crbug.com/1044930): Update the cache and the password store
-    // according to the toggle value.
+    ChangeCurrentOriginSavePasswordsStatus(enabled);
     return;
   }
   NOTREACHED() << "Unhandled selected action: "
@@ -302,17 +311,39 @@ void PasswordAccessoryControllerImpl::OnGenerationRequested(
 
 PasswordAccessoryControllerImpl::PasswordAccessoryControllerImpl(
     content::WebContents* web_contents,
-    password_manager::CredentialCache* credential_cache)
-    : web_contents_(web_contents), credential_cache_(credential_cache) {}
-
-// Additional creation functions in unit tests only:
-PasswordAccessoryControllerImpl::PasswordAccessoryControllerImpl(
-    content::WebContents* web_contents,
     password_manager::CredentialCache* credential_cache,
-    base::WeakPtr<ManualFillingController> mf_controller)
+    base::WeakPtr<ManualFillingController> mf_controller,
+    password_manager::PasswordManagerClient* password_client)
     : web_contents_(web_contents),
       credential_cache_(credential_cache),
-      mf_controller_(std::move(mf_controller)) {}
+      mf_controller_(std::move(mf_controller)),
+      password_client_(password_client) {}
+
+void PasswordAccessoryControllerImpl::ChangeCurrentOriginSavePasswordsStatus(
+    bool saving_enabled) {
+  const url::Origin origin = GetFocusedFrameOrigin();
+  if (origin.opaque())
+    return;
+
+  const GURL origin_as_gurl = origin.GetURL();
+  password_manager::PasswordStore::FormDigest form_digest(
+      autofill::PasswordForm::Scheme::kHtml,
+      password_manager::GetSignonRealm(origin_as_gurl), origin_as_gurl);
+  password_manager::PasswordStore* store =
+      password_client_->GetProfilePasswordStore();
+  password_client_->UpdateCacheWithBlacklistedForOrigin(origin,
+                                                        !saving_enabled);
+  if (saving_enabled) {
+    store->Unblacklist(form_digest, base::NullCallback());
+    return;
+  }
+
+  autofill::PasswordForm form =
+      password_manager_util::MakeNormalizedBlacklistedForm(
+          std::move(form_digest));
+  form.date_created = base::Time::Now();
+  store->AddLogin(form);
+}
 
 bool PasswordAccessoryControllerImpl::AppearsInSuggestions(
     const base::string16& suggestion,

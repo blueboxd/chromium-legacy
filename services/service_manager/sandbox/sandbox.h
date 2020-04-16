@@ -52,6 +52,20 @@ class SERVICE_MANAGER_SANDBOX_EXPORT Sandbox {
   static bool Initialize(service_manager::SandboxType sandbox_type,
                          sandbox::SandboxInterfaceInfo* sandbox_info);
 #endif  // defined(OS_WIN)
+
+  // Returns true if the current process is running with a sandbox, and false
+  // if the process is not sandboxed. This should be used to assert that code is
+  // not running at high-privilege (e.g. in the browser process):
+  //
+  //    DCHECK(service_manager::Sandbox::IsProcessSandboxed());
+  //
+  // The definition of what constitutes a sandbox, and the relative strength of
+  // the restrictions placed on the process, and a per-platform implementation
+  // detail.
+  //
+  // Except if the process is the browser, if the process is running with the
+  // --no-sandbox flag, this unconditionally returns true.
+  static bool IsProcessSandboxed();
 };
 
 }  // namespace service_manager

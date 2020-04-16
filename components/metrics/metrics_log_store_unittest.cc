@@ -5,7 +5,7 @@
 #include "components/metrics/metrics_log_store.h"
 
 #include "components/metrics/metrics_pref_names.h"
-#include "components/metrics/test_metrics_service_client.h"
+#include "components/metrics/test/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

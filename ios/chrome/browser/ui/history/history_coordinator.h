@@ -17,14 +17,6 @@ enum class UrlLoadStrategy;
 // Coordinator that presents History.
 @interface HistoryCoordinator : ChromeCoordinator
 
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // Opaque instructions on how to open urls.
 @property(nonatomic) UrlLoadStrategy loadStrategy;
 // Delegate used to make the Tab UI visible.

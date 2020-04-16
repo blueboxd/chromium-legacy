@@ -42,7 +42,6 @@
 
 - (void)start {
   DCHECK(self.browser);
-  DCHECK(self.browserState);
 
   self.textZoomCommandHandler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), TextZoomCommands);
@@ -52,7 +51,7 @@
             commandHandler:self.textZoomCommandHandler];
 
   self.textZoomViewController = [[TextZoomViewController alloc]
-      initWithDarkAppearance:self.browserState->IsOffTheRecord()];
+      initWithDarkAppearance:self.browser->GetBrowserState()->IsOffTheRecord()];
   self.textZoomViewController.commandHandler = self.textZoomCommandHandler;
 
   self.textZoomViewController.zoomHandler = self.mediator;

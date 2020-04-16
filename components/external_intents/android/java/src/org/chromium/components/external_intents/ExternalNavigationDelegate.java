@@ -9,7 +9,6 @@ import android.content.pm.ResolveInfo;
 
 import androidx.annotation.NonNull;
 
-import org.chromium.base.PackageManagerUtils;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 
 import java.util.ArrayList;
@@ -20,12 +19,6 @@ import java.util.List;
  * by {@link ExternalNavigationHandler}.
  */
 public interface ExternalNavigationDelegate {
-    /**
-     * See {@link PackageManagerUtils#queryIntentActivities(Intent, int)}
-     */
-    @NonNull
-    List<ResolveInfo> queryIntentActivities(Intent intent);
-
     /**
      * Determine if Chrome is the default or only handler for a given intent. If true, Chrome
      * will handle the intent when started.

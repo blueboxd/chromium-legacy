@@ -8,19 +8,10 @@
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-blink.h"
 
 namespace blink {
-class BackgroundFetchRegistration;
 class BackgroundFetchOptions;
 }
 
 namespace mojo {
-
-template <>
-struct TypeConverter<blink::BackgroundFetchRegistration*,
-                     blink::mojom::blink::BackgroundFetchRegistrationPtr> {
-  static blink::BackgroundFetchRegistration* Convert(
-      const blink::mojom::blink::BackgroundFetchRegistrationPtr&
-          mojo_registration);
-};
 
 template <>
 struct TypeConverter<blink::mojom::blink::BackgroundFetchOptionsPtr,

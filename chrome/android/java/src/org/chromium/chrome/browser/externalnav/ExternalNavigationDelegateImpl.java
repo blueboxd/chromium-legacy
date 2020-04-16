@@ -205,12 +205,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public List<ResolveInfo> queryIntentActivities(Intent intent) {
-        return PackageManagerUtils.queryIntentActivities(
-                intent, PackageManager.GET_RESOLVED_FILTER);
-    }
-
-    @Override
     public boolean willChromeHandleIntent(Intent intent) {
         return willChromeHandleIntent(intent, false);
     }

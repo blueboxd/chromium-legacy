@@ -74,7 +74,7 @@
                     (infobars::InfoBarDelegate*)infoBarDelegate
                            badgeSupport:(BOOL)badgeSupport
                                    type:(InfobarType)infobarType {
-  self = [super initWithBaseViewController:nil browserState:nil];
+  self = [super initWithBaseViewController:nil browser:nil];
   if (self) {
     _infobarDelegate = infoBarDelegate;
     _presented = YES;

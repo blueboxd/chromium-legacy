@@ -250,9 +250,9 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
             WebContents webContents = tab.getWebContents();
             PageInfoController.show(this, webContents, getToolbarManager().getContentPublisher(),
                     PageInfoController.OpenedFromSource.MENU,
-                    /*offlinePageLoadUrlDelegate=*/
-                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab),
-                    new ChromePageInfoControllerDelegate(this, webContents));
+                    new ChromePageInfoControllerDelegate(this, webContents,
+                            /*offlinePageLoadUrlDelegate=*/
+                            new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)));
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);

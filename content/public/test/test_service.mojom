@@ -41,4 +41,7 @@ interface TestService {
   // exactly.
   CreateUnsafeSharedMemoryRegion(string message)
       => (mojo_base.mojom.UnsafeSharedMemoryRegion? region);
+
+  // Returns the result of service_manager::Sandbox::IsProcessSandboxed().
+  IsProcessSandboxed() => (bool is_sandboxed);
 };

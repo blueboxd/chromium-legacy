@@ -41,11 +41,6 @@
   return self;
 }
 
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController {
-  NOTREACHED();
-  return nil;
-}
-
 #pragma mark - Public Methods
 
 - (void)addItemWithTitle:(NSString*)title action:(ProceduralBlock)actionBlock {

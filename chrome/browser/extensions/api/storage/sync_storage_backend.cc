@@ -96,9 +96,10 @@ SyncableSettingsStorage* SyncStorageBackend::GetOrCreateStorageWithSyncData(
   storage_objs_[extension_id] = std::move(syncable_storage);
 
   if (sync_processor_.get()) {
-    syncer::SyncError error = raw_syncable_storage->StartSyncing(
-        std::move(sync_data), CreateSettingsSyncProcessor(extension_id));
-    if (error.IsSet())
+    base::Optional<syncer::ModelError> error =
+        raw_syncable_storage->StartSyncing(
+            std::move(sync_data), CreateSettingsSyncProcessor(extension_id));
+    if (error.has_value())
       raw_syncable_storage->StopSyncing();
   }
   return raw_syncable_storage;
@@ -170,7 +171,7 @@ syncer::SyncDataList SyncStorageBackend::GetAllSyncDataForTesting(
   return all_sync_data;
 }
 
-syncer::SyncMergeResult SyncStorageBackend::MergeDataAndStartSyncing(
+base::Optional<syncer::ModelError> SyncStorageBackend::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -208,7 +209,7 @@ syncer::SyncMergeResult SyncStorageBackend::MergeDataAndStartSyncing(
     SyncableSettingsStorage* storage = storage_obj.second.get();
 
     auto group = grouped_sync_data.find(extension_id);
-    syncer::SyncError error;
+    base::Optional<syncer::ModelError> error;
     if (group != grouped_sync_data.end()) {
       error = storage->StartSyncing(base::WrapUnique(group->second),
                                     CreateSettingsSyncProcessor(extension_id));
@@ -218,7 +219,7 @@ syncer::SyncMergeResult SyncStorageBackend::MergeDataAndStartSyncing(
                                     CreateSettingsSyncProcessor(extension_id));
     }
 
-    if (error.IsSet())
+    if (error.has_value())
       storage->StopSyncing();
   }
 
@@ -229,10 +230,10 @@ syncer::SyncMergeResult SyncStorageBackend::MergeDataAndStartSyncing(
     GetOrCreateStorageWithSyncData(group.first, base::WrapUnique(group.second));
   }
 
-  return syncer::SyncMergeResult(type);
+  return base::nullopt;
 }
 
-syncer::SyncError SyncStorageBackend::ProcessSyncChanges(
+base::Optional<syncer::ModelError> SyncStorageBackend::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& sync_changes) {
   DCHECK(IsOnBackendSequence());
@@ -255,13 +256,13 @@ syncer::SyncError SyncStorageBackend::ProcessSyncChanges(
   for (const auto& group : grouped_sync_data) {
     SyncableSettingsStorage* storage =
         GetOrCreateStorageWithSyncData(group.first, EmptyDictionaryValue());
-    syncer::SyncError error =
+    base::Optional<syncer::ModelError> error =
         storage->ProcessSyncChanges(base::WrapUnique(group.second));
-    if (error.IsSet())
+    if (error.has_value())
       storage->StopSyncing();
   }
 
-  return syncer::SyncError();
+  return base::nullopt;
 }
 
 void SyncStorageBackend::StopSyncing(syncer::ModelType type) {

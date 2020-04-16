@@ -532,8 +532,6 @@ static_library("test_support_model") {
     "model/fake_model_type_sync_bridge.h",
     "model/fake_sync_change_processor.cc",
     "model/fake_sync_change_processor.h",
-    "model/fake_syncable_service.cc",
-    "model/fake_syncable_service.h",
     "model/mock_model_type_change_processor.cc",
     "model/mock_model_type_change_processor.h",
     "model/model_type_store_test_util.cc",

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/desks/desks_util.h"
@@ -198,7 +199,7 @@ void BrowserShortcutLauncherItemController::ItemSelected(
     ash::ShelfLaunchSource source,
     ItemSelectedCallback callback) {
   if (event && (event->flags() & ui::EF_CONTROL_DOWN)) {
-    chrome::NewEmptyWindow(ChromeLauncherController::instance()->profile());
+    ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
     std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, {});
     return;
   }
@@ -216,7 +217,7 @@ void BrowserShortcutLauncherItemController::ItemSelected(
   Browser* last_browser = chrome::FindTabbedBrowser(profile, true);
 
   if (!last_browser) {
-    chrome::NewEmptyWindow(profile);
+    ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
     std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, {});
     return;
   }
@@ -346,7 +347,7 @@ BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
   }
   // If there are no suitable browsers we create a new one.
   if (items.empty()) {
-    chrome::NewEmptyWindow(ChromeLauncherController::instance()->profile());
+    ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
     return ash::SHELF_ACTION_NEW_WINDOW_CREATED;
   }
   Browser* browser = BrowserList::GetInstance()->GetLastActive();

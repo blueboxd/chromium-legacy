@@ -34,10 +34,6 @@
 
 namespace {
 
-int64_t GetSerializationId(const performance_manager::Node* node) {
-  return performance_manager::Node::GetSerializationId(node);
-}
-
 // Best effort convert |value| to a string.
 std::string ToJSON(const base::Value& value) {
   std::string result;
@@ -154,6 +150,11 @@ void DiscardsGraphDumpImpl::BindWithGraph(
       &DiscardsGraphDumpImpl::OnConnectionError, base::Unretained(this)));
 }
 
+int64_t DiscardsGraphDumpImpl::GetNodeIdForTesting(
+    const performance_manager::Node* node) {
+  return GetNodeId(node);
+}
+
 namespace {
 
 template <typename FunctionType>
@@ -172,6 +173,24 @@ void DiscardsGraphDumpImpl::SubscribeToChanges(
     mojo::PendingRemote<discards::mojom::GraphChangeStream> change_subscriber) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   change_subscriber_.Bind(std::move(change_subscriber));
+
+  // Give all existing nodes an ID.
+  for (const performance_manager::FrameNode* frame_node :
+       graph_->GetAllFrameNodes()) {
+    AddNode(frame_node);
+  }
+  for (const performance_manager::PageNode* page_node :
+       graph_->GetAllPageNodes()) {
+    AddNode(page_node);
+  }
+  for (const performance_manager::ProcessNode* process_node :
+       graph_->GetAllProcessNodes()) {
+    AddNode(process_node);
+  }
+  for (const performance_manager::WorkerNode* worker_node :
+       graph_->GetAllWorkerNodes()) {
+    AddNode(worker_node);
+  }
 
   // Send creation notifications for all existing nodes.
   for (const performance_manager::ProcessNode* process_node :
@@ -236,6 +255,7 @@ void DiscardsGraphDumpImpl::OnTakenFromGraph(
 
 void DiscardsGraphDumpImpl::OnFrameNodeAdded(
     const performance_manager::FrameNode* frame_node) {
+  AddNode(frame_node);
   SendFrameNotification(frame_node, true);
   StartFrameFaviconRequest(frame_node);
 }
@@ -243,6 +263,7 @@ void DiscardsGraphDumpImpl::OnFrameNodeAdded(
 void DiscardsGraphDumpImpl::OnBeforeFrameNodeRemoved(
     const performance_manager::FrameNode* frame_node) {
   SendDeletionNotification(frame_node);
+  RemoveNode(frame_node);
 }
 
 void DiscardsGraphDumpImpl::OnURLChanged(
@@ -254,6 +275,7 @@ void DiscardsGraphDumpImpl::OnURLChanged(
 
 void DiscardsGraphDumpImpl::OnPageNodeAdded(
     const performance_manager::PageNode* page_node) {
+  AddNode(page_node);
   SendPageNotification(page_node, true);
   StartPageFaviconRequest(page_node);
 }
@@ -261,6 +283,7 @@ void DiscardsGraphDumpImpl::OnPageNodeAdded(
 void DiscardsGraphDumpImpl::OnBeforePageNodeRemoved(
     const performance_manager::PageNode* page_node) {
   SendDeletionNotification(page_node);
+  RemoveNode(page_node);
 }
 
 void DiscardsGraphDumpImpl::OnFaviconUpdated(
@@ -277,6 +300,7 @@ void DiscardsGraphDumpImpl::OnMainFrameUrlChanged(
 
 void DiscardsGraphDumpImpl::OnProcessNodeAdded(
     const performance_manager::ProcessNode* process_node) {
+  AddNode(process_node);
   SendProcessNotification(process_node, true);
 }
 
@@ -288,16 +312,19 @@ void DiscardsGraphDumpImpl::OnProcessLifetimeChange(
 void DiscardsGraphDumpImpl::OnBeforeProcessNodeRemoved(
     const performance_manager::ProcessNode* process_node) {
   SendDeletionNotification(process_node);
+  RemoveNode(process_node);
 }
 
 void DiscardsGraphDumpImpl::OnWorkerNodeAdded(
     const performance_manager::WorkerNode* worker_node) {
+  AddNode(worker_node);
   SendWorkerNotification(worker_node, true);
 }
 
 void DiscardsGraphDumpImpl::OnBeforeWorkerNodeRemoved(
     const performance_manager::WorkerNode* worker_node) {
   SendDeletionNotification(worker_node);
+  RemoveNode(worker_node);
 }
 
 void DiscardsGraphDumpImpl::OnFinalResponseURLDetermined(
@@ -329,6 +356,25 @@ void DiscardsGraphDumpImpl::OnBeforeClientWorkerRemoved(
   SendWorkerNotification(worker_node, false);
 }
 
+void DiscardsGraphDumpImpl::AddNode(const performance_manager::Node* node) {
+  DCHECK(node_ids_.find(node) == node_ids_.end());
+  node_ids_.insert(std::make_pair(node, node_id_generator_.GenerateNextId()));
+}
+
+void DiscardsGraphDumpImpl::RemoveNode(const performance_manager::Node* node) {
+  size_t erased = node_ids_.erase(node);
+  DCHECK_EQ(1u, erased);
+}
+
+int64_t DiscardsGraphDumpImpl::GetNodeId(
+    const performance_manager::Node* node) {
+  if (node == nullptr)
+    return 0;
+
+  DCHECK(node_ids_.find(node) != node_ids_.end());
+  return node_ids_[node].GetUnsafeValue();
+}
+
 DiscardsGraphDumpImpl::FaviconRequestHelper*
 DiscardsGraphDumpImpl::EnsureFaviconRequestHelper() {
   if (!favicon_request_helper_) {
@@ -345,12 +391,12 @@ void DiscardsGraphDumpImpl::StartPageFaviconRequest(
   if (!page_node->GetMainFrameUrl().is_valid())
     return;
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&FaviconRequestHelper::RequestFavicon,
-                                base::Unretained(EnsureFaviconRequestHelper()),
-                                page_node->GetMainFrameUrl(),
-                                page_node->GetContentsProxy(),
-                                GetSerializationId(page_node)));
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&FaviconRequestHelper::RequestFavicon,
+                     base::Unretained(EnsureFaviconRequestHelper()),
+                     page_node->GetMainFrameUrl(),
+                     page_node->GetContentsProxy(), GetNodeId(page_node)));
 }
 
 void DiscardsGraphDumpImpl::StartFrameFaviconRequest(
@@ -363,7 +409,7 @@ void DiscardsGraphDumpImpl::StartFrameFaviconRequest(
                                 base::Unretained(EnsureFaviconRequestHelper()),
                                 frame_node->GetURL(),
                                 frame_node->GetPageNode()->GetContentsProxy(),
-                                GetSerializationId(frame_node)));
+                                GetNodeId(frame_node)));
 }
 
 void DiscardsGraphDumpImpl::SendFrameNotification(
@@ -373,16 +419,16 @@ void DiscardsGraphDumpImpl::SendFrameNotification(
   // TODO(https://crbug.com/1028117): Add more frame properties.
   discards::mojom::FrameInfoPtr frame_info = discards::mojom::FrameInfo::New();
 
-  frame_info->id = GetSerializationId(frame);
+  frame_info->id = GetNodeId(frame);
 
   auto* parent_frame = frame->GetParentFrameNode();
-  frame_info->parent_frame_id = GetSerializationId(parent_frame);
+  frame_info->parent_frame_id = GetNodeId(parent_frame);
 
   auto* process = frame->GetProcessNode();
-  frame_info->process_id = GetSerializationId(process);
+  frame_info->process_id = GetNodeId(process);
 
   auto* page = frame->GetPageNode();
-  frame_info->page_id = GetSerializationId(page);
+  frame_info->page_id = GetNodeId(page);
 
   frame_info->url = frame->GetURL();
   frame_info->description_json =
@@ -401,7 +447,7 @@ void DiscardsGraphDumpImpl::SendPageNotification(
   // TODO(https://crbug.com/1028117): Add more page_node properties.
   discards::mojom::PageInfoPtr page_info = discards::mojom::PageInfo::New();
 
-  page_info->id = GetSerializationId(page_node);
+  page_info->id = GetNodeId(page_node);
   page_info->main_frame_url = page_node->GetMainFrameUrl();
   page_info->description_json = ToJSON(
       graph_->GetNodeDataDescriberRegistry()->DescribeNodeData(page_node));
@@ -419,7 +465,7 @@ void DiscardsGraphDumpImpl::SendProcessNotification(
   discards::mojom::ProcessInfoPtr process_info =
       discards::mojom::ProcessInfo::New();
 
-  process_info->id = GetSerializationId(process);
+  process_info->id = GetNodeId(process);
   process_info->pid = process->GetProcessId();
   process_info->private_footprint_kb = process->GetPrivateFootprintKb();
 
@@ -439,21 +485,21 @@ void DiscardsGraphDumpImpl::SendWorkerNotification(
   discards::mojom::WorkerInfoPtr worker_info =
       discards::mojom::WorkerInfo::New();
 
-  worker_info->id = GetSerializationId(worker);
+  worker_info->id = GetNodeId(worker);
   worker_info->url = worker->GetURL();
-  worker_info->process_id = GetSerializationId(worker->GetProcessNode());
+  worker_info->process_id = GetNodeId(worker->GetProcessNode());
 
   for (const performance_manager::FrameNode* client_frame :
        worker->GetClientFrames()) {
-    worker_info->client_frame_ids.push_back(GetSerializationId(client_frame));
+    worker_info->client_frame_ids.push_back(GetNodeId(client_frame));
   }
   for (const performance_manager::WorkerNode* client_worker :
        worker->GetClientWorkers()) {
-    worker_info->client_worker_ids.push_back(GetSerializationId(client_worker));
+    worker_info->client_worker_ids.push_back(GetNodeId(client_worker));
   }
   for (const performance_manager::WorkerNode* child_worker :
        worker->GetChildWorkers()) {
-    worker_info->child_worker_ids.push_back(GetSerializationId(child_worker));
+    worker_info->child_worker_ids.push_back(GetNodeId(child_worker));
   }
 
   worker_info->description_json =
@@ -468,7 +514,7 @@ void DiscardsGraphDumpImpl::SendWorkerNotification(
 void DiscardsGraphDumpImpl::SendDeletionNotification(
     const performance_manager::Node* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  change_subscriber_->NodeDeleted(GetSerializationId(node));
+  change_subscriber_->NodeDeleted(GetNodeId(node));
 }
 
 void DiscardsGraphDumpImpl::SendFaviconNotification(

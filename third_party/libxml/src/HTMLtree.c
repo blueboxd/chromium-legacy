@@ -226,7 +226,7 @@ found_head:
 found_meta:
     /*
      * Search and update all the remaining the meta elements carrying
-     * encoding informations
+     * encoding information
      */
     while (cur != NULL) {
 	if ((cur->type == XML_ELEMENT_NODE) && (cur->name != NULL)) {
@@ -345,7 +345,7 @@ xmlAllocOutputBufferInternal(xmlCharEncodingHandlerPtr encoder);
  ************************************************************************/
 /**
  * htmlSaveErrMemory:
- * @extra:  extra informations
+ * @extra:  extra information
  *
  * Handle an out of memory condition
  */
@@ -359,7 +359,7 @@ htmlSaveErrMemory(const char *extra)
  * htmlSaveErr:
  * @code:  the error number
  * @node:  the location of the error.
- * @extra:  extra informations
+ * @extra:  extra information
  *
  * Handle an out of memory condition
  */
@@ -1048,7 +1048,7 @@ htmlDocContentDumpFormatOutput(xmlOutputBufferPtr buf, xmlDocPtr cur,
  * @cur:  the document
  * @encoding:  the encoding string
  *
- * Dump an HTML document. Formating return/spaces are added.
+ * Dump an HTML document. Formatting return/spaces are added.
  */
 void
 htmlDocContentDumpOutput(xmlOutputBufferPtr buf, xmlDocPtr cur,

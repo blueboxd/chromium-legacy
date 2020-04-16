@@ -66,7 +66,7 @@
     // OTR browser state.
     _personalDataManager =
         autofill::PersonalDataManagerFactory::GetForBrowserState(
-            super.browserState->GetOriginalChromeBrowserState());
+            super.browser->GetBrowserState()->GetOriginalChromeBrowserState());
     DCHECK(_personalDataManager);
 
     _personalDataManagerObserver.reset(

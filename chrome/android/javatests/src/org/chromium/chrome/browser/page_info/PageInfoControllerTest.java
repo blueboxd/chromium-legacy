@@ -66,10 +66,10 @@ public class PageInfoControllerTest {
             Tab tab = mActivityTestRule.getActivity().getActivityTab();
             PageInfoController.show(mActivityTestRule.getActivity(), tab.getWebContents(), null,
                     PageInfoController.OpenedFromSource.MENU,
-                    /*offlinePageLoadUrlDelegate=*/
-                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab),
-                    new ChromePageInfoControllerDelegate(
-                            mActivityTestRule.getActivity(), tab.getWebContents()));
+                    new ChromePageInfoControllerDelegate(mActivityTestRule.getActivity(),
+                            tab.getWebContents(),
+                            /*offlinePageLoadUrlDelegate=*/
+                            new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)));
         });
     }
 
@@ -86,14 +86,16 @@ public class PageInfoControllerTest {
                 testUrl, PageTransition.TYPED, mActivityTestRule.getActivity().getActivityTab());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Tab tab = mActivityTestRule.getActivity().getActivityTab();
+            ChromePageInfoControllerDelegate chromePageInfoControllerDelegate =
+                    new ChromePageInfoControllerDelegate(mActivityTestRule.getActivity(),
+                            tab.getWebContents(),
+                            /*offlinePageLoadUrlDelegate=*/
+                            new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab));
+            chromePageInfoControllerDelegate.setOfflinePageStateForTesting(
+                    ChromePageInfoControllerDelegate.OfflinePageState.NOT_OFFLINE_PAGE);
             PageInfoController pageInfo = new PageInfoController(mActivityTestRule.getActivity(),
-                    tab.getWebContents(), ConnectionSecurityLevel.NONE, /*offlinePageUrl=*/null,
-                    /*offlinePageCreationDate=*/null,
-                    PageInfoController.OfflinePageState.NOT_OFFLINE_PAGE, /*publisher=*/null,
-                    /*offlinePageLoadUrlDelegate=*/
-                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab),
-                    new ChromePageInfoControllerDelegate(
-                            mActivityTestRule.getActivity(), tab.getWebContents()));
+                    tab.getWebContents(), ConnectionSecurityLevel.NONE, /*publisher=*/null,
+                    chromePageInfoControllerDelegate);
             PageInfoView pageInfoView = pageInfo.getPageInfoViewForTesting();
             // Test that the title contains the Unicode hostname rather than strict equality, as
             // the test server will be bound to a random port.

@@ -1,6 +1,12 @@
 <!DOCTYPE html>
-<link href="resources/grid.css" rel="stylesheet">
-<link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
+<title>CSS Grid: auto-repeat tracks and intrinsic sizes.</title>
+<link rel="author" title="Sergio Villar" href="mailto:svillar@igalia.com"/>
+<link rel="help" href="https://drafts.csswg.org/css-grid-1/#repeat-notation"/>
+<meta name="assert" content="Test ensure that grids properly recompute the number of auto repeat tracks when the min|max-content contributions of grid items changed."/>
+<link rel="issue" href="https://crbug.com/621517"/>
+<link rel="issue" href="https://crbug.com/633474"/>
+<link href="/css/support/grid.css" rel="stylesheet"/>
+<link href="/css/support/width-keyword-classes.css" rel="stylesheet"/>
 <style>
 .grid {
     border: 2px solid black;
@@ -16,9 +22,9 @@
 .abs { height: 5px; position: absolute; width: 100%; }
 
 </style>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
 <script>
 function setGridTemplate(id, gridTemplateRows, gridTemplateColumns)
 {

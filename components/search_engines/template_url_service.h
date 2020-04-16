@@ -369,13 +369,13 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Process new search engine changes from Sync, merging them into our local
   // data. This may send notifications if local search engines are added,
   // updated or removed.
-  syncer::SyncError ProcessSyncChanges(
+  base::Optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
   // Merge initial search engine data from Sync and push any local changes up
   // to Sync. This may send notifications if local search engines are added,
   // updated or removed.
-  syncer::SyncMergeResult MergeDataAndStartSyncing(
+  base::Optional<syncer::ModelError> MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -687,8 +687,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   void MergeInSyncTemplateURL(TemplateURL* sync_turl,
                               const SyncDataMap& sync_data,
                               syncer::SyncChangeList* change_list,
-                              SyncDataMap* local_data,
-                              syncer::SyncMergeResult* merge_result);
+                              SyncDataMap* local_data);
 
   // Goes through a vector of TemplateURLs and ensure that both the in-memory
   // and database copies have valid sync_guids. This is to fix crbug.com/102038,

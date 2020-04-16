@@ -19,16 +19,6 @@
 // Coordinator for displaying UI to allow the user to pick among options.
 @interface SelectorCoordinator : ChromeCoordinator
 
-// Use -initWithBaseViewController:browser:
-- (nonnull instancetype)initWithBaseViewController:
-    (nonnull UIViewController*)viewController NS_UNAVAILABLE;
-
-// Use -initWithBaseViewController:browser:
-- (nonnull instancetype)
-    initWithBaseViewController:(nonnull UIViewController*)viewController
-                  browserState:(nonnull ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // Options to present to the user.
 @property(nonatomic, nullable, copy) NSOrderedSet<NSString*>* options;
 

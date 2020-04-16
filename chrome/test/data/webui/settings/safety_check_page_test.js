@@ -156,7 +156,7 @@ suite('SafetyCheckUiTests', function() {
     fireSafetyCheckUpdatesEvent(settings.SafetyCheckUpdatesStatus.UPDATED);
     fireSafetyCheckPasswordsEvent(settings.SafetyCheckPasswordsStatus.SAFE);
     fireSafetyCheckSafeBrowsingEvent(
-        settings.SafetyCheckSafeBrowsingStatus.ENABLED);
+        settings.SafetyCheckSafeBrowsingStatus.ENABLED_STANDARD);
     fireSafetyCheckExtensionsEvent(
         settings.SafetyCheckExtensionsStatus.NO_BLOCKLISTED_EXTENSIONS);
 
@@ -337,9 +337,18 @@ suite('SafetyCheckUiTests', function() {
     assertIconStatusRunning(page.$$('#safeBrowsingIcon'));
   });
 
-  test('safeBrowsingEnabledUiTest', function() {
+  test('safeBrowsingEnabledStandardUiTest', function() {
     fireSafetyCheckSafeBrowsingEvent(
-        settings.SafetyCheckSafeBrowsingStatus.ENABLED);
+        settings.SafetyCheckSafeBrowsingStatus.ENABLED_STANDARD);
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
+    assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
+    assertIconStatusSafe(page.$$('#safeBrowsingIcon'));
+  });
+
+  test('safeBrowsingEnabledEnhancedUiTest', function() {
+    fireSafetyCheckSafeBrowsingEvent(
+        settings.SafetyCheckSafeBrowsingStatus.ENABLED_ENHANCED);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));

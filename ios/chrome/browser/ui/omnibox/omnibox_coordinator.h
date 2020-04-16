@@ -17,15 +17,6 @@ class WebOmniboxEditController;
 // The coordinator for the omnibox.
 @interface OmniboxCoordinator : ChromeCoordinator
 
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // The edit controller interfacing the |textField| and the omnibox components
 // code. Needs to be set before the coordinator is started.
 @property(nonatomic, assign) WebOmniboxEditController* editController;

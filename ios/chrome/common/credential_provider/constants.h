@@ -10,4 +10,9 @@
 // Path to the persisted file for the credential provider archivable store.
 NSURL* CredentialProviderSharedArchivableStoreURL();
 
+// Key for the app group user defaults indicating if the credentials have been
+// sync for the first time. The defaults contain a Bool indicating if the first
+// time sync have been completed.
+extern NSString* const kUserDefaultsCredentialProviderFirstTimeSyncCompleted;
+
 #endif  // IOS_CHROME_COMMON_CREDENTIAL_PROVIDER_CONSTANTS_H_

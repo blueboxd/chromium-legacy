@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/app_menu_constants.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "base/bind.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -201,10 +202,10 @@ void ExtensionShelfContextMenu::ExecuteCommand(int command_id,
       SetLaunchType(extensions::LAUNCH_TYPE_FULLSCREEN);
       break;
     case ash::MENU_NEW_WINDOW:
-      chrome::NewEmptyWindow(controller()->profile());
+      ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
       break;
     case ash::MENU_NEW_INCOGNITO_WINDOW:
-      chrome::NewEmptyWindow(controller()->profile()->GetOffTheRecordProfile());
+      ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/true);
       break;
     default:
       if (extension_items_) {

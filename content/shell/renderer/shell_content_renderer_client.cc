@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/net_errors.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/service_manager/sandbox/sandbox.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/web/web_testing_support.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -101,6 +102,10 @@ class TestRendererServiceImpl : public mojom::TestService {
       const std::string& message,
       CreateUnsafeSharedMemoryRegionCallback callback) override {
     NOTREACHED();
+  }
+
+  void IsProcessSandboxed(IsProcessSandboxedCallback callback) override {
+    std::move(callback).Run(service_manager::Sandbox::IsProcessSandboxed());
   }
 
   mojo::Receiver<mojom::TestService> receiver_;

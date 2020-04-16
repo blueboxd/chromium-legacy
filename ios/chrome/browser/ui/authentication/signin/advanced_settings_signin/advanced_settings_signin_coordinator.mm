@@ -6,6 +6,7 @@
 
 #import "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/sync/profile_sync_service_factory.h"
@@ -72,16 +73,19 @@ using l10n_util::GetNSString;
 
   // Create the mediator.
   SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(self.browserState);
+      SyncSetupServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   AuthenticationService* authenticationService =
-      AuthenticationServiceFactory::GetForBrowserState(self.browserState);
+      AuthenticationServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   syncer::SyncService* syncService =
-      ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   self.advancedSettingsSigninMediator = [[AdvancedSettingsSigninMediator alloc]
       initWithSyncSetupService:syncSetupService
          authenticationService:authenticationService
                    syncService:syncService
-                   prefService:self.browserState->GetPrefs()];
+                   prefService:self.browser->GetBrowserState()->GetPrefs()];
   self.advancedSettingsSigninNavigationController.presentationController
       .delegate = self;
 
@@ -174,12 +178,14 @@ using l10n_util::GetNSString;
   [self.googleServicesSettingsCoordinator stop];
   self.googleServicesSettingsCoordinator = nil;
   SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(self.browserState);
+      SyncSetupServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   DCHECK(!syncSetupService->HasUncommittedChanges())
       << "-[GoogleServicesSettingsCoordinator stop] should commit sync "
          "changes.";
   AuthenticationService* authService =
-      AuthenticationServiceFactory::GetForBrowserState(self.browserState);
+      AuthenticationServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   ChromeIdentity* identity = authService->GetAuthenticatedIdentity();
   [self runCompletionCallbackWithSigninResult:signinResult
                                      identity:identity

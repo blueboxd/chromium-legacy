@@ -50,6 +50,7 @@ class TestService : public service_manager::Service, public mojom::TestService {
   void CreateUnsafeSharedMemoryRegion(
       const std::string& message,
       CreateUnsafeSharedMemoryRegionCallback callback) override;
+  void IsProcessSandboxed(IsProcessSandboxedCallback callback) override;
 
   service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;

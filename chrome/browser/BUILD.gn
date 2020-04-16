@@ -343,8 +343,6 @@ jumbo_static_library("browser") {
     "content_settings/cookie_settings_factory.h",
     "content_settings/host_content_settings_map_factory.cc",
     "content_settings/host_content_settings_map_factory.h",
-    "content_settings/local_shared_objects_container.cc",
-    "content_settings/local_shared_objects_container.h",
     "content_settings/mixed_content_settings_tab_helper.cc",
     "content_settings/mixed_content_settings_tab_helper.h",
     "content_settings/sound_content_setting_observer.cc",

@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/local_shared_objects_container.h"
+#include "components/browsing_data/content/local_shared_objects_container.h"
 
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "chrome/browser/browsing_data/browsing_data_file_system_util.h"
-#include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
-#include "chrome/browser/browsing_data/cookies_tree_model.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/browsing_data/content/appcache_helper.h"
 #include "components/browsing_data/content/cache_storage_helper.h"
 #include "components/browsing_data/content/canonical_cookie_hash.h"
@@ -23,6 +19,7 @@
 #include "components/browsing_data/content/local_storage_helper.h"
 #include "components/browsing_data/content/service_worker_helper.h"
 #include "components/browsing_data/content/shared_worker_helper.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -30,41 +27,45 @@
 #include "net/cookies/cookie_util.h"
 #include "url/gurl.h"
 
+namespace browsing_data {
 namespace {
 
 bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
   return net::registry_controlled_domains::SameDomainOrHost(
-      gurl1,
-      gurl2,
+      gurl1, gurl2,
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
 }  // namespace
 
-LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
-    : appcaches_(new browsing_data::CannedAppCacheHelper(
-          content::BrowserContext::GetDefaultStoragePartition(profile)
+LocalSharedObjectsContainer::LocalSharedObjectsContainer(
+    content::BrowserContext* browser_context,
+    const std::vector<storage::FileSystemType>& additional_file_system_types)
+    : appcaches_(new CannedAppCacheHelper(
+          content::BrowserContext::GetDefaultStoragePartition(browser_context)
               ->GetAppCacheService())),
-      cookies_(new browsing_data::CannedCookieHelper(
-          content::BrowserContext::GetDefaultStoragePartition(profile))),
-      databases_(new browsing_data::CannedDatabaseHelper(profile)),
-      file_systems_(new browsing_data::CannedFileSystemHelper(
-          content::BrowserContext::GetDefaultStoragePartition(profile)
+      cookies_(new CannedCookieHelper(
+          content::BrowserContext::GetDefaultStoragePartition(
+              browser_context))),
+      databases_(new CannedDatabaseHelper(browser_context)),
+      file_systems_(new CannedFileSystemHelper(
+          content::BrowserContext::GetDefaultStoragePartition(browser_context)
               ->GetFileSystemContext(),
-          browsing_data_file_system_util::GetAdditionalFileSystemTypes())),
-      indexed_dbs_(new browsing_data::CannedIndexedDBHelper(
-          content::BrowserContext::GetDefaultStoragePartition(profile))),
-      local_storages_(new browsing_data::CannedLocalStorageHelper(profile)),
-      service_workers_(new browsing_data::CannedServiceWorkerHelper(
-          content::BrowserContext::GetDefaultStoragePartition(profile)
+          additional_file_system_types)),
+      indexed_dbs_(new CannedIndexedDBHelper(
+          content::BrowserContext::GetDefaultStoragePartition(
+              browser_context))),
+      local_storages_(new CannedLocalStorageHelper(browser_context)),
+      service_workers_(new CannedServiceWorkerHelper(
+          content::BrowserContext::GetDefaultStoragePartition(browser_context)
               ->GetServiceWorkerContext())),
-      shared_workers_(new browsing_data::CannedSharedWorkerHelper(
-          content::BrowserContext::GetDefaultStoragePartition(profile),
-          profile->GetResourceContext())),
-      cache_storages_(new browsing_data::CannedCacheStorageHelper(
-          content::BrowserContext::GetDefaultStoragePartition(profile)
+      shared_workers_(new CannedSharedWorkerHelper(
+          content::BrowserContext::GetDefaultStoragePartition(browser_context),
+          browser_context->GetResourceContext())),
+      cache_storages_(new CannedCacheStorageHelper(
+          content::BrowserContext::GetDefaultStoragePartition(browser_context)
               ->GetCacheStorageContext())),
-      session_storages_(new browsing_data::CannedLocalStorageHelper(profile)) {}
+      session_storages_(new CannedLocalStorageHelper(browser_context)) {}
 
 LocalSharedObjectsContainer::~LocalSharedObjectsContainer() = default;
 
@@ -92,8 +93,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   // to be a third party regarding the domain of the provided |origin|. E.g. if
   // the origin is "http://foo.com" then all cookies with domain foo.com,
   // a.foo.com, b.a.foo.com or *.foo.com will be counted.
-  typedef browsing_data::CannedCookieHelper::OriginCookieSetMap
-      OriginCookieSetMap;
+  typedef CannedCookieHelper::OriginCookieSetMap OriginCookieSetMap;
   const OriginCookieSetMap& origin_cookies_set_map =
       cookies()->origin_cookie_set_map();
   for (auto it = origin_cookies_set_map.begin();
@@ -140,7 +140,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   }
 
   // Count shared workers for the domain of the given |origin|.
-  typedef browsing_data::SharedWorkerHelper::SharedWorkerInfo SharedWorkerInfo;
+  typedef SharedWorkerHelper::SharedWorkerInfo SharedWorkerInfo;
   const std::set<SharedWorkerInfo>& shared_worker_info =
       shared_workers()->GetSharedWorkerInfo();
   for (const auto& it : shared_worker_info) {
@@ -236,12 +236,4 @@ void LocalSharedObjectsContainer::Reset() {
   session_storages_->Reset();
 }
 
-std::unique_ptr<CookiesTreeModel>
-LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
-  auto container = std::make_unique<LocalDataContainer>(
-      cookies_, databases_, local_storages_, session_storages_, appcaches_,
-      indexed_dbs_, file_systems_, nullptr, service_workers_, shared_workers_,
-      cache_storages_, nullptr, nullptr);
-
-  return std::make_unique<CookiesTreeModel>(std::move(container), nullptr);
-}
+}  // namespace browsing_data

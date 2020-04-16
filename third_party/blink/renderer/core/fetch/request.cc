@@ -391,18 +391,20 @@ Request* Request::CreateRequestWithRequestOrString(
   //   |fallbackMode| otherwise."
   // - "If |mode| is "navigate", throw a TypeError."
   // - "If |mode| is non-null, set |request|'s mode to |mode|."
-  if (init->mode() == "navigate") {
-    exception_state.ThrowTypeError(
-        "Cannot construct a Request with a RequestInit whose mode member is "
-        "set as 'navigate'.");
-    return nullptr;
-  }
-  if (init->mode() == "same-origin") {
-    request->SetMode(network::mojom::RequestMode::kSameOrigin);
-  } else if (init->mode() == "no-cors") {
-    request->SetMode(network::mojom::RequestMode::kNoCors);
-  } else if (init->mode() == "cors") {
-    request->SetMode(network::mojom::RequestMode::kCors);
+  if (init->hasMode()) {
+    if (init->mode() == "navigate") {
+      exception_state.ThrowTypeError(
+          "Cannot construct a Request with a RequestInit whose mode member is "
+          "set as 'navigate'.");
+      return nullptr;
+    }
+    if (init->mode() == "same-origin") {
+      request->SetMode(network::mojom::RequestMode::kSameOrigin);
+    } else if (init->mode() == "no-cors") {
+      request->SetMode(network::mojom::RequestMode::kNoCors);
+    } else if (init->mode() == "cors") {
+      request->SetMode(network::mojom::RequestMode::kCors);
+    }
   } else {
     // |inputRequest| is directly checked here instead of setting and
     // checking |fallbackMode| as specified in the spec.
@@ -414,48 +416,47 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If |init|'s importance member is present, set |request|'s importance
   // mode to it." For more information see Priority Hints at
   // https://crbug.com/821464.
-  DCHECK(init->importance().IsNull() ||
-         RuntimeEnabledFeatures::PriorityHintsEnabled(execution_context));
-  if (!init->importance().IsNull())
+  if (init->hasImportance()) {
     UseCounter::Count(execution_context, WebFeature::kPriorityHints);
-
-  if (init->importance() == "low") {
-    request->SetImportance(mojom::FetchImportanceMode::kImportanceLow);
-  } else if (init->importance() == "high") {
-    request->SetImportance(mojom::FetchImportanceMode::kImportanceHigh);
+    if (init->importance() == "low") {
+      request->SetImportance(mojom::blink::FetchImportanceMode::kImportanceLow);
+    } else if (init->importance() == "high") {
+      request->SetImportance(
+          mojom::blink::FetchImportanceMode::kImportanceHigh);
+    }
   }
 
   // "Let |credentials| be |init|'s credentials member if it is present, and
   // |fallbackCredentials| otherwise."
   // "If |credentials| is non-null, set |request|'s credentials mode to
   // |credentials|."
-
-  base::Optional<network::mojom::CredentialsMode> credentials_result =
-      ParseCredentialsMode(init->credentials());
-  if (credentials_result) {
-    request->SetCredentials(credentials_result.value());
+  if (init->hasCredentials()) {
+    request->SetCredentials(ParseCredentialsMode(init->credentials()).value());
   } else if (!input_request) {
     request->SetCredentials(network::mojom::CredentialsMode::kSameOrigin);
   }
 
   // "If |init|'s cache member is present, set |request|'s cache mode to it."
-  if (init->cache() == "default") {
-    request->SetCacheMode(mojom::FetchCacheMode::kDefault);
-  } else if (init->cache() == "no-store") {
-    request->SetCacheMode(mojom::FetchCacheMode::kNoStore);
-  } else if (init->cache() == "reload") {
-    request->SetCacheMode(mojom::FetchCacheMode::kBypassCache);
-  } else if (init->cache() == "no-cache") {
-    request->SetCacheMode(mojom::FetchCacheMode::kValidateCache);
-  } else if (init->cache() == "force-cache") {
-    request->SetCacheMode(mojom::FetchCacheMode::kForceCache);
-  } else if (init->cache() == "only-if-cached") {
-    request->SetCacheMode(mojom::FetchCacheMode::kOnlyIfCached);
+  if (init->hasCache()) {
+    auto&& cache = init->cache();
+    if (cache == "default") {
+      request->SetCacheMode(mojom::blink::FetchCacheMode::kDefault);
+    } else if (cache == "no-store") {
+      request->SetCacheMode(mojom::blink::FetchCacheMode::kNoStore);
+    } else if (cache == "reload") {
+      request->SetCacheMode(mojom::blink::FetchCacheMode::kBypassCache);
+    } else if (cache == "no-cache") {
+      request->SetCacheMode(mojom::blink::FetchCacheMode::kValidateCache);
+    } else if (cache == "force-cache") {
+      request->SetCacheMode(mojom::blink::FetchCacheMode::kForceCache);
+    } else if (cache == "only-if-cached") {
+      request->SetCacheMode(mojom::blink::FetchCacheMode::kOnlyIfCached);
+    }
   }
 
   // If |request|’s cache mode is "only-if-cached" and |request|’s mode is not
   // "same-origin", then throw a TypeError.
-  if (request->CacheMode() == mojom::FetchCacheMode::kOnlyIfCached &&
+  if (request->CacheMode() == mojom::blink::FetchCacheMode::kOnlyIfCached &&
       request->Mode() != network::mojom::RequestMode::kSameOrigin) {
     exception_state.ThrowTypeError(
         "'only-if-cached' can be set only with 'same-origin' mode");
@@ -464,12 +465,14 @@ Request* Request::CreateRequestWithRequestOrString(
 
   // "If |init|'s redirect member is present, set |request|'s redirect mode
   // to it."
-  if (init->redirect() == "follow") {
-    request->SetRedirect(network::mojom::RedirectMode::kFollow);
-  } else if (init->redirect() == "error") {
-    request->SetRedirect(network::mojom::RedirectMode::kError);
-  } else if (init->redirect() == "manual") {
-    request->SetRedirect(network::mojom::RedirectMode::kManual);
+  if (init->hasRedirect()) {
+    if (init->redirect() == "follow") {
+      request->SetRedirect(network::mojom::RedirectMode::kFollow);
+    } else if (init->redirect() == "error") {
+      request->SetRedirect(network::mojom::RedirectMode::kError);
+    } else if (init->redirect() == "manual") {
+      request->SetRedirect(network::mojom::RedirectMode::kManual);
+    }
   }
 
   // "If |init|'s integrity member is present, set |request|'s
@@ -706,6 +709,7 @@ base::Optional<network::mojom::CredentialsMode> Request::ParseCredentialsMode(
     return network::mojom::CredentialsMode::kSameOrigin;
   if (credentials_mode == "include")
     return network::mojom::CredentialsMode::kInclude;
+  NOTREACHED();
   return base::nullopt;
 }
 

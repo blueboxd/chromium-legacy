@@ -529,6 +529,15 @@ void ChromePasswordManagerClient::UpdateCredentialCache(
 #endif
 }
 
+void ChromePasswordManagerClient::UpdateCacheWithBlacklistedForOrigin(
+    const url::Origin& origin,
+    bool is_blacklisted) {
+#if defined(OS_ANDROID)
+  credential_cache_.UpdateBlacklistedForOrigin(
+      origin, CredentialCache::IsOriginBlacklisted(is_blacklisted));
+#endif
+}
+
 void ChromePasswordManagerClient::PasswordWasAutofilled(
     const std::vector<const PasswordForm*>& best_matches,
     const GURL& origin,

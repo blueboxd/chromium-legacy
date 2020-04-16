@@ -525,7 +525,28 @@ TEST_F(ArcVmClientAdapterTest, StopArcInstance) {
   StartMiniArc();
   UpgradeArc(true);
 
-  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  adapter()->StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
+  run_loop()->RunUntilIdle();
+  EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
+  // The callback for StopVm D-Bus reply does NOT call ArcInstanceStopped when
+  // the D-Bus call result is successful.
+  EXPECT_FALSE(arc_instance_stopped_called());
+
+  // Instead, vm_concierge explicitly notifies Chrome of the VM termination.
+  RecreateRunLoop();
+  SendVmStoppedSignal();
+  run_loop()->Run();
+  // ..and that calls ArcInstanceStopped.
+  EXPECT_TRUE(arc_instance_stopped_called());
+}
+
+// Tests that StopArcInstance() initiates ARC log backup.
+TEST_F(ArcVmClientAdapterTest, StopArcInstance_WithLogBackup) {
+  SetValidUserInfo();
+  StartMiniArc();
+  UpgradeArc(true);
+
+  adapter()->StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/true);
   run_loop()->RunUntilIdle();
   EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
   // The callback for StopVm D-Bus reply does NOT call ArcInstanceStopped when
@@ -546,7 +567,7 @@ TEST_F(ArcVmClientAdapterTest, StopArcInstance_OnShutdown) {
   StartMiniArc();
   UpgradeArc(true);
 
-  adapter()->StopArcInstance(/*on_shutdown=*/true);
+  adapter()->StopArcInstance(/*on_shutdown=*/true, /*backup_log=*/false);
   run_loop()->RunUntilIdle();
   EXPECT_FALSE(GetTestConciergeClient()->stop_vm_called());
   EXPECT_FALSE(arc_instance_stopped_called());
@@ -561,7 +582,7 @@ TEST_F(ArcVmClientAdapterTest, StopArcInstance_Fail) {
   response.set_success(false);
   GetTestConciergeClient()->set_stop_vm_response(response);
 
-  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  adapter()->StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
   run_loop()->Run();
   EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
   // The callback for StopVm D-Bus reply does call ArcInstanceStopped when
@@ -587,7 +608,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmProxyFailure) {
   vm_tools::concierge::StopVmResponse response;
   response.set_success(false);
   GetTestConciergeClient()->set_stop_vm_response(response);
-  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  adapter()->StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
   run_loop()->Run();
   EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
   EXPECT_TRUE(arc_instance_stopped_called());
@@ -611,7 +632,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcCreateDataFailure) {
   vm_tools::concierge::StopVmResponse response;
   response.set_success(false);
   GetTestConciergeClient()->set_stop_vm_response(response);
-  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  adapter()->StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
   run_loop()->Run();
   EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
   EXPECT_TRUE(arc_instance_stopped_called());
@@ -633,7 +654,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartConciergeFailure) {
   vm_tools::concierge::StopVmResponse response;
   response.set_success(false);
   GetTestConciergeClient()->set_stop_vm_response(response);
-  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  adapter()->StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
   run_loop()->Run();
   EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
   EXPECT_TRUE(arc_instance_stopped_called());
@@ -656,7 +677,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_NoUserId) {
   vm_tools::concierge::StopVmResponse response;
   response.set_success(false);
   GetTestConciergeClient()->set_stop_vm_response(response);
-  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  adapter()->StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
   run_loop()->Run();
   EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
   EXPECT_TRUE(arc_instance_stopped_called());
@@ -679,7 +700,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_NoSerial) {
   vm_tools::concierge::StopVmResponse response;
   response.set_success(false);
   GetTestConciergeClient()->set_stop_vm_response(response);
-  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  adapter()->StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
   run_loop()->Run();
   EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
   EXPECT_TRUE(arc_instance_stopped_called());
@@ -704,7 +725,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmFailure) {
   vm_tools::concierge::StopVmResponse response;
   response.set_success(false);
   GetTestConciergeClient()->set_stop_vm_response(response);
-  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  adapter()->StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
   run_loop()->Run();
   EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
   EXPECT_TRUE(arc_instance_stopped_called());
@@ -726,7 +747,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmFailureEmptyReply) {
   vm_tools::concierge::StopVmResponse response;
   response.set_success(false);
   GetTestConciergeClient()->set_stop_vm_response(response);
-  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  adapter()->StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
   run_loop()->Run();
   EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
   EXPECT_TRUE(arc_instance_stopped_called());
@@ -742,7 +763,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_Success) {
   EXPECT_FALSE(arc_instance_stopped_called());
 
   // Try to stop the VM.
-  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  adapter()->StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
   run_loop()->RunUntilIdle();
   EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
   EXPECT_FALSE(arc_instance_stopped_called());

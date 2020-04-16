@@ -78,16 +78,16 @@ void BackgroundFetchBridge::DidGetRegistration(
     RegistrationCallback callback,
     mojom::blink::BackgroundFetchError error,
     mojom::blink::BackgroundFetchRegistrationPtr registration_ptr) {
-  BackgroundFetchRegistration* registration =
-      registration_ptr.To<BackgroundFetchRegistration*>();
-
-  if (registration) {
-    DCHECK_EQ(error, mojom::blink::BackgroundFetchError::NONE);
-    DCHECK_EQ(registration->result(), "");
-    registration->Initialize(
-        GetSupplementable(),
-        std::move(registration_ptr->registration_interface));
+  if (!registration_ptr || !registration_ptr->registration_data) {
+    DCHECK_NE(error, mojom::blink::BackgroundFetchError::NONE);
+    std::move(callback).Run(error, nullptr);
+    return;
   }
+
+  DCHECK_EQ(error, mojom::blink::BackgroundFetchError::NONE);
+  BackgroundFetchRegistration* registration =
+      MakeGarbageCollected<blink::BackgroundFetchRegistration>(
+          GetSupplementable(), std::move(registration_ptr));
 
   std::move(callback).Run(error, registration);
 }

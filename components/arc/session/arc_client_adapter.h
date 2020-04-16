@@ -43,8 +43,9 @@ class ArcClientAdapter {
                           chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Asynchronously stops the ARC instance. |on_shutdown| is true if the method
-  // is called due to the browser being shut down.
-  virtual void StopArcInstance(bool on_shutdown) = 0;
+  // is called due to the browser being shut down. Also backs up the ARC
+  // bug report if |backup_log| is set to true.
+  virtual void StopArcInstance(bool on_shutdown, bool backup_log) = 0;
 
   // Sets a hash string of the profile user IDs and an ARC serial number for the
   // user.

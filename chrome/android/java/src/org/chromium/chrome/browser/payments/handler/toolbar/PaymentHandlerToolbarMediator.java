@@ -134,8 +134,9 @@ import org.chromium.ui.modelutil.PropertyModel;
         if (mChromeActivity == null) return;
         PageInfoController.show(mChromeActivity, mWebContentsRef, null,
                 PageInfoController.OpenedFromSource.TOOLBAR,
-                /*offlinePageLoadUrlDelegate=*/
-                new OfflinePageUtils.WebContentsOfflinePageLoadUrlDelegate(mWebContentsRef),
-                new ChromePageInfoControllerDelegate(mChromeActivity, mWebContentsRef));
+                new ChromePageInfoControllerDelegate(mChromeActivity, mWebContentsRef,
+                        /*offlinePageLoadUrlDelegate=*/
+                        new OfflinePageUtils.WebContentsOfflinePageLoadUrlDelegate(
+                                mWebContentsRef)));
     };
 }

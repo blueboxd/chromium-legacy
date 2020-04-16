@@ -11,25 +11,7 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation ChromeCoordinator {
-  ChromeBrowserState* _browserState;
-}
-
-- (nullable instancetype)initWithBaseViewController:
-    (UIViewController*)viewController {
-  return [self initWithBaseViewController:viewController browser:nullptr];
-}
-
-- (nullable instancetype)
-    initWithBaseViewController:(UIViewController*)viewController
-                  browserState:(ChromeBrowserState*)browserState {
-  if (self = [super init]) {
-    _baseViewController = viewController;
-    _childCoordinators = [MutableCoordinatorArray array];
-    _browserState = browserState;
-  }
-  return self;
-}
+@implementation ChromeCoordinator
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser {
@@ -47,10 +29,6 @@
   // By default the active child is the one most recently added to the child
   // array, but subclasses can override this.
   return self.childCoordinators.lastObject;
-}
-
-- (ChromeBrowserState*)browserState {
-  return self.browser ? self.browser->GetBrowserState() : _browserState;
 }
 
 #pragma mark - Public

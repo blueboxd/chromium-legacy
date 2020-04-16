@@ -96,7 +96,7 @@
         FullscreenController::FromBrowser(self.browser), self.viewController);
   } else {
     _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
-        FullscreenController::FromBrowserState(self.browserState),
+        FullscreenController::FromBrowserState(self.browser->GetBrowserState()),
         self.viewController);
   }
 
@@ -163,7 +163,8 @@
   if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
     FullscreenController::FromBrowser(self.browser)->ExitFullscreen();
   } else {
-    FullscreenController::FromBrowserState(self.browserState)->ExitFullscreen();
+    FullscreenController::FromBrowserState(self.browser->GetBrowserState())
+        ->ExitFullscreen();
   }
 }
 

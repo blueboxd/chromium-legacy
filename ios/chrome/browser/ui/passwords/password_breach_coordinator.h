@@ -12,14 +12,6 @@
 // prompts for a checkup of the stored passwords.
 @interface PasswordBreachCoordinator : ChromeCoordinator
 
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_PASSWORDS_PASSWORD_BREACH_COORDINATOR_H_

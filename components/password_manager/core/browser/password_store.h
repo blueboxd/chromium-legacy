@@ -213,8 +213,8 @@ class PasswordStore : protected PasswordStoreSync,
   // blacklisted entries. If |completion| is not null, it will be posted to the
   // |main_task_runner_| after deletions have been completed. Should be called
   // on the UI thread.
-  void Unblacklist(const PasswordStore::FormDigest& form_digest,
-                   base::OnceClosure completion);
+  virtual void Unblacklist(const PasswordStore::FormDigest& form_digest,
+                           base::OnceClosure completion);
 
   // Searches for a matching PasswordForm, and notifies |consumer| on
   // completion. The request will be cancelled if the consumer is destroyed.

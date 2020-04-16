@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/test_metrics_provider.h"
+#include "components/metrics/test/test_metrics_provider.h"
 
 #include "base/metrics/histogram_macros.h"
 

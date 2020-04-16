@@ -31,8 +31,14 @@ import tempfile
 # 2. On Linux:
 #    a. sudo apt-get install libicu-dev
 #    b. git clone https://github.com/GNOME/libxml2.git somewhere
-# 3. On Mac, install these MacPorts:
-#    autoconf automake libtool pkgconfig icu
+# 3. On Mac, install these packages with brew:
+#      autoconf automake libtool pkgconfig icu4c
+#
+#    Important! Before running roll.py, set these environmental variables so the
+#    configure script can find ICU:
+#      export LDFLAGS="-L/path/to/homebrew/opt/icu4c/lib"
+#      export CPPFLAGS="-I/path/to/homebrew/opt/icu4c/include"
+#      export PKG_CONFIG_PATH="/path/to/homebrew/opt/icu4c/lib/pkgconfig"
 #
 # Procedure:
 #
@@ -66,11 +72,14 @@ import tempfile
 #    e. Complete the review as usual
 
 PATCHES = [
+    # TODO(dcheng): reach out upstream to see what's going on here.
+    'revert-non-recursive-xml-parsing.patch',
     'chromium-issue-599427.patch',
     'chromium-issue-628581.patch',
-    'libxml2-2.9.4-security-CVE-2017-7376-nanohttp-out-of-bounds-write.patch',
     'libxml2-2.9.4-security-xpath-nodetab-uaf.patch',
     'chromium-issue-708434.patch',
+    # TODO(dcheng): Merge this back upstream.
+    'add-missing-ifdef-in-xml-reader.patch',
 ]
 
 
@@ -295,10 +304,11 @@ def check_copying(full_path_to_third_party_libxml_src):
             raise Exception('check COPYING')
 
 
-def prepare_libxml_distribution(libxml2_repo_path, temp_dir):
+def prepare_libxml_distribution(src_path, libxml2_repo_path, temp_dir):
     """Makes a libxml2 distribution.
 
     Args:
+        src_path: The path to the Chromium checkout.
         libxml2_repo_path: The path to the local clone of the libxml2 repo.
         temp_dir: A temporary directory to stage the distribution to.
 
@@ -326,6 +336,13 @@ def prepare_libxml_distribution(libxml2_repo_path, temp_dir):
             shell=True)
     with WorkingDir(temp_src_path):
         os.remove('.gitignore')
+        for patch in PATCHES:
+            print('applying %s' % patch)
+            subprocess.check_call(
+                'patch -p1 --fuzz=0 < %s' % os.path.join(
+                    src_path, THIRD_PARTY_LIBXML_SRC, '..', 'chromium', patch),
+                shell=True)
+
     with WorkingDir(temp_config_path):
         print('../src/autogen.sh %s' % XML_CONFIGURE_OPTIONS)
         subprocess.check_call(['../src/autogen.sh'] + XML_CONFIGURE_OPTIONS)
@@ -346,8 +363,8 @@ def roll_libxml_linux(src_path, libxml2_repo_path):
             temp_dir = tempfile.mkdtemp()
             print('temporary directory: %s' % temp_dir)
 
-            commit, tar_file = prepare_libxml_distribution(libxml2_repo_path,
-                                                           temp_dir)
+            commit, tar_file = prepare_libxml_distribution(
+                src_path, libxml2_repo_path, temp_dir)
 
             # Remove all of the old libxml to ensure only desired cruft
             # accumulates
@@ -365,12 +382,6 @@ def roll_libxml_linux(src_path, libxml2_repo_path):
             # Put the version number is the README file
             sed_in_place('../README.chromium',
                          's/Version: .*$/Version: %s/' % commit)
-
-            for patch in PATCHES:
-                print(patch)
-                subprocess.check_call(
-                    'cat ../chromium/%s | patch -p1 --fuzz=0' % patch,
-                    shell=True)
 
             with WorkingDir('../linux'):
                 subprocess.check_call(

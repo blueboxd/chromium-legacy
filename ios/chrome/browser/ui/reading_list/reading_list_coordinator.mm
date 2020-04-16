@@ -94,11 +94,12 @@
   // Create the mediator.
   ReadingListModel* model =
       ReadingListModelFactory::GetInstance()->GetForBrowserState(
-          self.browserState);
+          self.browser->GetBrowserState());
   ReadingListListItemFactory* itemFactory =
       [[ReadingListListItemFactory alloc] init];
   FaviconLoader* faviconLoader =
-      IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
+      IOSChromeFaviconLoaderFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   self.mediator = [[ReadingListMediator alloc] initWithModel:model
                                                faviconLoader:faviconLoader
                                              listItemFactory:itemFactory];
@@ -150,7 +151,8 @@
 
   // Send the "Viewed Reading List" event to the feature_engagement::Tracker
   // when the user opens their reading list.
-  feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
+  feature_engagement::TrackerFactory::GetForBrowserState(
+      self.browser->GetBrowserState())
       ->NotifyEvent(feature_engagement::events::kViewedReadingList);
 
   [super start];
@@ -363,7 +365,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   web::WebState* activeWebState =
       self.browser->GetWebStateList()->GetActiveWebState();
   new_tab_page_uma::RecordAction(
-      self.browserState, activeWebState,
+      self.browser->GetBrowserState(), activeWebState,
       new_tab_page_uma::ACTION_OPENED_READING_LIST_ENTRY);
 
   // Load the offline URL if available.

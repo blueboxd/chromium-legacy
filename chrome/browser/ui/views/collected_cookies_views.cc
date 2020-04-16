@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +25,7 @@
 #include "components/browsing_data/content/database_helper.h"
 #include "components/browsing_data/content/file_system_helper.h"
 #include "components/browsing_data/content/indexed_db_helper.h"
+#include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/browsing_data/content/local_storage_helper.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -97,6 +98,21 @@ base::string16 GetAnnotationTextForSetting(ContentSetting setting) {
       NOTREACHED() << "Unknown ContentSetting value: " << setting;
       return base::string16();
   }
+}
+
+// Creates a new CookiesTreeModel for all objects in the container,
+// copying each of them.
+std::unique_ptr<CookiesTreeModel> CreateCookiesTreeModel(
+    const browsing_data::LocalSharedObjectsContainer& shared_objects) {
+  auto container = std::make_unique<LocalDataContainer>(
+      shared_objects.cookies(), shared_objects.databases(),
+      shared_objects.local_storages(), shared_objects.session_storages(),
+      shared_objects.appcaches(), shared_objects.indexed_dbs(),
+      shared_objects.file_systems(), nullptr, shared_objects.service_workers(),
+      shared_objects.shared_workers(), shared_objects.cache_storages(), nullptr,
+      nullptr);
+
+  return std::make_unique<CookiesTreeModel>(std::move(container), nullptr);
 }
 
 }  // namespace
@@ -410,7 +426,7 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
   allowed_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   allowed_cookies_tree_model_ =
-      content_settings->allowed_local_shared_objects().CreateCookiesTreeModel();
+      CreateCookiesTreeModel(content_settings->allowed_local_shared_objects());
   std::unique_ptr<CookiesTreeViewDrawingProvider> allowed_drawing_provider =
       std::make_unique<CookiesTreeViewDrawingProvider>();
   allowed_cookies_drawing_provider_ = allowed_drawing_provider.get();
@@ -473,7 +489,7 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateBlockedPane() {
   blocked_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   blocked_label->SizeToFit(kTreeViewWidth);
   blocked_cookies_tree_model_ =
-      content_settings->blocked_local_shared_objects().CreateCookiesTreeModel();
+      CreateCookiesTreeModel(content_settings->blocked_local_shared_objects());
   std::unique_ptr<CookiesTreeViewDrawingProvider> blocked_drawing_provider =
       std::make_unique<CookiesTreeViewDrawingProvider>();
   blocked_cookies_drawing_provider_ = blocked_drawing_provider.get();

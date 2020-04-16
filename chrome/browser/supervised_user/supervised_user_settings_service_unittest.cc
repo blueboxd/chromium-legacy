@@ -69,15 +69,14 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
         new syncer::SyncChangeProcessorWrapperForTest(sync_processor_.get()));
   }
 
-  syncer::SyncMergeResult StartSyncing(
-      const syncer::SyncDataList& initial_sync_data) {
+  void StartSyncing(const syncer::SyncDataList& initial_sync_data) {
     std::unique_ptr<syncer::SyncErrorFactory> error_handler(
         new MockSyncErrorFactory(syncer::SUPERVISED_USER_SETTINGS));
-    syncer::SyncMergeResult result = settings_service_.MergeDataAndStartSyncing(
-        syncer::SUPERVISED_USER_SETTINGS, initial_sync_data,
-        CreateSyncProcessor(), std::move(error_handler));
-    EXPECT_FALSE(result.error().IsSet());
-    return result;
+    base::Optional<syncer::ModelError> error =
+        settings_service_.MergeDataAndStartSyncing(
+            syncer::SUPERVISED_USER_SETTINGS, initial_sync_data,
+            CreateSyncProcessor(), std::move(error_handler));
+    EXPECT_FALSE(error.has_value());
   }
 
   void UploadSplitItem(const std::string& key, const std::string& value) {
@@ -160,9 +159,9 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessAtomicSetting) {
   syncer::SyncChangeList change_list;
   change_list.push_back(
       syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD, data));
-  syncer::SyncError error =
+  base::Optional<syncer::ModelError> error =
       settings_service_.ProcessSyncChanges(FROM_HERE, change_list);
-  EXPECT_FALSE(error.IsSet()) << error.ToString();
+  EXPECT_FALSE(error.has_value()) << error.value().ToString();
   ASSERT_TRUE(settings_);
   ASSERT_TRUE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
   std::string string_value;
@@ -192,9 +191,9 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessSplitSetting) {
     change_list.push_back(
         syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD, data));
   }
-  syncer::SyncError error =
+  base::Optional<syncer::ModelError> error =
       settings_service_.ProcessSyncChanges(FROM_HERE, change_list);
-  EXPECT_FALSE(error.IsSet()) << error.ToString();
+  EXPECT_FALSE(error.has_value()) << error.value().ToString();
   ASSERT_TRUE(settings_);
   ASSERT_TRUE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
   const base::DictionaryValue* dict_value = nullptr;
@@ -203,7 +202,7 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessSplitSetting) {
 }
 
 TEST_F(SupervisedUserSettingsServiceTest, Merge) {
-  syncer::SyncMergeResult result = StartSyncing(syncer::SyncDataList());
+  StartSyncing(syncer::SyncDataList());
   EXPECT_TRUE(settings_service_
                   .GetAllSyncDataForTesting(syncer::SUPERVISED_USER_SETTINGS)
                   .empty());
@@ -231,7 +230,7 @@ TEST_F(SupervisedUserSettingsServiceTest, Merge) {
                                                                  it.key()),
               it.value()));
     }
-    result = StartSyncing(sync_data);
+    StartSyncing(sync_data);
     EXPECT_EQ(3u,
               settings_service_
                   .GetAllSyncDataForTesting(syncer::SUPERVISED_USER_SETTINGS)
@@ -260,7 +259,7 @@ TEST_F(SupervisedUserSettingsServiceTest, Merge) {
                                                                  it.key()),
               it.value()));
     }
-    result = StartSyncing(sync_data);
+    StartSyncing(sync_data);
     EXPECT_EQ(4u,
               settings_service_
                   .GetAllSyncDataForTesting(syncer::SUPERVISED_USER_SETTINGS)

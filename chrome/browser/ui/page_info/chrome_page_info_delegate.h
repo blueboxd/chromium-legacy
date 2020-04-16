@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_PAGE_INFO_CHROME_PAGE_INFO_DELEGATE_H_
 
 #include "build/build_config.h"
-#include "chrome/browser/content_settings/local_shared_objects_container.h"
+#include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/page_info/page_info_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -74,8 +74,10 @@ class ChromePageInfoDelegate : public PageInfoDelegate {
 
  private:
   TabSpecificContentSettings* GetTabSpecificContentSettings() const;
-  const LocalSharedObjectsContainer& GetAllowedObjects(const GURL& site_url);
-  const LocalSharedObjectsContainer& GetBlockedObjects(const GURL& site_url);
+  const browsing_data::LocalSharedObjectsContainer& GetAllowedObjects(
+      const GURL& site_url);
+  const browsing_data::LocalSharedObjectsContainer& GetBlockedObjects(
+      const GURL& site_url);
   Profile* GetProfile() const;
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::ChromePasswordProtectionService*

@@ -17,7 +17,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
-#include "components/sync/model/sync_merge_result.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace arc {
@@ -133,7 +132,8 @@ void ArcPackageSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
   wait_until_ready_to_sync_cb_ = std::move(done);
 }
 
-syncer::SyncMergeResult ArcPackageSyncableService::MergeDataAndStartSyncing(
+base::Optional<syncer::ModelError>
+ArcPackageSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -147,8 +147,6 @@ syncer::SyncMergeResult ArcPackageSyncableService::MergeDataAndStartSyncing(
 
   sync_processor_ = std::move(sync_processor);
   sync_error_handler_ = std::move(error_handler);
-
-  syncer::SyncMergeResult result = syncer::SyncMergeResult(type);
 
   const std::vector<std::string> local_packages =
       prefs_->GetPackagesFromPrefs();
@@ -189,7 +187,7 @@ syncer::SyncMergeResult ArcPackageSyncableService::MergeDataAndStartSyncing(
     sync_items_[local_package_name] = std::move(sync_item);
   }
   sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
-  return result;
+  return base::nullopt;
 }
 
 void ArcPackageSyncableService::StopSyncing(syncer::ModelType type) {
@@ -204,13 +202,13 @@ void ArcPackageSyncableService::StopSyncing(syncer::ModelType type) {
   pending_uninstall_items_.clear();
 }
 
-syncer::SyncError ArcPackageSyncableService::ProcessSyncChanges(
+base::Optional<syncer::ModelError>
+ArcPackageSyncableService::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (!sync_processor_.get()) {
-    return syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
-                             "ARC package syncable service is not started.",
-                             syncer::ARC_PACKAGE);
+    return syncer::ModelError(FROM_HERE,
+                              "ARC package syncable service is not started.");
   }
 
   for (const auto& change : change_list) {
@@ -234,7 +232,7 @@ syncer::SyncError ArcPackageSyncableService::ProcessSyncChanges(
     }
   }
 
-  return syncer::SyncError();
+  return base::nullopt;
 }
 
 bool ArcPackageSyncableService::SyncStarted() {

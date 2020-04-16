@@ -44,14 +44,6 @@
 // the consent agreed by the user.
 @interface UnifiedConsentCoordinator : ChromeCoordinator
 
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 @property(nonatomic, weak) id<UnifiedConsentCoordinatorDelegate> delegate;
 // Identity selected by the user to sign-in. By default, the first identity from
 // GetAllIdentitiesSortedForDisplay() is used.

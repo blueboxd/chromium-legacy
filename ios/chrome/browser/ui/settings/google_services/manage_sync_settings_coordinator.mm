@@ -77,9 +77,9 @@
   DCHECK(self.baseNavigationController);
   self.mediator = [[ManageSyncSettingsMediator alloc]
       initWithSyncService:self.syncService
-          userPrefService:self.browserState->GetPrefs()];
-  self.mediator.syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(self.browserState);
+          userPrefService:self.browser->GetBrowserState()->GetPrefs()];
+  self.mediator.syncSetupService = SyncSetupServiceFactory::GetForBrowserState(
+      self.browser->GetBrowserState());
   self.mediator.commandHandler = self;
   self.viewController = [[ManageSyncSettingsTableViewController alloc]
       initWithStyle:UITableViewStyleGrouped];
@@ -95,7 +95,8 @@
 #pragma mark - Properties
 
 - (syncer::SyncService*)syncService {
-  return ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+  return ProfileSyncServiceFactory::GetForBrowserState(
+      self.browser->GetBrowserState());
 }
 
 #pragma mark - Private
@@ -142,10 +143,10 @@
   // Otherwise, show the full encryption options.
   if (self.syncService->GetUserSettings()->IsPassphraseRequired()) {
     controllerToPush = [[SyncEncryptionPassphraseTableViewController alloc]
-        initWithBrowserState:self.browserState];
+        initWithBrowserState:self.browser->GetBrowserState()];
   } else {
     controllerToPush = [[SyncEncryptionTableViewController alloc]
-        initWithBrowserState:self.browserState];
+        initWithBrowserState:self.browser->GetBrowserState()];
   }
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
@@ -158,7 +159,8 @@
 
 - (void)openWebAppActivityDialog {
   AuthenticationService* authService =
-      AuthenticationServiceFactory::GetForBrowserState(self.browserState);
+      AuthenticationServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   base::RecordAction(base::UserMetricsAction(
       "Signin_AccountSettings_GoogleActivityControlsClicked"));
   self.dismissWebAndAppSettingDetailsControllerBlock =

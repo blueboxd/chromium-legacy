@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "services/service_manager/sandbox/sandbox.h"
 
 namespace content {
 
@@ -72,6 +73,10 @@ void TestService::CreateUnsafeSharedMemoryRegion(
     const std::string& message,
     CreateUnsafeSharedMemoryRegionCallback callback) {
   NOTREACHED();
+}
+
+void TestService::IsProcessSandboxed(IsProcessSandboxedCallback callback) {
+  std::move(callback).Run(service_manager::Sandbox::IsProcessSandboxed());
 }
 
 }  // namespace content

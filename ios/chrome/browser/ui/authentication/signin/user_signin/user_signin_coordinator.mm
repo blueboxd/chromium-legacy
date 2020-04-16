@@ -107,15 +107,17 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 
   self.mediator = [[UserSigninMediator alloc]
       initWithAuthenticationService:AuthenticationServiceFactory::
-                                        GetForBrowserState(self.browserState)
+                                        GetForBrowserState(
+                                            self.browser->GetBrowserState())
                     identityManager:IdentityManagerFactory::GetForBrowserState(
-                                        self.browserState)
+                                        self.browser->GetBrowserState())
                      consentAuditor:ConsentAuditorFactory::GetForBrowserState(
-                                        self.browserState)
+                                        self.browser->GetBrowserState())
               unifiedConsentService:UnifiedConsentServiceFactory::
-                                        GetForBrowserState(self.browserState)
+                                        GetForBrowserState(
+                                            self.browser->GetBrowserState())
                    syncSetupService:SyncSetupServiceFactory::GetForBrowserState(
-                                        self.browserState)];
+                                        self.browser->GetBrowserState())];
   self.mediator.delegate = self;
 
   self.unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc]

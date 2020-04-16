@@ -129,8 +129,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
                 std::make_unique<syncer::SyncChangeProcessorWrapperForTest>(
                     sync_processor),
                 std::make_unique<syncer::SyncErrorFactoryMock>())
-            .error()
-            .IsSet());
+            .has_value());
   }
 
   void InitSync(syncer::SyncChangeProcessor* sync_processor) {
@@ -156,8 +155,8 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
     base::WeakPtr<syncer::SyncableService> syncable_service =
         std::move(syncable_service_provider).Run();
     DCHECK(syncable_service.get());
-    EXPECT_FALSE(
-        syncable_service->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
+    EXPECT_FALSE(syncable_service->ProcessSyncChanges(FROM_HERE, change_list)
+                     .has_value());
   }
 
   void SendChanges(const syncer::SyncChangeList& change_list) {

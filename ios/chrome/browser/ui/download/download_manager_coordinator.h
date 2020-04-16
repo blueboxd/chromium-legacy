@@ -18,14 +18,6 @@ class DownloadTask;
 @interface DownloadManagerCoordinator
     : ChromeCoordinator<DownloadManagerTabHelperDelegate>
 
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // Presents the receiver's view controller.
 @property(nonatomic) id<ContainedPresenter> presenter;
 

@@ -92,7 +92,7 @@
 - (void)showHandoff {
   HandoffTableViewController* viewController =
       [[HandoffTableViewController alloc]
-          initWithBrowserState:self.browserState];
+          initWithBrowserState:self.browser->GetBrowserState()];
   viewController.dispatcher = self.viewController.dispatcher;
   [self.baseNavigationController pushViewController:viewController
                                            animated:YES];

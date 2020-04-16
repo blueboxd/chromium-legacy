@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_METRICS_TEST_METRICS_SERVICE_CLIENT_H_
-#define COMPONENTS_METRICS_TEST_METRICS_SERVICE_CLIENT_H_
+#ifndef COMPONENTS_METRICS_TEST_TEST_METRICS_SERVICE_CLIENT_H_
+#define COMPONENTS_METRICS_TEST_TEST_METRICS_SERVICE_CLIENT_H_
 
 #include <stdint.h>
 
@@ -12,9 +12,7 @@
 #include "base/macros.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
-#include "components/metrics/test_metrics_log_uploader.h"
-
-// TODO(crbug.com/1068142): Move this to the new test directory.
+#include "components/metrics/test/test_metrics_log_uploader.h"
 
 namespace metrics {
 
@@ -79,4 +77,4 @@ class TestMetricsServiceClient : public MetricsServiceClient {
 
 }  // namespace metrics
 
-#endif  // COMPONENTS_METRICS_TEST_METRICS_SERVICE_CLIENT_H_
+#endif  // COMPONENTS_METRICS_TEST_TEST_METRICS_SERVICE_CLIENT_H_

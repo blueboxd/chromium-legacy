@@ -38,27 +38,10 @@ class BackgroundFetchRegistration final
 
  public:
   BackgroundFetchRegistration(
-      const String& developer_id,
-      uint64_t upload_total,
-      uint64_t uploaded,
-      uint64_t download_total,
-      uint64_t downloaded,
-      mojom::BackgroundFetchResult result,
-      mojom::BackgroundFetchFailureReason failure_reason);
-
-  BackgroundFetchRegistration(
       ServiceWorkerRegistration* service_worker_registration,
       mojom::blink::BackgroundFetchRegistrationPtr registration);
 
   ~BackgroundFetchRegistration() override;
-
-  // Initializes the BackgroundFetchRegistration to be associated with the given
-  // ServiceWorkerRegistration. It will register itself as an observer for
-  // progress events, powering the `progress` JavaScript event.
-  void Initialize(
-      ServiceWorkerRegistration* registration,
-      mojo::PendingRemote<mojom::blink::BackgroundFetchRegistrationService>
-          registration_service);
 
   // BackgroundFetchRegistrationObserver implementation.
   void OnProgress(uint64_t upload_total,

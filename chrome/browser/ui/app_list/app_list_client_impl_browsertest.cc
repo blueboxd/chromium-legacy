@@ -182,10 +182,10 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, CreateNewWindow) {
   EXPECT_EQ(0U, chrome::GetBrowserCount(
                     browser()->profile()->GetPrimaryOTRProfile()));
 
-  controller->CreateNewWindow(browser()->profile(), false);
+  controller->CreateNewWindow(/*incognito=*/false);
   EXPECT_EQ(2U, chrome::GetBrowserCount(browser()->profile()));
 
-  controller->CreateNewWindow(browser()->profile(), true);
+  controller->CreateNewWindow(/*incognito=*/true);
   EXPECT_EQ(1U, chrome::GetBrowserCount(
                     browser()->profile()->GetPrimaryOTRProfile()));
 }
@@ -337,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest,
 
   // Create an incognito browser so that we can close the regular one without
   // exiting the test.
-  controller->CreateNewWindow(profile, true);
+  controller->CreateNewWindow(/*incognito=*/true);
   EXPECT_EQ(1U, chrome::GetBrowserCount(profile_otr));
   // Creating incognito browser should not update the launch time.
   EXPECT_EQ(time_recorded1,
@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest,
 
   // Launch another regular browser.
   const base::Time time_before_launch = base::Time::Now();
-  controller->CreateNewWindow(profile, false);
+  controller->CreateNewWindow(/*incognito=*/false);
   const base::Time time_after_launch = base::Time::Now();
   EXPECT_EQ(1U, chrome::GetBrowserCount(profile));
 
@@ -362,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest,
   EXPECT_GE(time_after_launch, time_recorded2);
 
   // Creating a second regular browser should not update the launch time.
-  controller->CreateNewWindow(profile, false);
+  controller->CreateNewWindow(/*incognito=*/false);
   EXPECT_EQ(2U, chrome::GetBrowserCount(profile));
   EXPECT_EQ(time_recorded2,
             prefs->GetLastLaunchTime(extension_misc::kChromeAppId));

@@ -51,14 +51,12 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
       const network::mojom::URLResponseHead& response_head);
   void OnImageDownloadProgress(uint64_t current);
   void UpdateProgressNotification(const base::string16& context);
-  void CancelProgressNotification();
+  void ClearProgressAndCloseNotification();
   void OnProgressNotificationAction(base::Optional<int> button, bool closed);
   void OnURLLoadComplete(std::unique_ptr<std::string> content);
   void WriteImageAndShowNotification(const SkBitmap& original_image,
                                      const SkBitmap& resized_image);
-  void ShowNotification(const base::string16& title,
-                        const SkBitmap& image,
-                        const std::string& notification_id);
+  void ShowNotification(const base::string16& title, const SkBitmap& image);
   void DetectWrite(uint64_t old_sequence_number,
                    base::TimeTicks start_ticks,
                    bool is_image);
@@ -73,7 +71,7 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
   base::OneShotTimer write_detection_timer_;
   int64_t image_content_length_ = -1;
   int64_t image_content_progress_ = 0;
-  std::string image_notification_id_;
+  std::string notification_id_;
   bool progress_notification_closed_ = false;
   base::OneShotTimer image_download_update_progress_timer_;
 

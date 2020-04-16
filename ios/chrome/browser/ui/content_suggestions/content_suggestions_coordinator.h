@@ -32,15 +32,6 @@ class WebState;
 @property(nonatomic, strong, readonly)
     UICollectionViewController* viewController;
 
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // Dismisses all modals owned by the NTP mediator.
 - (void)dismissModals;
 

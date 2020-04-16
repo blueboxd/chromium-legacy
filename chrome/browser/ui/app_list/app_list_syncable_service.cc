@@ -45,7 +45,6 @@
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
-#include "components/sync/model/sync_merge_result.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -836,7 +835,8 @@ void AppListSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
   }
 }
 
-syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
+base::Optional<syncer::ModelError>
+AppListSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -865,8 +865,6 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
   sync_processor_ = std::move(sync_processor);
   sync_error_handler_ = std::move(error_handler);
 
-  syncer::SyncMergeResult result = syncer::SyncMergeResult(type);
-  result.set_num_items_before_association(sync_items_.size());
   VLOG(2) << this << ": MergeDataAndStartSyncing: " << initial_sync_data.size();
 
   // Copy all sync items to |unsynced_items|.
@@ -876,7 +874,6 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
   }
 
   // Create SyncItem entries for initial_sync_data.
-  size_t new_items = 0, updated_items = 0;
   for (syncer::SyncDataList::const_iterator iter = initial_sync_data.begin();
        iter != initial_sync_data.end(); ++iter) {
     const syncer::SyncData& data = *iter;
@@ -885,10 +882,7 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
     DVLOG(2) << this << "  Initial Sync Item: " << item_id
              << " Type: " << specifics.item_type();
     DCHECK_EQ(syncer::APP_LIST, data.GetDataType());
-    if (ProcessSyncItemSpecifics(specifics))
-      ++new_items;
-    else
-      ++updated_items;
+    ProcessSyncItemSpecifics(specifics);
     if (specifics.item_type() != sync_pb::AppListSpecifics::TYPE_FOLDER &&
         !IsUnRemovableDefaultApp(item_id) && !AppIsOem(item_id) &&
         !AppIsDefault(profile_, item_id)) {
@@ -897,15 +891,10 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
     }
     unsynced_items.erase(item_id);
   }
-  result.set_num_items_after_association(sync_items_.size());
-  result.set_num_items_added(new_items);
-  result.set_num_items_deleted(0);
-  result.set_num_items_modified(updated_items);
-
   // Initial sync data has been processed, it is safe now to add new sync items.
   initial_sync_data_processed_ = true;
 
-  // Send unsynced items. Does not affect |result|.
+  // Send unsynced items.
   syncer::SyncChangeList change_list;
   for (std::set<std::string>::iterator iter = unsynced_items.begin();
        iter != unsynced_items.end(); ++iter) {
@@ -956,7 +945,7 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
     on_initialized_.Signal();
   }
 
-  return result;
+  return base::nullopt;
 }
 
 void AppListSyncableService::StopSyncing(syncer::ModelType type) {
@@ -976,13 +965,12 @@ syncer::SyncDataList AppListSyncableService::GetAllSyncDataForTesting() const {
   return list;
 }
 
-syncer::SyncError AppListSyncableService::ProcessSyncChanges(
+base::Optional<syncer::ModelError> AppListSyncableService::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (!sync_processor_.get()) {
-    return syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
-                             "App List syncable service is not started.",
-                             syncer::APP_LIST);
+    return syncer::ModelError(FROM_HERE,
+                              "App List syncable service is not started.");
   }
 
   HandleUpdateStarted();
@@ -1006,7 +994,7 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
 
   HandleUpdateFinished();
 
-  return syncer::SyncError();
+  return base::nullopt;
 }
 
 void AppListSyncableService::Shutdown() {

@@ -606,8 +606,12 @@ Polymer({
     switch (this.safeBrowsingStatus_) {
       case settings.SafetyCheckSafeBrowsingStatus.CHECKING:
         return ChildUiStatus.RUNNING;
-      case settings.SafetyCheckSafeBrowsingStatus.ENABLED:
+      case settings.SafetyCheckSafeBrowsingStatus.ENABLED_STANDARD:
+      case settings.SafetyCheckSafeBrowsingStatus.ENABLED_ENHANCED:
         return ChildUiStatus.SAFE;
+      case settings.SafetyCheckSafeBrowsingStatus.ENABLED:
+        // ENABLED is deprecated.
+        assertNotReached();
       case settings.SafetyCheckSafeBrowsingStatus.DISABLED:
       case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_ADMIN:
       case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_EXTENSION:

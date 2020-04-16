@@ -8,14 +8,20 @@
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_consumer.h"
+
+@class ArchivableCredentialStore;
 
 // A browser-context keyed service that is used to keep the Credential Provider
 // Extension data up to date.
-class CredentialProviderService : public KeyedService {
+class CredentialProviderService
+    : public KeyedService,
+      public password_manager::PasswordStoreConsumer {
  public:
   // Initializes the service.
   CredentialProviderService(
-      scoped_refptr<password_manager::PasswordStore> password_store);
+      scoped_refptr<password_manager::PasswordStore> password_store,
+      NSURL* file_url);
   ~CredentialProviderService() override;
 
   // KeyedService:
@@ -24,8 +30,25 @@ class CredentialProviderService : public KeyedService {
  private:
   friend class CredentialProviderServiceTest;
 
+  // Request all the credentials to sync them. B efore adding the fresh ones,
+  // the old ones are deleted.
+  void SyncAllCredentials();
+
+  // Adds a credential with the passed args to the store.
+  void SaveCredential(const autofill::PasswordForm& form) const;
+
+  // Syncs the store to disk.
+  void SyncStore() const;
+
+  // PasswordStoreConsumer:
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
+
   // The interface for getting and manipulating a user's saved passwords.
   scoped_refptr<password_manager::PasswordStore> password_store_;
+
+  // The interface for saving and updating credentials.
+  ArchivableCredentialStore* archivable_credential_store_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialProviderService);
 };

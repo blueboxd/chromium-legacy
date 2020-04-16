@@ -90,13 +90,13 @@ void ChromePageInfoDelegate::ContentSettingChangedViaPageInfo(
   GetTabSpecificContentSettings()->ContentSettingChangedViaPageInfo(type);
 }
 
-const LocalSharedObjectsContainer& ChromePageInfoDelegate::GetAllowedObjects(
-    const GURL& site_url) {
+const browsing_data::LocalSharedObjectsContainer&
+ChromePageInfoDelegate::GetAllowedObjects(const GURL& site_url) {
   return GetTabSpecificContentSettings()->allowed_local_shared_objects();
 }
 
-const LocalSharedObjectsContainer& ChromePageInfoDelegate::GetBlockedObjects(
-    const GURL& site_url) {
+const browsing_data::LocalSharedObjectsContainer&
+ChromePageInfoDelegate::GetBlockedObjects(const GURL& site_url) {
   return GetTabSpecificContentSettings()->blocked_local_shared_objects();
 }
 

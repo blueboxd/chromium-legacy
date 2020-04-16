@@ -378,8 +378,9 @@ bool DeleteDirectiveHandler::CreateDeleteDirectives(
       global_id_directive->set_end_time_usec(end_time_usecs);
     }
   }
-  syncer::SyncError error = ProcessLocalDeleteDirective(delete_directive);
-  return !error.IsSet();
+  base::Optional<syncer::ModelError> error =
+      ProcessLocalDeleteDirective(delete_directive);
+  return !error.has_value();
 }
 
 bool DeleteDirectiveHandler::CreateUrlDeleteDirective(const GURL& url) {
@@ -391,17 +392,18 @@ bool DeleteDirectiveHandler::CreateUrlDeleteDirective(const GURL& url) {
   url_directive->set_url(url.spec());
   url_directive->set_end_time_usec(TimeToUnixUsec(base::Time::Now()));
 
-  syncer::SyncError error = ProcessLocalDeleteDirective(delete_directive);
-  return !error.IsSet();
+  base::Optional<syncer::ModelError> error =
+      ProcessLocalDeleteDirective(delete_directive);
+  return !error.has_value();
 }
 
-syncer::SyncError DeleteDirectiveHandler::ProcessLocalDeleteDirective(
+base::Optional<syncer::ModelError>
+DeleteDirectiveHandler::ProcessLocalDeleteDirective(
     const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!sync_processor_) {
-    return syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
-                             "Cannot send local delete directive to sync",
-                             syncer::HISTORY_DELETE_DIRECTIVES);
+    return syncer::ModelError(FROM_HERE,
+                              "Cannot send local delete directive to sync");
   }
 #if !defined(NDEBUG)
   CheckDeleteDirectiveValid(delete_directive);
@@ -431,7 +433,8 @@ void DeleteDirectiveHandler::WaitUntilReadyToSync(base::OnceClosure done) {
   }
 }
 
-syncer::SyncMergeResult DeleteDirectiveHandler::MergeDataAndStartSyncing(
+base::Optional<syncer::ModelError>
+DeleteDirectiveHandler::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -449,7 +452,7 @@ syncer::SyncMergeResult DeleteDirectiveHandler::MergeDataAndStartSyncing(
                                 &internal_tracker_);
   }
 
-  return syncer::SyncMergeResult(type);
+  return base::nullopt;
 }
 
 void DeleteDirectiveHandler::StopSyncing(syncer::ModelType type) {
@@ -458,15 +461,13 @@ void DeleteDirectiveHandler::StopSyncing(syncer::ModelType type) {
   sync_processor_.reset();
 }
 
-syncer::SyncError DeleteDirectiveHandler::ProcessSyncChanges(
+base::Optional<syncer::ModelError> DeleteDirectiveHandler::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!sync_processor_) {
-    return syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
-                             "Sync is disabled.",
-                             syncer::HISTORY_DELETE_DIRECTIVES);
+    return syncer::ModelError(FROM_HERE, "Sync is disabled.");
   }
 
   syncer::SyncDataList delete_directives;
@@ -495,7 +496,7 @@ syncer::SyncError DeleteDirectiveHandler::ProcessSyncChanges(
                                 &internal_tracker_);
   }
 
-  return syncer::SyncError();
+  return base::nullopt;
 }
 
 void DeleteDirectiveHandler::FinishProcessing(

@@ -9,6 +9,7 @@
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "url/origin.h"
 
 namespace password_manager {
 
@@ -44,6 +45,10 @@ void PasswordManagerClient::GeneratePassword() {}
 void PasswordManagerClient::UpdateCredentialCache(
     const GURL& origin,
     const std::vector<const autofill::PasswordForm*>& best_matches,
+    bool is_blacklisted) {}
+
+void PasswordManagerClient::UpdateCacheWithBlacklistedForOrigin(
+    const url::Origin& origin,
     bool is_blacklisted) {}
 
 void PasswordManagerClient::PasswordWasAutofilled(

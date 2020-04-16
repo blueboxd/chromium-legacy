@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -17,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "build/build_config.h"
 #include "content/browser/utility_process_host.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,6 +26,8 @@
 #include "content/public/test/test_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/sandbox/sandbox.h"
+#include "services/service_manager/sandbox/switches.h"
 
 namespace content {
 namespace {
@@ -34,14 +38,25 @@ class MojoSandboxTest : public ContentBrowserTest {
  public:
   MojoSandboxTest() = default;
 
-  void SetUpOnMainThread() override {
+  using BeforeStartCallback = base::OnceCallback<void(UtilityProcessHost*)>;
+
+  void StartProcess(BeforeStartCallback callback = BeforeStartCallback()) {
     base::RunLoop run_loop;
     base::PostTaskAndReply(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&MojoSandboxTest::StartUtilityProcessOnIoThread,
-                       base::Unretained(this)),
+                       base::Unretained(this), std::move(callback)),
         run_loop.QuitClosure());
     run_loop.Run();
+  }
+
+  mojo::Remote<mojom::TestService> BindTestService() {
+    mojo::Remote<mojom::TestService> test_service;
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&MojoSandboxTest::BindTestServiceOnIoThread,
+                                  base::Unretained(this),
+                                  test_service.BindNewPipeAndPassReceiver()));
+    return test_service;
   }
 
   void TearDownOnMainThread() override {
@@ -58,10 +73,17 @@ class MojoSandboxTest : public ContentBrowserTest {
   std::unique_ptr<UtilityProcessHost> host_;
 
  private:
-  void StartUtilityProcessOnIoThread() {
+  void StartUtilityProcessOnIoThread(BeforeStartCallback callback) {
     host_.reset(new UtilityProcessHost());
     host_->SetMetricsName("mojo_sandbox_test_process");
+    if (callback)
+      std::move(callback).Run(host_.get());
     ASSERT_TRUE(host_->Start());
+  }
+
+  void BindTestServiceOnIoThread(
+      mojo::PendingReceiver<mojom::TestService> receiver) {
+    host_->GetChildProcess()->BindReceiver(std::move(receiver));
   }
 
   void StopUtilityProcessOnIoThread() { host_.reset(); }
@@ -72,15 +94,8 @@ class MojoSandboxTest : public ContentBrowserTest {
 // Ensures that a read-only shared memory region can be created within a
 // sandboxed process.
 IN_PROC_BROWSER_TEST_F(MojoSandboxTest, SubprocessReadOnlySharedMemoryRegion) {
-  mojo::Remote<mojom::TestService> test_service;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          [](UtilityProcessHost* host,
-             mojo::PendingReceiver<mojom::TestService> receiver) {
-            host->GetChildProcess()->BindReceiver(std::move(receiver));
-          },
-          host_.get(), test_service.BindNewPipeAndPassReceiver()));
+  StartProcess();
+  mojo::Remote<mojom::TestService> test_service = BindTestService();
 
   bool got_response = false;
   base::RunLoop run_loop;
@@ -103,15 +118,8 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, SubprocessReadOnlySharedMemoryRegion) {
 // Ensures that a writable shared memory region can be created within a
 // sandboxed process.
 IN_PROC_BROWSER_TEST_F(MojoSandboxTest, SubprocessWritableSharedMemoryRegion) {
-  mojo::Remote<mojom::TestService> test_service;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          [](UtilityProcessHost* host,
-             mojo::PendingReceiver<mojom::TestService> receiver) {
-            host->GetChildProcess()->BindReceiver(std::move(receiver));
-          },
-          host_.get(), test_service.BindNewPipeAndPassReceiver()));
+  StartProcess();
+  mojo::Remote<mojom::TestService> test_service = BindTestService();
 
   bool got_response = false;
   base::RunLoop run_loop;
@@ -134,15 +142,8 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, SubprocessWritableSharedMemoryRegion) {
 // Ensures that an unsafe shared memory region can be created within a
 // sandboxed process.
 IN_PROC_BROWSER_TEST_F(MojoSandboxTest, SubprocessUnsafeSharedMemoryRegion) {
-  mojo::Remote<mojom::TestService> test_service;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          [](UtilityProcessHost* host,
-             mojo::PendingReceiver<mojom::TestService> receiver) {
-            host->GetChildProcess()->BindReceiver(std::move(receiver));
-          },
-          host_.get(), test_service.BindNewPipeAndPassReceiver()));
+  StartProcess();
+  mojo::Remote<mojom::TestService> test_service = BindTestService();
 
   bool got_response = false;
   base::RunLoop run_loop;
@@ -160,6 +161,60 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, SubprocessUnsafeSharedMemoryRegion) {
       }));
   run_loop.Run();
   EXPECT_TRUE(got_response);
+}
+
+// Test for service_manager::IsProcessSandboxed().
+IN_PROC_BROWSER_TEST_F(MojoSandboxTest, IsProcessSandboxed) {
+  StartProcess();
+  mojo::Remote<mojom::TestService> test_service = BindTestService();
+
+  // The browser should not be considered sandboxed.
+  EXPECT_FALSE(service_manager::Sandbox::IsProcessSandboxed());
+
+  base::Optional<bool> maybe_is_sandboxed;
+  base::RunLoop run_loop;
+  test_service.set_disconnect_handler(run_loop.QuitClosure());
+  test_service->IsProcessSandboxed(
+      base::BindLambdaForTesting([&](bool is_sandboxed) {
+        maybe_is_sandboxed = is_sandboxed;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  ASSERT_TRUE(maybe_is_sandboxed.has_value());
+  EXPECT_TRUE(maybe_is_sandboxed.value());
+}
+
+IN_PROC_BROWSER_TEST_F(MojoSandboxTest, NotIsProcessSandboxed) {
+  StartProcess(base::BindOnce([](UtilityProcessHost* host) {
+    host->SetSandboxType(service_manager::SandboxType::kNoSandbox);
+  }));
+  mojo::Remote<mojom::TestService> test_service = BindTestService();
+
+  // The browser should not be considered sandboxed.
+  EXPECT_FALSE(service_manager::Sandbox::IsProcessSandboxed());
+
+  base::Optional<bool> maybe_is_sandboxed;
+  base::RunLoop run_loop;
+  test_service.set_disconnect_handler(run_loop.QuitClosure());
+  test_service->IsProcessSandboxed(
+      base::BindLambdaForTesting([&](bool is_sandboxed) {
+        maybe_is_sandboxed = is_sandboxed;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  ASSERT_TRUE(maybe_is_sandboxed.has_value());
+#if defined(OS_ANDROID)
+  // Android does not support unsandboxed utility processes. See
+  // org.chromium.content.browser.ChildProcessLauncherHelperImpl#createAndStart
+  EXPECT_TRUE(maybe_is_sandboxed.value());
+#else
+  // If the content_browsertests is launched with --no-sandbox, that will
+  // get passed down to the browser and all child processes. In that case,
+  // IsProcessSandboxed() will report true, per the API.
+  bool no_sandbox = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      service_manager::switches::kNoSandbox);
+  EXPECT_EQ(no_sandbox, maybe_is_sandboxed.value());
+#endif
 }
 
 }  //  namespace

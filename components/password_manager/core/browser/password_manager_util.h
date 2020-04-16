@@ -204,6 +204,32 @@ void SetDefaultPasswordStore(PrefService* pref_service,
 // |pref_service| must not be null.
 void ClearAccountStorageSettingsForAllUsers(PrefService* pref_service);
 
+// Represents the state of the user wrt. sign-in and account-scoped storage.
+// Used for metrics.
+enum class PasswordAccountStorageUserState {
+  // Signed-out user (and no account storage opt-in exists).
+  kSignedOutUser,
+  // Signed-out user, but an account storage opt-in exists.
+  kSignedOutAccountStoreUser,
+  // Signed-in user, not opted in to the account storage (but will save
+  // passwords to the account storage by default).
+  kSignedInUser,
+  // Signed-in user, not opted in to the account storage, and has explicitly
+  // chosen to save passwords only on the device.
+  kSignedInUserSavingLocally,
+  // Signed-in user, opted in to the account storage, and saving passwords to
+  // the account storage..
+  kSignedInAccountStoreUser,
+  // Signed-in user and opted in to the account storage, but has chosen to save
+  // passwords only on the device.
+  kSignedInAccountStoreUserSavingLocally,
+  // Syncing user.
+  kSyncUser,
+};
+PasswordAccountStorageUserState ComputePasswordAccountStorageUserState(
+    const PrefService* pref_service,
+    const syncer::SyncService* sync_service);
+
 }  // namespace password_manager_util
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_

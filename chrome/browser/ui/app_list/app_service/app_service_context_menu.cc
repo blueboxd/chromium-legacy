@@ -113,11 +113,11 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
       break;
 
     case ash::APP_CONTEXT_MENU_NEW_WINDOW:
-      controller()->CreateNewWindow(profile(), false);
+      controller()->CreateNewWindow(/*incognito=*/false);
       break;
 
     case ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW:
-      controller()->CreateNewWindow(profile(), true);
+      controller()->CreateNewWindow(/*incognito=*/true);
       break;
 
     case ash::STOP_APP:

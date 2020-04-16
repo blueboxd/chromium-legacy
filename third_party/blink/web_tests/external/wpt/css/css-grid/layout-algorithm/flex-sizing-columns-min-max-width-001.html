@@ -1,6 +1,11 @@
 <!DOCTYPE HTML>
-<link href="resources/grid.css" rel="stylesheet">
-<link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
+<title>CSS Grid Layout Test: min and max size when computing the flex fraction</title>
+<link rel="author" title="Sergio Villar" href="mailto:svillar@igalia.com"/>
+<link rel="help" href="https://drafts.csswg.org/css-grid/#algo-flex-tracks"/>
+<link rel="issue" href="https://bugs.chromium.org/p/chromium/issues/detail?id=660690"/>
+<link href="/css/support/grid.css" rel="stylesheet"/>
+<link href="/css/support/width-keyword-classes.css" rel="stylesheet">
+<meta name="assert" content="This test ensures that minimum and maximum sizes are used to compute the flex fraction for indefinite free spaces."/>
 <style>
 .grid {
    margin: 3px;
@@ -15,10 +20,9 @@
 .item:nth-child(1) { background-color: purple; }
 .item:nth-child(2) { background-color: blue; }
 </style>
-
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
 <body onload="checkLayout('.grid')">
 
 <p>This test PASS if all the grids in the same row look the same.</p>

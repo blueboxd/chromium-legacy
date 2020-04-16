@@ -221,8 +221,8 @@ void RemoteCopyMessageHandler::HandleText(const std::string& text) {
       base::BindOnce(&RemoteCopyMessageHandler::DetectWrite,
                      base::Unretained(this), old_sequence_number,
                      base::TimeTicks::Now(), /*is_image=*/false));
-  ShowNotification(GetTextNotificationTitle(device_name_), SkBitmap(),
-                   base::GenerateGUID());
+  notification_id_ = base::GenerateGUID();
+  ShowNotification(GetTextNotificationTitle(device_name_), SkBitmap());
   Finish(RemoteCopyHandleMessageResult::kSuccessHandledText);
 }
 
@@ -246,7 +246,7 @@ void RemoteCopyMessageHandler::HandleImage(const std::string& image_url) {
   bool can_update_notification = CanUpdateProgressNotification();
 
   if (should_show_progress) {
-    CancelProgressNotification();
+    ClearProgressAndCloseNotification();
     UpdateProgressNotification(l10n_util::GetStringUTF16(
         can_update_notification
             ? IDS_SHARING_REMOTE_COPY_NOTIFICATION_PREPARING_DOWNLOAD
@@ -313,13 +313,13 @@ void RemoteCopyMessageHandler::OnImageDownloadProgress(uint64_t current) {
 void RemoteCopyMessageHandler::UpdateProgressNotification(
     const base::string16& context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (image_notification_id_.empty()) {
-    image_notification_id_ = base::GenerateGUID();
+  if (notification_id_.empty()) {
+    notification_id_ = base::GenerateGUID();
     // base::Unretained is safe as the SharingService owns |this| via the
     // SharingHandlerRegistry and also the passed callback.
     SharingServiceFactory::GetForBrowserContext(profile_)
         ->SetNotificationActionHandler(
-            image_notification_id_,
+            notification_id_,
             base::BindRepeating(
                 &RemoteCopyMessageHandler::OnProgressNotificationAction,
                 base::Unretained(this)));
@@ -330,7 +330,7 @@ void RemoteCopyMessageHandler::UpdateProgressNotification(
   rich_notification_data.never_timeout = true;
 
   message_center::Notification notification(
-      message_center::NOTIFICATION_TYPE_PROGRESS, image_notification_id_,
+      message_center::NOTIFICATION_TYPE_PROGRESS, notification_id_,
       GetImageNotificationTitle(device_name_),
       GetRemainingTimeString(image_content_progress_, image_content_length_,
                              timer_.Elapsed()),
@@ -386,22 +386,21 @@ void RemoteCopyMessageHandler::UpdateProgressNotification(
                      base::Unretained(this), context));
 }
 
-void RemoteCopyMessageHandler::CancelProgressNotification() {
+void RemoteCopyMessageHandler::ClearProgressAndCloseNotification() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   image_content_length_ = -1;
   image_content_progress_ = 0;
   progress_notification_closed_ = false;
 
-  if (image_notification_id_.empty())
+  if (notification_id_.empty())
     return;
 
   SharingServiceFactory::GetForBrowserContext(profile_)
-      ->SetNotificationActionHandler(image_notification_id_,
-                                     base::NullCallback());
+      ->SetNotificationActionHandler(notification_id_, base::NullCallback());
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Close(
-      NotificationHandler::Type::SHARING, image_notification_id_);
+      NotificationHandler::Type::SHARING, notification_id_);
 
-  image_notification_id_.clear();
+  notification_id_.clear();
 }
 
 void RemoteCopyMessageHandler::OnProgressNotificationAction(
@@ -418,8 +417,7 @@ void RemoteCopyMessageHandler::OnProgressNotificationAction(
   if (closed) {
     // Remove the handler as this notification is now closed.
     SharingServiceFactory::GetForBrowserContext(profile_)
-        ->SetNotificationActionHandler(image_notification_id_,
-                                       base::NullCallback());
+        ->SetNotificationActionHandler(notification_id_, base::NullCallback());
     progress_notification_closed_ = true;
     return;
   }
@@ -544,29 +542,25 @@ void RemoteCopyMessageHandler::WriteImageAndShowNotification(
   // having both notifications on screen, remove the progress one first.
   if (!progress_notification_closed_ &&
       !base::FeatureList::IsEnabled(kRemoteCopyPersistentNotification)) {
-    CancelProgressNotification();
+    ClearProgressAndCloseNotification();
   }
 #endif  // defined(OS_MACOSX)
 
-  std::string notification_id = image_notification_id_;
-  if (notification_id.empty()) {
-    notification_id = base::GenerateGUID();
-  } else {
+  // If the notification id is not empty there must be a progress notification
+  // that can be updated. Just clear its action handler.
+  if (!notification_id_.empty()) {
     SharingServiceFactory::GetForBrowserContext(profile_)
-        ->SetNotificationActionHandler(image_notification_id_,
-                                       base::NullCallback());
-    image_notification_id_.clear();
+        ->SetNotificationActionHandler(notification_id_, base::NullCallback());
+  } else {
+    notification_id_ = base::GenerateGUID();
   }
 
-  ShowNotification(GetImageNotificationTitle(device_name_), resized_image,
-                   notification_id);
+  ShowNotification(GetImageNotificationTitle(device_name_), resized_image);
   Finish(RemoteCopyHandleMessageResult::kSuccessHandledImage);
 }
 
-void RemoteCopyMessageHandler::ShowNotification(
-    const base::string16& title,
-    const SkBitmap& image,
-    const std::string& notification_id) {
+void RemoteCopyMessageHandler::ShowNotification(const base::string16& title,
+                                                const SkBitmap& image) {
   TRACE_EVENT0("sharing", "RemoteCopyMessageHandler::ShowNotification");
 
   gfx::Image icon;
@@ -597,7 +591,7 @@ void RemoteCopyMessageHandler::ShowNotification(
   ui::Accelerator paste_accelerator(ui::VKEY_V, ui::EF_PLATFORM_ACCELERATOR);
 
   message_center::Notification notification(
-      type, notification_id, title,
+      type, notification_id_, title,
       l10n_util::GetStringFUTF16(
           IDS_SHARING_REMOTE_COPY_NOTIFICATION_DESCRIPTION,
           paste_accelerator.GetShortcutText()),
@@ -649,8 +643,10 @@ void RemoteCopyMessageHandler::DetectWrite(uint64_t old_sequence_number,
 void RemoteCopyMessageHandler::Finish(RemoteCopyHandleMessageResult result) {
   TRACE_EVENT1("sharing", "RemoteCopyMessageHandler::Finish", "result", result);
 
-  if (!image_notification_id_.empty())
-    CancelProgressNotification();  // TODO(knollr): Show an error instead?
+  if (result != RemoteCopyHandleMessageResult::kSuccessHandledText &&
+      result != RemoteCopyHandleMessageResult::kSuccessHandledImage) {
+    ClearProgressAndCloseNotification();
+  }
 
   LogRemoteCopyHandleMessageResult(result);
   device_name_.clear();
@@ -662,5 +658,5 @@ void RemoteCopyMessageHandler::CancelAsyncTasks() {
   resize_callback_.Cancel();
   write_detection_timer_.AbandonAndStop();
   image_download_update_progress_timer_.AbandonAndStop();
-  CancelProgressNotification();
+  ClearProgressAndCloseNotification();
 }

@@ -18,7 +18,6 @@ struct PasswordForm;
 // with an empty origin or Android forms.
 - (instancetype)initWithPasswordForm:(const autofill::PasswordForm&)passwordForm
                              favicon:(NSString*)favicon
-                  keychainIdentifier:(NSString*)keychainIdentifier
                 validationIdentifier:(NSString*)validationIdentifier;
 
 @end

@@ -8,6 +8,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.SystemClock;
@@ -17,6 +18,7 @@ import android.util.Pair;
 import android.webkit.WebView;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -24,6 +26,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -220,7 +223,7 @@ public class ExternalNavigationHandler {
         try {
             Intent intent = Intent.parseUri(browserFallbackUrl, Intent.URI_INTENT_SCHEME);
             sanitizeQueryIntentActivitiesIntent(intent);
-            List<ResolveInfo> resolvingInfos = mDelegate.queryIntentActivities(intent);
+            List<ResolveInfo> resolvingInfos = queryIntentActivities(intent);
             if (!isAlreadyInTargetWebApk(resolvingInfos, params)
                     && launchWebApkIfSoleIntentHandler(resolvingInfos, intent)) {
                 return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
@@ -547,7 +550,7 @@ public class ExternalNavigationHandler {
         final Uri uri = targetIntent.getData();
         if (targetIntent.getPackage() == null && uri != null
                 && UrlConstants.SMS_SCHEME.equals(uri.getScheme())) {
-            List<ResolveInfo> resolvingInfos = mDelegate.queryIntentActivities(targetIntent);
+            List<ResolveInfo> resolvingInfos = queryIntentActivities(targetIntent);
             targetIntent.setPackage(getDefaultSmsPackageName(resolvingInfos));
             return true;
         }
@@ -640,8 +643,7 @@ public class ExternalNavigationHandler {
         }
 
         if (previousIntent != null
-                && resolversSubsetOf(
-                        resolvingInfos, mDelegate.queryIntentActivities(previousIntent))) {
+                && resolversSubsetOf(resolvingInfos, queryIntentActivities(previousIntent))) {
             if (DEBUG) Log.i(TAG, "Same host, no new resolvers");
             return true;
         }
@@ -867,7 +869,7 @@ public class ExternalNavigationHandler {
         if (hasIntentScheme) recordIntentActionMetrics(targetIntent);
 
         Intent debugIntent = new Intent(targetIntent);
-        List<ResolveInfo> resolvingInfos = mDelegate.queryIntentActivities(targetIntent);
+        List<ResolveInfo> resolvingInfos = queryIntentActivities(targetIntent);
         if (resolvingInfos.isEmpty()) {
             return handleUnresolvableIntent(params, targetIntent, browserFallbackUrl);
         }
@@ -925,7 +927,7 @@ public class ExternalNavigationHandler {
     }
 
     /**
-     * Sanitize intent to be passed to {@link ExternalNavigationDelegate#queryIntentActivities()}
+     * Sanitize intent to be passed to {@link queryIntentActivities()}
      * ensuring that web pages cannot bypass browser security.
      */
     private void sanitizeQueryIntentActivitiesIntent(Intent intent) {
@@ -1050,7 +1052,7 @@ public class ExternalNavigationHandler {
         }
         if (intent.getPackage() != null) return true;
 
-        List<ResolveInfo> resolvingInfos = mDelegate.queryIntentActivities(intent);
+        List<ResolveInfo> resolvingInfos = queryIntentActivities(intent);
         return resolvingInfos != null && !resolvingInfos.isEmpty();
     }
 
@@ -1098,8 +1100,17 @@ public class ExternalNavigationHandler {
      * Returns whether or not there's an activity available to handle the intent.
      */
     private boolean deviceCanHandleIntent(Intent intent) {
-        List<ResolveInfo> resolveInfos = mDelegate.queryIntentActivities(intent);
+        List<ResolveInfo> resolveInfos = queryIntentActivities(intent);
         return resolveInfos != null && !resolveInfos.isEmpty();
+    }
+
+    /**
+     * See {@link PackageManagerUtils#queryIntentActivities(Intent, int)}
+     */
+    @NonNull
+    private List<ResolveInfo> queryIntentActivities(Intent intent) {
+        return PackageManagerUtils.queryIntentActivities(
+                intent, PackageManager.GET_RESOLVED_FILTER);
     }
 
     private static boolean intentResolutionMatches(Intent intent, Intent other) {

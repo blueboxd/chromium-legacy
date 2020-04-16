@@ -22,21 +22,25 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/credential_cache.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "url/origin.h"
 
 namespace {
 using autofill::AccessoryAction;
@@ -49,8 +53,11 @@ using autofill::mojom::FocusedFieldType;
 using base::ASCIIToUTF16;
 using password_manager::CreateEntry;
 using password_manager::CredentialCache;
+using password_manager::MockPasswordStore;
+using password_manager::OriginCredentialStore;
 using testing::_;
 using testing::ByMove;
+using testing::Eq;
 using testing::Mock;
 using testing::NiceMock;
 using testing::Return;
@@ -61,6 +68,7 @@ using IsPslMatch = autofill::UserInfo::IsPslMatch;
 
 constexpr char kExampleSite[] = "https://example.com";
 constexpr char kExampleSiteMobile[] = "https://m.example.com";
+constexpr char kExampleSignonRealm[] = "https://example.com/";
 constexpr char kExampleDomain[] = "example.com";
 
 class MockPasswordGenerationController
@@ -70,8 +78,9 @@ class MockPasswordGenerationController
 
   explicit MockPasswordGenerationController(content::WebContents* web_contents);
 
-  MOCK_METHOD1(OnGenerationRequested,
-               void(autofill::password_generation::PasswordGenerationType));
+  MOCK_METHOD(void,
+              OnGenerationRequested,
+              (autofill::password_generation::PasswordGenerationType));
 };
 
 // static
@@ -86,6 +95,24 @@ void MockPasswordGenerationController::CreateForWebContents(
 MockPasswordGenerationController::MockPasswordGenerationController(
     content::WebContents* web_contents)
     : PasswordGenerationControllerImpl(web_contents) {}
+
+class MockPasswordManagerClient
+    : public password_manager::StubPasswordManagerClient {
+ public:
+  explicit MockPasswordManagerClient(MockPasswordStore* mock_password_store)
+      : mock_password_store_(mock_password_store) {}
+
+  MOCK_METHOD(void,
+              UpdateCacheWithBlacklistedForOrigin,
+              (const url::Origin&, bool));
+
+  password_manager::PasswordStore* GetProfilePasswordStore() const override {
+    return mock_password_store_;
+  }
+
+ private:
+  MockPasswordStore* mock_password_store_;
+};
 
 base::string16 password_for_str(const base::string16& user) {
   return l10n_util::GetStringFUTF16(
@@ -134,7 +161,9 @@ AccessorySheetData::Builder PasswordAccessorySheetDataBuilder(
 
 class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
  public:
-  PasswordAccessoryControllerTest() = default;
+  PasswordAccessoryControllerTest()
+      : ChromeRenderViewHostTestHarness(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -146,10 +175,18 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
               web_contents()->GetFocusedFrame()->GetLastCommittedOrigin());
 
     MockPasswordGenerationController::CreateForWebContents(web_contents());
+    mock_password_store_ = base::MakeRefCounted<MockPasswordStore>();
+    mock_password_store_->Init(nullptr);
+    mock_pwd_manager_client_ =
+        std::make_unique<MockPasswordManagerClient>(mock_password_store_.get());
+
     PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
-        web_contents(), cache(), mock_manual_filling_controller_.AsWeakPtr());
+        web_contents(), cache(), mock_manual_filling_controller_.AsWeakPtr(),
+        mock_pwd_manager_client_.get());
     NavigateAndCommit(GURL(kExampleSite));
   }
+
+  void TearDown() override { mock_password_store_->ShutdownOnUIThread(); }
 
   PasswordAccessoryController* controller() {
     return PasswordAccessoryControllerImpl::FromWebContents(web_contents());
@@ -157,11 +194,17 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
 
   password_manager::CredentialCache* cache() { return &credential_cache_; }
 
+  MockPasswordManagerClient* password_client() {
+    return mock_pwd_manager_client_.get();
+  }
+
  protected:
   StrictMock<MockManualFillingController> mock_manual_filling_controller_;
+  scoped_refptr<MockPasswordStore> mock_password_store_;
 
  private:
   password_manager::CredentialCache credential_cache_;
+  std::unique_ptr<MockPasswordManagerClient> mock_pwd_manager_client_;
 };
 
 TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
@@ -593,7 +636,8 @@ TEST_F(PasswordAccessoryControllerTest,
   FocusWebContentsOnMainFrame();
 
   PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
-      raw_web_contents, cache(), mock_manual_filling_controller_.AsWeakPtr());
+      raw_web_contents, cache(), mock_manual_filling_controller_.AsWeakPtr(),
+      password_client());
   PasswordAccessoryController* incognito_accessory =
       PasswordAccessoryControllerImpl::FromWebContents(raw_web_contents);
   cache()->SaveCredentialsAndBlacklistedForOrigin(
@@ -637,4 +681,33 @@ TEST_F(PasswordAccessoryControllerTest, AddsSaveToggleIfWasBlacklisted) {
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillablePasswordField,
       /*is_manual_generation_available=*/false);
+}
+
+TEST_F(PasswordAccessoryControllerTest, SavePasswordsToggledUpdatesCache) {
+  url::Origin example_origin = url::Origin::Create(GURL(kExampleSite));
+  EXPECT_CALL(*password_client(),
+              UpdateCacheWithBlacklistedForOrigin(example_origin, false));
+  controller()->OnToggleChanged(
+      autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS, true);
+}
+
+TEST_F(PasswordAccessoryControllerTest, SavePasswordsEnabledUpdatesStore) {
+  password_manager::PasswordStore::FormDigest form_digest(
+      autofill::PasswordForm::Scheme::kHtml, kExampleSignonRealm,
+      GURL(kExampleSite));
+  EXPECT_CALL(*mock_password_store_, Unblacklist(form_digest, _));
+  controller()->OnToggleChanged(
+      autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS, true);
+}
+
+TEST_F(PasswordAccessoryControllerTest, SavePasswordsDisabledUpdatesStore) {
+  autofill::PasswordForm expected_form;
+  expected_form.blacklisted_by_user = true;
+  expected_form.scheme = autofill::PasswordForm::Scheme::kHtml;
+  expected_form.signon_realm = kExampleSignonRealm;
+  expected_form.origin = GURL(kExampleSite);
+  expected_form.date_created = base::Time::Now();
+  EXPECT_CALL(*mock_password_store_, AddLogin(Eq(expected_form)));
+  controller()->OnToggleChanged(
+      autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS, false);
 }

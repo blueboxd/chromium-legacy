@@ -10,11 +10,11 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_view.h"
+#include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -123,7 +123,7 @@ void CookieControlsController::OnCookieBlockingEnabledForSite(
 }
 
 int CookieControlsController::GetBlockedCookieCount() {
-  const LocalSharedObjectsContainer& blocked_objects =
+  const browsing_data::LocalSharedObjectsContainer& blocked_objects =
       tab_observer_->tab_specific_content_settings()
           ->blocked_local_shared_objects();
   return blocked_objects.GetObjectCount();

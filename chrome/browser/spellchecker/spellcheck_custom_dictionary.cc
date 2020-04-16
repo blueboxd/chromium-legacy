@@ -305,7 +305,8 @@ void SpellcheckCustomDictionary::WaitUntilReadyToSync(base::OnceClosure done) {
     wait_until_ready_to_sync_cb_ = std::move(done);
 }
 
-syncer::SyncMergeResult SpellcheckCustomDictionary::MergeDataAndStartSyncing(
+base::Optional<syncer::ModelError>
+SpellcheckCustomDictionary::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -337,10 +338,7 @@ syncer::SyncMergeResult SpellcheckCustomDictionary::MergeDataAndStartSyncing(
   Notify(*to_change_locally);
   Save(std::move(to_change_locally));
 
-  // Send local changes to the sync server.
-  syncer::SyncMergeResult result(type);
-  result.set_error(Sync(to_change_remotely));
-  return result;
+  return Sync(to_change_remotely);
 }
 
 void SpellcheckCustomDictionary::StopSyncing(syncer::ModelType type) {
@@ -366,7 +364,8 @@ syncer::SyncDataList SpellcheckCustomDictionary::GetAllSyncDataForTesting(
   return data;
 }
 
-syncer::SyncError SpellcheckCustomDictionary::ProcessSyncChanges(
+base::Optional<syncer::ModelError>
+SpellcheckCustomDictionary::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -385,10 +384,11 @@ syncer::SyncError SpellcheckCustomDictionary::ProcessSyncChanges(
       case syncer::SyncChange::ACTION_UPDATE:
         // Intentionally fall through.
       case syncer::SyncChange::ACTION_INVALID:
-        return sync_error_handler_->CreateAndUploadError(
-            FROM_HERE,
-            "Processing sync changes failed on change type " +
-                syncer::SyncChange::ChangeTypeToString(change.change_type()));
+        return syncer::ConvertToModelError(
+            sync_error_handler_->CreateAndUploadError(
+                FROM_HERE, "Processing sync changes failed on change type " +
+                               syncer::SyncChange::ChangeTypeToString(
+                                   change.change_type())));
     }
   }
 
@@ -397,7 +397,7 @@ syncer::SyncError SpellcheckCustomDictionary::ProcessSyncChanges(
   Notify(*dictionary_change);
   Save(std::move(dictionary_change));
 
-  return syncer::SyncError();
+  return base::nullopt;
 }
 
 SpellcheckCustomDictionary::LoadFileResult::LoadFileResult()
@@ -489,12 +489,11 @@ void SpellcheckCustomDictionary::Save(
                      std::move(dictionary_change), custom_dictionary_path_));
 }
 
-syncer::SyncError SpellcheckCustomDictionary::Sync(
+base::Optional<syncer::ModelError> SpellcheckCustomDictionary::Sync(
     const Change& dictionary_change) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  syncer::SyncError error;
   if (!IsSyncing() || dictionary_change.empty())
-    return error;
+    return base::nullopt;
 
   // The number of words on the sync server should not exceed the limits.
   int server_size = static_cast<int>(words_.size()) -
@@ -529,8 +528,9 @@ syncer::SyncError SpellcheckCustomDictionary::Sync(
   }
 
   // Send the changes to the sync processor.
-  error = sync_processor_->ProcessSyncChanges(FROM_HERE, sync_change_list);
-  if (error.IsSet())
+  base::Optional<syncer::ModelError> error =
+      sync_processor_->ProcessSyncChanges(FROM_HERE, sync_change_list);
+  if (error.has_value())
     return error;
 
   // Turn off syncing of this dictionary if the server already has the maximum
@@ -538,7 +538,7 @@ syncer::SyncError SpellcheckCustomDictionary::Sync(
   if (words_.size() > spellcheck::kMaxSyncableDictionaryWords)
     StopSyncing(syncer::DICTIONARY);
 
-  return error;
+  return base::nullopt;
 }
 
 void SpellcheckCustomDictionary::Notify(const Change& dictionary_change) {

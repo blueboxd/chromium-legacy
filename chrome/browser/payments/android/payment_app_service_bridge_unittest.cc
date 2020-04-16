@@ -24,7 +24,10 @@ namespace payments {
 class MockCallback {
  public:
   MockCallback() = default;
-  MOCK_METHOD0(NotifyPaymentAppCreated, void(void));
+  MOCK_METHOD2(NotifyPaymentAppsCreated,
+               void(const content::PaymentAppProvider::PaymentApps&,
+                    const payments::ServiceWorkerPaymentAppFinder::
+                        InstallablePaymentApps&));
   MOCK_METHOD1(NotifyPaymentAppCreationError, void(const std::string& error));
   MOCK_METHOD0(NotifyDoneCreatingPaymentApps, void(void));
 };
@@ -68,7 +71,7 @@ TEST_F(PaymentAppServiceBridgeUnitTest, Smoke) {
           /* number_of_factories= */ 3, web_contents_->GetMainFrame(),
           top_origin_, std::move(method_data), web_data_service_,
           /* may_crawl_for_installable_payment_apps= */ true,
-          base::BindRepeating(&MockCallback::NotifyPaymentAppCreated,
+          base::BindRepeating(&MockCallback::NotifyPaymentAppsCreated,
                               base::Unretained(&mock_callback)),
           base::BindRepeating(&MockCallback::NotifyPaymentAppCreationError,
                               base::Unretained(&mock_callback)),
@@ -92,8 +95,10 @@ TEST_F(PaymentAppServiceBridgeUnitTest, Smoke) {
   content::PaymentAppProvider::PaymentApps apps;
   ServiceWorkerPaymentAppFinder::InstallablePaymentApps installables;
 
-  EXPECT_CALL(mock_callback, NotifyPaymentAppCreated());
-  bridge->OnCreatingNativePaymentAppsSkipped(apps, installables);
+  EXPECT_CALL(mock_callback,
+              NotifyPaymentAppsCreated(::testing::_, ::testing::_));
+  bridge->OnCreatingNativePaymentAppsSkipped(std::move(apps),
+                                             std::move(installables));
 
   EXPECT_CALL(mock_callback, NotifyPaymentAppCreationError("some error"));
   bridge->OnPaymentAppCreationError("some error");

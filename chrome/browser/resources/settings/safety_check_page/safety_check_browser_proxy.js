@@ -67,10 +67,13 @@ cr.define('settings', function() {
    */
   /* #export */ const SafetyCheckSafeBrowsingStatus = {
     CHECKING: 0,
+    // Enabled is deprecated; kept not to break old UMA metrics (enums.xml).
     ENABLED: 1,
     DISABLED: 2,
     DISABLED_BY_ADMIN: 3,
     DISABLED_BY_EXTENSION: 4,
+    ENABLED_STANDARD: 5,
+    ENABLED_ENHANCED: 6,
   };
 
   /**

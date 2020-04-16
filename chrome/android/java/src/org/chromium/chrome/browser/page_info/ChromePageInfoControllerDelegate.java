@@ -6,14 +6,20 @@ package org.chromium.chrome.browser.page_info;
 
 import android.content.Intent;
 import android.text.SpannableString;
+import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Consumer;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
+import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils.OfflinePageLoadUrlDelegate;
 import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
@@ -35,12 +41,23 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.text.DateFormat;
+import java.util.Date;
 
 /**
  * Chrome's implementation of PageInfoControllerDelegate, that provides Chrome-specific info to
  * PageInfoController. It also contains logic for Chrome-specific features, like {@link Previews}
  */
 public class ChromePageInfoControllerDelegate implements PageInfoControllerDelegate {
+    @IntDef({OfflinePageState.NOT_OFFLINE_PAGE, OfflinePageState.TRUSTED_OFFLINE_PAGE,
+            OfflinePageState.UNTRUSTED_OFFLINE_PAGE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface OfflinePageState {
+        int NOT_OFFLINE_PAGE = 1;
+        int TRUSTED_OFFLINE_PAGE = 2;
+        int UNTRUSTED_OFFLINE_PAGE = 3;
+    }
+
     @IntDef({PreviewPageState.NOT_PREVIEW, PreviewPageState.SECURE_PAGE_PREVIEW,
             PreviewPageState.INSECURE_PAGE_PREVIEW})
     @Retention(RetentionPolicy.SOURCE)
@@ -53,11 +70,18 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
     private final WebContents mWebContents;
     private final ChromeActivity mActivity;
     private final @PreviewPageState int mPreviewPageState;
+    private String mOfflinePageUrl;
+    private String mOfflinePageCreationDate;
+    private @OfflinePageState int mOfflinePageState;
+    private OfflinePageLoadUrlDelegate mOfflinePageLoadUrlDelegate;
 
-    public ChromePageInfoControllerDelegate(ChromeActivity activity, WebContents webContents) {
+    public ChromePageInfoControllerDelegate(ChromeActivity activity, WebContents webContents,
+            OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate) {
         mWebContents = webContents;
         mActivity = activity;
         mPreviewPageState = getPreviewPageStateAndRecordUma();
+        initOfflinePageParams();
+        mOfflinePageLoadUrlDelegate = offlinePageLoadUrlDelegate;
     }
 
     private Profile profile() {
@@ -82,6 +106,28 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
                     EventConstants.PREVIEWS_VERBOSE_STATUS_OPENED);
         }
         return previewPageState;
+    }
+
+    private void initOfflinePageParams() {
+        mOfflinePageState = OfflinePageState.NOT_OFFLINE_PAGE;
+        OfflinePageItem offlinePage = OfflinePageUtils.getOfflinePage(mWebContents);
+        if (offlinePage != null) {
+            mOfflinePageUrl = offlinePage.getUrl();
+            if (OfflinePageUtils.isShowingTrustedOfflinePage(mWebContents)) {
+                mOfflinePageState = OfflinePageState.TRUSTED_OFFLINE_PAGE;
+            } else {
+                mOfflinePageState = OfflinePageState.UNTRUSTED_OFFLINE_PAGE;
+            }
+            // Get formatted creation date of the offline page. If the page was shared (so the
+            // creation date cannot be acquired), make date an empty string and there will be
+            // specific processing for showing different string in UI.
+            long pageCreationTimeMs = offlinePage.getCreationTimeMs();
+            if (pageCreationTimeMs != 0) {
+                Date creationDate = new Date(offlinePage.getCreationTimeMs());
+                DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
+                mOfflinePageCreationDate = df.format(creationDate);
+            }
+        }
     }
 
     /**
@@ -193,5 +239,69 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
     @Override
     public VrHandler getVrHandler() {
         return VrModuleProvider.getDelegate();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getOfflinePageUrl() {
+        return mOfflinePageUrl;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isShowingOfflinePage() {
+        return mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE && !isShowingPreview();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void initOfflinePageUiParams(
+            PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss) {
+        if (isShowingOfflinePage() && OfflinePageUtils.isConnected()) {
+            viewParams.openOnlineButtonClickCallback = () -> {
+                runAfterDismiss.accept(() -> {
+                    // Attempt to reload to an online version of the viewed offline web page.
+                    // This attempt might fail if the user is offline, in which case an offline
+                    // copy will be reloaded.
+                    OfflinePageUtils.reload(mWebContents, mOfflinePageLoadUrlDelegate);
+                });
+            };
+        } else {
+            viewParams.openOnlineButtonShown = false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Nullable
+    public String getOfflinePageConnectionMessage() {
+        if (mOfflinePageState == OfflinePageState.TRUSTED_OFFLINE_PAGE) {
+            return String.format(mActivity.getString(R.string.page_info_connection_offline),
+                    mOfflinePageCreationDate);
+        } else if (mOfflinePageState == OfflinePageState.UNTRUSTED_OFFLINE_PAGE) {
+            // For untrusted pages, if there's a creation date, show it in the message.
+            if (TextUtils.isEmpty(mOfflinePageCreationDate)) {
+                return mActivity.getString(
+                        R.string.page_info_offline_page_not_trusted_without_date);
+            } else {
+                return String.format(
+                        mActivity.getString(R.string.page_info_offline_page_not_trusted_with_date),
+                        mOfflinePageCreationDate);
+            }
+        }
+        return null;
+    }
+
+    @VisibleForTesting
+    void setOfflinePageStateForTesting(@OfflinePageState int offlinePageState) {
+        mOfflinePageState = offlinePageState;
     }
 }

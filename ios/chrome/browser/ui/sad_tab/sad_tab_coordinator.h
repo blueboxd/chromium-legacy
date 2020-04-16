@@ -13,14 +13,6 @@
 // Coordinator that displays a SadTab view.
 @interface SadTabCoordinator : ChromeCoordinator<SadTabTabHelperDelegate>
 
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // Required to support Overscroll Actions UI, which is displayed when Sad Tab is
 // pulled down.
 @property(nonatomic, weak) id<OverscrollActionsControllerDelegate>

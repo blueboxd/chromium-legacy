@@ -359,14 +359,14 @@ source_set("call_stack_profile_collector") {
 jumbo_static_library("test_support") {
   testonly = true
   sources = [
-    "test_enabled_state_provider.cc",
-    "test_enabled_state_provider.h",
-    "test_metrics_log_uploader.cc",
-    "test_metrics_log_uploader.h",
-    "test_metrics_provider.cc",
-    "test_metrics_provider.h",
-    "test_metrics_service_client.cc",
-    "test_metrics_service_client.h",
+    "test/test_enabled_state_provider.cc",
+    "test/test_enabled_state_provider.h",
+    "test/test_metrics_log_uploader.cc",
+    "test/test_metrics_log_uploader.h",
+    "test/test_metrics_provider.cc",
+    "test/test_metrics_provider.h",
+    "test/test_metrics_service_client.cc",
+    "test/test_metrics_service_client.h",
   ]
 
   public_deps = [ ":metrics" ]

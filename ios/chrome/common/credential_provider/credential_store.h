@@ -20,6 +20,22 @@
 // the system.
 - (void)saveDataWithCompletion:(void (^)(NSError* error))completion;
 
+// Removes all the credentials. Use |-saveDataWithCompletion:| to
+// update the data on disk.
+- (void)removeAllCredentials;
+
+// Adds a credential to the memory storage. Use |-saveDataWithCompletion:| to
+// update the data on disk.
+- (void)addCredential:(id<Credential>)credential;
+
+// Updates a credential in the memory storage. Use |-saveDataWithCompletion:| to
+// update the data on disk.
+- (void)updateCredential:(id<Credential>)credential;
+
+// Removes a credential from the memory storage. Use |-saveDataWithCompletion:|
+// to update the data on disk.
+- (void)removeCredential:(id<Credential>)credential;
+
 @end
 
 #endif  // IOS_CHROME_COMMON_CREDENTIAL_PROVIDER_CREDENTIAL_STORE_H_

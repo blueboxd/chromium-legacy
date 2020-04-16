@@ -9,6 +9,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_mediator.h"
@@ -56,9 +57,10 @@
     _passwordViewController.contentInsetsAlwaysEqualToSafeArea = YES;
 
     auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
-        self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
+        browser->GetBrowserState(), ServiceAccessType::EXPLICIT_ACCESS);
     FaviconLoader* faviconLoader =
-        IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
+        IOSChromeFaviconLoaderFactory::GetForBrowserState(
+            browser->GetBrowserState());
 
     _passwordMediator = [[ManualFillPasswordMediator alloc]
         initWithPasswordStore:passwordStore

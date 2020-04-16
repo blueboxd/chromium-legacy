@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class NavigatorUABrandVersion;
 class ScriptState;
 
 class NavigatorUAData : public ScriptWrappable, ExecutionContextClient {

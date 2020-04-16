@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
@@ -35,9 +36,9 @@
 @synthesize type = _type;
 @synthesize started = _started;
 
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
-                                type:(ToolbarContainerType)type {
-  if (self = [super initWithBaseViewController:nil browserState:browserState]) {
+- (instancetype)initWithBrowser:(Browser*)browser
+                           type:(ToolbarContainerType)type {
+  if (self = [super initWithBaseViewController:nil browser:browser]) {
     _type = type;
   }
   return self;
@@ -92,7 +93,7 @@
         self.containerViewController);
   } else {
     _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
-        FullscreenController::FromBrowserState(self.browserState),
+        FullscreenController::FromBrowserState(self.browser->GetBrowserState()),
         self.containerViewController);
   }
   self.started = YES;

@@ -339,7 +339,6 @@ void NetworkDeviceHandlerImpl::SetUsbEthernetMacAddressSource(
   }
 
   usb_ethernet_mac_address_source_ = source;
-  usb_ethernet_mac_address_source_needs_update_ = true;
   mac_address_change_not_supported_.clear();
   ApplyUsbEthernetMacAddressSourceToShill();
 }
@@ -539,20 +538,8 @@ void NetworkDeviceHandlerImpl::ApplyUsbEthernetMacAddressSourceToShill() {
     return;
   }
 
-  std::string previous_primary_enabled_usb_ethernet_device_path =
-      primary_enabled_usb_ethernet_device_path_;
-
   UpdatePrimaryEnabledUsbEthernetDevice();
   ResetMacAddressSourceForSecondaryUsbEthernetDevices();
-
-  // Do nothing else if device path and MAC address source have not changed.
-  if (!usb_ethernet_mac_address_source_needs_update_ &&
-      previous_primary_enabled_usb_ethernet_device_path ==
-          primary_enabled_usb_ethernet_device_path_) {
-    return;
-  }
-
-  usb_ethernet_mac_address_source_needs_update_ = false;
 
   const DeviceState* primary_enabled_usb_ethernet_device_state =
       network_state_handler_->GetDeviceState(

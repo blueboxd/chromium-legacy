@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browsing_data/browsing_data_file_system_util.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -103,9 +104,11 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
       map_(HostContentSettingsMapFactory::GetForProfile(
           Profile::FromBrowserContext(tab->GetBrowserContext()))),
       allowed_local_shared_objects_(
-          Profile::FromBrowserContext(tab->GetBrowserContext())),
+          Profile::FromBrowserContext(tab->GetBrowserContext()),
+          browsing_data_file_system_util::GetAdditionalFileSystemTypes()),
       blocked_local_shared_objects_(
-          Profile::FromBrowserContext(tab->GetBrowserContext())),
+          Profile::FromBrowserContext(tab->GetBrowserContext()),
+          browsing_data_file_system_util::GetAdditionalFileSystemTypes()),
       geolocation_usages_state_(map_, ContentSettingsType::GEOLOCATION),
       midi_usages_state_(map_, ContentSettingsType::MIDI_SYSEX),
       pending_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
@@ -345,9 +348,9 @@ void TabSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
 void TabSpecificContentSettings::OnDomStorageAccessed(const GURL& url,
                                                       bool local,
                                                       bool blocked_by_policy) {
-  LocalSharedObjectsContainer& container = blocked_by_policy
-                                               ? blocked_local_shared_objects_
-                                               : allowed_local_shared_objects_;
+  browsing_data::LocalSharedObjectsContainer& container =
+      blocked_by_policy ? blocked_local_shared_objects_
+                        : allowed_local_shared_objects_;
   browsing_data::CannedLocalStorageHelper* helper =
       local ? container.local_storages() : container.session_storages();
   helper->Add(url::Origin::Create(url));

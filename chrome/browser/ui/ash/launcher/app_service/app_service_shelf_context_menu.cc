@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_shelf_context_menu.h"
 
 #include "ash/public/cpp/app_menu_constants.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -130,11 +131,11 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
         ShelfContextMenu::ExecuteCommand(ash::MENU_OPEN_NEW, event_flags);
         return;
       }
-      chrome::NewEmptyWindow(controller()->profile());
+      ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
       break;
 
     case ash::MENU_NEW_INCOGNITO_WINDOW:
-      chrome::NewEmptyWindow(controller()->profile()->GetOffTheRecordProfile());
+      ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/true);
       break;
 
     case ash::STOP_APP:

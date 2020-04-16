@@ -18,7 +18,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 @JNINamespace("autofill_assistant")
 public class AssistantGenericUiModel extends PropertyModel {
     /** The view inflated by the generic UI framework. */
-    static final WritableObjectPropertyKey<View> VIEW = new WritableObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<View> VIEW = new WritableObjectPropertyKey<>();
 
     public AssistantGenericUiModel() {
         super(VIEW);

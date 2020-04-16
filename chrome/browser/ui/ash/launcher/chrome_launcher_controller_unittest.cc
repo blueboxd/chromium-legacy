@@ -542,11 +542,12 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   void StartPrefSyncService(const syncer::SyncDataList& init_sync_list) {
-    syncer::SyncMergeResult r = GetPrefSyncService()->MergeDataAndStartSyncing(
-        syncer::PREFERENCES, init_sync_list,
-        std::make_unique<syncer::FakeSyncChangeProcessor>(),
-        std::make_unique<syncer::SyncErrorFactoryMock>());
-    EXPECT_FALSE(r.error().IsSet());
+    base::Optional<syncer::ModelError> error =
+        GetPrefSyncService()->MergeDataAndStartSyncing(
+            syncer::PREFERENCES, init_sync_list,
+            std::make_unique<syncer::FakeSyncChangeProcessor>(),
+            std::make_unique<syncer::SyncErrorFactoryMock>());
+    EXPECT_FALSE(error.has_value());
   }
 
   void SetAppIconLoader(std::unique_ptr<AppIconLoader> loader) {

@@ -1987,9 +1987,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             WebContents webContents = currentTab.getWebContents();
             PageInfoController.show(this, webContents, null,
                     PageInfoController.OpenedFromSource.MENU,
-                    /*offlinePageLoadUrlDelegate=*/
-                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab),
-                    new ChromePageInfoControllerDelegate(this, webContents));
+                    new ChromePageInfoControllerDelegate(this, webContents,
+                            /*offlinePageLoadUrlDelegate=*/
+                            new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab)));
         } else if (id == R.id.translate_id) {
             RecordUserAction.record("MobileMenuTranslate");
             Tracker tracker = TrackerFactory.getTrackerForProfile(

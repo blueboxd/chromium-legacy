@@ -53,16 +53,17 @@
   self.viewController.longPressDelegate = self.longPressDelegate;
   if (@available(iOS 13, *)) {
     self.viewController.overrideUserInterfaceStyle =
-        self.browserState->IsOffTheRecord() ? UIUserInterfaceStyleDark
-                                            : UIUserInterfaceStyleUnspecified;
+        self.browser->GetBrowserState()->IsOffTheRecord()
+            ? UIUserInterfaceStyleDark
+            : UIUserInterfaceStyleUnspecified;
   }
 
   self.mediator = [[ToolbarMediator alloc] init];
-  self.mediator.incognito = self.browserState->IsOffTheRecord();
+  self.mediator.incognito = self.browser->GetBrowserState()->IsOffTheRecord();
   self.mediator.consumer = self.viewController;
   self.mediator.webStateList = self.browser->GetWebStateList();
-  self.mediator.bookmarkModel =
-      ios::BookmarkModelFactory::GetForBrowserState(self.browserState);
+  self.mediator.bookmarkModel = ios::BookmarkModelFactory::GetForBrowserState(
+      self.browser->GetBrowserState());
 }
 
 - (void)stop {

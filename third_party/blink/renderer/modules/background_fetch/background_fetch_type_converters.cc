@@ -13,24 +13,6 @@
 
 namespace mojo {
 
-blink::BackgroundFetchRegistration*
-TypeConverter<blink::BackgroundFetchRegistration*,
-              blink::mojom::blink::BackgroundFetchRegistrationPtr>::
-    Convert(const blink::mojom::blink::BackgroundFetchRegistrationPtr&
-                mojo_registration) {
-  if (!mojo_registration || !mojo_registration->registration_data)
-    return nullptr;
-
-  return blink::MakeGarbageCollected<blink::BackgroundFetchRegistration>(
-      mojo_registration->registration_data->developer_id,
-      mojo_registration->registration_data->upload_total,
-      mojo_registration->registration_data->uploaded,
-      mojo_registration->registration_data->download_total,
-      mojo_registration->registration_data->downloaded,
-      mojo_registration->registration_data->result,
-      mojo_registration->registration_data->failure_reason);
-}
-
 blink::mojom::blink::BackgroundFetchOptionsPtr
 TypeConverter<blink::mojom::blink::BackgroundFetchOptionsPtr,
               const blink::BackgroundFetchOptions*>::

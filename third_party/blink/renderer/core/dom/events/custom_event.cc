@@ -36,9 +36,19 @@ CustomEvent::CustomEvent(ScriptState* script_state,
                          const AtomicString& type,
                          const CustomEventInit* initializer)
     : Event(type, initializer) {
+  // TODO(crbug.com/1070964): Remove this existence check.  There is a bug that
+  // the current code generator does not initialize a ScriptValue with the
+  // v8::Null value despite that the dictionary member has the default value of
+  // IDL null.  |hasDetail| guard is necessary here.
   if (initializer->hasDetail()) {
-    detail_.SetAcrossWorld(script_state->GetIsolate(),
-                           initializer->detail().V8Value());
+    v8::Local<v8::Value> detail = initializer->detail().V8Value();
+    // TODO(crbug.com/1070871): Remove the following IsNullOrUndefined() check.
+    // This null/undefined check fills the gap between the new and old bindings
+    // code.  The new behavior is preferred in a long term, and we'll switch to
+    // the new behavior once the migration to the new bindings gets settled.
+    if (!detail->IsNullOrUndefined()) {
+      detail_.SetAcrossWorld(script_state->GetIsolate(), detail);
+    }
   }
 }
 

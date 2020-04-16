@@ -42,17 +42,23 @@ class SafetyCheckHandler
     kDisabledByAdmin = 4,
     kFailedOffline = 5,
     kFailed = 6,
+    // Non-Google branded browsers cannot check for updates using
+    // VersionUpdater.
+    kUnknown = 7,
     // New enum values must go above here.
-    kMaxValue = kFailed,
+    kMaxValue = kUnknown,
   };
   enum class SafeBrowsingStatus {
     kChecking = 0,
+    // Enabled is deprecated; kept not to break old UMA metrics (enums.xml).
     kEnabled = 1,
     kDisabled = 2,
     kDisabledByAdmin = 3,
     kDisabledByExtension = 4,
+    kEnabledStandard = 5,
+    kEnabledEnhanced = 6,
     // New enum values must go above here.
-    kMaxValue = kDisabledByExtension,
+    kMaxValue = kEnabledEnhanced,
   };
   enum class PasswordsStatus {
     kChecking = 0,

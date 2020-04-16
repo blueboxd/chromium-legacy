@@ -14,7 +14,7 @@
 @synthesize window = _window;
 
 - (instancetype)initWithWindow:(UIWindow*)window {
-  if ((self = [super initWithBaseViewController:nil browserState:nullptr])) {
+  if ((self = [super initWithBaseViewController:nil browser:nullptr])) {
     _window = window;
   }
   return self;

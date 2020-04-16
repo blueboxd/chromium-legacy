@@ -19,15 +19,6 @@ class WebState;
 // Coordinator that owns and manages an InfobarContainer.
 @interface InfobarContainerCoordinator : ChromeCoordinator
 
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // Sets the visibility of the container to |hidden|.
 - (void)hideContainer:(BOOL)hidden;
 

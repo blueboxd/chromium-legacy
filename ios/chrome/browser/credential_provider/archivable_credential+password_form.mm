@@ -37,13 +37,14 @@ NSString* recordIdentifierForPasswordForm(const autofill::PasswordForm& form) {
 
 - (instancetype)initWithPasswordForm:(const autofill::PasswordForm&)passwordForm
                              favicon:(NSString*)favicon
-                  keychainIdentifier:(NSString*)keychainIdentifier
                 validationIdentifier:(NSString*)validationIdentifier {
   if (passwordForm.origin.is_empty() ||
       password_manager::IsValidAndroidFacetURI(passwordForm.signon_realm)) {
     return nil;
   }
   std::string site_name = password_manager::GetShownOrigin(passwordForm.origin);
+  NSString* keychainIdentifier =
+      SysUTF8ToNSString(passwordForm.encrypted_password);
   return [self initWithFavicon:favicon
             keychainIdentifier:keychainIdentifier
                           rank:passwordForm.times_used

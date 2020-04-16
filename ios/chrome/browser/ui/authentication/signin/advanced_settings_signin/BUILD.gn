@@ -22,6 +22,7 @@ source_set("advanced_settings_signin") {
     "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui/alert_coordinator",

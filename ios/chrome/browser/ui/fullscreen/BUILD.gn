@@ -54,6 +54,7 @@ source_set("coordinators") {
   deps = [
     ":fullscreen",
     "//base",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/fullscreen:feature_flags",
   ]

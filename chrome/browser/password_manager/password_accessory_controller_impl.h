@@ -19,6 +19,7 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/credential_cache.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
@@ -60,11 +61,12 @@ class PasswordAccessoryControllerImpl
 
   // Like |CreateForWebContents|, it creates the controller and attaches it to
   // the given |web_contents|. Additionally, it allows inject a manual filling
-  // controller.
+  // controller and a |PasswordManagerClient|.
   static void CreateForWebContentsForTesting(
       content::WebContents* web_contents,
       password_manager::CredentialCache* credential_cache,
-      base::WeakPtr<ManualFillingController> mf_controller);
+      base::WeakPtr<ManualFillingController> mf_controller,
+      password_manager::PasswordManagerClient* password_client);
 
   // True if the focus event was sent for the current focused frame or if it is
   // a blur event and no frame is focused. This check avoids reacting to
@@ -79,16 +81,18 @@ class PasswordAccessoryControllerImpl
  private:
   friend class content::WebContentsUserData<PasswordAccessoryControllerImpl>;
 
-  // Required for construction via |CreateForWebContents|:
-  PasswordAccessoryControllerImpl(
-      content::WebContents* contents,
-      password_manager::CredentialCache* credential_cache);
-
-  // Constructor that allows to inject a mock or fake view.
+  // This constructor can also be used by |CreateForWebContentsForTesting|
+  // to inject a fake |ManualFillingController| and a fake
+  // |PasswordManagerClient|.
   PasswordAccessoryControllerImpl(
       content::WebContents* web_contents,
       password_manager::CredentialCache* credential_cache,
-      base::WeakPtr<ManualFillingController> mf_controller);
+      base::WeakPtr<ManualFillingController> mf_controller,
+      password_manager::PasswordManagerClient* password_client);
+
+  // Enables or disables saving for the focused origin. This involves removing
+  // or adding blacklisted entry in the |PasswordStore|.
+  void ChangeCurrentOriginSavePasswordsStatus(bool enabled);
 
   // Returns true if |suggestion| matches a credential for |origin|.
   bool AppearsInSuggestions(const base::string16& suggestion,
@@ -106,13 +110,17 @@ class PasswordAccessoryControllerImpl
   // ------------------------------------------------------------------------
 
   // The tab for which this class is scoped.
-  content::WebContents* web_contents_;
+  content::WebContents* web_contents_ = nullptr;
 
   // Keeps track of credentials which are stored for all origins in this tab.
-  password_manager::CredentialCache* credential_cache_;
+  password_manager::CredentialCache* credential_cache_ = nullptr;
 
   // The password accessory controller object to forward client requests to.
   base::WeakPtr<ManualFillingController> mf_controller_;
+
+  // The password manager client is used to update the save passwords status
+  // for the currently focused origin.
+  password_manager::PasswordManagerClient* password_client_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

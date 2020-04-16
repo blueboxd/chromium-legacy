@@ -1061,10 +1061,7 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     bool force_encoded_audio_insertable_streams,
     bool force_encoded_video_insertable_streams)
-    : initialize_called_(false),
-      client_(client),
-      is_closed_(false),
-      is_unregistered_(false),
+    : client_(client),
       dependency_factory_(dependency_factory),
       track_adapter_map_(
           base::MakeRefCounted<blink::WebRtcMediaStreamTrackAdapterMap>(
@@ -1083,8 +1080,7 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
 // Constructor to be used for creating mocks only.
 RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : client_(nullptr),
-      dependency_factory_(nullptr),
+    : is_unregistered_(true),  // Avoid StopAndUnregister in destructor
       task_runner_(std::move(task_runner)) {}
 
 RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {

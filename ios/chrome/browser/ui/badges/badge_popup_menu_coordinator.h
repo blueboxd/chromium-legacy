@@ -12,15 +12,6 @@
 // Coordinator for the badge overflow popup menu.
 @interface BadgePopupMenuCoordinator : ChromeCoordinator
 
-// Use -initWithBaseViewController:browser:
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-
-// Use -initWithBaseViewController:browser:
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // Updates the popup menu with |badgesItems|.
 - (void)setBadgeItemsToShow:(NSArray<id<BadgeItem>>*)badgeItems;
 

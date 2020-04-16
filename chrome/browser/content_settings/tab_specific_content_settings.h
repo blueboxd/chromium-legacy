@@ -17,8 +17,8 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
-#include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
+#include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/content_settings_usages_state.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -266,11 +266,13 @@ class TabSpecificContentSettings
   // Returns the |LocalSharedObjectsContainer| instances corresponding to all
   // allowed, and blocked, respectively, local shared objects like cookies,
   // local storage, ... .
-  const LocalSharedObjectsContainer& allowed_local_shared_objects() const {
+  const browsing_data::LocalSharedObjectsContainer&
+  allowed_local_shared_objects() const {
     return allowed_local_shared_objects_;
   }
 
-  const LocalSharedObjectsContainer& blocked_local_shared_objects() const {
+  const browsing_data::LocalSharedObjectsContainer&
+  blocked_local_shared_objects() const {
     return blocked_local_shared_objects_;
   }
 
@@ -404,8 +406,8 @@ class TabSpecificContentSettings
   HostContentSettingsMap* map_;
 
   // Stores the blocked/allowed cookies.
-  LocalSharedObjectsContainer allowed_local_shared_objects_;
-  LocalSharedObjectsContainer blocked_local_shared_objects_;
+  browsing_data::LocalSharedObjectsContainer allowed_local_shared_objects_;
+  browsing_data::LocalSharedObjectsContainer blocked_local_shared_objects_;
 
   // Manages information about Geolocation API usage in this page.
   ContentSettingsUsagesState geolocation_usages_state_;

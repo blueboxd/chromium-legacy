@@ -28,6 +28,7 @@ source_set("credential_provider") {
     "//components/password_manager/core/browser:affiliation",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/common/app_group",
     "//ios/chrome/common/credential_provider",
     "//url",
   ]
@@ -53,6 +54,8 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/autofill/core/common",
     "//components/password_manager/core/browser:test_support",
+    "//ios/chrome/common/app_group",
+    "//ios/chrome/common/credential_provider",
     "//testing/gtest",
     "//url",
   ]

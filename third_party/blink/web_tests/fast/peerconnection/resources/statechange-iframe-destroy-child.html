@@ -18,8 +18,8 @@ function causeIssue() {
   };
 
   youConnection.createOffer(offerOptions)
-    .then(function(offer){
-      youConnection.setLocalDescription(offer);
+    .then(async function(offer) {
+      await youConnection.setLocalDescription(offer);
       // Cause an implicit rollback.
       youConnection.setRemoteDescription(offer);
     });

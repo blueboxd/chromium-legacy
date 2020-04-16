@@ -1,6 +1,13 @@
 <!DOCTYPE html>
-<html>
-<link href="resources/grid.css" rel="stylesheet">
+<title>CSS Grid: auto-placement with 'grid-auto-flow: column'</title>
+<link rel="author" title="Manuel Rego Casasnovas" href="mailto:rego@igalia.com">
+<link rel="help" href="https://drafts.csswg.org/css-grid-1/#propdef-grid-auto-flow">
+<link rel="help" href="https://drafts.csswg.org/css-grid-1/#auto-placement-algo">
+<link rel="help" href="https://bugs.chromium.org/p/chromium/issues/detail?id=384099">
+<meta name="assert" content="Check that the auto-placement algorithm is sparse by default.">
+<link rel="stylesheet" href="/css/support/grid.css">
+<link rel="stylesheet" href="/fonts/ahem.css">
+
 <style>
 .grid {
     grid-template-columns: 50px 100px 150px 200px;
@@ -12,11 +19,15 @@
     position: relative;
 }
 </style>
-<script src="../../resources/check-layout.js"></script>
-<body onload="checkLayout('.grid')">
 
-<p>This test checks that the auto-placement algorithm is sparse by default.</p>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
+<script type="text/javascript">
+  setup({ explicit_done: true });
+</script>
 
+<body onload="document.fonts.ready.then(() => { checkLayout('.grid'); })">
 <div class="unconstrainedContainer">
     <div class="grid">
         <div class="sizedToGridArea firstRowSecondColumn" data-offset-x="50" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
@@ -104,6 +115,4 @@
         <div class="sizedToGridArea autoRowAutoColumn" data-offset-x="150" data-offset-y="50" data-expected-width="150" data-expected-height="100"></div>
     </div>
 </div>
-
 </body>
-</html>

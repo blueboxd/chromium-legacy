@@ -1,8 +1,12 @@
 <!DOCTYPE html>
-<html>
-<script src="../../resources/check-layout.js"></script>
-<link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
-<link href="resources/grid.css" rel="stylesheet">
+<title>CSS Grid: 'auto' sizes with item's margins with vertical-rl</title>
+<link rel="author" title="Javier Fernandez" href="mailto:jfernandez@igalia.com">
+<link rel="help" href="https://drafts.csswg.org/css-grid/#layout-algorithm">
+<link rel="help" href="https://bugs.chromium.org/p/chromium/issues/detail?id=357419">
+<meta name="assert" content="Check that the grid's rows and columns 'auto' sizes are updated accordingly to its grid-item's before and start margins when using vertical-rl writing mode."/>
+<link href="/css/support/grid.css" rel="stylesheet">
+<link href="/css/support/width-keyword-classes.css" rel="stylesheet">
+
 <style>
 .grid {
     grid-template-rows: auto auto;
@@ -38,13 +42,14 @@
     padding-bottom: 10px;
 }
 </style>
-</head>
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
+
 <body onload="checkLayout('.grid')">
-
-<div>This test checks that the grid's rows and columns 'auto' sizes are updated accordingly to its grid-item's before and start margins.</div>
-
-<div>
-    <div class="grid fit-content verticalLR" data-expected-width="40" data-expected-height="120">
+<div style="position: relative">
+    <div class="grid fit-content verticalRL" data-expected-width="40" data-expected-height="120">
         <div class="gridItem marginTop firstRowFirstColumn"></div>
         <div class="gridItem marginBottom firstRowSecondColumn"></div>
         <div class="gridItem secondRowFirstColumn"></div>
@@ -52,8 +57,8 @@
     </div>
 </div>
 
-<div>
-    <div class="grid fit-content verticalLR" data-expected-width="40" data-expected-height="120">
+<div style="position: relative">
+    <div class="grid fit-content verticalRL" data-expected-width="40" data-expected-height="120">
         <div class="gridItem marginTop paddingTop firstRowFirstColumn"></div>
         <div class="gridItem borderTop borderBottom firstRowSecondColumn"></div>
         <div class="gridItem secondRowFirstColumn"></div>
@@ -61,8 +66,8 @@
     </div>
 </div>
 
-<div>
-    <div class="grid fit-content verticalLR" data-expected-width="40" data-expected-height="120">
+<div style="position: relative">
+    <div class="grid fit-content verticalRL" data-expected-width="40" data-expected-height="120">
         <div class="gridItem marginTop paddingTop firstRowFirstColumn"></div>
         <div class="gridItem borderTop borderBottom firstRowSecondColumn"></div>
         <div class="gridItem secondRowFirstColumn"></div>
@@ -70,14 +75,12 @@
     </div>
 </div>
 
-<div>
-    <div class="grid fit-content verticalLR" data-expected-width="40" data-expected-height="120">
+<div style="position: relative">
+    <div class="grid fit-content verticalRL" data-expected-width="40" data-expected-height="120">
         <div class="gridItem marginTop paddingTop firstRowFirstColumn"></div>
         <div class="gridItem paddingBottom firstRowSecondColumn"></div>
         <div class="gridItem secondRowFirstColumn"></div>
         <div class="gridItem secondRowSecondColumn"></div>
     </div>
 </div>
-
 </body>
-</html>

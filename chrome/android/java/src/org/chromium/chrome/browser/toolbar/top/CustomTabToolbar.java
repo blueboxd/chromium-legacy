@@ -602,9 +602,9 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                 if (activity == null) return;
                 PageInfoController.show(activity, webContents, getContentPublisher(),
                         PageInfoController.OpenedFromSource.TOOLBAR,
-                        /*offlinePageLoadUrlDelegate=*/
-                        new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab),
-                        new ChromePageInfoControllerDelegate(activity, webContents));
+                        new ChromePageInfoControllerDelegate(activity, webContents,
+                                /*offlinePageLoadUrlDelegate=*/
+                                new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab)));
             });
         }
 

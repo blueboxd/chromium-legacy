@@ -20,15 +20,6 @@
 @interface LocationBarCoordinator
     : ChromeCoordinator <LocationBarURLLoader, OmniboxCommands>
 
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // View controller containing the omnibox.
 @property(nonatomic, strong, readonly)
     UIViewController* locationBarViewController;

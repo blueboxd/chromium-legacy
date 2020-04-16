@@ -9,10 +9,11 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/sync/model/sync_error.h"
+#include "components/sync/base/model_type.h"
 #include "extensions/browser/value_store/value_store_change.h"
 
 namespace syncer {
+class ModelError;
 class SyncChangeProcessor;
 }  // namespace syncer
 
@@ -35,7 +36,8 @@ class SettingsSyncProcessor {
   void Init(const base::DictionaryValue& initial_state);
 
   // Sends |changes| to sync.
-  syncer::SyncError SendChanges(const ValueStoreChangeList& changes);
+  base::Optional<syncer::ModelError> SendChanges(
+      const ValueStoreChangeList& changes);
 
   // Informs this that |changes| have been receieved from sync. No action will
   // be taken, but this must be notified for internal bookkeeping.

@@ -128,7 +128,12 @@ def StartPinpointJobs(state, date):
           universal_newlines=True).strip()
     logging.info(output)
     assert 'https://pinpoint' in output
-    item['jobs'].append({'id': output.split('/')[-1], 'status': 'queued'})
+    bot = config['configuration']
+    item['jobs'].append({
+        'id': output.split('/')[-1],
+        'status': 'queued',
+        'bot': bot
+    })
   state.append(item)
   state.sort(key=lambda p: p['timestamp'])  # Keep items sorted by date.
 
@@ -281,14 +286,15 @@ def GetRevisionResults(item):
 
   if not df.empty:
     # Aggregate over the results of individual stories.
-    df = df.groupby(['change', 'name', 'benchmark', 'unit'])['mean'].agg(
-        ['mean', 'count']).reset_index()
+    df = df.groupby(['change', 'job_id', 'name', 'benchmark',
+                     'unit'])['mean'].agg(['mean', 'count']).reset_index()
   else:
     # Otherwise build a single row with an "empty" aggregate for this revision.
     # This is needed so we can remember in the cache that this revision has
     # been processed.
     df = pd.DataFrame(index=[0])
     df['change'] = item['revision']
+    df['job_id'] = '(missing)'
     df['name'] = '(missing)'
     df['benchmark'] = '(missing)'
     df['unit'] = ''
@@ -317,8 +323,15 @@ def GetRevisionResults(item):
   df.loc[df['label'] == 'without_patch', 'timestamp'] = (
       df['timestamp'] - pd.DateOffset(years=1))
 
-  return df[['revision', 'timestamp', 'label',
-             'benchmark', 'name', 'mean', 'count']]
+  df['bot'] = 'unknown'
+  for j in item['jobs']:
+    bot = j.get('bot', 'unknown')
+    df.loc[df['job_id'].str.contains(str(j['id'])), 'bot'] = bot
+
+  return df[[
+      'revision', 'timestamp', 'bot', 'label', 'benchmark', 'name', 'mean',
+      'count'
+  ]]
 
 
 def _SkipProcessing(item):

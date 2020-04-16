@@ -208,7 +208,6 @@
   if (self.started)
     return;
 
-  DCHECK(self.browserState);
   DCHECK(!self.viewController);
   [self startBrowserContainer];
   [self.dispatcher startDispatchingToTarget:self
@@ -640,7 +639,7 @@
                              updateResultsCount:model];
                        });
 
-  if (!self.browserState->IsOffTheRecord())
+  if (!self.browser->GetBrowserState()->IsOffTheRecord())
     helper->PersistSearchTerm();
 }
 
@@ -710,7 +709,7 @@
 
 - (void)showSecurityHelpPage {
   UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kPageInfoHelpCenterURL));
-  params.in_incognito = self.browserState->IsOffTheRecord();
+  params.in_incognito = self.browser->GetBrowserState()->IsOffTheRecord();
   UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
   [self hidePageInfo];
 }

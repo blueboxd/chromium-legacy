@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/storage/settings_sync_processor.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
+#include "components/sync/model/model_error.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/extension_setting_specifics.pb.h"
@@ -40,7 +41,7 @@ void SettingsSyncProcessor::Init(const base::DictionaryValue& initial_state) {
   initialized_ = true;
 }
 
-syncer::SyncError SettingsSyncProcessor::SendChanges(
+base::Optional<syncer::ModelError> SettingsSyncProcessor::SendChanges(
     const ValueStoreChangeList& changes) {
   DCHECK(IsOnBackendSequence());
   CHECK(initialized_) << "Init not called";
@@ -76,11 +77,11 @@ syncer::SyncError SettingsSyncProcessor::SendChanges(
   }
 
   if (sync_changes.empty())
-    return syncer::SyncError();
+    return base::nullopt;
 
-  syncer::SyncError error =
+  base::Optional<syncer::ModelError> error =
       sync_processor_->ProcessSyncChanges(FROM_HERE, sync_changes);
-  if (error.IsSet())
+  if (error.has_value())
     return error;
 
   synced_keys_.insert(added_keys.begin(), added_keys.end());
@@ -88,7 +89,7 @@ syncer::SyncError SettingsSyncProcessor::SendChanges(
     synced_keys_.erase(*i);
   }
 
-  return syncer::SyncError();
+  return base::nullopt;
 }
 
 void SettingsSyncProcessor::NotifyChanges(const ValueStoreChangeList& changes) {

@@ -118,6 +118,9 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_FAILED" desc="This text describes that Chrome cannot update due to an unknown error.">
     Chrome didn't update, something went wrong. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Fix Chrome update problems and failed updates.<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_UNKNOWN" desc="This text displays the installed version of Chrome when it is not possible to check for updates.">
+    Chrome version <ph name="PRODUCT_VERSION">$1<ex>15.0.865.0</ex></ph> is installed
+  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_SIGNED_OUT" desc="This text points out that the password check can only run when the user is signed in.">
     Chrome can't check your passwords because you're not signed in
   </message>

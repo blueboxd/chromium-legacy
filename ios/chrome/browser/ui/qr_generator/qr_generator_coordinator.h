@@ -22,11 +22,6 @@
 
 // Unavailable, use -initWithBaseViewController:browser:title:URL:.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
-// Unavailable, use -initWithBaseViewController:browser:title:URL:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;
 
 @end

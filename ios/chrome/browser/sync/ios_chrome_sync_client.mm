@@ -31,7 +31,6 @@
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/sync_base_switches.h"
-#include "components/sync/driver/file_based_trusted_vault_client.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_util.h"
@@ -53,6 +52,7 @@
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
 #include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
+#include "ios/chrome/browser/sync/ios_trusted_vault_client.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
 #include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
@@ -68,9 +68,6 @@
 #endif
 
 namespace {
-
-const base::FilePath::CharType kTrustedVaultFilename[] =
-    FILE_PATH_LITERAL("Trusted Vault");
 
 syncer::ModelTypeSet GetDisabledTypesFromCommandLine() {
   std::string disabled_types_str =
@@ -113,9 +110,7 @@ IOSChromeSyncClient::IOSChromeSyncClient(ChromeBrowserState* browser_state)
           /*account_password_store=*/nullptr,
           ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state_));
 
-  // TODO(crbug.com/1019685): Instantiate a specific client for ios.
-  trusted_vault_client_ = std::make_unique<syncer::FileBasedTrustedVaultClient>(
-      browser_state_->GetStatePath().Append(kTrustedVaultFilename));
+  trusted_vault_client_ = std::make_unique<IOSTrustedVaultClient>();
 }
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}

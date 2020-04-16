@@ -29,9 +29,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils.OfflinePageLoadUrlDelegate;
 import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.site_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
@@ -65,8 +62,6 @@ import org.chromium.url.URI;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.URISyntaxException;
-import java.text.DateFormat;
-import java.util.Date;
 
 /**
  * Java side of Android implementation of the page info UI.
@@ -82,18 +77,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         int VR = 3;
     }
 
-    @IntDef({OfflinePageState.NOT_OFFLINE_PAGE, OfflinePageState.TRUSTED_OFFLINE_PAGE,
-            OfflinePageState.UNTRUSTED_OFFLINE_PAGE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface OfflinePageState {
-        int NOT_OFFLINE_PAGE = 1;
-        int TRUSTED_OFFLINE_PAGE = 2;
-        int UNTRUSTED_OFFLINE_PAGE = 3;
-    }
-
     private final WindowAndroid mWindowAndroid;
     private final WebContents mWebContents;
-    private final OfflinePageLoadUrlDelegate mOfflinePageLoadUrlDelegate;
     private final PermissionParamsListBuilder mPermissionParamsListBuilder;
     private final PageInfoControllerDelegate mDelegate;
 
@@ -117,13 +102,6 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     // The security level of the page (a valid ConnectionSecurityLevel).
     private int mSecurityLevel;
 
-    // Creation date of an offline copy, if web contents contains an offline page.
-    private String mOfflinePageCreationDate;
-
-    // The state of offline page in the web contents (not offline page, trusted/untrusted offline
-    // page).
-    private @OfflinePageState int mOfflinePageState;
-
     // The name of the content publisher, if any.
     private String mContentPublisher;
 
@@ -145,24 +123,14 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      * @param activity                 Activity which is used for showing a popup.
      * @param webContents              The WebContents showing the page that the PageInfo is about.
      * @param securityLevel            The security level of the page being shown.
-     * @param offlinePageUrl           URL that the offline page claims to be generated from.
-     * @param offlinePageCreationDate  Date when the offline page was created.
-     * @param offlinePageState         State of the WebContents showing offline page.
      * @param publisher                The name of the content publisher, if any.
-     * @param offlinePageLoadUrlDelegate      {@link OfflinePageLoadUrlDelegate} defined by the
-     *                                 caller.
      * @param delegate                 The PageInfoControllerDelegate used to provide
      *                                 embedder-specific info.
      */
     protected PageInfoController(Activity activity, WebContents webContents, int securityLevel,
-            String offlinePageUrl, String offlinePageCreationDate,
-            @OfflinePageState int offlinePageState, String publisher,
-            OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate,
-            PageInfoControllerDelegate delegate) {
-        mOfflinePageLoadUrlDelegate = offlinePageLoadUrlDelegate;
+            String publisher, PageInfoControllerDelegate delegate) {
         mWebContents = webContents;
         mSecurityLevel = securityLevel;
-        mOfflinePageState = offlinePageState;
         mDelegate = delegate;
         mRunAfterDismissConsumer = new Consumer<Runnable>() {
             @Override
@@ -172,9 +140,6 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         };
         PageInfoViewParams viewParams = new PageInfoViewParams();
 
-        if (mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE) {
-            mOfflinePageCreationDate = offlinePageCreationDate;
-        }
         mWindowAndroid = webContents.getTopLevelNativeWindow();
         mContentPublisher = publisher;
 
@@ -189,9 +154,10 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         // Work out the URL and connection message and status visibility.
         // TODO(crbug.com/1033178): dedupe the DomDistillerUrlUtils#getOriginalUrlFromDistillerUrl()
         // calls.
-        mFullUrl = isShowingOfflinePage() ? offlinePageUrl
-                                          : DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(
-                                                  webContents.getVisibleUrlString());
+        mFullUrl = mDelegate.isShowingOfflinePage()
+                ? mDelegate.getOfflinePageUrl()
+                : DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(
+                        webContents.getVisibleUrlString());
 
         // This can happen if an invalid chrome-distiller:// url was entered.
         if (mFullUrl == null) mFullUrl = "";
@@ -203,7 +169,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         }
 
         String displayUrl = UrlFormatter.formatUrlForSecurityDisplay(mFullUrl);
-        if (isShowingOfflinePage()) {
+        if (mDelegate.isShowingOfflinePage()) {
             displayUrl = UrlUtilities.stripScheme(mFullUrl);
         }
         SpannableStringBuilder displayUrlBuilder = new SpannableStringBuilder(displayUrl);
@@ -244,21 +210,9 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         }
 
         mDelegate.initPreviewUiParams(viewParams, mRunAfterDismissConsumer);
+        mDelegate.initOfflinePageUiParams(viewParams, mRunAfterDismissConsumer);
 
-        if (isShowingOfflinePage() && OfflinePageUtils.isConnected()) {
-            viewParams.openOnlineButtonClickCallback = () -> {
-                runAfterDismiss(() -> {
-                    // Attempt to reload to an online version of the viewed offline web page.
-                    // This attempt might fail if the user is offline, in which case an offline
-                    // copy will be reloaded.
-                    OfflinePageUtils.reload(mWebContents, mOfflinePageLoadUrlDelegate);
-                });
-            };
-        } else {
-            viewParams.openOnlineButtonShown = false;
-        }
-
-        if (!mIsInternalPage && !isShowingOfflinePage() && !mDelegate.isShowingPreview()
+        if (!mIsInternalPage && !mDelegate.isShowingOfflinePage() && !mDelegate.isShowingPreview()
                 && mDelegate.isInstantAppAvailable(mFullUrl)) {
             final Intent instantAppIntent = mDelegate.getInstantAppIntentForUrl(mFullUrl);
             viewParams.instantAppButtonClickCallback = () -> {
@@ -327,8 +281,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      * Whether to show a 'Details' link to the connection info popup.
      */
     private boolean isConnectionDetailsLinkVisible() {
-        return mContentPublisher == null && !isShowingOfflinePage() && !mDelegate.isShowingPreview()
-                && !mIsInternalPage;
+        return mContentPublisher == null && !mDelegate.isShowingOfflinePage()
+                && !mDelegate.isShowingPreview() && !mIsInternalPage;
     }
 
     /**
@@ -369,20 +323,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                     context.getString(R.string.page_info_domain_hidden, mContentPublisher));
         } else if (mDelegate.isShowingPreview() && mDelegate.isPreviewPageInsecure()) {
             connectionInfoParams.summary = summary;
-        } else if (mOfflinePageState == OfflinePageState.TRUSTED_OFFLINE_PAGE) {
-            messageBuilder.append(
-                    String.format(context.getString(R.string.page_info_connection_offline),
-                            mOfflinePageCreationDate));
-        } else if (mOfflinePageState == OfflinePageState.UNTRUSTED_OFFLINE_PAGE) {
-            // For untrusted pages, if there's a creation date, show it in the message.
-            if (TextUtils.isEmpty(mOfflinePageCreationDate)) {
-                messageBuilder.append(context.getString(
-                        R.string.page_info_offline_page_not_trusted_without_date));
-            } else {
-                messageBuilder.append(String.format(
-                        context.getString(R.string.page_info_offline_page_not_trusted_with_date),
-                        mOfflinePageCreationDate));
-            }
+        } else if (mDelegate.getOfflinePageConnectionMessage() != null) {
+            messageBuilder.append(mDelegate.getOfflinePageConnectionMessage());
         } else {
             if (!TextUtils.equals(summary, details)) {
                 connectionInfoParams.summary = summary;
@@ -468,14 +410,6 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         }
     }
 
-    /**
-     * Whether website dialog is displayed for an offline page.
-     */
-    private boolean isShowingOfflinePage() {
-        return mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE
-                && !mDelegate.isShowingPreview();
-    }
-
     private boolean isSheet(Context context) {
         return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
                 && !mDelegate.getVrHandler().isInVr();
@@ -495,13 +429,10 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      *            information is retrieved for the visible entry.
      * @param contentPublisher The name of the publisher of the content.
      * @param source Determines the source that triggered the popup.
-     * @param offlinePageLoadUrlDelegate {@link OfflinePageLoadUrlDelegate} defined by the
-     *         caller.
      * @param delegate The PageInfoControllerDelegate used to provide embedder-specific info.
      */
     public static void show(final Activity activity, WebContents webContents,
             final String contentPublisher, @OpenedFromSource int source,
-            OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate,
             PageInfoControllerDelegate delegate) {
         // If the activity's decor view is not attached to window, we don't show the dialog because
         // the window manager might have revoked the window token for this activity. See
@@ -519,35 +450,9 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             assert false : "Invalid source passed";
         }
 
-
-        String offlinePageUrl = null;
-        String offlinePageCreationDate = null;
-        @OfflinePageState
-        int offlinePageState = OfflinePageState.NOT_OFFLINE_PAGE;
-
-        OfflinePageItem offlinePage = OfflinePageUtils.getOfflinePage(webContents);
-        if (offlinePage != null) {
-            offlinePageUrl = offlinePage.getUrl();
-            if (OfflinePageUtils.isShowingTrustedOfflinePage(webContents)) {
-                offlinePageState = OfflinePageState.TRUSTED_OFFLINE_PAGE;
-            } else {
-                offlinePageState = OfflinePageState.UNTRUSTED_OFFLINE_PAGE;
-            }
-            // Get formatted creation date of the offline page. If the page was shared (so the
-            // creation date cannot be acquired), make date an empty string and there will be
-            // specific processing for showing different string in UI.
-            long pageCreationTimeMs = offlinePage.getCreationTimeMs();
-            if (pageCreationTimeMs != 0) {
-                Date creationDate = new Date(offlinePage.getCreationTimeMs());
-                DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
-                offlinePageCreationDate = df.format(creationDate);
-            }
-        }
-
         new PageInfoController(activity, webContents,
-                SecurityStateModel.getSecurityLevelForWebContents(webContents), offlinePageUrl,
-                offlinePageCreationDate, offlinePageState, contentPublisher,
-                offlinePageLoadUrlDelegate, delegate);
+                SecurityStateModel.getSecurityLevelForWebContents(webContents), contentPublisher,
+                delegate);
     }
 
     @Override

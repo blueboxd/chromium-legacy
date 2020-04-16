@@ -118,12 +118,13 @@
   self.NTPMediator = [[NTPHomeMediator alloc]
              initWithWebState:self.webState
            templateURLService:ios::TemplateURLServiceFactory::
-                                  GetForBrowserState(self.browserState)
+                                  GetForBrowserState(
+                                      self.browser->GetBrowserState())
                     URLLoader:URLLoader
                   authService:AuthenticationServiceFactory::GetForBrowserState(
-                                  self.browserState)
+                                  self.browser->GetBrowserState())
               identityManager:IdentityManagerFactory::GetForBrowserState(
-                                  self.browserState)
+                                  self.browser->GetBrowserState())
                    logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
                                   self.browser, self.webState)
       voiceSearchAvailability:&_voiceSearchAvailability];

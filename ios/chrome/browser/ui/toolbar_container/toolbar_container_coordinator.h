@@ -16,14 +16,10 @@ enum class ToolbarContainerType { kPrimary, kSecondary };
 @interface ToolbarContainerCoordinator : ChromeCoordinator
 
 // Initializes a container with |type| and |browserState|.
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
-                                type:(ToolbarContainerType)type
+- (instancetype)initWithBrowser:(Browser*)browser
+                           type:(ToolbarContainerType)type
     NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
+
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;
 

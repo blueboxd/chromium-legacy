@@ -203,9 +203,9 @@ void ExtensionAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     extension_menu_items_->ExecuteCommand(command_id, nullptr, nullptr,
                                           content::ContextMenuParams());
   } else if (command_id == ash::APP_CONTEXT_MENU_NEW_WINDOW) {
-    controller()->CreateNewWindow(profile(), false);
+    controller()->CreateNewWindow(/*incognito=*/false);
   } else if (command_id == ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW) {
-    controller()->CreateNewWindow(profile(), true);
+    controller()->CreateNewWindow(/*incognito=*/true);
   } else {
     AppContextMenu::ExecuteCommand(command_id, event_flags);
   }

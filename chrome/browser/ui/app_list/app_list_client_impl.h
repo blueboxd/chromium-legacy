@@ -108,7 +108,7 @@ class AppListClientImpl
   void PinApp(const std::string& app_id) override;
   void UnpinApp(const std::string& app_id) override;
   Pinnable GetPinnable(const std::string& app_id) override;
-  void CreateNewWindow(Profile* profile, bool incognito) override;
+  void CreateNewWindow(bool incognito) override;
   void OpenURL(Profile* profile,
                const GURL& url,
                ui::PageTransition transition,

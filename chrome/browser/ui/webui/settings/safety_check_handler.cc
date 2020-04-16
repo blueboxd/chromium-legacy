@@ -20,6 +20,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/version_info/version_info.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_id.h"
@@ -65,9 +66,8 @@ SafetyCheckHandler::UpdateStatus ConvertToUpdateStatus(
     case VersionUpdater::DISABLED_BY_ADMIN:
       return SafetyCheckHandler::UpdateStatus::kDisabledByAdmin;
     // The disabled state can only be returned on non Chrome-branded browsers.
-    // Since we don't know the actual state of updates, this is the same as a
-    // generic error.
     case VersionUpdater::DISABLED:
+      return SafetyCheckHandler::UpdateStatus::kUnknown;
     case VersionUpdater::FAILED:
     case VersionUpdater::FAILED_CONNECTION_TYPE_DISALLOWED:
       return SafetyCheckHandler::UpdateStatus::kFailed;
@@ -156,14 +156,17 @@ void SafetyCheckHandler::CheckUpdates() {
 
 void SafetyCheckHandler::CheckSafeBrowsing() {
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  const PrefService::Preference* pref =
+  const PrefService::Preference* enabled_pref =
       pref_service->FindPreference(prefs::kSafeBrowsingEnabled);
+  bool enabled = pref_service->GetBoolean(prefs::kSafeBrowsingEnabled);
   SafeBrowsingStatus status;
-  if (pref_service->GetBoolean(prefs::kSafeBrowsingEnabled)) {
-    status = SafeBrowsingStatus::kEnabled;
-  } else if (pref->IsManaged()) {
+  if (enabled && pref_service->GetBoolean(prefs::kSafeBrowsingEnhanced)) {
+    status = SafeBrowsingStatus::kEnabledEnhanced;
+  } else if (enabled) {
+    status = SafeBrowsingStatus::kEnabledStandard;
+  } else if (enabled_pref->IsManaged()) {
     status = SafeBrowsingStatus::kDisabledByAdmin;
-  } else if (pref->IsExtensionControlled()) {
+  } else if (enabled_pref->IsExtensionControlled()) {
     status = SafeBrowsingStatus::kDisabledByExtension;
   } else {
     status = SafeBrowsingStatus::kDisabled;
@@ -334,6 +337,10 @@ base::string16 SafetyCheckHandler::GetStringForUpdates(UpdateStatus status) {
       return l10n_util::GetStringFUTF16(
           IDS_SETTINGS_SAFETY_CHECK_UPDATES_FAILED,
           base::ASCIIToUTF16(chrome::kChromeFixUpdateProblems));
+    case UpdateStatus::kUnknown:
+      return l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_UPDATES_UNKNOWN,
+          base::UTF8ToUTF16(version_info::GetVersionNumber()));
   }
 }
 
@@ -343,8 +350,12 @@ base::string16 SafetyCheckHandler::GetStringForSafeBrowsing(
     case SafeBrowsingStatus::kChecking:
       return l10n_util::GetStringUTF16(IDS_SETTINGS_SAFETY_CHECK_RUNNING);
     case SafeBrowsingStatus::kEnabled:
+    case SafeBrowsingStatus::kEnabledStandard:
       return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENABLED);
+          IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENABLED_STANDARD);
+    case SafeBrowsingStatus::kEnabledEnhanced:
+      return l10n_util::GetStringUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENABLED_ENHANCED);
     case SafeBrowsingStatus::kDisabled:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED);

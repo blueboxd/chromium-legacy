@@ -13,13 +13,6 @@
 // Coordinator for BrowserViewController.
 @interface BrowserCoordinator : ChromeCoordinator
 
-// Use only -initWithBaseViewController:browser:
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // The main view controller.
 @property(nonatomic, strong, readonly) BrowserViewController* viewController;
 

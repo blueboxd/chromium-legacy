@@ -19,14 +19,6 @@ enum class UrlLoadStrategy;
 @interface HistoryClearBrowsingDataCoordinator
     : ChromeCoordinator <ClearBrowsingDataUIDelegate>
 
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // Delegate for this coordinator.
 @property(nonatomic, weak) id<HistoryUIDelegate> delegate;
 

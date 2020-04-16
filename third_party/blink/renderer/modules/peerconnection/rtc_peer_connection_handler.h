@@ -371,20 +371,20 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
 
   // Initialize() is never expected to be called more than once, even if the
   // first call fails.
-  bool initialize_called_;
+  bool initialize_called_ = false;
 
   // |client_| is a raw pointer to the blink object (blink::RTCPeerConnection)
   // that owns this object.
   // It is valid for the lifetime of this object, but is cleared when
   // StopAndUnregister() is called, in order to make sure it doesn't
   // interfere with garbage collection of the owner object.
-  RTCPeerConnectionHandlerClient* client_;
+  RTCPeerConnectionHandlerClient* client_ = nullptr;
   // True if this PeerConnection has been closed.
   // After the PeerConnection has been closed, this object may no longer
   // forward callbacks to blink.
-  bool is_closed_;
+  bool is_closed_ = false;
   // True if StopAndUnregister has been called.
-  bool is_unregistered_;
+  bool is_unregistered_ = false;
 
   // Transition from kHaveLocalOffer to kHaveRemoteOffer indicates implicit
   // rollback in which case we need to also make visiting of kStable observable.
@@ -393,7 +393,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
 
   // |dependency_factory_| is a raw pointer, and is valid for the lifetime of
   // RenderThreadImpl.
-  blink::PeerConnectionDependencyFactory* const dependency_factory_;
+  blink::PeerConnectionDependencyFactory* const dependency_factory_ = nullptr;
 
   blink::WebLocalFrame* frame_ = nullptr;
 
@@ -441,8 +441,8 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   // used when constructing the PeerConnection carry over when
   // SetConfiguration is called.
   webrtc::PeerConnectionInterface::RTCConfiguration configuration_;
-  bool force_encoded_audio_insertable_streams_;
-  bool force_encoded_video_insertable_streams_;
+  bool force_encoded_audio_insertable_streams_ = false;
+  bool force_encoded_video_insertable_streams_ = false;
 
   // Record info about the first SessionDescription from the local and
   // remote side to record UMA stats once both are set.  We only check

@@ -81,6 +81,7 @@
 #include "components/user_manager/user_manager.h"
 #else
 #include "chrome/browser/extensions/api/messaging/native_messaging_launch_from_native.h"
+#include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/user_manager.h"
 #endif
 
@@ -263,10 +264,12 @@ bool CanOpenProfileOnStartup(Profile* profile) {
 #endif
 }
 
+#if !defined(OS_CHROMEOS)
 bool ShouldShowProfilePicker() {
   return !signin_util::IsForceSigninEnabled() &&
          base::FeatureList::IsEnabled(features::kNewProfilePicker);
 }
+#endif  // !defined(OS_CHROMEOS)
 
 void ShowUserManagerOnStartup() {
 #if !defined(OS_CHROMEOS)
@@ -797,11 +800,12 @@ bool StartupBrowserCreator::LaunchBrowserForLastProfiles(
     bool process_startup,
     Profile* last_used_profile,
     const Profiles& last_opened_profiles) {
+#if !defined(OS_CHROMEOS)
   if (ShouldShowProfilePicker()) {
-    // TODO(crbug.com/1063856): Adjust to show the profile picker.
-    ShowUserManagerOnStartup();
+    ProfilePicker::Show();
     return true;
   }
+#endif  // !defined(OS_CHROMEOS)
 
   chrome::startup::IsProcessStartup is_process_startup = process_startup ?
       chrome::startup::IS_PROCESS_STARTUP :

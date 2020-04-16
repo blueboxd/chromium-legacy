@@ -15,6 +15,8 @@
 // data. Can also be used as a memory only store. Use |saveDataWithCompletion:|
 // to update the data on disk. All operations will be held in memory until saved
 // to disk, making it possible to batch multiple operations.
+//
+// Only supports |Credentials| of class |ArchivableCredential|.
 @interface ArchivableCredentialStore : NSObject <CredentialStore>
 
 // Initializes the store. |fileURL| is where the store should live in disk. If
@@ -25,18 +27,6 @@
 // store with |fileURL| = nil to effectively create a memory only store.
 - (instancetype)initWithFileURL:(NSURL*)fileURL NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
-
-// Adds a credential to the memory storage. Use |saveDataWithCompletion:| to
-// update the data on disk.
-- (void)addCredential:(ArchivableCredential*)credential;
-
-// Updates a credential in the memory storage. Use |saveDataWithCompletion:| to
-// update the data on disk.
-- (void)updateCredential:(ArchivableCredential*)credential;
-
-// Removes a credential from the memory storage. Use |saveDataWithCompletion:|
-// to update the data on disk.
-- (void)removeCredential:(ArchivableCredential*)credential;
 
 @end
 

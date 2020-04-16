@@ -44,15 +44,6 @@ enum class PresentAddPassesDialogResult {
 // Coordinates presentation of "Add pkpass UI" and "failed to add pkpass UI".
 @interface PassKitCoordinator : ChromeCoordinator<PassKitTabHelperDelegate>
 
-// Use -initWithBaseViewController:browser:
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-
-// Use -initWithBaseViewController:browser:
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // Must be set before calling |start| method. Set to null when stop method is
 // called or web state is destroyed.
 @property(nonatomic) web::WebState* webState;

@@ -172,14 +172,14 @@ TEST_F(SupervisedUserWhitelistServiceTest, MergeEmpty) {
   ASSERT_TRUE(
       service_->GetAllSyncDataForTesting(syncer::SUPERVISED_USER_WHITELISTS)
           .empty());
-  syncer::SyncMergeResult result = service_->MergeDataAndStartSyncing(
+  base::Optional<syncer::ModelError> error = service_->MergeDataAndStartSyncing(
       syncer::SUPERVISED_USER_WHITELISTS, syncer::SyncDataList(),
       std::unique_ptr<syncer::SyncChangeProcessor>(),
       std::unique_ptr<syncer::SyncErrorFactory>());
   EXPECT_TRUE(
       service_->GetAllSyncDataForTesting(syncer::SUPERVISED_USER_WHITELISTS)
           .empty());
-  EXPECT_FALSE(result.error().IsSet());
+  EXPECT_FALSE(error.has_value());
 
   EXPECT_EQ(0u, installer_->registered_whitelists().size());
 }
@@ -218,14 +218,14 @@ TEST_F(SupervisedUserWhitelistServiceTest, MergeExisting) {
   ASSERT_EQ(
       2u, service_->GetAllSyncDataForTesting(syncer::SUPERVISED_USER_WHITELISTS)
               .size());
-  syncer::SyncMergeResult result = service_->MergeDataAndStartSyncing(
+  base::Optional<syncer::ModelError> error = service_->MergeDataAndStartSyncing(
       syncer::SUPERVISED_USER_WHITELISTS, initial_data,
       std::unique_ptr<syncer::SyncChangeProcessor>(),
       std::unique_ptr<syncer::SyncErrorFactory>());
   EXPECT_EQ(
       2u, service_->GetAllSyncDataForTesting(syncer::SUPERVISED_USER_WHITELISTS)
               .size());
-  EXPECT_FALSE(result.error().IsSet());
+  EXPECT_FALSE(error.has_value());
 
   // Whitelist A (which was previously ready) should be removed now, and
   // whitelist B was never ready.
@@ -253,8 +253,9 @@ TEST_F(SupervisedUserWhitelistServiceTest, ApplyChanges) {
       FROM_HERE, syncer::SyncChange::ACTION_DELETE,
       SupervisedUserWhitelistService::CreateWhitelistSyncData(
           "aaaa", "Ignored")));
-  syncer::SyncError error = service_->ProcessSyncChanges(FROM_HERE, changes);
-  EXPECT_FALSE(error.IsSet());
+  base::Optional<syncer::ModelError> error =
+      service_->ProcessSyncChanges(FROM_HERE, changes);
+  EXPECT_FALSE(error.has_value());
 
   EXPECT_EQ(0u, site_lists_.size());
 

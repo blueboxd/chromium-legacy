@@ -20,15 +20,6 @@
 @property(nonatomic, readwrite, weak) id<ActivityServicePresentation>
     presentationProvider;
 
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // Cancels any in-progress share activities and dismisses the corresponding UI.
 - (void)cancelShare;
 

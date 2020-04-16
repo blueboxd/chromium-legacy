@@ -245,7 +245,7 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
       EXPECT_NE(0u, frame->page_id);
 
       // The page's main frame should have an URL.
-      if (frame->id == NodeBase::GetSerializationId(main_frame))
+      if (frame->id == impl_raw->GetNodeIdForTesting(main_frame))
         EXPECT_EQ(kExampleUrl, frame->url);
     }
     EXPECT_NE(0u, frame->id);
@@ -270,7 +270,7 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
       false, now, next_navigation_id++, kAnotherURL, kHtmlMimeType);
 
   size_t child_frame_id =
-      NodeBase::GetSerializationId(mock_graph.child_frame.get());
+      impl_raw->GetNodeIdForTesting(mock_graph.child_frame.get());
   mock_graph.child_frame.reset();
 
   task_environment.RunUntilIdle();
@@ -280,7 +280,7 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
   EXPECT_FALSE(base::Contains(change_stream.id_set(), child_frame_id));
 
   const auto main_page_it = change_stream.page_map().find(
-      NodeBase::GetSerializationId(mock_graph.page.get()));
+      impl_raw->GetNodeIdForTesting(mock_graph.page.get()));
   ASSERT_TRUE(main_page_it != change_stream.page_map().end());
   EXPECT_EQ(kAnotherURL, main_page_it->second->main_frame_url);
 

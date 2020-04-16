@@ -72,13 +72,13 @@
       initWithManualFillAccessoryViewControllerDelegate:self];
 
   auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
-      self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
+      self.browser->GetBrowserState(), ServiceAccessType::EXPLICIT_ACCESS);
 
   // There is no personal data manager in OTR (incognito). Get the original
   // one for manual fallback.
   autofill::PersonalDataManager* personalDataManager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(
-          self.browserState->GetOriginalChromeBrowserState());
+          self.browser->GetBrowserState()->GetOriginalChromeBrowserState());
 
   _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
          initWithConsumer:self.formInputAccessoryViewController

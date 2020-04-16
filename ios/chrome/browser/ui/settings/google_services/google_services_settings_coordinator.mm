@@ -93,19 +93,20 @@
   viewController.presentationDelegate = self;
   self.viewController = viewController;
   SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(self.browserState);
+      SyncSetupServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   self.mediator = [[GoogleServicesSettingsMediator alloc]
-      initWithUserPrefService:self.browserState->GetPrefs()
+      initWithUserPrefService:self.browser->GetBrowserState()->GetPrefs()
              localPrefService:GetApplicationContext()->GetLocalState()
              syncSetupService:syncSetupService
                          mode:self.mode];
   self.mediator.consumer = viewController;
   self.mediator.authService = self.authService;
-  self.mediator.identityManager =
-      IdentityManagerFactory::GetForBrowserState(self.browserState);
+  self.mediator.identityManager = IdentityManagerFactory::GetForBrowserState(
+      self.browser->GetBrowserState());
   self.mediator.commandHandler = self;
-  self.mediator.syncService =
-      ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+  self.mediator.syncService = ProfileSyncServiceFactory::GetForBrowserState(
+      self.browser->GetBrowserState());
   viewController.modelDelegate = self.mediator;
   viewController.serviceDelegate = self.mediator;
   DCHECK(self.baseNavigationController);
@@ -122,7 +123,8 @@
   if (self.authService->IsAuthenticated() &&
       !self.signinInteractionCoordinator) {
     SyncSetupService* syncSetupService =
-        SyncSetupServiceFactory::GetForBrowserState(self.browserState);
+        SyncSetupServiceFactory::GetForBrowserState(
+            self.browser->GetBrowserState());
     if (self.mode == GoogleServicesSettingsModeSettings &&
         syncSetupService->GetSyncServiceState() ==
             SyncSetupService::kSyncSettingsNotConfirmed) {
@@ -157,7 +159,8 @@
 #pragma mark - Properties
 
 - (AuthenticationService*)authService {
-  return AuthenticationServiceFactory::GetForBrowserState(self.browserState);
+  return AuthenticationServiceFactory::GetForBrowserState(
+      self.browser->GetBrowserState());
 }
 
 - (GoogleServicesSettingsViewController*)googleServicesSettingsViewController {
@@ -169,7 +172,8 @@
 
 - (void)restartAuthenticationFlow {
   ChromeIdentity* authenticatedIdentity =
-      AuthenticationServiceFactory::GetForBrowserState(self.browserState)
+      AuthenticationServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState())
           ->GetAuthenticatedIdentity();
   [self.googleServicesSettingsViewController preventUserInteraction];
   DCHECK(!self.authenticationFlow);
@@ -207,7 +211,7 @@
 - (void)openPassphraseDialog {
   SyncEncryptionPassphraseTableViewController* controller =
       [[SyncEncryptionPassphraseTableViewController alloc]
-          initWithBrowserState:self.browserState];
+          initWithBrowserState:self.browser->GetBrowserState()];
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
   controller.dispatcher = static_cast<

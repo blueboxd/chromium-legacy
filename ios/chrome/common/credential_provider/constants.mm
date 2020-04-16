@@ -36,3 +36,6 @@ NSURL* CredentialProviderSharedArchivableStoreURL() {
   return [credentialProviderURL
       URLByAppendingPathComponent:kArchivableStorageFilename];
 }
+
+NSString* const kUserDefaultsCredentialProviderFirstTimeSyncCompleted =
+    @"UserDefaultsCredentialProviderFirstTimeSyncCompleted";

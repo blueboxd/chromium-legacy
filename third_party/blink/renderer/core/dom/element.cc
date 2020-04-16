@@ -3741,7 +3741,10 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
   DCHECK(!shadow_root_init_dict->hasMode() || !GetShadowRoot());
   bool delegates_focus = shadow_root_init_dict->hasDelegatesFocus() &&
                          shadow_root_init_dict->delegatesFocus();
-  bool manual_slotting = shadow_root_init_dict->slotAssignment() == "manual";
+  bool manual_slotting = false;
+  if (shadow_root_init_dict->hasSlotAssignment()) {
+    manual_slotting = (shadow_root_init_dict->slotAssignment() == "manual");
+  }
   return &AttachShadowRootInternal(type, delegates_focus, manual_slotting);
 }
 

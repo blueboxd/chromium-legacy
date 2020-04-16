@@ -22,6 +22,8 @@ static_library("content") {
     "file_system_helper.h",
     "indexed_db_helper.cc",
     "indexed_db_helper.h",
+    "local_shared_objects_container.cc",
+    "local_shared_objects_container.h",
     "local_storage_helper.cc",
     "local_storage_helper.h",
     "service_worker_helper.cc",

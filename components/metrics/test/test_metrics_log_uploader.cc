@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/test_metrics_log_uploader.h"
+#include "components/metrics/test/test_metrics_log_uploader.h"
 #include "components/metrics/metrics_log_uploader.h"
 
 namespace metrics {

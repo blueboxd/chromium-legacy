@@ -15,14 +15,6 @@
 // Coordinator to display the identity chooser view controller.
 @interface IdentityChooserCoordinator : ChromeCoordinator
 
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-// Unavailable, use -initWithBaseViewController:browser:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-
 // Selected ChromeIdentity.
 @property(nonatomic, strong) ChromeIdentity* selectedIdentity;
 // Delegate.

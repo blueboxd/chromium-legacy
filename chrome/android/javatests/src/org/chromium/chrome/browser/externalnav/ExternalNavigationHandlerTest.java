@@ -1675,7 +1675,6 @@ public class ExternalNavigationHandlerTest {
     }
 
     private static class TestExternalNavigationDelegate implements ExternalNavigationDelegate {
-        @Override
         public List<ResolveInfo> queryIntentActivities(Intent intent) {
             List<ResolveInfo> list = new ArrayList<>();
             String dataString = intent.getDataString();
@@ -2112,9 +2111,9 @@ public class ExternalNavigationHandlerTest {
     }
 
     private static class TestPackageManager extends MockPackageManager {
-        private ExternalNavigationDelegate mDelegate;
+        private TestExternalNavigationDelegate mDelegate;
 
-        public TestPackageManager(ExternalNavigationDelegate delegate) {
+        public TestPackageManager(TestExternalNavigationDelegate delegate) {
             mDelegate = delegate;
         }
 
@@ -2127,7 +2126,7 @@ public class ExternalNavigationHandlerTest {
     private static class TestContext extends ContextWrapper {
         private PackageManager mPackageManager;
 
-        public TestContext(Context baseContext, ExternalNavigationDelegate delegate) {
+        public TestContext(Context baseContext, TestExternalNavigationDelegate delegate) {
             super(baseContext);
             mPackageManager = new TestPackageManager(delegate);
         }

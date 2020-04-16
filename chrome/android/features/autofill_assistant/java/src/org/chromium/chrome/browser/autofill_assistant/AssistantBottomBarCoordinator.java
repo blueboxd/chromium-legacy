@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCo
 import org.chromium.chrome.browser.autofill_assistant.form.AssistantFormCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.form.AssistantFormModel;
 import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantGenericUiCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantGenericUiModel;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCoordinator;
@@ -245,6 +246,12 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         // Animate when form inputs change.
         model.getFormModel().addObserver((source, propertyKey) -> {
             if (AssistantFormModel.INPUTS == propertyKey) {
+                animateChildren(rootView);
+            }
+        });
+
+        model.getGenericUiModel().addObserver((source, propertyKey) -> {
+            if (AssistantGenericUiModel.VIEW == propertyKey) {
                 animateChildren(rootView);
             }
         });

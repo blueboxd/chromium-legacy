@@ -27,13 +27,15 @@ class SyncChangeProcessorWrapperForTest : public SyncChangeProcessor {
   ~SyncChangeProcessorWrapperForTest() override;
 
   // SyncChangeProcessor implementation.
-  SyncError ProcessSyncChanges(const base::Location& from_here,
-                               const SyncChangeList& change_list) override;
+  base::Optional<ModelError> ProcessSyncChanges(
+      const base::Location& from_here,
+      const SyncChangeList& change_list) override;
   SyncDataList GetAllSyncData(ModelType type) const override;
 
  private:
-  const base::RepeatingCallback<SyncError(const base::Location& from_here,
-                                          const SyncChangeList& change_list)>
+  const base::RepeatingCallback<base::Optional<ModelError>(
+      const base::Location& from_here,
+      const SyncChangeList& change_list)>
       process_sync_changes_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorWrapperForTest);

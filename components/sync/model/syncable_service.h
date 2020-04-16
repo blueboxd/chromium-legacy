@@ -10,11 +10,11 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/model/model_error.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_data.h"
-#include "components/sync/model/sync_error.h"
-#include "components/sync/model/sync_merge_result.h"
 
 namespace syncer {
 
@@ -54,10 +54,9 @@ class SyncableService : public base::SupportsWeakPtr<SyncableService> {
   // two. After this, the SyncableService's local data should match the server
   // data, and the service should be ready to receive and process any further
   // SyncChange's as they occur.
-  // Returns: a SyncMergeResult whose error field reflects whether an error
-  //          was encountered while merging the two models. The merge result
-  //          may also contain optional merge statistics.
-  virtual SyncMergeResult MergeDataAndStartSyncing(
+  // Returns: base::nullopt if no error was encountered while merging the two
+  //          models, otherwise a base::Optional filled with such error.
+  virtual base::Optional<syncer::ModelError> MergeDataAndStartSyncing(
       ModelType type,
       const SyncDataList& initial_sync_data,
       std::unique_ptr<SyncChangeProcessor> sync_processor,
@@ -68,11 +67,11 @@ class SyncableService : public base::SupportsWeakPtr<SyncableService> {
 
   // SyncChangeProcessor interface.
   // Process a list of new SyncChanges and update the local data as necessary.
-  // Returns: A default SyncError (IsSet() == false) if no errors were
-  //          encountered, and a filled SyncError (IsSet() == true)
-  //          otherwise.
-  virtual SyncError ProcessSyncChanges(const base::Location& from_here,
-                                       const SyncChangeList& change_list) = 0;
+  // Returns: base::nullopt if no error was encountered, otherwise a
+  //          base::Optional filled with such error.
+  virtual base::Optional<ModelError> ProcessSyncChanges(
+      const base::Location& from_here,
+      const SyncChangeList& change_list) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncableService);

@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-class ChromeBrowserState;
 @class ChromeCoordinator;
 class Browser;
 
@@ -17,13 +16,6 @@ typedef NSMutableArray<ChromeCoordinator*> MutableCoordinatorArray;
 // Members of this class should clean up their own UI when they are deallocated.
 // TODO(crbug.com/795832): Move to ui/coordinators.
 @interface ChromeCoordinator : NSObject
-
-// Creates a coordinator that will use |viewController|.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController;
-// Creates a coordinator that uses |viewController| and |browserState|.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-    NS_DESIGNATED_INITIALIZER;
 
 // Creates a coordinator that uses |viewController| and |browser|.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
@@ -49,9 +41,6 @@ typedef NSMutableArray<ChromeCoordinator*> MutableCoordinatorArray;
 // needed. This is usually the same object as |baseViewController|.
 @property(weak, nonatomic, readonly)
     UINavigationController* baseNavigationController;
-
-// The coordinator's BrowserState.
-@property(assign, nonatomic, readonly) ChromeBrowserState* browserState;
 
 // The coordinator's Browser, if one was assigned.
 @property(assign, nonatomic, readonly) Browser* browser;

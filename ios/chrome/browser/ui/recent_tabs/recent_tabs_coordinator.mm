@@ -72,7 +72,7 @@
   DCHECK(!self.mediator);
   self.mediator = [[RecentTabsMediator alloc] init];
   self.mediator.browserState =
-      self.browserState->GetOriginalChromeBrowserState();
+      self.browser->GetBrowserState()->GetOriginalChromeBrowserState();
   // Set the consumer first before calling [self.mediator initObservers] and
   // then [self.mediator configureConsumer].
   self.mediator.consumer = recentTabsTableViewController;

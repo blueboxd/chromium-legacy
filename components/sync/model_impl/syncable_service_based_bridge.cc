@@ -75,13 +75,6 @@ SyncChange::SyncChangeType ConvertToSyncChangeType(
   return SyncChange::ACTION_INVALID;
 }
 
-base::Optional<ModelError> ConvertToModelError(const SyncError& sync_error) {
-  if (sync_error.IsSet()) {
-    return ModelError(sync_error.location(), sync_error.message());
-  }
-  return base::nullopt;
-}
-
 // Parses the content of |record_list| into |*in_memory_store|. The output
 // parameter is first for binding purposes.
 base::Optional<ModelError> ParseInMemoryStoreOnBackendSequence(
@@ -126,16 +119,15 @@ class LocalChangeProcessor : public SyncChangeProcessor {
 
   ~LocalChangeProcessor() override {}
 
-  SyncError ProcessSyncChanges(const base::Location& from_here,
-                               const SyncChangeList& change_list) override {
+  base::Optional<ModelError> ProcessSyncChanges(
+      const base::Location& from_here,
+      const SyncChangeList& change_list) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     // Reject changes if the processor has already experienced errors.
     base::Optional<ModelError> processor_error = other_->GetError();
     if (processor_error) {
-      return SyncError(processor_error->location(),
-                       SyncError::UNRECOVERABLE_ERROR,
-                       processor_error->message(), type_);
+      return processor_error;
     }
 
     std::unique_ptr<ModelTypeStore::WriteBatch> batch =
@@ -214,7 +206,7 @@ class LocalChangeProcessor : public SyncChangeProcessor {
 
     store_->CommitWriteBatch(std::move(batch), error_callback_);
 
-    return SyncError();
+    return base::nullopt;
   }
 
   SyncDataList GetAllSyncData(ModelType type) const override {
@@ -342,8 +334,7 @@ base::Optional<ModelError> SyncableServiceBasedBridge::ApplySyncChanges(
     return base::nullopt;
   }
 
-  return ConvertToModelError(
-      syncable_service_->ProcessSyncChanges(FROM_HERE, sync_change_list));
+  return syncable_service_->ProcessSyncChanges(FROM_HERE, sync_change_list);
 }
 
 void SyncableServiceBasedBridge::GetData(StorageKeyList storage_keys,
@@ -551,12 +542,10 @@ base::Optional<ModelError> SyncableServiceBasedBridge::StartSyncableService() {
       type_, error_callback, store_.get(), &in_memory_store_,
       change_processor());
 
-  const base::Optional<ModelError> merge_error = ConvertToModelError(
-      syncable_service_
-          ->MergeDataAndStartSyncing(
-              type_, initial_sync_data, std::move(local_change_processor),
-              std::make_unique<SyncErrorFactoryImpl>(type_))
-          .error());
+  const base::Optional<ModelError> merge_error =
+      syncable_service_->MergeDataAndStartSyncing(
+          type_, initial_sync_data, std::move(local_change_processor),
+          std::make_unique<SyncErrorFactoryImpl>(type_));
 
   if (!merge_error) {
     syncable_service_started_ = true;

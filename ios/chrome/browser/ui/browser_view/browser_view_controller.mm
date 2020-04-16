@@ -1869,8 +1869,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           toolbar_container::kToolbarContainerEnabled)) {
     self.secondaryToolbarContainerCoordinator =
         [[ToolbarContainerCoordinator alloc]
-            initWithBrowserState:self.browserState
-                            type:ToolbarContainerType::kSecondary];
+            initWithBrowser:self.browser
+                       type:ToolbarContainerType::kSecondary];
     self.secondaryToolbarContainerCoordinator.toolbarCoordinators =
         @[ bottomToolbarCoordinator ];
     [self.secondaryToolbarContainerCoordinator start];

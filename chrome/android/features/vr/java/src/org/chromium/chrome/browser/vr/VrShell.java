@@ -569,9 +569,9 @@ public class VrShell extends GvrLayout
         WebContents webContents = tab.getWebContents();
         PageInfoController.show(mActivity, webContents, null,
                 PageInfoController.OpenedFromSource.VR,
-                /*offlinePageLoadUrlDelegate=*/
-                new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab),
-                new ChromePageInfoControllerDelegate(mActivity, webContents));
+                new ChromePageInfoControllerDelegate(mActivity, webContents,
+                        /*offlinePageLoadUrlDelegate=*/
+                        new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)));
     }
 
     // Called because showing audio permission dialog isn't supported in VR. This happens when

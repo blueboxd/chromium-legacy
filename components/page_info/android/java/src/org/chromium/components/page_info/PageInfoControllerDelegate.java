@@ -6,6 +6,8 @@ package org.chromium.components.page_info;
 
 import android.content.Intent;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
@@ -66,4 +68,29 @@ public interface PageInfoControllerDelegate {
      * Returns a VrHandler for Page Info UI.
      */
     public VrHandler getVrHandler();
+
+    /**
+     * Gets the Url of the offline page being shown if any. Returns null otherwise.
+     */
+    @Nullable
+    String getOfflinePageUrl();
+
+    /**
+     * Whether the page being shown is an offline page.
+     */
+    boolean isShowingOfflinePage();
+
+    /**
+     * Initialize viewParams with Offline Page UI info, if any.
+     * @param viewParams The PageInfoViewParams to set state on.
+     * @param consumer Used to set "open Online" button callback for offline page.
+     */
+    void initOfflinePageUiParams(PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss);
+
+    /**
+     * Return the connection message shown for an offline page, if appropriate.
+     * Returns null if there's no offline page.
+     */
+    @Nullable
+    String getOfflinePageConnectionMessage();
 }

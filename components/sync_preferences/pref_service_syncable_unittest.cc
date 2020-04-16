@@ -88,17 +88,16 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
   explicit TestSyncProcessorStub(syncer::SyncChangeList* output)
       : output_(output), fail_next_(false) {}
 
-  syncer::SyncError ProcessSyncChanges(
+  base::Optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override {
     if (output_)
       output_->insert(output_->end(), change_list.begin(), change_list.end());
     if (fail_next_) {
       fail_next_ = false;
-      return syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
-                               "Error", syncer::PREFERENCES);
+      return syncer::ModelError(FROM_HERE, "Error");
     }
-    return syncer::SyncError();
+    return base::nullopt;
   }
 
   void FailNextProcessSyncChanges() { fail_next_ = true; }
@@ -170,8 +169,7 @@ SyncData CreateRemoteSyncData(int64_t id,
 class PrefServiceSyncableTest : public testing::Test {
  public:
   PrefServiceSyncableTest()
-      : pref_sync_service_(nullptr),
-        next_pref_remote_sync_node_id_(0) {}
+      : pref_sync_service_(nullptr), next_pref_remote_sync_node_id_(0) {}
 
   void SetUp() override {
     prefs_.registry()->RegisterStringPref(kUnsyncedPreferenceName,
@@ -199,11 +197,12 @@ class PrefServiceSyncableTest : public testing::Test {
 
   void InitWithSyncDataTakeOutput(const syncer::SyncDataList& initial_data,
                                   syncer::SyncChangeList* output) {
-    syncer::SyncMergeResult r = pref_sync_service_->MergeDataAndStartSyncing(
-        syncer::PREFERENCES, initial_data,
-        std::make_unique<TestSyncProcessorStub>(output),
-        std::make_unique<syncer::SyncErrorFactoryMock>());
-    EXPECT_FALSE(r.error().IsSet());
+    base::Optional<syncer::ModelError> error =
+        pref_sync_service_->MergeDataAndStartSyncing(
+            syncer::PREFERENCES, initial_data,
+            std::make_unique<TestSyncProcessorStub>(output),
+            std::make_unique<syncer::SyncErrorFactoryMock>());
+    EXPECT_FALSE(error.has_value());
   }
 
   void InitWithNoSyncData() {
@@ -442,11 +441,12 @@ class PrefServiceSyncableMergeTest : public testing::Test {
 
   void InitWithSyncDataTakeOutput(const syncer::SyncDataList& initial_data,
                                   syncer::SyncChangeList* output) {
-    syncer::SyncMergeResult r = pref_sync_service_->MergeDataAndStartSyncing(
-        syncer::PREFERENCES, initial_data,
-        std::make_unique<TestSyncProcessorStub>(output),
-        std::make_unique<syncer::SyncErrorFactoryMock>());
-    EXPECT_FALSE(r.error().IsSet());
+    base::Optional<syncer::ModelError> error =
+        pref_sync_service_->MergeDataAndStartSyncing(
+            syncer::PREFERENCES, initial_data,
+            std::make_unique<TestSyncProcessorStub>(output),
+            std::make_unique<syncer::SyncErrorFactoryMock>());
+    EXPECT_FALSE(error.has_value());
   }
 
   const base::Value& GetPreferenceValue(const std::string& name) {
@@ -659,10 +659,11 @@ TEST_F(PrefServiceSyncableTest, FailModelAssociation) {
   syncer::SyncChangeList output;
   TestSyncProcessorStub* stub = new TestSyncProcessorStub(&output);
   stub->FailNextProcessSyncChanges();
-  syncer::SyncMergeResult r = pref_sync_service_->MergeDataAndStartSyncing(
-      syncer::PREFERENCES, syncer::SyncDataList(), base::WrapUnique(stub),
-      std::make_unique<syncer::SyncErrorFactoryMock>());
-  EXPECT_TRUE(r.error().IsSet());
+  base::Optional<syncer::ModelError> error =
+      pref_sync_service_->MergeDataAndStartSyncing(
+          syncer::PREFERENCES, syncer::SyncDataList(), base::WrapUnique(stub),
+          std::make_unique<syncer::SyncErrorFactoryMock>());
+  EXPECT_TRUE(error.has_value());
 }
 
 TEST_F(PrefServiceSyncableTest, UpdatedPreferenceWithDefaultValue) {
@@ -920,11 +921,11 @@ class PrefServiceSyncableChromeOsTest : public testing::Test {
   void InitSyncForAllTypes(syncer::SyncChangeList* output = nullptr) {
     for (ModelType type : kAllPreferenceModelTypes) {
       syncer::SyncDataList empty_data;
-      syncer::SyncMergeResult r =
+      base::Optional<syncer::ModelError> error =
           prefs_->GetSyncableService(type)->MergeDataAndStartSyncing(
               type, empty_data, std::make_unique<TestSyncProcessorStub>(output),
               std::make_unique<syncer::SyncErrorFactoryMock>());
-      EXPECT_FALSE(r.error().IsSet());
+      EXPECT_FALSE(error.has_value());
     }
   }
 

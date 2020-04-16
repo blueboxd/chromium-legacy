@@ -650,6 +650,8 @@ void FakeSessionManagerClient::UpgradeArcContainer(
 }
 
 void FakeSessionManagerClient::StopArcInstance(
+    const std::string& account_id,
+    bool backup_log,
     VoidDBusMethodCallback callback) {
   if (!arc_available_ || !container_running_) {
     PostReply(FROM_HERE, std::move(callback), false /* result */);

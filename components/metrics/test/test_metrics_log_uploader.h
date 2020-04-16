@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_METRICS_TEST_METRICS_LOG_UPLOADER_H_
-#define COMPONENTS_METRICS_TEST_METRICS_LOG_UPLOADER_H_
+#ifndef COMPONENTS_METRICS_TEST_TEST_METRICS_LOG_UPLOADER_H_
+#define COMPONENTS_METRICS_TEST_TEST_METRICS_LOG_UPLOADER_H_
 
 #include "components/metrics/metrics_log_uploader.h"
 #include "third_party/metrics_proto/reporting_info.pb.h"
-
-// TODO(crbug.com/1068142): Move this to the new test directory.
 
 namespace metrics {
 
@@ -42,4 +40,4 @@ class TestMetricsLogUploader : public MetricsLogUploader {
 
 }  // namespace metrics
 
-#endif  // COMPONENTS_METRICS_TEST_METRICS_LOG_UPLOADER_H_
+#endif  // COMPONENTS_METRICS_TEST_TEST_METRICS_LOG_UPLOADER_H_

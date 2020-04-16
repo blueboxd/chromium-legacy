@@ -2211,6 +2211,49 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BackgroundColor) {
   EXPECT_EQ(inner, outer);
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DefaultFocusForEmbeddedPDF) {
+  GURL url = embedded_test_server()->GetURL("/pdf/pdf_embed.html");
+
+  // Load page with embedded PDF and make sure it succeeds.
+  ASSERT_TRUE(LoadPdf(url));
+  WebContents* guest_contents = nullptr;
+  WebContents* embedder_contents = GetActiveWebContents();
+  content::BrowserPluginGuestManager* guest_manager =
+      embedder_contents->GetBrowserContext()->GetGuestManager();
+  ASSERT_NO_FATAL_FAILURE(guest_manager->ForEachGuest(
+      embedder_contents,
+      base::BindRepeating(&GetGuestCallback, &guest_contents)));
+  ASSERT_TRUE(guest_contents);
+
+  // Verify that current focus state is body element.
+  const std::string script =
+      "const is_plugin_focused = document.activeElement === "
+      "document.body;"
+      "window.domAutomationController.send(is_plugin_focused);";
+
+  bool result = false;
+  ASSERT_TRUE(
+      content::ExecuteScriptAndExtractBool(guest_contents, script, &result));
+  ASSERT_TRUE(result);
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DefaultFocusForNonEmbeddedPDF) {
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  // Verify that current focus state is document element.
+  const std::string script =
+      "const is_plugin_focused = document.activeElement === "
+      "document.body;"
+      "window.domAutomationController.send(is_plugin_focused);";
+
+  bool result = false;
+  ASSERT_TRUE(
+      content::ExecuteScriptAndExtractBool(guest_contents, script, &result));
+  ASSERT_TRUE(result);
+}
+
 // A helper for waiting for the first request for |url_to_intercept|.
 class RequestWaiter {
  public:

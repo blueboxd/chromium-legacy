@@ -2247,6 +2247,7 @@ jumbo_static_library("ui") {
     sources += [
       "bookmarks/bookmark_bubble_sign_in_delegate.cc",
       "bookmarks/bookmark_bubble_sign_in_delegate.h",
+      "profile_picker.h",
       "startup/default_browser_infobar_delegate.cc",
       "startup/default_browser_infobar_delegate.h",
       "startup/default_browser_prompt.cc",
@@ -2260,6 +2261,8 @@ jumbo_static_library("ui") {
       "views/external_protocol_dialog.h",
       "views/profiles/badged_profile_photo.cc",
       "views/profiles/badged_profile_photo.h",
+      "views/profiles/profile_picker_view.cc",
+      "views/profiles/profile_picker_view.h",
       "views/profiles/user_manager_view.cc",
       "views/profiles/user_manager_view.h",
       "webui/app_launcher_page_ui.cc",

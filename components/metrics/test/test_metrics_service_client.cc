@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/test_metrics_service_client.h"
+#include "components/metrics/test/test_metrics_service_client.h"
 
 #include <memory>
 
@@ -21,8 +21,7 @@ TestMetricsServiceClient::TestMetricsServiceClient()
       reporting_is_managed_(false),
       enable_default_(EnableMetricsDefault::DEFAULT_UNKNOWN) {}
 
-TestMetricsServiceClient::~TestMetricsServiceClient() {
-}
+TestMetricsServiceClient::~TestMetricsServiceClient() {}
 
 metrics::MetricsService* TestMetricsServiceClient::GetMetricsService() {
   return nullptr;

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_controller.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
@@ -482,11 +483,8 @@ AppListControllerDelegate::Pinnable AppListClientImpl::GetPinnable(
                              ChromeLauncherController::instance()->profile());
 }
 
-void AppListClientImpl::CreateNewWindow(Profile* profile, bool incognito) {
-  if (incognito)
-    chrome::NewEmptyWindow(profile->GetPrimaryOTRProfile());
-  else
-    chrome::NewEmptyWindow(profile);
+void AppListClientImpl::CreateNewWindow(bool incognito) {
+  ash::NewWindowDelegate::GetInstance()->NewWindow(incognito);
 }
 
 void AppListClientImpl::OpenURL(Profile* profile,

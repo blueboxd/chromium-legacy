@@ -5,6 +5,7 @@
 #import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/common/credential_provider/archivable_credential.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -39,31 +40,6 @@
     _workingQueue = dispatch_queue_create(nullptr, DISPATCH_QUEUE_CONCURRENT);
   }
   return self;
-}
-
-- (void)addCredential:(ArchivableCredential*)credential {
-  DCHECK(credential.recordIdentifier)
-      << "credential must have a record identifier";
-  dispatch_barrier_async(self.workingQueue, ^{
-    DCHECK(!self.memoryStorage[credential.recordIdentifier])
-        << "Credential already exists in the storage";
-    self.memoryStorage[credential.recordIdentifier] = credential;
-  });
-}
-
-- (void)updateCredential:(ArchivableCredential*)credential {
-  [self removeCredential:credential];
-  [self addCredential:credential];
-}
-
-- (void)removeCredential:(ArchivableCredential*)credential {
-  DCHECK(credential.recordIdentifier)
-      << "credential must have a record identifier";
-  dispatch_barrier_async(self.workingQueue, ^{
-    DCHECK(self.memoryStorage[credential.recordIdentifier])
-        << "Credential doesn't exist in the storage";
-    self.memoryStorage[credential.recordIdentifier] = nil;
-  });
 }
 
 #pragma mark - CredentialStore
@@ -117,6 +93,38 @@
     [data writeToURL:self.fileURL options:NSDataWritingAtomic error:&error];
     DCHECK(!error) << error.debugDescription.UTF8String;
     executeCompletionIfPresent(error);
+  });
+}
+
+- (void)removeAllCredentials {
+  dispatch_barrier_async(self.workingQueue, ^{
+    [self.memoryStorage removeAllObjects];
+  });
+}
+
+- (void)addCredential:(id<Credential>)credential {
+  DCHECK(credential.recordIdentifier)
+      << "credential must have a record identifier";
+  dispatch_barrier_async(self.workingQueue, ^{
+    DCHECK(!self.memoryStorage[credential.recordIdentifier])
+        << "Credential already exists in the storage";
+    self.memoryStorage[credential.recordIdentifier] =
+        base::mac::ObjCCastStrict<ArchivableCredential>(credential);
+  });
+}
+
+- (void)updateCredential:(id<Credential>)credential {
+  [self removeCredential:credential];
+  [self addCredential:credential];
+}
+
+- (void)removeCredential:(id<Credential>)credential {
+  DCHECK(credential.recordIdentifier)
+      << "credential must have a record identifier";
+  dispatch_barrier_async(self.workingQueue, ^{
+    DCHECK(self.memoryStorage[credential.recordIdentifier])
+        << "Credential doesn't exist in the storage";
+    self.memoryStorage[credential.recordIdentifier] = nil;
   });
 }
 

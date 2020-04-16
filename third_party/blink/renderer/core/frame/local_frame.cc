@@ -2527,6 +2527,13 @@ void LocalFrame::DidUpdateFramePolicy(const FramePolicy& frame_policy) {
   To<RemoteFrameOwner>(Owner())->SetFramePolicy(frame_policy);
 }
 
+void LocalFrame::OnScreensChange() {
+  if (RuntimeEnabledFeatures::ScreenEnumerationEnabled()) {
+    DomWindow()->DispatchEvent(
+        *Event::Create(event_type_names::kScreenschange));
+  }
+}
+
 bool LocalFrame::ShouldThrottleDownload() {
   const auto now = base::TimeTicks::Now();
   if (num_burst_download_requests_ == 0) {

@@ -539,6 +539,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // sandbox flags or container policy. The new policy won't take effect until
   // the next navigation.
   void DidUpdateFramePolicy(const FramePolicy& frame_policy) final;
+  void OnScreensChange() final;
 
   // blink::mojom::LocalMainFrame overrides:
   void AnimateDoubleTapZoom(const gfx::Point& point,

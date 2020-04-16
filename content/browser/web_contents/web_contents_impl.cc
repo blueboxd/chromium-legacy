@@ -82,6 +82,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/text_input_manager.h"
+#include "content/browser/screen_enumeration/screen_change_monitor.h"
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/javascript_dialog_navigation_deferrer.h"
@@ -622,6 +623,10 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   using_dark_colors_ = native_theme->ShouldUseDarkColors();
   preferred_color_scheme_ = native_theme->GetPreferredColorScheme();
 
+  screen_change_monitor_ =
+      std::make_unique<ScreenChangeMonitor>(base::BindRepeating(
+          &WebContentsImpl::OnScreensChange, base::Unretained(this)));
+
   // ConversionHost takes a weak ref on |this|, so it must be created outside of
   // the initializer list.
   if (base::FeatureList::IsEnabled(features::kConversionMeasurement)) {
@@ -1091,6 +1096,13 @@ RenderWidgetHostView* WebContentsImpl::GetFullscreenRenderWidgetHostView() {
 
 WebContentsView* WebContentsImpl::GetView() const {
   return view_.get();
+}
+
+void WebContentsImpl::OnScreensChange() {
+  for (FrameTreeNode* node : frame_tree_.Nodes()) {
+    RenderFrameHostImpl* rfh = node->current_frame_host();
+    rfh->GetAssociatedLocalFrame()->OnScreensChange();
+  }
 }
 
 void WebContentsImpl::OnScreenOrientationChange() {

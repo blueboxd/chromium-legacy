@@ -109,10 +109,9 @@ const wchar_t* GetCursorId(gfx::NativeCursor native_cursor) {
       return MAKEINTRESOURCE(IDC_COPYCUR);
     case mojom::CursorType::kAlias:
       return MAKEINTRESOURCE(IDC_ALIAS);
-    case mojom::CursorType::kNone:
-      return MAKEINTRESOURCE(IDC_CURSOR_NONE);
     case mojom::CursorType::kContextMenu:
     case mojom::CursorType::kCustom:
+    case mojom::CursorType::kNone:
       NOTIMPLEMENTED();
       return IDC_ARROW;
     default:
@@ -151,19 +150,28 @@ void CursorLoaderWin::UnloadAll() {
 }
 
 void CursorLoaderWin::SetPlatformCursor(gfx::NativeCursor* cursor) {
-  if (cursor->type() != mojom::CursorType::kCustom) {
-    if (cursor->platform()) {
-      cursor->SetPlatformCursor(cursor->platform());
-    } else {
-      const wchar_t* cursor_id = GetCursorId(*cursor);
-      PlatformCursor platform_cursor = LoadCursor(NULL, cursor_id);
-      if (!platform_cursor && !g_cursor_resource_module_name.Get().empty()) {
-        platform_cursor = LoadCursor(
-            GetModuleHandle(g_cursor_resource_module_name.Get().c_str()),
-                            cursor_id);
-      }
-      cursor->SetPlatformCursor(platform_cursor);
+  if (cursor->type() == mojom::CursorType::kCustom)
+    return;
+
+  // Using a dark 1x1 bit bmp kNone cursor may still cause DWM to do composition
+  // work unnecessarily. Better to totally remove it from the screen.
+  // crbug.com/1069698
+  if (cursor->type() == mojom::CursorType::kNone) {
+    cursor->SetPlatformCursor(nullptr);
+    return;
+  }
+
+  if (cursor->platform()) {
+    cursor->SetPlatformCursor(cursor->platform());
+  } else {
+    const wchar_t* cursor_id = GetCursorId(*cursor);
+    PlatformCursor platform_cursor = LoadCursor(nullptr, cursor_id);
+    if (!platform_cursor && !g_cursor_resource_module_name.Get().empty()) {
+      platform_cursor = LoadCursor(
+          GetModuleHandle(g_cursor_resource_module_name.Get().c_str()),
+          cursor_id);
     }
+    cursor->SetPlatformCursor(platform_cursor);
   }
 }
 

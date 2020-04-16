@@ -1039,6 +1039,7 @@ test("content_browsertests") {
     "../browser/resource_loading_browsertest.cc",
     "../browser/scheduler/responsiveness/native_event_observer_browsertest.mm",
     "../browser/scheduler/responsiveness/native_event_observer_browsertest_win.cc",
+    "../browser/screen_enumeration/screen_enumeration_browsertest.cc",
     "../browser/screen_orientation/screen_orientation_browsertest.cc",
     "../browser/security_exploit_browsertest.cc",
     "../browser/service_process_host_browsertest.cc",

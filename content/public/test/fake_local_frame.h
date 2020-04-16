@@ -62,6 +62,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void ReportContentSecurityPolicyViolation(
       network::mojom::CSPViolationPtr violation) override;
   void DidUpdateFramePolicy(const blink::FramePolicy& frame_policy) override;
+  void OnScreensChange() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

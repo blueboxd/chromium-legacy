@@ -11828,6 +11828,7 @@ interface webkitURL
     getter onrendersubtreeactivation
     getter onreset
     getter onresize
+    getter onscreenschange
     getter onscroll
     getter onscrollend
     getter onsearch
@@ -12030,6 +12031,7 @@ interface webkitURL
     setter onrendersubtreeactivation
     setter onreset
     setter onresize
+    setter onscreenschange
     setter onscroll
     setter onscrollend
     setter onsearch

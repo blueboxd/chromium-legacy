@@ -82,6 +82,8 @@ void FakeLocalFrame::ReportContentSecurityPolicyViolation(
 void FakeLocalFrame::DidUpdateFramePolicy(
     const blink::FramePolicy& frame_policy) {}
 
+void FakeLocalFrame::OnScreensChange() {}
+
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<blink::mojom::LocalFrame>(

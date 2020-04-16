@@ -9,4 +9,6 @@
     ImplementedAs=GlobalScreenEnumeration
 ] partial interface Window {
   [CallWith=ScriptState, RaisesException] Promise<sequence<Screen>> getScreens();
+
+  attribute EventHandler onscreenschange;
 };

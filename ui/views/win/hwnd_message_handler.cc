@@ -403,7 +403,6 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
       use_system_default_icon_(false),
       restored_enabled_(false),
       current_cursor_(nullptr),
-      previous_cursor_(nullptr),
       dpi_(0),
       called_enable_non_client_dpi_scaling_(false),
       active_mouse_tracking_flags_(0),
@@ -864,15 +863,9 @@ bool HWNDMessageHandler::SetTitle(const base::string16& title) {
 }
 
 void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
-  TRACE_EVENT2("ui,input", "HWNDMessageHandler::SetCursor", "cursor", cursor,
-               "previous_cursor", previous_cursor_);
-  if (cursor) {
-    previous_cursor_ = ::SetCursor(cursor);
-    current_cursor_ = cursor;
-  } else if (previous_cursor_) {
-    ::SetCursor(previous_cursor_);
-    previous_cursor_ = nullptr;
-  }
+  TRACE_EVENT1("ui,input", "HWNDMessageHandler::SetCursor", "cursor", cursor);
+  ::SetCursor(cursor);
+  current_cursor_ = cursor;
 }
 
 void HWNDMessageHandler::FrameTypeChanged() {

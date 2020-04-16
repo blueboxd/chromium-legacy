@@ -112,6 +112,7 @@ class RenderViewHostDelegateView;
 class RenderWidgetHostImpl;
 class RenderWidgetHostInputEventRouter;
 class SavePackage;
+class ScreenChangeMonitor;
 class ScreenOrientationProvider;
 class SiteInstance;
 class BeforeUnloadBlockingDelegate;  // content_browser_test_utils_internal.h
@@ -250,6 +251,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   WebContentsView* GetView() const;
 
+  void OnScreensChange();
   void OnScreenOrientationChange();
 
   ScreenOrientationProvider* GetScreenOrientationProviderForTesting() const {
@@ -2025,6 +2027,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Represents the favicon urls candidates from the page.
   // Empty std::vector until the first update from the renderer.
   std::vector<blink::mojom::FaviconURLPtr> favicon_urls_;
+
+  // Monitors system screen info changes to notify the renderer.
+  std::unique_ptr<ScreenChangeMonitor> screen_change_monitor_;
 
   // This time is used to record the last time we saw a screen orientation
   // change.

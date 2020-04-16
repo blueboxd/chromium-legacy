@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ENUMERATION_GLOBAL_SCREEN_ENUMERATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ENUMERATION_GLOBAL_SCREEN_ENUMERATION_H_
 
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -24,6 +25,8 @@ class GlobalScreenEnumeration {
   static ScriptPromise getScreens(ScriptState*,
                                   LocalDOMWindow&,
                                   ExceptionState&);
+
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(screenschange, kScreenschange)
 };
 
 }  // namespace blink

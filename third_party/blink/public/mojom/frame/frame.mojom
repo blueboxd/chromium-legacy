@@ -436,6 +436,11 @@ interface LocalFrame {
   // Notifies the frame that its parent has changed the frame's sandbox flags or
   // container policy.
   DidUpdateFramePolicy(blink.mojom.FramePolicy frame_policy);
+
+  // Called when the device's screen information changes.
+  // TODO(crbug.com/1068774): Include screen info with this event, perhaps
+  // plumbing the multi-screen info via SynchronizeVisualProperties.
+  OnScreensChange();
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that

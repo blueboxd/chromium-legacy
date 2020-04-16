@@ -625,10 +625,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // The current cursor.
   HCURSOR current_cursor_;
 
-  // The last cursor that was active before the current one was selected. Saved
-  // so that we can restore it.
-  HCURSOR previous_cursor_;
-
   // The icon created from the bitmap image of the window icon.
   base::win::ScopedHICON window_icon_;
 

@@ -547,9 +547,13 @@ void HeadlessShell::OnScreenshotCaptured(
 
 void HeadlessShell::PrintToPDF() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  bool display_header_footer =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPrintToPDFNoHeader);
   devtools_client_->GetPage()->GetExperimental()->PrintToPDF(
       page::PrintToPDFParams::Builder()
-          .SetDisplayHeaderFooter(true)
+          .SetDisplayHeaderFooter(display_header_footer)
           .SetPrintBackground(true)
           .SetPreferCSSPageSize(true)
           .Build(),

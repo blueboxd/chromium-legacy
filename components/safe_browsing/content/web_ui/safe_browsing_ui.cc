@@ -180,15 +180,17 @@ void WebUIInfoSingleton::ClearPGPings() {
   std::map<int, LoginReputationClientResponse>().swap(pg_responses_);
 }
 
-int WebUIInfoSingleton::AddToRTLookupPings(const RTLookupRequest request) {
+int WebUIInfoSingleton::AddToRTLookupPings(const RTLookupRequest request,
+                                           const std::string oauth_token) {
   if (!HasListener())
     return -1;
 
-  for (auto* webui_listener : webui_instances_)
-    webui_listener->NotifyRTLookupPingJsListener(rt_lookup_pings_.size(),
-                                                 request);
+  RTLookupRequestAndToken ping = {request, oauth_token};
 
-  rt_lookup_pings_.push_back(request);
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyRTLookupPingJsListener(rt_lookup_pings_.size(), ping);
+
+  rt_lookup_pings_.push_back(ping);
 
   return rt_lookup_pings_.size() - 1;
 }
@@ -206,7 +208,7 @@ void WebUIInfoSingleton::AddToRTLookupResponses(
 }
 
 void WebUIInfoSingleton::ClearRTLookupPings() {
-  std::vector<RTLookupRequest>().swap(rt_lookup_pings_);
+  std::vector<RTLookupRequestAndToken>().swap(rt_lookup_pings_);
   std::map<int, RTLookupResponse>().swap(rt_lookup_responses_);
 }
 
@@ -1232,14 +1234,14 @@ std::string SerializePGResponse(const LoginReputationClientResponse& response) {
   return response_serialized;
 }
 
-std::string SerializeRTLookupPing(const RTLookupRequest& request) {
+std::string SerializeRTLookupPing(const RTLookupRequestAndToken& ping) {
   base::DictionaryValue request_dict;
+  RTLookupRequest request = ping.request;
 
   request_dict.SetKey("url", base::Value(request.url()));
   request_dict.SetKey("population",
                       SerializeChromeUserPopulation(request.population()));
-  request_dict.SetKey("scoped_oauth_token",
-                      base::Value(request.scoped_oauth_token()));
+  request_dict.SetKey("scoped_oauth_token", base::Value(ping.token));
 
   std::string lookupType;
   switch (request.lookup_type()) {
@@ -1752,7 +1754,7 @@ void SafeBrowsingUIHandler::GetPGResponses(const base::ListValue* args) {
 }
 
 void SafeBrowsingUIHandler::GetRTLookupPings(const base::ListValue* args) {
-  const std::vector<RTLookupRequest> requests =
+  const std::vector<RTLookupRequestAndToken> requests =
       WebUIInfoSingleton::GetInstance()->rt_lookup_pings();
 
   base::ListValue pings_sent;
@@ -1939,7 +1941,7 @@ void SafeBrowsingUIHandler::NotifyPGResponseJsListener(
 
 void SafeBrowsingUIHandler::NotifyRTLookupPingJsListener(
     int token,
-    const RTLookupRequest& request) {
+    const RTLookupRequestAndToken& request) {
   base::ListValue request_list;
   request_list.Append(base::Value(token));
   request_list.Append(base::Value(SerializeRTLookupPing(request)));

@@ -185,60 +185,42 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
     }
 
-    private boolean isInTwaInstalledFromAppStore(ChromeActivity activity) {
-        assert activity != null;
-        String twaPackageName = mPackageManagerDelegate.getTwaPackageName(activity);
-        if (twaPackageName == null) return false;
-        String installerPackageName = mPackageManagerDelegate.getInstallerPackage(twaPackageName);
-        if (installerPackageName == null) return false;
-        return mAppStores.containsKey(installerPackageName);
-    }
-
-    /** Precondition: {@link #isInTwaInstalledFromAppStore} returns true. */
     private void findAppStoreBillingApp(
             ChromeActivity activity, List<ResolveInfo> allInstalledPaymentApps) {
         assert activity != null;
-        // The following asserts are assumed to have been checked in {@link
-        // isInTwaInstalledFromAppStore}.
         String twaPackageName = mPackageManagerDelegate.getTwaPackageName(activity);
-        assert twaPackageName != null;
-        String installerAppStorePackageName =
-                mPackageManagerDelegate.getInstallerPackage(twaPackageName);
-        assert installerAppStorePackageName != null;
+        if (twaPackageName == null) return;
+        ResolveInfo twaApp = findAppWithPackageName(allInstalledPaymentApps, twaPackageName);
+        if (twaApp == null) return;
 
-        GURL appStoreBillingUriMethod = mAppStores.get(installerAppStorePackageName);
-        assert appStoreBillingUriMethod != null;
-        assert appStoreBillingUriMethod.isValid();
-        String appStoreBillingMethod = appStoreBillingUriMethod.getSpec();
-        if (!mDelegate.getParams().getMethodData().containsKey(appStoreBillingMethod)) return;
-        ResolveInfo twaApp = findAppWithPackageNameAndSupportedMethod(
-                allInstalledPaymentApps, twaPackageName, appStoreBillingUriMethod);
-        if (twaApp == null) {
-            android.util.Log.d(TAG, "The current TWA cannot handle Payment Request.");
-            return;
+        for (GURL appStoreBillingUriMethod : mAppStores.values()) {
+            assert appStoreBillingUriMethod != null;
+            assert appStoreBillingUriMethod.isValid();
+            String appStoreBillingMethod = removeTrailingSlash(appStoreBillingUriMethod.getSpec());
+            assert appStoreBillingMethod != null;
+            if (!mDelegate.getParams().getMethodData().containsKey(appStoreBillingMethod)) continue;
+            if (!paymentAppSupportsUriMethod(twaApp, appStoreBillingUriMethod)) continue;
+            onValidPaymentAppForPaymentMethodName(twaApp, appStoreBillingMethod);
         }
-        onValidPaymentAppForPaymentMethodName(twaApp, appStoreBillingMethod);
     }
 
-    private ResolveInfo findAppWithPackageNameAndSupportedMethod(
-            List<ResolveInfo> apps, String packageName, GURL uriMethod) {
+    private boolean paymentAppSupportsUriMethod(ResolveInfo app, GURL uriMethod) {
+        String defaultMethod = app.activityInfo.metaData == null
+                ? null
+                : app.activityInfo.metaData.getString(
+                        META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME);
+        GURL defaultUriMethod = new GURL(defaultMethod);
+        assert uriMethod.isValid();
+        return (getSupportedPaymentMethods(app.activityInfo).contains(uriMethod.getSpec()))
+                || (uriMethod.equals(defaultUriMethod));
+    }
+
+    private ResolveInfo findAppWithPackageName(List<ResolveInfo> apps, String packageName) {
         assert packageName != null;
-        assert uriMethod != null;
         for (int i = 0; i < apps.size(); i++) {
             ResolveInfo app = apps.get(i);
             String appPackageName = app.activityInfo.packageName;
-            if (!packageName.equals(appPackageName)) continue;
-            String defaultMethod = app.activityInfo.metaData == null
-                    ? null
-                    : app.activityInfo.metaData.getString(
-                            META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME);
-            GURL defaultUriMethod = new GURL(defaultMethod);
-            if ((uriMethod.isValid()
-                        && getSupportedPaymentMethods(app.activityInfo)
-                                   .contains(uriMethod.getSpec()))
-                    || (defaultUriMethod.isValid() && uriMethod.equals(defaultUriMethod))) {
-                return app;
-            }
+            if (packageName.equals(appPackageName)) return app;
         }
         return null;
     }
@@ -294,8 +276,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         // and, consequently, the {@link PaymentRequest} object.
         ChromeActivity activity =
                 ChromeActivity.fromWebContents(mDelegate.getParams().getWebContents());
-        if (!mDelegate.getParams().requestShippingOrPayerContact() && activity != null
-                && isInTwaInstalledFromAppStore(activity)) {
+        if (!mDelegate.getParams().requestShippingOrPayerContact() && activity != null) {
             findAppStoreBillingApp(activity, allInstalledPaymentApps);
         }
 
@@ -690,7 +671,11 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     @Nullable
     private static String uriToStringWithoutTrailingSlash(@Nullable URI uri) {
         if (uri == null) return null;
-        String string = uri.toString();
+        return removeTrailingSlash(uri.toString());
+    }
+
+    @Nullable
+    private static String removeTrailingSlash(@Nullable String string) {
         return string.endsWith("/") ? string.substring(0, string.length() - 1) : string;
     }
 

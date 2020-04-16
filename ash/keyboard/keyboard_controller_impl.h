@@ -78,6 +78,7 @@ class ASH_EXPORT KeyboardControllerImpl
   bool SetAreaToRemainOnScreen(const gfx::Rect& bounds) override;
   void SetDraggableArea(const gfx::Rect& bounds) override;
   bool SetWindowBoundsInScreen(const gfx::Rect& bounds_in_screen) override;
+  bool ShouldOverscroll() override;
   void AddObserver(KeyboardControllerObserver* observer) override;
   void RemoveObserver(KeyboardControllerObserver* observer) override;
 

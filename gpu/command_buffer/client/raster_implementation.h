@@ -126,6 +126,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                    int dst_x_offset,
                    int dst_y_offset,
                    GLenum texture_target,
+                   GLuint row_bytes,
                    const SkImageInfo& src_info,
                    const void* src_pixels) override;
 

@@ -140,11 +140,11 @@ class CertificateManagerModel {
   // Map from the subject organization name to the list of certs from that
   // organization.  If a cert does not have an organization name, the
   // subject's CertPrincipal::GetDisplayName() value is used instead.
-  typedef std::map<std::string, std::vector<std::unique_ptr<CertInfo>>>
-      OrgGroupingMap;
+  using OrgGroupingMap =
+      std::map<std::string, std::vector<std::unique_ptr<CertInfo>>>;
 
-  typedef base::Callback<void(std::unique_ptr<CertificateManagerModel>)>
-      CreationCallback;
+  using CreationCallback =
+      base::OnceCallback<void(std::unique_ptr<CertificateManagerModel>)>;
 
   class Observer {
    public:
@@ -162,7 +162,7 @@ class CertificateManagerModel {
   // |browser_context|.
   static void Create(content::BrowserContext* browser_context,
                      Observer* observer,
-                     const CreationCallback& callback);
+                     CreationCallback callback);
 
   // Use |Create| instead to create a |CertificateManagerModel| for a
   // |BrowserContext|.
@@ -193,8 +193,10 @@ class CertificateManagerModel {
   // |data|, using the given |password|. If |is_extractable| is false,
   // mark the private key as unextractable from the slot.
   // Returns a net error code on failure.
-  int ImportFromPKCS12(PK11SlotInfo* slot_info, const std::string& data,
-                       const base::string16& password, bool is_extractable);
+  int ImportFromPKCS12(PK11SlotInfo* slot_info,
+                       const std::string& data,
+                       const base::string16& password,
+                       bool is_extractable);
 
   // Import user certificate from DER encoded |data|.
   // Returns a net error code on failure.
@@ -252,19 +254,19 @@ class CertificateManagerModel {
   static void DidGetCertDBOnUIThread(
       std::unique_ptr<Params> params,
       CertificateManagerModel::Observer* observer,
-      const CreationCallback& callback,
+      CreationCallback callback,
       net::NSSCertDatabase* cert_db,
       bool is_user_db_available,
       bool is_tpm_available);
   static void DidGetCertDBOnIOThread(
       std::unique_ptr<Params> params,
       CertificateManagerModel::Observer* observer,
-      const CreationCallback& callback,
+      CreationCallback callback,
       net::NSSCertDatabase* cert_db);
   static void GetCertDBOnIOThread(std::unique_ptr<Params> params,
                                   content::ResourceContext* resource_context,
                                   CertificateManagerModel::Observer* observer,
-                                  const CreationCallback& callback);
+                                  CreationCallback callback);
 
   net::NSSCertDatabase* cert_db_;
 

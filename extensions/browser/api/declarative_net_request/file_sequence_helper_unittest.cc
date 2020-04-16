@@ -312,9 +312,8 @@ TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
     api_rules.clear();
     api_rules.push_back(GetAPIRule(rule));
 
-    ParseInfo info;
     int rule_id = kMinValidID + 1;
-    info.SetError(ParseResult::ERROR_EMPTY_RULE_PRIORITY, &rule_id);
+    ParseInfo info(ParseResult::ERROR_EMPTY_RULE_PRIORITY, &rule_id);
     TestAddDynamicRules(source.Clone(), std::move(api_rules),
                         ReadJSONRulesResult::Status::kSuccess,
                         UpdateDynamicRulesStatus::kErrorInvalidRules,

@@ -73,8 +73,12 @@ namespace declarativeNetRequest {
 
   // Describes a single static ruleset.
   dictionary Ruleset {
+    // A non-empty string uniquely identifying the ruleset.
+    DOMString id;
     // The path of the JSON ruleset relative to the extension directory.
     DOMString path;
+    // Whether the ruleset is enabled by default.
+    boolean enabled;
   };
 
   // Represents a query key-value pair.

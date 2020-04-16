@@ -176,7 +176,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM: {
       dict->SetString(kKeyType, "file_system");
 
-      const BrowsingDataFileSystemHelper::FileSystemInfo& file_system_info =
+      const browsing_data::FileSystemHelper::FileSystemInfo& file_system_info =
           *node.GetDetailedInfo().file_system_info;
       const storage::FileSystemType kPerm = storage::kFileSystemTypePersistent;
       const storage::FileSystemType kTemp = storage::kFileSystemTypeTemporary;
@@ -235,7 +235,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     case CookieTreeNode::DetailedInfo::TYPE_SHARED_WORKER: {
       dict->SetString(kKeyType, "shared_worker");
 
-      const BrowsingDataSharedWorkerHelper::SharedWorkerInfo&
+      const browsing_data::SharedWorkerHelper::SharedWorkerInfo&
           shared_worker_info = *node.GetDetailedInfo().shared_worker_info;
 
       dict->SetString(kKeyOrigin, shared_worker_info.worker.spec());

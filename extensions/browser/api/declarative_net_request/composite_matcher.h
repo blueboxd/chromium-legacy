@@ -51,6 +51,8 @@ class CompositeMatcher {
   explicit CompositeMatcher(MatcherList matchers);
   ~CompositeMatcher();
 
+  const MatcherList& matchers() const { return matchers_; }
+
   // Adds the |new_matcher| to the list of matchers. If a matcher with the
   // corresponding ID is already present, updates the matcher.
   void AddOrUpdateRuleset(std::unique_ptr<RulesetMatcher> new_matcher);

@@ -34,8 +34,6 @@ class MockPackageManagerDelegate extends PackageManagerDelegate {
     private final Map<ApplicationInfo, String[]> mResources = new HashMap<>();
 
     private String mMockTwaPackage;
-    // A map of a package name to its installer's package name.
-    private Map<String, String> mMockInstallerPackageMap = new HashMap<>();
 
     /**
      * Simulates an installed payment app with no supported delegations.
@@ -155,18 +153,6 @@ class MockPackageManagerDelegate extends PackageManagerDelegate {
         mMockTwaPackage = mockTwaPackage;
     }
 
-    /**
-     * Mock the installer of a specified package.
-     * @param packageName The package name that is intended to mock a installer for.
-     * @param installerPackageName The package name intended to be set as the installer of the
-     *         specified package. not allowed to be null.
-     */
-    public void mockInstallerForPackage(String packageName, String installerPackageName) {
-        assert installerPackageName != null;
-        assert packageName != null;
-        mMockInstallerPackageMap.put(packageName, installerPackageName);
-    }
-
     @Override
     public List<ResolveInfo> getActivitiesThatCanRespondToIntentWithMetaData(Intent intent) {
         return mActivities;
@@ -203,13 +189,6 @@ class MockPackageManagerDelegate extends PackageManagerDelegate {
             ApplicationInfo applicationInfo, int resourceId) {
         assert STRING_ARRAY_RESOURCE_ID == resourceId;
         return mResources.get(applicationInfo);
-    }
-
-    @Override
-    @Nullable
-    public String getInstallerPackage(String packageName) {
-        return !mMockInstallerPackageMap.isEmpty() ? mMockInstallerPackageMap.get(packageName)
-                                                   : super.getInstallerPackage(packageName);
     }
 
     @Override

@@ -234,13 +234,7 @@ bool ChromeKeyboardControllerClient::SetWindowBoundsInScreen(
 }
 
 bool ChromeKeyboardControllerClient::IsKeyboardOverscrollEnabled() {
-  DCHECK(cached_keyboard_config_);
-  if (cached_keyboard_config_->overscroll_behavior !=
-      keyboard::KeyboardOverscrollBehavior::kDefault) {
-    return cached_keyboard_config_->overscroll_behavior ==
-           keyboard::KeyboardOverscrollBehavior::kEnabled;
-  }
-  return true;
+  return keyboard_controller_->ShouldOverscroll();
 }
 
 GURL ChromeKeyboardControllerClient::GetVirtualKeyboardUrl() {

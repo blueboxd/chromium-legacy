@@ -24,7 +24,7 @@ namespace {
 base::Optional<extensions::Command> CommandForExtensionAction(
     const extensions::Extension* extension,
     Profile* profile) {
-  const auto* info = extensions::ActionInfo::GetAnyActionInfo(extension);
+  const auto* info = extensions::ActionInfo::GetExtensionActionInfo(extension);
 
   if (!info)
     return base::nullopt;
@@ -82,7 +82,8 @@ ExtensionInstalledBubbleModel::ExtensionInstalledBubbleModel(
   const std::string& keyword = extensions::OmniboxInfo::GetKeyword(extension);
   base::Optional<extensions::Command> command =
       CommandForExtensionAction(extension, profile);
-  const auto* action_info = extensions::ActionInfo::GetAnyActionInfo(extension);
+  const auto* action_info =
+      extensions::ActionInfo::GetExtensionActionInfo(extension);
 
   // TODO(ellyjones): There is no logical reason why TYPE_ACTION should be
   // different here, but the existing bubble behaves this way.

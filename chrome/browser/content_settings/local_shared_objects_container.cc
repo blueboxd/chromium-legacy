@@ -9,19 +9,20 @@
 #include <utility>
 #include <vector>
 
-#include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_database_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_file_system_util.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_shared_worker_helper.h"
-#include "chrome/browser/browsing_data/canonical_cookie_hash.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/browsing_data/content/appcache_helper.h"
+#include "components/browsing_data/content/cache_storage_helper.h"
+#include "components/browsing_data/content/canonical_cookie_hash.h"
+#include "components/browsing_data/content/cookie_helper.h"
+#include "components/browsing_data/content/database_helper.h"
+#include "components/browsing_data/content/file_system_helper.h"
+#include "components/browsing_data/content/indexed_db_helper.h"
 #include "components/browsing_data/content/local_storage_helper.h"
+#include "components/browsing_data/content/service_worker_helper.h"
+#include "components/browsing_data/content/shared_worker_helper.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -41,25 +42,26 @@ bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
 }  // namespace
 
 LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
-    : appcaches_(new CannedBrowsingDataAppCacheHelper(
+    : appcaches_(new browsing_data::CannedAppCacheHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetAppCacheService())),
-      cookies_(new CannedBrowsingDataCookieHelper(
+      cookies_(new browsing_data::CannedCookieHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile))),
-      databases_(new CannedBrowsingDataDatabaseHelper(profile)),
-      file_systems_(new CannedBrowsingDataFileSystemHelper(
+      databases_(new browsing_data::CannedDatabaseHelper(profile)),
+      file_systems_(new browsing_data::CannedFileSystemHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile)
-              ->GetFileSystemContext())),
-      indexed_dbs_(new CannedBrowsingDataIndexedDBHelper(
+              ->GetFileSystemContext(),
+          browsing_data_file_system_util::GetAdditionalFileSystemTypes())),
+      indexed_dbs_(new browsing_data::CannedIndexedDBHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile))),
       local_storages_(new browsing_data::CannedLocalStorageHelper(profile)),
-      service_workers_(new CannedBrowsingDataServiceWorkerHelper(
+      service_workers_(new browsing_data::CannedServiceWorkerHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetServiceWorkerContext())),
-      shared_workers_(new CannedBrowsingDataSharedWorkerHelper(
+      shared_workers_(new browsing_data::CannedSharedWorkerHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile),
           profile->GetResourceContext())),
-      cache_storages_(new CannedBrowsingDataCacheStorageHelper(
+      cache_storages_(new browsing_data::CannedCacheStorageHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetCacheStorageContext())),
       session_storages_(new browsing_data::CannedLocalStorageHelper(profile)) {}
@@ -90,7 +92,8 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   // to be a third party regarding the domain of the provided |origin|. E.g. if
   // the origin is "http://foo.com" then all cookies with domain foo.com,
   // a.foo.com, b.a.foo.com or *.foo.com will be counted.
-  typedef CannedBrowsingDataCookieHelper::OriginCookieSetMap OriginCookieSetMap;
+  typedef browsing_data::CannedCookieHelper::OriginCookieSetMap
+      OriginCookieSetMap;
   const OriginCookieSetMap& origin_cookies_set_map =
       cookies()->origin_cookie_set_map();
   for (auto it = origin_cookies_set_map.begin();
@@ -137,7 +140,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   }
 
   // Count shared workers for the domain of the given |origin|.
-  typedef BrowsingDataSharedWorkerHelper::SharedWorkerInfo SharedWorkerInfo;
+  typedef browsing_data::SharedWorkerHelper::SharedWorkerInfo SharedWorkerInfo;
   const std::set<SharedWorkerInfo>& shared_worker_info =
       shared_workers()->GetSharedWorkerInfo();
   for (const auto& it : shared_worker_info) {

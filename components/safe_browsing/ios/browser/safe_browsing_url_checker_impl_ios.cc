@@ -12,7 +12,8 @@ bool SafeBrowsingUrlCheckerImpl::CanPerformFullURLLookup(const GURL& url) {
 }
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
-    std::unique_ptr<RTLookupRequest> request) {
+    std::unique_ptr<RTLookupRequest> request,
+    std::string oauth_token) {
   NOTREACHED();
 }
 

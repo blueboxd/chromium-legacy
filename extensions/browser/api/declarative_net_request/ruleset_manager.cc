@@ -218,6 +218,8 @@ void RulesetManager::OnDidFinishNavigation(content::RenderFrameHost* host) {
 
 void RulesetManager::SetObserverForTest(TestObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!(test_observer_ && observer))
+      << "Multiple test observers are not supported";
   test_observer_ = observer;
 }
 

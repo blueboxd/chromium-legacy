@@ -36,7 +36,6 @@ static void JNI_UkmRecorder_RecordEventWithIntegerMetric(
     const base::android::JavaParamRef<jstring>& j_event_name,
     const base::android::JavaParamRef<jstring>& j_metric_name,
     jint j_metric_value) {
-  LOG(ERROR) << "LOGGING INTERACTION WITH VAL: " << j_metric_value;
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
   const ukm::SourceId source_id =

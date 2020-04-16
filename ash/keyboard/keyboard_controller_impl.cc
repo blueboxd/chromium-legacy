@@ -189,6 +189,10 @@ bool KeyboardControllerImpl::SetWindowBoundsInScreen(
       bounds_in_screen);
 }
 
+bool KeyboardControllerImpl::ShouldOverscroll() {
+  return keyboard_ui_controller_->IsKeyboardOverscrollEnabled();
+}
+
 void KeyboardControllerImpl::AddObserver(KeyboardControllerObserver* observer) {
   observers_.AddObserver(observer);
 }

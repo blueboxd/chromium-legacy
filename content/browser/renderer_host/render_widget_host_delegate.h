@@ -148,9 +148,12 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void ExecuteEditCommand(
       const std::string& command,
       const base::Optional<base::string16>& value) = 0;
+  virtual void Undo() = 0;
+  virtual void Redo() = 0;
   virtual void Cut() = 0;
   virtual void Copy() = 0;
   virtual void Paste() = 0;
+  virtual void PasteAndMatchStyle() = 0;
   virtual void SelectAll() = 0;
 
   // Requests the renderer to move the selection extent to a new position.

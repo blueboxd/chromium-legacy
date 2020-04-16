@@ -19,6 +19,8 @@ include_rules = [
   "+components/exo",
   "+components/heap_profiling",
   "+components/keyed_service",
+  "+components/media_control/browser",
+  "+components/media_control/mojom",
   "+components/network_hints",
   "+components/network_session_configurator/common",
   "+components/policy/core/browser",

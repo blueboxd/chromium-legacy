@@ -563,7 +563,7 @@ TEST_F(RealTimeUrlLookupServiceTest, TestStartLookup_ResponseIsAlreadyCached) {
                             response_callback.Get());
 
   // |request_callback| should not be called.
-  EXPECT_CALL(request_callback, Run(_)).Times(0);
+  EXPECT_CALL(request_callback, Run(_, _)).Times(0);
   EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
 
   task_environment_->RunUntilIdle();
@@ -588,10 +588,12 @@ TEST_F(RealTimeUrlLookupServiceTest,
 
   base::MockCallback<RTLookupResponseCallback> response_callback;
   rt_service()->StartLookup(
-      url, base::BindOnce([](std::unique_ptr<RTLookupRequest> request) {
-        // Check token is attached.
-        EXPECT_EQ("access_token_string", request->scoped_oauth_token());
-      }),
+      url,
+      base::BindOnce(
+          [](std::unique_ptr<RTLookupRequest> request, std::string token) {
+            // Check token is attached.
+            EXPECT_EQ("access_token_string", token);
+          }),
       response_callback.Get());
 
   EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
@@ -620,10 +622,12 @@ TEST_F(RealTimeUrlLookupServiceTest, TestStartLookup_NoTokenWhenNotSignedIn) {
 
   base::MockCallback<RTLookupResponseCallback> response_callback;
   rt_service()->StartLookup(
-      url, base::BindOnce([](std::unique_ptr<RTLookupRequest> request) {
-        // Check the token field is empty.
-        EXPECT_FALSE(request->has_scoped_oauth_token());
-      }),
+      url,
+      base::BindOnce(
+          [](std::unique_ptr<RTLookupRequest> request, std::string token) {
+            // Check the token field is empty.
+            EXPECT_EQ("", token);
+          }),
       response_callback.Get());
 
   EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
@@ -648,10 +652,12 @@ TEST_F(RealTimeUrlLookupServiceTest,
 
   base::MockCallback<RTLookupResponseCallback> response_callback;
   rt_service()->StartLookup(
-      url, base::BindOnce([](std::unique_ptr<RTLookupRequest> request) {
-        // Check the token field is empty.
-        EXPECT_FALSE(request->has_scoped_oauth_token());
-      }),
+      url,
+      base::BindOnce(
+          [](std::unique_ptr<RTLookupRequest> request, std::string token) {
+            // Check the token field is empty.
+            EXPECT_EQ("", token);
+          }),
       response_callback.Get());
 
   EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));

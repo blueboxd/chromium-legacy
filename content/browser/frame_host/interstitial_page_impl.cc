@@ -451,6 +451,22 @@ void InterstitialPageImpl::ExecuteEditCommand(
   input_handler->ExecuteEditCommand(command, value);
 }
 
+void InterstitialPageImpl::Undo() {
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
+    return;
+  input_handler->Undo();
+  RecordAction(base::UserMetricsAction("Undo"));
+}
+
+void InterstitialPageImpl::Redo() {
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
+    return;
+  input_handler->Redo();
+  RecordAction(base::UserMetricsAction("Redo"));
+}
+
 void InterstitialPageImpl::Copy() {
   auto* input_handler = GetFocusedFrameInputHandler();
   if (!input_handler)
@@ -465,6 +481,14 @@ void InterstitialPageImpl::Paste() {
     return;
   input_handler->Paste();
   RecordAction(base::UserMetricsAction("Paste"));
+}
+
+void InterstitialPageImpl::PasteAndMatchStyle() {
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
+    return;
+  input_handler->PasteAndMatchStyle();
+  RecordAction(base::UserMetricsAction("PasteAndMatchStyle"));
 }
 
 void InterstitialPageImpl::SelectAll() {

@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -24,6 +23,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/browsing_data/content/cache_storage_helper.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/core/simple_factory_key.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
@@ -107,8 +107,8 @@ class SigninManagerAndroidTest : public ::testing::Test {
 };
 
 // TODO(crbug.com/929456): This test does not actually test anything; the
-// CannedBrowsingDataCacheStorageHelper isn't hooked up to observe any
-// deletions. Disabled to allow refactoring of browsing data code.
+// CannedCacheStorageHelper isn't hooked up to observe any deletions. Disabled
+// to allow refactoring of browsing data code.
 TEST_F(SigninManagerAndroidTest, DISABLED_DeleteGoogleServiceWorkerCaches) {
   struct TestCase {
     std::string worker_url;
@@ -136,7 +136,7 @@ TEST_F(SigninManagerAndroidTest, DISABLED_DeleteGoogleServiceWorkerCaches) {
   // TODO(crbug.com/929456): This helper is not attached anywhere to
   // be able to observe deletions.
   // Add service workers.
-  auto helper = base::MakeRefCounted<CannedBrowsingDataCacheStorageHelper>(
+  auto helper = base::MakeRefCounted<browsing_data::CannedCacheStorageHelper>(
       content::BrowserContext::GetDefaultStoragePartition(profile())
           ->GetCacheStorageContext());
 

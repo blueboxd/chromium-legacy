@@ -121,7 +121,7 @@ additional buckets are added later.
 
 #### Usage
 
-Define an `enum class` with a `kMaxValue` enumerator:
+*In C++*, define an `enum class` with a `kMaxValue` enumerator:
 
 ```c++
 enum class NewTabPageAction {
@@ -154,7 +154,7 @@ UmaHistogramEnumeration("NewTabPageAction", action);
 #### Legacy Enums
 
 **Note: this method of defining histogram enums is deprecated. Do not use this
-for new enums.**
+for new enums *in C++*.**
 
 Many legacy enums define a `kCount` sentinel, reying on the compiler to
 automatically update it when new entries are added:

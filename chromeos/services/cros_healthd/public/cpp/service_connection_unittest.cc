@@ -100,8 +100,9 @@ mojom::BatteryInfoPtr MakeBatteryInfo() {
       std::move(smart_info));
 }
 
-mojom::CachedVpdInfoPtr MakeCachedVpdInfo() {
-  return mojom::CachedVpdInfo::New("fake_sku_number" /* sku_number */);
+mojom::CachedVpdResultPtr MakeCachedVpdResult() {
+  return mojom::CachedVpdResult::NewVpdInfo(
+      mojom::CachedVpdInfo::New("fake_sku_number" /* sku_number */));
 }
 
 mojom::CpuResultPtr MakeCpuResult() {
@@ -149,7 +150,7 @@ mojom::TelemetryInfoPtr MakeTelemetryInfo() {
   return mojom::TelemetryInfo::New(
       MakeBatteryInfo() /* battery_info */,
       MakeNonRemovableBlockDeviceInfo() /* block_device_info */,
-      MakeCachedVpdInfo() /* vpd_info */, MakeCpuResult() /* cpu_result */,
+      MakeCachedVpdResult() /* vpd_result */, MakeCpuResult() /* cpu_result */,
       MakeTimezoneResult() /* timezone_result */,
       MakeMemoryResult() /* memory_result */,
       MakeBacklightResult() /* backlight_result */,

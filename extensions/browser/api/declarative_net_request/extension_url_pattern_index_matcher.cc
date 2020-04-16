@@ -37,26 +37,8 @@ std::vector<url_pattern_index::UrlPatternIndexMatcher> GetMatchers(
   return matchers;
 }
 
-bool HasAnyRules(const flat_rule::UrlPatternIndex* index) {
-  DCHECK(index);
-
-  if (index->fallback_rules()->size() > 0)
-    return true;
-
-  // Iterate over all ngrams and check their corresponding rules.
-  for (auto* ngram_to_rules : *index->ngram_index()) {
-    if (ngram_to_rules == index->ngram_index_empty_slot())
-      continue;
-
-    if (ngram_to_rules->rule_list()->size() > 0)
-      return true;
-  }
-
-  return false;
-}
-
 bool IsExtraHeadersMatcherInternal(
-    const ExtensionUrlPatternIndexMatcher::UrlPatternIndexList* index_list) {
+    const std::vector<url_pattern_index::UrlPatternIndexMatcher>& matchers) {
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
   // TODO(crbug.com/947591): Modify this method for
@@ -71,11 +53,20 @@ bool IsExtraHeadersMatcherInternal(
   };
 
   for (flat::IndexType index : extra_header_indices) {
-    if (HasAnyRules(index_list->Get(index)))
+    if (matchers[index].rules_count() > 0)
       return true;
   }
 
   return false;
+}
+
+size_t GetRulesCountInternal(
+    const std::vector<url_pattern_index::UrlPatternIndexMatcher>& matchers) {
+  size_t rules_count = 0;
+  for (const auto& matcher : matchers)
+    rules_count += matcher.rules_count();
+
+  return rules_count;
 }
 
 }  // namespace
@@ -88,7 +79,8 @@ ExtensionUrlPatternIndexMatcher::ExtensionUrlPatternIndexMatcher(
     : RulesetMatcherBase(extension_id, source_type),
       metadata_list_(metadata_list),
       matchers_(GetMatchers(index_list)),
-      is_extra_headers_matcher_(IsExtraHeadersMatcherInternal(index_list)) {}
+      is_extra_headers_matcher_(IsExtraHeadersMatcherInternal(matchers_)),
+      rules_count_(GetRulesCountInternal(matchers_)) {}
 
 ExtensionUrlPatternIndexMatcher::~ExtensionUrlPatternIndexMatcher() = default;
 

@@ -204,9 +204,12 @@ ExtensionInstallProto::BackgroundScriptType GetBackgroundScriptType(
     return ExtensionInstallProto::PERSISTENT_BACKGROUND_PAGE;
   if (extensions::BackgroundInfo::HasLazyBackgroundPage(&extension))
     return ExtensionInstallProto::EVENT_PAGE;
+  if (extensions::BackgroundInfo::IsServiceWorkerBased(&extension))
+    return ExtensionInstallProto::SERVICE_WORKER;
 
-  // If an extension had neither a persistent nor lazy background page, it must
-  // not have a background page.
+  // If an extension had neither a persistent background page, a lazy
+  // background page nor a service worker based background script, it must not
+  // have a background script.
   DCHECK(!extensions::BackgroundInfo::HasBackgroundPage(&extension));
   return ExtensionInstallProto::NO_BACKGROUND_SCRIPT;
 }

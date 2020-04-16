@@ -54,6 +54,9 @@ class RulesetMatcherBase {
   // Returns whether this modifies "extraHeaders".
   virtual bool IsExtraHeadersMatcher() const = 0;
 
+  // Returns the number of rules in this matcher.
+  virtual size_t GetRulesCount() const = 0;
+
   // Returns the extension ID with which this matcher is associated.
   const ExtensionId& extension_id() const { return extension_id_; }
 

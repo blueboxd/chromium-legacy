@@ -15,6 +15,7 @@
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
+#include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/extension.h"
@@ -334,6 +335,51 @@ dnr_api::ModifyHeaderInfo CreateModifyHeaderInfo(
 bool EqualsForTesting(const dnr_api::ModifyHeaderInfo& lhs,
                       const dnr_api::ModifyHeaderInfo& rhs) {
   return lhs.operation == rhs.operation && lhs.header == rhs.header;
+}
+
+RulesetManagerObserver::RulesetManagerObserver(RulesetManager* manager)
+    : manager_(manager), current_count_(manager_->GetMatcherCountForTest()) {
+  manager_->SetObserverForTest(this);
+}
+
+RulesetManagerObserver::~RulesetManagerObserver() {
+  manager_->SetObserverForTest(nullptr);
+}
+
+std::vector<GURL> RulesetManagerObserver::GetAndResetRequestSeen() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  std::vector<GURL> seen_requests;
+  std::swap(seen_requests, observed_requests_);
+  return seen_requests;
+}
+
+void RulesetManagerObserver::WaitForExtensionsWithRulesetsCount(size_t count) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ASSERT_FALSE(expected_count_);
+  if (current_count_ == count)
+    return;
+
+  expected_count_ = count;
+  run_loop_ = std::make_unique<base::RunLoop>();
+  run_loop_->Run();
+}
+
+void RulesetManagerObserver::OnRulesetCountChanged(size_t count) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  current_count_ = count;
+  if (expected_count_ != count)
+    return;
+
+  ASSERT_TRUE(run_loop_.get());
+
+  run_loop_->Quit();
+  expected_count_.reset();
+}
+
+void RulesetManagerObserver::OnEvaluateRequest(const WebRequestInfo& request,
+                                               bool is_incognito_context) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  observed_requests_.push_back(request.url);
 }
 
 }  // namespace declarative_net_request

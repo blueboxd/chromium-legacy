@@ -59,6 +59,9 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
     virtual ~TestObserver() = default;
   };
 
+  // This is public so that it can be deleted by tests.
+  ~RulesMonitorService() override;
+
   // Returns the instance for |browser_context|. An instance is shared between
   // an incognito and a regular context.
   static RulesMonitorService* Get(content::BrowserContext* browser_context);
@@ -66,6 +69,9 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<RulesMonitorService>*
   GetFactoryInstance();
+
+  static std::unique_ptr<RulesMonitorService> CreateInstanceForTesting(
+      content::BrowserContext* context);
 
   // Updates the dynamic rules for the |extension| and then invokes
   // |callback| with an optional error.
@@ -92,8 +98,6 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   // The constructor is kept private since this should only be created by the
   // BrowserContextKeyedAPIFactory.
   explicit RulesMonitorService(content::BrowserContext* browser_context);
-
-  ~RulesMonitorService() override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "RulesMonitorService"; }

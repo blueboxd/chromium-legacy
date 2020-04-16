@@ -31,7 +31,7 @@ message Report {
   // one within a session.
   optional int32 report_id = 6;
 
-  // Indicates that recording was continously enabled for the period of time
+  // Indicates that recording was continuously enabled for the period of time
   // captured in this report.
   optional bool is_continuous = 8;
 

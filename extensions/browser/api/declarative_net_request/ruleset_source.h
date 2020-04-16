@@ -43,6 +43,7 @@ struct IndexAndPersistJSONRulesetResult {
       int ruleset_checksum,
       std::vector<InstallWarning> warnings,
       size_t rules_count,
+      size_t regex_rules_count,
       base::TimeDelta index_and_persist_time);
   static IndexAndPersistJSONRulesetResult CreateErrorResult(std::string error);
   ~IndexAndPersistJSONRulesetResult();
@@ -63,6 +64,9 @@ struct IndexAndPersistJSONRulesetResult {
 
   // The number of indexed rules. Valid if |success| is true.
   size_t rules_count = 0;
+
+  // The number of indexed regex rules. Valid if |success| is true.
+  size_t regex_rules_count = 0;
 
   // Time taken to deserialize the JSON rules and persist them in flatbuffer
   // format. Valid if success is true.
@@ -151,6 +155,8 @@ class RulesetSource {
   // Each ruleset source within an extension has a distinct ID.
   int id() const { return id_; }
 
+  bool is_dynamic_ruleset() const { return id_ == kDynamicRulesetID; }
+
   // The origin type for this ruleset. Can be from the manifest or dynamic.
   api::declarative_net_request::SourceType type() const { return type_; }
 
@@ -159,6 +165,10 @@ class RulesetSource {
 
   // The ID of the extension from which the ruleset originates from.
   const ExtensionId& extension_id() const { return extension_id_; }
+
+  // Whether the ruleset is enabled by default (as specified in the extension
+  // manifest).
+  bool enabled() const { return enabled_; }
 
   // Indexes and persists the JSON ruleset. This is potentially unsafe since the
   // JSON rules file is parsed in-process. Note: This must be called on a
@@ -176,12 +186,10 @@ class RulesetSource {
       data_decoder::DataDecoder* decoder,
       IndexAndPersistJSONRulesetCallback callback) const;
 
-  // Indexes the given |rules| in indexed/flatbuffer format. Populates
-  // |ruleset_checksum| on success. The number of |rules| must be less than the
-  // rule count limit.
+  // Indexes the given |rules| in indexed/flatbuffer format. The number of
+  // |rules| must be less than the rule count limit.
   ParseInfo IndexAndPersistRules(
-      std::vector<api::declarative_net_request::Rule> rules,
-      int* ruleset_checksum) const;
+      std::vector<api::declarative_net_request::Rule> rules) const;
 
   // Reads JSON rules synchronously. Callers should only use this if the JSON is
   // trusted. Must be called on a sequence which supports file IO.
@@ -197,7 +205,8 @@ class RulesetSource {
                 int id,
                 api::declarative_net_request::SourceType type,
                 size_t rule_count_limit,
-                ExtensionId extension_id);
+                ExtensionId extension_id,
+                bool enabled);
 
   base::FilePath json_path_;
   base::FilePath indexed_path_;
@@ -205,6 +214,7 @@ class RulesetSource {
   api::declarative_net_request::SourceType type_;
   size_t rule_count_limit_;
   ExtensionId extension_id_;
+  bool enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetSource);
 };

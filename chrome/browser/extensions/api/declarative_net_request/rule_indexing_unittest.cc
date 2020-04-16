@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <algorithm>
 #include <functional>
 #include <string>
 #include <utility>
@@ -12,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -21,9 +23,14 @@
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
+#include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
+#include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
+#include "extensions/browser/disable_reason.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
@@ -45,10 +52,14 @@ constexpr char kLargeRegexFilter[] = ".{512}x";
 
 namespace dnr_api = extensions::api::declarative_net_request;
 
+using ::testing::Field;
+using ::testing::Pointee;
+using ::testing::Property;
+using ::testing::UnorderedElementsAre;
+using ::testing::UnorderedElementsAreArray;
+
 std::string GetParseError(ParseResult result, int rule_id) {
-  ParseInfo info;
-  info.SetError(result, &rule_id);
-  return info.error();
+  return ParseInfo(result, &rule_id).error();
 }
 
 std::string GetErrorWithFilename(
@@ -68,6 +79,7 @@ InstallWarning GetLargeRegexWarning(
 }
 
 // Base test fixture to test indexing of rulesets.
+// TODO(karandeepb): Rename this to DeclarativeNetRequestUnittestBase.
 class RuleIndexingTestBase : public DNRTestBase {
  public:
   RuleIndexingTestBase() = default;
@@ -75,6 +87,15 @@ class RuleIndexingTestBase : public DNRTestBase {
   // DNRTestBase override.
   void SetUp() override {
     DNRTestBase::SetUp();
+
+    RulesMonitorService::GetFactoryInstance()->SetTestingFactory(
+        browser_context(),
+        base::BindRepeating([](content::BrowserContext* context) {
+          return static_cast<std::unique_ptr<KeyedService>>(
+              RulesMonitorService::CreateInstanceForTesting(context));
+        }));
+    ASSERT_TRUE(RulesMonitorService::Get(browser_context()));
+
     loader_ = CreateExtensionLoader();
     extension_dir_ =
         temp_dir().GetPath().Append(FILE_PATH_LITERAL("test_extension"));
@@ -84,10 +105,15 @@ class RuleIndexingTestBase : public DNRTestBase {
   }
 
  protected:
+  RulesetManager* manager() {
+    return RulesMonitorService::Get(browser_context())->ruleset_manager();
+  }
+
   // Loads the extension and verifies the indexed ruleset location and histogram
   // counts.
-  void LoadAndExpectSuccess(size_t expected_indexed_rules_count,
-                            bool expect_rulesets_indexed = true) {
+  void LoadAndExpectSuccess(size_t expected_rules_count,
+                            size_t expected_enabled_rules_count,
+                            bool expect_rulesets_indexed) {
     base::HistogramTester tester;
     WriteExtensionData();
 
@@ -109,8 +135,10 @@ class RuleIndexingTestBase : public DNRTestBase {
     if (GetParam() == ExtensionLoadType::PACKED && expect_rulesets_indexed) {
       tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram,
                               1 /* count */);
-      tester.ExpectBucketCount(kManifestRulesCountHistogram,
-                               expected_indexed_rules_count, 1 /* count */);
+      tester.ExpectUniqueSample(kManifestRulesCountHistogram,
+                                expected_rules_count, 1 /* count */);
+      tester.ExpectUniqueSample(kManifestEnabledRulesCountHistogram,
+                                expected_enabled_rules_count, 1 /* count */);
     }
   }
 
@@ -166,6 +194,7 @@ class RuleIndexingTestBase : public DNRTestBase {
 // Fixture testing that declarative rules corresponding to the Declarative Net
 // Request API are correctly indexed, for both packed and unpacked extensions.
 // This only tests a single ruleset.
+// TODO(karandeepb): Rename this to SingleRulesetTest.
 class SingleRulesetIndexingTest : public RuleIndexingTestBase {
  public:
   SingleRulesetIndexingTest() = default;
@@ -189,15 +218,36 @@ class SingleRulesetIndexingTest : public RuleIndexingTestBase {
                                              kJSONRulesFilename);
   }
 
+  // |expected_rules_count| refers to the count of indexed rules. When
+  // |expected_rules_count| is not set, it is inferred from the added rules.
+  void LoadAndExpectSuccess(
+      const base::Optional<size_t>& expected_rules_count = base::nullopt) {
+    size_t rules_count = 0;
+    if (expected_rules_count)
+      rules_count = *expected_rules_count;
+    else if (rules_value_ && rules_value_->is_list())
+      rules_count = rules_value_->GetList().size();
+    else
+      rules_count = rules_list_.size();
+
+    // We only index up to dnr_api::MAX_NUMBER_OF_RULES rules per ruleset.
+    rules_count = std::min(rules_count,
+                           static_cast<size_t>(dnr_api::MAX_NUMBER_OF_RULES));
+
+    RuleIndexingTestBase::LoadAndExpectSuccess(rules_count, rules_count, true);
+  }
+
  private:
   // RuleIndexingTestBase override:
   void WriteExtensionData() override {
     if (!rules_value_)
       rules_value_ = ToListValue(rules_list_);
 
-    WriteManifestAndRuleset(extension_dir(),
-                            TestRulesetInfo(kJSONRulesFilename, *rules_value_),
-                            {} /* hosts */);
+    constexpr char kRulesetID[] = "id";
+    WriteManifestAndRuleset(
+        extension_dir(),
+        TestRulesetInfo(kRulesetID, kJSONRulesFilename, *rules_value_),
+        {} /* hosts */);
 
     // Overwrite the JSON rules file with some invalid json.
     if (persist_invalid_json_file_) {
@@ -415,7 +465,7 @@ TEST_P(SingleRulesetIndexingTest, InvalidJSONRules_StrongTypes) {
   }
 
   extension_loader()->set_ignore_manifest_warnings(true);
-  LoadAndExpectSuccess(2 /* rules count */);
+  LoadAndExpectSuccess(2u);
 
   // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
   // which causes it to lose the install warning. This should be fixed.
@@ -468,7 +518,7 @@ TEST_P(SingleRulesetIndexingTest, InvalidJSONRules_Parsed) {
   SetRules(base::JSONReader::ReadDeprecated(kRules));
 
   extension_loader()->set_ignore_manifest_warnings(true);
-  LoadAndExpectSuccess(1 /* rules count */);
+  LoadAndExpectSuccess(1u);
 
   // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
   // which causes it to lose the install warning. This should be fixed.
@@ -506,7 +556,7 @@ TEST_P(SingleRulesetIndexingTest, RuleCountLimitMatched) {
     rule.condition->url_filter = std::to_string(i);
     AddRule(rule);
   }
-  LoadAndExpectSuccess(dnr_api::MAX_NUMBER_OF_RULES);
+  LoadAndExpectSuccess();
 }
 
 // Ensure that we get an install warning on exceeding the rule count limit.
@@ -519,7 +569,7 @@ TEST_P(SingleRulesetIndexingTest, RuleCountLimitExceeded) {
   }
 
   extension_loader()->set_ignore_manifest_warnings(true);
-  LoadAndExpectSuccess(dnr_api::MAX_NUMBER_OF_RULES);
+  LoadAndExpectSuccess();
 
   // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
   // which causes it to lose the install warning. This should be fixed.
@@ -567,10 +617,9 @@ TEST_P(SingleRulesetIndexingTest, LargeRegexIgnored) {
   if (GetParam() != ExtensionLoadType::PACKED) {
     InstallWarning warning_1 = GetLargeRegexWarning(kMinValidID + 5);
     InstallWarning warning_2 = GetLargeRegexWarning(kMinValidID + 6);
-    EXPECT_THAT(
-        extension()->install_warnings(),
-        ::testing::UnorderedElementsAre(::testing::Eq(std::cref(warning_1)),
-                                        ::testing::Eq(std::cref(warning_2))));
+    EXPECT_THAT(extension()->install_warnings(),
+                UnorderedElementsAre(::testing::Eq(std::cref(warning_1)),
+                                     ::testing::Eq(std::cref(warning_2))));
   }
 }
 
@@ -589,7 +638,6 @@ TEST_P(SingleRulesetIndexingTest, WarningAndError) {
   rule.id = kMinValidID + 1;
   AddRule(rule);
 
-  extension_loader()->set_ignore_manifest_warnings(true);
   LoadAndExpectError(
       GetParseError(ParseResult::ERROR_INVALID_REGEX_FILTER, kMinValidID + 1));
 }
@@ -636,12 +684,12 @@ TEST_P(SingleRulesetIndexingTest, InvalidJSONFile) {
 }
 
 TEST_P(SingleRulesetIndexingTest, EmptyRuleset) {
-  LoadAndExpectSuccess(0 /* rules count */);
+  LoadAndExpectSuccess();
 }
 
 TEST_P(SingleRulesetIndexingTest, AddSingleRule) {
   AddRule(CreateGenericRule());
-  LoadAndExpectSuccess(1 /* rules count */);
+  LoadAndExpectSuccess();
 }
 
 TEST_P(SingleRulesetIndexingTest, AddTwoRules) {
@@ -650,17 +698,18 @@ TEST_P(SingleRulesetIndexingTest, AddTwoRules) {
 
   rule.id = kMinValidID + 1;
   AddRule(rule);
-  LoadAndExpectSuccess(2 /* rules count */);
+  LoadAndExpectSuccess();
 }
 
 // Test that we do not use an extension provided indexed ruleset.
 TEST_P(SingleRulesetIndexingTest, ExtensionWithIndexedRuleset) {
   set_persist_initial_indexed_ruleset();
   AddRule(CreateGenericRule());
-  LoadAndExpectSuccess(1 /* rules count */);
+  LoadAndExpectSuccess();
 }
 
 // Tests that multiple static rulesets are correctly indexed.
+// TODO(karandeepb): Rename this to MultipleRulesetsTest.
 class MultipleRulesetsIndexingTest : public RuleIndexingTestBase {
  public:
   MultipleRulesetsIndexingTest() = default;
@@ -673,6 +722,57 @@ class MultipleRulesetsIndexingTest : public RuleIndexingTestBase {
 
   void AddRuleset(const TestRulesetInfo& info) { rulesets_.push_back(info); }
 
+  TestRulesetInfo CreateRuleset(const std::string& manifest_id_and_path,
+                                size_t num_non_regex_rules,
+                                size_t num_regex_rules,
+                                bool enabled) {
+    std::vector<TestRule> rules;
+    TestRule rule = CreateGenericRule();
+    int id = kMinValidID;
+    for (size_t i = 0; i < num_non_regex_rules; ++i, ++id) {
+      rule.id = id;
+      rules.push_back(rule);
+    }
+
+    TestRule regex_rule = CreateGenericRule();
+    regex_rule.condition->url_filter.reset();
+    regex_rule.condition->regex_filter = "block";
+    for (size_t i = 0; i < num_regex_rules; ++i, ++id) {
+      regex_rule.id = id;
+      rules.push_back(regex_rule);
+    }
+
+    return TestRulesetInfo(manifest_id_and_path, *ToListValue(rules), enabled);
+  }
+
+  // |expected_rules_count| and |expected_enabled_rules_count| refer to the
+  // counts of indexed rules. When not set, these are inferred from the added
+  // rulesets.
+  void LoadAndExpectSuccess(
+      const base::Optional<size_t>& expected_rules_count = base::nullopt,
+      const base::Optional<size_t>& expected_enabled_rules_count =
+          base::nullopt) {
+    size_t rules_count = 0u;
+    size_t rules_enabled_count = 0u;
+    for (const TestRulesetInfo& info : rulesets_) {
+      size_t count = info.rules_value.GetList().size();
+
+      // We only index up to dnr_api::MAX_NUMBER_OF_RULES per ruleset, but may
+      // index more rules than this limit across rulesets.
+      count =
+          std::min(count, static_cast<size_t>(dnr_api::MAX_NUMBER_OF_RULES));
+
+      rules_count += count;
+      if (info.enabled)
+        rules_enabled_count += count;
+    }
+
+    RuleIndexingTestBase::LoadAndExpectSuccess(
+        expected_rules_count.value_or(rules_count),
+        expected_enabled_rules_count.value_or(rules_enabled_count),
+        !rulesets_.empty());
+  }
+
  private:
   std::vector<TestRulesetInfo> rulesets_;
 };
@@ -682,25 +782,16 @@ TEST_P(MultipleRulesetsIndexingTest, Success) {
   size_t kNumRulesets = 7;
   size_t kRulesPerRuleset = 10;
 
-  std::vector<TestRule> rules;
-  for (size_t i = 0; i < kRulesPerRuleset; ++i) {
-    TestRule rule = CreateGenericRule();
-    rule.id = kMinValidID + i;
-    rules.push_back(rule);
+  for (size_t i = 0; i < kNumRulesets; ++i) {
+    AddRuleset(CreateRuleset(std::to_string(i), kRulesPerRuleset, 0, true));
   }
-  base::Value rules_value = std::move(*ToListValue(rules));
 
-  for (size_t i = 0; i < kNumRulesets; ++i)
-    AddRuleset(TestRulesetInfo(std::to_string(i), rules_value));
-
-  LoadAndExpectSuccess(kNumRulesets *
-                       kRulesPerRuleset /* expected_indexed_rules_count */);
+  LoadAndExpectSuccess();
 }
 
 // Tests an extension with no static rulesets.
 TEST_P(MultipleRulesetsIndexingTest, ZeroRulesets) {
-  LoadAndExpectSuccess(0 /* expected_indexed_rules_count */,
-                       false /* expect_rulesets_indexed */);
+  LoadAndExpectSuccess();
 }
 
 // Tests an extension with multiple empty rulesets.
@@ -708,29 +799,30 @@ TEST_P(MultipleRulesetsIndexingTest, EmptyRulesets) {
   size_t kNumRulesets = 7;
 
   for (size_t i = 0; i < kNumRulesets; ++i)
-    AddRuleset(TestRulesetInfo(std::to_string(i), base::ListValue()));
+    AddRuleset(CreateRuleset(std::to_string(i), 0, 0, true));
 
-  LoadAndExpectSuccess(0u /* expected_indexed_rules_count */);
+  LoadAndExpectSuccess();
 }
 
 // Tests an extension with multiple static rulesets, with one of rulesets
 // specifying an invalid rules file.
 TEST_P(MultipleRulesetsIndexingTest, ListNotPassed) {
     std::vector<TestRule> rules({CreateGenericRule()});
-    AddRuleset(TestRulesetInfo("1", *ToListValue(rules)));
+    AddRuleset(TestRulesetInfo("id1", "path1", *ToListValue(rules)));
 
     // Persist a ruleset with an invalid rules file.
-    AddRuleset(TestRulesetInfo("2", base::DictionaryValue()));
+    AddRuleset(TestRulesetInfo("id2", "path2", base::DictionaryValue()));
 
-    AddRuleset(TestRulesetInfo("3", base::ListValue()));
+    AddRuleset(TestRulesetInfo("id3", "path3", base::ListValue()));
 
-    LoadAndExpectError(kErrorListNotPassed, "2" /* filename */);
+    LoadAndExpectError(kErrorListNotPassed, "path2" /* filename */);
 }
 
 // Tests an extension with multiple static rulesets with each ruleset generating
 // some install warnings.
 TEST_P(MultipleRulesetsIndexingTest, InstallWarnings) {
   size_t expected_rule_count = 0;
+  size_t enabled_rule_count = 0;
   std::vector<std::string> expected_warnings;
   {
     // Persist a ruleset with an install warning for a large regex.
@@ -744,31 +836,24 @@ TEST_P(MultipleRulesetsIndexingTest, InstallWarnings) {
     rule.condition->regex_filter = kLargeRegexFilter;
     rules.push_back(rule);
 
-    TestRulesetInfo info("1.json", *ToListValue(rules));
+    TestRulesetInfo info("id1", "path1", *ToListValue(rules), true);
+    AddRuleset(info);
 
     expected_warnings.push_back(
         GetLargeRegexWarning(*rule.id, info.relative_file_path).message);
 
-    AddRuleset(info);
-
     expected_rule_count += rules.size();
+    enabled_rule_count += 1;
   }
 
   {
     // Persist a ruleset with an install warning for exceeding the rule count.
-    std::vector<TestRule> rules;
-    for (int i = 1; i <= dnr_api::MAX_NUMBER_OF_RULES + 1; ++i) {
-      TestRule rule = CreateGenericRule();
-      rule.id = kMinValidID + i;
-      rules.push_back(rule);
-    }
-
-    TestRulesetInfo info("2.json", *ToListValue(rules));
+    TestRulesetInfo info =
+        CreateRuleset("id2", dnr_api::MAX_NUMBER_OF_RULES + 1, 0, false);
+    AddRuleset(info);
 
     expected_warnings.push_back(
         GetErrorWithFilename(kRuleCountExceeded, info.relative_file_path));
-
-    AddRuleset(info);
 
     expected_rule_count += dnr_api::MAX_NUMBER_OF_RULES;
   }
@@ -776,38 +861,21 @@ TEST_P(MultipleRulesetsIndexingTest, InstallWarnings) {
   {
     // Persist a ruleset with an install warning for exceeding the regex rule
     // count.
-    std::vector<TestRule> rules;
-    TestRule regex_rule = CreateGenericRule();
-    regex_rule.condition->url_filter.reset();
-    int rule_id = kMinValidID;
-    for (int i = 1; i <= dnr_api::MAX_NUMBER_OF_REGEX_RULES + 1;
-         ++i, ++rule_id) {
-      regex_rule.id = rule_id;
-      regex_rule.condition->regex_filter = std::to_string(i);
-      rules.push_back(regex_rule);
-    }
-
-    const int kCountNonRegexRules = 5;
-    TestRule rule = CreateGenericRule();
-    for (int i = 1; i <= kCountNonRegexRules; i++, ++rule_id) {
-      rule.id = rule_id;
-      rule.condition->url_filter = std::to_string(i);
-      rules.push_back(rule);
-    }
-
-    TestRulesetInfo info("3.json", *ToListValue(rules));
+    size_t kCountNonRegexRules = 5;
+    TestRulesetInfo info =
+        CreateRuleset("id3", kCountNonRegexRules,
+                      dnr_api::MAX_NUMBER_OF_REGEX_RULES + 1, false);
+    AddRuleset(info);
 
     expected_warnings.push_back(
         GetErrorWithFilename(kRegexRuleCountExceeded, info.relative_file_path));
-
-    AddRuleset(info);
 
     expected_rule_count +=
         kCountNonRegexRules + dnr_api::MAX_NUMBER_OF_REGEX_RULES;
   }
 
   extension_loader()->set_ignore_manifest_warnings(true);
-  LoadAndExpectSuccess(expected_rule_count);
+  LoadAndExpectSuccess(expected_rule_count, enabled_rule_count);
 
   // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
   // which causes it to lose the install warning. This should be fixed.
@@ -818,9 +886,123 @@ TEST_P(MultipleRulesetsIndexingTest, InstallWarnings) {
     for (const InstallWarning& warning : warnings)
       warning_strings.push_back(warning.message);
 
-    EXPECT_THAT(warning_strings,
-                ::testing::UnorderedElementsAreArray(expected_warnings));
+    EXPECT_THAT(warning_strings, UnorderedElementsAreArray(expected_warnings));
   }
+}
+
+TEST_P(MultipleRulesetsIndexingTest, EnabledRulesCount) {
+  AddRuleset(CreateRuleset("id1", 100, 10, true));
+  AddRuleset(CreateRuleset("id2", 200, 20, false));
+  AddRuleset(CreateRuleset("id3", 300, 30, true));
+
+  RulesetManagerObserver ruleset_waiter(manager());
+  LoadAndExpectSuccess();
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+
+  // Only the first and third rulesets should be enabled.
+  CompositeMatcher* composite_matcher =
+      manager()->GetMatcherForExtension(extension()->id());
+  ASSERT_TRUE(composite_matcher);
+
+  EXPECT_THAT(composite_matcher->matchers(),
+              UnorderedElementsAre(Pointee(Property(&RulesetMatcher::id, 1)),
+                                   Pointee(Property(&RulesetMatcher::id, 3))));
+  EXPECT_THAT(composite_matcher->matchers(),
+              UnorderedElementsAre(
+                  Pointee(Property(&RulesetMatcher::GetRulesCount, 100 + 10)),
+                  Pointee(Property(&RulesetMatcher::GetRulesCount, 300 + 30))));
+}
+
+// Ensure that exceeding the rules count limit across rulesets raises an install
+// warning.
+TEST_P(MultipleRulesetsIndexingTest, StaticRuleCountExceeded) {
+  // Enabled on load.
+  AddRuleset(CreateRuleset("1.json", 10000, 0, true));
+  // Disabled by default.
+  AddRuleset(
+      CreateRuleset("2.json", dnr_api::MAX_NUMBER_OF_RULES + 20, 0, false));
+  // Not enabled on load since including it exceeds the static rules count.
+  AddRuleset(
+      CreateRuleset("3.json", dnr_api::MAX_NUMBER_OF_RULES + 10, 0, true));
+  // Enabled on load.
+  AddRuleset(CreateRuleset("4.json", 30, 0, true));
+
+  RulesetManagerObserver ruleset_waiter(manager());
+  extension_loader()->set_ignore_manifest_warnings(true);
+
+  LoadAndExpectSuccess();
+
+  std::string extension_id = extension()->id();
+
+  // Installing the extension causes install warning for rulesets 2 and 3 since
+  // they exceed the rules limit. Also, since the set of enabled rulesets exceed
+  // the rules limit, another warning should be raised.
+  if (GetParam() != ExtensionLoadType::PACKED) {
+    EXPECT_THAT(
+        extension()->install_warnings(),
+        UnorderedElementsAre(
+            Field(&InstallWarning::message,
+                  GetErrorWithFilename(kRuleCountExceeded, "2.json")),
+            Field(&InstallWarning::message,
+                  GetErrorWithFilename(kRuleCountExceeded, "3.json")),
+            Field(&InstallWarning::message, kEnabledRuleCountExceeded)));
+  }
+
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+
+  CompositeMatcher* composite_matcher =
+      manager()->GetMatcherForExtension(extension_id);
+  ASSERT_TRUE(composite_matcher);
+
+  EXPECT_THAT(composite_matcher->matchers(),
+              UnorderedElementsAre(Pointee(Property(&RulesetMatcher::id, 1)),
+                                   Pointee(Property(&RulesetMatcher::id, 4))));
+  EXPECT_THAT(composite_matcher->matchers(),
+              UnorderedElementsAre(
+                  Pointee(Property(&RulesetMatcher::GetRulesCount, 10000)),
+                  Pointee(Property(&RulesetMatcher::GetRulesCount, 30))));
+}
+
+// Ensure that exceeding the regex rules limit across rulesets raises a warning.
+TEST_P(MultipleRulesetsIndexingTest, RegexRuleCountExceeded) {
+  // Enabled on load.
+  AddRuleset(CreateRuleset("1.json", 10000, 100, true));
+  // Won't be enabled on load since including it will exceed the regex rule
+  // count.
+  AddRuleset(
+      CreateRuleset("2.json", 1, dnr_api::MAX_NUMBER_OF_REGEX_RULES, true));
+  // Won't be enabled on load since it is disabled by default.
+  AddRuleset(CreateRuleset("3.json", 10, 10, false));
+  // Enabled on load.
+  AddRuleset(CreateRuleset("4.json", 20, 20, true));
+
+  RulesetManagerObserver ruleset_waiter(manager());
+  extension_loader()->set_ignore_manifest_warnings(true);
+
+  LoadAndExpectSuccess();
+
+  // Installing the extension causes an install warning since the set of enabled
+  // rulesets exceed the regex rules limit.
+  if (GetParam() != ExtensionLoadType::PACKED) {
+    EXPECT_THAT(extension()->install_warnings(),
+                UnorderedElementsAre(Field(&InstallWarning::message,
+                                           kEnabledRegexRuleCountExceeded)));
+  }
+
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+
+  CompositeMatcher* composite_matcher =
+      manager()->GetMatcherForExtension(extension()->id());
+  ASSERT_TRUE(composite_matcher);
+
+  EXPECT_THAT(composite_matcher->matchers(),
+              UnorderedElementsAre(Pointee(Property(&RulesetMatcher::id, 1)),
+                                   Pointee(Property(&RulesetMatcher::id, 4))));
+  EXPECT_THAT(
+      composite_matcher->matchers(),
+      UnorderedElementsAre(
+          Pointee(Property(&RulesetMatcher::GetRulesCount, 10000 + 100)),
+          Pointee(Property(&RulesetMatcher::GetRulesCount, 20 + 20))));
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

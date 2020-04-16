@@ -162,7 +162,6 @@ class OopPixelTest : public testing::Test,
                                          options.color_space,
                                          PlaybackImageProvider::Settings());
 
-    gpu::gles2::GLES2Interface* gl = gles2_context_provider_->ContextGL();
     int width = options.resource_size.width();
     int height = options.resource_size.height();
 
@@ -209,6 +208,17 @@ class OopPixelTest : public testing::Test,
     EXPECT_EQ(raster_implementation->GetError(),
               static_cast<unsigned>(GL_NO_ERROR));
 
+    gpu::gles2::GLES2Interface* gl = gles2_context_provider_->ContextGL();
+    SkBitmap result = ReadbackMailbox(gl, mailbox, options);
+    gpu::SyncToken sync_token;
+    gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+    sii->DestroySharedImage(sync_token, mailbox);
+    return result;
+  }
+
+  SkBitmap ReadbackMailbox(gpu::gles2::GLES2Interface* gl,
+                           const gpu::Mailbox& mailbox,
+                           const RasterOptions& options) {
     // Import the texture in gl, create an fbo and bind the texture to it.
     GLuint gl_texture_id = gl->CreateAndConsumeTextureCHROMIUM(mailbox.name);
     GLuint fbo_id;
@@ -218,6 +228,8 @@ class OopPixelTest : public testing::Test,
                              GL_TEXTURE_2D, gl_texture_id, 0);
 
     // Read the data back.
+    int width = options.resource_size.width();
+    int height = options.resource_size.height();
     std::unique_ptr<unsigned char[]> data(
         new unsigned char[width * height * 4]);
     gl->ReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data.get());
@@ -225,11 +237,7 @@ class OopPixelTest : public testing::Test,
     gl->DeleteTextures(1, &gl_texture_id);
     gl->DeleteFramebuffers(1, &fbo_id);
 
-    gpu::SyncToken sync_token;
-    gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
-    sii->DestroySharedImage(sync_token, mailbox);
-
-    // Swizzle rgba->bgra if needed.
+    // Swizzle rgba->bgra
     std::vector<SkPMColor> colors;
     colors.reserve(width * height);
     for (int h = 0; h < height; ++h) {
@@ -242,10 +250,8 @@ class OopPixelTest : public testing::Test,
 
     SkBitmap bitmap;
     bitmap.allocN32Pixels(width, height);
-    SkPixmap pixmap(SkImageInfo::MakeN32Premul(options.resource_size.width(),
-                                               options.resource_size.height()),
-                    colors.data(),
-                    options.resource_size.width() * sizeof(SkColor));
+    SkPixmap pixmap(SkImageInfo::MakeN32Premul(width, height), colors.data(),
+                    width * sizeof(SkColor));
     bitmap.writePixels(pixmap);
     return bitmap;
   }
@@ -1609,6 +1615,42 @@ TEST_F(OopPixelTest, DrawTextBlobPersistentShaderCache) {
   // and use shaders from the persistent cache.
   InitializeOOPContext();
   actual = Raster(display_item_list, options);
+  ExpectEquals(actual, expected);
+}
+
+TEST_F(OopPixelTest, WritePixels) {
+  gfx::Rect rect(10, 10);
+  RasterOptions options(rect.size());
+  auto* raster_implementation = raster_context_provider_->RasterInterface();
+  auto* sii = raster_context_provider_->SharedImageInterface();
+  uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER |
+                   gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+  gpu::Mailbox dest_mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::RGBA_8888, gfx::Size(rect.width(), rect.height()),
+      options.color_space, flags);
+  EXPECT_TRUE(dest_mailbox.Verify());
+  raster_implementation->WaitSyncTokenCHROMIUM(
+      sii->GenUnverifiedSyncToken().GetConstData());
+
+  std::vector<SkPMColor> expected_pixels(rect.width() * rect.height(),
+                                         SkPreMultiplyARGB(255, 0, 0, 255));
+  SkBitmap expected;
+  expected.installPixels(
+      SkImageInfo::MakeN32Premul(rect.width(), rect.height()),
+      expected_pixels.data(), rect.width() * sizeof(SkColor));
+
+  raster_implementation->WritePixels(dest_mailbox, 0, 0, 0,
+                                     expected.info().minRowBytes(),
+                                     expected.info(), expected.getPixels());
+  raster_implementation->OrderingBarrierCHROMIUM();
+  EXPECT_EQ(raster_implementation->GetError(),
+            static_cast<unsigned>(GL_NO_ERROR));
+
+  gpu::gles2::GLES2Interface* gl = gles2_context_provider_->ContextGL();
+  SkBitmap actual = ReadbackMailbox(gl, dest_mailbox, options);
+  gpu::SyncToken sync_token;
+  gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+  sii->DestroySharedImage(sync_token, dest_mailbox);
   ExpectEquals(actual, expected);
 }
 

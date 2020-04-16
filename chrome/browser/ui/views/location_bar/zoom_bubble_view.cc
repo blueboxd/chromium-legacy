@@ -517,7 +517,7 @@ void ZoomBubbleView::SetExtensionInfo(const extensions::Extension* extension) {
 
   if (!has_default_sized_icon) {
     const extensions::ActionInfo* action =
-        extensions::ActionInfo::GetAnyActionInfo(extension);
+        extensions::ActionInfo::GetExtensionActionInfo(extension);
     if (!action || action->default_icon.empty())
       return;  // Out of options.
 

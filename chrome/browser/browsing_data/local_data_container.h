@@ -14,17 +14,17 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_database_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_media_license_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_shared_worker_helper.h"
+#include "components/browsing_data/content/appcache_helper.h"
+#include "components/browsing_data/content/cache_storage_helper.h"
+#include "components/browsing_data/content/cookie_helper.h"
+#include "components/browsing_data/content/database_helper.h"
+#include "components/browsing_data/content/file_system_helper.h"
+#include "components/browsing_data/content/indexed_db_helper.h"
 #include "components/browsing_data/content/local_storage_helper.h"
+#include "components/browsing_data/content/service_worker_helper.h"
+#include "components/browsing_data/content/shared_worker_helper.h"
 
 class BrowsingDataFlashLSOHelper;
 class CookiesTreeModel;
@@ -53,11 +53,11 @@ class LocalDataContainer {
   using SessionStorageInfoList = std::list<content::StorageUsageInfo>;
   using IndexedDBInfoList = std::list<content::StorageUsageInfo>;
   using FileSystemInfoList =
-      std::list<BrowsingDataFileSystemHelper::FileSystemInfo>;
+      std::list<browsing_data::FileSystemHelper::FileSystemInfo>;
   using QuotaInfoList = std::list<BrowsingDataQuotaHelper::QuotaInfo>;
   using ServiceWorkerUsageInfoList = std::list<content::StorageUsageInfo>;
   using SharedWorkerInfoList =
-      std::list<BrowsingDataSharedWorkerHelper::SharedWorkerInfo>;
+      std::list<browsing_data::SharedWorkerHelper::SharedWorkerInfo>;
   using CacheStorageUsageInfoList = std::list<content::StorageUsageInfo>;
   using AppCacheInfoList = std::list<content::StorageUsageInfo>;
   using FlashLSODomainList = std::vector<std::string>;
@@ -65,17 +65,17 @@ class LocalDataContainer {
       std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>;
 
   LocalDataContainer(
-      scoped_refptr<BrowsingDataCookieHelper> cookie_helper,
-      scoped_refptr<BrowsingDataDatabaseHelper> database_helper,
+      scoped_refptr<browsing_data::CookieHelper> cookie_helper,
+      scoped_refptr<browsing_data::DatabaseHelper> database_helper,
       scoped_refptr<browsing_data::LocalStorageHelper> local_storage_helper,
       scoped_refptr<browsing_data::LocalStorageHelper> session_storage_helper,
-      scoped_refptr<BrowsingDataAppCacheHelper> appcache_helper,
-      scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper,
-      scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper,
+      scoped_refptr<browsing_data::AppCacheHelper> appcache_helper,
+      scoped_refptr<browsing_data::IndexedDBHelper> indexed_db_helper,
+      scoped_refptr<browsing_data::FileSystemHelper> file_system_helper,
       scoped_refptr<BrowsingDataQuotaHelper> quota_helper,
-      scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper,
-      scoped_refptr<BrowsingDataSharedWorkerHelper> shared_worker_helper,
-      scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper,
+      scoped_refptr<browsing_data::ServiceWorkerHelper> service_worker_helper,
+      scoped_refptr<browsing_data::SharedWorkerHelper> shared_worker_helper,
+      scoped_refptr<browsing_data::CacheStorageHelper> cache_storage_helper,
       scoped_refptr<BrowsingDataFlashLSOHelper> flash_data_helper,
       scoped_refptr<BrowsingDataMediaLicenseHelper> media_license_helper);
   virtual ~LocalDataContainer();
@@ -123,17 +123,17 @@ class LocalDataContainer {
 
   // Pointers to the helper objects, needed to retreive all the types of locally
   // stored data.
-  scoped_refptr<BrowsingDataAppCacheHelper> appcache_helper_;
-  scoped_refptr<BrowsingDataCookieHelper> cookie_helper_;
-  scoped_refptr<BrowsingDataDatabaseHelper> database_helper_;
+  scoped_refptr<browsing_data::AppCacheHelper> appcache_helper_;
+  scoped_refptr<browsing_data::CookieHelper> cookie_helper_;
+  scoped_refptr<browsing_data::DatabaseHelper> database_helper_;
   scoped_refptr<browsing_data::LocalStorageHelper> local_storage_helper_;
   scoped_refptr<browsing_data::LocalStorageHelper> session_storage_helper_;
-  scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper_;
-  scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper_;
+  scoped_refptr<browsing_data::IndexedDBHelper> indexed_db_helper_;
+  scoped_refptr<browsing_data::FileSystemHelper> file_system_helper_;
   scoped_refptr<BrowsingDataQuotaHelper> quota_helper_;
-  scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper_;
-  scoped_refptr<BrowsingDataSharedWorkerHelper> shared_worker_helper_;
-  scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper_;
+  scoped_refptr<browsing_data::ServiceWorkerHelper> service_worker_helper_;
+  scoped_refptr<browsing_data::SharedWorkerHelper> shared_worker_helper_;
+  scoped_refptr<browsing_data::CacheStorageHelper> cache_storage_helper_;
   scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
   scoped_refptr<BrowsingDataMediaLicenseHelper> media_license_helper_;
 

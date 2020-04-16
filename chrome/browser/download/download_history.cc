@@ -248,7 +248,6 @@ DownloadHistory::DownloadHistory(content::DownloadManager* manager,
     : notifier_(manager, this),
       history_(std::move(history)),
       loading_id_(download::DownloadItem::kInvalidId),
-      history_size_(0),
       initial_history_query_complete_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   download::SimpleDownloadManager::DownloadVector items;
@@ -339,7 +338,6 @@ void DownloadHistory::LoadHistoryDownloads(
 #endif
     DCHECK_EQ(DownloadHistoryData::PERSISTED,
               DownloadHistoryData::Get(item)->state());
-    ++history_size_;
   }
 
   // Indicate that the history db is initialized.
@@ -423,13 +421,6 @@ void DownloadHistory::ItemAdded(uint32_t download_id,
   }
   data->SetState(DownloadHistoryData::PERSISTED);
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.HistorySize2",
-                              history_size_,
-                              1/*min*/,
-                              (1 << 23)/*max*/,
-                              (1 << 7)/*num_buckets*/);
-  ++history_size_;
-
   // Notify the observer about the change in the persistence state.
   if (was_persisted != IsPersisted(item)) {
     for (Observer& observer : observers_)
@@ -510,10 +501,6 @@ void DownloadHistory::OnDownloadRemoved(content::DownloadManager* manager,
   // This is important: another OnDownloadRemoved() handler could do something
   // that synchronously fires an OnDownloadUpdated().
   data->SetState(DownloadHistoryData::NOT_PERSISTED);
-  // ItemAdded increments history_size_ only if the item wasn't
-  // removed_while_adding_, so the next line does not belong in
-  // ScheduleRemoveDownload().
-  --history_size_;
 }
 
 void DownloadHistory::ScheduleRemoveDownload(uint32_t download_id) {

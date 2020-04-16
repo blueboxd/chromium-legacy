@@ -31,11 +31,17 @@ void MockRenderWidgetHostDelegate::ExecuteEditCommand(
     const std::string& command,
     const base::Optional<base::string16>& value) {}
 
+void MockRenderWidgetHostDelegate::Undo() {}
+
+void MockRenderWidgetHostDelegate::Redo() {}
+
 void MockRenderWidgetHostDelegate::Cut() {}
 
 void MockRenderWidgetHostDelegate::Copy() {}
 
 void MockRenderWidgetHostDelegate::Paste() {}
+
+void MockRenderWidgetHostDelegate::PasteAndMatchStyle() {}
 
 void MockRenderWidgetHostDelegate::SelectAll() {}
 

@@ -206,7 +206,7 @@ std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
     }
   }
 
-  const ActionInfo* action = ActionInfo::GetAnyActionInfo(extension);
+  const ActionInfo* action = ActionInfo::GetExtensionActionInfo(extension);
   if (action && !action->default_icon.empty())
     action->default_icon.GetPaths(&image_paths);
 

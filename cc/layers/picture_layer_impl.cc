@@ -29,6 +29,7 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
+#include "cc/trees/transform_node.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
@@ -96,7 +97,7 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       only_used_low_res_last_append_quads_(false),
       nearest_neighbor_(false),
       use_transformed_rasterization_(false),
-      can_use_lcd_text_(true),
+      lcd_text_disallowed_reason_(LCDTextDisallowedReason::kNone),
       directly_composited_image_size_(base::nullopt),
       directly_composited_image_raster_aspect_ratio_(0.f),
       tile_size_calculator_(this) {
@@ -179,7 +180,7 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   // Simply push the value to the active tree without any extra invalidations,
   // since the pending tree tiles would have this handled. This is here to
   // ensure the state is consistent for future raster.
-  layer_impl->can_use_lcd_text_ = can_use_lcd_text_;
+  layer_impl->lcd_text_disallowed_reason_ = lcd_text_disallowed_reason_;
 
   layer_impl->SanityCheckTilingState();
 }
@@ -742,7 +743,7 @@ void PictureLayerImpl::UpdateRasterSource(
 
   // The |raster_source_| is initially null, so have to check for that for the
   // first frame.
-  bool could_have_tilings = raster_source_.get() && CanHaveTilings();
+  bool could_have_tilings = CanHaveTilings();
   raster_source_.swap(raster_source);
 
   // Register images from the new raster source, if the recording was updated.
@@ -794,19 +795,48 @@ bool PictureLayerImpl::UpdateCanUseLCDTextAfterCommit() {
   DCHECK(layer_tree_impl()->IsSyncTree());
 
   // Once we disable lcd text, we don't re-enable it.
-  if (!can_use_lcd_text_)
+  if (!can_use_lcd_text())
     return false;
 
-  if (can_use_lcd_text_ == CanUseLCDText())
+  auto new_lcd_text_disallowed_reason = ComputeLCDTextDisallowedReason();
+  if (lcd_text_disallowed_reason_ == new_lcd_text_disallowed_reason)
     return false;
 
-  can_use_lcd_text_ = CanUseLCDText();
+  lcd_text_disallowed_reason_ = new_lcd_text_disallowed_reason;
   // Synthetically invalidate everything.
   gfx::Rect bounds_rect(bounds());
   invalidation_ = Region(bounds_rect);
   tilings_->Invalidate(invalidation_);
   UnionUpdateRect(bounds_rect);
   return true;
+}
+
+LCDTextDisallowedReason PictureLayerImpl::ComputeLCDTextDisallowedReason()
+    const {
+  if (layer_tree_impl()->settings().layers_always_allowed_lcd_text)
+    return LCDTextDisallowedReason::kNone;
+  if (!layer_tree_impl()->settings().can_use_lcd_text)
+    return LCDTextDisallowedReason::kSetting;
+  if (!contents_opaque())
+    return LCDTextDisallowedReason::kContentsNotOpaque;
+
+  if (GetEffectTree().Node(effect_tree_index())->screen_space_opacity != 1.f)
+    return LCDTextDisallowedReason::kLayerOpacity;
+  if (!GetTransformTree()
+           .Node(transform_tree_index())
+           ->node_and_ancestors_have_only_integer_translation)
+    return LCDTextDisallowedReason::kNonIntegralTranslation;
+  if (static_cast<int>(offset_to_transform_parent().x()) !=
+      offset_to_transform_parent().x())
+    return LCDTextDisallowedReason::kNonIntegralXOffset;
+  if (static_cast<int>(offset_to_transform_parent().y()) !=
+      offset_to_transform_parent().y())
+    return LCDTextDisallowedReason::kNonIntegralYOffset;
+
+  if (has_will_change_transform_hint())
+    return LCDTextDisallowedReason::kWillChangeTransform;
+
+  return LCDTextDisallowedReason::kNone;
 }
 
 void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
@@ -873,7 +903,7 @@ std::unique_ptr<Tile> PictureLayerImpl::CreateTile(
 
   return layer_tree_impl()->tile_manager()->CreateTile(
       info, id(), layer_tree_impl()->source_frame_number(), flags,
-      can_use_lcd_text_);
+      can_use_lcd_text());
 }
 
 const Region* PictureLayerImpl::GetPendingInvalidation() {
@@ -1514,6 +1544,8 @@ void PictureLayerImpl::ResetRasterScale() {
 }
 
 bool PictureLayerImpl::CanHaveTilings() const {
+  if (!raster_source_)
+    return false;
   if (raster_source_->IsSolidColor())
     return false;
   if (!DrawsContent())
@@ -1627,6 +1659,10 @@ void PictureLayerImpl::AsValueInto(
                              viewport_rect_for_tile_priority_in_content_space_,
                              state);
   MathUtil::AddToTracedValue("visible_rect", visible_layer_rect(), state);
+
+  state->SetString(
+      "lcd_text_disallowed_reason",
+      LCDTextDisallowedReasonToString(lcd_text_disallowed_reason_));
 
   state->BeginArray("pictures");
   raster_source_->AsValueInto(state);

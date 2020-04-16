@@ -114,13 +114,14 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     DetailedInfo& InitAppCache(const content::StorageUsageInfo* usage_info);
     DetailedInfo& InitIndexedDB(const content::StorageUsageInfo* usage_info);
     DetailedInfo& InitFileSystem(
-        const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info);
+        const browsing_data::FileSystemHelper::FileSystemInfo*
+            file_system_info);
     DetailedInfo& InitQuota(
         const BrowsingDataQuotaHelper::QuotaInfo* quota_info);
     DetailedInfo& InitServiceWorker(
         const content::StorageUsageInfo* usage_info);
     DetailedInfo& InitSharedWorker(
-        const BrowsingDataSharedWorkerHelper::SharedWorkerInfo*
+        const browsing_data::SharedWorkerHelper::SharedWorkerInfo*
             shared_worker_info);
     DetailedInfo& InitCacheStorage(const content::StorageUsageInfo* usage_info);
     DetailedInfo& InitFlashLSO(const std::string& flash_lso_domain);
@@ -134,11 +135,11 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     // Used for AppCache, Database (WebSQL), IndexedDB, Service Worker, and
     // Cache Storage node types.
     const content::StorageUsageInfo* usage_info = nullptr;
-    const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info =
+    const browsing_data::FileSystemHelper::FileSystemInfo* file_system_info =
         nullptr;
     const BrowsingDataQuotaHelper::QuotaInfo* quota_info = nullptr;
-    const BrowsingDataSharedWorkerHelper::SharedWorkerInfo* shared_worker_info =
-        nullptr;
+    const browsing_data::SharedWorkerHelper::SharedWorkerInfo*
+        shared_worker_info = nullptr;
     std::string flash_lso_domain;
     const BrowsingDataMediaLicenseHelper::MediaLicenseInfo* media_license_info =
         nullptr;

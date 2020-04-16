@@ -439,6 +439,7 @@ extern const char kInvalidReplacementAndroidApp[];
 extern const char kInvalidReplacementWebApp[];
 extern const char kInvalidRequirement[];
 extern const char kInvalidRequirements[];
+extern const char kInvalidRulesetID[];
 extern const char kInvalidRunAt[];
 extern const char kInvalidSandboxedPagesList[];
 extern const char kInvalidSandboxedPage[];

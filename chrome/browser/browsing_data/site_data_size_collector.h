@@ -10,16 +10,16 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_database_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/browsing_data/content/appcache_helper.h"
+#include "components/browsing_data/content/cache_storage_helper.h"
+#include "components/browsing_data/content/cookie_helper.h"
+#include "components/browsing_data/content/database_helper.h"
+#include "components/browsing_data/content/file_system_helper.h"
+#include "components/browsing_data/content/indexed_db_helper.h"
 #include "components/browsing_data/content/local_storage_helper.h"
+#include "components/browsing_data/content/service_worker_helper.h"
 #include "content/public/browser/storage_partition.h"
 
 class SiteDataSizeCollector {
@@ -29,21 +29,22 @@ class SiteDataSizeCollector {
   using LocalStorageInfoList = std::list<content::StorageUsageInfo>;
   using IndexedDBInfoList = std::list<content::StorageUsageInfo>;
   using FileSystemInfoList =
-      std::list<BrowsingDataFileSystemHelper::FileSystemInfo>;
+      std::list<browsing_data::FileSystemHelper::FileSystemInfo>;
   using ServiceWorkerUsageInfoList = std::list<content::StorageUsageInfo>;
   using CacheStorageUsageInfoList = std::list<content::StorageUsageInfo>;
   using FlashLSODomainList = std::vector<std::string>;
 
-  SiteDataSizeCollector(const base::FilePath& default_storage_partition_path,
-                        BrowsingDataCookieHelper* cookie_helper,
-                        BrowsingDataDatabaseHelper* database_helper,
-                        browsing_data::LocalStorageHelper* local_storage_helper,
-                        BrowsingDataAppCacheHelper* appcache_helper,
-                        BrowsingDataIndexedDBHelper* indexed_db_helper,
-                        BrowsingDataFileSystemHelper* file_system_helper,
-                        BrowsingDataServiceWorkerHelper* service_worker_helper,
-                        BrowsingDataCacheStorageHelper* cache_storage_helper,
-                        BrowsingDataFlashLSOHelper* flash_lso_helper);
+  SiteDataSizeCollector(
+      const base::FilePath& default_storage_partition_path,
+      browsing_data::CookieHelper* cookie_helper,
+      browsing_data::DatabaseHelper* database_helper,
+      browsing_data::LocalStorageHelper* local_storage_helper,
+      browsing_data::AppCacheHelper* appcache_helper,
+      browsing_data::IndexedDBHelper* indexed_db_helper,
+      browsing_data::FileSystemHelper* file_system_helper,
+      browsing_data::ServiceWorkerHelper* service_worker_helper,
+      browsing_data::CacheStorageHelper* cache_storage_helper,
+      BrowsingDataFlashLSOHelper* flash_lso_helper);
   virtual ~SiteDataSizeCollector();
 
   using FetchCallback = base::OnceCallback<void(int64_t)>;
@@ -77,14 +78,14 @@ class SiteDataSizeCollector {
 
   // Pointers to the helper objects, needed to retreive all the types of locally
   // stored data.
-  scoped_refptr<BrowsingDataAppCacheHelper> appcache_helper_;
-  scoped_refptr<BrowsingDataCookieHelper> cookie_helper_;
-  scoped_refptr<BrowsingDataDatabaseHelper> database_helper_;
+  scoped_refptr<browsing_data::AppCacheHelper> appcache_helper_;
+  scoped_refptr<browsing_data::CookieHelper> cookie_helper_;
+  scoped_refptr<browsing_data::DatabaseHelper> database_helper_;
   scoped_refptr<browsing_data::LocalStorageHelper> local_storage_helper_;
-  scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper_;
-  scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper_;
-  scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper_;
-  scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper_;
+  scoped_refptr<browsing_data::IndexedDBHelper> indexed_db_helper_;
+  scoped_refptr<browsing_data::FileSystemHelper> file_system_helper_;
+  scoped_refptr<browsing_data::ServiceWorkerHelper> service_worker_helper_;
+  scoped_refptr<browsing_data::CacheStorageHelper> cache_storage_helper_;
   scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
 
   // Callback called when sizes of all site data are fetched and accumulated.

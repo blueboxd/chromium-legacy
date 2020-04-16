@@ -89,7 +89,7 @@ bool ExtensionActionHandler::Validate(
     const Extension* extension,
     std::string* error,
     std::vector<InstallWarning>* warnings) const {
-  const ActionInfo* action = ActionInfo::GetAnyActionInfo(extension);
+  const ActionInfo* action = ActionInfo::GetExtensionActionInfo(extension);
   if (!action || action->default_icon.empty())
     return true;
 

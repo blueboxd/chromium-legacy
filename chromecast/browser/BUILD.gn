@@ -149,6 +149,7 @@ cast_source_set("browser") {
     ":public",
     "//chromecast/browser/metrics",
     "//chromecast/metrics",
+    "//components/media_control/mojom",
   ]
 
   deps = [
@@ -183,6 +184,7 @@ cast_source_set("browser") {
     "//chromecast/service",
     "//components/cdm/browser",
     "//components/download/public/common:public",
+    "//components/media_control/browser",
     "//components/metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",

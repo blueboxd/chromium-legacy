@@ -19,22 +19,19 @@ namespace declarative_net_request {
 // Holds the result of indexing a JSON ruleset.
 class ParseInfo {
  public:
-  // Creates a ParseInfo for a successful parse.
-  ParseInfo();
+  // Constructor to be used on success.
+  ParseInfo(size_t rules_count,
+            size_t regex_rules_count,
+            int ruleset_checksum,
+            std::vector<int> regex_limit_exceeded_rules);
+
+  // Constructor to be used on error.
+  ParseInfo(ParseResult error_reason, const int* rule_id);
 
   ParseInfo(ParseInfo&&);
   ParseInfo& operator=(ParseInfo&&);
   ~ParseInfo();
 
-  // Rules which exceed the per rule regex memory limit. These are ignored
-  // during indexing.
-  void AddRegexLimitExceededRule(int rule_id);
-  const std::vector<int>& regex_limit_exceeded_rules() const {
-    return regex_limit_exceeded_rules_;
-  }
-
-  // |rule_id| is null when invalid.
-  void SetError(ParseResult error_reason, const int* rule_id);
 
   bool has_error() const { return has_error_; }
   ParseResult error_reason() const {
@@ -46,14 +43,40 @@ class ParseInfo {
     return error_;
   }
 
+  // Rules which exceed the per-rule regex memory limit. These are ignored
+  // during indexing.
+  const std::vector<int>& regex_limit_exceeded_rules() const {
+    DCHECK(!has_error_);
+    return regex_limit_exceeded_rules_;
+  }
+
+  size_t rules_count() const {
+    DCHECK(!has_error_);
+    return rules_count_;
+  }
+
+  size_t regex_rules_count() const {
+    DCHECK(!has_error_);
+    return regex_rules_count_;
+  }
+
+  int ruleset_checksum() const {
+    DCHECK(!has_error_);
+    return ruleset_checksum_;
+  }
+
  private:
   bool has_error_ = false;
-
-  std::vector<int> regex_limit_exceeded_rules_;
 
   // Only valid iff |has_error_| is true.
   std::string error_;
   ParseResult error_reason_ = ParseResult::NONE;
+
+  // Only valid iff |has_error_| is false.
+  size_t rules_count_ = 0;
+  size_t regex_rules_count_ = 0;
+  int ruleset_checksum_ = -1;
+  std::vector<int> regex_limit_exceeded_rules_;
 };
 
 }  // namespace declarative_net_request

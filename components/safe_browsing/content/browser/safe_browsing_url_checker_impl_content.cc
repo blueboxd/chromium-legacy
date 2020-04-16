@@ -26,7 +26,8 @@ bool SafeBrowsingUrlCheckerImpl::CanPerformFullURLLookup(const GURL& url) {
 }
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
-    std::unique_ptr<RTLookupRequest> request) {
+    std::unique_ptr<RTLookupRequest> request,
+    std::string oauth_token) {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
 
   // The following is to log this RTLookupRequest on any open
@@ -35,7 +36,7 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
       FROM_HERE, CreateTaskTraits(ThreadID::UI),
       base::BindOnce(&WebUIInfoSingleton::AddToRTLookupPings,
                      base::Unretained(WebUIInfoSingleton::GetInstance()),
-                     *request),
+                     *request, oauth_token),
       base::BindOnce(&SafeBrowsingUrlCheckerImpl::SetWebUIToken,
                      weak_factory_.GetWeakPtr()));
 }

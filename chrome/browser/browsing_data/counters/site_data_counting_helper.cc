@@ -8,9 +8,9 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -220,7 +220,7 @@ void SiteDataCountingHelper::Done(const std::vector<GURL>& origins) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(tasks_ > 0);
   for (const GURL& origin : origins) {
-    if (BrowsingDataHelper::HasWebScheme(origin))
+    if (browsing_data::HasWebScheme(origin))
       unique_hosts_.insert(origin.host());
   }
   if (--tasks_ > 0)

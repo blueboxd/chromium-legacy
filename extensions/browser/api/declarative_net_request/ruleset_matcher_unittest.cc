@@ -1079,6 +1079,40 @@ TEST_F(RulesetMatcherTest, RegexSubstitution) {
   }
 }
 
+TEST_F(RulesetMatcherTest, RulesCount) {
+  size_t kNumNonRegexRules = 20;
+  size_t kNumRegexRules = 10;
+  std::vector<TestRule> rules;
+  int id = kMinValidID;
+  for (size_t i = 0; i < kNumNonRegexRules; ++i, ++id) {
+    TestRule rule = CreateGenericRule();
+    rule.id = id;
+    rule.condition->url_filter = std::to_string(id);
+    rules.push_back(rule);
+  }
+
+  for (size_t i = 0; i < kNumRegexRules; ++i, ++id) {
+    TestRule rule = CreateGenericRule();
+    rule.id = id;
+    rule.condition->url_filter.reset();
+    rule.condition->regex_filter = std::to_string(id);
+    rules.push_back(rule);
+  }
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher(rules, CreateTemporarySource(), &matcher));
+  ASSERT_TRUE(matcher);
+  EXPECT_EQ(kNumRegexRules + kNumNonRegexRules, matcher->GetRulesCount());
+  EXPECT_EQ(kNumRegexRules, matcher->GetRegexRulesCount());
+
+  // Also verify the rules count for an empty matcher.
+  ASSERT_TRUE(
+      CreateVerifiedMatcher({} /* rules */, CreateTemporarySource(), &matcher));
+  ASSERT_TRUE(matcher);
+  EXPECT_EQ(0u, matcher->GetRulesCount());
+  EXPECT_EQ(0u, matcher->GetRegexRulesCount());
+}
+
 // Test that rules with the same priority will override each other correctly
 // based on action.
 TEST_F(RulesetMatcherTest, BreakTiesByActionPriority) {

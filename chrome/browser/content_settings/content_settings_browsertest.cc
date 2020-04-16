@@ -11,7 +11,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -28,6 +27,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/browsing_data/content/cookie_helper.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/nacl/common/buildflags.h"
@@ -66,7 +66,7 @@ using net::URLRequestMockHTTPJob;
 
 namespace {
 
-CannedBrowsingDataCookieHelper* GetSiteSettingsCookieContainer(
+browsing_data::CannedCookieHelper* GetSiteSettingsCookieContainer(
     Browser* browser) {
   TabSpecificContentSettings* settings =
       TabSpecificContentSettings::FromWebContents(
@@ -74,7 +74,7 @@ CannedBrowsingDataCookieHelper* GetSiteSettingsCookieContainer(
   return settings->allowed_local_shared_objects().cookies();
 }
 
-CannedBrowsingDataCookieHelper* GetSiteSettingsBlockedCookieContainer(
+browsing_data::CannedCookieHelper* GetSiteSettingsBlockedCookieContainer(
     Browser* browser) {
   TabSpecificContentSettings* settings =
       TabSpecificContentSettings::FromWebContents(
@@ -82,7 +82,7 @@ CannedBrowsingDataCookieHelper* GetSiteSettingsBlockedCookieContainer(
   return settings->blocked_local_shared_objects().cookies();
 }
 
-net::CookieList ExtractCookies(CannedBrowsingDataCookieHelper* container) {
+net::CookieList ExtractCookies(browsing_data::CannedCookieHelper* container) {
   bool got_result = false;
   net::CookieList result;
   container->StartFetching(
@@ -394,9 +394,9 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, AllowCookiesUsingExceptions) {
   WriteCookie(browser());
   ASSERT_TRUE(ReadCookie(browser()).empty());
 
-  CannedBrowsingDataCookieHelper* accepted =
+  browsing_data::CannedCookieHelper* accepted =
       GetSiteSettingsCookieContainer(browser());
-  CannedBrowsingDataCookieHelper* blocked =
+  browsing_data::CannedCookieHelper* blocked =
       GetSiteSettingsBlockedCookieContainer(browser());
   EXPECT_TRUE(accepted->empty());
   ASSERT_EQ(1u, blocked->GetCookieCount());
@@ -427,9 +427,9 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesUsingExceptions) {
 
   WriteCookie(browser());
   ASSERT_TRUE(ReadCookie(browser()).empty());
-  CannedBrowsingDataCookieHelper* accepted =
+  browsing_data::CannedCookieHelper* accepted =
       GetSiteSettingsCookieContainer(browser());
-  CannedBrowsingDataCookieHelper* blocked =
+  browsing_data::CannedCookieHelper* blocked =
       GetSiteSettingsBlockedCookieContainer(browser());
   EXPECT_TRUE(accepted->empty());
   ASSERT_EQ(1u, blocked->GetCookieCount());
@@ -904,9 +904,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest, CookieStore) {
     EXPECT_EQ("set executed for first", result3);
     observer.Wait();
 
-    CannedBrowsingDataCookieHelper* accepted =
+    browsing_data::CannedCookieHelper* accepted =
         GetSiteSettingsCookieContainer(browser());
-    CannedBrowsingDataCookieHelper* blocked =
+    browsing_data::CannedCookieHelper* blocked =
         GetSiteSettingsBlockedCookieContainer(browser());
     EXPECT_EQ(1u, accepted->GetCookieCount());
     EXPECT_TRUE(blocked->empty());
@@ -927,9 +927,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest, CookieStore) {
     EXPECT_EQ("set executed for second", result4);
     observer.Wait();
 
-    CannedBrowsingDataCookieHelper* accepted =
+    browsing_data::CannedCookieHelper* accepted =
         GetSiteSettingsCookieContainer(browser());
-    CannedBrowsingDataCookieHelper* blocked =
+    browsing_data::CannedCookieHelper* blocked =
         GetSiteSettingsBlockedCookieContainer(browser());
     EXPECT_EQ(1u, accepted->GetCookieCount());
     EXPECT_EQ(1u, blocked->GetCookieCount());

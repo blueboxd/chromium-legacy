@@ -189,14 +189,13 @@ js_library("device_page_browser_proxy.m") {
   extra_deps = [ ":modulize" ]
 }
 
-# TODO: Fix and re-enable
-#js_library("display.m") {
-#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/display.m.js" ]
-#  deps = [
-#    # TODO: Fill those in.
-#  ]
-#  extra_deps = [ ":display_module" ]
-#}
+js_library("display.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/display.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":display_module" ]
+}
 
 js_library("display_layout.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/display_layout.m.js" ]
@@ -222,14 +221,13 @@ js_library("drag_behavior.m") {
   extra_deps = [ ":modulize" ]
 }
 
-# TODO: Fix and re-enable
-#js_library("keyboard.m") {
-#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/keyboard.m.js" ]
-#  deps = [
-#    # TODO: Fill those in.
-#  ]
-#  extra_deps = [ ":keyboard_module" ]
-#}
+js_library("keyboard.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/keyboard.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":keyboard_module" ]
+}
 
 js_library("layout_behavior.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/layout_behavior.m.js" ]
@@ -263,14 +261,13 @@ js_library("power.m") {
   extra_deps = [ ":power_module" ]
 }
 
-# TODO: Fix and re-enable
-#js_library("storage.m") {
-#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/storage.m.js" ]
-#  deps = [
-#    # TODO: Fill those in.
-#  ]
-#  extra_deps = [ ":storage_module" ]
-#}
+js_library("storage.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/storage.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":storage_module" ]
+}
 
 js_library("storage_external.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/storage_external.m.js" ]
@@ -302,22 +299,16 @@ group("polymer3_elements") {
   public_deps = [
     ":device_page_module",
     ":display_layout_module",
-
-    # TODO: Fix and re-enable
-    #":display_module",
+    ":display_module",
     ":display_overscan_dialog_module",
-
-    # TODO: Fix and re-enable
-    #":keyboard_module",
+    ":keyboard_module",
     ":modulize",
     ":night_light_slider_module",
     ":pointers_module",
     ":power_module",
     ":storage_external_entry_module",
     ":storage_external_module",
-
-    # TODO: Fix and re-enable
-    #":storage_module",
+    ":storage_module",
     ":stylus_module",
   ]
 }
@@ -328,12 +319,11 @@ polymer_modulizer("device_page") {
   html_type = "dom-module"
 }
 
-# TODO: Fix and re-enable
-#polymer_modulizer("display") {
-#  js_file = "display.js"
-#  html_file = "display.html"
-#  html_type = "dom-module"
-#}
+polymer_modulizer("display") {
+  js_file = "display.js"
+  html_file = "display.html"
+  html_type = "dom-module"
+}
 
 polymer_modulizer("display_layout") {
   js_file = "display_layout.js"
@@ -347,12 +337,11 @@ polymer_modulizer("display_overscan_dialog") {
   html_type = "dom-module"
 }
 
-# TODO: Fix and re-enable
-#polymer_modulizer("keyboard") {
-#  js_file = "keyboard.js"
-#  html_file = "keyboard.html"
-#  html_type = "dom-module"
-#}
+polymer_modulizer("keyboard") {
+  js_file = "keyboard.js"
+  html_file = "keyboard.html"
+  html_type = "dom-module"
+}
 
 polymer_modulizer("night_light_slider") {
   js_file = "night_light_slider.js"
@@ -372,12 +361,11 @@ polymer_modulizer("power") {
   html_type = "dom-module"
 }
 
-# TODO: Fix and re-enable
-#polymer_modulizer("storage") {
-#  js_file = "storage.js"
-#  html_file = "storage.html"
-#  html_type = "dom-module"
-#}
+polymer_modulizer("storage") {
+  js_file = "storage.js"
+  html_file = "storage.html"
+  html_type = "dom-module"
+}
 
 polymer_modulizer("storage_external") {
   js_file = "storage_external.js"

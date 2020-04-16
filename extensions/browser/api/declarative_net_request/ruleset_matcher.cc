@@ -91,6 +91,15 @@ bool RulesetMatcher::IsExtraHeadersMatcher() const {
          regex_matcher_.IsExtraHeadersMatcher();
 }
 
+size_t RulesetMatcher::GetRulesCount() const {
+  return url_pattern_index_matcher_.GetRulesCount() +
+         regex_matcher_.GetRulesCount();
+}
+
+size_t RulesetMatcher::GetRegexRulesCount() const {
+  return regex_matcher_.GetRulesCount();
+}
+
 void RulesetMatcher::OnRenderFrameCreated(content::RenderFrameHost* host) {
   url_pattern_index_matcher_.OnRenderFrameCreated(host);
   regex_matcher_.OnRenderFrameCreated(host);

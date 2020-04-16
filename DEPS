@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '8ac25c44cbe820b5f6f8b14328662c7cbb26478b',
+  'skia_revision': '9e1e913c81cd3acb4b82fa1e0d4ad47e5711fd29',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'b774f178a4e28c55f8dfb7d87da86030c35d2ae5',
+  'v8_revision': 'bf321a1884e860c02e6263624fc5f09aa7fd99a9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '9f64a3e1686ed7e691dbd3cd5ad22b6f3fcf2caf',
+  'devtools_frontend_revision': '4c0a21a0882d117c4c58c2a3807c75fed748ae43',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1217,7 +1217,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'b9ebe017027adf088691e82ee8e17065a92402c7',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '51591a540007980695aaa13a28a55bacde51567d',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1522,7 +1522,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@bd0ce7c933dc0c8e635198cfadd2528b0fa86deb',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@66792cf7d6a9fc05a6af17f2df9b5051244efc39',
     'condition': 'checkout_src_internal',
   },
 

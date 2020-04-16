@@ -91,9 +91,12 @@ class RenderWidgetHostDelegateEditCommandCounter
       const base::Optional<base::string16>& value) override {
     edit_command_message_count_++;
   }
+  void Undo() override {}
+  void Redo() override {}
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}
+  void PasteAndMatchStyle() override {}
   void SelectAll() override {}
 };
 

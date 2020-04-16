@@ -16,7 +16,6 @@
 #include "chromecast/media/base/media_codec_support.h"
 #include "chromecast/media/base/supported_codec_profile_levels_memo.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
-#include "chromecast/renderer/cast_media_playback_options.h"
 #include "chromecast/renderer/cast_url_loader_throttle_provider.h"
 #include "chromecast/renderer/cast_websocket_handshake_throttle_provider.h"
 #include "chromecast/renderer/js_channel_bindings.h"
@@ -24,6 +23,7 @@
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
 #include "chromecast/renderer/on_load_script_injector.h"
 #include "chromecast/renderer/queryable_data_bindings.h"
+#include "components/media_control/renderer/media_playback_options.h"
 #include "components/network_hints/renderer/web_prescient_networking_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
@@ -178,7 +178,7 @@ void CastContentRendererClient::RenderFrameCreated(
   DCHECK(render_frame);
 
   // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
-  new CastMediaPlaybackOptions(render_frame);
+  new media_control::MediaPlaybackOptions(render_frame);
   if (!::chromecast::IsFeatureEnabled(kUseQueryableDataBackend)) {
     new QueryableDataBindings(render_frame);
   }
@@ -351,7 +351,8 @@ bool CastContentRendererClient::DeferMediaLoad(
 bool CastContentRendererClient::RunWhenInForeground(
     content::RenderFrame* render_frame,
     base::OnceClosure closure) {
-  auto* playback_options = CastMediaPlaybackOptions::Get(render_frame);
+  auto* playback_options =
+      media_control::MediaPlaybackOptions::Get(render_frame);
   DCHECK(playback_options);
   return playback_options->RunWhenInForeground(std::move(closure));
 }

@@ -43,8 +43,10 @@ class UrlPatternIndexTest : public ::testing::Test {
  protected:
   bool AddUrlRule(const proto::UrlRule& rule) {
     auto offset = SerializeUrlRule(rule, flat_builder_.get(), &domain_map_);
-    if (offset.o)
+    if (offset.o) {
+      indexed_rules_count_++;
       index_builder_->IndexUrlRule(offset);
+    }
     return !!offset.o;
   }
 
@@ -64,6 +66,8 @@ class UrlPatternIndexTest : public ::testing::Test {
     auto rule_offset = rule_builder.Finish();
 
     index_builder_->IndexUrlRule(rule_offset);
+
+    indexed_rules_count_++;
   }
 
   void Finish() {
@@ -73,6 +77,8 @@ class UrlPatternIndexTest : public ::testing::Test {
     const flat::UrlPatternIndex* flat_index =
         flat::GetUrlPatternIndex(flat_builder_->GetBufferPointer());
     index_matcher_.reset(new UrlPatternIndexMatcher(flat_index));
+
+    ASSERT_EQ(indexed_rules_count_, index_matcher_->rules_count());
   }
 
   const flat::UrlRule* FindMatch(
@@ -128,9 +134,11 @@ class UrlPatternIndexTest : public ::testing::Test {
     flat_builder_.reset(new flatbuffers::FlatBufferBuilder());
     index_builder_.reset(new UrlPatternIndexBuilder(flat_builder_.get()));
     domain_map_.clear();
+    indexed_rules_count_ = 0;
   }
 
  private:
+  size_t indexed_rules_count_ = 0;
   std::unique_ptr<flatbuffers::FlatBufferBuilder> flat_builder_;
   std::unique_ptr<UrlPatternIndexBuilder> index_builder_;
   std::unique_ptr<UrlPatternIndexMatcher> index_matcher_;

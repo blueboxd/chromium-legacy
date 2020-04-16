@@ -347,13 +347,12 @@ public class ViewAndroidDelegate {
     /**
      * Notify the client of the position of the bottom controls.
      * @param bottomControlsOffsetY The Y offset of the bottom controls in physical pixels.
-     * @param bottomContentOffsetY The Y offset of the content in physical pixels.
      * @param bottomControlsMinHeightOffsetY The current bottom controls min-height in physical
      *                                       pixels.
      */
     @CalledByNative
-    public void onBottomControlsChanged(int bottomControlsOffsetY, int bottomContentOffsetY,
-            int bottomControlsMinHeightOffsetY) {}
+    public void onBottomControlsChanged(
+            int bottomControlsOffsetY, int bottomControlsMinHeightOffsetY) {}
 
     /**
      * @return The Visual Viewport bottom inset in pixels.

@@ -103,6 +103,10 @@ class ASH_PUBLIC_EXPORT KeyboardController {
   // Sets the bounds of the keyboard window in screen coordinates.
   virtual bool SetWindowBoundsInScreen(const gfx::Rect& bounds) = 0;
 
+  // Whether to adjust the viewport of child windows in the current root window,
+  // in order for the keyboard to avoid occluding the window contents.
+  virtual bool ShouldOverscroll() = 0;
+
   // Adds/removes a KeyboardControllerObserver.
   virtual void AddObserver(KeyboardControllerObserver* observer) = 0;
   virtual void RemoveObserver(KeyboardControllerObserver* observer) = 0;

@@ -3905,7 +3905,8 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
     PictureLayerImpl* root_layer =
         static_cast<PictureLayerImpl*>(host_impl->active_tree()->root_layer());
     bool can_use_lcd_text =
-        host_impl->active_tree()->root_layer()->CanUseLCDText();
+        root_layer->ComputeLCDTextDisallowedReasonForTesting() ==
+        LCDTextDisallowedReason::kNone;
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
         // The first draw.

@@ -40,9 +40,12 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void ExecuteEditCommand(
       const std::string& command,
       const base::Optional<base::string16>& value) override {}
+  void Undo() override {}
+  void Redo() override {}
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}
+  void PasteAndMatchStyle() override {}
   void SelectAll() override {}
 };
 

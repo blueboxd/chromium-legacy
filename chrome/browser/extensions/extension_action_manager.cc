@@ -88,7 +88,8 @@ ExtensionAction* ExtensionActionManager::GetExtensionAction(
   if (iter != actions_.end())
     return iter->second.get();
 
-  const ActionInfo* action_info = ActionInfo::GetAnyActionInfo(&extension);
+  const ActionInfo* action_info =
+      ActionInfo::GetExtensionActionInfo(&extension);
   if (!action_info)
     return nullptr;
 

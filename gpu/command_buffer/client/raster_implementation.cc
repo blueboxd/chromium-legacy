@@ -1076,9 +1076,49 @@ void RasterImplementation::WritePixels(const gpu::Mailbox& dest_mailbox,
                                        int dst_x_offset,
                                        int dst_y_offset,
                                        GLenum texture_target,
+                                       GLuint row_bytes,
                                        const SkImageInfo& src_info,
                                        const void* src_pixels) {
-  NOTREACHED();
+  // Get the size of the SkColorSpace while maintaining 8-byte alignment.
+  GLuint pixels_offset = 0;
+  if (src_info.colorSpace()) {
+    pixels_offset = base::bits::Align(
+        src_info.colorSpace()->writeToMemory(nullptr), sizeof(uint64_t));
+  }
+
+  GLuint src_size = src_info.computeByteSize(row_bytes);
+  GLuint total_size =
+      pixels_offset + base::bits::Align(src_size, sizeof(uint64_t));
+
+  GLint shm_id;
+  GLuint shm_offset;
+  void* address;
+  base::Optional<ScopedMappedMemoryPtr> mapped_ptr;
+  base::Optional<ScopedTransferBufferPtr> transfer_ptr;
+  // Prefer transfer buffer but fall back to MappedMemory if there's not enough
+  // free space.
+  if (transfer_buffer_->GetFreeSize() < total_size) {
+    mapped_ptr.emplace(total_size, helper(), mapped_memory_.get());
+    shm_id = mapped_ptr->shm_id();
+    shm_offset = mapped_ptr->offset();
+    address = mapped_ptr->address();
+  } else {
+    transfer_ptr.emplace(total_size, helper(), transfer_buffer_);
+    shm_id = transfer_ptr->shm_id();
+    shm_offset = transfer_ptr->offset();
+    address = transfer_ptr->address();
+  }
+
+  if (src_info.colorSpace()) {
+    size_t bytes_written = src_info.colorSpace()->writeToMemory(address);
+    DCHECK_LE(bytes_written, pixels_offset);
+  }
+  memcpy(static_cast<uint8_t*>(address) + pixels_offset, src_pixels, src_size);
+
+  helper_->WritePixelsINTERNALImmediate(
+      dst_x_offset, dst_y_offset, src_info.width(), src_info.height(),
+      row_bytes, src_info.colorType(), src_info.alphaType(), shm_id, shm_offset,
+      pixels_offset, dest_mailbox.name);
 }
 
 void RasterImplementation::BeginRasterCHROMIUM(

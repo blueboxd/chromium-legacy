@@ -847,12 +847,22 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         disk_info_out->set_size(storage->size);
       }
     }
-    const auto& vpd_info = probe_result->vpd_info;
-    if (!vpd_info.is_null() && vpd_info->sku_number.has_value()) {
-      em::SystemStatus* const system_status_out =
-          response_params_.device_status->mutable_system_status();
-      system_status_out->set_vpd_sku_number(vpd_info->sku_number.value());
+
+    // Process CachedVpdResult.
+    const auto& vpd_result = probe_result->vpd_result;
+    if (!vpd_result.is_null()) {
+      if (vpd_result->is_error()) {
+        LOG(ERROR) << "cros_healthd: Error getting cached VPD info: "
+                   << vpd_result->get_error()->msg;
+      } else {
+        const auto& vpd_info = vpd_result->get_vpd_info();
+        em::SystemStatus* const system_status_out =
+            response_params_.device_status->mutable_system_status();
+        if (vpd_info->sku_number.has_value())
+          system_status_out->set_vpd_sku_number(vpd_info->sku_number.value());
+      }
     }
+
     const auto& battery_info = probe_result->battery_info;
     if (!battery_info.is_null()) {
       em::PowerStatus* const power_status_out =

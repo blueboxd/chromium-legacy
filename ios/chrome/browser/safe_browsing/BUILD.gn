@@ -11,6 +11,8 @@ source_set("safe_browsing") {
     "safe_browsing_service.mm",
     "safe_browsing_tab_helper.h",
     "safe_browsing_tab_helper.mm",
+    "url_checker_delegate_impl.h",
+    "url_checker_delegate_impl.mm",
   ]
 
   deps = [
@@ -24,6 +26,7 @@ source_set("safe_browsing") {
     "//components/safe_browsing/core/db:database_manager",
     "//components/safe_browsing/core/db:v4_local_database_manager",
     "//components/safe_browsing/core/db:v4_protocol_manager_util",
+    "//components/security_interstitials/core:unsafe_resource",
     "//ios/chrome/browser",
     "//ios/net",
     "//ios/web/public",
@@ -45,6 +48,8 @@ source_set("unit_tests") {
   deps = [
     ":safe_browsing",
     "//components/prefs:test_support",
+    "//components/safe_browsing/core/browser",
+    "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/db",
     "//components/safe_browsing/core/db:database_manager",
     "//components/safe_browsing/core/db:metadata_proto",

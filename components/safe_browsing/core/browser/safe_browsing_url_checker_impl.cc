@@ -115,6 +115,16 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       enhanced_protection_enabled_(enhanced_protection_enabled),
       url_lookup_service_on_ui_(url_lookup_service_on_ui) {}
 
+SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
+    ResourceType resource_type,
+    scoped_refptr<UrlCheckerDelegate> url_checker_delegate)
+    : load_flags_(0),
+      resource_type_(resource_type),
+      has_user_gesture_(false),
+      url_checker_delegate_(url_checker_delegate),
+      database_manager_(url_checker_delegate_->GetDatabaseManager()),
+      real_time_lookup_enabled_(false) {}
+
 SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
 

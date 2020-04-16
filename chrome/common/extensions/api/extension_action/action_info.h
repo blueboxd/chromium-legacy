@@ -46,8 +46,7 @@ struct ActionInfo {
 
   // Returns any action associated with the extension, whether it's specified
   // under the "page_action", "browser_action", or "action" key.
-  // TODO(devlin): Rename this to GetExtensionActionInfo().
-  static const ActionInfo* GetAnyActionInfo(const Extension* extension);
+  static const ActionInfo* GetExtensionActionInfo(const Extension* extension);
 
   // Sets the extension's action.
   static void SetExtensionActionInfo(Extension* extension,

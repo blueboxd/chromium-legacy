@@ -167,8 +167,10 @@ void RasterImplementationGLES::WritePixels(const gpu::Mailbox& dest_mailbox,
                                            int dst_x_offset,
                                            int dst_y_offset,
                                            GLenum texture_target,
+                                           GLuint row_bytes,
                                            const SkImageInfo& src_info,
                                            const void* src_pixels) {
+  DCHECK_EQ(row_bytes, src_info.minRowBytes());
   GLuint texture_id = CreateAndConsumeForGpuRaster(dest_mailbox);
   BeginSharedImageAccessDirectCHROMIUM(
       texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);

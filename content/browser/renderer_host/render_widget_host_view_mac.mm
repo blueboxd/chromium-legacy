@@ -1789,15 +1789,15 @@ void RenderWidgetHostViewMac::ExecuteEditCommand(const std::string& command) {
 }
 
 void RenderWidgetHostViewMac::Undo() {
-  WebContents* web_contents = GetWebContents();
-  if (web_contents)
-    web_contents->Undo();
+  if (auto* delegate = GetFocusedRenderWidgetHostDelegate()) {
+    delegate->Undo();
+  }
 }
 
 void RenderWidgetHostViewMac::Redo() {
-  WebContents* web_contents = GetWebContents();
-  if (web_contents)
-    web_contents->Redo();
+  if (auto* delegate = GetFocusedRenderWidgetHostDelegate()) {
+    delegate->Redo();
+  }
 }
 
 void RenderWidgetHostViewMac::Cut() {
@@ -1825,9 +1825,9 @@ void RenderWidgetHostViewMac::Paste() {
 }
 
 void RenderWidgetHostViewMac::PasteAndMatchStyle() {
-  WebContents* web_contents = GetWebContents();
-  if (web_contents)
-    web_contents->PasteAndMatchStyle();
+  if (auto* delegate = GetFocusedRenderWidgetHostDelegate()) {
+    delegate->PasteAndMatchStyle();
+  }
 }
 
 void RenderWidgetHostViewMac::SelectAll() {

@@ -1334,7 +1334,7 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
       prev_bottom_controls_min_height_offset_pix_);
 
   if (bottom_changed || !controls_initialized_)
-    view_.OnBottomControlsChanged(bottom_translate, bottom_shown_pix,
+    view_.OnBottomControlsChanged(bottom_translate,
                                   bottom_min_height_offset_pix);
   prev_bottom_shown_pix_ = bottom_shown_pix;
   prev_bottom_controls_translate_ = bottom_translate;

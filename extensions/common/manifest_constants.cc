@@ -619,6 +619,9 @@ const char kInvalidRequirement[] =
     "Invalid value for requirement \"*\"";
 const char kInvalidRequirements[] =
     "Invalid value for 'requirements'";
+const char kInvalidRulesetID[] =
+    "'*.*': Invalid 'id' specified for Ruleset at index *. The ID must be "
+    "non-empty and unique.";
 const char kInvalidRunAt[] =
     "Invalid value for 'content_scripts[*].run_at'.";
 const char kInvalidSandboxedPagesList[] =

@@ -20,8 +20,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
-#include "chrome/browser/browsing_data/mock_browsing_data_cookie_helper.h"
-#include "chrome/browser/browsing_data/mock_browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -39,6 +37,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/browsing_data/content/mock_cookie_helper.h"
+#include "components/browsing_data/content/mock_local_storage_helper.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -432,15 +432,15 @@ class SiteSettingsHandlerTest : public testing::Test {
   // TODO(https://crbug.com/835712): Currently only set up the cookies and local
   // storage nodes, will update all other nodes in the future.
   void SetUpCookiesTreeModel() {
-    scoped_refptr<MockBrowsingDataCookieHelper>
+    scoped_refptr<browsing_data::MockCookieHelper>
         mock_browsing_data_cookie_helper;
-    scoped_refptr<MockBrowsingDataLocalStorageHelper>
+    scoped_refptr<browsing_data::MockLocalStorageHelper>
         mock_browsing_data_local_storage_helper;
 
     mock_browsing_data_cookie_helper =
-        new MockBrowsingDataCookieHelper(profile());
+        new browsing_data::MockCookieHelper(profile());
     mock_browsing_data_local_storage_helper =
-        new MockBrowsingDataLocalStorageHelper(profile());
+        new browsing_data::MockLocalStorageHelper(profile());
 
     auto container = std::make_unique<LocalDataContainer>(
         mock_browsing_data_cookie_helper,

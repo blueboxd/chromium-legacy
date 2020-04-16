@@ -43,7 +43,6 @@ doodles.IDS = {
   LOGO_DOODLE_IFRAME: 'logo-doodle-iframe',
   LOGO_DOODLE_CONTAINER: 'logo-doodle-container',
   LOGO_DOODLE_BUTTON: 'logo-doodle-button',
-  LOGO_DOODLE_NOTIFIER: 'logo-doodle-notifier',
   LOGO_DOODLE_WRAPPER: 'logo-doodle-wrapper',
 };
 
@@ -162,21 +161,6 @@ doodles.init = function() {
           doodles.fadeToLogoOrDoodle();
         }
       });
-    }
-  });
-
-  // Set up doodle notifier (but it may be invisible).
-  const doodleNotifier = $(doodles.IDS.LOGO_DOODLE_NOTIFIER);
-  doodleNotifier.title = configData.translatedStrings.clickToViewDoodle;
-  doodleNotifier.addEventListener('click', function(e) {
-    e.preventDefault();
-    const state = window.history.state || {};
-    state.notheme = true;
-    window.history.replaceState(state, document.title);
-    ntpApiHandle.logEvent(doodles.LOG_TYPE.NTP_STATIC_LOGO_SHOWN_FROM_CACHE);
-    ntpApiHandle.onthemechange();
-    if (e.detail === 0) {  // Activated by keyboard.
-      $(doodles.IDS.LOGO_DOODLE_BUTTON).focus();
     }
   });
 };

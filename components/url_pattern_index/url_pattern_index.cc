@@ -114,6 +114,23 @@ int GetKeysMask(const T& map) {
   return mask;
 }
 
+size_t GetRulesCount(const flat::UrlPatternIndex* index) {
+  if (!index)
+    return 0;
+
+  size_t rules_count = index->fallback_rules()->size();
+
+  // Iterate over all ngrams and check their corresponding rules.
+  for (auto* ngram_to_rules : *index->ngram_index()) {
+    if (ngram_to_rules == index->ngram_index_empty_slot())
+      continue;
+
+    rules_count += ngram_to_rules->rule_list()->size();
+  }
+
+  return rules_count;
+}
+
 // Checks whether a URL |rule| can be converted to its FlatBuffers equivalent,
 // and performs the actual conversion.
 class UrlRuleFlatBufferConverter {
@@ -762,7 +779,7 @@ bool DoesRuleFlagsMatch(const flat::UrlRule& rule,
 
 UrlPatternIndexMatcher::UrlPatternIndexMatcher(
     const flat::UrlPatternIndex* flat_index)
-    : flat_index_(flat_index) {
+    : flat_index_(flat_index), rules_count_(GetRulesCount(flat_index)) {
   DCHECK(!flat_index || flat_index->n() == kNGramSize);
 }
 

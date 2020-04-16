@@ -36,6 +36,7 @@ class ExtensionUrlPatternIndexMatcher final : public RulesetMatcherBase {
   bool IsExtraHeadersMatcher() const override {
     return is_extra_headers_matcher_;
   }
+  size_t GetRulesCount() const override { return rules_count_; }
 
  private:
   using UrlPatternIndexMatcher = url_pattern_index::UrlPatternIndexMatcher;
@@ -63,6 +64,8 @@ class ExtensionUrlPatternIndexMatcher final : public RulesetMatcherBase {
   const std::vector<UrlPatternIndexMatcher> matchers_;
 
   const bool is_extra_headers_matcher_;
+
+  const size_t rules_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUrlPatternIndexMatcher);
 };

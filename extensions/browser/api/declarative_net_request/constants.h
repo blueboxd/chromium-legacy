@@ -118,6 +118,8 @@ extern const char kErrorListNotPassed[];
 // Rule indexing install warnings.
 extern const char kRuleCountExceeded[];
 extern const char kRegexRuleCountExceeded[];
+extern const char kEnabledRuleCountExceeded[];
+extern const char kEnabledRegexRuleCountExceeded[];
 extern const char kRuleNotParsedWarning[];
 extern const char kTooManyParseFailuresWarning[];
 
@@ -130,6 +132,7 @@ extern const char kDynamicRegexRuleCountExceeded[];
 // Histogram names.
 extern const char kIndexAndPersistRulesTimeHistogram[];
 extern const char kManifestRulesCountHistogram[];
+extern const char kManifestEnabledRulesCountHistogram[];
 extern const char kUpdateDynamicRulesStatusHistogram[];
 extern const char kReadDynamicRulesJSONStatusHistogram[];
 extern const char kIsLargeRegexHistogram[];

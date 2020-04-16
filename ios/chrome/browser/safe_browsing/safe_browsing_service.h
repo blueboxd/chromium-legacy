@@ -29,7 +29,10 @@ class WeakWrapperSharedURLLoaderFactory;
 }  // namespace network
 
 namespace safe_browsing {
+enum class ResourceType;
 class SafeBrowsingDatabaseManager;
+class SafeBrowsingUrlCheckerImpl;
+class UrlCheckerDelegate;
 }  // namespace safe_browsing
 
 // Manages Safe Browsing related functionality. This class owns and provides
@@ -50,8 +53,10 @@ class SafeBrowsingService
   // before the IO thread is torn down.
   void ShutDown();
 
-  // Returns the SafeBrowsingDatabaseManager owned by this service.
-  safe_browsing::SafeBrowsingDatabaseManager* GetDatabaseManager();
+  // Creates a SafeBrowsingUrlCheckerImpl that can be used to query the
+  // SafeBrowsingDatabaseManager owned by this service.
+  std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl> CreateUrlChecker(
+      safe_browsing::ResourceType resource_type);
 
  private:
   friend struct web::WebThread::DeleteOnThread<web::WebThread::UI>;
@@ -137,6 +142,9 @@ class SafeBrowsingService
   // the IO thread.
   scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
       safe_browsing_db_manager_;
+
+  // Delegate for SafeBrowsingUrlCheckerImpl instances.
+  scoped_refptr<safe_browsing::UrlCheckerDelegate> url_checker_delegate_;
 
   // This watches for changes to the Safe Browsing opt-out preference.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;

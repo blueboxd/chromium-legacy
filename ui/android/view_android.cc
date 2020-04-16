@@ -434,7 +434,6 @@ void ViewAndroid::OnTopControlsChanged(float top_controls_offset,
 
 void ViewAndroid::OnBottomControlsChanged(
     float bottom_controls_offset,
-    float bottom_content_offset,
     float bottom_controls_min_height_offset) {
   ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
   if (delegate.is_null())
@@ -442,7 +441,6 @@ void ViewAndroid::OnBottomControlsChanged(
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ViewAndroidDelegate_onBottomControlsChanged(
       env, delegate, std::round(bottom_controls_offset),
-      std::round(bottom_content_offset),
       std::round(bottom_controls_min_height_offset));
 }
 

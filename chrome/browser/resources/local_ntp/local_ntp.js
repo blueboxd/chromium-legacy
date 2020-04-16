@@ -103,8 +103,8 @@ const CLASSES = {
   SHOW_ELEMENT: 'show-element',
   // When the realbox has matches to show.
   SHOW_MATCHES: 'show-matches',
-  // Applied when the doodle notifier should be shown instead of the doodle.
-  USE_NOTIFIER: 'use-notifier',
+  // Applied when the doodle shouldn't be shown, e.g. when a theme is applied.
+  DONT_SHOW_DOODLE: 'dont-show-doodle',
 };
 
 const DOCUMENT_MATCH_TYPE = 'document';
@@ -744,35 +744,10 @@ function floatUpNotification(notification, notificationContainer) {
 }
 
 /**
- * Returns theme background info, first checking for history.state.notheme. If
- * the page has notheme set, returns a fallback light-colored theme (or dark-
- * colored theme if dark mode is enabled). This is used when the doodle is
- * displayed after clicking the notifier.
+ * Returns theme background info.
  * @return {?NtpTheme}
  */
 function getNtpTheme() {
-  if (history.state && history.state.notheme) {
-    return {
-      alternateLogo: false,
-      backgroundColorRgba:
-          (isDarkModeEnabled ? NTP_DESIGN.darkBackgroundColor :
-                               NTP_DESIGN.backgroundColor),
-      customBackgroundConfigured: false,
-      customBackgroundDisabledByPolicy: false,
-      iconBackgroundColor:
-          (isDarkModeEnabled ? NTP_DESIGN.iconDarkBackgroundColor :
-                               NTP_DESIGN.iconBackgroundColor),
-      isNtpBackgroundDark: isDarkModeEnabled,
-      textColorLightRgba: [102, 102, 102, 255],
-      textColorRgba:
-          (isDarkModeEnabled ? NTP_DESIGN.titleColorAgainstDark :
-                               NTP_DESIGN.titleColor),
-      useTitleContainer: false,
-      useWhiteAddIcon: isDarkModeEnabled,
-      usingDefaultTheme: true,
-    };
-  }
-
   const info = window.chrome.embeddedSearch.newTabPage.ntpTheme;
   const preview = $(customize.IDS.CUSTOM_BG_PREVIEW);
   if (preview.dataset.hasPreview === 'true') {
@@ -1952,12 +1927,10 @@ function renderTheme() {
         '--logo-color', convertToRGBAColor(theme.logoColor));
   }
 
-  // The doodle notifier should be shown for non-default backgrounds. This
-  // includes non-white backgrounds, excluding dark mode gray if dark mode is
-  // enabled.
-  const isDefaultBackground = theme.usingDefaultTheme && !theme.imageUrl;
-  const useNotifier = configData.doodleNotifierEnabled && !isDefaultBackground;
-  document.body.classList.toggle(CLASSES.USE_NOTIFIER, useNotifier);
+  // The doodle shouldn't be shown for non-default backgrounds. This  includes
+  // non-white backgrounds, excluding dark mode gray if dark mode is enabled.
+  document.body.classList.toggle(
+      CLASSES.DONT_SHOW_DOODLE, !theme.usingDefaultTheme || !!theme.imageUrl);
 
   // If a custom background has been selected the image will be applied to the
   // custom-background element instead of the body.

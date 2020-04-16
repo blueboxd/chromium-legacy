@@ -73,7 +73,13 @@ const char kErrorListNotPassed[] = "Rules file must contain a list.";
 const char kRuleCountExceeded[] =
     "Rule count exceeded. Some rules were ignored.";
 const char kRegexRuleCountExceeded[] =
-    "Regex rule count exceeded. Some rules were ignored.";
+    "Regular expression rule count exceeded. Some rules were ignored.";
+const char kEnabledRuleCountExceeded[] =
+    "The number of enabled rules exceeds the API limits. Some rulesets will be "
+    "ignored.";
+const char kEnabledRegexRuleCountExceeded[] =
+    "The number of enabled regular expression rules exceeds the API limits. "
+    "Some rulesets will be ignored.";
 const char kRuleNotParsedWarning[] =
     "Rule with * couldn't be parsed. Parse error: *.";
 const char kTooManyParseFailuresWarning[] =
@@ -88,7 +94,9 @@ const char kDynamicRegexRuleCountExceeded[] =
 const char kIndexAndPersistRulesTimeHistogram[] =
     "Extensions.DeclarativeNetRequest.IndexAndPersistRulesTime";
 const char kManifestRulesCountHistogram[] =
-    "Extensions.DeclarativeNetRequest.ManifestRulesCount";
+    "Extensions.DeclarativeNetRequest.ManifestRulesCount2";
+const char kManifestEnabledRulesCountHistogram[] =
+    "Extensions.DeclarativeNetRequest.ManifestEnabledRulesCount2";
 const char kUpdateDynamicRulesStatusHistogram[] =
     "Extensions.DeclarativeNetRequest.UpdateDynamicRulesStatus";
 const char kReadDynamicRulesJSONStatusHistogram[] =

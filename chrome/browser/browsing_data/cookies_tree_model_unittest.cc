@@ -10,22 +10,22 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browsing_data/mock_browsing_data_appcache_helper.h"
-#include "chrome/browser/browsing_data/mock_browsing_data_cache_storage_helper.h"
-#include "chrome/browser/browsing_data/mock_browsing_data_cookie_helper.h"
-#include "chrome/browser/browsing_data/mock_browsing_data_database_helper.h"
-#include "chrome/browser/browsing_data/mock_browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_flash_lso_helper.h"
-#include "chrome/browser/browsing_data/mock_browsing_data_indexed_db_helper.h"
-#include "chrome/browser/browsing_data/mock_browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_media_license_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_quota_helper.h"
-#include "chrome/browser/browsing_data/mock_browsing_data_service_worker_helper.h"
-#include "chrome/browser/browsing_data/mock_browsing_data_shared_worker_helper.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mock_settings_observer.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/browsing_data/content/mock_appcache_helper.h"
+#include "components/browsing_data/content/mock_cache_storage_helper.h"
+#include "components/browsing_data/content/mock_cookie_helper.h"
+#include "components/browsing_data/content/mock_database_helper.h"
+#include "components/browsing_data/content/mock_file_system_helper.h"
+#include "components/browsing_data/content/mock_indexed_db_helper.h"
+#include "components/browsing_data/content/mock_local_storage_helper.h"
+#include "components/browsing_data/content/mock_service_worker_helper.h"
+#include "components/browsing_data/content/mock_shared_worker_helper.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
@@ -62,27 +62,27 @@ class CookiesTreeModelTest : public testing::Test {
   void SetUp() override {
     profile_.reset(new TestingProfile());
     mock_browsing_data_cookie_helper_ =
-        new MockBrowsingDataCookieHelper(profile_.get());
+        new browsing_data::MockCookieHelper(profile_.get());
     mock_browsing_data_database_helper_ =
-        new MockBrowsingDataDatabaseHelper(profile_.get());
+        new browsing_data::MockDatabaseHelper(profile_.get());
     mock_browsing_data_local_storage_helper_ =
-        new MockBrowsingDataLocalStorageHelper(profile_.get());
+        new browsing_data::MockLocalStorageHelper(profile_.get());
     mock_browsing_data_session_storage_helper_ =
-        new MockBrowsingDataLocalStorageHelper(profile_.get());
+        new browsing_data::MockLocalStorageHelper(profile_.get());
     mock_browsing_data_appcache_helper_ =
-        new MockBrowsingDataAppCacheHelper(profile_.get());
+        new browsing_data::MockAppCacheHelper(profile_.get());
     mock_browsing_data_indexed_db_helper_ =
-        new MockBrowsingDataIndexedDBHelper(profile_.get());
+        new browsing_data::MockIndexedDBHelper(profile_.get());
     mock_browsing_data_file_system_helper_ =
-        new MockBrowsingDataFileSystemHelper(profile_.get());
+        new browsing_data::MockFileSystemHelper(profile_.get());
     mock_browsing_data_quota_helper_ =
         new MockBrowsingDataQuotaHelper(profile_.get());
     mock_browsing_data_service_worker_helper_ =
-        new MockBrowsingDataServiceWorkerHelper(profile_.get());
+        new browsing_data::MockServiceWorkerHelper(profile_.get());
     mock_browsing_data_shared_worker_helper_ =
-        new MockBrowsingDataSharedWorkerHelper(profile_.get());
+        new browsing_data::MockSharedWorkerHelper(profile_.get());
     mock_browsing_data_cache_storage_helper_ =
-        new MockBrowsingDataCacheStorageHelper(profile_.get());
+        new browsing_data::MockCacheStorageHelper(profile_.get());
     mock_browsing_data_flash_lso_helper_ =
         new MockBrowsingDataFlashLSOHelper(profile_.get());
     mock_browsing_data_media_license_helper_ =
@@ -397,27 +397,27 @@ class CookiesTreeModelTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
-  scoped_refptr<MockBrowsingDataCookieHelper>
+  scoped_refptr<browsing_data::MockCookieHelper>
       mock_browsing_data_cookie_helper_;
-  scoped_refptr<MockBrowsingDataDatabaseHelper>
+  scoped_refptr<browsing_data::MockDatabaseHelper>
       mock_browsing_data_database_helper_;
-  scoped_refptr<MockBrowsingDataLocalStorageHelper>
+  scoped_refptr<browsing_data::MockLocalStorageHelper>
       mock_browsing_data_local_storage_helper_;
-  scoped_refptr<MockBrowsingDataLocalStorageHelper>
+  scoped_refptr<browsing_data::MockLocalStorageHelper>
       mock_browsing_data_session_storage_helper_;
-  scoped_refptr<MockBrowsingDataAppCacheHelper>
+  scoped_refptr<browsing_data::MockAppCacheHelper>
       mock_browsing_data_appcache_helper_;
-  scoped_refptr<MockBrowsingDataIndexedDBHelper>
+  scoped_refptr<browsing_data::MockIndexedDBHelper>
       mock_browsing_data_indexed_db_helper_;
-  scoped_refptr<MockBrowsingDataFileSystemHelper>
+  scoped_refptr<browsing_data::MockFileSystemHelper>
       mock_browsing_data_file_system_helper_;
   scoped_refptr<MockBrowsingDataQuotaHelper>
       mock_browsing_data_quota_helper_;
-  scoped_refptr<MockBrowsingDataServiceWorkerHelper>
+  scoped_refptr<browsing_data::MockServiceWorkerHelper>
       mock_browsing_data_service_worker_helper_;
-  scoped_refptr<MockBrowsingDataSharedWorkerHelper>
+  scoped_refptr<browsing_data::MockSharedWorkerHelper>
       mock_browsing_data_shared_worker_helper_;
-  scoped_refptr<MockBrowsingDataCacheStorageHelper>
+  scoped_refptr<browsing_data::MockCacheStorageHelper>
       mock_browsing_data_cache_storage_helper_;
   scoped_refptr<MockBrowsingDataFlashLSOHelper>
       mock_browsing_data_flash_lso_helper_;

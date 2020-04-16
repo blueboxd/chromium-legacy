@@ -69,7 +69,7 @@ class ShowExtensionAction : public ContentAction {
     // TODO(devlin): We should probably throw an error if the extension has no
     // action specified in the manifest. Currently, this is allowed since
     // extensions will have a synthesized page action.
-    if (!ActionInfo::GetAnyActionInfo(extension)) {
+    if (!ActionInfo::GetExtensionActionInfo(extension)) {
       *error = kNoAction;
       return nullptr;
     }
@@ -386,7 +386,7 @@ std::unique_ptr<ContentAction> SetIcon::Create(
     const base::DictionaryValue* dict,
     std::string* error) {
   // We can't set a page or action's icon if the extension doesn't have one.
-  if (!ActionInfo::GetAnyActionInfo(extension)) {
+  if (!ActionInfo::GetExtensionActionInfo(extension)) {
     *error = kNoPageOrBrowserAction;
     return nullptr;
   }

@@ -28,14 +28,14 @@ int64_t GetFileSizeBlocking(const base::FilePath& file_path) {
 
 SiteDataSizeCollector::SiteDataSizeCollector(
     const base::FilePath& default_storage_partition_path,
-    BrowsingDataCookieHelper* cookie_helper,
-    BrowsingDataDatabaseHelper* database_helper,
+    browsing_data::CookieHelper* cookie_helper,
+    browsing_data::DatabaseHelper* database_helper,
     browsing_data::LocalStorageHelper* local_storage_helper,
-    BrowsingDataAppCacheHelper* appcache_helper,
-    BrowsingDataIndexedDBHelper* indexed_db_helper,
-    BrowsingDataFileSystemHelper* file_system_helper,
-    BrowsingDataServiceWorkerHelper* service_worker_helper,
-    BrowsingDataCacheStorageHelper* cache_storage_helper,
+    browsing_data::AppCacheHelper* appcache_helper,
+    browsing_data::IndexedDBHelper* indexed_db_helper,
+    browsing_data::FileSystemHelper* file_system_helper,
+    browsing_data::ServiceWorkerHelper* service_worker_helper,
+    browsing_data::CacheStorageHelper* cache_storage_helper,
     BrowsingDataFlashLSOHelper* flash_lso_helper)
     : default_storage_partition_path_(default_storage_partition_path),
       appcache_helper_(appcache_helper),

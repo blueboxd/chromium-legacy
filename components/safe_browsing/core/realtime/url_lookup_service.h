@@ -38,7 +38,7 @@ class PrefService;
 namespace safe_browsing {
 
 using RTLookupRequestCallback =
-    base::OnceCallback<void(std::unique_ptr<RTLookupRequest>)>;
+    base::OnceCallback<void(std::unique_ptr<RTLookupRequest>, std::string)>;
 
 using RTLookupResponseCallback =
     base::OnceCallback<void(bool, std::unique_ptr<RTLookupResponse>)>;

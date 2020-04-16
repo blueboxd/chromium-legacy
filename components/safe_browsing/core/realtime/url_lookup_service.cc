@@ -190,15 +190,11 @@ void RealTimeUrlLookupService::SendRequest(
 
   pending_requests_[owned_loader.release()] = std::move(response_callback);
 
-  // For displaying the token in chrome://safe-browsing, set the
-  // scoped_oauth_token field. Since the token is already set in the header,
-  // this field is set after the request is sent.
-  if (access_token_info.has_value()) {
-    request->set_scoped_oauth_token(access_token_info.value().token);
-  }
-  base::PostTask(
-      FROM_HERE, CreateTaskTraits(ThreadID::IO),
-      base::BindOnce(std::move(request_callback), std::move(request)));
+  base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
+                 base::BindOnce(std::move(request_callback), std::move(request),
+                                access_token_info.has_value()
+                                    ? access_token_info.value().token
+                                    : ""));
 }
 
 std::unique_ptr<RTLookupResponse>

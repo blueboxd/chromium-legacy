@@ -175,6 +175,9 @@ class UrlPatternIndexMatcher {
   UrlPatternIndexMatcher(UrlPatternIndexMatcher&&);
   UrlPatternIndexMatcher& operator=(UrlPatternIndexMatcher&&);
 
+  // Returns the number of rules in this index.
+  size_t rules_count() const { return rules_count_; }
+
   // If the index contains one or more UrlRules that match the request, returns
   // one of them, depending on the |strategy|. Otherwise, returns nullptr.
   //
@@ -240,6 +243,8 @@ class UrlPatternIndexMatcher {
  private:
   // Must outlive this instance.
   const flat::UrlPatternIndex* flat_index_;
+
+  size_t rules_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(UrlPatternIndexMatcher);
 };

@@ -21,8 +21,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/browsing_data_file_system_util.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/browsing_data/counters/cache_counter.h"
@@ -42,6 +42,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
@@ -528,18 +529,21 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     storage::FileSystemContext* file_system_context =
         storage_partition->GetFileSystemContext();
     auto container = std::make_unique<LocalDataContainer>(
-        new BrowsingDataCookieHelper(storage_partition),
-        new BrowsingDataDatabaseHelper(profile),
+        new browsing_data::CookieHelper(storage_partition),
+        new browsing_data::DatabaseHelper(profile),
         new browsing_data::LocalStorageHelper(profile),
         /*session_storage_helper=*/nullptr,
-        new BrowsingDataAppCacheHelper(storage_partition->GetAppCacheService()),
-        new BrowsingDataIndexedDBHelper(storage_partition),
-        BrowsingDataFileSystemHelper::Create(file_system_context),
+        new browsing_data::AppCacheHelper(
+            storage_partition->GetAppCacheService()),
+        new browsing_data::IndexedDBHelper(storage_partition),
+        browsing_data::FileSystemHelper::Create(
+            file_system_context,
+            browsing_data_file_system_util::GetAdditionalFileSystemTypes()),
         BrowsingDataQuotaHelper::Create(profile),
-        new BrowsingDataServiceWorkerHelper(service_worker_context),
-        new BrowsingDataSharedWorkerHelper(storage_partition,
-                                           profile->GetResourceContext()),
-        new BrowsingDataCacheStorageHelper(cache_storage_context),
+        new browsing_data::ServiceWorkerHelper(service_worker_context),
+        new browsing_data::SharedWorkerHelper(storage_partition,
+                                              profile->GetResourceContext()),
+        new browsing_data::CacheStorageHelper(cache_storage_context),
         BrowsingDataFlashLSOHelper::Create(profile),
         BrowsingDataMediaLicenseHelper::Create(file_system_context));
     base::RunLoop run_loop;

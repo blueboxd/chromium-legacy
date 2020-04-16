@@ -464,7 +464,8 @@ void GetFakeCrosHealthdData(
       kFakeBatteryVoltageMinDesign, kFakeBatteryModel, kFakeBatteryChargeNow,
       kFakeBatteryCurrentNow, kFakeBatteryTechnology, kFakeBatteryStatus,
       smart_battery_info.Clone());
-  chromeos::cros_healthd::mojom::CachedVpdInfo cached_vpd_info(kFakeSkuNumber);
+  auto vpd_result = chromeos::cros_healthd::mojom::CachedVpdResult::NewVpdInfo(
+      chromeos::cros_healthd::mojom::CachedVpdInfo::New(kFakeSkuNumber));
   chromeos::cros_healthd::mojom::CpuInfo cpu_info(
       kFakeModelName, kFakeMojoArchitecture, kFakeMaxClockSpeed);
   std::vector<chromeos::cros_healthd::mojom::CpuInfoPtr> cpu_vector;
@@ -502,10 +503,10 @@ void GetFakeCrosHealthdData(
   auto fan_result = chromeos::cros_healthd::mojom::FanResult::NewFanInfo(
       std::move(fan_vector));
   chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
-      battery_info.Clone(), std::move(block_device_info),
-      cached_vpd_info.Clone(), std::move(cpu_result),
-      std::move(timezone_result), std::move(memory_result),
-      std::move(backlight_result), std::move(fan_result));
+      battery_info.Clone(), std::move(block_device_info), std::move(vpd_result),
+      std::move(cpu_result), std::move(timezone_result),
+      std::move(memory_result), std::move(backlight_result),
+      std::move(fan_result));
 
   // Create fake SampledData.
   em::CPUTempInfo fake_cpu_temp_sample;

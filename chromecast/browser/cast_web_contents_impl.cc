@@ -22,11 +22,11 @@
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/queryable_data_host_cast.h"
 #include "chromecast/common/mojom/activity_url_filter.mojom.h"
-#include "chromecast/common/mojom/media_playback_options.mojom.h"
 #include "chromecast/common/mojom/on_load_script_injector.mojom.h"
 #include "chromecast/common/mojom/queryable_data_store.mojom.h"
 #include "chromecast/common/queryable_data.h"
 #include "chromecast/net/connectivity_checker.h"
+#include "components/media_control/mojom/media_playback_options.mojom.h"
 #include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -530,7 +530,7 @@ void CastWebContentsImpl::RenderFrameCreated(
       feature_manager_remote.BindNewPipeAndPassReceiver());
   feature_manager_remote->ConfigureFeatures(GetRendererFeatures());
 
-  mojo::AssociatedRemote<chromecast::shell::mojom::MediaPlaybackOptions>
+  mojo::AssociatedRemote<components::media_control::mojom::MediaPlaybackOptions>
       media_playback_options;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &media_playback_options);

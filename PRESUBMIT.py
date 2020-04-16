@@ -2483,6 +2483,8 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^cloud_print[\\/]",
                  r"^components[\\/]browser_watcher[\\/]"
                      r"dump_stability_report_main_win.cc$",
+                 r"^components[\\/]media_control[\\/]renderer[\\/]"
+                     r"media_playback_options\.cc$",
                  r"^components[\\/]zucchini[\\/].*",
                  # TODO(peter): Remove this exception. https://crbug.com/534537
                  r"^content[\\/]browser[\\/]notifications[\\/]"

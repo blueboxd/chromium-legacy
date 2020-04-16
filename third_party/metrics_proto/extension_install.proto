@@ -112,6 +112,8 @@ message ExtensionInstallProto {
     PERSISTENT_BACKGROUND_PAGE = 1;  // The extension has a persistent
                                      // background page.
     EVENT_PAGE = 2;                  // The extension has a (lazy) event page.
+    SERVICE_WORKER = 3;              // The extension has a service worker based
+                                     // background context.
   }
   optional BackgroundScriptType background_script_type = 13;
 

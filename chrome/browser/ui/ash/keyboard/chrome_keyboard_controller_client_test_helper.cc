@@ -62,6 +62,7 @@ class ChromeKeyboardControllerClientTestHelper::FakeKeyboardController
   bool SetWindowBoundsInScreen(const gfx::Rect& bounds) override {
     return false;
   }
+  bool ShouldOverscroll() override { return true; }
   void AddObserver(ash::KeyboardControllerObserver* observer) override {
     observers_.AddObserver(observer);
   }

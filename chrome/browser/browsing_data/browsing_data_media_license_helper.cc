@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "components/browsing_data/content/browsing_data_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -103,7 +103,7 @@ void BrowsingDataMediaLicenseHelperImpl::FetchMediaLicenseInfoOnFileTaskRunner(
   std::list<MediaLicenseInfo> result;
   backend->GetOriginsForTypeOnFileTaskRunner(kType, &origins);
   for (const auto& origin : origins) {
-    if (!BrowsingDataHelper::HasWebScheme(origin.GetURL()))
+    if (!browsing_data::HasWebScheme(origin.GetURL()))
       continue;  // Non-websafe state is not considered browsing data.
 
     int64_t size;

@@ -78,6 +78,8 @@ class RulesetMatcher {
       uint8_t excluded_remove_headers_mask,
       std::vector<RequestAction>* remove_headers_actions) const;
   bool IsExtraHeadersMatcher() const;
+  size_t GetRulesCount() const;
+  size_t GetRegexRulesCount() const;
 
   void OnRenderFrameCreated(content::RenderFrameHost* host);
   void OnRenderFrameDeleted(content::RenderFrameHost* host);

@@ -88,6 +88,12 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
       bool enhanced_protection_enabled,
       base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui);
 
+  // Constructor that takes only a ResourceType and a UrlCheckerDelegate,
+  // omitting other arguments that never have non-default values on iOS.
+  SafeBrowsingUrlCheckerImpl(
+      ResourceType resource_type,
+      scoped_refptr<UrlCheckerDelegate> url_checker_delegate);
+
   ~SafeBrowsingUrlCheckerImpl() override;
 
   // mojom::SafeBrowsingUrlChecker implementation.
@@ -175,7 +181,8 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
       scoped_refptr<SafeBrowsingDatabaseManager> database_manager);
 
   // Called when the |request| from the real-time lookup service is sent.
-  void OnRTLookupRequest(std::unique_ptr<RTLookupRequest> request);
+  void OnRTLookupRequest(std::unique_ptr<RTLookupRequest> request,
+                         std::string oauth_token);
 
   // Called when the |response| from the real-time lookup service is received.
   // |is_rt_lookup_successful| is true if the response code is OK and the

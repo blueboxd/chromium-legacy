@@ -49,6 +49,15 @@ struct DeepScanDebugData {
 };
 #endif
 
+// The struct to combine a real time lookup request and the token associated
+// with it. The token is not part of the request proto because it is sent in the
+// header. The token will be displayed along with the request in the safe
+// browsing page.
+struct RTLookupRequestAndToken {
+  RTLookupRequest request;
+  std::string token;
+};
+
 class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
  public:
   SafeBrowsingUIHandler(content::BrowserContext* context);
@@ -177,7 +186,8 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
 
   // Called when any new real time lookup pings are sent while one or more
   // WebUI tabs are open.
-  void NotifyRTLookupPingJsListener(int token, const RTLookupRequest& request);
+  void NotifyRTLookupPingJsListener(int token,
+                                    const RTLookupRequestAndToken& request);
 
   // Called when any new real time lookup responses are received while one or
   // more WebUI tabs are open.
@@ -283,7 +293,8 @@ class WebUIInfoSingleton {
 
   // Add the new ping to |rt_lookup_pings_|. Returns a token that can be used in
   // |AddToRTLookupResponses| to correlate a ping and response.
-  int AddToRTLookupPings(const RTLookupRequest request);
+  int AddToRTLookupPings(const RTLookupRequest request,
+                         const std::string oauth_token);
 
   // Add the new response to |rt_lookup_responses_| and send it to all the open
   // chrome://safe-browsing tabs.
@@ -385,7 +396,7 @@ class WebUIInfoSingleton {
 
   // Get the list of real time lookup pings since the oldest currently open
   // chrome://safe-browsing tab was opened.
-  const std::vector<RTLookupRequest>& rt_lookup_pings() const {
+  const std::vector<RTLookupRequestAndToken>& rt_lookup_pings() const {
     return rt_lookup_pings_;
   }
 
@@ -479,7 +490,7 @@ class WebUIInfoSingleton {
 
   // List of real time lookup pings sent since the oldest currently open
   // chrome://safe-browsing tab was opened.
-  std::vector<RTLookupRequest> rt_lookup_pings_;
+  std::vector<RTLookupRequestAndToken> rt_lookup_pings_;
 
   // List of real time lookup responses received since the oldest currently open
   // chrome://safe-browsing tab was opened.

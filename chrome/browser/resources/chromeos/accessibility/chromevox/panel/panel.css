@@ -383,6 +383,11 @@ button:disabled,
   display: none !important;
 }
 
-#search-bar {
-  width: 100%;
+#menus-search-bar {
+  height: 35px;
+  margin-bottom: 10px;
+  margin-inline-end: 10px;
+  margin-inline-start: 10px;
+  margin-top: 10px;
+  width: calc(100% - 20px);
 }

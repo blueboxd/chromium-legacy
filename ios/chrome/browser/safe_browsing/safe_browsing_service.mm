@@ -11,9 +11,11 @@
 #include "build/branding_buildflags.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/browser/safe_browsing_url_checker_impl.h"
 #include "components/safe_browsing/core/browser/url_checker_delegate.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/db/v4_local_database_manager.h"
+#import "ios/chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -42,6 +44,9 @@ void SafeBrowsingService::Initialize(PrefService* prefs,
       user_data_path.Append(safe_browsing::kSafeBrowsingBaseFilename);
   safe_browsing_db_manager_ = safe_browsing::V4LocalDatabaseManager::Create(
       safe_browsing_data_path, safe_browsing::ExtendedReportingLevelCallback());
+
+  url_checker_delegate_ =
+      base::MakeRefCounted<UrlCheckerDelegateImpl>(safe_browsing_db_manager_);
 
   io_thread_enabler_ =
       base::MakeRefCounted<SafeBrowsingService::IOThreadEnabler>(
@@ -73,9 +78,11 @@ void SafeBrowsingService::ShutDown() {
   network_context_client_.reset();
 }
 
-safe_browsing::SafeBrowsingDatabaseManager*
-SafeBrowsingService::GetDatabaseManager() {
-  return safe_browsing_db_manager_.get();
+std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl>
+SafeBrowsingService::CreateUrlChecker(
+    safe_browsing::ResourceType resource_type) {
+  return std::make_unique<safe_browsing::SafeBrowsingUrlCheckerImpl>(
+      resource_type, url_checker_delegate_);
 }
 
 void SafeBrowsingService::SetUpURLLoaderFactory(

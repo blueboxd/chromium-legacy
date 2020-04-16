@@ -14,6 +14,7 @@
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -30,16 +31,22 @@ IndexHelper::Result CombineResults(
   IndexHelper::Result total_result;
   total_result.ruleset_checksums.reserve(results.size());
   size_t total_rules_count = 0;
+  size_t enabled_rules_count = 0;
+  size_t enabled_regex_rules_count = 0;
   base::TimeDelta total_index_and_persist_time;
 
-  // TODO(crbug.com/754526): Impose a limit on the total number of rules across
-  // all the rulesets for an extension. Also, limit the number of install
-  // warnings across all rulesets.
+  // TODO(crbug.com/754526): Limit the number of install warnings across all
+  // rulesets.
 
   // Note |results| may be empty.
   for (auto& result_pair : results) {
     IndexAndPersistJSONRulesetResult& index_result = result_pair.second;
     const RulesetSource* source = result_pair.first;
+
+    // Per-ruleset limits should have been enforced during ruleset indexing.
+    DCHECK_LE(index_result.regex_rules_count,
+              static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES));
+    DCHECK_LE(index_result.rules_count, source->rule_count_limit());
 
     if (!index_result.success) {
       total_result.error = std::move(index_result.error);
@@ -56,6 +63,25 @@ IndexHelper::Result CombineResults(
 
     total_index_and_persist_time += index_result.index_and_persist_time;
     total_rules_count += index_result.rules_count;
+
+    if (source->enabled()) {
+      enabled_rules_count += index_result.rules_count;
+      enabled_regex_rules_count += index_result.regex_rules_count;
+    }
+  }
+
+  // Raise an install warning if the enabled rule count exceeds the API limits.
+  // We don't raise a hard error to maintain forwards compatibility.
+  if (enabled_rules_count > static_cast<size_t>(dnr_api::MAX_NUMBER_OF_RULES)) {
+    total_result.warnings.emplace_back(
+        kEnabledRuleCountExceeded, manifest_keys::kDeclarativeNetRequestKey,
+        manifest_keys::kDeclarativeRuleResourcesKey);
+  } else if (enabled_regex_rules_count >
+             static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES)) {
+    total_result.warnings.emplace_back(
+        kEnabledRegexRuleCountExceeded,
+        manifest_keys::kDeclarativeNetRequestKey,
+        manifest_keys::kDeclarativeRuleResourcesKey);
   }
 
   if (log_histograms) {
@@ -63,11 +89,13 @@ IndexHelper::Result CombineResults(
         declarative_net_request::kIndexAndPersistRulesTimeHistogram,
         total_index_and_persist_time);
 
-    // TODO(karandeepb): Increase the maximum sample size for this histogram
-    // since we anticipate increasing the rules limit.
-    UMA_HISTOGRAM_COUNTS_100000(
+    UMA_HISTOGRAM_COUNTS_1M(
         declarative_net_request::kManifestRulesCountHistogram,
         total_rules_count);
+
+    UMA_HISTOGRAM_COUNTS_1M(
+        declarative_net_request::kManifestEnabledRulesCountHistogram,
+        enabled_rules_count);
   }
 
   return total_result;

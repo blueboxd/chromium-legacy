@@ -31,6 +31,7 @@ RankingItemType RankingItemTypeFromSearchResult(
     case ash::AppListSearchResultType::kAnswerCard:
     case ash::AppListSearchResultType::kPlayStoreReinstallApp:
     case ash::AppListSearchResultType::kAssistantChip:
+    case ash::AppListSearchResultType::kOsSettings:
       // NOTE: We don't rank results of type kAssistantChip as the Assistant
       // chip result, if present, is always shown in a dedicated slot.
       return RankingItemType::kIgnored;

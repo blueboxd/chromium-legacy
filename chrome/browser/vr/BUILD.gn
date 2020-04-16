@@ -254,7 +254,6 @@ component("vr_common") {
     "vr_export.h",
     "vr_web_contents_observer.cc",
     "vr_web_contents_observer.h",
-    "xr_test_utils.h",
   ]
 
   sources += [
@@ -572,6 +571,8 @@ source_set("vr_test_support") {
     "test/mock_ui_browser_interface.h",
     "test/vr_test_suite.cc",
     "test/vr_test_suite.h",
+    "xr_test_utils.cc",
+    "xr_test_utils.h",
   ]
 
   public_deps = [
@@ -669,7 +670,9 @@ if (!is_android) {
     ]
 
     deps = [
+      # TODO(alcooper) remove vr_test_support when xr_test_utils moves
       ":vr_common",
+      ":vr_test_support",
       "//chrome/common:constants",
       "//chrome/test:xr_browser_tests_common",
       "//device/vr:vr",

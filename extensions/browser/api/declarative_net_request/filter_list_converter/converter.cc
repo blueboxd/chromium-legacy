@@ -33,8 +33,6 @@ namespace dnr_api = extensions::api::declarative_net_request;
 using ElementTypeMap =
     base::flat_map<proto::ElementType, dnr_api::ResourceType>;
 
-constexpr char kJSONRulesFilename[] = "rules.json";
-
 // Utility class to convert the proto::UrlRule format to the JSON format
 // supported by Declarative Net Request.
 class ProtoToJSONRuleConverter {
@@ -490,9 +488,13 @@ class DNRJsonRuleOutputStream : public subresource_filter::RuleOutputStream {
   }
 
   bool Finish() override {
+    constexpr char kJSONRulesFilename[] = "rules.json";
+    constexpr char kRulesetID[] = "filter_list";
+
     switch (write_type_) {
       case filter_list_converter::kExtension: {
-        TestRulesetInfo info(kJSONRulesFilename, output_rules_list_);
+        TestRulesetInfo info(kRulesetID, kJSONRulesFilename,
+                             output_rules_list_);
         WriteManifestAndRuleset(output_path_, info, {} /* hosts */);
         break;
       }

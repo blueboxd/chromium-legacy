@@ -12,19 +12,19 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
-class CannedBrowsingDataAppCacheHelper;
-class CannedBrowsingDataCookieHelper;
-class CannedBrowsingDataDatabaseHelper;
-class CannedBrowsingDataFileSystemHelper;
-class CannedBrowsingDataIndexedDBHelper;
-class CannedBrowsingDataServiceWorkerHelper;
-class CannedBrowsingDataSharedWorkerHelper;
-class CannedBrowsingDataCacheStorageHelper;
 class CookiesTreeModel;
 class GURL;
 class Profile;
 
 namespace browsing_data {
+class CannedAppCacheHelper;
+class CannedCacheStorageHelper;
+class CannedCookieHelper;
+class CannedDatabaseHelper;
+class CannedFileSystemHelper;
+class CannedIndexedDBHelper;
+class CannedServiceWorkerHelper;
+class CannedSharedWorkerHelper;
 class CannedLocalStorageHelper;
 }
 
@@ -49,29 +49,29 @@ class LocalSharedObjectsContainer {
   // copying each of them.
   std::unique_ptr<CookiesTreeModel> CreateCookiesTreeModel() const;
 
-  CannedBrowsingDataAppCacheHelper* appcaches() const {
+  browsing_data::CannedAppCacheHelper* appcaches() const {
     return appcaches_.get();
   }
-  CannedBrowsingDataCookieHelper* cookies() const { return cookies_.get(); }
-  CannedBrowsingDataDatabaseHelper* databases() const {
+  browsing_data::CannedCookieHelper* cookies() const { return cookies_.get(); }
+  browsing_data::CannedDatabaseHelper* databases() const {
     return databases_.get();
   }
-  CannedBrowsingDataFileSystemHelper* file_systems() const {
+  browsing_data::CannedFileSystemHelper* file_systems() const {
     return file_systems_.get();
   }
-  CannedBrowsingDataIndexedDBHelper* indexed_dbs() const {
+  browsing_data::CannedIndexedDBHelper* indexed_dbs() const {
     return indexed_dbs_.get();
   }
   browsing_data::CannedLocalStorageHelper* local_storages() const {
     return local_storages_.get();
   }
-  CannedBrowsingDataServiceWorkerHelper* service_workers() const {
+  browsing_data::CannedServiceWorkerHelper* service_workers() const {
     return service_workers_.get();
   }
-  CannedBrowsingDataSharedWorkerHelper* shared_workers() const {
+  browsing_data::CannedSharedWorkerHelper* shared_workers() const {
     return shared_workers_.get();
   }
-  CannedBrowsingDataCacheStorageHelper* cache_storages() const {
+  browsing_data::CannedCacheStorageHelper* cache_storages() const {
     return cache_storages_.get();
   }
   browsing_data::CannedLocalStorageHelper* session_storages() const {
@@ -79,15 +79,15 @@ class LocalSharedObjectsContainer {
   }
 
  private:
-  scoped_refptr<CannedBrowsingDataAppCacheHelper> appcaches_;
-  scoped_refptr<CannedBrowsingDataCookieHelper> cookies_;
-  scoped_refptr<CannedBrowsingDataDatabaseHelper> databases_;
-  scoped_refptr<CannedBrowsingDataFileSystemHelper> file_systems_;
-  scoped_refptr<CannedBrowsingDataIndexedDBHelper> indexed_dbs_;
+  scoped_refptr<browsing_data::CannedAppCacheHelper> appcaches_;
+  scoped_refptr<browsing_data::CannedCookieHelper> cookies_;
+  scoped_refptr<browsing_data::CannedDatabaseHelper> databases_;
+  scoped_refptr<browsing_data::CannedFileSystemHelper> file_systems_;
+  scoped_refptr<browsing_data::CannedIndexedDBHelper> indexed_dbs_;
   scoped_refptr<browsing_data::CannedLocalStorageHelper> local_storages_;
-  scoped_refptr<CannedBrowsingDataServiceWorkerHelper> service_workers_;
-  scoped_refptr<CannedBrowsingDataSharedWorkerHelper> shared_workers_;
-  scoped_refptr<CannedBrowsingDataCacheStorageHelper> cache_storages_;
+  scoped_refptr<browsing_data::CannedServiceWorkerHelper> service_workers_;
+  scoped_refptr<browsing_data::CannedSharedWorkerHelper> shared_workers_;
+  scoped_refptr<browsing_data::CannedCacheStorageHelper> cache_storages_;
   scoped_refptr<browsing_data::CannedLocalStorageHelper> session_storages_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSharedObjectsContainer);

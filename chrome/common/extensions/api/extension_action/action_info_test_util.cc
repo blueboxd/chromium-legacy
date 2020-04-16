@@ -29,7 +29,8 @@ const char* GetManifestKeyForActionType(ActionInfo::Type type) {
 
 const ActionInfo* GetActionInfoOfType(const Extension& extension,
                                       ActionInfo::Type type) {
-  const ActionInfo* action_info = ActionInfo::GetAnyActionInfo(&extension);
+  const ActionInfo* action_info =
+      ActionInfo::GetExtensionActionInfo(&extension);
   return (action_info && action_info->type == type) ? action_info : nullptr;
 }
 

@@ -14,11 +14,11 @@ namespace browsing_data {
 
 namespace {
 
-class CannedBrowsingDataLocalStorageTest : public testing::Test {
+class CannedLocalStorageTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 };
 
-TEST_F(CannedBrowsingDataLocalStorageTest, Empty) {
+TEST_F(CannedLocalStorageTest, Empty) {
   content::TestBrowserContext context;
 
   const GURL origin("http://host1:1/");
@@ -33,7 +33,7 @@ TEST_F(CannedBrowsingDataLocalStorageTest, Empty) {
   ASSERT_TRUE(helper->empty());
 }
 
-TEST_F(CannedBrowsingDataLocalStorageTest, Delete) {
+TEST_F(CannedLocalStorageTest, Delete) {
   content::TestBrowserContext context;
 
   const GURL origin1("http://host1:9000");
@@ -54,7 +54,7 @@ TEST_F(CannedBrowsingDataLocalStorageTest, Delete) {
   EXPECT_EQ(1u, helper->GetCount());
 }
 
-TEST_F(CannedBrowsingDataLocalStorageTest, IgnoreExtensionsAndDevTools) {
+TEST_F(CannedLocalStorageTest, IgnoreExtensionsAndDevTools) {
   content::TestBrowserContext context;
 
   const GURL origin1("chrome-extension://abcdefghijklmnopqrstuvwxyz/");

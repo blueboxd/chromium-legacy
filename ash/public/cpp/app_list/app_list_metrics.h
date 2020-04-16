@@ -82,6 +82,8 @@ enum SearchResultType {
   DRIVE_QUICK_ACCESS,
   // A result from the Assistant provider.
   ASSISTANT,
+  // An OsSettingsResult.
+  OS_SETTINGS,
   // Boundary is always last.
   SEARCH_RESULT_TYPE_BOUNDARY
 };

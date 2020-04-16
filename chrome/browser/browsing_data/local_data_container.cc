@@ -16,17 +16,17 @@
 // LocalDataContainer, public:
 
 LocalDataContainer::LocalDataContainer(
-    scoped_refptr<BrowsingDataCookieHelper> cookie_helper,
-    scoped_refptr<BrowsingDataDatabaseHelper> database_helper,
+    scoped_refptr<browsing_data::CookieHelper> cookie_helper,
+    scoped_refptr<browsing_data::DatabaseHelper> database_helper,
     scoped_refptr<browsing_data::LocalStorageHelper> local_storage_helper,
     scoped_refptr<browsing_data::LocalStorageHelper> session_storage_helper,
-    scoped_refptr<BrowsingDataAppCacheHelper> appcache_helper,
-    scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper,
-    scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper,
+    scoped_refptr<browsing_data::AppCacheHelper> appcache_helper,
+    scoped_refptr<browsing_data::IndexedDBHelper> indexed_db_helper,
+    scoped_refptr<browsing_data::FileSystemHelper> file_system_helper,
     scoped_refptr<BrowsingDataQuotaHelper> quota_helper,
-    scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper,
-    scoped_refptr<BrowsingDataSharedWorkerHelper> shared_worker_helper,
-    scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper,
+    scoped_refptr<browsing_data::ServiceWorkerHelper> service_worker_helper,
+    scoped_refptr<browsing_data::SharedWorkerHelper> shared_worker_helper,
+    scoped_refptr<browsing_data::CacheStorageHelper> cache_storage_helper,
     scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper,
     scoped_refptr<BrowsingDataMediaLicenseHelper> media_license_helper)
     : appcache_helper_(std::move(appcache_helper)),

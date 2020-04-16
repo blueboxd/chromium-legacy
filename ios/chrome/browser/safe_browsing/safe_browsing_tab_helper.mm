@@ -6,7 +6,10 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "components/safe_browsing/core/browser/safe_browsing_url_checker_impl.h"
+#include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/features.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -31,62 +34,99 @@ SafeBrowsingTabHelper::SafeBrowsingTabHelper(web::WebState* web_state) {
   if (!GetApplicationContext()->GetSafeBrowsingService())
     return;
 
-  database_client_ = std::make_unique<SafeBrowsingTabHelper::DatabaseClient>(
-      GetApplicationContext()->GetSafeBrowsingService()->GetDatabaseManager());
-  policy_decider_ = std::make_unique<SafeBrowsingTabHelper::PolicyDecider>(
-      web_state, database_client_.get());
+  url_checker_client_ = std::make_unique<UrlCheckerClient>();
+  policy_decider_ =
+      std::make_unique<PolicyDecider>(web_state, url_checker_client_.get());
 }
 
 SafeBrowsingTabHelper::~SafeBrowsingTabHelper() {
-  if (database_client_) {
+  if (url_checker_client_) {
     base::DeleteSoon(FROM_HERE, {web::WebThread::IO},
-                     database_client_.release());
+                     url_checker_client_.release());
   }
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(SafeBrowsingTabHelper)
 
-#pragma mark - SafeBrowsingTabHelper::DatabaseClient
+#pragma mark - SafeBrowsingTabHelper::UrlCheckerClient
 
-SafeBrowsingTabHelper::DatabaseClient::DatabaseClient(
-    safe_browsing::SafeBrowsingDatabaseManager* database_manager)
-    : database_manager_(database_manager),
-      threat_types_(safe_browsing::CreateSBThreatTypeSet(
-          {safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
-           safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-           safe_browsing::SB_THREAT_TYPE_URL_UNWANTED,
-           safe_browsing::SB_THREAT_TYPE_BILLING})) {}
+SafeBrowsingTabHelper::UrlCheckerClient::UrlCheckerClient() = default;
 
-SafeBrowsingTabHelper::DatabaseClient::~DatabaseClient() {
+SafeBrowsingTabHelper::UrlCheckerClient::~UrlCheckerClient() {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  database_manager_->CancelCheck(this);
 }
 
-void SafeBrowsingTabHelper::DatabaseClient::CheckUrl(const GURL& url) {
+void SafeBrowsingTabHelper::UrlCheckerClient::CheckUrl(
+    std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl> url_checker,
+    const GURL& url,
+    const std::string& method) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  database_manager_->CheckBrowseUrl(url, threat_types_, this);
+  safe_browsing::SafeBrowsingUrlCheckerImpl* url_checker_ptr =
+      url_checker.get();
+  active_url_checkers_.insert(std::move(url_checker));
+  url_checker_ptr->CheckUrl(url, method,
+                            base::BindOnce(&UrlCheckerClient::OnCheckUrlResult,
+                                           AsWeakPtr(), url_checker_ptr));
+}
+
+void SafeBrowsingTabHelper::UrlCheckerClient::OnCheckUrlResult(
+    safe_browsing::SafeBrowsingUrlCheckerImpl* url_checker,
+    safe_browsing::SafeBrowsingUrlCheckerImpl::NativeUrlCheckNotifier*
+        slow_check_notifier,
+    bool proceed,
+    bool showed_interstitial) {
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
+  DCHECK(url_checker);
+  if (slow_check_notifier) {
+    *slow_check_notifier = base::BindOnce(&UrlCheckerClient::OnCheckComplete,
+                                          AsWeakPtr(), url_checker);
+    return;
+  }
+
+  OnCheckComplete(url_checker, proceed, showed_interstitial);
+}
+
+void SafeBrowsingTabHelper::UrlCheckerClient::OnCheckComplete(
+    safe_browsing::SafeBrowsingUrlCheckerImpl* url_checker,
+    bool proceed,
+    bool showed_interstitial) {
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
+  DCHECK(url_checker);
+  active_url_checkers_.erase(url_checker);
 }
 
 #pragma mark - SafeBrowsingTabHelper::PolicyDecider
 
 SafeBrowsingTabHelper::PolicyDecider::PolicyDecider(
     web::WebState* web_state,
-    SafeBrowsingTabHelper::DatabaseClient* database_client)
+    UrlCheckerClient* url_checker_client)
     : web::WebStatePolicyDecider(web_state),
-      database_client_(database_client) {}
+      url_checker_client_(url_checker_client) {}
 
 web::WebStatePolicyDecider::PolicyDecision
 SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
     NSURLRequest* request,
     const web::WebStatePolicyDecider::RequestInfo& request_info) {
-  if (!database_client_)
+  if (!url_checker_client_)
     return web::WebStatePolicyDecider::PolicyDecision::Allow();
 
+  SafeBrowsingService* safe_browsing_service =
+      GetApplicationContext()->GetSafeBrowsingService();
+
+  safe_browsing::ResourceType resource_type =
+      request_info.target_frame_is_main
+          ? safe_browsing::ResourceType::kMainFrame
+          : safe_browsing::ResourceType::kSubFrame;
+  std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl> url_checker =
+      safe_browsing_service->CreateUrlChecker(resource_type);
+
   GURL request_url = net::GURLWithNSURL(request.URL);
-  base::PostTask(
-      FROM_HERE, {web::WebThread::IO},
-      base::BindOnce(&SafeBrowsingTabHelper::DatabaseClient::CheckUrl,
-                     base::Unretained(database_client_), request_url));
+  std::string method = base::SysNSStringToUTF8([request HTTPMethod]);
+
+  base::PostTask(FROM_HERE, {web::WebThread::IO},
+                 base::BindOnce(&UrlCheckerClient::CheckUrl,
+                                url_checker_client_->AsWeakPtr(),
+                                std::move(url_checker), request_url, method));
 
   return web::WebStatePolicyDecider::PolicyDecision::Allow();
 }

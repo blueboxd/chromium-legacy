@@ -58,7 +58,6 @@ bool FileSystemStatus::IsAndroidDebuggable(const base::FilePath& json_path) {
                                                     base::JSON_PARSE_RFC));
   if (!result.value) {
     LOG(ERROR) << "Error parsing " << json_path
-               << ": code=" << result.error_code
                << ", message=" << result.error_message << ": " << content;
     return false;
   }

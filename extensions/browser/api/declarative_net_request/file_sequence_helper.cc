@@ -257,8 +257,7 @@ bool UpdateAndIndexDynamicRules(const RulesetSource& source,
   }
 
   // Index and persist the indexed ruleset.
-  ParseInfo info = temporary_source->IndexAndPersistRules(std::move(new_rules),
-                                                          ruleset_checksum);
+  ParseInfo info = temporary_source->IndexAndPersistRules(std::move(new_rules));
   if (info.has_error()) {
     *error = info.error();
     *status = info.error_reason() == ParseResult::ERROR_PERSISTING_RULESET
@@ -266,6 +265,8 @@ bool UpdateAndIndexDynamicRules(const RulesetSource& source,
                   : UpdateDynamicRulesStatus::kErrorInvalidRules;
     return false;
   }
+
+  *ruleset_checksum = info.ruleset_checksum();
 
   // Treat rules which exceed the regex memory limit as errors if these are new
   // rules. Just surface an error for the first such rule.

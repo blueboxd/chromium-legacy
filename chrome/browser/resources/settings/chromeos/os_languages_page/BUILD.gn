@@ -96,14 +96,13 @@ js_library("os_add_languages_dialog.m") {
   extra_deps = [ ":os_add_languages_dialog_module" ]
 }
 
-# TODO: Fix and re-enable
-#js_library("os_languages_page.m") {
-#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_languages_page/os_languages_page.m.js" ]
-#  deps = [
-#    # TODO: Fill those in.
-#  ]
-#  extra_deps = [ ":os_languages_page_module" ]
-#}
+js_library("os_languages_page.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_languages_page/os_languages_page.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":os_languages_page_module" ]
+}
 
 js_library("os_languages_section.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_languages_page/os_languages_section.m.js" ]
@@ -119,9 +118,7 @@ group("polymer3_elements") {
   public_deps = [
     ":manage_input_methods_page_module",
     ":os_add_languages_dialog_module",
-
-    # TODO: Fix and re-enable
-    #":os_languages_page_module",
+    ":os_languages_page_module",
     ":os_languages_section_module",
   ]
 }
@@ -138,12 +135,11 @@ polymer_modulizer("os_add_languages_dialog") {
   html_type = "dom-module"
 }
 
-# TODO: Fix and re-enable
-#polymer_modulizer("os_languages_page") {
-#  js_file = "os_languages_page.js"
-#  html_file = "os_languages_page.html"
-#  html_type = "dom-module"
-#}
+polymer_modulizer("os_languages_page") {
+  js_file = "os_languages_page.js"
+  html_file = "os_languages_page.html"
+  html_type = "dom-module"
+}
 
 polymer_modulizer("os_languages_section") {
   js_file = "os_languages_section.js"

@@ -108,6 +108,15 @@ struct NonRemovableBlockDeviceInfo {
   uint32 serial;
 };
 
+// Cached VPD probe result. Can either be populated with the CachedVpdInfo or an
+// error retrieving the information.
+union CachedVpdResult {
+  // Valid CachedVpdInfo.
+  CachedVpdInfo vpd_info;
+  // The error that occurred attempting to retrieve the CachedVpdInfo.
+  ProbeError error;
+};
+
 // Cached VPD read from sysfs.
 struct CachedVpdInfo {
   // Contents of /sys/firmware/vpd/ro/sku_number, if the device supports it.
@@ -223,7 +232,7 @@ struct TelemetryInfo {
   array<NonRemovableBlockDeviceInfo>? block_device_info;
   // Only present when kCachedVpdData was included in the categories input to
   // ProbeTelemetryInfo.
-  CachedVpdInfo? vpd_info;
+  CachedVpdResult? vpd_result;
   // Information about each of the device's CPUs. Only present when kCpu was
   // included in the categories input to ProbeTelemetryInfo.
   CpuResult? cpu_result;

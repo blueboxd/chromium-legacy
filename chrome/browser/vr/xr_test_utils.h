@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_VR_XR_TEST_UTILS_H_
 
 #include "base/callback_forward.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "device/vr/public/mojom/isolated_xr_service.mojom-forward.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace vr {
 
@@ -14,9 +15,15 @@ namespace vr {
 // Service instance before other client code can use it. Any time a new instance
 // of the service is started by |GetXRDeviceService()|, this callback (if
 // non-null) is invoked.
-VR_EXPORT void SetXRDeviceServiceStartupCallbackForTesting(
+void SetXRDeviceServiceStartupCallbackForTesting(
     base::RepeatingClosure callback);
 
+// Acquires a remote handle to the sandboxed isolated XR Device Service
+// instance, launching a process to host the service if necessary.
+// This is really just a wrapper for |GetXRDeviceService| which is only exposed
+// internally to content/browser.
+const mojo::Remote<device::mojom::XRDeviceService>&
+GetXRDeviceServiceForTesting();
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_XR_TEST_UTILS_H_

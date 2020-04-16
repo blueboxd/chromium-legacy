@@ -14,9 +14,7 @@ namespace network {
 ThrottlingController* ThrottlingController::instance_ = nullptr;
 
 ThrottlingController::ThrottlingController() = default;
-ThrottlingController::~ThrottlingController() {
-  liveness_ = Liveness::kDead;
-}
+ThrottlingController::~ThrottlingController() = default;
 
 // static
 void ThrottlingController::SetConditions(
@@ -59,7 +57,6 @@ bool ThrottlingController::HasInterceptor(
   // Null |instance_| means there is no network condition registered.
   if (!instance_)
     return false;
-  instance_->CheckValidThread();
   return instance_->interceptors_.find(throttling_profile_id) !=
          instance_->interceptors_.end();
 }
@@ -67,20 +64,20 @@ bool ThrottlingController::HasInterceptor(
 void ThrottlingController::Register(
     uint32_t net_log_source_id,
     const base::UnguessableToken& throttling_profile_id) {
-  CheckValidThread();
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (interceptors_.find(throttling_profile_id) == interceptors_.end())
     return;
   net_log_source_profile_map_[net_log_source_id] = throttling_profile_id;
 }
 
 void ThrottlingController::Unregister(uint32_t net_log_source_id) {
-  CheckValidThread();
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   net_log_source_profile_map_.erase(net_log_source_id);
 }
 
 base::Optional<base::UnguessableToken> ThrottlingController::GetProfileID(
     uint32_t net_log_source_id) {
-  CheckValidThread();
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto it = net_log_source_profile_map_.find(net_log_source_id);
   if (it == net_log_source_profile_map_.end())
     return base::nullopt;
@@ -90,7 +87,7 @@ base::Optional<base::UnguessableToken> ThrottlingController::GetProfileID(
 void ThrottlingController::SetNetworkConditions(
     const base::UnguessableToken& throttling_profile_id,
     std::unique_ptr<NetworkConditions> conditions) {
-  CheckValidThread();
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = interceptors_.find(throttling_profile_id);
   if (it == interceptors_.end()) {
@@ -116,27 +113,9 @@ void ThrottlingController::SetNetworkConditions(
   }
 }
 
-static NOINLINE void CrashBecauseThrottlingControllerDeleted() {
-  LOG(ERROR) << "deleted";
-  CHECK(false);
-}
-
-static NOINLINE void CrashBecauseThrottlingControllerBad() {
-  LOG(ERROR) << "bad";
-  CHECK(false);
-}
-
 ThrottlingNetworkInterceptor* ThrottlingController::FindInterceptor(
     uint32_t net_log_source_id) {
-  CheckValidThread();
-
-  if (liveness_ == Liveness::kDead) {
-    CrashBecauseThrottlingControllerDeleted();
-  } else if (liveness_ != Liveness::kAlive) {
-    Liveness liveness = liveness_;
-    base::debug::Alias(&liveness);
-    CrashBecauseThrottlingControllerBad();
-  }
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto source_profile_map_it =
       net_log_source_profile_map_.find(net_log_source_id);
@@ -144,10 +123,6 @@ ThrottlingNetworkInterceptor* ThrottlingController::FindInterceptor(
     return nullptr;
   auto it = interceptors_.find(source_profile_map_it->second);
   return it != interceptors_.end() ? it->second.get() : nullptr;
-}
-
-void ThrottlingController::CheckValidThread() {
-  CHECK(thread_checker_.CalledOnValidThread());
 }
 
 }  // namespace network

@@ -14,9 +14,11 @@ namespace vr {
 
 // Acquires a remote handle to the sandboxed isolated XR Device Service
 // instance, launching a process to host the service if necessary.
-VR_EXPORT const mojo::Remote<device::mojom::XRDeviceService>&
+const VR_EXPORT mojo::Remote<device::mojom::XRDeviceService>&
 GetXRDeviceService();
 
+void VR_EXPORT SetXRDeviceServiceStartupCallbackForTestingInternal(
+    base::RepeatingClosure callback);
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_SERVICE_XR_DEVICE_SERVICE_H_

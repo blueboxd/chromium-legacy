@@ -144,7 +144,8 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
 }
 
 // static
-const ActionInfo* ActionInfo::GetAnyActionInfo(const Extension* extension) {
+const ActionInfo* ActionInfo::GetExtensionActionInfo(
+    const Extension* extension) {
   const ActionInfoData* data =
       static_cast<ActionInfoData*>(extension->GetManifestData(keys::kAction));
   return data ? data->action_info.get() : nullptr;

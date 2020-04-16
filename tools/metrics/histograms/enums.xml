@@ -2668,6 +2668,7 @@ Unknown properties are collapsed to zero. -->
   <int value="29" label="Zero State Local File"/>
   <int value="30" label="Drive Quick Access"/>
   <int value="31" label="Assistant"/>
+  <int value="32" label="OS Settings"/>
 </enum>
 
 <enum name="AppListSearchResultDisplayType">

@@ -2471,7 +2471,6 @@ void PDFiumEngine::LoadDocument() {
   if (getting_password_)
     return;
 
-  ScopedUnsupportedFeature scoped_unsupported_feature(this);
   bool needs_password = false;
   if (TryLoadingDoc(std::string(), &needs_password)) {
     ContinueLoadingDocument(std::string());
@@ -2497,7 +2496,12 @@ bool PDFiumEngine::TryLoadingDoc(const std::string& password,
 
   if (!password.empty())
     password_tries_remaining_--;
-  document_->LoadDocument(password);
+
+  {
+    ScopedUnsupportedFeature scoped_unsupported_feature(this);
+    document_->LoadDocument(password);
+  }
+
   if (!doc()) {
     if (FPDF_GetLastError() == FPDF_ERR_PASSWORD)
       *needs_password = true;
@@ -2530,8 +2534,6 @@ void PDFiumEngine::OnGetPasswordComplete(int32_t result,
 }
 
 void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
-  ScopedUnsupportedFeature scoped_unsupported_feature(this);
-
   bool needs_password = false;
   bool loaded = TryLoadingDoc(password, &needs_password);
   bool password_incorrect = !loaded && needs_password && !password.empty();
@@ -2703,7 +2705,10 @@ void PDFiumEngine::LoadForm() {
   document_->SetFormStatus();
   if (document_->form_status() != PDF_FORM_NOTAVAIL ||
       doc_loader_->IsDocumentComplete()) {
-    document_->InitializeForm(&form_filler_);
+    {
+      ScopedUnsupportedFeature scoped_unsupported_feature(this);
+      document_->InitializeForm(&form_filler_);
+    }
 #if defined(PDF_ENABLE_XFA)
     FPDF_LoadXFA(doc());
 #endif

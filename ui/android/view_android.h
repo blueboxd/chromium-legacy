@@ -162,7 +162,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
                             float top_content_offset,
                             float top_controls_min_height_offset);
   void OnBottomControlsChanged(float bottom_controls_offset,
-                               float bottom_content_offset,
                                float bottom_controls_min_height_offset);
   void OnBrowserControlsHeightChanged();
 

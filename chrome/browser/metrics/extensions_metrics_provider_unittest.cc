@@ -363,6 +363,18 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
     EXPECT_EQ(ExtensionInstallProto::PERSISTENT_BACKGROUND_PAGE,
               install.background_script_type());
   }
+  {
+    // Test that service worker scripts are reported correctly.
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("service worker")
+            .SetBackgroundContext(
+                ExtensionBuilder::BackgroundContext::SERVICE_WORKER)
+            .Build();
+    add_extension(extension.get());
+    ExtensionInstallProto install = ConstructProto(*extension);
+    EXPECT_EQ(ExtensionInstallProto::SERVICE_WORKER,
+              install.background_script_type());
+  }
 
   {
     // Test changing the blacklist state.

@@ -42,8 +42,6 @@ namespace dnr_api = api::declarative_net_request;
 
 namespace {
 
-constexpr char kJSONRulesFilename[] = "rules_file.json";
-
 class RulesetManagerTest : public DNRTestBase {
  public:
   RulesetManagerTest() {}
@@ -72,7 +70,9 @@ class RulesetManagerTest : public DNRTestBase {
                            ? ConfigFlag::kConfig_HasBackgroundScript
                            : ConfigFlag::kConfig_None;
 
-    TestRulesetInfo info(kJSONRulesFilename, *ToListValue(rules));
+    constexpr char kRulesetID[] = "id";
+    constexpr char kJSONRulesFilename[] = "rules_file.json";
+    TestRulesetInfo info(kRulesetID, kJSONRulesFilename, *ToListValue(rules));
     WriteManifestAndRuleset(extension_dir, info, host_permissions, flags);
 
     last_loaded_extension_ =

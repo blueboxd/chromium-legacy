@@ -151,9 +151,6 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
   // the db_handle, and can rely on PostTask sequentiality?
   IdSet removed_while_adding_;
 
-  // Count the number of items in the history for UMA.
-  int64_t history_size_;
-
   bool initial_history_query_complete_;
 
   base::ObserverList<Observer>::Unchecked observers_;

@@ -14,6 +14,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/bits.h"
 #include "base/containers/flat_map.h"
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
@@ -470,6 +471,17 @@ class RasterDecoderImpl final : public RasterDecoder,
                                     GLboolean unpack_premultiply_alpha,
                                     const Mailbox& source_mailbox,
                                     const Mailbox& dest_mailbox);
+  void DoWritePixelsINTERNAL(GLint x_offset,
+                             GLint y_offset,
+                             GLuint src_width,
+                             GLuint src_height,
+                             GLuint row_bytes,
+                             GLuint src_sk_color_type,
+                             GLuint src_sk_alpha_type,
+                             GLint shm_id,
+                             GLuint shm_offset,
+                             GLuint shm_size,
+                             const volatile GLbyte* mailbox);
   void DoLoseContextCHROMIUM(GLenum current, GLenum other) { NOTIMPLEMENTED(); }
   void DoBeginRasterCHROMIUM(GLuint sk_color,
                              GLuint msaa_sample_count,
@@ -2238,6 +2250,114 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
   }
 }
 
+void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
+                                              GLint y_offset,
+                                              GLuint src_width,
+                                              GLuint src_height,
+                                              GLuint row_bytes,
+                                              GLuint src_sk_color_type,
+                                              GLuint src_sk_alpha_type,
+                                              GLint shm_id,
+                                              GLuint shm_offset,
+                                              GLuint pixels_offset,
+                                              const volatile GLbyte* mailbox) {
+  if (src_sk_color_type > kLastEnum_SkColorType) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "WritePixels",
+                       "src_sk_color_type must be a valid SkColorType");
+    return;
+  }
+  if (src_sk_alpha_type > kLastEnum_SkAlphaType) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "WritePixels",
+                       "src_sk_alpha_type must be a valid SkAlphaType");
+    return;
+  }
+
+  Mailbox dest_mailbox = Mailbox::FromVolatile(
+      *reinterpret_cast<const volatile Mailbox*>(mailbox));
+  DLOG_IF(ERROR, !dest_mailbox.Verify())
+      << "WritePixels was passed an invalid mailbox";
+  auto dest_shared_image = shared_image_representation_factory_.ProduceSkia(
+      dest_mailbox, shared_context_state_);
+  if (!dest_shared_image) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glWritePixels",
+                       "Attempting to write to unknown mailbox.");
+    return;
+  }
+
+  // If present, the color space is serialized into shared memory before the
+  // pixel data.
+  sk_sp<SkColorSpace> color_space;
+  if (pixels_offset > 0) {
+    void* color_space_bytes =
+        GetSharedMemoryAs<void*>(shm_id, shm_offset, pixels_offset);
+    color_space = SkColorSpace::Deserialize(color_space_bytes, pixels_offset);
+    if (!color_space) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glWritePixels",
+                         "Failed to deserialize expected SkColorSpace");
+      return;
+    }
+  }
+
+  SkImageInfo src_info = SkImageInfo::Make(
+      src_width, src_height, static_cast<SkColorType>(src_sk_color_type),
+      static_cast<SkAlphaType>(src_sk_alpha_type), std::move(color_space));
+
+  std::vector<GrBackendSemaphore> begin_semaphores;
+  std::vector<GrBackendSemaphore> end_semaphores;
+
+  // Allow uncleared access, as we manually handle clear tracking.
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
+      dest_scoped_access = dest_shared_image->BeginScopedWriteAccess(
+          &begin_semaphores, &end_semaphores,
+          SharedImageRepresentation::AllowUnclearedAccess::kYes);
+  if (!dest_scoped_access) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glWritePixels",
+                       "Dest shared image is not writable");
+    return;
+  }
+
+  if (!begin_semaphores.empty()) {
+    bool result = dest_scoped_access->surface()->wait(begin_semaphores.size(),
+                                                      begin_semaphores.data());
+    if (!result) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glWritePixels",
+                         "Unable to obtain write access to dest shared image.");
+      return;
+    }
+  }
+
+  // The pixels are stored after the serialized SkColorSpace + padding
+  void* pixel_data = GetSharedMemoryAs<void*>(
+      shm_id, shm_offset + pixels_offset, src_info.computeByteSize(row_bytes));
+  if (!pixel_data) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glWritePixels",
+                       "Couldn't retrieve pixel data.");
+    return;
+  }
+  auto* canvas = dest_scoped_access->surface()->getCanvas();
+  bool written =
+      canvas->writePixels(src_info, pixel_data, row_bytes, x_offset, y_offset);
+  if (!written) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glWritePixels",
+                       "Failed to write pixels to SkCanvas");
+  }
+
+  GrFlushInfo flush_info = {
+      .fFlags = kNone_GrFlushFlags,
+      .fNumSemaphores = end_semaphores.size(),
+      .fSignalSemaphores = end_semaphores.data(),
+  };
+  gpu::AddVulkanCleanupTaskForSkiaFlush(
+      shared_context_state_->vk_context_provider(), &flush_info);
+  dest_scoped_access->surface()->flush(
+      SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
+
+  if (!dest_shared_image->IsCleared()) {
+    dest_shared_image->SetClearedRect(
+        gfx::Rect(x_offset, y_offset, src_width, src_height));
+  }
+}
+
 namespace {
 
 // Helper to read client data from transfer cache.
@@ -2313,11 +2433,10 @@ void RasterDecoderImpl::DoClearPaintCacheINTERNAL() {
   paint_cache_->PurgeAll();
 }
 
-void RasterDecoderImpl::DoBeginRasterCHROMIUM(
-    GLuint sk_color,
-    GLuint msaa_sample_count,
-    GLboolean can_use_lcd_text,
-    const volatile GLbyte* key) {
+void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLuint sk_color,
+                                              GLuint msaa_sample_count,
+                                              GLboolean can_use_lcd_text,
+                                              const volatile GLbyte* key) {
   // Workaround for https://crbug.com/906453: Flush before BeginRaster (the
   // commands between BeginRaster and EndRaster will not flush).
   FlushToWorkAroundMacCrashes();
@@ -2372,8 +2491,8 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   std::vector<GrBackendSemaphore> begin_semaphores;
   DCHECK(end_semaphores_.empty());
   DCHECK(!scoped_shared_image_write_);
-  // Allow uncleared access, as raster specifically handles uncleared images by
-  // clearing them before writing.
+  // Allow uncleared access, as raster specifically handles uncleared images
+  // by clearing them before writing.
   scoped_shared_image_write_ = shared_image_->BeginScopedWriteAccess(
       final_msaa_count, surface_props, &begin_semaphores, &end_semaphores_,
       SharedImageRepresentation::AllowUnclearedAccess::kYes);
@@ -2514,8 +2633,8 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
 
   raster_canvas_ = nullptr;
 
-  // The DDL pins memory for the recorded ops so it must be kept alive until its
-  // flushed.
+  // The DDL pins memory for the recorded ops so it must be kept alive until
+  // its flushed.
   std::unique_ptr<SkDeferredDisplayList> ddl;
   if (use_ddl_) {
     TRACE_EVENT0("gpu",

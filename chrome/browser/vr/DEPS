@@ -24,7 +24,9 @@ specific_include_rules = {
     "+device/vr/test/test_hook.h",
     "+third_party/openvr/src/headers/openvr.h",
   ],
-  ".*mock.*" : [
-    "+chrome/browser/vr/service",
+  # xr_test_utils will be moving to content/public/test, where it can depend on
+  # internal content code.
+  "xr_test_utils\.cc" : [
+    "+chrome/browser/vr/service/xr_device_service.h",
   ]
 }

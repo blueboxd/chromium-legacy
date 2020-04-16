@@ -995,8 +995,8 @@ void CertificatesHandler::HandleRefreshCertificates(
     // Request that a model be created.
     CertificateManagerModel::Create(
         Profile::FromWebUI(web_ui()), this,
-        base::Bind(&CertificatesHandler::OnCertificateManagerModelCreated,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CertificatesHandler::OnCertificateManagerModelCreated,
+                       weak_ptr_factory_.GetWeakPtr()));
     requested_certificate_manager_model_ = true;
     return;
   }

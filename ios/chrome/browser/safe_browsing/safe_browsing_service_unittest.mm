@@ -9,7 +9,9 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/core/browser/safe_browsing_url_checker_impl.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/db/metadata.pb.h"
 #include "components/safe_browsing/core/db/util.h"
@@ -31,23 +33,25 @@ namespace {
 const char kSafePage[] = "http://example.test/safe.html";
 const char kMalwarePage[] = "http://example.test/malware.html";
 
-class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
-                     public safe_browsing::SafeBrowsingDatabaseManager::Client {
+class TestUrlCheckerClient {
  public:
-  TestSBClient(SafeBrowsingService* safe_browsing_service)
-      : result_pending_(false),
-        threat_type_(safe_browsing::SB_THREAT_TYPE_SAFE),
-        safe_browsing_service_(safe_browsing_service) {}
+  TestUrlCheckerClient(SafeBrowsingService* safe_browsing_service)
+      : safe_browsing_service_(safe_browsing_service) {}
 
-  safe_browsing::SBThreatType threat_type() const { return threat_type_; }
+  ~TestUrlCheckerClient() = default;
 
-  std::string threat_hash() const { return threat_hash_; }
+  TestUrlCheckerClient(const TestUrlCheckerClient&) = delete;
+  TestUrlCheckerClient& operator=(const TestUrlCheckerClient&) = delete;
+
+  bool url_is_unsafe() const { return url_is_unsafe_; }
 
   void CheckUrl(const GURL& url) {
     result_pending_ = true;
-    base::PostTask(
-        FROM_HERE, {web::WebThread::IO},
-        base::BindOnce(&TestSBClient::CheckBrowseUrlOnIOThread, this, url));
+    url_checker_ = safe_browsing_service_->CreateUrlChecker(
+        safe_browsing::ResourceType::kMainFrame);
+    base::PostTask(FROM_HERE, {web::WebThread::IO},
+                   base::BindOnce(&TestUrlCheckerClient::CheckUrlOnIOThread,
+                                  base::Unretained(this), url));
   }
 
   bool result_pending() const { return result_pending_; }
@@ -59,53 +63,43 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
   }
 
  private:
-  friend class base::RefCountedThreadSafe<TestSBClient>;
-  ~TestSBClient() override {}
-
-  void CheckBrowseUrlOnIOThread(const GURL& url) {
-    safe_browsing::SBThreatTypeSet threat_types =
-        safe_browsing::CreateSBThreatTypeSet(
-            {safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-             safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
-             safe_browsing::SB_THREAT_TYPE_URL_UNWANTED,
-             safe_browsing::SB_THREAT_TYPE_BILLING});
-
-    // The async CheckDone() hook will not be called when we have a synchronous
-    // safe signal, so call it right away.
-    bool synchronous_safe_signal =
-        safe_browsing_service_->GetDatabaseManager()->CheckBrowseUrl(
-            url, threat_types, this);
-    if (synchronous_safe_signal) {
-      threat_type_ = safe_browsing::SB_THREAT_TYPE_SAFE;
-      base::PostTask(FROM_HERE, {web::WebThread::UI},
-                     base::BindOnce(&TestSBClient::CheckDone, this));
-    }
+  void CheckUrlOnIOThread(const GURL& url) {
+    url_checker_->CheckUrl(
+        url, "GET",
+        base::BindOnce(&TestUrlCheckerClient::OnCheckUrlResult,
+                       base::Unretained(this)));
   }
 
-  void OnCheckBrowseUrlResult(
-      const GURL& url,
-      safe_browsing::SBThreatType threat_type,
-      const safe_browsing::ThreatMetadata& metadata) override {
-    threat_type_ = threat_type;
-    base::PostTask(FROM_HERE, {web::WebThread::UI},
-                   base::BindOnce(&TestSBClient::CheckDone, this));
+  void OnCheckUrlResult(
+      safe_browsing::SafeBrowsingUrlCheckerImpl::NativeUrlCheckNotifier*
+          slow_check_notifier,
+      bool proceed,
+      bool showed_interstitial) {
+    if (slow_check_notifier) {
+      *slow_check_notifier =
+          base::BindOnce(&TestUrlCheckerClient::OnCheckUrlResult,
+                         base::Unretained(this), nullptr);
+      return;
+    }
+    url_is_unsafe_ = showed_interstitial;
+    result_pending_ = false;
+    url_checker_.reset();
   }
 
   void CheckDone() { result_pending_ = false; }
 
-  bool result_pending_;
-  safe_browsing::SBThreatType threat_type_;
-  std::string threat_hash_;
+  bool result_pending_ = false;
+  bool url_is_unsafe_ = false;
   SafeBrowsingService* safe_browsing_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSBClient);
+  std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl> url_checker_;
 };
 
 }  // namespace
 
 class SafeBrowsingServiceTest : public PlatformTest {
  public:
-  SafeBrowsingServiceTest() {
+  SafeBrowsingServiceTest()
+      : task_environment_(web::WebTaskEnvironment::IO_MAINLOOP) {
     safe_browsing::RegisterProfilePrefs(local_state_.registry());
 
     store_factory_ = new safe_browsing::TestV4StoreFactory();
@@ -173,32 +167,29 @@ class SafeBrowsingServiceTest : public PlatformTest {
 
 TEST_F(SafeBrowsingServiceTest, SafeAndUnsafePages) {
   // Verify that queries to the Safe Browsing database owned by
-  // SafeBrowsignServiceIOSImpl receive respones.
-  scoped_refptr<TestSBClient> client =
-      base::MakeRefCounted<TestSBClient>(safe_browsing_service_.get());
-
+  // SafeBrowsingService receive responses.
+  TestUrlCheckerClient client(safe_browsing_service_.get());
   GURL safe_url = GURL(kSafePage);
-  client->CheckUrl(safe_url);
-  EXPECT_TRUE(client->result_pending());
-  client->WaitForResult();
-  EXPECT_FALSE(client->result_pending());
-  EXPECT_EQ(client->threat_type(), safe_browsing::SB_THREAT_TYPE_SAFE);
+  client.CheckUrl(safe_url);
+  EXPECT_TRUE(client.result_pending());
+  client.WaitForResult();
+  EXPECT_FALSE(client.result_pending());
+  EXPECT_FALSE(client.url_is_unsafe());
 
   GURL unsafe_url = GURL(kMalwarePage);
   MarkUrlAsMalware(unsafe_url);
-
-  client->CheckUrl(unsafe_url);
-  EXPECT_TRUE(client->result_pending());
-  client->WaitForResult();
-  EXPECT_FALSE(client->result_pending());
-  EXPECT_EQ(client->threat_type(), safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
+  client.CheckUrl(unsafe_url);
+  EXPECT_TRUE(client.result_pending());
+  client.WaitForResult();
+  EXPECT_FALSE(client.result_pending());
+  EXPECT_TRUE(client.url_is_unsafe());
 
   // Disable Safe Browsing, and ensure that unsafe URLs are no longer flagged.
   local_state_.SetUserPref(prefs::kSafeBrowsingEnabled,
                            std::make_unique<base::Value>(false));
-  client->CheckUrl(unsafe_url);
-  EXPECT_TRUE(client->result_pending());
-  client->WaitForResult();
-  EXPECT_FALSE(client->result_pending());
-  EXPECT_EQ(client->threat_type(), safe_browsing::SB_THREAT_TYPE_SAFE);
+  client.CheckUrl(unsafe_url);
+  EXPECT_TRUE(client.result_pending());
+  client.WaitForResult();
+  EXPECT_FALSE(client.result_pending());
+  EXPECT_FALSE(client.url_is_unsafe());
 }

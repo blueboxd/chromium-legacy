@@ -1141,8 +1141,11 @@ class CONTENT_EXPORT NavigationRequest
   // start, the headers will be applied to the initial network request. When
   // modified during a redirect, the headers will be applied to the redirected
   // request.
-  std::vector<std::string> removed_request_headers_;
   net::HttpRequestHeaders modified_request_headers_;
+
+  // Set of headers to remove during the redirect phase. This can only be
+  // modified during the redirect phase.
+  std::vector<std::string> removed_request_headers_;
 
   // Allows to override response_headers_ in tests.
   // TODO(clamy): Clean this up once the architecture of unit tests is better.

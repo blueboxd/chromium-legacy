@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "components/browsing_data/content/browsing_data_helper.h"
 
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"

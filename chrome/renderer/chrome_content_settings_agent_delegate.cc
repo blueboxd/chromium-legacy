@@ -107,6 +107,11 @@ base::Optional<bool> ChromeContentSettingsAgentDelegate::AllowMutationEvents() {
   return base::nullopt;
 }
 
+template ContentSetting ContentSettingsAgentImpl::GetContentSettingFromRules<>(
+    const ContentSettingsForOneType&,
+    const WebFrame*,
+    const GURL&);
+
 base::Optional<bool>
 ChromeContentSettingsAgentDelegate::AllowRunningInsecureContent(
     bool allowed_per_settings,

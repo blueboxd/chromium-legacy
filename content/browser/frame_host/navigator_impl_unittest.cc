@@ -1059,7 +1059,7 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
   // current one.
   GURL kUrlSameSiteAs1("http://www.a.com/foo");
   {
-    SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs1,
+    SiteInstanceDescriptor descriptor(kUrlSameSiteAs1,
                                       SiteInstanceRelation::RELATED);
     scoped_refptr<SiteInstance> converted_instance =
         ConvertToSiteInstance(rfhm, descriptor, nullptr);
@@ -1071,7 +1071,7 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
   GURL kUrlSameSiteAs2("http://www.b.com/foo");
   scoped_refptr<SiteInstance> related_instance;
   {
-    SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs2,
+    SiteInstanceDescriptor descriptor(kUrlSameSiteAs2,
                                       SiteInstanceRelation::RELATED);
     related_instance = ConvertToSiteInstance(rfhm, descriptor, nullptr);
     // If kUrlSameSiteAs2 requires a dedicated process on this platform, this
@@ -1095,7 +1095,7 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
   // 5) Convert a descriptor of an unrelated instance with the same site as the
   // current one, several times, with and without candidate sites.
   {
-    SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs1,
+    SiteInstanceDescriptor descriptor(kUrlSameSiteAs1,
                                       SiteInstanceRelation::UNRELATED);
     scoped_refptr<SiteInstance> converted_instance_1 =
         ConvertToSiteInstance(rfhm, descriptor, nullptr);
@@ -1133,7 +1133,7 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
   // 6) Convert a descriptor of an unrelated instance with the same site of
   // related_instance and using it as a candidate.
   {
-    SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs2,
+    SiteInstanceDescriptor descriptor(kUrlSameSiteAs2,
                                       SiteInstanceRelation::UNRELATED);
     scoped_refptr<SiteInstance> converted_instance_1 =
         ConvertToSiteInstance(rfhm, descriptor, related_instance.get());

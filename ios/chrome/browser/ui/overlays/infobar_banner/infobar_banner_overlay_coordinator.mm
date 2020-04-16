@@ -140,12 +140,11 @@
 // Creates a mediator instance from the supported mediator class list that
 // supports the coordinator's request.
 - (InfobarBannerOverlayMediator*)newMediator {
-  for (Class mediatorClass in [self class].supportedMediatorClasses) {
-    if (mediatorClass.requestSupport->IsRequestSupported(self.request))
-      return [[mediatorClass alloc] initWithRequest:self.request];
-  }
-  NOTREACHED() << "None of the supported mediator classes support request.";
-  return nil;
+  InfobarBannerOverlayMediator* mediator =
+      base::mac::ObjCCast<InfobarBannerOverlayMediator>(GetMediatorForRequest(
+          [self class].supportedMediatorClasses, self.request));
+  DCHECK(mediator) << "None of the supported mediator classes support request.";
+  return mediator;
 }
 
 @end

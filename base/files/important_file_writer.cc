@@ -248,7 +248,9 @@ void ImportantFileWriter::WriteNow(std::unique_ptr<std::string> data) {
                std::move(before_next_write_callback_),
                std::move(after_next_write_callback_), histogram_suffix_));
 
-  if (!task_runner_->PostTask(FROM_HERE, MakeCriticalClosure(task))) {
+  if (!task_runner_->PostTask(
+          FROM_HERE,
+          MakeCriticalClosure("ImportantFileWriter::WriteNow", task))) {
     // Posting the task to background message loop is not expected
     // to fail, but if it does, avoid losing data and just hit the disk
     // on the current thread.

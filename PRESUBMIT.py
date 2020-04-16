@@ -1264,8 +1264,9 @@ _JAVA_MULTIPLE_DEFINITION_EXCLUDED_PATHS = [
 _IMAGE_EXTENSIONS = ['.svg', '.png', '.webp']
 
 # These paths contain test data and other known invalid JSON files.
-_KNOWN_INVALID_JSON_FILE_PATTERNS = [
+_KNOWN_TEST_DATA_AND_INVALID_JSON_FILE_PATTERNS = [
     r'test[\\/]data[\\/]',
+    r'testing[\\/]buildbot[\\/]',
     r'^components[\\/]policy[\\/]resources[\\/]policy_templates\.json$',
     r'^third_party[\\/]protobuf[\\/]',
     r'^third_party[\\/]blink[\\/]renderer[\\/]devtools[\\/]protocol\.json$',
@@ -2789,7 +2790,9 @@ def _CheckParseErrors(input_api, output_api):
       return False
     path = affected_file.LocalPath()
 
-    if _MatchesFile(input_api, _KNOWN_INVALID_JSON_FILE_PATTERNS, path):
+    if _MatchesFile(input_api,
+                    _KNOWN_TEST_DATA_AND_INVALID_JSON_FILE_PATTERNS,
+                    path):
       return False
 
     if (action == _GetIDLParseError and
@@ -2968,7 +2971,8 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
     # affected files for .json, .cc, and .h files which look like they contain
     # a manifest definition.
     if (f.LocalPath().endswith('.json') and
-        not _MatchesFile(input_api, _KNOWN_INVALID_JSON_FILE_PATTERNS,
+        not _MatchesFile(input_api,
+                         _KNOWN_TEST_DATA_AND_INVALID_JSON_FILE_PATTERNS,
                          f.LocalPath())):
       json_comment_eater = _ImportJSONCommentEater(input_api)
       mostly_json_lines = '\n'.join(f.NewContents())

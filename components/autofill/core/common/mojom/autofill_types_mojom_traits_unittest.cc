@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/test_autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -47,7 +48,7 @@ void CreateTestFieldDataPredictions(const std::string& signature,
 }
 
 void CreateTestPasswordFormFillData(PasswordFormFillData* fill_data) {
-  fill_data->form_renderer_id = 1234;
+  fill_data->form_renderer_id = autofill::FormRendererId(1234);
   fill_data->origin = GURL("https://foo.com/");
   fill_data->action = GURL("https://foo.com/login");
   test::CreateTestSelectField("TestUsernameFieldLabel", "TestUsernameFieldName",
@@ -330,7 +331,9 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
 TEST_F(AutofillTypeTraitsTestImpl, PassFormData) {
   FormData input;
   test::CreateTestAddressFormData(&input);
-  input.username_predictions = {1, 13, 2};
+  input.username_predictions = {autofill::FieldRendererId(1),
+                                autofill::FieldRendererId(13),
+                                autofill::FieldRendererId(2)};
   input.button_titles.push_back(
       std::make_pair(base::ASCIIToUTF16("Sign-up"),
                      mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE));
@@ -389,8 +392,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormFillData) {
 
 TEST_F(AutofillTypeTraitsTestImpl, PasswordFormGenerationData) {
   PasswordFormGenerationData input;
-  input.new_password_renderer_id = 1234u,
-  input.confirmation_password_renderer_id = 5789u;
+  input.new_password_renderer_id = autofill::FieldRendererId(1234u),
+  input.confirmation_password_renderer_id = autofill::FieldRendererId(5789u);
 
   base::RunLoop loop;
   mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());

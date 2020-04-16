@@ -17,7 +17,6 @@ namespace signin {
 enum class ReauthResult;
 }
 
-struct CoreAccountId;
 class Profile;
 
 // Responsible for triggering authentication flows related to the passwords
@@ -32,13 +31,10 @@ class AccountStorageAuthHelper {
   AccountStorageAuthHelper(const AccountStorageAuthHelper&) = delete;
   AccountStorageAuthHelper& operator=(const AccountStorageAuthHelper&) = delete;
 
-  // Requests a reauth for the given |account_id|. In case of success, sets the
+  // Requests a reauth for the primary account. In case of success, sets the
   // opt in preference for account storage. |reauth_callback| is then called
   // passing whether the reauth succeeded or not.
-  // TODO(crbug.com/1070944): Retrieve the primary account id internally and
-  // update method comment.
   void TriggerOptInReauth(
-      const CoreAccountId& account_id,
       base::OnceCallback<
           void(password_manager::PasswordManagerClient::ReauthSucceeded)>
           reauth_callback);

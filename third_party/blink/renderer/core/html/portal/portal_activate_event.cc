@@ -121,6 +121,13 @@ const AtomicString& PortalActivateEvent::InterfaceName() const {
 
 HTMLPortalElement* PortalActivateEvent::adoptPredecessor(
     ExceptionState& exception_state) {
+  if (!RuntimeEnabledFeatures::PortalsEnabled(document_)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Portals is not enabled in this document.");
+    return nullptr;
+  }
+
   if (!predecessor_portal_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,

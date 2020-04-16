@@ -2568,6 +2568,8 @@ enum WebFeature {
   kDocumentPolicyIframePolicyAttribute = 3228,
   kDocumentPolicyCausedPageUnload = 3229,
   kRequiredDocumentPolicy = 3230,
+  kPerformanceObserverEntryTypesAndBuffered = 3231,
+  kPerformanceObserverTypeError = 3232,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

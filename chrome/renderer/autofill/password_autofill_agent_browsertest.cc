@@ -31,6 +31,7 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/renderer/render_frame.h"
@@ -444,15 +445,16 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void UpdateRendererIDs() {
     fill_data_.has_renderer_ids = true;
     if (!username_element_.IsNull()) {
-      fill_data_.username_field.unique_renderer_id =
-          username_element_.UniqueRendererFormControlId();
+      fill_data_.username_field.unique_renderer_id = autofill::FieldRendererId(
+          username_element_.UniqueRendererFormControlId());
     }
     ASSERT_FALSE(password_element_.IsNull());
-    fill_data_.password_field.unique_renderer_id =
-        password_element_.UniqueRendererFormControlId();
+    fill_data_.password_field.unique_renderer_id = autofill::FieldRendererId(
+        password_element_.UniqueRendererFormControlId());
     WebFormElement form = password_element_.Form();
-    fill_data_.form_renderer_id = form.IsNull() ? FormData::kNotSetRendererId
-                                                : form.UniqueRendererFormId();
+    fill_data_.form_renderer_id =
+        form.IsNull() ? autofill::FormRendererId()
+                      : autofill::FormRendererId(form.UniqueRendererFormId());
   }
 
   void UpdateUsernameAndPasswordElements() {
@@ -664,18 +666,18 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         << "Some expected masks are missed in FormData";
   }
 
-  uint32_t GetFormUniqueRendererId(const WebString& form_id) {
+  autofill::FormRendererId GetFormUniqueRendererId(const WebString& form_id) {
     WebLocalFrame* frame = GetMainFrame();
     if (!frame)
-      return FormData::kNotSetRendererId;
+      return autofill::FormRendererId();
     WebFormElement web_form =
         frame->GetDocument().GetElementById(form_id).To<WebFormElement>();
-    return web_form.UniqueRendererFormId();
+    return autofill::FormRendererId(web_form.UniqueRendererFormId());
   }
 
   void ExpectFormDataWithUsernameAndPasswordsAndEvent(
       const autofill::FormData& form_data,
-      uint32_t form_renderer_id,
+      autofill::FormRendererId form_renderer_id,
       const std::string& username_value,
       const std::string& password_value,
       const std::string& new_password_value,
@@ -688,7 +690,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   }
 
   void ExpectFormSubmittedWithUsernameAndPasswords(
-      uint32_t form_rendere_id,
+      autofill::FormRendererId form_renderer_id,
       const std::string& username_value,
       const std::string& password_value,
       const std::string& new_password_value) {
@@ -696,13 +698,13 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     ASSERT_TRUE(fake_driver_.called_password_form_submitted());
     ASSERT_TRUE(static_cast<bool>(fake_driver_.form_data_submitted()));
     ExpectFormDataWithUsernameAndPasswordsAndEvent(
-        *(fake_driver_.form_data_submitted()), form_rendere_id, username_value,
+        *(fake_driver_.form_data_submitted()), form_renderer_id, username_value,
         password_value, new_password_value,
         SubmissionIndicatorEvent::HTML_FORM_SUBMISSION);
   }
 
   void ExpectSameDocumentNavigationWithUsernameAndPasswords(
-      uint32_t form_rendere_id,
+      autofill::FormRendererId form_renderer_id,
       const std::string& username_value,
       const std::string& password_value,
       const std::string& new_password_value,
@@ -711,7 +713,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     ASSERT_TRUE(fake_driver_.called_same_document_navigation());
     ASSERT_TRUE(static_cast<bool>(fake_driver_.form_data_maybe_submitted()));
     ExpectFormDataWithUsernameAndPasswordsAndEvent(
-        *(fake_driver_.form_data_maybe_submitted()), form_rendere_id,
+        *(fake_driver_.form_data_maybe_submitted()), form_renderer_id,
         username_value, password_value, new_password_value, event);
   }
 
@@ -770,7 +772,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   }
 
   void ClearField(FormFieldData* field) {
-    field->unique_renderer_id = std::numeric_limits<uint32_t>::max();
+    field->unique_renderer_id = autofill::FieldRendererId();
     field->value.clear();
   }
 
@@ -943,12 +945,13 @@ TEST_F(PasswordAutofillAgentTest, NoFillingOnSignupForm_NoMetrics) {
   ASSERT_FALSE(element.IsNull());
   username_element_ = element.To<WebInputElement>();
 
-  fill_data_.username_field.unique_renderer_id = FormData::kNotSetRendererId;
-  fill_data_.password_field.unique_renderer_id = FormData::kNotSetRendererId;
+  fill_data_.username_field.unique_renderer_id = autofill::FieldRendererId();
+  fill_data_.password_field.unique_renderer_id = autofill::FieldRendererId();
 
   WebFormElement form_element =
       document.GetElementById("LoginTestForm").To<WebFormElement>();
-  fill_data_.form_renderer_id = form_element.UniqueRendererFormId();
+  fill_data_.form_renderer_id =
+      autofill::FormRendererId(form_element.UniqueRendererFormId());
 
   SimulateOnFillPasswordForm(fill_data_);
   histogram_tester_.ExpectTotalCount(
@@ -1791,12 +1794,13 @@ TEST_F(PasswordAutofillAgentTest, DontTryToShowTouchToFillSignUpForm) {
   ASSERT_FALSE(element.IsNull());
   username_element_ = element.To<WebInputElement>();
 
-  fill_data_.username_field.unique_renderer_id = FormData::kNotSetRendererId;
-  fill_data_.password_field.unique_renderer_id = FormData::kNotSetRendererId;
+  fill_data_.username_field.unique_renderer_id = autofill::FieldRendererId();
+  fill_data_.password_field.unique_renderer_id = autofill::FieldRendererId();
 
   WebFormElement form_element =
       document.GetElementById("LoginTestForm").To<WebFormElement>();
-  fill_data_.form_renderer_id = form_element.UniqueRendererFormId();
+  fill_data_.form_renderer_id =
+      autofill::FormRendererId(form_element.UniqueRendererFormId());
 
   SimulateOnFillPasswordForm(fill_data_);
 
@@ -2740,7 +2744,7 @@ TEST_F(PasswordAutofillAgentTest, NoForm_PromptForAJAXSubmitWithoutNavigation) {
   FireAjaxSucceeded();
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
-      FormData::kNotSetRendererId, "Bob", "mypassword", "",
+      autofill::FormRendererId(), "Bob", "mypassword", "",
       SubmissionIndicatorEvent::XHR_SUCCEEDED);
 }
 
@@ -2764,7 +2768,7 @@ TEST_F(PasswordAutofillAgentTest,
   base::RunLoop().RunUntilIdle();
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
-      FormData::kNotSetRendererId, "Bob", "mypassword", "",
+      autofill::FormRendererId(), "Bob", "mypassword", "",
       SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
 }
 
@@ -2799,7 +2803,7 @@ TEST_F(PasswordAutofillAgentTest,
        PromptForAJAXSubmitAfterDeletingParentElement) {
   LoadHTML(kDivWrappedFormHTML);
   UpdateUsernameAndPasswordElements();
-  uint32_t renderer_id = GetFormUniqueRendererId("form");
+  autofill::FormRendererId renderer_id = GetFormUniqueRendererId("form");
 
   SimulateUsernameTyping("Bob");
   SimulatePasswordTyping("mypassword");
@@ -3233,7 +3237,7 @@ TEST_F(PasswordAutofillAgentTest,
     FireAjaxSucceeded();
 
     ExpectSameDocumentNavigationWithUsernameAndPasswords(
-        FormData::kNotSetRendererId, "Alice", "mypassword", "",
+        autofill::FormRendererId(), "Alice", "mypassword", "",
         SubmissionIndicatorEvent::XHR_SUCCEEDED);
   }
 }
@@ -3259,7 +3263,7 @@ TEST_F(PasswordAutofillAgentTest,
   base::RunLoop().RunUntilIdle();
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
-      FormData::kNotSetRendererId, "Alice", "mypassword", "",
+      autofill::FormRendererId(), "Alice", "mypassword", "",
       SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
 }
 
@@ -3397,7 +3401,8 @@ TEST_F(PasswordAutofillAgentTest,
        SameDocumentNavigationSubmissionUsernameIsEmpty) {
   username_element_.SetValue(WebString());
   SimulatePasswordTyping("random");
-  uint32_t renderer_id = GetFormUniqueRendererId("LoginTestForm");
+  autofill::FormRendererId renderer_id =
+      GetFormUniqueRendererId("LoginTestForm");
 
   // Simulate that JavaScript removes the submitted form from DOM. That means
   // that a submission was successful.

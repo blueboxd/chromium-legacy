@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -226,12 +227,12 @@ TEST(PasswordFormFillDataTest, RendererIDs) {
 
   // Set renderer id related fields.
   FormData form_data;
-  form_data.unique_renderer_id = 42;
+  form_data.unique_renderer_id = FormRendererId(42);
   form_data.is_form_tag = true;
   form_on_page.form_data = form_data;
   form_on_page.has_renderer_ids = true;
-  form_on_page.username_element_renderer_id = 123;
-  form_on_page.password_element_renderer_id = 456;
+  form_on_page.username_element_renderer_id = FieldRendererId(123);
+  form_on_page.password_element_renderer_id = FieldRendererId(456);
 
   PasswordFormFillData result(form_on_page, {}, preferred_match, true);
 
@@ -251,11 +252,10 @@ TEST(PasswordFormFillDataTest, NoPasswordElement) {
   PasswordForm form_on_page;
   form_on_page.origin = GURL("https://foo.com/");
   form_on_page.has_renderer_ids = true;
-  form_on_page.username_element_renderer_id = 123;
+  form_on_page.username_element_renderer_id = FieldRendererId(123);
   // Set no password element.
-  form_on_page.password_element_renderer_id =
-      std::numeric_limits<uint32_t>::max();
-  form_on_page.new_password_element_renderer_id = 456;
+  form_on_page.password_element_renderer_id = FieldRendererId();
+  form_on_page.new_password_element_renderer_id = FieldRendererId(456);
 
   // Create an exact match in the database.
   PasswordForm preferred_match = form_on_page;
@@ -263,7 +263,7 @@ TEST(PasswordFormFillDataTest, NoPasswordElement) {
   preferred_match.password_value = ASCIIToUTF16("test");
 
   FormData form_data;
-  form_data.unique_renderer_id = 42;
+  form_data.unique_renderer_id = FormRendererId(42);
   form_data.is_form_tag = true;
   form_on_page.form_data = form_data;
 
@@ -272,10 +272,8 @@ TEST(PasswordFormFillDataTest, NoPasswordElement) {
 
   // Check that nor username nor password fields are set.
   EXPECT_EQ(true, result.has_renderer_ids);
-  EXPECT_EQ(std::numeric_limits<uint32_t>::max(),
-            result.username_field.unique_renderer_id);
-  EXPECT_EQ(std::numeric_limits<uint32_t>::max(),
-            result.password_field.unique_renderer_id);
+  EXPECT_TRUE(result.username_field.unique_renderer_id.is_null());
+  EXPECT_TRUE(result.password_field.unique_renderer_id.is_null());
 }
 
 }  // namespace autofill

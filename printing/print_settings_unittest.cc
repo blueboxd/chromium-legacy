@@ -10,26 +10,8 @@
 namespace printing {
 
 TEST(PrintSettingsTest, IsColorModelSelected) {
-  {
-    base::Optional<bool> color(IsColorModelSelected(COLOR));
-    ASSERT_TRUE(color.has_value());
-    EXPECT_TRUE(color.value());
-  }
-  {
-    base::Optional<bool> gray(IsColorModelSelected(GRAY));
-    ASSERT_TRUE(gray.has_value());
-    EXPECT_FALSE(gray.value());
-  }
-  {
-    // Test lower bound validity.
-    base::Optional<bool> lower(IsColorModelSelected(UNKNOWN_COLOR_MODEL + 1));
-    EXPECT_TRUE(lower.has_value());
-  }
-  {
-    // Test upper bound validity.
-    base::Optional<bool> upper(IsColorModelSelected(COLOR_MODEL_LAST));
-    EXPECT_TRUE(upper.has_value());
-  }
+  for (int model = UNKNOWN_COLOR_MODEL + 1; model <= COLOR_MODEL_LAST; ++model)
+    EXPECT_TRUE(IsColorModelSelected(IsColorModelSelected(model).has_value()));
 }
 
 TEST(PrintSettingsDeathTest, IsColorModelSelectedUnknown) {

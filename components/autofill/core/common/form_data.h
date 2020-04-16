@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -34,8 +35,6 @@ struct FormData {
   struct IdentityComparator {
     bool operator()(const FormData& a, const FormData& b) const;
   };
-
-  static constexpr uint32_t kNotSetRendererId = std::numeric_limits<uint32_t>::max();
 
   FormData();
   FormData(const FormData&);
@@ -97,7 +96,7 @@ struct FormData {
   // Unique renderer id returned by WebFormElement::UniqueRendererFormId(). It
   // is not persistent between page loads, so it is not saved and not used in
   // comparison in SameFormAs().
-  uint32_t unique_renderer_id = kNotSetRendererId;
+  FormRendererId unique_renderer_id;
   // The type of the event that was taken as an indication that this form is
   // being or has already been submitted. This field is filled only in Password
   // Manager for submitted password forms.
@@ -110,7 +109,7 @@ struct FormData {
   // of being a username (the first one is the most likely username). Can
   // contain IDs of elements which are not in |fields|. This is only used during
   // parsing into PasswordForm, and hence not serialised for storage.
-  std::vector<uint32_t> username_predictions;
+  std::vector<FieldRendererId> username_predictions;
   // True if this is a Gaia form which should be skipped on saving.
   bool is_gaia_with_skip_save_password_form = false;
 };

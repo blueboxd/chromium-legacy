@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
+#include "third_party/blink/renderer/core/timing/layout_shift_attribution.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 
 namespace blink {
@@ -29,6 +30,9 @@ class CORE_EXPORT LayoutShift final : public PerformanceEntry {
   double value() const { return value_; }
   bool hadRecentInput() const { return had_recent_input_; }
   double lastInputTime() const { return most_recent_input_timestamp_; }
+  HeapVector<Member<LayoutShiftAttribution>> sources() const {
+    return sources_;
+  }
 
   void Trace(Visitor*) override;
 
@@ -38,6 +42,7 @@ class CORE_EXPORT LayoutShift final : public PerformanceEntry {
   double value_;
   bool had_recent_input_;
   DOMHighResTimeStamp most_recent_input_timestamp_;
+  HeapVector<Member<LayoutShiftAttribution>> sources_;
 };
 
 }  // namespace blink

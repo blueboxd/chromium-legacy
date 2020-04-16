@@ -65,8 +65,7 @@ void PasswordManagerClient::NotifyUserCredentialsWereLeaked(
     const GURL& origin,
     const base::string16& username) {}
 
-void PasswordManagerClient::TriggerReauthForAccount(
-    const CoreAccountId& account_id,
+void PasswordManagerClient::TriggerReauthForPrimaryAccount(
     base::OnceCallback<void(ReauthSucceeded)> reauth_callback) {
   std::move(reauth_callback).Run(ReauthSucceeded(false));
 }

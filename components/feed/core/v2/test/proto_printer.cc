@@ -119,7 +119,6 @@ class TextProtoPrinter {
     PRINT_ONEOF(content);
     PRINT_ONEOF(local_action);
     PRINT_ONEOF(shared_state);
-    PRINT_ONEOF(next_stream_state);
     EndMessage();
     return *this;
   }
@@ -185,14 +184,6 @@ class TextProtoPrinter {
     EndMessage();
     return *this;
   }
-  TextProtoPrinter& operator<<(const feedstore::StreamAndContentState& v) {
-    BeginMessage();
-    PRINT_FIELD(stream_data);
-    PRINT_FIELD(content);
-    PRINT_FIELD(shared_state);
-    EndMessage();
-    return *this;
-  }
 
   template <typename T>
   void Field(const std::string& name, const T& value) {
@@ -234,9 +225,6 @@ std::string ToTextProto(const feedstore::Content& v) {
   return TextProtoPrinter::ToString(v);
 }
 std::string ToTextProto(const feedstore::StreamSharedState& v) {
-  return TextProtoPrinter::ToString(v);
-}
-std::string ToTextProto(const feedstore::StreamAndContentState& v) {
   return TextProtoPrinter::ToString(v);
 }
 std::string ToTextProto(const feedstore::StoredAction& v) {

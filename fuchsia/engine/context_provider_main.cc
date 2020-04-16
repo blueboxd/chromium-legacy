@@ -4,6 +4,7 @@
 
 #include "fuchsia/engine/context_provider_main.h"
 
+#include <fuchsia/feedback/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/sys/cpp/outgoing_directory.h>
 
@@ -29,33 +30,51 @@ std::string GetVersionString() {
   return version_string;
 }
 
+// TODO(https://crbug.com/1010222): Add annotations at Context startup, once
+// Contexts are moved out to run in their own components.
+void RegisterFeedbackAnnotations() {
+  fuchsia::feedback::ComponentData component_data;
+  component_data.set_namespace_("web-engine");
+  component_data.mutable_annotations()->push_back(
+      {"version", version_info::GetVersionNumber()});
+  base::fuchsia::ComponentContextForCurrentProcess()
+      ->svc()
+      ->Connect<fuchsia::feedback::ComponentDataRegister>()
+      ->Upsert(std::move(component_data), []() {});
+}
+
 }  // namespace
 
 int ContextProviderMain() {
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
-  sys::OutgoingDirectory* directory =
-      base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get();
 
   if (!cr_fuchsia::InitLoggingFromCommandLine(
           *base::CommandLine::ForCurrentProcess())) {
     return 1;
   }
 
+  // Populate feedback annotations for this component.
+  RegisterFeedbackAnnotations();
+
   LOG(INFO) << "Starting WebEngine " << GetVersionString();
 
   ContextProviderImpl context_provider;
 
+  // Publish the ContextProvider and Debug services.
+  sys::OutgoingDirectory* const directory =
+      base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get();
   base::fuchsia::ScopedServiceBinding<fuchsia::web::ContextProvider> binding(
       directory, &context_provider);
-
   base::fuchsia::ScopedServiceBinding<fuchsia::web::Debug> debug_binding(
       directory->debug_dir(), &context_provider);
 
-  // Serve outgoing directory only after publishing all services.
-  directory->ServeFromStartupInfo();
-
+  // Publish the Lifecycle service, used by the framework to request that the
+  // service terminate.
   base::RunLoop run_loop;
   cr_fuchsia::LifecycleImpl lifecycle(directory, run_loop.QuitClosure());
+
+  // Serve outgoing directory only after publishing all services.
+  directory->ServeFromStartupInfo();
 
   run_loop.Run();
 

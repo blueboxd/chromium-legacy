@@ -213,6 +213,13 @@ void CocoaScrollBar::OnPaint(gfx::Canvas* canvas) {
       canvas->sk_canvas(), gfx::RectToSkIRect(GetLocalBounds()), params);
 }
 
+bool CocoaScrollBar::CanProcessEventsWithinSubtree() const {
+  // If using overlay scrollbars, do not process events when fully hidden.
+  return scroller_style_ == NSScrollerStyleOverlay
+             ? !IsScrollbarFullyHidden()
+             : ScrollBar::CanProcessEventsWithinSubtree();
+}
+
 bool CocoaScrollBar::OnMousePressed(const ui::MouseEvent& event) {
   // Ignore the mouse press if the scrollbar is hidden.
   if (IsScrollbarFullyHidden())

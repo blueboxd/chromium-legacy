@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -24,6 +25,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 
@@ -1214,6 +1216,48 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
               root_accessibility_manager->GetFocus());
   }
 }
+#endif  // ifndef OS_ANDROID
 
-#endif
+class CrossPlatformAccessibilityBrowserTestWithImplicitRootScrolling
+    : public CrossPlatformAccessibilityBrowserTest {
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kImplicitRootScroller);
+    CrossPlatformAccessibilityBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    CrossPlatformAccessibilityBrowserTestWithImplicitRootScrolling,
+    ImplicitRootScroller) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/implicit-root-scroller.html");
+
+  BrowserAccessibilityManager* manager = GetManager();
+  const BrowserAccessibility* heading =
+      FindNodeByRole(manager->GetRoot(), ax::mojom::Role::kHeading);
+
+  // Ensure that this page has an implicit root scroller that's something
+  // other than the root of the accessibility tree.
+  ui::AXNode::AXID root_scroller_id = manager->GetTreeData().root_scroller_id;
+  BrowserAccessibility* root_scroller = manager->GetFromID(root_scroller_id);
+  ASSERT_TRUE(root_scroller);
+  EXPECT_NE(root_scroller_id, manager->GetRoot()->GetId());
+
+  // If we take the root scroll offsets into account (most platforms)
+  // the heading should be scrolled above the top.
+  manager->SetUseRootScrollOffsetsWhenComputingBoundsForTesting(true);
+  gfx::Rect bounds = heading->GetUnclippedRootFrameBoundsRect();
+  EXPECT_LT(bounds.y(), 0);
+
+  // If we don't take the root scroll offsets into account (Android)
+  // the heading should not have a negative top coordinate.
+  manager->SetUseRootScrollOffsetsWhenComputingBoundsForTesting(false);
+  bounds = heading->GetUnclippedRootFrameBoundsRect();
+  EXPECT_GT(bounds.y(), 0);
+}
+
 }  // namespace content

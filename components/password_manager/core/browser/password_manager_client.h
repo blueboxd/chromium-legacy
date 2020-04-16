@@ -51,7 +51,6 @@ namespace signin_metrics {
 enum class AccessPoint;
 }
 
-struct CoreAccountId;
 class GURL;
 
 #if defined(ON_FOCUS_PING_ENABLED)
@@ -247,10 +246,9 @@ class PasswordManagerClient {
                                                const GURL& origin,
                                                const base::string16& username);
 
-  // Requests a reauth for the given |account_id| and triggers the
+  // Requests a reauth for the primary account and triggers the
   // |reauth_callback| with ReauthSucceeded(true) if reauthentication succeeded.
-  virtual void TriggerReauthForAccount(
-      const CoreAccountId& account_id,
+  virtual void TriggerReauthForPrimaryAccount(
       base::OnceCallback<void(ReauthSucceeded)> reauth_callback);
 
   // Redirects the user to a sign-in in a new tab. |access_point| is used for

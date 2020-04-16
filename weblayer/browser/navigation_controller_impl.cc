@@ -117,10 +117,15 @@ void NavigationControllerImpl::Navigate(JNIEnv* env,
   Navigate(GURL(base::android::ConvertJavaStringToUTF8(env, url)));
 }
 
-void NavigationControllerImpl::Replace(JNIEnv* env,
-                                       const JavaParamRef<jobject>& obj,
-                                       const JavaParamRef<jstring>& url) {
-  Replace(GURL(base::android::ConvertJavaStringToUTF8(env, url)));
+void NavigationControllerImpl::NavigateWithParams(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& url,
+    jboolean should_replace_current_entry) {
+  content::NavigationController::LoadURLParams params(
+      GURL(base::android::ConvertJavaStringToUTF8(env, url)));
+  params.should_replace_current_entry = should_replace_current_entry;
+  DoNavigate(std::move(params));
 }
 
 ScopedJavaLocalRef<jstring>
@@ -176,10 +181,13 @@ void NavigationControllerImpl::Navigate(const GURL& url) {
   DoNavigate(content::NavigationController::LoadURLParams(url));
 }
 
-void NavigationControllerImpl::Replace(const GURL& url) {
-  content::NavigationController::LoadURLParams params(url);
-  params.should_replace_current_entry = true;
-  DoNavigate(std::move(params));
+void NavigationControllerImpl::Navigate(
+    const GURL& url,
+    const NavigationController::NavigateParams& params) {
+  content::NavigationController::LoadURLParams load_params(url);
+  load_params.should_replace_current_entry =
+      params.should_replace_current_entry;
+  DoNavigate(std::move(load_params));
 }
 
 void NavigationControllerImpl::GoBack() {

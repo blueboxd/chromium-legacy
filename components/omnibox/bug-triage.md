@@ -1,8 +1,8 @@
 # Omnibox Bug Triage Process
 
-*last update: 2018/06/11*
+*last update: 2020/04/16*
 
-*The current triage process owner is `mpearson@`.*
+*The current triage process owner is `jdonnelly@`.*
 
 Instructions for Chrome omnibox engineers serving an assigned bug triage
 rotation.
@@ -27,7 +27,7 @@ labeled as such (*Needs=Feedback* or *Needs=TestConfirmation*).
 
 ## Process
 
-* Every other day (weekend excluded), the triage engineer looks over [all
+* Every Monday, Wednesday and Friday, the triage engineer looks over [all
   *Unconfirmed* and *Untriaged* omnibox bugs (without *Needs=Feedback*)](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3AUI%3EBrowser%3EOmnibox+status%3AUnconfirmed%2CUntriaged+-component%3AUI%3EBrowser%3EOmnibox%3ESecurityIndicators+-Needs%3DFeedback&colspec=ID+Pri+M+Stars+ReleaseBlock+Component+Status+Owner+Summary+OS+Modified&x=m&y=releaseblock&cells=ids)
   and triages them.
 * Every week on Tuesday, the triage engineer looks over [all *Unconfirmed* and
@@ -180,7 +180,7 @@ The subcomponents of omnibox bugs include:
 | UI>Browser>Omnibox>ZeroSuggest | Suggestions displayed on omnibox focus (both contextual and non-contextual). |
 
 If the bug is extremely low priority, set the **NextAction field** to
-**01/07/2020** and mention that we will "reassess" the bug next year.  This
+**01/07/2021** and mention that we will "reassess" the bug next year.  This
 NextAction field is for Priority-3 bugs that are somehow less important than
 other *priority-3* bugs.  These are bugs we’re sure no one on the team intends
 to fix this year (e.g., really unimportant, or mostly unimportant and hard to
@@ -278,12 +278,15 @@ restrict applied.
 
 Example request:
 
-> Please submit chrome://omnibox output for “\_\_\_”.  Check both the "show
-> all details" and "show results per provider" boxes.  This will help us
-> figure out what's going on.
+> Please visit chrome://omnibox in the version of Chrome in which you're
+> experiencing the issue and type the input that triggers the issue into the
+> "Enter omnibox input" text box. Then click the Download link and attach the
+> downloaded file to this issue.
 >
-> Feel free to paste the results in here unformatted; we’ll be able to
-> decipher them.
+> Please be aware that this data may reveal details of your browsing history so
+> only attach the file if you're comfortable sharing that data with the omnibox
+> team. I have added the Restrict-View-Google label to this issue so that it is
+> not visible to the public.
 
 ## Commonly referenced bugs
 

@@ -233,6 +233,13 @@ TrustTokenKeyCommitmentParser::ParseMultipleIssuers(
     map_storage.emplace_back(std::move(canonicalized_issuer(e)),
                              std::move(commitment(e)));
   }
+
+  // Please don't remove this VLOG without first checking with
+  // trust_tokens/OWNERS to see if it's still being used for manual
+  // testing.
+  VLOG(1) << "Successfully parsed " << map_storage.size()
+          << " issuers' Trust Tokens key commitments.";
+
   return std::make_unique<base::flat_map<
       SuitableTrustTokenOrigin, mojom::TrustTokenKeyCommitmentResultPtr>>(
       std::move(map_storage));

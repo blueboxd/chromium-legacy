@@ -39,10 +39,6 @@ oncalls: {
   url: "https://build.chromium.org/p/chromium/sheriff_perfbot.json"
 }
 oncalls: {
-  name: "V8"
-  url: "https://build.chromium.org/p/chromium/sheriff_v8.json"
-}
-oncalls: {
   name: "Trooper"
   url: "https://build.chromium.org/p/chromium/trooper.json"
 }

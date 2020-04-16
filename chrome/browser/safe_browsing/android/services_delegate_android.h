@@ -47,8 +47,6 @@ class ServicesDelegateAndroid : public ServicesDelegate {
   void CreateTelemetryService(Profile* profile) override;
   void RemoveTelemetryService(Profile* profile) override;
 
-  std::string GetSafetyNetId() const override;
-
   // The telemetry service tied to the current profile.
   std::unique_ptr<AndroidTelemetryService> telemetry_service_;
 

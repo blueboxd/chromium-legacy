@@ -59,6 +59,8 @@ void InitializeRegistryOverrideForTesting(
   DWORD disable_cloud_association = 0;
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"enable_cloud_association",
                                           disable_cloud_association));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.WriteValue(L"domains_allowed_to_login", L"test.com"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

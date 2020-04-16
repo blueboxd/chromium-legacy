@@ -510,8 +510,12 @@ bool RestrictedCookieManager::ValidateAccessToCookiesAt(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin& top_frame_origin) {
-  bool site_for_cookies_ok = site_for_cookies_.IsEquivalent(site_for_cookies);
+  if (origin_.opaque()) {
+    mojo::ReportBadMessage("Access is denied in this context");
+    return false;
+  }
 
+  bool site_for_cookies_ok = site_for_cookies_.IsEquivalent(site_for_cookies);
   DCHECK(site_for_cookies_ok)
       << "site_for_cookies from renderer='" << site_for_cookies.ToDebugString()
       << "' from browser='" << site_for_cookies_.ToDebugString() << "';";

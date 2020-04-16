@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import androidx.annotation.StringDef;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import org.json.JSONException;
@@ -35,6 +36,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -158,6 +161,15 @@ public class RenderTestRule extends TestWatcher {
     private int mSkiaGoldRevision;
     private String mSkiaGoldRevisionDescription;
 
+    @StringDef({Corpus.ANDROID_RENDER_TESTS, Corpus.ANDROID_VR_RENDER_TESTS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Corpus {
+        // Corpus for general use.
+        String ANDROID_RENDER_TESTS = "android-render-tests";
+        // Corpus for VR (virtual reality) features.
+        String ANDROID_VR_RENDER_TESTS = "android-vr-render-tests";
+    }
+
     /**
      * An exception thrown after a Render Test if images do not match the goldens or goldens are
      * missing on a render test device.
@@ -177,11 +189,14 @@ public class RenderTestRule extends TestWatcher {
     }
 
     // Skia Gold-specific constructor used by the builder.
-    protected RenderTestRule(int revision, String corpus, String description) {
+    // Note that each corpus/description combination results in some additional initialization
+    // on the host (~250 ms), so consider whether adding unique descriptions is necessary before
+    // adding them to a bunch of test classes.
+    protected RenderTestRule(int revision, @Corpus String corpus, String description) {
         assert revision >= 0;
 
         mUseSkiaGold = true;
-        mSkiaGoldCorpus = (corpus == null) ? "android-render-tests" : corpus;
+        mSkiaGoldCorpus = (corpus == null) ? Corpus.ANDROID_RENDER_TESTS : corpus;
         mSkiaGoldRevisionDescription = description;
         mSkiaGoldRevision = revision;
 
@@ -500,7 +515,7 @@ public class RenderTestRule extends TestWatcher {
      */
     public static class SkiaGoldBuilder {
         private int mRevision;
-        private String mCorpus;
+        private @Corpus String mCorpus;
         private String mDescription;
 
         public SkiaGoldBuilder setRevision(int revision) {
@@ -508,7 +523,7 @@ public class RenderTestRule extends TestWatcher {
             return this;
         }
 
-        public SkiaGoldBuilder setCorpus(String corpus) {
+        public SkiaGoldBuilder setCorpus(@Corpus String corpus) {
             mCorpus = corpus;
             return this;
         }

@@ -16,6 +16,7 @@
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -138,7 +139,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // created for |element| it is not recreated.
   void MaybeCreateCurrentGenerationItem(
       blink::WebInputElement element,
-      uint32_t confirmation_password_renderer_id);
+      FieldRendererId confirmation_password_renderer_id);
 
   void LogMessage(autofill::SavePasswordProgressLogger::StringID message_id);
   void LogBoolean(autofill::SavePasswordProgressLogger::StringID message_id,
@@ -160,7 +161,8 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
 
   // Contains correspondence between generation enabled element and data for
   // generation.
-  std::map<uint32_t, PasswordFormGenerationData> generation_enabled_fields_;
+  std::map<FieldRendererId, PasswordFormGenerationData>
+      generation_enabled_fields_;
 
   // True iff the generation element should be marked with special HTML
   // attribute (only for experimental purposes).

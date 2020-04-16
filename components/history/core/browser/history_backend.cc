@@ -2541,7 +2541,8 @@ void HistoryBackend::Commit() {
 #if defined(OS_IOS)
   // Attempts to get the application running long enough to commit the database
   // transaction if it is currently being backgrounded.
-  base::ios::ScopedCriticalAction scoped_critical_action;
+  base::ios::ScopedCriticalAction scoped_critical_action(
+      "HistoryBackend::Commit");
 #endif
 
   // Note that a commit may not actually have been scheduled if a caller

@@ -24,21 +24,7 @@
 namespace feed {
 namespace {
 
-const char kNextPageToken[] = "next page token";
-const char kConsistencyToken[] = "consistency token";
-const int64_t kLastAddedTimeMs = 100;
-
 using LoadStreamResult = FeedStore::LoadStreamResult;
-
-feedstore::StreamData MakeStreamData() {
-  feedstore::StreamData stream_data;
-  *stream_data.mutable_content_id() = MakeRootId();
-  stream_data.set_next_page_token(kNextPageToken);
-  stream_data.set_consistency_token(kConsistencyToken);
-  stream_data.set_last_added_time_millis(kLastAddedTimeMs);
-
-  return stream_data;
-}
 
 std::string KeyForContentId(base::StringPiece prefix,
                             const feedwire::ContentId& content_id) {
@@ -428,35 +414,6 @@ TEST_F(FeedStoreTest, ReadContentAndSharedStates) {
           }));
   fake_db_->LoadCallback(false);
   EXPECT_TRUE(did_failed_read);
-}
-
-TEST_F(FeedStoreTest, ReadNextStreamState) {
-  feedstore::Record record;
-  feedstore::StreamAndContentState* next_stream_state =
-      record.mutable_next_stream_state();
-  *next_stream_state->mutable_stream_data() = MakeStreamData();
-  *next_stream_state->add_content() = MakeContent(0);
-  *next_stream_state->add_shared_state() = MakeSharedState(0);
-
-  MakeFeedStore({{"N", record}});
-
-  // Successful read
-  CallbackReceiver<std::unique_ptr<feedstore::StreamAndContentState>> receiver;
-  store_->ReadNextStreamState(receiver.Bind());
-  fake_db_->GetCallback(true);
-  ASSERT_NE(receiver.GetResult(), base::nullopt);
-  feedstore::StreamAndContentState* result = receiver.GetResult()->get();
-  ASSERT_NE(result, nullptr);
-  EXPECT_TRUE(result->has_stream_data());
-  EXPECT_EQ(result->content_size(), 1);
-  EXPECT_EQ(result->shared_state_size(), 1);
-
-  // Failed read
-  receiver.GetResult().reset();
-  store_->ReadNextStreamState(receiver.Bind());
-  fake_db_->GetCallback(false);
-  EXPECT_NE(receiver.GetResult(), base::nullopt);
-  EXPECT_EQ(receiver.GetResult()->get(), nullptr);
 }
 
 TEST_F(FeedStoreTest, ReadActions) {

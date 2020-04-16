@@ -113,7 +113,7 @@ bool IsThereVisiblePasswordField(const FormData& form) {
 // Finds the matched form manager with id |form_renderer_id| in
 // |form_managers|.
 PasswordFormManager* FindMatchedManagerByRendererId(
-    uint32_t form_renderer_id,
+    autofill::FormRendererId form_renderer_id,
     const std::vector<std::unique_ptr<PasswordFormManager>>& form_managers,
     const PasswordManagerDriver* driver) {
   for (const auto& form_manager : form_managers) {
@@ -254,7 +254,7 @@ PasswordManager::~PasswordManager() = default;
 void PasswordManager::OnGeneratedPasswordAccepted(
     PasswordManagerDriver* driver,
     const FormData& form_data,
-    uint32_t generation_element_id,
+    autofill::FieldRendererId generation_element_id,
     const base::string16& password) {
   PasswordFormManager* manager = GetMatchedManager(driver, form_data);
   if (manager) {
@@ -441,7 +441,7 @@ void PasswordManager::OnPasswordFormSubmittedNoChecksForiOS(
 
 void PasswordManager::OnUserModifiedNonPasswordField(
     PasswordManagerDriver* driver,
-    int32_t renderer_id,
+    autofill::FieldRendererId renderer_id,
     const base::string16& value) {
   // |driver| might be empty on iOS or in tests.
   int driver_id = driver ? driver->GetId() : 0;
@@ -643,9 +643,10 @@ PasswordFormManager* PasswordManager::ProvisionallySaveForm(
 }
 
 #if !defined(OS_IOS)
-void PasswordManager::LogFirstFillingResult(PasswordManagerDriver* driver,
-                                            uint32_t form_renderer_id,
-                                            int32_t result) {
+void PasswordManager::LogFirstFillingResult(
+    PasswordManagerDriver* driver,
+    autofill::FormRendererId form_renderer_id,
+    int32_t result) {
   PasswordFormManager* matching_manager =
       FindMatchedManagerByRendererId(form_renderer_id, form_managers_, driver);
   if (!matching_manager)

@@ -131,7 +131,7 @@ void ContentPasswordManagerDriver::GeneratedPasswordAccepted(
 
 void ContentPasswordManagerDriver::GeneratedPasswordAccepted(
     const autofill::FormData& form_data,
-    uint32_t generation_element_id,
+    autofill::FieldRendererId generation_element_id,
     const base::string16& password) {
   GetPasswordManager()->OnGeneratedPasswordAccepted(
       this, form_data, generation_element_id, password);
@@ -288,7 +288,7 @@ void ContentPasswordManagerDriver::UserModifiedPasswordField() {
 }
 
 void ContentPasswordManagerDriver::UserModifiedNonPasswordField(
-    uint32_t renderer_id,
+    autofill::FieldRendererId renderer_id,
     const base::string16& value) {
   GetPasswordManager()->OnUserModifiedNonPasswordField(this, renderer_id,
                                                        value);
@@ -322,7 +322,7 @@ void ContentPasswordManagerDriver::FocusedInputChanged(
 }
 
 void ContentPasswordManagerDriver::LogFirstFillingResult(
-    uint32_t form_renderer_id,
+    autofill::FormRendererId form_renderer_id,
     int32_t result) {
   GetPasswordManager()->LogFirstFillingResult(this, form_renderer_id, result);
 }

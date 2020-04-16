@@ -37,6 +37,10 @@ bool DisableUpdateService() {
   return true;
 }
 
+bool DisableMainThreadFreezeDetection() {
+  return true;
+}
+
 policy::ConfigurationPolicyProvider* GetOverriddenPlatformPolicyProvider() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           "com.apple.configuration.managed")) {

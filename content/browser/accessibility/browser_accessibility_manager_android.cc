@@ -30,6 +30,9 @@ BrowserAccessibilityManagerAndroid::BrowserAccessibilityManagerAndroid(
     : BrowserAccessibilityManager(delegate),
       web_contents_accessibility_(std::move(web_contents_accessibility)),
       prune_tree_for_screen_reader_(true) {
+  // The Java layer handles the root scroll offset.
+  use_root_scroll_offsets_when_computing_bounds_ = false;
+
   if (web_contents_accessibility_)
     web_contents_accessibility_->set_root_manager(this);
   Initialize(initial_tree);
@@ -456,11 +459,6 @@ void BrowserAccessibilityManagerAndroid::OnAtomicUpdateFinished(
       return;
     wcax->HandleNavigate();
   }
-}
-
-bool BrowserAccessibilityManagerAndroid::
-    UseRootScrollOffsetsWhenComputingBounds() {
-  return true;
 }
 
 WebContentsAccessibilityAndroid*

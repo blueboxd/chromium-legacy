@@ -23,6 +23,10 @@
 // Cancels any in-progress share activities and dismisses the corresponding UI.
 - (void)cancelShare;
 
+// Shows an error alert with the given |title| and body |message|.
+- (void)showErrorAlertWithStringTitle:(NSString*)title
+                              message:(NSString*)message;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_ACTIVITY_SERVICE_LEGACY_COORDINATOR_H_

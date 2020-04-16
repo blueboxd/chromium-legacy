@@ -16,7 +16,7 @@ bool IsFormOrClientNonSecure(AutofillClient* client, const FormData& form) {
 bool ShouldAllowCreditCardFallbacks(AutofillClient* client,
                                     const FormData& form) {
   // Skip the form check if there wasn't a form yet:
-  if (form.unique_renderer_id == FormData::kNotSetRendererId)
+  if (form.unique_renderer_id.is_null())
     return client->IsContextSecure();
   return !IsFormOrClientNonSecure(client, form);
 }

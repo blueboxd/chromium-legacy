@@ -1,0 +1,39 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "cc/raster/lcd_text_disallowed_reason.h"
+
+#include <iostream>
+#include "base/logging.h"
+
+namespace cc {
+
+const char* LCDTextDisallowedReasonToString(LCDTextDisallowedReason reason) {
+  switch (reason) {
+    case LCDTextDisallowedReason::kNone:
+      return "none";
+    case LCDTextDisallowedReason::kSetting:
+      return "setting";
+    case LCDTextDisallowedReason::kContentsNotOpaque:
+      return "contents not opaque";
+    case LCDTextDisallowedReason::kLayerOpacity:
+      return "layer opacity";
+    case LCDTextDisallowedReason::kNonIntegralTranslation:
+      return "non-integral translation";
+    case LCDTextDisallowedReason::kNonIntegralXOffset:
+      return "non-integral x-offset";
+    case LCDTextDisallowedReason::kNonIntegralYOffset:
+      return "non-integral y-offset";
+    case LCDTextDisallowedReason::kWillChangeTransform:
+      return "will-change: transform";
+  }
+  NOTREACHED();
+  return "";
+}
+
+std::ostream& operator<<(std::ostream& os, LCDTextDisallowedReason reason) {
+  return os << LCDTextDisallowedReasonToString(reason);
+}
+
+}  // namespace cc

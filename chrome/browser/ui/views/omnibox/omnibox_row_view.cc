@@ -4,12 +4,15 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_row_view.h"
 
+#include "base/i18n/case_conversion.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/prefs/pref_service.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/button.h"
@@ -18,6 +21,7 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/style/typography.h"
 
 class OmniboxRowView::HeaderView : public views::View,
                                    public views::ButtonListener {
@@ -31,6 +35,11 @@ class OmniboxRowView::HeaderView : public views::View,
     header_text_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
     layout->SetFlexForView(header_text_, 1);
 
+    const gfx::FontList& font = views::style::GetFont(
+        CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
+    header_text_->SetFontList(font);
+    header_text_->SetEnabledColor(gfx::kGoogleGrey700);
+
     // TODO(tommycli): Add a focus ring.
     hide_button_ = AddChildView(views::CreateVectorToggleImageButton(this));
     views::InstallCircleHighlightPathGenerator(hide_button_);
@@ -38,7 +47,11 @@ class OmniboxRowView::HeaderView : public views::View,
 
   void SetHeader(int suggestion_group_id, const base::string16& header_text) {
     suggestion_group_id_ = suggestion_group_id;
-    header_text_->SetText(header_text);
+
+    // TODO(tommycli): Our current design calls for uppercase text here, but
+    // it seems like an open question what should happen for non-Latin locales.
+    // Moreover, it seems unusual to do case conversion in Views in general.
+    header_text_->SetText(base::i18n::ToUpper(header_text));
 
     if (pref_service_) {
       hide_button_->SetToggled(omnibox::IsSuggestionGroupIdHidden(

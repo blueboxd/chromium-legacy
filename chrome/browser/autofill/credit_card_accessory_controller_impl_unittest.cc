@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -137,7 +138,7 @@ class CreditCardAccessoryControllerTest
 
   void SetFormOrigin(GURL origin) {
     FormData form;
-    form.unique_renderer_id = 1;
+    form.unique_renderer_id = FormRendererId(1);
     form.action = origin;
     form.main_frame_origin = url::Origin::Create(origin);
     client_.set_form_origin(origin);

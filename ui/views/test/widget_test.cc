@@ -5,6 +5,7 @@
 #include "ui/views/test/widget_test.h"
 
 #include "build/build_config.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/test/native_widget_factory.h"
 #include "ui/views/widget/root_view.h"
@@ -221,6 +222,33 @@ void WidgetDestroyedWaiter::Wait() {
 void WidgetDestroyedWaiter::OnWidgetDestroyed(Widget* widget) {
   widget->RemoveObserver(this);
   run_loop_.Quit();
+}
+
+WidgetVisibleWaiter::WidgetVisibleWaiter(Widget* widget) : widget_(widget) {}
+WidgetVisibleWaiter::~WidgetVisibleWaiter() = default;
+
+void WidgetVisibleWaiter::Wait() {
+  if (!widget_->IsVisible()) {
+    widget_observer_.Add(widget_);
+    run_loop_.Run();
+  }
+}
+
+void WidgetVisibleWaiter::OnWidgetVisibilityChanged(Widget* widget,
+                                                    bool visible) {
+  DCHECK_EQ(widget_, widget);
+  if (visible) {
+    widget_observer_.Remove(widget);
+    run_loop_.Quit();
+  }
+}
+
+void WidgetVisibleWaiter::OnWidgetDestroying(Widget* widget) {
+  DCHECK_EQ(widget_, widget);
+  ADD_FAILURE() << "Widget destroying before it became visible!";
+  // Even though the test failed, be polite and remove the observer so we
+  // don't crash with a UAF in the destructor.
+  widget_observer_.Remove(widget);
 }
 
 }  // namespace test

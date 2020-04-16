@@ -210,6 +210,7 @@ android_library("chrome_java_test_support") {
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",
     "//chrome/browser/flags:java",
     "//chrome/browser/preferences:java",
+    "//chrome/browser/settings:test_support_java",
     "//chrome/browser/tab:java",
     "//chrome/browser/ui/android/appmenu:java",
     "//chrome/browser/ui/android/appmenu:test_support_java",

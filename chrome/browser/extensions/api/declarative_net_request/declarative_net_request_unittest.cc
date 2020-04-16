@@ -19,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -913,7 +914,13 @@ TEST_P(MultipleRulesetsTest, EnabledRulesCount) {
 
 // Ensure that exceeding the rules count limit across rulesets raises an install
 // warning.
-TEST_P(MultipleRulesetsTest, StaticRuleCountExceeded) {
+// Fails on Linux. See https://crbug.com/1071403
+#if defined(OS_LINUX)
+#define MAYBE_StaticRuleCountExceeded DISABLED_StaticRuleCountExceeded
+#else
+#define MAYBE_StaticRuleCountExceeded StaticRuleCountExceeded
+#endif
+TEST_P(MultipleRulesetsTest, MAYBE_StaticRuleCountExceeded) {
   // Enabled on load.
   AddRuleset(CreateRuleset("1.json", 10000, 0, true));
   // Disabled by default.

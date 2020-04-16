@@ -10,15 +10,16 @@
 
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/renderer_id.h"
 
 namespace autofill {
 
 // Contains renderer ids of password related elements found by the form parser.
 struct ParsingResult {
-  uint32_t username_renderer_id;
-  uint32_t password_renderer_id;
-  uint32_t new_password_renderer_id;
-  uint32_t confirm_password_renderer_id;
+  FieldRendererId username_renderer_id;
+  FieldRendererId password_renderer_id;
+  FieldRendererId new_password_renderer_id;
+  FieldRendererId confirm_password_renderer_id;
 };
 
 struct PasswordAndMetadata {
@@ -57,12 +58,11 @@ struct PasswordFormFillData {
   // renderer form id. No special values for |has_renderer_ids| == false case
   // was introduced because the absent of ids is just temprorary situation while
   // the old form parsing still exists.
-  // If there is no form tag then |form_renderer_id| ==
-  // FormData::kNotSetRendererId.
+  // If there is no form tag then |form_renderer_id|.is_null().
   // Username and Password elements renderer ids are in
   // |username_field.unique_renderer_id| and |password_field.unique_renderer_id|
   // correspondingly.
-  uint32_t form_renderer_id = FormData::kNotSetRendererId;
+  FormRendererId form_renderer_id;
 
   // The name of the form.
   base::string16 name;

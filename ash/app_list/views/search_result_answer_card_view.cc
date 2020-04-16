@@ -391,10 +391,9 @@ SearchResultAnswerCardView::CreateAnswerCardResponseHeadersForTest(
     const std::string& title) {
   auto headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-  headers->AddHeader(base::StrCat({kSearchAnswerHasResult, ": true"}));
-  headers->AddHeader(base::StrCat({kSearchAnswerTitle, ": ", title.c_str()}));
-  headers->AddHeader(
-      base::StrCat({kSearchAnswerIssuedQuery, ": ", query.c_str()}));
+  headers->SetHeader(kSearchAnswerHasResult, "true");
+  headers->SetHeader(kSearchAnswerTitle, title);
+  headers->SetHeader(kSearchAnswerIssuedQuery, query);
   return headers;
 }
 

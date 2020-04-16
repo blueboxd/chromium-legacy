@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.site_settings;
 
+import org.chromium.components.content_settings.ContentSettingValues;
+
 /**
  * Encapsulates clearing the data of {@link Website}s.
  * Requires native library to be initialized.

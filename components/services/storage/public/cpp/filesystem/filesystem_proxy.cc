@@ -97,7 +97,7 @@ FilesystemProxy::~FilesystemProxy() = default;
 
 bool FilesystemProxy::PathExists(const base::FilePath& path) {
   if (!remote_directory_)
-    return base::PathExists(MakeAbsolute(path));
+    return base::PathExists(MaybeMakeAbsolute(path));
 
   bool exists = false;
   remote_directory_->PathExists(MakeRelative(path), &exists);
@@ -112,7 +112,7 @@ FileErrorOr<std::vector<base::FilePath>> FilesystemProxy::GetDirectoryEntries(
           ? mojom::GetEntriesMode::kFilesOnly
           : mojom::GetEntriesMode::kFilesAndDirectories;
   if (!remote_directory_)
-    return FilesystemImpl::GetDirectoryEntries(MakeAbsolute(path), mode);
+    return FilesystemImpl::GetDirectoryEntries(MaybeMakeAbsolute(path), mode);
 
   base::File::Error error = base::File::FILE_ERROR_IO;
   std::vector<base::FilePath> entries;
@@ -130,7 +130,7 @@ FileErrorOr<std::vector<base::FilePath>> FilesystemProxy::GetDirectoryEntries(
 FileErrorOr<base::File> FilesystemProxy::OpenFile(const base::FilePath& path,
                                                   int flags) {
   if (!remote_directory_) {
-    base::File file(MakeAbsolute(path), flags);
+    base::File file(MaybeMakeAbsolute(path), flags);
     if (!file.IsValid())
       return file.error_details();
     return file;
@@ -202,7 +202,7 @@ FileErrorOr<base::File> FilesystemProxy::OpenFile(const base::FilePath& path,
 
 bool FilesystemProxy::RemoveFile(const base::FilePath& path) {
   if (!remote_directory_)
-    return base::DeleteFile(MakeAbsolute(path), /*recursive=*/false);
+    return base::DeleteFile(MaybeMakeAbsolute(path), /*recursive=*/false);
 
   bool success = false;
   remote_directory_->RemoveFile(MakeRelative(path), &success);
@@ -212,7 +212,7 @@ bool FilesystemProxy::RemoveFile(const base::FilePath& path) {
 base::File::Error FilesystemProxy::CreateDirectory(const base::FilePath& path) {
   base::File::Error error = base::File::FILE_ERROR_IO;
   if (!remote_directory_) {
-    if (!base::CreateDirectoryAndGetError(MakeAbsolute(path), &error))
+    if (!base::CreateDirectoryAndGetError(MaybeMakeAbsolute(path), &error))
       return error;
     return base::File::FILE_OK;
   }
@@ -223,7 +223,7 @@ base::File::Error FilesystemProxy::CreateDirectory(const base::FilePath& path) {
 
 bool FilesystemProxy::RemoveDirectory(const base::FilePath& path) {
   if (!remote_directory_) {
-    const base::FilePath full_path = MakeAbsolute(path);
+    const base::FilePath full_path = MaybeMakeAbsolute(path);
     if (!base::DirectoryExists(full_path))
       return false;
     return base::DeleteFile(full_path, /*recursive=*/false);
@@ -238,7 +238,7 @@ base::Optional<base::File::Info> FilesystemProxy::GetFileInfo(
     const base::FilePath& path) {
   if (!remote_directory_) {
     base::File::Info info;
-    if (base::GetFileInfo(MakeAbsolute(path), &info))
+    if (base::GetFileInfo(MaybeMakeAbsolute(path), &info))
       return info;
     return base::nullopt;
   }
@@ -252,8 +252,8 @@ base::File::Error FilesystemProxy::RenameFile(const base::FilePath& old_path,
                                               const base::FilePath& new_path) {
   base::File::Error error = base::File::FILE_ERROR_IO;
   if (!remote_directory_) {
-    if (!base::ReplaceFile(MakeAbsolute(old_path), MakeAbsolute(new_path),
-                           &error)) {
+    if (!base::ReplaceFile(MaybeMakeAbsolute(old_path),
+                           MaybeMakeAbsolute(new_path), &error)) {
       return error;
     }
     return base::File::FILE_OK;
@@ -267,7 +267,7 @@ base::File::Error FilesystemProxy::RenameFile(const base::FilePath& old_path,
 FileErrorOr<std::unique_ptr<FilesystemProxy::FileLock>>
 FilesystemProxy::LockFile(const base::FilePath& path) {
   if (!remote_directory_) {
-    base::FilePath full_path = MakeAbsolute(path);
+    base::FilePath full_path = MaybeMakeAbsolute(path);
     FileErrorOr<base::File> result = FilesystemImpl::LockFileLocal(full_path);
     if (result.is_error())
       return result.error();
@@ -308,12 +308,12 @@ base::FilePath FilesystemProxy::MakeRelative(const base::FilePath& path) const {
   return relative_path;
 }
 
-base::FilePath FilesystemProxy::MakeAbsolute(const base::FilePath& path) const {
+base::FilePath FilesystemProxy::MaybeMakeAbsolute(
+    const base::FilePath& path) const {
   DCHECK(!remote_directory_);
-  if (path.IsAbsolute())
+  if (path.IsAbsolute() || root_.empty())
     return path;
 
-  DCHECK(!root_.empty());
   return root_.Append(path);
 }
 

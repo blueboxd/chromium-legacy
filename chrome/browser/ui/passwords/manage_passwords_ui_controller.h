@@ -149,7 +149,6 @@ class ManagePasswordsUIController
   void OnDialogHidden() override;
   bool AuthenticateUser() override;
   void AuthenticateUserForAccountStoreOptInAndSavePassword(
-      CoreAccountId account_id,
       const base::string16& username,
       const base::string16& password) override;
   bool ArePasswordsRevealedWhenBubbleIsOpened() const override;

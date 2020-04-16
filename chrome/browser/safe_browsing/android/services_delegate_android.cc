@@ -117,8 +117,4 @@ void ServicesDelegateAndroid::RemoveTelemetryService(Profile* profile) {
     telemetry_service_.reset();
 }
 
-std::string ServicesDelegateAndroid::GetSafetyNetId() const {
-  return database_manager_->GetSafetyNetId();
-}
-
 }  // namespace safe_browsing

@@ -17,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "components/autofill/content/renderer/field_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 
 namespace blink {
 class WebFormControlElement;
@@ -87,7 +88,7 @@ class FormCache {
 
   // Clears all entries from |initial_select_values_| and
   // |initial_checked_state_| whose keys not contained in |ids_to_retain|.
-  void PruneInitialValueCaches(const std::set<uint32_t>& ids_to_retain);
+  void PruneInitialValueCaches(const std::set<FieldRendererId>& ids_to_retain);
 
   // The frame this FormCache is associated with. Weak reference.
   blink::WebLocalFrame* frame_;
@@ -102,11 +103,11 @@ class FormCache {
 
   // The cached initial values for <select> elements. Entries are keyed by
   // unique_renderer_form_control_id of the WebSelectElements.
-  std::map<uint32_t, base::string16> initial_select_values_;
+  std::map<FieldRendererId, base::string16> initial_select_values_;
 
   // The cached initial values for checkable <input> elements. Entries are
   // keyed by the unique_renderer_form_control_id of the WebInputElements.
-  std::map<uint32_t, bool> initial_checked_state_;
+  std::map<FieldRendererId, bool> initial_checked_state_;
 
   DISALLOW_COPY_AND_ASSIGN(FormCache);
 };

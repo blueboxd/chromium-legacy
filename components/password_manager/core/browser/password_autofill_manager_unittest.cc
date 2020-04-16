@@ -57,7 +57,6 @@ const char kPasswordName[] = "password";
 const char kAliceUsername[] = "alice";
 const char kAlicePassword[] = "password";
 const char kAliceAccountStoredPassword[] = "account-stored-password";
-const char kAliceEmail[] = "alice@gmail.com";
 
 using autofill::PopupType;
 using autofill::Suggestion;
@@ -141,9 +140,8 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   }
 
   MOCK_METHOD0(GeneratePassword, void());
-  MOCK_METHOD2(TriggerReauthForAccount,
-               void(const CoreAccountId&,
-                    base::OnceCallback<void(ReauthSucceeded)>));
+  MOCK_METHOD1(TriggerReauthForPrimaryAccount,
+               void(base::OnceCallback<void(ReauthSucceeded)>));
   MOCK_METHOD1(TriggerSignIn, void(signin_metrics::AccessPoint));
   MOCK_METHOD0(GetFaviconService, favicon::FaviconService*());
   MOCK_METHOD1(NavigateToManagePasswordsPage, void(ManagePasswordsReferrer));
@@ -547,9 +545,6 @@ TEST_F(PasswordAutofillManagerTest,
   NiceMock<MockAutofillClient> autofill_client;
   InitializePasswordAutofillManager(&client, &autofill_client);
   client.SetAccountStorageOptIn(false);
-  const CoreAccountId kAliceId = client.identity_test_env()
-                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
-                                     .account_id;
   testing::Mock::VerifyAndClearExpectations(&autofill_client);
 
   // Accepting a suggestion should trigger a call to update the popup. The
@@ -565,7 +560,7 @@ TEST_F(PasswordAutofillManagerTest,
           PopupType::kPasswords))
       .WillOnce(testing::SaveArg<0>(&suggestions));
   EXPECT_CALL(autofill_client, PinPopupView);
-  EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _));
+  EXPECT_CALL(client, TriggerReauthForPrimaryAccount);
   EXPECT_CALL(autofill_client, GetPopupSuggestions())
       .WillOnce(Return(CreateTestSuggestions(/*has_opt_in_and_fill=*/true,
                                              /*has_opt_in_and_generate*/ false,
@@ -584,9 +579,6 @@ TEST_F(PasswordAutofillManagerTest,
   NiceMock<MockAutofillClient> autofill_client;
   InitializePasswordAutofillManager(&client, &autofill_client);
   client.SetAccountStorageOptIn(false);
-  const CoreAccountId kAliceId = client.identity_test_env()
-                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
-                                     .account_id;
   testing::Mock::VerifyAndClearExpectations(&autofill_client);
 
   // Accepting a suggestion should trigger a call to update the popup. The
@@ -603,7 +595,7 @@ TEST_F(PasswordAutofillManagerTest,
           PopupType::kPasswords))
       .WillOnce(testing::SaveArg<0>(&suggestions));
   EXPECT_CALL(autofill_client, PinPopupView);
-  EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _));
+  EXPECT_CALL(client, TriggerReauthForPrimaryAccount);
   EXPECT_CALL(autofill_client, GetPopupSuggestions())
       .WillOnce(Return(CreateTestSuggestions(/*has_opt_in_and_fill=*/false,
                                              /*has_opt_in_and_generate*/ true,
@@ -640,9 +632,6 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndFillUpdatesPopup) {
   std::vector<autofill::Suggestion> suggestions;
   InitializePasswordAutofillManager(&client, &autofill_client);
   client.SetAccountStorageOptIn(false);
-  const CoreAccountId kAliceId = client.identity_test_env()
-                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
-                                     .account_id;
   testing::Mock::VerifyAndClearExpectations(&autofill_client);
 
   // Accepting a suggestion should trigger a call to update the popup.
@@ -660,8 +649,8 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndFillUpdatesPopup) {
         .WillOnce(Return(CreateTestSuggestions(
             /*has_opt_in_and_fill=*/true, /*has_opt_in_and_generate*/ false,
             /*has_re_signin=*/false)));
-    EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _))
-        .WillOnce([](const auto& unused, auto reauth_callback) {
+    EXPECT_CALL(client, TriggerReauthForPrimaryAccount)
+        .WillOnce([](auto reauth_callback) {
           std::move(reauth_callback).Run(ReauthSucceeded(false));
         });
     EXPECT_CALL(
@@ -690,9 +679,6 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndGenerateUpdatesPopup) {
   std::vector<autofill::Suggestion> suggestions;
   InitializePasswordAutofillManager(&client, &autofill_client);
   client.SetAccountStorageOptIn(false);
-  const CoreAccountId kAliceId = client.identity_test_env()
-                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
-                                     .account_id;
   testing::Mock::VerifyAndClearExpectations(&autofill_client);
   EXPECT_CALL(*client.GetPasswordFeatureManager(), SetAccountStorageOptIn)
       .Times(0);
@@ -712,8 +698,8 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndGenerateUpdatesPopup) {
         .WillOnce(Return(CreateTestSuggestions(/*has_opt_in_and_fill=*/false,
                                                /*has_opt_in_and_generate*/ true,
                                                /*has_re_signin=*/false)));
-    EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _))
-        .WillOnce([](const auto& unused, auto reauth_callback) {
+    EXPECT_CALL(client, TriggerReauthForPrimaryAccount)
+        .WillOnce([](auto reauth_callback) {
           std::move(reauth_callback).Run(ReauthSucceeded(false));
         });
     EXPECT_CALL(
@@ -742,9 +728,6 @@ TEST_F(PasswordAutofillManagerTest, SuccessfullOptInAndFillHidesPopup) {
   NiceMock<MockAutofillClient> autofill_client;
   InitializePasswordAutofillManager(&client, &autofill_client);
   client.SetAccountStorageOptIn(false);
-  const CoreAccountId kAliceId = client.identity_test_env()
-                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
-                                     .account_id;
   testing::Mock::VerifyAndClearExpectations(&autofill_client);
 
   // Accepting a suggestion should trigger a call to update the popup.
@@ -755,8 +738,8 @@ TEST_F(PasswordAutofillManagerTest, SuccessfullOptInAndFillHidesPopup) {
   EXPECT_CALL(autofill_client, UpdatePopup);
   EXPECT_CALL(autofill_client, PinPopupView);
 
-  EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _))
-      .WillOnce([](const auto& id, auto reauth_callback) {
+  EXPECT_CALL(client, TriggerReauthForPrimaryAccount)
+      .WillOnce([](auto reauth_callback) {
         std::move(reauth_callback).Run(ReauthSucceeded(true));
       });
 
@@ -773,9 +756,6 @@ TEST_F(PasswordAutofillManagerTest,
   NiceMock<MockAutofillClient> autofill_client;
   InitializePasswordAutofillManager(&client, &autofill_client);
   client.SetAccountStorageOptIn(false);
-  const CoreAccountId kAliceId = client.identity_test_env()
-                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
-                                     .account_id;
   testing::Mock::VerifyAndClearExpectations(&autofill_client);
 
   // Accepting a suggestion should trigger a call to update the popup.
@@ -786,8 +766,8 @@ TEST_F(PasswordAutofillManagerTest,
   EXPECT_CALL(autofill_client, UpdatePopup);
   EXPECT_CALL(autofill_client, PinPopupView);
 
-  EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _))
-      .WillOnce([](const auto& id, auto reauth_callback) {
+  EXPECT_CALL(client, TriggerReauthForPrimaryAccount)
+      .WillOnce([](auto reauth_callback) {
         std::move(reauth_callback).Run(ReauthSucceeded(true));
       });
   EXPECT_CALL(
@@ -806,9 +786,6 @@ TEST_F(PasswordAutofillManagerTest, SuccessfullOptInMayShowEmptyState) {
   NiceMock<MockAutofillClient> autofill_client;
   InitializePasswordAutofillManager(&client, &autofill_client);
   client.SetAccountStorageOptIn(true);
-  const CoreAccountId kAliceId = client.identity_test_env()
-                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
-                                     .account_id;
   testing::Mock::VerifyAndClearExpectations(&autofill_client);
 
   // Only the unlock button was available. After being clicked, it's in a

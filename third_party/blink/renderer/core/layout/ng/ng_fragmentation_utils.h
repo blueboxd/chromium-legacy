@@ -47,14 +47,6 @@ inline bool IsResumingLayout(const NGBlockBreakToken* token) {
   return token && !token->IsBreakBefore();
 }
 
-// Return true if the fragment to be generated for the specified item is going
-// to be the first fragment for the node.
-inline bool IsFirstForNode(const NGInlineItem& item,
-                           const NGInlineBreakToken* token) {
-  return item.IsFirstForNode() &&
-         (!token || item.StartOffset() >= token->TextOffset());
-}
-
 // Calculate the final "break-between" value at a class A or C breakpoint. This
 // is the combination of all break-before and break-after values that met at the
 // breakpoint.

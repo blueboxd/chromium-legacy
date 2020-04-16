@@ -14,6 +14,7 @@
 #include "base/observer_list_types.h"
 #include "components/infobars/core/infobar.h"
 #import "ios/chrome/browser/infobars/infobar_controller_delegate.h"
+#import "ios/chrome/browser/infobars/infobar_type.h"
 
 @protocol InfobarUIDelegate;
 namespace infobars {
@@ -23,7 +24,12 @@ class InfoBarDelegate;
 // The iOS version of infobars::InfoBar.
 class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
  public:
-  InfoBarIOS(id<InfobarUIDelegate> controller,
+  InfoBarIOS(InfobarType infobar_type,
+             std::unique_ptr<infobars::InfoBarDelegate> delegate,
+             bool skip_banner = false);
+  // TODO(crbug.com/1030357): InfobarUIDelegate and this constructor can be
+  // removed once overlay-based infobar UI is fully supported.
+  InfoBarIOS(id<InfobarUIDelegate> ui_delegate,
              std::unique_ptr<infobars::InfoBarDelegate> delegate,
              bool skip_banner = false);
   ~InfoBarIOS() override;
@@ -43,6 +49,9 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
   // Adds and removes observers.
   void AddObserver(Observer* obs) { observers_.AddObserver(obs); }
   void RemoveObserver(Observer* obs) { observers_.RemoveObserver(obs); }
+
+  // Returns the infobar type.
+  InfobarType infobar_type() const { return infobar_type_; }
 
   // Whether or not the infobar has been accepted.  Set to true when the
   // associated action has been executed (e.g. page translation finished), and
@@ -69,7 +78,8 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
   void RemoveInfoBar() override;
 
   base::ObserverList<Observer, /*check_empty=*/true> observers_;
-  id<InfobarUIDelegate> controller_ = nil;
+  id<InfobarUIDelegate> ui_delegate_ = nil;
+  InfobarType infobar_type_;
   bool accepted_ = false;
   bool skip_banner_ = false;
   base::WeakPtrFactory<InfoBarIOS> weak_factory_{this};

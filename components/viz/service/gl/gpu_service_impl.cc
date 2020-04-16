@@ -722,11 +722,6 @@ void GpuServiceImpl::GetGpuSupportedRuntimeVersionAndDevicePerfInfo(
   DCHECK(device_perf_info_.has_value());
   std::move(callback).Run(gpu_info_.dx12_vulkan_version_info,
                           device_perf_info_.value());
-
-  // The unsandboxed GPU info collection process fulfilled its duty and Dxdiag
-  // task is not running. Bye bye.
-  if (number_of_long_dx_tasks_in_progress_ == 0)
-    MaybeExit(false);
 }
 
 void GpuServiceImpl::RequestCompleteGpuInfo(
@@ -746,11 +741,6 @@ void GpuServiceImpl::RequestCompleteGpuInfo(
           [](GpuServiceImpl* gpu_service,
              RequestCompleteGpuInfoCallback callback) {
             std::move(callback).Run(gpu_service->gpu_info_.dx_diagnostics);
-
-            // The unsandboxed GPU info collection process fulfilled its duty.
-            gpu_service->number_of_long_dx_tasks_in_progress_--;
-            if (gpu_service->number_of_long_dx_tasks_in_progress_ == 0)
-              gpu_service->MaybeExit(false);
           },
           this, std::move(callback))));
 }
@@ -785,7 +775,6 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
 
   // We can continue on shutdown here because we're not writing any critical
   // state in this task.
-  number_of_long_dx_tasks_in_progress_++;
   base::PostTaskAndReplyWithResult(
       base::ThreadPool::CreateCOMSTATaskRunner(
           {base::TaskPriority::USER_VISIBLE,

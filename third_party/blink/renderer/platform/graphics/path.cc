@@ -82,27 +82,30 @@ bool Path::Contains(const FloatPoint& point, WindRule rule) const {
   return path_.contains(x, y);
 }
 
-// FIXME: this method ignores the CTM and may yield inaccurate results for large
-// scales.
-SkPath Path::StrokePath(const StrokeData& stroke_data) const {
+SkPath Path::StrokePath(const StrokeData& stroke_data,
+                        const AffineTransform& transform) const {
+  float stroke_precision = clampTo<float>(
+      sqrt(std::max(transform.XScaleSquared(), transform.YScaleSquared())));
+  return StrokePath(stroke_data, stroke_precision);
+}
+
+SkPath Path::StrokePath(const StrokeData& stroke_data,
+                        float stroke_precision) const {
   PaintFlags flags;
   stroke_data.SetupPaint(&flags);
 
-  // Skia stroke resolution scale. This is multiplied by 4 internally
-  // (i.e. 1.0 corresponds to 1/4 pixel res).
-  static const SkScalar kResScale = 0.3f;
-
   SkPath stroke_path;
-  flags.getFillPath(path_, &stroke_path, nullptr, kResScale);
+  flags.getFillPath(path_, &stroke_path, nullptr, stroke_precision);
 
   return stroke_path;
 }
 
 bool Path::StrokeContains(const FloatPoint& point,
-                          const StrokeData& stroke_data) const {
+                          const StrokeData& stroke_data,
+                          const AffineTransform& transform) const {
   if (!std::isfinite(point.X()) || !std::isfinite(point.Y()))
     return false;
-  return StrokePath(stroke_data)
+  return StrokePath(stroke_data, transform)
       .contains(SkScalar(point.X()), SkScalar(point.Y()));
 }
 
@@ -111,7 +114,9 @@ FloatRect Path::BoundingRect() const {
 }
 
 FloatRect Path::StrokeBoundingRect(const StrokeData& stroke_data) const {
-  return StrokePath(stroke_data).computeTightBounds();
+  // Skia stroke resolution scale for reduced-precision requirements.
+  constexpr float kStrokePrecision = 0.3f;
+  return StrokePath(stroke_data, kStrokePrecision).computeTightBounds();
 }
 
 static FloatPoint* ConvertPathPoints(FloatPoint dst[],

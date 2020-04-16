@@ -6,6 +6,7 @@ package org.chromium.weblayer_private;
 
 import android.os.IBinder;
 
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.components.version_info.VersionConstants;
 import org.chromium.weblayer_private.interfaces.IWebLayer;
@@ -60,6 +61,7 @@ public final class WebLayerFactoryImpl extends IWebLayerFactory.Stub {
         return VersionConstants.PRODUCT_MAJOR_VERSION;
     }
 
+    @CalledByNative
     static int getClientMajorVersion() {
         if (sClientMajorVersion == 0) {
             throw new IllegalStateException(

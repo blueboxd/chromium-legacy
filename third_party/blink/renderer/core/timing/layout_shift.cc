@@ -34,10 +34,12 @@ void LayoutShift::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.Add("value", value_);
   builder.Add("hadRecentInput", had_recent_input_);
   builder.Add("lastInputTime", most_recent_input_timestamp_);
+  // TODO(crbug.com/1053510): add sources_.
 }
 
 void LayoutShift::Trace(Visitor* visitor) {
   PerformanceEntry::Trace(visitor);
+  visitor->Trace(sources_);
 }
 
 }  // namespace blink

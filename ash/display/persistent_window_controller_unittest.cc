@@ -9,6 +9,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -467,6 +468,142 @@ TEST_F(PersistentWindowControllerTest, RestoreBounds) {
   window_state->Restore();
   EXPECT_TRUE(window_state->IsNormalStateType());
   EXPECT_EQ(restore_bounds_in_screen, window->GetBoundsInScreen());
+}
+
+// Tests that the MRU order is maintained visually after adding and removing a
+// display.
+TEST_F(PersistentWindowControllerTest, MRUOrderMatchesStacking) {
+  UpdateDisplay("0+0-500x500,0+501-500x500");
+
+  // Add three windows, all on the secondary display.
+  const gfx::Rect bounds(500, 0, 200, 200);
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds);
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds);
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow(bounds);
+
+  // MRU order should be opposite of the order the windows were created. Verify
+  // that all three windows are indeed on the secondary display.
+  const int64_t primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
+  const int64_t secondary_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id();
+  display::Screen* screen = display::Screen::GetScreen();
+  const std::vector<aura::Window*> expected_mru_order = {
+      window3.get(), window2.get(), window1.get()};
+  ASSERT_EQ(
+      expected_mru_order,
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks));
+  for (auto* window : expected_mru_order)
+    ASSERT_EQ(secondary_id, screen->GetDisplayNearestWindow(window).id());
+
+  // Disconnect secondary display. The windows should move to the primary
+  // display and retain MRU ordering.
+  display::ManagedDisplayInfo primary_info =
+      display_manager()->GetDisplayInfo(primary_id);
+  display::ManagedDisplayInfo secondary_info =
+      display_manager()->GetDisplayInfo(secondary_id);
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.push_back(primary_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  // The order which the children are stacked in is the reverse of the order
+  // they are in the children() field.
+  aura::Window* parent = window1->parent();
+  ASSERT_TRUE(parent);
+  std::vector<aura::Window*> children_ordered_by_stacking = parent->children();
+  std::reverse(children_ordered_by_stacking.begin(),
+               children_ordered_by_stacking.end());
+  EXPECT_EQ(
+      expected_mru_order,
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks));
+  EXPECT_EQ(expected_mru_order, children_ordered_by_stacking);
+  EXPECT_EQ(primary_id, screen->GetDisplayNearestWindow(parent).id());
+
+  // Reconnect secondary display. The windows should move to the secondary
+  // display and retain MRU ordering.
+  display_info_list.push_back(secondary_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  parent = window1->parent();
+  children_ordered_by_stacking = parent->children();
+  std::reverse(children_ordered_by_stacking.begin(),
+               children_ordered_by_stacking.end());
+  ASSERT_TRUE(parent);
+  EXPECT_EQ(
+      expected_mru_order,
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks));
+  EXPECT_EQ(expected_mru_order, children_ordered_by_stacking);
+  EXPECT_EQ(secondary_id, screen->GetDisplayNearestWindow(parent).id());
+}
+
+// Similar to the above test but with windows created on both displays.
+TEST_F(PersistentWindowControllerTest, MRUOrderMatchesStackingInterleaved) {
+  UpdateDisplay("0+0-500x500,0+501-500x500");
+
+  // Add four windows, two on each display.
+  const gfx::Rect primary_bounds(200, 200);
+  const gfx::Rect secondary_bounds(500, 0, 200, 200);
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow(primary_bounds);
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow(secondary_bounds);
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow(primary_bounds);
+  std::unique_ptr<aura::Window> window4 = CreateTestWindow(secondary_bounds);
+
+  // MRU order should be opposite of the order the windows were created.
+  const int64_t primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
+  const int64_t secondary_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id();
+  display::Screen* screen = display::Screen::GetScreen();
+  const std::vector<aura::Window*> expected_mru_order = {
+      window4.get(), window3.get(), window2.get(), window1.get()};
+  ASSERT_EQ(
+      expected_mru_order,
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks));
+
+  // Disconnect secondary display. The windows should move to the primary
+  // display and retain MRU ordering. Note that this logic is part of
+  // RootWindowController and not PersistentWindowController.
+  display::ManagedDisplayInfo primary_info =
+      display_manager()->GetDisplayInfo(primary_id);
+  display::ManagedDisplayInfo secondary_info =
+      display_manager()->GetDisplayInfo(secondary_id);
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.push_back(primary_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  // The order which the children are stacked in is the reverse of the order
+  // they are in the children() field.
+  aura::Window* parent = window1->parent();
+  ASSERT_TRUE(parent);
+  ASSERT_EQ(parent, window2->parent());
+  std::vector<aura::Window*> children_ordered_by_stacking = parent->children();
+  std::reverse(children_ordered_by_stacking.begin(),
+               children_ordered_by_stacking.end());
+  EXPECT_EQ(
+      expected_mru_order,
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks));
+  EXPECT_EQ(expected_mru_order, children_ordered_by_stacking);
+  EXPECT_EQ(primary_id, screen->GetDisplayNearestWindow(parent).id());
+
+  // Reconnect secondary display. |window2| and |window4| should move back to
+  // the secondary display.
+  display_info_list.push_back(secondary_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(
+      expected_mru_order,
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks));
+  parent = window1->parent();
+  EXPECT_EQ(primary_id, screen->GetDisplayNearestWindow(parent).id());
+  ASSERT_EQ(2u, parent->children().size());
+  EXPECT_EQ(window1.get(), parent->children()[0]);
+  EXPECT_EQ(window3.get(), parent->children()[1]);
+
+  parent = window2->parent();
+  EXPECT_EQ(secondary_id, screen->GetDisplayNearestWindow(parent).id());
+  ASSERT_EQ(2u, parent->children().size());
+  EXPECT_EQ(window2.get(), parent->children()[0]);
+  EXPECT_EQ(window4.get(), parent->children()[1]);
 }
 
 }  // namespace ash

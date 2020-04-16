@@ -200,9 +200,4 @@ void ServicesDelegateDesktop::StopOnIOThread(bool shutdown) {
   database_manager_->StopOnIOThread(shutdown);
 }
 
-std::string ServicesDelegateDesktop::GetSafetyNetId() const {
-  NOTREACHED() << "Only implemented on Android";
-  return "";
-}
-
 }  // namespace safe_browsing

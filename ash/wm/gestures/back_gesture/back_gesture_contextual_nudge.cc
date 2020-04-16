@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/callback.h"
+#include "base/i18n/rtl.h"
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -104,8 +105,15 @@ std::unique_ptr<views::Widget> CreateWidget() {
   // nudge, which may based on the conditions to show the nudge.
   const gfx::Rect display_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  gfx::Rect widget_bounds(-kBackgroundWidth, display_bounds.y(),
-                          kBackgroundWidth, display_bounds.height());
+  gfx::Rect widget_bounds;
+  if (base::i18n::IsRTL()) {
+    widget_bounds = gfx::Rect(display_bounds.right(), display_bounds.y(),
+                              kBackgroundWidth, display_bounds.height());
+  } else {
+    widget_bounds =
+        gfx::Rect(display_bounds.x() - kBackgroundWidth, display_bounds.y(),
+                  kBackgroundWidth, display_bounds.height());
+  }
   widget->SetBounds(widget_bounds);
   return widget;
 }
@@ -182,9 +190,9 @@ class BackGestureContextualNudge::ContextualNudgeView
       label_ = AddChildView(std::make_unique<views::Label>());
       label_->SetBackgroundColor(SK_ColorTRANSPARENT);
       label_->SetEnabledColor(kLabelColor);
-      label_->SetText(
-          l10n_util::GetStringUTF16(IDS_ASH_BACK_GESTURE_CONTEXTUAL_NUDGE));
-      label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+      label_->SetText(l10n_util::GetStringUTF16(
+          base::i18n::IsRTL() ? IDS_ASH_BACK_GESTURE_CONTEXTUAL_NUDGE_RTL
+                              : IDS_ASH_BACK_GESTURE_CONTEXTUAL_NUDGE));
       label_->SetLineHeight(kLabelLineHeight);
       label_->SetFontList(
           gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
@@ -195,9 +203,10 @@ class BackGestureContextualNudge::ContextualNudgeView
     ~SuggestionView() override { StopObservingImplicitAnimations(); }
 
     void ScheduleBounceAnimation() {
+      const bool is_rtl = base::i18n::IsRTL();
       gfx::Transform transform;
       const int x_offset = kCircleRadius - kCircleInsideScreenWidth;
-      transform.Translate(-x_offset, 0);
+      transform.Translate(is_rtl ? x_offset : -x_offset, 0);
       ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
       animation.AddObserver(this);
       animation.SetTransitionDuration(kSuggestionBounceAnimationDuration);
@@ -206,7 +215,7 @@ class BackGestureContextualNudge::ContextualNudgeView
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       layer()->SetTransform(transform);
 
-      transform.Translate(x_offset, 0);
+      transform.Translate(is_rtl ? -x_offset : x_offset, 0);
       animation.SetTransitionDuration(kSuggestionBounceAnimationDuration);
       animation.SetTweenType(gfx::Tween::EASE_IN_OUT_2);
       animation.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
@@ -231,7 +240,7 @@ class BackGestureContextualNudge::ContextualNudgeView
       const gfx::Rect bounds = GetLocalBounds();
       gfx::Rect label_rect(bounds);
       label_rect.ClampToCenteredSize(label_->GetPreferredSize());
-      label_rect.set_x(bounds.left_center().x() + 2 * kCircleRadius +
+      label_rect.set_x(bounds.x() + 2 * kCircleRadius +
                        kPaddingBetweenCircleAndLabel + kLabelCornerRadius);
       label_->SetBoundsRect(label_rect);
     }
@@ -251,17 +260,24 @@ class BackGestureContextualNudge::ContextualNudgeView
           gfx::Vector2d(0, kBackNudgeShadowOffsetY2),
           kBackNudgeShadowBlurRadius2, kBackNudgeShadowColor2));
       circle_flags.setLooper(gfx::CreateShadowDrawLooper(shadows));
-      const gfx::Point left_center = GetLocalBounds().left_center();
-      canvas->DrawCircle(
-          gfx::Point(left_center.x() + kCircleRadius, left_center.y()),
-          kCircleRadius, circle_flags);
+      if (base::i18n::IsRTL()) {
+        const gfx::Point right_center = GetLocalBounds().right_center();
+        canvas->DrawCircle(
+            gfx::Point(right_center.x() - kCircleRadius, right_center.y()),
+            kCircleRadius, circle_flags);
+      } else {
+        const gfx::Point left_center = GetLocalBounds().left_center();
+        canvas->DrawCircle(
+            gfx::Point(left_center.x() + kCircleRadius, left_center.y()),
+            kCircleRadius, circle_flags);
+      }
 
       // Draw the black round rectangle around the text.
       cc::PaintFlags round_rect_flags;
       round_rect_flags.setStyle(cc::PaintFlags::kFill_Style);
       round_rect_flags.setAntiAlias(true);
       round_rect_flags.setColor(kLabelBackgroundColor);
-      gfx::Rect label_bounds(label_->bounds());
+      gfx::Rect label_bounds(label_->GetMirroredBounds());
       label_bounds.Inset(/*horizontal=*/-kLabelCornerRadius,
                          /*vertical=*/-kLabelTopBottomInset);
       canvas->DrawRoundRect(label_bounds, kLabelCornerRadius, round_rect_flags);
@@ -290,7 +306,9 @@ class BackGestureContextualNudge::ContextualNudgeView
   void ScheduleOffScreenToStartPositionAnimation() {
     animation_stage_ = AnimationStage::kSlidingIn;
     gfx::Transform transform;
-    transform.Translate(kBackgroundWidth, 0);
+    transform.Translate(base::i18n::IsRTL() ? -kBackgroundWidth + kCircleRadius
+                                            : kBackgroundWidth - kCircleRadius,
+                        0);
     ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
     animation.AddObserver(this);
     animation.SetTransitionDuration(kNudgeShowAnimationDuration);
@@ -302,7 +320,9 @@ class BackGestureContextualNudge::ContextualNudgeView
   void ScheduleStartPositionToOffScreenAnimation() {
     animation_stage_ = AnimationStage::kSlidingOut;
     gfx::Transform transform;
-    transform.Translate(-kBackgroundWidth, 0);
+    transform.Translate(base::i18n::IsRTL() ? kBackgroundWidth - kCircleRadius
+                                            : -kBackgroundWidth + kCircleRadius,
+                        0);
     ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
     animation.SetTransitionDuration(kNudgeHideAnimationDuration);
     animation.SetTweenType(gfx::Tween::EASE_OUT_2);
@@ -311,12 +331,7 @@ class BackGestureContextualNudge::ContextualNudgeView
   }
 
   // views::View:
-  void Layout() override {
-    gfx::Rect rect = GetLocalBounds();
-    rect.ClampToCenteredSize(gfx::Size(kBackgroundWidth, kBackgroundWidth));
-    rect.set_x(-kCircleRadius);
-    suggestion_view_->SetBoundsRect(rect);
-  }
+  void Layout() override { suggestion_view_->SetBoundsRect(GetLocalBounds()); }
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override {

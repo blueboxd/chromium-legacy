@@ -74,19 +74,20 @@ void SavePasswordProgressLogger::LogPasswordForm(
                 ScrubElementID(form.username_element));
   if (form.has_renderer_ids) {
     log.SetString(GetStringFromID(STRING_USERNAME_ELEMENT_RENDERER_ID),
-                  NumberToString(form.username_element_renderer_id));
+                  NumberToString(form.username_element_renderer_id.value()));
   }
   log.SetString(GetStringFromID(STRING_PASSWORD_ELEMENT),
                 ScrubElementID(form.password_element));
   if (form.has_renderer_ids) {
     log.SetString(GetStringFromID(STRING_PASSWORD_ELEMENT_RENDERER_ID),
-                  NumberToString(form.password_element_renderer_id));
+                  NumberToString(form.password_element_renderer_id.value()));
   }
   log.SetString(GetStringFromID(STRING_NEW_PASSWORD_ELEMENT),
                 ScrubElementID(form.new_password_element));
   if (form.has_renderer_ids) {
-    log.SetString(GetStringFromID(STRING_NEW_PASSWORD_ELEMENT_RENDERER_ID),
-                  NumberToString(form.new_password_element_renderer_id));
+    log.SetString(
+        GetStringFromID(STRING_NEW_PASSWORD_ELEMENT_RENDERER_ID),
+        NumberToString(form.new_password_element_renderer_id.value()));
   }
   if (!form.confirmation_password_element.empty()) {
     log.SetString(GetStringFromID(STRING_CONFIRMATION_PASSWORD_ELEMENT),
@@ -94,7 +95,8 @@ void SavePasswordProgressLogger::LogPasswordForm(
     if (form.has_renderer_ids) {
       log.SetString(
           GetStringFromID(STRING_CONFIRMATION_PASSWORD_ELEMENT_RENDERER_ID),
-          NumberToString(form.confirmation_password_element_renderer_id));
+          NumberToString(
+              form.confirmation_password_element_renderer_id.value()));
     }
   }
   log.SetBoolean(GetStringFromID(STRING_PASSWORD_GENERATED),
@@ -133,9 +135,8 @@ void SavePasswordProgressLogger::LogFormData(
              (form_data.is_form_tag ? "true" : "false") + "\n";
 
   if (form_data.is_form_tag) {
-    message +=
-        "Form renderer id: " + NumberToString(form_data.unique_renderer_id) +
-        "\n";
+    message += "Form renderer id: " +
+               NumberToString(form_data.unique_renderer_id.value()) + "\n";
   }
 
   // Log fields.
@@ -151,8 +152,8 @@ void SavePasswordProgressLogger::LogFormData(
     std::string field_info =
         ScrubElementID(field.name) +
         ": type=" + ScrubElementID(field.form_control_type) +
-        ", renderer_id = " + NumberToString(field.unique_renderer_id) + ", " +
-        is_visible + ", " + is_empty + autocomplete + "\n";
+        ", renderer_id = " + NumberToString(field.unique_renderer_id.value()) +
+        ", " + is_visible + ", " + is_empty + autocomplete + "\n";
     message += field_info;
   }
   message += "}";

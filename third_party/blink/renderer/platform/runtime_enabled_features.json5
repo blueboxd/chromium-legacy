@@ -958,6 +958,11 @@
       name: "LayoutNGTable",
     },
     {
+      // Adds the "sources" attribute to the LayoutShift interface for the
+      // Layout Instability API (bit.ly/cls-sources).
+      name: "LayoutShiftAttribution",
+    },
+    {
       name: "LazyFrameLoading",
       status: "stable",
     },

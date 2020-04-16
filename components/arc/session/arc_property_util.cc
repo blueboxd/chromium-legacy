@@ -41,11 +41,8 @@ constexpr char kPAIRegionsPropertyName[] = "pai-regions";
 constexpr int kAndroidMaxPropertyLength = 91;
 
 // The following 4 functions as well as the constants above are the _exact_ copy
-// of the ones in platform2/arc/setup/arc_setup_util.cc. Do not modify the
-// implementation directly here. Instead, modify it in platform2 with proper
-// unit tests, then roll the change into Chromium.
-// TODO(yusukes): Once we stop expanding the properties in arc-setup for the
-// container, remove the code in platform2/arc/setup/.
+// of the ones in platform2/arc/setup/arc_setup_util.cc. After modifying code in
+// Chromium, make sure to reflect the changes to the platform2 side.
 
 bool FindProperty(const std::string& line_prefix_to_find,
                   std::string* out_prop,

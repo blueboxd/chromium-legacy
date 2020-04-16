@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/logging/stub_log_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,14 +58,14 @@ class BrowserSavePasswordProgressLoggerTest : public testing::Test {
     field.form_control_type = "password";
     field.is_focusable = true;
     field.autocomplete_attribute = "new-password";
-    field.unique_renderer_id = 10;
+    field.unique_renderer_id = autofill::FieldRendererId(10);
     form_.fields.push_back(field);
 
     // Add a text field.
     field.name = base::UTF8ToUTF16("email");
     field.form_control_type = "text";
     field.is_focusable = false;
-    field.unique_renderer_id = 42;
+    field.unique_renderer_id = autofill::FieldRendererId(42);
     field.value = base::UTF8ToUTF16("a@example.com");
     field.autocomplete_attribute.clear();
     form_.fields.push_back(field);

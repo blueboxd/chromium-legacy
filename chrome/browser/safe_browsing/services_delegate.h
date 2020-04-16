@@ -142,8 +142,6 @@ class ServicesDelegate {
   virtual SafeBrowsingNetworkContext* GetSafeBrowsingNetworkContext(
       Profile* profile) const;
 
-  virtual std::string GetSafetyNetId() const = 0;
-
  protected:
   network::mojom::NetworkContextParamsPtr CreateNetworkContextParams(
       Profile* profile);

@@ -174,6 +174,8 @@ void MetricsReporter::NetworkRequestComplete(NetworkRequestType type,
 
 void MetricsReporter::OnLoadStream(LoadStreamStatus load_from_store_status,
                                    LoadStreamStatus final_status) {
+  DVLOG(1) << "OnLoadStream load_from_store_status=" << load_from_store_status
+           << " final_status=" << final_status;
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.LoadStreamStatus.Initial",
                             final_status);
   if (load_from_store_status != LoadStreamStatus::kNoStatus) {
@@ -192,11 +194,6 @@ void MetricsReporter::OnBackgroundRefresh(LoadStreamStatus final_status) {
 void MetricsReporter::OnLoadMore(LoadStreamStatus final_status) {
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.LoadStreamStatus.LoadMore",
                             final_status);
-}
-
-void MetricsReporter::OnMaybeTriggerRefresh(TriggerType trigger,
-                                            bool clear_all_before_refresh) {
-  // TODO(harringtond): Either add UMA for this or remove it.
 }
 
 void MetricsReporter::OnClearAll(base::TimeDelta time_since_last_clear) {

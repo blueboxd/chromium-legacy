@@ -5891,11 +5891,10 @@ void RenderFrameHostImpl::HandleRendererDebugURL(const GURL& url) {
 }
 
 void RenderFrameHostImpl::SetUpMojoIfNeeded() {
-  if (registry_.get())
+  if (associated_registry_.get())
     return;
 
   associated_registry_ = std::make_unique<blink::AssociatedInterfaceRegistry>();
-  registry_ = std::make_unique<service_manager::BinderRegistry>();
 
   auto bind_frame_host_receiver =
       [](RenderFrameHostImpl* impl,
@@ -5965,8 +5964,6 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
 }
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {
-  registry_.reset();
-
   frame_.reset();
   frame_bindings_control_.reset();
   frame_host_associated_receiver_.reset();
@@ -7026,10 +7023,10 @@ void RenderFrameHostImpl::GetInterface(
   // Requests are serviced on |document_scoped_interface_provider_receiver_|. It
   // is therefore safe to assume that every incoming interface request is coming
   // from the currently active document in the corresponding RenderFrame.
-  if (!registry_ ||
-      !registry_->TryBindInterface(interface_name, &interface_pipe)) {
-    delegate_->OnInterfaceRequest(this, interface_name, &interface_pipe);
-  }
+  // NOTE: this way of acquiring interfaces has been replaced with
+  // BrowserInterfaceBroker (see https://crbug.com/718652). The code below is
+  // left to support the CastWebContentsImpl use case.
+  delegate_->OnInterfaceRequest(this, interface_name, &interface_pipe);
 }
 
 void RenderFrameHostImpl::CreateAppCacheBackend(

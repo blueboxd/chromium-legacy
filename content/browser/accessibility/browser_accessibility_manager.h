@@ -341,7 +341,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
 
   // True by default, but some platforms want to treat the root
   // scroll offsets separately.
-  virtual bool UseRootScrollOffsetsWhenComputingBounds();
+  bool UseRootScrollOffsetsWhenComputingBounds();
+  void SetUseRootScrollOffsetsWhenComputingBoundsForTesting(bool use);
 
   // Walk the tree using depth-first pre-order traversal.
   static BrowserAccessibility* NextInTreeOrder(
@@ -517,6 +518,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // For testing only: If true, the manually-set device scale factor will be
   // used and it won't be updated from the delegate.
   bool use_custom_device_scale_factor_for_testing_;
+
+  // Whether we should include or exclude the scroll offsets on the root
+  // scroller when computing bounding rectangles. Usually true, but on
+  // some platforms the root scroll offsets are handled separately.
+  bool use_root_scroll_offsets_when_computing_bounds_ = true;
 
   // For testing only: A function to call when a generated event is fired.
   GeneratedEventCallbackForTesting generated_event_callback_for_testing_;

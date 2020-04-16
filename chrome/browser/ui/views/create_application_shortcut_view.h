@@ -48,19 +48,22 @@ class CreateChromeApplicationShortcutView : public views::DialogDelegateView,
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
-  bool Accept() override;
-  bool Cancel() override;
 
   // ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
+  CreateChromeApplicationShortcutView(Profile* profile,
+                                      const base::Callback<void(bool)>& cb);
+
   // Creates a new check-box with the given text and checked state.
   std::unique_ptr<views::Checkbox> AddCheckbox(const base::string16& text,
                                                bool checked);
 
   // Called when the app's ShortcutInfo (with icon) is loaded.
   void OnAppInfoLoaded(std::unique_ptr<web_app::ShortcutInfo> shortcut_info);
+
+  void OnDialogAccepted();
 
   // Profile in which the shortcuts will be created.
   Profile* profile_;

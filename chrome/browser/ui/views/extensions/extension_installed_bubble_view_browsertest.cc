@@ -20,47 +20,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_observer.h"
-
-namespace {
-
-// Helper class to wait for a views::Widget to become visible.
-// TODO(devlin): Move this to a common place, and hunt down other similar
-// functionality.
-class WidgetVisibleWaiter : public views::WidgetObserver {
- public:
-  explicit WidgetVisibleWaiter(views::Widget* widget) : widget_(widget) {}
-  ~WidgetVisibleWaiter() override = default;
-
-  void Wait() {
-    if (!widget_->IsVisible()) {
-      widget_observer_.Add(widget_);
-      run_loop_.Run();
-    }
-  }
-
-  // WidgetObserver:
-  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override {
-    DCHECK_EQ(widget_, widget);
-    if (visible)
-      run_loop_.Quit();
-  }
-
-  void OnWidgetDestroying(views::Widget* widget) override {
-    DCHECK_EQ(widget_, widget);
-    ADD_FAILURE() << "Widget destroying before it became visible!";
-    // Even though the test failed, be polite and remove the observer so we
-    // don't crash with a UAF in the destructor.
-    widget_observer_.Remove(widget);
-  }
-
- private:
-  views::Widget* const widget_;
-  base::RunLoop run_loop_;
-  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
-};
-
-}  // namespace
 
 class ExtensionInstalledBubbleViewsBrowserTest
     : public SupportsTestDialog<extensions::ExtensionBrowserTest>,
@@ -135,7 +94,7 @@ void ExtensionInstalledBubbleViewsBrowserTest::ShowUi(const std::string& name) {
   if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
     // With the toolbar menu, the extension slides out of the menu before the
     // bubble shows. Wait for the bubble to become visible.
-    WidgetVisibleWaiter(bubble_widget_).Wait();
+    views::test::WidgetVisibleWaiter(bubble_widget_).Wait();
   }
 }
 

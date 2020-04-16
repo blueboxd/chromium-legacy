@@ -11,6 +11,7 @@
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -93,7 +94,12 @@ void PersistentWindowController::MaybeRestorePersistentWindowBounds() {
 
   display::Screen* screen = display::Screen::GetScreen();
   int window_restored_count = 0;
-  for (auto* window : GetWindowList()) {
+  // Maybe add the windows to a new display via SetBoundsInScreen() depending on
+  // their persistent window info. Go backwards so that if they do get added to
+  // another root window's container, the stacking order will match the MRU
+  // order (windows added first are stacked at the bottom).
+  std::vector<aura::Window*> mru_window_list = GetWindowList();
+  for (auto* window : base::Reversed(mru_window_list)) {
     WindowState* window_state = WindowState::Get(window);
     if (!window_state->persistent_window_info())
       continue;

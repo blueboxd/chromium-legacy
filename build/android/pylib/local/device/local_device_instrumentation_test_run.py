@@ -141,6 +141,7 @@ class LocalDeviceInstrumentationTestRun(
     self._flag_changers = {}
     self._shared_prefs_to_restore = []
     self._skia_gold_work_dir = None
+    self._skia_gold_session_manager = None
 
   #override
   def TestPackage(self):
@@ -370,6 +371,8 @@ class LocalDeviceInstrumentationTestRun(
     # expectations can be re-used between tests, saving a significant amount
     # of time.
     self._skia_gold_work_dir = tempfile.mkdtemp()
+    self._skia_gold_session_manager = gold_utils.SkiaGoldSessionManager(
+        self._skia_gold_work_dir, self._test_instance.skia_gold_properties)
     if self._test_instance.wait_for_java_debugger:
       apk = self._test_instance.apk_under_test or self._test_instance.test_apk
       logging.warning('*' * 80)
@@ -381,6 +384,7 @@ class LocalDeviceInstrumentationTestRun(
   def TearDown(self):
     shutil.rmtree(self._skia_gold_work_dir)
     self._skia_gold_work_dir = None
+    self._skia_gold_session_manager = None
     # By default, teardown will invoke ADB. When receiving SIGTERM due to a
     # timeout, there's a high probability that ADB is non-responsive. In these
     # cases, sending an ADB command will potentially take a long time to time
@@ -923,8 +927,6 @@ class LocalDeviceInstrumentationTestRun(
 
     gold_properties = self._test_instance.skia_gold_properties
     with tempfile_ext.NamedTemporaryDirectory() as host_dir:
-      gold_session = gold_utils.SkiaGoldSession(
-          working_dir=self._skia_gold_work_dir, gold_properties=gold_properties)
       use_luci = not (gold_properties.local_pixel_tests
                       or gold_properties.no_luci_auth)
 
@@ -948,9 +950,11 @@ class LocalDeviceInstrumentationTestRun(
               'when doing Skia Gold comparison.' % image_name)
           continue
 
+        gold_session = self._skia_gold_session_manager.GetSkiaGoldSession(
+            keys_file=json_path)
+
         status, error = gold_session.RunComparison(
             name=render_name,
-            keys_file=json_path,
             png_file=image_path,
             output_manager=self._env.output_manager,
             use_luci=use_luci)
@@ -966,6 +970,9 @@ class LocalDeviceInstrumentationTestRun(
         if status == status_codes.AUTH_FAILURE:
           _AppendToLog(results,
                        'Gold authentication failed with output %s' % error)
+        elif status == status_codes.INIT_FAILURE:
+          _AppendToLog(results,
+                       'Gold initialization failed with output %s' % error)
         elif status == status_codes.COMPARISON_FAILURE_REMOTE:
           triage_link = gold_session.GetTriageLink(render_name)
           if not triage_link:

@@ -27,10 +27,6 @@ oncalls {
   url: "https://rota-ng.appspot.com/legacy/sheriff_perfbot.json"
 }
 oncalls {
-  name: "V8"
-  url: "https://rota-ng.appspot.com/legacy/sheriff_v8.json"
-}
-oncalls {
   name: "Trooper"
   url: "https://rota-ng.appspot.com/legacy/trooper.json"
 }

@@ -316,17 +316,6 @@ safe_browsing::ThreatSource RemoteSafeBrowsingDatabaseManager::GetThreatSource()
   return safe_browsing::ThreatSource::REMOTE;
 }
 
-std::string RemoteSafeBrowsingDatabaseManager::GetSafetyNetId() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(IsSupported());
-  if (!enabled_)
-    return std::string();
-
-  SafeBrowsingApiHandler* api_handler = SafeBrowsingApiHandler::GetInstance();
-  DCHECK(api_handler) << "SafeBrowsingApiHandler was never constructed";
-  return api_handler->GetSafetyNetId();
-}
-
 bool RemoteSafeBrowsingDatabaseManager::IsDownloadProtectionEnabled() const {
   return false;
 }

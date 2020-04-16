@@ -37,11 +37,11 @@
 #include "weblayer/browser/file_select_helper.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/i18n_util.h"
-#include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/profile_impl.h"
+#include "weblayer/common/isolated_world_ids.h"
 #include "weblayer/public/fullscreen_delegate.h"
 #include "weblayer/public/new_tab_delegate.h"
 #include "weblayer/public/tab_observer.h"
@@ -64,6 +64,7 @@
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/javascript_tab_modal_dialog_manager_delegate_android.h"
 #include "weblayer/browser/top_controls_container_view.h"
+#include "weblayer/browser/weblayer_factory_impl_android.h"
 #include "weblayer/browser/webrtc/media_stream_manager.h"
 #endif
 
@@ -650,8 +651,27 @@ void TabImpl::AddNewContents(content::WebContents* source,
 }
 
 void TabImpl::CloseContents(content::WebContents* source) {
-  if (new_tab_delegate_)
-    new_tab_delegate_->CloseTab();
+  // The only time that |browser_| is null is during shutdown, and this callback
+  // shouldn't come in at that time.
+  DCHECK(browser_);
+
+#if defined(OS_ANDROID)
+  // Prior to 84 closing tabs was delegated to the embedder. In 84 closing tabs
+  // was changed to be done internally in the implementation, but as this
+  // required changes on the client side as well as in the implementation the
+  // prior flow needs to be preserved when the client is expecting it.
+  if (WebLayerFactoryImplAndroid::GetClientMajorVersion() < 84) {
+    if (new_tab_delegate_)
+      new_tab_delegate_->CloseTab();
+  } else {
+    JNIEnv* env = AttachCurrentThread();
+    Java_TabImpl_handleCloseFromWebContents(env, java_impl_);
+    // The above call resulted in the destruction of this; nothing to do but
+    // return.
+  }
+#else
+  browser_->RemoveTab(this);
+#endif
 }
 
 void TabImpl::FindReply(content::WebContents* web_contents,

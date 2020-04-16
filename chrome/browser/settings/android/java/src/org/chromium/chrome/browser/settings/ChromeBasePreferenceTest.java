@@ -15,10 +15,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.stringContainsInOrder;
 
 import android.content.Context;
-import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.ViewInteraction;
-import android.support.test.rule.ActivityTestRule;
 
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
@@ -47,8 +44,8 @@ import java.util.List;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class ChromeBasePreferenceTest {
     @Rule
-    public ActivityTestRule<SettingsActivity> mRule =
-            new ActivityTestRule<>(SettingsActivity.class);
+    public SettingsActivityTestRule<DummySettingsForTest> mActivityRule =
+            new SettingsActivityTestRule<>(DummySettingsForTest.class);
 
     private PreferenceScreen mPreferenceScreen;
     private Context mContext;
@@ -58,13 +55,8 @@ public class ChromeBasePreferenceTest {
 
     @Before
     public void setUp() {
-        Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
-                InstrumentationRegistry.getInstrumentation().getContext(),
-                DummySettingsForTest.class.getName());
-        mRule.launchActivity(intent);
-
-        PreferenceFragmentCompat fragment =
-                (PreferenceFragmentCompat) mRule.getActivity().getMainFragment();
+        mActivityRule.startSettingsActivity();
+        PreferenceFragmentCompat fragment = mActivityRule.getFragment();
         mPreferenceScreen = fragment.getPreferenceScreen();
         mContext = fragment.getPreferenceManager().getContext();
     }

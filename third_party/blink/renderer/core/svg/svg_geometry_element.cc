@@ -118,9 +118,17 @@ bool SVGGeometryElement::isPointInStroke(SVGPointTearOff* point) const {
         layout_shape.ComputeNonScalingStrokeTransform();
     path.Transform(transform);
     local_point = transform.MapPoint(local_point);
+
+    // Un-scale to get back to the root-transform (cheaper than re-computing
+    // the root transform from scratch).
+    AffineTransform root_transform;
+    root_transform.Scale(layout_shape.StyleRef().EffectiveZoom())
+        .Multiply(transform);
+    return path.StrokeContains(local_point, stroke_data, root_transform);
   }
   // Path::StrokeContains will reject points with a non-finite component.
-  return path.StrokeContains(local_point, stroke_data);
+  return path.StrokeContains(local_point, stroke_data,
+                             layout_shape.ComputeRootTransform());
 }
 
 Path SVGGeometryElement::ToClipPath() const {

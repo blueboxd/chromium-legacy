@@ -29,6 +29,7 @@ include_rules = [
   "+base/observer_list.h",
   "+base/optional.h",
   "+base/pending_task.h",
+  "+base/profiler/sample_metadata.h",
   "+base/run_loop.h",
   "+base/sequence_checker.h",
   "+base/single_thread_task_runner.h",

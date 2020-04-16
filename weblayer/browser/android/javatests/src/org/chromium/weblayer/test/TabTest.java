@@ -72,12 +72,12 @@ public class TabTest {
         String url = mActivityTestRule.getTestDataURL("simple_page.html");
         mActivity = mActivityTestRule.launchShellWithUrl(url);
         Assert.assertNotNull(mActivity);
-        CloseTabNewTabCallbackImpl callback = new CloseTabNewTabCallbackImpl();
+        OnTabRemovedTabListCallbackImpl callback = new OnTabRemovedTabListCallbackImpl();
         // Verify that calling dispatchBeforeUnloadAndClose will close the tab asynchronously when
         // there is no beforeunload handler.
         Assert.assertFalse(TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            mActivity.getBrowser().registerTabListCallback(callback);
             Tab tab = mActivity.getBrowser().getActiveTab();
-            tab.setNewTabCallback(callback);
             tab.dispatchBeforeUnloadAndClose();
             return callback.hasClosed();
         }));
@@ -91,11 +91,11 @@ public class TabTest {
         String url = mActivityTestRule.getTestDataURL("before_unload.html");
         mActivity = mActivityTestRule.launchShellWithUrl(url);
         Assert.assertNotNull(mActivity);
-        CloseTabNewTabCallbackImpl callback = new CloseTabNewTabCallbackImpl();
+        OnTabRemovedTabListCallbackImpl callback = new OnTabRemovedTabListCallbackImpl();
         // Verify that beforeunload is not run when there's no user action.
         Assert.assertFalse(TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            mActivity.getBrowser().registerTabListCallback(callback);
             Tab tab = mActivity.getBrowser().getActiveTab();
-            tab.setNewTabCallback(callback);
             tab.dispatchBeforeUnloadAndClose();
             return callback.hasClosed();
         }));

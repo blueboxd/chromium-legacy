@@ -852,7 +852,7 @@ bool BaseRenderingContext2D::IsPointInStrokeInternal(const Path& path,
   std::copy(GetState().LineDash().begin(), GetState().LineDash().end(),
             line_dash.begin());
   stroke_data.SetLineDash(line_dash, GetState().LineDashOffset());
-  return path.StrokeContains(transformed_point, stroke_data);
+  return path.StrokeContains(transformed_point, stroke_data, ctm);
 }
 
 void BaseRenderingContext2D::clearRect(double x,

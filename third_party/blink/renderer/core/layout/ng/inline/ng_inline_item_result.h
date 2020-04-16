@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_ITEM_RESULT_H_
 
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
@@ -34,6 +35,14 @@ struct CORE_EXPORT NGInlineItemResult {
   unsigned Length() const {
     DCHECK_GT(end_offset, start_offset);
     return end_offset - start_offset;
+  }
+
+  // Return true if the fragment to be generated for the specified item is going
+  // to be the first fragment for the node.
+  bool IsFirstForNode() const {
+    DCHECK(item->Type() == NGInlineItem::kText ||
+           item->Type() == NGInlineItem::kControl);
+    return item->IsFirstForNode() && start_offset == item->StartOffset();
   }
 
   LayoutUnit HyphenInlineSize() const {

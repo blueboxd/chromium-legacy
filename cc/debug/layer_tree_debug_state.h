@@ -46,7 +46,7 @@ class CC_DEBUG_EXPORT LayerTreeDebugState {
 
   int slow_down_raster_scale_factor;
   bool rasterize_only_visible_content;
-  bool show_picture_borders;
+  bool highlight_non_lcd_text_layers;
 
   bool show_hit_test_borders;
 

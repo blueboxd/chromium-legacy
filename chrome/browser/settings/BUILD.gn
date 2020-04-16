@@ -24,6 +24,7 @@ android_library("javatests") {
 
   deps = [
     ":java",
+    ":test_support_java",
     "//chrome/android:chrome_java",
     "//chrome/test/android:chrome_java_test_support",
     "//content/public/test/android:content_java_test_support",
@@ -34,5 +35,17 @@ android_library("javatests") {
     "//third_party/espresso:espresso_all_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
+  ]
+}
+
+android_library("test_support_java") {
+  testonly = true
+
+  sources = [ "android/java/src/org/chromium/chrome/browser/settings/SettingsActivityTestRule.java" ]
+
+  deps = [
+    "//chrome/android:chrome_java",
+    "//third_party/android_deps:androidx_preference_preference_java",
+    "//third_party/android_support_test_runner:rules_java",
   ]
 }

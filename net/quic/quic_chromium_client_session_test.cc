@@ -107,7 +107,7 @@ class TestingQuicChromiumClientSession : public QuicChromiumClientSession {
  public:
   using QuicChromiumClientSession::QuicChromiumClientSession;
 
-  MOCK_METHOD0(OnPathDegrading, void());
+  MOCK_METHOD(void, OnPathDegrading, (), (override));
 
   void ReallyOnPathDegrading() { QuicChromiumClientSession::OnPathDegrading(); }
 };

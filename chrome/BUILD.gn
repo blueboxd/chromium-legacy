@@ -1506,11 +1506,6 @@ group("strings") {
 }
 
 if (is_android) {
-  java_cpp_enum("content_setting_javagen") {
-    sources =
-        [ "../components/content_settings/core/common/content_settings.h" ]
-  }
-
   java_cpp_enum("cookie_controls_mode_javagen") {
     sources =
         [ "../components/content_settings/core/browser/cookie_settings.h" ]

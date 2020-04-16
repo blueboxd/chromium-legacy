@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "chromecast/public/cast_sys_info.h"
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
@@ -56,6 +57,9 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
       PrefService* pref_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~CastMetricsServiceClient() override;
+
+  CastMetricsServiceClient(const CastMetricsServiceClient&) = delete;
+  CastMetricsServiceClient& operator=(const CastMetricsServiceClient&) = delete;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -122,8 +126,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   base::RepeatingCallback<void(base::OnceClosure)> collect_final_metrics_cb_;
   base::RepeatingCallback<void(base::OnceClosure)> external_events_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastMetricsServiceClient);
+  const std::unique_ptr<CastSysInfo> cast_sys_info_;
 };
 
 }  // namespace metrics

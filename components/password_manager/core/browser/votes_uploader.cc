@@ -175,7 +175,7 @@ size_t GetLowEntropyHashValue(const base::string16& value) {
 }  // namespace
 
 SingleUsernameVoteData::SingleUsernameVoteData(
-    uint32_t renderer_id,
+    autofill::FieldRendererId renderer_id,
     const FormPredictions& form_predictions)
     : renderer_id(renderer_id), form_predictions(form_predictions) {}
 
@@ -444,7 +444,7 @@ void VotesUploader::UploadFirstLoginVotes(
 }
 
 void VotesUploader::SetInitialHashValueOfUsernameField(
-    uint32_t username_element_renderer_id,
+    autofill::FieldRendererId username_element_renderer_id,
     FormStructure* form_structure) {
   auto it = initial_values_.find(username_element_renderer_id);
 
@@ -487,7 +487,8 @@ void VotesUploader::MaybeSendSingleUsernameVote(bool credentials_saved) {
     AutofillField* field = form_to_upload->field(i);
 
     ServerFieldType type = autofill::UNKNOWN_TYPE;
-    uint32_t field_renderer_id = predictions.fields[i].renderer_id;
+    autofill::FieldRendererId field_renderer_id =
+        predictions.fields[i].renderer_id;
     if (field_renderer_id == single_username_vote_data_->renderer_id) {
       if (field_info_manager->GetFieldType(predictions.form_signature,
                                            predictions.fields[i].signature) !=

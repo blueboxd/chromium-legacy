@@ -17,9 +17,12 @@
 #import "ios/chrome/browser/ui/activity_services/share_protocol.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data_builder.h"
+#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,8 +40,8 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 // The time when the Share Page operation started.
 @property(nonatomic, assign) base::TimeTicks sharePageStartTime;
 
-// Shares the current page using the |canonicalURL|.
-- (void)sharePageWithCanonicalURL:(const GURL&)canonicalURL;
+// Coordinator used to display error messages when activities fail.
+@property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 
 @end
 
@@ -59,6 +62,9 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 - (void)stop {
   [self.browser->GetCommandDispatcher() stopDispatchingToTarget:self];
+
+  [self.alertCoordinator stop];
+  self.alertCoordinator = nil;
 }
 
 - (void)cancelShare {
@@ -66,11 +72,30 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
   [controller cancelShareAnimated:NO];
 }
 
+- (void)showErrorAlertWithStringTitle:(NSString*)title
+                              message:(NSString*)message {
+  self.alertCoordinator = [[AlertCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                         browser:self.browser
+                           title:title
+                         message:message];
+
+  // Add OK button.
+  __weak __typeof(self) weakSelf = self;
+  ProceduralBlock action = ^{
+    [weakSelf alertDismissed];
+  };
+  [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_APP_OK)
+                                   action:action
+                                    style:UIAlertActionStyleDefault];
+  [self.alertCoordinator start];
+}
+
 #pragma mark - Command handlers
 
 - (void)sharePage {
   self.sharePageStartTime = base::TimeTicks::Now();
-  __weak ActivityServiceLegacyCoordinator* weakSelf = self;
+  __weak __typeof(self) weakSelf = self;
   activity_services::RetrieveCanonicalUrl(
       self.browser->GetWebStateList()->GetActiveWebState(), ^(const GURL& url) {
         [weakSelf sharePageWithCanonicalURL:url];
@@ -89,6 +114,7 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 #pragma mark - Private Methods
 
+// Shares the current page using the |canonicalURL|.
 - (void)sharePageWithCanonicalURL:(const GURL&)canonicalURL {
   ShareToData* data = activity_services::ShareToDataForWebState(
       self.browser->GetWebStateList()->GetActiveWebState(), canonicalURL);
@@ -114,6 +140,12 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
            passwordProvider:self
            positionProvider:self.positionProvider
        presentationProvider:self.presentationProvider];
+}
+
+// Cleans up the alert's components.
+- (void)alertDismissed {
+  [self.alertCoordinator stop];
+  self.alertCoordinator = nil;
 }
 
 @end

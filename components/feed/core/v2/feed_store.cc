@@ -28,11 +28,9 @@ namespace {
 // 'c/<content-id>' -> content
 // 'a/<id>' -> action
 // 's/<content-id>' -> shared_state
-// 'N' -> next_stream_state
 constexpr char kMainStreamId[] = "0";
 const char kStreamDataKey[] = "S/0";
 const char kLocalActionPrefix[] = "a/";
-const char kNextStreamStateKey[] = "N";
 
 leveldb::ReadOptions CreateReadOptions() {
   leveldb::ReadOptions opts;
@@ -73,8 +71,6 @@ std::string KeyForRecord(const feedstore::Record& record) {
       return LocalActionKey(record.local_action().id());
     case feedstore::Record::kSharedState:
       return SharedStateKey(record.shared_state().content_id());
-    case feedstore::Record::kNextStreamState:
-      return kNextStreamStateKey;
     case feedstore::Record::DATA_NOT_SET:  // fall through
       NOTREACHED() << "Invalid record case " << record.data_case();
       return "";
@@ -346,29 +342,6 @@ void FeedStore::OnReadContentFinished(
   }
 
   std::move(callback).Run(std::move(content), std::move(shared_states));
-}
-
-void FeedStore::ReadNextStreamState(
-    base::OnceCallback<void(std::unique_ptr<feedstore::StreamAndContentState>)>
-        callback) {
-  ReadSingle(
-      kNextStreamStateKey,
-      base::BindOnce(&FeedStore::OnReadNextStreamStateFinished,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void FeedStore::OnReadNextStreamStateFinished(
-    base::OnceCallback<void(std::unique_ptr<feedstore::StreamAndContentState>)>
-        callback,
-    bool success,
-    std::unique_ptr<feedstore::Record> record) {
-  if (!success || !record) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-
-  std::move(callback).Run(
-      base::WrapUnique(record->release_next_stream_state()));
 }
 
 void FeedStore::ReadActions(

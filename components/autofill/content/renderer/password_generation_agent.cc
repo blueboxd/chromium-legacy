@@ -52,24 +52,23 @@ using Logger = autofill::SavePasswordProgressLogger;
 
 // Returns the renderer id of the next password field in |control_elements|
 // after |new_password|. This field is likely to be the confirmation field.
-// Returns FormData::kNotSetRendererId if there is no such
-// field.
-uint32_t FindConfirmationPasswordFieldId(
+// Returns a null renderer ID if there is no such field.
+FieldRendererId FindConfirmationPasswordFieldId(
     const std::vector<WebFormControlElement>& control_elements,
     const WebFormControlElement& new_password) {
   auto iter =
       std::find(control_elements.begin(), control_elements.end(), new_password);
 
   if (iter == control_elements.end())
-    return FormData::kNotSetRendererId;
+    return FieldRendererId();
 
   ++iter;
   for (; iter != control_elements.end(); ++iter) {
     const WebInputElement* input_element = ToWebInputElement(&(*iter));
     if (input_element && input_element->IsPasswordFieldForAutofill())
-      return input_element->UniqueRendererFormControlId();
+      return FieldRendererId(input_element->UniqueRendererFormControlId());
   }
-  return FormData::kNotSetRendererId;
+  return FieldRendererId();
 }
 
 void CopyElementValueToOtherInputElements(
@@ -311,8 +310,8 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword(
             current_generation_item_->generation_element_.MaxLength(),
             current_generation_item_->generation_element_.NameForAutofill()
                 .Utf16(),
-            current_generation_item_->generation_element_
-                .UniqueRendererFormControlId(),
+            FieldRendererId(current_generation_item_->generation_element_
+                                .UniqueRendererFormControlId()),
             is_generation_element_password_type,
             GetTextDirectionForElement(
                 current_generation_item_->generation_element_),
@@ -328,8 +327,8 @@ bool PasswordGenerationAgent::SetUpUserTriggeredGeneration() {
   if (last_focused_password_element_.IsNull() || !render_frame())
     return false;
 
-  uint32_t last_focused_password_element_id =
-      last_focused_password_element_.UniqueRendererFormControlId();
+  FieldRendererId last_focused_password_element_id(
+      last_focused_password_element_.UniqueRendererFormControlId());
 
   bool is_automatic_generation_available = base::Contains(
       generation_enabled_fields_, last_focused_password_element_id);
@@ -390,8 +389,8 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
   if (element->IsPasswordFieldForAutofill())
     last_focused_password_element_ = *element;
 
-  auto it =
-      generation_enabled_fields_.find(element->UniqueRendererFormControlId());
+  auto it = generation_enabled_fields_.find(
+      FieldRendererId(element->UniqueRendererFormControlId()));
   if (it != generation_enabled_fields_.end()) {
     MaybeCreateCurrentGenerationItem(
         *element, it->second.confirmation_password_renderer_id);
@@ -527,8 +526,8 @@ void PasswordGenerationAgent::AutomaticGenerationAvailable() {
           current_generation_item_->generation_element_.MaxLength(),
           current_generation_item_->generation_element_.NameForAutofill()
               .Utf16(),
-          current_generation_item_->generation_element_
-              .UniqueRendererFormControlId(),
+          FieldRendererId(current_generation_item_->generation_element_
+                              .UniqueRendererFormControlId()),
           is_generation_element_password_type,
           GetTextDirectionForElement(
               current_generation_item_->generation_element_),
@@ -548,9 +547,9 @@ void PasswordGenerationAgent::ShowEditingPopup() {
   std::unique_ptr<FormData> form_data = CreateFormDataToPresave();
   DCHECK(form_data);
 
-  uint32_t generation_element_renderer_id =
+  FieldRendererId generation_element_renderer_id(
       current_generation_item_->generation_element_
-          .UniqueRendererFormControlId();
+          .UniqueRendererFormControlId());
   base::string16 password_value =
       current_generation_item_->generation_element_.Value().Utf16();
 
@@ -589,7 +588,7 @@ void PasswordGenerationAgent::PasswordNoLongerGenerated() {
 
 void PasswordGenerationAgent::MaybeCreateCurrentGenerationItem(
     WebInputElement generation_element,
-    uint32_t confirmation_password_renderer_id) {
+    FieldRendererId confirmation_password_renderer_id) {
   // Do not create |current_generation_item_| if it already is created for
   // |generation_element| or the user accepted generated password. So if the
   // user accepted the generated password, generation is not offered on any

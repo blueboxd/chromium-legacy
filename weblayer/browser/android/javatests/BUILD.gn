@@ -10,7 +10,6 @@ android_library("weblayer_java_tests") {
   sources = [
     "src/org/chromium/weblayer/test/BoundedCountDownLatch.java",
     "src/org/chromium/weblayer/test/BrowserFragmentLifecycleTest.java",
-    "src/org/chromium/weblayer/test/CloseTabNewTabCallbackImpl.java",
     "src/org/chromium/weblayer/test/CookieManagerTest.java",
     "src/org/chromium/weblayer/test/CrashReporterTest.java",
     "src/org/chromium/weblayer/test/DataClearingTest.java",
@@ -28,6 +27,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/NavigationWaiter.java",
     "src/org/chromium/weblayer/test/NewTabCallbackImpl.java",
     "src/org/chromium/weblayer/test/NewTabCallbackTest.java",
+    "src/org/chromium/weblayer/test/OnTabRemovedTabListCallbackImpl.java",
     "src/org/chromium/weblayer/test/ProfileTest.java",
     "src/org/chromium/weblayer/test/RenderingTest.java",
     "src/org/chromium/weblayer/test/SmokeTest.java",

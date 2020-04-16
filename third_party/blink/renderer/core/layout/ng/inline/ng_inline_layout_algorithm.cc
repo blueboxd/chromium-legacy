@@ -238,7 +238,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
              item.GetLayoutObject()->IsLayoutNGListItem());
       DCHECK(item_result.shape_result);
 
-      text_builder.SetIsFirstForNode(IsFirstForNode(item, BreakToken()));
+      text_builder.SetIsFirstForNode(item_result.IsFirstForNode());
 
       if (UNLIKELY(quirks_mode_))
         box->EnsureTextMetrics(*item.Style(), baseline_type_);
@@ -446,7 +446,7 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
   NGTextFragmentBuilder text_builder(ConstraintSpace().GetWritingMode());
   text_builder.SetItem(type, line_info.ItemsData(), item_result,
                        box->text_height);
-  text_builder.SetIsFirstForNode(IsFirstForNode(item, BreakToken()));
+  text_builder.SetIsFirstForNode(item_result->IsFirstForNode());
   line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
                      item_result->inline_size, item.BidiLevel());
 }

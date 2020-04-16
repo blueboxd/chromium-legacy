@@ -1460,8 +1460,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     protected void convertWebRectToAndroidCoordinates(Rect rect) {
-        // Convert CSS (web) pixels to Android View pixels
+        // Offset by the scroll position.
         RenderCoordinatesImpl rc = mWebContents.getRenderCoordinates();
+        rect.offset(-(int) rc.getScrollX(), -(int) rc.getScrollY());
+
+        // Convert CSS (web) pixels to Android View pixels
         rect.left = (int) rc.fromLocalCssToPix(rect.left);
         rect.top = (int) rc.fromLocalCssToPix(rect.top);
         rect.bottom = (int) rc.fromLocalCssToPix(rect.bottom);
@@ -1477,7 +1480,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
         // Clip to the viewport bounds.
         int viewportRectTop = viewLocation[1] + (int) rc.getContentOffsetYPix();
-        int viewportRectBottom = viewportRectTop + mView.getHeight();
+        int viewportRectBottom = viewportRectTop + rc.getLastFrameViewportHeightPixInt();
         if (rect.top < viewportRectTop) rect.top = viewportRectTop;
         if (rect.bottom > viewportRectBottom) rect.bottom = viewportRectBottom;
     }

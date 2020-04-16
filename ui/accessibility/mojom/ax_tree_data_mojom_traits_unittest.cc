@@ -33,6 +33,7 @@ TEST(AXTreeDataMojomTraitsTest, TestSerializeAndDeserializeAXTreeData) {
   input.sel_focus_object_id = 12;
   input.sel_focus_offset = 13;
   input.sel_focus_affinity = ax::mojom::TextAffinity::kDownstream;
+  input.root_scroller_id = 14;
 
   EXPECT_TRUE(SerializeAndDeserialize<ax::mojom::AXTreeData>(&input, &output));
 
@@ -53,4 +54,5 @@ TEST(AXTreeDataMojomTraitsTest, TestSerializeAndDeserializeAXTreeData) {
   EXPECT_EQ(12, output.sel_focus_object_id);
   EXPECT_EQ(13, output.sel_focus_offset);
   EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, output.sel_focus_affinity);
+  EXPECT_EQ(14, output.root_scroller_id);
 }

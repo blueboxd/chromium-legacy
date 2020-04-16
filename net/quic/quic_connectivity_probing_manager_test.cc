@@ -45,21 +45,29 @@ class MockQuicChromiumClientSession
   ~MockQuicChromiumClientSession() override {}
 
   // QuicChromiumPacketReader::Visitor interface.
-  MOCK_METHOD2(OnReadError,
-               void(int result, const DatagramClientSocket* socket));
+  MOCK_METHOD(void,
+              OnReadError,
+              (int result, const DatagramClientSocket* socket),
+              (override));
 
-  MOCK_METHOD3(OnPacket,
-               bool(const quic::QuicReceivedPacket& packet,
-                    const quic::QuicSocketAddress& local_address,
-                    const quic::QuicSocketAddress& peer_address));
+  MOCK_METHOD(bool,
+              OnPacket,
+              (const quic::QuicReceivedPacket& packet,
+               const quic::QuicSocketAddress& local_address,
+               const quic::QuicSocketAddress& peer_address),
+              (override));
 
-  MOCK_METHOD2(OnProbeFailed,
-               void(NetworkChangeNotifier::NetworkHandle network,
-                    const quic::QuicSocketAddress& peer_address));
+  MOCK_METHOD(void,
+              OnProbeFailed,
+              (NetworkChangeNotifier::NetworkHandle network,
+               const quic::QuicSocketAddress& peer_address),
+              (override));
 
-  MOCK_METHOD2(OnSendConnectivityProbingPacket,
-               bool(QuicChromiumPacketWriter* writer,
-                    const quic::QuicSocketAddress& peer_address));
+  MOCK_METHOD(bool,
+              OnSendConnectivityProbingPacket,
+              (QuicChromiumPacketWriter * writer,
+               const quic::QuicSocketAddress& peer_address),
+              (override));
 
   void OnProbeSucceeded(
       NetworkChangeNotifier::NetworkHandle network,

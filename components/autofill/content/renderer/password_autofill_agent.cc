@@ -387,9 +387,9 @@ bool FormHasNonEmptyPasswordField(const FormData& form) {
 }
 
 void AnnotateFieldWithParsingResult(WebDocument doc,
-                                    uint32_t renderer_id,
+                                    FieldRendererId renderer_id,
                                     const std::string& text) {
-  if (renderer_id == FormData::kNotSetRendererId)
+  if (renderer_id.is_null())
     return;
   auto element = FindFormControlElementByUniqueRendererId(doc, renderer_id);
   if (element.IsNull())
@@ -464,14 +464,18 @@ PasswordAutofillAgent::FormStructureInfo::FormStructureInfo() = default;
 PasswordAutofillAgent::FormStructureInfo::FormStructureInfo(
     const FormStructureInfo& other) = default;
 
+PasswordAutofillAgent::FormStructureInfo&
+PasswordAutofillAgent::FormStructureInfo::operator=(
+    const PasswordAutofillAgent::FormStructureInfo& other) = default;
+
 PasswordAutofillAgent::FormStructureInfo::FormStructureInfo(
     FormStructureInfo&& other) = default;
-
-PasswordAutofillAgent::FormStructureInfo::~FormStructureInfo() = default;
 
 PasswordAutofillAgent::FormStructureInfo&
 PasswordAutofillAgent::FormStructureInfo::operator=(
     PasswordAutofillAgent::FormStructureInfo&& other) = default;
+
+PasswordAutofillAgent::FormStructureInfo::~FormStructureInfo() = default;
 
 PasswordAutofillAgent::FocusStateNotifier::FocusStateNotifier(
     PasswordAutofillAgent* agent)
@@ -572,7 +576,7 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
     GetPasswordManagerDriver()->UserModifiedPasswordField();
   } else {
     GetPasswordManagerDriver()->UserModifiedNonPasswordField(
-        element.UniqueRendererFormControlId(), element_value);
+        FieldRendererId(element.UniqueRendererFormControlId()), element_value);
   }
 }
 
@@ -948,7 +952,7 @@ void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
   // visibility could be expensive. Add performance metrics for this.
   if (event != SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR) {
     bool is_last_updated_field_in_form =
-        last_updated_form_renderer_id_ != FormData::kNotSetRendererId;
+        !last_updated_form_renderer_id_.is_null();
     // Check whether the form which is the candidate for submission disappeared.
     // If yes this form is considered to be successfully submitted.
     if (is_last_updated_field_in_form) {
@@ -1227,10 +1231,8 @@ void PasswordAutofillAgent::FillPasswordForm(
   }
 
   bool username_password_fields_not_set =
-      form_data.username_field.unique_renderer_id ==
-          FormData::kNotSetRendererId &&
-      form_data.password_field.unique_renderer_id ==
-          FormData::kNotSetRendererId;
+      form_data.username_field.unique_renderer_id.is_null() &&
+      form_data.password_field.unique_renderer_id.is_null();
   if (username_password_fields_not_set) {
     // No fields for filling were found during parsing, which means filling
     // fallback case. So save data for fallback filling.
@@ -1241,8 +1243,8 @@ void PasswordAutofillAgent::FillPasswordForm(
   WebInputElement username_element, password_element;
   std::tie(username_element, password_element) =
       FindUsernamePasswordElements(form_data);
-  bool is_single_username_fill = form_data.password_field.unique_renderer_id ==
-                                 FormData::kNotSetRendererId;
+  bool is_single_username_fill =
+      form_data.password_field.unique_renderer_id.is_null();
   WebElement main_element =
       is_single_username_fill ? username_element : password_element;
   if (main_element.IsNull()) {
@@ -1327,8 +1329,8 @@ void PasswordAutofillAgent::InformNoSavedCredentials() {
   WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
   std::vector<WebFormControlElement> elements =
       FindFormControlElementsByUniqueRendererId(
-          doc, std::vector<uint32_t>(all_autofilled_elements_.begin(),
-                                     all_autofilled_elements_.end()));
+          doc, std::vector<FieldRendererId>(all_autofilled_elements_.begin(),
+                                            all_autofilled_elements_.end()));
   for (WebFormControlElement& element : elements) {
     if (element.IsNull())
       continue;
@@ -1449,8 +1451,8 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   forms_structure_cache_.clear();
   autofilled_elements_cache_.clear();
   all_autofilled_elements_.clear();
-  last_updated_field_renderer_id_ = FormData::kNotSetRendererId;
-  last_updated_form_renderer_id_ = FormData::kNotSetRendererId;
+  last_updated_field_renderer_id_ = FieldRendererId();
+  last_updated_form_renderer_id_ = FormRendererId();
   touch_to_fill_state_ = TouchToFillState::kShouldShow;
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   page_passwords_analyser_.Reset();
@@ -1693,24 +1695,21 @@ PasswordAutofillAgent::GetPasswordManagerDriver() {
 std::pair<WebInputElement, WebInputElement>
 PasswordAutofillAgent::FindUsernamePasswordElements(
     const PasswordFormFillData& form_data) {
-  const uint32_t username_renderer_id =
+  const FieldRendererId username_renderer_id =
       form_data.username_field.unique_renderer_id;
-  const uint32_t password_renderer_id =
+  const FieldRendererId password_renderer_id =
       form_data.password_field.unique_renderer_id;
-  const bool is_username_present =
-      username_renderer_id != FormData::kNotSetRendererId;
-  const bool is_password_present =
-      password_renderer_id != FormData::kNotSetRendererId;
+  const bool is_username_present = !username_renderer_id.is_null();
+  const bool is_password_present = !password_renderer_id.is_null();
 
-  std::vector<uint32_t> element_ids;
+  std::vector<FieldRendererId> element_ids;
   if (is_password_present)
     element_ids.push_back(password_renderer_id);
   if (is_username_present)
     element_ids.push_back(username_renderer_id);
 
   WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
-  bool wrapped_in_form_tag =
-      form_data.form_renderer_id != FormData::kNotSetRendererId;
+  bool wrapped_in_form_tag = !form_data.form_renderer_id.is_null();
   std::vector<WebFormControlElement> elements =
       wrapped_in_form_tag
           ? form_util::FindFormControlElementsByUniqueRendererId(
@@ -1799,7 +1798,7 @@ PasswordAutofillAgent::ExtractFormStructureInfo(const FormData& form_data) {
 
 bool PasswordAutofillAgent::WasFormStructureChanged(
     const FormStructureInfo& form_info) const {
-  if (form_info.unique_renderer_id == FormData::kNotSetRendererId)
+  if (form_info.unique_renderer_id.is_null())
     return true;
 
   auto cached_form = forms_structure_cache_.find(form_info.unique_renderer_id);
@@ -1835,7 +1834,7 @@ bool PasswordAutofillAgent::WasFormStructureChanged(
 void PasswordAutofillAgent::TryFixAutofilledForm(
     std::vector<WebFormControlElement>* control_elements) const {
   for (auto& element : *control_elements) {
-    const unsigned element_id = element.UniqueRendererFormControlId();
+    const FieldRendererId element_id(element.UniqueRendererFormControlId());
     auto cached_element = autofilled_elements_cache_.find(element_id);
     if (cached_element == autofilled_elements_cache_.end())
       continue;
@@ -1849,7 +1848,7 @@ void PasswordAutofillAgent::TryFixAutofilledForm(
 void PasswordAutofillAgent::AutofillField(const base::string16& value,
                                           WebInputElement field) {
   // Do not autofill on load fields that have any user typed input.
-  const uint32_t field_id = field.UniqueRendererFormControlId();
+  const FieldRendererId field_id(field.UniqueRendererFormControlId());
   if (field_data_manager_->DidUserType(field_id))
     return;
 
@@ -1872,10 +1871,11 @@ void PasswordAutofillAgent::SetLastUpdatedFormAndField(
     const WebFormElement& form,
     const WebFormControlElement& input) {
   last_updated_form_renderer_id_ =
-      form.IsNull() ? FormData::kNotSetRendererId : form.UniqueRendererFormId();
-  last_updated_field_renderer_id_ = input.IsNull()
-                                        ? FormData::kNotSetRendererId
-                                        : input.UniqueRendererFormControlId();
+      form.IsNull() ? FormRendererId()
+                    : FormRendererId(form.UniqueRendererFormId());
+  last_updated_field_renderer_id_ =
+      input.IsNull() ? FieldRendererId()
+                     : FieldRendererId(input.UniqueRendererFormControlId());
 }
 
 }  // namespace autofill

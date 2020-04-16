@@ -20,6 +20,7 @@
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -2980,7 +2981,8 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   EXPECT_TRUE(WebFormElementToFormData(forms[0], input_element, nullptr,
                                        EXTRACT_VALUE, &form, &field));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(forms[0].UniqueRendererFormId(), form.unique_renderer_id);
+  EXPECT_EQ(FormRendererId(forms[0].UniqueRendererFormId()),
+            form.unique_renderer_id);
   EXPECT_EQ(GetCanonicalOriginForDocument(frame->GetDocument()), form.url);
   EXPECT_FALSE(form.url.is_empty());
   EXPECT_EQ(GURL("http://cnn.com/submit/"), form.action);
@@ -3041,8 +3043,9 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   WebVector<WebFormControlElement> form_control_elements;
   forms[0].GetFormControlElements(form_control_elements);
   for (size_t i = 0; i < fields.size(); ++i)
-    EXPECT_EQ(form_control_elements[i].UniqueRendererFormControlId(),
-              fields[i].unique_renderer_id);
+    EXPECT_EQ(
+        FieldRendererId(form_control_elements[i].UniqueRendererFormControlId()),
+        fields[i].unique_renderer_id);
 }
 
 TEST_F(FormAutofillTest, WebFormElementConsiderNonControlLabelableElements) {

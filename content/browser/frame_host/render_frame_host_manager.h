@@ -31,7 +31,6 @@
 #include "url/origin.h"
 
 namespace content {
-class BrowserContext;
 class FrameTreeNode;
 class InterstitialPageImpl;
 class NavigationControllerImpl;
@@ -546,8 +545,7 @@ class CONTENT_EXPORT RenderFrameHostManager
         : existing_site_instance(site_instance),
           relation(SiteInstanceRelation::PREEXISTING) {}
 
-    SiteInstanceDescriptor(BrowserContext* browser_context,
-                           GURL dest_url,
+    SiteInstanceDescriptor(GURL dest_url,
                            SiteInstanceRelation relation_to_current);
 
     // Set with an existing SiteInstance to be reused.
@@ -555,10 +553,6 @@ class CONTENT_EXPORT RenderFrameHostManager
 
     // In case |existing_site_instance| is null, specify a destination URL.
     GURL dest_url;
-
-    // In case |existing_site_instance| is null, specify a BrowsingContext, to
-    // be used with |dest_url| to resolve the site URL.
-    BrowserContext* browser_context;
 
     // Specifies how the new site is related to the current BrowsingInstance.
     // This is PREEXISTING iff |existing_site_instance| is defined.

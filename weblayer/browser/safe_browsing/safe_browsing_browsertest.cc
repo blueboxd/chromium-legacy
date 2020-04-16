@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "weblayer/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/navigation.h"
 #include "weblayer/public/navigation_controller.h"
@@ -45,12 +46,10 @@ class FakeSafeBrowsingApiHandler
     : public safe_browsing::SafeBrowsingApiHandler {
  public:
   // SafeBrowsingApiHandler
-  std::string GetSafetyNetId() override { return ""; }
   void StartURLCheck(
       std::unique_ptr<URLCheckCallbackMeta> callback,
       const GURL& url,
       const safe_browsing::SBThreatTypeSet& threat_types) override {
-    LOG(INFO) << "BLA test handler url=" + url.spec();
     RunCallbackOnIOThread(std::move(callback), GetSafeBrowsingRestriction(url),
                           safe_browsing::ThreatMetadata());
   }
@@ -111,6 +110,11 @@ class SafeBrowsingBrowserTest : public WebLayerBrowserTest,
     load_observer.Wait();
     EXPECT_EQ(expect_interstitial, HasInterstitial());
     if (expect_interstitial) {
+      if (base::FeatureList::IsEnabled(
+              safe_browsing::kCommittedSBInterstitials)) {
+        ASSERT_EQ(SafeBrowsingBlockingPage::kTypeForTesting,
+                  GetSecurityInterstitialPage()->GetTypeForTesting());
+      }
       EXPECT_TRUE(GetSecurityInterstitialPage()->GetHTMLContents().length() >
                   0);
     }

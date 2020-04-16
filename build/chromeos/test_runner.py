@@ -109,8 +109,6 @@ class RemoteTest(object):
           '--start',
           # Don't persist any filesystem changes after the VM shutsdown.
           '--copy-on-write',
-          '--device',
-          'localhost'
       ]
     else:
       self._test_cmd += [
@@ -706,8 +704,6 @@ def host_cmd(args, unknown_args):
         '--start',
         # Don't persist any filesystem changes after the VM shutsdown.
         '--copy-on-write',
-        '--device',
-        'localhost',
     ]
   else:
     cros_run_test_cmd += [

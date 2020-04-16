@@ -4487,7 +4487,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)showActivityServiceErrorAlertWithStringTitle:(NSString*)title
                                              message:(NSString*)message {
-  [self showErrorAlertWithStringTitle:title message:message];
+  [_activityServiceCoordinator showErrorAlertWithStringTitle:title
+                                                     message:message];
 }
 
 #pragma mark - CaptivePortalDetectorTabHelperDelegate

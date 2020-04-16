@@ -1,5 +1,12 @@
-csharrison@chromium.org
+# Please send significant changes to functionality and non-trivial changes to
+# core files like metrics_web_contents_observer.cc and
+# page_load_tracker.cc to bmcquade or skobes.
+
 bmcquade@chromium.org
+skobes@chromium.org
+npm@chromium.org
+sullivan@chromium.org
+csharrison@chromium.org
 jkarlin@chromium.org
 ryansturm@chromium.org
 johnidel@chromium.org
@@ -7,3 +14,5 @@ johnidel@chromium.org
 # For straightforward addition/removal to existing observers only (for
 # APAC).
 kinuko@chromium.org
+
+# COMPONENT: Speed>Metrics

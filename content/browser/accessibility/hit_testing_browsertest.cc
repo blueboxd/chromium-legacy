@@ -6,6 +6,7 @@
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "content/browser/accessibility/accessibility_content_browsertest.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -30,6 +31,12 @@ namespace content {
 // First parameter of the tuple = device scale factor
 // Second parameter = whether use-zoom-for-dsf is enabled
 using AccessibilityZoomTestParam = std::tuple<double, bool>;
+
+#define EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(css_point, expected_node, \
+                                             hit_node)                 \
+  SCOPED_TRACE(::testing::Message()                                    \
+               << GetScopedTrace(css_point, expected_node, hit_node)); \
+  EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
 
 class AccessibilityHitTestingBrowserTest
     : public AccessibilityContentBrowserTest,
@@ -243,6 +250,44 @@ class AccessibilityHitTestingBrowserTest
     accessibility_waiter.WaitForNotification();
   }
 
+  base::string16 FormatHitTestAccessibilityTree() {
+    std::unique_ptr<AccessibilityTreeFormatter> accessibility_tree_formatter =
+        AccessibilityTreeFormatterBlink::CreateBlink();
+    accessibility_tree_formatter->set_show_ids(true);
+    accessibility_tree_formatter->SetPropertyFilters(
+        {{base::ASCIIToUTF16("name=*"),
+          AccessibilityTreeFormatter::PropertyFilter::ALLOW},
+         {base::ASCIIToUTF16("location=*"),
+          AccessibilityTreeFormatter::PropertyFilter::ALLOW},
+         {base::ASCIIToUTF16("size=*"),
+          AccessibilityTreeFormatter::PropertyFilter::ALLOW}});
+    base::string16 accessibility_tree;
+    accessibility_tree_formatter->FormatAccessibilityTreeForTesting(
+        GetRootAndAssertNonNull(), &accessibility_tree);
+    return accessibility_tree;
+  }
+
+  std::string GetScopedTrace(gfx::Point css_point,
+                             BrowserAccessibility* expected_node,
+                             BrowserAccessibility* hit_node) {
+    std::stringstream string_stream;
+    string_stream << std::endl
+                  << "View bounds: "
+                  << GetRootBrowserAccessibilityManager()
+                         ->GetViewBoundsInScreenCoordinates()
+                         .ToString()
+                  << " Page scale: " << page_scale_
+                  << " Scroll offset: " << scroll_offset_.ToString()
+                  << std::endl
+                  << "Test point CSS: " << css_point.ToString()
+                  << " Frame: " << CSSToFramePoint(css_point).ToString()
+                  << " Physical: "
+                  << CSSToPhysicalPixelPoint(css_point).ToString() << std::endl
+                  << "Accessibility tree: " << std::endl
+                  << FormatHitTestAccessibilityTree();
+    return string_stream.str();
+  }
+
   float page_scale_ = 1.0f;
   gfx::Vector2d scroll_offset_;
 };
@@ -300,13 +345,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
     BrowserAccessibility* hit_node = CallCachingAsyncHitTest(rect_2_point);
     BrowserAccessibility* expected_node =
         FindNode(ax::mojom::Role::kGenericContainer, "rect2");
-
-    // Compare several properties so that we generate rich log output if the
-    // test fails.
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_2_point, expected_node, hit_node);
   }
 
   // Test a hit on a rect in the iframe.
@@ -315,13 +354,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
     BrowserAccessibility* hit_node = CallCachingAsyncHitTest(rect_b_point);
     BrowserAccessibility* expected_node =
         FindNode(ax::mojom::Role::kGenericContainer, "rectB");
-
-    // Compare several properties so that we generate rich log output if the
-    // test fails.
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_b_point, expected_node, hit_node);
   }
 }
 
@@ -347,13 +380,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest, HitTest) {
     BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect_2_point);
     BrowserAccessibility* expected_node =
         FindNode(ax::mojom::Role::kGenericContainer, "rect2");
-
-    // Compare several properties so that we generate rich log output if the
-    // test fails.
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_2_point, expected_node, hit_node);
   }
 
   // Test a hit on a rect in the iframe.
@@ -362,24 +389,12 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest, HitTest) {
     BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect_b_point);
     BrowserAccessibility* expected_node =
         FindNode(ax::mojom::Role::kGenericContainer, "rectB");
-
-    // Compare several properties so that we generate rich log output if the
-    // test fails.
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_b_point, expected_node, hit_node);
 
     // Test with a different event.
     hit_node = HitTestAndWaitForResultWithEvent(rect_b_point,
                                                 ax::mojom::Event::kAlert);
-
-    // Compare several properties so that we generate rich log output if the
-    // test fails.
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_b_point, expected_node, hit_node);
   }
 }
 
@@ -451,13 +466,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingCrossProcessBrowserTest,
     BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect_b_point);
     BrowserAccessibility* expected_node =
         FindNode(ax::mojom::Role::kGenericContainer, "rectB");
-
-    // Compare several properties so that we generate rich log output if the
-    // test fails.
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_b_point, expected_node, hit_node);
   }
 
   // Scroll div up 100px.
@@ -477,13 +486,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingCrossProcessBrowserTest,
     BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect_g_point);
     BrowserAccessibility* expected_node =
         FindNode(ax::mojom::Role::kGenericContainer, "rectG");
-
-    // Compare several properties so that we generate rich log output if the
-    // test fails.
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_g_point, expected_node, hit_node);
   }
 }
 
@@ -522,10 +525,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
 
     // Call again and we should get the correct element.
     hit_node = CallCachingAsyncHitTest(rect_2_point);
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_2_point, expected_node, hit_node);
   }
 
   // Test a hit on a rect in the iframe.
@@ -539,10 +539,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
 
     // Call again and we should get the correct element.
     hit_node = CallCachingAsyncHitTest(rect_b_point);
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_b_point, expected_node, hit_node);
   }
 }
 
@@ -575,13 +572,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
     BrowserAccessibility* hit_node = CallCachingAsyncHitTest(rect_2_point);
     BrowserAccessibility* expected_node =
         FindNode(ax::mojom::Role::kGenericContainer, "rect2");
-
-    // Compare several properties so that we generate rich log output if the
-    // test fails.
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_2_point, expected_node, hit_node);
   }
 
   // Test a hit on a rect in the iframe.
@@ -590,13 +581,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
     BrowserAccessibility* hit_node = CallCachingAsyncHitTest(rect_b_point);
     BrowserAccessibility* expected_node =
         FindNode(ax::mojom::Role::kGenericContainer, "rectB");
-
-    // Compare several properties so that we generate rich log output if the
-    // test fails.
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_b_point, expected_node, hit_node);
   }
 }
 
@@ -628,13 +613,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
     BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect_2_point);
     BrowserAccessibility* expected_node =
         FindNode(ax::mojom::Role::kGenericContainer, "rect2");
-
-    // Compare several properties so that we generate rich log output if the
-    // test fails.
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_2_point, expected_node, hit_node);
   }
 
   // Test a hit on a rect in the iframe.
@@ -643,13 +622,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
     BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect_b_point);
     BrowserAccessibility* expected_node =
         FindNode(ax::mojom::Role::kGenericContainer, "rectB");
-
-    // Compare several properties so that we generate rich log output if the
-    // test fails.
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_b_point, expected_node, hit_node);
   }
 }
 
@@ -682,13 +655,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
     BrowserAccessibility* hit_node = CallNearestLeafNode(rect_2_point);
     BrowserAccessibility* expected_node =
         FindNode(ax::mojom::Role::kStaticText, "2");
-
-    // Compare several properties so that we generate rich log output if the
-    // test fails.
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_2_point, expected_node, hit_node);
   }
 
   // Test a hit on text in the iframe.
@@ -697,13 +664,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
     BrowserAccessibility* hit_node = CallNearestLeafNode(rect_b_point);
     BrowserAccessibility* expected_node =
         FindNode(ax::mojom::Role::kStaticText, "B");
-
-    // Compare several properties so that we generate rich log output if the
-    // test fails.
-    EXPECT_EQ(expected_node->GetName(), hit_node->GetName());
-    EXPECT_EQ(expected_node->GetId(), hit_node->GetId());
-    EXPECT_EQ(expected_node->GetClippedScreenBoundsRect(),
-              hit_node->GetClippedScreenBoundsRect());
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_b_point, expected_node, hit_node);
   }
 }
 #endif

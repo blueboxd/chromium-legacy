@@ -49,6 +49,7 @@ import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.browser_ui.settings.SearchUtils;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsMode;
@@ -539,6 +540,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             getInfoForOrigins();
         } else if (FOUR_STATE_COOKIE_TOGGLE_KEY.equals(preference.getKey())) {
             setCookieSettingsPreference((CookieSettingsState) newValue);
+            getInfoForOrigins();
         } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
             PrefServiceBridge.getInstance().setBoolean(
                     Pref.BLOCK_THIRD_PARTY_COOKIES, ((boolean) newValue));
@@ -589,13 +591,13 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         PrefServiceBridge.getInstance().setInteger(Pref.COOKIE_CONTROLS_MODE, mode);
         PrefServiceBridge.getInstance().setBoolean(
                 Pref.BLOCK_THIRD_PARTY_COOKIES, mode == CookieControlsMode.ON);
+    }
 
-        // Re-configure the FourStateCookieToggle in order to avoid having stale state variables
-        // within the FourStateCookieSettingsPreference. These variables determine the checked and
-        // enabled states of each of the buttons.
-        configureFourStateCookieToggle(
+    private boolean cookieSettingsExceptionShouldBlock() {
+        FourStateCookieSettingsPreference fourStateCookieToggle =
                 (FourStateCookieSettingsPreference) getPreferenceScreen().findPreference(
-                        FOUR_STATE_COOKIE_TOGGLE_KEY));
+                        FOUR_STATE_COOKIE_TOGGLE_KEY);
+        return fourStateCookieToggle.getState() == CookieSettingsState.ALLOW;
     }
 
     private String getAddExceptionDialogMessage() {
@@ -613,9 +615,15 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                     ? R.string.website_settings_add_site_description_sound_block
                     : R.string.website_settings_add_site_description_sound_allow;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
-            resource = WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES)
-                    ? R.string.website_settings_add_site_description_cookies_block
-                    : R.string.website_settings_add_site_description_cookies_allow;
+            if (mRequiresFourStateSetting) {
+                resource = cookieSettingsExceptionShouldBlock()
+                        ? R.string.website_settings_add_site_description_cookies_block
+                        : R.string.website_settings_add_site_description_cookies_allow;
+            } else {
+                resource = WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES)
+                        ? R.string.website_settings_add_site_description_cookies_block
+                        : R.string.website_settings_add_site_description_cookies_allow;
+            }
         }
         assert resource > 0;
         return getString(resource);
@@ -650,10 +658,16 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     // AddExceptionPreference.SiteAddedCallback:
     @Override
     public void onAddSite(String primaryPattern, String secondaryPattern) {
-        int setting =
-                (WebsitePreferenceBridge.isCategoryEnabled(mCategory.getContentSettingsType()))
-                ? ContentSettingValues.BLOCK
-                : ContentSettingValues.ALLOW;
+        int setting;
+        if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES) && mRequiresFourStateSetting) {
+            setting = cookieSettingsExceptionShouldBlock() ? ContentSettingValues.BLOCK
+                                                           : ContentSettingValues.ALLOW;
+        } else {
+            setting =
+                    (WebsitePreferenceBridge.isCategoryEnabled(mCategory.getContentSettingsType()))
+                    ? ContentSettingValues.BLOCK
+                    : ContentSettingValues.ALLOW;
+        }
 
         WebsitePreferenceBridge.setContentSettingForPattern(
                 mCategory.getContentSettingsType(), primaryPattern, secondaryPattern, setting);

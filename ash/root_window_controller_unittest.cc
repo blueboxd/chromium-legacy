@@ -347,22 +347,25 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   EXPECT_EQ("0,0 600x500", lock_screen->GetNativeWindow()->bounds().ToString());
 }
 
-// Tests that the moved windows (except the active one) are put under existing
-// ones.
-TEST_F(RootWindowControllerTest, MoveWindows_UnderExisting) {
+// Tests that the moved windows maintain MRU ordering.
+TEST_F(RootWindowControllerTest, MoveWindows_MaintainMRUordering) {
   UpdateDisplay("600x600,300x300");
 
   display::Screen* screen = display::Screen::GetScreen();
   const display::Display primary_display = screen->GetPrimaryDisplay();
   const display::Display secondary_display = GetSecondaryDisplay();
 
-  views::Widget* existing = CreateTestWidget(gfx::Rect(0, 10, 100, 100));
+  views::Widget* existing1 = CreateTestWidget(gfx::Rect(0, 10, 100, 100));
   ASSERT_EQ(primary_display.id(),
-            screen->GetDisplayNearestWindow(existing->GetNativeWindow()).id());
+            screen->GetDisplayNearestWindow(existing1->GetNativeWindow()).id());
 
   views::Widget* moved = CreateTestWidget(gfx::Rect(650, 10, 100, 100));
   ASSERT_EQ(secondary_display.id(),
             screen->GetDisplayNearestWindow(moved->GetNativeWindow()).id());
+
+  views::Widget* existing2 = CreateTestWidget(gfx::Rect(0, 10, 100, 100));
+  ASSERT_EQ(primary_display.id(),
+            screen->GetDisplayNearestWindow(existing2->GetNativeWindow()).id());
 
   views::Widget* active = CreateTestWidget(gfx::Rect(650, 10, 100, 100));
   ASSERT_TRUE(active->IsActive());
@@ -375,20 +378,14 @@ TEST_F(RootWindowControllerTest, MoveWindows_UnderExisting) {
   // |active| is still active.
   ASSERT_TRUE(active->IsActive());
 
-  // |moved| should be put under |existing|.
-  ASSERT_EQ(moved->GetNativeWindow()->parent(),
-            existing->GetNativeWindow()->parent());
-  bool found_existing = false;
-  bool found_moved = false;
-  for (auto* child : moved->GetNativeWindow()->parent()->children()) {
-    if (child == existing->GetNativeWindow())
-      found_existing = true;
-    if (child == moved->GetNativeWindow()) {
-      found_moved = true;
-      break;
-    }
-  }
-  EXPECT_TRUE(found_moved && !found_existing);
+  // |moved| should be put between |existing2| and |existing1| to maintain MRU
+  // ordering.
+  aura::Window* parent = moved->GetNativeWindow()->parent();
+  ASSERT_EQ(parent, existing1->GetNativeWindow()->parent());
+  const std::vector<aura::Window*> expected_order = {
+      existing1->GetNativeWindow(), moved->GetNativeWindow(),
+      existing2->GetNativeWindow(), active->GetNativeWindow()};
+  EXPECT_EQ(expected_order, parent->children());
 }
 
 TEST_F(RootWindowControllerTest, ModalContainer) {

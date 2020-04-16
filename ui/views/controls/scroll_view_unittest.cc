@@ -1030,6 +1030,33 @@ TEST_F(ScrollViewTest, CocoaOverlayScrollBars) {
   EXPECT_NE(0, HorizontalScrollBarHeight());
 }
 
+// Test that overlay scroll bars will only process events when visible.
+TEST_F(WidgetScrollViewTest,
+       OverlayScrollBarsCannotProcessEventsWhenTransparent) {
+  // Allow expectations to distinguish between fade outs and immediate changes.
+  ui::ScopedAnimationDurationScaleMode really_animate(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  SetUseOverlayScrollers();
+
+  ScrollView* scroll_view = AddScrollViewWithContentSize(
+      gfx::Size(kDefaultWidth * 5, kDefaultHeight * 5));
+  ScrollViewTestApi test_api(scroll_view);
+  ScrollBar* scroll_bar = test_api.GetScrollBar(HORIZONTAL);
+
+  // Verify scroll bar is unable to process events.
+  EXPECT_FALSE(scroll_bar->CanProcessEventsWithinSubtree());
+
+  ui::test::EventGenerator generator(
+      GetContext(), scroll_view->GetWidget()->GetNativeWindow());
+
+  generator.GenerateTrackpadRest();
+
+  // Since the scroll bar will become visible, it should now be able to process
+  // events.
+  EXPECT_TRUE(scroll_bar->CanProcessEventsWithinSubtree());
+}
+
 // Test overlay scrollbar behavior when just resting fingers on the trackpad.
 TEST_F(WidgetScrollViewTest, ScrollersOnRest) {
   // Allow expectations to distinguish between fade outs and immediate changes.

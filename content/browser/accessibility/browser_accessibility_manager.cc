@@ -365,7 +365,12 @@ void BrowserAccessibilityManager::DidStopLoading() {
 }
 
 bool BrowserAccessibilityManager::UseRootScrollOffsetsWhenComputingBounds() {
-  return true;
+  return use_root_scroll_offsets_when_computing_bounds_;
+}
+
+void BrowserAccessibilityManager ::
+    SetUseRootScrollOffsetsWhenComputingBoundsForTesting(bool use) {
+  use_root_scroll_offsets_when_computing_bounds_ = use;
 }
 
 bool BrowserAccessibilityManager::OnAccessibilityEvents(

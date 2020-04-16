@@ -228,9 +228,6 @@ class SafeBrowsingDatabaseManager
   // syncs.
   virtual std::unique_ptr<StoreStateMap> GetStoreStateMap();
 
-  // Returns the Safety Net ID of the device.
-  virtual std::string GetSafetyNetId() const;
-
   // Returns the ThreatSource for this implementation.
   virtual ThreatSource GetThreatSource() const = 0;
 

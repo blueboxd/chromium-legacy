@@ -19,10 +19,18 @@ namespace feed {
 class FeedStream;
 
 // Loads the stream model from storage or network.
-// If successful, this directly forces a model load in |FeedStream()|
-// before completing the task.
+// Has two modes, see |LoadStreamTask::LoadType|.
 class LoadStreamTask : public offline_pages::Task {
  public:
+  enum class LoadType {
+    // Loads the stream model into memory. If successful, this directly forces a
+    // model load in |FeedStream()| before completing the task.
+    kInitialLoad,
+    // Refreshes the stored stream data from the network. This will fail if the
+    // model is already loaded.
+    kBackgroundRefresh,
+  };
+
   struct Result {
     Result() = default;
     explicit Result(LoadStreamStatus a_final_status)
@@ -32,9 +40,12 @@ class LoadStreamTask : public offline_pages::Task {
     // Status of just loading the stream from the persistent store, if that
     // was attempted.
     LoadStreamStatus load_from_store_status = LoadStreamStatus::kNoStatus;
+    LoadType load_type;
   };
-  explicit LoadStreamTask(FeedStream* stream,
-                          base::OnceCallback<void(Result)> done_callback);
+
+  LoadStreamTask(LoadType load_type,
+                 FeedStream* stream,
+                 base::OnceCallback<void(Result)> done_callback);
   ~LoadStreamTask() override;
   LoadStreamTask(const LoadStreamTask&) = delete;
   LoadStreamTask& operator=(const LoadStreamTask&) = delete;
@@ -49,6 +60,7 @@ class LoadStreamTask : public offline_pages::Task {
   void QueryRequestComplete(FeedNetwork::QueryRequestResult result);
   void Done(LoadStreamStatus status);
 
+  LoadType load_type_;
   FeedStream* stream_;  // Unowned.
   std::unique_ptr<LoadStreamFromStoreTask> load_from_store_task_;
   LoadStreamStatus load_from_store_status_ = LoadStreamStatus::kNoStatus;

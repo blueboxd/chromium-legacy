@@ -201,9 +201,10 @@ public class MediaCaptureNotificationService extends Service {
                         .setLocalOnly(true);
 
         Intent tabIntent = ChromeIntentUtil.createBringTabToFrontIntent(notificationId);
+        Context appContext = ContextUtils.getApplicationContext();
         if (tabIntent != null) {
-            PendingIntentProvider contentIntent = PendingIntentProvider.getActivity(
-                    ContextUtils.getApplicationContext(), notificationId, tabIntent, 0);
+            PendingIntentProvider contentIntent =
+                    PendingIntentProvider.getActivity(appContext, notificationId, tabIntent, 0);
             builder.setContentIntent(contentIntent);
             if (mediaType == MediaType.SCREEN_CAPTURE) {
                 // Add a "Stop" button to the screen capture notification and turn the notification
@@ -211,47 +212,35 @@ public class MediaCaptureNotificationService extends Service {
                 builder.setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH);
                 builder.setVibrate(new long[0]);
                 builder.addAction(R.drawable.ic_stop_white_36dp,
-                        ContextUtils.getApplicationContext().getResources().getString(
-                                R.string.accessibility_stop),
+                        appContext.getString(R.string.accessibility_stop),
                         buildStopCapturePendingIntent(notificationId));
             }
         }
 
-        StringBuilder descriptionText =
-                new StringBuilder(getNotificationContentText(mediaType, url, isIncognito))
-                        .append('.');
-
-        String contentText;
-        if (isIncognito) {
-            builder.setSubText(ContextUtils.getApplicationContext().getResources().getString(
-                    R.string.notification_incognito_tab));
-            // App name is automatically added to the title from Android N,
-            // but needs to be added explicitly for prior versions.
-            String appNamePrefix = isRunningAtLeastN()
-                    ? ""
-                    : (ContextUtils.getApplicationContext().getString(R.string.app_name) + " - ");
-            builder.setContentTitle(appNamePrefix + descriptionText.toString());
-            contentText = ContextUtils.getApplicationContext().getResources().getString(
-                    R.string.media_notification_link_text_incognito);
+        String titleText = getNotificationTitleText(mediaType);
+        // App name is automatically added to the title from Android N, but needs to be added
+        // explicitly for prior versions.
+        if (isRunningAtLeastN()) {
+            builder.setContentTitle(titleText);
         } else {
-            if (tabIntent == null) {
-                descriptionText.append(" ").append(url);
-            } else if (mediaType != MediaType.SCREEN_CAPTURE) {
-                descriptionText.append(" ").append(
-                        ContextUtils.getApplicationContext().getResources().getString(
-                                R.string.media_notification_link_text, url));
-            }
-
-            // From Android N, notification by default has the app name and title should not be the
-            // same as app name.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-                builder.setContentTitle(
-                        ContextUtils.getApplicationContext().getString(R.string.app_name));
-            }
-            contentText = descriptionText.toString();
+            builder.setContentTitle(
+                    appContext.getString(R.string.media_capture_notification_app_name_separator,
+                            appContext.getString(R.string.app_name), titleText));
         }
-        builder.setContentText(contentText);
 
+        String contentText = null;
+        if (isIncognito) {
+            contentText = appContext.getString(
+                    R.string.media_capture_notification_content_text_incognito);
+            builder.setSubText(appContext.getString(R.string.notification_incognito_tab));
+        } else if (tabIntent == null) {
+            contentText = url;
+        } else {
+            contentText =
+                    appContext.getString(R.string.media_capture_notification_content_text, url);
+        }
+
+        builder.setContentText(contentText);
         ChromeNotification notification = builder.buildWithBigTextStyle(contentText);
         mNotificationManager.notify(notification);
         mNotifications.put(notificationId, mediaType);
@@ -262,37 +251,22 @@ public class MediaCaptureNotificationService extends Service {
     }
 
     /**
-     * Builds notification content text for the provided mediaType and url.
      * @param mediaType Media type of the notification.
-     * @param url Url of the current webrtc call.
-     * @return A string builder initialized to the contents of the specified string.
+     * @return user-facing text for the provided mediaType.
      */
-    private String getNotificationContentText(
-            @MediaType int mediaType, String url, boolean hideUserData) {
-        if (mediaType == MediaType.SCREEN_CAPTURE) {
-            return ContextUtils.getApplicationContext().getResources().getString(hideUserData
-                            ? R.string.screen_capture_incognito_notification_text
-                            : R.string.screen_capture_notification_text,
-                    url);
-        }
-
+    private String getNotificationTitleText(@MediaType int mediaType) {
         int notificationContentTextId = 0;
-        if (mediaType == MediaType.AUDIO_AND_VIDEO) {
-            notificationContentTextId = hideUserData
-                    ? R.string.video_audio_call_incognito_notification_text_2
-                    : R.string.video_audio_call_notification_text_2;
+        if (mediaType == MediaType.SCREEN_CAPTURE) {
+            notificationContentTextId = R.string.screen_capture_notification_title;
+        } else if (mediaType == MediaType.AUDIO_AND_VIDEO) {
+            notificationContentTextId = R.string.video_audio_capture_notification_title;
         } else if (mediaType == MediaType.VIDEO_ONLY) {
-            notificationContentTextId = hideUserData
-                    ? R.string.video_call_incognito_notification_text_2
-                    : R.string.video_call_notification_text_2;
+            notificationContentTextId = R.string.video_capture_notification_title;
         } else if (mediaType == MediaType.AUDIO_ONLY) {
-            notificationContentTextId = hideUserData
-                    ? R.string.audio_call_incognito_notification_text_2
-                    : R.string.audio_call_notification_text_2;
+            notificationContentTextId = R.string.audio_capture_notification_title;
         }
 
-        return ContextUtils.getApplicationContext().getResources().getString(
-                notificationContentTextId);
+        return ContextUtils.getApplicationContext().getString(notificationContentTextId);
     }
 
     /**

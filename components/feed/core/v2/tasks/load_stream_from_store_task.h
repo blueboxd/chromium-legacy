@@ -6,6 +6,7 @@
 #define COMPONENTS_FEED_CORE_V2_TASKS_LOAD_STREAM_FROM_STORE_TASK_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -30,13 +31,20 @@ class LoadStreamFromStoreTask : public offline_pages::Task {
     Result(Result&&);
     Result& operator=(Result&&);
     LoadStreamStatus status = LoadStreamStatus::kNoStatus;
-    // Only provided if successful.
+    // Only provided if using |LoadType::kFullLoad| AND successful.
     std::unique_ptr<StreamModelUpdateRequest> update_request;
-    // On failure, this data may be provided.
+    // This data is provided when |LoadType::kConsistencyTokenOnly|, or when
+    // loading fails.
     std::string consistency_token;
   };
 
-  LoadStreamFromStoreTask(FeedStore* store,
+  enum class LoadType {
+    kFullLoad = 0,
+    kConsistencyTokenOnly = 1,
+  };
+
+  LoadStreamFromStoreTask(LoadType load_type,
+                          FeedStore* store,
                           const base::Clock* clock,
                           UserClass user_class,
                           base::OnceCallback<void(Result)> callback);
@@ -58,6 +66,7 @@ class LoadStreamFromStoreTask : public offline_pages::Task {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
+  LoadType load_type_;
   FeedStore* store_;  // Unowned.
   const base::Clock* clock_;
   UserClass user_class_;

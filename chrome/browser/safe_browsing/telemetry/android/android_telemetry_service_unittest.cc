@@ -247,10 +247,6 @@ TEST_F(AndroidTelemetryServiceTest, GetReport_ValidateAllFields) {
   EXPECT_EQ(kItemReceivedBytes, report->download_item_info().length());
   ASSERT_TRUE(report->download_item_info().has_file_basename());
   EXPECT_EQ(kItemTargetFilePath, report->download_item_info().file_basename());
-
-  ASSERT_TRUE(report->has_safety_net_id());
-  // Empty since the Safety Net ID couldn't have been fetched in a unittest.
-  EXPECT_EQ(0u, report->safety_net_id().length());
 }
 
 }  // namespace safe_browsing

@@ -22,11 +22,17 @@ class SafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
  public:
   typedef security_interstitials::UnsafeResource UnsafeResource;
 
+  // Interstitial type, used in tests.
+  static const content::InterstitialPageDelegate::TypeID kTypeForTesting;
+
   static SafeBrowsingBlockingPage* CreateBlockingPage(
       SafeBrowsingUIManager* ui_manager,
       content::WebContents* web_contents,
       const GURL& main_frame_url,
       const UnsafeResource& unsafe_resource);
+
+  // InterstitialPageDelegate methods:
+  content::InterstitialPageDelegate::TypeID GetTypeForTesting() override;
 
  private:
   SafeBrowsingBlockingPage(

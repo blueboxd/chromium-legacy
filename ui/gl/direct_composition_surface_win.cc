@@ -576,6 +576,15 @@ void DirectCompositionSurfaceWin::Destroy() {
   // Destroy presentation helper first because its dtor calls GetHandle.
   presentation_helper_ = nullptr;
   root_surface_->Destroy();
+
+  // Freeing DComp resources such as visuals and surfaces causes the
+  // device to become 'dirty'. We must commit the changes to the device
+  // in order for the objects to actually be destroyed.
+  // Leaving the device in the dirty state for long periods of time means
+  // that if DWM.exe crashes, the Chromium window will become black until
+  // the next Commit.
+  layer_tree_.reset();
+  dcomp_device_->Commit();
 }
 
 gfx::Size DirectCompositionSurfaceWin::GetSize() {

@@ -4,6 +4,22 @@
 
 const oneGoogleBarHeightInPixels = 64;
 
+let darkThemeEnabled = false;
+let shouldUndoDarkTheme = false;
+
+/**
+ * @param {boolean} enabled
+ * @return {!Promise}
+ */
+async function enableDarkTheme(enabled) {
+  if (!window.gbar) {
+    return;
+  }
+  darkThemeEnabled = enabled;
+  const ogb = await window.gbar.a.bf();
+  ogb.pc.call(ogb, enabled ? 1 : 0);
+}
+
 /**
  * The following |messageType|'s are sent to the parent frame:
  *  - loaded: initial load
@@ -55,9 +71,23 @@ function trackOverlayState() {
       }
       return true;
     });
-    document.querySelector('#overlayBackdrop')
-        .toggleAttribute('show', overlayShown);
     postMessage(overlayShown ? 'activate' : 'deactivate');
+    // Allow the iframe z-level update to take effect before updating the
+    // backdrop.
+    setTimeout(() => {
+      document.querySelector('#overlayBackdrop')
+          .toggleAttribute('show', overlayShown);
+      // When showing the backdrop, turn on dark theme for better visibility if
+      // it is off.
+      if (overlayShown && !darkThemeEnabled) {
+        shouldUndoDarkTheme = true;
+        enableDarkTheme(true);
+      }
+      if (!overlayShown && shouldUndoDarkTheme) {
+        shouldUndoDarkTheme = false;
+        enableDarkTheme(false);
+      }
+    });
   });
   observer.observe(
       document, {attributes: true, childList: true, subtree: true});
@@ -65,10 +95,7 @@ function trackOverlayState() {
 
 window.addEventListener('message', ({data}) => {
   if (data.type === 'enableDarkTheme') {
-    if (!window.gbar) {
-      return;
-    }
-    window.gbar.a.bf().then(ogb => ogb.pc.call(ogb, data.enabled ? 1 : 0));
+    enableDarkTheme(data.enabled);
   }
 });
 

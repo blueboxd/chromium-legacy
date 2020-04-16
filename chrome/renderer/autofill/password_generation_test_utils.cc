@@ -9,6 +9,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,10 +33,11 @@ const char* const kEvents[] = {"focus",  "keydown", "input",
                                "change", "keyup",   "blur"};
 
 // Returns renderer id of WebInput element with id attribute |input_id|.
-uint32_t GetRendererId(WebDocument document, const char* input_id) {
+autofill::FieldRendererId GetRendererId(WebDocument document,
+                                        const char* input_id) {
   WebElement element = document.GetElementById(WebString::FromUTF8(input_id));
   auto* input = ToWebInputElement(&element);
-  return input->UniqueRendererFormControlId();
+  return autofill::FieldRendererId(input->UniqueRendererFormControlId());
 }
 
 }  // namespace

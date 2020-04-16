@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/test/views_test_base.h"
@@ -271,6 +272,29 @@ class WidgetDestroyedWaiter : public WidgetObserver {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetDestroyedWaiter);
+};
+
+// Helper class to wait for a Widget to become visible. This will add a failure
+// to the currently-running test if the widget is destroyed before becoming
+// visible.
+class WidgetVisibleWaiter : public WidgetObserver {
+ public:
+  explicit WidgetVisibleWaiter(Widget* widget);
+  WidgetVisibleWaiter(const WidgetVisibleWaiter&) = delete;
+  WidgetVisibleWaiter& operator=(const WidgetVisibleWaiter&) = delete;
+  ~WidgetVisibleWaiter() override;
+
+  // Waits for the widget to become visible.
+  void Wait();
+
+ private:
+  // WidgetObserver:
+  void OnWidgetVisibilityChanged(Widget* widget, bool visible) override;
+  void OnWidgetDestroying(Widget* widget) override;
+
+  Widget* const widget_;
+  base::RunLoop run_loop_;
+  ScopedObserver<Widget, WidgetObserver> widget_observer_{this};
 };
 
 }  // namespace test

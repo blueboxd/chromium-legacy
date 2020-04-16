@@ -43,4 +43,11 @@ const char kCrashStagingUploadURL[] =
 const char kAppsDir[] = "apps";
 const char kUninstallScript[] = "uninstall.cmd";
 
+// Policy Management constants.
+const char kProxyModeDirect[] = "direct";
+const char kProxyModeAutoDetect[] = "auto_detect";
+const char kProxyModePacScript[] = "pac_script";
+const char kProxyModeFixedServers[] = "fixed_servers";
+const char kProxyModeSystem[] = "system";
+
 }  // namespace updater

@@ -11,26 +11,13 @@
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+alert_consumer_support.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/test/alert_overlay_mediator_test.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/test/fake_alert_overlay_mediator.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-// Fake subclass of AlertOverlayMediator for tests.
-@interface FakeAlertOverlayMediator : AlertOverlayMediator
-// Define readwrite versions of subclassing properties.
-@property(nonatomic, readwrite) NSString* alertTitle;
-@property(nonatomic, readwrite) NSString* alertMessage;
-@property(nonatomic, readwrite)
-    NSArray<TextFieldConfiguration*>* alertTextFieldConfigurations;
-@property(nonatomic, readwrite) NSArray<AlertAction*>* alertActions;
-@property(nonatomic, readwrite) NSString* alertAccessibilityIdentifier;
-@end
-
-@implementation FakeAlertOverlayMediator
-@end
 
 // Tests that the AlertOverlayMediator's subclassing properties are correctly
 // applied to the consumer.

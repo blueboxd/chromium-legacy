@@ -42,6 +42,7 @@ import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
+import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFindInPageCallbackClient;
@@ -544,7 +545,30 @@ public final class TabImpl extends ITab.Stub {
         }
     }
 
+    @CalledByNative
+    private void handleCloseFromWebContents() throws RemoteException {
+        // On clients < 84 WebContents-initiated tab closing was delegated to the client; this flow
+        // should not be used, as the client will not be expecting it.
+        assert WebLayerFactoryImpl.getClientMajorVersion() >= 84;
+
+        if (getBrowser() == null) return;
+        getBrowser().destroyTab(this);
+    }
+
     public void destroy() {
+        // Ensure that this method isn't called twice.
+        assert mInterceptNavigationDelegate != null;
+
+        if (WebLayerFactoryImpl.getClientMajorVersion() >= 84) {
+            // Notify the client that this instance is being destroyed to prevent it from calling
+            // back into this object if the embedder mistakenly tries to do so.
+            try {
+                mClient.onTabDestroyed();
+            } catch (RemoteException e) {
+                throw new APICallException(e);
+            }
+        }
+
         if (mTabCallbackProxy != null) {
             mTabCallbackProxy.destroy();
             mTabCallbackProxy = null;

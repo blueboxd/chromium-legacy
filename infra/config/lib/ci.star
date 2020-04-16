@@ -357,9 +357,6 @@ def ci_builder(
   # (e.g. bucket) occurs before we try to use it
   ret = builders.builder(
       name = name,
-      resultdb_settings = resultdb.settings(
-          enable = True,
-      ),
       **kwargs
   )
 

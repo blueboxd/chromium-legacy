@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,11 +9,9 @@
 # This script is intended to run continuously as a background daemon
 # process, running under an ordinary (non-root) user account.
 
-from __future__ import print_function
-
 import sys
-if sys.version_info[0] != 2 or sys.version_info[1] < 7:
-  print("This script requires Python version 2.7")
+if sys.version_info[0] != 3 or sys.version_info[1] < 3:
+  print("This script requires Python version 3.3")
   sys.exit(1)
 
 import argparse
@@ -29,7 +27,6 @@ import os
 import pipes
 import platform
 import psutil
-import platform
 import pwd
 import re
 import signal
@@ -104,6 +101,8 @@ CONFIG_DIR = os.path.join(HOME_DIR, ".config/chrome-remote-desktop")
 SESSION_FILE_PATH = os.path.join(HOME_DIR, ".chrome-remote-desktop-session")
 SYSTEM_SESSION_FILE_PATH = "/etc/chrome-remote-desktop-session"
 
+DEBIAN_XSESSION_PATH = "/etc/X11/Xsession"
+
 X_LOCK_FILE_TEMPLATE = "/tmp/.X%d-lock"
 FIRST_X_DISPLAY_NUMBER = 20
 
@@ -152,7 +151,7 @@ COMMAND_NOT_EXECUTABLE_EXIT_CODE = 126
 
 # Globals needed by the atexit cleanup() handler.
 g_desktop = None
-g_host_hash = hashlib.md5(socket.gethostname()).hexdigest()
+g_host_hash = hashlib.md5(socket.gethostname().encode()).hexdigest()
 
 def gen_xorg_config(sizes):
   return (
@@ -245,9 +244,8 @@ def is_supported_platform():
       os.path.isfile(SYSTEM_SESSION_FILE_PATH)):
     return True
 
-  # The host has been tested only on Ubuntu.
-  distribution = platform.linux_distribution()
-  return (distribution[0]).lower() == 'ubuntu'
+  # The session chooser expects a Debian-style Xsession script.
+  return os.path.isfile(DEBIAN_XSESSION_PATH);
 
 
 class Config:
@@ -377,7 +375,7 @@ class SessionOutputFilterThread(threading.Thread):
         print("IOError when reading session output: ", e)
         return
 
-      if line == "":
+      if line == b"":
         # EOF reached. Just stop the thread.
         return
 
@@ -386,10 +384,11 @@ class SessionOutputFilterThread(threading.Thread):
 
       if time.time() - started_time >= SESSION_OUTPUT_TIME_LIMIT_SECONDS:
         is_logging = False
-        print("Suppressing rest of the session output.")
-        sys.stdout.flush()
+        print("Suppressing rest of the session output.", flush=True)
       else:
-        print("Session output: %s" % line.strip("\n"))
+        # Pass stream bytes through as is instead of decoding and encoding.
+        sys.stdout.buffer.write(
+            "Session output: ".encode(sys.stdout.encoding) + line);
         sys.stdout.flush()
 
 
@@ -558,7 +557,7 @@ class Desktop:
     with tempfile.NamedTemporaryFile(
         prefix="chrome_remote_desktop_",
         suffix=".conf", delete=False) as config_file:
-      config_file.write(gen_xorg_config(self.sizes))
+      config_file.write(gen_xorg_config(self.sizes).encode())
 
     # We can't support exact resize with the current Xorg dummy driver.
     self.server_supports_exact_resize = False
@@ -1080,7 +1079,11 @@ def run_command_with_group(command, group):
            # Close no-longer-needed file descriptors
            "6>&- 7<&- 8>&- 9>&-"
            .format(command=" ".join(map(pipes.quote, command)))],
-        preexec_fn=lambda: pre_exec(read_fd, write_fd))
+        # It'd be nice to use pass_fds instead close_fds=False. Unfortunately,
+        # pass_fds doesn't seem usable with remapping. It runs after preexec_fn,
+        # which does the remapping, but complains if the specified fds don't
+        # exist ahead of time.
+        close_fds=False, preexec_fn=lambda: pre_exec(read_fd, write_fd))
     result = process.wait()
   except OSError as e:
     logging.error("Failed to execute sg: {}".format(e.strerror))

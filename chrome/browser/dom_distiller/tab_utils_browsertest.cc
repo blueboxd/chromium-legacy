@@ -47,10 +47,11 @@ namespace {
 
 const char* kSimpleArticlePath = "/dom_distiller/simple_article.html";
 const char* kOriginalArticleTitle = "Test Page Title";
+const char* kExpectedArticleHeading = "Test Page Title";
 #if defined(OS_ANDROID)
-const char* kExpectedArticleTitle = "Test Page Title";
+const char* kExpectedDocumentTitle = "Test Page Title";
 #else   // Desktop. This test is in chrome/ and is not run on iOS.
-const char* kExpectedArticleTitle = "Test Page Title - Reader Mode";
+const char* kExpectedDocumentTitle = "Test Page Title - Reader Mode";
 #endif  // defined(OS_ANDROID)
 const char* kDistillablePageHistogram =
     "DomDistiller.Time.ActivelyViewingArticleBeforeDistilling";
@@ -200,9 +201,16 @@ class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
   }
   const GURL& article_url() const { return article_url_; }
 
-  std::string GetPageTitle(content::WebContents* web_contents) const {
+  std::string GetDocumentTitle(content::WebContents* web_contents) const {
     return content::ExecuteScriptAndGetValue(web_contents->GetMainFrame(),
                                              "document.title")
+        .GetString();
+  }
+
+  std::string GetArticleHeading(content::WebContents* web_contents) const {
+    return content::ExecuteScriptAndGetValue(
+               web_contents->GetMainFrame(),
+               "document.getElementById('title-holder').textContent")
         .GetString();
   }
 
@@ -240,7 +248,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   EXPECT_NE(initial_web_contents, after_web_contents);
   EXPECT_TRUE(
       after_web_contents->GetLastCommittedURL().SchemeIs(kDomDistillerScheme));
-  EXPECT_EQ(kExpectedArticleTitle, GetPageTitle(after_web_contents));
+  EXPECT_EQ(kExpectedDocumentTitle, GetDocumentTitle(after_web_contents));
+  EXPECT_EQ(kExpectedArticleHeading, GetArticleHeading(after_web_contents));
 }
 
 // TODO(1061928): Make this test more robust by using a TestMockTimeTaskRunner
@@ -301,12 +310,14 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
 
   // Verify that the source WebContents is showing the original article.
   EXPECT_EQ(article_url(), source_web_contents->GetLastCommittedURL());
-  EXPECT_EQ(kOriginalArticleTitle, GetPageTitle(source_web_contents));
+  EXPECT_EQ(kOriginalArticleTitle, GetDocumentTitle(source_web_contents));
 
   // Verify the destination WebContents is showing distilled content.
   EXPECT_TRUE(destination_web_contents->GetLastCommittedURL().SchemeIs(
       kDomDistillerScheme));
-  EXPECT_EQ(kExpectedArticleTitle, GetPageTitle(destination_web_contents));
+  EXPECT_EQ(kExpectedDocumentTitle, GetDocumentTitle(destination_web_contents));
+  EXPECT_EQ(kExpectedArticleHeading,
+            GetArticleHeading(destination_web_contents));
 
   content::WebContentsDestroyedWatcher destroyed_watcher(
       destination_web_contents);

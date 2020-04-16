@@ -187,11 +187,18 @@ bool LayoutSVGShape::ShapeDependentStrokeContains(
       // The reason is similar to the above code about HasPath().
       if (!rare_data_)
         UpdateNonScalingStrokeData();
+
+      // Un-scale to get back to the root-transform (cheaper than re-computing
+      // the root transform from scratch).
+      AffineTransform root_transform;
+      root_transform.Scale(StyleRef().EffectiveZoom())
+          .Multiply(NonScalingStrokeTransform());
+
       stroke_path_cache_ = std::make_unique<Path>(
-          NonScalingStrokePath().StrokePath(stroke_data));
+          NonScalingStrokePath().StrokePath(stroke_data, root_transform));
     } else {
-      stroke_path_cache_ =
-          std::make_unique<Path>(path_->StrokePath(stroke_data));
+      stroke_path_cache_ = std::make_unique<Path>(
+          path_->StrokePath(stroke_data, ComputeRootTransform()));
     }
   }
 
@@ -300,19 +307,23 @@ void LayoutSVGShape::UpdateLayout() {
   ClearNeedsLayout();
 }
 
+AffineTransform LayoutSVGShape::ComputeRootTransform() const {
+  const LayoutObject* root = this;
+  while (root && !root->IsSVGRoot())
+    root = root->Parent();
+  return LocalToAncestorTransform(ToLayoutSVGRoot(root)).ToAffineTransform();
+}
+
 AffineTransform LayoutSVGShape::ComputeNonScalingStrokeTransform() const {
   // Compute the CTM to the SVG root. This should probably be the CTM all the
   // way to the "canvas" of the page ("host" coordinate system), but with our
   // current approach of applying/painting non-scaling-stroke, that can break in
   // unpleasant ways (see crbug.com/747708 for an example.) Maybe it would be
   // better to apply this effect during rasterization?
-  const LayoutObject* root = this;
-  while (root && !root->IsSVGRoot())
-    root = root->Parent();
   AffineTransform host_transform;
   host_transform.Scale(1 / StyleRef().EffectiveZoom())
-      .Multiply(
-          LocalToAncestorTransform(ToLayoutSVGRoot(root)).ToAffineTransform());
+      .Multiply(ComputeRootTransform());
+
   // Width of non-scaling stroke is independent of translation, so zero it out
   // here.
   host_transform.SetE(0);

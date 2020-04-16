@@ -415,12 +415,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // Should only be accessed on the IO thread after creation.
   mojo::Receiver<mojom::GpuService> receiver_{this};
 
-#if defined(OS_WIN)
-  // Used to track if the Dx Diag task on a different thread is still running.
-  // The status is checked before exiting the unsandboxed GPU process.
-  int number_of_long_dx_tasks_in_progress_ = 0;
-#endif
-
 #if defined(OS_CHROMEOS)
   scoped_refptr<arc::ProtectedBufferManager> protected_buffer_manager_;
 #endif  // defined(OS_CHROMEOS)

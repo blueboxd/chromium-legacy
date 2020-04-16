@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/util/type_safety/strong_alias.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
+#include "components/autofill/core/common/renderer_id.h"
 
 namespace autofill {
 class AutofillDriver;
@@ -62,9 +63,10 @@ class PasswordManagerDriver
   // Notifies the password manager that the user has accepted a generated
   // password. The password manager can bring up some disambiguation UI in
   // response.
-  virtual void GeneratedPasswordAccepted(const autofill::FormData& form_data,
-                                         uint32_t generation_element_id,
-                                         const base::string16& password) {}
+  virtual void GeneratedPasswordAccepted(
+      const autofill::FormData& form_data,
+      autofill::FieldRendererId generation_element_id,
+      const base::string16& password) {}
 
   virtual void TouchToFillClosed(ShowVirtualKeyboard show_virtual_keyboard) {}
 

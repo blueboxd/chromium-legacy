@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/password_manager/core/browser/form_parsing/fuzzer/data_accessor.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -135,9 +136,9 @@ autofill::FormData GenerateWithDataAccessor(
     result.fields[i].name_attribute = result.fields[i].name;
     result.fields[i].id_attribute =
         accessor->ConsumeString16(field_params[i].id_length);
-    // Check both positive and negavites numbers for renderer ids.
+    // Check both positive and negatives numbers for renderer ids.
     result.fields[i].unique_renderer_id =
-        static_cast<uint32_t>(accessor->ConsumeNumber(6) - 32);
+        autofill::FieldRendererId(accessor->ConsumeNumber(6) - 32);
     if (predictions) {
       PasswordFieldPrediction field_prediction;
       if (MaybeGenerateFieldPrediction(accessor, &field_prediction)) {
@@ -168,7 +169,7 @@ autofill::FormData GenerateWithDataAccessor(
       if (MaybeGenerateFieldPrediction(accessor, &field_prediction)) {
         // Check both positive and negavites numbers for renderer ids.
         field_prediction.renderer_id =
-            static_cast<uint32_t>(accessor->ConsumeNumber(6) - 32);
+            autofill::FieldRendererId(accessor->ConsumeNumber(6) - 32);
         predictions->fields.push_back(field_prediction);
       }
     }

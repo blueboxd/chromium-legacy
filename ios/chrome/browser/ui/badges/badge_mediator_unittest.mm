@@ -117,7 +117,7 @@ class BadgeMediatorTest : public testing::TestWithParam<TestParam> {
   // Pass in different |message_text| to avoid replacing existing infobar.
   InfoBarIOS* AddInfobar(InfobarType type, base::string16 message_text) {
     std::unique_ptr<InfoBarIOS> added_infobar =
-        FakeInfobarIOS::Create(type, /*has_badge=*/true, message_text);
+        std::make_unique<FakeInfobarIOS>(type, message_text);
     InfoBarIOS* infobar = added_infobar.get();
     infobar_manager()->AddInfoBar(std::move(added_infobar));
     return infobar;
@@ -240,8 +240,8 @@ TEST_P(BadgeMediatorTest,
   EXPECT_EQ(badge_consumer_.displayedBadge.badgeType,
             BadgeType::kBadgeTypePasswordSave);
   InsertActivatedWebState(/*index=*/1);
-  std::unique_ptr<InfoBarIOS> added_infobar = FakeInfobarIOS::Create(
-      kSecondInfobarType, /*has_badge=*/true, kSecondInfobarMessageText);
+  std::unique_ptr<InfoBarIOS> added_infobar = std::make_unique<FakeInfobarIOS>(
+      kSecondInfobarType, kSecondInfobarMessageText);
   InfoBarManagerImpl::FromWebState(web_state_list_.GetWebStateAt(0))
       ->AddInfoBar(std::move(added_infobar));
   EXPECT_FALSE(badge_consumer_.displayedBadge);
@@ -253,8 +253,8 @@ TEST_P(BadgeMediatorTest, BadgeMediatorTestDoNotAddInfobarIfWebStateListGone) {
   InsertActivatedWebState(/*index=*/0);
   ASSERT_FALSE(badge_consumer_.displayedBadge);
   [badge_mediator_ disconnect];
-  std::unique_ptr<InfoBarIOS> added_infobar = FakeInfobarIOS::Create(
-      kSecondInfobarType, /*has_badge=*/true, kSecondInfobarMessageText);
+  std::unique_ptr<InfoBarIOS> added_infobar = std::make_unique<FakeInfobarIOS>(
+      kSecondInfobarType, kSecondInfobarMessageText);
   InfoBarManagerImpl::FromWebState(web_state_list_.GetActiveWebState())
       ->AddInfoBar(std::move(added_infobar));
   EXPECT_FALSE(badge_consumer_.displayedBadge);

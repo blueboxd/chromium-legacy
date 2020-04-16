@@ -43,7 +43,7 @@ std::unique_ptr<StreamModel> LoadModelFromStore(FeedStore* store) {
     result = std::move(task_result);
   };
   LoadStreamFromStoreTask load_task(
-      store, /*clock=*/nullptr,
+      LoadStreamFromStoreTask::LoadType::kFullLoad, store, /*clock=*/nullptr,
       UserClass::kActiveSuggestionsConsumer,  // Has no effect.
       base::BindLambdaForTesting(complete));
   // We want to load the data no matter how stale.
@@ -280,10 +280,9 @@ class TestMetricsReporter : public MetricsReporter {
               << " (store status: " << load_from_store_status << ")";
     MetricsReporter::OnLoadStream(load_from_store_status, final_status);
   }
-  void OnMaybeTriggerRefresh(TriggerType trigger,
-                             bool clear_all_before_refresh) override {
-    refresh_trigger_type = trigger;
-    MetricsReporter::OnMaybeTriggerRefresh(trigger, clear_all_before_refresh);
+  void OnBackgroundRefresh(LoadStreamStatus final_status) override {
+    background_refresh_status = final_status;
+    MetricsReporter::OnBackgroundRefresh(final_status);
   }
   void OnClearAll(base::TimeDelta time_since_last_clear) override {
     this->time_since_last_clear = time_since_last_clear;
@@ -294,6 +293,7 @@ class TestMetricsReporter : public MetricsReporter {
 
   base::Optional<int> slice_viewed_index;
   base::Optional<LoadStreamStatus> load_stream_status;
+  base::Optional<LoadStreamStatus> background_refresh_status;
   base::Optional<base::TimeDelta> time_since_last_clear;
   base::Optional<TriggerType> refresh_trigger_type;
 };
@@ -395,23 +395,54 @@ TEST_F(FeedStreamTest, RefreshIsScheduledOnInitialize) {
   EXPECT_TRUE(refresh_scheduler_.scheduled_period);
 }
 
-TEST_F(FeedStreamTest, ScheduledRefreshTriggersRefresh) {
-  stream_->InitializeScheduling();
-  stream_->ExecuteRefreshTask();
-
-  EXPECT_EQ(TriggerType::kFixedTimer, metrics_reporter_.refresh_trigger_type);
-  // TODO(harringtond): Once we actually perform the refresh, make sure
-  // RefreshTaskComplete() is called.
-  // EXPECT_TRUE(refresh_scheduler_.refresh_task_complete);
-}
-
 TEST_F(FeedStreamTest, DoNotRefreshIfArticlesListIsHidden) {
   stream_->SetArticlesListVisible(false);
   stream_->InitializeScheduling();
   stream_->ExecuteRefreshTask();
 
-  EXPECT_TRUE(refresh_scheduler_.canceled);
-  EXPECT_FALSE(metrics_reporter_.refresh_trigger_type);
+  EXPECT_TRUE(refresh_scheduler_.refresh_task_complete);
+  EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedArticlesListHidden,
+            metrics_reporter_.background_refresh_status);
+}
+
+TEST_F(FeedStreamTest, BackgroundRefreshSuccess) {
+  // Trigger a background refresh.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  stream_->ExecuteRefreshTask();
+  WaitForIdleTaskQueue();
+
+  // Verify the refresh happened and that we can load a stream without the
+  // network.
+  ASSERT_TRUE(refresh_scheduler_.refresh_task_complete);
+  EXPECT_EQ(LoadStreamStatus::kLoadedFromNetwork,
+            metrics_reporter_.background_refresh_status);
+  EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+  EXPECT_FALSE(stream_->GetModel());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  EXPECT_EQ("2 slices", surface.Describe());
+}
+
+TEST_F(FeedStreamTest, BackgroundRefreshNotAttemptedWhenModelIsLoading) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  stream_->ExecuteRefreshTask();
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ(metrics_reporter_.background_refresh_status,
+            LoadStreamStatus::kModelAlreadyLoaded);
+}
+
+TEST_F(FeedStreamTest, BackgroundRefreshNotAttemptedAfterModelIsLoaded) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  stream_->ExecuteRefreshTask();
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ(metrics_reporter_.background_refresh_status,
+            LoadStreamStatus::kModelAlreadyLoaded);
 }
 
 TEST_F(FeedStreamTest, SurfaceReceivesInitialContent) {
@@ -630,6 +661,23 @@ TEST_F(FeedStreamTest, DoNotLoadStreamWhenEulaIsNotAccepted) {
   EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedEulaNotAccepted,
             metrics_reporter_.load_stream_status);
   EXPECT_EQ("zero-state", surface.Describe());
+}
+
+TEST_F(FeedStreamTest, LoadStreamAfterEulaIsAccepted) {
+  // Connect a surface before the EULA is accepted.
+  is_eula_accepted_ = false;
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  ASSERT_EQ("zero-state", surface.Describe());
+
+  // Accept EULA, our surface should receive data.
+  surface.Clear();
+  is_eula_accepted_ = true;
+  stream_->OnEulaAccepted();
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ("2 slices", surface.Describe());
 }
 
 TEST_F(FeedStreamTest, DoNotLoadFromNetworkAfterHistoryIsDeleted) {

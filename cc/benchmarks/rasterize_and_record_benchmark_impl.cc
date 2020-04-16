@@ -159,10 +159,6 @@ void RasterizeAndRecordBenchmarkImpl::DidCompleteCommit(
                      rasterize_results_.pixels_rasterized_with_non_solid_color);
   result->SetInteger("pixels_rasterized_as_opaque",
                      rasterize_results_.pixels_rasterized_as_opaque);
-  result->SetInteger("visible_pixels_for_lcd_text",
-                     rasterize_results_.visible_pixels_for_lcd_text);
-  result->SetInteger("visible_pixels_for_non_lcd_text",
-                     rasterize_results_.visible_pixels_for_non_lcd_text);
   result->SetInteger("total_layers", rasterize_results_.total_layers);
   result->SetInteger("total_picture_layers",
                      rasterize_results_.total_picture_layers);
@@ -170,6 +166,17 @@ void RasterizeAndRecordBenchmarkImpl::DidCompleteCommit(
                      rasterize_results_.total_picture_layers_with_no_content);
   result->SetInteger("total_picture_layers_off_screen",
                      rasterize_results_.total_picture_layers_off_screen);
+
+  std::unique_ptr<base::DictionaryValue> lcd_text_pixels(
+      new base::DictionaryValue());
+  for (size_t i = 0; i < kLCDTextDisallowedReasonCount; i++) {
+    lcd_text_pixels->SetInteger(
+        LCDTextDisallowedReasonToString(
+            static_cast<LCDTextDisallowedReason>(i)),
+        rasterize_results_.visible_pixels_by_lcd_text_disallowed_reason[i]);
+  }
+  result->SetDictionary("visible_pixels_by_lcd_text_disallowed_reason",
+                        std::move(lcd_text_pixels));
 
   NotifyDone(std::move(result));
 }
@@ -188,10 +195,9 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
   int text_pixels =
       layer->GetRasterSource()->GetDisplayItemList()->AreaOfDrawText(
           layer->visible_layer_rect());
-  if (layer->CanUseLCDText())
-    rasterize_results_.visible_pixels_for_lcd_text += text_pixels;
-  else
-    rasterize_results_.visible_pixels_for_non_lcd_text += text_pixels;
+  rasterize_results_
+      .visible_pixels_by_lcd_text_disallowed_reason[static_cast<size_t>(
+          layer->lcd_text_disallowed_reason())] += text_pixels;
 
   FixedInvalidationPictureLayerTilingClient client(layer,
                                                    gfx::Rect(layer->bounds()));
@@ -243,8 +249,7 @@ RasterizeAndRecordBenchmarkImpl::RasterizeResults::RasterizeResults()
     : pixels_rasterized(0),
       pixels_rasterized_with_non_solid_color(0),
       pixels_rasterized_as_opaque(0),
-      visible_pixels_for_lcd_text(0),
-      visible_pixels_for_non_lcd_text(0),
+      visible_pixels_by_lcd_text_disallowed_reason{0},
       total_layers(0),
       total_picture_layers(0),
       total_picture_layers_with_no_content(0),

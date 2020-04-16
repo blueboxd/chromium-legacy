@@ -447,6 +447,7 @@ core_idl_files =
                     "timing/event_counts.idl",
                     "timing/largest_contentful_paint.idl",
                     "timing/layout_shift.idl",
+                    "timing/layout_shift_attribution.idl",
                     "timing/memory_info.idl",
                     "timing/performance.idl",
                     "timing/performance_element_timing.idl",

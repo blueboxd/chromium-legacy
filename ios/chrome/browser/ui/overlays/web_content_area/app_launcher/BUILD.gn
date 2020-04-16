@@ -4,8 +4,6 @@
 
 source_set("app_launcher") {
   sources = [
-    "app_launcher_alert_overlay_coordinator.h",
-    "app_launcher_alert_overlay_coordinator.mm",
     "app_launcher_alert_overlay_mediator.h",
     "app_launcher_alert_overlay_mediator.mm",
   ]

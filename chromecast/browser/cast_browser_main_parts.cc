@@ -140,6 +140,8 @@
 
 #if !defined(OS_FUCHSIA)
 #include "base/bind_helpers.h"
+#include "chromecast/base/cast_sys_info_util.h"
+#include "chromecast/public/cast_sys_info.h"
 #include "components/heap_profiling/client_connection_manager.h"
 #include "components/heap_profiling/supervisor.h"
 #endif  // !defined(OS_FUCHSIA)
@@ -586,10 +588,12 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #if defined(USE_AURA)
 
 #if !defined(OS_FUCHSIA)
-  // Start UI devtools if enabled.
+  // Start UI devtools if this is a dev device or explicitly enabled.
   // Note that this must happen before the window tree host is created by the
   // window manager.
-  if (::ui_devtools::UiDevToolsServer::IsUiDevToolsEnabled(
+  auto build_type = CreateSysInfo()->GetBuildType();
+  if (CAST_IS_DEBUG_BUILD() || build_type == CastSysInfo::BUILD_ENG ||
+      ::ui_devtools::UiDevToolsServer::IsUiDevToolsEnabled(
           ::ui_devtools::switches::kEnableUiDevTools)) {
     // Starts the UI Devtools server for browser Aura UI
     ui_devtools_ = std::make_unique<CastUIDevTools>(

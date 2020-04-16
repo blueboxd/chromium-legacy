@@ -582,14 +582,12 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
 #endif  // defined(OS_ANDROID)
 }
 
-void ChromePasswordManagerClient::TriggerReauthForAccount(
-    const CoreAccountId& account_id,
+void ChromePasswordManagerClient::TriggerReauthForPrimaryAccount(
     base::OnceCallback<void(ReauthSucceeded)> reauth_callback) {
 #if defined(OS_ANDROID)
   std::move(reauth_callback).Run(ReauthSucceeded(false));
 #else   // !defined(OS_ANDROID)
-  account_storage_auth_helper_.TriggerOptInReauth(account_id,
-                                                  std::move(reauth_callback));
+  account_storage_auth_helper_.TriggerOptInReauth(std::move(reauth_callback));
 #endif  // defined(OS_ANDROID)
 }
 
@@ -976,7 +974,7 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
 void ChromePasswordManagerClient::ShowPasswordEditingPopup(
     const gfx::RectF& bounds,
     const autofill::FormData& form_data,
-    uint32_t field_renderer_id,
+    autofill::FieldRendererId field_renderer_id,
     const base::string16& password_value) {
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
           password_generation_driver_receivers_.GetCurrentTargetFrame(),

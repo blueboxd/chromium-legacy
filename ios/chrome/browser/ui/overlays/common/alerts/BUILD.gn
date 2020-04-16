@@ -25,12 +25,16 @@ source_set("alerts") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "alert_overlay_mediator_unittest.mm" ]
+  sources = [
+    "alert_overlay_coordinator_unittest.mm",
+    "alert_overlay_mediator_unittest.mm",
+  ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
     ":alerts",
+    "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/overlays/test",
     "//ios/chrome/browser/ui/alert_view",
@@ -38,6 +42,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/overlays/common/alerts/test",
     "//ios/chrome/browser/ui/overlays/test",
+    "//ios/chrome/test:test_support",
+    "//ios/web/public/test:test",
     "//testing/gtest",
     "//ui/base",
   ]

@@ -121,7 +121,7 @@ interface PasswordManagerDriver {
 
   // Notification that the user (not JavaScript) modified the value of a
   // non-password field with |renderer_id|, and |value| is the current value.
-  UserModifiedNonPasswordField(uint32 renderer_id,
+  UserModifiedNonPasswordField(FieldRendererId renderer_id,
                                mojo_base.mojom.String16 value);
 
   // Instructs the browser to show a popup with password suggestions. The popup
@@ -147,7 +147,7 @@ interface PasswordManagerDriver {
   // integer serialization of autofill::FillingResult. It is passed as an
   // integer as no further interpretation of the value is necessary in the
   // browser.
-  LogFirstFillingResult(uint32 form_renderer_id, int32 result);
+  LogFirstFillingResult(FormRendererId form_renderer_id, int32 result);
 };
 
 // There is one instance of this interface per web contents in the browser
@@ -162,8 +162,11 @@ interface PasswordGenerationDriver {
   // The location should be specified in the renderers coordinate system. Form
   // is the form associated with the password field. |field_renderer_id| is the
   // ID of the password field triggering generation.
-  ShowPasswordEditingPopup(gfx.mojom.RectF bounds, FormData form_data,
-      uint32 field_renderer_id, mojo_base.mojom.String16 password_value);
+  ShowPasswordEditingPopup(
+    gfx.mojom.RectF bounds,
+    FormData form_data,
+    FieldRendererId field_renderer_id,
+    mojo_base.mojom.String16 password_value);
 
   // Informs the browser that the password generation option was rejected
   // by the user typing more characters than the maximum offer size into the
@@ -172,7 +175,7 @@ interface PasswordGenerationDriver {
 
   // Instructs the browser to presave the form with generated password.
   PresaveGeneratedPassword(FormData form_data,
-                          mojo_base.mojom.String16 password_value);
+                           mojo_base.mojom.String16 password_value);
 
   // Instructs the browser that form no longer contains a generated password and
   // the presaved form should be removed.

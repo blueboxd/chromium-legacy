@@ -1,0 +1,29 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("alerts") {
+  sources = [
+    "web_content_area_alert_overlay_coordinator.h",
+    "web_content_area_alert_overlay_coordinator.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//base",
+    "//components/strings:components_strings_grit",
+    "//components/url_formatter",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/web_content_area",
+    "//ios/chrome/browser/ui/alert_view",
+    "//ios/chrome/browser/ui/overlays:coordinators",
+    "//ios/chrome/browser/ui/overlays:util",
+    "//ios/chrome/browser/ui/overlays/common/alerts",
+    "//ios/chrome/browser/ui/overlays/web_content_area/app_launcher",
+    "//ios/chrome/browser/ui/overlays/web_content_area/http_auth_dialogs",
+    "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs",
+    "//ui/base",
+  ]
+}

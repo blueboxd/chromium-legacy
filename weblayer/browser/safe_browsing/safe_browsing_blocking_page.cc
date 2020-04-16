@@ -11,6 +11,11 @@
 
 namespace weblayer {
 
+// static
+const content::InterstitialPageDelegate::TypeID
+    SafeBrowsingBlockingPage::kTypeForTesting =
+        &SafeBrowsingBlockingPage::kTypeForTesting;
+
 SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     SafeBrowsingUIManager* ui_manager,
     content::WebContents* web_contents,
@@ -43,6 +48,11 @@ SafeBrowsingBlockingPage* SafeBrowsingBlockingPage::CreateBlockingPage(
       CreateControllerClient(web_contents, unsafe_resources, ui_manager,
                              nullptr /*pref_service*/),
       BaseBlockingPage::CreateDefaultDisplayOptions(unsafe_resources));
+}
+
+content::InterstitialPageDelegate::TypeID
+SafeBrowsingBlockingPage::GetTypeForTesting() {
+  return SafeBrowsingBlockingPage::kTypeForTesting;
 }
 
 }  // namespace weblayer

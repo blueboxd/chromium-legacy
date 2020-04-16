@@ -17,6 +17,7 @@ source_set("infobars") {
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/infobars/overlays:overlay_type",
     "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/ui/badges:util",
     "//ios/chrome/browser/ui/infobars:infobars_ui",
   ]
 }

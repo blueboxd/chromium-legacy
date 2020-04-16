@@ -188,9 +188,11 @@ void HistoryService::HandleBackgrounding() {
   if (!backend_task_runner_ || !history_backend_.get())
     return;
 
-  ScheduleTask(PRIORITY_NORMAL,
-               base::MakeCriticalClosure(base::BindOnce(
-                   &HistoryBackend::PersistState, history_backend_.get())));
+  ScheduleTask(
+      PRIORITY_NORMAL,
+      base::MakeCriticalClosure("HistoryService::HandleBackgrounding",
+                                base::BindOnce(&HistoryBackend::PersistState,
+                                               history_backend_.get())));
 }
 #endif
 

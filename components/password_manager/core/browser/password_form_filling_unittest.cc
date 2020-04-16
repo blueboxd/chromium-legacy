@@ -16,6 +16,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
@@ -67,9 +68,11 @@ class PasswordFormFillingTest : public testing::Test {
     observed_form_.origin = GURL("https://accounts.google.com/a/LoginAuth");
     observed_form_.action = GURL("https://accounts.google.com/a/Login");
     observed_form_.username_element = ASCIIToUTF16("Email");
-    observed_form_.username_element_renderer_id = 100;
+    observed_form_.username_element_renderer_id =
+        autofill::FieldRendererId(100);
     observed_form_.password_element = ASCIIToUTF16("Passwd");
-    observed_form_.password_element_renderer_id = 101;
+    observed_form_.password_element_renderer_id =
+        autofill::FieldRendererId(101);
     observed_form_.submit_element = ASCIIToUTF16("signIn");
     observed_form_.signon_realm = "https://accounts.google.com";
     observed_form_.form_data.name = ASCIIToUTF16("the-form-name");
@@ -182,12 +185,12 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
     PasswordForm observed_form = observed_form_;
     if (test_case.new_password_present) {
       observed_form.new_password_element = ASCIIToUTF16("New Passwd");
-      observed_form.new_password_element_renderer_id = 125;
+      observed_form.new_password_element_renderer_id =
+          autofill::FieldRendererId(125);
     }
     if (!test_case.current_password_present) {
       observed_form.password_element.clear();
-      observed_form.password_element_renderer_id =
-          autofill::FormData::kNotSetRendererId;
+      observed_form.password_element_renderer_id = autofill::FieldRendererId();
     }
 
     PasswordFormFillData fill_data;

@@ -182,7 +182,7 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
         ", type=" + ScrubElementID(field->form_control_type);
 
     field_info +=
-        ", renderer_id = " + NumberToString(field->unique_renderer_id);
+        ", renderer_id = " + NumberToString(field->unique_renderer_id.value());
 
     if (!field->autocomplete_attribute.empty())
       field_info +=

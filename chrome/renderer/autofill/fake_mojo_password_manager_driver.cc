@@ -58,7 +58,7 @@ void FakeMojoPasswordManagerDriver::UserModifiedPasswordField() {
 }
 
 void FakeMojoPasswordManagerDriver::UserModifiedNonPasswordField(
-    uint32_t renderer_id,
+    autofill::FieldRendererId renderer_id,
     const base::string16& value) {}
 
 void FakeMojoPasswordManagerDriver::CheckSafeBrowsingReputation(

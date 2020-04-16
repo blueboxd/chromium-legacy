@@ -18,6 +18,7 @@
 #include "cc/layers/tile_size_calculator.h"
 #include "cc/paint/discardable_image_map.h"
 #include "cc/paint/image_id.h"
+#include "cc/raster/lcd_text_disallowed_reason.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
 #include "cc/tiles/tiling_set_eviction_queue.h"
@@ -136,7 +137,15 @@ class CC_EXPORT PictureLayerImpl
   ImageInvalidationResult InvalidateRegionForImages(
       const PaintImageIdFlatSet& images_to_invalidate);
 
-  bool can_use_lcd_text() const { return can_use_lcd_text_; }
+  bool can_use_lcd_text() const {
+    return lcd_text_disallowed_reason_ == LCDTextDisallowedReason::kNone;
+  }
+  LCDTextDisallowedReason lcd_text_disallowed_reason() const {
+    return lcd_text_disallowed_reason_;
+  }
+  LCDTextDisallowedReason ComputeLCDTextDisallowedReasonForTesting() const {
+    return ComputeLCDTextDisallowedReason();
+  }
 
   const Region& InvalidationForTesting() const { return invalidation_; }
 
@@ -197,6 +206,8 @@ class CC_EXPORT PictureLayerImpl
       const std::vector<DiscardableImageMap::PaintWorkletInputWithImageId>&
           inputs);
 
+  LCDTextDisallowedReason ComputeLCDTextDisallowedReason() const;
+
   PictureLayerImpl* twin_layer_;
 
   std::unique_ptr<PictureLayerTilingSet> tilings_;
@@ -230,7 +241,8 @@ class CC_EXPORT PictureLayerImpl
 
   bool nearest_neighbor_ : 1;
   bool use_transformed_rasterization_ : 1;
-  bool can_use_lcd_text_ : 1;
+
+  LCDTextDisallowedReason lcd_text_disallowed_reason_;
 
   // The intrinsic size of the directly composited image. A directly composited
   // image is an image which is the only thing drawn into a layer. In these

@@ -16,7 +16,7 @@ PasswordGenerationUIData::PasswordGenerationUIData(
     const gfx::RectF& bounds,
     int max_length,
     const base::string16& generation_element,
-    uint32_t generation_element_id,
+    FieldRendererId generation_element_id,
     bool is_generation_element_password_type,
     base::i18n::TextDirection text_direction,
     const autofill::FormData& form_data)
@@ -42,8 +42,8 @@ PasswordGenerationUIData& PasswordGenerationUIData::operator=(
 PasswordGenerationUIData::~PasswordGenerationUIData() = default;
 
 void LogPasswordGenerationEvent(PasswordGenerationEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.Event",
-                            event, EVENT_ENUM_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.Event", event,
+                            EVENT_ENUM_COUNT);
 }
 
 }  // namespace password_generation

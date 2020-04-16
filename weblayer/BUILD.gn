@@ -62,8 +62,14 @@ if (is_android) {
   repack_locales("weblayer_locales") {
     input_locales = locales
     output_locales = locales
-    source_patterns = [ "${root_gen_dir}/weblayer/components_strings_" ]
-    deps = [ ":generate_components_strings" ]
+    source_patterns = [
+      "${root_gen_dir}/components/strings/components_locale_settings_",
+      "${root_gen_dir}/weblayer/components_strings_",
+    ]
+    deps = [
+      ":generate_components_strings",
+      "//components/strings:components_locale_settings",
+    ]
     output_dir = "$root_out_dir/weblayer/locales"
   }
 
@@ -134,7 +140,6 @@ source_set("weblayer_lib_base") {
     "browser/host_content_settings_map_factory.h",
     "browser/i18n_util.cc",
     "browser/i18n_util.h",
-    "browser/isolated_world_ids.h",
     "browser/javascript_tab_modal_dialog_manager_delegate_android.cc",
     "browser/javascript_tab_modal_dialog_manager_delegate_android.h",
     "browser/navigation_controller_impl.cc",
@@ -190,6 +195,7 @@ source_set("weblayer_lib_base") {
     "common/content_client_impl.h",
     "common/features.cc",
     "common/features.h",
+    "common/isolated_world_ids.h",
     "common/weblayer_paths.cc",
     "common/weblayer_paths.h",
     "public/browser.cc",
@@ -267,6 +273,7 @@ source_set("weblayer_lib_base") {
     "//components/spellcheck:buildflags",
     "//components/ssl_errors",
     "//components/startup_metric_utils/browser",
+    "//components/strings",
     "//components/user_prefs",
     "//components/variations",
     "//components/variations/net",
@@ -363,6 +370,8 @@ source_set("weblayer_lib_base") {
       "browser/tab_callback_proxy.h",
       "browser/top_controls_container_view.cc",
       "browser/top_controls_container_view.h",
+      "browser/weblayer_factory_impl_android.cc",
+      "browser/weblayer_factory_impl_android.h",
       "browser/weblayer_impl_android.cc",
       "browser/webrtc/media_stream_manager.cc",
       "browser/webrtc/media_stream_manager.h",

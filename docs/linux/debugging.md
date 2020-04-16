@@ -272,6 +272,25 @@ rr replay
 (gdb) reverse-fin # run to where this function was called from
 ```
 
+You can debug multi-process chrome using `rr -f [PID]`. To find the process
+id you can either run `rr ps` after recording, or a convenient way
+to find the correct process id is to run with `--vmodule=render_frame_impl=1`
+which will log a message on navigations. e.g.
+
+```
+$ rr record out/Debug/content_shell --disable-hang-monitor --no-sandbox --disable-seccomp-sandbox --disable-setuid-sandbox --vmodule=render_frame_impl=1 https://google.com/
+rr: Saving execution to trace directory `...'.
+...
+[128515:128515:0320/164124.768687:VERBOSE1:render_frame_impl.cc(4244)] Committed provisional load: https://www.google.com/
+```
+
+From the log message we can see that the site was loaded into process 128515
+and can set a breakpoint for when that process is forked.
+
+```
+rr replay -f 128515
+```
+
 ### Graphical Debugging Aid for Chromium Views
 
 The following link describes a tool that can be used on Linux, Windows and Mac under GDB.

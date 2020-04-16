@@ -32,6 +32,7 @@ import org.chromium.weblayer.NavigationState;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
+import org.chromium.weblayer_private.interfaces.NavigateParams;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -246,17 +247,53 @@ public class NavigationTest {
 
     @Test
     @SmallTest
+    public void testDefaultNavigateParams() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        setNavigationCallback(activity);
+
+        NavigateParams params = new NavigateParams();
+        navigateAndWaitForCompletion(URL2,
+                ()
+                        -> activity.getTab().getNavigationController().navigate(
+                                Uri.parse(URL2), params));
+        runOnUiThreadBlocking(() -> {
+            NavigationController navigationController = activity.getTab().getNavigationController();
+            assertFalse(navigationController.canGoForward());
+            assertTrue(navigationController.canGoBack());
+            assertEquals(2, navigationController.getNavigationListSize());
+        });
+    }
+
+    @Test
+    @SmallTest
     public void testReplace() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
         setNavigationCallback(activity);
 
-        navigateAndWaitForCompletion(
-                URL2, () -> activity.getTab().getNavigationController().replace(Uri.parse(URL2)));
+        final NavigateParams params = new NavigateParams();
+        params.mShouldReplaceCurrentEntry = true;
+        navigateAndWaitForCompletion(URL2,
+                ()
+                        -> activity.getTab().getNavigationController().navigate(
+                                Uri.parse(URL2), params));
         runOnUiThreadBlocking(() -> {
             NavigationController navigationController = activity.getTab().getNavigationController();
             assertFalse(navigationController.canGoForward());
             assertFalse(navigationController.canGoBack());
             assertEquals(1, navigationController.getNavigationListSize());
+        });
+
+        // Verify that a default NavigateParams does not replace.
+        final NavigateParams params2 = new NavigateParams();
+        navigateAndWaitForCompletion(URL3,
+                ()
+                        -> activity.getTab().getNavigationController().navigate(
+                                Uri.parse(URL3), params2));
+        runOnUiThreadBlocking(() -> {
+            NavigationController navigationController = activity.getTab().getNavigationController();
+            assertFalse(navigationController.canGoForward());
+            assertTrue(navigationController.canGoBack());
+            assertEquals(2, navigationController.getNavigationListSize());
         });
     }
 

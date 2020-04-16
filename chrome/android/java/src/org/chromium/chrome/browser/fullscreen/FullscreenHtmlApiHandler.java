@@ -347,12 +347,12 @@ public class FullscreenHtmlApiHandler {
      * Create and show the fullscreen notification toast.
      */
     private void showNotificationToast() {
-        if (mNotificationToast == null) {
-            int resId = R.string.immersive_fullscreen_api_notification;
-            mNotificationToast = Toast.makeText(
-                    mWindow.getContext(), resId, Toast.LENGTH_LONG);
-            mNotificationToast.setGravity(Gravity.TOP | Gravity.CENTER, 0, 0);
+        if (mNotificationToast != null) {
+            mNotificationToast.cancel();
         }
+        int resId = R.string.immersive_fullscreen_api_notification;
+        mNotificationToast = Toast.makeText(mWindow.getContext(), resId, Toast.LENGTH_LONG);
+        mNotificationToast.setGravity(Gravity.TOP | Gravity.CENTER, 0, 0);
         mNotificationToast.show();
     }
 
@@ -362,6 +362,7 @@ public class FullscreenHtmlApiHandler {
     public void hideNotificationToast() {
         if (mNotificationToast != null) {
             mNotificationToast.cancel();
+            mNotificationToast = null;
         }
     }
 

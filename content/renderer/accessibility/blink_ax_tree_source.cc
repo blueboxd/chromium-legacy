@@ -461,6 +461,8 @@ bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
     }
   }
 
+  tree_data->root_scroller_id = root().RootScroller().AxID();
+
   return true;
 }
 

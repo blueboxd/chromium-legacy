@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
 #include "components/autofill/content/browser/key_press_handler_manager.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -166,7 +167,7 @@ class PasswordGenerationPopupControllerImpl
   const autofill::FieldSignature field_signature_;
 
   // Renderer ID of the generation element.
-  const uint32_t generation_element_id_;
+  const autofill::FieldRendererId generation_element_id_;
 
   // Maximum length of the password to be generated. 0 represents an unbound
   // maximum length.

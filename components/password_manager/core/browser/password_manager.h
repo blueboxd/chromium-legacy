@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/form_submission_observer.h"
@@ -82,10 +83,11 @@ class PasswordManager : public FormSubmissionObserver {
 
   // Notifies the renderer to start the generation flow or pops up additional UI
   // in case there is a danger to overwrite an existing password.
-  void OnGeneratedPasswordAccepted(PasswordManagerDriver* driver,
-                                   const autofill::FormData& form_data,
-                                   uint32_t generation_element_id,
-                                   const base::string16& password);
+  void OnGeneratedPasswordAccepted(
+      PasswordManagerDriver* driver,
+      const autofill::FormData& form_data,
+      autofill::FieldRendererId generation_element_id,
+      const base::string16& password);
 
   // Presaves the form with generated password. |driver| is needed to find the
   // matched form manager.
@@ -146,7 +148,7 @@ class PasswordManager : public FormSubmissionObserver {
   // a frame corresponding to |driver| and has a renderer id |renderer_id|.
   // |value| is the current value of the field.
   void OnUserModifiedNonPasswordField(PasswordManagerDriver* driver,
-                                      int32_t renderer_id,
+                                      autofill::FieldRendererId renderer_id,
                                       const base::string16& value);
 
   // Handles a request to show manual fallback for password saving, i.e. the
@@ -199,7 +201,7 @@ class PasswordManager : public FormSubmissionObserver {
   // credentials into a site. This may be called multiple times, but only
   // the first result will be recorded for each PasswordFormManager.
   void LogFirstFillingResult(PasswordManagerDriver* driver,
-                             uint32_t form_renderer_id,
+                             autofill::FormRendererId form_renderer_id,
                              int32_t result);
 #endif  // !defined(OS_IOS)
 

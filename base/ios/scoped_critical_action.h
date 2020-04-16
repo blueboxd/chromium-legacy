@@ -27,7 +27,7 @@ namespace ios {
 // save such data.
 class ScopedCriticalAction {
  public:
-  ScopedCriticalAction();
+  ScopedCriticalAction(StringPiece task_name);
   ~ScopedCriticalAction();
 
  private:
@@ -41,7 +41,9 @@ class ScopedCriticalAction {
 
     // Informs the OS that the background task has started. This is a
     // static method to ensure that the instance has a non-zero refcount.
-    static void StartBackgroundTask(scoped_refptr<Core> core);
+    // |task_name| is used by the OS to log any leaked background tasks.
+    static void StartBackgroundTask(scoped_refptr<Core> core,
+                                    StringPiece task_name);
     // Informs the OS that the background task has completed. This is a
     // static method to ensure that the instance has a non-zero refcount.
     static void EndBackgroundTask(scoped_refptr<Core> core);
@@ -51,10 +53,10 @@ class ScopedCriticalAction {
     ~Core();
 
     // |UIBackgroundTaskIdentifier| returned by
-    // |beginBackgroundTaskWithExpirationHandler:| when marking the beginning of
-    // a long-running background task. It is defined as an |unsigned int|
-    // instead of a |UIBackgroundTaskIdentifier| so this class can be used in
-    // .cc files.
+    // |beginBackgroundTaskWithName:expirationHandler:| when marking the
+    // beginning of a long-running background task. It is defined as an
+    // |unsigned int| instead of a |UIBackgroundTaskIdentifier| so this class
+    // can be used in .cc files.
     unsigned int background_task_id_;
     Lock background_task_id_lock_;
 

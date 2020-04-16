@@ -182,12 +182,14 @@ class FeedStream : public FeedStreamApi,
  private:
   class SurfaceUpdater;
   class ModelStoreChangeMonitor;
-  void MaybeTriggerRefresh(TriggerType trigger,
-                           bool clear_all_before_refresh = false);
+  // Determines if we should attempt loading the stream or refreshing at all.
+  // Returns |LoadStreamStatus::kNoStatus| if loading may be attempted.
+  LoadStreamStatus ShouldAttemptLoad(bool model_loading = false);
   void TriggerStreamLoad();
   void UnloadModel();
 
-  void LoadStreamTaskComplete(LoadStreamTask::Result result);
+  void InitialStreamLoadComplete(LoadStreamTask::Result result);
+  void BackgroundRefreshComplete(LoadStreamTask::Result result);
 
   void ClearAll();
 

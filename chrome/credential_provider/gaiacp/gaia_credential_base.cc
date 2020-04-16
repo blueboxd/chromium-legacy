@@ -95,20 +95,9 @@ constexpr UINT kPasswordErrors[] = {IDS_PASSWORD_COMPLEXITY_ERROR_BASE,
                                     IDS_USER_NOT_FOUND_PASSWORD_ERROR_BASE,
                                     IDS_AD_PASSWORD_CHANGE_DENIED_BASE};
 
-base::string16 GetEmailDomains(const base::string16 kEmailDomainsKey) {
-  std::vector<wchar_t> email_domains(16);
-  ULONG length = email_domains.size();
-  HRESULT hr = GetGlobalFlag(kEmailDomainsKey, &email_domains[0], &length);
-  if (FAILED(hr)) {
-    if (hr == HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
-      email_domains.resize(length + 1);
-      length = email_domains.size();
-      hr = GetGlobalFlag(kEmailDomainsKey, &email_domains[0], &length);
-      if (FAILED(hr))
-        email_domains[0] = 0;
-    }
-  }
-  return base::string16(&email_domains[0]);
+base::string16 GetEmailDomains(
+    const base::string16 restricted_domains_reg_key) {
+  return GetGlobalFlagOrDefault(restricted_domains_reg_key, L"");
 }
 
 base::string16 GetEmailDomains() {
@@ -1513,6 +1502,32 @@ HRESULT CGaiaCredentialBase::SetComboBoxSelectedValue(DWORD field_id,
   return E_NOTIMPL;
 }
 
+bool CGaiaCredentialBase::CanProceedToLogonStub(wchar_t** status_text) {
+  bool can_proceed_to_logon_stub = true;
+  BSTR error_message;
+
+  // Restricted domains key must be set to proceed with logon stub.
+  base::string16 restricted_domains = GetEmailDomains();
+  if (restricted_domains.empty()) {
+    can_proceed_to_logon_stub = false;
+    error_message = AllocErrorString(IDS_EMAIL_MISMATCH_BASE);
+    LOGFN(ERROR) << "Restricted domains registry key must be set";
+  }
+  // If there is no internet connection, just abort right away.
+  else if (!InternetAvailabilityChecker::Get()->HasInternetConnection()) {
+    can_proceed_to_logon_stub = false;
+    error_message = AllocErrorString(IDS_NO_NETWORK_BASE);
+    LOGFN(VERBOSE) << "No internet connection";
+  }
+
+  if (!can_proceed_to_logon_stub) {
+    ::SHStrDupW(OLE2CW(error_message), status_text);
+    ::SysFreeString(error_message);
+  }
+
+  return can_proceed_to_logon_stub;
+}
+
 HRESULT CGaiaCredentialBase::CommandLinkClicked(DWORD dwFieldID) {
   if (dwFieldID == FID_FORGOT_PASSWORD_LINK && needs_windows_password_) {
     request_force_password_change_ = !request_force_password_change_;
@@ -1580,15 +1595,9 @@ HRESULT CGaiaCredentialBase::GetSerialization(
       LOGFN(VERBOSE) << "HandleAutologon hr=" << putHR(hr);
       TellOmahaDidRun();
 
-      // If there is no internet connection, just abort right away.
-      if (!InternetAvailabilityChecker::Get()->HasInternetConnection()) {
-        BSTR error_message = AllocErrorString(IDS_NO_NETWORK_BASE);
-        ::SHStrDupW(OLE2CW(error_message), status_text);
-        ::SysFreeString(error_message);
-
+      if (!CanProceedToLogonStub(status_text)) {
         *status_icon = CPSI_NONE;
         *cpgsr = CPGSR_NO_CREDENTIAL_FINISHED;
-        LOGFN(INFO) << "No internet connection";
         submit_button_enabled = UpdateSubmitButtonInteractiveState();
 
         hr = S_OK;

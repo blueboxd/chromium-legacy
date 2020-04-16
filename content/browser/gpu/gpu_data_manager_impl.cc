@@ -165,6 +165,11 @@ void GpuDataManagerImpl::OnBrowserThreadsStarted() {
   base::AutoLock auto_lock(lock_);
   private_->OnBrowserThreadsStarted();
 }
+
+void GpuDataManagerImpl::TerminateInfoCollectionGpuProcess() {
+  base::AutoLock auto_lock(lock_);
+  private_->TerminateInfoCollectionGpuProcess();
+}
 #endif
 
 void GpuDataManagerImpl::UpdateGpuFeatureInfo(

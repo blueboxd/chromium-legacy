@@ -1,0 +1,125 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/updater/policy_manager.h"
+
+namespace updater {
+
+// TODO: crbug 1070833.
+// The DefaultPolicyManager is just a stub manager at the moment that returns
+// |false| or failure for all methods. This policy manager would be in effect
+// when policies are not effective for any other policy manager in the system.
+// It is expected that this policy manager will return default values instead of
+// failure in the future.
+class DefaultPolicyManager : public PolicyManagerInterface {
+ public:
+  DefaultPolicyManager();
+  DefaultPolicyManager(const DefaultPolicyManager&) = delete;
+  DefaultPolicyManager& operator=(const DefaultPolicyManager&) = delete;
+  ~DefaultPolicyManager() override;
+
+  std::string source() override;
+
+  bool IsManaged() override;
+
+  bool GetLastCheckPeriodMinutes(int* minutes) override;
+  bool GetUpdatesSuppressedTimes(int* start_hour,
+                                 int* start_min,
+                                 int* duration_min) override;
+  bool GetDownloadPreferenceGroupPolicy(
+      std::string* download_preference) override;
+  bool GetPackageCacheSizeLimitMBytes(int* cache_size_limit) override;
+  bool GetPackageCacheExpirationTimeDays(int* cache_life_limit) override;
+
+  bool GetEffectivePolicyForAppInstalls(const std::string& app_id,
+                                        int* install_policy) override;
+  bool GetEffectivePolicyForAppUpdates(const std::string& app_id,
+                                       int* update_policy) override;
+  bool GetTargetVersionPrefix(const std::string& app_id,
+                              std::string* target_version_prefix) override;
+  bool IsRollbackToTargetVersionAllowed(const std::string& app_id,
+                                        bool* rollback_allowed) override;
+  bool GetProxyMode(std::string* proxy_mode) override;
+  bool GetProxyPacUrl(std::string* proxy_pac_url) override;
+  bool GetProxyServer(std::string* proxy_server) override;
+};
+
+DefaultPolicyManager::DefaultPolicyManager() = default;
+
+DefaultPolicyManager::~DefaultPolicyManager() = default;
+
+bool DefaultPolicyManager::IsManaged() {
+  return false;
+}
+
+std::string DefaultPolicyManager::source() {
+  return std::string("default");
+}
+
+bool DefaultPolicyManager::GetLastCheckPeriodMinutes(int* minutes) {
+  return false;
+}
+
+bool DefaultPolicyManager::GetUpdatesSuppressedTimes(int* start_hour,
+                                                     int* start_min,
+                                                     int* duration_min) {
+  return false;
+}
+
+bool DefaultPolicyManager::GetDownloadPreferenceGroupPolicy(
+    std::string* download_preference) {
+  return false;
+}
+
+bool DefaultPolicyManager::GetPackageCacheSizeLimitMBytes(
+    int* cache_size_limit) {
+  return false;
+}
+
+bool DefaultPolicyManager::GetPackageCacheExpirationTimeDays(
+    int* cache_life_limit) {
+  return false;
+}
+
+bool DefaultPolicyManager::GetEffectivePolicyForAppInstalls(
+    const std::string& app_id,
+    int* install_policy) {
+  return false;
+}
+
+bool DefaultPolicyManager::GetEffectivePolicyForAppUpdates(
+    const std::string& app_id,
+    int* update_policy) {
+  return false;
+}
+
+bool DefaultPolicyManager::GetTargetVersionPrefix(
+    const std::string& app_id,
+    std::string* target_version_prefix) {
+  return false;
+}
+
+bool DefaultPolicyManager::IsRollbackToTargetVersionAllowed(
+    const std::string& app_id,
+    bool* rollback_allowed) {
+  return false;
+}
+
+bool DefaultPolicyManager::GetProxyMode(std::string* proxy_mode) {
+  return false;
+}
+
+bool DefaultPolicyManager::GetProxyPacUrl(std::string* proxy_pac_url) {
+  return false;
+}
+
+bool DefaultPolicyManager::GetProxyServer(std::string* proxy_server) {
+  return false;
+}
+
+std::unique_ptr<PolicyManagerInterface> GetPolicyManager() {
+  return std::make_unique<DefaultPolicyManager>();
+}
+
+}  // namespace updater

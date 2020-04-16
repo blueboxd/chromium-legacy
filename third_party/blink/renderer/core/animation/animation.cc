@@ -37,6 +37,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
+#include "third_party/blink/renderer/core/animation/animation_utils.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/animation/css/css_transition.h"
@@ -2328,21 +2329,18 @@ void Animation::commitStyles(ExceptionState& exception_state) {
   // 6. Update style attribute for inline style.
   ActiveInterpolationsMap interpolations_map =
       To<KeyframeEffect>(effect())->InterpolationsForCommitStyles();
-  StyleResolver& resolver = target->GetDocument().EnsureStyleResolver();
-  scoped_refptr<ComputedStyle> style =
-      resolver.StyleForInterpolations(*target, interpolations_map);
 
-  for (const auto& property : animation_properties) {
-    if (!property.IsCSSProperty())
-      continue;
-
-    CSSPropertyRef ref(property.GetCSSPropertyName(), target->GetDocument());
-    const CSSValue* value = ref.GetProperty().CSSValueFromComputedStyle(
-        *style, target->GetLayoutObject(), false);
-    inline_style->setProperty(target->GetExecutionContext(),
-                              property.GetCSSPropertyName().ToAtomicString(),
-                              value->CssText(), "", ASSERT_NO_EXCEPTION);
-  }
+  AnimationUtils::ForEachInterpolatedPropertyValue(
+      target, animation_properties, interpolations_map,
+      WTF::BindRepeating(
+          [](CSSStyleDeclaration* inline_style, Element* target,
+             PropertyHandle property, const CSSValue* value) {
+            inline_style->setProperty(
+                target->GetExecutionContext(),
+                property.GetCSSPropertyName().ToAtomicString(),
+                value->CssText(), "", ASSERT_NO_EXCEPTION);
+          },
+          WrapWeakPersistent(inline_style), WrapWeakPersistent(target)));
 }
 
 void Animation::Trace(Visitor* visitor) {

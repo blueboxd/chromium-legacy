@@ -134,12 +134,13 @@ public class TabSuggestionMessageService extends MessageService implements TabSu
                             List<Tab> selectedTabs, TabModelSelector tabModelSelector) {
                         int totalTabCountBeforeProcess =
                                 tabModelSelector.getCurrentModel().getCount();
-                        super.processSelectedTabs(selectedTabs, tabModelSelector);
                         List<Integer> selectedTabIds = new ArrayList<>();
                         for (int i = 0; i < selectedTabs.size(); i++) {
                             selectedTabIds.add(selectedTabs.get(i).getId());
                         }
                         accepted(selectedTabIds, totalTabCountBeforeProcess);
+
+                        super.processSelectedTabs(selectedTabs, tabModelSelector);
                     }
                 };
             default:
@@ -194,12 +195,14 @@ public class TabSuggestionMessageService extends MessageService implements TabSu
     @VisibleForTesting
     public void dismiss() {
         assert mCurrentTabSuggestionFeedback != null;
+        assert mCurrentBestTabSuggestion != null;
         mCurrentTabSuggestionFeedback.onResult(
                 new TabSuggestionFeedback(mCurrentBestTabSuggestion, NOT_CONSIDERED, null, 0));
     }
 
     private void accepted(List<Integer> selectedTabIds, int totalTabCount) {
         assert mCurrentTabSuggestionFeedback != null;
+        assert mCurrentBestTabSuggestion != null;
         mCurrentTabSuggestionFeedback.onResult(new TabSuggestionFeedback(
                 mCurrentBestTabSuggestion, ACCEPTED, selectedTabIds, totalTabCount));
     }
@@ -220,6 +223,7 @@ public class TabSuggestionMessageService extends MessageService implements TabSu
     @Override
     public void onTabSuggestionInvalidated() {
         mCurrentBestTabSuggestion = null;
+        mCurrentTabSuggestionFeedback = null;
         sSuggestionAvailableForTesting = false;
         sendInvalidNotification();
     }

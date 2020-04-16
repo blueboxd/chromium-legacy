@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 
 namespace blink {
 class WebFormControlElement;
@@ -17,14 +18,14 @@ class WebFormControlElement;
 
 namespace autofill {
 
-// This class provides the meathods to update and get the field data (the pair
+// This class provides the methods to update and get the field data (the pair
 // of user typed value and field properties mask).
 class FieldDataManager : public base::RefCounted<FieldDataManager> {
  public:
   FieldDataManager();
 
   void ClearData();
-  bool HasFieldData(uint32_t id) const;
+  bool HasFieldData(FieldRendererId id) const;
 
   // Updates the field value associated with the key |element| in
   // |field_value_and_properties_map_|.
@@ -38,20 +39,20 @@ class FieldDataManager : public base::RefCounted<FieldDataManager> {
       const blink::WebFormControlElement& element,
       FieldPropertiesMask mask);
 
-  base::string16 GetUserTypedValue(uint32_t id) const;
-  FieldPropertiesMask GetFieldPropertiesMask(uint32_t id) const;
+  base::string16 GetUserTypedValue(FieldRendererId id) const;
+  FieldPropertiesMask GetFieldPropertiesMask(FieldRendererId id) const;
 
   // Check if the string |value| is saved in |field_value_and_properties_map_|.
   bool FindMachedValue(const base::string16& value) const;
 
-  bool DidUserType(uint32_t id) const;
+  bool DidUserType(FieldRendererId id) const;
 
  private:
   friend class base::RefCounted<FieldDataManager>;
 
   ~FieldDataManager();
 
-  std::map<uint32_t,
+  std::map<FieldRendererId,
            std::pair<base::Optional<base::string16>, FieldPropertiesMask>>
       field_value_and_properties_map_;
 };

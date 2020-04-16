@@ -43,10 +43,6 @@ const char kApkMimeType[] = "application/vnd.android.package-archive";
 // The number of user gestures to trace back for the referrer chain.
 const int kAndroidTelemetryUserGestureLimit = 2;
 
-bool CanCaptureSafetyNetId() {
-  return base::FeatureList::IsEnabled(safe_browsing::kCaptureSafetyNetId);
-}
-
 void RecordApkDownloadTelemetryOutcome(ApkDownloadTelemetryOutcome outcome) {
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.AndroidTelemetry.ApkDownload.Outcome",
                             outcome);
@@ -107,10 +103,6 @@ void AndroidTelemetryService::OnDownloadCreated(
   if (!CanSendPing(item)) {
     return;
   }
-
-  // The report can be sent. Try capturing the safety net ID. This should
-  // complete before the download completes, but is not guaranteed, That's OK.
-  MaybeCaptureSafetyNetId();
 
   item->AddObserver(this);
 }
@@ -229,25 +221,8 @@ AndroidTelemetryService::GetReport(download::DownloadItem* item) {
   mutable_download_item_info->set_length(item->GetReceivedBytes());
   mutable_download_item_info->set_file_basename(
       item->GetTargetFilePath().BaseName().value());
-  report->set_safety_net_id(safety_net_id_on_ui_thread_);
 
   return report;
-}
-
-void AndroidTelemetryService::MaybeCaptureSafetyNetId() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(sb_service_->database_manager());
-  if (!CanCaptureSafetyNetId() || !safety_net_id_on_ui_thread_.empty() ||
-      !sb_service_->database_manager()->IsSupported()) {
-    return;
-  }
-
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&SafeBrowsingDatabaseManager::GetSafetyNetId,
-                     sb_service_->database_manager()),
-      base::BindOnce(&AndroidTelemetryService::SetSafetyNetIdOnUIThread,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AndroidTelemetryService::MaybeSendApkDownloadReport(
@@ -268,11 +243,6 @@ void AndroidTelemetryService::MaybeSendApkDownloadReport(
                      std::move(report)));
 
   RecordApkDownloadTelemetryOutcome(ApkDownloadTelemetryOutcome::SENT);
-}
-
-void AndroidTelemetryService::SetSafetyNetIdOnUIThread(const std::string& sid) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  safety_net_id_on_ui_thread_ = sid;
 }
 
 }  // namespace safe_browsing

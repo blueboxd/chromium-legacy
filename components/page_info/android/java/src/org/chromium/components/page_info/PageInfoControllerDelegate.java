@@ -93,4 +93,15 @@ public interface PageInfoControllerDelegate {
      */
     @Nullable
     String getOfflinePageConnectionMessage();
+
+    /**
+     * Whether Site settings are available.
+     */
+    boolean isSiteSettingsAvailable();
+
+    /**
+     * Show site settings for the URL passed in.
+     * @param url The URL to show site settings for.
+     */
+    void showSiteSettings(String url);
 }

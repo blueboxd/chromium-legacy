@@ -262,30 +262,24 @@ void FeedStream::TriggerStreamLoad() {
     return;
 
   // If we should not load the stream, abort and send a zero-state update.
-  if (!IsArticlesListVisible()) {
-    LoadStreamTaskComplete(LoadStreamTask::Result(
-        LoadStreamStatus::kLoadNotAllowedArticlesListHidden));
-    return;
-  }
-  if (!delegate_->IsEulaAccepted()) {
-    LoadStreamTaskComplete(LoadStreamTask::Result(
-        LoadStreamStatus::kLoadNotAllowedEulaNotAccepted));
+  LoadStreamStatus do_not_attempt_reason = ShouldAttemptLoad();
+  if (do_not_attempt_reason != LoadStreamStatus::kNoStatus) {
+    InitialStreamLoadComplete(LoadStreamTask::Result(do_not_attempt_reason));
     return;
   }
 
   model_loading_in_progress_ = true;
   surface_updater_->LoadStreamStarted();
   task_queue_.AddTask(std::make_unique<LoadStreamTask>(
-      this, base::BindOnce(&FeedStream::LoadStreamTaskComplete,
-                           base::Unretained(this))));
+      LoadStreamTask::LoadType::kInitialLoad, this,
+      base::BindOnce(&FeedStream::InitialStreamLoadComplete,
+                     base::Unretained(this))));
 }
 
-void FeedStream::LoadStreamTaskComplete(LoadStreamTask::Result result) {
+void FeedStream::InitialStreamLoadComplete(LoadStreamTask::Result result) {
   metrics_reporter_->OnLoadStream(result.load_from_store_status,
                                   result.final_status);
-  DVLOG(1) << "LoadStreamTaskComplete load_from_store_status="
-           << result.load_from_store_status
-           << " final_status=" << result.final_status;
+
   model_loading_in_progress_ = false;
 
   // If loading failed, update surfaces with an appropriate zero-state error.
@@ -383,13 +377,38 @@ void FeedStream::OnStoreChange(const StreamModel::StoreUpdate& update) {
   store_->WriteOperations(update.sequence_number, update.operations);
 }
 
+LoadStreamStatus FeedStream::ShouldAttemptLoad(bool model_loading) {
+  // Don't try to load the model if it's already loaded, or in the process of
+  // being loaded. Because |ShouldAttemptLoad()| is used both before and during
+  // the load process, we need to ignore this check when |model_loading| is
+  // true.
+  if (model_ || (!model_loading && model_loading_in_progress_))
+    return LoadStreamStatus::kModelAlreadyLoaded;
+
+  if (!IsArticlesListVisible())
+    return LoadStreamStatus::kLoadNotAllowedArticlesListHidden;
+
+  if (!delegate_->IsEulaAccepted())
+    return LoadStreamStatus::kLoadNotAllowedEulaNotAccepted;
+
+  return LoadStreamStatus::kNoStatus;
+}
+
 LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest() {
-  // TODO(harringtond): |suppress_refreshes_until_| was historically used for
-  // privacy purposes after clearing data to make sure sync data made it to the
-  // server. I'm not sure we need this now. But also, it was documented as not
-  // affecting manually triggered refreshes, but coded in a way that it does.
-  // I've tried to keep the same functionality as the old feed code, but we
-  // should revisit this.
+  // Time has passed since calling |ShouldAttemptLoad()|, call it again to
+  // confirm we should still attempt loading.
+  const LoadStreamStatus should_not_attempt_reason =
+      ShouldAttemptLoad(/*model_loading=*/true);
+  if (should_not_attempt_reason != LoadStreamStatus::kNoStatus) {
+    return should_not_attempt_reason;
+  }
+
+  // TODO(harringtond): |suppress_refreshes_until_| was historically used
+  // for privacy purposes after clearing data to make sure sync data made it
+  // to the server. I'm not sure we need this now. But also, it was
+  // documented as not affecting manually triggered refreshes, but coded in
+  // a way that it does. I've tried to keep the same functionality as the
+  // old feed code, but we should revisit this.
   if (tick_clock_->NowTicks() < suppress_refreshes_until_) {
     return LoadStreamStatus::kCannotLoadFromNetworkSupressedForHistoryDelete;
   }
@@ -406,7 +425,8 @@ LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest() {
 }
 
 void FeedStream::OnEulaAccepted() {
-  MaybeTriggerRefresh(TriggerType::kForegrounded);
+  if (surfaces_.might_have_observers())
+    TriggerStreamLoad();
 }
 
 void FeedStream::OnHistoryDeleted() {
@@ -431,33 +451,35 @@ void FeedStream::OnSignedOut() {
 }
 
 void FeedStream::OnEnterForeground() {
-  MaybeTriggerRefresh(TriggerType::kForegrounded);
+  // The v1 feed may trigger a refresh on foregrounding,
+  // but I don't think that makes any sense here. We already refresh the feed
+  // if necessary when the stream loads.
 }
 
 void FeedStream::ExecuteRefreshTask() {
-  if (!IsArticlesListVisible()) {
-    // While the check and cancel isn't strictly necessary, a long lived session
-    // could be issuing refreshes due to the background trigger while articles
-    // are not visible.
-    refresh_task_scheduler_->Cancel();
+  LoadStreamStatus do_not_attempt_reason = ShouldAttemptLoad();
+  if (do_not_attempt_reason != LoadStreamStatus::kNoStatus) {
+    BackgroundRefreshComplete(LoadStreamTask::Result(do_not_attempt_reason));
     return;
   }
-  MaybeTriggerRefresh(TriggerType::kFixedTimer);
+
+  task_queue_.AddTask(std::make_unique<LoadStreamTask>(
+      LoadStreamTask::LoadType::kBackgroundRefresh, this,
+      base::BindOnce(&FeedStream::BackgroundRefreshComplete,
+                     base::Unretained(this))));
+}
+
+void FeedStream::BackgroundRefreshComplete(LoadStreamTask::Result result) {
+  metrics_reporter_->OnBackgroundRefresh(result.final_status);
+  refresh_task_scheduler_->RefreshTaskComplete();
 }
 
 void FeedStream::ClearAll() {
-  // TODO(harringtond): How should we handle in-progress tasks.
   metrics_reporter_->OnClearAll(clock_->Now() - GetLastFetchTime());
 
   // TODO(harringtond): This should result in clearing feed data
-  // and _maybe_ triggering refresh with TriggerType::kNtpShown.
+  // and triggering a model load attempt if there are connected surfaces.
   // That work should be embedded in a task.
-}
-
-void FeedStream::MaybeTriggerRefresh(TriggerType trigger,
-                                     bool clear_all_before_refresh) {
-  metrics_reporter_->OnMaybeTriggerRefresh(trigger, clear_all_before_refresh);
-  // TODO(harringtond): Implement refresh (with LoadStreamTask).
 }
 
 void FeedStream::LoadModel(std::unique_ptr<StreamModel> model) {

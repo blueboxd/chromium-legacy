@@ -58,22 +58,6 @@ void RelaunchRequiredDialogView::SetDeadline(base::Time deadline) {
   relaunch_required_timer_.SetDeadline(deadline);
 }
 
-bool RelaunchRequiredDialogView::Cancel() {
-  base::RecordAction(base::UserMetricsAction("RelaunchRequired_Close"));
-
-  return true;
-}
-
-bool RelaunchRequiredDialogView::Accept() {
-  base::RecordAction(base::UserMetricsAction("RelaunchRequired_Accept"));
-
-  on_accept_.Run();
-
-  // Keep the dialog open in case shutdown is prevented for some reason so that
-  // the user can try again if needed.
-  return false;
-}
-
 ui::ModalType RelaunchRequiredDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
@@ -107,8 +91,7 @@ gfx::Size RelaunchRequiredDialogView::CalculatePreferredSize() const {
 RelaunchRequiredDialogView::RelaunchRequiredDialogView(
     base::Time deadline,
     base::RepeatingClosure on_accept)
-    : on_accept_(on_accept),
-      relaunch_required_timer_(
+    : relaunch_required_timer_(
           deadline,
           base::BindRepeating(&RelaunchRequiredDialogView::UpdateWindowTitle,
                               base::Unretained(this))) {
@@ -119,6 +102,14 @@ RelaunchRequiredDialogView::RelaunchRequiredDialogView(
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_RELAUNCH_REQUIRED_CANCEL_BUTTON));
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
+      [](base::RepeatingClosure callback) {
+        base::RecordAction(base::UserMetricsAction("RelaunchRequired_Accept"));
+        callback.Run();
+      },
+      on_accept));
+  DialogDelegate::SetCancelCallback(base::BindOnce(
+      base::RecordAction, base::UserMetricsAction("RelaunchRequired_Close")));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::RELAUNCH_REQUIRED);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

@@ -1,7 +1,30 @@
-# Chromium UI Development
-Developing in Chromium UI? Trying to figure out how we handle bugs? You've
-reached the right place.
+# Welcome!
+Developing in Chromium UI? Trying to figure out how to create your UI? Need to
+contact the Views team? You've reached the right place.
 
-# Bug Triage
-Chromium UI Bug Triage is sharded between several teams.
-*   [Frontline Triage Procedures](frontline_triage.md)
+## Quick Links
+|||---|||
+
+### **[Create](/docs/ui/create/index.md)**
+
+Recipes to help you work with Chrome UI.
+
+* [Coming Soon]
+
+### **[Learn](/docs/ui/learn/index.md)**
+
+Details on Chrome UI.
+
+* [Coming Soon]
+
+Processes
+
+* [Frontline Triage Procedures](frontline_triage.md)
+
+### **[Ask](/docs/ui/ask/index.md)**
+
+Ways to get help.
+
+* [Coming Soon]
+
+|||---|||

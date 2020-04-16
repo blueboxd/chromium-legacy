@@ -12,6 +12,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/html_based_username_detector.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -50,11 +51,10 @@ base::LazyInstance<re2::RE2, PasswordSiteUrlLazyInstanceTraits>
 // elements of the form, |form_data| should be the already extracted FormData
 // representation of that form. |username_detector_cache| is optional, and can
 // be used to spare recomputation if called multiple times for the same form.
-std::vector<uint32_t> GetUsernamePredictions(
+std::vector<FieldRendererId> GetUsernamePredictions(
     const std::vector<WebFormControlElement>& control_elements,
     const FormData& form_data,
     UsernameDetectorCache* username_detector_cache) {
-  std::vector<uint32_t> username_predictions;
   // Dummy cache stores the predictions in case no real cache was passed to
   // here.
   UsernameDetectorCache dummy_cache;

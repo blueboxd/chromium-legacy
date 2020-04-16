@@ -11,16 +11,6 @@
 (function() {
 
 /**
- * States of the safety check parent element.
- * @enum {number}
- */
-const ParentStatus = {
-  BEFORE: 0,
-  CHECKING: 1,
-  AFTER: 2,
-};
-
-/**
  * UI states a safety check child can be in. Defines the basic UI of the child.
  * @enum {number}
  */
@@ -30,6 +20,14 @@ const ChildUiStatus = {
   INFO: 2,
   WARNING: 3,
 };
+
+/**
+ * @typedef {{
+ *   newState: settings.SafetyCheckParentStatus,
+ *   displayString: string,
+ * }}
+ */
+let ParentChangedEvent;
 
 /**
  * @typedef {{
@@ -74,11 +72,11 @@ Polymer({
   properties: {
     /**
      * Current state of the safety check parent element.
-     * @private {!ParentStatus}
+     * @private {!settings.SafetyCheckParentStatus}
      */
     parentStatus_: {
       type: Number,
-      value: ParentStatus.BEFORE,
+      value: settings.SafetyCheckParentStatus.BEFORE,
     },
 
     /**
@@ -173,6 +171,9 @@ Polymer({
 
     // Register for safety check status updates.
     this.addWebUIListener(
+        settings.SafetyCheckCallbackConstants.PARENT_CHANGED,
+        this.onSafetyCheckParentChanged_.bind(this));
+    this.addWebUIListener(
         settings.SafetyCheckCallbackConstants.UPDATES_CHANGED,
         this.onSafetyCheckUpdatesChanged_.bind(this));
     this.addWebUIListener(
@@ -202,7 +203,7 @@ Polymer({
 
     // Update UI.
     this.parentDisplayString_ = this.i18n('safetyCheckRunning');
-    this.parentStatus_ = ParentStatus.CHECKING;
+    this.parentStatus_ = settings.SafetyCheckParentStatus.CHECKING;
     // Reset all children states.
     this.updatesStatus_ = settings.SafetyCheckUpdatesStatus.CHECKING;
     this.passwordsStatus_ = settings.SafetyCheckPasswordsStatus.CHECKING;
@@ -231,7 +232,7 @@ Polymer({
         this.extensionsStatus_ !=
             settings.SafetyCheckExtensionsStatus.CHECKING) {
       // Update UI.
-      this.parentStatus_ = ParentStatus.AFTER;
+      this.parentStatus_ = settings.SafetyCheckParentStatus.AFTER;
       // Start periodic safety check parent ran string updates.
       const timestamp = Date.now();
       const update = async () => {
@@ -248,6 +249,15 @@ Polymer({
         text: this.i18n('safetyCheckAriaLiveAfter'),
       });
     }
+  },
+
+  /**
+   * @param {!ParentChangedEvent} event
+   * @private
+   */
+  onSafetyCheckParentChanged_: function(event) {
+    // TODO(crbug.com/1015841): Use parent state from backend instead of
+    // computing and storing parent state in WebUI.
   },
 
   /**
@@ -295,7 +305,7 @@ Polymer({
    * @return {boolean}
    */
   shouldShowParentButton_: function() {
-    return this.parentStatus_ === ParentStatus.BEFORE;
+    return this.parentStatus_ === settings.SafetyCheckParentStatus.BEFORE;
   },
 
   /**
@@ -303,7 +313,7 @@ Polymer({
    * @return {boolean}
    */
   shouldShowParentIconButton_: function() {
-    return this.parentStatus_ !== ParentStatus.BEFORE;
+    return this.parentStatus_ !== settings.SafetyCheckParentStatus.BEFORE;
   },
 
   /** @private */
@@ -327,7 +337,7 @@ Polymer({
    * @return {boolean}
    */
   shouldShowChildren_: function() {
-    return this.parentStatus_ != ParentStatus.BEFORE;
+    return this.parentStatus_ != settings.SafetyCheckParentStatus.BEFORE;
   },
 
   /**

@@ -23,6 +23,7 @@
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
+#include "components/strings/grit/components_locale_settings.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
@@ -47,6 +48,7 @@
 #include "services/service_manager/public/cpp/binder_map.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -284,6 +286,7 @@ void ContentBrowserClientImpl::OverrideWebkitPrefs(
   TabImpl* tab = TabImpl::FromWebContents(web_contents);
   prefs->fullscreen_supported = tab && tab->fullscreen_delegate();
   prefs->password_echo_enabled = tab && tab->GetPasswordEchoEnabled();
+  prefs->default_encoding = l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING);
 }
 
 mojo::Remote<network::mojom::NetworkContext>

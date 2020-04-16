@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/possible_username_data.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -20,7 +21,7 @@ class IsPossibleUsernameValidTest : public testing::Test {
   IsPossibleUsernameValidTest()
       : possible_username_data_(
             "https://example.com/" /* submitted_signon_realm */,
-            1u /* renderer_id */,
+            autofill::FieldRendererId(1u),
             ASCIIToUTF16("username") /* value */,
             base::Time::Now() /* last_change */,
             10 /* driver_id */) {}

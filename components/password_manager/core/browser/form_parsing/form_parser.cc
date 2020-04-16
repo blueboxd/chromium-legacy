@@ -26,6 +26,7 @@
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 
 using autofill::FieldPropertiesFlags;
@@ -703,9 +704,9 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
 }
 
 // A helper to return a |field|'s unique_renderer_id or
-// kNotSetRendererId if |field| is null.
-uint32_t ExtractUniqueId(const FormFieldData* field) {
-  return field ? field->unique_renderer_id : FormData::kNotSetRendererId;
+// a null renderer ID if |field| is null.
+autofill::FieldRendererId ExtractUniqueId(const FormFieldData* field) {
+  return field ? field->unique_renderer_id : autofill::FieldRendererId();
 }
 
 // Tries to find the username and password fields in |processed_fields| based
@@ -761,7 +762,7 @@ void ParseUsingBaseHeuristics(
       }
     }
   } else {
-    const uint32_t password_ids[] = {
+    const autofill::FieldRendererId password_ids[] = {
         ExtractUniqueId(found_fields->password),
         ExtractUniqueId(found_fields->new_password),
         ExtractUniqueId(found_fields->confirmation_password)};
@@ -913,10 +914,10 @@ std::vector<ProcessedField> ProcessFields(
 // prediction) that occurs in |processed_fields| and has interactability level
 // at least |username_max|.
 const FormFieldData* FindUsernameInPredictions(
-    const std::vector<uint32_t>& username_predictions,
+    const std::vector<autofill::FieldRendererId>& username_predictions,
     const std::vector<ProcessedField>& processed_fields,
     Interactability username_max) {
-  for (uint32_t predicted_id : username_predictions) {
+  for (autofill::FieldRendererId predicted_id : username_predictions) {
     auto iter = std::find_if(
         processed_fields.begin(), processed_fields.end(),
         [predicted_id, username_max](const ProcessedField& processed_field) {
@@ -943,7 +944,8 @@ bool GetMayUsePrefilledPlaceholder(
   if (!form_predictions || !significant_fields.username)
     return false;
 
-  uint32_t username_id = significant_fields.username->unique_renderer_id;
+  autofill::FieldRendererId username_id =
+      significant_fields.username->unique_renderer_id;
   for (const PasswordFieldPrediction& prediction : form_predictions->fields) {
     if (prediction.renderer_id == username_id)
       return prediction.may_use_prefilled_placeholder;

@@ -764,13 +764,21 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       delegate->set_dispatcher(self.dispatcher);
 
       if (IsInfobarUIRebootEnabled()) {
-        InfobarPasswordCoordinator* coordinator =
-            [[InfobarPasswordCoordinator alloc]
-                initWithInfoBarDelegate:delegate.get()
-                                   type:InfobarType::kInfobarTypePasswordSave];
+        std::unique_ptr<InfoBarIOS> infobar;
         // If manual save, skip showing banner.
-        std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
-            coordinator, std::move(delegate), /*skip_banner=*/manual);
+        bool skip_banner = manual;
+        if (IsInfobarOverlayUIEnabled()) {
+          infobar = std::make_unique<InfoBarIOS>(
+              InfobarType::kInfobarTypePasswordSave, std::move(delegate),
+              skip_banner);
+        } else {
+          InfobarPasswordCoordinator* coordinator = [[InfobarPasswordCoordinator
+              alloc]
+              initWithInfoBarDelegate:delegate.get()
+                                 type:InfobarType::kInfobarTypePasswordSave];
+          infobar = std::make_unique<InfoBarIOS>(
+              coordinator, std::move(delegate), skip_banner);
+        }
         infoBarManager->AddInfoBar(std::move(infobar),
                                    /*replace_existing=*/true);
       } else if (!manual) {

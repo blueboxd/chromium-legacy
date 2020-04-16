@@ -7,7 +7,6 @@
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_password_infobar_banner_overlay.h"
 #import "ios/chrome/browser/overlays/public/infobar_modal/password_infobar_modal_overlay_request_config.h"
-#import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -37,8 +36,7 @@ InfobarOverlayRequestFactoryImpl::CreateInfobarRequest(
   // non-null after all existing infobars have been converted to using overlays.
   // Early return in the interim to prevent crashing while the remaining
   // infobars are being converted.
-  FactoryHelper* factory =
-      factory_storages_[infobar_ios->InfobarUIDelegate().infobarType][type];
+  FactoryHelper* factory = factory_storages_[infobar_ios->infobar_type()][type];
   return factory ? factory->CreateInfobarRequest(infobar_ios) : nullptr;
 }
 

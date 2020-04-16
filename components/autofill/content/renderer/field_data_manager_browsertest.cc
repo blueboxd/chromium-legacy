@@ -5,6 +5,7 @@
 #include "components/autofill/content/renderer/field_data_manager.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -51,7 +52,7 @@ TEST_F(FieldDataManagerTest, UpdateFieldDataMap) {
   field_data_manager->UpdateFieldDataMap(control_elements_[0],
                                          control_elements_[0].Value().Utf16(),
                                          FieldPropertiesFlags::USER_TYPED);
-  const uint32_t id = control_elements_[0].UniqueRendererFormControlId();
+  const FieldRendererId id(control_elements_[0].UniqueRendererFormControlId());
   EXPECT_TRUE(field_data_manager->HasFieldData(id));
   EXPECT_EQ(UTF8ToUTF16("first"), field_data_manager->GetUserTypedValue(id));
   EXPECT_EQ(FieldPropertiesFlags::USER_TYPED,
@@ -69,8 +70,8 @@ TEST_F(FieldDataManagerTest, UpdateFieldDataMap) {
                                          control_elements_[1].Value().Utf16(),
                                          FieldPropertiesFlags::AUTOFILLED);
   EXPECT_EQ(FieldPropertiesFlags::NO_FLAGS,
-            field_data_manager->GetFieldPropertiesMask(
-                control_elements_[1].UniqueRendererFormControlId()));
+            field_data_manager->GetFieldPropertiesMask(FieldRendererId(
+                control_elements_[1].UniqueRendererFormControlId())));
 
   field_data_manager->ClearData();
   EXPECT_FALSE(field_data_manager->HasFieldData(id));
@@ -81,7 +82,7 @@ TEST_F(FieldDataManagerTest, UpdateFieldDataMapWithNullValue) {
       base::MakeRefCounted<FieldDataManager>();
   field_data_manager->UpdateFieldDataMapWithNullValue(
       control_elements_[0], FieldPropertiesFlags::USER_TYPED);
-  const uint32_t id = control_elements_[0].UniqueRendererFormControlId();
+  const FieldRendererId id(control_elements_[0].UniqueRendererFormControlId());
   EXPECT_TRUE(field_data_manager->HasFieldData(id));
   EXPECT_EQ(base::string16(), field_data_manager->GetUserTypedValue(id));
   EXPECT_EQ(FieldPropertiesFlags::USER_TYPED,

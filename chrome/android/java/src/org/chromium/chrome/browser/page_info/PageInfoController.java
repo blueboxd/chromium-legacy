@@ -29,8 +29,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.site_settings.CookieControlsBridge;
+import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -195,12 +195,12 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                 displayUrlBuilder.toString(), autocompleteSchemeClassifier);
         autocompleteSchemeClassifier.destroy();
 
-        if (SiteSettingsHelper.isSiteSettingsAvailable(webContents)) {
+        if (mDelegate.isSiteSettingsAvailable()) {
             viewParams.siteSettingsButtonClickCallback = () -> {
                 // Delay while the dialog closes.
                 runAfterDismiss(() -> {
                     recordAction(PageInfoAction.PAGE_INFO_SITE_SETTINGS_OPENED);
-                    SiteSettingsHelper.showSiteSettings(activity, mFullUrl);
+                    mDelegate.showSiteSettings(mFullUrl);
                 });
             };
             viewParams.cookieControlsShown = delegate.cookieControlsShown();

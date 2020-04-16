@@ -51,37 +51,6 @@ public class NewTabCallbackTest {
 
     @Test
     @SmallTest
-    public void testCloseTab() {
-        String url = mActivityTestRule.getTestDataURL("new_tab_then_close.html");
-        mActivity = mActivityTestRule.launchShellWithUrl(url);
-        Assert.assertNotNull(mActivity);
-        NewTabCallbackImpl callback = new NewTabCallbackImpl();
-        Tab firstTab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            Tab tab = mActivity.getBrowser().getActiveTab();
-            tab.setNewTabCallback(callback);
-            return tab;
-        });
-
-        // Click on the tab to trigger creating a new tab.
-        EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());
-        callback.waitForNewTab();
-        CloseTabNewTabCallbackImpl closeTabImpl = new CloseTabNewTabCallbackImpl();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(2, mActivity.getBrowser().getTabs().size());
-            Tab secondTab = mActivity.getBrowser().getActiveTab();
-            Assert.assertNotSame(firstTab, secondTab);
-            secondTab.setNewTabCallback(closeTabImpl);
-            // Switch to the first tab so clicking closes |secondTab|.
-            secondTab.getBrowser().setActiveTab(firstTab);
-        });
-
-        // Clicking on the tab again to callback to close the tab.
-        EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());
-        closeTabImpl.waitForCloseTab();
-    }
-
-    @Test
-    @SmallTest
     public void testNewTabHasFocus() {
         String url = mActivityTestRule.getTestDataURL("new_browser.html");
         mActivity = mActivityTestRule.launchShellWithUrl(url);

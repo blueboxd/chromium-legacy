@@ -2,15 +2,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("common") {
+source_set("java_script_dialogs") {
+  public = [
+    "java_script_alert_overlay_mediator.h",
+    "java_script_confirmation_overlay_mediator.h",
+    "java_script_prompt_overlay_mediator.h",
+  ]
   sources = [
+    "java_script_alert_overlay_mediator.mm",
+    "java_script_confirmation_overlay_mediator.mm",
     "java_script_dialog_blocking_action.h",
     "java_script_dialog_blocking_action.mm",
     "java_script_overlay_mediator_util.h",
     "java_script_overlay_mediator_util.mm",
+    "java_script_prompt_overlay_mediator.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
+
+  friend = [ ":unit_tests" ]
 
   deps = [
     "//base",
@@ -21,83 +31,6 @@ source_set("common") {
     "//ios/chrome/browser/overlays/public/web_content_area",
     "//ios/chrome/browser/ui/alert_view",
     "//ios/chrome/browser/ui/dialogs",
-    "//ios/chrome/browser/ui/elements",
-    "//ios/chrome/browser/ui/overlays:coordinators",
-    "//ios/chrome/browser/ui/overlays/common/alerts",
-    "//ui/base",
-  ]
-}
-
-source_set("alerts") {
-  sources = [
-    "java_script_alert_overlay_coordinator.h",
-    "java_script_alert_overlay_coordinator.mm",
-    "java_script_alert_overlay_mediator.h",
-    "java_script_alert_overlay_mediator.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-
-  deps = [
-    ":common",
-    "//base",
-    "//components/strings:components_strings_grit",
-    "//ios/chrome/app/strings:ios_strings_grit",
-    "//ios/chrome/browser/overlays",
-    "//ios/chrome/browser/overlays/public/web_content_area",
-    "//ios/chrome/browser/ui/alert_view",
-    "//ios/chrome/browser/ui/dialogs:constants",
-    "//ios/chrome/browser/ui/elements",
-    "//ios/chrome/browser/ui/overlays:coordinators",
-    "//ios/chrome/browser/ui/overlays/common/alerts",
-    "//ui/base",
-  ]
-}
-
-source_set("confirmations") {
-  sources = [
-    "java_script_confirmation_overlay_coordinator.h",
-    "java_script_confirmation_overlay_coordinator.mm",
-    "java_script_confirmation_overlay_mediator.h",
-    "java_script_confirmation_overlay_mediator.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-
-  deps = [
-    ":common",
-    "//base",
-    "//components/strings:components_strings_grit",
-    "//ios/chrome/app/strings:ios_strings_grit",
-    "//ios/chrome/browser/overlays",
-    "//ios/chrome/browser/overlays/public/web_content_area",
-    "//ios/chrome/browser/ui/alert_view",
-    "//ios/chrome/browser/ui/dialogs:constants",
-    "//ios/chrome/browser/ui/elements",
-    "//ios/chrome/browser/ui/overlays:coordinators",
-    "//ios/chrome/browser/ui/overlays/common/alerts",
-    "//ui/base",
-  ]
-}
-
-source_set("prompts") {
-  sources = [
-    "java_script_prompt_overlay_coordinator.h",
-    "java_script_prompt_overlay_coordinator.mm",
-    "java_script_prompt_overlay_mediator.h",
-    "java_script_prompt_overlay_mediator.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-
-  deps = [
-    ":common",
-    "//base",
-    "//components/strings:components_strings_grit",
-    "//ios/chrome/app/strings:ios_strings_grit",
-    "//ios/chrome/browser/overlays",
-    "//ios/chrome/browser/overlays/public/web_content_area",
-    "//ios/chrome/browser/ui/alert_view",
     "//ios/chrome/browser/ui/dialogs:constants",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/overlays:coordinators",
@@ -117,10 +50,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    ":alerts",
-    ":common",
-    ":confirmations",
-    ":prompts",
+    ":java_script_dialogs",
     "//base/test:test_support",
     "//components/strings:components_strings_grit",
     "//components/url_formatter",

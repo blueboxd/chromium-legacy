@@ -43,7 +43,8 @@ class COMPONENT_EXPORT(STORAGE_SERVICE_FILESYSTEM_SUPPORT) FilesystemProxy {
   // outside of |root| and in general suffer no restrictions on what paths are
   // allowed.
   //
-  // If |root| is empty, this object's methods will only accept absolute paths.
+  // If |root| is empty, relative paths are used as-is and effectively
+  // interpreted as relative to the current working directory.
   explicit FilesystemProxy(decltype(UNRESTRICTED), const base::FilePath& root);
 
   // Constructs a new FilesystemProxy for |root|, using |directory| to invoke
@@ -129,10 +130,13 @@ class COMPONENT_EXPORT(STORAGE_SERVICE_FILESYSTEM_SUPPORT) FilesystemProxy {
   // Not called by unrestricted FilesystemProxy instances.
   base::FilePath MakeRelative(const base::FilePath& path) const;
 
-  // For unrestricted FilesystemProxy instances, this returns a FilePath that is
-  // always absolute. If |path| is absolute, it is returned unmodified. If
-  // relative, it is resolved against |root_|.
-  base::FilePath MakeAbsolute(const base::FilePath& path) const;
+  // For unrestricted FilesystemProxy instances with a non-empty root, this
+  // returns a FilePath that is always absolute. If |path| is absolute, it is
+  // returned unmodified. If |path| is relative AND |root_| is non-empty, the
+  // path is resolved against |root_| and the resulting absolute path is
+  // returned. Finally, if |path| is relative and |root_| is empty, this returns
+  // |path| unmodified.
+  base::FilePath MaybeMakeAbsolute(const base::FilePath& path) const;
 
   const base::FilePath root_;
   const size_t num_root_components_ = 0;

@@ -54,9 +54,13 @@ function showLoadingIndicator(isLastPage) {
 }
 
 // Sets the title.
-function setTitle(title) {
+function setTitle(title, documentTitleSuffix) {
   $('title-holder').textContent = title;
-  document.title = title;
+  if (documentTitleSuffix) {
+    document.title = title + documentTitleSuffix;
+  } else {
+    document.title = title;
+  }
 }
 
 // Set the text direction of the document ('ltr', 'rtl', or 'auto').

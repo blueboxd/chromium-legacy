@@ -38,8 +38,6 @@ class RelaunchRequiredDialogView : views::DialogDelegateView {
   void SetDeadline(base::Time deadline);
 
   // views::DialogDelegateView:
-  bool Cancel() override;
-  bool Accept() override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
@@ -58,9 +56,6 @@ class RelaunchRequiredDialogView : views::DialogDelegateView {
   void UpdateWindowTitle();
 
   static constexpr int kTitleIconSize = 20;
-
-  // A callback to run if the user accepts the prompt to relaunch the browser.
-  base::RepeatingClosure on_accept_;
 
   // Timer that schedules title refreshes.
   RelaunchRequiredTimer relaunch_required_timer_;

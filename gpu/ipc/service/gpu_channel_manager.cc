@@ -358,8 +358,18 @@ gles2::ProgramCache* GpuChannelManager::program_cache() {
 void GpuChannelManager::RemoveChannel(int client_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  auto it = gpu_channels_.find(client_id);
+  if (it == gpu_channels_.end())
+    return;
+
   delegate_->DidDestroyChannel(client_id);
-  gpu_channels_.erase(client_id);
+
+  // Erase the |gpu_channels_| entry before destroying the GpuChannel object to
+  // avoid reentrancy problems from the GpuChannel destructor.
+  std::unique_ptr<GpuChannel> channel = std::move(it->second);
+  gpu_channels_.erase(it);
+  channel.reset();
+
   if (gpu_channels_.empty()) {
     delegate_->DidDestroyAllChannels();
   }

@@ -434,10 +434,8 @@ bool MockDrmDevice::CommitProperties(
     return false;
 
   for (uint32_t i = 0; i < request->cursor; ++i) {
-    bool res = ValidatePropertyValue(request->items[i].property_id,
-                                     request->items[i].value);
-    if (!res)
-      return false;
+    EXPECT_TRUE(ValidatePropertyValue(request->items[i].property_id,
+                                      request->items[i].value));
   }
 
   if (page_flip_request)
@@ -448,11 +446,9 @@ bool MockDrmDevice::CommitProperties(
 
   // Only update values if not testing.
   for (uint32_t i = 0; i < request->cursor; ++i) {
-    bool res =
-        UpdateProperty(request->items[i].object_id,
-                       request->items[i].property_id, request->items[i].value);
-    if (!res)
-      return false;
+    EXPECT_TRUE(UpdateProperty(request->items[i].object_id,
+                               request->items[i].property_id,
+                               request->items[i].value));
   }
 
   return true;

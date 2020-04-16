@@ -9803,28 +9803,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
     </if>
 
-    <!-- Media capture notification strings -->
-    <if expr="is_android or enable_vr">
-      <message name="IDS_VIDEO_CALL_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video call is in progress." formatter_data="android_java">
-        Accessing video input
-      </message>
-      <message name="IDS_AUDIO_CALL_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC audio call is in progress" formatter_data="android_java">
-        Accessing audio input
-      </message>
-      <message name="IDS_VIDEO_AUDIO_CALL_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video and audio call is in progress" formatter_data="android_java">
-        Accessing audio and video input
-      </message>
-      <message name="IDS_VIDEO_CALL_INCOGNITO_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video call is in progress in incognito mode." formatter_data="android_java">
-        A site is accessing video input
-      </message>
-      <message name="IDS_AUDIO_CALL_INCOGNITO_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC audio call is in progress in incognito mode." formatter_data="android_java">
-        A site is accessing audio input
-      </message>
-      <message name="IDS_VIDEO_AUDIO_CALL_INCOGNITO_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video and audio call is in progress in incognito mode." formatter_data="android_java">
-        A site is accessing audio and video input
-      </message>
-    </if>
-
     <!-- Download open confirmation dialog -->
     <if expr="not is_android">
       <message name="IDS_DOWNLOAD_OPEN_CONFIRMATION_DIALOG_TITLE" desc="Title of the dialog prompt shown to users when an extension is trying to open a downloaded file.">

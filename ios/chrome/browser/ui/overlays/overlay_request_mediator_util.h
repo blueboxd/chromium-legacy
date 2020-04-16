@@ -9,6 +9,8 @@
 
 #include <memory>
 
+@class OverlayRequestMediator;
+class OverlayRequest;
 class OverlayRequestSupport;
 
 // Returns an OverlayRequestSupport aggregating the support from all
@@ -17,5 +19,11 @@ class OverlayRequestSupport;
 // OverlayRequestMediator type.
 std::unique_ptr<OverlayRequestSupport> CreateAggregateSupportForMediators(
     NSArray<Class>* mediator_classes);
+
+// Iterates through the OverlayRequestMediator classes in |mediator_classes|,
+// searching for one that supports |request|.  If one is found, returns a new
+// instance of the mediator for that request.  Otherwise, returns nil.
+OverlayRequestMediator* GetMediatorForRequest(NSArray<Class>* mediator_classes,
+                                              OverlayRequest* request);
 
 #endif  // IOS_CHROME_BROWSER_UI_OVERLAYS_OVERLAY_REQUEST_MEDIATOR_UTIL_H_

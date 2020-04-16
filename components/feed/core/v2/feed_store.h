@@ -66,10 +66,6 @@ class FeedStore {
                               std::vector<feedstore::StreamSharedState>)>
           content_callback);
 
-  void ReadNextStreamState(
-      base::OnceCallback<
-          void(std::unique_ptr<feedstore::StreamAndContentState>)> callback);
-
   void ReadActions(
       base::OnceCallback<void(std::vector<feedstore::StoredAction>)> callback);
   void WriteActions(std::vector<feedstore::StoredAction> actions,
@@ -111,11 +107,6 @@ class FeedStore {
           callback,
       bool success,
       std::unique_ptr<std::vector<feedstore::Record>> records);
-  void OnReadNextStreamStateFinished(
-      base::OnceCallback<
-          void(std::unique_ptr<feedstore::StreamAndContentState>)> callback,
-      bool success,
-      std::unique_ptr<feedstore::Record> record);
 
   void OnReadActionsFinished(
       base::OnceCallback<void(std::vector<feedstore::StoredAction>)> callback,

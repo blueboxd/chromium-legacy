@@ -27,6 +27,7 @@
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -361,7 +362,7 @@ class FormStructure {
     value_from_dynamic_change_form_ = v;
   }
 
-  uint32_t unique_renderer_id() const { return unique_renderer_id_; }
+  FormRendererId unique_renderer_id() const { return unique_renderer_id_; }
 
  private:
   friend class AutofillMergeTest;
@@ -635,7 +636,7 @@ class FormStructure {
 
   bool value_from_dynamic_change_form_ = false;
 
-  uint32_t unique_renderer_id_;
+  FormRendererId unique_renderer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

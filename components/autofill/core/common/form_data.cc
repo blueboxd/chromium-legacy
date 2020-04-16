@@ -231,7 +231,7 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormData& form) {
   buffer << Tag{"div"} << Attrib{"class", "form"};
   buffer << Tag{"table"};
   buffer << Tr{} << "Form name:" << form.name;
-  buffer << Tr{} << "Unique renderer Id:" << form.unique_renderer_id;
+  buffer << Tr{} << "Unique renderer Id:" << form.unique_renderer_id.value();
   buffer << Tr{} << "URL:" << form.url;
   buffer << Tr{} << "Action:" << form.action;
   buffer << Tr{} << "Is action empty:" << form.is_action_empty;

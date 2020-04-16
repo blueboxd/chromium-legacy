@@ -26,10 +26,11 @@ class SkiaGoldSession(object):
     """Status codes for RunComparison."""
     SUCCESS = 0
     AUTH_FAILURE = 1
-    COMPARISON_FAILURE_REMOTE = 2
-    COMPARISON_FAILURE_LOCAL = 3
-    LOCAL_DIFF_FAILURE = 4
-    NO_OUTPUT_MANAGER = 5
+    INIT_FAILURE = 2
+    COMPARISON_FAILURE_REMOTE = 3
+    COMPARISON_FAILURE_LOCAL = 4
+    LOCAL_DIFF_FAILURE = 5
+    NO_OUTPUT_MANAGER = 6
 
   class ComparisonResults(object):
     """Struct-like object for storing results of an image comparison."""
@@ -41,39 +42,53 @@ class SkiaGoldSession(object):
       self.local_diff_closest_image = None
       self.local_diff_diff_image = None
 
-  def __init__(self, working_dir, gold_properties, instance=DEFAULT_INSTANCE):
+  def __init__(self,
+               working_dir,
+               gold_properties,
+               keys_file,
+               corpus,
+               instance=DEFAULT_INSTANCE):
     """A class to handle all aspects of an image comparison via Skia Gold.
+
+    A single SkiaGoldSession is valid for a single instance/corpus/keys_file
+    combination.
 
     Args:
       working_dir: The directory to store config files, etc. Sharing the same
           working directory between multiple SkiaGoldSessions allows re-use of
           authentication and downloaded baselines.
       gold_properties: A SkiaGoldProperties instance for the current test run.
+      keys_file: A path to a JSON file containing various comparison config
+          data such as corpus and debug information like the hardware/software
+          configuration the images will be produced on.
+      corpus: The corpus that images that will be compared belong to.
       instance: The name of the Skia Gold instance to interact with.
     """
     self._working_dir = working_dir
     self._gold_properties = gold_properties
+    self._keys_file = keys_file
+    self._corpus = corpus
     self._instance = instance
     self._triage_link_file = tempfile.NamedTemporaryFile(
         suffix='.txt', dir=working_dir, delete=False).name
     # A map of image name (string) to ComparisonResults for that image.
     self._comparison_results = {}
+    self._authenticated = False
+    self._initialized = False
 
+  # pylint: disable=too-many-return-statements
   def RunComparison(self,
                     name,
-                    keys_file,
                     png_file,
                     output_manager,
                     use_luci=True):
     """Helper method to run all steps to compare a produced image.
 
-    Handles authentication, comparison, and, if necessary, local diffing.
+    Handles authentication, initialization, comparison, and, if necessary,
+    local diffing.
 
     Args:
       name: The name of the image being compared.
-      keys_file: A path to a JSON file containing various comparison config
-          data such as corpus and debug information like the hardware/software
-          configuration the image was produced on.
       png_file: A path to a PNG file containing the image to be compared.
       output_manager: The output manager used to save local diff images if
           necessary. Can be None, but will fail if it ends up needing to be used
@@ -91,11 +106,11 @@ class SkiaGoldSession(object):
     if auth_rc:
       return self.StatusCodes.AUTH_FAILURE, auth_stdout
 
-    with open(keys_file) as f:
-      corpus = json.load(f).get('source_type', self._instance)
+    init_rc, init_stdout = self.Initialize()
+    if init_rc:
+      return self.StatusCodes.INIT_FAILURE, init_stdout
 
-    compare_rc, compare_stdout = self.Compare(
-        name=name, keys_file=keys_file, png_file=png_file, corpus=corpus)
+    compare_rc, compare_stdout = self.Compare(name=name, png_file=png_file)
     if not compare_rc:
       return self.StatusCodes.SUCCESS, None
 
@@ -107,10 +122,7 @@ class SkiaGoldSession(object):
       return (self.StatusCodes.NO_OUTPUT_MANAGER,
               'No output manager for local diff images')
     diff_rc, diff_stdout = self.Diff(
-        name=name,
-        png_file=png_file,
-        corpus=corpus,
-        output_manager=output_manager)
+        name=name, png_file=png_file, output_manager=output_manager)
     if diff_rc:
       return self.StatusCodes.LOCAL_DIFF_FAILURE, diff_stdout
     return self.StatusCodes.COMPARISON_FAILURE_LOCAL, compare_stdout
@@ -128,10 +140,12 @@ class SkiaGoldSession(object):
       authentication process. |output| is the stdout + stderr of the
       authentication process.
     """
+    if self._authenticated:
+      return 0, None
     if self._gold_properties.bypass_skia_gold_functionality:
       logging.warning('Not actually authenticating with Gold due to '
                       '--bypass-skia-gold-functionality being present.')
-      return 0, ''
+      return 0, None
 
     auth_cmd = [GOLDCTL_BINARY, 'auth', '--work-dir', self._working_dir]
     if use_luci:
@@ -143,46 +157,41 @@ class SkiaGoldSession(object):
 
     rc, stdout, _ = cmd_helper.GetCmdStatusOutputAndError(
         auth_cmd, merge_stderr=True)
+    if rc == 0:
+      self._authenticated = True
     return rc, stdout
 
-  def Compare(self, name, keys_file, png_file, corpus):
-    """Compares the given image to images known to Gold.
+  def Initialize(self):
+    """Initializes the working directory if necessary.
 
-    Triage links can later be retrieved using GetTriageLink().
-
-    Args:
-      name: The name of the image being compared.
-      keys_file: A path to a JSON file containing various comparison config
-          data such as corpus and debug information like the hardware/software
-          configuration the image was produced on.
-      png_file: A path to a PNG file containing the image to be compared.
-      corpus: The corpus that the image belongs to.
+    This can technically be skipped if the same information is passed to the
+    command used for image comparison, but that is less efficient under the
+    hood. Doing it that way effectively requires an initialization for every
+    comparison (~250 ms) instead of once at the beginning.
 
     Returns:
       A tuple (return_code, output). |return_code| is the return code of the
-      comparison process. |output| is the stdout + stderr of the comparison
-      process.
+      initialization process. |output| is the stdout + stderr of the
+      initialization process.
     """
+    if self._initialized:
+      return 0, None
     if self._gold_properties.bypass_skia_gold_functionality:
-      logging.warning('Not actually comparing with Gold due to '
+      logging.warning('Not actually initializing Gold due to '
                       '--bypass-skia-gold-functionality being present.')
-      return 0, ''
+      return 0, None
 
-    compare_cmd = [
+    init_cmd = [
         GOLDCTL_BINARY,
         'imgtest',
-        'add',
+        'init',
         '--passfail',
-        '--test-name',
-        name,
         '--instance',
         self._instance,
         '--corpus',
-        corpus,
+        self._corpus,
         '--keys-file',
-        keys_file,
-        '--png-file',
-        png_file,
+        self._keys_file,
         '--work-dir',
         self._working_dir,
         '--failure-file',
@@ -190,10 +199,8 @@ class SkiaGoldSession(object):
         '--commit',
         self._gold_properties.git_revision,
     ]
-    if self._gold_properties.local_pixel_tests:
-      compare_cmd.append('--dryrun')
     if self._gold_properties.IsTryjobRun():
-      compare_cmd.extend([
+      init_cmd.extend([
           '--issue',
           str(self._gold_properties.issue),
           '--patchset',
@@ -205,6 +212,44 @@ class SkiaGoldSession(object):
           '--cis',
           str(self._gold_properties.continuous_integration_system),
       ])
+    rc, stdout, _ = cmd_helper.GetCmdStatusOutputAndError(
+        init_cmd, merge_stderr=True)
+    if rc == 0:
+      self._initialized = True
+    return rc, stdout
+
+  def Compare(self, name, png_file):
+    """Compares the given image to images known to Gold.
+
+    Triage links can later be retrieved using GetTriageLink().
+
+    Args:
+      name: The name of the image being compared.
+      png_file: A path to a PNG file containing the image to be compared.
+
+    Returns:
+      A tuple (return_code, output). |return_code| is the return code of the
+      comparison process. |output| is the stdout + stderr of the comparison
+      process.
+    """
+    if self._gold_properties.bypass_skia_gold_functionality:
+      logging.warning('Not actually comparing with Gold due to '
+                      '--bypass-skia-gold-functionality being present.')
+      return 0, None
+
+    compare_cmd = [
+        GOLDCTL_BINARY,
+        'imgtest',
+        'add',
+        '--test-name',
+        name,
+        '--png-file',
+        png_file,
+        '--work-dir',
+        self._working_dir,
+    ]
+    if self._gold_properties.local_pixel_tests:
+      compare_cmd.append('--dryrun')
 
     rc, stdout, _ = cmd_helper.GetCmdStatusOutputAndError(
         compare_cmd, merge_stderr=True)
@@ -223,7 +268,7 @@ class SkiaGoldSession(object):
       cl_triage_link = cl_triage_link.format(
           instance=self._instance,
           issue=self._gold_properties.issue,
-          corpus=corpus)
+          corpus=self._corpus)
       self._comparison_results[name].triage_link = cl_triage_link
     else:
       try:
@@ -235,7 +280,7 @@ class SkiaGoldSession(object):
             'Failed to read triage link from file')
     return rc, stdout
 
-  def Diff(self, name, png_file, corpus, output_manager):
+  def Diff(self, name, png_file, output_manager):
     """Performs a local image diff against the closest known positive in Gold.
 
     This is used for running tests on a workstation, where uploading data to
@@ -246,7 +291,6 @@ class SkiaGoldSession(object):
     Args:
       name: The name of the image being compared.
       png_file: The path to a PNG file containing the image to be diffed.
-      corpus: The corpus that the image belongs to.
       output_manager: The output manager used to save local diff images.
 
     Returns:
@@ -269,7 +313,7 @@ class SkiaGoldSession(object):
         GOLDCTL_BINARY,
         'diff',
         '--corpus',
-        corpus,
+        self._corpus,
         '--instance',
         self._instance,
         '--input',
@@ -395,6 +439,57 @@ class SkiaGoldSession(object):
     """
     assert name in self._comparison_results
     return self._comparison_results[name].local_diff_diff_image
+
+
+class SkiaGoldSessionManager(object):
+  def __init__(self, working_dir, gold_properties):
+    """Class to manage one or more SkiaGoldSessions.
+
+    A separate session is required for each instance/corpus/keys_file
+    combination, so this class will lazily create them as necessary.
+
+    Args:
+      working_dir: The working directory under which each individual
+          SkiaGoldSessions' working directory will be created.
+      gold_properties: A SkiaGoldProperties instance that will be used to create
+          any SkiaGoldSessions.
+    """
+    self._working_dir = working_dir
+    self._gold_properties = gold_properties
+    self._sessions = {}
+
+  def GetSkiaGoldSession(self,
+                         keys_file,
+                         corpus=None,
+                         instance=DEFAULT_INSTANCE):
+    """Gets a SkiaGoldSession for the given arguments.
+
+    Lazily creates one if necessary.
+
+    Args:
+      keys_file: A path to a JSON file containing various comparison config
+          data such as corpus and debug information like the hardware/software
+          configuration the image was produced on.
+      corpus: The corpus the session is for. If None, the corpus will be
+          determined using available information.
+      instance: The name of the Skia Gold instance to interact with.
+    """
+    with open(keys_file) as f:
+      keys = json.load(f)
+    keys_string = json.dumps(keys, sort_keys=True)
+    if corpus is None:
+      corpus = keys.get('source_type', instance)
+    # Use the string representation of the keys JSON as a proxy for a hash since
+    # dicts themselves are not hashable.
+    session = self._sessions.setdefault(instance,
+                                        {}).setdefault(corpus, {}).setdefault(
+                                            keys_string, None)
+    if not session:
+      working_dir = tempfile.mkdtemp(dir=self._working_dir)
+      session = SkiaGoldSession(working_dir, self._gold_properties, keys_file,
+                                corpus, instance)
+      self._sessions[instance][corpus][keys_string] = session
+    return session
 
 
 class SkiaGoldProperties(object):

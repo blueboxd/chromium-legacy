@@ -21,7 +21,6 @@ std::string ToTextProto(const feedstore::StreamStructureSet& v);
 std::string ToTextProto(const feedstore::StreamStructure& v);
 std::string ToTextProto(const feedstore::Content& v);
 std::string ToTextProto(const feedstore::StreamSharedState& v);
-std::string ToTextProto(const feedstore::StreamAndContentState& v);
 std::string ToTextProto(const feedstore::StoredAction& v);
 std::string ToTextProto(const feedstore::Record& v);
 
@@ -46,10 +45,6 @@ inline std::ostream& operator<<(std::ostream& os, const feedstore::Content& v) {
 }
 inline std::ostream& operator<<(std::ostream& os,
                                 const feedstore::StreamSharedState& v) {
-  return os << ToTextProto(v);
-}
-inline std::ostream& operator<<(std::ostream& os,
-                                const feedstore::StreamAndContentState& v) {
   return os << ToTextProto(v);
 }
 inline std::ostream& operator<<(std::ostream& os,

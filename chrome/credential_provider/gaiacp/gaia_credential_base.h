@@ -281,6 +281,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
                                BSTR* error_text);
 
   HRESULT RecoverWindowsPasswordIfPossible(base::string16* recovered_password);
+
   // Sets the error message in the password field based on the HRESULT returned
   // by NetUserChangePassword win32 function.
   void SetErrorMessageInPasswordField(HRESULT hr);
@@ -289,6 +290,11 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // which can't be worked out with manual user input in the forgot password
   // flow.
   bool BlockingPasswordError(UINT message_id);
+
+  // Determines whether the logon stub can be launched by checking internet
+  // connection and registry keys that should be present. |status_text| is
+  // populated with a message to show in the login UI.
+  bool CanProceedToLogonStub(wchar_t** status_text);
 
   Microsoft::WRL::ComPtr<ICredentialProviderCredentialEvents> events_;
   Microsoft::WRL::ComPtr<IGaiaCredentialProvider> provider_;

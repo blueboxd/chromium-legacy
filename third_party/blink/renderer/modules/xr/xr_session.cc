@@ -295,6 +295,7 @@ void XRSession::MetricsReporter::ReportFeatureUsed(
       break;
     case XRSessionFeature::DOM_OVERLAY:
     case XRSessionFeature::HIT_TEST:
+    case XRSessionFeature::LIGHT_ESTIMATION:
       // Not recording metrics for these features currently.
       break;
   }

@@ -900,6 +900,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Properties of the object's owning document or page.
   virtual double EstimatedLoadingProgress() const { return 0; }
+  virtual AXObject* RootScroller() const;
 
   // DOM and layout tree access.
   virtual Node* GetNode() const { return nullptr; }

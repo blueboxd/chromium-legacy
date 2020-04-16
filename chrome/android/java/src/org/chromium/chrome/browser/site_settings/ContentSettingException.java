@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge.
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
+import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 
 import java.io.Serializable;

@@ -171,9 +171,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
     return last_commit_was_error_page_;
   }
 
-  // Exposes the interface registry to be manipulated for testing.
-  service_manager::BinderRegistry& binder_registry() { return *registry_; }
-
   // Returns a PendingReceiver<InterfaceProvider> that is safe to bind to an
   // implementation, but will never receive any interface receivers.
   static mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>

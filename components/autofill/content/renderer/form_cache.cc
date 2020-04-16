@@ -216,7 +216,7 @@ std::vector<FormData> FormCache::ExtractNewForms(
   WebVector<WebFormElement> web_forms;
   document.Forms(web_forms);
 
-  std::set<uint32_t> observed_unique_renderer_ids;
+  std::set<FieldRendererId> observed_unique_renderer_ids;
 
   // Log an error message for deprecated attributes, but only the first time
   // the form is parsed.
@@ -348,7 +348,7 @@ void FormCache::ClearElement(WebFormControlElement& control_element,
   } else if (form_util::IsSelectElement(control_element)) {
     WebSelectElement select_element = control_element.To<WebSelectElement>();
     auto initial_value_iter = initial_select_values_.find(
-        select_element.UniqueRendererFormControlId());
+        FieldRendererId(select_element.UniqueRendererFormControlId()));
     if (initial_value_iter != initial_select_values_.end() &&
         select_element.Value().Utf16() != initial_value_iter->second) {
       select_element.SetAutofillValue(
@@ -358,7 +358,7 @@ void FormCache::ClearElement(WebFormControlElement& control_element,
     WebInputElement input_element = control_element.To<WebInputElement>();
     DCHECK(form_util::IsCheckableElement(&input_element));
     auto checkable_element_it = initial_checked_state_.find(
-        input_element.UniqueRendererFormControlId());
+        FieldRendererId(input_element.UniqueRendererFormControlId()));
     if (checkable_element_it != initial_checked_state_.end() &&
         input_element.IsChecked() != checkable_element_it->second) {
       input_element.SetChecked(checkable_element_it->second, true);
@@ -598,7 +598,7 @@ bool FormCache::ShouldShowAutocompleteConsoleWarnings(
 }
 
 void FormCache::PruneInitialValueCaches(
-    const std::set<uint32_t>& ids_to_retain) {
+    const std::set<FieldRendererId>& ids_to_retain) {
   auto should_not_retain = [&ids_to_retain](const auto& p) {
     return !base::Contains(ids_to_retain, p.first);
   };

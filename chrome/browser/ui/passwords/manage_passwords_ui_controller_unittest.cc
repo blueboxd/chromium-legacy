@@ -37,7 +37,6 @@
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
-#include "google_apis/gaia/core_account_id.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,8 +93,8 @@ class MockPasswordManagerClient
     : public password_manager::StubPasswordManagerClient {
  public:
   MOCK_METHOD(void,
-              TriggerReauthForAccount,
-              (const CoreAccountId&, base::OnceCallback<void(ReauthSucceeded)>),
+              TriggerReauthForPrimaryAccount,
+              (base::OnceCallback<void(ReauthSucceeded)>),
               (override));
 };
 
@@ -526,13 +525,12 @@ TEST_F(ManagePasswordsUIControllerTest,
 
   // The user hasn't opted in, so a reauth flow will be triggered.
   base::OnceCallback<void(ReauthSucceeded)> reauth_callback;
-  EXPECT_CALL(client(), TriggerReauthForAccount)
-      .WillOnce(MoveArg<1>(&reauth_callback));
+  EXPECT_CALL(client(), TriggerReauthForPrimaryAccount)
+      .WillOnce(MoveArg<0>(&reauth_callback));
 
   // The user clicks save which will invoke the reauth flow.
   controller()->AuthenticateUserForAccountStoreOptInAndSavePassword(
-      CoreAccountId(), submitted_form().username_value,
-      submitted_form().password_value);
+      submitted_form().username_value, submitted_form().password_value);
 
   // The bubble gets hidden after the user clicks on save.
   controller()->OnBubbleHidden();
@@ -558,8 +556,8 @@ TEST_F(ManagePasswordsUIControllerTest,
 
   // The user hasn't opted in, so a reauth flow will be triggered.
   base::OnceCallback<void(ReauthSucceeded)> reauth_callback;
-  EXPECT_CALL(client(), TriggerReauthForAccount)
-      .WillOnce(MoveArg<1>(&reauth_callback));
+  EXPECT_CALL(client(), TriggerReauthForPrimaryAccount)
+      .WillOnce(MoveArg<0>(&reauth_callback));
 
   // Unsuccessful reauth should change the default store to profile store.
   EXPECT_CALL(
@@ -568,8 +566,7 @@ TEST_F(ManagePasswordsUIControllerTest,
 
   // The user clicks save which will invoke the reauth flow.
   controller()->AuthenticateUserForAccountStoreOptInAndSavePassword(
-      CoreAccountId(), submitted_form().username_value,
-      submitted_form().password_value);
+      submitted_form().username_value, submitted_form().password_value);
 
   // The bubble gets hidden after the user clicks on save.
   controller()->OnBubbleHidden();

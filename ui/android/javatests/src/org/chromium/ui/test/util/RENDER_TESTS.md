@@ -155,6 +155,14 @@ If you want to separate your baselines from the default `android-render-tests`
 corpus in Gold, you can call `setCorpus()` on your
 `SkiaGoldBuilder` instance before calling `build()`.
 
+**Note:** Each instance/corpus/description combination results in needing to
+create a new Gold session under the hood, which adds ~250 ms due to extra
+initialization the first time that combination is used in a particular test
+suite run. Instance and corpus are pretty constant, so the main culprit is the
+description. This overhead can be kept low by using identical descriptions in
+multiple test classes, including multiple test cases in a test class that has a
+description, or avoiding descriptions altogether.
+
 ### Running the tests locally
 
 When running instrumentation tests locally, pass the `--local-output` option to

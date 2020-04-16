@@ -94,27 +94,16 @@ class AndroidTelemetryService
   std::unique_ptr<ClientSafeBrowsingReportRequest> GetReport(
       download::DownloadItem* item);
 
-  // If |safety_net_id_on_ui_thread_| isn't already set, post a task on the IO
-  // thread to get the safety net ID of the device and then store that value on
-  // the UI thread in |safety_net_id_on_ui_thread_|.
-  void MaybeCaptureSafetyNetId();
-
   // Sends |report| proto to the Safe Browsing backend. The report may not be
   // sent if the proto fails to serialize.
   void MaybeSendApkDownloadReport(
       std::unique_ptr<ClientSafeBrowsingReportRequest> report);
-
-  // Gets called on the UI thread when the |safety_net_id| of the device has
-  // been captured. Sets |safety_net_id_on_ui_thread_| to the captured value.
-  void SetSafetyNetIdOnUIThread(const std::string& safety_net_id);
 
   // Helper method to get prefs from |profile_|.
   const PrefService* GetPrefs();
 
   // Profile associated with this instance. Unowned.
   Profile* profile_;
-
-  std::string safety_net_id_on_ui_thread_;
 
   // Unowned.
   SafeBrowsingService* sb_service_;

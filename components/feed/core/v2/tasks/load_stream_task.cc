@@ -22,10 +22,26 @@
 #include "components/feed/core/v2/stream_model_update_request.h"
 
 namespace feed {
+namespace {
+using LoadType = LoadStreamTask::LoadType;
 
-LoadStreamTask::LoadStreamTask(FeedStream* stream,
+feedwire::FeedQuery::RequestReason GetRequestReason(LoadType load_type) {
+  switch (load_type) {
+    case LoadType::kInitialLoad:
+      return feedwire::FeedQuery::MANUAL_REFRESH;
+    case LoadType::kBackgroundRefresh:
+      return feedwire::FeedQuery::SCHEDULED_REFRESH;
+  }
+}
+
+}  // namespace
+
+LoadStreamTask::LoadStreamTask(LoadType load_type,
+                               FeedStream* stream,
                                base::OnceCallback<void(Result)> done_callback)
-    : stream_(stream), done_callback_(std::move(done_callback)) {}
+    : load_type_(load_type),
+      stream_(stream),
+      done_callback_(std::move(done_callback)) {}
 
 LoadStreamTask::~LoadStreamTask() = default;
 
@@ -40,8 +56,16 @@ void LoadStreamTask::Run() {
     return;
   }
 
+  // Use |kConsistencyTokenOnly| to short-circuit loading from store if we don't
+  // need the full stream state.
+  auto load_from_store_type =
+      (load_type_ == LoadType::kInitialLoad)
+          ? LoadStreamFromStoreTask::LoadType::kFullLoad
+          : LoadStreamFromStoreTask::LoadType::kConsistencyTokenOnly;
+
   load_from_store_task_ = std::make_unique<LoadStreamFromStoreTask>(
-      stream_->GetStore(), stream_->GetClock(), stream_->GetUserClass(),
+      load_from_store_type, stream_->GetStore(), stream_->GetClock(),
+      stream_->GetUserClass(),
       base::BindOnce(&LoadStreamTask::LoadFromStoreComplete, GetWeakPtr()));
   load_from_store_task_->Execute(base::DoNothing());
 }
@@ -53,7 +77,8 @@ void LoadStreamTask::LoadFromStoreComplete(
   //  - If loading from store works, update the model.
   //  - Otherwise, try to load from the network.
 
-  if (result.status == LoadStreamStatus::kLoadedFromStore) {
+  if (load_type_ == LoadType::kInitialLoad &&
+      result.status == LoadStreamStatus::kLoadedFromStore) {
     auto model = std::make_unique<StreamModel>();
     model->Update(std::move(result.update_request));
     stream_->LoadModel(std::move(model));
@@ -67,7 +92,6 @@ void LoadStreamTask::LoadFromStoreComplete(
     return;
   }
 
-  // TODO(harringtond): Add throttling.
   // TODO(harringtond): Request parameters here are all placeholder values.
   feedwire::Request request;
   request.set_request_version(feedwire::Request::FEED_QUERY);
@@ -76,10 +100,9 @@ void LoadStreamTask::LoadFromStoreComplete(
   *feed_request.mutable_client_info() =
       CreateClientInfo(stream_->GetChromeInfo());
 
-  feed_request.mutable_feed_query()->set_reason(
-      feedwire::FeedQuery::MANUAL_REFRESH);
   request.mutable_feed_request()->add_client_capability(
       feedwire::Capability::BASE_UI);
+  feed_request.mutable_feed_query()->set_reason(GetRequestReason(load_type_));
   if (!result.consistency_token.empty()) {
     feed_request.mutable_consistency_token()->set_token(
         result.consistency_token);
@@ -112,9 +135,11 @@ void LoadStreamTask::QueryRequestComplete(
       std::make_unique<StreamModelUpdateRequest>(*update_request),
       base::DoNothing());
 
-  auto model = std::make_unique<StreamModel>();
-  model->Update(std::move(update_request));
-  stream_->LoadModel(std::move(model));
+  if (load_type_ != LoadType::kBackgroundRefresh) {
+    auto model = std::make_unique<StreamModel>();
+    model->Update(std::move(update_request));
+    stream_->LoadModel(std::move(model));
+  }
 
   Done(LoadStreamStatus::kLoadedFromNetwork);
 }
@@ -123,6 +148,7 @@ void LoadStreamTask::Done(LoadStreamStatus status) {
   Result result;
   result.load_from_store_status = load_from_store_status_;
   result.final_status = status;
+  result.load_type = load_type_;
   std::move(done_callback_).Run(result);
   TaskComplete();
 }

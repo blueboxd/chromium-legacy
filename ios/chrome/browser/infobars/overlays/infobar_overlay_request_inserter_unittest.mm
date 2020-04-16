@@ -62,8 +62,8 @@ class InfobarOverlayRequestInserterTest : public PlatformTest {
   // pointer to the added InfoBar.  If |message_text| matches an infobar already
   // added, then it the new one will be ignored.
   InfoBar* CreateInfobar(base::string16 message_text) {
-    std::unique_ptr<InfoBar> added_infobar =
-        std::make_unique<FakeInfobarIOS>(message_text);
+    std::unique_ptr<InfoBar> added_infobar = std::make_unique<FakeInfobarIOS>(
+        InfobarType::kInfobarTypeConfirm, message_text);
     InfoBar* infobar = added_infobar.get();
     manager()->AddInfoBar(std::move(added_infobar));
     return infobar;

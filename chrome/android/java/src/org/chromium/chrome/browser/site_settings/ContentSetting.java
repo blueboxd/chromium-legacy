@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.site_settings;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.components.content_settings.ContentSettingValues;
+
 /**
  * Java counterpart to C++ ContentSetting enum.
  *

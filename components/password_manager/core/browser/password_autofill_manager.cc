@@ -43,10 +43,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/signin/public/base/signin_metrics.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
-#include "google_apis/gaia/core_account_id.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -369,19 +367,10 @@ void PasswordAutofillManager::OnUnlockItemAccepted(
       unlock_item ==
           autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE);
 
-  signin::IdentityManager* identity_manager =
-      password_client_->GetIdentityManager();
-  if (!identity_manager)
-    return;
-  CoreAccountId account_id =
-      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
-  if (account_id.empty())
-    return;
   UpdatePopup(SetUnlockLoadingState(autofill_client_->GetPopupSuggestions(),
                                     unlock_item, IsLoading(true)));
   autofill_client_->PinPopupView();
-  password_client_->TriggerReauthForAccount(
-      account_id,
+  password_client_->TriggerReauthForPrimaryAccount(
       base::BindOnce(&PasswordAutofillManager::OnUnlockReauthCompleted,
                      weak_ptr_factory_.GetWeakPtr(), unlock_item));
 }

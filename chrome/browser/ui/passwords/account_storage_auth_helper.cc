@@ -9,12 +9,15 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/consent_level.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/core_account_id.h"
 
 namespace {
@@ -30,7 +33,6 @@ AccountStorageAuthHelper::AccountStorageAuthHelper(
 AccountStorageAuthHelper::~AccountStorageAuthHelper() = default;
 
 void AccountStorageAuthHelper::TriggerOptInReauth(
-    const CoreAccountId& account_id,
     base::OnceCallback<void(ReauthSucceeded)> reauth_callback) {
   Browser* browser = chrome::FindBrowserWithProfile(profile_);
   if (!browser) {
@@ -43,8 +45,21 @@ void AccountStorageAuthHelper::TriggerOptInReauth(
     std::move(reauth_callback).Run(ReauthSucceeded(false));
     return;
   }
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
+  if (!identity_manager) {
+    std::move(reauth_callback).Run(ReauthSucceeded(false));
+    return;
+  }
+  CoreAccountId primary_account_id =
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
+  if (primary_account_id.empty()) {
+    std::move(reauth_callback).Run(ReauthSucceeded(false));
+    return;
+  }
+
   signin_view_controller->ShowReauthPrompt(
-      account_id,
+      primary_account_id,
       base::BindOnce(&AccountStorageAuthHelper::OnOptInReauthCompleted,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(reauth_callback)));

@@ -1159,12 +1159,10 @@ void RenderFrameHostManager::OnDidSetAdFrameType(
 }
 
 RenderFrameHostManager::SiteInstanceDescriptor::SiteInstanceDescriptor(
-    BrowserContext* browser_context,
     GURL dest_url,
     SiteInstanceRelation relation_to_current)
     : existing_site_instance(nullptr),
       dest_url(dest_url),
-      browser_context(browser_context),
       relation(relation_to_current) {}
 
 void RenderFrameHostManager::RenderProcessGone(
@@ -1638,7 +1636,6 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
       static_cast<SiteInstanceImpl*>(current_instance);
   NavigationControllerImpl& controller =
       delegate_->GetControllerForRenderManager();
-  BrowserContext* browser_context = controller.GetBrowserContext();
 
   // If the entry has an instance already we should usually use it, unless it is
   // no longer suitable.
@@ -1677,7 +1674,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     // have been broken anyway if there were no error. Otherwise, we keep it
     // in the same BrowsingInstance to preserve scripting relationships after
     // reloads.
-    return SiteInstanceDescriptor(browser_context, GURL(kUnreachableWebDataURL),
+    return SiteInstanceDescriptor(GURL(kUnreachableWebDataURL),
                                   force_browsing_instance_swap
                                       ? SiteInstanceRelation::UNRELATED
                                       : SiteInstanceRelation::RELATED);
@@ -1686,8 +1683,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // If a swap is required, we need to force the SiteInstance AND
   // BrowsingInstance to be different ones, using CreateForURL.
   if (force_browsing_instance_swap) {
-    return SiteInstanceDescriptor(browser_context, dest_url,
-                                  SiteInstanceRelation::UNRELATED);
+    return SiteInstanceDescriptor(dest_url, SiteInstanceRelation::UNRELATED);
   }
 
   // TODO(https://crbug.com/566091): Don't create OOPIFs on the NTP.  Remove
@@ -1718,14 +1714,16 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     // existing process for the site, we should use it.  We can call
     // GetRelatedSiteInstance() for this, which will eagerly set the site and
     // thus use the correct process.
+    DCHECK_EQ(controller.GetBrowserContext(),
+              current_instance_impl->GetBrowserContext());
     bool use_process_per_site =
-        RenderProcessHost::ShouldUseProcessPerSite(browser_context, dest_url) &&
+        RenderProcessHost::ShouldUseProcessPerSite(
+            current_instance_impl->GetBrowserContext(), dest_url) &&
         RenderProcessHostImpl::GetSoleProcessHostForURL(
             current_instance_impl->GetIsolationContext(), dest_url);
     if (current_instance_impl->HasRelatedSiteInstance(dest_url) ||
         use_process_per_site) {
-      return SiteInstanceDescriptor(browser_context, dest_url,
-                                    SiteInstanceRelation::RELATED);
+      return SiteInstanceDescriptor(dest_url, SiteInstanceRelation::RELATED);
     }
 
     // For extensions, Web UI URLs (such as the new tab page), and apps we do
@@ -1733,8 +1731,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     // will have a non-privileged RenderProcessHost. Create a new SiteInstance
     // for this URL instead (with the correct process type).
     if (!current_instance_impl->IsSuitableForURL(dest_url)) {
-      return SiteInstanceDescriptor(browser_context, dest_url,
-                                    SiteInstanceRelation::RELATED);
+      return SiteInstanceDescriptor(dest_url, SiteInstanceRelation::RELATED);
     }
 
     // Normally the "site" on the SiteInstance is set lazily when the load
@@ -1827,8 +1824,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
 
   // Start the new renderer in a new SiteInstance, but in the current
   // BrowsingInstance.
-  return SiteInstanceDescriptor(browser_context, dest_url,
-                                SiteInstanceRelation::RELATED);
+  return SiteInstanceDescriptor(dest_url, SiteInstanceRelation::RELATED);
 }
 
 bool RenderFrameHostManager::IsBrowsingInstanceSwapAllowedForPageTransition(

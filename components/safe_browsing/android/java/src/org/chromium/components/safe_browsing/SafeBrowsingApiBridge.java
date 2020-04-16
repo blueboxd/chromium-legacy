@@ -61,14 +61,6 @@ public final class SafeBrowsingApiBridge {
     }
 
     /**
-     * Get the SafetyNet ID of the device.
-     */
-    @CalledByNative
-    private static String getSafetyNetId(SafeBrowsingApiHandler handler) {
-        return handler.getSafetyNetId();
-    }
-
-    /**
      * Starts a Safe Browsing check. Must be called on the same sequence as |create|.
      */
     @CalledByNative

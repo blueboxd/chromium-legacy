@@ -25,3 +25,7 @@ source_set("android") {
     "//components/content_settings/core/common",
   ]
 }
+
+java_cpp_enum("content_setting_javagen") {
+  sources = [ "../core/common/content_settings.h" ]
+}

@@ -81,8 +81,14 @@ class PLATFORM_EXPORT Path {
 
   bool Contains(const FloatPoint&) const;
   bool Contains(const FloatPoint&, WindRule) const;
-  bool StrokeContains(const FloatPoint&, const StrokeData&) const;
-  SkPath StrokePath(const StrokeData&) const;
+
+  // Determine if the path's stroke contains the point.  The transform is used
+  // only to determine the precision factor when analyzing the stroke, so that
+  // we return accurate results in high-zoom scenarios.
+  bool StrokeContains(const FloatPoint&,
+                      const StrokeData&,
+                      const AffineTransform&) const;
+  SkPath StrokePath(const StrokeData&, const AffineTransform&) const;
 
   FloatRect BoundingRect() const;
   FloatRect StrokeBoundingRect(const StrokeData&) const;
@@ -193,6 +199,7 @@ class PLATFORM_EXPORT Path {
                   float radius_y,
                   float start_angle,
                   float end_angle);
+  SkPath StrokePath(const StrokeData&, float stroke_precision) const;
 
   SkPath path_;
 };

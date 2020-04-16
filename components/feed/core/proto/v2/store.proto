@@ -22,7 +22,6 @@ option optimize_for = LITE_RUNTIME;
 // 'c/<content-id>' -> content
 // 'a/<id>' -> action
 // 's/<content-id>' -> shared_state
-// 'N' -> next_stream_state
 message Record {
   oneof data {
     StreamData stream_data = 1;
@@ -30,8 +29,6 @@ message Record {
     Content content = 3;
     StoredAction local_action = 4;
     StreamSharedState shared_state = 5;
-    // The result of a background refresh, to be processed later.
-    StreamAndContentState next_stream_state = 6;
   }
 }
 
@@ -162,12 +159,4 @@ message StoredAction {
   int32 upload_attempt_count = 2;
   // The action to upload.
   feedwire.FeedAction action = 3;
-}
-
-// The internal version of the server response. Includes feature tree and
-// content.
-message StreamAndContentState {
-  StreamData stream_data = 1;
-  repeated Content content = 2;
-  repeated StreamSharedState shared_state = 3;
 }

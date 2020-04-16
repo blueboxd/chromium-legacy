@@ -16,19 +16,19 @@ void FieldDataManager::ClearData() {
   field_value_and_properties_map_.clear();
 }
 
-bool FieldDataManager::HasFieldData(uint32_t id) const {
+bool FieldDataManager::HasFieldData(FieldRendererId id) const {
   return field_value_and_properties_map_.find(id) !=
          field_value_and_properties_map_.end();
 }
 
-base::string16 FieldDataManager::GetUserTypedValue(uint32_t id) const {
+base::string16 FieldDataManager::GetUserTypedValue(FieldRendererId id) const {
   DCHECK(HasFieldData(id));
   return field_value_and_properties_map_.at(id).first.value_or(
       base::string16());
 }
 
 FieldPropertiesMask FieldDataManager::GetFieldPropertiesMask(
-    uint32_t id) const {
+    FieldRendererId id) const {
   DCHECK(HasFieldData(id));
   return field_value_and_properties_map_.at(id).second;
 }
@@ -53,7 +53,7 @@ void FieldDataManager::UpdateFieldDataMap(
     const blink::WebFormControlElement& element,
     const base::string16& value,
     FieldPropertiesMask mask) {
-  uint32_t id = element.UniqueRendererFormControlId();
+  FieldRendererId id(element.UniqueRendererFormControlId());
   if (HasFieldData(id)) {
     field_value_and_properties_map_.at(id).first =
         base::Optional<base::string16>(value);
@@ -72,14 +72,14 @@ void FieldDataManager::UpdateFieldDataMap(
 void FieldDataManager::UpdateFieldDataMapWithNullValue(
     const blink::WebFormControlElement& element,
     FieldPropertiesMask mask) {
-  uint32_t id = element.UniqueRendererFormControlId();
+  FieldRendererId id(element.UniqueRendererFormControlId());
   if (HasFieldData(id))
     field_value_and_properties_map_.at(id).second |= mask;
   else
     field_value_and_properties_map_[id] = std::make_pair(base::nullopt, mask);
 }
 
-bool FieldDataManager::DidUserType(uint32_t id) const {
+bool FieldDataManager::DidUserType(FieldRendererId id) const {
   return HasFieldData(id) &&
          (GetFieldPropertiesMask(id) & FieldPropertiesFlags::USER_TYPED);
 }

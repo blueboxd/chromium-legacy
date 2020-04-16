@@ -44,9 +44,10 @@ class NavigationControllerImpl : public NavigationController,
   void Navigate(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& obj,
                 const base::android::JavaParamRef<jstring>& url);
-  void Replace(JNIEnv* env,
-               const base::android::JavaParamRef<jobject>& obj,
-               const base::android::JavaParamRef<jstring>& url);
+  void NavigateWithParams(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj,
+                          const base::android::JavaParamRef<jstring>& url,
+                          jboolean should_replace_current_entry);
   void GoBack(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
     GoBack();
   }
@@ -100,7 +101,7 @@ class NavigationControllerImpl : public NavigationController,
   void AddObserver(NavigationObserver* observer) override;
   void RemoveObserver(NavigationObserver* observer) override;
   void Navigate(const GURL& url) override;
-  void Replace(const GURL& url) override;
+  void Navigate(const GURL& url, const NavigateParams& params) override;
   void GoBack() override;
   void GoForward() override;
   bool CanGoBack() override;

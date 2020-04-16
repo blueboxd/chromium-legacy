@@ -49,6 +49,7 @@ proto_library("proto_v2") {
     "v2/wire/response_status_code.proto",
     "v2/wire/stream_structure.proto",
     "v2/wire/templates.proto",
+    "v2/wire/there_and_back_again_data.proto",
     "v2/wire/token.proto",
     "v2/wire/version.proto",
   ]

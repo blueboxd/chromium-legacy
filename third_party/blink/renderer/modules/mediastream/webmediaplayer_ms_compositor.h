@@ -239,6 +239,12 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   base::TimeTicks last_expected_display_time_ GUARDED_BY(current_frame_lock_);
   size_t presented_frames_ GUARDED_BY(current_frame_lock_) = 0u;
 
+  // The value of GetPreferredRenderInterval() the last time |current_frame_|
+  // was updated. Used by GetLastPresentedFrameMetadata(), to prevent calling
+  // GetPreferredRenderInterval() from the main thread.
+  base::TimeDelta last_preferred_render_interval_
+      GUARDED_BY(current_frame_lock_);
+
   bool stopped_;
   bool render_started_;
 

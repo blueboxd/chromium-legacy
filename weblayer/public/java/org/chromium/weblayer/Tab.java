@@ -39,7 +39,7 @@ public class Tab {
     // Maps from id (as returned from ITab.getId()) to Tab.
     private static final Map<Integer, Tab> sTabMap = new HashMap<Integer, Tab>();
 
-    private final ITab mImpl;
+    private ITab mImpl;
     private final NavigationController mNavigationController;
     private final FindInPageController mFindInPageController;
     private final ObserverList<TabCallback> mCallbacks;
@@ -192,10 +192,12 @@ public class Tab {
      * asynchronously closes the tab.
      *
      * If there is a beforeunload handler a dialog is shown to the user which will allow them to
-     * choose whether to proceed with closing the tab. The closure will be notified via {@link
-     * NewTabCallback#onCloseTab}. The tab will not close if the user chooses to cancel the action.
-     * If there is no beforeunload handler, the tab closure will be asynchronous (but immediate) and
-     * will be notified in the same way.
+     * choose whether to proceed with closing the tab. If the WebLayer implementation is < 84 the
+     * closure will be notified via {@link NewTabCallback#onCloseTab}; on 84 and above, WebLayer
+     * closes the tab internally and the embedder will be notified via
+     * TabListCallback#onTabRemoved(). The tab will not close if the user chooses to cancel the
+     * action. If there is no beforeunload handler, the tab closure will be asynchronous (but
+     * immediate) and will be notified in the same way.
      *
      * To close the tab synchronously without running beforeunload, use {@link Browser#destroyTab}.
      *
@@ -324,10 +326,22 @@ public class Tab {
         @Override
         public void onCloseTab() {
             StrictModeWorkaround.apply();
+
+            // Prior to 84 this method was used to signify that the embedder should take action to
+            // close the Tab; 84+ it's deprecated and no longer sent..
+            assert WebLayer.getSupportedMajorVersionInternal() < 84;
+
             // This should only be hit if setNewTabCallback() has been called with a non-null
             // value.
             assert mNewTabCallback != null;
             mNewTabCallback.onCloseTab();
+        }
+
+        @Override
+        public void onTabDestroyed() {
+            // Ensure that the app will fail fast if the embedder mistakenly tries to call back
+            // into the implementation via this Tab.
+            mImpl = null;
         }
 
         @Override

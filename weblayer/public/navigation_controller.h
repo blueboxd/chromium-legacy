@@ -15,7 +15,13 @@ class NavigationObserver;
 
 class NavigationController {
  public:
-  virtual ~NavigationController() {}
+  // The members of this struct and their defaults should be kept in sync with
+  // |NavigationController::LoadURLParams|.
+  struct NavigateParams {
+    bool should_replace_current_entry = false;
+  };
+
+  virtual ~NavigationController() = default;
 
   virtual void AddObserver(NavigationObserver* observer) = 0;
 
@@ -23,7 +29,7 @@ class NavigationController {
 
   virtual void Navigate(const GURL& url) = 0;
 
-  virtual void Replace(const GURL& url) = 0;
+  virtual void Navigate(const GURL& url, const NavigateParams& params) = 0;
 
   virtual void GoBack() = 0;
 

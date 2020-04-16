@@ -8,7 +8,6 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
@@ -22,10 +21,8 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "content/public/browser/web_contents.h"
-#include "google_apis/gaia/core_account_id.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -84,16 +81,6 @@ bool IsSyncUser(Profile* profile) {
   const syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   return password_bubble_experiment::IsSmartLockUser(sync_service);
-}
-
-CoreAccountId GetSignedInAccount(Profile* profile) {
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
-  if (!identity_manager)
-    return CoreAccountId();
-  return identity_manager
-      ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
-      .account_id;
 }
 
 }  // namespace
@@ -179,10 +166,8 @@ void SaveUpdateWithAccountStoreBubbleController::OnSaveClicked() {
                               pending_password_.password_value);
     } else {
       // Otherwise, we should invoke the reauth flow before saving.
-      CoreAccountId account_id = GetSignedInAccount(GetProfile());
       delegate_->AuthenticateUserForAccountStoreOptInAndSavePassword(
-          account_id, pending_password_.username_value,
-          pending_password_.password_value);
+          pending_password_.username_value, pending_password_.password_value);
     }
   }
 }

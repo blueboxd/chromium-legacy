@@ -5173,11 +5173,10 @@ crbug.com/824848 [ Mac ] external/wpt/html/semantics/links/following-hyperlinks/
 crbug.com/824848 [ Win ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
 
 # Sheriff 2018-03-26
+crbug.com/825733 [ Win ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
+crbug.com/825733 [ Win ] virtual/audio-service/media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
 crbug.com/754986 media/video-transformed.html [ Pass Failure ]
 crbug.com/754986 virtual/audio-service/media/video-transformed.html [ Pass Failure ]
-# Superceded temporarily by wider suppresseion for skbug.com/10139
-#crbug.com/825733 [ Win ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
-#crbug.com/825733 [ Win ] virtual/audio-service/media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
 
 # Sheriff 2018-03-29
 crbug.com/827209 [ Win ] fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
@@ -6135,8 +6134,7 @@ crbug.com/1006759 http/tests/devtools/editor/php-highlighter.js [ Pass Failure ]
 crbug.com/1029941 [ Linux ] external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
 crbug.com/1029941 [ Linux ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 crbug.com/1029941 [ Linux ] virtual/cascade/external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
-#Temporarily superceded by suppression for skbug.com/10139
-#crbug.com/1029941 [ Linux ] virtual/exotic-color-space/images/yuv-decode-eligible/color-profile-layer-filter.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/exotic-color-space/images/yuv-decode-eligible/color-profile-layer-filter.html [ Failure ]
 crbug.com/1029941 [ Linux ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
 
 # Disabled for three-way merge after https://crrev.com/c/devtools/devtools-frontend/+/1934218 is submitted
@@ -6647,21 +6645,15 @@ crbug.com/1064839 fast/hidpi/image-srcset-svg-canvas-2x.html [ Pass Failure ]
 crbug.com/1064839 fast/hidpi/image-srcset-svg-canvas.html [ Pass Failure ]
 crbug.com/1065335 [ Win ] fast/hidpi/image-srcset-relative-svg-canvas.html [ Pass Failure ]
 
+#Slight change to Skia displacement filter implementation.
+skbug.com/10139 css3/filters/effect-reference-zoom-hw.html [ Pass Failure ]
+
 # Sheriff 2020-03-31
 crbug.com/1065335 [ Win ] fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Pass Failure ]
 # Sheriff 2020-04-01
 crbug.com/1066122 virtual/threaded-no-composited-antialiasing/animations/events/animation-iteration-event.html [ Pass Failure ]
 crbug.com/1066732 fast/events/platform-wheelevent-paging-x-in-scrolling-div.html [ Pass Failure ]
 crbug.com/1066732 fast/events/platform-wheelevent-paging-y-in-scrolling-div.html [ Pass Failure ]
-
-#Imperceptible changes to Gaussian blur code in Skia.
-skbug.com/10139 css3/filters/effect-combined-hw.html [ Pass Failure ]
-skbug.com/10139 images/yuv-decode-eligible/color-profile-layer-filter.html [ Pass Failure ]
-skbug.com/10139 media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
-skbug.com/10139 virtual/audio-service/media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
-skbug.com/10139 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
-skbug.com/10139 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
-skbug.com/10139 virtual/exotic-color-space/images/yuv-decode-eligible/color-profile-layer-filter.html [ Pass Failure ]
 
 # Test flakes
 crbug.com/1066716 http/tests/cache/zero-length-xhr.html [ Pass Timeout ]

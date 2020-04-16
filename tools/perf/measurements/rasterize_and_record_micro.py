@@ -95,10 +95,16 @@ class RasterizeAndRecordMicro(legacy_page_test.LegacyPageTest):
 
     if self._report_detailed_results:
       for metric in ('pixels_rasterized_with_non_solid_color',
-                     'pixels_rasterized_as_opaque',
-                     'visible_pixels_for_lcd_text',
-                     'visible_pixels_for_non_lcd_text', 'total_layers',
+                     'pixels_rasterized_as_opaque', 'total_layers',
                      'total_picture_layers',
                      'total_picture_layers_with_no_content',
                      'total_picture_layers_off_screen'):
         results.AddMeasurement(metric, 'count', data[metric])
+
+      lcd_text_pixels = data['visible_pixels_by_lcd_text_disallowed_reason']
+      for reason in lcd_text_pixels:
+        if reason == 'none':
+          name = 'visible_pixels_lcd_text'
+        else:
+          name = 'visible_pixels_non_lcd_text:' + reason
+        results.AddMeasurement(name, 'count', lcd_text_pixels[reason])

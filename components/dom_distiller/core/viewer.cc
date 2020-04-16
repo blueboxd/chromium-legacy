@@ -175,15 +175,18 @@ const std::string GetErrorPageJs() {
 
 const std::string GetSetTitleJs(std::string title) {
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  base::Value value(title);
+  base::Value suffixValue("");
 #else  // Desktop
   std::string suffix(
       l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_TITLE_SUFFIX));
-  base::Value value(title + " - " + suffix);
+  base::Value suffixValue(" - " + suffix);
 #endif
-  std::string output;
-  base::JSONWriter::Write(value, &output);
-  return "setTitle(" + output + ");";
+  base::Value titleValue(title);
+  std::string suffixJs;
+  base::JSONWriter::Write(suffixValue, &suffixJs);
+  std::string titleJs;
+  base::JSONWriter::Write(titleValue, &titleJs);
+  return "setTitle(" + titleJs + ", " + suffixJs + ");";
 }
 
 const std::string GetSetTextDirectionJs(const std::string& direction) {

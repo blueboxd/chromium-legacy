@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 
 namespace password_manager {
@@ -24,7 +25,7 @@ constexpr base::TimeDelta kMaxDelayBetweenTypingUsernameAndSubmission =
 // username during username first flow.
 struct PossibleUsernameData {
   PossibleUsernameData(std::string signon_realm,
-                       uint32_t renderer_id,
+                       autofill::FieldRendererId renderer_id,
                        base::string16 value,
                        base::Time last_change,
                        int driver_id);
@@ -32,7 +33,7 @@ struct PossibleUsernameData {
   ~PossibleUsernameData();
 
   std::string signon_realm;
-  uint32_t renderer_id;
+  autofill::FieldRendererId renderer_id;
   base::string16 value;
   base::Time last_change;
 

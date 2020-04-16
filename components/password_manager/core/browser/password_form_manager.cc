@@ -94,7 +94,7 @@ bool IsUsernameFirstFlowFeatureEnabled() {
 // Find a field in |predictions| with given renderer id.
 const PasswordFieldPrediction* FindFieldPrediction(
     const base::Optional<FormPredictions>& predictions,
-    uint32_t field_renderer_id) {
+    autofill::FieldRendererId field_renderer_id) {
   if (!predictions)
     return nullptr;
   for (const auto& field : predictions->fields) {
@@ -185,7 +185,7 @@ bool PasswordFormManager::DoesManage(
 }
 
 bool PasswordFormManager::DoesManageAccordingToRendererId(
-    uint32_t form_renderer_id,
+    autofill::FormRendererId form_renderer_id,
     const PasswordManagerDriver* driver) const {
   if (driver != driver_.get())
     return false;
@@ -773,7 +773,7 @@ void PasswordFormManager::FillForm(const FormData& observed_form) {
 
 void PasswordFormManager::OnGeneratedPasswordAccepted(
     FormData form_data,
-    uint32_t generation_element_id,
+    autofill::FieldRendererId generation_element_id,
     const base::string16& password) {
   // Find the generating element to update its value. The parser needs a non
   // empty value.

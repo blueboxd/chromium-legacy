@@ -20,6 +20,7 @@
 #include "base/test/test_waitable_event.h"
 #include "base/threading/scoped_blocking_call_internal.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -487,7 +488,15 @@ TEST_F(ScopedBlockingCallIOJankMonitoringTest, MultiThreadedOverlapped) {
 // First one starting at 10 seconds (can't start later than that or we'll trip
 // the kTimeDiscrepancyTimeout per TaskEnvironment's inability to RunUntilIdle()
 // with pending blocked tasks).
-TEST_F(ScopedBlockingCallIOJankMonitoringTest, MultiThreadedOverlappedWindows) {
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+// https://crbug.com/1071166
+#define MAYBE_MultiThreadedOverlappedWindows \
+  DISABLED_MultiThreadedOverlappedWindows
+#else
+#define MAYBE_MultiThreadedOverlappedWindows MultiThreadedOverlappedWindows
+#endif
+TEST_F(ScopedBlockingCallIOJankMonitoringTest,
+       MAYBE_MultiThreadedOverlappedWindows) {
   static const int kNumJankyTasks = 3;
   static_assert(
       kNumJankyTasks <= test::TaskEnvironment::kNumForegroundThreadPoolThreads,

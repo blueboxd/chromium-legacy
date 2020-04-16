@@ -36,6 +36,11 @@ bool DisableSigninRecallPromo();
 // infobar won't be shown during testing.
 bool DisableUpdateService();
 
+// The main thread freeze detection is interfering with the EarlGrey
+// synchronization.
+// Return true if it should be disabled.
+bool DisableMainThreadFreezeDetection();
+
 // Returns a policy provider that should be installed as the platform policy
 // provider when testing. May return nullptr.
 policy::ConfigurationPolicyProvider* GetOverriddenPlatformPolicyProvider();

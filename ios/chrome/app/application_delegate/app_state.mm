@@ -272,8 +272,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     scoped_refptr<net::URLRequestContextGetter> getter =
         currentInterface.browserState->GetRequestContext();
     _savingCookies = YES;
-    __block base::OnceClosure criticalClosure =
-        base::MakeCriticalClosure(base::BindOnce(^{
+    __block base::OnceClosure criticalClosure = base::MakeCriticalClosure(
+        "applicationDidEnterBackground:_savingCookies", base::BindOnce(^{
           DCHECK_CURRENTLY_ON(web::WebThread::UI);
           _savingCookies = NO;
         }));

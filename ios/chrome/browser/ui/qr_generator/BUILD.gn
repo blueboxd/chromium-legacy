@@ -18,7 +18,10 @@ source_set("ui") {
     "//ui/base",
     "//url:url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [
+    "UIKit.framework",
+    "CoreImage.framework",
+  ]
 }
 
 source_set("qr_generator") {

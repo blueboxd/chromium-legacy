@@ -13,6 +13,7 @@
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,7 +38,7 @@ class FakePasswordGenerationDriver
   MOCK_METHOD4(ShowPasswordEditingPopup,
                void(const gfx::RectF&,
                     const autofill::FormData&,
-                    uint32_t,
+                    autofill::FieldRendererId,
                     const base::string16&));
   MOCK_METHOD0(PasswordGenerationRejectedByTyping, void());
   MOCK_METHOD2(PresaveGeneratedPassword,

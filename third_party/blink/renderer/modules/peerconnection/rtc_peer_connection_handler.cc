@@ -2384,7 +2384,8 @@ void RTCPeerConnectionHandler::OnRemoveReceiverPlanB(uintptr_t receiver_id) {
 
 void RTCPeerConnectionHandler::OnModifySctpTransport(
     blink::WebRTCSctpTransportSnapshot state) {
-  client_->DidModifySctpTransport(state);
+  if (client_)
+    client_->DidModifySctpTransport(state);
 }
 
 void RTCPeerConnectionHandler::OnModifyTransceivers(
@@ -2519,7 +2520,8 @@ void RTCPeerConnectionHandler::OnIceCandidateError(
 }
 
 void RTCPeerConnectionHandler::OnInterestingUsage(int usage_pattern) {
-  client_->DidNoteInterestingUsage(usage_pattern);
+  if (client_)
+    client_->DidNoteInterestingUsage(usage_pattern);
 }
 
 webrtc::SessionDescriptionInterface*

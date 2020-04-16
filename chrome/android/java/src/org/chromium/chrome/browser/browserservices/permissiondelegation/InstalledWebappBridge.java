@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.site_settings.ContentSettingValues;
+import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.embedder_support.util.Origin;
 
 /**

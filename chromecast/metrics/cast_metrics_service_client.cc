@@ -19,7 +19,6 @@
 #include "chromecast/base/path_utils.h"
 #include "chromecast/base/pref_names.h"
 #include "chromecast/base/version.h"
-#include "chromecast/public/cast_sys_info.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -155,10 +154,9 @@ bool CastMetricsServiceClient::GetBrand(std::string* brand_code) {
 }
 
 ::metrics::SystemProfileProto::Channel CastMetricsServiceClient::GetChannel() {
-  std::unique_ptr<CastSysInfo> sys_info = CreateSysInfo();
 
 #if defined(OS_ANDROID) || defined(OS_FUCHSIA)
-  switch (sys_info->GetBuildType()) {
+  switch (cast_sys_info_->GetBuildType()) {
     case CastSysInfo::BUILD_ENG:
       return ::metrics::SystemProfileProto::CHANNEL_UNKNOWN;
     case CastSysInfo::BUILD_BETA:
@@ -173,7 +171,7 @@ bool CastMetricsServiceClient::GetBrand(std::string* brand_code) {
   // metrics caused by the virtual channel which could be temporary or
   // arbitrary.
   return GetReleaseChannelFromUpdateChannelName(
-      sys_info->GetSystemReleaseChannel());
+      cast_sys_info_->GetSystemReleaseChannel());
 #endif  // defined(OS_ANDROID) || defined(OS_FUCHSIA)
 }
 
@@ -270,7 +268,8 @@ CastMetricsServiceClient::CastMetricsServiceClient(
       pref_service_(pref_service),
       client_info_loaded_(false),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      url_loader_factory_(url_loader_factory) {}
+      url_loader_factory_(url_loader_factory),
+      cast_sys_info_(CreateSysInfo()) {}
 
 CastMetricsServiceClient::~CastMetricsServiceClient() = default;
 

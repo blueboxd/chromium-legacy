@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list_option.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list_popup.h"
@@ -2751,6 +2752,21 @@ Document* AXObject::GetDocument() const {
     return nullptr;
 
   return frame_view->GetFrame().GetDocument();
+}
+
+AXObject* AXObject::RootScroller() const {
+  Node* global_root_scroller = GetDocument()
+                                   ->GetPage()
+                                   ->GlobalRootScrollerController()
+                                   .GlobalRootScroller();
+  if (!global_root_scroller)
+    return nullptr;
+
+  // Only return the root scroller if it's part of the same document.
+  if (global_root_scroller->GetDocument() != GetDocument())
+    return nullptr;
+
+  return AXObjectCache().GetOrCreate(global_root_scroller);
 }
 
 LocalFrameView* AXObject::DocumentFrameView() const {

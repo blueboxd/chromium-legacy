@@ -11,11 +11,12 @@ using base::TimeDelta;
 
 namespace password_manager {
 
-PossibleUsernameData::PossibleUsernameData(std::string signon_realm,
-                                           uint32_t renderer_id,
-                                           base::string16 value,
-                                           base::Time last_change,
-                                           int driver_id)
+PossibleUsernameData::PossibleUsernameData(
+    std::string signon_realm,
+    autofill::FieldRendererId renderer_id,
+    base::string16 value,
+    base::Time last_change,
+    int driver_id)
     : signon_realm(std::move(signon_realm)),
       renderer_id(renderer_id),
       value(std::move(value)),

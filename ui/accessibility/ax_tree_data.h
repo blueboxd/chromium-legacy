@@ -69,6 +69,11 @@ struct AX_EXPORT AXTreeData {
   AXNode::AXID sel_focus_object_id = AXNode::kInvalidAXID;
   int32_t sel_focus_offset = -1;
   ax::mojom::TextAffinity sel_focus_affinity;
+
+  // The node that's used as the root scroller. On some platforms
+  // like Android we need to ignore accessibility scroll offsets for
+  // that node and get them from the viewport instead.
+  AXNode::AXID root_scroller_id = AXNode::kInvalidAXID;
 };
 
 AX_EXPORT bool operator==(const AXTreeData& lhs, const AXTreeData& rhs);

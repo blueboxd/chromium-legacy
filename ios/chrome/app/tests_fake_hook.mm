@@ -28,6 +28,9 @@ bool DisableSigninRecallPromo() {
 bool DisableUpdateService() {
   return false;
 }
+bool DisableMainThreadFreezeDetection() {
+  return false;
+}
 policy::ConfigurationPolicyProvider* GetOverriddenPlatformPolicyProvider() {
   return nullptr;
 }

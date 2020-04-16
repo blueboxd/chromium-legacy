@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 
 #if defined(OS_IOS)
@@ -29,7 +30,7 @@ bool IsMultiTaskingSupported();
 // |ios::ScopedCriticalAction|.
 class CriticalClosure {
  public:
-  explicit CriticalClosure(OnceClosure closure);
+  explicit CriticalClosure(StringPiece task_name, OnceClosure closure);
   ~CriticalClosure();
   void Run();
 
@@ -51,20 +52,24 @@ class CriticalClosure {
 // Example:
 //   file_task_runner_->PostTask(
 //       FROM_HERE,
-//       MakeCriticalClosure(base::BindOnce(&WriteToDiskTask, path_, data)));
+//       MakeCriticalClosure(task_name,
+//                           base::BindOnce(&WriteToDiskTask, path_, data)));
 //
 // Note new closures might be posted in this closure. If the new closures need
 // background running time, |MakeCriticalClosure| should be applied on them
-// before posting.
+// before posting. |task_name| is used by the platform to identify any tasks
+// that do not complete in time for suspension.
 #if defined(OS_IOS)
-inline OnceClosure MakeCriticalClosure(OnceClosure closure) {
+inline OnceClosure MakeCriticalClosure(StringPiece task_name,
+                                       OnceClosure closure) {
   DCHECK(internal::IsMultiTaskingSupported());
   return base::BindOnce(
       &internal::CriticalClosure::Run,
-      Owned(new internal::CriticalClosure(std::move(closure))));
+      Owned(new internal::CriticalClosure(task_name, std::move(closure))));
 }
 #else  // defined(OS_IOS)
-inline OnceClosure MakeCriticalClosure(OnceClosure closure) {
+inline OnceClosure MakeCriticalClosure(StringPiece task_name,
+                                       OnceClosure closure) {
   // No-op for platforms where the application does not need to acquire
   // background time for closures to finish when it goes into the background.
   return closure;

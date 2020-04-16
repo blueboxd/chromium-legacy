@@ -67,7 +67,11 @@ public interface SafeBrowsingApiHandler {
      *
      * @return the Safety Net ID of the device.
      */
-    public String getSafetyNetId();
+    // TODO(crbug.com/1070836): Remove this interface once internal repository implementation is
+    // removed.
+    public default String getSafetyNetId() {
+        return "";
+    }
 
     /**
      * Start a URI-lookup to determine if it matches one of the specified threats.

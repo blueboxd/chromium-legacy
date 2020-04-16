@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -74,7 +75,7 @@ struct PasswordGenerationControllerImpl::GenerationElementData {
   autofill::FieldSignature field_signature;
 
   // Renderer ID of the password field triggering generation.
-  uint32_t generation_element_id;
+  autofill::FieldRendererId generation_element_id;
 
   // Maximum length of the generated password.
   uint32_t max_password_length;

@@ -123,6 +123,9 @@ base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
     return device::mojom::XRSessionFeature::HIT_TEST;
   } else if (feature_string == "dom-overlay") {
     return device::mojom::XRSessionFeature::DOM_OVERLAY;
+  } else if (RuntimeEnabledFeatures::WebXRIncubationsEnabled(doc) &&
+             feature_string == "light-estimation") {
+    return device::mojom::XRSessionFeature::LIGHT_ESTIMATION;
   }
 
   return base::nullopt;
@@ -154,6 +157,8 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
         return false;
       }
       return true;
+    case device::mojom::XRSessionFeature::LIGHT_ESTIMATION:
+      return mode == device::mojom::blink::XRSessionMode::kImmersiveAr;
   }
 }
 
@@ -171,6 +176,7 @@ bool HasRequiredFeaturePolicy(const Document* doc,
     case device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED:
     case device::mojom::XRSessionFeature::DOM_OVERLAY:
     case device::mojom::XRSessionFeature::HIT_TEST:
+    case device::mojom::XRSessionFeature::LIGHT_ESTIMATION:
       return doc->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebXr,
                                    ReportOptions::kReportOnFailure);
   }

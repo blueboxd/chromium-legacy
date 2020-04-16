@@ -444,6 +444,9 @@ def builder(
       name = name,
       dimensions = dimensions,
       properties = properties,
+      resultdb_settings = resultdb.settings(
+          enable = True,
+      ),
       **kwargs
   )
 

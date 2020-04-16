@@ -1880,6 +1880,10 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AndroidWebViewClientSafeBrowsingThreatType">
+  <obsolete>
+    Removed 04/2020. These metrics are tracked generally for SafeBrowsing, and
+    WebView no longer needs specializations.
+  </obsolete>
   <int value="0" label="SAFE_BROWSING_THREAT_UNKNOWN">
     The resource was blocked for a reason other than the ones provided here.
   </int>
@@ -26980,6 +26984,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3228" label="DocumentPolicyIframePolicyAttribute"/>
   <int value="3229" label="DocumentPolicyCausedPageUnload"/>
   <int value="3230" label="RequiredDocumentPolicy"/>
+  <int value="3231" label="PerformanceObserverEntryTypesAndBuffered"/>
+  <int value="3232" label="PerformanceObserverTypeError"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

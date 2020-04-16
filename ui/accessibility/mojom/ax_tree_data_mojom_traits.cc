@@ -34,6 +34,7 @@ bool StructTraits<ax::mojom::AXTreeDataDataView, ui::AXTreeData>::Read(
   out->sel_focus_object_id = data.sel_focus_object_id();
   out->sel_focus_offset = data.sel_focus_offset();
   out->sel_focus_affinity = data.sel_focus_affinity();
+  out->root_scroller_id = data.root_scroller_id();
   return true;
 }
 

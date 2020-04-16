@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace base {
@@ -142,10 +143,10 @@ struct FormFieldData {
   base::string16 aria_label;
   base::string16 aria_description;
 
-  // Unique renderer id returned by WebFormElement::UniqueRendererFormId(). It
-  // is not persistent between page loads, so it is not saved and not used in
-  // comparison in SameFieldAs().
-  uint32_t unique_renderer_id = std::numeric_limits<uint32_t>::max();
+  // Unique renderer id returned by
+  // WebFormControlElement::UniqueRendererFormId(). It is not persistent between
+  // page loads, so it is not saved and not used in comparison in SameFieldAs().
+  FieldRendererId unique_renderer_id;
 
   // The ax node id of the form control in the accessibility tree.
   int32_t form_control_ax_id = 0;

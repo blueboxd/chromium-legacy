@@ -7,7 +7,6 @@ package org.chromium.weblayer.test;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,9 +66,8 @@ public class TabListCallbackTest {
         }
     }
 
-    @Before
-    public void setUp() {
-        String url = mActivityTestRule.getTestDataURL("new_browser.html");
+    protected void initialize(String testDataFile) {
+        String url = mActivityTestRule.getTestDataURL(testDataFile);
         mActivity = mActivityTestRule.launchShellWithUrl(url);
         Assert.assertNotNull(mActivity);
         NewTabCallbackImpl callback = new NewTabCallbackImpl();
@@ -91,6 +89,8 @@ public class TabListCallbackTest {
     @Test
     @SmallTest
     public void testActiveTabChanged() {
+        initialize("new_browser.html");
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TabListCallbackImpl callback = new TabListCallbackImpl();
             mActivity.getBrowser().registerTabListCallback(callback);
@@ -102,6 +102,8 @@ public class TabListCallbackTest {
     @Test
     @SmallTest
     public void testMoveToDifferentFragment() {
+        initialize("new_browser.html");
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Browser browser2 = Browser.fromFragment(mActivity.createBrowserFragment(0));
             Browser browser1 = mActivity.getBrowser();
@@ -136,6 +138,8 @@ public class TabListCallbackTest {
     @Test
     @SmallTest
     public void testDispose() {
+        initialize("new_browser.html");
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TabListCallbackImpl callback = new TabListCallbackImpl();
             Browser browser = mActivity.getBrowser();
@@ -144,5 +148,22 @@ public class TabListCallbackTest {
             Assert.assertTrue(callback.getObservedValues().contains(TabListCallbackImpl.ACTIVE));
             Assert.assertEquals(1, browser.getTabs().size());
         });
+    }
+
+    @Test
+    @SmallTest
+    public void testCallbackInvokedWhenTabClosedViaWebContents() {
+        initialize("new_tab_then_close.html");
+
+        OnTabRemovedTabListCallbackImpl closeTabCallback = new OnTabRemovedTabListCallbackImpl();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivity.getBrowser().registerTabListCallback(closeTabCallback);
+            // Switch to the first tab so clicking closes |secondTab|.
+            mSecondTab.getBrowser().setActiveTab(mFirstTab);
+        });
+
+        // Clicking on the tab again to callback to close the tab.
+        EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());
+        closeTabCallback.waitForCloseTab();
     }
 }

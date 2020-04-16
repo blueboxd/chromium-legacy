@@ -146,6 +146,22 @@ constexpr int kErrorMissingRunableFile = kCustomInstallErrorBase + 2;
 // Running the application installer failed.
 constexpr int kErrorApplicationInstallerFailed = kCustomInstallErrorBase + 3;
 
+// Policy Management constants.
+extern const char kProxyModeDirect[];
+extern const char kProxyModeAutoDetect[];
+extern const char kProxyModePacScript[];
+extern const char kProxyModeFixedServers[];
+extern const char kProxyModeSystem[];
+
+constexpr int kPolicyDisabled = 0;
+constexpr int kPolicyEnabled = 1;
+constexpr int kPolicyEnabledMachineOnly = 4;
+constexpr int kPolicyManualUpdatesOnly = 2;
+constexpr int kPolicyAutomaticUpdatesOnly = 3;
+
+constexpr bool kInstallPolicyDefault = kPolicyEnabled;
+constexpr bool kUpdatePolicyDefault = kPolicyEnabled;
+
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_CONSTANTS_H_

@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/qr_generator/qr_generator_util.h"
 
+#import <CoreImage/CoreImage.h>
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif

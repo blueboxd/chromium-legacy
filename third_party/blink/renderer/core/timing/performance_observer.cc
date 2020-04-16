@@ -102,9 +102,11 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
   bool is_buffered = false;
   if (observer_init->hasEntryTypes()) {
     if (observer_init->hasType()) {
-      exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
-                                        "An observe() call must not include "
-                                        "both entryTypes and type arguments.");
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kPerformanceObserverTypeError);
+      exception_state.ThrowTypeError(
+          "An observe() call must not include "
+          "both entryTypes and type arguments.");
       return;
     }
     if (type_ == PerformanceObserverType::kTypeObserver) {
@@ -135,6 +137,8 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
       return;
     }
     if (observer_init->buffered()) {
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kPerformanceObserverEntryTypesAndBuffered);
       String message =
           "The PerformanceObserver does not support buffered flag with "
           "the entryTypes argument.";
@@ -146,9 +150,11 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
     filter_options_ = entry_types;
   } else {
     if (!observer_init->hasType()) {
-      exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
-                                        "An observe() call must include either "
-                                        "entryTypes or type arguments.");
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kPerformanceObserverTypeError);
+      exception_state.ThrowTypeError(
+          "An observe() call must include either "
+          "entryTypes or type arguments.");
       return;
     }
     if (type_ == PerformanceObserverType::kEntryTypesObserver) {

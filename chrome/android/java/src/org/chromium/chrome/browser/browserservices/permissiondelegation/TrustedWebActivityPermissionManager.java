@@ -19,7 +19,7 @@ import androidx.browser.trusted.Token;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.site_settings.ContentSettingValues;
+import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.embedder_support.util.Origin;
 
 import java.util.ArrayList;

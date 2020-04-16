@@ -24,11 +24,13 @@ LoadStreamFromStoreTask::Result& LoadStreamFromStoreTask::Result::operator=(
     Result&&) = default;
 
 LoadStreamFromStoreTask::LoadStreamFromStoreTask(
+    LoadType load_type,
     FeedStore* store,
     const base::Clock* clock,
     UserClass user_class,
     base::OnceCallback<void(Result)> callback)
-    : store_(store),
+    : load_type_(load_type),
+      store_(store),
       clock_(clock),
       user_class_(user_class),
       result_callback_(std::move(callback)),
@@ -50,6 +52,11 @@ void LoadStreamFromStoreTask::LoadStreamDone(
 
   if (!result.stream_data.consistency_token().empty()) {
     consistency_token_ = result.stream_data.consistency_token();
+  }
+
+  if (load_type_ == LoadType::kConsistencyTokenOnly) {
+    Complete(LoadStreamStatus::kLoadedFromStore);
+    return;
   }
 
   if (result.stream_structures.empty()) {
@@ -122,7 +129,8 @@ void LoadStreamFromStoreTask::LoadContentDone(
 void LoadStreamFromStoreTask::Complete(LoadStreamStatus status) {
   Result task_result;
   task_result.status = status;
-  if (status == LoadStreamStatus::kLoadedFromStore) {
+  if (status == LoadStreamStatus::kLoadedFromStore &&
+      load_type_ == LoadType::kFullLoad) {
     task_result.update_request = std::move(update_request_);
   } else {
     task_result.consistency_token = consistency_token_;

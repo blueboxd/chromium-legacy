@@ -325,7 +325,7 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
   EXPECT_CALL(*delegate(), NeverSavePassword()).Times(0);
   EXPECT_CALL(*delegate(), OnNopeUpdateClicked()).Times(0);
   EXPECT_CALL(*delegate(), AuthenticateUserForAccountStoreOptInAndSavePassword(
-                               _, pending_password().username_value,
+                               pending_password().username_value,
                                pending_password().password_value));
   controller()->OnSaveClicked();
   DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);

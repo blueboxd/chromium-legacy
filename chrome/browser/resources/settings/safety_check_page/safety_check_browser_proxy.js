@@ -19,10 +19,24 @@ cr.define('settings', function() {
    * @enum {string}
    */
   /* #export */ const SafetyCheckCallbackConstants = {
+    PARENT_CHANGED: 'safety-check-parent-status-changed',
     UPDATES_CHANGED: 'safety-check-updates-status-changed',
     PASSWORDS_CHANGED: 'safety-check-passwords-status-changed',
     SAFE_BROWSING_CHANGED: 'safety-check-safe-browsing-status-changed',
     EXTENSIONS_CHANGED: 'safety-check-extensions-status-changed',
+  };
+
+  /**
+   * States of the safety check parent element.
+   * Needs to be kept in sync with ParentStatus in
+   * chrome/browser/ui/webui/settings/safety_check_handler.h
+   * @enum {number}
+   */
+  /* #export */
+  const SafetyCheckParentStatus = {
+    BEFORE: 0,
+    CHECKING: 1,
+    AFTER: 2,
   };
 
   /**
@@ -124,6 +138,7 @@ cr.define('settings', function() {
   // #cr_define_end
   return {
     SafetyCheckCallbackConstants,
+    SafetyCheckParentStatus,
     SafetyCheckUpdatesStatus,
     SafetyCheckPasswordsStatus,
     SafetyCheckSafeBrowsingStatus,

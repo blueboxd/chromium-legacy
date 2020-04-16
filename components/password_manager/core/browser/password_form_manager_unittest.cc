@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
@@ -21,6 +22,7 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/multi_store_password_save_manager.h"
@@ -215,7 +217,7 @@ std::map<FormSignature, FormPredictions> CreatePredictions(
     std::vector<std::pair<int, ServerFieldType>> field_predictions) {
   FormPredictions predictions;
   for (const auto& index_prediction : field_predictions) {
-    uint32_t renderer_id =
+    autofill::FieldRendererId renderer_id =
         form.fields[index_prediction.first].unique_renderer_id;
     ServerFieldType server_type = index_prediction.second;
     predictions.fields.emplace_back();
@@ -283,7 +285,7 @@ class PasswordFormManagerTest : public testing::Test,
     observed_form_.url = origin;
     observed_form_.action = action;
     observed_form_.name = ASCIIToUTF16("sign-in");
-    observed_form_.unique_renderer_id = 1;
+    observed_form_.unique_renderer_id = autofill::FormRendererId(1);
     observed_form_.is_form_tag = true;
 
     observed_form_only_password_fields_ = observed_form_;
@@ -293,14 +295,14 @@ class PasswordFormManagerTest : public testing::Test,
     field.id_attribute = field.name;
     field.name_attribute = field.name;
     field.form_control_type = "text";
-    field.unique_renderer_id = 1;
+    field.unique_renderer_id = autofill::FieldRendererId(1);
     observed_form_.fields.push_back(field);
 
     field.name = ASCIIToUTF16("username");
     field.id_attribute = field.name;
     field.name_attribute = field.name;
     field.form_control_type = "text";
-    field.unique_renderer_id = 2;
+    field.unique_renderer_id = autofill::FieldRendererId(2);
     observed_form_.fields.push_back(field);
 
     non_password_form_ = observed_form_;
@@ -309,7 +311,7 @@ class PasswordFormManagerTest : public testing::Test,
     field.id_attribute = field.name;
     field.name_attribute = field.name;
     field.form_control_type = "password";
-    field.unique_renderer_id = 3;
+    field.unique_renderer_id = autofill::FieldRendererId(3);
     observed_form_.fields.push_back(field);
     observed_form_only_password_fields_.fields.push_back(field);
 
@@ -317,7 +319,7 @@ class PasswordFormManagerTest : public testing::Test,
     field.id_attribute = field.name;
     field.name_attribute = field.name;
     field.form_control_type = "password";
-    field.unique_renderer_id = 5;
+    field.unique_renderer_id = autofill::FieldRendererId(5);
     observed_form_only_password_fields_.fields.push_back(field);
 
 // On iOS the unique_id member uniquely addresses this field in the DOM.
@@ -462,7 +464,7 @@ TEST_P(PasswordFormManagerTest, DoesManage) {
 
   // On non-iOS platforms unique_renderer_id is the form identifier.
   another_form = observed_form_;
-  another_form.unique_renderer_id = observed_form_.unique_renderer_id + 1;
+  another_form.unique_renderer_id.value() += 1;
 #if defined(OS_IOS)
   EXPECT_TRUE(form_manager_->DoesManage(another_form, &driver_));
 #else
@@ -552,8 +554,7 @@ TEST_P(PasswordFormManagerTest, AutofillSignUpForm) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
   task_runner_->FastForwardUntilNoTasksRemain();
-  constexpr uint32_t kNoID = FormData::kNotSetRendererId;
-  EXPECT_EQ(kNoID, fill_data.password_field.unique_renderer_id);
+  EXPECT_TRUE(fill_data.password_field.unique_renderer_id.is_null());
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
 #if defined(OS_IOS)
   EXPECT_EQ(ASCIIToUTF16("sign-in"), generation_data.form_name);
@@ -562,7 +563,7 @@ TEST_P(PasswordFormManagerTest, AutofillSignUpForm) {
 #else
   EXPECT_EQ(observed_form_.fields.back().unique_renderer_id,
             generation_data.new_password_renderer_id);
-  EXPECT_EQ(kNoID, generation_data.confirmation_password_renderer_id);
+  EXPECT_TRUE(generation_data.confirmation_password_renderer_id.is_null());
 #endif
 }
 
@@ -572,11 +573,12 @@ TEST_P(PasswordFormManagerTest, GenerationOnNewAndConfirmPasswordFields) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   // Make |observed_form_| to be sign-up form.
   observed_form_.fields.back().autocomplete_attribute = "new-password";
-  const uint32_t new_password_render_id =
+  const autofill::FieldRendererId new_password_render_id =
       observed_form_.fields.back().unique_renderer_id;
   // Add a confirmation field.
   FormFieldData field;
-  const uint32_t confirm_password_render_id = new_password_render_id + 1;
+  const autofill::FieldRendererId confirm_password_render_id(
+      new_password_render_id.value() + 1);
   field.unique_renderer_id = confirm_password_render_id;
   field.form_control_type = "password";
   field.autocomplete_attribute = "new-password";
@@ -905,7 +907,7 @@ TEST_P(PasswordFormManagerTest, IsEqualToSubmittedForm) {
   ASSERT_TRUE(
       form_manager_->ProvisionallySave(submitted_form, &driver_, nullptr));
 
-  observed_form_.unique_renderer_id += 10;
+  observed_form_.unique_renderer_id.value() += 10;
   observed_form_.fields.clear();
 
   EXPECT_TRUE(form_manager_->IsEqualToSubmittedForm(observed_form_));
@@ -1715,13 +1717,13 @@ TEST_P(PasswordFormManagerTest, FillForm) {
     FormData form = observed_form_;
 
     if (observed_form_changed) {
-      form.fields[kUsernameFieldIndex].unique_renderer_id += 1000;
+      form.fields[kUsernameFieldIndex].unique_renderer_id.value() += 1000;
       form.fields[kUsernameFieldIndex].name += ASCIIToUTF16("1");
       form.fields[kUsernameFieldIndex].id_attribute += ASCIIToUTF16("1");
 #if defined(OS_IOS)
       form.fields[kUsernameFieldIndex].unique_id += ASCIIToUTF16("1");
 #endif
-      form.fields[kPasswordFieldIndex].unique_renderer_id += 1000;
+      form.fields[kPasswordFieldIndex].unique_renderer_id.value() += 1000;
     }
 
     PasswordFormFillData fill_data;
@@ -1755,8 +1757,8 @@ TEST_P(PasswordFormManagerTest, FillFormWaitForServerPredictions) {
 
   FormData changed_form = observed_form_;
 
-  changed_form.fields[kUsernameFieldIndex].unique_renderer_id += 1000;
-  changed_form.fields[kPasswordFieldIndex].unique_renderer_id += 1000;
+  changed_form.fields[kUsernameFieldIndex].unique_renderer_id.value() += 1000;
+  changed_form.fields[kPasswordFieldIndex].unique_renderer_id.value() += 1000;
 
   // Check that no filling until server predicions or filling timeout
   // expiration.
@@ -2111,8 +2113,8 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlow) {
   fetcher_->NotifyFetchCompleted();
   const base::string16 possible_username = ASCIIToUTF16("possible_username");
   PossibleUsernameData possible_username_data(
-      saved_match_.signon_realm, 1u /* renderer_id */, possible_username,
-      base::Time::Now(), 0 /* driver_id */);
+      saved_match_.signon_realm, autofill::FieldRendererId(1),
+      possible_username, base::Time::Now(), 0 /* driver_id */);
 
   FormData submitted_form = observed_form_only_password_fields_;
   submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
@@ -2141,8 +2143,8 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowDifferentDomains) {
   fetcher_->NotifyFetchCompleted();
   base::string16 possible_username = ASCIIToUTF16("possible_username");
   PossibleUsernameData possible_username_data(
-      "https://another.domain.com", 1u /* renderer_id */, possible_username,
-      base::Time::Now(), 0 /* driver_id */);
+      "https://another.domain.com", autofill::FieldRendererId(1u),
+      possible_username, base::Time::Now(), 0 /* driver_id */);
 
   FormData submitted_form = observed_form_only_password_fields_;
   submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
@@ -2164,7 +2166,7 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowVotes) {
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
   const base::string16 possible_username = ASCIIToUTF16("possible_username");
-  constexpr uint64_t kUsernameFieldRendererId = 100;
+  constexpr autofill::FieldRendererId kUsernameFieldRendererId(100);
   PossibleUsernameData possible_username_data(
       saved_match_.signon_realm, kUsernameFieldRendererId, possible_username,
       base::Time::Now(), 0 /* driver_id */);
@@ -2216,8 +2218,8 @@ TEST_P(PasswordFormManagerTest, PossibleUsernameServerPredictions) {
 
   const base::string16 possible_username = ASCIIToUTF16("possible_username");
   PossibleUsernameData possible_username_data(
-      saved_match_.signon_realm, 101u /* renderer_id */, possible_username,
-      base::Time::Now(), 0 /* driver_id */);
+      saved_match_.signon_realm, autofill::FieldRendererId(101u),
+      possible_username, base::Time::Now(), 0 /* driver_id */);
 
   FormData submitted_form = observed_form_only_password_fields_;
   submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
@@ -2261,8 +2263,8 @@ TEST_P(PasswordFormManagerTest, PossibleUsernameFieldManager) {
 
   const base::string16 possible_username = ASCIIToUTF16("possible_username");
   PossibleUsernameData possible_username_data(
-      saved_match_.signon_realm, 101u /* renderer_id */, possible_username,
-      base::Time::Now(), 0 /* driver_id */);
+      saved_match_.signon_realm, autofill::FieldRendererId(101u),
+      possible_username, base::Time::Now(), 0 /* driver_id */);
 
   FormData submitted_form = observed_form_only_password_fields_;
   submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
@@ -2693,7 +2695,8 @@ TEST_F(PasswordFormManagerTestWithMockedSaver,
        OnGeneratedPasswordAccepted_InvalidField) {
   FormData form_data = observed_form_only_password_fields_;
   // A call with a non-existent password field should not crash.
-  form_manager_->OnGeneratedPasswordAccepted(std::move(form_data), 12345,
+  form_manager_->OnGeneratedPasswordAccepted(std::move(form_data),
+                                             autofill::FieldRendererId(12345),
                                              ASCIIToUTF16("new_password"));
 }
 
@@ -2758,8 +2761,8 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, UsernameFirstFlow) {
   fetcher_->NotifyFetchCompleted();
   const base::string16 possible_username = ASCIIToUTF16("possible_username");
   PossibleUsernameData possible_username_data(
-      saved_match_.signon_realm, 1u /* renderer_id */, possible_username,
-      base::Time::Now(), 0 /* driver_id */);
+      saved_match_.signon_realm, autofill::FieldRendererId(1u),
+      possible_username, base::Time::Now(), 0 /* driver_id */);
   FormData submitted_form = observed_form_only_password_fields_;
   submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
   // Check that a username is chosen from |possible_username_data|.
@@ -2781,8 +2784,8 @@ TEST_F(PasswordFormManagerTestWithMockedSaver,
   fetcher_->NotifyFetchCompleted();
   base::string16 possible_username = ASCIIToUTF16("possible_username");
   PossibleUsernameData possible_username_data(
-      "https://another.domain.com", 1u /* renderer_id */, possible_username,
-      base::Time::Now(), 0 /* driver_id */);
+      "https://another.domain.com", autofill::FieldRendererId(1u),
+      possible_username, base::Time::Now(), 0 /* driver_id */);
   FormData submitted_form = observed_form_only_password_fields_;
   submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
   PasswordForm parsed_submitted_form;

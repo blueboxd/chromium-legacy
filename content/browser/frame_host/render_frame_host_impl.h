@@ -84,7 +84,6 @@
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
@@ -976,10 +975,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Allow tests to override the timeout used to keep subframe processes alive
   // for unload handler processing.
   void SetSubframeUnloadTimeoutForTesting(const base::TimeDelta& timeout);
-
-  service_manager::BinderRegistry& BinderRegistryForTesting() {
-    return *registry_;
-  }
 
   mojo::Remote<blink::mojom::FileChooser> BindFileChooserForTesting();
 
@@ -2335,7 +2330,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   std::unique_ptr<blink::AssociatedInterfaceRegistry> associated_registry_;
 
-  std::unique_ptr<service_manager::BinderRegistry> registry_;
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
 
   std::list<std::unique_ptr<WebBluetoothServiceImpl>> web_bluetooth_services_;

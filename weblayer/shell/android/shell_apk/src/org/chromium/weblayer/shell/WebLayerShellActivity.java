@@ -240,6 +240,10 @@ public class WebLayerShellActivity extends FragmentActivity {
             public void onActiveTabChanged(Tab activeTab) {
                 mUrlViewContainer.setDisplayedChild(NONEDITABLE_URL_TEXT_VIEW);
             }
+            @Override
+            public void onTabRemoved(Tab tab) {
+                closeTab(tab);
+            }
         };
         mBrowser.registerTabListCallback(mTabListCallback);
         View nonEditUrlView = mBrowser.getUrlBarController().createUrlBarView(
@@ -283,10 +287,10 @@ public class WebLayerShellActivity extends FragmentActivity {
                 mPreviousTabList.add(mBrowser.getActiveTab());
                 mBrowser.setActiveTab(newTab);
             }
-
             @Override
             public void onCloseTab() {
-                closeTab(tab);
+                // This callback is deprecated and no longer sent.
+                assert false;
             }
         });
         tab.setFullscreenCallback(new FullscreenCallback() {
@@ -389,10 +393,9 @@ public class WebLayerShellActivity extends FragmentActivity {
 
     private void closeTab(Tab tab) {
         mPreviousTabList.remove(tab);
-        if (mBrowser.getActiveTab() == tab && !mPreviousTabList.isEmpty()) {
+        if (mBrowser.getActiveTab() == null && !mPreviousTabList.isEmpty()) {
             mBrowser.setActiveTab(mPreviousTabList.remove(mPreviousTabList.size() - 1));
         }
-        mBrowser.destroyTab(tab);
     }
 
     private Fragment getOrCreateBrowserFragment(Bundle savedInstanceState) {

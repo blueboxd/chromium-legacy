@@ -30,6 +30,14 @@ class SafetyCheckHandler
     : public settings::SettingsPageUIHandler,
       public password_manager::BulkLeakCheckService::Observer {
  public:
+  // The following enum represent the state of the safety check parent
+  // component and  should be kept in sync with the JS frontend
+  // (safety_check_browser_proxy.js).
+  enum class ParentStatus {
+    kBefore = 0,
+    kChecking = 1,
+    kAfter = 2,
+  };
   // The following enums represent the state of each component of the safety
   // check and should be kept in sync with the JS frontend
   // (safety_check_browser_proxy.js) and |SafetyCheck*| metrics enums in
@@ -164,6 +172,7 @@ class SafetyCheckHandler
 
   // Methods for building user-visible strings based on the safety check
   // state.
+  base::string16 GetStringForParent(ParentStatus status);
   base::string16 GetStringForUpdates(UpdateStatus status);
   base::string16 GetStringForSafeBrowsing(SafeBrowsingStatus status);
   base::string16 GetStringForPasswords(PasswordsStatus status,
@@ -196,6 +205,22 @@ class SafetyCheckHandler
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
+
+  // Updates the parent status from the children statuses.
+  void CompleteParentIfChildrenCompleted();
+
+  // Fire a safety check element WebUI update with a state and string.
+  void FireBasicSafetyCheckWebUiListener(const std::string& event_name,
+                                         int new_state,
+                                         const base::string16& display_string);
+
+  // The current status of the safety check elements. Before safety
+  // check is started, the parent is in the 'before' state.
+  ParentStatus parent_status_ = ParentStatus::kBefore;
+  UpdateStatus update_status_ = UpdateStatus::kChecking;
+  PasswordsStatus passwords_status_ = PasswordsStatus::kChecking;
+  SafeBrowsingStatus safe_browsing_status_ = SafeBrowsingStatus::kChecking;
+  ExtensionsStatus extensions_status_ = ExtensionsStatus::kChecking;
 
   std::unique_ptr<VersionUpdater> version_updater_;
   password_manager::BulkLeakCheckService* leak_service_ = nullptr;

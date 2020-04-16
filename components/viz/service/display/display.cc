@@ -273,6 +273,9 @@ Display::~Display() {
   allow_schedule_gpu_task_during_destruction_.reset(
       new gpu::ScopedAllowScheduleGpuTask);
 #endif
+  if (resource_provider_) {
+    resource_provider_->SetAllowAccessToGPUThread(true);
+  }
 #if defined(OS_ANDROID)
   // In certain cases, drivers hang when tearing down the display. Finishing
   // before teardown appears to address this. As we're during display teardown,
@@ -584,7 +587,8 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
   // GL commands for deleting resources to after the draw, and prevents context
   // switching because the scheduler knows sync token dependencies at that time.
   DisplayResourceProvider::ScopedBatchReturnResources returner(
-      resource_provider_.get());
+      resource_provider_.get(), /*allow_access_to_gpu_thread=*/true);
+
   base::ElapsedTimer aggregate_timer;
   aggregate_timer.Begin();
   CompositorFrame frame;
@@ -1137,6 +1141,11 @@ void Display::SetSupportedFrameIntervals(
 
 base::ScopedClosureRunner Display::GetCacheBackBufferCb() {
   return output_surface_->GetCacheBackBufferCb();
+}
+
+void Display::DisableGPUAccessByDefault() {
+  DCHECK(resource_provider_);
+  resource_provider_->SetAllowAccessToGPUThread(false);
 }
 
 }  // namespace viz

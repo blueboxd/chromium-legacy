@@ -114,8 +114,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
 
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
 
-  bool UseRootScrollOffsetsWhenComputingBounds() override;
-
   WebContentsAccessibilityAndroid* GetWebContentsAXFromRootManager();
 
   // This gives BrowserAccessibilityManager::Create access to the class

@@ -25,6 +25,7 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -277,7 +278,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   // Stores information about form field structure.
   struct FormFieldInfo {
-    uint32_t unique_renderer_id = FormData::kNotSetRendererId;
+    FieldRendererId unique_renderer_id;
     std::string form_control_type;
     std::string autocomplete_attribute;
     bool is_focusable = false;
@@ -287,12 +288,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   struct FormStructureInfo {
     FormStructureInfo();
     FormStructureInfo(const FormStructureInfo& other);
+    FormStructureInfo& operator=(const FormStructureInfo& other);
     FormStructureInfo(FormStructureInfo&& other);
+    FormStructureInfo& operator=(FormStructureInfo&& other);
     ~FormStructureInfo();
 
-    FormStructureInfo& operator=(FormStructureInfo&& other);
-
-    uint32_t unique_renderer_id = FormData::kNotSetRendererId;
+    FormRendererId unique_renderer_id;
     std::vector<FormFieldInfo> fields;
   };
 
@@ -536,13 +537,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   bool prefilled_username_metrics_logged_ = false;
 
   // Keeps autofilled values for the form elements.
-  std::map<unsigned /*renderer id*/, blink::WebString>
-      autofilled_elements_cache_;
-  std::set<unsigned /*renderer id*/> all_autofilled_elements_;
+  std::map<FieldRendererId, blink::WebString> autofilled_elements_cache_;
+  std::set<FieldRendererId> all_autofilled_elements_;
   // Keeps forms structure (amount of elements, element types etc).
   // TODO(crbug/898109): It's too expensive to keep the whole FormData
   // structure. Replace FormData with a smaller structure.
-  std::map<unsigned /*renderer id*/, FormStructureInfo> forms_structure_cache_;
+  std::map<FormRendererId, FormStructureInfo> forms_structure_cache_;
 
   // Flag to prevent that multiple PasswordManager.FirstRendererFillingResult
   // UMA metrics are recorded per page load. This is reset on
@@ -550,9 +550,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   bool recorded_first_filling_result_ = false;
 
   // Contains renderer id of last updated input element.
-  uint32_t last_updated_field_renderer_id_ = FormData::kNotSetRendererId;
+  FieldRendererId last_updated_field_renderer_id_;
   // Contains renderer id of the form of the last updated input element.
-  uint32_t last_updated_form_renderer_id_ = FormData::kNotSetRendererId;
+  FormRendererId last_updated_form_renderer_id_;
 
   // Current state of Touch To Fill. This is reset during
   // CleanupOnDocumentShutdown.

@@ -300,6 +300,22 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isSiteSettingsAvailable() {
+        return SiteSettingsHelper.isSiteSettingsAvailable(mWebContents);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void showSiteSettings(String url) {
+        SiteSettingsHelper.showSiteSettings(mActivity, url);
+    }
+
     @VisibleForTesting
     void setOfflinePageStateForTesting(@OfflinePageState int offlinePageState) {
         mOfflinePageState = offlinePageState;

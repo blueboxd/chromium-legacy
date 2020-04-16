@@ -14,36 +14,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_observer.h"
 
 using views::Widget;
-
-// Helper to wait until the hover card widget is visible.
-class HoverCardVisibleWaiter : public views::WidgetObserver {
- public:
-  explicit HoverCardVisibleWaiter(Widget* hover_card)
-      : hover_card_(hover_card) {
-    hover_card_->AddObserver(this);
-  }
-  ~HoverCardVisibleWaiter() override { hover_card_->RemoveObserver(this); }
-
-  void Wait() {
-    if (hover_card_->IsVisible())
-      return;
-    run_loop_.Run();
-  }
-
-  // WidgetObserver overrides:
-  void OnWidgetVisibilityChanged(Widget* widget, bool visible) override {
-    if (visible)
-      run_loop_.Quit();
-  }
-
- private:
-  Widget* const hover_card_;
-  base::RunLoop run_loop_;
-};
 
 class TabHoverCardBubbleViewInteractiveUiTest : public InProcessBrowserTest {
  public:
@@ -74,10 +48,8 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewInteractiveUiTest,
   tab_strip->UpdateHoverCard(tab);
   TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
   Widget* widget = hover_card->GetWidget();
-  HoverCardVisibleWaiter waiter(widget);
-  waiter.Wait();
-
   EXPECT_NE(nullptr, widget);
+  views::test::WidgetVisibleWaiter(widget).Wait();
   EXPECT_TRUE(widget->IsVisible());
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_DOWN, false,

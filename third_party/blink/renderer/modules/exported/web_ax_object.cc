@@ -370,13 +370,6 @@ bool WebAXObject::IsLinked() const {
   return private_->IsLinked();
 }
 
-bool WebAXObject::IsLoaded() const {
-  if (IsDetached())
-    return false;
-
-  return private_->IsLoaded();
-}
-
 bool WebAXObject::IsModal() const {
   if (IsDetached())
     return false;
@@ -678,13 +671,6 @@ WebString WebAXObject::AriaInvalidValue() const {
   return private_->AriaInvalidValue();
 }
 
-double WebAXObject::EstimatedLoadingProgress() const {
-  if (IsDetached())
-    return 0.0;
-
-  return private_->EstimatedLoadingProgress();
-}
-
 int WebAXObject::HeadingLevel() const {
   if (IsDetached())
     return 0;
@@ -847,6 +833,27 @@ static ax::mojom::TextAffinity ToAXAffinity(TextAffinity affinity) {
       NOTREACHED();
       return ax::mojom::TextAffinity::kDownstream;
   }
+}
+
+bool WebAXObject::IsLoaded() const {
+  if (IsDetached())
+    return false;
+
+  return private_->IsLoaded();
+}
+
+double WebAXObject::EstimatedLoadingProgress() const {
+  if (IsDetached())
+    return 0.0;
+
+  return private_->EstimatedLoadingProgress();
+}
+
+WebAXObject WebAXObject::RootScroller() const {
+  if (IsDetached())
+    return WebAXObject();
+
+  return WebAXObject(private_->RootScroller());
 }
 
 void WebAXObject::Selection(bool& is_selection_backward,

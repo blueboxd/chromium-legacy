@@ -644,7 +644,9 @@ void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
     manager->UpdateDxDiagNodeRequestStatus(true);
     host->gpu_service()->RequestCompleteGpuInfo(
         base::BindOnce([](const gpu::DxDiagNode& dx_diagnostics) {
-          GpuDataManagerImpl::GetInstance()->UpdateDxDiagNode(dx_diagnostics);
+          GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
+          manager->UpdateDxDiagNode(dx_diagnostics);
+          manager->TerminateInfoCollectionGpuProcess();
         }));
   });
 
@@ -708,6 +710,7 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
                   // UpdateDevicePerfInfo() because only the latter calls
                   // NotifyGpuInfoUpdate().
                   manager->UpdateDevicePerfInfo(device_perf_info);
+                  manager->TerminateInfoCollectionGpuProcess();
                 }));
       },
       delta);
@@ -894,6 +897,30 @@ void GpuDataManagerImplPrivate::OnBrowserThreadsStarted() {
   // Observer for display change.
   if (display::Screen::GetScreen())
     display::Screen::GetScreen()->AddObserver(owner_);
+}
+
+void GpuDataManagerImplPrivate::TerminateInfoCollectionGpuProcess() {
+  // Wait until DxDiag, DX12/Vulkan and DevicePerfInfo requests are all
+  // complete.
+  if (gpu_info_dx_diag_requested_ && !gpu_info_dx_diag_request_failed_ &&
+      gpu_info_.dx_diagnostics.IsEmpty())
+    return;
+  // gpu_info_dx12_vulkan_valid_ is always updated before device_perf_info
+  if (gpu_info_dx12_vulkan_requested_ &&
+      !gpu_info_dx12_vulkan_request_failed_ &&
+      !gpu::GetDevicePerfInfo().has_value())
+    return;
+
+  // GpuProcessHost::Get() calls GpuDataManagerImpl functions and causes a
+  // re-entry of lock.
+  base::AutoUnlock unlock(owner_->lock_);
+  // GpuProcessHost::Get() only runs on the IO thread. Get() can be called
+  // directly here from TerminateInfoCollectionGpuProcess(), which also runs on
+  // the IO thread.
+  GpuProcessHost* host = GpuProcessHost::Get(GPU_PROCESS_KIND_INFO_COLLECTION,
+                                             false /* force_create */);
+  if (host)
+    host->ForceShutdown();
 }
 
 #endif

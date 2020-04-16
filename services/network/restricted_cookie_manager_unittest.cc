@@ -423,6 +423,25 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlFromWrongOrigin) {
   ASSERT_THAT(cookies, testing::SizeIs(0));
 }
 
+TEST_P(RestrictedCookieManagerTest, GetAllForUrlFromOpaqueOrigin) {
+  SetSessionCookie("cookie-name", "cookie-value", "example.com", "/");
+
+  url::Origin opaque_origin;
+  ASSERT_TRUE(opaque_origin.opaque());
+  service_->OverrideOriginForTesting(opaque_origin);
+
+  auto options = mojom::CookieManagerGetOptions::New();
+  options->name = "";
+  options->match_type = mojom::CookieMatchType::STARTS_WITH;
+  ExpectBadMessage();
+  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
+      GURL("https://example.com/test/"), GURL("https://example.com"),
+      url::Origin::Create(GURL("https://example.com")), std::move(options));
+  EXPECT_TRUE(received_bad_message());
+
+  ASSERT_THAT(cookies, testing::SizeIs(0));
+}
+
 TEST_P(RestrictedCookieManagerTest, GetCookieStringFromWrongOrigin) {
   SetSessionCookie("cookie-name", "cookie-value", "example.com", "/");
   SetSessionCookie("cookie-name-2", "cookie-value-2", "example.com", "/");
@@ -640,6 +659,23 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieFromWrongOrigin) {
           /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
           net::COOKIE_PRIORITY_DEFAULT),
       GURL("https://not-example.com/test/"), GURL("https://example.com"),
+      url::Origin::Create(GURL("https://example.com"))));
+  ASSERT_TRUE(received_bad_message());
+}
+
+TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieFromOpaqueOrigin) {
+  url::Origin opaque_origin;
+  ASSERT_TRUE(opaque_origin.opaque());
+  service_->OverrideOriginForTesting(opaque_origin);
+
+  ExpectBadMessage();
+  EXPECT_FALSE(sync_service_->SetCanonicalCookie(
+      net::CanonicalCookie(
+          "new-name", "new-value", "not-example.com", "/", base::Time(),
+          base::Time(), base::Time(), /* secure = */ true,
+          /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_DEFAULT),
+      GURL("https://example.com/test/"), GURL("https://example.com"),
       url::Origin::Create(GURL("https://example.com"))));
   ASSERT_TRUE(received_bad_message());
 }
@@ -965,6 +1001,25 @@ TEST_P(RestrictedCookieManagerTest, AddChangeListenerFromWrongOrigin) {
             good_listener.observed_changes()[0].cause);
   EXPECT_EQ("cookie-name", good_listener.observed_changes()[0].cookie.Name());
   EXPECT_EQ("cookie-value", good_listener.observed_changes()[0].cookie.Value());
+}
+
+TEST_P(RestrictedCookieManagerTest, AddChangeListenerFromOpaqueOrigin) {
+  url::Origin opaque_origin;
+  ASSERT_TRUE(opaque_origin.opaque());
+  service_->OverrideOriginForTesting(opaque_origin);
+
+  mojo::PendingRemote<network::mojom::CookieChangeListener> bad_listener_remote;
+  mojo::PendingReceiver<network::mojom::CookieChangeListener> bad_receiver =
+      bad_listener_remote.InitWithNewPipeAndPassReceiver();
+  ExpectBadMessage();
+  sync_service_->AddChangeListener(
+      GURL("https://example.com/test/"), GURL("https://example.com"),
+      url::Origin::Create(GURL("https://example.com")),
+      std::move(bad_listener_remote));
+  EXPECT_TRUE(received_bad_message());
+
+  TestCookieChangeListener bad_listener(std::move(bad_receiver));
+  ASSERT_THAT(bad_listener.observed_changes(), testing::SizeIs(0));
 }
 
 // Test that the Change listener receives the access semantics, and that they

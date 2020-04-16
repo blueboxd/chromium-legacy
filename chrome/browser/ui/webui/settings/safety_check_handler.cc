@@ -33,6 +33,7 @@
 namespace {
 
 // Constants for communication with JS.
+constexpr char kParentEvent[] = "safety-check-parent-status-changed";
 constexpr char kUpdatesEvent[] = "safety-check-updates-status-changed";
 constexpr char kPasswordsEvent[] = "safety-check-passwords-status-changed";
 constexpr char kSafeBrowsingEvent[] =
@@ -84,6 +85,31 @@ SafetyCheckHandler::~SafetyCheckHandler() = default;
 void SafetyCheckHandler::PerformSafetyCheck() {
   AllowJavascript();
 
+  // Reset status of parent and children, which might have been set from a
+  // previous run of safety check.
+  parent_status_ = ParentStatus::kChecking;
+  update_status_ = UpdateStatus::kChecking;
+  passwords_status_ = PasswordsStatus::kChecking;
+  safe_browsing_status_ = SafeBrowsingStatus::kChecking;
+  extensions_status_ = ExtensionsStatus::kChecking;
+
+  // Update WebUi.
+  FireBasicSafetyCheckWebUiListener(kParentEvent,
+                                    static_cast<int>(parent_status_),
+                                    GetStringForParent(parent_status_));
+  FireBasicSafetyCheckWebUiListener(
+      kUpdatesEvent, static_cast<int>(update_status_), base::UTF8ToUTF16(""));
+  FireBasicSafetyCheckWebUiListener(kPasswordsEvent,
+                                    static_cast<int>(passwords_status_),
+                                    base::UTF8ToUTF16(""));
+  FireBasicSafetyCheckWebUiListener(kSafeBrowsingEvent,
+                                    static_cast<int>(safe_browsing_status_),
+                                    base::UTF8ToUTF16(""));
+  FireBasicSafetyCheckWebUiListener(kExtensionsEvent,
+                                    static_cast<int>(extensions_status_),
+                                    base::UTF8ToUTF16(""));
+
+  // Run safety check.
   if (!version_updater_) {
     version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
   }
@@ -245,27 +271,28 @@ void SafetyCheckHandler::OnUpdateCheckResult(VersionUpdater::Status status,
                                              const std::string& version,
                                              int64_t update_size,
                                              const base::string16& message) {
-  UpdateStatus update_status = ConvertToUpdateStatus(status);
-  base::DictionaryValue event;
-  event.SetIntKey(kNewState, static_cast<int>(update_status));
-  event.SetStringKey(kDisplayString, GetStringForUpdates(update_status));
-  FireWebUIListener(kUpdatesEvent, event);
-  if (update_status != UpdateStatus::kChecking) {
+  update_status_ = ConvertToUpdateStatus(status);
+  if (update_status_ != UpdateStatus::kChecking) {
     base::UmaHistogramEnumeration("Settings.SafetyCheck.UpdatesResult",
-                                  update_status);
+                                  update_status_);
   }
+  FireBasicSafetyCheckWebUiListener(kUpdatesEvent,
+                                    static_cast<int>(update_status_),
+                                    GetStringForUpdates(update_status_));
+  CompleteParentIfChildrenCompleted();
 }
 
 void SafetyCheckHandler::OnSafeBrowsingCheckResult(
     SafetyCheckHandler::SafeBrowsingStatus status) {
-  base::DictionaryValue event;
-  event.SetIntKey(kNewState, static_cast<int>(status));
-  event.SetStringKey(kDisplayString, GetStringForSafeBrowsing(status));
-  FireWebUIListener(kSafeBrowsingEvent, event);
-  if (status != SafeBrowsingStatus::kChecking) {
+  safe_browsing_status_ = status;
+  if (safe_browsing_status_ != SafeBrowsingStatus::kChecking) {
     base::UmaHistogramEnumeration("Settings.SafetyCheck.SafeBrowsingResult",
-                                  status);
+                                  safe_browsing_status_);
   }
+  FireBasicSafetyCheckWebUiListener(
+      kSafeBrowsingEvent, static_cast<int>(safe_browsing_status_),
+      GetStringForSafeBrowsing(safe_browsing_status_));
+  CompleteParentIfChildrenCompleted();
 }
 
 void SafetyCheckHandler::OnPasswordsCheckResult(PasswordsStatus status,
@@ -284,6 +311,8 @@ void SafetyCheckHandler::OnPasswordsCheckResult(PasswordsStatus status,
     base::UmaHistogramEnumeration("Settings.SafetyCheck.PasswordsResult",
                                   status);
   }
+  passwords_status_ = status;
+  CompleteParentIfChildrenCompleted();
 }
 
 void SafetyCheckHandler::OnExtensionsCheckResult(
@@ -308,6 +337,21 @@ void SafetyCheckHandler::OnExtensionsCheckResult(
   if (status != ExtensionsStatus::kChecking) {
     base::UmaHistogramEnumeration("Settings.SafetyCheck.ExtensionsResult",
                                   status);
+  }
+  extensions_status_ = status;
+  CompleteParentIfChildrenCompleted();
+}
+
+base::string16 SafetyCheckHandler::GetStringForParent(ParentStatus status) {
+  switch (status) {
+    case ParentStatus::kBefore:
+      return l10n_util::GetStringUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_BEFORE);
+    case ParentStatus::kChecking:
+      return l10n_util::GetStringUTF16(IDS_SETTINGS_SAFETY_CHECK_RUNNING);
+    case ParentStatus::kAfter:
+      return l10n_util::GetStringUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER);
   }
 }
 
@@ -600,4 +644,30 @@ void SafetyCheckHandler::RegisterMessages() {
       kGetParentRanDisplayString,
       base::BindRepeating(&SafetyCheckHandler::HandleGetParentRanDisplayString,
                           base::Unretained(this)));
+}
+
+void SafetyCheckHandler::CompleteParentIfChildrenCompleted() {
+  if (update_status_ != UpdateStatus::kChecking &&
+      passwords_status_ != PasswordsStatus::kChecking &&
+      safe_browsing_status_ != SafeBrowsingStatus::kChecking &&
+      extensions_status_ != ExtensionsStatus::kChecking) {
+    // TODO(crbug.com/1015841): Minor improvement: also store the timestamp when
+    // safety check completed in the backend instead of in the frontend. This
+    // allows computing the safety check parent ran string on all platforms
+    // without the frontend handling the timestamp.
+    parent_status_ = ParentStatus::kAfter;
+    FireBasicSafetyCheckWebUiListener(kParentEvent,
+                                      static_cast<int>(parent_status_),
+                                      GetStringForParent(parent_status_));
+  }
+}
+
+void SafetyCheckHandler::FireBasicSafetyCheckWebUiListener(
+    const std::string& event_name,
+    int new_state,
+    const base::string16& display_string) {
+  base::DictionaryValue event;
+  event.SetIntKey(kNewState, new_state);
+  event.SetStringKey(kDisplayString, display_string);
+  FireWebUIListener(event_name, event);
 }

@@ -15,7 +15,7 @@
 
 namespace blink {
 
-void NGInlineCursor::MoveToItem(const ItemsSpan::iterator& iter) {
+inline void NGInlineCursor::MoveToItem(const ItemsSpan::iterator& iter) {
   DCHECK(IsItemCursor());
   DCHECK(iter >= items_.begin() && iter <= items_.end());
   current_.item_iter_ = iter;
@@ -855,15 +855,6 @@ PositionWithAffinity NGInlineCursor::PositionForPointInChild(
   return PositionWithAffinity();
 }
 
-void NGInlineCursor::MakeNull() {
-  if (root_paint_fragment_) {
-    current_.paint_fragment_ = nullptr;
-    return;
-  }
-  if (fragment_items_)
-    return MoveToItem(items_.end());
-}
-
 void NGInlineCursor::MoveTo(const NGInlineCursorPosition& position) {
   CheckValid(position);
   current_ = position;
@@ -1278,8 +1269,11 @@ void NGInlineCursor::MoveToNextItem() {
   if (UNLIKELY(!current_.item_))
     return;
   DCHECK(current_.item_iter_ != items_.end());
-  ++current_.item_iter_;
-  MoveToItem(current_.item_iter_);
+  if (++current_.item_iter_ != items_.end()) {
+    current_.item_ = current_.item_iter_->get();
+    return;
+  }
+  MakeNull();
 }
 
 void NGInlineCursor::MoveToNextItemSkippingChildren() {

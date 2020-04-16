@@ -7,6 +7,7 @@
 #include "ios/chrome/browser/infobars/infobar_badge_model.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#include "ios/chrome/browser/ui/badges/badge_type_util.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 
@@ -17,11 +18,12 @@
 namespace {
 // Returns |infobar|'s InfobarType.
 InfobarType GetInfobarType(infobars::InfoBar* infobar) {
-  return static_cast<InfoBarIOS*>(infobar)->InfobarUIDelegate().infobarType;
+  return static_cast<InfoBarIOS*>(infobar)->infobar_type();
 }
 // Returns whether |infobar| supports badges.
 bool SupportsBadges(infobars::InfoBar* infobar) {
-  return static_cast<InfoBarIOS*>(infobar)->InfobarUIDelegate().hasBadge;
+  return BadgeTypeForInfobarType(GetInfobarType(infobar)) !=
+         BadgeType::kBadgeTypeNone;
 }
 }  // namespace
 

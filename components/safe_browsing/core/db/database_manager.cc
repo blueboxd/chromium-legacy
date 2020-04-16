@@ -149,11 +149,6 @@ void SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished() {
   update_complete_callback_list_.Notify();
 }
 
-std::string SafeBrowsingDatabaseManager::GetSafetyNetId() const {
-  NOTREACHED() << "Only implemented on Android";
-  return "";
-}
-
 SafeBrowsingDatabaseManager::SafeBrowsingApiCheck::SafeBrowsingApiCheck(
     const GURL& url,
     Client* client)

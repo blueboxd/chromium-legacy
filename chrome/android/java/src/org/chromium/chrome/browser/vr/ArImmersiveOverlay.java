@@ -106,11 +106,12 @@ public class ArImmersiveOverlay
 
         @Override // SurfaceUiWrapper
         public void onSurfaceVisible() {
-            if (mNotificationToast == null) {
-                int resId = R.string.immersive_fullscreen_api_notification;
-                mNotificationToast = Toast.makeText(mActivity, resId, Toast.LENGTH_LONG);
-                mNotificationToast.setGravity(Gravity.TOP | Gravity.CENTER, 0, 0);
+            if (mNotificationToast != null) {
+                mNotificationToast.cancel();
             }
+            int resId = R.string.immersive_fullscreen_api_notification;
+            mNotificationToast = Toast.makeText(mActivity, resId, Toast.LENGTH_LONG);
+            mNotificationToast.setGravity(Gravity.TOP | Gravity.CENTER, 0, 0);
             mNotificationToast.show();
         }
 
@@ -121,6 +122,7 @@ public class ArImmersiveOverlay
         public void destroy() {
             if (mNotificationToast != null) {
                 mNotificationToast.cancel();
+                mNotificationToast = null;
             }
             mDialog.dismiss();
         }

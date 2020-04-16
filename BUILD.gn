@@ -435,6 +435,7 @@ group("gn_all") {
       "//ash/app_list:app_list_demo",
       "//ash/app_list:app_list_unittests",
       "//ash/keyboard/ui:keyboard_unittests",
+      "//chrome/browser/metrics/perf:profile_provider_unittest",
       "//chrome/test:usage_time_limit_unittests",
       "//chromeos:chromeos_unittests",
       "//chromeos/components:chromeos_components_unittests",
@@ -917,7 +918,6 @@ if (is_chromeos) {
     testonly = true
     deps = [
       "//chrome",
-      "//chrome/browser/metrics/perf:profile_provider_unittest",
       "//chrome/test/chromedriver",
       "//components/chromeos_camera:jpeg_decode_accelerator_unittest",
       "//components/exo/wayland:wayland_client_perftests",

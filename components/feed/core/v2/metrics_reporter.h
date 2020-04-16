@@ -62,14 +62,12 @@ class MetricsReporter {
   static void NetworkRequestComplete(NetworkRequestType type,
                                      int http_status_code);
 
-  // FeedStream::EventObserver.
+  // Stream events.
 
   virtual void OnLoadStream(LoadStreamStatus load_from_store_status,
                             LoadStreamStatus final_status);
-  void OnBackgroundRefresh(LoadStreamStatus final_status);
+  virtual void OnBackgroundRefresh(LoadStreamStatus final_status);
   void OnLoadMore(LoadStreamStatus final_status);
-  virtual void OnMaybeTriggerRefresh(TriggerType trigger,
-                                     bool clear_all_before_refresh);
   virtual void OnClearAll(base::TimeDelta time_since_last_clear);
 
  private:

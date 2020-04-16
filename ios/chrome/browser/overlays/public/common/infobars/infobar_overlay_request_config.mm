@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
-#import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
+#include "ios/chrome/browser/ui/badges/badge_type_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,8 +20,9 @@ InfobarOverlayRequestConfig::InfobarOverlayRequestConfig(
     InfoBarIOS* infobar,
     InfobarOverlayType overlay_type)
     : infobar_(infobar->GetWeakPtr()),
-      infobar_type_(infobar->InfobarUIDelegate().infobarType),
-      has_badge_(infobar->InfobarUIDelegate().hasBadge),
+      infobar_type_(infobar->infobar_type()),
+      has_badge_(BadgeTypeForInfobarType(infobar_type_) !=
+                 BadgeType::kBadgeTypeNone),
       overlay_type_(overlay_type) {}
 
 InfobarOverlayRequestConfig::~InfobarOverlayRequestConfig() = default;

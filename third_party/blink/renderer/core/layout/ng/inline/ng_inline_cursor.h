@@ -151,6 +151,11 @@ class CORE_EXPORT NGInlineCursorPosition {
   TextDirection BaseDirection() const;
 
  private:
+  void Clear() {
+    paint_fragment_ = nullptr;
+    item_ = nullptr;
+  }
+
   const NGPaintFragment* paint_fragment_ = nullptr;
   const NGFragmentItem* item_ = nullptr;
   ItemsSpan::iterator item_iter_;
@@ -400,7 +405,7 @@ class CORE_EXPORT NGInlineCursor {
 
   // Make the current position points nothing, e.g. cursor moves over start/end
   // fragment, cursor moves to first/last child to parent has no children.
-  void MakeNull();
+  void MakeNull() { current_.Clear(); }
 
   // Move the cursor position to the first fragment in tree.
   void MoveToFirst();

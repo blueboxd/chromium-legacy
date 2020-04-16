@@ -29,7 +29,6 @@
 #include "components/password_manager/core/browser/ui/plaintext_reason.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -319,10 +318,7 @@ void PasswordsPrivateDelegateImpl::InvokeGoogleReauth(
     PasswordsPrivateDelegateImpl::GoogleReauthCallback callback) {
   if (auto* client =
           ChromePasswordManagerClient::FromWebContents(web_contents)) {
-    client->TriggerReauthForAccount(
-        IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountId(
-            signin::ConsentLevel::kNotRequired),
-        std::move(callback));
+    client->TriggerReauthForPrimaryAccount(std::move(callback));
     return;
   }
   std::move(callback).Run(

@@ -163,6 +163,7 @@ constexpr device::mojom::XRSessionFeature kARCoreDeviceFeatures[] = {
     device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
     device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED,
     device::mojom::XRSessionFeature::DOM_OVERLAY,
+    device::mojom::XRSessionFeature::LIGHT_ESTIMATION,
 };
 
 #if BUILDFLAG(ENABLE_OPENVR)

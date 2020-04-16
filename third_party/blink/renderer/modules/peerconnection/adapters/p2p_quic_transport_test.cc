@@ -1411,7 +1411,8 @@ TEST_F(P2PQuicTransportMockConnectionTest, OnDatagramReceived) {
 
 // Test that when a datagram is sent that is properly fires the OnDatagramSent
 // function on the delegate.
-TEST_F(P2PQuicTransportMockConnectionTest, OnDatagramSent) {
+// Flaky on all platforms. See https://crbug.com/1071340
+TEST_F(P2PQuicTransportMockConnectionTest, DISABLED_OnDatagramSent) {
   EXPECT_CALL(*connection(), SendMessage(_, _, _))
       .WillOnce(Invoke([](quic::QuicMessageId message_id,
                           quic::QuicMemSliceSpan message, bool flush) {
@@ -1425,7 +1426,8 @@ TEST_F(P2PQuicTransportMockConnectionTest, OnDatagramSent) {
 
 // Test that when the quic::QuicConnection is congestion control blocked that
 // the datagram gets buffered and not sent.
-TEST_F(P2PQuicTransportMockConnectionTest, DatagramNotSent) {
+// Flaky on all platforms. See https://crbug.com/1071340
+TEST_F(P2PQuicTransportMockConnectionTest, DISABLED_DatagramNotSent) {
   EXPECT_CALL(*connection(), SendMessage(_, _, _))
       .WillOnce(Return(quic::MESSAGE_STATUS_BLOCKED));
   EXPECT_CALL(*delegate(), OnDatagramSent()).Times(0);
@@ -1435,7 +1437,8 @@ TEST_F(P2PQuicTransportMockConnectionTest, DatagramNotSent) {
 
 // Test that when datagrams are buffered they are later sent when the transport
 // is no longer congestion control blocked.
-TEST_F(P2PQuicTransportMockConnectionTest, BufferedDatagramsSent) {
+// Flaky on all platforms. See https://crbug.com/1071340
+TEST_F(P2PQuicTransportMockConnectionTest, DISABLED_BufferedDatagramsSent) {
   EXPECT_CALL(*connection(), SendMessage(_, _, _))
       .WillOnce(Return(quic::MESSAGE_STATUS_BLOCKED));
   transport()->SendDatagram(VectorFromArray(kMessage));
@@ -1470,7 +1473,9 @@ TEST_F(P2PQuicTransportMockConnectionTest, BufferedDatagramsSent) {
 // -Write blocked - datagrams are buffered.
 // -Write unblocked - send buffered datagrams.
 // -Write blocked - keep datagrams buffered.
-TEST_F(P2PQuicTransportMockConnectionTest, BufferedDatagramRemainBuffered) {
+// Flaky on all platforms. See https://crbug.com/1071340
+TEST_F(P2PQuicTransportMockConnectionTest,
+       DISABLED_BufferedDatagramRemainBuffered) {
   EXPECT_CALL(*connection(), SendMessage(_, _, _))
       .WillOnce(Return(quic::MESSAGE_STATUS_BLOCKED));
   transport()->SendDatagram(VectorFromArray(kMessage));
@@ -1506,7 +1511,8 @@ TEST_F(P2PQuicTransportMockConnectionTest, BufferedDatagramRemainBuffered) {
   transport()->SendDatagram(VectorFromArray(kMessage));
 }
 
-TEST_F(P2PQuicTransportMockConnectionTest, LostDatagramUpdatesStats) {
+// Flaky on all platforms. See https://crbug.com/1071340
+TEST_F(P2PQuicTransportMockConnectionTest, DISABLED_LostDatagramUpdatesStats) {
   // The ID the quic::QuicSession will assign to the datagram that is used for
   // callbacks, like OnDatagramLost.
   uint32_t datagram_id;

@@ -92,6 +92,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
   bool Dx12VulkanRequested() const;
   // Called from BrowserMainLoop::BrowserThreadsStarted().
   void OnBrowserThreadsStarted();
+  void TerminateInfoCollectionGpuProcess();
 #endif
   // Update the GPU feature info. This updates the blacklist and enabled status
   // of GPU rasterization. In the future this will be used for more features.

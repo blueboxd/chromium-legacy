@@ -2061,7 +2061,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithAppBanner,
   RenderFrameDeletedObserver delete_observer_rfh(current_frame_host());
 
   // 2) Navigate away. Page A requested a PWA app banner, and thus not cached.
-  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
   delete_observer_rfh.WaitUntilDeleted();
 
   // 3) Go back to A.

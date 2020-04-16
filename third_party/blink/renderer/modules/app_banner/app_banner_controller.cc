@@ -41,6 +41,9 @@ void AppBannerController::BannerPromptRequest(
     return;
   }
 
+  // With the current implementation, bfcache could cause prompt() event to be
+  // lost if called after being put into the cache, and the banner will not be
+  // hidden properly. We disable bfcache to avoid these issues.
   frame_->GetFrameScheduler()->RegisterStickyFeature(
       blink::SchedulingPolicy::Feature::kAppBanner,
       {blink::SchedulingPolicy::RecordMetricsForBackForwardCache()});

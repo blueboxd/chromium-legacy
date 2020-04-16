@@ -168,6 +168,11 @@ void ContentSettingsAgentImpl::DidBlockContentType(
     GetContentSettingsManager().OnContentBlocked(routing_id(), settings_type);
 }
 
+template ContentSetting ContentSettingsAgentImpl::GetContentSettingFromRules<>(
+    const ContentSettingsForOneType&,
+    const WebFrame*,
+    const GURL&);
+
 template <typename URL>
 ContentSetting ContentSettingsAgentImpl::GetContentSettingFromRules(
     const ContentSettingsForOneType& rules,

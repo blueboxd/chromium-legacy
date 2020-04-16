@@ -2807,6 +2807,10 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerWebRequestApiTest,
 IN_PROC_BROWSER_TEST_P(ServiceWorkerWebRequestApiTest, ServiceWorkerScript) {
   // The extension to be used in this test adds foo=bar request header.
   const char kScriptPath[] = "/echoheader_service_worker.js";
+  // The request handler below will run on the EmbeddedTestServer's IO thread.
+  // Hence guard access to |served_service_worker_count| and |foo_header_value|
+  // using a lock.
+  base::Lock lock;
   int served_service_worker_count = 0;
   std::string foo_header_value;
 
@@ -2818,6 +2822,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerWebRequestApiTest, ServiceWorkerScript) {
         if (request.relative_url != kScriptPath)
           return nullptr;
 
+        base::AutoLock auto_lock(lock);
         ++served_service_worker_count;
         foo_header_value.clear();
         if (request.headers.find("foo") != request.headers.end())
@@ -2845,15 +2850,21 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerWebRequestApiTest, ServiceWorkerScript) {
   std::string script =
       content::JsReplace("register($1, './in-scope');", kScriptPath);
   EXPECT_EQ("DONE", EvalJs(web_contents, script));
-  EXPECT_EQ(1, served_service_worker_count);
-  EXPECT_EQ("bar", foo_header_value);
+  {
+    base::AutoLock auto_lock(lock);
+    EXPECT_EQ(1, served_service_worker_count);
+    EXPECT_EQ("bar", foo_header_value);
+  }
 
   // Update the worker. The worker should have "foo: bar" request header in the
   // request for update checking.
   EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   EXPECT_EQ("DONE", EvalJs(web_contents, "update('./in-scope');"));
-  EXPECT_EQ(2, served_service_worker_count);
-  EXPECT_EQ("bar", foo_header_value);
+  {
+    base::AutoLock auto_lock(lock);
+    EXPECT_EQ(2, served_service_worker_count);
+    EXPECT_EQ("bar", foo_header_value);
+  }
 }
 
 // Ensure that extensions can intercept service worker navigation preload

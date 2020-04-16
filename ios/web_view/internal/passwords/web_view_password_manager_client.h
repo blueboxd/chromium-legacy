@@ -120,6 +120,7 @@ class WebViewPasswordManagerClient
       override;
   signin::IdentityManager* GetIdentityManager() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  void UpdateFormManagers() override;
   bool IsIsolationForPasswordSitesEnabled() const override;
   bool IsNewTabPage() const override;
   password_manager::FieldInfoManager* GetFieldInfoManager() const override;

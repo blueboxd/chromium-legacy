@@ -31,11 +31,6 @@ class WebViewPasswordStoreFactory
 
   static WebViewPasswordStoreFactory* GetInstance();
 
-  // Called by the PasswordDataTypeController whenever there is a possibility
-  // that syncing passwords has just started or ended for |browser_state|.
-  static void OnPasswordsSyncedStatePotentiallyChanged(
-      WebViewBrowserState* browser_state);
-
  private:
   friend class base::NoDestructor<WebViewPasswordStoreFactory>;
 

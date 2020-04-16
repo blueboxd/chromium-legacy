@@ -178,16 +178,13 @@ class AppWindowWrapper {
    * @param {Object} appState App state.
    * @param {boolean} reopen True if the launching is triggered automatically.
    *     False otherwise.
-   * @param {function()=} opt_callback Completion callback.
+   * @return {Promise} Resolved when the window is launched.
    */
-  async launch(appState, reopen, opt_callback) {
+  async launch(appState, reopen) {
     // Check if the window is opened or not.
     if (this.openingOrOpened_) {
       console.error('The window is already opened.');
-      if (opt_callback) {
-        opt_callback();
-      }
-      return;
+      return Promise.resolve();
     }
     this.openingOrOpened_ = true;
 
@@ -237,10 +234,6 @@ class AppWindowWrapper {
       console.error(error);
     } finally {
       unlock();
-    }
-
-    if (opt_callback) {
-      opt_callback();
     }
   }
 
@@ -337,12 +330,12 @@ class SingletonAppWindowWrapper extends AppWindowWrapper {
    * @param {Object} appState App state.
    * @param {boolean} reopen True if the launching is triggered automatically.
    *     False otherwise.
-   * @param {function()=} opt_callback Completion callback.
+   * @return {Promise} Resolved when the window is launched.
    */
-  async launch(appState, reopen, opt_callback) {
+  async launch(appState, reopen) {
     // If the window is not opened yet, just call the parent method.
     if (!this.openingOrOpened_) {
-      return super.launch(appState, reopen, opt_callback);
+      return super.launch(appState, reopen);
     }
 
     // The lock is used to wait until the window is opened and set in
@@ -361,10 +354,6 @@ class SingletonAppWindowWrapper extends AppWindowWrapper {
         console.error('Window reload requested before loaded. Skiping.');
       } else {
         this.window_.contentWindow.reload();
-      }
-
-      if (opt_callback) {
-        opt_callback();
       }
     } finally {
       unlock();
@@ -391,7 +380,7 @@ class SingletonAppWindowWrapper extends AppWindowWrapper {
         opt_callback && opt_callback();
         return;
       }
-      this.launch(appState, true, opt_callback);
+      this.launch(appState, true).then(() => opt_callback && opt_callback());
     });
   }
 }

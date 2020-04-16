@@ -8,25 +8,26 @@
  * @type {!string}
  * @const
  */
-var ICON_IMAGE = 'images/icon/video-player-192.png';
+const ICON_IMAGE = 'images/icon/video-player-192.png';
 
 /**
  * Configuration of the video player panel.
  * @type {!Object}
  * @const
  */
-var windowCreateOptions = {
+const windowCreateOptions = {
   frame: {
-    color: '#fafafa'
+    color: '#fafafa',
   },
   minWidth: 480,
-  minHeight: 270
+  minHeight: 270,
 };
 
 /**
  * Backgound object.
  * @type {!BackgroundBase}
  */
+// eslint-disable-next-line no-var
 var background = new BackgroundBase();
 
 /**
@@ -34,8 +35,8 @@ var background = new BackgroundBase();
  * used to create the string. The first call returns "VIDEO_PLAYER_APP_0".
  * @return {string} windowId The windowId string.
  */
-var generateWindowId = (function() {
-  var seq = 0;
+const generateWindowId = (function() {
+  let seq = 0;
   return function() {
     return 'VIDEO_PLAYER_APP_' + seq++;
   }.wrap();
@@ -48,9 +49,9 @@ var generateWindowId = (function() {
  * @return {!Promise} Promise to be fulfilled on success, or rejected on error.
  */
 function openVideoPlayerWindow(urls) {
-  var position = 0;
-  var startUrl = (position < urls.length) ? urls[position] : '';
-  var windowId = null;
+  let position = 0;
+  const startUrl = (position < urls.length) ? urls[position] : '';
+  let windowId = null;
 
   return new Promise(function(fulfill, reject) {
            util.URLsToEntries(urls)
@@ -65,7 +66,7 @@ function openVideoPlayerWindow(urls) {
         }
 
         // Adjusts the position to start playing.
-        var maybePosition = util.entriesToURLs(entries).indexOf(startUrl);
+        const maybePosition = util.entriesToURLs(entries).indexOf(startUrl);
         if (maybePosition !== -1) {
           position = maybePosition;
         }
@@ -73,18 +74,15 @@ function openVideoPlayerWindow(urls) {
         windowId = generateWindowId();
 
         // Opens the video player window.
-        return new Promise(function(fulfill, reject) {
-          var urls = util.entriesToURLs(entries);
-          var videoPlayer = new AppWindowWrapper(
-              'video_player.html', assert(windowId), windowCreateOptions);
+        const urls = util.entriesToURLs(entries);
+        const videoPlayer = new AppWindowWrapper(
+            'video_player.html', assert(windowId), windowCreateOptions);
 
-          videoPlayer.launch(
-              {items: urls, position: position}, false,
-              fulfill.bind(null, videoPlayer));
-        }.wrap());
+        return videoPlayer.launch({items: urls, position: position}, false)
+            .then(() => videoPlayer);
       }.wrap())
       .then(function(videoPlayer) {
-        var appWindow = videoPlayer.rawAppWindow;
+        const appWindow = videoPlayer.rawAppWindow;
 
         appWindow.onClosed.addListener(function() {
           chrome.power.releaseKeepAwake();

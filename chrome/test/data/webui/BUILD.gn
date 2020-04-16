@@ -159,7 +159,7 @@ js2gtest("browser_tests_js_webui") {
   }
 
   if (use_nss_certs) {
-    sources += [ "certificate_viewer_dialog_test.js" ]
+    sources += [ "certificate_viewer_dialog_browsertest.js" ]
   }
   if (enable_extensions) {
     sources += [

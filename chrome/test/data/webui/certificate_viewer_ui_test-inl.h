@@ -20,7 +20,8 @@
 #include "net/cert/x509_util_nss.h"
 #include "net/test/test_certificate_data.h"
 
-// Test framework for chrome/test/data/webui/certificate_viewer_dialog_test.js.
+// Test framework for
+// chrome/test/data/webui/certificate_viewer_dialog_browsertest.js.
 class CertificateViewerUITest : public WebUIBrowserTest {
  public:
   CertificateViewerUITest();

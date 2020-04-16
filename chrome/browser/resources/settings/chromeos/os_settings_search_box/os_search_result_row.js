@@ -9,26 +9,71 @@
 Polymer({
   is: 'os-search-result-row',
 
-  behaviors: [cr.ui.FocusRowBehavior],
+  behaviors: [I18nBehavior, cr.ui.FocusRowBehavior],
 
   properties: {
-    // Whether the search result row is selected.
+    /** Whether the search result row is selected. */
     selected: {
       type: Boolean,
+      reflectToAttribute: true,
+      observer: 'makeA11yAnnouncementIfSelectedAndUnfocused_',
+    },
+
+    /** Aria label for the row. */
+    ariaLabel: {
+      type: String,
+      computed: 'computeAriaLabel_(searchResult)',
       reflectToAttribute: true,
     },
 
     /** @type {!chromeos.settings.mojom.SearchResult} */
     searchResult: Object,
+
+    /** Number of rows in the list this row is part of. */
+    listLength: Number,
+
+    /** @private */
+    resultText_: {
+      type: String,
+      computed: 'computeResultText_(searchResult)',
+    },
+  },
+
+  /** @override */
+  attached() {
+    // Initialize the announcer once.
+    Polymer.IronA11yAnnouncer.requestAvailability();
+  },
+
+  /** @private */
+  makeA11yAnnouncementIfSelectedAndUnfocused_() {
+    if (!this.selected || this.lastFocused) {
+      // Do not alert the user if the result is not selected, or
+      // the list is focused, defer to aria tags instead.
+      return;
+    }
+
+    // The selected item is normally not focused when selected, the
+    // selected search result should be verbalized as it changes.
+    this.fire('iron-announce', {text: this.ariaLabel});
   },
 
   /**
    * @return {string} Exact string of the result to be displayed.
    */
-  getResultText_() {
+  computeResultText_() {
     // The C++ layer stores the text result as an array of 16 bit char codes,
     // so it must be converted to a JS String.
     return String.fromCharCode.apply(null, this.searchResult.resultText.data);
+  },
+
+  /**
+   * @return {string} Aria label string for ChromeVox to verbalize.
+   */
+  computeAriaLabel_() {
+    return this.i18n(
+        'searchResultSelected', this.focusRowIndex + 1, this.listLength,
+        this.computeResultText_());
   },
 
   /**
@@ -62,7 +107,14 @@ Polymer({
     const params = pathAndOptParams.length == 2 ?
         new URLSearchParams(pathAndOptParams[1]) :
         undefined;
+
+    // TODO(crbug/1071283): The announcement should occur before any
+    // announcements at the new route.
+    this.fire(
+        'iron-announce',
+        {text: this.i18n('searchResultNavigatedTo', this.resultText_)});
     settings.Router.getInstance().navigateTo(route, params);
+
     this.fire('navigated-to-result-route');
   },
 

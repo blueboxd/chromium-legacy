@@ -7,14 +7,14 @@
  * @type {!Object}
  * @const
  */
-var windowCreateOptions = {
+const windowCreateOptions = {
   id: 'gallery',
   outerBounds: {
     minWidth: 860,
-    minHeight: 554
+    minHeight: 554,
   },
   frame: {
-    color: '#1E2023'
+    color: '#1E2023',
   },
   hidden: true
 };
@@ -23,13 +23,14 @@ var windowCreateOptions = {
  * Backgound object. This is necessary for AppWindowWrapper.
  * @type {!BackgroundBase}
  */
+// eslint-disable-next-line no-var
 var background = new BackgroundBase();
 
 /**
  * Gallery app window wrapper.
  * @type {!SingletonAppWindowWrapper}
  */
-var galleryWrapper =
+const galleryWrapper =
     new SingletonAppWindowWrapper('gallery.html', windowCreateOptions);
 
 /**
@@ -51,12 +52,9 @@ function openGalleryWindow(urls) {
         }
 
         // Opens a window.
-        return new Promise(function(fulfill, reject) {
-                 galleryWrapper.launch(
-                     {urls: urls}, false, fulfill.bind(null, galleryWrapper));
-               })
-            .then(function(galleryWrapper) {
-              var galleryWrapperDocument =
+        return galleryWrapper.launch({urls: urls}, false)
+            .then(function() {
+              const galleryWrapperDocument =
                   galleryWrapper.rawAppWindow.contentWindow.document;
               if (galleryWrapperDocument.readyState == 'complete') {
                 return galleryWrapper;

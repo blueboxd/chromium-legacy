@@ -90,7 +90,7 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
   syncer::ProfileSyncService::InitParams init_params;
   init_params.identity_manager = identity_manager;
   init_params.start_behavior = syncer::ProfileSyncService::MANUAL_START;
-  init_params.sync_client = std::make_unique<WebViewSyncClient>(browser_state);
+  init_params.sync_client = WebViewSyncClient::Create(browser_state);
   init_params.url_loader_factory = browser_state->GetSharedURLLoaderFactory();
   // ios/web_view has no need to update network time.
   init_params.network_time_update_callback = base::DoNothing();

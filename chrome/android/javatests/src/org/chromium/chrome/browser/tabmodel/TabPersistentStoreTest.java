@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
-import android.util.SparseArray;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -34,21 +33,17 @@ import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabCreationState;
-import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelSelectorMetadata;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabModelMetaDataInfo;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
+import org.chromium.chrome.test.util.browser.tabmodel.MockTabCreator;
+import org.chromium.chrome.test.util.browser.tabmodel.MockTabCreatorManager;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
-import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -80,87 +75,6 @@ public class TabPersistentStoreTest {
             this.url = url;
             this.isStandardActiveIndex = isStandardActiveIndex;
             this.isIncognitoActiveIndex = isIncognitoActiveIndex;
-        }
-    }
-
-    private static class MockTabCreator extends TabCreator {
-        public final SparseArray<TabState> created;
-        public final CallbackHelper callback;
-
-        private final boolean mIsIncognito;
-        private final TabModelSelector mSelector;
-
-        public int idOfFirstCreatedTab = Tab.INVALID_TAB_ID;
-
-        public MockTabCreator(boolean incognito, TabModelSelector selector) {
-            created = new SparseArray<>();
-            callback = new CallbackHelper();
-            mIsIncognito = incognito;
-            mSelector = selector;
-        }
-
-        @Override
-        public boolean createsTabsAsynchronously() {
-            return false;
-        }
-
-        @Override
-        public Tab createNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent) {
-            Tab tab = new MockTab(0, mIsIncognito, TabLaunchType.FROM_LINK);
-            mSelector.getModel(mIsIncognito)
-                    .addTab(tab, TabModel.INVALID_TAB_INDEX, type,
-                            TabCreationState.LIVE_IN_FOREGROUND);
-            storeTabInfo(null, tab.getId());
-            return tab;
-        }
-
-        @Override
-        public Tab createFrozenTab(TabState state, int id, int index) {
-            Tab tab = new MockTab(id, state.isIncognito(), TabLaunchType.FROM_RESTORE);
-            TabTestUtils.restoreFieldsFromState(tab, state);
-            mSelector.getModel(mIsIncognito)
-                    .addTab(tab, index, TabLaunchType.FROM_RESTORE,
-                            TabCreationState.FROZEN_ON_RESTORE);
-            storeTabInfo(state, id);
-            return tab;
-        }
-
-        @Override
-        public boolean createTabWithWebContents(
-                Tab parent, WebContents webContents, @TabLaunchType int type, String url) {
-            return false;
-        }
-
-        @Override
-        public Tab launchUrl(String url, @TabLaunchType int type) {
-            return null;
-        }
-
-        private void storeTabInfo(TabState state, int id) {
-            if (created.size() == 0) idOfFirstCreatedTab = id;
-            created.put(id, state);
-            callback.notifyCalled();
-        }
-    }
-
-    private static class MockTabCreatorManager implements TabCreatorManager {
-        private MockTabCreator mRegularCreator;
-        private MockTabCreator mIncognitoCreator;
-
-        public MockTabCreatorManager() {}
-
-        public MockTabCreatorManager(TabModelSelector selector) {
-            initialize(selector);
-        }
-
-        public void initialize(TabModelSelector selector) {
-            mRegularCreator = new MockTabCreator(false, selector);
-            mIncognitoCreator = new MockTabCreator(true, selector);
-        }
-
-        @Override
-        public MockTabCreator getTabCreator(boolean incognito) {
-            return incognito ? mIncognitoCreator : mRegularCreator;
         }
     }
 

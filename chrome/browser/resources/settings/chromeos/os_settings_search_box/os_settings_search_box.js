@@ -49,8 +49,8 @@ function fakeSettingsSearchHandlerSearch(query) {
     ['bluetooth devices', 'bluetoothDevices', Icon.kWifi],
     ['wifi', 'networks?type=WiFi', Icon.kWifi],
     ['languages', 'languages/details', Icon.kWifi],
-    ['people', 'people', Icon.kWifi],
-    ['security', 'privacy', Icon.kWifi],
+    ['people', 'osPeople', Icon.kWifi],
+    ['security', 'osPrivacy', Icon.kWifi],
     ['personalization', 'personalization', Icon.kWifi],
     ['keyboard', 'keyboard-overlay', Icon.kWifi],
     ['touchpad', 'pointer-overlay', Icon.kWifi],
@@ -69,6 +69,8 @@ function fakeSettingsSearchHandlerSearch(query) {
 
 Polymer({
   is: 'os-settings-search-box',
+
+  behaviors: [I18nBehavior],
 
   properties: {
     // True when the toolbar is displaying in narrow mode.
@@ -117,6 +119,7 @@ Polymer({
      */
     searchResults_: {
       type: Array,
+      value: [],
       observer: 'onSearchResultsChanged_',
     },
 
@@ -163,12 +166,15 @@ Polymer({
     'search-changed': 'fetchSearchResults_',
   },
 
-  /** @private */
+  /** @override */
   attached() {
     const toolbarSearchField = this.$.search;
     const searchInput = toolbarSearchField.getSearchInput();
     searchInput.addEventListener(
         'focus', this.onSearchInputFocused_.bind(this));
+
+    // Initialize the announcer once.
+    Polymer.IronA11yAnnouncer.requestAvailability();
   },
 
   /**
@@ -243,8 +249,31 @@ Polymer({
     settings.recordSearch();
   },
 
+  /**
+   * Causes ChromeVox to announce number of search results.
+   * @private
+   */
+  makeA11ySearchResultAnnouncement_() {
+    let a11yAlertText;
+    switch (this.searchResults_.length) {
+      case 0:
+        a11yAlertText = this.i18n('searchNoResults');
+        break;
+      case 1:
+        a11yAlertText = this.i18n('searchResultsOne', this.getCurrentQuery_());
+        break;
+      default:
+        a11yAlertText = this.i18n(
+            'searchResultsNumber', this.searchResults_.length,
+            this.getCurrentQuery_());
+        break;
+    }
+
+    this.fire('iron-announce', {text: a11yAlertText});
+  },
+
   /** @private */
-  onNavigatedtoResultRowRoute_() {
+  onNavigatedToResultRowRoute_() {
     // Settings has navigated to another page; close search results dropdown.
     this.shouldShowDropdown_ = false;
 
@@ -287,6 +316,14 @@ Polymer({
   },
 
   /**
+   * @return {number} Length of the search results array.
+   * @private
+   */
+  getListLength_() {
+    return this.searchResults_.length;
+  },
+
+  /**
    * Returns the correct tab index since <iron-list>'s default tabIndex property
    * does not automatically add selectedItem_'s <os-search-result-row> to the
    * default navigation flow, unless the user explicitly clicks on the row.
@@ -296,7 +333,7 @@ Polymer({
    * @private
    */
   getRowTabIndex_(item) {
-    return this.isItemSelected_(item) ? 0 : -1;
+    return this.isItemSelected_(item) && this.shouldShowDropdown_ ? 0 : -1;
   },
 
   /** @private */
@@ -304,6 +341,12 @@ Polymer({
     // Only show dropdown if focus is on search field with a non empty query.
     this.shouldShowDropdown_ =
         this.$.search.isSearchFocused() && !!this.getCurrentQuery_();
+
+    if (!this.shouldShowDropdown_) {
+      return;
+    }
+
+    this.makeA11ySearchResultAnnouncement_();
 
     if (!this.searchResultsExist_) {
       return;
@@ -366,8 +409,11 @@ Polymer({
    * @private
    */
   onKeyDown_(e) {
-    if (!this.searchResultsExist_) {
-      // No action should be taken if there are no search results.
+    if (!this.searchResultsExist_ ||
+        (!this.$.search.isSearchFocused() && !this.lastFocused_)) {
+      // No action should be taken if there are no search results, or when
+      // neither the search input nor a <os-search-result-row> is focused
+      // (ChromeVox may focus on clear search input button).
       return;
     }
 

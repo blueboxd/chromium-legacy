@@ -171,6 +171,15 @@ void WebUsbServiceImpl::GetPermission(
     return;
   }
 
+  callback = base::BindOnce(
+      [&](GetPermissionCallback callback,
+          device::mojom::UsbDeviceInfoPtr device) {
+        if (!device)
+          LOG(INFO) << "Responding to render with no USB device.";
+        std::move(callback).Run(std::move(device));
+      },
+      std::move(callback));
+
   usb_chooser_->GetPermission(std::move(device_filters), std::move(callback));
 }
 

@@ -16,6 +16,7 @@ js_library("os_settings_search_box") {
     ":os_search_result_row",
     "..:metrics_recorder",
     "..:search_handler",
+    "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//third_party/polymer/v1_0/components-chromium/iron-dropdown:iron-dropdown-extracted",
     "//third_party/polymer/v1_0/components-chromium/iron-list:iron-list-extracted",
     "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_search_field",
@@ -28,7 +29,9 @@ js_library("os_search_result_row") {
     "..:os_route",
     "..:search_handler",
     "../..:router",
+    "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js/cr/ui:focus_row_behavior",
   ]
 }

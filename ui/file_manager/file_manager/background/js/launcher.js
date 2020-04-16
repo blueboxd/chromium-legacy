@@ -183,7 +183,7 @@ launcher.launchFileManager =
 
   const appWindow = new AppWindowWrapper(
       'main.html', appId, FILE_MANAGER_WINDOW_CREATE_OPTIONS);
-  appWindow.launch(opt_appState || {}, false, () => {
+  appWindow.launch(opt_appState || {}, false).then(() => {
     if (!appWindow.rawAppWindow) {
       opt_callback && opt_callback(null);
       return Promise.resolve(null);

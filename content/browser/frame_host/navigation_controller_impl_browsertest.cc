@@ -126,6 +126,10 @@ class NavigationControllerBrowserTest : public ContentBrowserTest {
         "internals.runtimeFlags.fractionalScrollOffsetsEnabled";
     return EvalJs(shell(), script).ExtractBool();
   }
+
+  WebContentsImpl* contents() const {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
 };
 
 // Base class for tests that need to supply modifications to EmbeddedTestServer
@@ -10562,6 +10566,33 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 #else
     subframe_ref_url.WaitForNavigationFinished();
 #endif
+  }
+}
+
+// Navigating a subframe to the same URL should not generate a history entry.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NoHistoryOnNavigationToSameUrl) {
+  {
+    GURL frame_url = embedded_test_server()->GetURL(
+        "a.com", "/cross_site_iframe_factory.html?a(a)");
+
+    ASSERT_TRUE(NavigateToURL(shell(), frame_url));
+    FrameTreeNode* child = contents()->GetFrameTree()->root()->child_at(0);
+    GURL child_url = child->current_url();
+    int entry_count = contents()->GetController().GetEntryCount();
+    ASSERT_TRUE(NavigateFrameToURL(child, child_url));
+    EXPECT_EQ(entry_count, contents()->GetController().GetEntryCount());
+  }
+  {
+    GURL frame_url = embedded_test_server()->GetURL(
+        "a.com", "/cross_site_iframe_factory.html?a(b)");
+
+    ASSERT_TRUE(NavigateToURL(shell(), frame_url));
+    FrameTreeNode* child = contents()->GetFrameTree()->root()->child_at(0);
+    GURL child_url = child->current_url();
+    int entry_count = contents()->GetController().GetEntryCount();
+    ASSERT_TRUE(NavigateFrameToURL(child, child_url));
+    EXPECT_EQ(entry_count, contents()->GetController().GetEntryCount());
   }
 }
 

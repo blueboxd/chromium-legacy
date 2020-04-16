@@ -585,7 +585,8 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
 
   value_wrapper.DoneCloning();
 
-  value_wrapper.WrapIfBiggerThan(IDBValueWrapper::kWrapThreshold);
+  if (base::FeatureList::IsEnabled(kIndexedDBLargeValueWrapping))
+    value_wrapper.WrapIfBiggerThan(IDBValueWrapper::kWrapThreshold);
 
   auto idb_value = std::make_unique<IDBValue>(
       value_wrapper.TakeWireBytes(), value_wrapper.TakeBlobInfo(),

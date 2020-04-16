@@ -2,6 +2,8 @@
 
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_row_behavior.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="../os_icons.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../search_handler.html">
@@ -44,16 +46,20 @@
       }
     </style>
     <div focus-row-container>
+      <!-- The focus-row-control is aria-disabled because the aria-label of
+           this element (:host) will include instructions on how to navigate
+           to a selection.-->
       <div focus-row-control
           focus-type="rowWrapper"
           id="searchResultContainer"
           on-click="navigateToSearchResultRoute"
           on-keypress="onKeyPress_"
+          aria-disabled="true"
           selectable>
         <iron-icon id="resultIcon" icon="[[getResultIcon_(searchResult)]]">
         </iron-icon>
-        <div id="resultText">
-          [[getResultText_(searchResult)]]
+        <div id="resultText" aria-hidden="true">
+          [[resultText_]]
         </div>
         <iron-icon id="actionTypeIcon" icon="cr:arrow-forward">
         </iron-icon>

@@ -241,6 +241,10 @@ WebViewPasswordManagerClient::GetURLLoaderFactory() {
   return web_state_->GetBrowserState()->GetSharedURLLoaderFactory();
 }
 
+void WebViewPasswordManagerClient::UpdateFormManagers() {
+  delegate_.passwordManager->UpdateFormManagers();
+}
+
 bool WebViewPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
   return false;
 }

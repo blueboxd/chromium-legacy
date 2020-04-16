@@ -3,7 +3,9 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_row.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/mojo/mojo/public/mojom/base/string16.mojom.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="os_search_result_row.html">
@@ -127,11 +129,14 @@
           <template>
             <os-search-result-row actionable search-result="[[item]]"
                 selected="[[isItemSelected_(item, selectedItem_)]]"
-                tabindex$="[[getRowTabIndex_(item, selectedItem_)]]"
-                iron-list-tab-index$="[[getRowTabIndex_(item, selectedItem_)]]"
-                on-navigated-to-result-route="onNavigatedtoResultRowRoute_"
+                tabindex$="[[getRowTabIndex_(item, selectedItem_,
+                    shouldShowDropdown_)]]"
+                iron-list-tab-index$="[[getRowTabIndex_(item, selectedItem_,
+                    shouldShowDropdown_)]]"
+                on-navigated-to-result-route="onNavigatedToResultRowRoute_"
                 last-focused="{{lastFocused_}}"
                 list-blurred="{{listBlurred_}}"
+                list-length="[[getListLength_(searchResults_)]]"
                 focus-row-index="[[index]]"
                 first$="[[!index]]">
             </os-search-result-row>

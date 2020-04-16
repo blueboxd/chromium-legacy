@@ -319,8 +319,11 @@ class ChromeOSTermsHandler
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // If we fail to load Chrome OS EULA from disk, load it from resources.
     // Do nothing if OEM EULA or Play Store ToS load failed.
-    if (contents_.empty() && path_.empty())
-      contents_ = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
+    if (contents_.empty() && path_.empty()) {
+      contents_ =
+          ui::ResourceBundle::GetSharedInstance().LoadLocalizedResourceString(
+              IDS_TERMS_HTML);
+    }
     std::move(callback_).Run(base::RefCountedString::TakeString(&contents_));
   }
 
@@ -361,9 +364,9 @@ class ChromeOSCreditsHandler
   void StartOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (path_ == kKeyboardUtilsPath) {
-      contents_ = ui::ResourceBundle::GetSharedInstance()
-                      .GetRawDataResource(IDR_KEYBOARD_UTILS_JS)
-                      .as_string();
+      contents_ =
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+              IDR_KEYBOARD_UTILS_JS);
       ResponseOnUIThread();
       return;
     }
@@ -428,9 +431,9 @@ class CrostiniCreditsHandler
   void StartOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (path_ == kKeyboardUtilsPath) {
-      contents_ = ui::ResourceBundle::GetSharedInstance()
-                      .GetRawDataResource(IDR_KEYBOARD_UTILS_JS)
-                      .as_string();
+      contents_ =
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+              IDR_KEYBOARD_UTILS_JS);
       ResponseOnUIThread();
       return;
     }
@@ -636,7 +639,9 @@ void AboutUIHTMLSource::StartDataRequest(
       return;
     }
 #endif
-    response = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
+    response =
+        ui::ResourceBundle::GetSharedInstance().LoadLocalizedResourceString(
+            IDS_TERMS_HTML);
 #endif
   }
 

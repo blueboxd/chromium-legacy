@@ -9,21 +9,21 @@
  * @type {!string}
  * @const
  */
-var AUDIO_PLAYER_ICON = 'icons/audio-player-192.png';
+const AUDIO_PLAYER_ICON = 'icons/audio-player-192.png';
 
 /**
  * HTML source of the audio player.
  * @type {!string}
  * @const
  */
-var AUDIO_PLAYER_APP_URL = 'audio_player.html';
+const AUDIO_PLAYER_APP_URL = 'audio_player.html';
 
 /**
  * Configuration of the audio player.
  * @type {!Object}
  * @const
  */
-var audioPlayerCreateOptions = {
+const audioPlayerCreateOptions = {
   id: 'audio-player',
   minHeight: 4 + 48 + 96,  // 4px: border-top, 48px: track, 96px: controller
   minWidth: 320,
@@ -55,13 +55,14 @@ class AudioPlayerBackground extends BackgroundBase {
  * Backgound object. This is necessary for AppWindowWrapper.
  * @type {!AudioPlayerBackground}
  */
+// eslint-disable-next-line no-var
 var background = new AudioPlayerBackground();
 
 /**
  * Audio player app window wrapper.
  * @type {!SingletonAppWindowWrapper}
  */
-var audioPlayer = new SingletonAppWindowWrapper(
+const audioPlayer = new SingletonAppWindowWrapper(
     AUDIO_PLAYER_APP_URL, audioPlayerCreateOptions);
 
 /**
@@ -71,8 +72,8 @@ var audioPlayer = new SingletonAppWindowWrapper(
  * @return {!Promise} Promise to be fulfilled on success, or rejected on error.
  */
 function open(urls) {
-  var position = 0;
-  var startUrl = (position < urls.length) ? urls[position] : '';
+  let position = 0;
+  const startUrl = (position < urls.length) ? urls[position] : '';
 
   return new Promise(function(fulfill, reject) {
            if (urls.length === 0) {
@@ -83,12 +84,12 @@ function open(urls) {
            // Gets the current list of the children of the parent.
            window.webkitResolveLocalFileSystemURL(urls[0], function(fileEntry) {
              fileEntry.getParent(function(parentEntry) {
-               var dirReader = parentEntry.createReader();
-               var entries = [];
+               const dirReader = parentEntry.createReader();
+               let entries = [];
 
                // Call the reader.readEntries() until no more results are
                // returned.
-               var readEntries = function() {
+               const readEntries = function() {
                  dirReader.readEntries(function(results) {
                    if (!results.length) {
                      fulfill(entries.sort(util.compareName));
@@ -107,21 +108,18 @@ function open(urls) {
          })
       .then(function(entries) {
         // Omits non-audio files.
-        var audioEntries = entries.filter(FileType.isAudio);
+        const audioEntries = entries.filter(FileType.isAudio);
 
         // Adjusts the position to start playing.
-        var maybePosition = util.entriesToURLs(audioEntries).indexOf(startUrl);
+        const maybePosition =
+            util.entriesToURLs(audioEntries).indexOf(startUrl);
         if (maybePosition !== -1) {
           position = maybePosition;
         }
 
         // Opens the audio player.
-        return new Promise(function(fulfill, reject) {
-          var urls = util.entriesToURLs(audioEntries);
-          audioPlayer.launch(
-              {items: urls, position: position}, false,
-              fulfill.bind(null, null));
-        });
+        const urls = util.entriesToURLs(audioEntries);
+        return audioPlayer.launch({items: urls, position: position}, false);
       })
       .then(function() {
         audioPlayer.setIcon(AUDIO_PLAYER_ICON);

@@ -117,11 +117,10 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     /**
      * Should be called once the native library is loaded so that the actual internals of this
      * class can be initialized.
-     * @param tabContentProvider                      A {@link TabContentManager} instance.
+     * @param tabContentProvider A {@link TabContentManager} instance.
      */
     public void onNativeLibraryReady(TabContentManager tabContentProvider) {
         assert mTabContentManager == null : "onNativeLibraryReady called twice!";
-        mTabContentManager = tabContentProvider;
 
         ChromeTabCreator regularTabCreator =
                 (ChromeTabCreator) getTabCreatorManager().getTabCreator(false);
@@ -133,9 +132,16 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         TabModel incognitoModel = new IncognitoTabModel(new IncognitoTabModelImplCreator(
                 regularTabCreator, incognitoTabCreator, mUma, mOrderController,
                 mTabContentManager, mTabSaver, this));
-        initialize(normalModel, incognitoModel);
         regularTabCreator.setTabModel(normalModel, mOrderController);
         incognitoTabCreator.setTabModel(incognitoModel, mOrderController);
+        onNativeLibraryReadyInternal(tabContentProvider, normalModel, incognitoModel);
+    }
+
+    @VisibleForTesting
+    void onNativeLibraryReadyInternal(
+            TabContentManager tabContentProvider, TabModel normalModel, TabModel incognitoModel) {
+        mTabContentManager = tabContentProvider;
+        initialize(normalModel, incognitoModel);
         mTabSaver.setTabContentManager(mTabContentManager);
 
         addObserver(new EmptyTabModelSelectorObserver() {

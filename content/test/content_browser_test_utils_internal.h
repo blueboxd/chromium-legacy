@@ -39,8 +39,9 @@ class SiteInstance;
 class ToRenderFrameHost;
 
 // Navigates the frame represented by |node| to |url|, blocking until the
-// navigation finishes.
-void NavigateFrameToURL(FrameTreeNode* node, const GURL& url);
+// navigation finishes. Returns true if the navigation succeedd and the final
+// URL matches |url|.
+bool NavigateFrameToURL(FrameTreeNode* node, const GURL& url);
 
 // Sets the DialogManager to proceed by default or not when showing a
 // BeforeUnload dialog, and if it proceeds, what value to return.

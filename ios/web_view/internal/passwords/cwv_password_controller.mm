@@ -23,6 +23,7 @@
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #import "ios/web_view/internal/passwords/cwv_password_internal.h"
+#import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_client.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_driver.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -128,6 +129,12 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
     _passwordManagerDriver = std::move(passwordManagerDriver);
     _passwordManagerDriver->set_delegate(self);
 
+    [NSNotificationCenter.defaultCenter
+        addObserver:self
+           selector:@selector(handlePasswordStoreSyncToggledNotification:)
+               name:CWVPasswordStoreSyncToggledNotification
+             object:nil];
+
     // TODO(crbug.com/865114): Credential manager related logic
   }
   return self;
@@ -162,12 +169,12 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
   // per-page state.
   _passwordManager->DidNavigateMainFrame(/*form_may_be_submitted=*/true);
 
-  if (!webState->ContentIsHTML()) {
+  if (webState->ContentIsHTML()) {
+    [self findPasswordFormsAndSendThemToPasswordManager];
+  } else {
     // If the current page is not HTML, it does not contain any HTML forms.
     [self didFinishPasswordFormExtraction:std::vector<FormData>()];
   }
-
-  [self findPasswordFormsAndSendThemToPasswordManager];
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
@@ -288,6 +295,18 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
 }
 
 #pragma mark - Private methods
+
+- (void)handlePasswordStoreSyncToggledNotification:
+    (NSNotification*)notification {
+  NSValue* wrappedBrowserState =
+      notification.userInfo[CWVPasswordStoreNotificationBrowserStateKey];
+  ios_web_view::WebViewBrowserState* browserState =
+      static_cast<ios_web_view::WebViewBrowserState*>(
+          wrappedBrowserState.pointerValue);
+  if (_webState->GetBrowserState() == browserState) {
+    _passwordManagerClient->UpdateFormManagers();
+  }
+}
 
 - (void)didFinishPasswordFormExtraction:(const std::vector<FormData>&)forms {
   // Do nothing if |self| has been detached.

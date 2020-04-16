@@ -473,11 +473,11 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
   // partner. The logo is added directly to the DOM, rather than as an <img>
   // src, to make sure that screen readers can find accessibility tags inside
   // the SVG.
-  const std::string powered_by_element =
-      base::StrCat({"<span id='powered-by-logo'>",
-                    ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-                        IDR_CHROME_CLEANUP_PARTNER),
-                    "</span>"});
+  const std::string powered_by_element = base::StrCat(
+      {"<span id='powered-by-logo'>",
+       ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+           IDR_CHROME_CLEANUP_PARTNER),
+       "</span>"});
   const base::string16 powered_by_html =
       l10n_util::GetStringFUTF16(IDS_SETTINGS_RESET_CLEANUP_FOOTER_POWERED_BY,
                                  base::UTF8ToUTF16(powered_by_element));

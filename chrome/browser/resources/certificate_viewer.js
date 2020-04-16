@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('cert_viewer', function() {
+(function() {
   'use strict';
 
   /**
@@ -166,7 +166,8 @@ cr.define('cert_viewer', function() {
     clearCertificateFields();
     const item = $('hierarchy').selectedItem;
     if (item && item.detail.payload.index !== undefined) {
-      chrome.send('requestCertificateFields', [item.detail.payload.index]);
+      cr.sendWithPromise('requestCertificateFields', item.detail.payload.index)
+          .then(onCertificateFields);
     }
   }
 
@@ -175,7 +176,7 @@ cr.define('cert_viewer', function() {
    * @param {Object} certFields A dictionary containing the fields tree
    *     structure.
    */
-  function getCertificateFields(certFields) {
+  function onCertificateFields(certFields) {
     clearCertificateFields();
     const treeItem = $('cert-fields');
     treeItem.add(
@@ -183,6 +184,8 @@ cr.define('cert_viewer', function() {
     revealTree(treeItem);
     // Ensure the list is scrolled to the top by selecting the first item.
     treeItem.children[0].selected = true;
+    document.body.dispatchEvent(
+        new CustomEvent('certificate-fields-updated-for-tesing'));
   }
 
   /**
@@ -207,10 +210,5 @@ cr.define('cert_viewer', function() {
     }
   }
 
-  return {
-    initialize: initialize,
-    getCertificateFields: getCertificateFields,
-  };
-});
-
-document.addEventListener('DOMContentLoaded', cert_viewer.initialize);
+  document.addEventListener('DOMContentLoaded', initialize);
+})();

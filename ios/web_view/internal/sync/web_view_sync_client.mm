@@ -11,18 +11,14 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/browser_sync/profile_sync_components_factory_impl.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_store.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/engine/passive_model_worker.h"
-#include "components/sync_user_events/user_event_service.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_string.h"
 #include "ios/web/public/thread/web_task_traits.h"
@@ -34,7 +30,6 @@
 #import "ios/web_view/internal/sync/web_view_device_info_sync_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
-#include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -55,35 +50,58 @@ syncer::ModelTypeSet GetDisabledTypes() {
 }
 }  // namespace
 
-WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
-    : browser_state_(browser_state) {
-  profile_web_data_service_ =
+// static
+std::unique_ptr<WebViewSyncClient> WebViewSyncClient::Create(
+    WebViewBrowserState* browser_state) {
+  return std::make_unique<WebViewSyncClient>(
       WebViewWebDataServiceWrapperFactory::GetAutofillWebDataForBrowserState(
-          browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
-  account_web_data_service_ =
-      base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableAccountWalletStorage)
-          ? WebViewWebDataServiceWrapperFactory::GetAutofillWebDataForAccount(
-                browser_state_, ServiceAccessType::IMPLICIT_ACCESS)
-          : nullptr;
-
-  db_thread_ = profile_web_data_service_
-                   ? profile_web_data_service_->GetDBTaskRunner()
-                   : nullptr;
-
-  password_store_ = WebViewPasswordStoreFactory::GetForBrowserState(
-      browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
-  account_password_store_ =
+          browser_state, ServiceAccessType::IMPLICIT_ACCESS)
+          .get(),
+      WebViewWebDataServiceWrapperFactory::GetAutofillWebDataForAccount(
+          browser_state, ServiceAccessType::IMPLICIT_ACCESS)
+          .get(),
+      WebViewPasswordStoreFactory::GetForBrowserState(
+          browser_state, ServiceAccessType::IMPLICIT_ACCESS)
+          .get(),
       WebViewAccountPasswordStoreFactory::GetForBrowserState(
-          browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
+          browser_state, ServiceAccessType::IMPLICIT_ACCESS)
+          .get(),
+      browser_state->GetPrefs(),
+      WebViewIdentityManagerFactory::GetForBrowserState(browser_state),
+      WebViewModelTypeStoreServiceFactory::GetForBrowserState(browser_state),
+      WebViewDeviceInfoSyncServiceFactory::GetForBrowserState(browser_state),
+      WebViewProfileInvalidationProviderFactory::GetForBrowserState(
+          browser_state)
+          ->GetInvalidationService());
+}
 
+WebViewSyncClient::WebViewSyncClient(
+    autofill::AutofillWebDataService* profile_web_data_service,
+    autofill::AutofillWebDataService* account_web_data_service,
+    password_manager::PasswordStore* profile_password_store,
+    password_manager::PasswordStore* account_password_store,
+    PrefService* pref_service,
+    signin::IdentityManager* identity_manager,
+    syncer::ModelTypeStoreService* model_type_store_service,
+    syncer::DeviceInfoSyncService* device_info_sync_service,
+    invalidation::InvalidationService* invalidation_service)
+    : profile_web_data_service_(profile_web_data_service),
+      account_web_data_service_(account_web_data_service),
+      profile_password_store_(profile_password_store),
+      account_password_store_(account_password_store),
+      pref_service_(pref_service),
+      identity_manager_(identity_manager),
+      model_type_store_service_(model_type_store_service),
+      device_info_sync_service_(device_info_sync_service),
+      invalidation_service_(invalidation_service) {
   component_factory_ =
       std::make_unique<browser_sync::ProfileSyncComponentsFactoryImpl>(
           this, version_info::Channel::STABLE,
           prefs::kSavingBrowserHistoryDisabled,
-          base::CreateSingleThreadTaskRunner({web::WebThread::UI}), db_thread_,
-          profile_web_data_service_, account_web_data_service_, password_store_,
-          account_password_store_,
+          base::CreateSingleThreadTaskRunner({web::WebThread::UI}),
+          profile_web_data_service_->GetDBTaskRunner(),
+          profile_web_data_service_, account_web_data_service_,
+          profile_password_store_, account_password_store_,
           /*bookmark_sync_service=*/nullptr);
 }
 
@@ -91,12 +109,12 @@ WebViewSyncClient::~WebViewSyncClient() {}
 
 PrefService* WebViewSyncClient::GetPrefService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return browser_state_->GetPrefs();
+  return pref_service_;
 }
 
 signin::IdentityManager* WebViewSyncClient::GetIdentityManager() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return WebViewIdentityManagerFactory::GetForBrowserState(browser_state_);
+  return identity_manager_;
 }
 
 base::FilePath WebViewSyncClient::GetLocalSyncBackendFolder() {
@@ -104,13 +122,11 @@ base::FilePath WebViewSyncClient::GetLocalSyncBackendFolder() {
 }
 
 syncer::ModelTypeStoreService* WebViewSyncClient::GetModelTypeStoreService() {
-  return WebViewModelTypeStoreServiceFactory::GetForBrowserState(
-      browser_state_);
+  return model_type_store_service_;
 }
 
 syncer::DeviceInfoSyncService* WebViewSyncClient::GetDeviceInfoSyncService() {
-  return WebViewDeviceInfoSyncServiceFactory::GetForBrowserState(
-      browser_state_);
+  return device_info_sync_service_;
 }
 
 bookmarks::BookmarkModel* WebViewSyncClient::GetBookmarkModel() {
@@ -135,9 +151,7 @@ WebViewSyncClient::GetSendTabToSelfSyncService() {
 }
 
 base::RepeatingClosure WebViewSyncClient::GetPasswordStateChangedCallback() {
-  return base::BindRepeating(
-      &WebViewPasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged,
-      base::Unretained(browser_state_));
+  return base::DoNothing();
 }
 
 syncer::DataTypeController::TypeVector
@@ -152,13 +166,7 @@ BookmarkUndoService* WebViewSyncClient::GetBookmarkUndoService() {
 }
 
 invalidation::InvalidationService* WebViewSyncClient::GetInvalidationService() {
-  invalidation::ProfileInvalidationProvider* provider =
-      WebViewProfileInvalidationProviderFactory::GetForBrowserState(
-          browser_state_);
-  if (provider) {
-    return provider->GetInvalidationService();
-  }
-  return nullptr;
+  return invalidation_service_;
 }
 
 syncer::TrustedVaultClient* WebViewSyncClient::GetTrustedVaultClient() {

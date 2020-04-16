@@ -225,6 +225,10 @@ void USB::OnGetPermission(ScriptPromiseResolver* resolver,
   if (service_ && device_info) {
     resolver->Resolve(GetOrCreateDevice(std::move(device_info)));
   } else {
+    if (!service_)
+      LOG(INFO) << "No service connection after requestDevice().";
+    if (!device_info)
+      LOG(INFO) << "No device returned from GetPermission() call.";
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, kNoDeviceSelected));
   }
@@ -259,6 +263,7 @@ void USB::OnServiceConnectionError() {
   get_devices_requests_.clear();
 
   for (ScriptPromiseResolver* resolver : get_permission_requests_) {
+    LOG(INFO) << "Rejecting requestDevice() call on service connection error.";
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, kNoDeviceSelected));
   }

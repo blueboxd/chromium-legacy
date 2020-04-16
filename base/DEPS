@@ -6,7 +6,6 @@ include_rules = [
   "+third_party/lss",
   "+third_party/modp_b64",
   "+third_party/tcmalloc",
-  "+third_party/libunwindstack/src/libunwindstack/include",
 
   # These are implicitly brought in from the root, and we don't want them.
   "-ipc",

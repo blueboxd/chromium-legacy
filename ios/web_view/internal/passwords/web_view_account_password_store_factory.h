@@ -5,20 +5,24 @@
 #ifndef IOS_WEB_VIEW_INTERNAL_PASSWORDS_WEB_VIEW_ACCOUNT_PASSWORD_STORE_FACTORY_H_
 #define IOS_WEB_VIEW_INTERNAL_PASSWORDS_WEB_VIEW_ACCOUNT_PASSWORD_STORE_FACTORY_H_
 
+#import <Foundation/Foundation.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
+#include "components/password_manager/core/browser/password_store.h"
+#include "ios/web_view/internal/web_view_browser_state.h"
 
-enum class ServiceAccessType;
-
-namespace password_manager {
-class PasswordStore;
-}
+// Fired whenever password data is updated from the sync servers.
+FOUNDATION_EXPORT NSNotificationName const
+    CWVPasswordStoreSyncToggledNotification;
+// Stores a NSValue boxed WebViewBrowserState pointer that is the browsing
+// context of the fired notification.
+FOUNDATION_EXPORT NSString* const CWVPasswordStoreNotificationBrowserStateKey;
 
 namespace ios_web_view {
-
-class WebViewBrowserState;
 
 // Singleton that owns all Gaia-account-scoped PasswordStores and associates
 // them with WebViewBrowserStates.

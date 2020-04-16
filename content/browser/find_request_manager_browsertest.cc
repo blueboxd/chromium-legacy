@@ -83,10 +83,7 @@ class FindRequestManagerTest : public ContentBrowserTest,
     GURL url(embedded_test_server()->GetURL(
         "b.com", child->current_url().path()));
 
-    TestNavigationObserver observer(shell()->web_contents());
-    NavigateFrameToURL(child, url);
-    EXPECT_EQ(url, observer.last_navigation_url());
-    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_TRUE(NavigateFrameToURL(child, url));
   }
 
   void Find(const std::string& search_text,

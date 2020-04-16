@@ -25,7 +25,6 @@
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_device_info/device_info_prefs.h"
-#include "components/sync_sessions/session_sync_prefs.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "ios/web/public/thread/web_task_traits.h"
@@ -168,7 +167,6 @@ void WebViewBrowserState::RegisterPrefs(
   translate::TranslatePrefs::RegisterProfilePrefs(pref_registry);
   autofill::prefs::RegisterProfilePrefs(pref_registry);
   password_manager::PasswordManager::RegisterProfilePrefs(pref_registry);
-  sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(pref_registry);
   syncer::SyncPrefs::RegisterProfilePrefs(pref_registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(pref_registry);
 

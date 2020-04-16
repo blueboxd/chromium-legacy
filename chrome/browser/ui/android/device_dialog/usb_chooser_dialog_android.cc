@@ -136,6 +136,7 @@ void UsbChooserDialogAndroid::OnItemSelected(
 }
 
 void UsbChooserDialogAndroid::OnDialogCancelled(JNIEnv* env) {
+  LOG(INFO) << "USB chooser dialog canceled.";
   Cancel();
 }
 

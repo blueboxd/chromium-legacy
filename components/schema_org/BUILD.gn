@@ -41,17 +41,11 @@ compiled_action("schema_org_name_data") {
     rebase_path("$target_gen_dir/schema_org_name_data.json", root_build_dir),
   ]
 
-  inputs = [
-    rebase_path("//third_party/schema_org/schema.jsonld", root_build_dir),
-    rebase_path("//third_party/schema_org/overrides.jsonld", root_build_dir),
-  ]
-
   outputs = [ "$target_gen_dir/schema_org_name_data.json" ]
 }
 
 action("generate_schema_org_code") {
   script = "//components/schema_org/generate_schema_org_code.py"
-
   sources = [
     "templates/schema_org_entity_names.cc.tmpl",
     "templates/schema_org_entity_names.h.tmpl",
@@ -62,7 +56,6 @@ action("generate_schema_org_code") {
     "templates/schema_org_property_names.cc.tmpl",
     "templates/schema_org_property_names.h.tmpl",
   ]
-
   args =
       [
         "--schema-file",
@@ -77,12 +70,6 @@ action("generate_schema_org_code") {
         rebase_path("$target_gen_dir", root_build_dir),
         "--templates",
       ] + sources
-
-  inputs = [
-    rebase_path("//third_party/schema_org/schema.jsonld", root_build_dir),
-    rebase_path("//third_party/schema_org/overrides.jsonld", root_build_dir),
-  ]
-
   outputs = [
     "$target_gen_dir/schema_org_entity_names.h",
     "$target_gen_dir/schema_org_entity_names.cc",
@@ -93,7 +80,6 @@ action("generate_schema_org_code") {
     "$target_gen_dir/schema_org_enums.h",
     "$target_gen_dir/schema_org_enums.cc",
   ]
-
   deps = [ ":schema_org_name_data" ]
 }
 

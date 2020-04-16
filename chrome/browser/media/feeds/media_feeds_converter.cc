@@ -383,9 +383,9 @@ bool GetIdentifiers(const Property& property, T* item) {
 // string.
 base::Optional<mojom::InteractionCounterType> GetInteractionType(
     const Property& property) {
-  if (property.values->url_values.empty())
+  if (property.values->string_values.empty())
     return base::nullopt;
-  GURL type = property.values->url_values[0];
+  GURL type = GURL(property.values->string_values[0]);
   if (!type.SchemeIsHTTPOrHTTPS() || type.host() != "schema.org")
     return base::nullopt;
 
@@ -509,6 +509,9 @@ bool GetAction(mojom::MediaFeedItemActionStatus action_status,
     return false;
   item->action->url = target->values->url_values[0];
 
+  if (action_status == mojom::MediaFeedItemActionStatus::kUnknown)
+    return false;
+
   if (action_status == mojom::MediaFeedItemActionStatus::kActive) {
     auto* start_time =
         GetProperty(action.get(), schema_org::property::kStartTime);
@@ -629,8 +632,9 @@ base::Optional<EpisodeCandidate> GetEpisodeCandidate(const EntityPtr& entity) {
   candidate.entity = entity.get();
 
   auto action_status = GetActionStatus(entity.get());
-  candidate.action_status =
-      action_status.value_or(mojom::MediaFeedItemActionStatus::kUnknown);
+  if (!action_status)
+    return base::nullopt;
+  candidate.action_status = action_status.value();
 
   auto episode_number = GetPositiveIntegerFromProperty(
       entity.get(), schema_org::property::kEpisodeNumber);
@@ -903,13 +907,13 @@ void GetDataFeedItems(
                                 base::BindOnce(&GetMediaItemAuthor))) {
         continue;
       }
-      if (!convert_property.Run(schema_org::property::kPublication, false,
-                                base::BindOnce(&GetLiveDetails))) {
-        continue;
-      }
       if (!convert_property.Run(
               schema_org::property::kDuration, !converted_item->live,
               base::BindOnce(&GetDuration<mojom::MediaFeedItem>))) {
+        continue;
+      }
+      if (!convert_property.Run(schema_org::property::kPublication, false,
+                                base::BindOnce(&GetLiveDetails))) {
         continue;
       }
     } else if (converted_item->type == mojom::MediaFeedItemType::kMovie) {
@@ -942,12 +946,13 @@ void GetDataFeedItems(
         item->type == schema_org::entity::kTVSeries && converted_item->action;
     if (!has_embedded_action) {
       auto action_status = GetActionStatus(item.get());
-      converted_item->action_status =
-          action_status.value_or(mojom::MediaFeedItemActionStatus::kUnknown);
-      if (!convert_property.Run(
-              schema_org::property::kPotentialAction, !has_embedded_action,
-              base::BindOnce(&GetAction<mojom::MediaFeedItem>,
-                             converted_item->action_status))) {
+      if (!action_status.has_value())
+        continue;
+      converted_item->action_status = action_status.value();
+      if (!convert_property.Run(schema_org::property::kPotentialAction,
+                                !has_embedded_action,
+                                base::BindOnce(&GetAction<mojom::MediaFeedItem>,
+                                               action_status.value()))) {
         continue;
       }
     }

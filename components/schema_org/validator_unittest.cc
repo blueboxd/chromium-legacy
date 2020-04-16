@@ -368,4 +368,20 @@ TEST_F(SchemaOrgValidatorTest, InvalidEnumPropertyValue) {
   EXPECT_TRUE(entity->properties.empty());
 }
 
+TEST_F(SchemaOrgValidatorTest, ValidDurationPropertyValue) {
+  EntityPtr entity = Entity::New();
+  entity->type = entity::kAction;
+
+  PropertyPtr property = Property::New();
+  property->name = property::kDuration;
+  property->values = Values::New();
+  property->values->time_values.push_back(base::TimeDelta::FromHours(2));
+
+  entity->properties.push_back(std::move(property));
+
+  bool validated_entity = ValidateEntity(entity.get());
+  EXPECT_TRUE(validated_entity);
+  EXPECT_EQ(1u, entity->properties.size());
+}
+
 }  // namespace schema_org

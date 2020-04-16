@@ -462,8 +462,8 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithInteractionStatistic) {
   EntityPtr interaction_statistic = Entity::New();
   interaction_statistic->type = schema_org::entity::kInteractionCounter;
   interaction_statistic->properties.push_back(
-      CreateStringProperty(schema_org::property::kInteractionType,
-                           "https://schema.org/WatchAction"));
+      CreateUrlProperty(schema_org::property::kInteractionType,
+                        GURL("https://schema.org/WatchAction")));
   interaction_statistic->properties.push_back(
       CreateDoubleProperty(schema_org::property::kUserInteractionCount, 1.0));
   item->properties.push_back(

@@ -39,6 +39,54 @@
       ],
       "rdfs:comment": "The Action representing the type of interaction. For up votes, +1s, etc. use <a class=\"localLink\" href=\"http://schema.org/LikeAction\">LikeAction</a>. For down votes use <a class=\"localLink\" href=\"http://schema.org/DislikeAction\">DislikeAction</a>. Otherwise, use the most specific Action.",
       "rdfs:label": "interactionType"
+    },
+    {
+      "@id": "http://schema.org/duration",
+      "@type": "rdf:Property",
+      "http://purl.org/dc/terms/source": [
+        {
+          "@id": "https://github.com/schemaorg/schemaorg/issues/1698"
+        },
+        {
+          "@id": "https://github.com/schemaorg/schemaorg/issues/1457"
+        }
+      ],
+      "http://schema.org/category": [
+        "issue-1457",
+        "issue-1698"
+      ],
+      "http://schema.org/domainIncludes": [
+        {
+          "@id": "http://schema.org/QuantitativeValueDistribution"
+        },
+        {
+          "@id": "http://schema.org/Event"
+        },
+        {
+          "@id": "http://schema.org/Movie"
+        },
+        {
+          "@id": "http://schema.org/Schedule"
+        },
+        {
+          "@id": "http://schema.org/Audiobook"
+        },
+        {
+          "@id": "http://schema.org/MusicRecording"
+        },
+        {
+          "@id": "http://schema.org/MediaObject"
+        },
+        {
+          "@id": "http://schema.org/MusicRelease"
+        }
+      ],
+      "http://schema.org/rangeIncludes": [
+        {"@id": "http://schema.org/Duration"},
+        {"@id": "http://schema.org/Time"}
+      ],
+      "rdfs:comment": "The duration of the item (movie, audio recording, event, etc.) in <a href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601 date format</a>.",
+      "rdfs:label": "duration"
     }
   ]
 }

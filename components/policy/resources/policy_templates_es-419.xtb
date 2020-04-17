@@ -3279,7 +3279,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Si se establece que en esta lista <ph name="HTTP" /> solicita nombres de encabezado, la inspección de <ph name="CORS" /> ignorará los encabezados enumerados y habilitará la mitigación para las extensiones.
 
-      Si no se establece, no se aplicarán las mitigaciones que explicaron anteriormente.
+      Si no se establece, no se aplicarán las mitigaciones que se explicaron anteriormente.
 
       Para obtener más información sobre <ph name="CORS" />, visita la siguiente página web: <ph name="CORS_HELP_URL" />.
 
@@ -3351,7 +3351,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Si se establece esta configuración como verdadera, se utilizará la implementación heredada, la cual debe ser compatible con las versiones anteriores.
 
-      Si se establece como falsa o no se establece, se utilizará la nueva implementación; es posible que esto genere problemas de compatibilidad específicos en empresas.
+      Si se establece como falsa o no se establece, se utilizará la nueva implementación; es posible que esto genere problemas de compatibilidad específicos en la empresa.
 
       Después de algunos hitos, se quitará esta política.
 

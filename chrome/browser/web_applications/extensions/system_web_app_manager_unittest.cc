@@ -57,9 +57,11 @@ GURL AppUrl3() {
 ExternalInstallOptions GetWindowedInstallOptions() {
   ExternalInstallOptions options(AppUrl1(), DisplayMode::kStandalone,
                                  ExternalInstallSource::kSystemInstalled);
-  options.add_to_applications_menu = false;
+  options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
+  options.add_to_search = true;
+  options.add_to_management = false;
   options.bypass_service_worker_check = true;
   options.force_reinstall = true;
   return options;

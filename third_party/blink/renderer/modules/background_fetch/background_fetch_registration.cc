@@ -36,7 +36,9 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
       download_total_(registration->registration_data->download_total),
       downloaded_(registration->registration_data->downloaded),
       result_(registration->registration_data->result),
-      failure_reason_(registration->registration_data->failure_reason) {
+      failure_reason_(registration->registration_data->failure_reason),
+      observer_receiver_(this,
+                         service_worker_registration->GetExecutionContext()) {
   DCHECK(service_worker_registration);
   registration_ = service_worker_registration;
   registration_service_.Bind(std::move(registration->registration_interface));
@@ -377,6 +379,7 @@ void BackgroundFetchRegistration::UpdateUI(
 void BackgroundFetchRegistration::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
   visitor->Trace(observers_);
+  visitor->Trace(observer_receiver_);
   EventTargetWithInlineData::Trace(visitor);
   ActiveScriptWrappable::Trace(visitor);
 }

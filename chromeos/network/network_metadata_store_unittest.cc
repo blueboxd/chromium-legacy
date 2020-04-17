@@ -35,13 +35,29 @@ class TestNetworkMetadataObserver : public NetworkMetadataObserver {
   void OnFirstConnectionToNetwork(const std::string& guid) override {
     connections_.insert(guid);
   }
+  void OnNetworkUpdate(const std::string& guid,
+                       base::DictionaryValue* set_properties) override {
+    if (!updates_.contains(guid)) {
+      updates_[guid] = 1;
+    } else {
+      updates_[guid]++;
+    }
+  }
 
   bool HasConnected(const std::string& guid) {
     return connections_.count(guid) != 0;
   }
 
+  int GetNumberOfUpdates(const std::string& guid) {
+    if (!updates_.contains(guid)) {
+      return 0;
+    }
+    return updates_[guid];
+  }
+
  private:
   std::set<std::string> connections_;
+  base::flat_map<std::string, int> updates_;
 };
 
 class NetworkMetadataStoreTest : public ::testing::Test {
@@ -154,6 +170,7 @@ TEST_F(NetworkMetadataStoreTest, ConfigurationUpdated) {
   metadata_store()->SetIsConfiguredBySync(kGuid);
   ASSERT_FALSE(metadata_store()->GetLastConnectedTimestamp(kGuid).is_zero());
   ASSERT_TRUE(metadata_store()->GetIsConfiguredBySync(kGuid));
+  ASSERT_EQ(0, metadata_observer()->GetNumberOfUpdates(kGuid));
 
   base::DictionaryValue properties;
   properties.SetKey(shill::kSecurityProperty, base::Value(shill::kSecurityPsk));
@@ -165,6 +182,7 @@ TEST_F(NetworkMetadataStoreTest, ConfigurationUpdated) {
 
   ASSERT_TRUE(metadata_store()->GetLastConnectedTimestamp(kGuid).is_zero());
   ASSERT_FALSE(metadata_store()->GetIsConfiguredBySync(kGuid));
+  ASSERT_EQ(1, metadata_observer()->GetNumberOfUpdates(kGuid));
 }
 
 TEST_F(NetworkMetadataStoreTest, ConfigurationRemoved) {

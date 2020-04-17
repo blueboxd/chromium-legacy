@@ -44,6 +44,7 @@ from .codegen_utils import make_forward_declarations
 from .codegen_utils import make_header_include_directives
 from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
+from .package_initializer import package_initializer
 from .path_manager import PathManager
 
 
@@ -2493,7 +2494,12 @@ if (${info}.Holder() == ${info}.This()) {
                 EmptyNode(),
                 make_v8_set_return_value(cg_context),
                 TextNode("""\
+% if interface.identifier == "CSSStyleDeclaration":
+// CSSStyleDeclaration is abusing named properties.
+// Do not intercept if the property is not found.
+% else:
 bindings::V8SetReturnValue(${info}, nullptr);
+% endif
 return;"""),
             ]),
         EmptyNode(),
@@ -2615,7 +2621,13 @@ def make_named_property_definer_callback(cg_context, function_name):
         "NamedPropertyDefiner")
     body = func_def.body
 
-    if not cg_context.interface.indexed_and_named_properties.named_setter:
+    if cg_context.interface.identifier == "CSSStyleDeclaration":
+        body.append(
+            TextNode("""\
+// CSSStyleDeclaration is abusing named properties.
+// Do not intercept.  Fallback to OrdinaryDefineOwnProperty.
+"""))
+    elif not cg_context.interface.indexed_and_named_properties.named_setter:
         body.append(
             TextNode("""\
 // 3.8.3. [[DefineOwnProperty]]
@@ -6415,6 +6427,12 @@ def generate_init_idl_interfaces(web_idl_database):
     write_code_node_to_file(source_node, path_manager.gen_path_to(source_path))
 
 
+def run_multiprocessing_task(args):
+    interface, package_initializer = args
+    package_initializer.init()
+    generate_interface(interface)
+
+
 def generate_interfaces(web_idl_database):
     # More processes do not mean better performance.  The default size was
     # chosen heuristically.
@@ -6426,7 +6444,9 @@ def generate_interfaces(web_idl_database):
     # Prior to Python3, Pool.map doesn't support user interrupts (e.g. Ctrl-C),
     # although Pool.map_async(...).get(...) does.
     timeout_in_sec = 3600  # Just enough long time
-    pool.map_async(generate_interface,
-                   web_idl_database.interfaces).get(timeout_in_sec)
+    pool.map_async(
+        run_multiprocessing_task,
+        map(lambda interface: (interface, package_initializer()),
+            web_idl_database.interfaces)).get(timeout_in_sec)
 
     generate_init_idl_interfaces(web_idl_database)

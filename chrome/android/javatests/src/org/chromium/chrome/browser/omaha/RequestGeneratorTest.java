@@ -23,7 +23,7 @@ import org.chromium.chrome.test.omaha.AttributeFinder;
 import org.chromium.chrome.test.omaha.MockRequestGenerator;
 import org.chromium.chrome.test.omaha.MockRequestGenerator.DeviceType;
 import org.chromium.chrome.test.omaha.MockRequestGenerator.SignedInStatus;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeImpl;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
@@ -183,7 +183,7 @@ public class RequestGeneratorTest {
         }
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AccountManagerFacadeProvider.setInstanceForTests(
-                    new AccountManagerFacade(accountManager));
+                    new AccountManagerFacadeImpl(accountManager));
         });
 
         String sessionId = "random_session_id";

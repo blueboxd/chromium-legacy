@@ -20,6 +20,8 @@ namespace chrome_pdf {
 
 namespace {
 
+int g_last_timer_id = 0;
+
 std::string WideStringToString(FPDF_WIDESTRING wide_string) {
   return base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(wide_string));
 }
@@ -669,7 +671,9 @@ PDFiumEngine* PDFiumFormFiller::GetEngine(IPDF_JSPLATFORM* platform) {
 
 int PDFiumFormFiller::SetTimer(const base::TimeDelta& delay,
                                TimerCallback timer_func) {
-  const int timer_id = ++last_timer_id_;
+  const int timer_id = ++g_last_timer_id;
+  DCHECK(!base::Contains(timers_, timer_id));
+
   auto timer = std::make_unique<base::RepeatingTimer>();
   timer->Start(FROM_HERE, delay, base::BindRepeating(timer_func, timer_id));
   timers_[timer_id] = std::move(timer);
@@ -677,7 +681,8 @@ int PDFiumFormFiller::SetTimer(const base::TimeDelta& delay,
 }
 
 void PDFiumFormFiller::KillTimer(int timer_id) {
-  timers_.erase(timer_id);
+  size_t erased = timers_.erase(timer_id);
+  DCHECK_EQ(1u, erased);
 }
 
 }  // namespace chrome_pdf

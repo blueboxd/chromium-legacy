@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Lees en verander al jou data op die huidige webwerf wanneer dit opgeroep word</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> wil jou instellings terugstel.</translation>
 <translation id="1243314992276662751">Laai op</translation>
+<translation id="1243436884219965846">Gaan wagwoorde na</translation>
 <translation id="1244265436519979884">Linux-terugstelling vind tans plaas</translation>
 <translation id="1244303850296295656">Uitbreidingfout</translation>
 <translation id="1246158006305844142">Jou programme en instellings sal op alle Chrome-bedryfstelseltoestelle waarop jy met jou Google-rekening aangemeld is, sinkroniseer. Gaan na <ph name="LINK_BEGIN" />Chrome-instellings<ph name="LINK_END" /> toe vir blaaiersinkroniseringopsies.</translation>
@@ -934,7 +935,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2229161054156947610">Meer as 'n uur oor</translation>
 <translation id="222931766245975952">Lêer afgekap</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">Klik om vandag se logoskets te bekyk</translation>
 <translation id="2231238007119540260">As jy 'n bedienersertifikaat uitvee, stel jy die gewone sekuriteitskontroles vir daardie bediener terug en vereis daarvan om 'n geldige sertifikaat te gebruik.</translation>
 <translation id="2232876851878324699">Die lêer het een sertifikaat bevat, wat nie ingevoer is nie:</translation>
 <translation id="2233502537820838181">Meer inligting</translation>
@@ -2573,6 +2573,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4404136731284211429">Soek weer</translation>
 <translation id="4404843640767531781">Jou ouer blokkeer <ph name="APP_NAME" />. Vra jou ouer vir toestemming om hierdie program te gebruik.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Intydse Onderskrifte</translation>
 <translation id="4408599188496843485">Hulp</translation>
 <translation id="4409697491990005945">Kantlyne</translation>
 <translation id="4410545552906060960">Gebruik 'n nommer (PIN) pleks van 'n wagwoord om jou toestel te ontsluit. Om jou PIN later te stel, gaan na Instellings toe.</translation>
@@ -3978,6 +3979,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6326855256003666642">Telling van aktiewe aktiwiteite</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> vereis dat jy hierdie toestel voor die spertyd opdateer.</translation>
 <translation id="6327785803543103246">Webinstaanbediener-outo-ontdekking</translation>
+<translation id="6331566915566907158">Help om Chrome-bedryfstelselkenmerke en -werkverrigting beter te maak</translation>
 <translation id="6333064448949140209">Lêer sal vir ontfouting na Google gestuur word</translation>
 <translation id="6339668969738228384">Skep 'n nuwe profiel vir <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Kon nie aan die bediener koppel nie. Gaan asseblief jou netwerkverbinding na en probeer weer. As die probleem voortduur, herbegin jou Chromebook.</translation>
@@ -4938,6 +4940,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Verkeerde PIN. Jy het een poging oor.}other{Verkeerde PIN. Jy het # pogings oor.}}</translation>
 <translation id="7671130400130574146">Gebruik stelseltitelbalk en -grense</translation>
 <translation id="767127784612208024">Raak om terugstelling te bevestig</translation>
+<translation id="767147716926917172">Stuur diagnostiese en gebruiksdata outomaties na Google toe</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, in <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Stuur jou stem na Google om diktee in enige teksveld moontlik te maak.</translation>
 <translation id="7678280409648629969">Aanmelddata sal in Chrome geberg word nadat jy Incognitomodus verlaat het. Dit sal jou in staat stel om Aanraak-ID weer later met hierdie webwerf te gebruik.</translation>

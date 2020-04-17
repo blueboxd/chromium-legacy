@@ -108,7 +108,7 @@ jumbo_component("views_examples_lib") {
   }
 }
 
-executable("views_examples_exe") {
+executable("views_examples") {
   testonly = true
 
   sources = [ "examples_main.cc" ]
@@ -169,7 +169,7 @@ jumbo_component("views_examples_with_content_lib") {
   ]
 }
 
-executable("views_examples_with_content_exe") {
+executable("views_examples_with_content") {
   testonly = true
 
   sources = [ "examples_with_content_main_exe.cc" ]

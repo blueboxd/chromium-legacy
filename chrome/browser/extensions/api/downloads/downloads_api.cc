@@ -443,8 +443,10 @@ void InitSortTypeMap(SortTypeMap* sorter_types_ptr) {
   *sorter_types_ptr = SortTypeMap(std::move(v));
 }
 
-bool IsNotTemporaryDownloadFilter(const DownloadItem& download_item) {
-  return !download_item.IsTemporary();
+bool ShouldExport(const DownloadItem& download_item) {
+  return !download_item.IsTemporary() &&
+         download_item.GetDownloadSource() !=
+             download::DownloadSource::INTERNAL_API;
 }
 
 // Set |manager| to the on-record DownloadManager, and |incognito_manager| to
@@ -617,7 +619,7 @@ void RunDownloadQuery(
     if (incognito_manager)
       incognito_manager->GetAllDownloads(&all_items);
   }
-  query_out.AddFilter(base::Bind(&IsNotTemporaryDownloadFilter));
+  query_out.AddFilter(base::Bind(&ShouldExport));
   query_out.Search(all_items.begin(), all_items.end(), results);
 }
 
@@ -1863,7 +1865,7 @@ void ExtensionDownloadsEventRouter::OnListenerRemoved(
 void ExtensionDownloadsEventRouter::OnDownloadCreated(
     DownloadManager* manager, DownloadItem* download_item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (download_item->IsTemporary())
+  if (!ShouldExport(*download_item))
     return;
 
   EventRouter* router = EventRouter::Get(profile_);
@@ -1901,7 +1903,7 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(
   EventRouter* router = EventRouter::Get(profile_);
   ExtensionDownloadsEventRouterData* data =
     ExtensionDownloadsEventRouterData::Get(download_item);
-  if (download_item->IsTemporary() ||
+  if (!ShouldExport(*download_item) ||
       !router->HasEventListener(downloads::OnChanged::kEventName)) {
     return;
   }
@@ -1986,7 +1988,7 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(
 void ExtensionDownloadsEventRouter::OnDownloadRemoved(
     DownloadManager* manager, DownloadItem* download_item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (download_item->IsTemporary())
+  if (!ShouldExport(*download_item))
     return;
   DispatchEvent(
       events::DOWNLOADS_ON_ERASED, downloads::OnErased::kEventName, true,

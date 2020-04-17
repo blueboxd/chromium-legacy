@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">čitati i mijenjati sve vaše podatke na trenutačnoj web-lokaciji pri pozivanju</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> želi vratiti vaše postavke na zadano.</translation>
 <translation id="1243314992276662751">Prenesi</translation>
+<translation id="1243436884219965846">Pregledajte zaporke</translation>
 <translation id="1244265436519979884">U tijeku je vraćanje Linuxa</translation>
 <translation id="1244303850296295656">Pogreška proširenja</translation>
 <translation id="1246158006305844142">Vaše aplikacije i postavke sinkronizirat će se na svim uređajima s OS-om Chrome na kojima ste prijavljeni svojim Google računom. Za opcije sinkronizacije preglednika otvorite <ph name="LINK_BEGIN" />postavke Chromea<ph name="LINK_END" />.</translation>
@@ -934,7 +935,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2229161054156947610">Preostalo više od 1 sata</translation>
 <translation id="222931766245975952">Datoteka je skraćena</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">Kliknite za prikaz današnjeg doodle logotipa</translation>
 <translation id="2231238007119540260">Ako izbrišete certifikat poslužitelja, vratit ćete uobičajene sigurnosne provjere za taj poslužitelj i tražiti da koristi važeće certifikate.</translation>
 <translation id="2232876851878324699">Datoteka je sadržavala jedan certifikat koji nije bio uvezen:</translation>
 <translation id="2233502537820838181">&amp;Više informacija</translation>
@@ -2573,6 +2573,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4404136731284211429">Pretraži ponovo</translation>
 <translation id="4404843640767531781">Tvoj roditelj blokirao je aplikaciju <ph name="APP_NAME" />. Ako želiš koristiti tu aplikaciju, traži dopuštenje od roditelja.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Automatski titlovi</translation>
 <translation id="4408599188496843485">P&amp;omoć</translation>
 <translation id="4409697491990005945">Margine</translation>
 <translation id="4410545552906060960">Umjesto zaporkom, uređaj možete otključavati brojem (PIN-om). PIN možete postaviti kasnije u Postavkama.</translation>
@@ -3977,6 +3978,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="6326855256003666642">Broj aktivnosti održavanja</translation>
 <translation id="632707535499064463">Organizacija <ph name="ORGANIZATION_NAME" /> zahtijeva da ažurirate ovaj uređaj prije roka.</translation>
 <translation id="6327785803543103246">Automatsko otkrivanje putem web-proxyja</translation>
+<translation id="6331566915566907158">Pomozite poboljšati značajke i izvedbu OS-a Chrome</translation>
 <translation id="6333064448949140209">Datoteka će se poslati Googleu radi uklanjanja pogrešaka</translation>
 <translation id="6339668969738228384">Izradi novi profil za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Povezivanje s poslužiteljem nije moguće. Provjerite mrežnu vezu i pokušajte ponovo. Ako se problem ne riješi, ponovo pokrenite Chromebook.</translation>
@@ -4937,6 +4939,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN nije točan. Preostao vam je još jedan pokušaj.}one{PIN nije točan. Preostao vam je još # pokušaj.}few{PIN nije točan. Preostala su vam još # pokušaja.}other{PIN nije točan. Preostalo vam je još # pokušaja.}}</translation>
 <translation id="7671130400130574146">Koristi naslovnu traku sustava i obrube</translation>
 <translation id="767127784612208024">Dodirnite za potvrdu vraćanja na zadano</translation>
+<translation id="767147716926917172">Automatski šalje podatke o upotrebi i dijagnostici Googleu</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, na stranici <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Pošaljite audiopodatke o svojem glasu Googleu da biste omogućili diktiranje za bilo koje tekstno polje.</translation>
 <translation id="7678280409648629969">Podaci za prijavu pohranit će se u Chromeu nakon što izađete iz anonimnog načina. Na taj ćete način kasnije opet moći koristiti Touch ID s ovom web-lokacijom.</translation>

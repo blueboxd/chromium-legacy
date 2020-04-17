@@ -3,34 +3,26 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /** @typedef {{id: string, name: string, canBeDisabled: boolean}} */
-/* #export */ let NtpExtension;
+export let NtpExtension;
 
-cr.define('settings', function() {
   /** @interface */
-  /* #export */ class OnStartupBrowserProxy {
+  export class OnStartupBrowserProxy {
     /** @return {!Promise<?NtpExtension>} */
     getNtpExtension() {}
   }
 
   /**
-   * @implements {settings.OnStartupBrowserProxy}
+   * @implements {OnStartupBrowserProxy}
    */
-  /* #export */ class OnStartupBrowserProxyImpl {
+  export class OnStartupBrowserProxyImpl {
     /** @override */
     getNtpExtension() {
-      return cr.sendWithPromise('getNtpExtension');
+      return sendWithPromise('getNtpExtension');
     }
   }
 
-  cr.addSingletonGetter(OnStartupBrowserProxyImpl);
-
-  // #cr_define_end
-  return {
-    OnStartupBrowserProxy: OnStartupBrowserProxy,
-    OnStartupBrowserProxyImpl: OnStartupBrowserProxyImpl,
-  };
-});
+  addSingletonGetter(OnStartupBrowserProxyImpl);

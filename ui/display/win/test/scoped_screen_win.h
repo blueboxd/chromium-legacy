@@ -22,7 +22,8 @@ class ScopedScreenWin : public ScreenWin {
   ~ScopedScreenWin() override;
 
  private:
-  Screen* previous_screen_;
+  Screen* old_screen_ = Screen::SetScreenInstance(this);
+
   DISALLOW_COPY_AND_ASSIGN(ScopedScreenWin);
 };
 

@@ -16,7 +16,6 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "chromecast/crash/cast_crash_keys.h"
 #include "chromecast/crash/fuchsia/constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -100,7 +99,7 @@ class CastCrashStorageImplFuchsiaTest : public ::testing::Test {
 
 TEST_F(CastCrashStorageImplFuchsiaTest, LastLaunchedApp) {
   fuchsia::feedback::Annotation annotation;
-  annotation.key = "last-app";
+  annotation.key = "app.last-launched";
   annotation.value = "last_launched_app_id";
 
   cast_crash_storage_->SetLastLaunchedApp("last_launched_app_id");
@@ -110,7 +109,7 @@ TEST_F(CastCrashStorageImplFuchsiaTest, LastLaunchedApp) {
 
 TEST_F(CastCrashStorageImplFuchsiaTest, CurrentApp) {
   fuchsia::feedback::Annotation annotation;
-  annotation.key = "current-app";
+  annotation.key = "app.current";
   annotation.value = "current_app_id";
 
   cast_crash_storage_->SetCurrentApp("current_app_id");
@@ -120,7 +119,7 @@ TEST_F(CastCrashStorageImplFuchsiaTest, CurrentApp) {
 
 TEST_F(CastCrashStorageImplFuchsiaTest, PreviousApp) {
   fuchsia::feedback::Annotation annotation;
-  annotation.key = "previous-app";
+  annotation.key = "app.previous";
   annotation.value = "previous_app_id";
 
   cast_crash_storage_->SetPreviousApp("previous_app_id");

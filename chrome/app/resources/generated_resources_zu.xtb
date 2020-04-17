@@ -192,6 +192,7 @@ I-<ph name="EXTENSION_NAME" /></translation>
 <translation id="1241753985463165747">Funda uphinde ushintshe idatha yakho kuwebhusayithi yamanje uma kuhoxisiwe</translation>
 <translation id="1242633766021457174">I-<ph name="THIRD_PARTY_TOOL_NAME" /> ifuna ukusetha kabusha izilungiselelo zakho.</translation>
 <translation id="1243314992276662751">Layisha</translation>
+<translation id="1243436884219965846">Isibuyekezo samaphasiwedi</translation>
 <translation id="1244265436519979884">Ukubuyiselwa kwe-Linux manje kuyaqhubeka</translation>
 <translation id="1244303850296295656">Iphutha lesandiso</translation>
 <translation id="1246158006305844142">Izinhlelo zokusebenza nezilungiselelo zizovumelanisa kuwo wonke amadivayisi we-Chrome OS lapho ongene khona ngemvume nge-akhawunti yakho ye-Google. Ukuthola izinketho zokuvumelanisa isiphequluli, iya kuzilungiselelo ze-<ph name="LINK_BEGIN" />Chrome<ph name="LINK_END" />.</translation>
@@ -932,7 +933,6 @@ Ungaphatha izilungiselelo zale akhawunti ngokufaka uhlelo lokusebenza lwe-Family
 <translation id="2229161054156947610">Kusele ngaphezulu kwehora elingu-1</translation>
 <translation id="222931766245975952">Ifayela lifinyeziwe</translation>
 <translation id="2230051135190148440">I-CHAP</translation>
-<translation id="223106756035922488">Chofoza ukuze ubuke i-doodle yanamuhla</translation>
 <translation id="2231238007119540260">Uma ususa isitifiketi seseva, ubuyisela ukuhlolwa okujwayelekile kwezokuvikela kwaleyo seva futhi uyidinga ukuthi isebenzise isitifiketi esivumelekile.</translation>
 <translation id="2232876851878324699">Ifayela belikade liqukethe isitifiketi esisodwa, esingazange singeniswe:</translation>
 <translation id="2233502537820838181">Olunye ulwazi</translation>
@@ -2570,6 +2570,7 @@ Ungaphatha izilungiselelo zale akhawunti ngokufaka uhlelo lokusebenza lwe-Family
 <translation id="4404136731284211429">Skena futhi</translation>
 <translation id="4404843640767531781">I-<ph name="APP_NAME" /> ivinjwe ngumzali wakho. Cela umzali wakho imvume yokusebenzisa lolu hlelo lokusebenza.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Okushuthwe Bukhoma</translation>
 <translation id="4408599188496843485">Usizo</translation>
 <translation id="4409697491990005945">Amamajini</translation>
 <translation id="4410545552906060960">Sebenzisa inombolo (i-PIN) esikhundleni sephasiwedi ukuze uvule idivayisi yakho. Ukuze usethe i-PIN emuva kwesikhathi, hamba kuzilungiselelo.</translation>
@@ -3977,6 +3978,7 @@ Qiniseka ukuthi awuvezi noma yiluphi ulwazi olubucayi.</translation>
 <translation id="6326855256003666642">Ukubala kwe-Keepalive</translation>
 <translation id="632707535499064463">I-<ph name="ORGANIZATION_NAME" /> ifuna ukuba ubuyekeze le divayisi ngaphambi komnqamulajuqu.</translation>
 <translation id="6327785803543103246">Ukuthola ngokuzenzakalela ummeleli wewebhu</translation>
+<translation id="6331566915566907158">Siza ekuthuthukiseni izici nokusebenza kwe-Chrome OS</translation>
 <translation id="6333064448949140209">Ifayela lizothunyelwa ku-Google ngokususa amaphutha</translation>
 <translation id="6339668969738228384">Dala iphrofayela entsha ye-<ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Ayikwazanga ukuxhuma kuseva. Sicela uhlole uxhumo lwakho lenethiwekhi bese uyazama futhi. Uma inkinga iqhubeka, qalisa kabusha i-Chromebook yakho.</translation>
@@ -4937,6 +4939,7 @@ Qiniseka ukuthi awuvezi noma yiluphi ulwazi olubucayi.</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Iphinikhodi engalungile. Unomzamo owodwa osele.}one{Iphinikhodi engalungile. Unemizamo engu-# esele.}other{Iphinikhodi engalungile. Unemizamo engu-# esele.}}</translation>
 <translation id="7671130400130574146">Sebenzisa ibha yesihloko yesistimu nemingcele</translation>
 <translation id="767127784612208024">Thinta ukuze uqinisekise ukusetha kabusha</translation>
+<translation id="767147716926917172">Kuthumela idatha yokusetshenziswa nokuxilonga ngokuzenzekelayo ku-Google</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, ku-<ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Thumela izwi lakho ku-Google ukuze uvumele ukutholwa kunoma iyiphi inkambu yombhalo.</translation>
 <translation id="7678280409648629969">Idatha yokungena ngemvume izolondolozwa ku-Chrome ngemuva kokuphuma kumodi ye-Incognito. Lokhu kuzokuvumela ukuthi usebenzise i-Touch ID ngale webhusayithi emuva kwesikhathi.</translation>

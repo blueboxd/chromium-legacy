@@ -12,6 +12,15 @@
 namespace blink {
 namespace {
 
+struct SameSizeAsNGInlineItem {
+  void* pointers[2];
+  unsigned integers[3];
+  unsigned bit_fields : 32;
+};
+
+static_assert(sizeof(NGInlineItem) == sizeof(SameSizeAsNGInlineItem),
+              "NGInlineItem should stay small");
+
 const char* kNGInlineItemTypeStrings[] = {
     "Text",     "Control",  "AtomicInline",        "OpenTag",
     "CloseTag", "Floating", "OutOfFlowPositioned", "BidiControl"};

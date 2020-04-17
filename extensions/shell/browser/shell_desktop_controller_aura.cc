@@ -363,7 +363,7 @@ ShellDesktopControllerAura::CreateRootWindowControllerForDisplay(
   gfx::Rect bounds(gfx::ScaleToFlooredPoint(display.bounds().origin(),
                                             display.device_scale_factor()),
                    display.GetSizeInPixel());
-  std::unique_ptr<RootWindowController> root_window_controller =
+  auto root_window_controller =
       std::make_unique<RootWindowController>(this, bounds, browser_context_);
 
   // Initialize the root window with our clients.
@@ -392,13 +392,9 @@ void ShellDesktopControllerAura::TearDownRootWindowController(
 }
 
 void ShellDesktopControllerAura::MaybeQuit() {
-  // run_loop_ may be null in tests.
-  if (!run_loop_)
-    return;
-
   // Quit if there are no app windows open and no keep-alives waiting for apps
-  // to relaunch.
-  if (root_window_controllers_.empty() &&
+  // to relaunch.  |run_loop_| may be null in tests.
+  if (run_loop_ && root_window_controllers_.empty() &&
       !KeepAliveRegistry::GetInstance()->IsKeepingAlive()) {
     run_loop_->QuitWhenIdle();
   }
@@ -406,7 +402,7 @@ void ShellDesktopControllerAura::MaybeQuit() {
 
 #if defined(OS_CHROMEOS)
 gfx::Size ShellDesktopControllerAura::GetStartingWindowSize() {
-  gfx::Size size;
+  gfx::Size size = GetPrimaryDisplaySize();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAppShellHostWindowSize)) {
     const std::string size_str =
@@ -414,22 +410,16 @@ gfx::Size ShellDesktopControllerAura::GetStartingWindowSize() {
     int width, height;
     CHECK_EQ(2, sscanf(size_str.c_str(), "%dx%d", &width, &height));
     size = gfx::Size(width, height);
-  } else {
-    size = GetPrimaryDisplaySize();
   }
-  if (size.IsEmpty())
-    size = gfx::Size(1920, 1080);
-  return size;
+  return size.IsEmpty() ? gfx::Size(1920, 1080) : size;
 }
 
 gfx::Size ShellDesktopControllerAura::GetPrimaryDisplaySize() {
   const display::DisplayConfigurator::DisplayStateList& displays =
       display_configurator_->cached_displays();
-  if (displays.empty())
-    return gfx::Size();
-  const display::DisplayMode* mode = displays[0]->current_mode();
+  const display::DisplayMode* mode =
+      displays.empty() ? nullptr : displays[0]->current_mode();
   return mode ? mode->size() : gfx::Size();
-  return gfx::Size();
 }
 #endif
 

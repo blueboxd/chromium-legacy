@@ -357,6 +357,9 @@ def main():
     tool_path = os.path.abspath(os.path.join(
           os.path.dirname(__file__),
           '../../../third_party/llvm-build/Release+Asserts/bin'))
+  if not os.path.exists(tool_path):
+    sys.stderr.write('tool not found: %s\n' % tool_path)
+    return -1
 
   if args.all:
     # Reading source files is postponed to after possible regeneration of

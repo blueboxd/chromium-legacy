@@ -3777,6 +3777,11 @@ const char kZeroStateFilesDescription[] =
     "Enables zero state file recommendations in the Launcher, which appear when"
     "the search box is active and no query has been entered.";
 
+const char kZeroCopyVideoCaptureName[] = "Enable Zero-Copy Video Capture";
+const char kZeroCopyVideoCaptureDescription[] =
+    "Camera produces a gpu friendly buffer on capture and, if there is, "
+    "hardware accelerated video encoder consumes the buffer";
+
 // Prefer keeping this section sorted to adding new definitions down here.
 
 #endif  // defined(OS_CHROMEOS)

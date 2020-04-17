@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">ሲጠራ በአሁኑ ድር ጣቢያ ላይ ያለውን ውሂብ ሁሉ ያነብባል እና ይቀይራል</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> ቅንብሮችዎን ዳግም ማስጀመር ይፈልጋሉ።</translation>
 <translation id="1243314992276662751">ስቀል</translation>
+<translation id="1243436884219965846">የይለፍ ቃላትን ገምግም</translation>
 <translation id="1244265436519979884">Linux ወደነበረበት መመለስ አሁን በሂደት ላይ ነው</translation>
 <translation id="1244303850296295656">የቅጥያ ስህተት</translation>
 <translation id="1246158006305844142">የእርስዎ መተግበሪያዎች እና ቅንብሮች በGoogle መለያዎ በገቡባቸው ሁሉም የChrome OS መሣሪያዎች ላይ ይሰምራሉ። ለአሳሽ ስምረት አማራጮች ወደ <ph name="LINK_BEGIN" />የChrome ቅንብሮች<ph name="LINK_END" /> ይሂዱ።</translation>
@@ -934,7 +935,6 @@
 <translation id="2229161054156947610">ከ1 ሰዓት በላይ ይቀራል</translation>
 <translation id="222931766245975952">ፋይል ተቋርጧል</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">የዛሬውን doodle ለማየት ጠቅ ያድርጉ</translation>
 <translation id="2231238007119540260">የአገልጋይ እውቅና ማረጋገጫ ከሰረዙ የዚያ አገልጋይ መደበኛው የደህንነት ማረጋገጫዎችን ይመልሱና የሚሰራ የእውቅና ማረጋገጫ እንዲጠቀሙ ይፈልጉበታል።</translation>
 <translation id="2232876851878324699">ፋይሉ አንድ እንዲገባ ያልተደረገ የእውቅና ማረጋገጫ ይዞ ነበር፦</translation>
 <translation id="2233502537820838181">&amp;ተጨማሪ መረጃ</translation>
@@ -2570,6 +2570,7 @@
 <translation id="4404136731284211429">እንደገና ቃኝ</translation>
 <translation id="4404843640767531781"><ph name="APP_NAME" /> በእርስዎ ወላጅ ታግዷል። ወላጅዎ ይህን መተግበሪያ እንዲጠቀሙ ፈቃድ ይጠይቋቸው።</translation>
 <translation id="4405117686468554883">*.jpeg፣ *.jpg፣ *.png</translation>
+<translation id="4406883609789734330">የቀጥታ ስርጭት መግለጫ ጽሑፍ</translation>
 <translation id="4408599188496843485">እ&amp;ገዛ</translation>
 <translation id="4409697491990005945">ህዳጎች</translation>
 <translation id="4410545552906060960">መሣሪያዎን ለመክፈት ከይለፍ ቃል ይልቅ ቁጥር (ፒን) ይጠቀሙ። የእርስዎን ፒን በኋላ ለማቀናበር ወደ ቅንብሮች ይሂዱ።</translation>
@@ -3974,6 +3975,7 @@
 <translation id="6326855256003666642">የKeepalive ብዛት</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> ከቀነ ገደቡ በፊት ይህን መሣሪያ እንዲያዘምኑ ይፈልግብዎታል።</translation>
 <translation id="6327785803543103246">የድር ተኪ ራስ-ግኝት</translation>
+<translation id="6331566915566907158">የChrome OS ባህሪያት እና አፈጻጸም እንዲሻሻል ያግዙ</translation>
 <translation id="6333064448949140209">ፋይሉ ለመታረም ወደ Google ይላካል</translation>
 <translation id="6339668969738228384">ለ<ph name="USER_EMAIL_ADDRESS" /> አዲስ መገለጫ ይፈጠሩ</translation>
 <translation id="6340017061976355871">ከአገልጋዩ ጋር መገናኘት አልተቻለም። እባክዎ የአውታረ መረብዎን ግንኙነት ይፈትሹትና እንደገና ይሞክሩ። ችግሩ ከቀጠለ የእርስዎን Chromebook ዳግም ያስጀምሩት።</translation>
@@ -4934,6 +4936,7 @@
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{ትክክል ያልሆነ ፒን። አንድ ቀሪ ሙከራ አልዎት።}one{ትክክል ያልሆነ ፒን። # ቀሪ ሙከራዎች አልዎት።}other{ትክክል ያልሆነ ፒን። # ቀሪ ሙከራዎች አልዎት።}}</translation>
 <translation id="7671130400130574146">የሥርዓት ርእሰ አሞሌ እና ጠርዞች</translation>
 <translation id="767127784612208024">ዳግም ማስጀመርን ለማረጋገጥ ይንኩ</translation>
+<translation id="767147716926917172">የምርመራ እና የአጠቃቀም ውሂብ ወደ Google በራስ-ሰር ላክ</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />፣ በ<ph name="PAGE_TITLE" /> ውስጥ።</translation>
 <translation id="7676867886086876795">ወደ ማናቸውም የጽሑፍ መስክ በቃል ማስጻፍን ለመፍቀድ ድምጽዎን ወደ Google ይላኩ።</translation>
 <translation id="7678280409648629969">ከማንነትን የማያሳውቅ ሁነታ ከወጡ በኋላ በ Chrome ውስጥ በመለያ መግቢያ ውሂብ ይከማቻል። በኋላ ላይ እንደገና ከዚህ የድር ጣቢያ ጋር የንኪ መታወቂያን እንዲጠቀሙ ይህ ያስችልዎታል።</translation>

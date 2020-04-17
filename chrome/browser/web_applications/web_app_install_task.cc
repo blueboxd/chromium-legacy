@@ -694,6 +694,16 @@ void WebAppInstallTask::OnDialogCompleted(
   if (install_params_) {
     finalize_options.locally_installed = install_params_->locally_installed;
 
+    if (IsChromeOs()) {
+      finalize_options.chromeos_data.emplace();
+      finalize_options.chromeos_data->show_in_launcher =
+          install_params_->add_to_applications_menu;
+      finalize_options.chromeos_data->show_in_search =
+          install_params_->add_to_search;
+      finalize_options.chromeos_data->show_in_management =
+          install_params_->add_to_management;
+    }
+
     if (install_params_->user_display_mode != DisplayMode::kUndefined) {
       web_app_info_copy.open_as_window =
           install_params_->user_display_mode != DisplayMode::kBrowser;

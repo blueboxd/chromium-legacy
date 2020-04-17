@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Read and change all your data on the current website when invoked</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> wants to reset your settings.</translation>
 <translation id="1243314992276662751">Upload</translation>
+<translation id="1243436884219965846">Review passwords</translation>
 <translation id="1244265436519979884">Linux restore currently in progress</translation>
 <translation id="1244303850296295656">Extension error</translation>
 <translation id="1246158006305844142">Your apps and settings will sync across all Chrome OS devices where you are signed in with your Google Account. For browser sync options, go to<ph name="LINK_BEGIN" />Chrome settings<ph name="LINK_END" />.</translation>
@@ -934,7 +935,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2229161054156947610">More than 1 hour left</translation>
 <translation id="222931766245975952">File truncated</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">Click to view today’s doodle</translation>
 <translation id="2231238007119540260">If you delete a server certificate, you restore the usual security checks for that server and require that it uses a valid certificate.</translation>
 <translation id="2232876851878324699">The file contained one certificate, which was not imported:</translation>
 <translation id="2233502537820838181">&amp;More information</translation>
@@ -2573,6 +2573,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4404136731284211429">Scan again</translation>
 <translation id="4404843640767531781"><ph name="APP_NAME" /> is blocked by your parent. Ask your parent for permission to use this app.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Live Caption</translation>
 <translation id="4408599188496843485">H&amp;elp</translation>
 <translation id="4409697491990005945">Margins</translation>
 <translation id="4410545552906060960">Use a number (PIN) instead of a password to unlock your device. To set your PIN later, go to Settings.</translation>
@@ -3977,6 +3978,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6326855256003666642">Keepalive Count</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> requires you to update this device before the deadline.</translation>
 <translation id="6327785803543103246">Web proxy auto-discovery</translation>
+<translation id="6331566915566907158">Help improve Chrome OS features and performance</translation>
 <translation id="6333064448949140209">File will be sent to Google for debugging</translation>
 <translation id="6339668969738228384">Create a new profile for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Couldn’t connect with the server. Please check your network connection and try again. If the problem persists, restart your Chromebook.</translation>
@@ -4937,6 +4939,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Incorrect PIN. You have one attempt remaining.}other{Incorrect PIN. You have # attempts remaining.}}</translation>
 <translation id="7671130400130574146">Use system title bar and borders</translation>
 <translation id="767127784612208024">Touch to confirm reset</translation>
+<translation id="767147716926917172">Automatically sends diagnostic and usage data to Google</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, in <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Send your voice to Google to allow dictation into any text field.</translation>
 <translation id="7678280409648629969">Sign-in data will be stored in Chrome after you exit Incognito mode. This will let you use Touch ID with this website again later.</translation>
@@ -5363,7 +5366,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8199300056570174101">Network (Service) and Device properties</translation>
 <translation id="8200772114523450471">Resume</translation>
 <translation id="8202160505685531999">Please re-enter your password to update your <ph name="DEVICE_TYPE" /> profile.</translation>
-<translation id="8203732864715032075">Send you notifications and default to remembering this computer for Messages. <ph name="LINK_BEGIN" />Find out more<ph name="LINK_END" /></translation>
+<translation id="8203732864715032075">Send you notifications and default to remembering this computer for Messages. <ph name="LINK_BEGIN" />Learn more<ph name="LINK_END" /></translation>
 <translation id="820568752112382238">Most-visited sites</translation>
 <translation id="8206745257863499010">Bluesy</translation>
 <translation id="8206859287963243715">Mobile</translation>

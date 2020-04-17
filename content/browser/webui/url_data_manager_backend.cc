@@ -51,10 +51,11 @@ namespace content {
 
 namespace {
 
-const char kChromeURLContentSecurityPolicyHeaderBase[] =
-    "Content-Security-Policy: ";
+const char kChromeURLContentSecurityPolicyHeaderName[] =
+    "Content-Security-Policy";
 
-const char kChromeURLXFrameOptionsHeader[] = "X-Frame-Options: DENY";
+const char kChromeURLXFrameOptionsHeaderName[] = "X-Frame-Options";
+const char kChromeURLXFrameOptionsHeaderValue[] = "DENY";
 const char kNetworkErrorKey[] = "netError";
 
 bool SchemeIsInSchemes(const std::string& scheme,
@@ -139,42 +140,41 @@ scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
   // that is compatible with a given WebUI URL, and append it to the existing
   // response headers.
   if (source->ShouldAddContentSecurityPolicy()) {
-    std::string base = kChromeURLContentSecurityPolicyHeaderBase;
-    base.append(source->GetContentSecurityPolicyScriptSrc());
-    base.append(source->GetContentSecurityPolicyObjectSrc());
-    base.append(source->GetContentSecurityPolicyChildSrc());
-    base.append(source->GetContentSecurityPolicyStyleSrc());
-    base.append(source->GetContentSecurityPolicyImgSrc());
-    base.append(source->GetContentSecurityPolicyWorkerSrc());
+    std::string csp_header;
+    csp_header.append(source->GetContentSecurityPolicyScriptSrc());
+    csp_header.append(source->GetContentSecurityPolicyObjectSrc());
+    csp_header.append(source->GetContentSecurityPolicyChildSrc());
+    csp_header.append(source->GetContentSecurityPolicyStyleSrc());
+    csp_header.append(source->GetContentSecurityPolicyImgSrc());
+    csp_header.append(source->GetContentSecurityPolicyWorkerSrc());
     // TODO(crbug.com/1051745): Both CSP frame ancestors and XFO headers may be
     // added to the response but frame ancestors would take precedence. In the
     // future, XFO will be removed so when that happens remove the check and
     // always add frame ancestors.
     if (source->ShouldDenyXFrameOptions())
-      base.append(source->GetContentSecurityPolicyFrameAncestors());
-    headers->AddHeader(base);
+      csp_header.append(source->GetContentSecurityPolicyFrameAncestors());
+    headers->SetHeader(kChromeURLContentSecurityPolicyHeaderName, csp_header);
   }
 
-  if (source->ShouldDenyXFrameOptions())
-    headers->AddHeader(kChromeURLXFrameOptionsHeader);
+  if (source->ShouldDenyXFrameOptions()) {
+    headers->SetHeader(kChromeURLXFrameOptionsHeaderName,
+                       kChromeURLXFrameOptionsHeaderValue);
+  }
 
   if (!source->AllowCaching())
-    headers->AddHeader("Cache-Control: no-cache");
+    headers->SetHeader("Cache-Control", "no-cache");
 
   std::string mime_type = source->GetMimeType(path);
-  if (source->ShouldServeMimeTypeAsContentTypeHeader() && !mime_type.empty()) {
-    std::string content_type = base::StringPrintf(
-        "%s:%s", net::HttpRequestHeaders::kContentType, mime_type.c_str());
-    headers->AddHeader(content_type);
-  }
+  if (source->ShouldServeMimeTypeAsContentTypeHeader() && !mime_type.empty())
+    headers->SetHeader(net::HttpRequestHeaders::kContentType, mime_type);
 
   if (!origin.empty()) {
     std::string header = source->GetAccessControlAllowOriginForOrigin(origin);
     DCHECK(header.empty() || header == origin || header == "*" ||
            header == "null");
     if (!header.empty()) {
-      headers->AddHeader("Access-Control-Allow-Origin: " + header);
-      headers->AddHeader("Vary: Origin");
+      headers->SetHeader("Access-Control-Allow-Origin", header);
+      headers->SetHeader("Vary", "Origin");
     }
   }
 

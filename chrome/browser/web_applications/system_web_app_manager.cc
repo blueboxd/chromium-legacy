@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 
+#include <algorithm>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -164,9 +165,11 @@ ExternalInstallOptions CreateInstallOptionsForSystemApp(
   ExternalInstallOptions install_options(
       info.install_url, DisplayMode::kStandalone,
       ExternalInstallSource::kSystemInstalled);
-  install_options.add_to_applications_menu = false;
+  install_options.add_to_applications_menu = info.show_in_launcher;
   install_options.add_to_desktop = false;
   install_options.add_to_quick_launch_bar = false;
+  install_options.add_to_search = info.show_in_search;
+  install_options.add_to_management = false;
   install_options.bypass_service_worker_check = true;
   install_options.force_reinstall = force_update;
   install_options.uninstall_and_replace = info.uninstall_and_replace;

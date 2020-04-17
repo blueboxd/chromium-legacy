@@ -9,7 +9,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeImpl;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ProfileDataSource;
 
@@ -55,7 +55,7 @@ public class AccountManagerTestRule implements TestRule {
                         mProfileDataSourceFlag, blockGetAccountsFlag);
                 ThreadUtils.runOnUiThreadBlocking(() -> {
                     AccountManagerFacadeProvider.setInstanceForTests(
-                            new AccountManagerFacade(mDelegate));
+                            new AccountManagerFacadeImpl(mDelegate));
                 });
                 try {
                     statement.evaluate();

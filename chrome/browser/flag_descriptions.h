@@ -2196,6 +2196,9 @@ extern const char kVirtualKeyboardDescription[];
 extern const char kWakeOnPacketsName[];
 extern const char kWakeOnPacketsDescription[];
 
+extern const char kZeroCopyVideoCaptureName[];
+extern const char kZeroCopyVideoCaptureDescription[];
+
 extern const char kZeroStateFilesName[];
 extern const char kZeroStateFilesDescription[];
 

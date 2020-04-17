@@ -11,6 +11,7 @@
 #include "cc/base/rolling_time_delta_history.h"
 #include "cc/cc_export.h"
 #include "cc/metrics/event_metrics.h"
+#include "cc/scheduler/scheduler.h"
 #include "cc/tiles/tile_priority.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
@@ -100,7 +101,8 @@ class CC_EXPORT CompositorTimingHistory {
       const viz::BeginFrameId& current_frame_id,
       const viz::BeginFrameId& last_activated_frame_id,
       EventMetricsSet events_metrics);
-  void DidNotProduceFrame(const viz::BeginFrameId& id);
+  void DidNotProduceFrame(const viz::BeginFrameId& id,
+                          FrameSkippedReason skip_reason);
   void DidReceiveCompositorFrameAck();
   void DidPresentCompositorFrame(uint32_t frame_token,
                                  const viz::FrameTimingDetails& details);

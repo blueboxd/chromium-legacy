@@ -109,7 +109,7 @@
 <translation id="2298170939937364391">‏«ذره‌بین تمام‌صفحه» فعال شد. برای خاموش کردن آن، Ctrl+Search+M را دوباره فشار دهید.</translation>
 <translation id="2302092602801625023">‏این حساب با Family Link مدیریت می‌شود</translation>
 <translation id="2303600792989757991">مروری کلی بر پنجره تغییر حالت</translation>
-<translation id="2339073806695260576">برای یادداشت‌برداری، گرفتن عکس صفحه‌نمایش، استفاده از اشاره‌گر لیزری یا ذره‌بین روی دکمه قلم در قفسه ضربه بزنید.</translation>
+<translation id="2339073806695260576">برای یادداشت‌برداری، گرفتن نماگرفت، استفاده از اشاره‌گر لیزری یا ذره‌بین روی دکمه قلم در قفسه ضربه بزنید.</translation>
 <translation id="2341729377289034582">قفل درحالت عمودی</translation>
 <translation id="2352467521400612932">تنظیمات قلم</translation>
 <translation id="2354174487190027830">فعال‌سازی <ph name="NAME" /></translation>
@@ -479,7 +479,7 @@
 <translation id="7067196344162293536">چرخش خودکار</translation>
 <translation id="7068360136237591149">‏Open files (فایل‌ها را باز کن)</translation>
 <translation id="7076293881109082629">در حال ورود به سیستم</translation>
-<translation id="7088960765736518739">دسترسی سوئیچ</translation>
+<translation id="7088960765736518739">دسترسی کلیدی</translation>
 <translation id="7092922358121866860">نمایش تنظیمات «نور شب»</translation>
 <translation id="7098389117866926363">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
 <translation id="7131634465328662194">به‌طور خودکار از سیستم خارج خواهید شد.</translation>
@@ -521,7 +521,7 @@
 <translation id="7749443890790263709">به حداکثر تعداد میز رسیده‌اید.</translation>
 <translation id="776344839111254542">برای مشاهده جزئیات به‌روزرسانی کلیک کنید</translation>
 <translation id="7780159184141939021">چرخش صفحه</translation>
-<translation id="7796353162336583443">‏برای یادداشت‌برداری، گرفتن عکس صفحه‌نمایش، استفاده از «دستیار Google»، نشانگر لیزری یا ذره‌بین، روی دکمه قلم در قفسه ضربه بزنید.</translation>
+<translation id="7796353162336583443">‏برای یادداشت‌برداری، گرفتن نماگرفت، استفاده از «دستیار Google»، نشانگر لیزری یا ذره‌بین، روی دکمه قلم در قفسه ضربه بزنید.</translation>
 <translation id="7798302898096527229">‏برای لغو کردن، Search یا Shift را فشار دهید.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> و <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">سیگنال قوی</translation>

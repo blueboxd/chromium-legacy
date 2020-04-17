@@ -175,6 +175,8 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest, Install) {
   proxy->AppRegistryCache().ForOneApp(
       app_id, [](const apps::AppUpdate& update) {
         EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInLauncher());
+        EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInSearch());
+        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInManagement());
       });
 }
 
@@ -727,21 +729,14 @@ class SystemWebAppManagerNotShownInLauncherTest
 
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerNotShownInLauncherTest,
                        NotShownInLauncher) {
-  // TODO(crbug.com/1054195): Make the expectation unconditional.
-  const web_app::ProviderType provider = provider_type();
-
   WaitForSystemAppInstallAndLaunch(GetMockAppType());
   AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
   proxy->AppRegistryCache().ForOneApp(
-      app_id, [provider](const apps::AppUpdate& update) {
-        if (provider == ProviderType::kWebApps) {
-          EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInLauncher());
-        } else {
-          EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInLauncher());
-        }
+      app_id, [](const apps::AppUpdate& update) {
+        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInLauncher());
       });
   // OS Integration only relevant for Chrome OS.
 #if defined(OS_CHROMEOS)
@@ -753,15 +748,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerNotShownInLauncherTest,
   const ChromeAppListItem* mock_app = model_updater->FindItem(app_id);
   // |mock_app| shouldn't be found in |AppList| because it should be hidden in
   // launcher.
-  if (provider == ProviderType::kWebApps) {
-    // TODO(crbug.com/877898): |mock_app| should be hidden but web_apps.cc does
-    // not currently read from system_web_app_manager.cc. When
-    // DesktopPWAsWithoutExtensions launches this should change to
-    // EXPECT_FALSE().
-    EXPECT_TRUE(mock_app);
-  } else {
-    EXPECT_FALSE(mock_app);
-  }
+  EXPECT_FALSE(mock_app);
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -777,24 +764,14 @@ class SystemWebAppManagerNotShownInSearchTest
 
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerNotShownInSearchTest,
                        NotShownInSearch) {
-  const web_app::ProviderType provider = provider_type();
-
   WaitForSystemAppInstallAndLaunch(GetMockAppType());
   AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
   proxy->AppRegistryCache().ForOneApp(
-      app_id, [provider](const apps::AppUpdate& update) {
-        if (provider == ProviderType::kWebApps) {
-          // TODO(crbug.com/877898): |mock_app| should be hidden but web_apps.cc
-          // does not currently read from system_web_app_manager.cc. When
-          // DesktopPWAsWithoutExtensions launches remove the special case for
-          // kWebApps, ShowInSearch() should return false.
-          EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInSearch());
-        } else {
-          EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInSearch());
-        }
+      app_id, [](const apps::AppUpdate& update) {
+        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInSearch());
       });
 }
 
@@ -822,8 +799,6 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAdditionalSearchTermsTest,
       });
 }
 
-// These tests use the App Service which is only enabled on Chrome OS.
-#if defined(OS_CHROMEOS)
 // Tests that SWA-specific data is correctly migrated to Web Apps without
 // Extensions.
 class SystemWebAppManagerMigrationTest
@@ -846,39 +821,53 @@ class SystemWebAppManagerMigrationTest
   }
   ~SystemWebAppManagerMigrationTest() override = default;
 
- protected:
-  std::vector<std::string> GetAppAdditionalSearchTerms() {
-    AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
-
-    std::vector<std::string> additional_search_terms;
-    apps::AppServiceProxy* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
-    const bool app_found = proxy->AppRegistryCache().ForOneApp(
-        app_id, [&additional_search_terms](const apps::AppUpdate& update) {
-          additional_search_terms = update.AdditionalSearchTerms();
-        });
-    CHECK(app_found);
-
-    return additional_search_terms;
-  }
-
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// These tests use the App Service which is only enabled on Chrome OS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_PRE_ExtraDataIsMigrated PRE_ExtraDataIsMigrated
+#else
+#define MAYBE_PRE_ExtraDataIsMigrated DISABLED_PRE_ExtraDataIsMigrated
+#endif
 IN_PROC_BROWSER_TEST_F(SystemWebAppManagerMigrationTest,
-                       PRE_ExtraDataIsMigrated) {
+                       MAYBE_PRE_ExtraDataIsMigrated) {
   WaitForTestSystemAppInstall();
-  EXPECT_EQ(std::vector<std::string>({"Security"}),
-            GetAppAdditionalSearchTerms());
+  AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  const bool app_found = proxy->AppRegistryCache().ForOneApp(
+      app_id, [](const apps::AppUpdate& update) {
+        EXPECT_EQ(std::vector<std::string>({"Security"}),
+                  update.AdditionalSearchTerms());
+        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInManagement());
+      });
+  ASSERT_TRUE(app_found);
 }
 
-IN_PROC_BROWSER_TEST_F(SystemWebAppManagerMigrationTest, ExtraDataIsMigrated) {
+// These tests use the App Service which is only enabled on Chrome OS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_ExtraDataIsMigrated ExtraDataIsMigrated
+#else
+#define MAYBE_ExtraDataIsMigrated DISABLED_ExtraDataIsMigrated
+#endif
+IN_PROC_BROWSER_TEST_F(SystemWebAppManagerMigrationTest,
+                       MAYBE_ExtraDataIsMigrated) {
   WaitForTestSystemAppInstall();
-  EXPECT_EQ(std::vector<std::string>({"Security"}),
-            GetAppAdditionalSearchTerms());
+  AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  const bool app_found = proxy->AppRegistryCache().ForOneApp(
+      app_id, [](const apps::AppUpdate& update) {
+        EXPECT_EQ(std::vector<std::string>({"Security"}),
+                  update.AdditionalSearchTerms());
+        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInManagement());
+      });
+  ASSERT_TRUE(app_found);
 }
-#endif  // defined(OS_CHROMEOS)
 
 class SystemWebAppManagerChromeUntrustedTest
     : public SystemWebAppManagerBrowserTest {

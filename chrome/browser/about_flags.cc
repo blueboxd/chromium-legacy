@@ -137,6 +137,7 @@
 #include "gpu/config/gpu_switches.h"
 #include "media/audio/audio_features.h"
 #include "media/base/media_switches.h"
+#include "media/capture/capture_switches.h"
 #include "media/media_buildflags.h"
 #include "media/midi/midi_switches.h"
 #include "media/webrtc/webrtc_switches.h"
@@ -2155,6 +2156,17 @@ const FeatureEntry kFeatureEntries[] = {
         SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoEncode),
     },
 #if defined(OS_CHROMEOS)
+    {
+        "zero-copy-video-capture",
+        flag_descriptions::kZeroCopyVideoCaptureName,
+        flag_descriptions::kZeroCopyVideoCaptureDescription,
+        kOsCrOS,
+        ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
+            switches::kVideoCaptureUseGpuMemoryBuffer,
+            "1",
+            switches::kDisableVideoCaptureUseGpuMemoryBuffer,
+            "1"),
+    },
     {
         "ash-debug-shortcuts",
         flag_descriptions::kDebugShortcutsName,

@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
 #include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 
 struct WebApplicationInfo;
@@ -35,8 +37,14 @@ class InstallFinalizer {
   using UninstallWebAppCallback = base::OnceCallback<void(bool uninstalled)>;
 
   struct FinalizeOptions {
+    FinalizeOptions();
+    ~FinalizeOptions();
+    FinalizeOptions(const FinalizeOptions&);
+
     WebappInstallSource install_source = WebappInstallSource::COUNT;
     bool locally_installed = true;
+
+    base::Optional<WebAppChromeOsData> chromeos_data;
   };
 
   // Write the WebApp data to disk and register the app.

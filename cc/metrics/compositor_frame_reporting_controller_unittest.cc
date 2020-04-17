@@ -45,6 +45,12 @@ class TestCompositorFrameReportingController
     }
     return count;
   }
+
+  void ResetReporters() {
+    for (int i = 0; i < PipelineStage::kNumPipelineStages; ++i) {
+      reporters()[i] = nullptr;
+    }
+  }
 };
 
 class CompositorFrameReportingControllerTest : public testing::Test {
@@ -56,6 +62,7 @@ class CompositorFrameReportingControllerTest : public testing::Test {
   // The following functions simulate the actions that would
   // occur for each phase of the reporting controller.
   void SimulateBeginImplFrame() {
+    IncrementCurrentId();
     reporting_controller_.WillBeginImplFrame(args_);
   }
 
@@ -164,11 +171,17 @@ TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
   // BF
   reporting_controller_.WillBeginImplFrame(args_1);
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
+  reporting_controller_.OnFinishImplFrame(args_1.frame_id);
+  reporting_controller_.DidNotProduceFrame(args_1.frame_id,
+                                           FrameSkippedReason::kNoDamage);
 
   // BF -> BF
   // Should replace previous reporter.
   reporting_controller_.WillBeginImplFrame(args_2);
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
+  reporting_controller_.OnFinishImplFrame(args_2.frame_id);
+  reporting_controller_.DidNotProduceFrame(args_2.frame_id,
+                                           FrameSkippedReason::kNoDamage);
 
   // BF -> BMF -> BF
   // Should add new reporter.
@@ -205,19 +218,44 @@ TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
                                                  last_activated_id_, {});
   EXPECT_EQ(0, reporting_controller_.ActiveReporters());
 
-  // 4 simultaneous reporters active.
+  // Start a frame and take it all the way to the activate stage.
   SimulateActivate();
+  EXPECT_EQ(1, reporting_controller_.ActiveReporters());
 
+  // Start another frame and let it progress up to the commit stage.
   SimulateCommit(nullptr);
+  EXPECT_EQ(2, reporting_controller_.ActiveReporters());
 
+  // Start the next frame, and let it progress up to the main-frame.
   SimulateBeginMainFrame();
+  EXPECT_EQ(3, reporting_controller_.ActiveReporters());
 
+  // Start the next frame.
   SimulateBeginImplFrame();
   EXPECT_EQ(4, reporting_controller_.ActiveReporters());
+
+  reporting_controller_.OnFinishImplFrame(args_.frame_id);
+  reporting_controller_.DidNotProduceFrame(args_.frame_id,
+                                           FrameSkippedReason::kNoDamage);
 
   // Any additional BeginImplFrame's would be ignored.
   SimulateBeginImplFrame();
   EXPECT_EQ(4, reporting_controller_.ActiveReporters());
+}
+
+TEST_F(CompositorFrameReportingControllerTest,
+       StopRequestingFramesCancelsInFlightFrames) {
+  base::HistogramTester histogram_tester;
+
+  // 2 reporters active.
+  SimulateActivate();
+  SimulateCommit(nullptr);
+
+  reporting_controller_.OnStoppedRequestingBeginFrames();
+  reporting_controller_.ResetReporters();
+  histogram_tester.ExpectBucketCount(
+      "CompositorLatency.Type",
+      CompositorFrameReporter::FrameReportType::kDroppedFrame, 0);
 }
 
 TEST_F(CompositorFrameReportingControllerTest,
@@ -286,9 +324,25 @@ TEST_F(CompositorFrameReportingControllerTest, ImplFrameCausedNoDamage) {
   base::HistogramTester histogram_tester;
 
   SimulateBeginImplFrame();
+  reporting_controller_.OnFinishImplFrame(args_.frame_id);
+  reporting_controller_.DidNotProduceFrame(args_.frame_id,
+                                           FrameSkippedReason::kNoDamage);
   SimulateBeginImplFrame();
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
+  histogram_tester.ExpectBucketCount(
+      "CompositorLatency.Type",
+      CompositorFrameReporter::FrameReportType::kDroppedFrame, 0);
+
+  reporting_controller_.OnFinishImplFrame(args_.frame_id);
+  reporting_controller_.DidNotProduceFrame(args_.frame_id,
+                                           FrameSkippedReason::kWaitingOnMain);
+  SimulateBeginImplFrame();
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 1);
+  histogram_tester.ExpectBucketCount(
+      "CompositorLatency.Type",
+      CompositorFrameReporter::FrameReportType::kDroppedFrame, 1);
 }
 
 TEST_F(CompositorFrameReportingControllerTest, MainFrameCausedNoDamage) {
@@ -306,13 +360,15 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameCausedNoDamage) {
   reporting_controller_.WillBeginMainFrame(args_1);
   reporting_controller_.BeginMainFrameAborted(current_id_1);
   reporting_controller_.OnFinishImplFrame(current_id_1);
-  reporting_controller_.DidNotProduceFrame(current_id_1);
+  reporting_controller_.DidNotProduceFrame(current_id_1,
+                                           FrameSkippedReason::kNoDamage);
 
   reporting_controller_.WillBeginImplFrame(args_2);
   reporting_controller_.WillBeginMainFrame(args_2);
   reporting_controller_.OnFinishImplFrame(current_id_2);
   reporting_controller_.BeginMainFrameAborted(current_id_2);
-  reporting_controller_.DidNotProduceFrame(current_id_2);
+  reporting_controller_.DidNotProduceFrame(current_id_2,
+                                           FrameSkippedReason::kNoDamage);
 
   reporting_controller_.WillBeginImplFrame(args_3);
   reporting_controller_.WillBeginMainFrame(args_3);
@@ -335,7 +391,8 @@ TEST_F(CompositorFrameReportingControllerTest, DidNotProduceFrame) {
   reporting_controller_.WillBeginImplFrame(args_1);
   reporting_controller_.WillBeginMainFrame(args_1);
   reporting_controller_.OnFinishImplFrame(current_id_1);
-  reporting_controller_.DidNotProduceFrame(current_id_1);
+  reporting_controller_.DidNotProduceFrame(current_id_1,
+                                           FrameSkippedReason::kNoDamage);
 
   reporting_controller_.WillBeginImplFrame(args_2);
   reporting_controller_.OnFinishImplFrame(current_id_2);
@@ -365,6 +422,60 @@ TEST_F(CompositorFrameReportingControllerTest, DidNotProduceFrame) {
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.SubmitCompositorFrameToPresentationCompositorFrame",
       2);
+}
+
+TEST_F(CompositorFrameReportingControllerTest,
+       DidNotProduceFrameDueToWaitingOnMain) {
+  base::HistogramTester histogram_tester;
+
+  viz::BeginFrameId current_id_1(1, 1);
+  viz::BeginFrameArgs args_1 = SimulateBeginFrameArgs(current_id_1);
+
+  viz::BeginFrameId current_id_2(1, 2);
+  viz::BeginFrameArgs args_2 = SimulateBeginFrameArgs(current_id_2);
+  args_2.frame_time = args_1.frame_time + args_1.interval;
+
+  viz::BeginFrameId current_id_3(1, 3);
+  viz::BeginFrameArgs args_3 = SimulateBeginFrameArgs(current_id_3);
+  args_3.frame_time = args_2.frame_time + args_2.interval;
+
+  reporting_controller_.WillBeginImplFrame(args_1);
+  reporting_controller_.WillBeginMainFrame(args_1);
+  reporting_controller_.OnFinishImplFrame(current_id_1);
+  reporting_controller_.DidNotProduceFrame(current_id_1,
+                                           FrameSkippedReason::kWaitingOnMain);
+
+  reporting_controller_.WillBeginImplFrame(args_2);
+  reporting_controller_.OnFinishImplFrame(current_id_2);
+  reporting_controller_.DidNotProduceFrame(current_id_2,
+                                           FrameSkippedReason::kWaitingOnMain);
+
+  reporting_controller_.WillBeginImplFrame(args_3);
+  reporting_controller_.WillCommit();
+  reporting_controller_.DidCommit();
+  reporting_controller_.WillActivate();
+  reporting_controller_.DidActivate();
+  reporting_controller_.OnFinishImplFrame(current_id_3);
+  reporting_controller_.DidSubmitCompositorFrame(1, current_id_3, current_id_1,
+                                                 {});
+  viz::FrameTimingDetails details;
+  details.presentation_feedback = {args_3.frame_time + args_3.interval,
+                                   args_3.interval, 0};
+  reporting_controller_.DidPresentCompositorFrame(1, details);
+
+  // Frame for |args_2| was dropped waiting on the main-thread.
+  histogram_tester.ExpectBucketCount(
+      "CompositorLatency.Type",
+      CompositorFrameReporter::FrameReportType::kDroppedFrame, 1);
+
+  // Frames for |args_1| and |args_3| were presented, although |args_1| missed
+  // its deadline.
+  histogram_tester.ExpectBucketCount(
+      "CompositorLatency.Type",
+      CompositorFrameReporter::FrameReportType::kNonDroppedFrame, 2);
+  histogram_tester.ExpectBucketCount(
+      "CompositorLatency.Type",
+      CompositorFrameReporter::FrameReportType::kMissedDeadlineFrame, 1);
 }
 
 TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted) {

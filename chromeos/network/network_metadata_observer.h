@@ -9,6 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
+#include "base/values.h"
 
 namespace chromeos {
 
@@ -18,11 +19,16 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataObserver
     : public base::CheckedObserver {
  public:
   // Called the first time that a network is successfully connected to.
-  virtual void OnFirstConnectionToNetwork(const std::string& guid) = 0;
+  virtual void OnFirstConnectionToNetwork(const std::string& guid);
+
+  // Called after a network configuration and associated metadata has been
+  // updated.
+  virtual void OnNetworkUpdate(const std::string& guid,
+                               base::DictionaryValue* set_properties);
 
  protected:
-  NetworkMetadataObserver() = default;
-  ~NetworkMetadataObserver() override = default;
+  NetworkMetadataObserver();
+  ~NetworkMetadataObserver() override;
 };
 
 }  // namespace chromeos

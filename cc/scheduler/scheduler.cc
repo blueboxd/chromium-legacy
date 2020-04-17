@@ -607,8 +607,7 @@ void Scheduler::SendDidNotProduceFrame(const viz::BeginFrameArgs& args,
     return;
   last_begin_frame_ack_ = viz::BeginFrameAck(args, false /* has_damage */);
   client_->DidNotProduceFrame(last_begin_frame_ack_, reason);
-  if (reason == FrameSkippedReason::kNoDamage)
-    compositor_timing_history_->DidNotProduceFrame(args.frame_id);
+  compositor_timing_history_->DidNotProduceFrame(args.frame_id, reason);
 }
 
 // BeginImplFrame starts a compositor frame that will wait up until a deadline

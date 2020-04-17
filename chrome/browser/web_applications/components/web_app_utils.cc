@@ -117,4 +117,12 @@ std::string GetProfileCategoryForLogging(Profile* profile) {
 #endif
 }
 
+bool IsChromeOs() {
+#if defined(OS_CHROMEOS)
+  return true;
+#else
+  return false;
+#endif
+}
+
 }  // namespace web_app

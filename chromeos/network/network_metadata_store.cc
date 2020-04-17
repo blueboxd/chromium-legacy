@@ -106,6 +106,10 @@ void NetworkMetadataStore::OnConfigurationModified(
   if (set_properties->HasKey(shill::kPassphraseProperty)) {
     SetPref(guid, kLastConnectedTimestampPref, base::Value(0));
   }
+
+  for (auto& observer : observers_) {
+    observer.OnNetworkUpdate(guid, set_properties);
+  }
 }
 
 void NetworkMetadataStore::OnConfigurationRemoved(

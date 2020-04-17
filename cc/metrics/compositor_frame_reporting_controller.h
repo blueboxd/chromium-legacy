@@ -60,7 +60,8 @@ class CC_EXPORT CompositorFrameReportingController {
       const viz::BeginFrameId& current_frame_id,
       const viz::BeginFrameId& last_activated_frame_id,
       EventMetricsSet events_metrics);
-  virtual void DidNotProduceFrame(const viz::BeginFrameId& id);
+  virtual void DidNotProduceFrame(const viz::BeginFrameId& id,
+                                  FrameSkippedReason skip_reason);
   virtual void OnFinishImplFrame(const viz::BeginFrameId& id);
   virtual void DidPresentCompositorFrame(
       uint32_t frame_token,

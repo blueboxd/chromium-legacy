@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_INSTALL_MANAGER_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/optional.h"
+#include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
@@ -115,6 +118,10 @@ class InstallManager {
     bool add_to_applications_menu = true;
     bool add_to_desktop = true;
     bool add_to_quick_launch_bar = true;
+
+    // These have no effect outside of Chrome OS.
+    bool add_to_search = true;
+    bool add_to_management = true;
 
     bool bypass_service_worker_check = false;
     bool require_manifest = false;

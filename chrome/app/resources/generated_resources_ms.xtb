@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Baca dan ubah semua data anda pada tapak web semasa apabila digunakan</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> mahu menetapkan semula tetapan anda.</translation>
 <translation id="1243314992276662751">Muat naik</translation>
+<translation id="1243436884219965846">Semak kata laluan</translation>
 <translation id="1244265436519979884">Pemulihan Linux sedang dijalankan</translation>
 <translation id="1244303850296295656">Ralat sambungan</translation>
 <translation id="1246158006305844142">Apl dan tetapan anda akan disegerakkan pada semua peranti OS Chrome yang anda gunakan untuk log masuk dengan akaun Google anda. Untuk mendapatkan pilihan penyegerakan penyemak imbas, lawati <ph name="LINK_BEGIN" />tetapan Chrome<ph name="LINK_END" />.</translation>
@@ -934,7 +935,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2229161054156947610">Tinggal lebih 1 jam</translation>
 <translation id="222931766245975952">Fail dipangkas</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">Klik untuk melihat coretan hari ini</translation>
 <translation id="2231238007119540260">Jika anda memadamkan sijil pelayan, anda memulihkan pemeriksaan keselamatan biasa untuk pelayan tersebut dan memerlukannya untuk menggunakan sijil yang sah.</translation>
 <translation id="2232876851878324699">Fail ini mengandungi satu sijil, yang tidak diimport:</translation>
 <translation id="2233502537820838181">&amp;Maklumat lanjut</translation>
@@ -2573,6 +2573,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4404136731284211429">Imbas lagi</translation>
 <translation id="4404843640767531781"><ph name="APP_NAME" /> disekat oleh ibu/bapa anda. Minta kebenaran untuk menggunakan apl ini daripada ibu bapa anda.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Sari Kata Langsung</translation>
 <translation id="4408599188496843485">B&amp;antuan</translation>
 <translation id="4409697491990005945">Margin</translation>
 <translation id="4410545552906060960">Gunakan nombor (PIN) dan bukannya kata laluan untuk membuka kunci peranti anda. Pergi ke Tetapan untuk menetapkan PIN anda kemudian.</translation>
@@ -3977,6 +3978,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="6326855256003666642">Kiraan Pengekal</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> menghendaki anda mengemas kini peranti ini sebelum tarikh akhir.</translation>
 <translation id="6327785803543103246">Autopenemuan proksi web</translation>
+<translation id="6331566915566907158">Bantu kami mempertingkat ciri dan prestasi OS Chrome</translation>
 <translation id="6333064448949140209">Fail akan dihantar kepada Google untuk dinyahpepijat</translation>
 <translation id="6339668969738228384">Buat profil baharu untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Tidak dapat menyambung ke pelayan. Sila semak sambungan rangkaian anda dan cuba lagi. Sekiranya masalah ini berterusan, mulakan semula Chromebook anda.</translation>
@@ -4937,6 +4939,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN salah. Anda mempunyai satu percubaan lagi.}other{PIN salah. Anda mempunyai # percubaan lagi.}}</translation>
 <translation id="7671130400130574146">Gunakan bar dan sempadan tajuk sistem</translation>
 <translation id="767127784612208024">Sentuh untuk mengesahkan penetapan semula</translation>
+<translation id="767147716926917172">Menghantar data diagnostik dan penggunaan kepada Google secara automatik</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, dalam <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Hantar suara anda kepada Google untuk membolehkan pengimlakan dalam mana-mana medan teks.</translation>
 <translation id="7678280409648629969">Data log masuk akan disimpan dalam Chrome selepas anda keluar daripada mod Inkognito. Ini akan membolehkan anda menggunakan Touch ID pada tapak web ini lagi nanti.</translation>

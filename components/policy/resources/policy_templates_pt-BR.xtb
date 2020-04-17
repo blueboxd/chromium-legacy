@@ -763,6 +763,13 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
       Se esta política não for definida, a detecção de oclusão será ativada.</translation>
 <translation id="2166472654199325139">Não filtrar sites com conteúdo adulto</translation>
+<translation id="2166746572083670600">Configura o diretório que o <ph name="PRODUCT_NAME" /> usará para armazenar dados do usuário.
+
+      Se você definir esta política, o <ph name="PRODUCT_NAME" /> usará o diretório fornecido independentemente de o usuário ter ou não especificado a sinalização "--user-data-dir'". Para evitar perda de dados ou outros erros inesperados, não defina esta política para um diretório usado para outros propósitos, já que o <ph name="PRODUCT_NAME" /> gerencia o conteúdo.
+
+      Consulte https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas.
+
+      Se esta política for deixada sem definição, o caminho padrão do perfil será utilizado, e o usuário poderá substituí-lo pela sinalização de linha de comando "--user-data-dir".</translation>
 <translation id="2168397434410358693">Intervalo de inatividade no funcionamento com alimentação CA</translation>
 <translation id="217013996107840632">Parâmetros de linha de comando para fazer a mudança do navegador alternativo.</translation>
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>
@@ -2802,6 +2809,12 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
       Esta política é especificada em milissegundos.</translation>
 <translation id="523505283826916779">Configurações de acessibilidade</translation>
+<translation id="5236004592041099233">Configura a lista de URLs de login corporativo (somente para esquemas HTTP e HTTPS). O serviço de proteção de senhas capturará hashes com salt de senhas nesses URLs e os usará para detectar a reutilização.
+      Para que os hashes com salt de senhas sejam capturados corretamente pelo <ph name="PRODUCT_NAME" />, suas páginas de login precisam seguir as diretrizes apresentadas em https://www.chromium.org/developers/design-documents/create-amazing-password-forms (link em inglês).
+
+      Se essa configuração for ativada, os hashes com salt da senha serão capturados nesses URLs pelo serviço de proteção de senhas para detectar a reutilização.
+      Se essa configuração estiver desativada ou não for definida, o serviço de proteção de senhas capturará hashes com salt de senhas apenas em https://accounts.google.com.
+      Esta política está disponível apenas em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="5236882091572996759">Se esta política for definida como verdadeira ou não for definida, o usuário não será considerado inativo enquanto o áudio estiver sendo reproduzido. Isso impede que o tempo limite de inatividade seja atingido e que as ações correspondentes sejam realizadas. No entanto, o escurecimento, o desligamento e o bloqueio da tela serão realizados após os limites de tempo configurados, independentemente da atividade de áudio.
 
           Se esta política for definida como falsa, a atividade de áudio não impedirá que o usuário seja considerado inativo.</translation>
@@ -3511,6 +3524,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="6221175752766085998">Permitir certificados emitidos pelas âncoras de confiança locais sem a extensão subjectAlternativeName</translation>
 <translation id="6224304369267200483">Os URLs/domínios permitidos automaticamente direcionam a declaração da chave de segurança</translation>
 <translation id="6233173491898450179">Definir diretório de download</translation>
+<translation id="6234177445959386333">Configura a lista de URLs de login corporativo em que o serviço de proteção de senha capturará hashes com salt de senhas.</translation>
 <translation id="6242147107333796512">Enviar informações de relatórios de erros, como ID remoto, carimbo de data/hora da captura e causa.
 
       Se a política for definida como falsa ou não for definida, as informações de relatórios de erros não serão enviadas. Se ela for definida como verdadeira, as informações de relatórios de erros serão enviadas.</translation>
@@ -3953,6 +3967,12 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
       Se esta política não for definida, a estante será posicionada na parte inferior da tela por padrão, e o usuário poderá mudar a posição da estante.</translation>
 <translation id="7040229947030068419">Exemplo de valor:</translation>
 <translation id="7044883996351280650">Controla o serviço de backup e restauração do Android</translation>
+<translation id="705089873294344912">Configura o URL de mudança de senha (somente para esquemas HTTP e HTTPS). O serviço de proteção de senhas encaminhará os usuários a esse URL para que mudem a própria senha após receberem um aviso no navegador.
+      Para que o <ph name="PRODUCT_NAME" /> capture corretamente o hash com salt da nova senha na página de mudança de senha, essa página precisa seguir as diretrizes apresentadas em https://www.chromium.org/developers/design-documents/create-amazing-password-forms (link em inglês).
+
+      Se essa configuração estiver ativada, o serviço de proteção de senhas encaminhará os usuários a esse URL para que mudem a própria senha após receberem um aviso no navegador.
+      Se essa configuração estiver desativada ou não for definida, o serviço de proteção de senhas encaminhará os usuários para https://myaccount.google.com para a mudança da senha.
+      Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="7053678646221257043">Se ativada, esta política força a importação dos favoritos a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum favorito é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou a importação pode ocorrer automaticamente.</translation>
 <translation id="7063895219334505671">Permitir pop-ups nestes sites</translation>
 <translation id="706669471845501145">Permitir que os sites exibam notificações da área de trabalho</translation>

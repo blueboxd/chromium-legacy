@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Al je gegevens op de huidige website lezen en wijzigen wanneer dit wordt aangeroepen</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> wil je instellingen resetten.</translation>
 <translation id="1243314992276662751">Uploaden</translation>
+<translation id="1243436884219965846">Wachtwoorden controleren</translation>
 <translation id="1244265436519979884">Linux-herstel wordt momenteel uitgevoerd</translation>
 <translation id="1244303850296295656">Fout met extensie</translation>
 <translation id="1246158006305844142">Je apps en instellingen worden gesynchroniseerd voor alle Chrome OS-apparaten waarop je bent ingelogd met je Google-account. Ga naar de <ph name="LINK_BEGIN" />Chrome-instellingen<ph name="LINK_END" /> voor opties voor browsersynchronisatie.</translation>
@@ -934,7 +935,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2229161054156947610">Meer dan 1 uur resterend</translation>
 <translation id="222931766245975952">Bestand afgekapt</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">Klik om de doodle van vandaag te bekijken</translation>
 <translation id="2231238007119540260">Als je een servercertificaat verwijdert, herstel je de gebruikelijke beveiligingscontroles voor de server en verplicht je de server een geldig certificaat te gebruiken.</translation>
 <translation id="2232876851878324699">Het bestand bevat één certificaat. Dit certificaat is niet geïmporteerd:</translation>
 <translation id="2233502537820838181">&amp;Meer informatie</translation>
@@ -2573,6 +2573,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4404136731284211429">Opnieuw scannen</translation>
 <translation id="4404843640767531781"><ph name="APP_NAME" /> is geblokkeerd door je ouder. Vraag je ouder toestemming om deze app te gebruiken.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Live ondertiteling</translation>
 <translation id="4408599188496843485">H&amp;elp</translation>
 <translation id="4409697491990005945">Marges</translation>
 <translation id="4410545552906060960">Gebruik een nummer (pincode) in plaats van een wachtwoord om je apparaat te ontgrendelen. Als je later een pincode wilt instellen, ga je naar Instellingen.</translation>
@@ -3977,6 +3978,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6326855256003666642">Aantal keepalive-activiteiten</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> vereist dat je dit apparaat vóór de deadline updatet.</translation>
 <translation id="6327785803543103246">Webproxy automatisch vinden</translation>
+<translation id="6331566915566907158">Help de functies en prestaties van Chrome OS te verbeteren</translation>
 <translation id="6333064448949140209">Bestanden worden naar Google gestuurd voor foutopsporing</translation>
 <translation id="6339668969738228384">Een nieuw profiel maken voor <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Kan geen verbinding maken met de server. Controleer de netwerkverbinding en probeer het opnieuw. Als het probleem blijft optreden, start je de Chromebook opnieuw op.</translation>
@@ -4937,6 +4939,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Onjuiste pincode. Je hebt nog één poging over.}other{Onjuiste pincode. Je hebt nog # pogingen over.}}</translation>
 <translation id="7671130400130574146">Titelbalk en kaders van systeem gebruiken</translation>
 <translation id="767127784612208024">Tik hierop om het resetten te bevestigen</translation>
+<translation id="767147716926917172">Hiermee worden automatisch diagnostische en gebruiksgegevens naar Google gestuurd</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, in <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Verzend je stem naar Google zodat je kunt dicteren in tekstvelden.</translation>
 <translation id="7678280409648629969">Inloggegevens worden in Chrome opgeslagen nadat je de incognitomodus hebt afgesloten. Hierdoor kun je Touch ID later opnieuw gebruiken voor deze website.</translation>

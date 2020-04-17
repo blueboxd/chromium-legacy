@@ -16,6 +16,7 @@
 #include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/metrics/event_metrics.h"
 #include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/scheduler/scheduler.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_timing_details.h"
 
@@ -150,7 +151,7 @@ class CC_EXPORT CompositorFrameReporter {
 
   void OnFinishImplFrame(base::TimeTicks timestamp);
   void OnAbortBeginMainFrame(base::TimeTicks timestamp);
-  void OnDidNotProduceFrame();
+  void OnDidNotProduceFrame(FrameSkippedReason skip_reason);
   bool did_finish_impl_frame() const { return did_finish_impl_frame_; }
   base::TimeTicks impl_frame_finish_time() const {
     return impl_frame_finish_time_;
@@ -169,6 +170,8 @@ class CC_EXPORT CompositorFrameReporter {
   base::TimeTicks main_frame_abort_time() const {
     return *main_frame_abort_time_;
   }
+
+  FrameSkippedReason frame_skip_reason() const { return *frame_skip_reason_; }
 
  private:
   void DroppedFrame();
@@ -250,6 +253,7 @@ class CC_EXPORT CompositorFrameReporter {
   // The timestamp of when the frame was marked as not having produced a frame
   // (through a call to DidNotProduceFrame()).
   base::Optional<base::TimeTicks> did_not_produce_frame_time_;
+  base::Optional<FrameSkippedReason> frame_skip_reason_;
   base::Optional<base::TimeTicks> main_frame_abort_time_;
 };
 }  // namespace cc

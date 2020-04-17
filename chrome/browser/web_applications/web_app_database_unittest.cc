@@ -5,6 +5,9 @@
 #include "chrome/browser/web_applications/web_app_database.h"
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
@@ -12,6 +15,7 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
@@ -125,6 +129,14 @@ class WebAppDatabaseTest : public WebAppTest {
           "Foo_" + base::NumberToString(suffix) + "_" + base::NumberToString(i);
     }
     app->SetAdditionalSearchTerms(std::move(additional_search_terms));
+
+    if (IsChromeOs()) {
+      auto chromeos_data = base::make_optional<WebAppChromeOsData>();
+      chromeos_data->show_in_launcher = suffix & 0b001;
+      chromeos_data->show_in_search = suffix & 0b010;
+      chromeos_data->show_in_management = suffix & 0b100;
+      app->SetWebAppChromeOsData(std::move(chromeos_data));
+    }
 
     WebApp::SyncData sync_data;
     sync_data.name = "Sync" + name;
@@ -301,6 +313,9 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   app->SetName(name);
   app->SetUserDisplayMode(user_display_mode);
   app->SetIsLocallyInstalled(false);
+  // chromeos_data should always be set on ChromeOS.
+  if (IsChromeOs())
+    app->SetWebAppChromeOsData(base::make_optional<WebAppChromeOsData>());
 
   EXPECT_FALSE(app->HasAnySources());
   for (int i = Source::kMinValue; i <= Source::kMaxValue; ++i) {
@@ -333,6 +348,15 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_EQ(name, app_copy->name());
   EXPECT_EQ(user_display_mode, app_copy->user_display_mode());
   EXPECT_FALSE(app_copy->is_locally_installed());
+
+  auto& chromeos_data = app_copy->chromeos_data();
+  if (IsChromeOs()) {
+    EXPECT_TRUE(chromeos_data->show_in_launcher);
+    EXPECT_TRUE(chromeos_data->show_in_search);
+    EXPECT_TRUE(chromeos_data->show_in_management);
+  } else {
+    EXPECT_FALSE(chromeos_data.has_value());
+  }
 
   for (int i = Source::kMinValue; i <= Source::kMaxValue; ++i) {
     EXPECT_TRUE(app_copy->HasAnySources());

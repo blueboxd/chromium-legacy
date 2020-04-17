@@ -952,8 +952,10 @@ void CompositorTimingHistory::DidSubmitCompositorFrame(
   submit_start_time_ = Now();
 }
 
-void CompositorTimingHistory::DidNotProduceFrame(const viz::BeginFrameId& id) {
-  compositor_frame_reporting_controller_->DidNotProduceFrame(id);
+void CompositorTimingHistory::DidNotProduceFrame(
+    const viz::BeginFrameId& id,
+    FrameSkippedReason skip_reason) {
+  compositor_frame_reporting_controller_->DidNotProduceFrame(id, skip_reason);
 }
 
 void CompositorTimingHistory::DidReceiveCompositorFrameAck() {

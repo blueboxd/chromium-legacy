@@ -146,22 +146,31 @@ bool HasImportantProperty(AXNodeInfoData* node) {
   if (!node)
     return false;
 
+  // These properties are used to compute accessibility name in
+  // AccessibilityNodeInfoDataWrapper.
+  // TODO(hirokisato): Also check LABELED_BY.
   if (HasNonEmptyStringProperty(node, AXStringProperty::CONTENT_DESCRIPTION) ||
       HasNonEmptyStringProperty(node, AXStringProperty::TEXT) ||
       HasNonEmptyStringProperty(node, AXStringProperty::PANE_TITLE) ||
-      HasNonEmptyStringProperty(node, AXStringProperty::HINT_TEXT))
+      HasNonEmptyStringProperty(node, AXStringProperty::HINT_TEXT)) {
     return true;
+  }
 
-  if (GetBooleanProperty(node, AXBooleanProperty::EDITABLE) ||
-      GetBooleanProperty(node, AXBooleanProperty::CHECKABLE) ||
-      GetBooleanProperty(node, AXBooleanProperty::SELECTED))
+  // These properties are sorted in the same order of mojom file.
+  if (GetBooleanProperty(node, AXBooleanProperty::CHECKABLE) ||
+      GetBooleanProperty(node, AXBooleanProperty::FOCUSABLE) ||
+      GetBooleanProperty(node, AXBooleanProperty::SELECTED) ||
+      GetBooleanProperty(node, AXBooleanProperty::EDITABLE)) {
     return true;
+  }
 
-  if (HasStandardAction(node, AXActionType::CLICK) ||
-      HasStandardAction(node, AXActionType::FOCUS))
+  if (HasStandardAction(node, AXActionType::FOCUS) ||
+      HasStandardAction(node, AXActionType::CLEAR_FOCUS) ||
+      HasStandardAction(node, AXActionType::CLICK)) {
     return true;
+  }
 
-  // TODO(hirokisato) Also check LABELED_BY and ui::IsControl(role)
+  // TODO(hirokisato): Consider to check ui::IsControl(role).
   return false;
 }
 

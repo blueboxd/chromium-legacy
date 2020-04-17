@@ -397,7 +397,7 @@ IN_PROC_BROWSER_TEST_P(PendingAppManagerImplBrowserTest, CannotFetchManifest) {
 IN_PROC_BROWSER_TEST_P(PendingAppManagerImplBrowserTest, RegistrationTimeout) {
   ASSERT_TRUE(embedded_test_server()->Start());
   PendingAppRegistrationTask::SetTimeoutForTesting(0);
-  GURL url(embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
+  GURL url(embedded_test_server()->GetURL("/web_apps/no_service_worker.html"));
   CheckServiceWorkerStatus(url,
                            content::ServiceWorkerCapability::NO_SERVICE_WORKER);
 

@@ -20,7 +20,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeImpl;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChromeSigninController;
@@ -143,7 +143,7 @@ public class AndroidSyncSettingsTest {
                 FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             AccountManagerFacadeProvider.setInstanceForTests(
-                    new AccountManagerFacade(mAccountManager));
+                    new AccountManagerFacadeImpl(mAccountManager));
         });
         mAccount = addTestAccount("account@example.com");
         mAlternateAccount = addTestAccount("alternate@example.com");

@@ -31,6 +31,7 @@ source_set("browsertests") {
     "//chrome/test/payments:test_support",
     "//components/payments/content",
     "//components/payments/content:utils",
+    "//components/payments/core",
     "//components/payments/core:test_support",
     "//components/ukm:test_support",
   ]

@@ -289,8 +289,10 @@ void CompositorFrameReporter::OnAbortBeginMainFrame(base::TimeTicks timestamp) {
   // stage
 }
 
-void CompositorFrameReporter::OnDidNotProduceFrame() {
+void CompositorFrameReporter::OnDidNotProduceFrame(
+    FrameSkippedReason skip_reason) {
   did_not_produce_frame_time_ = base::TimeTicks::Now();
+  frame_skip_reason_ = skip_reason;
 }
 
 void CompositorFrameReporter::SetBlinkBreakdown(
@@ -354,6 +356,12 @@ void CompositorFrameReporter::TerminateReporter() {
       break;
     case FrameTerminationStatus::kDidNotProduceFrame:
       termination_status_str = "did_not_produce_frame";
+      if (!frame_skip_reason_.has_value() ||
+          frame_skip_reason() != FrameSkippedReason::kNoDamage) {
+        report_compositor_latency = true;
+        DroppedFrame();
+        termination_status_str = "dropped_frame";
+      }
       break;
     case FrameTerminationStatus::kUnknown:
       termination_status_str = "terminated_before_ending";

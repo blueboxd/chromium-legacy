@@ -201,19 +201,6 @@ Polymer({
         settings.SafetyCheckInteractions.SAFETY_CHECK_START);
     this.metricsBrowserProxy_.recordAction('Settings.SafetyCheck.Start');
 
-    // Update UI.
-    this.parentDisplayString_ = this.i18n('safetyCheckRunning');
-    this.parentStatus_ = settings.SafetyCheckParentStatus.CHECKING;
-    // Reset all children states.
-    this.updatesStatus_ = settings.SafetyCheckUpdatesStatus.CHECKING;
-    this.passwordsStatus_ = settings.SafetyCheckPasswordsStatus.CHECKING;
-    this.safeBrowsingStatus_ = settings.SafetyCheckSafeBrowsingStatus.CHECKING;
-    this.extensionsStatus_ = settings.SafetyCheckExtensionsStatus.CHECKING;
-    // Display running-status for safety check elements.
-    this.updatesDisplayString_ = '';
-    this.passwordsDisplayString_ = '';
-    this.safeBrowsingDisplayString_ = '';
-    this.extensionsDisplayString_ = '';
     // Trigger safety check.
     this.safetyCheckBrowserProxy_.runSafetyCheck();
     // Readout new safety check status via accessibility.
@@ -222,17 +209,14 @@ Polymer({
     });
   },
 
-  /** @private */
-  updateParentFromChildren_: function() {
-    // If all children elements received updates: update parent element.
-    if (this.updatesStatus_ != settings.SafetyCheckUpdatesStatus.CHECKING &&
-        this.passwordsStatus_ != settings.SafetyCheckPasswordsStatus.CHECKING &&
-        this.safeBrowsingStatus_ !=
-            settings.SafetyCheckSafeBrowsingStatus.CHECKING &&
-        this.extensionsStatus_ !=
-            settings.SafetyCheckExtensionsStatus.CHECKING) {
-      // Update UI.
-      this.parentStatus_ = settings.SafetyCheckParentStatus.AFTER;
+  /**
+   * @param {!ParentChangedEvent} event
+   * @private
+   */
+  onSafetyCheckParentChanged_: function(event) {
+    this.parentStatus_ = event.newState;
+    this.parentDisplayString_ = event.displayString;
+    if (this.parentStatus_ === settings.SafetyCheckParentStatus.AFTER) {
       // Start periodic safety check parent ran string updates.
       const timestamp = Date.now();
       const update = async () => {
@@ -252,22 +236,12 @@ Polymer({
   },
 
   /**
-   * @param {!ParentChangedEvent} event
-   * @private
-   */
-  onSafetyCheckParentChanged_: function(event) {
-    // TODO(crbug.com/1015841): Use parent state from backend instead of
-    // computing and storing parent state in WebUI.
-  },
-
-  /**
    * @param {!UpdatesChangedEvent} event
    * @private
    */
   onSafetyCheckUpdatesChanged_: function(event) {
     this.updatesStatus_ = event.newState;
     this.updatesDisplayString_ = event.displayString;
-    this.updateParentFromChildren_();
   },
 
   /**
@@ -277,7 +251,6 @@ Polymer({
   onSafetyCheckPasswordsChanged_: function(event) {
     this.passwordsDisplayString_ = event.displayString;
     this.passwordsStatus_ = event.newState;
-    this.updateParentFromChildren_();
   },
 
   /**
@@ -287,7 +260,6 @@ Polymer({
   onSafetyCheckSafeBrowsingChanged_: function(event) {
     this.safeBrowsingStatus_ = event.newState;
     this.safeBrowsingDisplayString_ = event.displayString;
-    this.updateParentFromChildren_();
   },
 
   /**
@@ -297,7 +269,6 @@ Polymer({
   onSafetyCheckExtensionsChanged_: function(event) {
     this.extensionsDisplayString_ = event.displayString;
     this.extensionsStatus_ = event.newState;
-    this.updateParentFromChildren_();
   },
 
   /**
@@ -321,6 +292,10 @@ Polymer({
     settings.HatsBrowserProxyImpl.getInstance().tryShowSurvey();
 
     this.runSafetyCheck_();
+
+    // Update parent element so that re-run button is visible and can be
+    // focused.
+    this.parentStatus_ = settings.SafetyCheckParentStatus.CHECKING;
     Polymer.dom.flush();
     this.focusParent_();
   },

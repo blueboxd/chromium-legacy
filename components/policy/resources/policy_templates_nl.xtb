@@ -773,6 +773,13 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 
       Als dit beleid niet is ingesteld, wordt detectie van occlusie ingeschakeld.</translation>
 <translation id="2166472654199325139">Sites niet filteren op content voor volwassenen</translation>
+<translation id="2166746572083670600">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME" /> gebruikt voor het opslaan van gebruikersgegevens.
+
+      Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> deze directory, ongeacht of de gebruiker de markering '--user-data-dir' heeft opgegeven. Ter voorkoming van gegevensverlies of andere onverwachte fouten moet je dit beleid niet instellen op een directory die wordt gebruikt voor andere doeleinden, omdat <ph name="PRODUCT_NAME" /> de content ervan beheert.
+
+      Ga naar https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die je kunt gebruiken.
+
+      Als dit beleid niet wordt ingesteld, wordt het standaard profielpad gebruikt. De gebruiker kan dit overschrijven met de opdrachtregelmarkering '--user-data-dir'.</translation>
 <translation id="2168397434410358693">Inactieve vertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="217013996107840632">Opdrachtregelparameters voor overschakeling vanaf de alternatieve browser.</translation>
 <translation id="2170233653554726857">WPAD-optimalisatie inschakelen</translation>
@@ -2864,6 +2871,12 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Dit beleid wordt opgegeven in milliseconden.</translation>
 <translation id="523505283826916779">Toegankelijkheidsinstellingen</translation>
+<translation id="5236004592041099233">Configureer de lijst met zakelijke login-URL's (alleen HTTP- en HTTPS-schema's). De wachtwoordbeveiligingsservice legt salted hashes van wachtwoorden op deze URL's vast en gebruikt ze om hergebruik van wachtwoorden te detecteren.
+      Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> salted hashes van wachtwoorden correct vastlegt, moet je ervoor zorgen dat je inlogpagina's voldoen aan de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Als deze instelling ingeschakeld is, legt de wachtwoordbeveiligingsservice salted hashes van wachtwoorden op deze URL's vast om hergebruik van wachtwoorden te detecteren.
+      Als deze instelling is uitgeschakeld of niet is ingesteld, legt de wachtwoordbeveiligingsservice alleen salted hashes van wachtwoorden op https://accounts.google.com vast.
+      Dit beleid is alleen beschikbaar op Windows-instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die zijn ingeschreven voor apparaatbeheer.</translation>
 <translation id="5236882091572996759">Als dit beleid is ingesteld op 'true' of niet is ingesteld, wordt de gebruiker niet beschouwd als inactief terwijl de audio wordt afgespeeld. Hierdoor wordt voorkomen dat de inactieve time-out wordt bereikt en dat de inactieve actie wordt ondernomen. Dimmen van het scherm, scherm uitschakelen en schermvergrendeling worden echter uitgevoerd na de geconfigureerde time-outs, ongeacht de audioactiviteit.
 
           Als dit beleid is ingesteld op 'false', voorkomt audioactiviteit niet dat de gebruiker als inactief wordt beschouwd.</translation>
@@ -3579,6 +3592,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="6221175752766085998">Door lokale vertrouwde instanties uitgegeven certificaten zonder de extensie subjectAlternativeName toestaan</translation>
 <translation id="6224304369267200483">URL's/domeinen hebben rechtstreekse bevestiging van de beveiligingssleutel toegestaan</translation>
 <translation id="6233173491898450179">Downloaddirectory instellen</translation>
+<translation id="6234177445959386333">Configureer de lijst met zakelijke login-URL's waar de wachtwoordbeveiligingsservice salted hashes van wachtwoorden moet vastleggen.</translation>
 <translation id="6242147107333796512">Informatie met betrekking tot crashrapporten rapporteren, zoals externe ID, tijdstempel van registratie en oorzaak.
 
       Als het beleid is ingesteld op False of niet is ingesteld, wordt informatie over crashrapporten niet gerapporteerd. Als het beleid is ingesteld op True, wordt informatie over crashrapporten gerapporteerd.</translation>
@@ -4029,6 +4043,12 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als het beleid niet wordt ingesteld, wordt de plank standaard onderaan het scherm geplaatst en kan de gebruiker de positie van de plank zelf wijzigen.</translation>
 <translation id="7040229947030068419">Voorbeeldwaarde:</translation>
 <translation id="7044883996351280650">De Android-service 'Back-up maken en terugzetten' beheren</translation>
+<translation id="705089873294344912">Configureer de URL voor wachtwoordwijzigingen (alleen HTTP en HTTPS). De wachtwoordbeveiligingsservice leidt gebruikers naar deze URL om hun wachtwoord te wijzigen nadat ze een waarschuwing in de browser hebben gezien.
+      Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> de salted hash van het nieuwe wachtwoord correct vastlegt op deze pagina voor wachtwoordwijzigingen, moet je ervoor zorgen dat je pagina voor wachtwoordwijzigingen de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms volgt.
+
+      Als deze instelling is ingeschakeld, leidt de wachtwoordbeveiligingsservice gebruikers naar deze URL om hun wachtwoord te wijzigen nadat ze een waarschuwing in hun browser hebben gezien.
+      Als deze instelling is uitgeschakeld of niet is ingesteld, leidt de wachtwoordbeveiligingsservice gebruikers naar https://myaccount.google.com om hun wachtwoord te wijzigen.
+      Dit beleid is alleen beschikbaar op Windows-instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die zijn ingeschreven voor apparaatbeheer.</translation>
 <translation id="7053678646221257043">Indien ingeschakeld, wordt met dit beleid afgedwongen dat bladwijzers worden geïmporteerd uit de huidige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
 
       Als het beleid is uitgeschakeld, worden er geen bladwijzers geïmporteerd.

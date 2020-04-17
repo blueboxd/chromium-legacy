@@ -1402,7 +1402,8 @@ class P2PQuicTransportMockConnectionTest : public testing::Test {
 
 // Test that when a datagram is received it properly fires the
 // OnDatagramReceived function on the delegate.
-TEST_F(P2PQuicTransportMockConnectionTest, OnDatagramReceived) {
+// Flaky on all platforms. See https://crbug.com/1071340
+TEST_F(P2PQuicTransportMockConnectionTest, DISABLED_OnDatagramReceived) {
   EXPECT_TRUE(transport()->CanSendDatagram());
   EXPECT_CALL(*delegate(), OnDatagramReceived(ElementsAreArray(kMessage)));
   transport()->OnMessageReceived(quiche::QuicheStringPiece(

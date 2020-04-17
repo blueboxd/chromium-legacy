@@ -28100,6 +28100,40 @@ Called by update_feature_policy_enum.py.-->
   <int value="6" label="Error"/>
 </enum>
 
+<enum name="FileHandlerRegistrationLinuxRecreateShortcutResult">
+  <summary>
+    Result of re-creating shortcut during file handler registration process
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Fail to create shortcut"/>
+</enum>
+
+<enum name="FileHandlerRegistrationLinuxResult">
+  <summary>Result of registering file handlers for PWA on Linux</summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Fail to create temp dir for mimetype file"/>
+  <int value="2" label="Fail to write mimetype file"/>
+  <int value="3"
+      label="Xdg utility returns non zero code for registering mimetype file"/>
+</enum>
+
+<enum name="FileHandlerRegistrationMacResult">
+  <summary>Result of registering file handlers for PWA on MacOS</summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Fail to create shortcut"/>
+</enum>
+
+<enum name="FileHandlerRegistrationWinResult">
+  <summary>Result of registering file handlers for PWA on Windows</summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Fail to create hard link from generic launcher"/>
+  <int value="2" label="Fail to copy from generic launcher"/>
+  <int value="3" label="Fail to add file association"/>
+  <int value="4" label="Fail to delete existing registration"/>
+  <int value="5"
+      label="Fail to delete file associations for existing registration"/>
+</enum>
+
 <enum name="FileManagerCrostiniShareDialogType">
   <int value="0" label="None"/>
   <int value="1" label="Share before open"/>
@@ -33491,6 +33525,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="IdleDeadlineCallbackType">
+  <obsolete>
+    Removed April 2020.
+  </obsolete>
   <int value="0" label="CalledWhenIdle"/>
   <int value="1" label="CalledByTimeout"/>
 </enum>
@@ -39358,6 +39395,7 @@ from previous Chrome versions.
   <int value="-192919826" label="ViewsSimplifiedFullscreenUI:enabled"/>
   <int value="-192389983" label="NoStatePrefetch:enabled"/>
   <int value="-189478545" label="ArcCustomTabsExperiment:enabled"/>
+  <int value="-188439713" label="disable-video-capture-use-gpu-memory-buffer"/>
   <int value="-186707397" label="HideArcMediaNotifications:enabled"/>
   <int value="-185162926" label="IncreaseInputAudioBufferSize:enabled"/>
   <int value="-184091779"
@@ -39764,6 +39802,7 @@ from previous Chrome versions.
   <int value="292560715" label="ViewsCastDialog:disabled"/>
   <int value="293134455" label="AutofillSendBillingCustomerNumber:disabled"/>
   <int value="293996306" label="ArrayPrototypeValues:disabled"/>
+  <int value="295661985" label="video-capture-use-gpu-memory-buffer"/>
   <int value="296215399" label="WindowsMixedReality:disabled"/>
   <int value="296296761" label="MediaFoundationVideoCapture:disabled"/>
   <int value="297095559" label="ShowBluetoothDebugLogToggle:disabled"/>
@@ -41343,6 +41382,7 @@ from previous Chrome versions.
   <int value="2135408204" label="OverscrollHistoryNavigation:disabled"/>
   <int value="2137113620"
       label="ProcessSharingWithStrictSiteInstances:enabled"/>
+  <int value="2137294324" label="zero-copy-video-capture"/>
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
   <int value="2137599770" label="enable-win32k-renderer-lockdown"/>
   <int value="2138146331" label="OmniboxVoiceSearchAlwaysVisible:enabled"/>
@@ -68820,6 +68860,54 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Dismiss to open a previously installed WebAPK"/>
   <int value="2" label="Open a newly installed WebAPK"/>
   <int value="3" label="Dismiss to open a newly installed WebAPK"/>
+</enum>
+
+<enum name="WebAppCreateShortcutIconLinuxResult">
+  <summary>Result for creating shortcut icon on Linux</summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Empty icon images"/>
+  <int value="2"
+      label="Fail to create temporary directory for writing icon images"/>
+  <int value="3" label="Fail to encode image to PNG"/>
+  <int value="4" label="Created image file is corrupted"/>
+  <int value="5" label="Fail to install icon"/>
+</enum>
+
+<enum name="WebAppCreateShortcutLinuxResult">
+  <summary>Result of creating shortcut for web app on MacOS.</summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Fail to get shortcut file name"/>
+  <int value="2" label="Fail to get chrome executable path"/>
+  <int value="3" label="Fail to get desktop directory path"/>
+  <int value="4" label="Fail to open desktop directory path"/>
+  <int value="5" label="Fail to open shortcut file path"/>
+  <int value="6" label="Created desktop shortcut file is corrupted"/>
+  <int value="7"
+      label="Fail to create temporary directory for application menu shortcut"/>
+  <int value="8" label="Created directory contents is corrupted"/>
+  <int value="9" label="Created application menu shortcut is corrupted"/>
+  <int value="10" label="Fail to install shortcut in application menu"/>
+</enum>
+
+<enum name="WebAppCreateShortcutMacResult">
+  <summary>Result of creating shortcut for web app on MacOS.</summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Couldn't find application directory to copy app to."/>
+  <int value="2" label="Fail to localize application"/>
+  <int value="3" label="Fail to get application paths"/>
+  <int value="4"
+      label="Fail to create temporary directory as staging area to write
+             application bundle"/>
+  <int value="5" label="Staging directory does not exist"/>
+  <int value="6" label="Fail to create executable path"/>
+  <int value="7" label="Fail to copy executable path"/>
+  <int value="8" label="Fail to copy plist"/>
+  <int value="9" label="Fail to write PkgInfo File"/>
+  <int value="10" label="Fail to update Plist"/>
+  <int value="11" label="Fail to update display name"/>
+  <int value="12" label="Fail to update icon"/>
+  <int value="13" label="Fail to create parent directory for destination path"/>
+  <int value="14" label="Fail to copy application to destination"/>
 </enum>
 
 <enum name="WebAppDisplayMode">

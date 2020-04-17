@@ -4,10 +4,15 @@
 
 #include "chrome/browser/web_applications/web_app_database.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
@@ -119,6 +124,15 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   if (web_app.theme_color().has_value())
     local_data->set_theme_color(web_app.theme_color().value());
 
+  if (web_app.chromeos_data().has_value()) {
+    auto& chromeos_data = web_app.chromeos_data().value();
+    auto* mutable_chromeos_data = local_data->mutable_chromeos_data();
+    mutable_chromeos_data->set_show_in_launcher(chromeos_data.show_in_launcher);
+    mutable_chromeos_data->set_show_in_search(chromeos_data.show_in_search);
+    mutable_chromeos_data->set_show_in_management(
+        chromeos_data.show_in_management);
+  }
+
   local_data->set_is_in_sync_install(web_app.is_in_sync_install());
 
   // Set sync_data to sync proto.
@@ -219,6 +233,30 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     return nullptr;
   }
   web_app->SetIsLocallyInstalled(local_data.is_locally_installed());
+
+  auto& chromeos_data_proto = local_data.chromeos_data();
+
+  if (IsChromeOs() && !local_data.has_chromeos_data()) {
+    DLOG(ERROR) << "WebApp proto parse error: no chromeos_data field. The web "
+                << "app might have been installed when running on an OS other "
+                << "than Chrome OS.";
+    return nullptr;
+  }
+
+  if (!IsChromeOs() && local_data.has_chromeos_data()) {
+    DLOG(ERROR) << "WebApp proto parse error: has chromeos_data field. The web "
+                << "app might have been installed when running on Chrome OS.";
+    return nullptr;
+  }
+
+  if (local_data.has_chromeos_data()) {
+    auto chromeos_data = base::make_optional<WebAppChromeOsData>();
+    chromeos_data->show_in_launcher = chromeos_data_proto.show_in_launcher();
+    chromeos_data->show_in_search = chromeos_data_proto.show_in_search();
+    chromeos_data->show_in_management =
+        chromeos_data_proto.show_in_management();
+    web_app->SetWebAppChromeOsData(std::move(chromeos_data));
+  }
 
   // Optional fields:
   if (local_data.has_display_mode())

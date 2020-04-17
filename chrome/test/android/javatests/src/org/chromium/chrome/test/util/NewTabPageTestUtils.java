@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.suggestions.tile.TileSectionType;
 import org.chromium.chrome.browser.suggestions.tile.TileSource;
 import org.chromium.chrome.browser.suggestions.tile.TileTitleSource;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeImpl;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.test.util.AccountHolder;
@@ -99,13 +99,13 @@ public class NewTabPageTestUtils {
     public static void setUpTestAccount() {
         FakeAccountManagerDelegate fakeAccountManager = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.ENABLE_PROFILE_DATA_SOURCE);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AccountManagerFacadeProvider.setInstanceForTests(
-                    new AccountManagerFacade(fakeAccountManager));
-        });
+        AccountManagerFacadeImpl accountManagerFacade =
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> new AccountManagerFacadeImpl(fakeAccountManager));
+        AccountManagerFacadeProvider.setInstanceForTests(accountManagerFacade);
         Account account = AccountUtils.createAccountFromName("test@gmail.com");
         fakeAccountManager.addAccountHolderExplicitly(new AccountHolder.Builder(account).build());
-        assertFalse(AccountManagerFacadeProvider.getInstance().isUpdatePending().get());
+        assertFalse(accountManagerFacade.isUpdatePending().get());
         assertFalse(SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false));
     }

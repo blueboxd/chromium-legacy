@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/aura/window_tree_host.h"
 
 namespace aura {
@@ -18,9 +19,11 @@ class WindowParentingClient;
 }
 }
 
+#if defined(USE_OZONE)
 namespace display {
 class Screen;
 }
+#endif
 
 namespace gfx {
 class Size;
@@ -39,7 +42,9 @@ class ShellPlatformDataAura {
   aura::WindowTreeHost* host() { return host_.get(); }
 
  private:
+#if defined(USE_OZONE)
   std::unique_ptr<display::Screen> screen_;
+#endif
 
   std::unique_ptr<aura::WindowTreeHost> host_;
   std::unique_ptr<aura::client::FocusClient> focus_client_;

@@ -184,7 +184,9 @@ int DeviceMediaToMojoAdapter::max_buffer_pool_buffer_count() {
   // concurrent streams of camera pipeline depth ~6. We allow at most 30 buffers
   // here to take into account the delay caused by the consumer (e.g. display or
   // video encoder).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableVideoCaptureUseGpuMemoryBuffer) &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kVideoCaptureUseGpuMemoryBuffer)) {
     kMaxBufferCount = 30;
   }

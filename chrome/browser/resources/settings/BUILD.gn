@@ -74,7 +74,6 @@ group("closure_compile") {
     "controls:closure_compile",
     "downloads_page:closure_compile",
     "languages_page:closure_compile",
-    "on_startup_page:closure_compile",
     "people_page:closure_compile",
     "prefs:closure_compile",
     "printing_page:closure_compile",

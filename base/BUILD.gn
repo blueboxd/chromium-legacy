@@ -3598,7 +3598,7 @@ if (is_android) {
   }
 
   android_library("base_junit_test_support") {
-    # Platform checks are broken for Robolectric.
+    # Platform checks are broken for Robolectric. See https://crbug.com/1071638.
     bypass_platform_checks = true
     testonly = true
     sources = [

@@ -1,6 +1,12 @@
 <!DOCTYPE html>
-<link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
-<link href="resources/grid.css" rel="stylesheet">
+<title>CSS Grid: indefinite grid container and percentage columns.</title>
+<link rel="author" title="Manuel Rego Casasnovas" href="mailto:rego@igalia.com"/>
+<link rel="help" href="https://drafts.csswg.org/css-grid-1/#valdef-grid-template-columns-length-percentage"/>
+<meta name="assert" content="Checks that percentage columns are only indefinite during intrinsic size computation. Aftewards, they are properly resolved against the grid container intrinsic sizes."/>
+<link rel="issue" href="https://crbug.com/616716"/>
+<link rel="stylesheet" href="/css/support/grid.css"/>
+<link rel="stylesheet" href="/css/support/width-keyword-classes.css"/>
+<link rel="stylesheet" type="text/css" href="/fonts/ahem.css"/>
 <style>
 .wrapper {
     position: relative;
@@ -36,14 +42,14 @@
     grid-template-columns: 50% 100px;
 }
 </style>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
-<body onload="checkLayout('.grid')">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
+<script type="text/javascript">
+    setup({ explicit_done: true });
+</script>
+<body onload="document.fonts.ready.then(() => { checkLayout('.grid'); })">
 <div id="log"></div>
-
-<p>This test checks that percentage columns are only indefinite during intrinsic size computation. Aftewards, they are properly resolved against the grid container intrinsic sizes.</p>
-
 <div class="wrapper">
     <div class="grid float oneColumn100" data-expected-width="40" data-expected-height="10">
         <div class="firstRowFirstColumn"
@@ -253,5 +259,4 @@
         </div>
     </div>
 </div>
-
 </body>

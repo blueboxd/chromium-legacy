@@ -272,7 +272,7 @@
 <translation id="1365180424462182382"><ph name="BEGIN_LINK" />مرورگرتان<ph name="END_LINK" /> توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود</translation>
 <translation id="1366177842110999534">‏اجرای ابزارها، ویرایشگرها و محیط‌های یکپارچه توسعه نرم‌افزار (IDE) ‏Linux در <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;بیشتر بدانید&lt;/a&gt;</translation>
 <translation id="1367951781824006909">انتخاب یک فایل</translation>
-<translation id="1369149969991017342">دسترسی سوئیچ (رایانه را فقط با یک یا دو سوئیچ کنترل کنید)</translation>
+<translation id="1369149969991017342">دسترسی کلیدی (رایانه را فقط با یک یا دو سوئیچ کنترل کنید)</translation>
 <translation id="1372841398847029212">همگام‌سازی با حسابتان</translation>
 <translation id="1374844444528092021">گواهی‌نامه مورد نیاز شبکه "<ph name="NETWORK_NAME" />" یا نصب نشده است و یا دیگر اعتبار ندارد. لطفاً گواهی‌نامه جدیدی بگیرید و دوباره سعی کنید وصل شوید.</translation>
 <translation id="1375321115329958930">رمزهای ورود ذخیره شده</translation>
@@ -337,7 +337,7 @@
 <translation id="1445693676523799095">این کار ممکن است مدتی طول بکشد</translation>
 <translation id="1451375123200651445">صفحه وب، فایل واحد</translation>
 <translation id="1451917004835509682">افزون فرد تحت نظارت</translation>
-<translation id="1454223536435069390">گرفتن عکس صفحه‌نمایش</translation>
+<translation id="1454223536435069390">گرفتن نماگرفت</translation>
 <translation id="1459967076783105826">موتورهای جستجو به وسیله برنامه‌های افزودنی اضافه شدند</translation>
 <translation id="146000042969587795">این قاب مسدود شد چون شامل چند محتوای ناامن است.</translation>
 <translation id="146219525117638703">‏وضعیت ONC</translation>
@@ -931,7 +931,6 @@
 <translation id="2229161054156947610">بیش از ۱ ساعت مانده است</translation>
 <translation id="222931766245975952">فایل ناقص</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">‏برای مشاهده doodle امروز، کلیک کنید</translation>
 <translation id="2231238007119540260">درصورتی‌که یک مجوز سرور را حذف کنید، بررسی های امنیتی معمولی را برای آن سرور بازیابی می‌کنید و سرور ملزم به استفاده از یک مجوز معتبر می‌شود.</translation>
 <translation id="2232876851878324699">این فایل دارای یک مجوز است، که وارد نشده است:</translation>
 <translation id="2233502537820838181">&amp;اطلاعات بیشتر</translation>
@@ -1416,7 +1415,7 @@
 <translation id="2861301611394761800">به‌روزرسانی سیستم کامل شد. لطفاً سیستم را راه‌اندازی مجدد کنید.</translation>
 <translation id="2861941300086904918">‏مدیر امنیت Native Client</translation>
 <translation id="2864601841139725659">تصویر نمایه اضافه کنید</translation>
-<translation id="2865919525181940183">عکس صفحه‌نمایش برنامه‌هایی که درحال‌حاضر روی صفحه هستند</translation>
+<translation id="2865919525181940183">نماگرفت برنامه‌هایی که درحال‌حاضر روی صفحه هستند</translation>
 <translation id="286674810810214575">درحال بررسی منابع برق...</translation>
 <translation id="2867768963760577682">بازکردن به‌عنوان برگه پین شده</translation>
 <translation id="2868746137289129307">این افزونه قدیمی است و خط‌مشی شرکت آن را غیرفعال کرده است. شاید وقتی یک نسخه جدیدتر در دسترس قرار گیرد به صورت خودکار فعال شود.</translation>
@@ -2082,7 +2081,7 @@
 <translation id="3735740477244556633">مرتب کردن براساس</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094"><ph name="APPLICATION" /> باز شود؟</translation>
-<translation id="3742055079367172538">عکس صفحه‌نمایش گرفته شد</translation>
+<translation id="3742055079367172538">نماگرفت گرفته شد</translation>
 <translation id="3742666961763734085">واحد سازمانی با این نام پیدا نشد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="3744111561329211289">همگام‌سازی پس‌زمینه</translation>
 <translation id="3746127522257263495">‏امکان افزودن حساب G Suite for Education در برنامه‌های Android وجود ندارد.</translation>
@@ -2437,7 +2436,7 @@
 <translation id="4194595472342532425">‏به‌دلیل مشکل پیکربندی، Plugin VM راه‌اندازی نشد. لطفاً با سرپرست دستگاه سازمانتان تماس بگیرید. کد خطا: <ph name="ERROR_CODE" />.</translation>
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="4195814663415092787">ادامه از جایی که ترک کردید</translation>
-<translation id="4198146608511578238">‏برای صحبت کردن با «دستیار Google»، کافیست نماد «راه‌انداز» را نگه‌دارید.</translation>
+<translation id="4198146608511578238">‏برای صحبت کردن با «دستیار Google»، کافی است نماد «راه‌انداز» را نگه‌دارید.</translation>
 <translation id="4200689466366162458">واژه‌های سفارشی</translation>
 <translation id="4200983522494130825">&amp;برگه جدید</translation>
 <translation id="4201546031411513170">هرزمان خواستید می‌توانید مواردی را که می‌خواهید همگام‌سازی شود در تنظیمات انتخاب کنید.</translation>
@@ -2469,7 +2468,7 @@
 <translation id="4249248555939881673">در انتظار اتصال شبکه...</translation>
 <translation id="4249373718504745892">این صفحه از دسترسی به دوربین و میکروفون شما بازداشته شده است.</translation>
 <translation id="424963718355121712">برنامه‌ها باید ازجانب میزبانی ارائه شوند که بر آن‌ها تأثیر دارد</translation>
-<translation id="4250229828105606438">عکس صفحه‌نمایش</translation>
+<translation id="4250229828105606438">نماگرفت</translation>
 <translation id="4250680216510889253">نه</translation>
 <translation id="4252035718262427477">صفحه وب، فایل تکی (دسته وب)</translation>
 <translation id="4252852543720145436">شناسه‌های محتوای محافظت‌شده</translation>
@@ -3779,7 +3778,7 @@
 <translation id="6075731018162044558">‏متأسفیم! سیستم نتوانست کد دسترسی دراز مدت به API را برای این دستگاه به دست آورد.</translation>
 <translation id="6075907793831890935">تبادل داده با دستگاهی به نام <ph name="HOSTNAME" /></translation>
 <translation id="6076175485108489240">‏استفاده از مکان. به برنامه‌ها و سرویس‌های دارای مجوز مکان اجازه دهید از مکان این دستگاه استفاده کنند. Google ممکن است به‌صورت دوره‌ای داده‌های مکان را جمع‌آوری کند و از این داده‌ها به‌شیوه‌ای ناشناس برای بهبود دقت مکان و خدمات مکان‌مبنا استفاده کند. <ph name="BEGIN_LINK1" />بیشتر بدانید<ph name="END_LINK1" /></translation>
-<translation id="6076448957780543068">اضافه کردن این عکس صفحه‌نمایش</translation>
+<translation id="6076448957780543068">اضافه کردن این نماگرفت</translation>
 <translation id="6076491747490570887">خاکستری سرد</translation>
 <translation id="6077131872140550515">برداشتن از شبکه‌های برگزیده</translation>
 <translation id="6077189836672154517">نکته‌ها و به‌روزرسانی‌ها درباره <ph name="DEVICE_TYPE" /></translation>
@@ -3930,7 +3929,7 @@
 <translation id="6272643420381259437">هنگام بارگیری افزایه، خطایی (<ph name="ERROR" />) روی داد</translation>
 <translation id="6273677812470008672">کیفیت</translation>
 <translation id="6277105963844135994">مهلت زمانی شبکه</translation>
-<translation id="6277518330158259200">گرفتن عکس صفحه‌نمایش</translation>
+<translation id="6277518330158259200">گرفتن نماگرفت</translation>
 <translation id="6278057325678116358">‏استفاده از GTK+‎</translation>
 <translation id="6278776436938569440">تغییر مکان</translation>
 <translation id="6279183038361895380">برای نمایش نشان‌گر |<ph name="ACCELERATOR" />| را فشار دهید</translation>
@@ -5204,7 +5203,7 @@
 <translation id="7986295104073916105">خواندن و تغییر تنظیمات گذرواژه ذخیره شده</translation>
 <translation id="7987814697832569482">‏همیشه ازطریق این VPN اتصال برقرار شود</translation>
 <translation id="7988355189918024273">فعالسازی ویژگی‌های دسترسی</translation>
-<translation id="7991296728590311172">تنظیمات دسترسی سوئیچ</translation>
+<translation id="7991296728590311172">تنظیمات دسترسی کلیدی</translation>
 <translation id="7994350303002908848">‏Plugin VM نصب نشد. لطفاً دوباره امتحان کنید یا با سرپرست دستگاه سازمانتان تماس بگیرید. کد خطا: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">‏روش EAP</translation>
 <translation id="7997826902155442747">پردازش اولویت‌دار</translation>
@@ -5928,7 +5927,7 @@
 <translation id="8931076093143205651">‏داده‌های استفاده و عیب‌یابی را ارسال کنید. با ارسال خودکار داده‌های تشخیص عیب و داده‌های استفاده از دستگاه و برنامه به Google، به بهبود تجربه استفاده از Android کمک کنید. این داده‌ها به بهبود پایداری سیستم و برنامه و موارد دیگر کمک خواهد کرد. بعضی داده‌های انبوهشی نیز به برنامه‌ها و شرکای Google (مانند «برنامه‌نویس‌های Android») کمک می‌کند. این تنظیم را مالک اعمال می‌کند. ممکن است مالک انتخاب کند داده‌های استفاده و عیب‌یابی این دستگاه به Google ارسال شود. اگر تنظیم «فعالیت وب و برنامه» تکمیلی روشن باشد، ممکن است این داده‌ها در «حساب Google» شما ذخیره شود.</translation>
 <translation id="8931394284949551895">دستگاه‌های جدید</translation>
 <translation id="8931475688782629595">مدیریت همگام‌سازی‌ها</translation>
-<translation id="8932894639908691771">گزینه‌های دسترسی سوئیچ</translation>
+<translation id="8932894639908691771">گزینه‌های دسترسی کلیدی</translation>
 <translation id="8933960630081805351">‏&amp;نمایش در Finder</translation>
 <translation id="8934732568177537184">ادامه</translation>
 <translation id="8938800817013097409">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
@@ -6142,7 +6141,7 @@
 <translation id="93766956588638423">تعمیر افزونه</translation>
 <translation id="938339467127511841">‏فضای ذخیره‌سازی Linux (بتا)</translation>
 <translation id="938470336146445890">لطفاً یک مجوز کاربر نصب کنید.</translation>
-<translation id="939252827960237676">عکس صفحه‌نمایش ذخیره نشد</translation>
+<translation id="939252827960237676">نماگرفت ذخیره نشد</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">عبارت ورود را وارد کنید</translation>
 <translation id="939736085109172342">پوشهٔ جدید</translation>

@@ -405,9 +405,8 @@ TEST_F(WifiConfigurationBridgeTest, LocalUpdate) {
   std::string guid = meow_network_id().SerializeToString();
   base::DictionaryValue set_properties;
   set_properties.SetBoolean(shill::kAutoConnectProperty, true);
-  bridge()->OnConfigurationModified("service_path", guid, &set_properties);
+  bridge()->OnNetworkUpdate(guid, &set_properties);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(storage_key, meow_network_id().SerializeToString());
 }
 
 TEST_F(WifiConfigurationBridgeTest, LocalUpdate_UntrackedField) {
@@ -419,7 +418,7 @@ TEST_F(WifiConfigurationBridgeTest, LocalUpdate_UntrackedField) {
   std::string guid = meow_network_id().SerializeToString();
   base::DictionaryValue set_properties;
   set_properties.SetString(shill::kUIDataProperty, "random_change");
-  bridge()->OnConfigurationModified("service_path", guid, &set_properties);
+  bridge()->OnNetworkUpdate(guid, &set_properties);
   base::RunLoop().RunUntilIdle();
 }
 

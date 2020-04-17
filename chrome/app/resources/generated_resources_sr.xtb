@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Читање и мењање података на актуелном веб-сајту по позиву</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> жели да ресетује подешавања.</translation>
 <translation id="1243314992276662751">Отпреми</translation>
+<translation id="1243436884219965846">Прегледајте лозинке</translation>
 <translation id="1244265436519979884">У току је враћање Linux података</translation>
 <translation id="1244303850296295656">Грешка додатка</translation>
 <translation id="1246158006305844142">Апликације и подешавања ће се синхронизовати на свим Chrome OS уређајима на којима сте пријављени помоћу свог Google налога. Опције синхронизације прегледача пронађите у <ph name="LINK_BEGIN" />подешавањима Chrome-а<ph name="LINK_END" />.</translation>
@@ -931,7 +932,6 @@
 <translation id="2229161054156947610">Остало је више од сат времена</translation>
 <translation id="222931766245975952">Датотека је скраћена</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">Кликните да бисте видели данашњи дудл логотип</translation>
 <translation id="2231238007119540260">Ако избришете серверски сертификат, враћате уобичајене безбедносне провере за тај сервер и захтевате да користи важећи сертификат.</translation>
 <translation id="2232876851878324699">Датотека садржи један сертификат, који није увезен:</translation>
 <translation id="2233502537820838181">&amp;Више информација</translation>
@@ -2570,6 +2570,7 @@
 <translation id="4404136731284211429">Скенирај поново</translation>
 <translation id="4404843640767531781">Родитељ блокира апликацију <ph name="APP_NAME" />. Затражи од родитеља дозволу за коришћење ове апликације.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Титл уживо</translation>
 <translation id="4408599188496843485">П&amp;омоћ</translation>
 <translation id="4409697491990005945">Маргине</translation>
 <translation id="4410545552906060960">Користите број (PIN) уместо лозинке за откључавање уређаја. Идите у Подешавања да бисте касније подесили PIN.</translation>
@@ -3975,6 +3976,7 @@
 <translation id="6326855256003666642">Број keepalive сигнала</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> тражи да ажурирате овај уређај пре истека рока.</translation>
 <translation id="6327785803543103246">Аутоматско откривање веб-проксија</translation>
+<translation id="6331566915566907158">Помозите нам да побољшамо функције и учинак Chrome ОС-а</translation>
 <translation id="6333064448949140209">Датотека ће бити послата Google-у ради отклањања грешака</translation>
 <translation id="6339668969738228384">Отвори нови профил за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Повезивање са сервером није успело. Проверите мрежну везу и пробајте поново касније. Ако се проблем настави, рестартујте Chromebook.</translation>
@@ -4935,6 +4937,7 @@
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Нетачан PIN. Имате још један покушај.}one{Нетачан PIN. Имате још # покушај.}few{Нетачан PIN. Имате још # покушаја.}other{Нетачан PIN. Имате још # покушаја.}}</translation>
 <translation id="7671130400130574146">Користи системску траку наслова и ивице</translation>
 <translation id="767127784612208024">Додирните да бисте потврдили ресетовање</translation>
+<translation id="767147716926917172">Аутоматски шаље Google-у дијагностику и податке о коришћењу</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, на страници <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Шаљите податке о гласу Google-у да би се омогућило диктирање у свим пољима за текст.</translation>
 <translation id="7678280409648629969">Подаци о пријављивању се чувају у Chrome-у када изађете из режима без архивирања. То ће вам омогућити да касније поново користите Touch ID са овим веб-сајтом.</translation>

@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -121,10 +120,8 @@ ScriptedIdleTaskController::RegisterCallback(
   DCHECK(idle_task);
 
   CallbackId id = NextCallbackId();
-  base::TimeTicks queue_timestamp = base::TimeTicks::Now();
+  idle_tasks_.Set(id, idle_task);
   uint32_t timeout_millis = options->timeout();
-  idle_tasks_.Set(id, MakeGarbageCollected<QueuedIdleTask>(
-                          idle_task, queue_timestamp, timeout_millis));
 
   probe::AsyncTaskScheduled(GetExecutionContext(), "requestIdleCallback",
                             idle_task->async_task_id());
@@ -199,13 +196,11 @@ void ScriptedIdleTaskController::RunCallback(
   auto idle_task_iter = idle_tasks_.find(id);
   if (idle_task_iter == idle_tasks_.end())
     return;
-  QueuedIdleTask* queued_idle_task = idle_task_iter->value;
-  DCHECK(queued_idle_task);
-  IdleTask* idle_task = queued_idle_task->task();
+  IdleTask* idle_task = idle_task_iter->value;
   DCHECK(idle_task);
 
-  base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeDelta allotted_time = std::max(deadline - now, base::TimeDelta());
+  base::TimeDelta allotted_time =
+      std::max(deadline - base::TimeTicks::Now(), base::TimeDelta());
 
   probe::AsyncTask async_task(GetExecutionContext(),
                               idle_task->async_task_id());
@@ -219,8 +214,6 @@ void ScriptedIdleTaskController::RunCallback(
           callback_type == IdleDeadline::CallbackType::kCalledByTimeout));
   idle_task->invoke(
       MakeGarbageCollected<IdleDeadline>(deadline, callback_type));
-
-  RecordIdleTaskMetrics(queued_idle_task, now, callback_type);
 
   // Finally there is no need to keep the idle task alive.
   //
@@ -264,40 +257,6 @@ void ScriptedIdleTaskController::ContextUnpaused() {
         WTF::Bind(&internal::IdleRequestCallbackWrapper::IdleTaskFired,
                   callback_wrapper));
   }
-}
-
-void ScriptedIdleTaskController::RecordIdleTaskMetrics(
-    QueuedIdleTask* queued_idle_task,
-    base::TimeTicks run_timestamp,
-    IdleDeadline::CallbackType callback_type) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "WebCore.ScriptedIdleTaskController.IdleTaskCallbackType", callback_type);
-  UMA_HISTOGRAM_COUNTS_100000(
-      "WebCore.ScriptedIdleTaskController.IdleTaskTimeout",
-      queued_idle_task->timeout_millis());
-  if (callback_type == IdleDeadline::CallbackType::kCalledWhenIdle) {
-    DCHECK_GE(run_timestamp, queued_idle_task->queue_timestamp());
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "WebCore.ScriptedIdleTaskController.IdleTaskQueueingTime",
-        run_timestamp - queued_idle_task->queue_timestamp());
-  }
-  if (callback_type == IdleDeadline::CallbackType::kCalledByTimeout) {
-    UMA_HISTOGRAM_COUNTS_100000(
-        "WebCore.ScriptedIdleTaskController.IdleTaskTimeoutExceeded",
-        queued_idle_task->timeout_millis());
-  }
-}
-
-ScriptedIdleTaskController::QueuedIdleTask::QueuedIdleTask(
-    IdleTask* idle_task,
-    base::TimeTicks queue_timestamp,
-    uint32_t timeout_millis)
-    : task_(idle_task),
-      queue_timestamp_(queue_timestamp),
-      timeout_millis_(timeout_millis) {}
-
-void ScriptedIdleTaskController::QueuedIdleTask::Trace(Visitor* visitor) {
-  visitor->Trace(task_);
 }
 
 }  // namespace blink

@@ -29,19 +29,25 @@ using base::android::ScopedJavaLocalRef;
 
 namespace weblayer {
 
-// NavigationThrottle implementation responsible for delaying certain
-// operations and performing them when safe. This is necessary as content
-// does allow certain operations to be called at certain times. For example,
-// content does not allow calling WebContents::Stop() from
-// WebContentsObserver::DidStartNavigation() (to do so crashes). To work around
-// this NavigationControllerImpl detects these scenarios and delays processing
-// until safe.
+// NavigationThrottle implementation responsible for stopping the navigation in
+// certain situations. In particular, WebContents::Stop() can not be called from
+// WebContentsObserver::DidStartNavigation() or
+// WebContentsObserver::DidRedirectNavigation() (to do so crashes). To work
+// around this NavigationControllerImpl detects if Stop() is called while
+// processing DidStartNavigation() or DidRedirectNavigation() and sets state in
+// NavigationThrottleImpl such that the navigation is canceled.
 //
-// Most of the support for these scenarios is handled by a custom
-// NavigationThrottle.  To make things interesting, the NavigationThrottle is
-// created after some of the scenarios this code wants to handle. As such,
-// NavigationImpl does some amount of caching until the NavigationThrottle is
-// created.
+// The call order for starting is WebContents::DidStartNavigation() followed
+// by NavigationThrottle::WillStartRequest(). To make things interesting,
+// the NavigationThrottle is created *after* DidStartNavigation(). OTOH,
+// the call order for redirect is NavigationThrottle::WillRedirectRequest()
+// followed by WebContentsObserver::DidRedirectNavigation(). To ensure the
+// right call order NavigationControllerImpl does nothing in
+// DidRedirectNavigation(), instead this class calls to the
+// NavigationController and then returns cancel if necessary. While redirect
+// handling is initiated from this class, start must be handled from the
+// WebContentsObserver call. This is necessary as some code paths do *not*
+// call to NavigationThrottle::WillStartRequest().
 class NavigationControllerImpl::NavigationThrottleImpl
     : public content::NavigationThrottle {
  public:
@@ -53,15 +59,9 @@ class NavigationControllerImpl::NavigationThrottleImpl
   ~NavigationThrottleImpl() override = default;
 
   void ScheduleCancel() { should_cancel_ = true; }
-  void ScheduleNavigate(
-      std::unique_ptr<content::NavigationController::LoadURLParams> params) {
-    load_params_ = std::move(params);
-  }
 
   // content::NavigationThrottle:
   ThrottleCheckResult WillStartRequest() override {
-    if (load_params_)
-      controller_->DoNavigate(std::move(load_params_));
     return should_cancel_ ? CANCEL : PROCEED;
   }
 
@@ -77,7 +77,6 @@ class NavigationControllerImpl::NavigationThrottleImpl
  private:
   NavigationControllerImpl* controller_;
   bool should_cancel_ = false;
-  std::unique_ptr<content::NavigationController::LoadURLParams> load_params_;
 };
 
 NavigationControllerImpl::NavigationControllerImpl(TabImpl* tab)
@@ -96,9 +95,6 @@ NavigationControllerImpl::CreateNavigationThrottle(
   auto* navigation = navigation_map_[handle].get();
   if (navigation->should_stop_when_throttle_created())
     throttle->ScheduleCancel();
-  auto load_params = navigation->TakeParamsToLoadWhenSafe();
-  if (load_params)
-    throttle->ScheduleNavigate(std::move(load_params));
   return throttle;
 }
 
@@ -126,9 +122,9 @@ void NavigationControllerImpl::NavigateWithParams(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& url,
     jboolean should_replace_current_entry) {
-  auto params = std::make_unique<content::NavigationController::LoadURLParams>(
+  content::NavigationController::LoadURLParams params(
       GURL(base::android::ConvertJavaStringToUTF8(env, url)));
-  params->should_replace_current_entry = should_replace_current_entry;
+  params.should_replace_current_entry = should_replace_current_entry;
   DoNavigate(std::move(params));
 }
 
@@ -182,16 +178,14 @@ void NavigationControllerImpl::RemoveObserver(NavigationObserver* observer) {
 }
 
 void NavigationControllerImpl::Navigate(const GURL& url) {
-  DoNavigate(
-      std::make_unique<content::NavigationController::LoadURLParams>(url));
+  DoNavigate(content::NavigationController::LoadURLParams(url));
 }
 
 void NavigationControllerImpl::Navigate(
     const GURL& url,
     const NavigationController::NavigateParams& params) {
-  auto load_params =
-      std::make_unique<content::NavigationController::LoadURLParams>(url);
-  load_params->should_replace_current_entry =
+  content::NavigationController::LoadURLParams load_params(url);
+  load_params.should_replace_current_entry =
       params.should_replace_current_entry;
   DoNavigate(std::move(load_params));
 }
@@ -397,18 +391,10 @@ void NavigationControllerImpl::NotifyLoadStateChanged() {
 }
 
 void NavigationControllerImpl::DoNavigate(
-    std::unique_ptr<content::NavigationController::LoadURLParams> params) {
-  if (navigation_starting_) {
-    // DoNavigate() is being called reentrantly. Delay processing until it's
-    // safe.
-    Stop();
-    navigation_starting_->SetParamsToLoadWhenSafe(std::move(params));
-    return;
-  }
-
-  params->transition_type = ui::PageTransitionFromInt(
+    content::NavigationController::LoadURLParams&& params) {
+  params.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  web_contents()->GetController().LoadURLWithParams(*params);
+  web_contents()->GetController().LoadURLWithParams(params);
   // So that if the user had entered the UI in a bar it stops flashing the
   // caret.
   web_contents()->Focus();

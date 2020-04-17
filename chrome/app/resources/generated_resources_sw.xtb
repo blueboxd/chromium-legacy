@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Soma na ubadilishe data yako yote kwenye tovuti unayovinjari sasa inapotumwa</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> inataka kuweka upya mipangilio yako.</translation>
 <translation id="1243314992276662751">Pakia</translation>
+<translation id="1243436884219965846">Kagua manenosiri</translation>
 <translation id="1244265436519979884">Shughuli ya kupakia metadata ya Linux inaendelea wakati huu</translation>
 <translation id="1244303850296295656">Hitilafu ya kiendelezi</translation>
 <translation id="1246158006305844142">Mipangilio na programu zako zitasawazishwa kwenye vifaa vyote vinavyotumia Mfumo wa Uendeshaji wa Chrome, ambavyo umetumia kuingia katika akaunti yako ya Google. Ili upate chaguo za kusawazisha kwenye kivinjari, nenda katika <ph name="LINK_BEGIN" />Mipangilio ya Chrome<ph name="LINK_END" />.</translation>
@@ -931,7 +932,6 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="2229161054156947610">Zimesalia zaidi ya saa 1</translation>
 <translation id="222931766245975952">Faili imepunguzwa</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">Bofya ili uangalie doodle ya leo</translation>
 <translation id="2231238007119540260">Ukifuta cheti cha seva, unarejesha upya ukaguzi salama wa kawaida kwa seva hiyo na unaihitaji kutumia cheti halali.</translation>
 <translation id="2232876851878324699">Faili ilikuwa na cheti kimoja, ambacho hakikuwa kimeletwa:</translation>
 <translation id="2233502537820838181">&amp;Maelezo Zaidi</translation>
@@ -2568,6 +2568,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4404136731284211429">Changanua tena</translation>
 <translation id="4404843640767531781"><ph name="APP_NAME" /> imezuiwa na mzazi wako. Mwombe mzazi wako ruhusa ya kutumia programu hii.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Manukuu Papo Hapo</translation>
 <translation id="4408599188496843485">Usaidizi</translation>
 <translation id="4409697491990005945">Pambizo</translation>
 <translation id="4410545552906060960">Tumia namba (PIN) badala ya nenosiri ili kufungua kifaa chako. Ili kuweka PIN yako baadaye, nenda kwenye Mipangilio.</translation>
@@ -3972,6 +3973,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6326855256003666642">Shughuli Zinazotumia Kiendelezi</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> inahitaji usasishe kifaa hiki kabla ya tarehe ya mwisho.</translation>
 <translation id="6327785803543103246">Ugunduzi wa seva mbadala za wavuti kiotomatiki</translation>
+<translation id="6331566915566907158">Tusaidie kuboresha utendaji na vipengele vya Mfumo wa Uendeshaji wa Chrome</translation>
 <translation id="6333064448949140209">Faili itatumwa kwa Google kwa ajili ya utatuzi</translation>
 <translation id="6339668969738228384">Unda wasifu mpya wa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Imeshindwa kuunganisha kwenye seva. Tafadhali angalia muunganisho wa mtandao wako kisha ujaribu tena. Kama tatizo litaendelea kwa muda, zima kisha uwashe Chromebook yako.</translation>
@@ -4932,6 +4934,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN si Sahihi. Umebakisha mara moja ya kujaribu.}other{PIN si Sahihi. Umebakisha mara # za kujaribu.}}</translation>
 <translation id="7671130400130574146">Tumia upau jina na mipaka ya mfumo</translation>
 <translation id="767127784612208024">Gusa ili uthibitishe kubadilisha</translation>
+<translation id="767147716926917172">Tuma kiotomatiki data ya matumizi na uchunguzi kwa Google.</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, katika <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Tuma sauti yako kwa Google ili uruhusu kuandika kwa kutamka katika sehemu ya maandishi.</translation>
 <translation id="7678280409648629969">Data ya kuingia katika akaunti itahifadhiwa kwenye Chrome baada ya kufunga Hali Fiche. Hali hii itakuruhusu utumie tena Touch ID kwenye tovuti hii baadaye.</translation>

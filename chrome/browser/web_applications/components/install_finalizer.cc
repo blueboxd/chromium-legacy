@@ -4,6 +4,8 @@
 
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -14,6 +16,13 @@
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 
 namespace web_app {
+
+InstallFinalizer::FinalizeOptions::FinalizeOptions() = default;
+
+InstallFinalizer::FinalizeOptions::~FinalizeOptions() = default;
+
+InstallFinalizer::FinalizeOptions::FinalizeOptions(const FinalizeOptions&) =
+    default;
 
 void InstallFinalizer::UninstallExternalWebAppByUrl(
     const GURL& app_url,

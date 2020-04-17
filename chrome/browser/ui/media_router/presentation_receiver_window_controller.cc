@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/ui/media_router/presentation_receiver_window.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -49,6 +50,11 @@ PresentationReceiverWindowController::CreateFromOriginalProfile(
 PresentationReceiverWindowController::~PresentationReceiverWindowController() {
   DCHECK(!web_contents_);
   DCHECK(!window_);
+
+  if (otr_profile_) {
+    otr_profile_->RemoveObserver(this);
+    ProfileDestroyer::DestroyProfileWhenAppropriate(otr_profile_);
+  }
 }
 
 void PresentationReceiverWindowController::Start(
@@ -107,20 +113,16 @@ PresentationReceiverWindowController::PresentationReceiverWindowController(
     const gfx::Rect& bounds,
     base::OnceClosure termination_callback,
     TitleChangeCallback title_change_callback)
-    : otr_profile_registration_(
-          IndependentOTRProfileManager::GetInstance()
-              ->CreateFromOriginalProfile(
-                  profile,
-                  base::BindOnce(&PresentationReceiverWindowController::
-                                     OriginalProfileDestroyed,
-                                 base::Unretained(this)))),
-      web_contents_(WebContents::Create(
-          CreateWebContentsParams(otr_profile_registration_->profile()))),
+    : otr_profile_(
+          profile->GetOffTheRecordProfile(Profile::OTRProfileID::CreateUnique(
+              "MediaRouter::PresentationReciever"))),
+      web_contents_(WebContents::Create(CreateWebContentsParams(otr_profile_))),
       window_(PresentationReceiverWindow::Create(this, bounds)),
       termination_callback_(std::move(termination_callback)),
       title_change_callback_(std::move(title_change_callback)) {
-  DCHECK(otr_profile_registration_->profile());
-  DCHECK(otr_profile_registration_->profile()->IsOffTheRecord());
+  DCHECK(otr_profile_);
+  DCHECK(otr_profile_->IsOffTheRecord());
+  otr_profile_->AddObserver(this);
   content::WebContentsObserver::Observe(web_contents_.get());
   web_contents_->SetDelegate(this);
 }
@@ -130,11 +132,11 @@ void PresentationReceiverWindowController::WindowClosed() {
   Terminate();
 }
 
-void PresentationReceiverWindowController::OriginalProfileDestroyed(
+void PresentationReceiverWindowController::OnProfileWillBeDestroyed(
     Profile* profile) {
-  DCHECK(profile == otr_profile_registration_->profile());
+  DCHECK(profile == otr_profile_);
   web_contents_.reset();
-  otr_profile_registration_.reset();
+  otr_profile_ = nullptr;
   Terminate();
 }
 

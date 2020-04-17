@@ -91,25 +91,6 @@ class CORE_EXPORT ScriptedIdleTaskController
                      IdleDeadline::CallbackType);
 
  private:
-  class QueuedIdleTask : public GarbageCollected<QueuedIdleTask> {
-   public:
-    QueuedIdleTask(IdleTask*,
-                   base::TimeTicks queue_timestamp,
-                   uint32_t timeout_millis);
-    virtual ~QueuedIdleTask() = default;
-
-    virtual void Trace(Visitor*);
-
-    IdleTask* task() { return task_; }
-    base::TimeTicks queue_timestamp() const { return queue_timestamp_; }
-    uint32_t timeout_millis() const { return timeout_millis_; }
-
-   private:
-    Member<IdleTask> task_;
-    base::TimeTicks queue_timestamp_;
-    uint32_t timeout_millis_;
-  };
-
   friend class internal::IdleRequestCallbackWrapper;
 
   void ContextPaused();
@@ -129,12 +110,8 @@ class CORE_EXPORT ScriptedIdleTaskController
                    base::TimeTicks deadline,
                    IdleDeadline::CallbackType);
 
-  void RecordIdleTaskMetrics(QueuedIdleTask*,
-                             base::TimeTicks run_timestamp,
-                             IdleDeadline::CallbackType);
-
   ThreadScheduler* scheduler_;  // Not owned.
-  HeapHashMap<CallbackId, Member<QueuedIdleTask>> idle_tasks_;
+  HeapHashMap<CallbackId, Member<IdleTask>> idle_tasks_;
   Vector<CallbackId> pending_timeouts_;
   CallbackId next_callback_id_;
   bool paused_;

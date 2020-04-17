@@ -30,6 +30,7 @@ import androidx.preference.PreferenceScreen;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -60,7 +61,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -443,27 +443,16 @@ public class ClearBrowsingDataFragmentTest {
      */
     private void waitForImportantDialogToShow(
             final ClearBrowsingDataFragment preferences, final int numImportantSites) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Assert.assertNotNull(preferences);
-                if (preferences.getImportantSitesDialogFragment() == null
-                        || !preferences.getImportantSitesDialogFragment().getDialog().isShowing()) {
-                    updateFailureReason("Dialog was null or not shown.");
-                    return false;
-                }
-                ListView sitesList = preferences.getImportantSitesDialogFragment().getSitesList();
-                if (sitesList.getAdapter().getCount() != numImportantSites) {
-                    updateFailureReason(
-                            String.format(Locale.US, "Adapter item count, %d, did not match %d",
-                                    sitesList.getAdapter().getCount(), numImportantSites));
-                    return false;
-                }
-                updateFailureReason(
-                        String.format(Locale.US, "ListView child count, %d, expected to be >= %d",
-                                sitesList.getChildCount(), numImportantSites));
-                return sitesList.getChildCount() >= numImportantSites;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Assert.assertNotNull(preferences);
+            Assert.assertNotNull(preferences.getImportantSitesDialogFragment());
+            Assert.assertTrue(
+                    preferences.getImportantSitesDialogFragment().getDialog().isShowing());
+
+            ListView sitesList = preferences.getImportantSitesDialogFragment().getSitesList();
+            Assert.assertEquals(numImportantSites, sitesList.getAdapter().getCount());
+            Assert.assertThat(
+                    sitesList.getChildCount(), Matchers.greaterThanOrEqualTo(numImportantSites));
         });
     }
 

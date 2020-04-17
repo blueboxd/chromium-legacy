@@ -142,6 +142,8 @@ def main(argv):
   parser.add_argument('tool_name',
                       nargs=1,
                       help='Clang tool to be tested.')
+  parser.add_argument(
+      '--test-filter', default='*', help='optional glob filter for test names')
   args = parser.parse_args(argv)
   tool_to_test = args.tool_name[0]
   print('\nTesting %s\n' % tool_to_test)
@@ -151,8 +153,9 @@ def main(argv):
       tools_clang_directory, tool_to_test, 'tests')
   compile_database = os.path.join(test_directory_for_tool,
                                   'compile_commands.json')
-  source_files = glob.glob(os.path.join(test_directory_for_tool,
-                                        '*-original.cc'))
+  source_files = glob.glob(
+      os.path.join(test_directory_for_tool,
+                   '%s-original.cc' % args.test_filter))
   ext = 'cc' if args.apply_edits else 'txt'
   actual_files = ['-'.join([source_file.rsplit('-', 1)[0], 'actual.cc'])
                   for source_file in source_files]

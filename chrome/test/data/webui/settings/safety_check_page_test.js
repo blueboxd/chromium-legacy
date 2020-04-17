@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {HatsBrowserProxyImpl, LifetimeBrowserProxyImpl, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PasswordManagerImpl, PasswordManagerProxy, Router, routes, SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckInteractions, SafetyCheckExtensionsStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from 'chrome://settings/settings.js';
+// #import {HatsBrowserProxyImpl, LifetimeBrowserProxyImpl, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PasswordManagerImpl, PasswordManagerProxy, Router, routes, SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckInteractions, SafetyCheckExtensionsStatus, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from 'chrome://settings/settings.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 // #import {TestHatsBrowserProxy} from 'chrome://test/settings/test_hats_browser_proxy.m.js';
@@ -47,6 +47,14 @@ suite('SafetyCheckUiTests', function() {
   teardown(function() {
     page.remove();
   });
+
+  function fireSafetyCheckParentEvent(state) {
+    const event = {};
+    event.newState = state;
+    event.displayString = null;
+    cr.webUIListenerCallback(
+        settings.SafetyCheckCallbackConstants.PARENT_CHANGED, event);
+  }
 
   function fireSafetyCheckUpdatesEvent(state) {
     const event = {};
@@ -159,6 +167,7 @@ suite('SafetyCheckUiTests', function() {
         settings.SafetyCheckSafeBrowsingStatus.ENABLED_STANDARD);
     fireSafetyCheckExtensionsEvent(
         settings.SafetyCheckExtensionsStatus.NO_BLOCKLISTED_EXTENSIONS);
+    fireSafetyCheckParentEvent(settings.SafetyCheckParentStatus.AFTER);
 
     Polymer.dom.flush();
     // Only the icon button is present.

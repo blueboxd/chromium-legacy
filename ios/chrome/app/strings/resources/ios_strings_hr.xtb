@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Smanji</translation>
 <translation id="2230173723195178503">Web-stranica učitana</translation>
 <translation id="2239626343334228536">Brisanje podataka o pregledavanju...</translation>
+<translation id="2245545499420671379">Blokiranje kolačića trećih strana u anonimnom načinu</translation>
 <translation id="2257567812274161158">Sinkronizacija ne funkcionira.</translation>
 <translation id="2267753748892043616">Dodaj račun</translation>
 <translation id="2268044343513325586">Pročišćavanje</translation>
@@ -419,6 +420,7 @@ Handoff mora biti omogućen i u odjeljku Općenito u Postavkama, a vaši uređaj
 
 Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. Unesite je da biste pokrenuli sinkronizaciju.</translation>
 <translation id="6418346271604475326">Priprema PDF-a</translation>
+<translation id="6426067060178468363">Dopuštanje kolačića</translation>
 <translation id="6434591244308415567">Došlo je do pogreške. Pokušajte ponovo kasnije.</translation>
 <translation id="6445051938772793705">Država</translation>
 <translation id="6445981559479772097">Poruka je poslana.</translation>
@@ -518,6 +520,7 @@ Budući da vašim računom upravlja <ph name="HOSTED_DOMAIN" />, vaši podaci iz
 <translation id="7781829728241885113">Danas</translation>
 <translation id="778855399387580014">Pokrenite pretraživanje u novoj kartici Chromea.</translation>
 <translation id="7791543448312431591">Dodaj</translation>
+<translation id="7828557259026017104">Kolačići su datoteke web-lokacija koje ste posjetili. Web-lokacije ih koriste kako bi zapamtile vaše postavke. Kolačiće trećih strana izrađuju ostale web-lokacije. Te web-lokacije posjeduju dio sadržaja prikazanog na web-stranici koju ste posjetili, primjerice oglase ili slike.</translation>
 <translation id="7840771868269352570">Odabrane će se stavke ukloniti.</translation>
 <translation id="7856733331829174190">Preuzimanje nije moguće</translation>
 <translation id="7859704718976024901">Povijest pregledavanja</translation>
@@ -543,6 +546,7 @@ Budući da vašim računom upravlja <ph name="HOSTED_DOMAIN" />, vaši podaci iz
 <translation id="8076014560081431679">Spremljene postavke web-lokacije neće se izbrisati i mogu odražavati vaše navike prilikom pregledavanja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Dostupno je preuzimanje datoteka. Opcije su dostupne pri dnu zaslona.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
+<translation id="8174524257672181687">Blokiranje svih kolačića (ne preporučuje se)</translation>
 <translation id="8197543752516192074">Prevedi stranicu</translation>
 <translation id="8205564605687841303">Odustani</translation>
 <translation id="8225985093977202398">Predmemorirane slike i datoteke</translation>

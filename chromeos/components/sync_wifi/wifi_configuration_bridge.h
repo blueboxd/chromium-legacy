@@ -63,11 +63,10 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
 
   // NetworkMetadataObserver:
   void OnFirstConnectionToNetwork(const std::string& guid) override;
+  void OnNetworkUpdate(const std::string& guid,
+                       base::DictionaryValue* set_properties) override;
 
   // NetworkConfigurationObserver::
-  void OnConfigurationModified(const std::string& service_path,
-                               const std::string& guid,
-                               base::DictionaryValue* set_properties) override;
   void OnBeforeConfigurationRemoved(const std::string& service_path,
                                     const std::string& guid) override;
   void OnConfigurationRemoved(const std::string& service_path,

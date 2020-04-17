@@ -4216,6 +4216,12 @@
     "expiry_milestone": 83
   },
   {
+    "name": "zero-copy-video-capture",
+    "owners": [ "chromeos-camera-eng@google.com",
+                "chromeos-gfx-video@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "zero-state-files",
     "owners": [ "tby", "jiameng" ],
     "expiry_milestone": 82

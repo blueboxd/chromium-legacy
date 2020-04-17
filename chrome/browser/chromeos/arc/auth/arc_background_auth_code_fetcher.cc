@@ -184,7 +184,7 @@ void ArcBackgroundAuthCodeFetcher::OnSimpleLoaderComplete(
     OptInSilentAuthCode uma_status;
     if (response_code >= 400 && response_code < 500)
       uma_status = OptInSilentAuthCode::HTTP_CLIENT_FAILURE;
-    if (response_code >= 500 && response_code < 600)
+    else if (response_code >= 500 && response_code < 600)
       uma_status = OptInSilentAuthCode::HTTP_SERVER_FAILURE;
     else
       uma_status = OptInSilentAuthCode::HTTP_UNKNOWN_FAILURE;

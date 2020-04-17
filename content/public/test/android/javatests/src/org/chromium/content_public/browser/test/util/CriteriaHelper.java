@@ -10,6 +10,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.TimeoutTimer;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Helper methods for creating and managing criteria.
@@ -20,10 +21,27 @@ import java.util.concurrent.Callable;
  * other approach exists.
  *
  * <p>
- * If you do not need failure reason, or only need static failure reason, the
- * Callback flavor can be less verbose with lambda.
+ * The Runnable variation of the CriteriaHelper methods allows a flexible way of verifying any
+ * number of conditions are met prior to proceeding.
  *
  * <pre>
+ * Example:
+ * <code>
+ * private void verifyMenuShown() {
+ *     CriteriaHelper.pollUiThread(() -> {
+ *         Assert.assertNotNull("App menu was null", getActivity().getAppMenuHandler());
+ *         Assert.assertTrue("App menu was not shown",
+ *                 getActivity().getAppMenuHandler().isAppMenuShowing());
+ *     });
+ * }
+ * </code>
+ * </pre>
+ *
+ * <p>
+ * To verify simple conditions, the Callback variation can be less verbose.
+ *
+ * <pre>
+ * Example:
  * <code>
  * private void assertMenuShown() {
  *     CriteriaHelper.pollUiThread(() -> getActivity().getAppMenuHandler().isAppMenuShowing(),
@@ -33,25 +51,7 @@ import java.util.concurrent.Callable;
  * </pre>
  *
  * <p>
- * Criteria supports dynamic failure reason like this:
- *
- * <pre>
- * <code>
- * public void waitForTabFullyLoaded(final Tab tab) {
- *     CriteriaHelper.pollUiThread(new Criteria() {
- *         {@literal @}Override
- *         public boolean isSatisfied() {
- *             if (tab.getWebContents() == null) {
- *                 updateFailureReason("Tab has no web contents");
- *                 return false;
- *             }
- *             updateFailureReason("Tab not fully loaded");
- *             return tab.isLoading();
- *         }
- *     });
- * }
- * </code>
- * </pre>
+ * The Criteria variation is deprecated and should be avoided in favor of using a Runnable.
  */
 public class CriteriaHelper {
     /** The default maximum time to wait for a criteria to become valid. */
@@ -60,45 +60,71 @@ public class CriteriaHelper {
     public static final long DEFAULT_POLLING_INTERVAL = 50;
 
     /**
-     * Checks whether the given Criteria is satisfied at a given interval, until either
-     * the criteria is satisfied, or the specified maxTimeoutMs number of ms has elapsed.
+     * Checks whether the given Runnable completes without exception at a given interval, until
+     * either the Runnable successfully completes, or the maxTimeoutMs number of ms has elapsed.
      *
      * <p>
      * This evaluates the Criteria on the Instrumentation thread, which more often than not is not
      * correct in an InstrumentationTest. Use
-     * {@link #pollUiThread(Criteria, long, long)} instead.
+     * {@link #pollUiThread(Runnable, long, long)} instead.
      *
-     * @param criteria The Criteria that will be checked.
+     * @param criteria The Runnable that will be attempted.
      * @param maxTimeoutMs The maximum number of ms that this check will be performed for
      *                     before timeout.
      * @param checkIntervalMs The number of ms between checks.
      */
     public static void pollInstrumentationThread(
-            Criteria criteria, long maxTimeoutMs, long checkIntervalMs) {
-        boolean isSatisfied = criteria.isSatisfied();
+            Runnable criteria, long maxTimeoutMs, long checkIntervalMs) {
+        AssertionError assertionError = null;
+        try {
+            criteria.run();
+            return;
+        } catch (AssertionError ae) {
+            assertionError = ae;
+        }
         TimeoutTimer timer = new TimeoutTimer(maxTimeoutMs);
-        while (!isSatisfied && !timer.isTimedOut()) {
+        while (!timer.isTimedOut()) {
             try {
                 Thread.sleep(checkIntervalMs);
             } catch (InterruptedException e) {
                 // Catch the InterruptedException. If the exception occurs before maxTimeoutMs
                 // and the criteria is not satisfied, the while loop will run again.
             }
-            isSatisfied = criteria.isSatisfied();
+            try {
+                criteria.run();
+                return;
+            } catch (AssertionError ae) {
+                assertionError = ae;
+            }
         }
-        Assert.assertTrue(criteria.getFailureReason(), isSatisfied);
+        throw assertionError;
     }
 
     /**
-     * Checks whether the given Criteria is satisfied polling at a default interval.
+     * Checks whether the given Runnable completes without exception at the default interval.
      *
      * <p>
-     * This evaluates the Criteria on the test thread, which more often than not is not correct
-     * in an InstrumentationTest.  Use {@link #pollUiThread(Criteria)} instead.
+     * This evaluates the Runnable on the test thread, which more often than not is not correct
+     * in an InstrumentationTest.  Use {@link #pollUiThread(Runnable)} instead.
      *
-     * @param criteria The Criteria that will be checked.
+     * @param criteria The Runnable that will be attempted.
      *
      * @see #pollInstrumentationThread(Criteria, long, long)
+     */
+    public static void pollInstrumentationThread(Runnable criteria) {
+        pollInstrumentationThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+    }
+
+    /**
+     * Deprecated, use {@link #pollInstrumentationThread(Runnable, long, long)}.
+     */
+    public static void pollInstrumentationThread(
+            Criteria criteria, long maxTimeoutMs, long checkIntervalMs) {
+        pollInstrumentationThread(toAssertionRunnable(criteria), maxTimeoutMs, checkIntervalMs);
+    }
+
+    /**
+     * Deprecated, use {@link #pollInstrumentationThread(Runnable)}.
      */
     public static void pollInstrumentationThread(Criteria criteria) {
         pollInstrumentationThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
@@ -121,7 +147,7 @@ public class CriteriaHelper {
     public static void pollInstrumentationThread(final Callable<Boolean> criteria,
             String failureReason, long maxTimeoutMs, long checkIntervalMs) {
         pollInstrumentationThread(
-                toCriteria(criteria, failureReason), maxTimeoutMs, checkIntervalMs);
+                toAssertionRunnable(criteria, failureReason), maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -153,38 +179,62 @@ public class CriteriaHelper {
     }
 
     /**
-     * Checks whether the given Criteria is satisfied polling at a given interval on the UI
-     * thread, until either the criteria is satisfied, or the maxTimeoutMs number of ms has elapsed.
+     * Checks whether the given Runnable completes without exception at a given interval on the UI
+     * thread, until either the Runnable successfully completes, or the maxTimeoutMs number of ms
+     * has elapsed.
      *
-     * @param criteria The Criteria that will be checked.
+     * @param criteria The Runnable that will be attempted.
      * @param maxTimeoutMs The maximum number of ms that this check will be performed for
      *                     before timeout.
      * @param checkIntervalMs The number of ms between checks.
      *
-     * @see #pollInstrumentationThread(Criteria)
+     * @see #pollInstrumentationThread(Runnable)
      */
     public static void pollUiThread(
-            final Criteria criteria, long maxTimeoutMs, long checkIntervalMs) {
-        pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(criteria::isSatisfied);
-            }
-
-            @Override
-            public String getFailureReason() {
-                return criteria.getFailureReason();
+            final Runnable criteria, long maxTimeoutMs, long checkIntervalMs) {
+        pollInstrumentationThread(() -> {
+            AtomicReference<Throwable> throwableRef = new AtomicReference<>();
+            ThreadUtils.runOnUiThreadBlocking(() -> {
+                try {
+                    criteria.run();
+                } catch (Throwable t) {
+                    throwableRef.set(t);
+                }
+            });
+            Throwable throwable = throwableRef.get();
+            if (throwable != null) {
+                if (throwable instanceof AssertionError) {
+                    throw (AssertionError) throwable;
+                } else if (throwable instanceof RuntimeException) {
+                    throw (RuntimeException) throwable;
+                } else {
+                    throw new RuntimeException(throwable);
+                }
             }
         }, maxTimeoutMs, checkIntervalMs);
     }
 
     /**
-     * Checks whether the given Criteria is satisfied polling at a default interval on the UI
-     * thread. If dynamic failure reason is not necessary, {@link #pollUiThread(Callable)} is
-     * simpler.
-     * @param criteria The Criteria that will be checked.
+     * Checks whether the given Runnable completes without exception at the default interval on
+     * the UI thread.
+     * @param criteria The Runnable that will be attempted.
      *
-     * @see #pollInstrumentationThread(Criteria)
+     * @see #pollInstrumentationThread(Runnable)
+     */
+    public static void pollUiThread(final Runnable criteria) {
+        pollUiThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+    }
+
+    /**
+     * Deprecated, use {@link #pollUiThread(Runnable, long, long)}.
+     */
+    public static void pollUiThread(
+            final Criteria criteria, long maxTimeoutMs, long checkIntervalMs) {
+        pollUiThread(toAssertionRunnable(criteria), maxTimeoutMs, checkIntervalMs);
+    }
+
+    /**
+     * Deprecated, use {@link #pollUiThread(Runnable)}.
      */
     public static void pollUiThread(final Criteria criteria) {
         pollUiThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
@@ -204,7 +254,7 @@ public class CriteriaHelper {
      */
     public static void pollUiThread(final Callable<Boolean> criteria, String failureReason,
             long maxTimeoutMs, long checkIntervalMs) {
-        pollUiThread(toCriteria(criteria, failureReason), maxTimeoutMs, checkIntervalMs);
+        pollUiThread(toAssertionRunnable(criteria, failureReason), maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -230,17 +280,24 @@ public class CriteriaHelper {
         pollUiThread(criteria, null);
     }
 
-    private static Criteria toCriteria(final Callable<Boolean> criteria, String failureReason) {
-        return new Criteria(failureReason) {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return criteria.call();
-                } catch (Exception e) {
-                    // If the exception keeps occurring, it would timeout.
-                    return false;
-                }
+    private static Runnable toAssertionRunnable(Callable<Boolean> criteria, String failureReason) {
+        return () -> {
+            boolean isSatisfied;
+            try {
+                isSatisfied = criteria.call();
+            } catch (RuntimeException re) {
+                throw re;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
+            Assert.assertTrue(failureReason, isSatisfied);
+        };
+    }
+
+    private static Runnable toAssertionRunnable(Criteria criteria) {
+        return () -> {
+            boolean satisfied = criteria.isSatisfied();
+            Assert.assertTrue(criteria.getFailureReason(), satisfied);
         };
     }
 }

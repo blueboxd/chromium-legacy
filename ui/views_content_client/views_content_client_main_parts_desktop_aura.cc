@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
@@ -19,13 +18,14 @@ class ViewsContentClientMainPartsDesktopAura
   ViewsContentClientMainPartsDesktopAura(
       const content::MainFunctionParams& content_params,
       ViewsContentClient* views_content_client);
-  ~ViewsContentClientMainPartsDesktopAura() override {}
+  ViewsContentClientMainPartsDesktopAura(
+      const ViewsContentClientMainPartsDesktopAura&) = delete;
+  ViewsContentClientMainPartsDesktopAura& operator=(
+      const ViewsContentClientMainPartsDesktopAura&) = delete;
+  ~ViewsContentClientMainPartsDesktopAura() override = default;
 
-  // content::BrowserMainParts:
+  // ViewsContentClientMainPartsAura:
   void PreMainMessageLoopRun() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ViewsContentClientMainPartsDesktopAura);
 };
 
 ViewsContentClientMainPartsDesktopAura::ViewsContentClientMainPartsDesktopAura(

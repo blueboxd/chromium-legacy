@@ -42,7 +42,6 @@ import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsMod
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
-import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
@@ -148,10 +147,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         } else if (newWebappInfo.shouldForceNavigation()) {
             mCustomTabIntentHandler.onNewIntent(newWebappInfo.getProvider());
         }
-    }
-
-    protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
-        return false;
     }
 
     protected WebappInfo createWebappInfo(Intent intent) {
@@ -492,13 +487,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     @Override
     protected Drawable getBackgroundDrawable() {
         return null;
-    }
-
-    /**
-     * @return {@link TabDelegateFactory} to be used while creating the associated {@link Tab}.
-     */
-    private TabDelegateFactory createTabDelegateFactory() {
-        return mDelegateFactory;
     }
 
     // We're temporarily disable CS on webapp since there are some issues. (http://crbug.com/471950)

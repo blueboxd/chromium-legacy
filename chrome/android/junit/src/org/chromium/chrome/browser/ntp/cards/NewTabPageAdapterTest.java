@@ -85,7 +85,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeImpl;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
@@ -98,7 +98,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Unit tests for {@link NewTabPageAdapter}. {@link AccountManagerFacade} uses AsyncTasks, thus
+ * Unit tests for {@link NewTabPageAdapter}. {@link AccountManagerFacadeImpl} uses AsyncTasks, thus
  * the need for {@link CustomShadowAsyncTask}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -283,7 +283,7 @@ public class NewTabPageAdapterTest {
      * TODO(https://crbug.com/914920): replace this with a mock after a fake implementation for
      * AccountManagerFacade is available.
      */
-    @Implements(AccountManagerFacade.class)
+    @Implements(AccountManagerFacadeImpl.class)
     public static class ShadowAccountManagerFacade {
         private static boolean sPopulated;
 

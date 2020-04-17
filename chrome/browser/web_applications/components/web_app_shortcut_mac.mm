@@ -28,6 +28,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
@@ -158,6 +159,36 @@ bool g_app_shims_allow_update_and_launch_in_tests = false;
 namespace web_app {
 
 namespace {
+
+// UMA metric name for creating shortcut result.
+constexpr const char* kCreateShortcutResult = "Apps.CreateShortcuts.Mac.Result";
+
+// Result of creating app shortcut.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class CreateShortcutResult {
+  kSuccess = 0,
+  kApplicationDirNotFound = 1,
+  kFailToLocalizeApplication = 2,
+  kFailToGetApplicationPaths = 3,
+  kFailToCreateTempDir = 4,
+  kStagingDirectoryNotExist = 5,
+  kFailToCreateExecutablePath = 6,
+  kFailToCopyExecutablePath = 7,
+  kFailToCopyPlist = 8,
+  kFailToWritePkgInfoFile = 9,
+  kFailToUpdatePlist = 10,
+  kFailToUpdateDisplayName = 11,
+  kFailToUpdateIcon = 12,
+  kFailToCreateParentDir = 13,
+  kFailToCopyApp = 14,
+  kMaxValue = kFailToCopyApp
+};
+
+// Records the result of creating shortcut to UMA.
+void RecordCreateShortcut(CreateShortcutResult result) {
+  UMA_HISTOGRAM_ENUMERATION(kCreateShortcutResult, result);
+}
 
 // The maximum number to append to to an app name before giving up and using the
 // extension id.
@@ -814,7 +845,8 @@ base::FilePath WebAppShortcutCreator::GetFallbackBasename() const {
 bool WebAppShortcutCreator::BuildShortcut(
     const base::FilePath& staging_path) const {
   if (!base::DirectoryExists(staging_path.DirName())) {
-    LOG(ERROR) << "Staging path directory does not exit: "
+    RecordCreateShortcut(CreateShortcutResult::kStagingDirectoryNotExist);
+    LOG(ERROR) << "Staging path directory does not exist: "
                << staging_path.DirName();
     return false;
   }
@@ -843,6 +875,7 @@ bool WebAppShortcutCreator::BuildShortcut(
                              NSFilePosixPermissions : @(0755)
                            }
                                 error:&error]) {
+    RecordCreateShortcut(CreateShortcutResult::kFailToCreateExecutablePath);
     LOG(ERROR) << "Failed to create destination executable path: "
                << destination_executable_path
                << ", error=" << base::SysNSStringToUTF8([error description]);
@@ -852,6 +885,7 @@ bool WebAppShortcutCreator::BuildShortcut(
   // Copy the executable file.
   if (!base::CopyFile(executable_path, destination_executable_path.Append(
                                            executable_path.BaseName()))) {
+    RecordCreateShortcut(CreateShortcutResult::kFailToCopyExecutablePath);
     LOG(ERROR) << "Failed to copy executable: " << executable_path;
     return false;
   }
@@ -859,6 +893,7 @@ bool WebAppShortcutCreator::BuildShortcut(
   // Copy the Info.plist.
   if (!base::CopyFile(plist_path,
                       destination_contents_path.Append("Info.plist"))) {
+    RecordCreateShortcut(CreateShortcutResult::kFailToCopyPlist);
     LOG(ERROR) << "Failed to copy plist: " << plist_path;
     return false;
   }
@@ -868,12 +903,26 @@ bool WebAppShortcutCreator::BuildShortcut(
   constexpr size_t kPkgInfoDataSize = base::size(kPkgInfoData) - 1;
   if (base::WriteFile(destination_contents_path.Append("PkgInfo"), kPkgInfoData,
                       kPkgInfoDataSize) != kPkgInfoDataSize) {
+    RecordCreateShortcut(CreateShortcutResult::kFailToWritePkgInfoFile);
     LOG(ERROR) << "Failed to write PkgInfo file: " << destination_contents_path;
     return false;
   }
 
-  return UpdatePlist(staging_path) && UpdateDisplayName(staging_path) &&
-         UpdateIcon(staging_path);
+  bool result = UpdatePlist(staging_path);
+  if (!result) {
+    RecordCreateShortcut(CreateShortcutResult::kFailToUpdatePlist);
+    return result;
+  }
+  result = UpdateDisplayName(staging_path);
+  if (!result) {
+    RecordCreateShortcut(CreateShortcutResult::kFailToUpdateDisplayName);
+    return result;
+  }
+  result = UpdateIcon(staging_path);
+  if (!result) {
+    RecordCreateShortcut(CreateShortcutResult::kFailToUpdateIcon);
+  }
+  return result;
 }
 
 void WebAppShortcutCreator::CreateShortcutsAt(
@@ -883,8 +932,10 @@ void WebAppShortcutCreator::CreateShortcutsAt(
   DCHECK(!dst_app_paths.empty());
 
   base::ScopedTempDir scoped_temp_dir;
-  if (!scoped_temp_dir.CreateUniqueTempDir())
+  if (!scoped_temp_dir.CreateUniqueTempDir()) {
+    RecordCreateShortcut(CreateShortcutResult::kFailToCreateTempDir);
     return;
+  }
 
   // Create the bundle in |staging_path|. Note that the staging path will be
   // encoded in CFBundleName, and only .apps with that exact name will have
@@ -901,6 +952,7 @@ void WebAppShortcutCreator::CreateShortcutsAt(
     // Create the parent directory for the app.
     base::FilePath dst_parent_dir = dst_app_path.DirName();
     if (!base::CreateDirectory(dst_parent_dir)) {
+      RecordCreateShortcut(CreateShortcutResult::kFailToCreateParentDir);
       LOG(ERROR) << "Creating directory " << dst_parent_dir.value()
                  << " failed.";
       continue;
@@ -911,6 +963,7 @@ void WebAppShortcutCreator::CreateShortcutsAt(
 
     // Copy the bundle to |dst_app_path|.
     if (!base::CopyDirectory(staging_path, dst_app_path, true)) {
+      RecordCreateShortcut(CreateShortcutResult::kFailToCopyApp);
       LOG(ERROR) << "Copying app to dst dir: " << dst_parent_dir.value()
                  << " failed";
       continue;
@@ -935,6 +988,7 @@ bool WebAppShortcutCreator::CreateShortcuts(
     return false;
   if (creation_reason == SHORTCUT_CREATION_BY_USER)
     RevealAppShimInFinder(updated_app_paths[0]);
+  RecordCreateShortcut(CreateShortcutResult::kSuccess);
   return true;
 }
 
@@ -947,14 +1001,17 @@ bool WebAppShortcutCreator::UpdateShortcuts(
     const base::FilePath applications_dir = GetChromeAppsFolder();
     if (applications_dir.empty() ||
         !base::DirectoryExists(applications_dir.DirName())) {
+      RecordCreateShortcut(CreateShortcutResult::kApplicationDirNotFound);
       LOG(ERROR) << "Couldn't find an Applications directory to copy app to.";
       return false;
     }
     // Only set folder icons and a localized name once. This avoids concurrent
     // calls to -[NSWorkspace setIcon:..], which is not reentrant.
     static bool once = UpdateAppShortcutsSubdirLocalizedName(applications_dir);
-    if (!once)
+    if (!once) {
+      RecordCreateShortcut(CreateShortcutResult::kFailToLocalizeApplication);
       LOG(ERROR) << "Failed to localize " << applications_dir.value();
+    }
   }
 
   // Get the list of paths to (re)create by bundle id (wherever it was moved
@@ -967,8 +1024,10 @@ bool WebAppShortcutCreator::UpdateShortcuts(
     app_paths.push_back(
         GetApplicationsShortcutPath(true /* avoid_conflicts */));
   }
-  if (app_paths.empty())
+  if (app_paths.empty()) {
+    RecordCreateShortcut(CreateShortcutResult::kFailToGetApplicationPaths);
     return false;
+  }
 
   CreateShortcutsAt(app_paths, updated_paths);
   return updated_paths->size() == app_paths.size();

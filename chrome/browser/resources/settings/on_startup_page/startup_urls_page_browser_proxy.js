@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /**
@@ -14,11 +14,10 @@
  *   url: string
  * }}
  */
-/* #export */ let StartupPageInfo;
+export let StartupPageInfo;
 
-cr.define('settings', function() {
   /** @interface */
-  /* #export */ class StartupUrlsPageBrowserProxy {
+  export class StartupUrlsPageBrowserProxy {
     loadStartupPages() {}
     useCurrentPages() {}
 
@@ -48,9 +47,9 @@ cr.define('settings', function() {
   }
 
   /**
-   * @implements {settings.StartupUrlsPageBrowserProxy}
+   * @implements {StartupUrlsPageBrowserProxy}
    */
-  /* #export */ class StartupUrlsPageBrowserProxyImpl {
+  export class StartupUrlsPageBrowserProxyImpl {
     /** @override */
     loadStartupPages() {
       chrome.send('onStartupPrefsPageLoad');
@@ -63,17 +62,17 @@ cr.define('settings', function() {
 
     /** @override */
     validateStartupPage(url) {
-      return cr.sendWithPromise('validateStartupPage', url);
+      return sendWithPromise('validateStartupPage', url);
     }
 
     /** @override */
     addStartupPage(url) {
-      return cr.sendWithPromise('addStartupPage', url);
+      return sendWithPromise('addStartupPage', url);
     }
 
     /** @override */
     editStartupPage(modelIndex, url) {
-      return cr.sendWithPromise('editStartupPage', modelIndex, url);
+      return sendWithPromise('editStartupPage', modelIndex, url);
     }
 
     /** @override */
@@ -82,11 +81,4 @@ cr.define('settings', function() {
     }
   }
 
-  cr.addSingletonGetter(StartupUrlsPageBrowserProxyImpl);
-
-  // #cr_define_end
-  return {
-    StartupUrlsPageBrowserProxy: StartupUrlsPageBrowserProxy,
-    StartupUrlsPageBrowserProxyImpl: StartupUrlsPageBrowserProxyImpl,
-  };
-});
+  addSingletonGetter(StartupUrlsPageBrowserProxyImpl);

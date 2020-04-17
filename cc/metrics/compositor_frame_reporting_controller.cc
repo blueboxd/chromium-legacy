@@ -61,10 +61,11 @@ void CompositorFrameReportingController::WillBeginImplFrame(
     const viz::BeginFrameArgs& args) {
   base::TimeTicks begin_time = Now();
   if (reporters_[PipelineStage::kBeginImplFrame]) {
-    // If the the reporter is replaced in this stage, it means that Impl frame
-    // caused no damage.
-    reporters_[PipelineStage::kBeginImplFrame]->TerminateFrame(
-        FrameTerminationStatus::kDidNotProduceFrame, begin_time);
+    auto& reporter = reporters_[PipelineStage::kBeginImplFrame];
+    DCHECK(reporter->did_finish_impl_frame());
+    DCHECK(reporter->did_not_produce_frame());
+    reporter->TerminateFrame(FrameTerminationStatus::kDidNotProduceFrame,
+                             reporter->did_not_produce_frame_time());
   }
   std::unique_ptr<CompositorFrameReporter> reporter =
       std::make_unique<CompositorFrameReporter>(
@@ -251,7 +252,8 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
 }
 
 void CompositorFrameReportingController::DidNotProduceFrame(
-    const viz::BeginFrameId& id) {
+    const viz::BeginFrameId& id,
+    FrameSkippedReason skip_reason) {
   for (auto& stage_reporter : reporters_) {
     if (stage_reporter && stage_reporter->frame_id_ == id) {
       // The reporter will be flagged and terminated when replaced by another
@@ -261,7 +263,7 @@ void CompositorFrameReportingController::DidNotProduceFrame(
       // long, then DidNotProduceFrame() is called for the reporter in the
       // BeginMain stage, but the main-thread can make updates, which can be
       // submitted with the next frame.
-      stage_reporter->OnDidNotProduceFrame();
+      stage_reporter->OnDidNotProduceFrame(skip_reason);
       return;
     }
   }
@@ -303,6 +305,7 @@ void CompositorFrameReportingController::OnStoppedRequestingBeginFrames() {
   auto now = Now();
   for (int i = 0; i < PipelineStage::kNumPipelineStages; ++i) {
     if (reporters_[i]) {
+      reporters_[i]->OnDidNotProduceFrame(FrameSkippedReason::kNoDamage);
       reporters_[i]->TerminateFrame(FrameTerminationStatus::kDidNotProduceFrame,
                                     now);
     }

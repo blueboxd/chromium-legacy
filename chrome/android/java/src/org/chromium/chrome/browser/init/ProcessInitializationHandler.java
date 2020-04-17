@@ -82,7 +82,7 @@ import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.minidump_uploader.CrashFileManager;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeImpl;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.viz.common.VizSwitches;
@@ -166,7 +166,7 @@ public class ProcessInitializationHandler {
         // only once and before AccountMangerHelper.get(...) is called to avoid using the
         // default AccountManagerDelegate.
         AccountManagerFacadeProvider.setInstance(
-                new AccountManagerFacade(AppHooks.get().createAccountManagerDelegate()));
+                new AccountManagerFacadeImpl(AppHooks.get().createAccountManagerDelegate()));
 
         // Set the unique identification generator for invalidations.  The
         // invalidations system can start and attempt to fetch the client ID

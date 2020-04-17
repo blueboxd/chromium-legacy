@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_EXTERNAL_INSTALL_OPTIONS_H_
 
 #include <iosfwd>
+#include <string>
+#include <vector>
 
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -32,8 +34,7 @@ struct ExternalInstallOptions {
   ExternalInstallSource install_source;
 
   // If true, a shortcut is added to the Applications folder on macOS, and Start
-  // Menu on Linux and Windows. On Chrome OS, all installed apps show up in the
-  // app list, so there is no need to do anything there. If false, we skip
+  // Menu on Linux and Windows and launcher on Chrome OS. If false, we skip
   // adding a shortcut to desktop as well, regardless of the value of
   // |add_to_desktop|.
   // TODO(ortuno): Make adding a shortcut to the applications menu independent
@@ -48,6 +49,14 @@ struct ExternalInstallOptions {
   // for Chrome OS, the Dock for macOS, and the Quick Launch Bar or Taskbar on
   // Windows. Currently this only works on Chrome OS.
   bool add_to_quick_launch_bar = true;
+
+  // If true, the app can be searched for on Chrome OS. Has no effect on other
+  // platforms.
+  bool add_to_search = true;
+
+  // If true, the app is shown in App Management on Chrome OS. Has no effect on
+  // other platforms.
+  bool add_to_management = true;
 
   // Whether the app should be reinstalled even if the user has previously
   // uninstalled it.

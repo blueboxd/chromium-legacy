@@ -55,7 +55,11 @@ public class ChromeSmokeTest {
         IUi2Locator locatorChrome = Ui2Locators.withPackageName(mPackageName);
 
         CriteriaHelper.pollInstrumentationThread(() -> {
-            return locatorChrome.locateOne(device) != null;
+            try {
+                return locatorChrome.locateOne(device) != null;
+            } catch (NullPointerException e) {
+                return false; // Throws an NPE on older Android versions.
+            }
         }, mPackageName + " should have loaded", TIMEOUT_MS, UI_CHECK_INTERVAL);
     }
 }

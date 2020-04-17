@@ -934,7 +934,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2229161054156947610">Queda més d'una hora</translation>
 <translation id="222931766245975952">Fitxer truncat</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">Fes clic per veure el doodle del dia</translation>
 <translation id="2231238007119540260">Si suprimiu un certificat de servidor, restaurareu les comprovacions de seguretat normals per a aquell servidor i es necessitarà que utilitzi un certificat vàlid.</translation>
 <translation id="2232876851878324699">El fitxer contenia un certificat que no s'ha importat:</translation>
 <translation id="2233502537820838181">&amp;Més informació</translation>
@@ -6065,7 +6064,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9112987648460918699">Cerca...</translation>
 <translation id="9114663181201435112">Inicia la sessió fàcilment</translation>
 <translation id="9115675100829699941">&amp;Adreces d'interès</translation>
-<translation id="9116465289595958864">Última modificació</translation>
+<translation id="9116465289595958864">Darrera modificació</translation>
 <translation id="9116799625073598554">Aplicació per prendre notes</translation>
 <translation id="9117030152748022724">Gestiona les teves aplicacions</translation>
 <translation id="9121814364785106365">Obre-ho com a pestanya reduïda</translation>

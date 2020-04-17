@@ -37,9 +37,10 @@ class DISPLAY_EXPORT Screen {
   // Retrieves the single Screen object.
   static Screen* GetScreen();
 
-  // Sets the global screen. NOTE: this does not take ownership of |screen|.
-  // Tests must be sure to reset any state they install.
-  static void SetScreenInstance(Screen* instance);
+  // Sets the global screen. Returns the previously installed screen, if any.
+  // NOTE: this does not take ownership of |screen|. Tests must be sure to reset
+  // any state they install.
+  static Screen* SetScreenInstance(Screen* instance);
 
   // Returns the current absolute position of the mouse pointer.
   virtual gfx::Point GetCursorScreenPoint() = 0;

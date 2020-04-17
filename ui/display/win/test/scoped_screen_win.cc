@@ -11,21 +11,16 @@ namespace win {
 namespace test {
 
 ScopedScreenWin::ScopedScreenWin() : ScreenWin(false) {
-  const gfx::Rect pixel_bounds = gfx::Rect(0, 0, 1920, 1200);
-  const gfx::Rect pixel_work = gfx::Rect(0, 0, 1920, 1100);
-  MONITORINFOEX monitor_info =
-      CreateMonitorInfo(pixel_bounds, pixel_work, L"primary");
-  std::vector<DisplayInfo> display_infos;
-  display_infos.push_back(
-      DisplayInfo(monitor_info, 1.0f /* device_scale_factor*/, 1.0f,
-                  Display::ROTATE_0, 60, gfx::Vector2dF(96.0, 96.0)));
-  UpdateFromDisplayInfos(display_infos);
-  previous_screen_ = Screen::GetScreen();
-  Screen::SetScreenInstance(this);
+  constexpr gfx::Rect kPixelBounds(0, 0, 1920, 1200);
+  constexpr gfx::Rect kPixelWork(0, 0, 1920, 1100);
+  const MONITORINFOEX monitor_info =
+      CreateMonitorInfo(kPixelBounds, kPixelWork, L"primary");
+  UpdateFromDisplayInfos({{monitor_info, 1.0f /* device_scale_factor*/, 1.0f,
+                           Display::ROTATE_0, 60, gfx::Vector2dF(96.0, 96.0)}});
 }
 
 ScopedScreenWin::~ScopedScreenWin() {
-  Screen::SetScreenInstance(previous_screen_);
+  Screen::SetScreenInstance(old_screen_);
 }
 
 }  // namespace test

@@ -44,6 +44,13 @@ message SourcesProto {
   required bool default = 5;
 }
 
+// Properties for integrating with Chrome OS UI surfaces.
+message ChromeOSDataProto {
+  required bool show_in_launcher = 1;
+  required bool show_in_search = 2;
+  required bool show_in_management = 3;
+}
+
 // Full WebApp object data. See detailed comments in
 // chrome/browser/web_applications/web_app.h. Note on database identities:
 // app_id is a hash of launch_url. app_id is the client tag for sync system.
@@ -84,4 +91,8 @@ message WebAppProto {
   repeated WebAppFileHandlerProto file_handlers = 12;
   // A list of additional search terms to use when searching for the app.
   repeated string additional_search_terms = 13;
+
+  // Even though |chromeos_data| is optional, it should always exist on
+  // ChromeOS.
+  optional ChromeOSDataProto chromeos_data = 14;
 }

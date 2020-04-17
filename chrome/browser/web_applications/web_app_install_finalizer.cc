@@ -4,6 +4,9 @@
 
 #include <utility>
 
+#include <map>
+#include <vector>
+
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 
 #include "base/bind.h"
@@ -162,6 +165,11 @@ void WebAppInstallFinalizer::FinalizeInstall(
                                     ? DisplayMode::kStandalone
                                     : DisplayMode::kBrowser);
   }
+
+  // `WebApp::chromeos_data` has a default value already. Only override if the
+  // caller provided a new value.
+  if (options.chromeos_data.has_value())
+    web_app->SetWebAppChromeOsData(options.chromeos_data.value());
 
   web_app->SetAdditionalSearchTerms(web_app_info.additional_search_terms);
   web_app->AddSource(source);

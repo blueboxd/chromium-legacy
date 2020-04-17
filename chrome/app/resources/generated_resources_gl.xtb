@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Ler e cambiar todos os teus datos no sitio web actual cando se invoque</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> quere restablecer a túa configuración.</translation>
 <translation id="1243314992276662751">Cargar</translation>
+<translation id="1243436884219965846">Revisar contrasinais</translation>
 <translation id="1244265436519979884">Estase restaurando Linux</translation>
 <translation id="1244303850296295656">Erro de extensión</translation>
 <translation id="1246158006305844142">As túas aplicacións e opcións de configuración sincronizaranse en todos os dispositivos Chrome OS nos que teñas a sesión iniciada na túa Conta de Google. Para ver as opción de sincronización do navegador, accede á <ph name="LINK_BEGIN" />configuración de Chrome<ph name="LINK_END" />.</translation>
@@ -933,7 +934,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2229161054156947610">Queda máis de 1 hora</translation>
 <translation id="222931766245975952">Ficheiro truncado</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">Fai clic para ver o doodle de hoxe</translation>
 <translation id="2231238007119540260">Se eliminas un certificado de servidor, restaurarás as comprobacións de seguranza habituais dese servidor e terá que utilizar un certificado válido.</translation>
 <translation id="2232876851878324699">O ficheiro contiña un certificado que non se importou:</translation>
 <translation id="2233502537820838181">&amp;Máis información</translation>
@@ -2572,6 +2572,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4404136731284211429">Buscar de novo</translation>
 <translation id="4404843640767531781">O teu pai ou nai bloqueou <ph name="APP_NAME" />. Pídelle permiso para utilizar esta aplicación.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg e *.png</translation>
+<translation id="4406883609789734330">Subtítulos instantáneos</translation>
 <translation id="4408599188496843485">A&amp;xuda</translation>
 <translation id="4409697491990005945">Marxes</translation>
 <translation id="4410545552906060960">Utiliza un número (PIN) en lugar dun contrasinal para desbloquear o dispositivo. Para definir o PIN máis tarde, vai a Configuración.</translation>
@@ -3976,6 +3977,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6326855256003666642">Reconto de Keepalive</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> require que actualices este dispositivo antes do prazo.</translation>
 <translation id="6327785803543103246">Detección automática do proxy web</translation>
+<translation id="6331566915566907158">Axudar a mellorar funcións e rendemento de Chrome OS</translation>
 <translation id="6333064448949140209">Enviarase o ficheiro a Google para proceder á depuración</translation>
 <translation id="6339668969738228384">Crea un novo perfil para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Non se puido establecer conexión co servidor. Comproba a conexión de rede e téntao de novo. Se o problema persiste, reinicia o dispositivo Chromebook.</translation>
@@ -4936,6 +4938,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{O PIN é incorrecto. Quédache un intento.}other{O PIN é incorrecto. Quédanche # intentos.}}</translation>
 <translation id="7671130400130574146">Utilizar a barra de título e os bordos do sistema</translation>
 <translation id="767127784612208024">Toca a chave para confirmar o seu restablecemento</translation>
+<translation id="767147716926917172">Envía automaticamente datos de uso e diagnóstico a Google</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, en <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Envía a túa voz a Google para utilizar o ditado en calquera campo de texto.</translation>
 <translation id="7678280409648629969">Os datos de inicio de sesión almacenaranse en Chrome cando saias do modo de incógnito. Desta forma poderás volver utilizar Touch ID con este sitio web máis tarde.</translation>

@@ -33,11 +33,9 @@ def _setup_sys_path():
 
 _setup_sys_path()
 
-from . import style_format
 from .dictionary import generate_dictionaries
 from .enumeration import generate_enumerations
 from .interface import generate_interfaces
-from .path_manager import PathManager
 from .union import generate_unions
 
 
@@ -49,9 +47,9 @@ def init(root_src_dir, root_gen_dir, component_reldirs):
             "//out/Default/gen" in GN.
         component_reldirs: Pairs of component and output directory.
     """
-    style_format.init(root_src_dir)
 
-    PathManager.init(
+    from . import package_initializer
+    package_initializer.init(
         root_src_dir=root_src_dir,
         root_gen_dir=root_gen_dir,
         component_reldirs=component_reldirs)

@@ -66,6 +66,9 @@ base::FilePath GetWebAppsTempDirectory(
 // tool/metrics/histograms/histograms.xml: "SystemWebAppProfileCategory".
 std::string GetProfileCategoryForLogging(Profile* profile);
 
+// Returns true if the WebApp should have `web_app::WebAppChromeOsData()`.
+bool IsChromeOs();
+
 }  // namespace web_app
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_UTILS_H_

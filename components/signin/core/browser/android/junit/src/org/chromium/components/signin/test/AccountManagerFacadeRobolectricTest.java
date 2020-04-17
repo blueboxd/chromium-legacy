@@ -28,6 +28,7 @@ import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeImpl;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.ProfileDataSource;
@@ -62,14 +63,14 @@ public class AccountManagerFacadeRobolectricTest {
         mDelegate = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.ENABLE_PROFILE_DATA_SOURCE);
         Assert.assertFalse(mDelegate.isRegisterObserversCalled());
-        mFacade = new AccountManagerFacade(mDelegate);
+        mFacade = new AccountManagerFacadeImpl(mDelegate);
         Assert.assertTrue(mDelegate.isRegisterObserversCalled());
     }
 
     private void setAccountRestrictionPatterns(String... patterns) {
         Bundle restrictions = new Bundle();
         restrictions.putStringArray(
-                AccountManagerFacade.ACCOUNT_RESTRICTION_PATTERNS_KEY, patterns);
+                AccountManagerFacadeImpl.ACCOUNT_RESTRICTION_PATTERNS_KEY, patterns);
         mShadowUserManager.setApplicationRestrictions(
                 RuntimeEnvironment.application.getPackageName(), restrictions);
         RuntimeEnvironment.application.sendBroadcast(
@@ -225,13 +226,13 @@ public class AccountManagerFacadeRobolectricTest {
     @SmallTest
     public void testCheckChildAccount() {
         Account testAccount = addTestAccount("test@gmail.com");
-        Account ucaAccount =
-                addTestAccount("uca@gmail.com", AccountManagerFacade.FEATURE_IS_CHILD_ACCOUNT_KEY);
-        Account usmAccount =
-                addTestAccount("usm@gmail.com", AccountManagerFacade.FEATURE_IS_USM_ACCOUNT_KEY);
+        Account ucaAccount = addTestAccount(
+                "uca@gmail.com", AccountManagerFacadeImpl.FEATURE_IS_CHILD_ACCOUNT_KEY);
+        Account usmAccount = addTestAccount(
+                "usm@gmail.com", AccountManagerFacadeImpl.FEATURE_IS_USM_ACCOUNT_KEY);
         Account bothAccount = addTestAccount("uca_usm@gmail.com",
-                AccountManagerFacade.FEATURE_IS_CHILD_ACCOUNT_KEY,
-                AccountManagerFacade.FEATURE_IS_USM_ACCOUNT_KEY);
+                AccountManagerFacadeImpl.FEATURE_IS_CHILD_ACCOUNT_KEY,
+                AccountManagerFacadeImpl.FEATURE_IS_USM_ACCOUNT_KEY);
 
         assertChildAccountStatus(testAccount, ChildAccountStatus.NOT_CHILD);
         assertChildAccountStatus(ucaAccount, ChildAccountStatus.REGULAR_CHILD);
@@ -246,7 +247,7 @@ public class AccountManagerFacadeRobolectricTest {
                                        .featureSet(new HashSet<>(Arrays.asList(features)))
                                        .build();
         mDelegate.addAccountHolderExplicitly(holder);
-        Assert.assertFalse(mFacade.isUpdatePending().get());
+        Assert.assertFalse(((AccountManagerFacadeImpl) mFacade).isUpdatePending().get());
         return account;
     }
 

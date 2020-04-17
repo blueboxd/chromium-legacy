@@ -8,57 +8,66 @@
  * the user to edit/remove the entry.
  */
 
-cr.define('settings', function() {
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import '../settings_shared_css.m.js';
+import '../site_favicon.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {StartupPageInfo, StartupUrlsPageBrowserProxyImpl} from './startup_urls_page_browser_proxy.js';
+
+/**
+ * The name of the event fired from this element when the "Edit" option is
+ * clicked.
+ * @type {string}
+ */
+export const EDIT_STARTUP_URL_EVENT = 'edit-startup-url';
+
+Polymer({
+  _template: html`{__html_template__}`,
+  is: 'settings-startup-url-entry',
+
+  behaviors: [FocusRowBehavior],
+
+  properties: {
+    editable: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+
+    /** @type {!StartupPageInfo} */
+    model: Object,
+  },
+
+  /** @private */
+  onRemoveTap_() {
+    this.$$('cr-action-menu').close();
+    StartupUrlsPageBrowserProxyImpl.getInstance().removeStartupPage(
+        this.model.modelIndex);
+  },
+
   /**
-   * The name of the event fired from this element when the "Edit" option is
-   * clicked.
-   * @type {string}
+   * @param {!Event} e
+   * @private
    */
-  /* #export */ const EDIT_STARTUP_URL_EVENT = 'edit-startup-url';
+  onEditTap_(e) {
+    e.preventDefault();
+    this.$$('cr-action-menu').close();
+    this.fire(EDIT_STARTUP_URL_EVENT, {
+      model: this.model,
+      anchor: this.$$('#dots'),
+    });
+  },
 
-  Polymer({
-    is: 'settings-startup-url-entry',
-
-    behaviors: [cr.ui.FocusRowBehavior],
-
-    properties: {
-      editable: {
-        type: Boolean,
-        reflectToAttribute: true,
-      },
-
-      /** @type {!StartupPageInfo} */
-      model: Object,
-    },
-
-    /** @private */
-    onRemoveTap_() {
-      this.$$('cr-action-menu').close();
-      settings.StartupUrlsPageBrowserProxyImpl.getInstance().removeStartupPage(
-          this.model.modelIndex);
-    },
-
-    /**
-     * @param {!Event} e
-     * @private
-     */
-    onEditTap_(e) {
-      e.preventDefault();
-      this.$$('cr-action-menu').close();
-      this.fire(settings.EDIT_STARTUP_URL_EVENT, {
-        model: this.model,
-        anchor: this.$$('#dots'),
-      });
-    },
-
-    /** @private */
-    onDotsTap_() {
-      const actionMenu =
-          /** @type {!CrActionMenuElement} */ (this.$$('#menu').get());
-      actionMenu.showAt(assert(this.$$('#dots')));
-    },
-  });
-
-  // #cr_define_end
-  return {EDIT_STARTUP_URL_EVENT};
+  /** @private */
+  onDotsTap_() {
+    const actionMenu =
+        /** @type {!CrActionMenuElement} */ (this.$$('#menu').get());
+    actionMenu.showAt(assert(this.$$('#dots')));
+  },
 });

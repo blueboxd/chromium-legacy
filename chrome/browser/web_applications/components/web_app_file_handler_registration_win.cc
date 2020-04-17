@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -67,6 +68,27 @@ bool IsWebAppLauncherRegisteredWithWindows(
       break;
   }
   return found_app;
+}
+
+// UMA metric name for file handler registration result
+constexpr const char* kRegistrationResultMetric =
+    "Apps.FileHandler.Registration.Win.Result";
+
+// Result of file handler registration process.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class RegistrationResult {
+  kSuccess = 0,
+  kFailToCopyFromGenericLauncher = 1,
+  kFailToAddFileAssociation = 2,
+  kFailToDeleteExistingRegistration = 3,
+  kFailToDeleteFileAssociationsForExistingRegistration = 4,
+  kMaxValue = kFailToDeleteFileAssociationsForExistingRegistration
+};
+
+// Record UMA metric for the result of file handler registration.
+void RecordRegistration(RegistrationResult result) {
+  UMA_HISTOGRAM_ENUMERATION(kRegistrationResultMetric, result);
 }
 
 // Construct a string that is used to specify which profile a web
@@ -171,6 +193,7 @@ void RegisterFileHandlersWithOsTask(
   if (!base::CreateWinHardLink(app_specific_launcher_path, pwa_launcher_path) &&
       !base::CopyFile(pwa_launcher_path, app_specific_launcher_path)) {
     DPLOG(ERROR) << "Unable to copy the generic PWA launcher";
+    RecordRegistration(RegistrationResult::kFailToCopyFromGenericLauncher);
     return;
   }
   base::CommandLine app_specific_launcher_command(app_specific_launcher_path);
@@ -178,10 +201,14 @@ void RegisterFileHandlersWithOsTask(
   app_specific_launcher_command.AppendSwitchPath(switches::kProfileDirectory,
                                                  profile_path.BaseName());
   app_specific_launcher_command.AppendSwitchASCII(switches::kAppId, app_id);
-  ShellUtil::AddFileAssociations(
+  bool result = ShellUtil::AddFileAssociations(
       GetProgIdForApp(profile_path, app_id), app_specific_launcher_command,
       user_visible_app_name, utf16_app_name + STRING16_LITERAL(" File"),
       icon_path, file_extensions);
+  if (!result)
+    RecordRegistration(RegistrationResult::kFailToAddFileAssociation);
+  else
+    RecordRegistration(RegistrationResult::kSuccess);
 }
 
 // Remove existing registration for an app, and reregister it. This is called
@@ -193,13 +220,23 @@ void ReRegisterFileHandlersWithOs(
     const std::set<base::string16>& file_extensions,
     const base::string16& prog_id,
     const base::string16& app_name_extension) {
+  auto deleteFile = [](const base::FilePath& path, bool recursive) {
+    bool result = base::DeleteFile(path, recursive);
+    if (!result)
+      RecordRegistration(RegistrationResult::kFailToDeleteExistingRegistration);
+  };
   base::ThreadPool::PostTask(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(IgnoreResult(&base::DeleteFile),
+      base::BindOnce(deleteFile,
                      ShellUtil::GetApplicationPathForProgId(prog_id),
                      /*recursively=*/false));
-  ShellUtil::DeleteFileAssociations(prog_id);
+  bool result = ShellUtil::DeleteFileAssociations(prog_id);
+  if (!result) {
+    RecordRegistration(
+        RegistrationResult::
+            kFailToDeleteFileAssociationsForExistingRegistration);
+  }
   base::ThreadPool::PostTask(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},

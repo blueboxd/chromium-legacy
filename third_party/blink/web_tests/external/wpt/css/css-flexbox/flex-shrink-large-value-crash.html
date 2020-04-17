@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<script>
-if (window.testRunner)
-    testRunner.dumpAsText();
-</script>
+<title>CSS Flexbox: large flex-shrink value</title>
+<link rel="help" href="https://drafts.csswg.org/css-flexbox/#scaled-flex-shrink-factor">
+<link rel="help" href="https://crbug.com/543614">
+<meta name="assert" content="This test ensures that large flex-shrink value does crash due to the lost of precision.">
 <style>
 .flex {
     display: inline-flex;
@@ -29,10 +29,8 @@ if (window.testRunner)
     <div class="high-shrink"></div>
 </div>
 
-<p>Passes if it does not assert. The high flex shrink factor can lead to loss
-of precision as we calculate the <a
-href="https://drafts.csswg.org/css-flexbox/#scaled-flex-shrink-factor">sum of
+<p>The high flex shrink factor can lead to loss of precision as we calculate the
+<a href="https://drafts.csswg.org/css-flexbox/#scaled-flex-shrink-factor">sum of
 scaled flex shrink factors</a> as required by the spec, and as we later subtract
 the scaled flex factors for frozen violations, we can get to a negative value
 due to that lost precision.</p>
-<p>PASS</p>

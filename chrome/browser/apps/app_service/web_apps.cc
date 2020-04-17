@@ -535,13 +535,25 @@ void WebApps::OnArcAppListPrefsDestroyed() {
 
 void WebApps::SetShowInFields(apps::mojom::AppPtr& app,
                               const web_app::WebApp* web_app) {
-  // TODO(crbug.com/1054195): Make web_apps read this from
-  // system_web_app_manager.
+  if (web_app->chromeos_data().has_value()) {
+    auto& chromeos_data = web_app->chromeos_data().value();
+    app->show_in_launcher = chromeos_data.show_in_launcher
+                                ? apps::mojom::OptionalBool::kTrue
+                                : apps::mojom::OptionalBool::kFalse;
+    app->show_in_search = chromeos_data.show_in_search
+                              ? apps::mojom::OptionalBool::kTrue
+                              : apps::mojom::OptionalBool::kFalse;
+    app->show_in_management = chromeos_data.show_in_management
+                                  ? apps::mojom::OptionalBool::kTrue
+                                  : apps::mojom::OptionalBool::kFalse;
+    return;
+  }
+
+  // Show the app everywhere by default.
   auto show = apps::mojom::OptionalBool::kTrue;
   app->show_in_launcher = show;
   app->show_in_search = show;
-  app->show_in_management =
-      web_app->IsSystemApp() ? apps::mojom::OptionalBool::kFalse : show;
+  app->show_in_management = show;
 }
 
 void WebApps::PopulatePermissions(const web_app::WebApp* web_app,

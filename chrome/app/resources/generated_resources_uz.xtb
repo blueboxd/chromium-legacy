@@ -193,6 +193,7 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1241753985463165747">Chaqirilganda joriy sayt ma’lumotlarini ko‘rish va o‘zgartirishga ruxsat berish</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> brauzerning dastlabki sozlamalarini tiklamoqchi.</translation>
 <translation id="1243314992276662751">Yuklash</translation>
+<translation id="1243436884219965846">Parollarni tekshirish</translation>
 <translation id="1244265436519979884">Ayni vaqtda Linux fayllari tiklanmoqda</translation>
 <translation id="1244303850296295656">Kengaytma xatoligi</translation>
 <translation id="1246158006305844142">Ilova va sozlamalaringiz Google hisobingiz bilan kirilgan barcha Chrome OS qurilmalaringizda sinxronlanadi. Brauzer sinxronizatsiyasi parametrlarini <ph name="LINK_BEGIN" />Chrome sozlamalari<ph name="LINK_END" /> orqali sozlash mumkin.</translation>
@@ -932,7 +933,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2229161054156947610">1 soatdan ko‘p vaqt qoldi</translation>
 <translation id="222931766245975952">Fayl shikastlangan</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">Bugungi dudlni ko‘rish uchun bosing</translation>
 <translation id="2231238007119540260">Agar server sertifikati o‘chirilsa, oddiy server havfsizligi tekshiruvi tiklanadi va yaroqli sertifikatdan foydalanish kerak bo‘ladi.</translation>
 <translation id="2232876851878324699">Faylda import qilinmagan bir sertifikat mavjud:</translation>
 <translation id="2233502537820838181">&amp;Tafsilotlar</translation>
@@ -2571,6 +2571,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4404136731284211429">Yana qidirish</translation>
 <translation id="4404843640767531781"><ph name="APP_NAME" /> ota-onangiz tomonidan bloklangan. Bu ilovadan foydalanish uchun ota-onangizdan ruxsat oling.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Jonli izoh</translation>
 <translation id="4408599188496843485">&amp;Yordam</translation>
 <translation id="4409697491990005945">Maydonlar</translation>
 <translation id="4410545552906060960">Qurilma qulfini parol emas raqamli kod bilan ochish (PIN). PIN kodni Sozlamalar orqali keyinroq sozlash mumkin.</translation>
@@ -3975,6 +3976,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6326855256003666642">Keepalive ulanishlari soni</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> tomonidan bu qurilmani muddati tugamasdan oʻchirib yoqish talab qilinmoqda.</translation>
 <translation id="6327785803543103246">Proksi-server avtomatik aniqlanishi</translation>
+<translation id="6331566915566907158">Chrome OS funksiyalari va unumdorligini yaxshilashga yordam bering</translation>
 <translation id="6333064448949140209">Fayl batafsil ko‘rib chiqilishi uchun Google serverlariga yuboriladi</translation>
 <translation id="6339668969738228384"><ph name="USER_EMAIL_ADDRESS" /> hisobi uchun yangi profil yaratilsin.</translation>
 <translation id="6340017061976355871">Serverga ulanib bo‘lmadi. Internet aloqasini tekshiring va qayta urinib ko‘ring. Muammo qaytarilaversa, Chromebookni o‘chirib yoqing.</translation>
@@ -4935,6 +4937,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN kod xato. Yana bir marta urinishingiz mumkin.}other{PIN kod xato. Yana # marta urinishingiz mumkin.}}</translation>
 <translation id="7671130400130574146">Tizim sarlavhalar paneli va ramkalaridan foydalanish</translation>
 <translation id="767127784612208024">Asliga qaytarishni teginib tasdiqlang</translation>
+<translation id="767147716926917172">Google serverlariga diagnostika va foydalanish statistikasini avtomatik yuborish</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, <ph name="PAGE_TITLE" /> sahifasida.</translation>
 <translation id="7676867886086876795">Diktovka istalgan matn maydonida ishlatilishi uchun ovozingiz Google serverlariga yuboriladi.</translation>
 <translation id="7678280409648629969">Chrome barmoq izlaringizni Inkognito rejimidan chiqilgandan keyin saqlaydi. Bu bilan keyingi safar ushbu saytga Touch ID orqali kirish mumkin.</translation>

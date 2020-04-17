@@ -7,7 +7,7 @@ package org.chromium.components.paintpreview.player;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeImpl;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
@@ -28,7 +28,7 @@ public class PaintPreviewTestRule extends NativeLibraryTestRule {
                 FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AccountManagerFacadeProvider.setInstanceForTests(
-                    new AccountManagerFacade(mAccountManager));
+                    new AccountManagerFacadeImpl(mAccountManager));
         });
         loadNativeLibraryAndInitBrowserProcess();
     }

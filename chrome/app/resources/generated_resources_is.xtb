@@ -934,7 +934,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2229161054156947610">Meira en 1 klukkustund eftir</translation>
 <translation id="222931766245975952">Skrá stýfð</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">Smelltu til að sjá dúllu dagsins</translation>
 <translation id="2231238007119540260">Ef þú eyðir vottorði þjóns endurheimtirðu hefðbundnar öryggisprófanir fyrir þann þjón og krefst þess að hann notist við gilt vottorð.</translation>
 <translation id="2232876851878324699">Skráin innihélt eitt vottorð sem ekki var flutt inn:</translation>
 <translation id="2233502537820838181">Frekari upplýsingar</translation>
@@ -1542,7 +1541,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3019285239893817657">Hnappur fyrir undirsíðu</translation>
 <translation id="3020183492814296499">Flýtileiðir</translation>
 <translation id="3020990233660977256">Raðnúmer: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021065318976393105">Þegar rafhlöðuorka er notuð</translation>
+<translation id="3021065318976393105">Þegar rafhlaða er notuð</translation>
 <translation id="3021066826692793094">Fiðrildi</translation>
 <translation id="3021678814754966447">Skoða frumkóða ramma</translation>
 <translation id="3022978424994383087">Náði þessu ekki.</translation>
@@ -2915,7 +2914,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4890773143211625964">Sýna ítarlegar stillingar prentara</translation>
 <translation id="4891089016822695758">Beta-umræðusvæði</translation>
 <translation id="4892229439761351791">Vefsvæði getur notað Bluetooth</translation>
-<translation id="489258173289528622">Aðgerðaleysi þegar rafhlöðuorka er notuð</translation>
+<translation id="489258173289528622">Aðgerðaleysi við notkun rafhlöðu</translation>
 <translation id="4893336867552636863">Þetta mun eyða vefskoðunargögnum varanlega úr þessu tæki.</translation>
 <translation id="4893522937062257019">Á lásskjánum</translation>
 <translation id="489454699928748701">Leyfa vefsvæðum að nota hreyfiskynjara</translation>
@@ -5945,7 +5944,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8951256747718668828">Villa kom í veg fyrir að hægt væri að ljúka endurheimt</translation>
 <translation id="8951465597020890363">Hætta samt í gestastillingu?</translation>
 <translation id="8952831374766033534">Stillingarvalkostur ekki studdur: <ph name="ERROR_LINE" /></translation>
-<translation id="8953476467359856141">Við hleðslu</translation>
+<translation id="8953476467359856141">Í hleðslu</translation>
 <translation id="895347679606913382">Ræsir...</translation>
 <translation id="8957762313041272117">Skjátextar í rauntíma</translation>
 <translation id="895944840846194039">JavaScript-minni</translation>

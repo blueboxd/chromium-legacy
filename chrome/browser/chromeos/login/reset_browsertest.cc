@@ -300,9 +300,7 @@ IN_PROC_BROWSER_TEST_F(ResetOobeTest, RequestAndCancleResetOnWelcomeScreen) {
   EXPECT_EQ(0, update_engine_client()->rollback_call_count());
 }
 
-// See http://crbug.com/990362 for details.
-// TODO(crbug.com/1049789): Re-enable this test.
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, DISABLED_ViewsLogic) {
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ViewsLogic) {
   PrefService* prefs = g_browser_process->local_state();
 
   // Rollback unavailable. Show and cancel.
@@ -379,10 +377,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackUnavailable) {
   CloseResetScreenAndWait();
 }
 
-// TODO(http://crbug.com/990362): Times out on MSAN buildbots.
-// TODO(http://crbug.com/990362): Flaky failures.
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
-                       DISABLED_RollbackAvailable) {
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback, RollbackAvailable) {
   PrefService* prefs = g_browser_process->local_state();
 
   // PRE test triggers start with Reset screen.
@@ -459,10 +454,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
   OobeWindowVisibilityWaiter(false).Wait();
 }
 
-// TODO(http://crbug.com/1025926): Times out on MSAN buildbots.
-// TODO(http://crbug.com/990362): Flaky failures.
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
-                       DISABLED_RevertAfterCancel) {
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback, RevertAfterCancel) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());

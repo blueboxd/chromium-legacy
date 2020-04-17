@@ -4,6 +4,8 @@
 
 #include "ui/display/screen.h"
 
+#include <utility>
+
 #include "ui/display/display.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
@@ -31,8 +33,8 @@ Screen* Screen::GetScreen() {
 }
 
 // static
-void Screen::SetScreenInstance(Screen* instance) {
-  g_screen = instance;
+Screen* Screen::SetScreenInstance(Screen* instance) {
+  return std::exchange(g_screen, instance);
 }
 
 Display Screen::GetDisplayNearestView(gfx::NativeView view) const {

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/web_application_info.h"
@@ -48,6 +49,10 @@ class WebApp {
   DisplayMode display_mode() const { return display_mode_; }
 
   DisplayMode user_display_mode() const { return user_display_mode_; }
+
+  const base::Optional<WebAppChromeOsData>& chromeos_data() const {
+    return chromeos_data_;
+  }
 
   // Locally installed apps have shortcuts installed on various UI surfaces.
   // If app isn't locally installed, it is excluded from UIs and only listed as
@@ -117,6 +122,7 @@ class WebApp {
   void SetThemeColor(base::Optional<SkColor> theme_color);
   void SetDisplayMode(DisplayMode display_mode);
   void SetUserDisplayMode(DisplayMode user_display_mode);
+  void SetWebAppChromeOsData(base::Optional<WebAppChromeOsData> chromeos_data);
   void SetIsLocallyInstalled(bool is_locally_installed);
   void SetIsInSyncInstall(bool is_in_sync_install);
   void SetIconInfos(std::vector<WebApplicationIconInfo> icon_infos);
@@ -150,6 +156,7 @@ class WebApp {
   base::Optional<SkColor> theme_color_;
   DisplayMode display_mode_;
   DisplayMode user_display_mode_;
+  base::Optional<WebAppChromeOsData> chromeos_data_;
   bool is_locally_installed_ = true;
   bool is_in_sync_install_ = false;
   std::vector<WebApplicationIconInfo> icon_infos_;

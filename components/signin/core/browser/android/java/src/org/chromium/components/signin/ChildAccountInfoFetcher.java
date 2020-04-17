@@ -92,7 +92,7 @@ public final class ChildAccountInfoFetcher {
     @CalledByNative
     private static void initializeForTests() {
         AccountManagerDelegate delegate = new SystemAccountManagerDelegate();
-        AccountManagerFacadeProvider.setInstanceForTests(new AccountManagerFacade(delegate));
+        AccountManagerFacadeProvider.setInstanceForTests(new AccountManagerFacadeImpl(delegate));
     }
 
     @NativeMethods

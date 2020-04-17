@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration_linux.h"
@@ -21,16 +22,55 @@ namespace web_app {
 
 namespace {
 
+// Result of registering file handlers.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class RegistrationResult {
+  kSuccess = 0,
+  kFailToCreateTempDir = 1,
+  kFailToWriteMimetypeFile = 2,
+  kXdgReturnNonZeroCode = 3,
+  kMaxValue = kXdgReturnNonZeroCode
+};
+
+// Result of re-creating shortcut.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class RecreateShortcutResult {
+  kSuccess = 0,
+  kFailToCreateShortcut = 1,
+  kMaxValue = kFailToCreateShortcut
+};
+
+// UMA metric name for file handler registration result.
+constexpr const char* kRegistrationResultMetric =
+    "Apps.FileHandler.Registration.Linux.Result";
+
+// UMA metric name for file handler shortcut re-create result.
+constexpr const char* kRecreateShortcutResultMetric =
+    "Apps.FileHandler.Registration.Linux.RecreateShortcut.Result";
+
+// Records UMA metric for result of file handler registration.
+void RecordRegistration(RegistrationResult result) {
+  UMA_HISTOGRAM_ENUMERATION(kRegistrationResultMetric, result);
+}
+
 void OnShortcutInfoReceived(std::unique_ptr<ShortcutInfo> info) {
   base::FilePath shortcut_data_dir = internals::GetShortcutDataDir(*info);
 
   ShortcutLocations locations;
   locations.applications_menu_location = APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
 
+  auto onCreateShortcut = [](bool shortcut_created) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kRecreateShortcutResultMetric,
+        shortcut_created ? RecreateShortcutResult::kSuccess
+                         : RecreateShortcutResult::kFailToCreateShortcut);
+  };
   internals::ScheduleCreatePlatformShortcuts(
       std::move(shortcut_data_dir), locations,
       ShortcutCreationReason::SHORTCUT_CREATION_BY_USER, std::move(info),
-      base::DoNothing());
+      base::BindOnce(onCreateShortcut));
 }
 
 void UpdateFileHandlerRegistrationInOs(const AppId& app_id, Profile* profile) {
@@ -52,22 +92,31 @@ bool DoRegisterMimeTypes(base::FilePath filename, std::string file_contents) {
   DCHECK(!filename.empty() && !file_contents.empty());
 
   base::ScopedTempDir temp_dir;
-  if (!temp_dir.CreateUniqueTempDir())
+  if (!temp_dir.CreateUniqueTempDir()) {
+    RecordRegistration(RegistrationResult::kFailToCreateTempDir);
     return false;
+  }
 
   base::FilePath temp_file_path(temp_dir.GetPath().Append(filename));
 
   int bytes_written = base::WriteFile(temp_file_path, file_contents.data(),
                                       file_contents.length());
-  if (bytes_written != static_cast<int>(file_contents.length()))
+  if (bytes_written != static_cast<int>(file_contents.length())) {
+    RecordRegistration(RegistrationResult::kFailToWriteMimetypeFile);
     return false;
+  }
 
   std::vector<std::string> argv{"xdg-mime", "install", "--mode", "user",
                                 temp_file_path.value()};
 
   int exit_code;
   shell_integration_linux::LaunchXdgUtility(argv, &exit_code);
-  return exit_code == 0;
+  bool result = exit_code == 0;
+  if (!result)
+    RecordRegistration(RegistrationResult::kXdgReturnNonZeroCode);
+  else
+    RecordRegistration(RegistrationResult::kSuccess);
+  return result;
 }
 
 RegisterMimeTypesOnLinuxCallback& GetRegisterMimeTypesCallbackForTesting() {

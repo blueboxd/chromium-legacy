@@ -635,7 +635,9 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
   media::VideoPixelFormat pixel_format = media::PIXEL_FORMAT_I420;
   auto storage_type =
       media::VideoEncodeAccelerator::Config::StorageType::kShmem;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableVideoCaptureUseGpuMemoryBuffer) &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kVideoCaptureUseGpuMemoryBuffer) &&
       video_content_type_ != webrtc::VideoContentType::SCREENSHARE) {
     // Use import mode for camera when GpuMemoryBuffer-based video capture is

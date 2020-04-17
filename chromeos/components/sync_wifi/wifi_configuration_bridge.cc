@@ -332,6 +332,36 @@ void WifiConfigurationBridge::OnFirstConnectionToNetwork(
                            weak_ptr_factory_.GetWeakPtr()));
 }
 
+void WifiConfigurationBridge::OnNetworkUpdate(
+    const std::string& guid,
+    base::DictionaryValue* set_properties) {
+  if (!set_properties)
+    return;
+
+  if (network_metadata_store_->GetIsConfiguredBySync(guid)) {
+    // Don't have to upload a configuration that came from sync.
+    NET_LOG(EVENT) << "Not uploading change to " << NetworkGuidId(guid)
+                   << ", modified network was configured "
+                      "by sync.";
+    return;
+  }
+  if (!set_properties->HasKey(shill::kAutoConnectProperty) &&
+      !set_properties->HasKey(shill::kPriorityProperty) &&
+      !set_properties->HasKey(shill::kProxyConfigProperty) &&
+      !set_properties->FindPath(
+          base::StringPrintf("%s.%s", shill::kStaticIPConfigProperty,
+                             shill::kNameServersProperty))) {
+    NET_LOG(EVENT) << "Not uploading change to " << NetworkGuidId(guid)
+                   << ", modified network field(s) are not synced.";
+    return;
+  }
+
+  NET_LOG(EVENT) << "Updating sync with changes to " << NetworkGuidId(guid);
+  local_network_collector_->GetSyncableNetwork(
+      guid, base::BindOnce(&WifiConfigurationBridge::SaveNetworkToSync,
+                           weak_ptr_factory_.GetWeakPtr()));
+}
+
 void WifiConfigurationBridge::SaveNetworkToSync(
     base::Optional<sync_pb::WifiConfigurationSpecifics> proto) {
   if (!proto) {
@@ -388,38 +418,6 @@ void WifiConfigurationBridge::OnConfigurationRemoved(
   entries_.erase(storage_key);
   Commit(std::move(batch));
   NET_LOG(EVENT) << "Removed network from sync.";
-}
-
-void WifiConfigurationBridge::OnConfigurationModified(
-    const std::string& service_path,
-    const std::string& guid,
-    base::DictionaryValue* set_properties) {
-  if (!set_properties)
-    return;
-
-  if (network_metadata_store_->GetIsConfiguredBySync(guid)) {
-    // Don't have to upload a configuration that came from sync.
-    NET_LOG(EVENT) << "Not uploading change to " << NetworkGuidId(guid)
-                   << ", modified network was configured "
-                      "by sync.";
-    return;
-  }
-  if (!set_properties->HasKey(shill::kAutoConnectProperty) &&
-      !set_properties->HasKey(shill::kPriorityProperty) &&
-      !set_properties->HasKey(shill::kProxyConfigProperty) &&
-      !set_properties->FindPath(
-          base::StringPrintf("%s.%s", shill::kStaticIPConfigProperty,
-                             shill::kNameServersProperty))) {
-    NET_LOG(EVENT)
-        << "Not uploading change, modified network field is not synced.";
-    return;
-  }
-
-  NET_LOG(EVENT) << "Updating sync with changes to "
-                 << NetworkPathId(service_path);
-  local_network_collector_->GetSyncableNetwork(
-      guid, base::BindOnce(&WifiConfigurationBridge::SaveNetworkToSync,
-                           weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WifiConfigurationBridge::SetNetworkMetadataStore(

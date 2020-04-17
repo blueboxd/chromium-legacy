@@ -143,7 +143,9 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
 
   // GpuMemoryBuffer-based VideoCapture buffer works only on the Chrome OS
   // VideoCaptureDevice implementation.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableVideoCaptureUseGpuMemoryBuffer) &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kVideoCaptureUseGpuMemoryBuffer)) {
     new_params.buffer_type = media::VideoCaptureBufferType::kGpuMemoryBuffer;
   }

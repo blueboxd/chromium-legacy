@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Ler e alterar todos os seus dados no website atual quando invocado</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> deseja redefinir suas configurações.</translation>
 <translation id="1243314992276662751">Fazer upload</translation>
+<translation id="1243436884219965846">Avaliar senhas</translation>
 <translation id="1244265436519979884">A restauração do Linux está em andamento</translation>
 <translation id="1244303850296295656">Erro na extensão</translation>
 <translation id="1246158006305844142">Seus apps e suas configurações serão sincronizados por todos os dispositivos Chrome OS conectados à sua Conta do Google. Para ver as opções de sincronização do navegador, acesse as <ph name="LINK_BEGIN" />configurações do Chrome<ph name="LINK_END" />.</translation>
@@ -934,7 +935,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2229161054156947610">Mais de 1 hora restante</translation>
 <translation id="222931766245975952">Arquivo truncado</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">Clique para visualizar o doodle de hoje</translation>
 <translation id="2231238007119540260">Ao excluir um certificado do servidor, você restaura as verificações de segurança normais do servidor e solicita que ele utilize um certificado válido.</translation>
 <translation id="2232876851878324699">O arquivo continha um certificado que não foi importado:</translation>
 <translation id="2233502537820838181">&amp;Mais informações</translation>
@@ -2573,6 +2573,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4404136731284211429">Verificar novamente</translation>
 <translation id="4404843640767531781">O app <ph name="APP_NAME" /> foi bloqueado pelo seu pai/mãe. É necessário pedir permissão para usá-lo.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Legenda instantânea</translation>
 <translation id="4408599188496843485">A&amp;juda</translation>
 <translation id="4409697491990005945">Margens</translation>
 <translation id="4410545552906060960">Use um número (PIN) em vez de uma senha para desbloquear o dispositivo. Para definir seu PIN mais tarde, acesse as configurações.</translation>
@@ -3979,6 +3980,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6326855256003666642">Contagem de manutenção de atividade</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> precisa que você atualize o dispositivo antes do fim do prazo.</translation>
 <translation id="6327785803543103246">Descoberta automática do proxy da Web</translation>
+<translation id="6331566915566907158">Ajudar a melhorar os recursos e o desempenho do Chrome OS</translation>
 <translation id="6333064448949140209">O arquivo será enviado ao Google para depuração</translation>
 <translation id="6339668969738228384">Criar um novo perfil para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Não foi possível conectar-se ao servidor. Verifique a conexão de rede e tente novamente. Se o problema persistir, reinicie o Chromebook.</translation>
@@ -4939,6 +4941,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN incorreto. Você tem apenas uma tentativa restante.}one{PIN incorreto. Você tem apenas # tentativa restante.}other{PIN incorreto. Você tem apenas # tentativas restantes.}}</translation>
 <translation id="7671130400130574146">Usar barra de título e bordas do sistema</translation>
 <translation id="767127784612208024">Toque para confirmar a redefinição</translation>
+<translation id="767147716926917172">Enviar automaticamente dados de uso e diagnóstico ao Google</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, neste site: <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Envie sua voz para que o Google permita que o ditado seja usado em qualquer campo de texto.</translation>
 <translation id="7678280409648629969">Os dados de login serão armazenados no Chrome depois que você sair do modo de navegação anônima. Isso permitirá utilizar o Touch ID nesse site novamente.</translation>
@@ -5950,7 +5953,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8952831374766033534">Opção de configuração indisponível: <ph name="ERROR_LINE" /></translation>
 <translation id="8953476467359856141">Ao carregar</translation>
 <translation id="895347679606913382">Iniciando...</translation>
-<translation id="8957762313041272117">Legendas em tempo real</translation>
+<translation id="8957762313041272117">Legenda instantânea</translation>
 <translation id="895944840846194039">Memória JavaScript</translation>
 <translation id="8962083179518285172">Ocultar detalhes</translation>
 <translation id="8962918469425892674">Este site está usando sensores de luz ou movimento.</translation>

@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Čitanje i menjanje podataka na aktuelnom veb-sajtu po pozivu</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> želi da resetuje podešavanja.</translation>
 <translation id="1243314992276662751">Otpremi</translation>
+<translation id="1243436884219965846">Pregledajte lozinke</translation>
 <translation id="1244265436519979884">U toku je vraćanje Linux podataka</translation>
 <translation id="1244303850296295656">Greška dodatka</translation>
 <translation id="1246158006305844142">Aplikacije i podešavanja će se sinhronizovati na svim Chrome OS uređajima na kojima ste prijavljeni pomoću svog Google naloga. Opcije sinhronizacije pregledača pronađite u <ph name="LINK_BEGIN" />podešavanjima Chrome-a<ph name="LINK_END" />.</translation>
@@ -931,7 +932,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2229161054156947610">Ostalo je više od sat vremena</translation>
 <translation id="222931766245975952">Datoteka je skraćena</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="223106756035922488">Kliknite da biste videli današnji dudl logotip</translation>
 <translation id="2231238007119540260">Ako izbrišete serverski sertifikat, vraćate uobičajene bezbednosne provere za taj server i zahtevate da koristi važeći sertifikat.</translation>
 <translation id="2232876851878324699">Datoteka sadrži jedan sertifikat, koji nije uvezen:</translation>
 <translation id="2233502537820838181">&amp;Više informacija</translation>
@@ -2570,6 +2570,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4404136731284211429">Skeniraj ponovo</translation>
 <translation id="4404843640767531781">Roditelj blokira aplikaciju <ph name="APP_NAME" />. Zatraži od roditelja dozvolu za korišćenje ove aplikacije.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Titl uživo</translation>
 <translation id="4408599188496843485">P&amp;omoć</translation>
 <translation id="4409697491990005945">Margine</translation>
 <translation id="4410545552906060960">Koristite broj (PIN) umesto lozinke za otključavanje uređaja. Idite u Podešavanja da biste kasnije podesili PIN.</translation>
@@ -3975,6 +3976,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6326855256003666642">Broj keepalive signala</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> traži da ažurirate ovaj uređaj pre isteka roka.</translation>
 <translation id="6327785803543103246">Automatsko otkrivanje veb-proksija</translation>
+<translation id="6331566915566907158">Pomozite nam da poboljšamo funkcije i učinak Chrome OS-a</translation>
 <translation id="6333064448949140209">Datoteka će biti poslata Google-u radi otklanjanja grešaka</translation>
 <translation id="6339668969738228384">Otvori novi profil za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Povezivanje sa serverom nije uspelo. Proverite mrežnu vezu i probajte ponovo kasnije. Ako se problem nastavi, restartujte Chromebook.</translation>
@@ -4935,6 +4937,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Netačan PIN. Imate još jedan pokušaj.}one{Netačan PIN. Imate još # pokušaj.}few{Netačan PIN. Imate još # pokušaja.}other{Netačan PIN. Imate još # pokušaja.}}</translation>
 <translation id="7671130400130574146">Koristi sistemsku traku naslova i ivice</translation>
 <translation id="767127784612208024">Dodirnite da biste potvrdili resetovanje</translation>
+<translation id="767147716926917172">Automatski šalje Google-u dijagnostiku i podatke o korišćenju</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, na stranici <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Šaljite podatke o glasu Google-u da bi se omogućilo diktiranje u svim poljima za tekst.</translation>
 <translation id="7678280409648629969">Podaci o prijavljivanju se čuvaju u Chrome-u kada izađete iz režima bez arhiviranja. To će vam omogućiti da kasnije ponovo koristite Touch ID sa ovim veb-sajtom.</translation>

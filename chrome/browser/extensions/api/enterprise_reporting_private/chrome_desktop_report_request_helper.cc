@@ -531,8 +531,10 @@ void RetrieveDeviceSecret(
   }
 #elif defined(OS_MACOSX)
   secret = ReadEncryptedSecret();
-  if (secret.empty())
+  if (secret.empty()) {
     std::move(callback).Run(secret, false);
+    return;
+  }
 
 #endif
   std::move(callback).Run(secret, true);

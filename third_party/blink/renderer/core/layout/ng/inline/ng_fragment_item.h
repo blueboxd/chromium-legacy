@@ -11,8 +11,8 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_type.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -22,6 +22,7 @@ namespace blink {
 class NGFragmentItems;
 class NGInlineBreakToken;
 class NGInlineItem;
+class NGPhysicalTextFragment;
 struct NGTextFragmentPaintInfo;
 
 // This class represents a text run or a box in an inline formatting context.
@@ -240,14 +241,13 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   }
 
   // Functions for |TextItem| and |GeneratedTextItem|
-  using NGTextType = NGPhysicalTextFragment::NGTextType;
   NGTextType TextType() const {
     if (Type() == kText)
       return static_cast<NGTextType>(sub_type_);
     if (Type() == kGeneratedText)
-      return NGTextType::kGeneratedText;
+      return NGTextType::kGenerated;
     NOTREACHED() << this;
-    return NGTextType::kNormalText;
+    return NGTextType::kNormal;
   }
 
   // True if this is a forced line break.

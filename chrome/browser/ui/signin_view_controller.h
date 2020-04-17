@@ -74,8 +74,8 @@ class SigninViewController {
 
   // Shows the Dice "add account" tab, which adds an account to the browser but
   // does not turn sync on. |email_hint| may be empty.
-  void ShowDiceAddAccountTab(signin_metrics::AccessPoint access_point,
-                             const std::string& email_hint);
+  virtual void ShowDiceAddAccountTab(signin_metrics::AccessPoint access_point,
+                                     const std::string& email_hint);
 
   // Shows the modal sign-in email confirmation dialog as a tab-modal dialog on
   // top of the currently displayed WebContents in |browser_|.
@@ -103,7 +103,7 @@ class SigninViewController {
   // indefinitely.
   // The reauth prompt that is currently displayed can be cancelled by
   // CloseModalSignin().
-  void ShowReauthPrompt(
+  virtual void ShowReauthPrompt(
       const CoreAccountId& account_id,
       base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
 

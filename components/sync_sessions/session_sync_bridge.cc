@@ -38,8 +38,8 @@ using syncer::MetadataChangeList;
 using syncer::ModelTypeStore;
 using syncer::ModelTypeSyncBridge;
 
-// Maximum number of favicons to sync.
-const int kMaxSyncFavicons = 200;
+// Maximum number of favicon mappings to keep in memory.
+const int kMaxFaviconMappings = 200;
 
 // Default time without activity after which a session is considered stale and
 // becomes a candidate for garbage collection.
@@ -111,7 +111,7 @@ SessionSyncBridge::SessionSyncBridge(
           sessions_client->GetLocalSessionEventRouter()),
       favicon_cache_(sessions_client->GetFaviconService(),
                      sessions_client->GetHistoryService(),
-                     kMaxSyncFavicons) {
+                     kMaxFaviconMappings) {
   DCHECK(sessions_client_);
   DCHECK(local_session_event_router_);
 }
@@ -239,11 +239,10 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
                       syncer::SESSIONS, SessionStore::GetClientTag(specifics)));
 
         batch->PutAndUpdateTracker(specifics, change->data().modification_time);
-        // If a favicon or favicon urls are present, load the URLs and visit
-        // times into the in-memory favicon cache.
+        // If a favicon or favicon urls are present, load the URLs into the
+        // in-memory favicon cache.
         if (specifics.has_tab()) {
-          favicon_cache_.UpdateMappingsFromForeignTab(
-              specifics.tab(), change->data().modification_time);
+          favicon_cache_.UpdateMappingsFromForeignTab(specifics.tab());
         }
         break;
       }
@@ -344,7 +343,7 @@ void SessionSyncBridge::TrackLocalNavigationId(base::Time timestamp,
 }
 
 void SessionSyncBridge::OnPageFaviconUpdated(const GURL& page_url) {
-  favicon_cache_.OnPageFaviconUpdated(page_url, base::Time::Now());
+  favicon_cache_.OnPageFaviconUpdated(page_url);
 }
 
 void SessionSyncBridge::OnFaviconVisited(const GURL& page_url,

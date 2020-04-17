@@ -445,7 +445,7 @@ public class CustomTabsConnection {
             tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
                 try (TraceEvent e = TraceEvent.scoped("WarmupInternalFinishInitialization")) {
                     // (4)
-                    Profile profile = Profile.getLastUsedProfile();
+                    Profile profile = Profile.getLastUsedRegularProfile();
                     WarmupManager.startPreconnectPredictorInitialization(profile);
 
                     // (5)
@@ -618,7 +618,7 @@ public class CustomTabsConnection {
 
             String[] urlsArray = urlsList.toArray(new String[0]);
             WarmupManager.reportNextLikelyNavigationsOnUiThread(
-                    Profile.getLastUsedProfile(), packages, urlsArray);
+                    Profile.getLastUsedRegularProfile(), packages, urlsArray);
         });
     }
 
@@ -629,7 +629,7 @@ public class CustomTabsConnection {
         try (TraceEvent e = TraceEvent.scoped("CustomTabsConnection.mayLaunchUrlOnUiThread")) {
             // doMayLaunchUrlInternal() is always called once the native level initialization is
             // done, at least the initial profile load. However, at that stage the startup callback
-            // may not have run, which causes Profile.getLastUsedProfile() to throw an
+            // may not have run, which causes Profile.getLastUsedRegularProfile() to throw an
             // exception. But the tasks have been posted by then, so reschedule ourselves, only
             // once.
             if (!BrowserStartupController.getInstance().isFullBrowserStarted()) {
@@ -896,7 +896,7 @@ public class CustomTabsConnection {
         if (!mClientManager.isFirstPartyOriginForSession(session, origin)) return;
 
         WarmupManager.getInstance().maybePreconnectUrlAndSubResources(
-                Profile.getLastUsedProfile(), redirectEndpoint.toString());
+                Profile.getLastUsedRegularProfile(), redirectEndpoint.toString());
     }
 
     @VisibleForTesting
@@ -964,7 +964,7 @@ public class CustomTabsConnection {
         String urlString = url.toString();
         String referrerString = referrer.toString();
         CustomTabsConnectionJni.get().createAndStartDetachedResourceRequest(
-                Profile.getLastUsedProfile(), session, urlString, referrerString, policy,
+                Profile.getLastUsedRegularProfile(), session, urlString, referrerString, policy,
                 DetachedResourceRequestMotivation.PARALLEL_REQUEST);
         if (mLogRequests) {
             Log.w(TAG, "startParallelRequest(%s, %s, %d)", urlString, referrerString, policy);
@@ -1006,7 +1006,7 @@ public class CustomTabsConnection {
 
             // Session is null because we don't need completion notifications.
             CustomTabsConnectionJni.get().createAndStartDetachedResourceRequest(
-                    Profile.getLastUsedProfile(), null, urlString, referrerString, policy,
+                    Profile.getLastUsedRegularProfile(), null, urlString, referrerString, policy,
                     DetachedResourceRequestMotivation.RESOURCE_PREFETCH);
             ++requestsSent;
 
@@ -1488,7 +1488,7 @@ public class CustomTabsConnection {
     private void startSpeculation(CustomTabsSessionToken session, String url, boolean useHiddenTab,
             Bundle extras, int uid) {
         WarmupManager warmupManager = WarmupManager.getInstance();
-        Profile profile = Profile.getLastUsedProfile();
+        Profile profile = Profile.getLastUsedRegularProfile();
 
         // At most one on-going speculation, clears the previous one.
         cancelSpeculation(null);

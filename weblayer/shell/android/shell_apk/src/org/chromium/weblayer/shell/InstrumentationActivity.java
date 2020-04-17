@@ -27,6 +27,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.weblayer.Browser;
+import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.NewTabCallback;
 import org.chromium.weblayer.NewTabType;
 import org.chromium.weblayer.Profile;
@@ -36,6 +37,7 @@ import org.chromium.weblayer.TabListCallback;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -63,6 +65,8 @@ public class InstrumentationActivity extends FragmentActivity {
     private IntentInterceptor mIntentInterceptor;
     private Bundle mSavedInstanceState;
     private TabCallback mTabCallback;
+    private TabListCallback mTabListCallback;
+    private List<Tab> mPreviousTabList = new ArrayList<>();
 
     private static boolean isJaCoCoEnabled() {
         // Nothing is set at runtime indicating jacoco is being used. This looks for the existence
@@ -194,6 +198,9 @@ public class InstrumentationActivity extends FragmentActivity {
             mTab.unregisterTabCallback(mTabCallback);
             mTabCallback = null;
         }
+        if (mTabListCallback != null) {
+            mBrowser.unregisterTabListCallback(mTabListCallback);
+        }
     }
 
     private void createWebLayerAsync() {
@@ -224,26 +231,58 @@ public class InstrumentationActivity extends FragmentActivity {
 
         mBrowser.setTopView(mTopContentsContainer);
 
-        if (mBrowser.getActiveTab() == null) {
-            assert mBrowser.getTabs().size() == 0;
-            // This happens with session restore enabled.
-            mBrowser.registerTabListCallback(new TabListCallback() {
-                @Override
-                public void onTabAdded(Tab tab) {
-                    if (mTab == null) {
-                        mBrowser.unregisterTabListCallback(this);
-                        setTab(tab);
-                    }
+        mTabListCallback = new TabListCallback() {
+            @Override
+            public void onTabAdded(Tab tab) {
+                // The first tab can be added asynchronously with session restore enabled.
+                if (mTab == null) {
+                    setTab(tab);
                 }
-            });
+            }
+
+            @Override
+            public void onTabRemoved(Tab tab) {
+                mPreviousTabList.remove(tab);
+
+                if (mTab == tab) {
+                    Tab prevTab = null;
+                    if (!mPreviousTabList.isEmpty()) {
+                        prevTab = mPreviousTabList.remove(mPreviousTabList.size() - 1);
+                    }
+
+                    setTab(prevTab);
+                }
+            }
+        };
+
+        mBrowser.registerTabListCallback(mTabListCallback);
+
+        if (mBrowser.getActiveTab() == null) {
+            // This happens with session restore enabled.
+            assert mBrowser.getTabs().size() == 0;
         } else {
             setTab(mBrowser.getActiveTab());
         }
     }
 
+    // Clears the state associated with |mTab| and sets |tab|, if non-null, as |mTab| and the
+    // active tab in the browser.
     private void setTab(Tab tab) {
-        assert mTab == null;
+        if (mTab != null) {
+            mTab.unregisterTabCallback(mTabCallback);
+            mTabCallback = null;
+            mTab = null;
+        }
+
         mTab = tab;
+
+        if (mTab == null) return;
+
+        // TODO(crbug.com/1066382): This will not be correct in the case where the initial
+        // navigation in |tab| was a failed navigation and there have been no more navigations since
+        // then.
+        mUrlView.setText(getLastCommittedUrlInTab(mTab));
+
         mTabCallback = new TabCallback() {
             @Override
             public void onVisibleUriChanged(Uri uri) {
@@ -255,22 +294,17 @@ public class InstrumentationActivity extends FragmentActivity {
         mTab.setNewTabCallback(new NewTabCallback() {
             @Override
             public void onNewTab(Tab newTab, @NewTabType int type) {
-                // NOTE: At this time there isn't a need to hang on to the previous tab as this
-                // activity doesn't support closing tabs. If needed that could be added following
-                // the implementation in WebLayerShellActivity.java.
-                mTab.unregisterTabCallback(mTabCallback);
-                mTabCallback = null;
-                mTab = null;
-
+                mPreviousTabList.add(mTab);
                 setTab(newTab);
-                mBrowser.setActiveTab(newTab);
             }
-
             @Override
             public void onCloseTab() {
                 assert false;
             }
         });
+
+        // Will be a no-op if this tab is already the active tab.
+        mBrowser.setActiveTab(mTab);
     }
 
     private Fragment getOrCreateBrowserFragment() {
@@ -305,6 +339,16 @@ public class InstrumentationActivity extends FragmentActivity {
         // have to wait until the commit is executed.
         transaction.commitNow();
         return fragment;
+    }
+
+    // Returns the display URL of the last committed navigation entry in |tab|. This will
+    // return an empty URL if there have been no committed navigations in |tab|.
+    public String getLastCommittedUrlInTab(Tab tab) {
+        NavigationController navController = tab.getNavigationController();
+        int currentIndex = navController.getNavigationListCurrentIndex();
+        return currentIndex == -1
+                ? ""
+                : navController.getNavigationEntryDisplayUri(currentIndex).toString();
     }
 
     public String getCurrentDisplayUrl() {

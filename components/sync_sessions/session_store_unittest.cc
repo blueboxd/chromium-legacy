@@ -349,7 +349,7 @@ TEST_F(SessionStoreTest, ShouldUpdateTrackerWithForeignData) {
   const int kTabNodeId1 = 2;
   const int kTabNodeId2 = 3;
 
-  EXPECT_CALL(mock_restored_foreign_tab_callback_, Run(_, _)).Times(0);
+  EXPECT_CALL(mock_restored_foreign_tab_callback_, Run(_)).Times(0);
 
   ASSERT_THAT(session_store()->tracker()->LookupAllForeignSessions(
                   SyncedSessionTracker::RAW),
@@ -422,7 +422,7 @@ TEST_F(SessionStoreTest, ShouldWriteAndRestoreForeignData) {
   const int kTabId1 = 7;
   const int kTabNodeId1 = 2;
 
-  EXPECT_CALL(mock_restored_foreign_tab_callback_, Run(_, _)).Times(0);
+  EXPECT_CALL(mock_restored_foreign_tab_callback_, Run(_)).Times(0);
 
   const std::string local_header_storage_key =
       SessionStore::GetHeaderStorageKey(kLocalSessionTag);
@@ -492,7 +492,7 @@ TEST_F(SessionStoreTest, ShouldWriteAndRestoreForeignData) {
   // Creation of a second session store should trigger a callback for the
   // restored tab.
   EXPECT_CALL(mock_restored_foreign_tab_callback_,
-              Run(testing::Property(&sync_pb::SessionTab::tab_id, kTabId1), _));
+              Run(testing::Property(&sync_pb::SessionTab::tab_id, kTabId1)));
 
   // Create second session store to verify that the persisted state is restored,
   // by mimicing a Chrome restart and using |underlying_store_| (in-memory) as a
@@ -539,7 +539,7 @@ TEST_F(SessionStoreTest, ShouldDeleteForeignData) {
   const int kTabNodeId1 = 1;
   const int kTabNodeId2 = 2;
 
-  EXPECT_CALL(mock_restored_foreign_tab_callback_, Run(_, _)).Times(0);
+  EXPECT_CALL(mock_restored_foreign_tab_callback_, Run(_)).Times(0);
 
   const std::string local_header_storage_key =
       SessionStore::GetHeaderStorageKey(kLocalSessionTag);

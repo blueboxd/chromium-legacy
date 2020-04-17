@@ -80,8 +80,8 @@ class TouchEventTest : public PageTestBase {
 
 TEST_F(TouchEventTest,
        PreventDefaultPassiveDueToDocumentLevelScrollerIntervention) {
-  TouchEvent* event =
-      EventWithDispatchType(WebInputEvent::kListenersNonBlockingPassive);
+  TouchEvent* event = EventWithDispatchType(
+      WebInputEvent::DispatchType::kListenersNonBlockingPassive);
   event->SetHandlingPassive(Event::PassiveMode::kPassiveForcedDocumentLevel);
 
   EXPECT_THAT(Messages(), ElementsAre());

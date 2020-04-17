@@ -185,7 +185,10 @@ circle{
     "idValue": "circle",
     "className": ".float.circle",
     "nodeWidth": "128",
-    "nodeHeight": "128"
+    "nodeHeight": "128",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 circle{
@@ -373,7 +376,10 @@ circle{
     "idValue": "circle",
     "className": ".float.circle",
     "nodeWidth": "128",
-    "nodeHeight": "128"
+    "nodeHeight": "128",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 

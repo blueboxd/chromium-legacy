@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
@@ -843,7 +844,7 @@ enum AuthenticationState {
   [_secondaryButton addTarget:self
                        action:@selector(onSecondaryButtonPressed:)
              forControlEvents:UIControlEventTouchUpInside];
-  [_secondaryButton setAccessibilityIdentifier:@"ic_close"];
+  _secondaryButton.accessibilityIdentifier = kSkipSigninAccessibilityIdentifier;
   _secondaryButton.hidden = YES;
   [self.view addSubview:_secondaryButton];
 

@@ -84,6 +84,7 @@
 #include "content/public/test/test_fileapi_operation_waiter.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -730,9 +731,9 @@ void WaitForLoadStopWithoutSuccessCheck(WebContents* web_contents) {
 }
 
 bool WaitForLoadStop(WebContents* web_contents) {
-  WebContentsDestroyedObserver observer(web_contents);
+  WebContentsDestroyedWatcher watcher(web_contents);
   WaitForLoadStopWithoutSuccessCheck(web_contents);
-  if (observer.IsDestroyed()) {
+  if (watcher.IsDestroyed()) {
     LOG(ERROR) << "WebContents was destroyed during waiting for load stop.";
     return false;
   }
@@ -2647,18 +2648,6 @@ bool WebContentsAddedObserver::RenderViewCreatedCalled() {
            child_observer_->main_frame_created_called_;
   }
   return false;
-}
-
-WebContentsDestroyedObserver::WebContentsDestroyedObserver(
-    WebContents* web_contents)
-    : WebContentsObserver(web_contents) {
-  DCHECK(web_contents);
-}
-
-WebContentsDestroyedObserver::~WebContentsDestroyedObserver() {}
-
-void WebContentsDestroyedObserver::WebContentsDestroyed() {
-  destroyed_ = true;
 }
 
 bool RequestFrame(WebContents* web_contents) {

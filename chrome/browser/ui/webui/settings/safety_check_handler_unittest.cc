@@ -1034,7 +1034,7 @@ TEST_F(SafetyCheckHandlerTest, CheckParentRanDisplayString) {
   // 1 second before midnight Dec 31st 2020, so that -(24h-1s) is still on the
   // same day. This test time is hard coded to prevent DST flakiness, see
   // crbug.com/1066576.
-  const base::Time systemTime =
+  const base::Time system_time =
       base::Time::FromDoubleT(1609459199).LocalMidnight() -
       base::TimeDelta::FromSeconds(1);
   // Display strings for given time deltas in seconds.
@@ -1056,9 +1056,9 @@ TEST_F(SafetyCheckHandlerTest, CheckParentRanDisplayString) {
   // Test that above time deltas produce the corresponding display strings.
   for (auto tuple : tuples) {
     const base::Time time =
-        systemTime - base::TimeDelta::FromSeconds(std::get<1>(tuple));
-    const base::string16 displayString = safety_check_->GetStringForParentRan(
-        time.ToJsTimeIgnoringNull(), systemTime);
-    EXPECT_EQ(base::UTF8ToUTF16(std::get<0>(tuple)), displayString);
+        system_time - base::TimeDelta::FromSeconds(std::get<1>(tuple));
+    const base::string16 display_string =
+        safety_check_->GetStringForParentRan(time, system_time);
+    EXPECT_EQ(base::UTF8ToUTF16(std::get<0>(tuple)), display_string);
   }
 }

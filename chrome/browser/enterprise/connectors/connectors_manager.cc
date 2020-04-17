@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
+
 #include <memory>
 
 #include "base/feature_list.h"
@@ -67,7 +68,7 @@ void ConnectorsManager::GetAnalysisSettings(const GURL& url,
       GetAnalysisSettingsFromLegacyPolicies(url, connector));
 }
 
-base::Optional<ConnectorsManager::AnalysisSettings>
+base::Optional<AnalysisSettings>
 ConnectorsManager::GetAnalysisSettingsFromLegacyPolicies(
     const GURL& url,
     AnalysisConnector connector) const {
@@ -194,23 +195,5 @@ std::set<std::string> ConnectorsManager::MatchURLAgainstLegacyPolicies(
 
   return tags;
 }
-
-// ConnectorsManager structs implementation-------------------------------------
-
-ConnectorsManager::AnalysisSettings::AnalysisSettings() = default;
-ConnectorsManager::AnalysisSettings::AnalysisSettings(
-    ConnectorsManager::AnalysisSettings&&) = default;
-ConnectorsManager::AnalysisSettings&
-ConnectorsManager::AnalysisSettings::operator=(
-    ConnectorsManager::AnalysisSettings&&) = default;
-ConnectorsManager::AnalysisSettings::~AnalysisSettings() = default;
-
-ConnectorsManager::ReportingSettings::ReportingSettings() = default;
-ConnectorsManager::ReportingSettings::ReportingSettings(
-    ConnectorsManager::ReportingSettings&&) = default;
-ConnectorsManager::ReportingSettings&
-ConnectorsManager::ReportingSettings::operator=(
-    ConnectorsManager::ReportingSettings&&) = default;
-ConnectorsManager::ReportingSettings::~ReportingSettings() = default;
 
 }  // namespace enterprise_connectors

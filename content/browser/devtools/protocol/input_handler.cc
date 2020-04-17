@@ -350,7 +350,8 @@ class InputHandler::InputInjector
     wheel_event->delta_x = 0;
     wheel_event->delta_y = 0;
     wheel_event->phase = blink::WebMouseWheelEvent::kPhaseEnded;
-    wheel_event->dispatch_type = blink::WebInputEvent::kEventNonBlocking;
+    wheel_event->dispatch_type =
+        blink::WebInputEvent::DispatchType::kEventNonBlocking;
     widget_host_->ForwardWheelEvent(*wheel_event);
   }
 
@@ -686,7 +687,7 @@ void InputHandler::DispatchMouseEvent(
     wheel_event->delta_x = static_cast<float>(-delta_x.fromJust());
     wheel_event->delta_y = static_cast<float>(-delta_y.fromJust());
     wheel_event->phase = blink::WebMouseWheelEvent::kPhaseBegan;
-    wheel_event->dispatch_type = blink::WebInputEvent::kBlocking;
+    wheel_event->dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;
   } else {
     mouse_event.reset(new blink::WebMouseEvent(type, modifiers, timestamp));
   }
@@ -898,8 +899,8 @@ void InputHandler::OnWidgetForDispatchWebTouchEvent(
   for (size_t i = 0; i < events.size(); i++) {
     events[i].dispatch_type =
         events[i].GetType() == blink::WebInputEvent::kTouchCancel
-            ? blink::WebInputEvent::kEventNonBlocking
-            : blink::WebInputEvent::kBlocking;
+            ? blink::WebInputEvent::DispatchType::kEventNonBlocking
+            : blink::WebInputEvent::DispatchType::kBlocking;
     events[i].moved_beyond_slop_region = true;
     events[i].unique_touch_event_id = ui::GetNextTouchEventId();
     for (unsigned j = 0; j < events[i].touches_length; j++) {
@@ -1176,7 +1177,8 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
     wheel_event->delta_x = 0;
     wheel_event->delta_y = 0;
     wheel_event->phase = blink::WebMouseWheelEvent::kPhaseEnded;
-    wheel_event->dispatch_type = blink::WebInputEvent::kEventNonBlocking;
+    wheel_event->dispatch_type =
+        blink::WebInputEvent::DispatchType::kEventNonBlocking;
     host_->GetRenderWidgetHost()->ForwardWheelEvent(*wheel_event);
   } else {
     host_->GetRenderWidgetHost()->ForwardMouseEvent(*mouse_event);

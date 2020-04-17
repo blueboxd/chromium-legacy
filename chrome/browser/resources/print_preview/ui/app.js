@@ -380,9 +380,7 @@ Polymer({
           this.$.model.applyStickySettings();
         }
 
-        // <if expr="chromeos">
         this.$.model.applyDestinationSpecificPolicies();
-        // </if>
 
         this.startPreviewWhenReady_ = true;
         this.$.state.transitTo(State.READY);

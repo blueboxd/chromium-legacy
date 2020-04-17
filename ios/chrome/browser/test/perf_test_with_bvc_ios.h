@@ -21,7 +21,6 @@ class Browser;
 @class BrowserViewController;
 @class BrowserViewControllerDependencyFactory;
 @class CommandDispatcher;
-@class TabModel;
 
 // Base class for performance tests that require a browser view controller.  The
 // BVC requires a non-trivial amount of setup and teardown, so it's best to
@@ -58,9 +57,6 @@ class PerfTestWithBVC : public PerfTest {
 
   WebStateList web_state_list_;
   WebStateList otr_web_state_list_;
-
-  TabModel* tab_model_;
-  TabModel* otr_tab_model_;
 
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<Browser> otr_browser_;

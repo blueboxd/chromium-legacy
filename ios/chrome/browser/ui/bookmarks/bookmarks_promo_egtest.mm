@@ -6,6 +6,7 @@
 #import <XCTest/XCTest.h>
 
 #include "base/ios/ios_util.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
@@ -129,10 +130,9 @@ using chrome_test_util::SecondarySignInButton;
                                           grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
   // Cancel the sign-in operation.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_buttonTitle([l10n_util::GetNSString(
-                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
-                     uppercaseString])] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kSkipSigninAccessibilityIdentifier)]
+      performAction:grey_tap()];
 
   // Check that the bookmarks UI reappeared and the cell is still here.
   [BookmarkEarlGrey verifyPromoAlreadySeen:NO];
@@ -162,10 +162,9 @@ using chrome_test_util::SecondarySignInButton;
       performAction:grey_tap()];
 
   // Cancel the sign-in operation.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_buttonTitle([l10n_util::GetNSString(
-                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
-                     uppercaseString])] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kSkipSigninAccessibilityIdentifier)]
+      performAction:grey_tap()];
 
   // Check that the bookmarks UI reappeared and the cell is still here.
   [SigninEarlGreyUI
@@ -198,10 +197,9 @@ using chrome_test_util::SecondarySignInButton;
   [SigninEarlGreyUI selectIdentityWithEmail:identityEmail];
 
   // Tap the CANCEL button.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_buttonTitle([l10n_util::GetNSString(
-                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
-                     uppercaseString])] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kSkipSigninAccessibilityIdentifier)]
+      performAction:grey_tap()];
 
   // Check that the bookmarks UI reappeared and the cell is still here.
   [BookmarkEarlGrey verifyPromoAlreadySeen:NO];

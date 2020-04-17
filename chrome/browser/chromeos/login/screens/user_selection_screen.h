@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
@@ -61,7 +62,6 @@ class UserSelectionScreen
   void CheckUserStatus(const AccountId& account_id);
   void HandleFocusPod(const AccountId& account_id);
   void HandleNoPodFocused();
-  void OnAllowedInputMethodsChanged();
   void OnBeforeShow();
 
   // Build list of users and send it to the webui.
@@ -145,6 +145,7 @@ class UserSelectionScreen
 
   void OnUserStatusChecked(const AccountId& account_id,
                            TokenHandleUtil::TokenHandleStatus status);
+  void OnAllowedInputMethodsChanged();
 
   LoginDisplayWebUIHandler* handler_ = nullptr;
 
@@ -172,6 +173,9 @@ class UserSelectionScreen
   AccountId focused_pod_account_id_;
   // Input Method Engine state used at the user selection screen.
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;
+
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      allowed_input_methods_subscription_;
 
   base::WeakPtrFactory<UserSelectionScreen> weak_factory_{this};
 

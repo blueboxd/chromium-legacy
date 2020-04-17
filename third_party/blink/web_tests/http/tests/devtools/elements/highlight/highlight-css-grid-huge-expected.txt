@@ -86,7 +86,10 @@ big-grid{
     "tagName": "div",
     "idValue": "big-grid",
     "nodeWidth": "769",
-    "nodeHeight": "995"
+    "nodeHeight": "995",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   },
   "gridInfo": [
     {

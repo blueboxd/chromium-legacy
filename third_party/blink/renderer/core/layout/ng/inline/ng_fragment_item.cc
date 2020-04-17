@@ -32,7 +32,7 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
     DCHECK_EQ(text_.shape_result->EndIndex(), EndOffset());
   }
 #endif
-  if (text.TextType() == NGPhysicalTextFragment::kGeneratedText) {
+  if (text.TextType() == NGTextType::kGenerated) {
     type_ = kGeneratedText;
     // Note: Because of |text_| and |generated_text_| are in same union and
     // we initialize |text_| instead of |generated_text_|, we should construct

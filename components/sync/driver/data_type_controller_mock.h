@@ -6,8 +6,8 @@
 #define COMPONENTS_SYNC_DRIVER_DATA_TYPE_CONTROLLER_MOCK_H__
 
 #include "components/sync/driver/data_type_controller.h"
+#include "components/sync/driver/sync_merge_result.h"
 #include "components/sync/model/sync_error.h"
-#include "components/sync/model/sync_merge_result.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {

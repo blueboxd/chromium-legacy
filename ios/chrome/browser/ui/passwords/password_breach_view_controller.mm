@@ -18,7 +18,7 @@
 #pragma mark - Public
 
 - (void)loadView {
-  self.imageName = @"password_breach_illustration";
+  self.image = [UIImage imageNamed:@"password_breach_illustration"];
   self.helpButtonAvailable = YES;
   [super loadView];
 }

@@ -96,16 +96,16 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
 
   ListenerEnum enum_value;
   switch (dispatch_type) {
-    case WebInputEvent::kListenersForcedNonBlockingDueToFling:
+    case WebInputEvent::DispatchType::kListenersForcedNonBlockingDueToFling:
       enum_value = PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING;
       break;
-    case WebInputEvent::kListenersNonBlockingPassive:
+    case WebInputEvent::DispatchType::kListenersNonBlockingPassive:
       enum_value = PASSIVE_LISTENER_UMA_ENUM_PASSIVE;
       break;
-    case WebInputEvent::kEventNonBlocking:
+    case WebInputEvent::DispatchType::kEventNonBlocking:
       enum_value = PASSIVE_LISTENER_UMA_ENUM_UNCANCELABLE;
       break;
-    case WebInputEvent::kBlocking:
+    case WebInputEvent::DispatchType::kBlocking:
       if (result == WebInputEventResult::kHandledApplication)
         enum_value = PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED;
       else if (result == WebInputEventResult::kHandledSuppressed)

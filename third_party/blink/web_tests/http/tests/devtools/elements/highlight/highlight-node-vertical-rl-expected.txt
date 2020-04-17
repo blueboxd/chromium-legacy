@@ -86,7 +86,10 @@ container{
     "tagName": "div",
     "idValue": "container",
     "nodeWidth": "300",
-    "nodeHeight": "300"
+    "nodeHeight": "300",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 child{
@@ -175,7 +178,10 @@ child{
     "tagName": "div",
     "idValue": "child",
     "nodeWidth": "240",
-    "nodeHeight": "220"
+    "nodeHeight": "220",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 span{
@@ -264,7 +270,10 @@ span{
     "tagName": "span",
     "idValue": "span",
     "nodeWidth": "10",
-    "nodeHeight": "70"
+    "nodeHeight": "70",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 TEXT{

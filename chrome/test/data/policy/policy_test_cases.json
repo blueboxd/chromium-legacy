@@ -443,12 +443,20 @@
     ]
   },
 
-  "PrintingSizeDefault": {
+  "PrintingPaperSizeDefault": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
-        "policies": { "PrintingSizeDefault": { "WidthUm": 210000, "HeightUm": 297000 } },
-        "prefs": { "printing.size_default": {} }
+        "policies": {
+          "PrintingPaperSizeDefault": {
+            "name": "custom",
+            "custom_size": {
+              "width": 210000,
+              "height": 297000
+            }
+          }
+        },
+        "prefs": { "printing.paper_size_default": {} }
       }
     ]
   },

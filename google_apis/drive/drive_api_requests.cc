@@ -1182,8 +1182,8 @@ void BatchUploadRequest::AddRequest(BatchableDelegate* request) {
   DCHECK(GetChildEntry(request) == child_requests_.end());
   DCHECK(!committed_);
   child_requests_.push_back(std::make_unique<BatchUploadChildEntry>(request));
-  request->Prepare(base::Bind(&BatchUploadRequest::OnChildRequestPrepared,
-                              weak_ptr_factory_.GetWeakPtr(), request));
+  request->Prepare(base::BindOnce(&BatchUploadRequest::OnChildRequestPrepared,
+                                  weak_ptr_factory_.GetWeakPtr(), request));
 }
 
 void BatchUploadRequest::OnChildRequestPrepared(RequestID request_id,

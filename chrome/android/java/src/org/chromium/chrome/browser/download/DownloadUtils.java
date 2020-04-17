@@ -206,7 +206,10 @@ public class DownloadUtils {
         }
 
         if (BrowserStartupController.getInstance().isFullBrowserStarted()) {
-            Profile profile = (tab == null ? Profile.getLastUsedProfile()
+            // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+            // incognito profile) instead of always using regular profile. It works correctly now,
+            // but it is not safe.
+            Profile profile = (tab == null ? Profile.getLastUsedRegularProfile()
                                            : Profile.fromWebContents(tab.getWebContents()));
             Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
             tracker.notifyEvent(EventConstants.DOWNLOAD_HOME_OPENED);

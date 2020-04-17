@@ -1244,22 +1244,6 @@ class WebContentsAddedObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsAddedObserver);
 };
 
-// Watches a WebContents to check if it was destroyed.
-class WebContentsDestroyedObserver : public WebContentsObserver {
- public:
-  explicit WebContentsDestroyedObserver(WebContents* web_contents);
-  ~WebContentsDestroyedObserver() override;
-  bool IsDestroyed() { return destroyed_; }
-
- private:
-  // Overridden WebContentsObserver methods.
-  void WebContentsDestroyed() override;
-
-  bool destroyed_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedObserver);
-};
-
 // Request a new frame be drawn, returns false if request fails.
 bool RequestFrame(WebContents* web_contents);
 

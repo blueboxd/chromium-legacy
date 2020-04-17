@@ -285,8 +285,7 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
 // Helper to create the image view.
 - (UIImageView*)createImageView {
-  UIImage* image = [UIImage imageNamed:self.imageName];
-  UIImageView* imageView = [[UIImageView alloc] initWithImage:image];
+  UIImageView* imageView = [[UIImageView alloc] initWithImage:self.image];
   imageView.contentMode = UIViewContentModeScaleAspectFit;
   imageView.translatesAutoresizingMaskIntoConstraints = NO;
   return imageView;

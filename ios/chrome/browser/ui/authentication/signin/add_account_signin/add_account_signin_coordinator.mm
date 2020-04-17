@@ -95,6 +95,8 @@ using signin_metrics::PromoAction;
       [self.identityInteractionManager cancelAndDismissAnimated:NO];
       break;
   }
+  // The manager UI has been dismissed, it can be set to nil.
+  self.identityInteractionManager = nil;
   [self runCompletionCallbackWithSigninResult:SigninCoordinatorResultInterrupted
                                      identity:nil
                    showAdvancedSettingsSignin:NO];

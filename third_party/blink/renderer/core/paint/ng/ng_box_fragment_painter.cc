@@ -1727,9 +1727,25 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
     if (fragment.IsInlineBox())
       bounds_rect = PhysicalRect(PixelSnappedIntRect(bounds_rect));
     if (hit_test.location.Intersects(bounds_rect)) {
-      if (hit_test.AddNodeToResult(fragment.NodeForHitTest(), bounds_rect,
-                                   physical_offset))
-        return true;
+      // We set offset in container block instead of offset in |fragment| like
+      // |NGBoxFragmentPainter::HitTestTextFragment()|.
+      // See http://crbug.com/1043471
+      if (box_item_ && box_item_->IsInlineBox()) {
+        if (hit_test.AddNodeToResult(
+                fragment.NodeForHitTest(), bounds_rect,
+                physical_offset - box_item_->OffsetInContainerBlock()))
+          return true;
+      } else if (paint_fragment_ &&
+                 paint_fragment_->PhysicalFragment().IsInline()) {
+        if (hit_test.AddNodeToResult(
+                fragment.NodeForHitTest(), bounds_rect,
+                physical_offset - paint_fragment_->OffsetInContainerBlock()))
+          return true;
+      } else {
+        if (hit_test.AddNodeToResult(fragment.NodeForHitTest(), bounds_rect,
+                                     physical_offset))
+          return true;
+      }
     }
   }
 

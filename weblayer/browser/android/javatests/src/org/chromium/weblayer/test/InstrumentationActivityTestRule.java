@@ -31,7 +31,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.weblayer.CookieManager;
-import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
@@ -261,17 +260,6 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     public String getTestDataURL(String path) {
         return getTestServer().getURL("/weblayer/test/data/" + path);
-    }
-
-    // Returns the display URL of the last committed navigation entry in |tab|. Note that this will
-    // return an empty URL if there have been no committed navigations in |tab|.
-    public String getLastCommittedUrlInTab(Tab tab) {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            NavigationController navController = tab.getNavigationController();
-            return navController
-                    .getNavigationEntryDisplayUri(navController.getNavigationListCurrentIndex())
-                    .toString();
-        });
     }
 
     // Returns the URL that is currently being displayed to the user.

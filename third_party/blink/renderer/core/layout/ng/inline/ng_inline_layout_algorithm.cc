@@ -250,13 +250,11 @@ void NGInlineLayoutAlgorithm::CreateLine(
       }
 
       if (UNLIKELY(item.IsSymbolMarker())) {
-        text_builder.SetItem(NGPhysicalTextFragment::kSymbolMarker,
-                             line_info->ItemsData(), &item_result,
-                             box->text_height);
+        text_builder.SetItem(NGTextType::kSymbolMarker, line_info->ItemsData(),
+                             &item_result, box->text_height);
       } else {
-        text_builder.SetItem(NGPhysicalTextFragment::kNormalText,
-                             line_info->ItemsData(), &item_result,
-                             box->text_height);
+        text_builder.SetItem(NGTextType::kNormal, line_info->ItemsData(),
+                             &item_result, box->text_height);
       }
       if (UNLIKELY(item_result.hyphen_shape_result)) {
         LayoutUnit hyphen_inline_size = item_result.HyphenInlineSize();
@@ -417,20 +415,20 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
   DCHECK_GE(item.Length(), 1u);
   DCHECK(!item.TextShapeResult());
   UChar character = line_info.ItemsData().text_content[item.StartOffset()];
-  NGPhysicalTextFragment::NGTextType type;
+  NGTextType type;
   switch (character) {
     case kNewlineCharacter:
-      type = NGPhysicalTextFragment::kForcedLineBreak;
+      type = NGTextType::kForcedLineBreak;
       break;
     case kTabulationCharacter:
-      type = NGPhysicalTextFragment::kFlowControl;
+      type = NGTextType::kFlowControl;
       break;
     case kZeroWidthSpaceCharacter:
       // Don't generate fragments if this is a generated (not in DOM) break
       // opportunity during the white space collapsing in NGInlineItemBuilder.
       if (item.IsGeneratedForLineBreak())
         return;
-      type = NGPhysicalTextFragment::kFlowControl;
+      type = NGTextType::kFlowControl;
       break;
     default:
       NOTREACHED();

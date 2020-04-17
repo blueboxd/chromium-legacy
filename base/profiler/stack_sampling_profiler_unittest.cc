@@ -20,6 +20,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/native_library.h"
+#include "base/path_service.h"
 #include "base/profiler/sample_metadata.h"
 #include "base/profiler/stack_sampler.h"
 #include "base/profiler/stack_sampling_profiler.h"
@@ -63,6 +65,64 @@ namespace base {
 using SamplingParams = StackSamplingProfiler::SamplingParams;
 
 namespace {
+
+// Calls into |wait_for_sample| after using alloca(), to test unwinding with a
+// frame pointer.
+// Disable inlining for this function so that it gets its own stack frame.
+NOINLINE FunctionAddressRange CallWithAlloca(OnceClosure wait_for_sample) {
+  const void* start_program_counter = GetProgramCounter();
+
+  // Volatile to force a dynamic stack allocation.
+  const volatile size_t alloca_size = 100;
+  // Use the memory via volatile writes to prevent the allocation from being
+  // optimized out.
+  volatile char* const allocation =
+      const_cast<volatile char*>(static_cast<char*>(alloca(alloca_size)));
+  for (volatile char* p = allocation; p < allocation + alloca_size; ++p)
+    *p = '\0';
+
+  if (!wait_for_sample.is_null())
+    std::move(wait_for_sample).Run();
+
+  // Volatile to prevent a tail call to GetProgramCounter().
+  const void* volatile end_program_counter = GetProgramCounter();
+  return {start_program_counter, end_program_counter};
+}
+
+// The function to be executed by the code in the other library.
+void OtherLibraryCallback(void* arg) {
+  OnceClosure* wait_for_sample = static_cast<OnceClosure*>(arg);
+
+  std::move(*wait_for_sample).Run();
+
+  // Prevent tail call.
+  volatile int i = 0;
+  ALLOW_UNUSED_LOCAL(i);
+}
+
+// Calls into |wait_for_sample| through a function within another library, to
+// test unwinding through multiple modules and scenarios involving unloaded
+// modules.
+// Disable inlining for this function so that it gets its own stack frame.
+NOINLINE FunctionAddressRange
+CallThroughOtherLibrary(NativeLibrary library, OnceClosure wait_for_sample) {
+  const void* start_program_counter = GetProgramCounter();
+
+  if (!wait_for_sample.is_null()) {
+    // A function whose arguments are a function accepting void*, and a void*.
+    using InvokeCallbackFunction = void (*)(void (*)(void*), void*);
+    EXPECT_TRUE(library);
+    InvokeCallbackFunction function = reinterpret_cast<InvokeCallbackFunction>(
+        GetFunctionPointerFromNativeLibrary(library, "InvokeCallbackFunction"));
+    EXPECT_TRUE(function);
+
+    (*function)(&OtherLibraryCallback, &wait_for_sample);
+  }
+
+  // Volatile to prevent a tail call to GetProgramCounter().
+  const void* volatile end_program_counter = GetProgramCounter();
+  return {start_program_counter, end_program_counter};
+}
 
 // State provided to the ProfileBuilder's ApplyMetadataRetrospectively function.
 struct RetrospectiveMetadata {
@@ -165,6 +225,27 @@ void TestProfileBuilder::OnProfileCompleted(TimeDelta profile_duration,
   std::move(callback_).Run(Profile{samples_, record_metadata_count_,
                                    retrospective_metadata_, profile_duration,
                                    sampling_period});
+}
+
+// Loads the other library, which defines a function to be called in the
+// WITH_OTHER_LIBRARY configuration.
+NativeLibrary LoadOtherLibrary() {
+  // The lambda gymnastics works around the fact that we can't use ASSERT_*
+  // macros in a function returning non-null.
+  const auto load = [](NativeLibrary* library) {
+    FilePath other_library_path;
+    ASSERT_TRUE(PathService::Get(DIR_MODULE, &other_library_path));
+    other_library_path = other_library_path.AppendASCII(
+        GetLoadableModuleName("base_profiler_test_support_library"));
+    NativeLibraryLoadError load_error;
+    *library = LoadNativeLibrary(other_library_path, &load_error);
+    ASSERT_TRUE(*library) << "error loading " << other_library_path.value()
+                          << ": " << load_error.ToString();
+  };
+
+  NativeLibrary library = nullptr;
+  load(&library);
+  return library;
 }
 
 // Unloads |library| and returns when it has completed unloading. Unloading a

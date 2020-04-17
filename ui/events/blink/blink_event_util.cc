@@ -644,8 +644,8 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
                               EventFlagsToWebEventModifiers(event.GetFlags()),
                               event.GetEventTime());
   result.dispatch_type = result.GetType() == WebInputEvent::kTouchCancel
-                             ? WebInputEvent::kEventNonBlocking
-                             : WebInputEvent::kBlocking;
+                             ? WebInputEvent::DispatchType::kEventNonBlocking
+                             : WebInputEvent::DispatchType::kBlocking;
   result.moved_beyond_slop_region = moved_beyond_slop_region;
   result.hovering = hovering;
 

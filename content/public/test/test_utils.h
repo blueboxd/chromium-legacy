@@ -316,7 +316,8 @@ class RenderFrameDeletedObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(RenderFrameDeletedObserver);
 };
 
-// Watches a WebContents and blocks until it is destroyed.
+// Watches a WebContents. Can be used to block until it is destroyed or just
+// merely report if it was destroyed.
 class WebContentsDestroyedWatcher : public WebContentsObserver {
  public:
   explicit WebContentsDestroyedWatcher(WebContents* web_contents);
@@ -325,11 +326,16 @@ class WebContentsDestroyedWatcher : public WebContentsObserver {
   // Waits until the WebContents is destroyed.
   void Wait();
 
+  // Returns whether the WebContents was destroyed.
+  bool IsDestroyed() { return destroyed_; }
+
  private:
   // Overridden WebContentsObserver methods.
   void WebContentsDestroyed() override;
 
   base::RunLoop run_loop_;
+
+  bool destroyed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedWatcher);
 };

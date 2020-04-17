@@ -1143,7 +1143,7 @@ void GaiaScreenHandler::HandleSecurityTokenPinEntered(
 
 void GaiaScreenHandler::OnShowAddUser() {
   signin_screen_handler_->is_account_picker_showing_first_time_ = false;
-  lock_screen_utils::EnforcePolicyInputMethods(std::string());
+  lock_screen_utils::EnforceDevicePolicyInputMethods(std::string());
   ShowGaiaAsync(EmptyAccountId());
 }
 
@@ -1405,8 +1405,8 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
 
   // Set Least Recently Used input method for the user.
   if (!populated_email_.empty()) {
-    lock_screen_utils::SetUserInputMethod(populated_email_,
-                                          gaia_ime_state.get());
+    lock_screen_utils::SetUserInputMethod(
+        populated_email_, gaia_ime_state.get(), true /*honor_device_policy*/);
   } else {
     std::vector<std::string> input_methods;
     if (gaia_ime_state->GetAllowedInputMethods().empty()) {

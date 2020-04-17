@@ -803,7 +803,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
     const WebMouseWheelEvent& wheel_event) {
   InputHandlerProxy::EventDisposition result = DROP_EVENT;
 
-  if (wheel_event.dispatch_type == WebInputEvent::kEventNonBlocking) {
+  if (wheel_event.dispatch_type ==
+      WebInputEvent::DispatchType::kEventNonBlocking) {
     // The first wheel event in the sequence should be cancellable.
     DCHECK(wheel_event.phase != WebMouseWheelEvent::kPhaseBegan);
     // Noncancellable wheel events should have phase info.

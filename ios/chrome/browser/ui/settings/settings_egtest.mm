@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_app_interface.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -461,10 +462,9 @@ id<GREYMatcher> ClearBrowsingDataCell() {
                   @"Settings should not register key commands when presented.");
 
   // Cancel the sign-in operation.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_buttonTitle([l10n_util::GetNSString(
-                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
-                     uppercaseString])] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kSkipSigninAccessibilityIdentifier)]
+      performAction:grey_tap()];
 
   // Wait for UI to finish closing the Sign-in screen.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];

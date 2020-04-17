@@ -100,8 +100,6 @@ ViewsScreenLocker::~ViewsScreenLocker() {
 void ViewsScreenLocker::Init() {
   lock_time_ = base::TimeTicks::Now();
   user_selection_screen_->Init(screen_locker_->GetUsersToShow());
-  if (!ime_state_.get())
-    ime_state_ = input_method::InputMethodManager::Get()->GetActiveIMEState();
 
   // Reset Caps Lock state when lock screen is shown.
   input_method::InputMethodManager::Get()->GetImeKeyboard()->SetCapsLockEnabled(
@@ -128,13 +126,6 @@ void ViewsScreenLocker::Init() {
                       base::TimeTicks::Now() - lock_time_);
   screen_locker_->ScreenLockReady();
   lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(this);
-
-  allowed_input_methods_subscription_ =
-      CrosSettings::Get()->AddSettingsObserver(
-          kDeviceLoginScreenInputMethods,
-          base::Bind(&ViewsScreenLocker::OnAllowedInputMethodsChanged,
-                     base::Unretained(this)));
-  OnAllowedInputMethodsChanged();
 }
 
 void ViewsScreenLocker::ShowErrorMessage(
@@ -308,10 +299,6 @@ void ViewsScreenLocker::UpdateChallengeResponseAuthAvailability(
       ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id);
   ash::LoginScreen::Get()->GetModel()->SetChallengeResponseAuthEnabledForUser(
       account_id, enable_challenge_response);
-}
-
-void ViewsScreenLocker::OnAllowedInputMethodsChanged() {
-  user_selection_screen_->OnAllowedInputMethodsChanged();
 }
 
 void ViewsScreenLocker::OnPinCanAuthenticate(const AccountId& account_id,

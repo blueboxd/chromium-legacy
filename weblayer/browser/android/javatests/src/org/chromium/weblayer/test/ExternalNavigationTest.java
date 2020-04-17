@@ -21,6 +21,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.Tab;
+import org.chromium.weblayer.TabListCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 /**
@@ -202,7 +203,8 @@ public class ExternalNavigationTest {
 
     /**
      * Tests that clicking on a link that goes to an external intent in a new tab results in
-     * a new tab being opened whose URL is that of the intent and the intent being launched.
+     * a new tab being opened whose URL is that of the intent and the intent being launched,
+     * followed by the new tab being closed.
      */
     @Test
     @SmallTest
@@ -215,8 +217,26 @@ public class ExternalNavigationTest {
 
         mActivityTestRule.navigateAndWait(url);
 
-        // Grab the existing tab before causing a new one to be opened.
-        Tab tab = mActivityTestRule.getActivity().getTab();
+        // Set up listening for the tab addition and removal that we expect to happen.
+        CallbackHelper onTabAddedCallbackHelper = new CallbackHelper();
+        CallbackHelper onTabRemovedCallbackHelper = new CallbackHelper();
+        TabListCallback tabListCallback = new TabListCallback() {
+            @Override
+            public void onTabAdded(Tab tab) {
+                onTabAddedCallbackHelper.notifyCalled();
+            }
+
+            @Override
+            public void onTabRemoved(Tab tab) {
+                onTabRemovedCallbackHelper.notifyCalled();
+            }
+        };
+        Browser browser = mActivityTestRule.getActivity().getBrowser();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { browser.registerTabListCallback(tabListCallback); });
+
+        // Grab the original tab before it changes.
+        Tab originalTab = mActivityTestRule.getActivity().getTab();
 
         mActivityTestRule.executeScriptSync(
                 "document.onclick = function() {document.getElementById('link').click()}",
@@ -224,23 +244,30 @@ public class ExternalNavigationTest {
         EventUtils.simulateTouchCenterOfView(
                 mActivityTestRule.getActivity().getWindow().getDecorView());
 
-        intentInterceptor.waitForIntent();
+        // (1) A new tab should be created...
+        onTabAddedCallbackHelper.waitForFirst();
 
-        // The current URL should not have changed in the existing tab, and the intent should have
-        // been launched.
-        Assert.assertEquals(url, mActivityTestRule.getLastCommittedUrlInTab(tab));
+        // (2) The intent should be launched in that tab...
+        intentInterceptor.waitForIntent();
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
         Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
         Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
         Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
 
-        // A new tab should have been created whose URL is that of the intent.
-        Browser browser = mActivityTestRule.getActivity().getBrowser();
+        // (3) And finally the new tab should be closed.
+        onTabRemovedCallbackHelper.waitForFirst();
+
+        // Now the original tab should be all that's left in the browser, with the display URL being
+        // the original URL.
         int numTabs =
                 TestThreadUtils.runOnUiThreadBlocking(() -> { return browser.getTabs().size(); });
-        Assert.assertEquals(2, numTabs);
-        Assert.assertEquals(INTENT_TO_CHROME_URL, mActivityTestRule.getCurrentDisplayUrl());
+        Assert.assertEquals(1, numTabs);
+        Assert.assertEquals(mActivityTestRule.getActivity().getTab(), originalTab);
+        Assert.assertEquals(url, mActivityTestRule.getCurrentDisplayUrl());
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { browser.unregisterTabListCallback(tabListCallback); });
     }
 
     /**

@@ -15,6 +15,7 @@ policy_tests.suiteName = 'PolicyTest';
 policy_tests.TestNames = {
   HeaderFooterPolicy: 'header/footer policy',
   CssBackgroundPolicy: 'css background policy',
+  MediaSizePolicy: 'media size policy',
   SheetsPolicy: 'sheets policy',
 };
 
@@ -76,7 +77,7 @@ suite(policy_tests.suiteName, function() {
       }
       initialSettings.policies = {[settingName]: policy};
     }
-    if (defaultMode !== undefined) {
+    if (defaultMode !== undefined && serializedSettingName !== undefined) {
       // We want to make sure sticky settings get overridden.
       initialSettings.serializedAppStateStr = JSON.stringify({
         version: 2,
@@ -216,6 +217,40 @@ suite(policy_tests.suiteName, function() {
       const checkbox = getCheckbox('cssBackground');
       assertEquals(subtestParams.expectedDisabled, checkbox.disabled);
       assertEquals(subtestParams.expectedChecked, checkbox.checked);
+    }
+  });
+
+  /** Tests different scenarios of applying default paper policy. */
+  test(assert(policy_tests.TestNames.MediaSizePolicy), async () => {
+    const tests = [
+      {
+        // No policies.
+        defaultMode: undefined,
+        expectedName: 'NA_LETTER',
+      },
+      {
+        // Not available option shouldn't change actual paper size setting.
+        defaultMode: {width: 200000, height: 200000},
+        expectedName: 'NA_LETTER',
+      },
+      {
+        // Change default paper size setting.
+        defaultMode: {width: 215900, height: 215900},
+        expectedName: 'CUSTOM_SQUARE',
+      }
+    ];
+    for (const subtestParams of tests) {
+      await doAllowedDefaultModePolicySetup(
+          'mediaSize', /*serializedSettingName=*/ undefined,
+          /*allowedMode=*/ undefined, subtestParams.defaultMode);
+      toggleMoreSettings();
+      const mediaSettingsSelect = page.$$('print-preview-sidebar')
+                                      .$$('print-preview-media-size-settings')
+                                      .$$('print-preview-settings-select')
+                                      .$$('select');
+      assertEquals(
+          subtestParams.expectedName,
+          JSON.parse(mediaSettingsSelect.value).name);
     }
   });
 

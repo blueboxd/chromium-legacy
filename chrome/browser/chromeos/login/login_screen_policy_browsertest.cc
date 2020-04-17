@@ -18,10 +18,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -52,26 +55,7 @@ class LoginScreenPolicyTest : public policy::DevicePolicyCrosBrowserTest {
       const char* cros_setting_name);
 
  protected:
-  void WaitForLoginScreen() {
-    content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-        content::NotificationService::AllSources())
-        .Wait();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    policy::DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kLoginManager);
-    command_line->AppendSwitch(switches::kForceLoginManagerInTests);
-  }
-
-  void TearDownOnMainThread() override {
-    // This shuts down the login UI.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&chrome::AttemptExit));
-    base::RunLoop().RunUntilIdle();
-    policy::DevicePolicyCrosBrowserTest::TearDownOnMainThread();
-  }
+  LoginManagerMixin login_manager_{&mixin_host_};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginScreenPolicyTest);
@@ -79,46 +63,11 @@ class LoginScreenPolicyTest : public policy::DevicePolicyCrosBrowserTest {
 
 void LoginScreenPolicyTest::RefreshDevicePolicyAndWaitForSettingChange(
     const char* cros_setting_name) {
-  scoped_refptr<content::MessageLoopRunner> runner(
-      new content::MessageLoopRunner);
-  std::unique_ptr<CrosSettings::ObserverSubscription> subscription(
-      chromeos::CrosSettings::Get()->AddSettingsObserver(
-          cros_setting_name,
-          base::BindLambdaForTesting([&]() { runner->Quit(); })));
-
-  RefreshDevicePolicy();
-  runner->Run();
-}
-
-IN_PROC_BROWSER_TEST_F(LoginScreenPolicyTest, RestrictInputMethods) {
-  WaitForLoginScreen();
-
-  input_method::InputMethodManager* imm =
-      input_method::InputMethodManager::Get();
-  ASSERT_TRUE(imm);
-
-  ASSERT_EQ(0U, imm->GetActiveIMEState()->GetAllowedInputMethods().size());
-
-  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
-  proto.mutable_login_screen_input_methods()->add_login_screen_input_methods(
-      "xkb:de::ger");
-  RefreshDevicePolicyAndWaitForSettingChange(
-      chromeos::kDeviceLoginScreenInputMethods);
-
-  ASSERT_EQ(1U, imm->GetActiveIMEState()->GetAllowedInputMethods().size());
-
-  // Remove the policy again
-  proto.mutable_login_screen_input_methods()
-      ->clear_login_screen_input_methods();
-  RefreshDevicePolicyAndWaitForSettingChange(
-      chromeos::kDeviceLoginScreenInputMethods);
-
-  ASSERT_EQ(0U, imm->GetActiveIMEState()->GetAllowedInputMethods().size());
+  policy_helper()->RefreshPolicyAndWaitUntilDeviceSettingsUpdated(
+      {cros_setting_name});
 }
 
 IN_PROC_BROWSER_TEST_F(LoginScreenPolicyTest, PolicyInputMethodsListEmpty) {
-  WaitForLoginScreen();
-
   input_method::InputMethodManager* imm =
       input_method::InputMethodManager::Get();
   ASSERT_TRUE(imm);
@@ -136,19 +85,18 @@ IN_PROC_BROWSER_TEST_F(LoginScreenPolicyTest, PolicyInputMethodsListEmpty) {
   ASSERT_EQ(0U, imm->GetActiveIMEState()->GetAllowedInputMethods().size());
 }
 
-class LoginScreenGuestButtonPolicy : public LoginScreenPolicyTest {
- public:
-  LoginScreenGuestButtonPolicy() {
-    device_state_.SetState(
-        DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED);
+class LoginScreenGuestButtonPolicyTest : public LoginScreenPolicyTest {
+ protected:
+  void SetGuestModePolicy(bool enabled) {
+    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+    proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(enabled);
+    RefreshDevicePolicyAndWaitForSettingChange(
+        chromeos::kAccountsPrefAllowGuest);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LoginScreenGuestButtonPolicy);
 };
 
-IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicy, NoUsers) {
-  WaitForLoginScreen();
+IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicyTest, NoUsers) {
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   // Default.
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
@@ -160,31 +108,21 @@ IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicy, NoUsers) {
   test::ExecuteOobeJS("chrome.send('showGuestInOobe', [true]);");
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
-  {
-    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
-    proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
-    RefreshDevicePolicyAndWaitForSettingChange(
-        chromeos::kAccountsPrefAllowGuest);
+  SetGuestModePolicy(false);
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
-    EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  test::ExecuteOobeJS("chrome.send('showGuestInOobe', [true]);");
+  // Should not affect.
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
-    test::ExecuteOobeJS("chrome.send('showGuestInOobe', [true]);");
-    // Should not affect.
-    EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
-  }
-
-  {
-    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
-    proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(true);
-    RefreshDevicePolicyAndWaitForSettingChange(
-        chromeos::kAccountsPrefAllowGuest);
-
-    EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
-  }
+  SetGuestModePolicy(true);
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 }
 
-IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicy, HasUsers) {
-  WaitForLoginScreen();
+IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicyTest, HasUsers) {
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+
+  // Default.
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   ash::LoginScreen::Get()->GetModel()->SetUserList({{}});
@@ -212,7 +150,6 @@ class LoginScreenLocalePolicyTestBase : public LoginScreenPolicyTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     LoginScreenPolicyTest::SetUpInProcessBrowserTestFixture();
-
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
     proto.mutable_login_screen_locales()->add_login_screen_locales(locale_);
     RefreshDevicePolicy();
@@ -231,24 +168,12 @@ class LoginScreenLocalePolicyTest : public LoginScreenLocalePolicyTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(LoginScreenLocalePolicyTest,
-                       DISABLED_PRE_LoginLocaleEnforcedByPolicy) {
-  chromeos::StartupUtils::MarkOobeCompleted();
-}
-
-IN_PROC_BROWSER_TEST_F(LoginScreenLocalePolicyTest,
-                       DISABLED_LoginLocaleEnforcedByPolicy) {
+                       LoginLocaleEnforcedByPolicy) {
   // Verifies that the default locale can be overridden with policy.
   EXPECT_EQ("fr", g_browser_process->GetApplicationLocale());
-  base::string16 french_title =
-      l10n_util::GetStringUTF16(IDS_LOGIN_POD_SIGNING_IN);
 
-  // Make sure this is really French and differs from the English title.
-  std::string loaded =
-      ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("en-US");
-  EXPECT_EQ("en-US", loaded);
-  base::string16 english_title =
-      l10n_util::GetStringUTF16(IDS_LOGIN_POD_SIGNING_IN);
-  EXPECT_NE(french_title, english_title);
+  // TODO(https://crbug.com/1071010) Implement dynamic locale reload on policy
+  // change.
 }
 
 class LoginScreenButtonsLocalePolicy : public LoginScreenLocalePolicyTestBase {

@@ -1044,29 +1044,6 @@ class ChromeLauncherControllerExtendedShelfTest
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerExtendedShelfTest);
 };
 
-// Watches WebContents and blocks until it is destroyed. This is needed for
-// the destruction of a V2 application.
-class WebContentsDestroyedWatcher : public content::WebContentsObserver {
- public:
-  explicit WebContentsDestroyedWatcher(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents),
-        message_loop_runner_(new content::MessageLoopRunner) {
-    EXPECT_TRUE(web_contents != nullptr);
-  }
-  ~WebContentsDestroyedWatcher() override {}
-
-  // Waits until the WebContents is destroyed.
-  void Wait() { message_loop_runner_->Run(); }
-
- private:
-  // Overridden WebContentsObserver methods.
-  void WebContentsDestroyed() override { message_loop_runner_->Quit(); }
-
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedWatcher);
-};
-
 // A V1 windowed application.
 class V1App : public TestBrowserWindow {
  public:
@@ -1118,7 +1095,8 @@ class V2App {
   }
 
   virtual ~V2App() {
-    WebContentsDestroyedWatcher destroyed_watcher(window_->web_contents());
+    content::WebContentsDestroyedWatcher destroyed_watcher(
+        window_->web_contents());
     window_->GetBaseWindow()->Close();
     destroyed_watcher.Wait();
   }

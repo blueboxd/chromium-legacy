@@ -1492,19 +1492,16 @@ INSTANTIATE_TEST_SUITE_P(
 
 class DeepScanningDialogDelegatePolicyResultsTest : public BaseTest {
  public:
-  enterprise_connectors::ConnectorsManager::AnalysisSettings settings() {
-    base::Optional<enterprise_connectors::ConnectorsManager::AnalysisSettings>
-        settings;
+  enterprise_connectors::AnalysisSettings settings() {
+    base::Optional<enterprise_connectors::AnalysisSettings> settings;
     enterprise_connectors::ConnectorsManager::GetInstance()
         ->GetAnalysisSettings(
             GURL(kTestUrl),
             enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
             base::BindLambdaForTesting(
                 [&settings](
-                    base::Optional<enterprise_connectors::ConnectorsManager::
-                                       AnalysisSettings> tmp_settings) {
-                  settings = std::move(tmp_settings);
-                }));
+                    base::Optional<enterprise_connectors::AnalysisSettings>
+                        tmp_settings) { settings = std::move(tmp_settings); }));
     EXPECT_TRUE(settings.has_value());
     return std::move(settings.value());
   }

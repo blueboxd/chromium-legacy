@@ -448,6 +448,7 @@ void WebContentsDestroyedWatcher::Wait() {
 }
 
 void WebContentsDestroyedWatcher::WebContentsDestroyed() {
+  destroyed_ = true;
   run_loop_.Quit();
 }
 

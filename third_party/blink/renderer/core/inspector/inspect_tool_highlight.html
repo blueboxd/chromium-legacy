@@ -87,6 +87,20 @@ body {
     visibility: var(--arrow-visibility);
 }
 
+.element-info-section {
+    margin-top: 12px;
+    margin-bottom: 6px;
+}
+
+.section-name {
+    color: #333;
+    font-weight: 500;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    line-height: 12px;
+}
+
 .element-info {
     display: flex;
     flex-direction: column;
@@ -109,13 +123,20 @@ body {
     line-height: 19px;
 }
 
-.element-info-contrast-row {
+.separator-container {
+    display: flex;
+    align-items: center;
+    flex: auto;
+    margin-left: 7px;
+}
+
+.separator {
     border-top: 1px solid #ddd;
-    padding-top: 5px;
-    margin-top: 5px;
+    width: 100%;
 }
 
 .element-info-name {
+    flex-shrink: 0;
     color: #666;
 }
 
@@ -132,9 +153,19 @@ body {
 
 .element-info-value-contrast {
     display: flex;
+    align-items: center;
     text-align: right;
     color: rgb(48, 57, 66);
     margin-left: 10px;
+}
+
+.element-info-value-contrast .a11y-icon {
+    margin-left: 8px;
+}
+
+.element-info-value-icon {
+    display: flex;
+    align-items: center;
 }
 
 .element-info-value-text {
@@ -205,16 +236,20 @@ body {
 .a11y-icon {
     width: 16px;
     height: 16px;
-    margin-left: 2px;
     background-repeat: no-repeat;
+    display: inline-block;
+}
+
+.a11y-icon-not-ok {
+    background-image: url('data:image/svg+xml,<svg fill="none" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="m9 1.5c-4.14 0-7.5 3.36-7.5 7.5s3.36 7.5 7.5 7.5 7.5-3.36 7.5-7.5-3.36-7.5-7.5-7.5zm0 13.5c-3.315 0-6-2.685-6-6 0-1.3875.4725-2.6625 1.2675-3.675l8.4075 8.4075c-1.0125.795-2.2875 1.2675-3.675 1.2675zm4.7325-2.325-8.4075-8.4075c1.0125-.795 2.2875-1.2675 3.675-1.2675 3.315 0 6 2.685 6 6 0 1.3875-.4725 2.6625-1.2675 3.675z" fill="%239e9e9e"/></svg>');
 }
 
 .a11y-icon-warning {
-    background-image: url("data:image/svg+xml;charset=UTF-8, %3csvg xmlns='http://www.w3.org/2000/svg' width='16px' height='16px' viewBox='0 0 18 18' fill='%23ffc107'%3e%3cpath d='M0 0h18v18H0z' fill='none'/%3e%3cpath d='M.5 16h17L9 1 .5 16zm9.5-2H8v-2h2v2zm0-3H8V7h2v4z'/%3e%3c/svg%3e ");
+    background-image: url('data:image/svg+xml,<svg fill="none" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="m8.25 11.25h1.5v1.5h-1.5zm0-6h1.5v4.5h-1.5zm.7425-3.75c-4.14 0-7.4925 3.36-7.4925 7.5s3.3525 7.5 7.4925 7.5c4.1475 0 7.5075-3.36 7.5075-7.5s-3.36-7.5-7.5075-7.5zm.0075 13.5c-3.315 0-6-2.685-6-6s2.685-6 6-6 6 2.685 6 6-2.685 6-6 6z" fill="%23e37400"/></svg>');
 }
 
 .a11y-icon-ok {
-    background-image: url("data:image/svg+xml;charset=UTF-8, %3csvg xmlns='http://www.w3.org/2000/svg' width='16px' height='16px' viewBox='0 0 48 48' fill='%2300a000'%3e%3cpath d='M0 0h48v48H0z' fill='none'/%3e%3cpath d='M18 32.34L9.66 24l-2.83 2.83L18 38l24-24-2.83-2.83z'/%3e%3c/svg%3e");
+    background-image: url('data:image/svg+xml,<svg fill="none" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="m9 1.5c-4.14 0-7.5 3.36-7.5 7.5s3.36 7.5 7.5 7.5 7.5-3.36 7.5-7.5-3.36-7.5-7.5-7.5zm0 13.5c-3.3075 0-6-2.6925-6-6s2.6925-6 6-6 6 2.6925 6 6-2.6925 6-6 6zm-1.5-4.35-1.95-1.95-1.05 1.05 3 3 6-6-1.05-1.05z" fill="%230ca40c"/></svg>');
 }
 
 @media (forced-colors: active) {
@@ -233,13 +268,14 @@ body {
     }
     .color-swatch-inner,
     .contrast-text,
-    .element-info-contrast-row {
+    .separator {
         border-color: Highlight;
     }
     .dimensions,
     .element-info-name,
     .element-info-value-color,
     .element-info-value-contrast,
+    .element-info-value-icon,
     .element-info-value-text,
     .material-tag-name,
     .material-class-name,
@@ -533,12 +569,34 @@ function _createElementDescription(elementInfo)
         addTextRow("Padding", padding);
 
     const cbgColor = elementInfo.contrast ? elementInfo.contrast.backgroundColor : null;
-    if (color && color !== "#00000000" && cbgColor && cbgColor !== "#00000000")
+    const hasContrastInfo = color && color !== "#00000000" && cbgColor && cbgColor !== "#00000000";
+
+    addSection("Accessibility");
+
+    if (hasContrastInfo)
         addContrastRow(style["color"], elementInfo.contrast);
 
-    function addRow(name, rowClassName, valueClassName) {
+    addTextRow("Name", elementInfo.accessibleName);
+    addTextRow("Role", elementInfo.accessibleRole);
+    addIconRow("Keyboard-focusable", elementInfo.isKeyboardFocusable ? "a11y-icon a11y-icon-ok" : "a11y-icon a11y-icon-not-ok");
+
+    function ensureElementInfoBody() {
         if (!elementInfoBodyElement)
             elementInfoBodyElement = elementInfoElement.createChild("div", "element-info-body")
+    }
+
+    function addSection(name) {
+        ensureElementInfoBody();
+        const rowElement = elementInfoBodyElement.createChild("div", "element-info-row element-info-section");
+        const nameElement = rowElement.createChild("div", "section-name");
+        nameElement.textContent = name;
+        const separatorElement = rowElement
+            .createChild("div", "separator-container")
+            .createChild("div", "separator");
+    }
+
+    function addRow(name, rowClassName, valueClassName) {
+        ensureElementInfoBody();
         const rowElement = elementInfoBodyElement.createChild("div", "element-info-row");
         if (rowClassName)
             rowElement.classList.add(rowClassName);
@@ -546,6 +604,10 @@ function _createElementDescription(elementInfo)
         nameElement.textContent = name;
         rowElement.createChild("div", "element-info-gap");
         return rowElement.createChild("div", valueClassName || "");
+    }
+
+    function addIconRow(name, value) {
+        addRow(name, "", "element-info-value-icon").createChild('div', value);
     }
 
     function addTextRow(name, value) {
@@ -563,7 +625,7 @@ function _createElementDescription(elementInfo)
     function addContrastRow(fgColor, contrast) {
         const ratio = contrastRatio(parseHexa(fgColor), parseHexa(contrast.backgroundColor));
         const threshold = computeIsLargeFont(contrast) ? 3.0 : 4.5;
-        const valueElement = addRow("Contrast", "element-info-contrast-row", "element-info-value-contrast");
+        const valueElement = addRow("Contrast", "", "element-info-value-contrast");
         const sampleText = valueElement.createChild("div", "contrast-text");
         sampleText.style.color = fgColor;
         sampleText.style.backgroundColor = contrast.backgroundColor;
@@ -873,7 +935,7 @@ function test() {
     drawHighlight(
         {"paths":[{"path":["M",122,133.796875,"L",822,133.796875,"L",822,208.796875,"L",122,208.796875,"Z"], "fillColor":"rgba(111, 168, 220, 0.658823529411765)","name":"content"},
         {"path":["M",122,113.796875,"L",822,113.796875,"L",822,228.796875,"L",122,228.796875,"Z"],"fillColor":"rgba(246, 178, 107, 0.66)","name":"margin"}],"showRulers":false,"showExtensionLines":false,
-        "elementInfo":{"tagName":"button","className":"class.name", "idValue":"download-hero","nodeWidth":"700","nodeHeight":"75","style":{"color":"#FFFFFFFF","font-family":"\"Product Sans\", \"Open Sans\", Roboto, Arial, \"Product Sans\", \"Open Sans\", Roboto, Arial","font-size":"20px","line-height":"25px","padding":"0px","margin":"20px 0px","background-color":"#00000000"},"contrast":{"fontSize":"20px","fontWeight":"400","backgroundColor":"#F9B826BF"}}, showExtensionLines: true, showRulers: true});
+        "elementInfo":{"tagName":"button","className":"class.name", "idValue":"download-hero","nodeWidth":"700","nodeHeight":"75","style":{"color":"#FFFFFFFF","font-family":"\"Product Sans\", \"Open Sans\", Roboto, Arial, \"Product Sans\", \"Open Sans\", Roboto, Arial","font-size":"20px","line-height":"25px","padding":"0px","margin":"20px 0px","background-color":"#00000000"},"contrast":{"fontSize":"20px","fontWeight":"400","backgroundColor":"#F9B826BF"},"isKeyboardFocusable":false,"accessibleName":"name","accessibleRole":"role"}, showExtensionLines: true, showRulers: true});
 }
 
 </script>

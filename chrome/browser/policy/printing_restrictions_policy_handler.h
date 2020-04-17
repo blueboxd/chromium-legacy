@@ -88,26 +88,6 @@ class PrintingPinDefaultPolicyHandler
   PrintingPinDefaultPolicyHandler();
   ~PrintingPinDefaultPolicyHandler() override;
 };
-
-class PrintingSizeDefaultPolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  PrintingSizeDefaultPolicyHandler();
-  ~PrintingSizeDefaultPolicyHandler() override;
-
-  // ConfigurationPolicyHandler implementation:
-  bool CheckPolicySettings(const PolicyMap& policies,
-                           PolicyErrorMap* errors) override;
-  void ApplyPolicySettings(const PolicyMap& policies,
-                           PrefValueMap* prefs) override;
-
- private:
-  bool CheckIntSubkey(const base::Value* dict,
-                      const std::string& key,
-                      PolicyErrorMap* errors);
-  bool GetValue(const PolicyMap& policies,
-                PolicyErrorMap* errors,
-                const base::Value** result);
-};
 #endif  // defined(OS_CHROMEOS)
 
 class PrintingAllowedBackgroundGraphicsModesPolicyHandler
@@ -124,6 +104,26 @@ class PrintingBackgroundGraphicsDefaultPolicyHandler
  public:
   PrintingBackgroundGraphicsDefaultPolicyHandler();
   ~PrintingBackgroundGraphicsDefaultPolicyHandler() override;
+};
+
+class PrintingPaperSizeDefaultPolicyHandler : public TypeCheckingPolicyHandler {
+ public:
+  PrintingPaperSizeDefaultPolicyHandler();
+  ~PrintingPaperSizeDefaultPolicyHandler() override;
+
+  // ConfigurationPolicyHandler implementation:
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
+
+ private:
+  bool CheckIntSubkey(const base::Value* dict,
+                      const std::string& key,
+                      PolicyErrorMap* errors);
+  bool GetValue(const PolicyMap& policies,
+                PolicyErrorMap* errors,
+                const base::Value** result);
 };
 
 }  // namespace policy

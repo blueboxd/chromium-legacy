@@ -72,6 +72,7 @@ template("chrome_ios_eg2_test_app_host") {
                              "public_deps",
                            ])
     testonly = true
+    xcode_product_bundle_id = "gtest.$target_name"
 
     if (!defined(entitlements_path) && !defined(entitlements_target)) {
       entitlements_target = ":$_tweak_entitlements"

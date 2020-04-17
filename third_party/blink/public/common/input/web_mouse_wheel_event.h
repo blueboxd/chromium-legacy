@@ -67,7 +67,7 @@ class BLINK_COMMON_EXPORT WebMouseWheelEvent : public WebMouseEvent {
 
   // Whether the event is blocking, non-blocking, all event
   // listeners were passive or was forced to be non-blocking.
-  DispatchType dispatch_type = kBlocking;
+  DispatchType dispatch_type = DispatchType::kBlocking;
 
   // The expected result of this wheel event (if not canceled).
   EventAction event_action = EventAction::kPageZoom;
@@ -94,7 +94,7 @@ class BLINK_COMMON_EXPORT WebMouseWheelEvent : public WebMouseEvent {
   // back to 1 and |frame_translate_| X and Y coordinates back to 0.
   WebMouseWheelEvent FlattenTransform() const;
 
-  bool IsCancelable() const { return dispatch_type == kBlocking; }
+  bool IsCancelable() const { return dispatch_type == DispatchType::kBlocking; }
 
   std::unique_ptr<WebInputEvent> Clone() const override;
 };

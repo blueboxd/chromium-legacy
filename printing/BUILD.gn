@@ -60,6 +60,8 @@ component("printing") {
     "backend/print_backend_consts.cc",
     "backend/print_backend_consts.h",
     "backend/print_backend_dummy.cc",
+    "backend/printing_restrictions.cc",
+    "backend/printing_restrictions.h",
     "metafile.cc",
     "metafile.h",
     "metafile_skia.cc",
@@ -133,8 +135,6 @@ component("printing") {
 
     sources += [
       "backend/print_backend_chromeos.cc",
-      "backend/printing_restrictions.cc",
-      "backend/printing_restrictions.h",
       "printed_document_chromeos.cc",
       "printing_context_no_system_dialog.cc",
       "printing_context_no_system_dialog.h",

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
@@ -45,10 +46,9 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
   [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
 
   // Cancel the sign-in operation.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_buttonTitle([l10n_util::GetNSString(
-                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
-                     uppercaseString])] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kSkipSigninAccessibilityIdentifier)]
+      performAction:grey_tap()];
   [SigninEarlGreyUI
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 }

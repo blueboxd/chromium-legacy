@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/sync/driver/sync_merge_result.h"
 #include "components/sync/model/data_type_error_handler_impl.h"
-#include "components/sync/model/sync_merge_result.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

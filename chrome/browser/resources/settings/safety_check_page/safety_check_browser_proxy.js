@@ -114,10 +114,9 @@ cr.define('settings', function() {
     /**
      * Get the display string for the safety check parent, showing how long ago
      * safety check last ran.`
-     * @param {number} timestamp The timestamp safety check last ran.
      * @return {!Promise<string>}
      */
-    getParentRanDisplayString(timestamp) {}
+    getParentRanDisplayString() {}
   }
 
   /** @implements {settings.SafetyCheckBrowserProxy} */
@@ -128,8 +127,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    getParentRanDisplayString(timestamp) {
-      return cr.sendWithPromise('getSafetyCheckRanDisplayString', timestamp);
+    getParentRanDisplayString() {
+      return cr.sendWithPromise('getSafetyCheckRanDisplayString');
     }
   }
 

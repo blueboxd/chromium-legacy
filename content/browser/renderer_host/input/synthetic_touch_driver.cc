@@ -75,7 +75,8 @@ void SyntheticTouchDriver::Cancel(int index,
   DCHECK(pointer_id_map_.find(index) != pointer_id_map_.end());
   touch_event_.CancelPoint(pointer_id_map_[index]);
   touch_event_.SetModifiers(key_modifiers);
-  touch_event_.dispatch_type = blink::WebInputEvent::kEventNonBlocking;
+  touch_event_.dispatch_type =
+      blink::WebInputEvent::DispatchType::kEventNonBlocking;
   pointer_id_map_.erase(index);
 }
 

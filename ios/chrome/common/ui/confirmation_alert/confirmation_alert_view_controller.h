@@ -33,8 +33,8 @@ extern NSString* const kConfirmationAlertPrimaryActionAccessibilityIdentifier;
 // The text for the primary action. Must be set before the view is loaded.
 @property(nonatomic, strong) NSString* primaryActionString;
 
-// The image name. Must be set before the view is loaded.
-@property(nonatomic, strong) NSString* imageName;
+// The image. Must be set before the view is loaded.
+@property(nonatomic, strong) UIImage* image;
 
 // Controls if there is a help button in the view. Must be set before the
 // view is loaded.

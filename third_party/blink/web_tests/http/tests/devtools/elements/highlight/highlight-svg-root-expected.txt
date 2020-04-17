@@ -86,7 +86,10 @@ svg-root{
     "tagName": "svg",
     "idValue": "svg-root",
     "nodeWidth": "150",
-    "nodeHeight": "150"
+    "nodeHeight": "150",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": ""
   }
 }
 

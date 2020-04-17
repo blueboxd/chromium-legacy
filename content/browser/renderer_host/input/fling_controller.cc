@@ -273,7 +273,8 @@ void FlingController::GenerateAndSendWheelEvents(
   synthetic_wheel.event.SetPositionInScreen(
       current_fling_parameters_.global_point);
   // Send wheel events nonblocking.
-  synthetic_wheel.event.dispatch_type = WebInputEvent::kEventNonBlocking;
+  synthetic_wheel.event.dispatch_type =
+      WebInputEvent::DispatchType::kEventNonBlocking;
 
   event_sender_client_->SendGeneratedWheelEvent(synthetic_wheel);
 }

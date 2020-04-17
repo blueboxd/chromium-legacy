@@ -73,8 +73,10 @@
 #include "net/base/url_util.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
+#include "printing/backend/printing_restrictions.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/print_settings.h"
+#include "printing/printing_utils.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
@@ -254,6 +256,9 @@ const char kHeaderFooter[] = "headerFooter";
 // Name of a dictionary pref holding the policy value for the background
 // graphics checkbox.
 const char kCssBackground[] = "cssBackground";
+// Name of a dictionary pref holding the policy value for the paper size
+// setting.
+const char kMediaSize[] = "mediaSize";
 #if defined(OS_CHROMEOS)
 // Name of a dictionary field holding policy value for the setting.
 const char kValue[] = "value";
@@ -448,6 +453,22 @@ UserActionBuckets DetermineUserAction(const base::Value& settings) {
   return PRINT_TO_PRINTER;
 }
 
+base::Optional<gfx::Size> ParsePaperSize(const base::Value* paper_size_value) {
+  if (!paper_size_value || paper_size_value->DictEmpty())
+    return base::nullopt;
+
+  const base::Value* custom_size =
+      paper_size_value->FindKey(kPaperSizeCustomSize);
+  if (custom_size) {
+    return gfx::Size(*custom_size->FindIntKey(kPaperSizeWidth),
+                     *custom_size->FindIntKey(kPaperSizeHeight));
+  }
+
+  const std::string* name = paper_size_value->FindStringKey(kPaperSizeName);
+  DCHECK(name);
+  return ParsePaper(*name).size_um;
+}
+
 base::Value GetPolicies(const PrefService& prefs) {
   base::Value policies(base::Value::Type::DICTIONARY);
 
@@ -477,6 +498,23 @@ base::Value GetPolicies(const PrefService& prefs) {
   }
   if (!background_graphics_policy.DictEmpty())
     policies.SetKey(kCssBackground, std::move(background_graphics_policy));
+
+  base::Value paper_size_policy(base::Value::Type::DICTIONARY);
+  if (prefs.HasPrefPath(prefs::kPrintingPaperSizeDefault)) {
+    base::Optional<gfx::Size> default_paper_size =
+        ParsePaperSize(prefs.Get(prefs::kPrintingPaperSizeDefault));
+    if (default_paper_size.has_value()) {
+      base::Value default_paper_size_value(base::Value::Type::DICTIONARY);
+      default_paper_size_value.SetIntKey(kPaperSizeWidth,
+                                         default_paper_size.value().width());
+      default_paper_size_value.SetIntKey(kPaperSizeHeight,
+                                         default_paper_size.value().height());
+      paper_size_policy.SetKey(kDefaultMode,
+                               std::move(default_paper_size_value));
+    }
+  }
+  if (!paper_size_policy.DictEmpty())
+    policies.SetKey(kMediaSize, std::move(paper_size_policy));
 
 #if defined(OS_CHROMEOS)
   if (prefs.HasPrefPath(prefs::kPrintingMaxSheetsAllowed)) {

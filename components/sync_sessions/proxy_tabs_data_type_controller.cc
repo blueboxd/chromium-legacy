@@ -8,9 +8,9 @@
 
 #include "base/values.h"
 #include "components/sync/driver/configure_context.h"
+#include "components/sync/driver/sync_merge_result.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/model_type_configurer.h"
-#include "components/sync/model/sync_merge_result.h"
 
 namespace sync_sessions {
 

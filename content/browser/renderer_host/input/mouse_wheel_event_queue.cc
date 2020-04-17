@@ -279,7 +279,7 @@ void MouseWheelEventQueue::TryForwardNextEventToRenderer() {
     send_wheel_events_async_ = false;
   } else if (send_wheel_events_async_) {
     event_sent_for_gesture_ack_->event.dispatch_type =
-        WebInputEvent::kEventNonBlocking;
+        WebInputEvent::DispatchType::kEventNonBlocking;
   }
 
   client_->SendMouseWheelEventImmediately(

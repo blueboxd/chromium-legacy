@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/scoped_thread_priority.h"
 #include "ui/display/win/display_info.h"
 #include "ui/gfx/icc_profile.h"
 
@@ -79,6 +80,7 @@ void ColorProfileReader::UpdateIfNeeded() {
 // static
 ColorProfileReader::DeviceToPathMap
 ColorProfileReader::BuildDeviceToPathMapOnBackgroundThread() {
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
   DeviceToPathMap device_to_path_map;
   EnumDisplayMonitors(nullptr, nullptr, EnumMonitorForProfilePathCallback,
                       reinterpret_cast<LPARAM>(&device_to_path_map));

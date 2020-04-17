@@ -18,12 +18,14 @@ namespace chromeos {
 namespace lock_screen_utils {
 
 void SetUserInputMethod(const std::string& username,
-                        input_method::InputMethodManager::State* ime_state) {
+                        input_method::InputMethodManager::State* ime_state,
+                        bool honor_device_policy) {
   bool succeed = false;
 
   const std::string input_method = GetUserLastInputMethod(username);
 
-  EnforcePolicyInputMethods(input_method);
+  if (honor_device_policy)
+    EnforceDevicePolicyInputMethods(input_method);
 
   if (!input_method.empty())
     succeed = SetUserInputMethodImpl(username, input_method, ime_state);
@@ -92,7 +94,7 @@ bool SetUserInputMethodImpl(
   return true;
 }
 
-void EnforcePolicyInputMethods(std::string user_input_method) {
+void EnforceDevicePolicyInputMethods(std::string user_input_method) {
   chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
   const base::ListValue* login_screen_input_methods = nullptr;
   if (!cros_settings->GetList(chromeos::kDeviceLoginScreenInputMethods,
@@ -129,6 +131,7 @@ void StopEnforcingPolicyInputMethods() {
   imm->GetActiveIMEState()->SetAllowedInputMethods(allowed_input_methods, true);
   if (ImeControllerClient::Get())  // Can be null in tests.
     ImeControllerClient::Get()->SetImesManagedByPolicy(false);
+  imm->GetActiveIMEState()->SetInputMethodLoginDefault();
 }
 
 void SetKeyboardSettings(const AccountId& account_id) {

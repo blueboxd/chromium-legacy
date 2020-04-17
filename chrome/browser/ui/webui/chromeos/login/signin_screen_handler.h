@@ -399,9 +399,6 @@ class SigninScreenHandler
   // Callback invoked after the feedback is finished.
   void OnFeedbackFinished();
 
-  // Called when the cros property controlling allowed input methods changes.
-  void OnAllowedInputMethodsChanged();
-
   // After proxy auth information has been supplied, this function re-enables
   // responding to network state notifications.
   void ReenableNetworkStateUpdatesAfterProxyAuth();
@@ -441,9 +438,6 @@ class SigninScreenHandler
   base::CancelableClosure connecting_closure_;
 
   content::NotificationRegistrar registrar_;
-
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      allowed_input_methods_subscription_;
 
   // Whether we're currently ignoring network state updates because a proxy auth
   // UI pending (or we're waiting for a grace period after the proxy auth UI is

@@ -308,6 +308,11 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
   DOMRect* bounding_box = element->getBoundingClientRect();
   element_info->setString("nodeWidth", String::Number(bounding_box->width()));
   element_info->setString("nodeHeight", String::Number(bounding_box->height()));
+
+  element_info->setBoolean("isKeyboardFocusable",
+                           element->IsKeyboardFocusable());
+  element_info->setString("accessibleName", element->computedName());
+  element_info->setString("accessibleRole", element->computedRole());
   return element_info;
 }
 

@@ -153,6 +153,10 @@ TEST_F('PrintPreviewPolicyTest', 'CssBackgroundPolicy', function() {
   this.runMochaTest(policy_tests.TestNames.CssBackgroundPolicy);
 });
 
+TEST_F('PrintPreviewPolicyTest', 'MediaSizePolicy', function() {
+  this.runMochaTest(policy_tests.TestNames.MediaSizePolicy);
+});
+
 GEN('#if defined(OS_CHROMEOS)');
 TEST_F('PrintPreviewPolicyTest', 'SheetsPolicy', function() {
   this.runMochaTest(policy_tests.TestNames.SheetsPolicy);

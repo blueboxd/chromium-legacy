@@ -69,9 +69,9 @@ class FakeInputEvent : public blink::WebInputEvent {
 
 class FakeTouchEvent : public blink::WebTouchEvent {
  public:
-  explicit FakeTouchEvent(
-      blink::WebInputEvent::Type event_type,
-      DispatchType dispatch_type = blink::WebInputEvent::kBlocking)
+  explicit FakeTouchEvent(blink::WebInputEvent::Type event_type,
+                          DispatchType dispatch_type =
+                              blink::WebInputEvent::DispatchType::kBlocking)
       : WebTouchEvent(event_type,
                       WebInputEvent::kNoModifiers,
                       WebInputEvent::GetStaticTimeStampForTests()) {
@@ -83,7 +83,8 @@ class FakeMouseWheelEvent : public blink::WebMouseWheelEvent {
  public:
   explicit FakeMouseWheelEvent(
       blink::WebInputEvent::Type event_type,
-      DispatchType dispatch_type = blink::WebInputEvent::kBlocking)
+      DispatchType dispatch_type =
+          blink::WebInputEvent::DispatchType::kBlocking)
       : WebMouseWheelEvent(event_type,
                            WebInputEvent::kNoModifiers,
                            WebInputEvent::GetStaticTimeStampForTests()) {
@@ -1918,7 +1919,7 @@ TEST_F(MainThreadSchedulerImplTest,
   // an urgent policy update.
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeTouchEvent(blink::WebInputEvent::kTouchStart,
-                     blink::WebInputEvent::kEventNonBlocking),
+                     blink::WebInputEvent::DispatchType::kEventNonBlocking),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   EXPECT_EQ(0, scheduler_->update_policy_count_);
   base::RunLoop().RunUntilIdle();
@@ -1968,7 +1969,7 @@ TEST_F(MainThreadSchedulerImplTest,
   // update.
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeTouchEvent(blink::WebInputEvent::kTouchStart,
-                     blink::WebInputEvent::kEventNonBlocking),
+                     blink::WebInputEvent::DispatchType::kEventNonBlocking),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   EXPECT_EQ(0, scheduler_->update_policy_count_);
   base::RunLoop().RunUntilIdle();

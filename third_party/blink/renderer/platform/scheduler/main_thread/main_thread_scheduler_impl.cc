@@ -176,12 +176,14 @@ bool IsBlockingEvent(const blink::WebInputEvent& web_input_event) {
   if (type == blink::WebInputEvent::kTouchStart) {
     const WebTouchEvent& touch_event =
         static_cast<const WebTouchEvent&>(web_input_event);
-    return touch_event.dispatch_type == blink::WebInputEvent::kBlocking;
+    return touch_event.dispatch_type ==
+           blink::WebInputEvent::DispatchType::kBlocking;
   }
 
   const WebMouseWheelEvent& mouse_event =
       static_cast<const WebMouseWheelEvent&>(web_input_event);
-  return mouse_event.dispatch_type == blink::WebInputEvent::kBlocking;
+  return mouse_event.dispatch_type ==
+         blink::WebInputEvent::DispatchType::kBlocking;
 }
 
 MainThreadSchedulerImpl* g_main_thread_scheduler = nullptr;

@@ -59,6 +59,12 @@ export const BackgroundGraphicsModeRestriction = {
  *     allowedMode: (BackgroundGraphicsModeRestriction | undefined),
  *     defaultMode: (BackgroundGraphicsModeRestriction | undefined),
  *   } | undefined),
+ *   mediaSize: ({
+ *     defaultMode: ({
+ *       width: (number | undefined),
+ *       height: (number | undefined),
+ *     } | undefined),
+ *   } | undefined),
  *   sheets: ({
  *     value: (number | undefined),
  *   } | undefined)

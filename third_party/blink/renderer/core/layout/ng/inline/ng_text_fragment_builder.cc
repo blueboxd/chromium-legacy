@@ -22,12 +22,11 @@ NGTextFragmentBuilder::NGTextFragmentBuilder(
       shape_result_(fragment.TextShapeResult()),
       text_type_(fragment.TextType()) {}
 
-void NGTextFragmentBuilder::SetItem(
-    NGPhysicalTextFragment::NGTextType text_type,
-    const NGInlineItemsData& items_data,
-    NGInlineItemResult* item_result,
-    LayoutUnit line_height) {
-  DCHECK_NE(text_type, NGPhysicalTextFragment::kGeneratedText)
+void NGTextFragmentBuilder::SetItem(NGTextType text_type,
+                                    const NGInlineItemsData& items_data,
+                                    NGInlineItemResult* item_result,
+                                    LayoutUnit line_height) {
+  DCHECK_NE(text_type, NGTextType::kGenerated)
       << "Please use SetText() instead.";
   DCHECK(item_result);
   DCHECK(item_result->item->Style());
@@ -53,7 +52,7 @@ void NGTextFragmentBuilder::SetText(
   DCHECK(style);
   DCHECK(shape_result);
 
-  text_type_ = NGPhysicalTextFragment::kGeneratedText;
+  text_type_ = NGTextType::kGenerated;
   text_ = text;
   start_offset_ = shape_result->StartIndex();
   end_offset_ = shape_result->EndIndex();
@@ -68,7 +67,7 @@ void NGTextFragmentBuilder::SetText(
 
 bool NGTextFragmentBuilder::IsGeneratedText() const {
   if (UNLIKELY(style_variant_ == NGStyleVariant::kEllipsis ||
-               text_type_ == NGPhysicalTextFragment::kGeneratedText))
+               text_type_ == NGTextType::kGenerated))
     return true;
 
   DCHECK(layout_object_);

@@ -190,17 +190,17 @@ TEST_F(NGPhysicalTextFragmentTest, Ellipsis) {
   const NGPhysicalTextFragment& truncated = *text_fragments[1];
   const NGPhysicalTextFragment& ellipsis = *text_fragments[2];
 
-  EXPECT_EQ(NGPhysicalTextFragment::kNormalText, hidden.TextType());
+  EXPECT_EQ(NGTextType::kNormal, hidden.TextType());
   EXPECT_FALSE(hidden.IsGeneratedText());
   EXPECT_TRUE(hidden.IsHiddenForPaint());
   EXPECT_EQ(u8"abcdef", GetText(hidden));
 
-  EXPECT_EQ(NGPhysicalTextFragment::kNormalText, truncated.TextType());
+  EXPECT_EQ(NGTextType::kNormal, truncated.TextType());
   EXPECT_FALSE(truncated.IsGeneratedText());
   EXPECT_FALSE(truncated.IsHiddenForPaint());
   EXPECT_EQ(u8"abc", GetText(truncated));
 
-  EXPECT_EQ(NGPhysicalTextFragment::kGeneratedText, ellipsis.TextType());
+  EXPECT_EQ(NGTextType::kGenerated, ellipsis.TextType());
   EXPECT_TRUE(ellipsis.IsGeneratedText());
   EXPECT_FALSE(ellipsis.IsHiddenForPaint());
   EXPECT_EQ(u8"\u2026", GetText(ellipsis));
@@ -242,15 +242,15 @@ TEST_F(NGPhysicalTextFragmentTest, SoftHyphen) {
   const NGPhysicalTextFragment& abc = *text_fragments[0];
   const NGPhysicalTextFragment& shy = *text_fragments[1];
   const NGPhysicalTextFragment& def = *text_fragments[2];
-  EXPECT_EQ(NGPhysicalTextFragment::kNormalText, abc.TextType());
+  EXPECT_EQ(NGTextType::kNormal, abc.TextType());
   // Note: ShapeResult::RunInfo.width_ == 0 for U+00AD
   EXPECT_EQ(u8"abc\u00AD", GetText(abc));
-  EXPECT_EQ(NGPhysicalTextFragment::kGeneratedText, shy.TextType());
+  EXPECT_EQ(NGTextType::kGenerated, shy.TextType());
   // Note: |ComputedStyle::HypenString()| returns "-" or U+2010 based on
   // glyph availability.
   if (GetText(shy) != "-")
     EXPECT_EQ(u8"\u2010", GetText(shy));
-  EXPECT_EQ(NGPhysicalTextFragment::kNormalText, def.TextType());
+  EXPECT_EQ(NGTextType::kNormal, def.TextType());
 }
 
 TEST_F(NGPhysicalTextFragmentTest, QuotationMarksAreAnonymousText) {

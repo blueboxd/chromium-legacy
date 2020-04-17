@@ -167,7 +167,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
         session_sync_prefs_(&pref_service_),
         favicon_cache_(/*favicon_service=*/nullptr,
                        /*history_service=*/nullptr,
-                       /*max_sync_favicon_limit=*/0) {
+                       /*max_mappings_limit=*/0) {
     SessionSyncPrefs::RegisterProfilePrefs(pref_service_.registry());
 
     ON_CALL(mock_sync_sessions_client_, GetSessionSyncPrefs())

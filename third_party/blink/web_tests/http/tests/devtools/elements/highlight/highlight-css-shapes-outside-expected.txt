@@ -185,7 +185,10 @@ circle{
     "idValue": "circle",
     "className": ".float.circle",
     "nodeWidth": "128",
-    "nodeHeight": "128"
+    "nodeHeight": "128",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 insetSimpleRound{
@@ -373,7 +376,10 @@ insetSimpleRound{
     "idValue": "insetSimpleRound",
     "className": ".float.insetSimpleRound",
     "nodeWidth": "128",
-    "nodeHeight": "128"
+    "nodeHeight": "128",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 insetComplexRound{
@@ -585,7 +591,10 @@ insetComplexRound{
     "idValue": "insetComplexRound",
     "className": ".float.insetComplexRound",
     "nodeWidth": "128",
-    "nodeHeight": "128"
+    "nodeHeight": "128",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 ellipse{
@@ -773,7 +782,10 @@ ellipse{
     "idValue": "ellipse",
     "className": ".float.ellipse",
     "nodeWidth": "128",
-    "nodeHeight": "80"
+    "nodeHeight": "80",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 contentBox{
@@ -985,7 +997,10 @@ contentBox{
     "idValue": "contentBox",
     "className": ".float.contentBox",
     "nodeWidth": "176",
-    "nodeHeight": "160"
+    "nodeHeight": "160",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 polygon{
@@ -1090,7 +1105,10 @@ polygon{
     "idValue": "polygon",
     "className": ".float.polygon",
     "nodeWidth": "128",
-    "nodeHeight": "128"
+    "nodeHeight": "128",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 raster{
@@ -1528,7 +1546,10 @@ raster{
     "idValue": "raster",
     "className": ".float.raster",
     "nodeWidth": "128",
-    "nodeHeight": "128"
+    "nodeHeight": "128",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 

@@ -333,7 +333,6 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       v8_session_(v8_session),
       dom_agent_(dom_agent),
       swallow_next_mouse_up_(false),
-      swallow_next_escape_up_(false),
       backend_node_id_to_inspect_(0),
       enabled_(&agent_state_, false),
       show_ad_highlights_(&agent_state_, false),
@@ -721,16 +720,6 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
     return WebInputEventResult::kHandledSuppressed;
   }
 
-  if (input_event.GetType() == WebInputEvent::kKeyUp &&
-      swallow_next_escape_up_) {
-    const auto& keyboard_event =
-        static_cast<const WebKeyboardEvent&>(input_event);
-    if (keyboard_event.windows_key_code == VKEY_ESCAPE) {
-      swallow_next_escape_up_ = false;
-      return WebInputEventResult::kHandledSuppressed;
-    }
-  }
-
   LocalFrame* frame = GetFrame();
   if (!frame || !frame->View() || !frame->ContentLayoutObject() ||
       !inspect_tool_)
@@ -758,8 +747,7 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
         static_cast<const WebKeyboardEvent&>(input_event);
     if (keyboard_event.windows_key_code == VKEY_ESCAPE) {
       GetFrontend()->inspectModeCanceled();
-      swallow_next_escape_up_ = true;
-      return WebInputEventResult::kHandledSuppressed;
+      return WebInputEventResult::kNotHandled;
     }
   }
 

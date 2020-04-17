@@ -4,6 +4,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/first_run/first_run_app_interface.h"
@@ -32,8 +33,7 @@ id<GREYMatcher> FirstRunOptInAcceptButton() {
 
 // Returns matcher for the skip sign in button.
 id<GREYMatcher> SkipSigninButton() {
-  return ButtonWithAccessibilityLabel(
-      l10n_util::GetNSString(IDS_IOS_FIRSTRUN_ACCOUNT_CONSISTENCY_SKIP_BUTTON));
+  return grey_accessibilityID(kSkipSigninAccessibilityIdentifier);
 }
 }
 

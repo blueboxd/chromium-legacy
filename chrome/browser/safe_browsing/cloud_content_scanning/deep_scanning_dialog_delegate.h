@@ -87,7 +87,7 @@ class DeepScanningDialogDelegate {
     std::vector<base::FilePath> paths;
 
     // The settings to use for the analysis of the data in this struct.
-    enterprise_connectors::ConnectorsManager::AnalysisSettings settings;
+    enterprise_connectors::AnalysisSettings settings;
   };
 
   // Result of deep scanning.  Each Result contains the verdicts of deep scans
@@ -227,8 +227,7 @@ class DeepScanningDialogDelegate {
   // block it.
   static bool ResultShouldAllowDataUse(
       BinaryUploadService::Result result,
-      const enterprise_connectors::ConnectorsManager::AnalysisSettings&
-          settings);
+      const enterprise_connectors::AnalysisSettings& settings);
 
  protected:
   DeepScanningDialogDelegate(content::WebContents* web_contents,
@@ -255,8 +254,7 @@ class DeepScanningDialogDelegate {
       Data data,
       CompletionCallback callback,
       DeepScanAccessPoint access_point,
-      base::Optional<enterprise_connectors::ConnectorsManager::AnalysisSettings>
-          settings);
+      base::Optional<enterprise_connectors::AnalysisSettings> settings);
 
   // Uploads data for deep scanning.  Returns true if uploading is occurring in
   // the background and false if there is nothing to do.

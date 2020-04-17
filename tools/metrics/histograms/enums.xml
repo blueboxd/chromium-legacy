@@ -19766,7 +19766,7 @@ Called by update_document_policy_enum.py.-->
   <int value="475" label="PrintingAllowedDuplexModes"/>
   <int value="477" label="PrintingColorDefault"/>
   <int value="478" label="PrintingDuplexDefault"/>
-  <int value="479" label="PrintingSizeDefault"/>
+  <int value="479" label="PrintingPaperSizeDefault"/>
   <int value="480" label="PrintHeaderFooter"/>
   <int value="481" label="CrostiniAllowed"/>
   <int value="482" label="DeviceUnaffiliatedCrostiniAllowed"/>

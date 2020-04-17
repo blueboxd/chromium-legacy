@@ -7,9 +7,11 @@
 
 #include <stdint.h>
 #include <vector>
+
 #include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -98,6 +100,9 @@ class CONTENT_EXPORT URLLoaderClientImpl final
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool bypass_redirect_checks_ = false;
   GURL last_loaded_url_;
+
+  // For UMA.
+  base::TimeTicks on_receive_response_time_;
 
   mojo::Remote<network::mojom::URLLoader> url_loader_;
   mojo::Receiver<network::mojom::URLLoaderClient> url_loader_client_receiver_{

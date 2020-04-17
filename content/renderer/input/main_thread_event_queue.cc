@@ -254,48 +254,49 @@ void MainThreadEventQueue::HandleEvent(
     blink::WebTouchEvent* touch_event =
         static_cast<blink::WebTouchEvent*>(event.get());
 
-    originally_cancelable =
-        touch_event->dispatch_type == blink::WebInputEvent::kBlocking;
+    originally_cancelable = touch_event->dispatch_type ==
+                            blink::WebInputEvent::DispatchType::kBlocking;
 
     // Adjust the |dispatchType| on the event since the compositor
     // determined all event listeners are passive.
     if (non_blocking) {
       touch_event->dispatch_type =
-          blink::WebInputEvent::kListenersNonBlockingPassive;
+          blink::WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     }
     if (touch_event->GetType() == blink::WebInputEvent::kTouchStart)
       last_touch_start_forced_nonblocking_due_to_fling_ = false;
 
     if (enable_fling_passive_listener_flag_ &&
         touch_event->touch_start_or_first_touch_move &&
-        touch_event->dispatch_type == blink::WebInputEvent::kBlocking) {
+        touch_event->dispatch_type ==
+            blink::WebInputEvent::DispatchType::kBlocking) {
       // If the touch start is forced to be passive due to fling, its following
       // touch move should also be passive.
       if (ack_result == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING ||
           last_touch_start_forced_nonblocking_due_to_fling_) {
-        touch_event->dispatch_type =
-            blink::WebInputEvent::kListenersForcedNonBlockingDueToFling;
+        touch_event->dispatch_type = blink::WebInputEvent::DispatchType::
+            kListenersForcedNonBlockingDueToFling;
         non_blocking = true;
         last_touch_start_forced_nonblocking_due_to_fling_ = true;
       }
     }
 
     // If the event is non-cancelable ACK it right away.
-    if (!non_blocking &&
-        touch_event->dispatch_type != blink::WebInputEvent::kBlocking)
+    if (!non_blocking && touch_event->dispatch_type !=
+                             blink::WebInputEvent::DispatchType::kBlocking)
       non_blocking = true;
   }
 
   if (is_wheel) {
     blink::WebMouseWheelEvent* wheel_event =
         static_cast<blink::WebMouseWheelEvent*>(event.get());
-    originally_cancelable =
-        wheel_event->dispatch_type == blink::WebInputEvent::kBlocking;
+    originally_cancelable = wheel_event->dispatch_type ==
+                            blink::WebInputEvent::DispatchType::kBlocking;
     if (non_blocking) {
       // Adjust the |dispatchType| on the event since the compositor
       // determined all event listeners are passive.
       wheel_event->dispatch_type =
-          blink::WebInputEvent::kListenersNonBlockingPassive;
+          blink::WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     }
   }
 

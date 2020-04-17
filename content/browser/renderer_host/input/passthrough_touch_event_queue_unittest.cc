@@ -374,7 +374,8 @@ TEST_F(PassthroughTouchEventQueueTest, Basic) {
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(WebInputEvent::kTouchStart, acked_event().GetType());
-  EXPECT_EQ(WebInputEvent::kBlocking, acked_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking,
+            acked_event().dispatch_type);
 
   // Receive an ACK for the second touch-event.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -382,7 +383,8 @@ TEST_F(PassthroughTouchEventQueueTest, Basic) {
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(WebInputEvent::kTouchMove, acked_event().GetType());
-  EXPECT_EQ(WebInputEvent::kBlocking, acked_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking,
+            acked_event().dispatch_type);
 }
 
 // Tests that touch-events with multiple points are queued properly.
@@ -983,7 +985,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutBasic) {
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(IsTimeoutRunning());
   EXPECT_EQ(WebInputEvent::kTouchCancel, sent_event().GetType());
-  EXPECT_NE(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_NE(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
@@ -1005,7 +1007,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutBasic) {
   // Subsequent events should be handled normally.
   PressTouchPoint(0, 1);
   EXPECT_EQ(WebInputEvent::kTouchStart, sent_event().GetType());
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
@@ -1453,7 +1455,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchAbsorptionWithConsumedFirstMove) {
   MoveTouchPoint(0, 60, 5);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   MoveTouchPoint(0, 20, 5);
@@ -1465,7 +1467,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchAbsorptionWithConsumedFirstMove) {
   SendGestureEventAck(WebInputEvent::kGestureScrollUpdate,
                       INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // Touch moves are sent right away.
@@ -1479,39 +1481,39 @@ TEST_F(PassthroughTouchEventQueueTest, TouchStartCancelableDuringScroll) {
   // active scroll sequence.
   PressTouchPoint(0, 1);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   MoveTouchPoint(0, 20, 5);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   SendGestureEvent(blink::WebInputEvent::kGestureScrollBegin);
   SendGestureEvent(blink::WebInputEvent::kGestureScrollUpdate);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // Even though scrolling has begun, touchstart events should be cancelable,
   // allowing, for example, customized pinch processing.
   PressTouchPoint(10, 11);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // As the touch start was consumed, touchmoves should no longer be throttled.
   MoveTouchPoint(1, 11, 11);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // With throttling disabled, touchend and touchmove events should also be
   // cancelable.
   MoveTouchPoint(1, 12, 12);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ReleaseTouchPoint(1);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // If subsequent touchmoves aren't consumed, the generated scroll events
@@ -1519,17 +1521,17 @@ TEST_F(PassthroughTouchEventQueueTest, TouchStartCancelableDuringScroll) {
   MoveTouchPoint(0, 25, 5);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   SendGestureEvent(blink::WebInputEvent::kGestureScrollUpdate);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
   MoveTouchPoint(0, 30, 5);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_NE(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_NE(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // The touchend will be uncancelable during an active scroll sequence.
   ReleaseTouchPoint(0);
-  EXPECT_NE(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_NE(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 }
 

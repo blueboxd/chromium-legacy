@@ -86,7 +86,10 @@ inspectedElement{
     "tagName": "div",
     "idValue": "inspectedElement",
     "nodeWidth": "250",
-    "nodeHeight": "250"
+    "nodeHeight": "250",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 

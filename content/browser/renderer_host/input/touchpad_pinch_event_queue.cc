@@ -61,9 +61,10 @@ blink::WebMouseWheelEvent CreateSyntheticWheelFromTouchpadPinchEvent(
   wheel_event.wheel_ticks_y = wheel_ticks_y;
 
   if (cancelable)
-    wheel_event.dispatch_type = blink::WebInputEvent::kBlocking;
+    wheel_event.dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;
   else
-    wheel_event.dispatch_type = blink::WebInputEvent::kEventNonBlocking;
+    wheel_event.dispatch_type =
+        blink::WebInputEvent::DispatchType::kEventNonBlocking;
 
   return wheel_event;
 }

@@ -1213,6 +1213,8 @@ jumbo_component("base") {
       "message_loop/message_pump_android.h",
       "os_compat_android.cc",
       "os_compat_android.h",
+      "profiler/native_unwinder_android.cc",
+      "profiler/native_unwinder_android.h",
       "profiler/stack_sampler_android.cc",
       "threading/platform_thread_android.cc",
       "trace_event/cpufreq_monitor_android.cc",
@@ -2383,29 +2385,13 @@ if (is_win) {
   }
 }
 
-if ((is_win && current_cpu != "x86") || is_mac ||
-    (is_android && (current_cpu == "arm" || current_cpu == "arm64"))) {
-  # Must be a loadable module so that it can be loaded/unloaded at runtime
-  # during testing.
-  loadable_module("base_profiler_test_support_library") {
-    testonly = true
-    sources = [ "profiler/test_support_library.cc" ]
-  }
-}
-
-if (is_android && (current_cpu == "arm" || current_cpu == "arm64")) {
-  source_set("native_unwinder_android") {
-    sources = [
-      "profiler/native_unwinder_android.cc",
-      "profiler/native_unwinder_android.h",
-      "profiler/unwindstack_internal_android.cc",
-      "profiler/unwindstack_internal_android.h",
-    ]
-
-    include_dirs = [ "//third_party/libunwindstack/src/libunwindstack/include" ]
-
-    public_deps = [ ":base" ]
-    deps = [ "//third_party/libunwindstack" ]
+if (is_win || is_mac) {
+  if (current_cpu == "x64" || (current_cpu == "arm64" && is_win)) {
+    # Must be a shared library so that it can be unloaded during testing.
+    loadable_module("base_profiler_test_support_library") {
+      testonly = true
+      sources = [ "profiler/test_support_library.cc" ]
+    }
   }
 }
 
@@ -2946,17 +2932,6 @@ test("base_unittests") {
     }
     if (current_cpu == "arm") {
       sources += [ "profiler/chrome_unwinder_android_unittest.cc" ]
-    }
-    if (current_cpu == "arm" || current_cpu == "arm64") {
-      sources += [ "profiler/native_unwinder_android_unittest.cc" ]
-      include_dirs =
-          [ "//third_party/libunwindstack/src/libunwindstack/include" ]
-      deps += [
-        ":base_profiler_test_support_java",
-        ":base_profiler_test_support_jni_headers",
-        ":base_profiler_test_support_library",
-        ":native_unwinder_android",
-      ]
     }
 
     sources += [
@@ -3676,24 +3651,6 @@ if (is_android) {
       "metrics/histogram_base.h",
       "task/task_traits.h",
       "trace_event/trace_config.h",
-    ]
-  }
-
-  generate_jni("base_profiler_test_support_jni_headers") {
-    testonly = true
-    sources =
-        [ "android/javatests/src/org/chromium/base/profiler/TestSupport.java" ]
-  }
-
-  android_library("base_profiler_test_support_java") {
-    testonly = true
-    sources =
-        [ "android/javatests/src/org/chromium/base/profiler/TestSupport.java" ]
-
-    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-    deps = [
-      "//base:base_java",
-      "//base:jni_java",
     ]
   }
 

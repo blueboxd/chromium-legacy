@@ -15,6 +15,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
+#include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/pref_names.h"
@@ -26,6 +28,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
+#include "components/arc/arc_prefs.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -84,6 +87,8 @@ constexpr char kPossibleNonMisconfigurationFailures[] =
     "Extensions.ForceInstalledSessionsWithNonMisconfigurationFailureOccured";
 constexpr char kManifestUpdateCheckStatus[] =
     "Extensions.ForceInstalledFailureUpdateCheckStatus";
+constexpr char kDisableReason[] =
+    "Extensions.ForceInstalledNotLoadedDisableReason";
 }  // namespace
 
 namespace extensions {
@@ -177,6 +182,68 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   histogram_tester_.ExpectUniqueSample(
       kTotalCountStats,
       prefs_->GetManagedPref(pref_names::kInstallForceList)->DictSize(), 1);
+}
+
+// Reporting disable reason for the force installed extensions which are
+// installed but not loaded when extension is disable due to single reason.
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       ExtensionsInstalledButNotLoadedUniqueDisableReason) {
+  SetupForceList();
+  auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  registry_->AddDisabled(ext1.get());
+  ExtensionPrefs::Get(&profile_)->AddDisableReason(
+      kExtensionId1, disable_reason::DisableReason::DISABLE_NOT_VERIFIED);
+  auto ext2 = ExtensionBuilder(kExtensionName2).SetID(kExtensionId2).Build();
+  registry_->AddEnabled(ext2.get());
+  tracker_->OnExtensionLoaded(&profile_, ext2.get());
+  // InstallationTracker should still keep running as kExtensionId1 is installed
+  // but not loaded.
+  EXPECT_TRUE(fake_timer_->IsRunning());
+  fake_timer_->Fire();
+  histogram_tester_.ExpectUniqueSample(
+      kDisableReason, disable_reason::DisableReason::DISABLE_NOT_VERIFIED, 1);
+}
+
+// Reporting disable reasons for the force installed extensions which are
+// installed but not loaded when extension is disable due to multiple reasons.
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       ExtensionsInstalledButNotLoadedMultipleDisableReason) {
+  SetupForceList();
+  auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  registry_->AddDisabled(ext1.get());
+  ExtensionPrefs::Get(&profile_)->AddDisableReasons(
+      kExtensionId1,
+      disable_reason::DisableReason::DISABLE_NOT_VERIFIED |
+          disable_reason::DisableReason::DISABLE_UNSUPPORTED_REQUIREMENT);
+  auto ext2 = ExtensionBuilder(kExtensionName2).SetID(kExtensionId2).Build();
+  registry_->AddEnabled(ext2.get());
+  tracker_->OnExtensionLoaded(&profile_, ext2.get());
+  // InstallationTracker should still keep running as kExtensionId1 is installed
+  // but not loaded.
+  EXPECT_TRUE(fake_timer_->IsRunning());
+  fake_timer_->Fire();
+  // Verifies that only one disable reason is reported;
+  histogram_tester_.ExpectUniqueSample(
+      kDisableReason,
+      disable_reason::DisableReason::DISABLE_UNSUPPORTED_REQUIREMENT, 1);
+}
+
+// Reporting DisableReason::DISABLE_NONE for the force installed extensions
+// which are installed but not loaded when extension is enabled.
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       ExtensionsInstalledButNotLoadedNoDisableReason) {
+  SetupForceList();
+  auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  registry_->AddEnabled(ext1.get());
+  auto ext2 = ExtensionBuilder(kExtensionName2).SetID(kExtensionId2).Build();
+  registry_->AddEnabled(ext2.get());
+  tracker_->OnExtensionLoaded(&profile_, ext2.get());
+  // InstallationTracker should still keep running as kExtensionId1 is installed
+  // but not loaded.
+  EXPECT_TRUE(fake_timer_->IsRunning());
+  fake_timer_->Fire();
+  histogram_tester_.ExpectUniqueSample(
+      kDisableReason, disable_reason::DisableReason::DISABLE_NONE, 1);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest,
@@ -549,6 +616,70 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   // loaded or failed.
   EXPECT_FALSE(fake_timer_->IsRunning());
   histogram_tester_.ExpectBucketCount(kPossibleNonMisconfigurationFailures, 1,
+                                      1);
+}
+
+#if defined(OS_CHROMEOS)
+// Session in which either all the extensions installed successfully, or all
+// failures are admin-side misconfigurations. This test verifies that failure
+// REPLACED_BY_ARC_APP is not considered as misconfiguration when ARC++ is
+// enabled for the profile.
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       NonMisconfigurationFailureNotPresentReplacedByArcAppErrorArcEnabled) {
+  // Enable ARC++ for this profile.
+  prefs_->SetManagedPref(arc::prefs::kArcEnabled,
+                         std::make_unique<base::Value>(true));
+  SetupForceList();
+  auto extension =
+      ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(&profile_, extension.get());
+  installation_reporter_->ReportFailure(
+      kExtensionId2, InstallationReporter::FailureReason::REPLACED_BY_ARC_APP);
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(kPossibleNonMisconfigurationFailures, 0,
+                                      1);
+}
+
+// Session in which at least one non misconfiguration failure occurred. This
+// test verifies that failure REPLACED_BY_ARC_APP is not considered as
+// misconfiguration when ARC++ is disabled for the profile.
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       NonMisconfigurationFailureNotPresentReplacedByArcAppErrorArcDisabled) {
+  // Enable ARC++ for this profile.
+  prefs_->SetManagedPref(arc::prefs::kArcEnabled,
+                         std::make_unique<base::Value>(false));
+  SetupForceList();
+  auto extension =
+      ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(&profile_, extension.get());
+  installation_reporter_->ReportFailure(
+      kExtensionId2, InstallationReporter::FailureReason::REPLACED_BY_ARC_APP);
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(kPossibleNonMisconfigurationFailures, 1,
+                                      1);
+}
+#endif  // defined(OS_CHROMEOS)
+
+// Session in which either all the extensions installed successfully, or all
+// failures are admin-side misconfigurations. This test verifies that failure
+// NOT_PERFORMING_NEW_INSTALL is considered as misconfiguration.
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       NonMisconfigurationFailureNotPresentNotPerformingNewInstallError) {
+  SetupForceList();
+  auto extension =
+      ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(&profile_, extension.get());
+  installation_reporter_->ReportFailure(
+      kExtensionId2,
+      InstallationReporter::FailureReason::NOT_PERFORMING_NEW_INSTALL);
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(kPossibleNonMisconfigurationFailures, 0,
                                       1);
 }
 

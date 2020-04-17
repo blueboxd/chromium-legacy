@@ -26,6 +26,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/script_executor.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -65,24 +66,6 @@ base::FilePath GetResourceFile(base::FilePath::StringPieceType relative_path) {
   }
   return full_path;
 }
-
-// This class waits for a WebContents it is assigned via Observe to be destroyed
-// and then quits a RunLoop it is given.  This is used in tests to wait for the
-// receiver page to be torn down in the presentation window.
-class CloseObserver final : public content::WebContentsObserver {
- public:
-  explicit CloseObserver(base::RunLoop* run_loop) : run_loop_(run_loop) {}
-
-  // content::WebContentsObserver overrides.
-  void WebContentsDestroyed() override { run_loop_->Quit(); }
-
-  using content::WebContentsObserver::Observe;
-
- private:
-  base::RunLoop* const run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloseObserver);
-};
 
 // This class imitates a presentation controller page from a messaging
 // standpoint.  It is registered as a controller connection for the appropriate
@@ -262,13 +245,11 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowControllerBrowserTest,
   receiver_window->Start(kPresentationId, presentation_url);
   ASSERT_TRUE(content::WaitForLoadStop(receiver_window->web_contents()));
 
-  base::RunLoop run_loop;
-  CloseObserver close_observer(&run_loop);
-  close_observer.Observe(receiver_window->web_contents());
-
+  content::WebContentsDestroyedWatcher destroyed_watcher(
+      receiver_window->web_contents());
   ASSERT_TRUE(content::ExecuteScript(receiver_window->web_contents(),
                                      "window.location = 'about:blank'"));
-  run_loop.Run();
+  destroyed_watcher.Wait();
 
   destroyer.AwaitTerminate(std::move(receiver_window));
 }
@@ -339,12 +320,10 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowControllerBrowserTest,
   receiver_window->Start(kPresentationId, GURL("about:blank"));
   ASSERT_TRUE(content::WaitForLoadStop(receiver_window->web_contents()));
 
-  base::RunLoop run_loop;
-  CloseObserver close_observer(&run_loop);
-  close_observer.Observe(receiver_window->web_contents());
-
+  content::WebContentsDestroyedWatcher destroyed_watcher(
+      receiver_window->web_contents());
   CloseWindow(receiver_window.get());
-  run_loop.Run();
+  destroyed_watcher.Wait();
 
   destroyer.AwaitTerminate(std::move(receiver_window));
 }

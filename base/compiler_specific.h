@@ -266,9 +266,8 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
   return arg || AnalyzerNoReturn();
 }
 
-#define ANALYZER_ASSUME_TRUE(arg) logging::AnalyzerAssumeTrue(!!(arg))
-#define ANALYZER_SKIP_THIS_PATH() \
-  static_cast<void>(::logging::AnalyzerNoReturn())
+#define ANALYZER_ASSUME_TRUE(arg) ::AnalyzerAssumeTrue(!!(arg))
+#define ANALYZER_SKIP_THIS_PATH() static_cast<void>(::AnalyzerNoReturn())
 #define ANALYZER_ALLOW_UNUSED(var) static_cast<void>(var);
 
 #else  // !defined(__clang_analyzer__)

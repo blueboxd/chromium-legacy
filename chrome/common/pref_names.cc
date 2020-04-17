@@ -1356,6 +1356,9 @@ const char kPrintingAllowedBackgroundGraphicsModes[] =
 const char kPrintingBackgroundGraphicsDefault[] =
     "printing.background_graphics_default";
 
+// A pref holding the default paper size.
+const char kPrintingPaperSizeDefault[] = "printing.paper_size_default";
+
 // Boolean controlling whether printing is enabled.
 const char kPrintingEnabled[] = "printing.enabled";
 
@@ -1426,9 +1429,6 @@ const char kPrintingDuplexDefault[] = "printing.duplex_default";
 
 // A pref holding the default PIN mode.
 const char kPrintingPinDefault[] = "printing.pin_default";
-
-// A pref holding the default page size.
-const char kPrintingSizeDefault[] = "printing.size_default";
 
 // Boolean flag which represents whether username and filename should be sent
 // to print server.

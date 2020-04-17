@@ -87,7 +87,10 @@ paddedGrid{
     "idValue": "paddedGrid",
     "className": ".grid.padded.fixed",
     "nodeWidth": "175",
-    "nodeHeight": "1130"
+    "nodeHeight": "1130",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   },
   "gridInfo": [
     {
@@ -239,7 +242,10 @@ nestedGrid{
     "idValue": "nestedGrid",
     "className": ".grid",
     "nodeWidth": "100",
-    "nodeHeight": "1000"
+    "nodeHeight": "1000",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   },
   "gridInfo": [
     {

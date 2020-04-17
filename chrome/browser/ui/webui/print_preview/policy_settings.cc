@@ -17,6 +17,7 @@ void PolicySettings::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kPrintingAllowedBackgroundGraphicsModes,
                                 0);
   registry->RegisterIntegerPref(prefs::kPrintingBackgroundGraphicsDefault, 0);
+  registry->RegisterDictionaryPref(prefs::kPrintingPaperSizeDefault);
 #if defined(OS_CHROMEOS)
   registry->RegisterIntegerPref(prefs::kPrintingAllowedColorModes, 0);
   registry->RegisterIntegerPref(prefs::kPrintingAllowedDuplexModes, 0);
@@ -24,7 +25,6 @@ void PolicySettings::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kPrintingColorDefault, 0);
   registry->RegisterIntegerPref(prefs::kPrintingDuplexDefault, 0);
   registry->RegisterIntegerPref(prefs::kPrintingPinDefault, 0);
-  registry->RegisterDictionaryPref(prefs::kPrintingSizeDefault);
   registry->RegisterIntegerPref(prefs::kPrintingMaxSheetsAllowed, -1);
 #endif
 }

@@ -9,6 +9,7 @@
 
 namespace printing {
 
+#if defined(OS_CHROMEOS)
 // Allowed printing modes as a bitmask.
 // This is used in pref file and should never change.
 enum class ColorModeRestriction {
@@ -35,14 +36,6 @@ enum class PinModeRestriction {
   kNoPin = 2,
 };
 
-// Allowed background graphics modes.
-// This is used in pref file and should never change.
-enum class BackgroundGraphicsModeRestriction {
-  kUnset = 0,
-  kEnabled = 1,
-  kDisabled = 2,
-};
-
 // Dictionary key for printing policies.
 // Must coincide with the name of field in |print_preview.Policies| in
 // chrome/browser/resources/print_preview/data/destination.js
@@ -52,10 +45,22 @@ PRINTING_EXPORT extern const char kAllowedPinModes[];
 PRINTING_EXPORT extern const char kDefaultColorMode[];
 PRINTING_EXPORT extern const char kDefaultDuplexMode[];
 PRINTING_EXPORT extern const char kDefaultPinMode[];
+#endif  // defined(OS_CHROMEOS)
 
-// Dictionary keys to be used with |kPrintingSizeDefault| policy.
-PRINTING_EXPORT extern const char kPageWidthUm[];
-PRINTING_EXPORT extern const char kPageHeightUm[];
+// Allowed background graphics modes.
+// This is used in pref file and should never change.
+enum class BackgroundGraphicsModeRestriction {
+  kUnset = 0,
+  kEnabled = 1,
+  kDisabled = 2,
+};
+
+// Dictionary keys to be used with |kPrintingPaperSizeDefault| policy.
+PRINTING_EXPORT extern const char kPaperSizeName[];
+PRINTING_EXPORT extern const char kPaperSizeNameCustomOption[];
+PRINTING_EXPORT extern const char kPaperSizeCustomSize[];
+PRINTING_EXPORT extern const char kPaperSizeWidth[];
+PRINTING_EXPORT extern const char kPaperSizeHeight[];
 
 }  // namespace printing
 

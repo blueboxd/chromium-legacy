@@ -1039,6 +1039,25 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineLevelBox(
       return child_position.value();
   }
 
+  if (PhysicalFragment().IsLineBox()) {
+    // There are no inline items to hit in this line box, e.g. <span> with
+    // size and border. We try in lines before |this| line in the block.
+    // See editing/selection/last-empty-inline.html
+    NGInlineCursor cursor(*Parent());
+    cursor.MoveTo(*this);
+    const PhysicalOffset point_in_line = point - OffsetInContainerBlock();
+    for (;;) {
+      cursor.MoveToPreviousLine();
+      if (!cursor)
+        break;
+      const NGPaintFragment& line = *cursor.CurrentPaintFragment();
+      const PhysicalOffset adjusted_point =
+          point_in_line + line.OffsetInContainerBlock();
+      if (auto position = line.PositionForPointInInlineLevelBox(adjusted_point))
+        return position;
+    }
+  }
+
   return PositionWithAffinity();
 }
 

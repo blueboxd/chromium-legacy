@@ -765,7 +765,6 @@ TEST_F(BluetoothTest, MAYBE_ConstructFakeAdapter) {
   EXPECT_TRUE(adapter_->CanPower());
   EXPECT_TRUE(adapter_->IsPresent());
   EXPECT_TRUE(adapter_->IsPowered());
-  EXPECT_TRUE(adapter_->IsPeripheralRoleSupported());
   EXPECT_FALSE(adapter_->IsDiscoverable());
   EXPECT_FALSE(adapter_->IsDiscovering());
 }

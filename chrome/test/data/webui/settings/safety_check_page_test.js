@@ -177,10 +177,7 @@ suite('SafetyCheckUiTests', function() {
     assertTrue(page.$$('#safetyCheckCollapse').opened);
 
     // Ensure the automatic browser proxy calls are started.
-    const timestamp =
-        await safetyCheckBrowserProxy.whenCalled('getParentRanDisplayString');
-    assertTrue(Number.isInteger(timestamp));
-    assertTrue(timestamp >= 0);
+    return safetyCheckBrowserProxy.whenCalled('getParentRanDisplayString');
   });
 
   test('HappinessTrackingSurveysTest', function() {

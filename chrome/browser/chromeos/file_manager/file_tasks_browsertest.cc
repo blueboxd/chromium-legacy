@@ -3,16 +3,23 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/path_service.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/entry_info.h"
+#include "extensions/browser/notification_types.h"
 #include "net/base/mime_util.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -40,6 +47,15 @@ void VerifyTasks(int* remaining,
                  std::unique_ptr<std::vector<FullTaskDescriptor>> result) {
   ASSERT_TRUE(result) << expectation.file_extensions;
 
+  bool has_media_app = false;
+  bool has_gallery = false;
+  for (const auto& t : *result) {
+    has_media_app = has_media_app || t.task_descriptor().app_id == kMediaAppId;
+    has_gallery = has_gallery || t.task_descriptor().app_id == kGalleryAppId;
+  }
+  // Gallery and Media App should never both appear as task options.
+  EXPECT_TRUE(!(has_media_app && has_gallery)) << expectation.file_extensions;
+
   auto default_task =
       std::find_if(result->begin(), result->end(),
                    [](const auto& task) { return task.is_default(); });
@@ -56,6 +72,25 @@ void VerifyTasks(int* remaining,
       << expectation.file_extensions;
 
   --*remaining;
+}
+
+// Installs a chrome app that handles .tiff.
+scoped_refptr<const extensions::Extension> InstallTiffHandlerChromeApp(
+    Profile* profile) {
+  base::ScopedAllowBlockingForTesting allow_io;
+  content::WindowedNotificationObserver handler_ready(
+      extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+      content::NotificationService::AllSources());
+  extensions::ChromeTestExtensionLoader loader(profile);
+
+  base::FilePath path;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &path));
+  path = path.AppendASCII("extensions/api_test/file_browser/app_file_handler");
+
+  auto extension = loader.LoadExtension(path);
+  EXPECT_TRUE(extension);
+  handler_ready.Wait();
+  return extension;
 }
 
 class FileTasksBrowserTest : public InProcessBrowserTest {
@@ -278,6 +313,26 @@ IN_PROC_BROWSER_TEST_F(FileTasksBrowserTestWithMediaApp,
   };
 
   TestExpectationsAgainstDefaultTasks(expectations);
+}
+
+// Sanity check: the tiff-specific file handler is preferred when MediaApp is
+// not enabled.
+IN_PROC_BROWSER_TEST_F(FileTasksBrowserTest, InstalledAppsAreImplicitDefaults) {
+  auto extension = InstallTiffHandlerChromeApp(browser()->profile());
+  TestExpectationsAgainstDefaultTasks({{"tiff", extension->id().c_str()}});
+}
+
+// If the media app is enabled, it will be preferred over a chrome app with a
+// specific extension, unless that app is set default via prefs.
+IN_PROC_BROWSER_TEST_F(FileTasksBrowserTestWithMediaApp,
+                       MediaAppPreferredOverChromeApps) {
+  Profile* profile = browser()->profile();
+  auto extension = InstallTiffHandlerChromeApp(profile);
+  TestExpectationsAgainstDefaultTasks({{"tiff", kMediaAppId}});
+
+  UpdateDefaultTask(profile->GetPrefs(), extension->id() + "|app|tiffAction",
+                    {"tiff"}, {"image/tiff"});
+  TestExpectationsAgainstDefaultTasks({{"tiff", extension->id().c_str()}});
 }
 
 }  // namespace file_tasks

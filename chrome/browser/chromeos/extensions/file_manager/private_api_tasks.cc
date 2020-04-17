@@ -70,16 +70,6 @@ std::set<std::string> GetUniqueMimeTypes(
   return mime_types;
 }
 
-// Returns whether |url| is a RAW image file according to its extension. Note
-// that since none of the extensions of interest are "known" mime types (per
-// net/mime_util.cc), it's enough to simply check the extension rather than
-// using MimeTypeCollector. TODO(crbug/1030935): Remove this.
-bool IsRawImage(const FileSystemURL& url) {
-  constexpr const char* kRawExtensions[] = {".arw", ".cr2", ".dng", ".nef",
-                                            ".nrw", ".orf", ".raf", ".rw2"};
-  return base::Contains(kRawExtensions, url.path().Extension());
-}
-
 // Intercepts usage of executeTask(..) that wants to invoke the old "Gallery"
 // chrome app. If the media app is enabled, substitute it.
 // TODO(crbug/1030935): Remove this when the gallery app is properly removed and
@@ -100,8 +90,11 @@ void MaybeAdjustTaskForGalleryAppRemoval(
   // is known to register as a handler. Although from a product perspective, the
   // Gallery should be entirely hidden, we still direct RAW images to Gallery
   // until chrome://media-app supports them.
-  if (std::find_if(urls.begin(), urls.end(), &IsRawImage) != urls.end())
+  if (std::find_if(urls.begin(), urls.end(), [](const auto& url) {
+        return file_manager::file_tasks::IsRawImage(url.path());
+      }) != urls.end()) {
     return;
+  }
 
   auto* provider = web_app::WebAppProvider::Get(profile);
   DCHECK(provider);

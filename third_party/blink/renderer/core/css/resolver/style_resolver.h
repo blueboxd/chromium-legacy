@@ -160,7 +160,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                                     PseudoId,
                                     unsigned rules_to_include);
   void MatchRuleSet(ElementRuleCollector&, RuleSet*);
-  void MatchUARules(ElementRuleCollector&);
+  void MatchUARules(const Element&, ElementRuleCollector&);
   void MatchUserRules(ElementRuleCollector&);
   // This matches `::part` selectors. It looks in ancestor scopes as far as
   // part mapping requires.

@@ -14,9 +14,11 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
+#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -24,6 +26,8 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_utils.h"
+
+namespace em = enterprise_management;
 
 namespace chromeos {
 
@@ -317,4 +321,57 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
                                         ->GetActiveIMEState()
                                         ->GetActiveInputMethodIds());
 }
+
+class LoginUIKeyboardPolicy : public policy::DevicePolicyCrosBrowserTest {
+ protected:
+  LoginManagerMixin login_manager_{&mixin_host_};
+};
+
+IN_PROC_BROWSER_TEST_F(LoginUIKeyboardPolicy, RestrictInputMethods) {
+  input_method::InputMethodManager* imm =
+      input_method::InputMethodManager::Get();
+  ASSERT_TRUE(imm);
+
+  ASSERT_EQ(imm->GetActiveIMEState()->GetAllowedInputMethods().size(), 0U);
+  std::vector<std::string> expected_input_methods;
+  Append_en_US_InputMethods(&expected_input_methods);
+  EXPECT_EQ(input_method::InputMethodManager::Get()
+                ->GetActiveIMEState()
+                ->GetActiveInputMethodIds(),
+            expected_input_methods);
+
+  std::vector<std::string> allowed_input_method{"xkb:de::ger"};
+
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_login_screen_input_methods()->add_login_screen_input_methods(
+      allowed_input_method.front());
+  policy_helper()->RefreshPolicyAndWaitUntilDeviceSettingsUpdated(
+      {chromeos::kDeviceLoginScreenInputMethods});
+
+  ASSERT_EQ(imm->GetActiveIMEState()->GetAllowedInputMethods().size(), 1U);
+  ASSERT_EQ(imm->GetActiveIMEState()->GetNumActiveInputMethods(), 1U);
+
+  chromeos::input_method::InputMethodManager::Get()->MigrateInputMethods(
+      &allowed_input_method);
+  ASSERT_EQ(imm->GetActiveIMEState()->GetCurrentInputMethod().id(),
+            allowed_input_method.front());
+
+  // The policy method stored to language_prefs::kPreferredKeyboardLayout. So
+  // it will be there after the policy is gone.
+  expected_input_methods.insert(
+      expected_input_methods.begin(),
+      imm->GetActiveIMEState()->GetActiveInputMethodIds()[0]);
+
+  // Remove the policy again
+  proto.mutable_login_screen_input_methods()
+      ->clear_login_screen_input_methods();
+  policy_helper()->RefreshPolicyAndWaitUntilDeviceSettingsUpdated(
+      {chromeos::kDeviceLoginScreenInputMethods});
+
+  ASSERT_EQ(imm->GetActiveIMEState()->GetAllowedInputMethods().size(), 0U);
+  ASSERT_EQ(expected_input_methods, input_method::InputMethodManager::Get()
+                                        ->GetActiveIMEState()
+                                        ->GetActiveInputMethodIds());
+}
+
 }  // namespace chromeos

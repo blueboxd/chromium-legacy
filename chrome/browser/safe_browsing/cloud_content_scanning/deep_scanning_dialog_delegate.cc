@@ -228,8 +228,7 @@ void DeepScanningDialogDelegate::Cancel(bool warning) {
 // static
 bool DeepScanningDialogDelegate::ResultShouldAllowDataUse(
     BinaryUploadService::Result result,
-    const enterprise_connectors::ConnectorsManager::AnalysisSettings&
-        settings) {
+    const enterprise_connectors::AnalysisSettings& settings) {
   // Keep this implemented as a switch instead of a simpler if statement so that
   // new values added to BinaryUploadService::Result cause a compiler error.
   switch (result) {
@@ -322,8 +321,7 @@ void DeepScanningDialogDelegate::OnGotAnalysisSettings(
     Data data,
     CompletionCallback callback,
     DeepScanAccessPoint access_point,
-    base::Optional<enterprise_connectors::ConnectorsManager::AnalysisSettings>
-        settings) {
+    base::Optional<enterprise_connectors::AnalysisSettings> settings) {
   // Proceed with a scan after obtaining settings, otherwise complete with a
   // positive result.
   if (!settings.has_value()) {

@@ -20,7 +20,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_stop_metadata_fate.h"
-#include "components/sync/model/sync_merge_result.h"
+#include "components/sync/driver/sync_merge_result.h"
 
 namespace syncer {
 

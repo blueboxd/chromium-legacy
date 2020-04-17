@@ -13,7 +13,7 @@
 #pragma mark - Public
 
 - (void)loadView {
-  self.imageName = @"consent_illustration";
+  self.image = [UIImage imageNamed:@"consent_illustration"];
   self.helpButtonAvailable = YES;
   self.primaryActionAvailable = YES;
   NSString* titleString =

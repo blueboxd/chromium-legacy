@@ -156,26 +156,78 @@ void RemoveFileManagerInternalActions(const std::set<std::string>& actions,
   tasks->swap(filtered);
 }
 
-// Returns true if the given task is a handler by built-in apps like the Files
-// app itself or QuickOffice etc. They are used as the initial default app.
-bool IsFallbackFileHandler(const FullTaskDescriptor& task, bool is_all_images) {
-  // TODO(crbug/1030935): Once Media app is the default app for all the types
-  // it accepts (defined in
-  // chromeos/components/media_app_ui/resources/manifest.json) delete this and
-  // merge Media App logic with below.
-  // The task to open with the Media App (kMediaAppId) is only returned as an
-  // option when the Media App is enabled, so there is no need to check feature
-  // flags here. This logic will choose the Media App (when it is enabled) as
-  // the default over Gallery even when they are both installed because of the
-  // order of operations in FindExtensionAndAppTasks, which appends web tasks
-  // (like Media App) before file handler tasks (like Gallery). Relying on this
-  // order of operations is a temporary measure.
-  if (task.task_descriptor().app_id ==
-          chromeos::default_web_apps::kMediaAppId &&
-      is_all_images) {
-    return true;
+// Adjusts |tasks| to reflect the product decision that chrome://media-app
+// should behave more like a user-installed app than a fallback handler.
+// Specifically, only apps set as the default in user prefs should be preferred
+// over chrome://media-app.
+// Until the Gallery app is removed, this function will also hide the Gallery
+// task in cases where choosing it would instead launch chrome://media-app due
+// to interception done in executeTask to support the "camera roll" function,
+// when the MediaApp feature is enabled. If the feature is not enabled, there
+// will be no MediaApp task and this function does nothing.
+void AdjustTasksForMediaApp(const std::vector<extensions::EntryInfo>& entries,
+                            std::vector<FullTaskDescriptor>* tasks) {
+  const auto task_for_app = [&](const std::string& app_id) {
+    return std::find_if(tasks->begin(), tasks->end(), [&](const auto& task) {
+      return task.task_descriptor().app_id == app_id;
+    });
+  };
+
+  const auto media_app_task =
+      task_for_app(chromeos::default_web_apps::kMediaAppId);
+  if (media_app_task == tasks->end())
+    return;
+
+  // TODO(crbug/1030935): Once Media app supports RAW files, delete the
+  // IsRawImage early exit. This is necessary while Gallery is still the
+  // better option for RAW files. The any_non_image check can be removed once
+  // video player functionality of the Media App is fully polished.
+  bool any_non_image = false;
+  for (const auto& entry : entries) {
+    if (IsRawImage(entry.path))
+      return;  // Let Gallery handle it.
+
+    any_non_image =
+        any_non_image || !net::MatchesMimeType("image/*", entry.mime_type);
   }
 
+  const auto gallery_task = task_for_app(kGalleryAppId);
+  if (any_non_image) {
+    // Remove the gallery app (if it was found), but don't re-order prefs.
+    // Picking it would launch Media App due to executeTask interception, but we
+    // should still prefer the Video Player app over Media App.
+    if (gallery_task != tasks->end())
+      tasks->erase(gallery_task);  // Note: invalidates iterators.
+    return;
+  }
+
+  // Due to https://crbug.com/1071289, configuring extension matches in SWA
+  // manifests has no effect on is_file_extension_match(), which means a non-
+  // "fallback" web app (i.e. a built-in app) can never be an automatic default.
+  // Fallback handlers are never preferred over extension-matched handlers, so
+  // we must instead pretend that the media app has an extension match.
+  // First DCHECK to see if the hack can be removed.
+  DCHECK(!media_app_task->is_file_extension_match());
+  media_app_task->set_is_file_extension_match(true);
+
+  // The logic in ChooseAndSetDefaultTask() also requires the following to hold.
+  // This should only fail if the media app is configured for "*" (e.g. like
+  // Zip Archiver). "image/*" does not count as "generic".
+  DCHECK(!media_app_task->is_generic_file_handler());
+
+  // Otherwise, build a new list with Media App at the front, and no Gallery.
+  std::vector<FullTaskDescriptor> new_tasks;
+  new_tasks.push_back(*media_app_task);
+  for (auto it = tasks->begin(); it != tasks->end(); ++it) {
+    if (it != media_app_task && it != gallery_task)
+      new_tasks.push_back(std::move(*it));
+  }
+  std::swap(*tasks, new_tasks);
+}
+
+// Returns true if the given task is a handler by built-in apps like the Files
+// app itself or QuickOffice etc. They are used as the initial default app.
+bool IsFallbackFileHandler(const FullTaskDescriptor& task) {
   if ((task.task_descriptor().task_type !=
            file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER &&
        task.task_descriptor().task_type !=
@@ -184,6 +236,11 @@ bool IsFallbackFileHandler(const FullTaskDescriptor& task, bool is_all_images) {
     return false;
   }
 
+  // Note that chromeos::default_web_apps::kMediaAppId does not appear in the
+  // list of built-in apps below. Doing so would mean the presence of any other
+  // handler of image files (e.g. Keep, Photos) would take precedence. But we
+  // want that only to occur if the user has explicitly set the preference for
+  // an app other than kMediaAppId to be the default (b/153387960).
   constexpr const char* kBuiltInApps[] = {
       kFileManagerAppId,
       kVideoPlayerAppId,
@@ -242,6 +299,8 @@ void PostProcessFoundTasks(
     disabled_actions.emplace("view-swf");
   if (!disabled_actions.empty())
     RemoveFileManagerInternalActions(disabled_actions, result_list.get());
+
+  AdjustTasksForMediaApp(entries, result_list.get());
 
   ChooseAndSetDefaultTask(*profile->GetPrefs(), entries, result_list.get());
   std::move(callback).Run(std::move(result_list));
@@ -769,14 +828,10 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
   // No default task, check for an explicit file extension match (without
   // MIME match) in the extension manifest and pick that over the fallback
   // handlers below (see crbug.com/803930)
-  const bool all_images =
-      std::all_of(entries.begin(), entries.end(), [](const auto& e) {
-        return net::MatchesMimeType("image/*", e.mime_type);
-      });
   for (size_t i = 0; i < tasks->size(); ++i) {
     FullTaskDescriptor& task = (*tasks)[i];
     if (task.is_file_extension_match() && !task.is_generic_file_handler() &&
-        !IsFallbackFileHandler(task, all_images)) {
+        !IsFallbackFileHandler(task)) {
       task.set_is_default(true);
       return;
     }
@@ -787,11 +842,17 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
   for (size_t i = 0; i < tasks->size(); ++i) {
     FullTaskDescriptor& task = (*tasks)[i];
     DCHECK(!task.is_default());
-    if (IsFallbackFileHandler(task, all_images)) {
+    if (IsFallbackFileHandler(task)) {
       task.set_is_default(true);
       return;
     }
   }
+}
+
+bool IsRawImage(const base::FilePath& path) {
+  constexpr const char* kRawExtensions[] = {".arw", ".cr2", ".dng", ".nef",
+                                            ".nrw", ".orf", ".raf", ".rw2"};
+  return base::Contains(kRawExtensions, path.Extension());
 }
 
 }  // namespace file_tasks

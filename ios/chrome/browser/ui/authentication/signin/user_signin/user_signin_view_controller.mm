@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_view_controller.h"
 
 #import "base/logging.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/gradient_view.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -252,6 +253,7 @@ enum AuthenticationButtonType {
 - (NSString*)confirmationButtonTitle {
   return l10n_util::GetNSString(IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON);
 }
+
 - (NSString*)skipSigninButtonTitle {
   if (self.useFirstRunSkipButton) {
     return l10n_util::GetNSString(
@@ -405,6 +407,8 @@ enum AuthenticationButtonType {
   DCHECK(!self.skipSigninButton);
   DCHECK(self.unifiedConsentViewController);
   self.skipSigninButton = [[UIButton alloc] init];
+  self.skipSigninButton.accessibilityIdentifier =
+      kSkipSigninAccessibilityIdentifier;
   [self addSubviewWithButton:self.skipSigninButton];
   [self.skipSigninButton setTitle:self.skipSigninButtonTitle
                          forState:UIControlStateNormal];

@@ -354,6 +354,10 @@ bool ProducerClient::IsShmemProvidedByProducer() const {
   return false;
 }
 
+void ProducerClient::Sync(std::function<void()>) {
+  NOTREACHED();
+}
+
 void ProducerClient::BindClientAndHostPipesForTesting(
     mojo::PendingReceiver<mojom::ProducerClient> producer_client_receiver,
     mojo::PendingRemote<mojom::ProducerHost> producer_host_remote) {

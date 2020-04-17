@@ -1754,7 +1754,8 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   EXPECT_TRUE(synthetic_wheel->GetModifiers() &
               blink::WebInputEvent::kControlKey);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseBegan, synthetic_wheel->phase);
-  EXPECT_EQ(blink::WebInputEvent::kBlocking, synthetic_wheel->dispatch_type);
+  EXPECT_EQ(blink::WebInputEvent::DispatchType::kBlocking,
+            synthetic_wheel->dispatch_type);
 
   dispatched_messages[0]->ToEvent()->CallCallback(
       INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -1781,10 +1782,11 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   synthetic_wheel = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseChanged, synthetic_wheel->phase);
   if (async_events_enabled_) {
-    EXPECT_EQ(blink::WebInputEvent::kEventNonBlocking,
+    EXPECT_EQ(blink::WebInputEvent::DispatchType::kEventNonBlocking,
               synthetic_wheel->dispatch_type);
   } else {
-    EXPECT_EQ(blink::WebInputEvent::kBlocking, synthetic_wheel->dispatch_type);
+    EXPECT_EQ(blink::WebInputEvent::DispatchType::kBlocking,
+              synthetic_wheel->dispatch_type);
   }
 
   if (async_events_enabled_) {
@@ -1818,7 +1820,7 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   ASSERT_EQ(WebInputEvent::kMouseWheel, input_event->GetType());
   synthetic_wheel = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseEnded, synthetic_wheel->phase);
-  EXPECT_EQ(blink::WebInputEvent::kEventNonBlocking,
+  EXPECT_EQ(blink::WebInputEvent::DispatchType::kEventNonBlocking,
             synthetic_wheel->dispatch_type);
   dispatched_messages[0]->ToEvent()->CallCallback(
       INPUT_EVENT_ACK_STATE_IGNORED);
@@ -1849,7 +1851,8 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   EXPECT_TRUE(synthetic_wheel->GetModifiers() &
               blink::WebInputEvent::kControlKey);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseBegan, synthetic_wheel->phase);
-  EXPECT_EQ(blink::WebInputEvent::kBlocking, synthetic_wheel->dispatch_type);
+  EXPECT_EQ(blink::WebInputEvent::DispatchType::kBlocking,
+            synthetic_wheel->dispatch_type);
 
   dispatched_messages[0]->ToEvent()->CallCallback(
       INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -1874,7 +1877,8 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   ASSERT_EQ(WebInputEvent::kMouseWheel, input_event->GetType());
   synthetic_wheel = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseChanged, synthetic_wheel->phase);
-  EXPECT_EQ(blink::WebInputEvent::kBlocking, synthetic_wheel->dispatch_type);
+  EXPECT_EQ(blink::WebInputEvent::DispatchType::kBlocking,
+            synthetic_wheel->dispatch_type);
 
   dispatched_messages[0]->ToEvent()->CallCallback(
       INPUT_EVENT_ACK_STATE_CONSUMED);

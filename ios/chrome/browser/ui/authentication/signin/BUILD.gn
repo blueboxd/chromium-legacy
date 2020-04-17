@@ -14,11 +14,11 @@ group("signin") {
 source_set("signin_headers") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "signin_constants.h",
     "signin_coordinator.h",
     "signin_utils.h",
   ]
   public_deps = [
+    ":constants",
     "//base",
     "//components/signin/public/base",
     "//ios/chrome/browser/browser_state",
@@ -28,10 +28,7 @@ source_set("signin_headers") {
 
 source_set("signin_protected") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "signin_constants.mm",
-    "signin_coordinator+protected.h",
-  ]
+  sources = [ "signin_coordinator+protected.h" ]
   deps = [ ":signin_headers" ]
 }
 
@@ -42,6 +39,7 @@ source_set("signin_impl") {
     "signin_coordinator.mm",
     "signin_utils.mm",
   ]
+  public_deps = [ ":constants" ]
   deps = [
     ":signin_headers",
     ":signin_protected",
@@ -83,4 +81,13 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/ocmock",
   ]
+}
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "signin_constants.h",
+    "signin_constants.mm",
+  ]
+  frameworks = [ "Foundation.framework" ]
 }

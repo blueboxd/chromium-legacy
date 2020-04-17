@@ -449,10 +449,10 @@ SessionStore::SessionStore(
     if (specifics.session_tag() != local_session_info_.session_tag) {
       UpdateTrackerWithSpecifics(specifics, mtime, &session_tracker_);
 
-      // Notify listeners. In practice, this has the goal to load the URLs and
-      // visit times into the in-memory favicon cache.
+      // Notify listeners. In practice, this has the goal to load the URLs into
+      // the in-memory favicon cache.
       if (specifics.has_tab()) {
-        restored_foreign_tab_callback_.Run(specifics.tab(), mtime);
+        restored_foreign_tab_callback_.Run(specifics.tab());
       }
     } else if (specifics.has_header()) {
       // This is previously stored local header information. Restoring the local

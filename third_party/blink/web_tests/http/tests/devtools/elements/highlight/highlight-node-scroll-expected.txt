@@ -87,7 +87,10 @@ inspectedElement1{
     "idValue": "inspectedElement1",
     "className": ".inspected",
     "nodeWidth": "250",
-    "nodeHeight": "250"
+    "nodeHeight": "250",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 inspectedElement2{
@@ -177,7 +180,10 @@ inspectedElement2{
     "idValue": "inspectedElement2",
     "className": ".inspected",
     "nodeWidth": "250",
-    "nodeHeight": "250"
+    "nodeHeight": "250",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 

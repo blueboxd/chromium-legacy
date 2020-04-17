@@ -41,6 +41,7 @@ source_set("eg_app_support+eg2") {
     "//base",
     "//base/test:test_support",
     "//ios/chrome/app:app_internal",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/tabs:tabs",
     "//ios/chrome/browser/web:tab_id_tab_helper",
     "//ios/chrome/browser/web_state_list",

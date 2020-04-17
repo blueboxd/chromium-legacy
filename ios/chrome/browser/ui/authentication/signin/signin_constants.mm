@@ -9,6 +9,8 @@
 #endif
 
 NSString* const kUserSigninAttemptedNotification = @"kUserSigninAttempted";
+NSString* const kSkipSigninAccessibilityIdentifier =
+    @"kSkipSigninAccessibilityIdentifier";
 
 @implementation SigninCompletionInfo
 

@@ -28,6 +28,13 @@
     'accessibility_component_extensions': {
       'filepath': 'chrome/browser/resources/chromeos/accessibility'
     },
+    'accessibility_minimal_core': {
+      'filepath': 'ui/accessibility/(ax_enums|ax_event_generator|ax_node\.|ax_node_data\.|ax_tree\.|ax_tree_serializer)' \
+                  '|ui/accessibility/platform/ax_platform_node_(base|mac|win)' \
+                  '|third_party/(WebKit|blink)/.*(accessibility|ax_object|web_ax|ax_node|ax_layout)' \
+                  '|content/renderer/accessibility/render_accessibility_impl' \
+                  '|content/browser/accessibility/browser_accessibility(\.|_manager|_win|_com|_cocoa)'
+    },
     'add_to_homescreen': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/webapps/|'\
                   'chrome/android/javatests/src/org/chromium/chrome/browser/webapps/|'\
@@ -2035,7 +2042,6 @@
     'accelerator_table': ['yusukes+watch@chromium.org'],
     'accessibility': ['aboxhall+watch@chromium.org',
                       'akihiroota@chromium.org',
-                      'aleventhal+watch@chromium.org',
                       'dmazzoni+watch@chromium.org',
                       'dougt+watch@chromium.org',
                       'dtseng+watch@chromium.org',
@@ -2046,6 +2052,7 @@
                       'sarakato+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
     'accessibility_component_extensions': ['anastasi+watch@google.com'],
+    'accessibility_minimal_core': ['aleventhal+watcha11y@chromium.org'],
     'add_to_homescreen': ['dominickn+watch-a2hs@chromium.org',
                           'hanxi+watch@chromium.org',
                           'pkotwicz+watch@chromium.org',

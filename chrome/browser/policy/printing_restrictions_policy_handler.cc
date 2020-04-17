@@ -139,62 +139,6 @@ PrintingPinDefaultPolicyHandler::PrintingPinDefaultPolicyHandler()
           }) {}
 
 PrintingPinDefaultPolicyHandler::~PrintingPinDefaultPolicyHandler() = default;
-
-PrintingSizeDefaultPolicyHandler::PrintingSizeDefaultPolicyHandler()
-    : TypeCheckingPolicyHandler(key::kPrintingSizeDefault,
-                                base::Value::Type::DICTIONARY) {}
-
-PrintingSizeDefaultPolicyHandler::~PrintingSizeDefaultPolicyHandler() = default;
-
-bool PrintingSizeDefaultPolicyHandler::CheckIntSubkey(const base::Value* dict,
-                                                      const std::string& key,
-                                                      PolicyErrorMap* errors) {
-  const base::Value* value = dict->FindKey(key);
-  if (!value) {
-    if (errors) {
-      errors->AddError(policy_name(), key, IDS_POLICY_NOT_SPECIFIED_ERROR);
-    }
-    return false;
-  }
-  if (!value->is_int()) {
-    if (errors) {
-      errors->AddError(policy_name(), key, IDS_POLICY_TYPE_ERROR,
-                       base::Value::GetTypeName(base::Value::Type::INTEGER));
-    }
-    return false;
-  }
-  return true;
-}
-
-bool PrintingSizeDefaultPolicyHandler::GetValue(const PolicyMap& policies,
-                                                PolicyErrorMap* errors,
-                                                const base::Value** result) {
-  const base::Value* value;
-  if (CheckAndGetValue(policies, errors, &value) && value &&
-      CheckIntSubkey(value, printing::kPageWidthUm, errors) &&
-      CheckIntSubkey(value, printing::kPageHeightUm, errors)) {
-    if (result)
-      *result = value;
-
-    return true;
-  }
-  return false;
-}
-
-bool PrintingSizeDefaultPolicyHandler::CheckPolicySettings(
-    const PolicyMap& policies,
-    PolicyErrorMap* errors) {
-  return GetValue(policies, errors, nullptr);
-}
-
-void PrintingSizeDefaultPolicyHandler::ApplyPolicySettings(
-    const PolicyMap& policies,
-    PrefValueMap* prefs) {
-  const base::Value* value;
-  if (GetValue(policies, nullptr, &value)) {
-    prefs->SetValue(prefs::kPrintingSizeDefault, value->Clone());
-  }
-}
 #endif  // defined(OS_CHROMEOS)
 
 PrintingAllowedBackgroundGraphicsModesPolicyHandler::
@@ -227,5 +171,109 @@ PrintingBackgroundGraphicsDefaultPolicyHandler::
 
 PrintingBackgroundGraphicsDefaultPolicyHandler::
     ~PrintingBackgroundGraphicsDefaultPolicyHandler() = default;
+
+PrintingPaperSizeDefaultPolicyHandler::PrintingPaperSizeDefaultPolicyHandler()
+    : TypeCheckingPolicyHandler(key::kPrintingPaperSizeDefault,
+                                base::Value::Type::DICTIONARY) {}
+
+PrintingPaperSizeDefaultPolicyHandler::
+    ~PrintingPaperSizeDefaultPolicyHandler() = default;
+
+bool PrintingPaperSizeDefaultPolicyHandler::CheckIntSubkey(
+    const base::Value* dict,
+    const std::string& key,
+    PolicyErrorMap* errors) {
+  const base::Value* value = dict->FindKey(key);
+  if (!value) {
+    if (errors) {
+      errors->AddError(policy_name(), key, IDS_POLICY_NOT_SPECIFIED_ERROR);
+    }
+    return false;
+  }
+  if (!value->is_int()) {
+    if (errors) {
+      errors->AddError(policy_name(), key, IDS_POLICY_TYPE_ERROR,
+                       base::Value::GetTypeName(base::Value::Type::INTEGER));
+    }
+    return false;
+  }
+  return true;
+}
+
+bool PrintingPaperSizeDefaultPolicyHandler::GetValue(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors,
+    const base::Value** result) {
+  const base::Value* value;
+  if (!CheckAndGetValue(policies, errors, &value)) {
+    *result = nullptr;
+    return false;
+  }
+  if (result)
+    *result = value;
+
+  if (!value)
+    return true;
+
+  const base::Value* name = value->FindKey(printing::kPaperSizeName);
+  if (!name) {
+    if (errors)
+      errors->AddError(policy_name(), IDS_POLICY_VALUE_FORMAT_ERROR);
+    return false;
+  }
+  if (!name->is_string()) {
+    if (errors) {
+      errors->AddError(policy_name(), printing::kPaperSizeName,
+                       IDS_POLICY_TYPE_ERROR,
+                       base::Value::GetTypeName(base::Value::Type::STRING));
+    }
+    return false;
+  }
+  bool custom_option_specified =
+      (name->GetString() == printing::kPaperSizeNameCustomOption);
+
+  bool custom_size_property_found = false;
+  const base::Value* custom_size =
+      value->FindKey(printing::kPaperSizeCustomSize);
+  if (custom_size) {
+    if (!custom_size->is_dict()) {
+      if (errors) {
+        errors->AddError(
+            policy_name(), printing::kPaperSizeCustomSize,
+            IDS_POLICY_TYPE_ERROR,
+            base::Value::GetTypeName(base::Value::Type::DICTIONARY));
+      }
+      return false;
+    }
+    if (!CheckIntSubkey(custom_size, printing::kPaperSizeWidth, errors) ||
+        !CheckIntSubkey(custom_size, printing::kPaperSizeHeight, errors)) {
+      return false;
+    }
+    custom_size_property_found = true;
+  }
+
+  if (custom_option_specified != custom_size_property_found) {
+    if (errors)
+      errors->AddError(policy_name(), IDS_POLICY_VALUE_FORMAT_ERROR);
+    return false;
+  }
+
+  return true;
+}
+
+bool PrintingPaperSizeDefaultPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  return GetValue(policies, errors, nullptr);
+}
+
+void PrintingPaperSizeDefaultPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  const base::Value* value;
+  if (GetValue(policies, nullptr, &value) && value) {
+    prefs->SetValue(prefs::kPrintingPaperSizeDefault, value->Clone());
+  }
+}
 
 }  // namespace policy

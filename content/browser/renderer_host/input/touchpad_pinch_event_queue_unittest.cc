@@ -170,7 +170,8 @@ MATCHER(EventHasCtrlModifier,
 
 MATCHER(EventIsBlocking,
         std::string(negation ? "is not" : "is") + " blocking") {
-  return arg.event.dispatch_type == blink::WebInputEvent::kBlocking;
+  return arg.event.dispatch_type ==
+         blink::WebInputEvent::DispatchType::kBlocking;
 }
 
 // Ensure that when the queue receives a touchpad pinch sequence, it sends a

@@ -98,7 +98,7 @@ class ConnectorsManagerLegacyPoliciesTest
     return connector() != AnalysisConnector::FILE_DOWNLOADED;
   }
 
-  void ValidateSettings(const ConnectorsManager::AnalysisSettings& settings) {
+  void ValidateSettings(const AnalysisSettings& settings) {
     ASSERT_EQ(settings.block_until_verdict, expected_block_until_verdict_);
     ASSERT_EQ(settings.block_password_protected_files,
               expected_block_password_protected_files_);
@@ -108,15 +108,14 @@ class ConnectorsManagerLegacyPoliciesTest
     ASSERT_EQ(settings.tags, expected_tags_);
   }
 
-  base::Optional<ConnectorsManager::AnalysisSettings> GetAnalysisSettingsSync(
+  base::Optional<AnalysisSettings> GetAnalysisSettingsSync(
       const GURL& url,
       AnalysisConnector connector) {
     // This helper only works when the result is known to be available
     // synchronously. Do not use it for async tests.
-    base::Optional<ConnectorsManager::AnalysisSettings> settings(base::nullopt);
+    base::Optional<AnalysisSettings> settings(base::nullopt);
     auto callback = base::BindLambdaForTesting(
-        [&settings](
-            base::Optional<ConnectorsManager::AnalysisSettings> tmp_settings) {
+        [&settings](base::Optional<AnalysisSettings> tmp_settings) {
           settings = std::move(tmp_settings);
         });
     connectors_manager_->GetAnalysisSettings(url, connector, callback);

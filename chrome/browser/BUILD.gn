@@ -3180,6 +3180,8 @@ jumbo_static_library("browser") {
       "download/download_shelf_context_menu.h",
       "download/download_shelf_controller.cc",
       "download/download_shelf_controller.h",
+      "enterprise/connectors/common.cc",
+      "enterprise/connectors/common.h",
       "enterprise/connectors/connectors_manager.cc",
       "enterprise/connectors/connectors_manager.h",
       "enterprise/connectors/enterprise_connectors_policy_handler.cc",

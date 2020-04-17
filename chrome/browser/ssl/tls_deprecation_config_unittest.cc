@@ -16,6 +16,7 @@ using chrome_browser_ssl::LegacyTLSExperimentConfig;
 
 class TLSDeprecationConfigTest : public testing::Test {
  protected:
+  void SetUp() override { ResetTLSDeprecationConfigForTesting(); }
   void TearDown() override { ResetTLSDeprecationConfigForTesting(); }
 };
 

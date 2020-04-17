@@ -788,7 +788,7 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInputCoalescedMoves) {
   kEvents[0].MovePoint(0, 50, 50);
   kEvents[1].PressPoint(10, 10);
   kEvents[1].MovePoint(0, 20, 20);
-  kEvents[0].dispatch_type = WebInputEvent::kEventNonBlocking;
+  kEvents[0].dispatch_type = WebInputEvent::DispatchType::kEventNonBlocking;
 
   EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
@@ -860,10 +860,10 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInputThrottlingMoves) {
   SyntheticWebTouchEvent kEvents[2];
   kEvents[0].PressPoint(10, 10);
   kEvents[0].MovePoint(0, 50, 50);
-  kEvents[0].dispatch_type = WebInputEvent::kEventNonBlocking;
+  kEvents[0].dispatch_type = WebInputEvent::DispatchType::kEventNonBlocking;
   kEvents[1].PressPoint(10, 10);
   kEvents[1].MovePoint(0, 20, 20);
-  kEvents[1].dispatch_type = WebInputEvent::kEventNonBlocking;
+  kEvents[1].dispatch_type = WebInputEvent::DispatchType::kEventNonBlocking;
 
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
@@ -994,7 +994,8 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   EXPECT_TRUE(last_touch_start_forced_nonblocking_due_to_fling());
   const WebTouchEvent* last_touch_event = static_cast<const WebTouchEvent*>(
       handled_tasks_.at(0)->taskAsEvent()->EventPointer());
-  kEvents.dispatch_type = WebInputEvent::kListenersForcedNonBlockingDueToFling;
+  kEvents.dispatch_type =
+      WebInputEvent::DispatchType::kListenersForcedNonBlockingDueToFling;
   EXPECT_TRUE(Equal(kEvents, *last_touch_event));
 
   kEvents.MovePoint(0, 30, 30);
@@ -1013,7 +1014,8 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   EXPECT_TRUE(last_touch_start_forced_nonblocking_due_to_fling());
   last_touch_event = static_cast<const WebTouchEvent*>(
       handled_tasks_.at(1)->taskAsEvent()->EventPointer());
-  kEvents.dispatch_type = WebInputEvent::kListenersForcedNonBlockingDueToFling;
+  kEvents.dispatch_type =
+      WebInputEvent::DispatchType::kListenersForcedNonBlockingDueToFling;
   EXPECT_TRUE(Equal(kEvents, *last_touch_event));
 
   kEvents.MovePoint(0, 50, 50);
@@ -1028,7 +1030,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   EXPECT_EQ(3u, handled_tasks_.size());
   EXPECT_EQ(kEvents.GetType(),
             handled_tasks_.at(2)->taskAsEvent()->Event().GetType());
-  EXPECT_EQ(kEvents.dispatch_type, WebInputEvent::kBlocking);
+  EXPECT_EQ(kEvents.dispatch_type, WebInputEvent::DispatchType::kBlocking);
   last_touch_event = static_cast<const WebTouchEvent*>(
       handled_tasks_.at(2)->taskAsEvent()->EventPointer());
   EXPECT_TRUE(Equal(kEvents, *last_touch_event));
@@ -1044,7 +1046,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   EXPECT_EQ(4u, handled_tasks_.size());
   EXPECT_EQ(kEvents.GetType(),
             handled_tasks_.at(3)->taskAsEvent()->Event().GetType());
-  EXPECT_EQ(kEvents.dispatch_type, WebInputEvent::kBlocking);
+  EXPECT_EQ(kEvents.dispatch_type, WebInputEvent::DispatchType::kBlocking);
   last_touch_event = static_cast<const WebTouchEvent*>(
       handled_tasks_.at(3)->taskAsEvent()->EventPointer());
   EXPECT_TRUE(Equal(kEvents, *last_touch_event));
@@ -1070,7 +1072,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
   EXPECT_EQ(1u, handled_tasks_.size());
   EXPECT_EQ(kEvents.GetType(),
             handled_tasks_.at(0)->taskAsEvent()->Event().GetType());
-  EXPECT_EQ(kEvents.dispatch_type, WebInputEvent::kBlocking);
+  EXPECT_EQ(kEvents.dispatch_type, WebInputEvent::DispatchType::kBlocking);
   EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
   const WebTouchEvent* last_touch_event = static_cast<const WebTouchEvent*>(
       handled_tasks_.at(0)->taskAsEvent()->EventPointer());
@@ -1087,7 +1089,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
   EXPECT_EQ(2u, handled_tasks_.size());
   EXPECT_EQ(kEvents.GetType(),
             handled_tasks_.at(1)->taskAsEvent()->Event().GetType());
-  EXPECT_EQ(kEvents.dispatch_type, WebInputEvent::kBlocking);
+  EXPECT_EQ(kEvents.dispatch_type, WebInputEvent::DispatchType::kBlocking);
   EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
   last_touch_event = static_cast<const WebTouchEvent*>(
       handled_tasks_.at(1)->taskAsEvent()->EventPointer());
@@ -1104,7 +1106,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
   EXPECT_EQ(3u, handled_tasks_.size());
   EXPECT_EQ(kEvents.GetType(),
             handled_tasks_.at(2)->taskAsEvent()->Event().GetType());
-  EXPECT_EQ(kEvents.dispatch_type, WebInputEvent::kBlocking);
+  EXPECT_EQ(kEvents.dispatch_type, WebInputEvent::DispatchType::kBlocking);
   EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
   last_touch_event = static_cast<const WebTouchEvent*>(
       handled_tasks_.at(2)->taskAsEvent()->EventPointer());
@@ -1121,7 +1123,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
   EXPECT_EQ(4u, handled_tasks_.size());
   EXPECT_EQ(kEvents.GetType(),
             handled_tasks_.at(3)->taskAsEvent()->Event().GetType());
-  EXPECT_EQ(kEvents.dispatch_type, WebInputEvent::kBlocking);
+  EXPECT_EQ(kEvents.dispatch_type, WebInputEvent::DispatchType::kBlocking);
   EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
   last_touch_event = static_cast<const WebTouchEvent*>(
       handled_tasks_.at(3)->taskAsEvent()->EventPointer());
@@ -1255,7 +1257,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchMoveBecomesNonBlocking) {
   kEvents[1].SetModifiers(1);
   kEvents[1].PressPoint(10, 10);
   kEvents[1].MovePoint(0, 20, 30);
-  kEvents[1].dispatch_type = WebInputEvent::kEventNonBlocking;
+  kEvents[1].dispatch_type = WebInputEvent::DispatchType::kEventNonBlocking;
   WebTouchEvent scroll_start(WebInputEvent::kTouchScrollStarted,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
@@ -1266,8 +1268,9 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchMoveBecomesNonBlocking) {
   EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(3);
-  EXPECT_EQ(WebInputEvent::kBlocking, kEvents[0].dispatch_type);
-  EXPECT_EQ(WebInputEvent::kEventNonBlocking, kEvents[1].dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, kEvents[0].dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kEventNonBlocking,
+            kEvents[1].dispatch_type);
   HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   HandleEvent(scroll_start, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -1285,11 +1288,11 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchMoveBecomesNonBlocking) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_FALSE(needs_main_frame_);
 
-  EXPECT_EQ(WebInputEvent::kEventNonBlocking,
+  EXPECT_EQ(WebInputEvent::DispatchType::kEventNonBlocking,
             static_cast<const WebTouchEvent&>(
                 handled_tasks_.at(0)->taskAsEvent()->Event())
                 .dispatch_type);
-  EXPECT_EQ(WebInputEvent::kEventNonBlocking,
+  EXPECT_EQ(WebInputEvent::DispatchType::kEventNonBlocking,
             static_cast<const WebTouchEvent&>(
                 handled_tasks_.at(1)->taskAsEvent()->Event())
                 .dispatch_type);
@@ -1311,8 +1314,8 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchMoveWithTouchEnd) {
   EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(3);
-  EXPECT_EQ(WebInputEvent::kBlocking, kEvents[0].dispatch_type);
-  EXPECT_EQ(WebInputEvent::kBlocking, kEvents[1].dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, kEvents[0].dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, kEvents[1].dispatch_type);
   HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   HandleEvent(scroll_start, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -1325,11 +1328,11 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchMoveWithTouchEnd) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_FALSE(needs_main_frame_);
 
-  EXPECT_EQ(WebInputEvent::kBlocking,
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking,
             static_cast<const WebTouchEvent&>(
                 handled_tasks_.at(0)->taskAsEvent()->Event())
                 .dispatch_type);
-  EXPECT_EQ(WebInputEvent::kBlocking,
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking,
             static_cast<const WebTouchEvent&>(
                 handled_tasks_.at(1)->taskAsEvent()->Event())
                 .dispatch_type);
@@ -1350,8 +1353,8 @@ TEST_F(MainThreadEventQueueTest, UnbufferedDispatchTouchEvent) {
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(3);
 
-  EXPECT_EQ(WebInputEvent::kBlocking, kEvents[0].dispatch_type);
-  EXPECT_EQ(WebInputEvent::kBlocking, kEvents[1].dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, kEvents[0].dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, kEvents[1].dispatch_type);
   HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   queue_->RequestUnbufferedInputEvents();
   EXPECT_EQ(1u, event_queue().size());

@@ -410,9 +410,7 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, CancelledNavigation) {
 
 // Tests that RenderDocumentHostUserData object is cleared when a failed
 // navigation results in an error page.
-// TODO(crbug.com/1065495): Fix the test flakiness.
-IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
-                       DISABLED_FailedNavigation) {
+IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, FailedNavigation) {
   // This test is only valid if error page isolation is enabled.
   if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(true))
     return;

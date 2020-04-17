@@ -90,6 +90,7 @@
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_cue.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/style_inherited_variables.h"
@@ -608,15 +609,22 @@ void StyleResolver::MatchUserRules(ElementRuleCollector& collector) {
   collector.FinishAddingUserRules();
 }
 
-void StyleResolver::MatchUARules(ElementRuleCollector& collector) {
+void StyleResolver::MatchUARules(const Element& element,
+                                 ElementRuleCollector& collector) {
   collector.SetMatchingUARules(true);
 
   CSSDefaultStyleSheets& default_style_sheets =
       CSSDefaultStyleSheets::Instance();
-  RuleSet* user_agent_style_sheet =
-      print_media_type_ ? default_style_sheets.DefaultPrintStyle()
-                        : default_style_sheets.DefaultStyle();
-  MatchRuleSet(collector, user_agent_style_sheet);
+  if (!print_media_type_) {
+    if (LIKELY(element.IsHTMLElement() || element.IsVTTElement()))
+      MatchRuleSet(collector, default_style_sheets.DefaultStyle());
+    else if (element.IsSVGElement())
+      MatchRuleSet(collector, default_style_sheets.DefaultSVGStyle());
+    else if (element.namespaceURI() == mathml_names::kNamespaceURI)
+      MatchRuleSet(collector, default_style_sheets.DefaultMathMLStyle());
+  } else {
+    MatchRuleSet(collector, default_style_sheets.DefaultPrintStyle());
+  }
 
   // In quirks mode, we match rules from the quirks user agent sheet.
   if (GetDocument().InQuirksMode())
@@ -647,7 +655,7 @@ DISABLE_CFI_PERF
 void StyleResolver::MatchAllRules(StyleResolverState& state,
                                   ElementRuleCollector& collector,
                                   bool include_smil_properties) {
-  MatchUARules(collector);
+  MatchUARules(state.GetElement(), collector);
   MatchUserRules(collector);
 
   // Now check author rules, beginning first with presentational attributes
@@ -1102,7 +1110,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
       }
     }
 
-    MatchUARules(collector);
+    MatchUARules(state.GetElement(), collector);
     MatchUserRules(collector);
     MatchAuthorRules(state.GetElement(), collector);
     collector.FinishAddingAuthorRulesForTreeScope();
@@ -1342,7 +1350,7 @@ void StyleResolver::CollectPseudoRulesForElement(
   collector.SetPseudoElementStyleRequest(PseudoElementStyleRequest(pseudo_id));
 
   if (rules_to_include & kUAAndUserCSSRules) {
-    MatchUARules(collector);
+    MatchUARules(element, collector);
     MatchUserRules(collector);
   }
 

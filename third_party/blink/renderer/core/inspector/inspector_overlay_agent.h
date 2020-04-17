@@ -228,7 +228,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   std::unique_ptr<FrameOverlay> frame_overlay_;
   Member<InspectTool> inspect_tool_;
   bool swallow_next_mouse_up_;
-  bool swallow_next_escape_up_;
   DOMNodeId backend_node_id_to_inspect_;
   InspectorAgentState::Boolean enabled_;
   InspectorAgentState::Boolean show_ad_highlights_;

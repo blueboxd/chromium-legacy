@@ -17,9 +17,9 @@
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "components/spellcheck/browser/spellcheck_dictionary.h"
+#include "components/sync/driver/sync_merge_result.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/sync_data.h"
-#include "components/sync/model/sync_merge_result.h"
 #include "components/sync/model/syncable_service.h"
 
 namespace base {

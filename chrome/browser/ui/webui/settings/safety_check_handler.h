@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/help/version_updater.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
+#include "components/safety_check/safety_check.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 
@@ -28,7 +29,8 @@
 // software.
 class SafetyCheckHandler
     : public settings::SettingsPageUIHandler,
-      public password_manager::BulkLeakCheckService::Observer {
+      public password_manager::BulkLeakCheckService::Observer,
+      public safety_check::SafetyCheck::SafetyCheckHandlerInterface {
  public:
   // The following enum represent the state of the safety check parent
   // component and  should be kept in sync with the JS frontend
@@ -38,10 +40,12 @@ class SafetyCheckHandler
     kChecking = 1,
     kAfter = 2,
   };
+
   // The following enums represent the state of each component of the safety
   // check and should be kept in sync with the JS frontend
   // (safety_check_browser_proxy.js) and |SafetyCheck*| metrics enums in
   // enums.xml.
+  using SafeBrowsingStatus = safety_check::SafetyCheck::SafeBrowsingStatus;
   enum class UpdateStatus {
     kChecking = 0,
     kUpdated = 1,
@@ -55,18 +59,6 @@ class SafetyCheckHandler
     kUnknown = 7,
     // New enum values must go above here.
     kMaxValue = kUnknown,
-  };
-  enum class SafeBrowsingStatus {
-    kChecking = 0,
-    // Enabled is deprecated; kept not to break old UMA metrics (enums.xml).
-    kEnabled = 1,
-    kDisabled = 2,
-    kDisabledByAdmin = 3,
-    kDisabledByExtension = 4,
-    kEnabledStandard = 5,
-    kEnabledEnhanced = 6,
-    // New enum values must go above here.
-    kMaxValue = kEnabledEnhanced,
   };
   enum class PasswordsStatus {
     kChecking = 0,
@@ -103,9 +95,9 @@ class SafetyCheckHandler
 
   // Constructs the 'safety check ran' display string by how long ago safety
   // check ran.
-  base::string16 GetStringForParentRan(double timestamp_ran);
-  base::string16 GetStringForParentRan(double timestamp_ran,
-                                       base::Time systemTime);
+  base::string16 GetStringForParentRan(base::Time safety_check_completion_time);
+  base::string16 GetStringForParentRan(base::Time safety_check_completion_time,
+                                       base::Time system_time);
 
  protected:
   SafetyCheckHandler(std::unique_ptr<VersionUpdater> version_updater,
@@ -141,10 +133,6 @@ class SafetyCheckHandler
   // are available.
   void CheckUpdates();
 
-  // Gets the status of Safe Browsing from the PrefService and invokes
-  // OnSafeBrowsingCheckResult with results.
-  void CheckSafeBrowsing();
-
   // Triggers a bulk password leak check and invokes OnPasswordsCheckResult once
   // results are available.
   void CheckPasswords();
@@ -160,7 +148,6 @@ class SafetyCheckHandler
                            const std::string& version,
                            int64_t update_size,
                            const base::string16& message);
-  void OnSafeBrowsingCheckResult(SafeBrowsingStatus status);
   void OnPasswordsCheckResult(PasswordsStatus status,
                               Compromised compromised,
                               Done done,
@@ -193,6 +180,9 @@ class SafetyCheckHandler
       const std::vector<extensions::api::passwords_private::PasswordUiEntry>&
           passwords);
 
+  // SafetyCheck::SafetyCheckHandlerInterface implementation.
+  void OnSafeBrowsingCheckResult(SafeBrowsingStatus status) override;
+
   // BulkLeakCheckService::Observer implementation.
   void OnStateChanged(
       password_manager::BulkLeakCheckService::State state) override;
@@ -221,6 +211,11 @@ class SafetyCheckHandler
   PasswordsStatus passwords_status_ = PasswordsStatus::kChecking;
   SafeBrowsingStatus safe_browsing_status_ = SafeBrowsingStatus::kChecking;
   ExtensionsStatus extensions_status_ = ExtensionsStatus::kChecking;
+
+  // System time when safety check completed.
+  base::Time safety_check_completion_time_;
+
+  std::unique_ptr<safety_check::SafetyCheck> safety_check_;
 
   std::unique_ptr<VersionUpdater> version_updater_;
   password_manager::BulkLeakCheckService* leak_service_ = nullptr;

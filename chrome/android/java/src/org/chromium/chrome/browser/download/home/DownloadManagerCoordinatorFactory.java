@@ -24,12 +24,14 @@ public class DownloadManagerCoordinatorFactory {
      * @param config             A {@link DownloadManagerUiConfig} to provide configuration params.
      * @param snackbarManager    The {@link SnackbarManager} that should be used to show snackbars.
      * @param modalDialogManager The {@link ModalDialogManager} that should be used to show dialog.
+     * @param isIncognito        The boolean that represents whether the current mode is incognito.
      * @return                   A new {@link DownloadManagerCoordinator} instance.
      */
     public static DownloadManagerCoordinator create(Activity activity,
             DownloadManagerUiConfig config, SnackbarManager snackbarManager,
-            ModalDialogManager modalDialogManager) {
-        Profile profile = Profile.getLastUsedRegularProfile();
+            ModalDialogManager modalDialogManager, boolean isIncognito) {
+        Profile profile = isIncognito ? Profile.getLastUsedRegularProfile().getOffTheRecordProfile()
+                                      : Profile.getLastUsedRegularProfile();
         LegacyDownloadProvider legacyProvider =
                 config.useNewDownloadPath ? null : new LegacyDownloadProviderImpl();
         return new DownloadManagerCoordinatorImpl(activity, config, new PrefetchEnabledSupplier(),

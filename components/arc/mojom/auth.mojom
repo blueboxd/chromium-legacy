@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 24
+// Next MinVersion: 25
 
 module arc.mojom;
 
@@ -318,8 +318,12 @@ interface AuthHost {
   // |account_info| is not null.
   // In case of an error, |status| must contain the reason of failure, other
   // than SUCCESS, and |account_info| is null.
+  // |persistent_error| flag set to true indicates that error cannot be
+  // eliminated by retrying the request.
   [MinVersion=15] RequestAccountInfo@13(string account_name)
-      => (ArcSignInStatus status, AccountInfo? account_info);
+      => (ArcSignInStatus status,
+          AccountInfo? account_info,
+          [MinVersion=24] bool persistent_error);
 
   // Returns |true| if Chrome OS Account Manager is available for this session.
   // Account Manager is not available in Guest Sessions and Public Sessions

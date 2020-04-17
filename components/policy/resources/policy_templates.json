@@ -988,7 +988,7 @@
         'PrintingDuplexDefault',
         'PrintingPinDefault',
         'PrintingBackgroundGraphicsDefault',
-        'PrintingSizeDefault',
+        'PrintingPaperSizeDefault',
         'PrintingSendUsernameAndFilenameEnabled',
         'PrintingMaxSheetsAllowed',
         'PrintJobHistoryExpirationPeriod',
@@ -1306,7 +1306,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': [
-        'chrome.win:82-',
+        'chrome.win:84-',
       ],
       'features': {
         'can_be_recommended': False,
@@ -1709,7 +1709,7 @@
       'id': 648,
       'caption': '''Use a default referrer policy of no-referrer-when-downgrade.''',
       'tags': [],
-      'desc': '''This enterprise policy is for short-term adaptation and will be removed in M82.
+      'desc': '''This enterprise policy is for short-term adaptation and will be removed in M86.
 
       Chrome's default referrer policy is being strengthened from its current value of no-referrer-when-downgrade to the more secure strict-origin-when-cross-origin through a gradual rollout targeting M80 stable.
 
@@ -2472,35 +2472,190 @@
       'desc': '''Overrides default background graphics printing mode.''',
     },
     {
-      'name': 'PrintingSizeDefault',
-      'owners': ['vkuzkokov@chromium.org'],
+      'name': 'PrintingPaperSizeDefault',
+      'owners': ['nikitapodguzov@chromium.org', 'bmalcolm@chromium.org'],
       'type': 'dict',
       'schema': {
         'type': 'object',
         'properties': {
-          'WidthUm': {
-            'description': '''Width of the page in micrometers''',
-            'type': 'integer',
+          'name' : {
+            'type': 'string',
+            'enum': [
+              'custom',
+              'asme_f_28x40in',
+              'iso_2a0_1189x1682mm',
+              'iso_a0_841x1189mm',
+              'iso_a10_26x37mm',
+              'iso_a1_594x841mm',
+              'iso_a2_420x594mm',
+              'iso_a3_297x420mm',
+              'iso_a4-extra_235.5x322.3mm',
+              'iso_a4-tab_225x297mm',
+              'iso_a4_210x297mm',
+              'iso_a5-extra_174x235mm',
+              'iso_a5_148x210mm',
+              'iso_a6_105x148mm',
+              'iso_a7_74x105mm',
+              'iso_a8_52x74mm',
+              'iso_a9_37x52mm',
+              'iso_b0_1000x1414mm',
+              'iso_b10_31x44mm',
+              'iso_b1_707x1000mm',
+              'iso_b2_500x707mm',
+              'iso_b3_353x500mm',
+              'iso_b4_250x353mm',
+              'iso_b5-extra_201x276mm',
+              'iso_b5_176x250mm',
+              'iso_b6_125x176mm',
+              'iso_b6c4_125x324mm',
+              'iso_b7_88x125mm',
+              'iso_b8_62x88mm',
+              'iso_b9_44x62mm',
+              'iso_c0_917x1297mm',
+              'iso_c10_28x40mm',
+              'iso_c1_648x917mm',
+              'iso_c2_458x648mm',
+              'iso_c3_324x458mm',
+              'iso_c4_229x324mm',
+              'iso_c5_162x229mm',
+              'iso_c6_114x162mm',
+              'iso_c6c5_114x229mm',
+              'iso_c7_81x114mm',
+              'iso_c7c6_81x162mm',
+              'iso_c8_57x81mm',
+              'iso_c9_40x57mm',
+              'iso_dl_110x220mm',
+              'jis_exec_216x330mm',
+              'jpn_chou2_111.1x146mm',
+              'jpn_chou3_120x235mm',
+              'jpn_chou4_90x205mm',
+              'jpn_hagaki_100x148mm',
+              'jpn_kahu_240x322.1mm',
+              'jpn_kaku2_240x332mm',
+              'jpn_oufuku_148x200mm',
+              'jpn_you4_105x235mm',
+              'na_10x11_10x11in',
+              'na_10x13_10x13in',
+              'na_10x14_10x14in',
+              'na_10x15_10x15in',
+              'na_11x12_11x12in',
+              'na_11x15_11x15in',
+              'na_12x19_12x19in',
+              'na_5x7_5x7in',
+              'na_6x9_6x9in',
+              'na_7x9_7x9in',
+              'na_9x11_9x11in',
+              'na_a2_4.375x5.75in',
+              'na_arch-a_9x12in',
+              'na_arch-b_12x18in',
+              'na_arch-c_18x24in',
+              'na_arch-d_24x36in',
+              'na_arch-e_36x48in',
+              'na_b-plus_12x19.17in',
+              'na_c5_6.5x9.5in',
+              'na_c_17x22in',
+              'na_d_22x34in',
+              'na_e_34x44in',
+              'na_edp_11x14in',
+              'na_eur-edp_12x14in',
+              'na_f_44x68in',
+              'na_fanfold-eur_8.5x12in',
+              'na_fanfold-us_11x14.875in',
+              'na_foolscap_8.5x13in',
+              'na_govt-legal_8x13in',
+              'na_govt-letter_8x10in',
+              'na_index-3x5_3x5in',
+              'na_index-4x6-ext_6x8in',
+              'na_index-4x6_4x6in',
+              'na_index-5x8_5x8in',
+              'na_invoice_5.5x8.5in',
+              'na_ledger_11x17in',
+              'na_legal-extra_9.5x15in',
+              'na_legal_8.5x14in',
+              'na_letter-extra_9.5x12in',
+              'na_letter-plus_8.5x12.69in',
+              'na_letter_8.5x11in',
+              'na_number-10_4.125x9.5in',
+              'na_number-11_4.5x10.375in',
+              'na_number-12_4.75x11in',
+              'na_number-14_5x11.5in',
+              'na_personal_3.625x6.5in',
+              'na_super-a_8.94x14in',
+              'na_super-b_13x19in',
+              'na_wide-format_30x42in',
+              'om_dai-pa-kai_275x395mm',
+              'om_folio-sp_215x315mm',
+              'om_invite_220x220mm',
+              'om_italian_110x230mm',
+              'om_juuro-ku-kai_198x275mm',
+              'om_large-photo_200x300',
+              'om_pa-kai_267x389mm',
+              'om_postfix_114x229mm',
+              'om_small-photo_100x150mm',
+              'prc_10_324x458mm',
+              'prc_16k_146x215mm',
+              'prc_1_102x165mm',
+              'prc_2_102x176mm',
+              'prc_32k_97x151mm',
+              'prc_3_125x176mm',
+              'prc_4_110x208mm',
+              'prc_5_110x220mm',
+              'prc_6_120x320mm',
+              'prc_7_160x230mm',
+              'prc_8_120x309mm',
+              'roc_16k_7.75x10.75in',
+              'roc_8k_10.75x15.5in',
+              'jis_b0_1030x1456mm',
+              'jis_b1_728x1030mm',
+              'jis_b2_515x728mm',
+              'jis_b3_364x515mm',
+              'jis_b4_257x364mm',
+              'jis_b5_182x257mm',
+              'jis_b6_128x182mm',
+              'jis_b7_91x128mm',
+              'jis_b8_64x91mm',
+              'jis_b9_45x64mm',
+              'jis_b10_32x45mm',
+            ]
           },
-          'HeightUm': {
-            'description': '''Height of the page in micrometers''',
-            'type': 'integer',
-          },
+          'custom_size': {
+            'type': 'object',
+            'properties': {
+              'width': {
+                'description': 'Width of the page in micrometers',
+                'type': 'integer',
+              },
+              'height': {
+                'description': 'Height of the page in micrometers',
+                'type': 'integer',
+              }
+            },
+            'required': ['width', 'height']
+          }
         },
-        'required': ['WidthUm', 'HeightUm'],
+        'required': ['name']
       },
-      'supported_on': ['chrome_os:72-'],
-      'future': True,
+      'supported_on': ['chrome.*:84-', 'chrome_os:84-'],
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': {'WidthUm': 210000, 'HeightUm': 297000},
+      'example_value': {
+        'name': 'custom',
+        'custom_size': {
+          'width': 210000,
+          'height': 297000
+        }
+      },
       'id': 479,
       'caption': '''Default printing page size''',
       'tags': [],
-      'desc': '''Overrides default printing page size. If the page size is unavailable this policy is ignored.''',
+      'desc': '''Overrides default printing page size.
+
+      <ph name="PAGE_SIZE_NAME">name</ph> should contain one of the listed formats or 'custom' if required paper size is not in the list. If 'custom' value is provided <ph name="PAGE_SIZE_CUSTOM_SIZE">custom_size</ph> property should be specified. It describes the desired height and width in micrometers. Otherwise <ph name="PAGE_SIZE_CUSTOM_SIZE">custom_size</ph> property shouldn't be specified. Policy that violates these rules is ignored.
+
+      If the page size is unavailable on the printer chosen by the user this policy is ignored.''',
     },
     {
       'name': 'PrintingSendUsernameAndFilenameEnabled',
@@ -7990,7 +8145,7 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:82-'],
+      'supported_on': ['chrome_os:83-'],
       'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
@@ -8011,7 +8166,7 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:82-'],
+      'supported_on': ['chrome_os:83-'],
       'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
@@ -8032,7 +8187,7 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:82-'],
+      'supported_on': ['chrome_os:83-'],
       'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
@@ -8834,7 +8989,7 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:82-'],
+      'supported_on': ['chrome_os:83-'],
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
@@ -9631,7 +9786,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      # TODO(https://crbug.com/1016253): Remove this policy in M85.
       'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
@@ -9642,7 +9797,7 @@
       'id': 172,
       'caption': '''Screen dim delay when running on AC power''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 85. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
 
           Specifies the length of time without user input after which the screen is dimmed when running on AC power.
 
@@ -9662,7 +9817,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      # TODO(https://crbug.com/1016253): Remove this policy in M85.
       'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
@@ -9673,7 +9828,7 @@
       'id': 173,
       'caption': '''Screen off delay when running on AC power''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 85. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
 
           Specifies the length of time without user input after which the screen is turned off when running on AC power.
 
@@ -9693,7 +9848,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      # TODO(https://crbug.com/1016253): Remove this policy in M85.
       'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
@@ -9704,7 +9859,7 @@
       'id': 174,
       'caption': '''Screen lock delay when running on AC power''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME">ScreenLockDelays</ph> instead.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 85. Please use <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME">ScreenLockDelays</ph> instead.
 
           Specifies the length of time without user input after which the screen is locked when running on AC power.
 
@@ -9726,7 +9881,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      # TODO(https://crbug.com/1016253): Remove this policy in M85.
       'supported_on': ['chrome_os:27-'],
       'features': {
         'dynamic_refresh': True,
@@ -9737,7 +9892,7 @@
       'id': 197,
       'caption': '''Idle warning delay when running on AC power''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 85. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
 
           Specifies the length of time without user input after which a warning dialog is shown when running on AC power.
 
@@ -9757,7 +9912,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      # TODO(https://crbug.com/1016253): Remove this policy in M85.
       'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
@@ -9768,7 +9923,7 @@
       'id': 175,
       'caption': '''Idle delay when running on AC power''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 85. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
 
           Specifies the length of time without user input after which the idle action is taken when running on AC power.
 
@@ -9786,7 +9941,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      # TODO(https://crbug.com/1016253): Remove this policy in M85.
       'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
@@ -9797,7 +9952,7 @@
       'id': 176,
       'caption': '''Screen dim delay when running on battery power''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 85. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
 
           Specifies the length of time without user input after which the screen is dimmed when running on battery power.
 
@@ -9817,7 +9972,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      # TODO(https://crbug.com/1016253): Remove this policy in M85.
       'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
@@ -9828,7 +9983,7 @@
       'id': 177,
       'caption': '''Screen off delay when running on battery power''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 85. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
 
           Specifies the length of time without user input after which the screen is turned off when running on battery power.
 
@@ -9848,7 +10003,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      # TODO(https://crbug.com/1016253): Remove this policy in M85.
       'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
@@ -9859,7 +10014,7 @@
       'id': 178,
       'caption': '''Screen lock delay when running on battery power''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME">ScreenLockDelays</ph> instead.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 85. Please use <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME">ScreenLockDelays</ph> instead.
 
           Specifies the length of time without user input after which the screen is locked when running on battery power.
 
@@ -9881,7 +10036,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      # TODO(https://crbug.com/1016253): Remove this policy in M85.
       'supported_on': ['chrome_os:27-'],
       'features': {
         'dynamic_refresh': True,
@@ -9892,7 +10047,7 @@
       'id': 198,
       'caption': '''Idle warning delay when running on battery power''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 85. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
 
           Specifies the length of time without user input after which a warning dialog is shown when running on battery power.
 
@@ -9912,7 +10067,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      # TODO(https://crbug.com/1016253): Remove this policy in M85.
       'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
@@ -9923,7 +10078,7 @@
       'id': 179,
       'caption': '''Idle delay when running on battery power''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 85. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
 
           Specifies the length of time without user input after which the idle action is taken when running on battery power.
 
@@ -9963,7 +10118,7 @@
           'caption': '''Do nothing''',
         },
       ],
-      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      # TODO(https://crbug.com/1016253): Remove this policy in M85.
       'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
@@ -9974,7 +10129,7 @@
       'id': 180,
       'caption': '''Action to take when the idle delay is reached''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 85. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
 
           This policy provides a fallback value for the more-specific <ph name="IDLE_ACTION_AC_POLICY_NAME">IdleActionAC</ph> and <ph name="IDLE_ACTION_BATTERY_POLICY_NAME">IdleActionBattery</ph> policies. If this policy is set, its value gets used if the respective more-specific policy is not set.
 
@@ -10010,7 +10165,7 @@
           'caption': '''Do nothing''',
         },
       ],
-      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      # TODO(https://crbug.com/1016253): Remove this policy in M85.
       'supported_on': ['chrome_os:30-'],
       'features': {
         'dynamic_refresh': True,
@@ -10021,7 +10176,7 @@
       'id': 226,
       'caption': '''Action to take when the idle delay is reached while running on AC power''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 85. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
 
           When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
 
@@ -10059,7 +10214,7 @@
           'caption': '''Do nothing''',
         },
       ],
-      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      # TODO(https://crbug.com/1016253): Remove this policy in M85.
       'supported_on': ['chrome_os:30-'],
       'features': {
         'dynamic_refresh': True,
@@ -10070,7 +10225,7 @@
       'id': 222,
       'caption': '''Action to take when the idle delay is reached while running on battery power''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 85. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
 
           When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
 
@@ -14300,7 +14455,7 @@
     {
       'name': 'MinimumChromeVersionEnforced',
       'owners': ['snijhara@google.com'],
-      'supported_on': ['chrome_os:82-'],
+      'supported_on': ['chrome_os:84-'],
       'device_only': True,
       'type': 'dict',
       'schema': {
@@ -14336,7 +14491,7 @@
           "warning_period" : 0,
           "eol_warning_period" : 14
         }, {
-          "chrome_version" : "82",
+          "chrome_version" : "83",
           "warning_period" : 10,
           "eol_warning_period" : 21
         }
@@ -17111,7 +17266,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'supported_on': ['chrome.*:82-', 'chrome_os:82-'],
+      'supported_on': ['chrome.*:83-', 'chrome_os:83-'],
       'future': True,
       'caption': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extension installation requests''',
       'example_value': True,
@@ -20317,7 +20472,7 @@ If this policy is left unset, privacy screen is disabled initially but can be co
       'owners': ['file://chrome/browser/notifications/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.linux:82-'],
+      'supported_on': ['chrome.linux:83-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -20366,7 +20521,7 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
           'required': ['cert_profile_id', 'key_algorithm']
         }
       },
-      'supported_on': ['chrome_os:82-'],
+      'supported_on': ['chrome_os:83-'],
       'device_only': False,
       'features': {
         'dynamic_refresh': True,
@@ -20414,7 +20569,7 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
           'required': ['cert_profile_id', 'key_algorithm']
         }
       },
-      'supported_on': ['chrome_os:82-'],
+      'supported_on': ['chrome_os:84-'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -20433,7 +20588,7 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
       'owners': ['file://chrome/browser/safe_browsing/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:82-', 'chrome_os:82-'],
+      'supported_on': ['chrome.*:83-', 'chrome_os:83-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -20449,7 +20604,7 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
       'owners': ['dlibby@microsoft.com', 'bokan@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:82-', 'chrome_os:82-', 'android:82-'],
+      'supported_on': ['chrome.*:83-', 'chrome_os:83-', 'android:83-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': True,

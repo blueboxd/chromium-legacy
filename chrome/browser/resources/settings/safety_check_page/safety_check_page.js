@@ -218,11 +218,9 @@ Polymer({
     this.parentDisplayString_ = event.displayString;
     if (this.parentStatus_ === settings.SafetyCheckParentStatus.AFTER) {
       // Start periodic safety check parent ran string updates.
-      const timestamp = Date.now();
       const update = async () => {
         this.parentDisplayString_ =
-            await this.safetyCheckBrowserProxy_.getParentRanDisplayString(
-                timestamp);
+            await this.safetyCheckBrowserProxy_.getParentRanDisplayString();
       };
       clearInterval(this.updateTimerId_);
       this.updateTimerId_ = setInterval(update, 60000);

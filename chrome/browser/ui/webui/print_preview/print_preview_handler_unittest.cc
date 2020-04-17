@@ -616,6 +616,8 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsNoPolicies) {
   ValidateInitialSettingsAllowedDefaultModePolicy(*web_ui()->call_data().back(),
                                                   "cssBackground",
                                                   base::nullopt, base::nullopt);
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "mediaSize", base::nullopt, base::nullopt);
   ValidateInitialSettingsValuePolicy(*web_ui()->call_data().back(), "sheets",
                                      base::nullopt);
 }
@@ -694,6 +696,64 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsDisableBackgroundGraphics) {
   ValidateInitialSettingsAllowedDefaultModePolicy(
       *web_ui()->call_data().back(), "cssBackground", base::nullopt,
       base::Value(2));
+}
+
+TEST_F(PrintPreviewHandlerTest, InitialSettingsDefaultPaperSizeName) {
+  const char kPrintingPaperSizeDefaultName[] = R"(
+    {
+      "name": "iso_a5_148x210mm"
+    })";
+  const char kExpectedInitialSettingsPolicy[] = R"(
+    {
+      "width": 148000,
+      "height": 210000
+    })";
+
+  base::Optional<base::Value> default_paper_size =
+      base::JSONReader::Read(kPrintingPaperSizeDefaultName);
+  ASSERT_TRUE(default_paper_size.has_value());
+  // Set a pref that should take priority over StickySettings.
+  prefs()->Set(prefs::kPrintingPaperSizeDefault, default_paper_size.value());
+  Initialize();
+
+  base::Optional<base::Value> expected_initial_settings_policy =
+      base::JSONReader::Read(kExpectedInitialSettingsPolicy);
+  ASSERT_TRUE(expected_initial_settings_policy.has_value());
+
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "mediaSize", base::nullopt,
+      std::move(expected_initial_settings_policy));
+}
+
+TEST_F(PrintPreviewHandlerTest, InitialSettingsDefaultPaperSizeCustomSize) {
+  const char kPrintingPaperSizeDefaultCustomSize[] = R"(
+    {
+      "name": "custom",
+      "custom_size": {
+        "width": 148000,
+        "height": 210000
+      }
+    })";
+  const char kExpectedInitialSettingsPolicy[] = R"(
+    {
+      "width": 148000,
+      "height": 210000
+    })";
+
+  base::Optional<base::Value> default_paper_size =
+      base::JSONReader::Read(kPrintingPaperSizeDefaultCustomSize);
+  ASSERT_TRUE(default_paper_size.has_value());
+  // Set a pref that should take priority over StickySettings.
+  prefs()->Set(prefs::kPrintingPaperSizeDefault, default_paper_size.value());
+  Initialize();
+
+  base::Optional<base::Value> expected_initial_settings_policy =
+      base::JSONReader::Read(kExpectedInitialSettingsPolicy);
+  ASSERT_TRUE(expected_initial_settings_policy.has_value());
+
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "mediaSize", base::nullopt,
+      std::move(expected_initial_settings_policy));
 }
 
 #if defined(OS_CHROMEOS)

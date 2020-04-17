@@ -65,7 +65,10 @@ source_set("authentication") {
     "//ui/base",
     "//ui/gfx",
   ]
-  public_deps = [ "//ios/chrome/browser/ui/collection_view" ]
+  public_deps = [
+    "//ios/chrome/browser/ui/authentication/signin:constants",
+    "//ios/chrome/browser/ui/collection_view",
+  ]
   if (is_chrome_branded) {
     deps += [ "resources:signin_promo_logo_chrome_color" ]
   } else {

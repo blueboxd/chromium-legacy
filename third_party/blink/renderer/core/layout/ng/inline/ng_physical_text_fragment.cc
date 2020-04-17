@@ -44,7 +44,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
               ? PhysicalSize{shape_result->SnappedWidth(), source.Size().height}
               : PhysicalSize{source.Size().width, shape_result->SnappedWidth()},
           kFragmentText,
-          source.TextType()),
+          static_cast<unsigned>(source.TextType())),
       text_(source.text_),
       text_offset_(start_offset, end_offset),
       shape_result_(std::move(shape_result)) {
@@ -59,7 +59,9 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
 }
 
 NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
-    : NGPhysicalFragment(builder, kFragmentText, builder->text_type_),
+    : NGPhysicalFragment(builder,
+                         kFragmentText,
+                         static_cast<unsigned>(builder->text_type_)),
       text_(builder->text_),
       text_offset_({builder->start_offset_, builder->end_offset_}),
       shape_result_(std::move(builder->shape_result_)) {

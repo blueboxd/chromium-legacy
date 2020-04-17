@@ -76,8 +76,8 @@ class TouchEmulatorTest : public testing::Test,
     EXPECT_EQ(0, event.GetModifiers() & all_buttons);
     WebInputEvent::DispatchType expected_dispatch_type =
         event.GetType() == WebInputEvent::kTouchCancel
-            ? WebInputEvent::kEventNonBlocking
-            : WebInputEvent::kBlocking;
+            ? WebInputEvent::DispatchType::kEventNonBlocking
+            : WebInputEvent::DispatchType::kBlocking;
     EXPECT_EQ(expected_dispatch_type, event.dispatch_type);
     if (ack_touches_synchronously_) {
       emulator()->HandleTouchEventAck(

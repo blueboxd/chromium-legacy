@@ -433,9 +433,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
                           const base::Closure& callback,
                           const ErrorCallback& error_callback);
 
-  // Indicates whether the adapter support the LowEnergy peripheral role.
-  virtual bool IsPeripheralRoleSupported() const;
-
   // Indicates whether the adapter radio is discoverable.
   virtual bool IsDiscoverable() const = 0;
 

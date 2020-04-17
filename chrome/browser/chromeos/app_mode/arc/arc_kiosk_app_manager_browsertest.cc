@@ -232,4 +232,56 @@ IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, Basic) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, GetAppByAccountId) {
+  const std::string package_name = "com.package.name";
+
+  // Initialize Arc Kiosk apps.
+  const policy::ArcKioskAppBasicInfo app1(package_name, "", "", "");
+  const std::vector<policy::ArcKioskAppBasicInfo> init_apps{app1};
+  SetApps(init_apps, std::string());
+
+  // Verify the app data searched by account id.
+  std::vector<const ArcKioskAppData*> apps;
+  GetApps(&apps);
+  ASSERT_EQ(1u, apps.size());
+  const ArcKioskAppData* app = apps.front();
+  const ArcKioskAppData* app_by_account_id =
+      manager()->GetAppByAccountId(app->account_id());
+  ASSERT_TRUE(app_by_account_id);
+  ASSERT_EQ(app_by_account_id, app);
+  ASSERT_EQ(app_by_account_id->package_name(), package_name);
+
+  // Verify the null value if the given account id is invalid.
+  const AccountId invalid_account_id;
+  const ArcKioskAppData* app_by_invalid_account_id =
+      manager()->GetAppByAccountId(invalid_account_id);
+  ASSERT_FALSE(app_by_invalid_account_id);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, UpdateNameAndIcon) {
+  const std::string package_name = "com.package.old";
+  const std::string new_name = "new_name";
+  const gfx::ImageSkiaRep new_image(gfx::Size(100, 100), 0.0f);
+  const gfx::ImageSkia new_icon(new_image);
+
+  // Initialize Arc Kiosk apps.
+  const policy::ArcKioskAppBasicInfo app1(package_name, "", "", "");
+  std::vector<policy::ArcKioskAppBasicInfo> init_apps{app1};
+  SetApps(init_apps, std::string());
+
+  // Verify the initialized app data.
+  std::vector<const ArcKioskAppData*> apps;
+  GetApps(&apps);
+  ASSERT_EQ(1u, apps.size());
+  const ArcKioskAppData* app = apps.front();
+  ASSERT_EQ(app->name(), package_name);
+  ASSERT_TRUE(app->icon().isNull());
+
+  // Update the name and icon of the app, then verify them.
+  manager()->UpdateNameAndIcon(app->account_id(), new_name, new_icon);
+  ASSERT_EQ(app->name(), new_name);
+  ASSERT_FALSE(app->icon().isNull());
+  ASSERT_TRUE(app->icon().BackedBySameObjectAs(new_icon));
+}
+
 }  // namespace chromeos

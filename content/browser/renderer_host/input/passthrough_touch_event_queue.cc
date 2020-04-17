@@ -119,7 +119,7 @@ void PassthroughTouchEventQueue::PrependTouchScrollNotification() {
   TouchEventWithLatencyInfo touch(WebInputEvent::kTouchScrollStarted,
                                   WebInputEvent::kNoModifiers,
                                   ui::EventTimeForNow(), LatencyInfo());
-  touch.event.dispatch_type = WebInputEvent::kEventNonBlocking;
+  touch.event.dispatch_type = WebInputEvent::DispatchType::kEventNonBlocking;
   SendTouchEventImmediately(&touch, true);
 }
 
@@ -262,7 +262,7 @@ void PassthroughTouchEventQueue::SendTouchEventImmediately(
   // uncancelable, mitigating the risk of jank when transitioning to a fling.
   if (send_touch_events_async_ &&
       touch->event.GetType() != WebInputEvent::kTouchStart)
-    touch->event.dispatch_type = WebInputEvent::kEventNonBlocking;
+    touch->event.dispatch_type = WebInputEvent::DispatchType::kEventNonBlocking;
 
   if (touch->event.GetType() == WebInputEvent::kTouchStart)
     touch->event.touch_start_or_first_touch_move = true;

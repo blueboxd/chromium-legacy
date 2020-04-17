@@ -20,7 +20,8 @@ namespace lock_screen_utils {
 // Update current input method (namely keyboard layout) in the given IME state
 // to last input method used by this user.
 void SetUserInputMethod(const std::string& username,
-                        input_method::InputMethodManager::State* ime_state);
+                        input_method::InputMethodManager::State* ime_state,
+                        bool honor_device_policy);
 
 // Get user's last input method.
 std::string GetUserLastInputMethod(const std::string& username);
@@ -31,8 +32,8 @@ bool SetUserInputMethodImpl(const std::string& username,
                             input_method::InputMethodManager::State* ime_state);
 
 // Sets the currently allowed input method, including those that are enforced
-// by policy.
-void EnforcePolicyInputMethods(std::string user_input_method);
+// by device policy.
+void EnforceDevicePolicyInputMethods(std::string user_input_method);
 
 // Remove any policy limitations on allowed IMEs.
 void StopEnforcingPolicyInputMethods();

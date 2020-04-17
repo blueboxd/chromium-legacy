@@ -86,7 +86,10 @@ container{
     "tagName": "div",
     "idValue": "container",
     "nodeWidth": "784",
-    "nodeHeight": "10"
+    "nodeHeight": "10",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 child{
@@ -176,6 +179,9 @@ child{
     "idValue": "container",
     "nodeWidth": "784",
     "nodeHeight": "10",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic",
     "isLockedAncestor": "true"
   }
 }

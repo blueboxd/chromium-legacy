@@ -74,6 +74,10 @@ class InstallationMetrics : public InstallationTracker::Observer {
   SessionType GetSessionType();
 #endif  // defined(OS_CHROMEOS)
 
+  // Reports disable reasons for the extensions which are installed but not
+  // loaded.
+  void ReportDisableReason(const ExtensionId& extension_id);
+
   // If |kInstallationTimeout| report time elapsed for extensions load,
   // otherwise amount of not yet loaded extensions and reasons
   // why they were not installed.

@@ -1,0 +1,16 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("safety_check") {
+  sources = [
+    "safety_check.cc",
+    "safety_check.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/prefs",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
+  ]
+}

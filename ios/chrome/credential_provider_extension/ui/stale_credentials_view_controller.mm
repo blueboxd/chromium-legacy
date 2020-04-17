@@ -13,7 +13,7 @@
 #pragma mark - Public
 
 - (void)loadView {
-  self.imageName = @"stale_credentials_illustration";
+  self.image = [UIImage imageNamed:@"stale_credentials_illustration"];
   self.helpButtonAvailable = NO;
   self.primaryActionAvailable = NO;
   NSString* titleString =

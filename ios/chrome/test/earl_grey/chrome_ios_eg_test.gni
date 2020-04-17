@@ -139,6 +139,7 @@ template("chrome_ios_eg_test") {
       "//ios/chrome/app/resources",
       ios_application_icons_target,
     ]
+    xcode_product_bundle_id = "gtest.$target_name"
 
     if (!defined(extra_substitutions)) {
       extra_substitutions = []

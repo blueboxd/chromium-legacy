@@ -43,13 +43,6 @@ class CORE_EXPORT NGInlineItem {
     kBidiControl
   };
 
-  // Whether pre- and post-context should be used for shaping.
-  enum NGLayoutInlineShapeOptions {
-    kNoContext = 0,
-    kPreContext = 1,
-    kPostContext = 2
-  };
-
   enum NGCollapseType {
     // No collapsible spaces.
     kNotCollapsible,
@@ -80,9 +73,6 @@ class CORE_EXPORT NGInlineItem {
   const char* NGInlineItemTypeToString(int val) const;
 
   const ShapeResult* TextShapeResult() const { return shape_result_.get(); }
-  NGLayoutInlineShapeOptions ShapeOptions() const {
-    return static_cast<NGLayoutInlineShapeOptions>(shape_options_);
-  }
 
   // If this item is "empty" for the purpose of empty block calculation.
   bool IsEmptyItem() const { return is_empty_item_; }
@@ -248,14 +238,13 @@ class CORE_EXPORT NGInlineItem {
   LayoutObject* layout_object_;
 
   NGInlineItemType type_;
+  unsigned style_variant_ : 2;      // NGStyleVariant
+  unsigned end_collapse_type_ : 2;  // NGCollapseType
+  unsigned bidi_level_ : 8;         // UBiDiLevel is defined as uint8_t.
   // |segment_data_| is valid only for |type_ == NGInlineItem::kText|.
   unsigned segment_data_ : NGInlineItemSegment::kSegmentDataBits;
-  unsigned bidi_level_ : 8;              // UBiDiLevel is defined as uint8_t.
-  unsigned shape_options_ : 2;
   unsigned is_empty_item_ : 1;
   unsigned is_block_level_ : 1;
-  unsigned style_variant_ : 2;
-  unsigned end_collapse_type_ : 2;  // NGCollapseType
   unsigned is_end_collapsible_newline_ : 1;
   unsigned is_symbol_marker_ : 1;
   unsigned is_generated_for_line_break_ : 1;

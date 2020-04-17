@@ -2287,8 +2287,8 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
 
   base::TimeTicks time_stamp = GetCurrentEventTime();
   blink::WebInputEvent::DispatchType dispatch_type =
-      touch_cancelable_ ? WebInputEvent::kBlocking
-                        : WebInputEvent::kEventNonBlocking;
+      touch_cancelable_ ? WebInputEvent::DispatchType::kBlocking
+                        : WebInputEvent::DispatchType::kEventNonBlocking;
 
   for (unsigned i = 0; i < touch_points_.size(); ++i) {
     const WebTouchPoint& touch_point = touch_points_[i];

@@ -70,7 +70,7 @@ public class DownloadActivity extends SnackbarActivity implements ModalDialogMan
         mModalDialogManager = new ModalDialogManager(
                 new AppModalPresenter(this), ModalDialogManager.ModalDialogType.APP);
         mDownloadCoordinator = DownloadManagerCoordinatorFactory.create(
-                this, config, getSnackbarManager(), mModalDialogManager);
+                this, config, getSnackbarManager(), mModalDialogManager, isOffTheRecord);
         setContentView(mDownloadCoordinator.getView());
         mIsOffTheRecord = isOffTheRecord;
         mDownloadCoordinator.addObserver(mUiObserver);

@@ -84,7 +84,6 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
  private:
   void UpdatePinKeyboardState(const AccountId& account_id);
   void UpdateChallengeResponseAuthAvailability(const AccountId& account_id);
-  void OnAllowedInputMethodsChanged();
   void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);
   void OnExternalBinaryAuthTimeout();
   void OnExternalBinaryEnrollmentTimeout();
@@ -97,12 +96,6 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
 
   // Time when lock was initiated, required for metrics.
   base::TimeTicks lock_time_;
-
-  // Input Method Engine state used at lock screen.
-  scoped_refptr<input_method::InputMethodManager::State> ime_state_;
-
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      allowed_input_methods_subscription_;
 
   base::OnceCallback<void(bool)> authenticate_with_external_binary_callback_;
 

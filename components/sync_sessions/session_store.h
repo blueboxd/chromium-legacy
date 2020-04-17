@@ -40,7 +40,7 @@ class SessionStore {
       std::unique_ptr<syncer::MetadataBatch> metadata_batch)>;
   // Mimics signature of FaviconCache::UpdateMappingsFromForeignTab().
   using RestoredForeignTabCallback =
-      base::RepeatingCallback<void(const sync_pb::SessionTab&, base::Time)>;
+      base::RepeatingCallback<void(const sync_pb::SessionTab&)>;
 
   // Opens a SessionStore instance, which involves IO to load previous state
   // from disk. |sessions_client| must not be null and must outlive the

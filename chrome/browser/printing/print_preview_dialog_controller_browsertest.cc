@@ -36,6 +36,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
@@ -101,23 +102,6 @@ class PrintPreviewDialogClonedObserver : public WebContentsObserver {
   std::unique_ptr<RequestPrintPreviewObserver> request_preview_dialog_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogClonedObserver);
-};
-
-class PrintPreviewDialogDestroyedObserver : public WebContentsObserver {
- public:
-  explicit PrintPreviewDialogDestroyedObserver(WebContents* dialog)
-      : WebContentsObserver(dialog) {}
-  ~PrintPreviewDialogDestroyedObserver() override = default;
-
-  bool dialog_destroyed() const { return dialog_destroyed_; }
-
- private:
-  // content::WebContentsObserver implementation.
-  void WebContentsDestroyed() override { dialog_destroyed_ = true; }
-
-  bool dialog_destroyed_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogDestroyedObserver);
 };
 
 void PluginsLoadedCallback(
@@ -243,9 +227,9 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 
   // Navigate in the initiator tab. Make sure navigating destroys the print
   // preview dialog.
-  PrintPreviewDialogDestroyedObserver dialog_destroyed_observer(preview_dialog);
+  content::WebContentsDestroyedWatcher watcher(preview_dialog);
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(dialog_destroyed_observer.dialog_destroyed());
+  ASSERT_TRUE(watcher.IsDestroyed());
 
   // Try printing again.
   PrintPreview();
@@ -278,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 
   // Reload the initiator. Make sure reloading destroys the print preview
   // dialog.
-  PrintPreviewDialogDestroyedObserver dialog_destroyed_observer(preview_dialog);
+  content::WebContentsDestroyedWatcher watcher(preview_dialog);
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents());
@@ -287,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   // may occur right after the commit, before the widget is destroyed.
   // Execute pending tasks to account for this.
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(dialog_destroyed_observer.dialog_destroyed());
+  ASSERT_TRUE(watcher.IsDestroyed());
 
   // Try printing again.
   PrintPreview();

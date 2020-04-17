@@ -23,7 +23,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
-import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
@@ -45,8 +44,6 @@ import java.util.HashMap;
 public class SuggestionsImageFetcherTest {
     public static final int IMAGE_SIZE_PX = 100;
     public static final String URL_STRING = "http://www.test.com";
-    @Rule
-    public DisableHistogramsRule disableHistogramsRule = new DisableHistogramsRule();
 
     @Rule
     public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();

@@ -50,8 +50,10 @@ import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Implementation of {@link WebContentsAccessibility} interface.
@@ -162,6 +164,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     // this to update a node quickly rather than building from one scratch each time.
     private SparseArray<AccessibilityNodeInfo> mNodeInfoCache = new SparseArray<>();
 
+    // Default delay for throttling of successive AccessibilityEvents in milliseconds.
+    private static final int ACCESSIBILITY_EVENT_DEFAULT_DELAY = 100;
+
     // This handles the dispatching of accessibility events. It acts as an intermediary where we can
     // apply throttling rules, delay event construction, etc.
     private AccessibilityEventDispatcher mEventDispatcher;
@@ -206,6 +211,13 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mCaptioningController = new CaptioningController(mWebContents);
         WindowEventObserverManager.from(mWebContents).addObserver(this);
 
+        // Define our delays on a per event type basis.
+        Map<Integer, Integer> eventThrottleDelays = new HashMap<Integer, Integer>();
+        eventThrottleDelays.put(
+                AccessibilityEvent.TYPE_VIEW_SCROLLED, ACCESSIBILITY_EVENT_DEFAULT_DELAY);
+        eventThrottleDelays.put(
+                AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED, ACCESSIBILITY_EVENT_DEFAULT_DELAY);
+
         mEventDispatcher =
                 new AccessibilityEventDispatcher(new AccessibilityEventDispatcher.Client() {
                     @Override
@@ -227,7 +239,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                         mView.requestSendAccessibilityEvent(mView, event);
                         return true;
                     }
-                });
+                }, eventThrottleDelays);
 
         // Native is initialized lazily, when node provider is actually requested.
     }

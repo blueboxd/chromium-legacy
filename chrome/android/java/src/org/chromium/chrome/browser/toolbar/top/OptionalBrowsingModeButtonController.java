@@ -85,6 +85,7 @@ class OptionalBrowsingModeButtonController {
      * Show the highest precedence optional button, hiding the optional button if none can be shown.
      */
     private void showHighestPrecedenceOptionalButton() {
+        if (mButtonDataProviders == null) return;
         for (ButtonDataProvider provider : mButtonDataProviders) {
             ButtonData buttonData = provider.get(mTabSupplier.get());
             if (buttonData != null && buttonData.canShow) {

@@ -15,6 +15,7 @@ class AssistantSuggestionsModelObserver;
 // The interface for the Assistant controller in charge of suggestions.
 class ASH_PUBLIC_EXPORT AssistantSuggestionsController {
  public:
+  // Returns the singleton instance owned by AssistantController.
   static AssistantSuggestionsController* Get();
 
   // Returns a pointer to the underlying model.

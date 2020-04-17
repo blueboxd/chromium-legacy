@@ -198,6 +198,10 @@ class DiceTurnSyncOnHelper
   // Switch to a new profile after exporting the token.
   void SwitchToProfile(Profile* new_profile);
 
+  // Only one DiceTurnSyncOnHelper can be attached per profile. This deletes
+  // any other helper attached to the profile.
+  void AttachToProfile();
+
   // Aborts the flow and deletes this object.
   void AbortAndDelete();
 

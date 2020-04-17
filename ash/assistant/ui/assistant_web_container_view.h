@@ -12,7 +12,6 @@
 
 namespace ash {
 
-class AssistantViewDelegate;
 class AssistantWebViewDelegate;
 
 // The container for hosting standalone WebContents in Assistant.
@@ -20,8 +19,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
     : public views::WidgetDelegateView,
       public AssistantWebView::Observer {
  public:
-  AssistantWebContainerView(
-      AssistantViewDelegate* assistant_view_delegate,
+  explicit AssistantWebContainerView(
       AssistantWebViewDelegate* web_container_view_delegate);
   ~AssistantWebContainerView() override;
 
@@ -49,7 +47,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
   void InitLayout();
   void RemoveContents();
 
-  AssistantViewDelegate* const assistant_view_delegate_;
   AssistantWebViewDelegate* const web_container_view_delegate_;
 
   std::unique_ptr<AssistantWebView> contents_view_;

@@ -12,7 +12,6 @@
 namespace blink {
 
 class XRPlaneDetectionState;
-class XRLightEstimationState;
 class XRWorldTrackingStateInit;
 
 class XRWorldTrackingState : public ScriptWrappable {
@@ -26,15 +25,10 @@ class XRWorldTrackingState : public ScriptWrappable {
     return plane_detection_state_;
   }
 
-  XRLightEstimationState* lightEstimationState() const {
-    return light_estimation_state_;
-  }
-
   void Trace(Visitor* visitor) override;
 
  private:
   Member<XRPlaneDetectionState> plane_detection_state_;
-  Member<XRLightEstimationState> light_estimation_state_;
 };
 
 }  // namespace blink

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
 #include "components/url_pattern_index/closed_hash_map.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
@@ -175,8 +176,9 @@ class UrlPatternIndexMatcher {
   UrlPatternIndexMatcher(UrlPatternIndexMatcher&&);
   UrlPatternIndexMatcher& operator=(UrlPatternIndexMatcher&&);
 
-  // Returns the number of rules in this index.
-  size_t rules_count() const { return rules_count_; }
+  // Returns the number of rules in this index. Lazily computed, the first call
+  // to this method will scan the entire index.
+  size_t GetRulesCount() const;
 
   // If the index contains one or more UrlRules that match the request, returns
   // one of them, depending on the |strategy|. Otherwise, returns nullptr.
@@ -244,7 +246,8 @@ class UrlPatternIndexMatcher {
   // Must outlive this instance.
   const flat::UrlPatternIndex* flat_index_;
 
-  size_t rules_count_ = 0;
+  // The number of rules in this index. Mutable since this is lazily computed.
+  mutable base::Optional<size_t> rules_count_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlPatternIndexMatcher);
 };

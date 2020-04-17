@@ -307,7 +307,10 @@ bool get_compression(int argc, char* argv[], int* value) {
 }
 
 void usage_exit(const char* program) {
-  printf("usage: %s gzip|zlib|raw [--compression 0:9] files...\n", program);
+  printf(
+      "usage: %s gzip|zlib|raw [--compression 0:9] [--huffman|--rle] "
+      "files...\n",
+      program);
   exit(1);
 }
 

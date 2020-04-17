@@ -81,7 +81,6 @@ group("closure_compile") {
     "privacy_page:closure_compile",
     "safety_check_page:closure_compile",
     "search_engines_page:closure_compile",
-    "search_page:closure_compile",
     "settings_main:closure_compile",
     "settings_menu:closure_compile",
     "settings_page:closure_compile",

@@ -3592,7 +3592,48 @@
     },
 
     'weblayer_android_x86_gtests': {
-      # TODO(crbug/1041619): Add weblayer skew tests here.
+      # TODO(estaab): Add variants to test between older clients and the master
+      #               implementation.
+      'weblayer_instrumentation_test_M81_implementation_apk': {
+        'args': [
+          '--tests-outdir',
+          '.',
+          '--client-outdir',
+          '.',
+          '--implementation-outdir',
+          '../../weblayer_instrumentation_test_M81/out/Release',
+        ],
+        'swarming': {
+          'cipd_packages': [
+            {
+              'cipd_package': 'chromium/testing/weblayer-x86',
+              'location': 'weblayer_instrumentation_test_M81',
+              'revision': 'version:81.0.4044.114',
+            }
+          ],
+        },
+        'test': 'weblayer_instrumentation_test_versions_apk',
+      },
+      'weblayer_instrumentation_test_M83_implementation_apk': {
+        'args': [
+          '--tests-outdir',
+          '.',
+          '--client-outdir',
+          '.',
+          '--implementation-outdir',
+          '../../weblayer_instrumentation_test_M83/out/Release',
+        ],
+        'swarming': {
+          'cipd_packages': [
+            {
+              'cipd_package': 'chromium/testing/weblayer-x86',
+              'location': 'weblayer_instrumentation_test_M83',
+              'revision': 'version:83.0.4103.15',
+            }
+          ],
+        },
+        'test': 'weblayer_instrumentation_test_versions_apk',
+      },
       'weblayer_instrumentation_test_apk': {
       },
     },

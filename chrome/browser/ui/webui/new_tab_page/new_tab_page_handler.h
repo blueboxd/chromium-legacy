@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 class GURL;
 class InstantService;
@@ -39,7 +40,8 @@ class LogoService;
 class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                           public InstantServiceObserver,
                           public NtpBackgroundServiceObserver,
-                          public OmniboxTabHelper::Observer {
+                          public OmniboxTabHelper::Observer,
+                          public ui::SelectFileDialog::Listener {
  public:
   NewTabPageHandler(mojo::PendingReceiver<new_tab_page::mojom::PageHandler>
                         pending_page_handler,
@@ -81,6 +83,8 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void FocusOmnibox() override;
   void PasteIntoOmnibox(const std::string& text) override;
   void GetDoodle(GetDoodleCallback callback) override;
+  void ChooseLocalCustomBackground(
+      ChooseLocalCustomBackgroundCallback callback) override;
 
  private:
   // InstantServiceObserver:
@@ -98,11 +102,18 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void OnOmniboxFocusChanged(OmniboxFocusState state,
                              OmniboxFocusChangeReason reason) override;
 
+  // SelectFileDialog::Listener:
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
+  void FileSelectionCanceled(void* params) override;
+
   void OnLogoAvailable(
       GetDoodleCallback callback,
       search_provider_logos::LogoCallbackReason type,
       const base::Optional<search_provider_logos::EncodedLogo>& logo);
 
+  ChooseLocalCustomBackgroundCallback choose_local_custom_background_callback_;
   chrome_colors::ChromeColorsService* chrome_colors_service_;
   InstantService* instant_service_;
   NtpBackgroundService* ntp_background_service_;
@@ -112,7 +123,9 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   std::string images_request_collection_id_;
   GetBackgroundImagesCallback background_images_callback_;
   mojo::Remote<new_tab_page::mojom::Page> page_;
+  Profile* profile_;
   mojo::Receiver<new_tab_page::mojom::PageHandler> receiver_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   content::WebContents* web_contents_;
   base::WeakPtrFactory<NewTabPageHandler> weak_ptr_factory_{this};
 

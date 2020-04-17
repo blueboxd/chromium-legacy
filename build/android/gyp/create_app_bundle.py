@@ -238,9 +238,13 @@ def _RewriteLanguageAssetPath(src_path):
   locale = src_path[len(_LOCALES_SUBDIR):-4]
   android_locale = resource_utils.ToAndroidLocaleName(locale)
 
-  # The locale format is <lang>-<region> or <lang>. Extract the language.
+  # The locale format is <lang>-<region> or <lang> or BCP-47 (e.g b+sr+Latn).
+  # Extract the language.
   pos = android_locale.find('-')
-  if pos >= 0:
+  if android_locale.startswith('b+'):
+    # If locale is in BCP-47 the language is the second tag (e.g. b+sr+Latn)
+    android_language = android_locale.split('+')[1]
+  elif pos >= 0:
     android_language = android_locale[:pos]
   else:
     android_language = android_locale

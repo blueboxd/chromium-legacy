@@ -403,14 +403,14 @@ class AvdConfig(object):
     android_avd_home = os.path.join(self._emulator_home, 'avd')
     avd_dir = os.path.join(android_avd_home, '%s.avd' % self._config.avd_name)
 
-    hardware_qemu_path = os.path.join(avd_dir, 'hardware-qemu.ini')
-    if os.path.exists(hardware_qemu_path):
-      with open(hardware_qemu_path) as hardware_qemu_file:
-        hardware_qemu_contents = ini.load(hardware_qemu_file)
+    config_path = os.path.join(avd_dir, 'config.ini')
+    if os.path.exists(config_path):
+      with open(config_path) as config_file:
+        config_contents = ini.load(config_file)
     else:
-      hardware_qemu_contents = {}
+      config_contents = {}
 
-    hardware_qemu_contents['hw.sdCard'] = 'true'
+    config_contents['hw.sdCard'] = 'true'
     if self._config.avd_settings.sdcard.size:
       sdcard_path = os.path.join(avd_dir, 'cr-sdcard.img')
       if not os.path.exists(sdcard_path):
@@ -423,10 +423,10 @@ class AvdConfig(object):
         ]
         cmd_helper.RunCmd(mksdcard_cmd)
 
-      hardware_qemu_contents['hw.sdCard.path'] = sdcard_path
+      config_contents['hw.sdCard.path'] = sdcard_path
 
-    with open(hardware_qemu_path, 'w') as hardware_qemu_file:
-      ini.dump(hardware_qemu_contents, hardware_qemu_file)
+    with open(config_path, 'w') as config_file:
+      ini.dump(config_contents, config_file)
 
   def _Initialize(self):
     if self._initialized:

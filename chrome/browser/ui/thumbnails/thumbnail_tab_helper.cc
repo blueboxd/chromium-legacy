@@ -47,13 +47,17 @@ gfx::Size GetMinimumThumbnailSize() {
   return min_target_size;
 }
 
-}  // anonymous namespace
-
-class ThumbnailTabHelper::ScopedCapture {
+// Manages increment/decrement of video capture state on a WebContents.
+// Acquires (if possible) on construction, releases (if acquired) on
+// destruction.
+class ScopedThumbnailCapture {
  public:
-  explicit ScopedCapture(ThumbnailTabHelper* helper) : helper_(helper) {
-    if (helper->web_contents()) {
-      helper->web_contents()->IncrementCapturerCount(
+  explicit ScopedThumbnailCapture(
+      content::WebContentsObserver* web_contents_observer)
+      : web_contents_observer_(web_contents_observer) {
+    auto* const contents = web_contents_observer->web_contents();
+    if (contents) {
+      contents->IncrementCapturerCount(
           gfx::ScaleToFlooredSize(GetMinimumThumbnailSize(),
                                   kMinThumbnailScaleFactor),
           /* stay_hidden */ true);
@@ -61,20 +65,129 @@ class ThumbnailTabHelper::ScopedCapture {
     }
   }
 
-  ~ScopedCapture() {
-    if (captured_ && helper_->web_contents())
-      helper_->web_contents()->DecrementCapturerCount(
-          /* stay_hidden */ true);
+  ~ScopedThumbnailCapture() {
+    auto* const contents = web_contents_observer_->web_contents();
+    if (captured_ && contents)
+      contents->DecrementCapturerCount(/* stay_hidden */ true);
   }
 
  private:
-  ThumbnailTabHelper* const helper_;
+  // We track a web contents observer because it's an easy way to see if the
+  // web contents has disappeared without having to add another observer.
+  content::WebContentsObserver* const web_contents_observer_;
   bool captured_ = false;
 };
 
+}  // anonymous namespace
+
+// ThumbnailTabHelper::TabStateTracker ---------------------------
+
+// Stores information about the state of the current WebContents and renderer.
+class ThumbnailTabHelper::TabStateTracker : public content::WebContentsObserver,
+                                            public ThumbnailImage::Delegate {
+ public:
+  TabStateTracker(ThumbnailTabHelper* thumbnail_tab_helper,
+                  content::WebContents* contents)
+      : content::WebContentsObserver(contents),
+        thumbnail_tab_helper_(thumbnail_tab_helper) {
+    last_visibility_ = web_contents()->GetVisibility();
+  }
+  ~TabStateTracker() override = default;
+
+  // Returns the host view associated with the current web contents, or null if
+  // none.
+  content::RenderWidgetHostView* GetView() {
+    auto* const contents = web_contents();
+    return contents ? contents->GetRenderViewHost()->GetWidget()->GetView()
+                    : nullptr;
+  }
+
+  // Notifies that a thumbnail has been successfully captured.
+  void OnThumbnailCaptured(CaptureType capture_type) {
+    // Remember that a thumbnail was captured while the tab was loaded.
+    if (IsTabLoaded()) {
+      captured_loaded_thumbnail_since_tab_hidden_ = true;
+      scoped_capture_.reset();
+    }
+  }
+
+  // Returns true if we are capturing thumbnails from a tab and should continue
+  // to do so, false if we should stop.
+  bool ShouldContinueVideoCapture() const {
+    return is_being_observed_ && !IsTabLoaded();
+  }
+
+ private:
+  // Returns whether the tab associated with the current web contents is
+  // currently loading.
+  bool IsTabLoaded() const {
+    auto* tab_load_tracker = resource_coordinator::TabLoadTracker::Get();
+    if (!tab_load_tracker)
+      return false;
+    const auto state = tab_load_tracker->GetLoadingState(web_contents());
+    return state != resource_coordinator::TabLoadTracker::LoadingState::LOADED;
+  }
+
+  // content::WebContentsObserver:
+  void OnVisibilityChanged(content::Visibility visibility) override {
+    if (last_visibility_ == content::Visibility::VISIBLE &&
+        visibility != content::Visibility::VISIBLE) {
+      captured_loaded_thumbnail_since_tab_hidden_ = false;
+      thumbnail_tab_helper_->CaptureThumbnailOnTabSwitch();
+    }
+    last_visibility_ = visibility;
+  }
+
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->IsInMainFrame() && navigation_handle->HasCommitted())
+      captured_loaded_thumbnail_since_tab_hidden_ = false;
+  }
+
+  void RenderViewReady() override {
+    if (!captured_loaded_thumbnail_since_tab_hidden_)
+      thumbnail_tab_helper_->StartVideoCapture();
+  }
+
+  void RenderViewDeleted(content::RenderViewHost* render_view_host) override {
+    thumbnail_tab_helper_->StopVideoCapture();
+  }
+
+  // ThumbnailImage::Delegate:
+  void ThumbnailImageBeingObservedChanged(bool is_being_observed) override {
+    if (is_being_observed_ != is_being_observed) {
+      is_being_observed_ = is_being_observed;
+      if (is_being_observed && !captured_loaded_thumbnail_since_tab_hidden_) {
+        scoped_capture_ = std::make_unique<ScopedThumbnailCapture>(this);
+        thumbnail_tab_helper_->StartVideoCapture();
+      } else if (!is_being_observed) {
+        scoped_capture_.reset();
+      }
+    }
+  }
+
+  // The last known visibility WebContents visibility.
+  content::Visibility last_visibility_;
+
+  // Is the thumbnail being observed?
+  bool is_being_observed_ = false;
+
+  // Whether a thumbnail was captured while the tab was loaded, since the tab
+  // was last hidden.
+  bool captured_loaded_thumbnail_since_tab_hidden_ = false;
+
+  // Scoped request for video capture. Ensures we always decrement the counter
+  // once per increment.
+  std::unique_ptr<ScopedThumbnailCapture> scoped_capture_;
+
+  ThumbnailTabHelper* const thumbnail_tab_helper_;
+};
+
+// ThumbnailTabHelper ----------------------------------------------------
+
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
-    : content::WebContentsObserver(contents),
-      last_visibility_(web_contents()->GetVisibility()) {}
+    : state_(std::make_unique<TabStateTracker>(this, contents)),
+      thumbnail_(base::MakeRefCounted<ThumbnailImage>(state_.get())) {}
 
 ThumbnailTabHelper::~ThumbnailTabHelper() {
   StopVideoCapture();
@@ -97,33 +210,6 @@ void ThumbnailTabHelper::RecordCaptureType(CaptureType type) {
   UMA_HISTOGRAM_ENUMERATION("Tab.Preview.CaptureType", type);
 }
 
-void ThumbnailTabHelper::ThumbnailImageBeingObservedChanged(
-    bool is_being_observed) {
-  if (is_being_observed_ != is_being_observed) {
-    is_being_observed_ = is_being_observed;
-    if (is_being_observed && !captured_loaded_thumbnail_since_tab_hidden_) {
-      scoped_capture_ = std::make_unique<ScopedCapture>(this);
-      StartVideoCapture();
-    } else if (!is_being_observed) {
-      scoped_capture_.reset();
-    }
-  }
-}
-
-bool ThumbnailTabHelper::ShouldKeepUpdatingThumbnail() const {
-  if (!is_being_observed_)
-    return false;
-
-  auto* tab_load_tracker = resource_coordinator::TabLoadTracker::Get();
-  if (tab_load_tracker &&
-      tab_load_tracker->GetLoadingState(web_contents()) !=
-          resource_coordinator::TabLoadTracker::LoadingState::LOADED) {
-    return true;
-  }
-
-  return false;
-}
-
 void ThumbnailTabHelper::CaptureThumbnailOnTabSwitch() {
   const base::TimeTicks time_of_call = base::TimeTicks::Now();
 
@@ -132,7 +218,7 @@ void ThumbnailTabHelper::CaptureThumbnailOnTabSwitch() {
 
   // Get the WebContents' main view. Note that during shutdown there may not be
   // a view to capture.
-  content::RenderWidgetHostView* const source_view = GetView();
+  content::RenderWidgetHostView* const source_view = state_->GetView();
   if (!source_view)
     return;
 
@@ -170,15 +256,7 @@ void ThumbnailTabHelper::StoreThumbnail(CaptureType type,
 
   RecordCaptureType(type);
   thumbnail_->AssignSkBitmap(bitmap);
-
-  // Remember that a thumbnail was captured while the tab was loaded.
-  auto* tab_load_tracker = resource_coordinator::TabLoadTracker::Get();
-  if (tab_load_tracker &&
-      tab_load_tracker->GetLoadingState(web_contents()) ==
-          resource_coordinator::TabLoadTracker::LoadingState::LOADED) {
-    captured_loaded_thumbnail_since_tab_hidden_ = true;
-    scoped_capture_.reset();
-  }
+  state_->OnThumbnailCaptured(type);
 }
 
 void ThumbnailTabHelper::StartVideoCapture() {
@@ -187,7 +265,7 @@ void ThumbnailTabHelper::StartVideoCapture() {
 
   // This pointer can become null before this method is called - see
   // RenderWidgetHost::GetView() for details.
-  content::RenderWidgetHostView* const source_view = GetView();
+  content::RenderWidgetHostView* const source_view = state_->GetView();
   if (!source_view)
     return;
 
@@ -226,37 +304,6 @@ void ThumbnailTabHelper::StopVideoCapture() {
   start_video_capture_time_ = base::TimeTicks();
 }
 
-content::RenderWidgetHostView* ThumbnailTabHelper::GetView() {
-  return web_contents()
-             ? web_contents()->GetRenderViewHost()->GetWidget()->GetView()
-             : nullptr;
-}
-
-void ThumbnailTabHelper::OnVisibilityChanged(content::Visibility visibility) {
-  if (last_visibility_ == content::Visibility::VISIBLE &&
-      visibility != content::Visibility::VISIBLE) {
-    captured_loaded_thumbnail_since_tab_hidden_ = false;
-    CaptureThumbnailOnTabSwitch();
-  }
-  last_visibility_ = visibility;
-}
-
-void ThumbnailTabHelper::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInMainFrame() && navigation_handle->HasCommitted())
-    captured_loaded_thumbnail_since_tab_hidden_ = false;
-}
-
-void ThumbnailTabHelper::RenderViewReady() {
-  if (!captured_loaded_thumbnail_since_tab_hidden_)
-    StartVideoCapture();
-}
-
-void ThumbnailTabHelper::RenderViewDeleted(
-    content::RenderViewHost* render_view_host) {
-  StopVideoCapture();
-}
-
 void ThumbnailTabHelper::OnFrameCaptured(
     base::ReadOnlySharedMemoryRegion data,
     ::media::mojom::VideoFrameInfoPtr info,
@@ -266,7 +313,7 @@ void ThumbnailTabHelper::OnFrameCaptured(
   CHECK(video_capturer_);
   const base::TimeTicks time_of_call = base::TimeTicks::Now();
 
-  if (!ShouldKeepUpdatingThumbnail())
+  if (!state_->ShouldContinueVideoCapture())
     StopVideoCapture();
 
   mojo::Remote<::viz::mojom::FrameSinkVideoConsumerFrameCallbacks>

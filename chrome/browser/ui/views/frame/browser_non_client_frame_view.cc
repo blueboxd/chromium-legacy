@@ -39,6 +39,12 @@
 // static
 constexpr int BrowserNonClientFrameView::kMinimumDragHeight;
 
+// metric name for reporting taskbar update result
+#if defined(OS_WIN)
+constexpr const char* kTaskbarMetricName =
+    "Profile.UpdateTaskbarDecoration.Win.Result";
+#endif
+
 BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
     : frame_(frame), browser_view_(browser_view) {
@@ -358,7 +364,8 @@ void BrowserNonClientFrameView::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
 #if defined(OS_WIN)
   taskbar::UpdateTaskbarDecoration(browser_view()->browser()->profile(),
-                                   frame_->GetNativeWindow());
+                                   frame_->GetNativeWindow(),
+                                   kTaskbarMetricName);
 #endif
 }
 
@@ -366,7 +373,8 @@ void BrowserNonClientFrameView::OnProfileHighResAvatarLoaded(
     const base::FilePath& profile_path) {
 #if defined(OS_WIN)
   taskbar::UpdateTaskbarDecoration(browser_view()->browser()->profile(),
-                                   frame_->GetNativeWindow());
+                                   frame_->GetNativeWindow(),
+                                   kTaskbarMetricName);
 #endif
 }
 

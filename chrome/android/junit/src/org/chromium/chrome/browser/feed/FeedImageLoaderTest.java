@@ -16,7 +16,6 @@ import android.graphics.drawable.Drawable;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalMatchers;
@@ -31,7 +30,6 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.Consumer;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.feed.library.api.host.imageloader.BundledAssets;
 import org.chromium.chrome.browser.feed.library.api.host.imageloader.ImageLoaderApi;
@@ -66,8 +64,6 @@ public class FeedImageLoaderTest {
     private static final String OVERLAY_IMAGE_BAD_DIRECTION =
             "overlay-image://?direction=east&url=http://www.test1.com";
 
-    @Rule
-    public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
 
     @Mock
     CachedImageFetcher mCachedImageFetcher;

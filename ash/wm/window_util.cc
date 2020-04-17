@@ -52,19 +52,6 @@ namespace ash {
 namespace window_util {
 namespace {
 
-// Moves |window| to the given |root| window's corresponding container, if it is
-// not already in the same root window. Returns true if |window| was moved.
-bool MoveWindowToRoot(aura::Window* window, aura::Window* root) {
-  if (!root || root == window->GetRootWindow())
-    return false;
-  aura::Window* container = RootWindowController::ForWindow(root)->GetContainer(
-      window->parent()->id());
-  if (!container)
-    return false;
-  container->AddChild(window);
-  return true;
-}
-
 // This window targeter reserves space for the portion of the resize handles
 // that extend within a top level window.
 class InteriorResizeHandleTargeter : public aura::WindowTargeter {
@@ -154,6 +141,13 @@ void SetAutoHideShelf(aura::Window* window, bool autohide) {
 
 bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {
   DCHECK(window);
+
+  aura::Window* root = Shell::GetRootWindowForDisplayId(display_id);
+  if (!root || root == window->GetRootWindow()) {
+    NOTREACHED();
+    return false;
+  }
+
   WindowState* window_state = WindowState::Get(window);
   if (window_state->allow_set_bounds_direct()) {
     display::Display display;
@@ -168,14 +162,22 @@ bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {
     window_state->OnWMEvent(&event);
     return true;
   }
-  aura::Window* root = Shell::GetRootWindowForDisplayId(display_id);
+
+  // Moves |window| to the given |root| window's corresponding container.
+  aura::Window* container = RootWindowController::ForWindow(root)->GetContainer(
+      window->parent()->id());
+  if (!container)
+    return false;
+
   // Update restore bounds to target root window.
   if (window_state->HasRestoreBounds()) {
     gfx::Rect restore_bounds = window_state->GetRestoreBoundsInParent();
     ::wm::ConvertRectToScreen(root, &restore_bounds);
     window_state->SetRestoreBoundsInScreen(restore_bounds);
   }
-  return root && MoveWindowToRoot(window, root);
+
+  container->AddChild(window);
+  return true;
 }
 
 int GetNonClientComponent(aura::Window* window, const gfx::Point& location) {

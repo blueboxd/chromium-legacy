@@ -28,46 +28,6 @@ namespace {
 
 constexpr int kPlaceHolderItemTag = -1;
 
-class WebauthnHoverButton : public HoverButton {
- public:
-  WebauthnHoverButton(views::ButtonListener* button_listener,
-                      std::unique_ptr<views::View> icon_view,
-                      const base::string16& title,
-                      const base::string16& subtitle,
-                      std::unique_ptr<views::View> secondary_view)
-      : HoverButton(button_listener,
-                    std::move(icon_view),
-                    title,
-                    subtitle,
-                    std::move(secondary_view),
-                    false) {}
-
-  gfx::Insets GetInsets() const override {
-    gfx::Insets ret = HoverButton::GetInsets();
-    if (vert_inset_.has_value()) {
-      ret.set_top(*vert_inset_);
-      ret.set_bottom(*vert_inset_);
-    }
-    if (left_inset_.has_value()) {
-      ret.set_left(*left_inset_);
-    }
-    ret.set_right(8);
-    return ret;
-  }
-
-  void SetInsetForNoIcon() {
-    // When there's no icon, insets within the underlying HoverButton take care
-    // of the padding on the left and we don't want to add any more.
-    left_inset_ = 0;
-  }
-
-  void SetVertInset(int vert_inset) { vert_inset_ = vert_inset; }
-
- private:
-  base::Optional<int> left_inset_;
-  base::Optional<int> vert_inset_;
-};
-
 enum class ItemType {
   kButton,
   kPlaceholder,
@@ -97,12 +57,6 @@ std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
 
   std::unique_ptr<views::View> secondary_view = nullptr;
 
-  // kTwoLineVertInset is the top and bottom padding of the HoverButton if
-  // |is_two_line_item| is true. This ensures that the spacing between the
-  // two lines isn't too large because HoverButton will otherwise spread the
-  // lines evenly over the given vertical space.
-  constexpr int kTwoLineVertInset = 6;
-
   switch (item_type) {
     case ItemType::kPlaceholder:
       // No secondary view in this case.
@@ -113,21 +67,6 @@ std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
       auto chevron_image = std::make_unique<views::ImageView>();
       chevron_image->SetImage(gfx::CreateVectorIcon(views::kSubmenuArrowIcon,
                                                     kChevronSize, icon_color));
-
-      int vert_inset = 0;
-      if (is_two_line_item) {
-        // Items that are sized for two lines use the top and bottom insets of
-        // the chevron image to pad single-line items out to a uniform height of
-        // |kHeight|.
-        constexpr int kHeight = 56;
-        const gfx::Size size = chevron_image->GetPreferredSize();
-        vert_inset = (kHeight - (2 * kTwoLineVertInset) - size.height()) / 2;
-      }
-
-      chevron_image->SetBorder(views::CreateEmptyBorder(
-          gfx::Insets(/*top=*/vert_inset, /*left=*/12,
-                      /*bottom=*/vert_inset, /*right=*/0)));
-
       secondary_view.reset(chevron_image.release());
       break;
     }
@@ -143,26 +82,29 @@ std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
     }
   }
 
-  auto hover_button = std::make_unique<WebauthnHoverButton>(
+  auto hover_button = std::make_unique<HoverButton>(
       listener, std::move(item_image), std::move(item_title),
       std::move(item_description), std::move(secondary_view));
   hover_button->set_tag(item_tag);
-  if (!vector_icon) {
-    hover_button->SetInsetForNoIcon();
-  }
-  if (is_two_line_item) {
-    hover_button->SetVertInset(kTwoLineVertInset);
+
+  // The HoverButton extends to the size of its contained views and applies some
+  // amount of spacing already. Fudge things into place with an additional
+  // invisible border where necessary.
+  // TODO(crbug.com/1071648): This is probably broken and should be rewritten.
+
+  // Pad to a total height of 56px for two-line items, and 46px for single-line.
+  int vertical_inset = is_two_line_item ? 2 : 6;
+  if (is_two_line_item && item_description.empty()) {
+    vertical_inset = 11;
   }
 
-  // Because there is an icon on both sides, set a custom border that has only
-  // half of the normal padding horizontally.
-  constexpr int kExtraVerticalPadding = 2;
-  constexpr int kHorizontalPadding = 8;
-  gfx::Insets padding(views::LayoutProvider::Get()->GetDistanceMetric(
-                          DISTANCE_CONTROL_LIST_VERTICAL) +
-                          kExtraVerticalPadding,
-                      kHorizontalPadding);
-  hover_button->SetBorder(views::CreateEmptyBorder(padding));
+  constexpr int kHorizontalInset = 8;
+  // If there is no vector icon, left-align the text with where the icon would
+  // be by setting no left border.
+  const int left_inset = vector_icon ? kHorizontalInset : 0;
+
+  hover_button->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+      vertical_inset, left_inset, vertical_inset, kHorizontalInset)));
 
   switch (item_type) {
     case ItemType::kPlaceholder: {

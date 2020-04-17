@@ -308,19 +308,25 @@ mojom::XRLightEstimationDataPtr FakeArCore::GetLightEstimationData() {
   return result;
 }
 
-base::Optional<uint64_t> FakeArCore::CreateAnchor(const mojom::Pose& pose,
-                                                  uint64_t plane_id) {
+void FakeArCore::CreatePlaneAttachedAnchor(const mojom::Pose& plane_from_anchor,
+                                           uint64_t plane_id,
+                                           CreateAnchorCallback callback) {
   // TODO(992035): Fix this when implementing tests.
-  return CreateAnchor(pose);
+  std::move(callback).Run(mojom::CreateAnchorResult::FAILURE, 0);
 }
 
-base::Optional<uint64_t> FakeArCore::CreateAnchor(const mojom::Pose& pose) {
-  anchors_[next_id_] = {pose.position, pose.orientation};
-  int32_t anchor_id = next_id_;
+void FakeArCore::CreateAnchor(
+    const mojom::XRNativeOriginInformation& native_origin_information,
+    const mojom::Pose& native_origin_from_anchor,
+    CreateAnchorCallback callback) {
+  std::move(callback).Run(mojom::CreateAnchorResult::FAILURE, 0);
+}
 
-  next_id_++;
-
-  return anchor_id;
+void FakeArCore::ProcessAnchorCreationRequests(
+    const gfx::Transform& mojo_from_viewer,
+    const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
+        maybe_input_state) {
+  // No-op - nothing gets deferred so far.
 }
 
 void FakeArCore::DetachAnchor(uint64_t anchor_id) {

@@ -10,9 +10,11 @@
 #include "base/containers/flat_map.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/task_manager/providers/task.h"
+#include "content/public/browser/dedicated_worker_id.h"
 #include "content/public/browser/dedicated_worker_service.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
+#include "content/public/browser/shared_worker_id.h"
 #include "content/public/browser/shared_worker_service.h"
 
 class Profile;

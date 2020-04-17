@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_AHARDWAREBUFFER_UTILS_H_
 
 #include "components/viz/common/resources/resource_format.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 
@@ -18,10 +19,11 @@ namespace gpu {
 // probably need something like gpu::Capabilities.texture_target_exception_list.
 
 // Returns whether the format is supported by AHardwareBuffer.
-bool AHardwareBufferSupportedFormat(viz::ResourceFormat format);
+bool GPU_GLES2_EXPORT
+AHardwareBufferSupportedFormat(viz::ResourceFormat format);
 
 // Returns the corresponding AHardwareBuffer format.
-unsigned int AHardwareBufferFormat(viz::ResourceFormat format);
+unsigned int GPU_GLES2_EXPORT AHardwareBufferFormat(viz::ResourceFormat format);
 
 }  // namespace gpu
 

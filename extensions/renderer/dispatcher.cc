@@ -17,7 +17,6 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -497,11 +496,9 @@ void Dispatcher::WillEvaluateServiceWorkerOnWorkerThread(
   v8::Isolate* isolate = context->isolate();
 
   // Fetch the source code for service_worker_bindings.js.
-  scoped_refptr<base::RefCountedMemory> bytes =
-      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+  base::StringPiece script_resource =
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_SERVICE_WORKER_BINDINGS_JS);
-  base::StringPiece script_resource(
-      reinterpret_cast<const char*>(bytes->front()), bytes->size());
   v8::Local<v8::String> script =
       v8::String::NewExternalOneByte(
           isolate, new StaticV8ExternalOneByteStringResource(script_resource))

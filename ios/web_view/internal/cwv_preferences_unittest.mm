@@ -15,7 +15,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/translate/core/browser/translate_pref_names.h"
-#import "ios/web_view/public/cwv_preferences_autofill.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"

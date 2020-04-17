@@ -28,6 +28,7 @@ from jinja2 import Template # pylint: disable=F0401
 # //ui/android/java/src/org/chromium/base/LocalizationUtils.java
 _CHROME_TO_ANDROID_LOCALE_MAP = {
     'es-419': 'es-rUS',
+    'sr-Latn': 'b+sr+Latn',
     'fil': 'tl',
     'he': 'iw',
     'id': 'in',
@@ -91,35 +92,38 @@ def ToAndroidLocaleName(chromium_locale):
 _RE_ANDROID_LOCALE_QUALIFIER_1 = re.compile(r'^([a-z]{2,3})(\-r([A-Z]+))?$')
 
 # Starting with Android 7.0/Nougat, BCP 47 codes are supported but must
-# be prefixed with 'b+', and may include optional tags. e.g. 'b+en+US',
-# 'b+ja+Latn', 'b+ja+JP+Latn'
+# be prefixed with 'b+', and may include optional tags.
+#  e.g. 'b+en+US', 'b+ja+Latn', 'b+ja+Latn+JP'
 _RE_ANDROID_LOCALE_QUALIFIER_2 = re.compile(r'^b\+([a-z]{2,3})(\+.+)?$')
-
-# Matches an all-uppercase region name.
-_RE_ALL_UPPERCASE = re.compile(r'^[A-Z]+$')
 
 
 def ToChromiumLocaleName(android_locale):
   """Convert an Android locale name into a Chromium one."""
   lang = None
   region = None
+  script = None
   m = _RE_ANDROID_LOCALE_QUALIFIER_1.match(android_locale)
   if m:
     lang = m.group(1)
     if m.group(2):
       region = m.group(3)
-  else:
-    m = _RE_ANDROID_LOCALE_QUALIFIER_2.match(android_locale)
-    if m:
-      lang = m.group(1)
-      if m.group(2):
-        tags = m.group(2).split('+')
-        # First all-uppercase tag is a region. This deals with cases where
-        # a special tag is placed before it (e.g. 'cmn+Hant-TW')
-        for tag in tags:
-          if _RE_ALL_UPPERCASE.match(tag):
-            region = tag
-            break
+  elif _RE_ANDROID_LOCALE_QUALIFIER_2.match(android_locale):
+    # Split an Android BCP-47 locale (e.g. b+sr+Latn+RS)
+    tags = android_locale.split('+')
+
+    # The Lang tag is always the first tag.
+    lang = tags[1]
+
+    # The optional region tag is 2ALPHA or 3DIGIT tag in pos 1 or 2.
+    # The optional script tag is 4ALPHA and always in pos 1.
+    optional_tags = iter(tags[2:])
+
+    next_tag = next(optional_tags, None)
+    if next_tag and len(next_tag) == 4:
+      script = next_tag
+      next_tag = next(optional_tags, None)
+    if next_tag and len(next_tag) < 4:
+      region = next_tag
 
   if not lang:
     return None
@@ -129,6 +133,10 @@ def ToChromiumLocaleName(android_locale):
     return 'es-419'
 
   lang = _ANDROID_TO_CHROMIUM_LANGUAGE_MAP.get(lang, lang)
+
+  if script:
+    lang = '%s-%s' % (lang, script)
+
   if not region:
     return lang
 

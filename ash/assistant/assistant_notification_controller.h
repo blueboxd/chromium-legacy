@@ -21,8 +21,6 @@
 
 namespace ash {
 
-class AssistantControllerImpl;
-
 // The class to manage Assistant notifications.
 class ASH_EXPORT AssistantNotificationController
     : public mojom::AssistantNotificationController,
@@ -36,8 +34,7 @@ class ASH_EXPORT AssistantNotificationController
   using AssistantNotificationType =
       chromeos::assistant::mojom::AssistantNotificationType;
 
-  explicit AssistantNotificationController(
-      AssistantControllerImpl* assistant_controller);
+  AssistantNotificationController();
   ~AssistantNotificationController() override;
 
   void BindReceiver(
@@ -80,8 +77,6 @@ class ASH_EXPORT AssistantNotificationController
                              bool by_user) override;
 
  private:
-  AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
-
   mojo::Receiver<mojom::AssistantNotificationController> receiver_{this};
 
   AssistantNotificationModel model_;

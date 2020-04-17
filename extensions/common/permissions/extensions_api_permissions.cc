@@ -149,12 +149,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kVpnProvider, "vpnProvider",
      APIPermissionInfo::kFlagCannotBeOptional |
          APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
-    // NOTE(kalman): This is provided by a manifest property but needs to
-    // appear in the install permission dialogue, so we need a fake
-    // permission for it. See http://crbug.com/247857.
-    {APIPermission::kWebConnectable, "webConnectable",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagInternal},
     {APIPermission::kWebRequest, "webRequest"},
     {APIPermission::kWebRequestBlocking, "webRequestBlocking"},
     {APIPermission::kDeclarativeNetRequest,

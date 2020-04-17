@@ -54,7 +54,7 @@ TaskResults ParseData(int task_id, std::unique_ptr<std::string> data) {
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           *data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
-  if (value_with_error.error_code != base::JSONReader::JSON_NO_ERROR) {
+  if (!value_with_error.value) {
     LOG(WARNING) << "Failed to parse print servers policy ("
                  << value_with_error.error_message << ") on line "
                  << value_with_error.error_line << " at position "

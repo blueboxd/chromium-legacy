@@ -171,6 +171,14 @@ void CreditCardFormEventLogger::OnLog(const std::string& name,
     base::UmaHistogramEnumeration(name + ".OnNonsecurePage", event,
                                   NUM_FORM_EVENTS);
   }
+
+  // Log a different histogram for credit card forms with server nickname
+  // available so that selection rate with server nickname can be compared on
+  // their own.
+  if (has_server_nickname_) {
+    base::UmaHistogramEnumeration(name + ".WithServerNickname", event,
+                                  NUM_FORM_EVENTS);
+  }
 }
 
 FormEvent CreditCardFormEventLogger::GetCardNumberStatusFormEvent(

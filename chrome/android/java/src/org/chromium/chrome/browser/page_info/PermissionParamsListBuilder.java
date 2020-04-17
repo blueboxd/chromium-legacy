@@ -118,8 +118,13 @@ class PermissionParamsListBuilder {
                         ApiCompatibilityUtils.getNotificationSettingsIntent(),
                         null /* androidPermissions */);
             } else if (!hasAndroidPermission(permission.type)) {
-                permissionParams.warningTextResource =
-                        R.string.page_info_android_permission_blocked;
+                if (permission.type == ContentSettingsType.AR) {
+                    permissionParams.warningTextResource =
+                            R.string.page_info_android_ar_camera_blocked;
+                } else {
+                    permissionParams.warningTextResource =
+                            R.string.page_info_android_permission_blocked;
+                }
                 permissionParams.clickCallback = createPermissionClickCallback(
                         null /* intentOverride */,
                         PermissionUtil.getAndroidPermissionsForContentSetting(permission.type));

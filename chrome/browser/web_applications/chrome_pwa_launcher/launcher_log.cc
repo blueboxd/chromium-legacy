@@ -5,24 +5,13 @@
 #include "chrome/browser/web_applications/chrome_pwa_launcher/launcher_log.h"
 
 #include "base/numerics/safe_conversions.h"
-#include "chrome/install_static/install_details.h"
-#include "chrome/install_static/install_util.h"
-
-namespace {
-
-constexpr wchar_t kValueName[] = L"PWALauncherResult";
-
-}  // namespace
 
 namespace web_app {
 
-LauncherLog::LauncherLog()
-    : key_(HKEY_CURRENT_USER,
-           install_static::GetRegistryPath().c_str(),
-           KEY_SET_VALUE) {}
+LauncherLog::LauncherLog() : key_(GetLauncherLogRegistryKey(KEY_SET_VALUE)) {}
 
-void LauncherLog::Log(int value) {
-  key_.WriteValue(kValueName, base::saturated_cast<DWORD>(value));
+void LauncherLog::Log(WebAppLauncherLaunchResult value) {
+  key_.WriteValue(kPwaLauncherResult, base::saturated_cast<DWORD>(value));
 }
 
 }  // namespace web_app

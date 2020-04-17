@@ -4,10 +4,8 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_world_tracking_state.h"
 
-#include "third_party/blink/renderer/bindings/modules/v8/v8_xr_light_estimation_state_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_plane_detection_state_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_world_tracking_state_init.h"
-#include "third_party/blink/renderer/modules/xr/xr_light_estimation_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_plane_detection_state.h"
 
 namespace blink {
@@ -22,20 +20,10 @@ XRWorldTrackingState::XRWorldTrackingState(
     plane_detection_state_ =
         MakeGarbageCollected<XRPlaneDetectionState>(nullptr);
   }
-
-  if (world_tracking_state_init &&
-      world_tracking_state_init->hasLightEstimationState()) {
-    light_estimation_state_ = MakeGarbageCollected<XRLightEstimationState>(
-        world_tracking_state_init->lightEstimationState());
-  } else {
-    light_estimation_state_ =
-        MakeGarbageCollected<XRLightEstimationState>(nullptr);
-  }
 }
 
 void XRWorldTrackingState::Trace(Visitor* visitor) {
   visitor->Trace(plane_detection_state_);
-  visitor->Trace(light_estimation_state_);
   ScriptWrappable::Trace(visitor);
 }
 

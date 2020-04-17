@@ -209,30 +209,87 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
   EXPECT_EQ(420, number_d);
 }
 
+TEST_F(JSONParserTest, LineColumnCounting) {
+  const struct {
+    const char* input;
+    int error_line;
+    int error_column;
+  } kCases[] = {
+      // For all but the "q_is_not_etc" case, the error (indicated by ^ in the
+      // comments) is seeing a digit when expecting ',' or ']'.
+      {
+          // Line and column counts are 1-based, not 0-based.
+          "q_is_not_the_start_of_any_valid_JSON_token",
+          1,
+          1,
+      },
+      {
+          "[2,4,6 8",
+          // -----^
+          1,
+          8,
+      },
+      {
+          "[2,4,6\t8",
+          // ------^
+          1,
+          8,
+      },
+      {
+          "[2,4,6\n8",
+          // ------^
+          2,
+          2,  // TODO(nigeltao): column should be 1.
+      },
+      {
+          "[\n0,\n1,\n2,\n3,4,5,6 7,\n8,\n9\n]",
+          // ---------------------^
+          5,
+          10,  // TODO(nigeltao): column should be 9.
+      },
+      {
+          // Same as the previous example, but with "\r\n"s instead of "\n"s.
+          "[\r\n0,\r\n1,\r\n2,\r\n3,4,5,6 7,\r\n8,\r\n9\r\n]",
+          // -----------------------------^
+          5,
+          10,  // TODO(nigeltao): column should be 9.
+      },
+      // The JSON spec forbids unescaped ASCII control characters (including
+      // line breaks) within a string, but our implementation is more lenient.
+      {
+          "[\"3\n1\" 4",
+          // --------^
+          1,  // TODO(nigeltao): line should be 2.
+          8,  // TODO(nigeltao): column should be 4.
+      },
+      {
+          "[\"3\r\n1\" 4",
+          // ----------^
+          1,  // TODO(nigeltao): line should be 2.
+          9,  // TODO(nigeltao): column should be 4.
+      },
+  };
+
+  for (unsigned int i = 0; i < base::size(kCases); ++i) {
+    auto test_case = kCases[i];
+    SCOPED_TRACE(StringPrintf("case %u: \"%s\"", i, test_case.input));
+
+    JSONReader::ValueWithError root = JSONReader::ReadAndReturnValueWithError(
+        test_case.input, JSON_PARSE_RFC);
+    EXPECT_FALSE(root.value);
+    EXPECT_EQ(
+        JSONParser::FormatErrorMessage(
+            test_case.error_line, test_case.error_column,
+            (i == 0) ? JSONReader::kUnexpectedToken : JSONReader::kSyntaxError),
+        root.error_message);
+  }
+}
+
 TEST_F(JSONParserTest, ErrorMessages) {
   JSONReader::ValueWithError root =
       JSONReader::ReadAndReturnValueWithError("[42]", JSON_PARSE_RFC);
   EXPECT_TRUE(root.error_message.empty());
   EXPECT_EQ(0, root.error_code);
-
-  // Test line and column counting
-  const char big_json[] = "[\n0,\n1,\n2,\n3,4,5,6 7,\n8,\n9\n]";
-  // error here ----------------------------------^
-  root = JSONReader::ReadAndReturnValueWithError(big_json, JSON_PARSE_RFC);
-  EXPECT_FALSE(root.value);
-  EXPECT_EQ(JSONParser::FormatErrorMessage(5, 10, JSONReader::kSyntaxError),
-            root.error_message);
-  EXPECT_EQ(JSONReader::JSON_SYNTAX_ERROR, root.error_code);
-
-  // Test line and column counting with "\r\n" line ending
-  const char big_json_crlf[] =
-      "[\r\n0,\r\n1,\r\n2,\r\n3,4,5,6 7,\r\n8,\r\n9\r\n]";
-  // error here ----------------------^
-  root = JSONReader::ReadAndReturnValueWithError(big_json_crlf, JSON_PARSE_RFC);
-  EXPECT_FALSE(root.value);
-  EXPECT_EQ(JSONParser::FormatErrorMessage(5, 10, JSONReader::kSyntaxError),
-            root.error_message);
-  EXPECT_EQ(JSONReader::JSON_SYNTAX_ERROR, root.error_code);
 
   // Test each of the error conditions
   root = JSONReader::ReadAndReturnValueWithError("{},{}", JSON_PARSE_RFC);

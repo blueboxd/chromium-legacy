@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/modules/xr/xr_light_estimation_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_plane_detection_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_system.h"
@@ -163,7 +162,7 @@ void XRFrameProvider::RequestFrame(XRSession* session) {
 
   auto options = device::mojom::blink::XRFrameDataRequestOptions::New(
       session->worldTrackingState()->planeDetectionState()->enabled(),
-      session->worldTrackingState()->lightEstimationState()->enabled());
+      session->LightEstimationEnabled());
 
   // Immersive frame logic.
   if (session->immersive()) {
@@ -356,7 +355,7 @@ void XRFrameProvider::RequestNonImmersiveFrameData(XRSession* session) {
     auto& data_provider = provider->value;
     auto options = device::mojom::blink::XRFrameDataRequestOptions::New(
         session->worldTrackingState()->planeDetectionState()->enabled(),
-        session->worldTrackingState()->lightEstimationState()->enabled());
+        session->LightEstimationEnabled());
 
     data_provider->GetFrameData(
         std::move(options),

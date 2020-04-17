@@ -76,7 +76,7 @@ tools and is not distributed.
 
     1. Roll the `chromium/src/DEPS` file to reference that new commit ID.
         ```sh
-        roll-dep src/third_party/sqlite/src
+        roll-dep src/third_party/sqlite/src --roll-to <git hash of merged CL>
         ```
     2. Update the version in //third_party/sqlite/README.chromium. Append the
        commit created by roll-dep above.
@@ -139,7 +139,7 @@ following:
     reference that new commit ID.
 
     ```sh
-    roll-dep src/third_party/sqlite/src
+    roll-dep src/third_party/sqlite/src --roll-to <git hash of merged CL>
     ```
 
 # Running Tests

@@ -156,13 +156,6 @@ TEST_F(WindowUtilTest, MoveWindowToDisplay) {
   const int original_container_id = window->parent()->id();
   const aura::Window* original_root = window->GetRootWindow();
 
-  EXPECT_FALSE(MoveWindowToDisplay(window.get(), display::kInvalidDisplayId));
-  EXPECT_EQ(original_display_id,
-            screen->GetDisplayNearestWindow(window.get()).id());
-  EXPECT_FALSE(MoveWindowToDisplay(window.get(), original_display_id));
-  EXPECT_EQ(original_display_id,
-            screen->GetDisplayNearestWindow(window.get()).id());
-
   ASSERT_EQ(2, screen->GetNumDisplays());
   const int64_t secondary_display_id = screen->GetAllDisplays()[1].id();
   EXPECT_NE(original_display_id, secondary_display_id);
@@ -177,6 +170,38 @@ TEST_F(WindowUtilTest, MoveWindowToDisplay) {
             screen->GetDisplayNearestWindow(window.get()).id());
   EXPECT_EQ(original_container_id, window->parent()->id());
   EXPECT_EQ(original_root, window->GetRootWindow());
+}
+
+// Tests that locking and unlocking the screen does not alter the display of a
+// window moved by MoveWindowToDisplay.
+TEST_F(WindowUtilTest, MoveWindowToDisplayAndLockScreen) {
+  UpdateDisplay("500x400, 600x400");
+  auto window = CreateTestWindow(gfx::Rect(12, 20, 100, 100));
+  display::Screen* screen = display::Screen::GetScreen();
+  ASSERT_EQ(2, screen->GetNumDisplays());
+  const int64_t primary_display_id = screen->GetAllDisplays()[0].id();
+  const int64_t secondary_display_id = screen->GetAllDisplays()[1].id();
+  ASSERT_EQ(primary_display_id,
+            screen->GetDisplayNearestWindow(window.get()).id());
+
+  EXPECT_TRUE(MoveWindowToDisplay(window.get(), secondary_display_id));
+  EXPECT_EQ(secondary_display_id,
+            screen->GetDisplayNearestWindow(window.get()).id());
+
+  // Tests that after locking and unlocking the screen the window remains on the
+  // secondary display.
+  GetSessionControllerClient()->LockScreen();
+  GetSessionControllerClient()->UnlockScreen();
+  EXPECT_EQ(secondary_display_id,
+            screen->GetDisplayNearestWindow(window.get()).id());
+
+  // Move the window to the primary display. Tests that after locking and
+  // unlocking the screen the window remains on the secondary display.
+  EXPECT_TRUE(MoveWindowToDisplay(window.get(), primary_display_id));
+  GetSessionControllerClient()->LockScreen();
+  GetSessionControllerClient()->UnlockScreen();
+  EXPECT_EQ(primary_display_id,
+            screen->GetDisplayNearestWindow(window.get()).id());
 }
 
 TEST_F(WindowUtilTest, RemoveTransientDescendants) {

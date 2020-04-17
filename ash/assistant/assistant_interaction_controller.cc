@@ -25,6 +25,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/session/session_controller_impl.h"
@@ -525,8 +526,8 @@ void AssistantInteractionController::OnSuggestionChipPressed(
     // receive a deleted pointer.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&AssistantControllerImpl::OpenUrl,
-                       assistant_controller_->GetWeakPtr(),
+        base::BindOnce(&AssistantController::OpenUrl,
+                       AssistantController::Get()->GetWeakPtr(),
                        suggestion->action_url, /*in_background=*/false,
                        /*from_server=*/false));
     return;
@@ -753,7 +754,7 @@ void AssistantInteractionController::OnOpenUrlResponse(const GURL& url,
   // We need to indicate that the navigation attempt is occurring as a result of
   // a server response so that we can differentiate from navigation attempts
   // initiated by direct user interaction.
-  assistant_controller_->OpenUrl(url, in_background, /*from_server=*/true);
+  AssistantController::Get()->OpenUrl(url, in_background, /*from_server=*/true);
 }
 
 void AssistantInteractionController::OnOpenAppResponse(
@@ -787,8 +788,8 @@ void AssistantInteractionController::OnOpenAppResponse(
                        base::CompareCase::SENSITIVE)) {
     intent_str = kAndroidIntentScheme + intent_str;
   }
-  assistant_controller_->OpenUrl(GURL(intent_str), /*in_background=*/false,
-                                 /*from_server=*/true);
+  AssistantController::Get()->OpenUrl(GURL(intent_str), /*in_background=*/false,
+                                      /*from_server=*/true);
   std::move(callback).Run(true);
 }
 

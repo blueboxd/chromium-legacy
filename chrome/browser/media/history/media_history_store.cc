@@ -24,6 +24,7 @@
 #include "sql/recovery.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "url/origin.h"
 
 namespace {
@@ -46,7 +47,7 @@ void DatabaseErrorCallback(sql::Database* db,
     // return errors until the handle is re-opened.
     sql::Recovery::RecoverDatabase(db, db_path);
 
-    // The DLOG(FATAL) below is intended to draw immediate attention to errors
+    // The DLOG(ERROR) below is intended to draw immediate attention to errors
     // in newly-written code.  Database corruption is generally a result of OS
     // or hardware issues, not coding errors at the client level, so displaying
     // the error would probably lead to confusion.  The ignored call signals the
@@ -55,9 +56,9 @@ void DatabaseErrorCallback(sql::Database* db,
     return;
   }
 
-  // The default handling is to assert on debug and to ignore on release.
+  // The default handling is to log on debug and to ignore on release.
   if (!sql::Database::IsExpectedSqliteError(extended_error))
-    DLOG(FATAL) << db->GetErrorMessage();
+    DLOG(ERROR) << db->GetErrorMessage();
 }
 
 }  // namespace
@@ -100,7 +101,7 @@ MediaHistoryStore::MediaHistoryStore(
       initialization_successful_(false) {
   db_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&MediaHistoryStore::Initialize, base::Unretained(this)));
+      base::BindOnce(&MediaHistoryStore::Initialize, base::RetainedRef(this)));
 }
 
 MediaHistoryStore::~MediaHistoryStore() {

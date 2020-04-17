@@ -191,20 +191,9 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator() {
   scoped_refptr<SegmentReader> segment_reader =
       SegmentReader::CreateFromSkROBuffer(std::move(ro_buffer));
 
-  // ImageFrameGenerator has the latest known alpha state. There will be a
-  // performance boost if the image is opaque since we can avoid painting
-  // the background in this case.
-  // For multi-frame images, these maybe animated on the compositor thread.
-  // So we can not mark them as opaque unless all frames are opaque.
-  // TODO(khushalsagar): Check whether all frames being added to the
-  // generator are opaque when populating FrameMetadata below.
-  SkAlphaType alpha_type = kPremul_SkAlphaType;
-  if (frame_data_.size() == 1u && !frame_generator_->HasAlpha(0u))
-    alpha_type = kOpaque_SkAlphaType;
-
   SkImageInfo info =
       SkImageInfo::MakeN32(decoded_size.width(), decoded_size.height(),
-                           alpha_type, color_space_for_sk_images_);
+                           AlphaType(), color_space_for_sk_images_);
   if (image_is_high_bit_depth_)
     info = info.makeColorType(kRGBA_F16_SkColorType);
 
@@ -327,12 +316,18 @@ int DeferredImageDecoder::RepetitionCount() const {
                            : repetition_count_;
 }
 
-bool DeferredImageDecoder::FrameHasAlphaAtIndex(size_t index) const {
-  if (metadata_decoder_)
-    return metadata_decoder_->FrameHasAlphaAtIndex(index);
-  if (!frame_generator_->IsMultiFrame())
-    return frame_generator_->HasAlpha(index);
-  return true;
+SkAlphaType DeferredImageDecoder::AlphaType() const {
+  // ImageFrameGenerator has the latest known alpha state. There will be a
+  // performance boost if the image is opaque since we can avoid painting
+  // the background in this case.
+  // For multi-frame images, these maybe animated on the compositor thread.
+  // So we can not mark them as opaque unless all frames are opaque.
+  // TODO(khushalsagar): Check whether all frames being added to the
+  // generator are opaque when populating FrameMetadata below.
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
+  if (frame_data_.size() == 1u && !frame_generator_->HasAlpha(0u))
+    alpha_type = kOpaque_SkAlphaType;
+  return alpha_type;
 }
 
 bool DeferredImageDecoder::FrameIsReceivedAtIndex(size_t index) const {

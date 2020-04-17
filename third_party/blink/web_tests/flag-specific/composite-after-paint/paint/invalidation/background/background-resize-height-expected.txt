@@ -10,6 +10,7 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image'",
       "position": [8, 8],
       "bounds": [110, 44],
+      "contentsOpaque": true,
       "invalidations": [
         [50, 0, 60, 44],
         [0, 40, 60, 4]
@@ -19,6 +20,7 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image size-contain'",
       "position": [108, 8],
       "bounds": [110, 44],
+      "contentsOpaque": true,
       "invalidations": [
         [0, 0, 60, 44],
         [50, 40, 60, 4]
@@ -28,6 +30,7 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image percent-height'",
       "position": [208, 8],
       "bounds": [110, 44],
+      "contentsOpaque": true,
       "invalidations": [
         [0, 0, 60, 44],
         [50, 40, 60, 4]
@@ -37,6 +40,7 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image bottom'",
       "position": [308, 8],
       "bounds": [110, 44],
+      "contentsOpaque": true,
       "invalidations": [
         [50, 0, 60, 44],
         [0, 0, 60, 44]
@@ -54,6 +58,7 @@
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image repeat-round'",
       "bounds": [60, 44],
+      "contentsOpaque": true,
       "backfaceVisibility": "hidden",
       "invalidations": [
         [0, 0, 60, 44]

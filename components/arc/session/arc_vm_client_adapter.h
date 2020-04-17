@@ -6,15 +6,12 @@
 #define COMPONENTS_ARC_SESSION_ARC_VM_CLIENT_ADAPTER_H_
 
 #include <memory>
-#include <string>
 
 #include "base/callback.h"
 #include "components/arc/session/arc_client_adapter.h"
 #include "components/arc/session/file_system_status.h"
 
 namespace arc {
-
-struct UpgradeParams;
 
 // Enum that describes which native bridge mode is used to run arm binaries on
 // x86.
@@ -31,16 +28,6 @@ using FileSystemStatusRewriter =
     base::RepeatingCallback<void(FileSystemStatus*)>;
 std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapterForTesting(
     const FileSystemStatusRewriter& rewriter);
-
-// Sets the path of the boot notification server socket for testing.
-void SetArcVmBootNotificationServerAddressForTesting(const std::string& path);
-
-// Generates a list of props from |upgrade_params|, each of which takes the form
-// "prefix.prop_name=value"
-std::vector<std::string> GenerateUpgradeProps(
-    const UpgradeParams& upgrade_params,
-    const std::string& serial_number,
-    const std::string& prefix);
 
 }  // namespace arc
 

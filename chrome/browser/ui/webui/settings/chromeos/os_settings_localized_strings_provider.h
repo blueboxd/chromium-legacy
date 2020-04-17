@@ -25,6 +25,11 @@ class LocalSearchServiceImpl;
 }  // namespace local_search_service
 
 namespace chromeos {
+
+namespace multidevice_setup {
+class MultiDeviceSetupClient;
+}  // namespace multidevice_setup
+
 namespace settings {
 
 struct SearchConcept;
@@ -56,7 +61,8 @@ class OsSettingsLocalizedStringsProvider
  public:
   OsSettingsLocalizedStringsProvider(
       Profile* profile,
-      local_search_service::LocalSearchServiceImpl* local_search_service);
+      local_search_service::LocalSearchServiceImpl* local_search_service,
+      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client);
   OsSettingsLocalizedStringsProvider(
       const OsSettingsLocalizedStringsProvider& other) = delete;
   OsSettingsLocalizedStringsProvider& operator=(

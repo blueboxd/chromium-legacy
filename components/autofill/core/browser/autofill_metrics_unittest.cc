@@ -277,6 +277,10 @@ class AutofillMetricsTest : public testing::Test {
                            bool include_masked_server_credit_card,
                            bool include_full_server_credit_card);
 
+  // Creates a masked server card with a nickname, and adds it to existing
+  // credit card list.
+  void AddMaskedServerCreditCardWithNickname();
+
   // If set to true, then user is capable of using FIDO authentication for card
   // unmasking.
   void SetFidoEligibility(bool is_verifiable);
@@ -463,6 +467,13 @@ void AutofillMetricsTest::RecreateCreditCards(
     full_server_credit_card.set_guid("10000000-0000-0000-0000-000000000003");
     personal_data_->AddFullServerCreditCard(full_server_credit_card);
   }
+  personal_data_->Refresh();
+}
+
+void AutofillMetricsTest::AddMaskedServerCreditCardWithNickname() {
+  CreditCard masked_server_credit_card =
+      test::GetMaskedServerCardWithNickname();
+  personal_data_->AddServerCreditCard(masked_server_credit_card);
   personal_data_->Refresh();
 }
 
@@ -5384,6 +5395,191 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardWillSubmitFormEvents) {
     histogram_tester.ExpectBucketCount(
         credit_card_form_events_frame_histogram_,
         FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_WILL_SUBMIT_ONCE, 0);
+  }
+}
+
+// Test that we log form events for masked server card nickname.
+TEST_F(AutofillMetricsTest, LogServerNicknameFormEvents) {
+  // Enable surfacing server card nickname flag.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableSurfacingServerCardNickname);
+
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Month", "card_month", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_MONTH);
+  test::CreateTestFormField("Year", "card_year", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+  test::CreateTestFormField("Credit card", "card", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NUMBER);
+
+  // Creating all kinds of cards. None of them has nicknames.
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      true /* include_full_server_credit_card */);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Flag is on but no masked server card has nickname.
+    // Simulating activating the autofill popup for the credit card field, new
+    // popup being shown and filling a local card suggestion.
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    std::string guid("10000000-0000-0000-0000-000000000001");  // local card
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+        autofill_manager_->MakeFrontendIDForTest(guid, std::string()));
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_LOCAL_SUGGESTION_FILLED, 1);
+    // Check that the nickname sub-histogram was not recorded.
+    // ExpectBucketCount() can't be used here because it expects the histogram
+    // to exist.
+    EXPECT_EQ(0, histogram_tester.GetTotalCountsForPrefix(
+                     "Autofill.FormEvents.CreditCard")
+                     ["Autofill.FormEvents.CreditCard.WithServerNickname"]);
+  }
+
+  // Add another masked server card with nickname.
+  AddMaskedServerCreditCardWithNickname();
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Flag is on and has a masked server card with nickname.
+    // Simulating activating the autofill popup for the credit card field, new
+    // popup being shown and filling a local card suggestion. Both general
+    // histogram and nickname sub-histogram are logged.
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    // Select the local card, still log to sub-histogram because user has
+    // another masked servr card with nickname.
+    std::string guid("10000000-0000-0000-0000-000000000001");
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+        autofill_manager_->MakeFrontendIDForTest(guid, std::string()));
+    // The general credit card form event historgram is still logged.
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_LOCAL_SUGGESTION_FILLED, 1);
+    // Sub-histogratm CreditCard.WithServerNickname is also logged
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_LOCAL_SUGGESTION_FILLED, 1);
+  }
+
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Flag is on and has a masked server card with nickname.
+    // Simulating activating the autofill popup for the credit card field, new
+    // popup being shown, selecting a masked card server suggestion and
+    // submitting the form. Verify that all related form events are correctly
+    // logged to nickname sub-histogram.
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    // Select the masked server card without nickname, still log to nickname
+    // sub-histogram because user has another masked server card with nickname.
+    std::string guid("10000000-0000-0000-0000-000000000002");
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
+        autofill_manager_->MakeFrontendIDForTest(guid, std::string()));
+    OnDidGetRealPan(AutofillClient::SUCCESS, "6011000990139424");
+    autofill_manager_->OnFormSubmitted(form, false,
+                                       SubmissionSource::FORM_SUBMISSION);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_INTERACTED_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SUBMITTED_ONCE, 1);
+  }
+
+  // Reset and disable the feature flag.
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillEnableSurfacingServerCardNickname);
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Flag is off (we won't display the nickname), we still log when user has a
+    // masked server card with nickname in order to compare the selection rate
+    // on the same group of user.
+    // Simulating activating the autofill popup for the credit card field, new
+    // popup being shown and filling a local card suggestion.
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    std::string guid("10000000-0000-0000-0000-000000000001");  // local card
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+        autofill_manager_->MakeFrontendIDForTest(guid, std::string()));
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_INTERACTED_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname",
+        FORM_EVENT_LOCAL_SUGGESTION_FILLED, 1);
   }
 }
 

@@ -18,8 +18,7 @@ import org.chromium.base.annotations.NativeMethods;
 public class RecordHistogram {
     /**
      * Tests may need to disable metrics. The value should be reset after the test done, to avoid
-     * carrying over state to unrelated tests. <p> In JUnit tests this can be done automatically
-     * using {@link org.chromium.base.metrics.test.DisableHistogramsRule}.
+     * carrying over state to unrelated tests.
      */
     @VisibleForTesting
     public static void setDisabledForTests(boolean disabled) {

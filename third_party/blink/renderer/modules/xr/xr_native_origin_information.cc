@@ -10,6 +10,25 @@
 #include "third_party/blink/renderer/modules/xr/xr_plane.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 
+namespace {
+device::mojom::XRReferenceSpaceCategory ToReferenceSpaceCategory(
+    blink::XRReferenceSpace::Type reference_space_type) {
+  switch (reference_space_type) {
+    case blink::XRReferenceSpace::Type::kTypeBoundedFloor:
+      return device::mojom::XRReferenceSpaceCategory::BOUNDED_FLOOR;
+    case blink::XRReferenceSpace::Type::kTypeUnbounded:
+      return device::mojom::XRReferenceSpaceCategory::UNBOUNDED;
+    case blink::XRReferenceSpace::Type::kTypeLocalFloor:
+      return device::mojom::XRReferenceSpaceCategory::LOCAL_FLOOR;
+    case blink::XRReferenceSpace::Type::kTypeLocal:
+      return device::mojom::XRReferenceSpaceCategory::LOCAL;
+    case blink::XRReferenceSpace::Type::kTypeViewer:
+      return device::mojom::XRReferenceSpaceCategory::VIEWER;
+  }
+}
+
+}  // namespace
+
 namespace blink {
 
 base::Optional<XRNativeOriginInformation> XRNativeOriginInformation::Create(
@@ -34,27 +53,18 @@ base::Optional<XRNativeOriginInformation> XRNativeOriginInformation::Create(
 base::Optional<XRNativeOriginInformation> XRNativeOriginInformation::Create(
     const XRReferenceSpace* reference_space) {
   DCHECK(reference_space);
-  switch (reference_space->GetType()) {
-    case XRReferenceSpace::Type::kTypeBoundedFloor:
-      return XRNativeOriginInformation(
-          Type::ReferenceSpace,
-          device::mojom::XRReferenceSpaceCategory::BOUNDED_FLOOR);
-    case XRReferenceSpace::Type::kTypeUnbounded:
-      return XRNativeOriginInformation(
-          Type::ReferenceSpace,
-          device::mojom::XRReferenceSpaceCategory::UNBOUNDED);
-    case XRReferenceSpace::Type::kTypeLocalFloor:
-      return XRNativeOriginInformation(
-          Type::ReferenceSpace,
-          device::mojom::XRReferenceSpaceCategory::LOCAL_FLOOR);
-    case XRReferenceSpace::Type::kTypeLocal:
-      return XRNativeOriginInformation(
-          Type::ReferenceSpace, device::mojom::XRReferenceSpaceCategory::LOCAL);
-    case XRReferenceSpace::Type::kTypeViewer:
-      return XRNativeOriginInformation(
-          Type::ReferenceSpace,
-          device::mojom::XRReferenceSpaceCategory::VIEWER);
-  }
+
+  auto reference_space_type = reference_space->GetType();
+  auto reference_space_category =
+      ToReferenceSpaceCategory(reference_space_type);
+
+  return XRNativeOriginInformation(Type::ReferenceSpace,
+                                   reference_space_category);
+}
+
+base::Optional<XRNativeOriginInformation> XRNativeOriginInformation::Create(
+    device::mojom::XRReferenceSpaceCategory reference_space_type) {
+  return XRNativeOriginInformation(Type::ReferenceSpace, reference_space_type);
 }
 
 XRNativeOriginInformation::XRNativeOriginInformation(Type type,

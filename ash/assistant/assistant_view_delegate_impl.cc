@@ -172,8 +172,4 @@ void AssistantViewDelegateImpl::OnSuggestionChipPressed(
     observer.OnSuggestionChipPressed(suggestion);
 }
 
-void AssistantViewDelegateImpl::OpenUrlFromView(const GURL& url) {
-  assistant_controller_->OpenUrl(url);
-}
-
 }  // namespace ash

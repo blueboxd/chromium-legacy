@@ -6,28 +6,13 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/polymer.gni")
 import("../settings.gni")
 
-js_type_check("closure_compile") {
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  closure_flags = settings_closure_flags
   deps = [ ":search_page" ]
 }
 
 js_library("search_page") {
-  deps = [
-    "..:route",
-    "..:router",
-    "../prefs",
-    "../search_engines_page:search_engines_browser_proxy",
-    "../settings_page:settings_animated_pages",
-    "//ui/webui/resources/js:cr",
-  ]
-}
-
-js_type_check("closure_compile_module") {
-  is_polymer3 = true
-  deps = [ ":search_page.m" ]
-}
-
-js_library("search_page.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/search_page/search_page.m.js" ]
   deps = [
     "..:route.m",
     "..:router.m",
@@ -35,7 +20,6 @@ js_library("search_page.m") {
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:cr.m",
   ]
-  extra_deps = [ ":search_page_module" ]
   externs_list = [ "$externs_path/settings_private.js" ]
 }
 
@@ -46,12 +30,5 @@ group("polymer3_elements") {
 polymer_modulizer("search_page") {
   js_file = "search_page.js"
   html_file = "search_page.html"
-  html_type = "dom-module"
-  namespace_rewrites = settings_namespace_rewrites
-  auto_imports = [
-    "chrome/browser/resources/settings/route.html|routes",
-    "chrome/browser/resources/settings/router.html|Router",
-    "chrome/browser/resources/settings/search_engines_page/search_engines_browser_proxy.html|SearchEnginesBrowserProxyImpl,SearchEnginesBrowserProxy,SearchEngine",
-    "ui/webui/resources/html/cr.html|addWebUIListener",
-  ]
+  html_type = "v3-ready"
 }

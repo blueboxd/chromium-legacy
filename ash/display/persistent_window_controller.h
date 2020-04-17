@@ -7,9 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/session/session_observer.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "ui/display/display_observer.h"
 
 namespace ash {
@@ -18,7 +16,6 @@ namespace ash {
 // multi-displays scenario.
 class ASH_EXPORT PersistentWindowController
     : public display::DisplayObserver,
-      public SessionObserver,
       public WindowTreeHostManager::Observer {
  public:
   // Public so it can be used by unit tests.
@@ -26,15 +23,15 @@ class ASH_EXPORT PersistentWindowController
       "Ash.PersistentWindow.NumOfWindowsRestored";
 
   PersistentWindowController();
+  PersistentWindowController(const PersistentWindowController&) = delete;
+  PersistentWindowController& operator=(const PersistentWindowController&) =
+      delete;
   ~PersistentWindowController() override;
 
  private:
   // display::DisplayObserver:
   void OnWillProcessDisplayChanges() override;
   void OnDisplayAdded(const display::Display& new_display) override;
-
-  // SessionObserver:
-  void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
@@ -44,8 +41,6 @@ class ASH_EXPORT PersistentWindowController
 
   // Callback binded on display added and run on display configuration changed.
   base::OnceCallback<void()> restore_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(PersistentWindowController);
 };
 
 }  // namespace ash

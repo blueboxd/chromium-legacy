@@ -73,7 +73,6 @@ import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerUIUtils;
-import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
@@ -253,7 +252,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             new ObservableSupplierImpl<>();
     private InsetObserverView mInsetObserverView;
     private ContextualSearchManager mContextualSearchManager;
-    protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
 
     private UpdateNotificationController mUpdateNotificationController;
@@ -745,10 +743,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mContextualSearchManager = new ContextualSearchManager(this, this);
         }
 
-        if (ReaderModeManager.isEnabled(this)) {
-            mReaderModeManager = new ReaderModeManager(getTabModelSelector(), this);
-        }
-
         TraceEvent.end("ChromeActivity:CompositorInitialization");
     }
 
@@ -1201,11 +1195,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @SuppressLint("NewApi")
     @Override
     protected final void onDestroy() {
-        if (mReaderModeManager != null) {
-            mReaderModeManager.destroy();
-            mReaderModeManager = null;
-        }
-
         if (mContextualSearchManager != null) {
             mContextualSearchManager.destroy();
             mContextualSearchManager = null;
@@ -1639,14 +1628,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public ContextualSearchManager getContextualSearchManager() {
         return mContextualSearchManager;
-    }
-
-    /**
-     * @return The {@code ReaderModeManager} or {@code null} if none;
-     */
-    @VisibleForTesting
-    public ReaderModeManager getReaderModeManager() {
-        return mReaderModeManager;
     }
 
     /**

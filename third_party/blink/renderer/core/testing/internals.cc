@@ -3010,6 +3010,8 @@ bool Internals::loseSharedGraphicsContext3D() {
   if (!shared_provider)
     return false;
   gpu::gles2::GLES2Interface* shared_gl = shared_provider->ContextGL();
+  if (!shared_gl)
+    return false;
   shared_gl->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_EXT,
                                  GL_INNOCENT_CONTEXT_RESET_EXT);
   // To prevent tests that call loseSharedGraphicsContext3D from being

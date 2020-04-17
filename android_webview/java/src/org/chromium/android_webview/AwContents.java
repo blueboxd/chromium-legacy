@@ -2660,7 +2660,7 @@ public class AwContents implements SmartClipProvider {
                 // application callback is executed without any native code on the stack. This
                 // so that any exception thrown by the application callback won't have to be
                 // propagated through a native call stack.
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(jsonResult));
+                AwThreadUtils.postToCurrentLooper(() -> callback.onResult(jsonResult));
             };
         }
 

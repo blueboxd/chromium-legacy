@@ -25,6 +25,10 @@ sql::InitStatus MediaHistoryTableBase::Initialize(sql::Database* db) {
   DCHECK(db);
 
   db_ = db;
+
+  if (!db->is_open())
+    return sql::InitStatus::INIT_FAILURE;
+
   return CreateTableIfNonExistent();
 }
 

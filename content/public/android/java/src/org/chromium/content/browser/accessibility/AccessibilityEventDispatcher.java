@@ -4,8 +4,6 @@
 
 package org.chromium.content.browser.accessibility;
 
-import android.view.accessibility.AccessibilityEvent;
-
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,12 +14,9 @@ import java.util.Map;
  * not overload the system and create lag by sending superfluous events.
  */
 public class AccessibilityEventDispatcher {
-    // Default delay for throttling of successive AccessibilityEvents in milliseconds.
-    private static final int ACCESSIBILITY_EVENT_DEFAULT_DELAY = 100;
-
     // Maps an AccessibilityEvent type to a throttle delay in milliseconds. This is populated once
     // in the constructor.
-    private Map<Integer, Integer> mEventThrottleDelays = new HashMap<Integer, Integer>();
+    private Map<Integer, Integer> mEventThrottleDelays;
 
     // For events being throttled (see: |mEventsToThrottle|), this array will map the eventType
     // to the last time (long in milliseconds) such an event has been sent.
@@ -71,14 +66,9 @@ public class AccessibilityEventDispatcher {
     /**
      *  Create an AccessibilityEventDispatcher and define the delays for event types.
      */
-    public AccessibilityEventDispatcher(Client mClient) {
+    public AccessibilityEventDispatcher(Client mClient, Map<Integer, Integer> eventThrottleDelays) {
         this.mClient = mClient;
-
-        // Define our delays on a per event type basis.
-        mEventThrottleDelays.put(
-                AccessibilityEvent.TYPE_VIEW_SCROLLED, ACCESSIBILITY_EVENT_DEFAULT_DELAY);
-        mEventThrottleDelays.put(
-                AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED, ACCESSIBILITY_EVENT_DEFAULT_DELAY);
+        this.mEventThrottleDelays = eventThrottleDelays;
     }
 
     /**

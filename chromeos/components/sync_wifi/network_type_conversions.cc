@@ -178,6 +178,67 @@ network_config::mojom::SecurityType MojoSecurityTypeFromProto(
   }
 }
 
+network_config::mojom::ProxySettingsPtr MojoProxySettingsFromProto(
+    const sync_pb::WifiConfigurationSpecifics_ProxyConfiguration& proxy_proto) {
+  auto proxy_settings = network_config::mojom::ProxySettings::New();
+  switch (proxy_proto.proxy_option()) {
+    case sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
+        PROXY_OPTION_AUTOMATIC:
+      proxy_settings->type = ::onc::proxy::kPAC;
+      proxy_settings->pac = proxy_proto.autoconfiguration_url();
+      break;
+    case sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
+        PROXY_OPTION_AUTODISCOVERY:
+      proxy_settings->type = ::onc::proxy::kWPAD;
+      break;
+    case sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
+        PROXY_OPTION_MANUAL: {
+      auto manual_settings = network_config::mojom::ManualProxySettings::New();
+      auto synced_manual_configuration =
+          proxy_proto.manual_proxy_configuration();
+      proxy_settings->type = ::onc::proxy::kManual;
+
+      manual_settings->http_proxy = network_config::mojom::ProxyLocation::New();
+      manual_settings->http_proxy->host =
+          synced_manual_configuration.http_proxy_url();
+      manual_settings->http_proxy->port =
+          synced_manual_configuration.http_proxy_port();
+
+      manual_settings->secure_http_proxy =
+          network_config::mojom::ProxyLocation::New();
+      manual_settings->secure_http_proxy->host =
+          synced_manual_configuration.secure_http_proxy_url();
+      manual_settings->secure_http_proxy->port =
+          synced_manual_configuration.secure_http_proxy_port();
+
+      manual_settings->socks = network_config::mojom::ProxyLocation::New();
+      manual_settings->socks->host =
+          synced_manual_configuration.socks_host_url();
+      manual_settings->socks->port =
+          synced_manual_configuration.socks_host_port();
+
+      proxy_settings->manual = std::move(manual_settings);
+
+      std::vector<std::string> exclude_domains;
+      for (const std::string& domain :
+           synced_manual_configuration.whitelisted_domains()) {
+        exclude_domains.push_back(domain);
+      }
+      proxy_settings->exclude_domains = std::move(exclude_domains);
+      break;
+    }
+    case sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
+        PROXY_OPTION_DISABLED:
+      proxy_settings->type = ::onc::proxy::kDirect;
+      break;
+    case sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
+        PROXY_OPTION_UNSPECIFIED:
+      break;
+  }
+
+  return proxy_settings;
+}
+
 network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
     const sync_pb::WifiConfigurationSpecifics& specifics) {
   auto config = network_config::mojom::ConfigProperties::New();
@@ -212,6 +273,14 @@ network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
     config->name_servers_config_type = onc::network_config::kIPConfigTypeStatic;
   } else {
     config->name_servers_config_type = onc::network_config::kIPConfigTypeDHCP;
+  }
+
+  if (specifics.has_proxy_configuration() &&
+      specifics.proxy_configuration().proxy_option() !=
+          sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
+              PROXY_OPTION_UNSPECIFIED) {
+    config->proxy_settings =
+        MojoProxySettingsFromProto(specifics.proxy_configuration());
   }
 
   return config;

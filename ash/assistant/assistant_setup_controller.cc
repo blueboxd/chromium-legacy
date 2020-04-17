@@ -8,6 +8,7 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/i18n_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -57,7 +58,7 @@ void AssistantSetupController::OnOptInButtonPressed() {
   using chromeos::assistant::prefs::ConsentStatus;
   if (AssistantState::Get()->consent_status().value_or(
           ConsentStatus::kUnknown) == ConsentStatus::kUnauthorized) {
-    assistant_controller_->OpenUrl(assistant::util::CreateLocalizedGURL(
+    AssistantController::Get()->OpenUrl(assistant::util::CreateLocalizedGURL(
         kGSuiteAdministratorInstructionsUrl));
   } else {
     StartOnboarding(/*relaunch=*/true);

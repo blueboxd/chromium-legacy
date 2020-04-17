@@ -7,7 +7,7 @@ import 'chrome://new-tab-page/customize_backgrounds.js';
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
 import {BackgroundSelectionType} from 'chrome://new-tab-page/customize_dialog.js';
 import {assertNotStyle, assertStyle, createTestProxy} from 'chrome://test/new_tab_page/test_support.js';
-import {flushTasks, isVisible} from 'chrome://test/test_util.m.js';
+import {eventToPromise, flushTasks, isVisible} from 'chrome://test/test_util.m.js';
 
 function createCollection(id = 0, label = '', url = '') {
   return {id: id, label: label, previewImageUrl: {url: url}};
@@ -56,11 +56,11 @@ suite('NewTabPageCustomizeBackgroundsTest', () => {
     assertStyle(customizeBackgrounds.$.images, 'display', 'none');
     const tiles =
         customizeBackgrounds.shadowRoot.querySelectorAll('#collections .tile');
-    assertEquals(2, tiles.length);
-    assertEquals('col_0', tiles[1].getAttribute('title'));
+    assertEquals(3, tiles.length);
+    assertEquals('col_0', tiles[2].getAttribute('title'));
     assertEquals(
         'background_image?https://col_0.jpg',
-        tiles[1].querySelector('.image').path);
+        tiles[2].querySelector('.image').path);
   });
 
   test('clicking collection selects collection', async function() {
@@ -73,7 +73,7 @@ suite('NewTabPageCustomizeBackgroundsTest', () => {
 
     // Act.
     customizeBackgrounds.shadowRoot
-        .querySelector('#collections .tile:nth-child(2)')
+        .querySelector('#collections .tile:nth-child(3)')
         .click();
 
     // Assert.
@@ -212,6 +212,16 @@ suite('NewTabPageCustomizeBackgroundsTest', () => {
       type: BackgroundSelectionType.NO_BACKGROUND
     };
     assertFalse(element.classList.contains('selected'));
+  });
+
+  test('choosing local dispatches cancel', async () => {
+    const customizeBackgrounds = await createCustomizeBackgrounds();
+    handler.setResultFor(
+        'chooseLocalCustomBackground', Promise.resolve({success: true}));
+    const waitForClose = eventToPromise('close', customizeBackgrounds);
+    customizeBackgrounds.$.uploadFromDevice.click();
+    await handler.whenCalled('chooseLocalCustomBackground');
+    await waitForClose;
   });
 
   suite('no background', () => {

@@ -157,10 +157,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // Invoked when suggestion chip is pressed.
   virtual void OnSuggestionChipPressed(
       const AssistantSuggestion* suggestion) = 0;
-
-  // Opens the specified |url| in a new browser tab. Special handling is applied
-  // to deep links which may cause deviation from this behavior.
-  virtual void OpenUrlFromView(const GURL& url) = 0;
 };
 
 }  // namespace ash

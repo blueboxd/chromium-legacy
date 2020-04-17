@@ -42,8 +42,12 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
 
   ~CreditCardFormEventLogger() override;
 
-  inline void set_is_context_secure(bool is_context_secure) {
+  void set_is_context_secure(bool is_context_secure) {
     is_context_secure_ = is_context_secure;
+  }
+
+  void set_has_server_nickname(bool has_server_nickname) {
+    has_server_nickname_ = has_server_nickname;
   }
 
   void OnDidSelectCardSuggestion(const CreditCard& credit_card,
@@ -91,6 +95,9 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   UnmaskAuthFlowType current_authentication_flow_;
   bool has_logged_masked_server_card_suggestion_selected_ = false;
   bool logged_suggestion_filled_was_masked_server_card_ = false;
+
+  // True when ANY of the masked server cards has a nickname.
+  bool has_server_nickname_ = false;
 
   // Weak references.
   PersonalDataManager* personal_data_manager_;

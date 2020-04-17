@@ -15767,6 +15767,7 @@ Called by update_document_policy_enum.py.-->
   <int value="3" label="GOOGLE"/>
   <int value="4" label="IIJ"/>
   <int value="5" label="QUAD9_SECURE"/>
+  <int value="6" label="DNS_SB"/>
 </enum>
 
 <enum name="DomainBoundCerts.DBLoadStatus">
@@ -22943,7 +22944,7 @@ Called by update_extension_histograms.py.-->
   <int value="39" label="kAudio"/>
   <int value="40" label="kFavicon"/>
   <int value="41" label="kMusicManagerPrivate"/>
-  <int value="42" label="kWebConnectable"/>
+  <int value="42" label="kDeleted_WebConnectable"/>
   <int value="43" label="kActivityLogPrivate"/>
   <int value="44" label="kBluetoothDevices"/>
   <int value="45" label="kDownloadsOpen"/>
@@ -32743,7 +32744,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2147467259" label="E_FAIL"/>
   <int value="-2147418113" label="E_UNEXPECTED"/>
   <int value="-2147417848" label="RPC_E_DISCONNECTED"/>
+  <int value="-2147221232" label="CLASS_E_NOAGGREGATION"/>
   <int value="-2147221164" label="REGDB_E_CLASSNOTREG"/>
+  <int value="-2147220480"
+      label="custom error for taskbar::CustomHresultCodes::kIsBrowserAbort"/>
+  <int value="-2147220479"
+      label="custom error for taskbar::CustomHresultCodes::kInvalidIcon"/>
+  <int value="-2147220478"
+      label="custom error for taskbar::CustomHresultCodes::kWindowsInvisible"/>
+  <int value="-2147220477"
+      label="custom error for taskbar::CustomHresultCodes::kImageLoading"/>
   <int value="-2147219455" label="GOOPDATE_E_NO_NETWORK"/>
   <int value="-2147219437" label="GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY"/>
   <int value="-2147219198" label="GOOPDATEINSTALL_E_INSTALLER_FAILED"/>
@@ -39757,6 +39767,7 @@ from previous Chrome versions.
   <int value="296215399" label="WindowsMixedReality:disabled"/>
   <int value="296296761" label="MediaFoundationVideoCapture:disabled"/>
   <int value="297095559" label="ShowBluetoothDebugLogToggle:disabled"/>
+  <int value="297346310" label="ElasticOverscrollWin:enabled"/>
   <int value="299792415" label="OmniboxSuggestionTransparencyOptions:enabled"/>
   <int value="300095239" label="FCMInvalidations:enabled"/>
   <int value="300870732" label="ShelfDimming:disabled"/>
@@ -40965,6 +40976,7 @@ from previous Chrome versions.
   <int value="1714016217" label="EnableHeuristicPalmDetectionFilter:enabled"/>
   <int value="1714922056" label="GlobalMediaControls:disabled"/>
   <int value="1715338237" label="ContextualSearchSecondTap:disabled"/>
+  <int value="1715382788" label="ElasticOverscrollWin:disabled"/>
   <int value="1716104463" label="enable-fullscreen-app-list"/>
   <int value="1717788959" label="SlowDCTimerInterruptsWin:disabled"/>
   <int value="1717987538" label="NTPTilesLowerResolutionFavicons:enabled"/>
@@ -66488,6 +66500,14 @@ Full version information for the fingerprint enum values:
   <int value="8" label="IMY"/>
 </enum>
 
+<enum name="UpdateAppBadgeMacResult">
+  <summary>The result from updating App Badge on macOS.</summary>
+  <int value="0" label="success"/>
+  <int value="1" label="No app shim manager"/>
+  <int value="2" label="No app shim host"/>
+  <int value="3" label="No app shim"/>
+</enum>
+
 <enum name="UpdateCheckStatus">
   <int value="0" label="Unknown"/>
   <int value="1" label="Ok"/>
@@ -68865,6 +68885,14 @@ Full version information for the fingerprint enum values:
   <int value="13" label="Policy-install on Chrome OS"/>
   <int value="14" label="System default app on Chrome OS"/>
   <int value="15" label="Install icon in the Omnibox"/>
+</enum>
+
+<enum name="WebAppLauncherLaunchResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Started">
+    Terminated unexpectedly after starting launch.
+  </int>
+  <int value="2" label="Error">Launching the Chrome process failed.</int>
 </enum>
 
 <enum name="WebAppManifestUpdateResult">

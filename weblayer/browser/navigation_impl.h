@@ -5,8 +5,11 @@
 #ifndef WEBLAYER_BROWSER_NAVIGATION_IMPL_H_
 #define WEBLAYER_BROWSER_NAVIGATION_IMPL_H_
 
+#include <memory>
 #include "base/macros.h"
+#include "base/optional.h"
 #include "build/build_config.h"
+#include "content/public/browser/navigation_controller.h"
 #include "weblayer/public/navigation.h"
 
 #if defined(OS_ANDROID)
@@ -34,6 +37,11 @@ class NavigationImpl : public Navigation {
   void set_safe_to_set_request_headers(bool value) {
     safe_to_set_request_headers_ = value;
   }
+
+  void SetParamsToLoadWhenSafe(
+      std::unique_ptr<content::NavigationController::LoadURLParams> params);
+  std::unique_ptr<content::NavigationController::LoadURLParams>
+  TakeParamsToLoadWhenSafe();
 
 #if defined(OS_ANDROID)
   void SetJavaNavigation(
@@ -98,6 +106,13 @@ class NavigationImpl : public Navigation {
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_navigation_;
 #endif
+
+  // Used to delay loading until safe. In particular, if Navigate() is called
+  // from NavigationStarted(), then the parameters are captured and the
+  // navigation started later on. The delaying is necessary as content is not
+  // reentrant, and this triggers some amount of reentrancy.
+  std::unique_ptr<content::NavigationController::LoadURLParams>
+      scheduled_load_params_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationImpl);
 };

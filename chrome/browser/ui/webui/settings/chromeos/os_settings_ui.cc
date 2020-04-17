@@ -389,10 +389,6 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
       base::FeatureList::IsEnabled(::features::kPrivacySettingsRedesign));
 
   html_source->AddBoolean(
-      "multideviceAllowedByPolicy",
-      chromeos::multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(
-          profile->GetPrefs()));
-  html_source->AddBoolean(
       "quickUnlockEnabled",
       chromeos::quick_unlock::IsPinEnabled(profile->GetPrefs()));
   html_source->AddBoolean(
@@ -428,8 +424,6 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "lockScreenHideSensitiveNotificationsSupported",
       ash::features::IsLockScreenHideSensitiveNotificationsSupported());
-  html_source->AddBoolean("showTechnologyBadge",
-                          !ash::features::IsSeparateNetworkIconsEnabled());
   html_source->AddBoolean("hasInternalStylus",
                           ash::stylus_utils::HasInternalStylus());
 

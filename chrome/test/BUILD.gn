@@ -3351,6 +3351,7 @@ test("unit_tests") {
     "../browser/resource_coordinator/tab_load_tracker_unittest.cc",
     "../browser/resources_util_unittest.cc",
     "../browser/search/contextual_search_policy_handler_android_unittest.cc",
+    "../browser/tab/state/tab_state_db_factory_unittest.cc",
     "../browser/tab/state/tab_state_db_unittest.cc",
 
     # TODO(hashimoto): those tests should be componentized and moved to
@@ -4439,6 +4440,7 @@ test("unit_tests") {
     deps += [
       "//ash:test_support",
       "//ash/app_list:test_support",
+      "//ash/public/cpp/assistant/test_support",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/resources/vector_icons",
       "//ash/strings",

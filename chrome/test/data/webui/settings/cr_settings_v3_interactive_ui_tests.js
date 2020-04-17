@@ -7,8 +7,6 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
 
-GEN('#include "chrome/browser/ui/ui_features.h"');
-
 /** Test fixture for shared Polymer 3 elements. */
 // eslint-disable-next-line no-var
 var CrSettingsV3InteractiveUITest = class extends PolymerInteractiveUITest {
@@ -23,11 +21,6 @@ var CrSettingsV3InteractiveUITest = class extends PolymerInteractiveUITest {
       '//third_party/mocha/mocha.js',
       '//chrome/test/data/webui/mocha_adapter.js',
     ];
-  }
-
-  /** @override */
-  get featureList() {
-    return {enabled: ['features::kSettingsPolymer3'], disabled: []};
   }
 };
 

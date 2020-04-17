@@ -44,10 +44,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionDialogUiTest, MAYBE_TabFocusLoop) {
 
   // Open ExtensionDialog, whose initial page is the extension's main.html.
   // The main.html contains three buttons.
-  ExtensionDialog::InitParams params(300, 300);
+  ExtensionDialog::InitParams params(gfx::Size(300, 300));
   params.is_modal = true;
-  params.min_width = 300;
-  params.min_height = 300;
+  params.min_size = {300, 300};
   ExtensionDialog* dialog =
       ExtensionDialog::Show(extension->url().Resolve("main.html"),
                             browser()->window()->GetNativeWindow(),

@@ -78,7 +78,7 @@ class UrlPatternIndexTest : public ::testing::Test {
         flat::GetUrlPatternIndex(flat_builder_->GetBufferPointer());
     index_matcher_.reset(new UrlPatternIndexMatcher(flat_index));
 
-    ASSERT_EQ(indexed_rules_count_, index_matcher_->rules_count());
+    ASSERT_EQ(indexed_rules_count_, index_matcher_->GetRulesCount());
   }
 
   const flat::UrlRule* FindMatch(

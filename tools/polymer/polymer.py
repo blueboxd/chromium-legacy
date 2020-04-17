@@ -254,6 +254,8 @@ def _extract_template(html_file, html_type):
           assert re.match(r'\s*</template>', lines[i - 2])
           assert re.match(r'\s*<script ', lines[i - 1])
           end_line = i - 3;
+        # Should not have an iron-iconset-svg in a dom-module file.
+        assert not re.match(r'\s*<iron-iconset-svg ', line)
 
     # If an opening <dom-module> tag was found, check that a closing one was
     # found as well.

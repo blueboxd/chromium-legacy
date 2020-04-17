@@ -71,7 +71,6 @@ public class HomeButtonTest extends DummyUiActivityTestCase {
         super.setUpTest();
 
         MockitoAnnotations.initMocks(this);
-        SettingsLauncher.getInstance().setInstanceForTests(mSettingsLauncher);
 
         // Set the default test status for homepage button tests.
         // By default, the homepage is <b>enabled</b> and with customized URL.
@@ -84,6 +83,7 @@ public class HomeButtonTest extends DummyUiActivityTestCase {
             mIdHomeButton = View.generateViewId();
             mHomeButton = new HomeButton(getActivity(), null);
             mHomeButton.setId(mIdHomeButton);
+            mHomeButton.setSettingsLauncherForTests(mSettingsLauncher);
             HomeButton.setSaveContextMenuForTests(true);
 
             content.addView(mHomeButton);

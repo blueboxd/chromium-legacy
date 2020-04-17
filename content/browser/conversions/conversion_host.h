@@ -16,6 +16,7 @@
 
 namespace content {
 
+class ConversionPageMetrics;
 class RenderFrameHost;
 class WebContents;
 
@@ -41,6 +42,13 @@ class CONTENT_EXPORT ConversionHost : public WebContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(ConversionHostTest,
                            ConversionWithInsecureReportingOrigin_BadMessage);
   FRIEND_TEST_ALL_PREFIXES(ConversionHostTest, ValidConversion_NoBadMessage);
+  FRIEND_TEST_ALL_PREFIXES(ConversionHostTest, PerPageConversionMetrics);
+  FRIEND_TEST_ALL_PREFIXES(ConversionHostTest,
+                           NoManager_NoPerPageConversionMetrics);
+
+  ConversionHost(
+      WebContents* web_contents,
+      std::unique_ptr<ConversionManager::Provider> conversion_manager_provider);
 
   // blink::mojom::ConversionHost:
   void RegisterConversion(blink::mojom::ConversionPtr conversion) override;
@@ -54,6 +62,11 @@ class CONTENT_EXPORT ConversionHost : public WebContentsObserver,
   // Gives access to a ConversionManager implementation to forward impressions
   // and conversion registrations to.
   std::unique_ptr<ConversionManager::Provider> conversion_manager_provider_;
+
+  // Logs metrics per top-level page load. Created for every top level
+  // navigation that commits, as long as there is a ConversionManager.
+  // Excludes the initial about:blank document.
+  std::unique_ptr<ConversionPageMetrics> conversion_page_metrics_;
 
   WebContentsFrameReceiverSet<blink::mojom::ConversionHost> receiver_;
 };

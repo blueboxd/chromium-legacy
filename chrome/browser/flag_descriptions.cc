@@ -2917,6 +2917,11 @@ const char kD3D11VideoDecoderName[] = "D3D11 Video Decoder";
 const char kD3D11VideoDecoderDescription[] =
     "Enables D3D11VideoDecoder for hardware accelerated video decoding.";
 
+const char kElasticOverscrollWinName[] = "Elastic Overscroll for Windows";
+const char kElasticOverscrollWinDescription[] =
+    "Enables Elastic Overscrolling for Windows on touchscreens and precision "
+    "touchpads.";
+
 const char kEnableMediaFoundationVideoCaptureName[] =
     "MediaFoundation Video Capture";
 const char kEnableMediaFoundationVideoCaptureDescription[] =

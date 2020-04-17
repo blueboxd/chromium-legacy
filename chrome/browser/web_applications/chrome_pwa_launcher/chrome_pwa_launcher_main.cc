@@ -19,15 +19,6 @@
 
 namespace {
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum LaunchResult {
-  kSuccess = 0,
-  kStarted = 1,
-  kError = 2,
-  kMaxValue = kError
-};
-
 // Returns the path to chrome.exe stored in the "Last Browser" file. If the file
 // is not found, can't be read, or does not contain a valid path, the launcher
 // crashes.
@@ -52,7 +43,8 @@ base::FilePath GetChromePathFromLastBrowserFile() {
 
 // Launches |chrome_path| with the current command-line arguments, and returns
 // the launch result.
-LaunchResult LaunchPwa(const base::FilePath& chrome_path) {
+web_app::WebAppLauncherLaunchResult LaunchPwa(
+    const base::FilePath& chrome_path) {
   // Launch chrome.exe, passing it all command-line arguments.
   base::CommandLine command_line(chrome_path);
   command_line.AppendArguments(*base::CommandLine::ForCurrentProcess(),
@@ -70,9 +62,9 @@ LaunchResult LaunchPwa(const base::FilePath& chrome_path) {
   base::LaunchOptions launch_options;
   launch_options.current_directory = chrome_path.DirName();
   launch_options.grant_foreground_privilege = true;
-  if (!base::LaunchProcess(command_line, launch_options).IsValid())
-    return LaunchResult::kError;
-  return LaunchResult::kSuccess;
+  return base::LaunchProcess(command_line, launch_options).IsValid()
+             ? web_app::WebAppLauncherLaunchResult::kSuccess
+             : web_app::WebAppLauncherLaunchResult::kError;
 }
 
 }  // namespace
@@ -92,14 +84,18 @@ int WINAPI wWinMain(HINSTANCE instance,
   logging_settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(logging_settings);
 
+  // Use |chrome_path| to set InstallDetails for the process, which tells the
+  // LauncherLog which registry key to log the launch result to. No logging can
+  // take place until |chrome_path| is known, so errors before this point are
+  // not recorded.
   const base::FilePath chrome_path = GetChromePathFromLastBrowserFile();
   install_static::InstallDetails::SetForProcess(
       install_static::MakeProductDetails(chrome_path.value()));
 
   web_app::LauncherLog launcher_log;
-  launcher_log.Log(LaunchResult::kStarted);
+  launcher_log.Log(web_app::WebAppLauncherLaunchResult::kStarted);
 
   auto launch_result = LaunchPwa(chrome_path);
   launcher_log.Log(launch_result);
-  return launch_result;
+  return static_cast<int>(launch_result);
 }

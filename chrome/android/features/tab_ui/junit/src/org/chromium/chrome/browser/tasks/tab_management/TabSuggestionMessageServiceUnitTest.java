@@ -26,7 +26,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
-import org.chromium.base.test.DisableNativeTestRule;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileJni;
@@ -64,8 +63,6 @@ public class TabSuggestionMessageServiceUnitTest {
     private static final int CLOSE_SUGGESTION_ACTION_BUTTON_RESOURCE_ID =
             org.chromium.chrome.tab_ui.R.string.tab_suggestion_close_tab_action_button;
 
-    @Rule
-    public final DisableNativeTestRule mDisableNative = new DisableNativeTestRule();
 
     private Tab mTab1;
     private Tab mTab2;

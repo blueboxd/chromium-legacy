@@ -15,40 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol CWVSyncControllerDataSource;
 @protocol CWVSyncControllerDelegate;
 
-// The error domain for sync errors.
-FOUNDATION_EXPORT CWV_EXPORT NSErrorDomain const CWVSyncErrorDomain;
-// NSString description for the type of error.
-FOUNDATION_EXPORT CWV_EXPORT
-    NSErrorUserInfoKey const CWVSyncErrorDescriptionKey;
-// NSString message describing the error in more detail.
-FOUNDATION_EXPORT CWV_EXPORT NSErrorUserInfoKey const CWVSyncErrorMessageKey;
-// NSValue wrapped BOOL indicating if the error is transient.
-FOUNDATION_EXPORT CWV_EXPORT
-    NSErrorUserInfoKey const CWVSyncErrorIsTransientKey;
-
-// Possible error codes during syncing.
-typedef NS_ENUM(NSInteger, CWVSyncError) {
-  // No error.
-  CWVSyncErrorNone = 0,
-  // The credentials supplied to GAIA were either invalid, or the locally
-  // cached credentials have expired.
-  CWVSyncErrorInvalidGAIACredentials = -100,
-  // The GAIA user is not authorized to use the service.
-  CWVSyncErrorUserNotSignedUp = -200,
-  // Could not connect to server to verify credentials. This could be in
-  // response to either failure to connect to GAIA or failure to connect to
-  // the service needing GAIA tokens during authentication.
-  CWVSyncErrorConnectionFailed = -300,
-  // The service is not available; try again later.
-  CWVSyncErrorServiceUnavailable = -400,
-  // The requestor of the authentication step cancelled the request
-  // prior to completion.
-  CWVSyncErrorRequestCanceled = -500,
-  // Indicates the service responded to a request, but we cannot
-  // interpret the response.
-  CWVSyncErrorUnexpectedServiceResponse = -600,
-};
-
 // Used to manage syncing for autofill and password data. Usage:
 // 1. Set the |dataSource| and |delegate|.
 // 2. Call |startSyncWithIdentity:| to start syncing with identity.

@@ -87,6 +87,8 @@ class ArCore {
       const std::vector<mojom::EntityTypeForHitTest>& entity_types,
       mojom::XRRayPtr ray) = 0;
 
+  // TODO(https://crbug.com/1071229): remove base::Optional, vector should be
+  // sufficient here.
   virtual mojom::XRHitTestSubscriptionResultsDataPtr
   GetHitTestSubscriptionResults(
       const gfx::Transform& mojo_from_viewer,
@@ -95,9 +97,40 @@ class ArCore {
 
   virtual void UnsubscribeFromHitTest(uint64_t subscription_id) = 0;
 
-  virtual base::Optional<uint64_t> CreateAnchor(const mojom::Pose& pose) = 0;
-  virtual base::Optional<uint64_t> CreateAnchor(const mojom::Pose& pose,
-                                                uint64_t plane_id) = 0;
+  using CreateAnchorCallback =
+      base::OnceCallback<void(device::mojom::CreateAnchorResult,
+                              uint64_t anchor_id)>;
+
+  // Creates free-floating anchor. This call will be deferred and the actual
+  // call may be postponed until ARCore is in correct state and the pose of
+  // native origin is known. The anchor pose passed in
+  // |native_origin_from_anchor| is expressed relative to a native origin passed
+  // in |native_origin_information|. The native origin will only be used to
+  // determine most up-to-date pose (i.e. it will *not* be used to create
+  // anchors attached to planes even if the native origin information describes
+  // a plane).
+  virtual void CreateAnchor(
+      const mojom::XRNativeOriginInformation& native_origin_information,
+      const mojom::Pose& native_origin_from_anchor,
+      CreateAnchorCallback callback) = 0;
+  // Creates plane-attached anchor. This call will be deferred and the actual
+  // call may be postponed until ARCore is in correct state and the pose of
+  // the plane is known.
+  virtual void CreatePlaneAttachedAnchor(const mojom::Pose& plane_from_anchor,
+                                         uint64_t plane_id,
+                                         CreateAnchorCallback callback) = 0;
+
+  // Starts processing anchor creation requests created by calls to
+  // |CreateAnchor()| & |CreatePlaneAttachedAnchor()| (see above). It should be
+  // called when ARCore is in appropriate state. This method must be called on a
+  // regular basis (once per ARCore update is sufficient), otherwise the anchor
+  // creation requests may be deferred for longer than they need to.
+  // TODO(https://crbug.com/1071229): remove base::Optional, vector should be
+  // sufficient here.
+  virtual void ProcessAnchorCreationRequests(
+      const gfx::Transform& mojo_from_viewer,
+      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
+          maybe_input_state) = 0;
 
   virtual void DetachAnchor(uint64_t anchor_id) = 0;
 

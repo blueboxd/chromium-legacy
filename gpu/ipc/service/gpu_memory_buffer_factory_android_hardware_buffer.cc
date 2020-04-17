@@ -5,13 +5,44 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory_android_hardware_buffer.h"
 
 #include "base/android/android_hardware_buffer_compat.h"
+#include "base/android/scoped_hardware_buffer_handle.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/command_buffer/service/ahardwarebuffer_utils.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
+#include "ui/gl/android/android_surface_control_compat.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
 
 namespace gpu {
+namespace {
+
+AHardwareBuffer_Desc GetBufferDescription(const gfx::Size& size,
+                                          viz::ResourceFormat format,
+                                          gfx::BufferUsage usage) {
+  AHardwareBuffer_Desc hwb_desc;
+  hwb_desc.width = size.width();
+  hwb_desc.height = size.height();
+  hwb_desc.format = AHardwareBufferFormat(format);
+
+  hwb_desc.usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE |
+                   AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT;
+  if (usage == gfx::BufferUsage::SCANOUT)
+    hwb_desc.usage |= gl::SurfaceControl::RequiredUsage();
+
+  // Number of images in an image array.
+  hwb_desc.layers = 1;
+
+  // The following three are not used here.
+  hwb_desc.stride = 0;
+  hwb_desc.rfu0 = 0;
+  hwb_desc.rfu1 = 0;
+
+  return hwb_desc;
+}
+
+}  // namespace
 
 GpuMemoryBufferFactoryAndroidHardwareBuffer::
     GpuMemoryBufferFactoryAndroidHardwareBuffer() = default;
@@ -55,6 +86,44 @@ void GpuMemoryBufferFactoryAndroidHardwareBuffer::DestroyGpuMemoryBuffer(
 
 ImageFactory* GpuMemoryBufferFactoryAndroidHardwareBuffer::AsImageFactory() {
   return this;
+}
+
+bool GpuMemoryBufferFactoryAndroidHardwareBuffer::SupportsCreateAnonymousImage()
+    const {
+  return true;
+}
+
+scoped_refptr<gl::GLImage>
+GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateAnonymousImage(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    SurfaceHandle surface_handle,
+    bool* is_cleared) {
+  auto resource_format = viz::GetResourceFormat(format);
+  if (!AHardwareBufferSupportedFormat(resource_format)) {
+    LOG(ERROR) << "Requested format not supported by AHB : " << resource_format;
+    return nullptr;
+  }
+
+  AHardwareBuffer* buffer = nullptr;
+  AHardwareBuffer_Desc hwb_desc =
+      GetBufferDescription(size, resource_format, usage);
+  base::AndroidHardwareBufferCompat::GetInstance().Allocate(&hwb_desc, &buffer);
+  if (!buffer) {
+    LOG(ERROR) << "Failed to allocate AHB";
+  }
+  auto handle = base::android::ScopedHardwareBufferHandle::Adopt(buffer);
+
+  scoped_refptr<gl::GLImageAHardwareBuffer> gl_image =
+      new gl::GLImageAHardwareBuffer(size);
+  if (!gl_image->Initialize(handle.get(), false)) {
+    LOG(ERROR) << "Failed to initialize GLImageAHardwareBuffer";
+    return nullptr;
+  }
+
+  *is_cleared = false;
+  return gl_image;
 }
 
 scoped_refptr<gl::GLImage>

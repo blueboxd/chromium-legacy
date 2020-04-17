@@ -319,15 +319,33 @@ class AppElement extends PolymerElement {
    */
   updateBackgroundImagePath_() {
     // The |backgroundSelection_| is retained after the dialog commits the
-    // change to the theme. Since |backgroundSelection_| has precendence over
+    // change to the theme. Since |backgroundSelection_| has precedence over
     // the theme background, the |backgroundSelection_| needs to be reset when
     // the theme is updated. This is only necessary when the dialog is closed.
     // If the dialog is open, it will either commit the |backgroundSelection_|
     // or reset |backgroundSelection_| on cancel.
+    //
+    // Update after background image path is updated so the image is not shown
+    // before the path is updated.
     if (!this.showCustomizeDialog_ &&
         this.backgroundSelection_.type !==
             BackgroundSelectionType.NO_SELECTION) {
-      this.backgroundSelection_ = {type: BackgroundSelectionType.NO_SELECTION};
+      // Wait when local image is selected, then no background is previewed
+      // followed by selecting a new local image. This avoids a flicker. The
+      // iframe with the old image is shown briefly before it navigates to a new
+      // iframe location, then fetches and renders the new local image.
+      if (this.backgroundSelection_.type ===
+          BackgroundSelectionType.NO_BACKGROUND) {
+        setTimeout(() => {
+          this.backgroundSelection_ = {
+            type: BackgroundSelectionType.NO_SELECTION
+          };
+        }, 100);
+      } else {
+        this.backgroundSelection_ = {
+          type: BackgroundSelectionType.NO_SELECTION
+        };
+      }
     }
     let path;
     switch (this.backgroundSelection_.type) {

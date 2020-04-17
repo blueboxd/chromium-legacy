@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 // property to see if |unlockWithPassphrase:| is necessary.
 - (void)syncControllerDidStartSync:(CWVSyncController*)syncController;
 
-// Called when sync fails. |error|'s code is a CWVSyncError.
+// Called when sync fails. |error| details are described in cwv_sync_errors.h.
 // May need to call |stopSyncAndClearIdentity| and try starting again later.
 - (void)syncController:(CWVSyncController*)syncController
       didFailWithError:(NSError*)error;

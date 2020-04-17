@@ -437,6 +437,8 @@ class ColorPicker extends HTMLElement {
 
     this.visualColorPicker_.addEventListener(
         'visual-color-picker-initialized', this.initializeListeners_);
+
+    window.addEventListener('resize', this.onWindowResize_, {once: true});
   }
 
   initializeListeners_ = () => {
@@ -448,8 +450,6 @@ class ColorPicker extends HTMLElement {
     this.addEventListener('format-change', this.updateFocusableElements_);
 
     document.documentElement.addEventListener('keydown', this.onKeyDown_);
-
-    window.addEventListener('resize', this.onWindowResize_, {once: true});
   }
 
   get selectedColor() {

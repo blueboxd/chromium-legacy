@@ -238,16 +238,6 @@ public class OmniboxSuggestionsList extends ListView implements OnScrollListener
     }
 
     @Override
-    protected void layoutChildren() {
-        super.layoutChildren();
-        // In ICS, the selected view is not marked as selected despite calling setSelection(0),
-        // so we bootstrap this after the children have been laid out.
-        if (!isInTouchMode() && getSelectedView() != null) {
-            getSelectedView().setSelected(true);
-        }
-    }
-
-    @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         mAnchorView.getViewTreeObserver().addOnGlobalLayoutListener(mAnchorViewLayoutListener);

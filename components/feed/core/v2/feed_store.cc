@@ -14,6 +14,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "components/feed/core/v2/stream_model_update_request.h"
@@ -23,11 +24,11 @@ namespace feed {
 namespace {
 
 // Keys are defined as:
-// 'S/<stream-id>' -> stream_data
-// 'T/<stream-id>/<sequence-number>' -> stream_structures
-// 'c/<content-id>' -> content
-// 'a/<id>' -> action
-// 's/<content-id>' -> shared_state
+// S/<stream-id>                    -> stream_data
+// T/<stream-id>/<sequence-number>  -> stream_structures
+// c/<content-id>                   -> content
+// a/<id>                           -> action
+// s/<content-id>                   -> shared_state
 constexpr char kMainStreamId[] = "0";
 const char kStreamDataKey[] = "S/0";
 const char kLocalActionPrefix[] = "a/";
@@ -57,6 +58,18 @@ std::string LocalActionKey(int32_t id) {
   return kLocalActionPrefix + base::NumberToString(id);
 }
 
+// Returns true if the record key is for stream data (stream_data,
+// stream_structures, content, shared_state).
+bool IsStreamRecordKey(base::StringPiece key) {
+  return key.size() > 1 && key[1] == '/' &&
+         (key[0] == 'S' || key[0] == 'T' || key[0] == 'c' || key[0] == 's');
+}
+
+bool IsLocalActionKey(const std::string& key) {
+  return base::StartsWith(key, kLocalActionPrefix,
+                          base::CompareCase::INSENSITIVE_ASCII);
+}
+
 std::string KeyForRecord(const feedstore::Record& record) {
   switch (record.data_case()) {
     case feedstore::Record::kStreamData:
@@ -71,20 +84,16 @@ std::string KeyForRecord(const feedstore::Record& record) {
       return LocalActionKey(record.local_action().id());
     case feedstore::Record::kSharedState:
       return SharedStateKey(record.shared_state().content_id());
-    case feedstore::Record::DATA_NOT_SET:  // fall through
-      NOTREACHED() << "Invalid record case " << record.data_case();
-      return "";
+    case feedstore::Record::DATA_NOT_SET:
+      break;
   }
+  NOTREACHED() << "Invalid record case " << record.data_case();
+  return "";
 }
 
 bool FilterByKey(const base::flat_set<std::string>& key_set,
                  const std::string& key) {
   return key_set.contains(key);
-}
-
-bool ActionsFilter(const std::string& key) {
-  return key.size() >= 2 && key[0] == kLocalActionPrefix[0] &&
-         key[1] == kLocalActionPrefix[1];
 }
 
 feedstore::Record MakeRecord(feedstore::Content content) {
@@ -196,8 +205,8 @@ void FeedStore::LoadStream(
     return;
   }
   auto filter = [](const std::string& key) {
-    return key == "S/0" || (key.size() > 3 && key[0] == 'T' && key[1] == '/' &&
-                            key[2] == '0' && key[3] == '/');
+    return key == kStreamDataKey ||
+           base::StartsWith(key, "T/0/", base::CompareCase::SENSITIVE);
   };
   database_->LoadEntriesWithFilter(
       base::BindRepeating(filter), CreateReadOptions(),
@@ -257,10 +266,7 @@ void FeedStore::SaveFullStream(
 
   auto filter = [](const base::flat_set<std::string>& updated_keys,
                    const std::string& key) {
-    if (key.empty() || updated_keys.contains(key))
-      return false;
-    return key[0] == 'S' || key[0] == 'T' || key[0] == 'c' || key[0] == 's' ||
-           key[0] == 'N';
+    return IsStreamRecordKey(key) && !updated_keys.contains(key);
   };
 
   database_->UpdateEntriesWithRemoveFilter(
@@ -347,7 +353,7 @@ void FeedStore::OnReadContentFinished(
 void FeedStore::ReadActions(
     base::OnceCallback<void(std::vector<feedstore::StoredAction>)> callback) {
   database_->LoadEntriesWithFilter(
-      base::BindRepeating(&ActionsFilter),
+      base::BindRepeating(&IsLocalActionKey),
       base::BindOnce(&FeedStore::OnReadActionsFinished,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

@@ -2290,6 +2290,12 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
   if (pixels_offset > 0) {
     void* color_space_bytes =
         GetSharedMemoryAs<void*>(shm_id, shm_offset, pixels_offset);
+    if (!color_space_bytes) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glWritePixels",
+                         "Failed to retrieve serialized SkColorSpace.");
+      return;
+    }
+
     color_space = SkColorSpace::Deserialize(color_space_bytes, pixels_offset);
     if (!color_space) {
       LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glWritePixels",

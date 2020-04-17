@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/search/ntp_user_data_logger.h"
 #include "chrome/browser/ui/search/omnibox_utils.h"
 #include "chrome/common/search/generated_colors_info.h"
 #include "chrome/common/search/instant_types.h"
@@ -63,7 +66,15 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
     theme->logo_color = ntp_theme.logo_color;
   }
   if (!ntp_theme.custom_background_url.is_empty()) {
-    theme->background_image_url = ntp_theme.custom_background_url;
+    base::StringPiece url = ntp_theme.custom_background_url.spec();
+    // TODO(crbug.com/1041125): Clean up when chrome-search://local-ntp removed.
+    if (url.starts_with("chrome-search://local-ntp/")) {
+      theme->background_image_url =
+          GURL("chrome-untrusted://new-tab-page/" +
+               url.substr(strlen("chrome-search://local-ntp/")).as_string());
+    } else {
+      theme->background_image_url = ntp_theme.custom_background_url;
+    }
   }
   if (!ntp_theme.custom_background_attribution_line_1.empty()) {
     theme->background_image_attribution_1 =
@@ -98,6 +109,7 @@ NewTabPageHandler::NewTabPageHandler(
           NtpBackgroundServiceFactory::GetForProfile(profile)),
       logo_service_(LogoServiceFactory::GetForProfile(profile)),
       page_{std::move(pending_page)},
+      profile_(profile),
       receiver_{this, std::move(pending_page_handler)},
       web_contents_(web_contents) {
   CHECK(instant_service_);
@@ -320,6 +332,26 @@ void NewTabPageHandler::GetDoodle(GetDoodleCallback callback) {
   logo_service_->GetLogo(std::move(callbacks), /*for_webui_ntp=*/true);
 }
 
+void NewTabPageHandler::ChooseLocalCustomBackground(
+    ChooseLocalCustomBackgroundCallback callback) {
+  select_file_dialog_ = ui::SelectFileDialog::Create(
+      this, std::make_unique<ChromeSelectFilePolicy>(web_contents_));
+  ui::SelectFileDialog::FileTypeInfo file_types;
+  file_types.allowed_paths = ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH;
+  file_types.extensions.resize(1);
+  file_types.extensions[0].push_back(FILE_PATH_LITERAL("jpg"));
+  file_types.extensions[0].push_back(FILE_PATH_LITERAL("jpeg"));
+  file_types.extensions[0].push_back(FILE_PATH_LITERAL("png"));
+  file_types.extension_description_overrides.push_back(
+      l10n_util::GetStringUTF16(IDS_UPLOAD_IMAGE_FORMAT));
+  select_file_dialog_->SelectFile(
+      ui::SelectFileDialog::SELECT_OPEN_FILE, base::string16(),
+      profile_->last_selected_directory(), &file_types, 0,
+      base::FilePath::StringType(), web_contents_->GetTopLevelNativeWindow(),
+      nullptr);
+  choose_local_custom_background_callback_ = std::move(callback);
+}
+
 void NewTabPageHandler::NtpThemeChanged(const NtpTheme& ntp_theme) {
   page_->SetTheme(MakeTheme(ntp_theme));
 }
@@ -407,6 +439,38 @@ void NewTabPageHandler::OnOmniboxFocusChanged(OmniboxFocusState state,
   if (web_contents_->GetController().GetPendingEntry() == nullptr) {
     page_->SetFakeboxVisible(reason != OMNIBOX_FOCUS_CHANGE_TYPING);
   }
+}
+
+void NewTabPageHandler::FileSelected(const base::FilePath& path,
+                                     int index,
+                                     void* params) {
+  if (instant_service_) {
+    profile_->set_last_selected_directory(path.DirName());
+    instant_service_->SelectLocalBackgroundImage(path);
+  }
+
+  select_file_dialog_ = nullptr;
+  // File selection can happen at any time after NTP load, and is not logged
+  // with the event.
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_)
+      ->LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_DONE,
+                 base::TimeDelta::FromSeconds(0));
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_)
+      ->LogEvent(NTP_BACKGROUND_UPLOAD_DONE, base::TimeDelta::FromSeconds(0));
+
+  std::move(choose_local_custom_background_callback_).Run(true);
+}
+
+void NewTabPageHandler::FileSelectionCanceled(void* params) {
+  select_file_dialog_ = nullptr;
+  // File selection can happen at any time after NTP load, and is not logged
+  // with the event.
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_)
+      ->LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_CANCEL,
+                 base::TimeDelta::FromSeconds(0));
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_)
+      ->LogEvent(NTP_BACKGROUND_UPLOAD_CANCEL, base::TimeDelta::FromSeconds(0));
+  std::move(choose_local_custom_background_callback_).Run(false);
 }
 
 void NewTabPageHandler::OnLogoAvailable(

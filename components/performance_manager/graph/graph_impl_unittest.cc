@@ -106,27 +106,6 @@ TEST_F(GraphImplTest, GetAllCUsByType) {
   EXPECT_NE(nullptr, pages[1]);
 }
 
-TEST_F(GraphImplTest, SerializationId) {
-  EXPECT_EQ(0u, NodeBase::GetSerializationId(nullptr));
-
-  TestNodeWrapper<ProcessNodeImpl> process =
-      TestNodeWrapper<ProcessNodeImpl>::Create(graph());
-
-  // The serialization ID should be non-zero, and should be stable for a given
-  // node.
-  auto id = NodeBase::GetSerializationId(process.get());
-  EXPECT_NE(0u, id);
-  EXPECT_EQ(id, NodeBase::GetSerializationId(process.get()));
-
-  SystemNodeImpl* system = graph()->FindOrCreateSystemNodeImpl();
-
-  // Different nodes should be assigned different IDs.
-  EXPECT_NE(id, NodeBase::GetSerializationId(system));
-  EXPECT_NE(0, NodeBase::GetSerializationId(system));
-  EXPECT_EQ(NodeBase::GetSerializationId(system),
-            NodeBase::GetSerializationId(system));
-}
-
 namespace {
 
 class LenientMockObserver : public GraphObserver {

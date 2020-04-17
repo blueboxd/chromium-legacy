@@ -8,7 +8,7 @@ import './autofill_page/password_check.m.js';
 import './autofill_page/passwords_section.m.js';
 import './autofill_page/payments_section.m.js';
 import './clear_browsing_data_dialog/clear_browsing_data_dialog.m.js';
-import './search_engines_page/search_engines_page.m.js';
+import './search_engines_page/search_engines_page.js';
 import './privacy_page/cookies_page.m.js';
 import './privacy_page/security_keys_subpage.m.js';
 import './privacy_page/security_page.m.js';

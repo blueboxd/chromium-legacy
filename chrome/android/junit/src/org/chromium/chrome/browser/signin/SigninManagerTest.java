@@ -30,7 +30,6 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.DisableNativeTestRule;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.components.signin.AccountTrackerService;
@@ -51,8 +50,6 @@ public class SigninManagerTest {
     @Rule
     public final JniMocker mocker = new JniMocker();
 
-    @Rule
-    public final DisableNativeTestRule mDisableNative = new DisableNativeTestRule();
 
     @Mock
     SigninManager.Natives mNativeMock;

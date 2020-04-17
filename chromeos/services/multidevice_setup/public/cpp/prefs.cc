@@ -41,7 +41,7 @@ void RegisterFeaturePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kSmartLockEnabledPrefName, true);
 }
 
-bool AreAnyMultiDeviceFeaturesAllowed(PrefService* pref_service) {
+bool AreAnyMultiDeviceFeaturesAllowed(const PrefService* pref_service) {
   return pref_service->GetBoolean(kInstantTetheringAllowedPrefName) ||
          pref_service->GetBoolean(kMessagesAllowedPrefName) ||
          pref_service->GetBoolean(kSmartLockAllowedPrefName);

@@ -144,5 +144,7 @@ settings_closure_flags =
       "js_module_root=./gen/chrome/browser/resources/settings/",
     ]
 
-settings_migrated_imports =
-    [ "chrome/browser/resources/settings/reset_page/reset_profile_banner.html" ]
+settings_migrated_imports = [
+  "chrome/browser/resources/settings/reset_page/reset_profile_banner.html",
+  "chrome/browser/resources/settings/search_page/search_page.html",
+]

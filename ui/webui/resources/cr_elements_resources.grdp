@@ -37,6 +37,10 @@
              file="cr_elements/cr_container_shadow_behavior.js"
              type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_FINGERPRINT_ICON_HTML"
+             file="cr_elements/cr_fingerprint/cr_fingerprint_icon.html"
+             type="chrome_html"
+             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_CR_FINGERPRINT_PROGRESS_ARC_HTML"
              file="cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.html"
              type="chrome_html"

@@ -9,6 +9,7 @@
 
 namespace ash {
 
+// TODO(dmblack): Deprecate.
 // Opens Google Assistant settings.
 ASH_EXPORT void OpenAssistantSettings();
 

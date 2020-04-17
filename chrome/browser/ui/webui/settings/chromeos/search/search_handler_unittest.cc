@@ -32,7 +32,7 @@ class SearchHandlerTest : public testing::Test {
 
     provider_ = std::make_unique<OsSettingsLocalizedStringsProvider>(
         profile_manager_.CreateTestingProfile("TestingProfile"),
-        &local_search_service_);
+        &local_search_service_, /*multidevice_setup_client=*/nullptr);
 
     handler_ = std::make_unique<SearchHandler>(provider_.get(),
                                                &local_search_service_);

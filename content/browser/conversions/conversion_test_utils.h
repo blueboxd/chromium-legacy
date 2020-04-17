@@ -40,7 +40,7 @@ class TestConversionManager : public ConversionManager {
 
   // ConversionManager:
   void HandleImpression(const StorableImpression& impression) override;
-  void HandleConversion(const StorableConversion& impression) override {}
+  void HandleConversion(const StorableConversion& conversion) override;
   void HandleSentReport(int64_t conversion_id) override;
   const ConversionPolicy& GetConversionPolicy() const override;
 
@@ -48,12 +48,14 @@ class TestConversionManager : public ConversionManager {
   void Reset();
 
   size_t num_impressions() const { return num_impressions_; }
+  size_t num_conversions() const { return num_conversions_; }
 
   int64_t last_sent_report_id() { return last_sent_report_id_; }
 
  private:
   ConversionPolicy policy_;
   size_t num_impressions_ = 0;
+  size_t num_conversions_ = 0;
   int64_t last_sent_report_id_ = 0L;
 };
 

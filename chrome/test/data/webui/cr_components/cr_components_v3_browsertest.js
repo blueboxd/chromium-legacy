@@ -61,10 +61,8 @@ var CrComponentsCertificateManagerV3Test =
   /** @override */
   get featureList() {
     return {
-      enabled: [
-        'network::features::kOutOfBlinkCors',
-        'features::kSettingsPolymer3',
-      ]
+      enabled: ['network::features::kOutOfBlinkCors'],
+      disabled: [],
     };
   }
 };

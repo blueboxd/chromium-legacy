@@ -30,6 +30,11 @@ void TestConversionManager::HandleImpression(
   num_impressions_++;
 }
 
+void TestConversionManager::HandleConversion(
+    const StorableConversion& conversion) {
+  num_conversions_++;
+}
+
 void TestConversionManager::HandleSentReport(int64_t conversion_id) {
   last_sent_report_id_ = conversion_id;
 }
@@ -40,6 +45,7 @@ const ConversionPolicy& TestConversionManager::GetConversionPolicy() const {
 
 void TestConversionManager::Reset() {
   num_impressions_ = 0u;
+  num_conversions_ = 0u;
   last_sent_report_id_ = 0UL;
 }
 

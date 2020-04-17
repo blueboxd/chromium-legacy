@@ -4,6 +4,11 @@
 
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -400,11 +405,11 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
           default_path.BaseName().value(), file_types, file_type_index,
           default_extension, show_android_picker_apps);
 
-  ExtensionDialog::InitParams dialog_params(kFileManagerWidth,
-                                            kFileManagerHeight);
+  ExtensionDialog::InitParams dialog_params(
+      {kFileManagerWidth, kFileManagerHeight});
   dialog_params.is_modal = (owner_window != nullptr);
-  dialog_params.min_width = kFileManagerMinimumWidth;
-  dialog_params.min_height = kFileManagerMinimumHeight;
+  dialog_params.min_size = {kFileManagerMinimumWidth,
+                            kFileManagerMinimumHeight};
   dialog_params.title = file_manager::util::GetSelectFileDialogTitle(type);
 #if defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(chromeos::features::kFilesNG)) {

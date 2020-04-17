@@ -125,7 +125,7 @@ public class TrustedWebActivityPermissionStore {
     }
 
     /** Gets all the origins of registered TWAs. */
-    Set<String> getStoredOrigins() {
+    public Set<String> getStoredOrigins() {
         // In case the pre-emptive disk read in initStorage hasn't occurred by the time we actually
         // need the value.
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {

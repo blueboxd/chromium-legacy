@@ -6,6 +6,7 @@
 
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/assistant/assistant_web_view_factory.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/view_shadow.h"
 #include "base/base64.h"
@@ -179,7 +180,7 @@ void ProactiveSuggestionsRichView::DidSuppressNavigation(
     WindowOpenDisposition disposition,
     bool from_user_gesture) {
   if (from_user_gesture)
-    delegate()->OpenUrlFromView(url);
+    AssistantController::Get()->OpenUrl(url);
 }
 
 }  // namespace ash

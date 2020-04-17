@@ -61,6 +61,23 @@ class CustomizeBackgroundsElement extends PolymerElement {
    * @return {string}
    * @private
    */
+  getCustomBackgroundClass_() {
+    switch (this.backgroundSelection.type) {
+      case BackgroundSelectionType.NO_SELECTION:
+        return this.theme && this.theme.backgroundImageUrl &&
+                this.theme.backgroundImageUrl.url.startsWith(
+                    'chrome-untrusted://new-tab-page/background.jpg') ?
+            'selected' :
+            '';
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
   getNoBackgroundClass_() {
     switch (this.backgroundSelection.type) {
       case BackgroundSelectionType.NO_BACKGROUND:
@@ -108,6 +125,16 @@ class CustomizeBackgroundsElement extends PolymerElement {
    */
   onCollectionClick_(e) {
     this.selectedCollection = this.$.collectionsRepeat.itemForElement(e.target);
+  }
+
+  /** @private */
+  async onUploadFromDeviceClick_() {
+    const {success} = await this.pageHandler_.chooseLocalCustomBackground();
+    if (success) {
+      // The theme update is asynchronous. Close the dialog and allow ntp-app
+      // to update the |backgroundSelection|.
+      this.dispatchEvent(new Event('close', {bubbles: true, composed: true}));
+    }
   }
 
   /** @private */

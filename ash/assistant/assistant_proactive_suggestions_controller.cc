@@ -11,6 +11,7 @@
 #include "ash/assistant/ui/proactive_suggestions_simple_view.h"
 #include "ash/assistant/ui/proactive_suggestions_view.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/assistant/util/histogram_util.h"
@@ -266,7 +267,7 @@ void AssistantProactiveSuggestionsController::OnCardClickDeepLinkReceived(
   const base::Optional<GURL> url =
       assistant::util::GetDeepLinkParamAsGURL(params, DeepLinkParam::kHref);
   if (url)
-    assistant_controller_->OpenUrl(url.value());
+    AssistantController::Get()->OpenUrl(url.value());
 
   // For metrics tracking, obtain the |category| of the content associated w/
   // the proactive suggestion card that was clicked...
@@ -300,7 +301,7 @@ void AssistantProactiveSuggestionsController::OnEntryPointClickDeepLinkReceived(
   // to direct the user to the complete inline collection.
   if (teleport.has_value()) {
     CloseUi(ProactiveSuggestionsShowResult::kTeleport);
-    assistant_controller_->OpenUrl(teleport.value());
+    AssistantController::Get()->OpenUrl(teleport.value());
     return;
   }
 

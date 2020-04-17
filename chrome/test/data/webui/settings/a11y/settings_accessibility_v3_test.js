@@ -10,7 +10,6 @@ GEN_INCLUDE([
   '//chrome/test/data/webui/polymer_browser_test_base.js',
 ]);
 
-GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "services/network/public/cpp/features.h"');
 
 /**
@@ -79,10 +78,7 @@ SettingsAccessibilityV3Test.prototype = {
 
   /** @override */
   featureList: {
-    enabled: [
-      'network::features::kOutOfBlinkCors',
-      'features::kSettingsPolymer3',
-    ],
+    enabled: ['network::features::kOutOfBlinkCors'],
     disabled: [],
   },
 

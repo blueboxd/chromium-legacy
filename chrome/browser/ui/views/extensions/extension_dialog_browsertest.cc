@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/content_test_utils.h"
-#include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 namespace {
@@ -22,10 +21,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionDialogTest, TextInputViaKeyEvent) {
       LoadExtension(test_data_dir_.AppendASCII("uitest/tab_traversal"));
   ASSERT_TRUE(extension.get());
 
-  ExtensionDialog::InitParams params(400, 300);
+  ExtensionDialog::InitParams params(gfx::Size(400, 300));
   params.is_modal = true;
-  params.min_width = 400;
-  params.min_height = 300;
+  params.min_size = {400, 300};
   auto* dialog = ExtensionDialog::Show(
       extension->url().Resolve("main.html"),
       browser()->window()->GetNativeWindow(), browser()->profile(),

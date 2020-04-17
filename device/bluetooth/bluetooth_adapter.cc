@@ -91,6 +91,11 @@ void BluetoothAdapter::SetPowered(bool powered,
   set_powered_callbacks_->error_callback = error_callback;
 }
 
+bool BluetoothAdapter::IsPeripheralRoleSupported() const {
+  // TODO(crbug/1071595): Implement this for more platforms.
+  return true;
+}
+
 std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet>
 BluetoothAdapter::RetrieveGattConnectedDevicesWithDiscoveryFilter(
     const BluetoothDiscoveryFilter& discovery_filter) {

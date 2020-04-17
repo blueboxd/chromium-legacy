@@ -8,7 +8,6 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "build/branding_buildflags.h"');
-GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "components/password_manager/core/common/password_manager_features.h"');
@@ -35,7 +34,6 @@ var CrSettingsV3BrowserTest = class extends PolymerTest {
     return {
       enabled: [
         'network::features::kOutOfBlinkCors',
-        'features::kSettingsPolymer3',
         ...(this.featureListInternal.enabled || []),
       ],
       disabled: this.featureListInternal.disabled || [],

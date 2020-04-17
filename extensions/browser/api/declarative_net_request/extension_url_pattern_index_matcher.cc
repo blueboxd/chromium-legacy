@@ -53,7 +53,7 @@ bool IsExtraHeadersMatcherInternal(
   };
 
   for (flat::IndexType index : extra_header_indices) {
-    if (matchers[index].rules_count() > 0)
+    if (matchers[index].GetRulesCount() > 0)
       return true;
   }
 
@@ -64,7 +64,7 @@ size_t GetRulesCountInternal(
     const std::vector<url_pattern_index::UrlPatternIndexMatcher>& matchers) {
   size_t rules_count = 0;
   for (const auto& matcher : matchers)
-    rules_count += matcher.rules_count();
+    rules_count += matcher.GetRulesCount();
 
   return rules_count;
 }

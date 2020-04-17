@@ -343,7 +343,8 @@ bool BitmapImage::IsSizeAvailable() {
 }
 
 PaintImage BitmapImage::PaintImageForCurrentFrame() {
-  if (cached_frame_)
+  auto alpha_type = decoder_ ? decoder_->AlphaType() : kUnknown_SkAlphaType;
+  if (cached_frame_ && cached_frame_.GetAlphaType() == alpha_type)
     return cached_frame_;
 
   cached_frame_ = CreatePaintImage();
@@ -380,20 +381,7 @@ scoped_refptr<Image> BitmapImage::ImageForDefaultFrame() {
 }
 
 bool BitmapImage::CurrentFrameKnownToBeOpaque() {
-  // If the image is animated, it is being animated by the compositor and we
-  // don't know what the current frame is.
-  // TODO(khushalsagar): We could say the image is opaque if none of the frames
-  // have alpha.
-  if (MaybeAnimated())
-    return false;
-
-  // We ask the decoder whether the image has alpha because in some cases the
-  // the correct value is known after decoding. The DeferredImageDecoder caches
-  // the accurate value from the decoded result.
-  const bool frame_has_alpha =
-      decoder_ ? decoder_->FrameHasAlphaAtIndex(PaintImage::kDefaultFrameIndex)
-               : true;
-  return !frame_has_alpha;
+  return decoder_ ? decoder_->AlphaType() == kOpaque_SkAlphaType : false;
 }
 
 bool BitmapImage::CurrentFrameIsComplete() {

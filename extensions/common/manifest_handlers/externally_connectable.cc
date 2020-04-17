@@ -75,10 +75,7 @@ bool ExternallyConnectableHandler::Parse(Extension* extension,
           *externally_connectable, allow_all_urls, &install_warnings, error);
   if (!info)
     return false;
-  if (!info->matches.is_empty()) {
-    PermissionsParser::AddAPIPermission(extension,
-                                        APIPermission::kWebConnectable);
-  }
+
   extension->AddInstallWarnings(std::move(install_warnings));
   extension->SetManifestData(keys::kExternallyConnectable, std::move(info));
   return true;

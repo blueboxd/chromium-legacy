@@ -66,6 +66,8 @@ public class HomeButton extends ChromeImageButton
     private static boolean sSaveContextMenuForTests;
     private ContextMenu mMenuForTests;
 
+    private SettingsLauncher mSettingsLauncher;
+
     public HomeButton(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -85,6 +87,8 @@ public class HomeButton extends ChromeImageButton
                 }
             }
         };
+
+        mSettingsLauncher = new SettingsLauncher();
     }
 
     public void destroy() {
@@ -143,7 +147,7 @@ public class HomeButton extends ChromeImageButton
         assert !isManagedByPolicy();
         if (isHomepageSettingsUIConversionEnabled()) {
             assert item.getItemId() == ID_SETTINGS;
-            SettingsLauncher.getInstance().launchSettingsPage(getContext(), HomepageSettings.class);
+            mSettingsLauncher.launchSettingsPage(getContext(), HomepageSettings.class);
         } else {
             assert item.getItemId() == ID_REMOVE;
             HomepageManager.getInstance().setPrefHomepageEnabled(false);
@@ -254,5 +258,10 @@ public class HomeButton extends ChromeImageButton
     @VisibleForTesting
     public ContextMenu getMenuForTests() {
         return mMenuForTests;
+    }
+
+    @VisibleForTesting
+    public void setSettingsLauncherForTests(SettingsLauncher settingsLauncher) {
+        mSettingsLauncher = settingsLauncher;
     }
 }

@@ -4316,7 +4316,10 @@ void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
   // Fieldsets look for a legend special child (layoutSpecialExcludedChild()).
   // We currently only support one special child per layout object, and the
   // flow thread would make for a second one.
-  if (IsFieldset())
+  // For LayoutNG, the multi-column display type will be applied to the
+  // anonymous content box. Thus, the flow thread should be added to the
+  // anonymous content box instead of the fieldset itself.
+  if (IsFieldsetIncludingNG())
     return;
 
   // Form controls are replaced content, and are therefore not supposed to

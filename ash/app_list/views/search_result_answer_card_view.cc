@@ -355,7 +355,7 @@ int SearchResultAnswerCardView::DoUpdate() {
   parent()->SetVisible(has_valid_answer_card);
 
   set_container_score(
-      has_valid_answer_card && top_result ? top_result->display_score() : 0);
+      has_valid_answer_card && top_result ? top_result->display_score() : -1);
   if (top_result)
     top_result->set_is_visible(has_valid_answer_card);
 

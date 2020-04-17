@@ -34,6 +34,9 @@ class XRNativeOriginInformation {
   static base::Optional<XRNativeOriginInformation> Create(
       const XRReferenceSpace* reference_space);
 
+  static base::Optional<XRNativeOriginInformation> Create(
+      device::mojom::XRReferenceSpaceCategory reference_space_category);
+
  private:
   enum class Type : int32_t { ReferenceSpace, InputSource, Anchor, Plane };
 

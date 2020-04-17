@@ -5,6 +5,7 @@
 #include "chrome/browser/tab/state/tab_state_db.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -26,23 +27,6 @@ bool DatabasePrefixFilter(const std::string& key_prefix,
 }
 
 }  // namespace
-
-TabStateDB::TabStateDB(
-    leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
-    const base::FilePath& profile_directory,
-    base::OnceClosure closure)
-    : database_status_(leveldb_proto::Enums::InitStatus::kNotInitialized),
-      storage_database_(
-          proto_database_provider->GetDB<tab_state_db::TabStateContentProto>(
-              leveldb_proto::ProtoDbType::TAB_STATE_DATABASE,
-              profile_directory.AppendASCII(kTabStateDBFolder),
-              base::CreateSequencedTaskRunner(
-                  {base::ThreadPool(), base::MayBlock(),
-                   base::TaskPriority::USER_VISIBLE}))) {
-  storage_database_->Init(base::BindOnce(&TabStateDB::OnDatabaseInitialized,
-                                         weak_ptr_factory_.GetWeakPtr(),
-                                         std::move(closure)));
-}
 
 TabStateDB::~TabStateDB() = default;
 
@@ -83,6 +67,22 @@ void TabStateDB::DeleteContent(const std::string& key,
 
 void TabStateDB::DeleteAllContent(OperationCallback callback) {
   storage_database_->Destroy(std::move(callback));
+}
+
+TabStateDB::TabStateDB(
+    leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+    const base::FilePath& profile_directory)
+    : database_status_(leveldb_proto::Enums::InitStatus::kNotInitialized),
+      storage_database_(
+          proto_database_provider->GetDB<tab_state_db::TabStateContentProto>(
+              leveldb_proto::ProtoDbType::TAB_STATE_DATABASE,
+              profile_directory.AppendASCII(kTabStateDBFolder),
+              base::CreateSequencedTaskRunner(
+                  {base::ThreadPool(), base::MayBlock(),
+                   base::TaskPriority::USER_VISIBLE}))) {
+  storage_database_->Init(base::BindOnce(&TabStateDB::OnDatabaseInitialized,
+                                         weak_ptr_factory_.GetWeakPtr(),
+                                         base::DoNothing::Once()));
 }
 
 TabStateDB::TabStateDB(

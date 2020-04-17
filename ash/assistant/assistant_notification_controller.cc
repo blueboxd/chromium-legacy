@@ -10,6 +10,7 @@
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_notification_expiry_monitor.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
@@ -78,11 +79,8 @@ bool IsValidActionUrl(const GURL& action_url) {
 
 // AssistantNotificationController ---------------------------------------------
 
-AssistantNotificationController::AssistantNotificationController(
-    AssistantControllerImpl* assistant_controller)
-    : assistant_controller_(assistant_controller),
-      expiry_monitor_(this),
-      notifier_id_(GetNotifierId()) {
+AssistantNotificationController::AssistantNotificationController()
+    : expiry_monitor_(this), notifier_id_(GetNotifierId()) {
   AddModelObserver(this);
   message_center::MessageCenter::Get()->AddObserver(this);
 }
@@ -210,10 +208,9 @@ void AssistantNotificationController::OnNotificationClicked(
 
   // Open the action url if it is valid.
   if (IsValidActionUrl(action_url)) {
-    // Note that we copy construct a new GURL as our |notification| may be
-    // destroyed during the |OpenUrl| sequence leaving |action_url| in a bad
-    // state.
-    assistant_controller_->OpenUrl(GURL(action_url));
+    // NOTE: We copy construct a new GURL as our |notification| may be destroyed
+    // during the OpenUrl() sequence leaving |action_url| in a bad state.
+    AssistantController::Get()->OpenUrl(GURL(action_url));
     model_.RemoveNotificationById(id, /*from_server=*/false);
     return;
   }

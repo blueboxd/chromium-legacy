@@ -198,6 +198,74 @@ class AccessibilityPanelWidgetObserver : public views::WidgetObserver {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityPanelWidgetObserver);
 };
 
+// Responsible for deferring ChromeVox load until a text-to-speech voice is
+// ready to be used. Plays progress tones while waiting.
+class ChromeVoxDeferredLoader : public content::UtteranceEventDelegate,
+                                public content::VoicesChangedDelegate {
+ public:
+  explicit ChromeVoxDeferredLoader(AccessibilityManager* manager)
+      : manager_(manager) {
+    Profile* profile = manager_->profile();
+    if (profile->HasOffTheRecordProfile())
+      profile = profile->GetOffTheRecordProfile();
+    std::vector<content::VoiceData> voices;
+    content::TtsController::GetInstance()->GetVoices(profile, &voices);
+    if (voices.empty())
+      content::TtsController::GetInstance()->AddVoicesChangedDelegate(this);
+    else
+      SendWarmupUtterance();
+  }
+
+  ~ChromeVoxDeferredLoader() override {
+    content::TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
+    content::TtsController::GetInstance()->RemoveUtteranceEventDelegate(this);
+    manager_->UnloadChromeVox();
+  }
+
+ private:
+  // content::UtteranceEventDelegate:
+  void OnTtsEvent(content::TtsUtterance* utterance,
+                  content::TtsEventType event_type,
+                  int char_index,
+                  int length,
+                  const std::string& error_message) override {
+    utterance->SetEventDelegate(nullptr);
+    timer_.Stop();
+    manager_->LoadChromeVox();
+  }
+
+  // content::VoicesChangedDelegate:
+  void OnVoicesChanged() override {
+    Profile* profile = manager_->profile();
+    if (profile->HasOffTheRecordProfile())
+      profile = profile->GetOffTheRecordProfile();
+    std::vector<content::VoiceData> voices;
+    content::TtsController::GetInstance()->GetVoices(profile, &voices);
+    if (!voices.empty()) {
+      content::TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
+      SendWarmupUtterance();
+    }
+  }
+
+  void SendWarmupUtterance() {
+    Profile* profile = manager_->profile();
+    if (profile->HasOffTheRecordProfile())
+      profile = profile->GetOffTheRecordProfile();
+    std::unique_ptr<content::TtsUtterance> utterance =
+        content::TtsUtterance::Create(profile);
+    utterance->SetEventDelegate(this);
+    content::TtsController::GetInstance()->SpeakOrEnqueue(std::move(utterance));
+    timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(500), this,
+                 &ChromeVoxDeferredLoader::OnTimer);
+  }
+
+  void OnTimer() { manager_->PlaySpokenFeedbackToggleCountdown(tick_count_++); }
+
+  AccessibilityManager* manager_;
+  int tick_count_ = 0;
+  base::RepeatingTimer timer_;
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // AccessibilityStatusEventDetails
 
@@ -482,11 +550,10 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
   NotifyAccessibilityStatusChanged(details);
 
   if (enabled) {
-    chromevox_loader_->Load(
-        profile_, base::BindRepeating(&AccessibilityManager::PostLoadChromeVox,
-                                      weak_ptr_factory_.GetWeakPtr()));
+    chromevox_deferred_loader_ =
+        std::make_unique<ChromeVoxDeferredLoader>(this);
   } else {
-    chromevox_loader_->Unload();
+    chromevox_deferred_loader_.reset();
   }
   UpdateBrailleImeState();
 }
@@ -1324,6 +1391,21 @@ void AccessibilityManager::OnExtensionUnloaded(
 
 void AccessibilityManager::OnShutdown(extensions::ExtensionRegistry* registry) {
   extension_registry_observer_.Remove(registry);
+}
+
+void AccessibilityManager::LoadChromeVox() {
+  chromevox_loader_->Load(
+      profile_, base::BindRepeating(&AccessibilityManager::PostLoadChromeVox,
+                                    weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AccessibilityManager::UnloadChromeVox() {
+  // In browser_tests unloading the ChromeVox extension can race with shutdown.
+  // http://crbug.com/801700
+  if (app_terminating_)
+    return;
+
+  chromevox_loader_->Unload();
 }
 
 void AccessibilityManager::PostLoadChromeVox() {

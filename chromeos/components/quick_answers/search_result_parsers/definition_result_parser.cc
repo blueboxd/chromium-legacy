@@ -22,7 +22,8 @@ constexpr char kSensesKey[] = "senses";
 constexpr char kDefinitionPathUnderSense[] = "definition.text";
 constexpr char kPhoneticsKey[] = "phonetics";
 constexpr char kPhoneticsTextKey[] = "text";
-constexpr char kPhoneticsResultTemplate[] = "%s · /%s/";
+constexpr char kDefinitionResultDefaultTemplate[] = "%s · /%s/";
+constexpr char kDefinitionResultNoPhoneticsTemplate[] = "%s";
 
 }  // namespace
 
@@ -35,18 +36,13 @@ bool DefinitionResultParser::Parse(const Value* result,
     return false;
   }
 
-  // Get Definition.
+  // Get definition and phonetics.
   const std::string* definition = ExtractDefinition(first_entry);
   if (!definition) {
     LOG(ERROR) << "Fail in extracting definition";
     return false;
   }
-
   const std::string* phonetics = ExtractPhonetics(first_entry);
-  if (!phonetics) {
-    LOG(ERROR) << "Fail in extracting phonetics";
-    return false;
-  }
 
   const std::string* query_term = result->FindStringPath(kQueryTermPath);
   if (!query_term) {
@@ -54,8 +50,11 @@ bool DefinitionResultParser::Parse(const Value* result,
     return false;
   }
 
-  const std::string& secondary_answer = base::StringPrintf(
-      kPhoneticsResultTemplate, query_term->c_str(), phonetics->c_str());
+  const std::string& secondary_answer =
+      phonetics ? base::StringPrintf(kDefinitionResultDefaultTemplate,
+                                     query_term->c_str(), phonetics->c_str())
+                : base::StringPrintf(kDefinitionResultNoPhoneticsTemplate,
+                                     query_term->c_str());
   quick_answer->result_type = ResultType::kDefinitionResult;
   quick_answer->primary_answer = *definition;
   quick_answer->secondary_answer = secondary_answer;
@@ -90,7 +89,7 @@ const std::string* DefinitionResultParser::ExtractPhonetics(
   const Value* first_phonetics =
       GetFirstListElement(*definition_entry, kPhoneticsKey);
   if (!first_phonetics) {
-    LOG(ERROR) << "Can't find a phonetics.";
+    LOG(WARNING) << "Can't find a phonetics.";
     return nullptr;
   }
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/internet_strings_provider.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "base/bind.h"
 #include "base/no_destructor.h"
@@ -214,6 +215,9 @@ void InternetStringsProvider::AddUiStrings(
   chromeos::network_element::AddDetailsLocalizedStrings(html_source);
   chromeos::network_element::AddConfigLocalizedStrings(html_source);
   chromeos::network_element::AddErrorLocalizedStrings(html_source);
+
+  html_source->AddBoolean("showTechnologyBadge",
+                          !ash::features::IsSeparateNetworkIconsEnabled());
 
   html_source->AddString("networkGoogleNameserversLearnMoreUrl",
                          chrome::kGoogleNameserversLearnMoreURL);

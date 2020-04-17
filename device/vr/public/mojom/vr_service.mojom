@@ -773,8 +773,10 @@ interface XREnvironmentIntegrationProvider {
   // Issues a request to create an anchor attached to a session.
   // |result| will contain status code of the request. |anchor_id| will be valid
   // only if the |result| is SUCCESS.
-  CreateAnchor(Pose anchor_pose) => (CreateAnchorResult result,
-                                     uint64 anchor_id);
+  CreateAnchor(
+    XRNativeOriginInformation native_origin_information,
+    Pose native_origin_from_anchor)
+      => (CreateAnchorResult result, uint64 anchor_id);
   // TODO(https://crbug.com/657632): Switch anchor_id to nullable integer once
   // that's available. This will allow us to remove CreateAnchorResult if we're
   // not interested in obtaining detailed error information from the device.
@@ -782,7 +784,7 @@ interface XREnvironmentIntegrationProvider {
   // Issues a request to create an anchor attached to a plane.
   // |result| will contain status code of the request. |anchor_id| will be valid
   // only if the |result| is SUCCESS.
-  CreatePlaneAnchor(Pose anchor_pose, uint64 plane_id) =>
+  CreatePlaneAnchor(Pose plane_from_anchor, uint64 plane_id) =>
     (CreateAnchorResult result, uint64 anchor_id);
   // TODO(https://crbug.com/657632): Ditto - make anchor_id a nullable integer..
 

@@ -55,6 +55,9 @@ class ClipboardTextReader final : public ClipboardReader {
   Blob* ReadFromSystem() override {
     String plain_text =
         system_clipboard()->ReadPlainText(mojom::ClipboardBuffer::kStandard);
+    // |plain_text| is empty if the clipboard is empty.
+    if (plain_text.IsEmpty())
+      return nullptr;
 
     // Encode WTF String to UTF-8, the standard text format for blobs.
     StringUTF8Adaptor utf_text(plain_text);

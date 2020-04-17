@@ -40,9 +40,13 @@
     position: relative;
   }
 
-  .selected .image {
+  .selected .image,
+  .selected #uploadFromDevice {
     box-shadow: 0 1px 3px 0 rgba(var(--google-grey-800-rgb), .3),
         0 4px 8px 3px rgba(var(--google-grey-800-rgb), .15);
+  }
+
+  .selected .image {
     transform: scale(.8);
   }
 
@@ -88,34 +92,77 @@
     display: block;
   }
 
-  @media (prefers-color-scheme: dark) {
-    .selected .image {
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
-          0 4px 8px 3px rgba(0, 0, 0, .15);
-    }
-  }
-
-  #noBackground .image {
+  #noBackground .image,
+  #uploadFromDevice .image {
     background: var(--ntp-background-override-color);
     border: 1px solid var(--ntp-border-color);
   }
+
+  #uploadFromDevice {
+    position: relative;
+  }
+
+  #uploadFromDeviceImage {
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+
+  #uploadFromDeviceImage .label {
+    text-align: center;
+  }
+
+  #uploadIcon {
+    -webkit-mask-image: url(icons/upload.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100%;
+    background-color: var(--google-grey-refresh-700);
+    height: 32px;
+    margin: 61px auto 8px;
+    width: 32px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .selected .image,
+    .selected #uploadFromDevice {
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
+          0 4px 8px 3px rgba(0, 0, 0, .15);
+    }
+
+    #uploadIcon {
+      background-color: var(--google-grey-refresh-500);
+    }
+  }
 </style>
 <ntp-grid id="collections" columns="3" hidden="[[selectedCollection]]">
+  <div id="uploadFromDevice" class="tile" role="button"
+      on-click="onUploadFromDeviceClick_">
+    <div class$="[[getCustomBackgroundClass_(theme, backgroundSelection)]]">
+      <div class="image">
+      </div>
+      <div id="uploadFromDeviceImage">
+        <div id="uploadIcon"></div>
+        <div class="label">$i18n{uploadFromDevice}</div>
+      </div>
+      <div class="selected-circle"></div>
+      <div class="selected-check"></div>
+    </div>
+    <div class="label"></div>
+  </div>
   <div id="noBackground" class="tile" role="button" on-click="onDefaultClick_">
-    <div
-        class$="[[getNoBackgroundClass_(theme, backgroundSelection)]]">
+    <div class$="[[getNoBackgroundClass_(theme, backgroundSelection)]]">
       <div class="image">
         <ntp-mini-page></ntp-mini-page>
       </div>
       <div class="selected-circle"></div>
       <div class="selected-check"></div>
     </div>
-    <div class="label">No background</div>
+    <div class="label">$i18n{noBackground}</div>
   </div>
   <dom-repeat id="collectionsRepeat" items="[[collections_]]">
     <template>
       <div class="tile" tabindex="0" title="[[item.label]]" role="button"
-        on-click="onCollectionClick_">
+          on-click="onCollectionClick_">
         <ntp-untrusted-iframe class="image"
             path="background_image?[[item.previewImageUrl.url]]">
         </ntp-untrusted-iframe>

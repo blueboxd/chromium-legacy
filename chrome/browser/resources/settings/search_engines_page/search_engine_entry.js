@@ -6,10 +6,26 @@
  * @fileoverview 'settings-search-engine-entry' is a component for showing a
  * search engine with its name, domain and query URL.
  */
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import '../controls/extension_controlled_indicator.m.js';
+import './search_engine_entry_css.js';
+import '../settings_shared_css.m.js';
+import '../site_favicon.m.js';
+
+import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl} from './search_engines_browser_proxy.m.js';
+
 Polymer({
   is: 'settings-search-engine-entry',
 
-  behaviors: [cr.ui.FocusRowBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [FocusRowBehavior],
 
   properties: {
     /** @type {!SearchEngine} */
@@ -32,12 +48,12 @@ Polymer({
     },
   },
 
-  /** @private {settings.SearchEnginesBrowserProxy} */
+  /** @private {SearchEnginesBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   created() {
-    this.browserProxy_ = settings.SearchEnginesBrowserProxyImpl.getInstance();
+    this.browserProxy_ = SearchEnginesBrowserProxyImpl.getInstance();
   },
 
   /** @private */

@@ -129,8 +129,7 @@ AssistantWebContainerView* AssistantWebUiController::GetViewForTest() {
 void AssistantWebUiController::CreateWebContainerView() {
   DCHECK(!web_container_view_);
 
-  web_container_view_ = new AssistantWebContainerView(
-      assistant_controller_->view_delegate(), &view_delegate_);
+  web_container_view_ = new AssistantWebContainerView(&view_delegate_);
   auto* widget = web_container_view_->GetWidget();
   widget->AddObserver(this);
   event_observer_ =

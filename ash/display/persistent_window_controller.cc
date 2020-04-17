@@ -5,9 +5,9 @@
 #include "ash/display/persistent_window_controller.h"
 
 #include "ash/display/persistent_window_info.h"
-#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/tablet_mode/scoped_skip_user_session_blocked_check.h"
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -25,20 +25,19 @@ display::DisplayManager* GetDisplayManager() {
 }
 
 MruWindowTracker::WindowList GetWindowList() {
+  // MRU tracker normally skips windows if called during a non active session.
+  // |scoped_skip_user_session_blocked_check| allows us to get the list of MRU
+  // windows even when a display is added during for example lock session.
+  ScopedSkipUserSessionBlockedCheck scoped_skip_user_session_blocked_check;
   return Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks);
 }
 
 // Returns true when window cycle list can be processed to perform save/restore
 // operations on observing display changes.
 bool ShouldProcessWindowList() {
-  // Window cycle list exists in active user session only.
-  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
+  if (!Shell::Get()->desks_controller())
     return false;
-
-  if (GetDisplayManager()->IsInMirrorMode())
-    return false;
-
-  return true;
+  return !GetDisplayManager()->IsInMirrorMode();
 }
 
 }  // namespace
@@ -47,13 +46,11 @@ constexpr char PersistentWindowController::kNumOfWindowsRestoredHistogramName[];
 
 PersistentWindowController::PersistentWindowController() {
   display::Screen::GetScreen()->AddObserver(this);
-  Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 PersistentWindowController::~PersistentWindowController() {
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
-  Shell::Get()->session_controller()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
@@ -76,11 +73,6 @@ void PersistentWindowController::OnDisplayAdded(
   restore_callback_ = base::BindOnce(
       &PersistentWindowController::MaybeRestorePersistentWindowBounds,
       base::Unretained(this));
-}
-
-void PersistentWindowController::OnSessionStateChanged(
-    session_manager::SessionState state) {
-  MaybeRestorePersistentWindowBounds();
 }
 
 void PersistentWindowController::OnDisplayConfigurationChanged() {

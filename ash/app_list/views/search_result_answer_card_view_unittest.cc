@@ -146,7 +146,7 @@ TEST_F(SearchResultAnswerCardViewTest, DeleteResult) {
   EXPECT_EQ(0UL, GetResults()->item_count());
   EXPECT_EQ(0, GetYSize());
   ASSERT_FALSE(search_card_view()->GetVisible());
-  EXPECT_EQ(0, GetContainerScore());
+  EXPECT_EQ(-1, GetContainerScore());
 }
 
 TEST_F(SearchResultAnswerCardViewTest, RemoveEquivalent) {

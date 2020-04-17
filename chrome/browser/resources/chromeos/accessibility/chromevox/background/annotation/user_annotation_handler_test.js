@@ -16,17 +16,8 @@ GEN_INCLUDE(['../../testing/mock_feedback.js']);
 ChromeVoxAnnotationTest = class extends ChromeVoxNextE2ETest {
   /** @override */
   testGenCppIncludes() {
+    super.testGenCppIncludes();
     GEN(`
-  // The following includes are copy-pasted from chromevox_e2e_test_base.js.
-  #include "ash/accessibility/accessibility_delegate.h"
-  #include "ash/shell.h"
-  #include "base/bind.h"
-  #include "base/callback.h"
-  #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-  #include "chrome/common/extensions/extension_constants.h"
-  #include "extensions/common/extension_l10n_util.h"
-
-  // The following includes are necessary for this test file.
   #include "base/command_line.h"
   #include "ui/accessibility/accessibility_switches.h"
   #include "ui/base/ui_base_switches.h"
@@ -38,14 +29,8 @@ ChromeVoxAnnotationTest = class extends ChromeVoxNextE2ETest {
     GEN(`
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
     ::switches::kEnableExperimentalAccessibilityChromeVoxAnnotations);
-  // Copy-pasted from chromevox_e2e_test_base.js.
-  auto allow = extension_l10n_util::AllowGzippedMessagesAllowedForTest();
-  base::Closure load_cb =
-    base::Bind(&chromeos::AccessibilityManager::EnableSpokenFeedback,
-        base::Unretained(chromeos::AccessibilityManager::Get()),
-        true);
-  WaitForExtension(extension_misc::kChromeVoxExtensionId, load_cb);
     `);
+    super.testGenPreamble();
   }
 
   assertNumberOfAnnotationsForUrl(url, numAnnotations) {

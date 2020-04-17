@@ -4,11 +4,10 @@
 
 #include "components/arc/session/arc_vm_client_adapter.h"
 
-#include <sys/socket.h>
-#include <sys/un.h>
 #include <time.h>
 
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -17,13 +16,10 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/no_destructor.h"
 #include "base/optional.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -33,10 +29,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/platform_thread.h"
-#include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
-#include "base/timer/elapsed_timer.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/concierge_client.h"
@@ -58,13 +51,9 @@ constexpr const char kArcCreateDataJobName[] = "arc_2dcreate_2ddata";
 constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
 constexpr const char kArcVmPerBoardFeaturesJobName[] =
     "arcvm_2dper_2dboard_2dfeatures";
-constexpr const char kArcVmBootNotificationServerJobName[] =
-    "arcvm_2dboot_2dnotification_2dserver";
 
 constexpr const char kCrosSystemPath[] = "/usr/bin/crossystem";
 constexpr const char kHomeDirectory[] = "/home";
-constexpr const char kArcVmBootNotificationServerSocketPath[] =
-    "/run/arcvm_boot_notification_server/host.socket";
 
 constexpr int64_t kInvalidCid = -1;
 
@@ -183,15 +172,24 @@ std::vector<std::string> GenerateKernelCmdline(
       "androidboot.boottime_offset=" + MonotonicTimestamp(),
       // TODO(yusukes): remove this once arcvm supports SELinux.
       "androidboot.selinux=permissive",
-  };
-  // Since we don't do mini VM yet, set not only |start_params| but also
-  // |upgrade_params| here for now.
-  const std::vector<std::string> upgrade_props =
-      GenerateUpgradeProps(upgrade_params, serial_number, "androidboot");
-  result.insert(result.end(), upgrade_props.begin(), upgrade_props.end());
 
-  // TODO(yusukes): Check if we need to set ro.boot.enable_adb_sideloading for
-  // ARCVM.
+      // Since we don't do mini VM yet, set not only |start_params| but also
+      // |upgrade_params| here for now.
+      base::StringPrintf("androidboot.disable_boot_completed=%d",
+                         upgrade_params.skip_boot_completed_broadcast),
+      base::StringPrintf("androidboot.copy_packages_cache=%d",
+                         static_cast<int>(upgrade_params.packages_cache_mode)),
+      base::StringPrintf("androidboot.skip_gms_core_cache=%d",
+                         upgrade_params.skip_gms_core_cache),
+      base::StringPrintf("androidboot.arc_demo_mode=%d",
+                         upgrade_params.is_demo_session),
+      base::StringPrintf(
+          "androidboot.supervision.transition=%d",
+          static_cast<int>(upgrade_params.supervision_transition)),
+      "androidboot.serialno=" + serial_number,
+  };
+  // TODO(yusukes): Check if we need to set ro.boot.container_boot_type and
+  // ro.boot.enable_adb_sideloading for ARCVM.
 
   // Conditionally sets some properties based on |start_params|.
   switch (start_params.play_store_auto_update) {
@@ -205,6 +203,18 @@ std::vector<std::string> GenerateKernelCmdline(
       break;
   }
 
+  // Conditionally sets more properties based on |upgrade_params|.
+  if (!upgrade_params.locale.empty()) {
+    result.push_back("androidboot.locale=" + upgrade_params.locale);
+    if (!upgrade_params.preferred_languages.empty()) {
+      result.push_back(
+          "androidboot.preferred_languages=" +
+          base::JoinString(upgrade_params.preferred_languages, ","));
+    }
+  }
+
+  // TODO(yusukes): Handle |is_account_managed| in |upgrade_params| when we
+  // implement apk sideloading for ARCVM.
   return result;
 }
 
@@ -286,81 +296,6 @@ int GetSystemPropertyInt(const std::string& property) {
     return -1;
   int output_int;
   return base::StringToInt(output, &output_int) ? output_int : -1;
-}
-
-const sockaddr_un* GetArcVmBootNotificationServerAddress() {
-  static struct sockaddr_un address {
-    .sun_family = AF_UNIX,
-    .sun_path = "/run/arcvm_boot_notification_server/host.socket"
-  };
-  return &address;
-}
-
-// Connects to UDS socket at |kArcVmBootNotificationServerSocketPath|.
-// Returns the connected socket fd if successful, or else an invalid fd. This
-// function can only be called with base::MayBlock().
-base::ScopedFD ConnectToArcVmBootNotificationServer() {
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::WILL_BLOCK);
-  base::ScopedFD fd(socket(AF_UNIX, SOCK_STREAM, 0));
-  if (!fd.is_valid()) {
-    PLOG(ERROR) << "Failed to create Unix socket";
-    return {};
-  }
-
-  if (HANDLE_EINTR(connect(fd.get(),
-                           reinterpret_cast<const sockaddr*>(
-                               GetArcVmBootNotificationServerAddress()),
-                           sizeof(sockaddr_un)))) {
-    PLOG(ERROR) << "Unable to connect to "
-                << kArcVmBootNotificationServerSocketPath;
-    return {};
-  }
-
-  return fd;
-}
-
-// Connects to arcvm-boot-notification-server to verify that it is listening.
-// When this function is called, the server has just started and may not be
-// listening on the socket yet, so this function will retry connecting for up
-// to 20s, with exponential backoff. This function can only be called with
-// base::MayBlock().
-bool IsArcVmBootNotificationServerListening() {
-  const base::ElapsedTimer timer;
-  constexpr base::TimeDelta limit = base::TimeDelta::FromSeconds(20);
-  base::TimeDelta sleep_duration = base::TimeDelta::FromMilliseconds(100);
-
-  do {
-    if (ConnectToArcVmBootNotificationServer().is_valid())
-      return true;
-
-    LOG(ERROR) << "Retrying to connect to boot notification server in "
-               << sleep_duration;
-    base::PlatformThread::Sleep(sleep_duration);
-    sleep_duration *= 2;
-  } while (timer.Elapsed() < limit);
-  return false;
-}
-
-// Sends upgrade props to arcvm-boot-notification-server over socket at
-// |kArcVmBootNotificationServerSocketPath|. This function can only be called
-// with base::MayBlock().
-bool SendUpgradePropsToArcVmBootNotificationServer(
-    const UpgradeParams& params,
-    const std::string& serial_number) {
-  std::string props = base::JoinString(
-      GenerateUpgradeProps(params, serial_number, "ro.boot"), "\n");
-
-  base::ScopedFD fd = ConnectToArcVmBootNotificationServer();
-  if (!fd.is_valid())
-    return false;
-
-  if (!base::WriteFileDescriptor(fd.get(), props.c_str(), props.size())) {
-    PLOG(ERROR) << "Unable to write props to "
-                << kArcVmBootNotificationServerSocketPath;
-    return false;
-  }
-  return true;
 }
 
 }  // namespace
@@ -520,60 +455,13 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   void OnArcVmServerProxyJobStopped(chromeos::VoidDBusMethodCallback callback,
                                     bool result) {
-    // Ignore |result| since it can be false when the proxy job has already been
-    // stopped for other reasons, but it's not considered as an error.
     VLOG(1) << "OnArcVmServerProxyJobStopped: job "
             << (result ? "stopped" : "not running?");
 
     should_notify_observers_ = true;
-
-    // Kill a stale arcvm-boot-notification-server job
-    chromeos::UpstartClient::Get()->StopJob(
-        kArcVmBootNotificationServerJobName, /*environment=*/{},
-        base::BindOnce(
-            &ArcVmClientAdapter::OnArcVmBootNotificationServerStopped,
-            weak_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void OnArcVmBootNotificationServerStopped(
-      chromeos::VoidDBusMethodCallback callback,
-      bool result) {
-    VLOG(1) << "OnArcVmBootNotificationServerStopped: job "
-            << (result ? "stopped" : "not running?");
-
-    VLOG(1) << "Starting arcvm-boot-notification-server";
-    chromeos::UpstartClient::Get()->StartJob(
-        kArcVmBootNotificationServerJobName, /*environment=*/{},
-        base::BindOnce(
-            &ArcVmClientAdapter::OnArcVmBootNotificationServerStarted,
-            weak_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void OnArcVmBootNotificationServerStarted(
-      chromeos::VoidDBusMethodCallback callback,
-      bool result) {
-    if (!result) {
-      LOG(ERROR) << "Failed to start arcvm-boot-notification-server job";
-      std::move(callback).Run(false);
-      return;
-    }
-
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&IsArcVmBootNotificationServerListening),
-        base::BindOnce(
-            &ArcVmClientAdapter::OnArcVmBootNotificationServerIsListening,
-            weak_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void OnArcVmBootNotificationServerIsListening(
-      chromeos::VoidDBusMethodCallback callback,
-      bool result) {
-    if (!result) {
-      LOG(ERROR) << "Failed to connect to arcvm-boot-notification-server";
-      std::move(callback).Run(false);
-      return;
-    }
+    // Always run the |callback| with true ignoring the |result|. |result| can
+    // be false when the proxy job has already been stopped for other reasons,
+    // but it's not considered as an error.
     std::move(callback).Run(true);
   }
 
@@ -712,16 +600,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
         start_request,
         base::BindOnce(&ArcVmClientAdapter::OnStartArcVmReply,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
-
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&SendUpgradePropsToArcVmBootNotificationServer, params,
-                       serial_number_),
-        base::BindOnce([](bool result) {
-          VLOG(1)
-              << "Sending upgrade props to arcvm-boot-notification-server was "
-              << (result ? "successful" : "unsuccessful");
-        }));
   }
 
   void OnStartArcVmReply(
@@ -808,52 +686,6 @@ std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter() {
 std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapterForTesting(
     const FileSystemStatusRewriter& rewriter) {
   return std::make_unique<ArcVmClientAdapter>(rewriter);
-}
-
-void SetArcVmBootNotificationServerAddressForTesting(
-    const std::string& new_address) {
-  sockaddr_un* address =
-      const_cast<sockaddr_un*>(GetArcVmBootNotificationServerAddress());
-  DCHECK_GE(sizeof(address->sun_path), new_address.size());
-  memset(address->sun_path, 0, sizeof(address->sun_path));
-  // |new_address| may contain '\0' if it is an abstract socket address, so use
-  // memcpy instead of strcpy.
-  memcpy(address->sun_path, new_address.data(), new_address.size());
-}
-
-std::vector<std::string> GenerateUpgradeProps(
-    const UpgradeParams& upgrade_params,
-    const std::string& serial_number,
-    const std::string& prefix) {
-  std::vector<std::string> result = {
-      base::StringPrintf("%s.disable_boot_completed=%d", prefix.c_str(),
-                         upgrade_params.skip_boot_completed_broadcast),
-      base::StringPrintf("%s.copy_packages_cache=%d", prefix.c_str(),
-                         static_cast<int>(upgrade_params.packages_cache_mode)),
-      base::StringPrintf("%s.skip_gms_core_cache=%d", prefix.c_str(),
-                         upgrade_params.skip_gms_core_cache),
-      base::StringPrintf("%s.arc_demo_mode=%d", prefix.c_str(),
-                         upgrade_params.is_demo_session),
-      base::StringPrintf(
-          "%s.supervision.transition=%d", prefix.c_str(),
-          static_cast<int>(upgrade_params.supervision_transition)),
-      base::StringPrintf("%s.serialno=%s", prefix.c_str(),
-                         serial_number.c_str()),
-  };
-  // Conditionally sets more properties based on |upgrade_params|.
-  if (!upgrade_params.locale.empty()) {
-    result.push_back(base::StringPrintf("%s.locale=%s", prefix.c_str(),
-                                        upgrade_params.locale.c_str()));
-    if (!upgrade_params.preferred_languages.empty()) {
-      result.push_back(base::StringPrintf(
-          "%s.preferred_languages=%s", prefix.c_str(),
-          base::JoinString(upgrade_params.preferred_languages, ",").c_str()));
-    }
-  }
-
-  // TODO(yusukes): Handle |is_managed_account| in |upgrade_params|.
-
-  return result;
 }
 
 }  // namespace arc

@@ -39,8 +39,11 @@ var MediaAppUIBrowserTest = class extends testing.Test {
 
   /** @override */
   get featureList() {
-    // Note the error `Cannot read property 'setConsumer' of undefined` will be
-    // raised if kFileHandlingAPI is omitted.
+    // NativeFileSystem and FileHandling flags should be automatically set by
+    // origin trials when the Media App feature is enabled, but this testing
+    // environment does not seem to recognize origin trials, so they must be
+    // explicitly set with flags to prevent tests crashing on Media App load due
+    // to window.launchQueue being undefined. See http://crbug.com/1071320.
     return {
       enabled: [
         'chromeos::features::kMediaApp',

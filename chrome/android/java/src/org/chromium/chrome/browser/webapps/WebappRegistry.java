@@ -25,12 +25,14 @@ import org.chromium.chrome.browser.browsing_data.UrlFilter;
 import org.chromium.chrome.browser.browsing_data.UrlFilterBridge;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -196,22 +198,62 @@ public class WebappRegistry {
     }
 
     /**
+     * Returns a string representation of the WebApk origin.
+     * @param storage The WebappDataStorage to extract origin for.
+     */
+    private String getScopeFromStorage(WebappDataStorage storage) {
+        if (!storage.getId().startsWith(WebApkConstants.WEBAPK_ID_PREFIX)) {
+            return "";
+        }
+
+        String scope = storage.getScope();
+
+        // Scope shouldn't be empty.
+        assert (!scope.isEmpty());
+
+        return scope;
+    }
+
+    /**
      * Returns true if a WebAPK is found whose scope matches |origin|.
      * @param origin The origin to search a WebAPK for.
      */
     public boolean hasAtLeastOneWebApkForOrigin(String origin) {
         for (HashMap.Entry<String, WebappDataStorage> entry : mStorages.entrySet()) {
             WebappDataStorage storage = entry.getValue();
-            if (!storage.getId().startsWith(WebApkConstants.WEBAPK_ID_PREFIX)) continue;
 
-            String scope = storage.getScope();
-
-            // Scope shouldn't be empty.
-            assert (!scope.isEmpty());
+            String scope = getScopeFromStorage(storage);
+            if (scope.isEmpty()) continue;
 
             if (scope.startsWith(origin)) return true;
         }
         return false;
+    }
+
+    /**
+     * Returns a Set of all origins that have an installed WebAPK.
+     */
+    Set<String> getOriginsWithWebApk() {
+        HashSet<String> origins = new HashSet<String>();
+        for (HashMap.Entry<String, WebappDataStorage> entry : mStorages.entrySet()) {
+            WebappDataStorage storage = entry.getValue();
+
+            String scope = getScopeFromStorage(storage);
+            if (scope.isEmpty()) continue;
+
+            origins.add(Origin.create(scope).toString());
+        }
+        return origins;
+    }
+
+    /**
+     * Returns all origins that have a WebAPK or TWA installed.
+     */
+    public Set<String> getOriginsWithInstalledApp() {
+        HashSet<String> origins = new HashSet<String>();
+        origins.addAll(getOriginsWithWebApk());
+        origins.addAll(mTrustedWebActivityPermissionStore.getStoredOrigins());
+        return origins;
     }
 
     /**

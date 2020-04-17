@@ -31,7 +31,7 @@ class Profile;
 //       will cover the entire element.
 //   * chrome-untrusted://new-tab-page/iframe?<url>: Behaves like an iframe with
 //       src set to <url>.
-//   Each of those helpers only accept HTTPS URLs.
+//   Each of those helpers only accept URLs with HTTPS or chrome-untrusted:.
 class UntrustedSource : public content::URLDataSource,
                         public OneGoogleBarServiceObserver,
                         public PromoServiceObserver {
@@ -71,6 +71,7 @@ class UntrustedSource : public content::URLDataSource,
   OneGoogleBarService* one_google_bar_service_;
   ScopedObserver<OneGoogleBarService, OneGoogleBarServiceObserver>
       one_google_bar_service_observer_{this};
+  Profile* profile_;
   std::vector<content::URLDataSource::GotDataCallback> promo_callbacks_;
   PromoService* promo_service_;
   ScopedObserver<PromoService, PromoServiceObserver> promo_service_observer_{

@@ -36,19 +36,6 @@
   NSHashTable* _webViews;
 }
 
-// This web view configuration's autofill data manager.
-// nil if CWVWebViewConfiguration is created with +incognitoConfiguration.
-@property(nonatomic, readonly, nullable)
-    CWVAutofillDataManager* autofillDataManager;
-
-// This web view configuration's sync controller.
-// nil if CWVWebViewConfiguration is created with +incognitoConfiguration.
-@property(nonatomic, readonly, nullable) CWVSyncController* syncController;
-
-// Initializes configuration with the specified browser state mode.
-- (instancetype)initWithBrowserState:
-    (std::unique_ptr<ios_web_view::WebViewBrowserState>)browserState;
-
 @end
 
 @implementation CWVWebViewConfiguration

@@ -408,6 +408,8 @@ blink_core_sources("layout") {
     "ng/layout_ng_ruby_base.h",
     "ng/layout_ng_ruby_run.cc",
     "ng/layout_ng_ruby_run.h",
+    "ng/layout_ng_ruby_text.cc",
+    "ng/layout_ng_ruby_text.h",
     "ng/layout_ng_table_caption.cc",
     "ng/layout_ng_table_caption.h",
     "ng/layout_ng_table_cell.cc",

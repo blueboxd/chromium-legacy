@@ -6,15 +6,13 @@
 #define CONTENT_PUBLIC_BROWSER_DEDICATED_WORKER_SERVICE_H_
 
 #include "base/observer_list_types.h"
-#include "base/util/type_safety/id_type.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/dedicated_worker_id.h"
 #include "content/public/browser/global_routing_id.h"
 
 class GURL;
 
 namespace content {
-
-using DedicatedWorkerId = util::IdType64<class DedicatedWorkerTag>;
 
 // An interface that allows to subscribe to the lifetime of dedicated workers.
 // The service is owned by the StoragePartition and lives on the UI thread.

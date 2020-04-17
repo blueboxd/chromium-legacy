@@ -5,7 +5,6 @@
 package org.chromium.android_webview;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -36,12 +35,9 @@ public abstract class AwContentsBackgroundThreadClient {
             Log.e(TAG,
                     "Client raised exception in shouldInterceptRequest. Re-throwing on UI thread.");
 
-            ThreadUtils.getUiThreadHandler().post(new Runnable() {
-                @Override
-                public void run() {
-                    Log.e(TAG, "The following exception was raised by shouldInterceptRequest:");
-                    throw e;
-                }
+            AwThreadUtils.postToUiThreadLooper(() -> {
+                Log.e(TAG, "The following exception was raised by shouldInterceptRequest:");
+                throw e;
             });
 
             return new AwWebResourceInterceptResponse(null, /*raisedException=*/true);

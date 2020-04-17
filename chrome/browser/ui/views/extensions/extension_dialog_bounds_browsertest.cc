@@ -54,10 +54,9 @@ class ExtensionDialogBoundsTest
 
     // Dimensions of a dialog that would be bigger than the remaining display
     // work area when the docked magnifier is enabled.
-    ExtensionDialog::InitParams params(1000, 1000);
+    ExtensionDialog::InitParams params(gfx::Size(1000, 1000));
     params.is_modal = true;
-    params.min_width = 640;
-    params.min_height = 240;
+    params.min_size = {640, 240};
     auto* dialog = ExtensionDialog::Show(
         extension->url().Resolve("main.html"),
         browser()->window()->GetNativeWindow(), browser()->profile(),

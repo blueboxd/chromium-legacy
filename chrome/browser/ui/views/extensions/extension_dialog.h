@@ -39,18 +39,21 @@ class ExtensionDialog : public views::DialogDelegate,
                         public base::RefCounted<ExtensionDialog> {
  public:
   struct InitParams {
-    InitParams(int width, int height);
+    // |size| Size in DIP (Device Independent Pixel) for the dialog window.
+    explicit InitParams(gfx::Size size);
     InitParams(const InitParams& other);
     ~InitParams();
 
     // |is_modal| determines whether the dialog is modal to |parent_window|.
     bool is_modal = false;
 
-    // |width| and |height| are the size of the dialog in pixels.
-    int width = 0;
-    int height = 0;
-    int min_width = 0;
-    int min_height = 0;
+    // Size in DIP (Device Independent Pixel) for the dialog window.
+    gfx::Size size;
+
+    // Minimum size in DIP (Device Independent Pixel) for the dialog window.
+    gfx::Size min_size;
+
+    // Text for the dialog title, it should be already localized.
     base::string16 title;
 
 #if defined(OS_CHROMEOS)

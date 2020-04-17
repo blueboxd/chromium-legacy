@@ -91,7 +91,9 @@ public class ReaderModeTest {
         assertThat(innerHtml).doesNotContain("article-header");
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mActivityTestRule.getActivity().getReaderModeManager().activateReaderMode(originalTab);
+            originalTab.getUserDataHost()
+                    .getUserData(ReaderModeManager.USER_DATA_KEY)
+                    .activateReaderMode(originalTab);
         });
         CustomTabActivity customTabActivity = waitForCustomTabActivity();
         CriteriaHelper.pollUiThread(
@@ -118,7 +120,9 @@ public class ReaderModeTest {
         assertThat(innerHtml).doesNotContain("article-header");
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mActivityTestRule.getActivity().getReaderModeManager().activateReaderMode(originalTab);
+            originalTab.getUserDataHost()
+                    .getUserData(ReaderModeManager.USER_DATA_KEY)
+                    .activateReaderMode(originalTab);
         });
         CustomTabActivity customTabActivity = waitForCustomTabActivity();
         CriteriaHelper.pollUiThread(
@@ -141,7 +145,9 @@ public class ReaderModeTest {
         assertThat(innerHtml).doesNotContain("article-header");
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mActivityTestRule.getActivity().getReaderModeManager().activateReaderMode(tab);
+            tab.getUserDataHost()
+                    .getUserData(ReaderModeManager.USER_DATA_KEY)
+                    .activateReaderMode(tab);
         });
         waitForDistillation(TITLE, mActivityTestRule.getActivity().getActivityTab());
 

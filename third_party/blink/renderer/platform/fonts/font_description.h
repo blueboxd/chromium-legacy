@@ -328,7 +328,7 @@ class PLATFORM_EXPORT FontDescription {
   }
   static bool SubpixelPositioning() { return use_subpixel_text_positioning_; }
 
-  void SetSubpixelAscentDescent(bool sp) const {
+  void SetSubpixelAscentDescent(bool sp) {
     fields_.subpixel_ascent_descent_ = sp;
   }
 
@@ -420,7 +420,7 @@ class PLATFORM_EXPORT FontDescription {
     unsigned typesetting_features_ : 3;
     unsigned variant_numeric_ : 8;
     unsigned variant_east_asian_ : 6;
-    mutable unsigned subpixel_ascent_descent_ : 1;
+    unsigned subpixel_ascent_descent_ : 1;
     unsigned font_optical_sizing_ : 1;
   };
 

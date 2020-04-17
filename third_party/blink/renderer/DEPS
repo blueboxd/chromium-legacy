@@ -28,6 +28,7 @@ include_rules = [
     "+base/metrics/single_sample_metrics.h",
     "+base/numerics/checked_math.h",
     "+base/numerics/clamped_math.h",
+    "+base/numerics/ranges.h",
     "+base/numerics/safe_conversions.h",
     "+base/optional.h",
     "+base/rand_util.h",

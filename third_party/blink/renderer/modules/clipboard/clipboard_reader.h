@@ -25,6 +25,7 @@ class ClipboardReader : public GarbageCollected<ClipboardReader> {
                                  const String& mime_type);
   virtual ~ClipboardReader();
 
+  // Returns nullptr if the data is empty or invalid.
   virtual Blob* ReadFromSystem() = 0;
 
   void Trace(Visitor* visitor);

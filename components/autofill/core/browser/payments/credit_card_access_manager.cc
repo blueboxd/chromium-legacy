@@ -84,12 +84,21 @@ void CreditCardAccessManager::UpdateCreditCardFormEventLogger() {
 
   size_t server_record_type_count = 0;
   size_t local_record_type_count = 0;
+  bool has_server_nickname = false;
   for (CreditCard* credit_card : credit_cards) {
+    // If any masked server card has valid nickname, we will set to true no
+    // matter the flag is enabled or not.
+    if (credit_card->record_type() == CreditCard::MASKED_SERVER_CARD &&
+        credit_card->HasValidNickname()) {
+      has_server_nickname = true;
+    }
+
     if (credit_card->record_type() == CreditCard::LOCAL_CARD)
       local_record_type_count++;
     else
       server_record_type_count++;
   }
+  form_event_logger_->set_has_server_nickname(has_server_nickname);
   form_event_logger_->set_server_record_type_count(server_record_type_count);
   form_event_logger_->set_local_record_type_count(local_record_type_count);
   form_event_logger_->set_is_context_secure(client_->IsContextSecure());

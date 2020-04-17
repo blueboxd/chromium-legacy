@@ -566,13 +566,12 @@ ScriptPromise XRSession::requestReferenceSpace(
   return promise;
 }
 
-ScriptPromise XRSession::CreateAnchor(
+ScriptPromise XRSession::CreateAnchorHelper(
     ScriptState* script_state,
-    const blink::TransformationMatrix& offset_space_from_anchor,
-    const blink::TransformationMatrix& mojo_from_offset_space,
-    base::Optional<uint64_t> plane_id,
+    const blink::TransformationMatrix& native_origin_from_anchor,
+    const XRNativeOriginInformation& native_origin_information,
     ExceptionState& exception_state) {
-  DVLOG(2) << __func__ << ": plane_id.has_value()=" << plane_id.has_value();
+  DVLOG(2) << __func__;
 
   if (ended_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -587,13 +586,9 @@ ScriptPromise XRSession::CreateAnchor(
     return ScriptPromise();
   }
 
-  auto mojo_from_anchor = mojo_from_offset_space * offset_space_from_anchor;
-
-  DVLOG(3) << __func__
-           << ": mojo_from_anchor = " << mojo_from_anchor.ToString(true);
-
-  TransformationMatrix::DecomposedType decomposed;
-  if (!mojo_from_anchor.Decompose(decomposed)) {
+  TransformationMatrix::DecomposedType decomposed_native_origin_from_anchor;
+  if (!native_origin_from_anchor.Decompose(
+          decomposed_native_origin_from_anchor)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kUnableToDecomposeMatrix);
     return ScriptPromise();
@@ -602,10 +597,13 @@ ScriptPromise XRSession::CreateAnchor(
   // TODO(https://crbug.com/929841): Remove negation in quaternion once the bug
   // is fixed.
   device::mojom::blink::PosePtr pose_ptr = device::mojom::blink::Pose::New(
-      gfx::Quaternion(-decomposed.quaternion_x, -decomposed.quaternion_y,
-                      -decomposed.quaternion_z, decomposed.quaternion_w),
-      blink::FloatPoint3D(decomposed.translate_x, decomposed.translate_y,
-                          decomposed.translate_z));
+      gfx::Quaternion(-decomposed_native_origin_from_anchor.quaternion_x,
+                      -decomposed_native_origin_from_anchor.quaternion_y,
+                      -decomposed_native_origin_from_anchor.quaternion_z,
+                      decomposed_native_origin_from_anchor.quaternion_w),
+      blink::FloatPoint3D(decomposed_native_origin_from_anchor.translate_x,
+                          decomposed_native_origin_from_anchor.translate_y,
+                          decomposed_native_origin_from_anchor.translate_z));
 
   DVLOG(3) << __func__
            << ": pose_ptr->orientation = " << pose_ptr->orientation.ToString()
@@ -614,17 +612,66 @@ ScriptPromise XRSession::CreateAnchor(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (plane_id) {
-    xr_->xrEnvironmentProviderRemote()->CreatePlaneAnchor(
-        std::move(pose_ptr), *plane_id,
-        WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
-                  WrapPersistent(resolver)));
-  } else {
-    xr_->xrEnvironmentProviderRemote()->CreateAnchor(
-        std::move(pose_ptr),
-        WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
-                  WrapPersistent(resolver)));
+  xr_->xrEnvironmentProviderRemote()->CreateAnchor(
+      native_origin_information.ToMojo(), std::move(pose_ptr),
+      WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
+                WrapPersistent(resolver)));
+
+  create_anchor_promises_.insert(resolver);
+
+  return promise;
+}
+
+ScriptPromise XRSession::CreatePlaneAnchorHelper(
+    ScriptState* script_state,
+    const blink::TransformationMatrix& plane_from_anchor,
+    uint64_t plane_id,
+    ExceptionState& exception_state) {
+  DVLOG(2) << __func__ << ", plane_id=" << plane_id;
+
+  if (ended_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSessionEnded);
+    return ScriptPromise();
   }
+
+  // Reject the promise if device doesn't support the anchors API.
+  if (!xr_->xrEnvironmentProviderRemote()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kAnchorsNotSupported);
+    return ScriptPromise();
+  }
+
+  TransformationMatrix::DecomposedType decomposed_plane_from_anchor;
+  if (!plane_from_anchor.Decompose(decomposed_plane_from_anchor)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kUnableToDecomposeMatrix);
+    return ScriptPromise();
+  }
+
+  // TODO(https://crbug.com/929841): Remove negation in quaternion once the bug
+  // is fixed.
+  device::mojom::blink::PosePtr pose_ptr = device::mojom::blink::Pose::New(
+      gfx::Quaternion(-decomposed_plane_from_anchor.quaternion_x,
+                      -decomposed_plane_from_anchor.quaternion_y,
+                      -decomposed_plane_from_anchor.quaternion_z,
+                      decomposed_plane_from_anchor.quaternion_w),
+      blink::FloatPoint3D(decomposed_plane_from_anchor.translate_x,
+                          decomposed_plane_from_anchor.translate_y,
+                          decomposed_plane_from_anchor.translate_z));
+
+  DVLOG(3) << __func__
+           << ": pose_ptr->orientation = " << pose_ptr->orientation.ToString()
+           << ", pose_ptr->position = " << pose_ptr->position.ToString();
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  xr_->xrEnvironmentProviderRemote()->CreatePlaneAnchor(
+      std::move(pose_ptr), plane_id,
+      WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
+                WrapPersistent(resolver)));
+
   create_anchor_promises_.insert(resolver);
 
   return promise;
@@ -859,7 +906,7 @@ void XRSession::OnCreateAnchorResult(ScriptPromiseResolver* resolver,
   if (result == device::mojom::CreateAnchorResult::SUCCESS) {
     // Anchor was created successfully on the device. Subsequent frame update
     // must contain newly created anchor data.
-    newly_created_anchor_ids_to_resolvers_.insert(id, resolver);
+    anchor_ids_to_pending_anchor_promises_.insert(id, resolver);
   } else {
     resolver->Reject();
   }
@@ -936,8 +983,8 @@ void XRSession::ProcessAnchorsData(
       it->value->Update(*anchor);
     } else {
       auto resolver_it =
-          newly_created_anchor_ids_to_resolvers_.find(anchor->id);
-      if (resolver_it == newly_created_anchor_ids_to_resolvers_.end()) {
+          anchor_ids_to_pending_anchor_promises_.find(anchor->id);
+      if (resolver_it == anchor_ids_to_pending_anchor_promises_.end()) {
         DCHECK(false)
             << "Newly created anchor must have a corresponding resolver!";
         continue;
@@ -946,7 +993,7 @@ void XRSession::ProcessAnchorsData(
       XRAnchor* xr_anchor =
           MakeGarbageCollected<XRAnchor>(anchor->id, this, *anchor);
       resolver_it->value->Resolve(xr_anchor);
-      newly_created_anchor_ids_to_resolvers_.erase(resolver_it);
+      anchor_ids_to_pending_anchor_promises_.erase(resolver_it);
 
       updated_anchors.insert(anchor->id, xr_anchor);
     }
@@ -971,9 +1018,10 @@ void XRSession::ProcessAnchorsData(
 
   anchor_ids_to_anchors_.swap(updated_anchors);
 
-  DCHECK(newly_created_anchor_ids_to_resolvers_.IsEmpty())
-      << "All newly created anchors should be updated in subsequent frame, got "
-      << newly_created_anchor_ids_to_resolvers_.size()
+  DCHECK(anchor_ids_to_pending_anchor_promises_.IsEmpty())
+      << "All anchors should be updated in the frame in which they were "
+         "created, got "
+      << anchor_ids_to_pending_anchor_promises_.size()
       << " anchors that have not been updated";
 }
 
@@ -1406,13 +1454,10 @@ void XRSession::UpdateWorldUnderstandingStateForFrame(
         frame_data->detected_planes_data.get(), timestamp);
     ProcessAnchorsData(frame_data->anchors_data.get(), timestamp);
     ProcessHitTestData(frame_data->hit_test_subscription_results.get());
-    world_information_->ProcessLightEstimationData(
-        frame_data->light_estimation_data.get(), timestamp);
   } else {
     world_information_->ProcessPlaneInformation(nullptr, timestamp);
     ProcessAnchorsData(nullptr, timestamp);
     ProcessHitTestData(nullptr);
-    world_information_->ProcessLightEstimationData(nullptr, timestamp);
   }
 }
 
@@ -1883,7 +1928,7 @@ void XRSession::Trace(Visitor* visitor) {
   visitor->Trace(request_hit_test_source_promises_);
   visitor->Trace(reference_spaces_);
   visitor->Trace(anchor_ids_to_anchors_);
-  visitor->Trace(newly_created_anchor_ids_to_resolvers_);
+  visitor->Trace(anchor_ids_to_pending_anchor_promises_);
   visitor->Trace(prev_base_layer_);
   visitor->Trace(hit_test_source_ids_to_hit_test_sources_);
   visitor->Trace(hit_test_source_ids_to_transient_input_hit_test_sources_);

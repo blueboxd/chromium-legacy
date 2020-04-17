@@ -53,11 +53,6 @@ class NodeBase {
     return graph_;
   }
 
-  // Returns an opaque ID for |node|, unique across all nodes in the same graph,
-  // zero for nullptr. This should never be used to look up nodes, only to
-  // provide a stable ID for serialization.
-  static int64_t GetSerializationId(NodeBase* node);
-
   // Helper functions for casting from a node type to its underlying NodeBase.
   // This CHECKs that the cast is valid. These functions work happily with
   // public and private node class inputs.
@@ -99,9 +94,6 @@ class NodeBase {
   // Assigned when JoinGraph() is called, up until LeaveGraph() is called, where
   // it is reset to null.
   GraphImpl* graph_ = nullptr;
-
-  // Assigned on first use, immutable from that point forward.
-  int64_t serialization_id_ = 0u;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -470,7 +470,16 @@ bool OmniboxPopupModel::IsSelectionAvailable(Selection selection) const {
       // TODO(orinj): Here is an opportunity to clean up the presentational
       //  logic that pkasting wanted to take out of AutocompleteMatch. The view
       //  should be driven by the model, so this is really the place to decide.
-      return match.ShouldShowTabMatchButton();
+      //  In other words, this duplicates logic within OmniboxResultView.
+      //  This is the proper place. OmniboxResultView should refer to here.
+      if (match.ShouldShowTabMatchButton())
+        return true;
+      if (base::FeatureList::IsEnabled(
+              omnibox::kOmniboxSuggestionTransparencyOptions) &&
+          match.SupportsDeletion()) {
+        return true;
+      }
+      return false;
     case FOCUSED_BUTTON_KEYWORD:
       return match.associated_keyword != nullptr;
     case FOCUSED_BUTTON_TAB_SWITCH:

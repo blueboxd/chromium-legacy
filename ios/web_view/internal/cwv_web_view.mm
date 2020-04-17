@@ -141,7 +141,6 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
 @property(nonatomic, readwrite) NSURL* visibleURL;
 @property(nonatomic, readwrite) NSString* visibleLocationString;
 @property(nonatomic, readwrite) CWVSSLStatus* visibleSSLStatus;
-@property(nonatomic, readonly) CWVAutofillController* autofillController;
 
 // Updates the availability of the back/forward navigation properties exposed
 // through |canGoBack| and |canGoForward|, and also updates |backForwardList|.

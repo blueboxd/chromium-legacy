@@ -846,7 +846,6 @@ void CanvasRenderingContext2D::DrawTextInternal(
     return;
 
   const Font& font = AccessFont();
-  font.GetFontDescription().SetSubpixelAscentDescent(true);
   const SimpleFontData* font_data = font.PrimaryFont();
   DCHECK(font_data);
   if (!font_data)

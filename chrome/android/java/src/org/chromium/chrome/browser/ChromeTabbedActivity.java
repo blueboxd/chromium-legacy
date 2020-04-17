@@ -1999,7 +1999,7 @@ public class ChromeTabbedActivity
             return getTabCreator(isIncognito).createNewTab(loadUrlParams, launchType, null, intent);
         } else {
             // Check if the tab is being created from a Reader Mode navigation.
-            if (ReaderModeManager.isEnabled(this)
+            if (ReaderModeManager.isEnabled()
                     && ReaderModeManager.isReaderModeCreatedIntent(intent)) {
                 Bundle extras = intent.getExtras();
                 int readerParentId = IntentUtils.safeGetInt(

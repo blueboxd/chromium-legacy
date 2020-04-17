@@ -54,7 +54,7 @@ std::unique_ptr<PrinterCache> ParsePrinters(std::unique_ptr<std::string> data) {
       base::JSONReader::ReadAndReturnValueWithError(
           *data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
 
-  if (value_with_error.error_code != base::JSONReader::JSON_NO_ERROR) {
+  if (!value_with_error.value) {
     LOG(WARNING) << "Failed to parse printers policy ("
                  << value_with_error.error_message << ") on line "
                  << value_with_error.error_line << " at position "

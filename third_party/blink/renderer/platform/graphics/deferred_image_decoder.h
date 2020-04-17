@@ -74,11 +74,11 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   size_t FrameCount();
   bool ImageIsHighBitDepth() const { return image_is_high_bit_depth_; }
   int RepetitionCount() const;
-  bool FrameHasAlphaAtIndex(size_t index) const;
   bool FrameIsReceivedAtIndex(size_t index) const;
   base::TimeDelta FrameDurationAtIndex(size_t index) const;
   ImageOrientation OrientationAtIndex(size_t index) const;
   bool HotSpot(IntPoint&) const;
+  SkAlphaType AlphaType() const;
 
   // A less expensive method for getting the number of bytes thus far received
   // for the image. Checking Data()->size() involves copying bytes to a

@@ -8,33 +8,24 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.Fragment;
-
 import org.chromium.base.IntentUtils;
 
 /**
  * A utility class for launching Chrome Settings.
  */
 public class SettingsLauncher {
-    private static SettingsLauncher sSettingsLauncher = new SettingsLauncher();
-    private static SettingsLauncher sInstanceForTests;
-
-    @VisibleForTesting
-    protected SettingsLauncher() {}
+    public SettingsLauncher() {}
 
     /**
-     * Returns the singleton instance of this class.
+     * @return An instance of this class.
+     * @deprecated New code should construct {@link SettingsLauncher} directly.
      */
+    // TODO(crbug.com/1054193): Inline and remove this method.
+    @Deprecated
     public static SettingsLauncher getInstance() {
-        return sInstanceForTests == null ? sSettingsLauncher : sInstanceForTests;
-    }
-
-    @VisibleForTesting
-    public void setInstanceForTests(SettingsLauncher getter) {
-        sInstanceForTests = getter;
+        return new SettingsLauncher();
     }
 
     /**

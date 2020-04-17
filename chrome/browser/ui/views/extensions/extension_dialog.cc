@@ -37,8 +37,8 @@
 using content::BrowserContext;
 using content::WebContents;
 
-ExtensionDialog::InitParams::InitParams(int width, int height)
-    : width(width), height(height) {}
+ExtensionDialog::InitParams::InitParams(gfx::Size size)
+    : size(std::move(size)) {}
 ExtensionDialog::InitParams::InitParams(const InitParams& other) = default;
 ExtensionDialog::InitParams::~InitParams() = default;
 
@@ -56,9 +56,8 @@ ExtensionDialog* ExtensionDialog::Show(const GURL& url,
   // Preferred size must be set before views::Widget::CreateWindowWithParent()
   // is called because CreateWindowWithParent() references CanResize().
   ExtensionViewViews* view = GetExtensionView(host.get());
-  view->SetPreferredSize(gfx::Size(init_params.width, init_params.height));
-  view->set_minimum_size(
-      gfx::Size(init_params.min_width, init_params.min_height));
+  view->SetPreferredSize(init_params.size);
+  view->set_minimum_size(init_params.min_size);
   host->SetAssociatedWebContents(web_contents);
 
   DCHECK(parent_window);
@@ -214,16 +213,18 @@ void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
   gfx::Rect bounds = parent ? views::Widget::GetWidgetForNativeWindow(parent)
                                   ->GetWindowBoundsInScreen()
                             : screen_rect;
-  bounds.ClampToCenteredSize({init_params.width, init_params.height});
+  bounds.ClampToCenteredSize(init_params.size);
 
-  // Make sure bounds is larger than {min_width, min_height}.
-  if (bounds.width() < init_params.min_width) {
-    bounds.set_x(bounds.x() + (bounds.width() - init_params.min_width) / 2);
-    bounds.set_width(init_params.min_width);
+  // Make sure bounds is larger than {min_size}.
+  if (bounds.width() < init_params.min_size.width()) {
+    bounds.set_x(bounds.x() +
+                 (bounds.width() - init_params.min_size.width()) / 2);
+    bounds.set_width(init_params.min_size.width());
   }
-  if (bounds.height() < init_params.min_height) {
-    bounds.set_y(bounds.y() + (bounds.height() - init_params.min_height) / 2);
-    bounds.set_height(init_params.min_height);
+  if (bounds.height() < init_params.min_size.height()) {
+    bounds.set_y(bounds.y() +
+                 (bounds.height() - init_params.min_size.height()) / 2);
+    bounds.set_height(init_params.min_size.height());
   }
 
   // Make sure bounds is still on screen.

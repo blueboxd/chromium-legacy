@@ -59,7 +59,6 @@ ios_web_view_public_headers = [
   "public/cwv_navigation_type.h",
   "public/cwv_password.h",
   "public/cwv_preferences.h",
-  "public/cwv_preferences_autofill.h",
   "public/cwv_preview_element_info.h",
   "public/cwv_script_command.h",
   "public/cwv_scroll_view.h",
@@ -68,6 +67,7 @@ ios_web_view_public_headers = [
   "public/cwv_sync_controller.h",
   "public/cwv_sync_controller_data_source.h",
   "public/cwv_sync_controller_delegate.h",
+  "public/cwv_sync_errors.h",
   "public/cwv_translation_controller.h",
   "public/cwv_translation_controller_delegate.h",
   "public/cwv_translation_language.h",
@@ -76,10 +76,7 @@ ios_web_view_public_headers = [
   "public/cwv_user_content_controller.h",
   "public/cwv_user_script.h",
   "public/cwv_web_view.h",
-  "public/cwv_web_view_autofill.h",
   "public/cwv_web_view_configuration.h",
-  "public/cwv_web_view_configuration_autofill.h",
-  "public/cwv_web_view_configuration_sync.h",
 ]
 
 source_set("web_view_sources") {
@@ -412,6 +409,7 @@ test("ios_web_view_unittests") {
     "internal/passwords/cwv_password_unittest.mm",
     "internal/passwords/web_view_password_manager_client_unittest.mm",
     "internal/signin/cwv_identity_unittest.mm",
+    "internal/signin/web_view_device_accounts_provider_impl_unittest.mm",
     "internal/signin/web_view_gaia_auth_fetcher_unittest.mm",
     "internal/sync/cwv_sync_controller_unittest.mm",
     "internal/sync/web_view_sync_client_unittest.mm",

@@ -50,26 +50,26 @@ base::ListValue GetExpectedScreens() {
   auto* screen = display::Screen::GetScreen();
   for (const auto& d : screen->GetAllDisplays()) {
     base::DictionaryValue s;
-    s.SetIntPath("availHeight", d.work_area().height());
-    s.SetIntPath("availLeft", d.work_area().x());
-    s.SetIntPath("availTop", d.work_area().y());
-    s.SetIntPath("availWidth", d.work_area().width());
-    s.SetIntPath("colorDepth", d.color_depth());
-    s.SetIntPath("height", d.bounds().height());
-    s.SetBoolPath("internal", d.IsInternal());
-    s.SetIntPath("left", d.bounds().x());
-    s.SetStringPath("name", "Generic Screen");
-    s.SetBoolPath("orientation", false);
-    s.SetIntPath("pixelDepth", d.color_depth());
-    s.SetBoolPath("primary", d.id() == screen->GetPrimaryDisplay().id());
+    s.SetIntKey("availHeight", d.work_area().height());
+    s.SetIntKey("availLeft", d.work_area().x());
+    s.SetIntKey("availTop", d.work_area().y());
+    s.SetIntKey("availWidth", d.work_area().width());
+    s.SetIntKey("colorDepth", d.color_depth());
+    s.SetIntKey("height", d.bounds().height());
+    s.SetBoolKey("internal", d.IsInternal());
+    s.SetIntKey("left", d.bounds().x());
+    s.SetStringKey("name", "Generic Screen");
+    s.SetBoolKey("orientation", false);
+    s.SetIntKey("pixelDepth", d.color_depth());
+    s.SetBoolKey("primary", d.id() == screen->GetPrimaryDisplay().id());
     // Handle JS's pattern for specifying integer and floating point numbers.
     int int_scale_factor = gfx::ToCeiledInt(d.device_scale_factor());
     if (int_scale_factor == d.device_scale_factor())
-      s.SetIntPath("scaleFactor", int_scale_factor);
+      s.SetIntKey("scaleFactor", int_scale_factor);
     else
-      s.SetDoublePath("scaleFactor", d.device_scale_factor());
-    s.SetIntPath("top", d.bounds().y());
-    s.SetIntPath("width", d.bounds().width());
+      s.SetDoubleKey("scaleFactor", d.device_scale_factor());
+    s.SetIntKey("top", d.bounds().y());
+    s.SetIntKey("width", d.bounds().width());
     expected_screens.Append(std::move(s));
   }
   return expected_screens;

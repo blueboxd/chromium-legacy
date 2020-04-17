@@ -6,8 +6,27 @@
  * @fileoverview
  * 'settings-search-page' is the settings page containing search settings.
  */
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import '../controls/extension_controlled_indicator.m.js';
+import '../i18n_setup.m.js';
+import '../settings_page/settings_animated_pages.m.js';
+import '../settings_page/settings_subpage.m.js';
+import '../settings_shared_css.m.js';
+import '../settings_vars_css.m.js';
+
+import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {routes} from '../route.m.js';
+import {Router} from '../router.m.js';
+import {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl} from '../search_engines_page/search_engines_browser_proxy.m.js';
+
 Polymer({
   is: 'settings-search-page',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     prefs: Object,
@@ -30,12 +49,12 @@ Polymer({
     focusConfig_: Object,
   },
 
-  /** @private {?settings.SearchEnginesBrowserProxy} */
+  /** @private {?SearchEnginesBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   created() {
-    this.browserProxy_ = settings.SearchEnginesBrowserProxyImpl.getInstance();
+    this.browserProxy_ = SearchEnginesBrowserProxyImpl.getInstance();
   },
 
   /** @override */
@@ -45,12 +64,12 @@ Polymer({
       this.set('searchEngines_', searchEngines.defaults);
     };
     this.browserProxy_.getSearchEnginesList().then(updateSearchEngines);
-    cr.addWebUIListener('search-engines-changed', updateSearchEngines);
+    addWebUIListener('search-engines-changed', updateSearchEngines);
 
     this.focusConfig_ = new Map();
-    if (settings.routes.SEARCH_ENGINES) {
+    if (routes.SEARCH_ENGINES) {
       this.focusConfig_.set(
-          settings.routes.SEARCH_ENGINES.path, '#enginesSubpageTrigger');
+          routes.SEARCH_ENGINES.path, '#enginesSubpageTrigger');
     }
   },
 
@@ -68,7 +87,7 @@ Polymer({
 
   /** @private */
   onManageSearchEnginesTap_() {
-    settings.Router.getInstance().navigateTo(settings.routes.SEARCH_ENGINES);
+    Router.getInstance().navigateTo(routes.SEARCH_ENGINES);
   },
 
   /**

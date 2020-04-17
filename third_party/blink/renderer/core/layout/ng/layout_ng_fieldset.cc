@@ -30,11 +30,38 @@ void LayoutNGFieldset::AddChild(LayoutObject* new_child,
     // supported). Removing it from its actual DOM siblings and putting it
     // elsewhere, on the other hand, does not work well.
 
+    // TODO(crbug.com/875235): Consider other display types not mentioned in the
+    // spec (ex. EDisplay::kLayoutCustom).
+    EDisplay display = EDisplay::kFlowRoot;
+    switch (StyleRef().Display()) {
+      case EDisplay::kFlex:
+      case EDisplay::kInlineFlex:
+        display = EDisplay::kFlex;
+        break;
+      case EDisplay::kGrid:
+      case EDisplay::kInlineGrid:
+        display = EDisplay::kGrid;
+        break;
+      default:
+        break;
+    }
+
     scoped_refptr<ComputedStyle> new_style =
-        ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(),
-                                                       EDisplay::kFlowRoot);
+        ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(), display);
+
+    // Inherit all properties listed here:
+    // https://html.spec.whatwg.org/C/#the-fieldset-and-legend-elements
+
     // TODO(crbug.com/875235): When the paint code is ready for anonymous
     // scrollable containers, inherit overflow-x and overflow-y here.
+
+    new_style->SetAlignContent(StyleRef().AlignContent());
+    new_style->SetAlignItems(StyleRef().AlignItems());
+
+    new_style->SetBorderBottomLeftRadius(StyleRef().BorderBottomLeftRadius());
+    new_style->SetBorderBottomRightRadius(StyleRef().BorderBottomRightRadius());
+    new_style->SetBorderTopLeftRadius(StyleRef().BorderTopLeftRadius());
+    new_style->SetBorderTopRightRadius(StyleRef().BorderTopRightRadius());
 
     new_style->SetPaddingTop(StyleRef().PaddingTop());
     new_style->SetPaddingRight(StyleRef().PaddingRight());
@@ -50,12 +77,32 @@ void LayoutNGFieldset::AddChild(LayoutObject* new_child,
     }
     new_style->SetColumnGap(StyleRef().ColumnGap());
     new_style->SetColumnFill(StyleRef().GetColumnFill());
+    new_style->SetColumnRuleColor(StyleColor(LayoutObject::ResolveColor(
+        StyleRef(), GetCSSPropertyColumnRuleColor())));
+    new_style->SetColumnRuleStyle(StyleRef().ColumnRuleStyle());
+    new_style->SetColumnRuleWidth(StyleRef().ColumnRuleWidth());
 
     new_style->SetFlexDirection(StyleRef().FlexDirection());
-    new_style->SetJustifyContent(StyleRef().JustifyContent());
+    new_style->SetFlexWrap(StyleRef().FlexWrap());
 
-    // TODO(mstensho): Inherit all properties listed here:
-    // https://html.spec.whatwg.org/C/#the-fieldset-and-legend-elements
+    new_style->SetGridAutoColumns(StyleRef().GridAutoColumns());
+    new_style->SetGridAutoFlow(StyleRef().GetGridAutoFlow());
+    new_style->SetGridAutoRows(StyleRef().GridAutoRows());
+    new_style->SetGridColumnEnd(StyleRef().GridColumnEnd());
+    new_style->SetGridColumnStart(StyleRef().GridColumnStart());
+    new_style->SetGridRowEnd(StyleRef().GridRowEnd());
+    new_style->SetGridRowStart(StyleRef().GridRowStart());
+    new_style->SetGridTemplateColumns(StyleRef().GridTemplateColumns());
+    new_style->SetGridTemplateRows(StyleRef().GridTemplateRows());
+    new_style->SetNamedGridArea(StyleRef().NamedGridArea());
+    new_style->SetNamedGridAreaColumnCount(
+        StyleRef().NamedGridAreaColumnCount());
+    new_style->SetNamedGridAreaRowCount(StyleRef().NamedGridAreaRowCount());
+    new_style->SetRowGap(StyleRef().RowGap());
+
+    new_style->SetJustifyContent(StyleRef().JustifyContent());
+    new_style->SetJustifyItems(StyleRef().JustifyItems());
+    new_style->SetUnicodeBidi(StyleRef().GetUnicodeBidi());
 
     fieldset_content = LayoutBlock::CreateAnonymousWithParentAndDisplay(
         this, new_style->Display());

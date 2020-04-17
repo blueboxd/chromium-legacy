@@ -278,6 +278,14 @@ SkColorType PaintImage::GetColorType() const {
   return kUnknown_SkColorType;
 }
 
+SkAlphaType PaintImage::GetAlphaType() const {
+  if (paint_image_generator_)
+    return paint_image_generator_->GetSkImageInfo().alphaType();
+  if (GetSkImage())
+    return GetSkImage()->alphaType();
+  return kUnknown_SkAlphaType;
+}
+
 int PaintImage::width() const {
   return paint_worklet_input_
              ? static_cast<int>(paint_worklet_input_->GetSize().width())

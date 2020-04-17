@@ -141,18 +141,24 @@ class XRSession final
                                       ExceptionState&);
 
   // Helper, not IDL-exposed
-  // |offset_space_from_anchor| is a matrix describing transform from offset
-  // space to the initial anchor's position.
-  // |mojo_from_offset_space| can be obtained from XRSpace and describes
-  // transform from mojo space to the offset space in which the anchor pose is
-  // expressed.
-  // |plane_id| - optional, id of the plane to which the anchor should be
-  // attached.
-  ScriptPromise CreateAnchor(
+  // |native_origin_from_anchor| is a matrix describing transform from native
+  // origin to the initial anchor's position.
+  // |native_origin_information| describes native origin telative to which the
+  // transform is expressed.
+  ScriptPromise CreateAnchorHelper(
       ScriptState* script_state,
-      const blink::TransformationMatrix& offset_space_from_anchor,
-      const blink::TransformationMatrix& mojo_from_offset_space,
-      base::Optional<uint64_t> plane_id,
+      const blink::TransformationMatrix& native_origin_from_anchor,
+      const XRNativeOriginInformation& native_origin_information,
+      ExceptionState& exception_state);
+
+  // Helper, not IDL-exposed
+  // |plane_from_anchor| is a matrix describing transform from plane to the
+  // initial anchor's position.
+  // |plane_id| is the id of the plane to which the anchor should be attached.
+  ScriptPromise CreatePlaneAnchorHelper(
+      ScriptState* script_state,
+      const blink::TransformationMatrix& plane_from_anchor,
+      uint64_t plane_id,
       ExceptionState& exception_state);
 
   int requestAnimationFrame(V8XRFrameRequestCallback* callback);
@@ -268,6 +274,7 @@ class XRSession final
   void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr display_info);
 
   bool UsesInputEventing() { return uses_input_eventing_; }
+  bool LightEstimationEnabled() { return false; }
 
   void Trace(Visitor* visitor) override;
 
@@ -398,19 +405,38 @@ class XRSession final
   XRSessionFeatureSet enabled_features_;
   std::unique_ptr<MetricsReporter> metrics_reporter_;
 
+  // From device's perspective, anchor creation is a multi-step process:
+  // - phase 1: application asked to create the anchor, blink has reached out to
+  // the device & does not know anything about the anchor yet.
+  // - phase 2: device returned anchor ID to blink, but blink cannot
+  // "materialize" the XRAnchor object & resolve the promise yet since it needs
+  // to wait for more information about the anchor that will arrive through the
+  // callback to XRFrameDataProvider's GetFrameData call.
+  // - phase 3: device returned anchor information through XRFrameData, blink
+  // can now construct XRAnchor object and resolve app's promise.
+  //
+  // This is done to ensure that from application's perspective, the anchor
+  // creation promises get resolved only when the XRAnchor object is already
+  // fully constructed.
+  //
+  // Anchor promises that are in phase 1 of creation live in
+  // |create_anchor_promises_|, anchor promises in phase 2 live in
+  // |anchor_ids_to_pending_anchor_promises_|, and anchors that got created in
+  // phase 3 live in |anchor_ids_to_anchors_|.
+
   bool is_tracked_anchors_null_ = true;
   HeapHashMap<uint64_t, Member<XRAnchor>> anchor_ids_to_anchors_;
 
   // Set of promises returned from CreateAnchor that are still in-flight to the
   // device. Once the device calls us back with the newly created anchor id, the
-  // resolver will be moved to |newly_created_anchor_ids_to_resolvers_|.
+  // resolver will be moved to |anchor_ids_to_pending_anchor_promises_|.
   HeapHashSet<Member<ScriptPromiseResolver>> create_anchor_promises_;
   // Promises for which anchors have already been created on the device side but
   // have not yet been resolved as their data is not yet available to blink.
   // Next frame update should contain the necessary data - the promise will be
   // resolved then.
   HeapHashMap<uint64_t, Member<ScriptPromiseResolver>>
-      newly_created_anchor_ids_to_resolvers_;
+      anchor_ids_to_pending_anchor_promises_;
 
   // Mapping of hit test source ids (aka hit test subscription ids) to hit test
   // sources. Hit test source has to be stored via weak member - JavaScript side

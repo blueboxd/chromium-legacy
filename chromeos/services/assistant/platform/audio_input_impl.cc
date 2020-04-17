@@ -421,20 +421,27 @@ void AudioInputImpl::SetDspHotwordLocale(std::string pref_locale) {
   cras_audio_handler_->SetHotwordModel(
       dsp_node_id, /* hotword_model */ base::ToLowerASCII(pref_locale),
       base::BindOnce(&AudioInputImpl::SetDspHotwordLocaleCallback,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), pref_locale));
 }
 
-void AudioInputImpl::SetDspHotwordLocaleCallback(bool success) {
+void AudioInputImpl::SetDspHotwordLocaleCallback(std::string pref_locale,
+                                                 bool success) {
   base::UmaHistogramBoolean("Assistant.SetDspHotwordLocale", success);
   if (success)
     return;
 
+  LOG(ERROR) << "Set " << pref_locale
+             << " hotword model failed, fallback to default locale.";
   // Reset the locale to the default value "en_us" if we failed to sync it to
   // the locale stored in user's pref.
   uint64_t dsp_node_id;
   base::StringToUint64(hotword_device_id_, &dsp_node_id);
-  cras_audio_handler_->SetHotwordModel(dsp_node_id, "en_us",
-                                       base::BindOnce([](bool success) {}));
+  cras_audio_handler_->SetHotwordModel(
+      dsp_node_id, /* hotword_model */ "en_us",
+      base::BindOnce([](bool success) {
+        if (!success)
+          LOG(ERROR) << "Reset to default hotword model failed.";
+      }));
 }
 
 void AudioInputImpl::RecreateAudioInputStream(bool use_dsp) {

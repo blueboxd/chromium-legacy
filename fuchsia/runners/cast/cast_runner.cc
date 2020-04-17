@@ -67,25 +67,17 @@ fuchsia::web::CreateContextParams BuildCreateContextParamsForIsolatedRunners(
     const fuchsia::web::CreateContextParams& create_context_params) {
   fuchsia::web::CreateContextParams output;
 
-  // Isolated contexts receive only a limited set of features.
-  fuchsia::web::ContextFeatureFlags features =
+  // Isolated contexts are only allowed a limited set of features.
+  // Only pass those features from |create_context_params|.
+  static constexpr fuchsia::web::ContextFeatureFlags kAllowedFeatures =
       fuchsia::web::ContextFeatureFlags::AUDIO |
-      fuchsia::web::ContextFeatureFlags::LEGACYMETRICS;
-
-  if ((create_context_params.features() &
-       fuchsia::web::ContextFeatureFlags::HEADLESS) ==
-      fuchsia::web::ContextFeatureFlags::HEADLESS) {
-    features |= fuchsia::web::ContextFeatureFlags::HEADLESS;
-  } else {
-    features |= fuchsia::web::ContextFeatureFlags::VULKAN |
-                fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
-                fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY;
-  }
-
-  // The rest of |create_context_params.features()| is ignored.
-  // TODO(crbug.com/1059497): Respect the flags or don't pass them in tests.
-
-  output.set_features(features);
+      fuchsia::web::ContextFeatureFlags::LEGACYMETRICS |
+      fuchsia::web::ContextFeatureFlags::HEADLESS |
+      fuchsia::web::ContextFeatureFlags::VULKAN |
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY;
+  DCHECK(create_context_params.has_features());
+  output.set_features(create_context_params.features() & kAllowedFeatures);
 
   if (create_context_params.has_user_agent_product()) {
     output.set_user_agent_product(create_context_params.user_agent_product());

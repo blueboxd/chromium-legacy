@@ -12,9 +12,9 @@
 namespace blink {
 
 LargestContentfulPaint::LargestContentfulPaint(double start_time,
-                                               double render_time,
+                                               base::TimeDelta render_time,
                                                uint64_t size,
-                                               double load_time,
+                                               base::TimeDelta load_time,
                                                const AtomicString& id,
                                                const String& url,
                                                Element* element)
@@ -51,8 +51,8 @@ Element* LargestContentfulPaint::element() const {
 void LargestContentfulPaint::BuildJSONValue(V8ObjectBuilder& builder) const {
   PerformanceEntry::BuildJSONValue(builder);
   builder.Add("size", size_);
-  builder.Add("renderTime", render_time_);
-  builder.Add("loadTime", load_time_);
+  builder.Add("renderTime", render_time_.InMillisecondsF());
+  builder.Add("loadTime", load_time_.InMillisecondsF());
   builder.Add("id", id_);
   builder.Add("url", url_);
   builder.Add("element", element());

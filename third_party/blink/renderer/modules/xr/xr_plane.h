@@ -44,7 +44,6 @@ class XRPlane : public ScriptWrappable {
 
   ScriptPromise createAnchor(ScriptState* script_state,
                              XRRigidTransform* initial_pose,
-                             XRSpace* space,
                              ExceptionState& exception_state);
 
   // Updates plane data from passed in |plane_data|. The resulting instance

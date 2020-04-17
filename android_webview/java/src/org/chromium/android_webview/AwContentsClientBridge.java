@@ -7,7 +7,6 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.net.http.SslCertificate;
 import android.net.http.SslError;
-import android.os.Handler;
 import android.util.Log;
 
 import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConversionHelper;
@@ -171,7 +170,7 @@ public class AwContentsClientBridge {
         // callback is executed without any native code on the stack. This so that any exception
         // thrown by the application callback won't have to be propagated through a native call
         // stack.
-        new Handler().post(() -> mClient.onReceivedSslError(callback, sslError));
+        AwThreadUtils.postToCurrentLooper(() -> mClient.onReceivedSslError(callback, sslError));
 
         // Record UMA on ssl error
         // Use sparse histogram in case new values are added in future releases
@@ -236,7 +235,7 @@ public class AwContentsClientBridge {
         // callback is executed without any native code on the stack. This so that any exception
         // thrown by the application callback won't have to be propagated through a native call
         // stack.
-        new Handler().post(() -> {
+        AwThreadUtils.postToCurrentLooper(() -> {
             JsResultHandler handler = new JsResultHandler(AwContentsClientBridge.this, id);
             mClient.handleJsAlert(url, message, handler);
         });
@@ -248,7 +247,7 @@ public class AwContentsClientBridge {
         // callback is executed without any native code on the stack. This so that any exception
         // thrown by the application callback won't have to be propagated through a native call
         // stack.
-        new Handler().post(() -> {
+        AwThreadUtils.postToCurrentLooper(() -> {
             JsResultHandler handler = new JsResultHandler(AwContentsClientBridge.this, id);
             mClient.handleJsConfirm(url, message, handler);
         });
@@ -261,7 +260,7 @@ public class AwContentsClientBridge {
         // callback is executed without any native code on the stack. This so that any exception
         // thrown by the application callback won't have to be propagated through a native call
         // stack.
-        new Handler().post(() -> {
+        AwThreadUtils.postToCurrentLooper(() -> {
             JsResultHandler handler = new JsResultHandler(AwContentsClientBridge.this, id);
             mClient.handleJsPrompt(url, message, defaultValue, handler);
         });
@@ -273,7 +272,7 @@ public class AwContentsClientBridge {
         // callback is executed without any native code on the stack. This so that any exception
         // thrown by the application callback won't have to be propagated through a native call
         // stack.
-        new Handler().post(() -> {
+        AwThreadUtils.postToCurrentLooper(() -> {
             JsResultHandler handler = new JsResultHandler(AwContentsClientBridge.this, id);
             mClient.handleJsBeforeUnload(url, message, handler);
         });

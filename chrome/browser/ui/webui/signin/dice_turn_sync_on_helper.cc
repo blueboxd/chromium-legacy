@@ -16,6 +16,7 @@
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/supports_user_data.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
@@ -48,6 +49,9 @@
 #include "content/public/browser/storage_partition.h"
 
 namespace {
+
+const void* const kCurrentDiceTurnSyncOnHelperKey =
+    &kCurrentDiceTurnSyncOnHelperKey;
 
 // A helper class to watch profile lifetime.
 class DiceTurnSyncOnHelperShutdownNotifierFactory
@@ -134,6 +138,38 @@ class TokensLoadedCallbackRunner : public signin::IdentityManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(TokensLoadedCallbackRunner);
 };
 
+struct CurrentDiceTurnSyncOnHelperUserData
+    : public base::SupportsUserData::Data {
+  DiceTurnSyncOnHelper* current_helper = nullptr;
+};
+
+DiceTurnSyncOnHelper* GetCurrentDiceTurnSyncOnHelper(Profile* profile) {
+  base::SupportsUserData::Data* data =
+      profile->GetUserData(kCurrentDiceTurnSyncOnHelperKey);
+  if (!data)
+    return nullptr;
+  CurrentDiceTurnSyncOnHelperUserData* wrapper =
+      static_cast<CurrentDiceTurnSyncOnHelperUserData*>(data);
+  DiceTurnSyncOnHelper* helper = wrapper->current_helper;
+  DCHECK(helper);
+  return helper;
+}
+
+void SetCurrentDiceTurnSyncOnHelper(Profile* profile,
+                                    DiceTurnSyncOnHelper* helper) {
+  if (!helper) {
+    DCHECK(profile->GetUserData(kCurrentDiceTurnSyncOnHelperKey));
+    profile->RemoveUserData(kCurrentDiceTurnSyncOnHelperKey);
+    return;
+  }
+
+  DCHECK(!profile->GetUserData(kCurrentDiceTurnSyncOnHelperKey));
+  std::unique_ptr<CurrentDiceTurnSyncOnHelperUserData> wrapper =
+      std::make_unique<CurrentDiceTurnSyncOnHelperUserData>();
+  wrapper->current_helper = helper;
+  profile->SetUserData(kCurrentDiceTurnSyncOnHelperKey, std::move(wrapper));
+}
+
 }  // namespace
 
 DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
@@ -163,6 +199,9 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
   DCHECK(profile_);
   // Should not start syncing if the profile is already authenticated
   DCHECK(!identity_manager_->HasPrimaryAccount());
+
+  // Cancel any existing helper.
+  AttachToProfile();
 
   if (account_info_.gaia.empty() || account_info_.email.empty()) {
     LOG(ERROR) << "Cannot turn Sync On for invalid account.";
@@ -217,6 +256,8 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
           base::OnceClosure()) {}
 
 DiceTurnSyncOnHelper::~DiceTurnSyncOnHelper() {
+  DCHECK_EQ(this, GetCurrentDiceTurnSyncOnHelper(profile_));
+  SetCurrentDiceTurnSyncOnHelper(profile_, nullptr);
 }
 
 bool DiceTurnSyncOnHelper::HasCanOfferSigninError() {
@@ -540,7 +581,13 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
 void DiceTurnSyncOnHelper::SwitchToProfile(Profile* new_profile) {
   DCHECK(!sync_blocker_);
   DCHECK(!sync_startup_tracker_);
+
+  policy::UserPolicySigninServiceFactory::GetForProfile(profile_)
+      ->ShutdownUserCloudPolicyManager();
+  SetCurrentDiceTurnSyncOnHelper(profile_, nullptr);  // Detach from old profile
   profile_ = new_profile;
+  AttachToProfile();
+
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile_);
   shutdown_subscription_ =
       DiceTurnSyncOnHelperShutdownNotifierFactory::GetInstance()
@@ -553,7 +600,25 @@ void DiceTurnSyncOnHelper::SwitchToProfile(Profile* new_profile) {
   signin_aborted_mode_ = SigninAbortedMode::REMOVE_ACCOUNT;
 }
 
+void DiceTurnSyncOnHelper::AttachToProfile() {
+  // Delete any current helper.
+  DiceTurnSyncOnHelper* current_helper =
+      GetCurrentDiceTurnSyncOnHelper(profile_);
+  if (current_helper) {
+    // If the existing flow was using the same account, keep the account.
+    if (current_helper->account_info_.account_id == account_info_.account_id)
+      current_helper->signin_aborted_mode_ = SigninAbortedMode::KEEP_ACCOUNT;
+    current_helper->AbortAndDelete();
+  }
+  DCHECK(!GetCurrentDiceTurnSyncOnHelper(profile_));
+
+  // Set this as the current helper.
+  SetCurrentDiceTurnSyncOnHelper(profile_, this);
+}
+
 void DiceTurnSyncOnHelper::AbortAndDelete() {
+  policy::UserPolicySigninServiceFactory::GetForProfile(profile_)
+      ->ShutdownUserCloudPolicyManager();
   if (signin_aborted_mode_ == SigninAbortedMode::REMOVE_ACCOUNT) {
     // Revoke the token, and the AccountReconcilor and/or the Gaia server will
     // take care of invalidating the cookies.
@@ -563,5 +628,6 @@ void DiceTurnSyncOnHelper::AbortAndDelete() {
         signin_metrics::SourceForRefreshTokenOperation::
             kDiceTurnOnSyncHelper_Abort);
   }
+
   delete this;
 }

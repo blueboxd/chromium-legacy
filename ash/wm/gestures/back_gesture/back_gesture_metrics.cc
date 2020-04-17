@@ -17,13 +17,13 @@
 namespace ash {
 
 constexpr char kBackGestureStartScenarioHistogram[] =
-    "Tablet.BackGesture.StartScenario";
+    "Ash.BackGesture.StartScenarioType";
 
 constexpr char kBackGestureEndScenarioHistogram[] =
-    "Tablet.BackGesture.EndScenario";
+    "Ash.BackGesture.EndScenarioType";
 
 constexpr char kBackGestureUnderneathWindowTypeHistogram[] =
-    "Tablet.BackGesture.UnderneathWindowType";
+    "Ash.BackGesture.UnderneathWindowType";
 
 BackGestureStartScenarioType GetStartScenarioType(
     bool dragged_from_splitview_divider,

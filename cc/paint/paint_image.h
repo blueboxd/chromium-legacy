@@ -271,8 +271,9 @@ class CC_PAINT_EXPORT PaintImage {
              SkYUVAIndex* plane_indices = nullptr,
              SkYUVColorSpace* yuv_color_space = nullptr) const;
 
-  // Returns the color type of this image.
+  // Get metadata associated with this image.
   SkColorType GetColorType() const;
+  SkAlphaType GetAlphaType() const;
 
   // Returns general information about the underlying image. Returns nullptr if
   // there is no available |paint_image_generator_|.

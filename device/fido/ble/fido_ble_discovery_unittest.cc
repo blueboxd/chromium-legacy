@@ -186,6 +186,7 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsKnownDevice) {
     return;
   }
   InitWithFakeAdapter();
+  BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
 
   SimulateLowEnergyDevice(4);  // This device should be ignored.
   SimulateLowEnergyDevice(7);
@@ -215,6 +216,7 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsNewDevice) {
     return;
   }
   InitWithFakeAdapter();
+  BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
 
   FidoBleDiscovery discovery;
   MockFidoDiscoveryObserver observer;
@@ -258,6 +260,7 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsUpdatedDevice) {
     return;
   }
   InitWithFakeAdapter();
+  BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
 
   SimulateLowEnergyDevice(3);
 
@@ -306,6 +309,7 @@ TEST_F(BluetoothTest, FidoBleDiscoveryRejectsCableDevice) {
     return;
   }
   InitWithFakeAdapter();
+  BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
 
   FidoBleDiscovery discovery;
   MockFidoDiscoveryObserver observer;

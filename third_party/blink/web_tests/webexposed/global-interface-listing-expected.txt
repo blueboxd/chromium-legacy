@@ -11275,10 +11275,6 @@ interface XRBoundedReferenceSpace : XRReferenceSpace
     attribute @@toStringTag
     getter boundsGeometry
     method constructor
-interface XRCubeMap
-    attribute @@toStringTag
-    method constructor
-    method updateWebGLEnvironmentCube
 interface XRDOMOverlayState
     attribute @@toStringTag
     getter type
@@ -11332,21 +11328,6 @@ interface XRInputSourcesChangeEvent : Event
     getter removed
     getter session
     method constructor
-interface XRLightEstimation
-    attribute @@toStringTag
-    getter lightProbe
-    getter reflectionProbe
-    method constructor
-interface XRLightEstimationState
-    attribute @@toStringTag
-    getter enabled
-    method constructor
-interface XRLightProbe
-    attribute @@toStringTag
-    getter mainLightDirection
-    getter mainLightIntensity
-    getter sphericalHarmonics
-    method constructor
 interface XRPlane
     attribute @@toStringTag
     getter lastChangedTime
@@ -11390,10 +11371,6 @@ interface XRReferenceSpaceEvent : Event
     attribute @@toStringTag
     getter referenceSpace
     getter transform
-    method constructor
-interface XRReflectionProbe
-    attribute @@toStringTag
-    getter cubeMap
     method constructor
 interface XRRenderState
     attribute @@toStringTag
@@ -11452,11 +11429,6 @@ interface XRSessionEvent : Event
 interface XRSpace : EventTarget
     attribute @@toStringTag
     method constructor
-interface XRSphericalHarmonics
-    attribute @@toStringTag
-    getter coefficients
-    getter orientation
-    method constructor
 interface XRSystem : EventTarget
     attribute @@toStringTag
     getter ondevicechange
@@ -11504,11 +11476,9 @@ interface XRWebGLLayer
 interface XRWorldInformation
     attribute @@toStringTag
     getter detectedPlanes
-    getter lightEstimation
     method constructor
 interface XRWorldTrackingState
     attribute @@toStringTag
-    getter lightEstimationState
     getter planeDetectionState
     method constructor
 interface XSLTProcessor

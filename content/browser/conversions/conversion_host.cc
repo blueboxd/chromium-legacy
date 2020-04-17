@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/conversions/conversion_manager_impl.h"
+#include "content/browser/conversions/conversion_page_metrics.h"
 #include "content/browser/conversions/conversion_policy.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -50,15 +52,19 @@ class ConversionManagerProviderImpl : public ConversionManager::Provider {
 std::unique_ptr<ConversionHost> ConversionHost::CreateForTesting(
     WebContents* web_contents,
     std::unique_ptr<ConversionManager::Provider> conversion_manager_provider) {
-  auto host = std::make_unique<ConversionHost>(web_contents);
-  host->conversion_manager_provider_ = std::move(conversion_manager_provider);
-  return host;
+  return base::WrapUnique(
+      new ConversionHost(web_contents, std::move(conversion_manager_provider)));
 }
 
 ConversionHost::ConversionHost(WebContents* web_contents)
+    : ConversionHost(web_contents,
+                     std::make_unique<ConversionManagerProviderImpl>()) {}
+
+ConversionHost::ConversionHost(
+    WebContents* web_contents,
+    std::unique_ptr<ConversionManager::Provider> conversion_manager_provider)
     : WebContentsObserver(web_contents),
-      conversion_manager_provider_(
-          std::make_unique<ConversionManagerProviderImpl>()),
+      conversion_manager_provider_(std::move(conversion_manager_provider)),
       receiver_(web_contents, this) {
   // TODO(csharrison): When https://crbug.com/1051334 is resolved, add a DCHECK
   // that the kConversionMeasurement feature is enabled.
@@ -72,11 +78,6 @@ void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   if (!conversion_manager)
     return;
 
-  // Get the impression data off the navigation.
-  if (!navigation_handle->GetImpression())
-    return;
-  const Impression& impression = *(navigation_handle->GetImpression());
-
   // If an impression is not associated with a main frame navigation, ignore it.
   // If the navigation did not commit, committed to a Chrome error page, or was
   // same document, ignore it. Impressions should never be attached to
@@ -85,6 +86,13 @@ void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
       !navigation_handle->HasCommitted() || navigation_handle->IsErrorPage() ||
       navigation_handle->IsSameDocument())
     return;
+
+  conversion_page_metrics_ = std::make_unique<ConversionPageMetrics>();
+
+  // Get the impression data off the navigation.
+  if (!navigation_handle->GetImpression())
+    return;
+  const Impression& impression = *(navigation_handle->GetImpression());
 
   // If the impression's conversion destination does not match the final top
   // frame origin of this new navigation ignore it.
@@ -126,8 +134,6 @@ void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   conversion_manager->HandleImpression(storable_impression);
 }
 
-// TODO(https://crbug.com/1044099): Limit the number of conversion redirects per
-// page-load to a reasonable number.
 void ConversionHost::RegisterConversion(
     blink::mojom::ConversionPtr conversion) {
   content::RenderFrameHost* render_frame_host =
@@ -164,6 +170,8 @@ void ConversionHost::RegisterConversion(
       render_frame_host->GetLastCommittedOrigin(),
       conversion->reporting_origin);
 
+  if (conversion_page_metrics_)
+    conversion_page_metrics_->OnConversion(storable_conversion);
   conversion_manager->HandleConversion(storable_conversion);
 }
 

@@ -3145,6 +3145,22 @@
             ]
         }
     ],
+    "LoadingPredictorUseOptimizationGuide": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_AllOn",
+                    "enable_features": [
+                        "LoadingPredictorUseLocalPredictions",
+                        "LoadingPredictorUseOptimizationGuide"
+                    ]
+                }
+            ]
+        }
+    ],
     "LowPriorityAdProcesses": [
         {
             "platforms": [

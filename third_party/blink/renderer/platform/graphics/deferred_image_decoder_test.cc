@@ -399,13 +399,13 @@ TEST_F(DeferredImageDecoderTest, frameOpacity) {
     sk_sp<SkImage> frame = CreatePaintImage(decoder.get()).GetSkImage();
     ASSERT_TRUE(frame);
     EXPECT_FALSE(frame->isOpaque());
-    EXPECT_TRUE(decoder->FrameHasAlphaAtIndex(0));
+    EXPECT_EQ(decoder->AlphaType(), kPremul_SkAlphaType);
 
     // Force a lazy decode by reading pixels.
     EXPECT_TRUE(frame->readPixels(pixmap, 0, 0));
 
     // After decoding, the frame is known to be opaque.
-    EXPECT_FALSE(decoder->FrameHasAlphaAtIndex(0));
+    EXPECT_EQ(decoder->AlphaType(), kOpaque_SkAlphaType);
     frame = CreatePaintImage(decoder.get()).GetSkImage();
     ASSERT_TRUE(frame);
     EXPECT_TRUE(frame->isOpaque());

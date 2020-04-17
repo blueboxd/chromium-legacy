@@ -68,13 +68,13 @@ PasswordProtectionService::PasswordProtectionService(
       "login.live.com"
       "facebook.com",
       "box.com",
+      "google.com",
       "paypal.com",
       "apple.com",
       "yahoo.com",
       "adobe.com",
       "amazon.com",
-      "linkedin.com",
-      "att.com"};
+      "linkedin.com"};
 }
 
 PasswordProtectionService::~PasswordProtectionService() {

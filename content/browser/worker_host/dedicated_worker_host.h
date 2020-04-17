@@ -11,7 +11,7 @@
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "content/browser/browser_interface_broker_impl.h"
-#include "content/public/browser/dedicated_worker_service.h"
+#include "content/public/browser/dedicated_worker_id.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"

@@ -86,7 +86,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioInputImpl
   void SetDeviceId(const std::string& device_id);
   void SetHotwordDeviceId(const std::string& device_id);
   void SetDspHotwordLocale(std::string pref_locale);
-  void SetDspHotwordLocaleCallback(bool success);
+  void SetDspHotwordLocaleCallback(std::string pref_locale, bool success);
 
   void RecreateAudioInputStream(bool use_dsp);
 

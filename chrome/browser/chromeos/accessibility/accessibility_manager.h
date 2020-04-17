@@ -91,6 +91,7 @@ typedef AccessibilityStatusCallbackList::Subscription
     AccessibilityStatusSubscription;
 
 class AccessibilityPanelWidgetObserver;
+class ChromeVoxDeferredLoader;
 
 enum class PlaySoundOption {
   // The sound is always played.
@@ -362,6 +363,8 @@ class AccessibilityManager
   ~AccessibilityManager() override;
 
  private:
+  void LoadChromeVox();
+  void UnloadChromeVox();
   void PostLoadChromeVox();
   void PostUnloadChromeVox();
   void PostSwitchChromeVoxProfile();
@@ -501,10 +504,14 @@ class AccessibilityManager
   // Used to set the audio focus enforcement type for ChromeVox.
   mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_manager_;
 
+  // Handles deferred ChromeVox load.
+  std::unique_ptr<ChromeVoxDeferredLoader> chromevox_deferred_loader_;
+
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_{this};
 
   friend class DictationTest;
   friend class SwitchAccessTest;
+  friend class ChromeVoxDeferredLoader;
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
 };
 

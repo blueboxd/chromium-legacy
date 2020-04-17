@@ -10,10 +10,10 @@
 
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_web_view_delegate.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/assistant/assistant_web_view_factory.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -35,10 +35,8 @@ constexpr int kMinWindowMarginDip = 48;
 }  // namespace
 
 AssistantWebContainerView::AssistantWebContainerView(
-    AssistantViewDelegate* assistant_view_delegate,
     AssistantWebViewDelegate* web_container_view_delegate)
-    : assistant_view_delegate_(assistant_view_delegate),
-      web_container_view_delegate_(web_container_view_delegate) {
+    : web_container_view_delegate_(web_container_view_delegate) {
   InitLayout();
 }
 
@@ -102,7 +100,7 @@ void AssistantWebContainerView::DidSuppressNavigation(
   // browser.
   if (assistant::util::IsDeepLinkUrl(url) ||
       disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) {
-    assistant_view_delegate_->OpenUrlFromView(url);
+    AssistantController::Get()->OpenUrl(url);
     return;
   }
 

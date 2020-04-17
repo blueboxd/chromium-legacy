@@ -1127,6 +1127,12 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         if (mTabThemeColorProvider != null) mTabThemeColorProvider.removeThemeColorObserver(this);
         if (mAppThemeColorProvider != null) mAppThemeColorProvider.destroy();
+
+        if (mActivityTabTabObserver != null) {
+            mActivityTabTabObserver.destroy();
+            mActivityTabTabObserver = null;
+        }
+
         mActivity.unregisterComponentCallbacks(mComponentCallbacks);
         mComponentCallbacks = null;
         AccessibilityUtil.removeObserver(this);

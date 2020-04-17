@@ -220,6 +220,8 @@ interface PageHandler {
   PasteIntoOmnibox(string text);
   // Gets current doodle if there is one.
   GetDoodle() => (Doodle? doodle);
+  // Choose custom background from local file system.
+  ChooseLocalCustomBackground() => (bool success);
 };
 
 // WebUI-side handler for requests from the browser.

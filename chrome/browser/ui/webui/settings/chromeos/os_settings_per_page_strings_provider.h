@@ -60,6 +60,7 @@ class OsSettingsPerPageStringsProvider {
   OsSettingsPerPageStringsProvider(Profile* profile, Delegate* delegate);
 
   Profile* profile() { return profile_; }
+  const Profile* profile() const { return profile_; }
   Delegate* delegate() { return delegate_; }
 
  private:

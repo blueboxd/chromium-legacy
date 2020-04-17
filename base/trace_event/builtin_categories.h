@@ -30,6 +30,7 @@
   X("accessibility")                                                     \
   X("AccountFetcherService")                                             \
   X("android_webview")                                                   \
+  X("aogh")                                                              \
   X("audio")                                                             \
   X("base")                                                              \
   X("benchmark")                                                         \
@@ -46,8 +47,13 @@
   X("browser")                                                           \
   X("browsing_data")                                                     \
   X("CacheStorage")                                                      \
+  X("Calculators")                                                       \
+  X("CameraStream")                                                      \
   X("camera")                                                            \
+  X("cast_app")                                                          \
   X("cast_perf_test")                                                    \
+  X("cast.mdns")                                                         \
+  X("cast.mdns.socket")                                                  \
   X("cast.stream")                                                       \
   X("cc")                                                                \
   X("cc.debug")                                                          \
@@ -112,6 +118,7 @@
   X("p2p")                                                               \
   X("page-serialization")                                                \
   X("pepper")                                                            \
+  X("PlatformMalloc")                                                    \
   X("ppapi")                                                             \
   X("ppapi proxy")                                                       \
   X("rail")                                                              \
@@ -131,6 +138,8 @@
   X("SiteEngagement")                                                    \
   X("skia")                                                              \
   X("sql")                                                               \
+  X("stadia_media")                                                      \
+  X("stadia_rtc")                                                        \
   X("startup")                                                           \
   X("sync")                                                              \
   X("sync_lock_contention")                                              \

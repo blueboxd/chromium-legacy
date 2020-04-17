@@ -6,10 +6,12 @@
 
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -106,6 +108,11 @@ void MultiDeviceStringsProvider::AddUiStrings(
        IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE_DISCONNECT},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddBoolean(
+      "multideviceAllowedByPolicy",
+      chromeos::multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(
+          profile()->GetPrefs()));
 
   html_source->AddString(
       "multideviceForgetDeviceSummary",

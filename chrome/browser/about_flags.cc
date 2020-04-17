@@ -4930,6 +4930,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPercentBasedScrollingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPercentBasedScrolling)},
 
+#if defined(OS_WIN)
+    {"elastic-overscroll-win", flag_descriptions::kElasticOverscrollWinName,
+     flag_descriptions::kElasticOverscrollWinDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kElasticOverscrollWin)},
+#endif
+
 #if !defined(OS_ANDROID)
     {"show-legacy-tls-warnings", flag_descriptions::kLegacyTLSWarningsName,
      flag_descriptions::kLegacyTLSWarningsDescription, kOsDesktop,

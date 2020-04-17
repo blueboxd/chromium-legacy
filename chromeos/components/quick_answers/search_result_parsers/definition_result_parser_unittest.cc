@@ -116,7 +116,14 @@ TEST_F(DefinitionResultParserTest, NoPhonetic) {
   Value result = BuildDictionaryResult(
       "unfathomable", "", "incapable of being fully explored or understood.");
   QuickAnswer quick_answer;
-  EXPECT_FALSE(parser_->Parse(&result, &quick_answer));
+  EXPECT_TRUE(parser_->Parse(&result, &quick_answer));
+
+  const auto& expected_title = "unfathomable";
+  const auto& expected_answer =
+      "incapable of being fully explored or understood.";
+  EXPECT_EQ(ResultType::kDefinitionResult, quick_answer.result_type);
+  EXPECT_EQ(expected_answer, quick_answer.primary_answer);
+  EXPECT_EQ(expected_title, quick_answer.secondary_answer);
 }
 
 TEST_F(DefinitionResultParserTest, NoDefinition) {

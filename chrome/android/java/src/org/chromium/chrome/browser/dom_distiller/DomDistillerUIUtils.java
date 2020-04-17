@@ -20,17 +20,6 @@ import org.chromium.ui.base.WindowAndroid;
  */
 @JNINamespace("dom_distiller::android")
 public final class DomDistillerUIUtils {
-    // Static handle to Reader Mode's manager.
-    private static ReaderModeManager sManagerManager;
-
-    /**
-     * Set the delegate to the ReaderModeManager.
-     * @param manager The class managing Reader Mode.
-     */
-    public static void setReaderModeManagerDelegate(ReaderModeManager manager) {
-        sManagerManager = manager;
-    }
-
     /**
      * A static method for native code to call to open the distiller UI settings.
      * @param webContents The WebContents containing the distilled content.
@@ -38,6 +27,7 @@ public final class DomDistillerUIUtils {
     @CalledByNative
     public static void openSettings(WebContents webContents) {
         Activity activity = getActivityFromWebContents(webContents);
+
         if (webContents != null && activity != null) {
             RecordUserAction.record("DomDistiller_DistilledPagePrefsOpened");
             AlertDialog.Builder builder =
@@ -45,16 +35,6 @@ public final class DomDistillerUIUtils {
             builder.setView(DistilledPagePrefsView.create(activity));
             builder.show();
         }
-    }
-
-    /**
-     * Clear static references to objects.
-     * @param manager The manager requesting the destoy. This prevents different managers in
-     * document mode from accidentally clearing a reference it doesn't own.
-     */
-    public static void destroy(ReaderModeManager manager) {
-        if (manager != sManagerManager) return;
-        sManagerManager = null;
     }
 
     /**

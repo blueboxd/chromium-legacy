@@ -11,12 +11,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/tab/state/tab_state_db_content.pb.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
 namespace leveldb_proto {
 class ProtoDatabaseProvider;
 }  // namespace leveldb_proto
 
+class TabStateDBFactory;
+class TabStateDBFactoryTest;
 class TabStateDBTest;
 
 // TabStateDatabase is leveldb backend store for NonCriticalPersistedTabData.
@@ -26,8 +29,7 @@ class TabStateDBTest;
 // <NonCriticalPersistedTabData id>_<Tab id>
 
 // NonCriticalPersistedTabData is stored in key/value pairs.
-// TODO(crbug.com/1061258) add a KeyedService so TabStateDB is per profile
-class TabStateDB {
+class TabStateDB : public KeyedService {
  public:
   using KeyAndValue = std::pair<std::string, std::vector<uint8_t>>;
 
@@ -43,12 +45,7 @@ class TabStateDB {
   using ContentEntry = leveldb_proto::ProtoDatabase<
       tab_state_db::TabStateContentProto>::KeyEntryVector;
 
-  // Initializes the database
-  TabStateDB(leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
-             const base::FilePath& profile_directory,
-             base::OnceClosure closure);
-
-  ~TabStateDB();
+  ~TabStateDB() override;
 
   // Returns true if initialization has finished successfully, otherwise false.
   bool IsInitialized() const;
@@ -71,6 +68,16 @@ class TabStateDB {
 
  private:
   friend class ::TabStateDBTest;
+  friend class ::TabStateDBFactory;
+  friend class ::TabStateDBFactoryTest;
+
+  // Initializes the database. Closure is invoked when database initialization
+  // is finished at which point the database can be used.
+  // TODO(crbug.com/1069810) don't block the calling thread on initialization
+  // Queue up operations instead and execute when initialization is finished.
+  TabStateDB(leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+             const base::FilePath& profile_directory);
+
   // Used for tests
   explicit TabStateDB(std::unique_ptr<leveldb_proto::ProtoDatabase<
                           tab_state_db::TabStateContentProto>> storage_database,

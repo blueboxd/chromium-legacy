@@ -47,6 +47,7 @@ import org.chromium.components.page_info.SystemSettingsActivityRequiredListener;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -74,6 +75,7 @@ public class PermissionParamsListBuilderUnitTest {
         when(mWebsitePreferenceBridgeMock.isPermissionControlledByDSE(
                      anyInt(), anyString(), anyBoolean()))
                 .thenReturn(false);
+        FakePermissionDelegate.clearBlockedPermissions();
         AndroidPermissionDelegate permissionDelegate = new FakePermissionDelegate();
         mSettingsActivityRequiredListener = new FakeSystemSettingsActivityRequiredListener();
         mPermissionParamsListBuilder = new PermissionParamsListBuilder(
@@ -125,6 +127,21 @@ public class PermissionParamsListBuilderUnitTest {
         assertEquals(1, mSettingsActivityRequiredListener.getCallCount());
         assertEquals(Settings.ACTION_LOCATION_SOURCE_SETTINGS,
                 mSettingsActivityRequiredListener.getIntentOverride().getAction());
+    }
+
+    @Test
+    public void arNotificationWhenCameraBlocked() {
+        FakePermissionDelegate.blockPermission(android.Manifest.permission.CAMERA);
+        mPermissionParamsListBuilder.addPermissionEntry(
+                "Test", ContentSettingsType.AR, ContentSettingValues.ALLOW);
+
+        List<PageInfoView.PermissionRowParams> rows =
+                mPermissionParamsListBuilder.build().permissions;
+
+        assertEquals(1, rows.size());
+        PageInfoView.PermissionRowParams permissionParams = rows.get(0);
+        assertEquals(
+                R.string.page_info_android_ar_camera_blocked, permissionParams.warningTextResource);
     }
 
     @Test
@@ -181,9 +198,19 @@ public class PermissionParamsListBuilderUnitTest {
     }
 
     private static class FakePermissionDelegate implements AndroidPermissionDelegate {
+        private static List<String> sBlockedPermissions = new ArrayList<String>();
+
+        private static void blockPermission(String permission) {
+            sBlockedPermissions.add(permission);
+        }
+
+        private static void clearBlockedPermissions() {
+            sBlockedPermissions.clear();
+        }
+
         @Override
         public boolean hasPermission(String permission) {
-            return true;
+            return !sBlockedPermissions.contains(permission);
         }
 
         @Override

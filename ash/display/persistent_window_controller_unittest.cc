@@ -341,7 +341,7 @@ TEST_F(PersistentWindowControllerTest, ReconnectOnLockScreen) {
   display_info_list.push_back(secondary_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(gfx::Rect(200, 0, 100, 200), w1->GetBoundsInScreen());
-  EXPECT_EQ(gfx::Rect(1, 0, 200, 100), w2->GetBoundsInScreen());
+  EXPECT_EQ(gfx::Rect(501, 0, 200, 100), w2->GetBoundsInScreen());
 
   // Unlocks and checks that |w2| is restored.
   GetSessionControllerClient()->SetSessionState(SessionState::ACTIVE);

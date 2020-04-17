@@ -34,7 +34,10 @@ source_set("public") {
 
 source_set("tests") {
   testonly = true
-  sources = [ "util_unittest.cc" ]
+  sources = [
+    "doh_provider_list_unittest.cc",
+    "util_unittest.cc",
+  ]
 
   deps = [
     "//net",

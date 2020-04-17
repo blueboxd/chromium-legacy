@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class LayoutRubyText final : public LayoutBlockFlow {
+class LayoutRubyText : public LayoutBlockFlow {
  public:
   LayoutRubyText(Element*);
   ~LayoutRubyText() override;

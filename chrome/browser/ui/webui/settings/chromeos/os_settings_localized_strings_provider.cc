@@ -1942,7 +1942,8 @@ void AddPageVisibilityStrings(content::WebUIDataSource* html_source) {
 
 OsSettingsLocalizedStringsProvider::OsSettingsLocalizedStringsProvider(
     Profile* profile,
-    local_search_service::LocalSearchServiceImpl* local_search_service)
+    local_search_service::LocalSearchServiceImpl* local_search_service,
+    multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client)
     : index_(local_search_service->GetIndexImpl(
           local_search_service::IndexId::kCrosSettings)) {
   // Add per-page string providers.
@@ -1952,9 +1953,7 @@ OsSettingsLocalizedStringsProvider::OsSettingsLocalizedStringsProvider(
   per_page_providers_.push_back(
       std::make_unique<BluetoothStringsProvider>(profile, /*delegate=*/this));
   per_page_providers_.push_back(std::make_unique<MultiDeviceStringsProvider>(
-      profile, /*delegate=*/this,
-      multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(
-          profile)));
+      profile, /*delegate=*/this, multidevice_setup_client));
 }
 
 OsSettingsLocalizedStringsProvider::~OsSettingsLocalizedStringsProvider() =

@@ -6,10 +6,11 @@ package org.chromium.components.browser_ui.widget.promo;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.view.View;
+
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,7 +19,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.components.browser_ui.widget.test.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -45,12 +45,10 @@ public class PromoCardCoordinatorTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP,
-            message = "Failing on K, https://crbug.com/1071414")
     public void
     testTextImageBinding() {
         final Drawable testImage =
-                mContext.getResources().getDrawable(R.drawable.logo_avatar_anonymous);
+                AppCompatResources.getDrawable(mContext, R.drawable.logo_avatar_anonymous);
         final String titleString = "Some string for title";
         final String testString = "Some test string";
         final String primaryButtonString = "Primary button string";

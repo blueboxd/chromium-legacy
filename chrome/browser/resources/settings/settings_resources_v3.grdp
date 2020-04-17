@@ -575,32 +575,32 @@
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_OMNIBOX_EXTENSION_ENTRY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/search_engines_page/omnibox_extension_entry.m.js"
+  <include name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_OMNIBOX_EXTENSION_ENTRY_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/search_engines_page/omnibox_extension_entry.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINE_DIALOG_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/search_engines_page/search_engine_dialog.m.js"
+  <include name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINE_DIALOG_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/search_engines_page/search_engine_dialog.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINE_ENTRY_CSS_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/search_engines_page/search_engine_entry_css.m.js"
+  <include name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINE_ENTRY_CSS_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/search_engines_page/search_engine_entry_css.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINE_ENTRY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/search_engines_page/search_engine_entry.m.js"
+  <include name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINE_ENTRY_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/search_engines_page/search_engine_entry.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINES_LIST_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/search_engines_page/search_engines_list.m.js"
+  <include name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINES_LIST_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/search_engines_page/search_engines_list.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINES_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/search_engines_page/search_engines_page.m.js"
+  <include name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINES_PAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/search_engines_page/search_engines_page.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SEARCH_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/search_page/search_page.m.js"
+  <include name="IDR_SETTINGS_SEARCH_PAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/search_page/search_page.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_SEARCH_SETTINGS_M_JS"

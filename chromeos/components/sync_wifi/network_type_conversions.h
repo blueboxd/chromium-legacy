@@ -47,6 +47,9 @@ network_config::mojom::SecurityType MojoSecurityTypeFromString(
 network_config::mojom::SecurityType MojoSecurityTypeFromProto(
     const sync_pb::WifiConfigurationSpecifics_SecurityType& security_type);
 
+network_config::mojom::ProxySettingsPtr MojoProxySettingsFromProto(
+    const sync_pb::WifiConfigurationSpecifics_ProxyConfiguration& specifics);
+
 network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
     const sync_pb::WifiConfigurationSpecifics& specifics);
 

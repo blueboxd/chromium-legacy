@@ -29,7 +29,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.shadows.ShadowAlertDialog;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.DisableNativeTestRule;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
@@ -46,8 +45,6 @@ public class SignOutDialogFragmentTest {
         public void onSignOutClicked(boolean forceWipeUserData) {}
     }
 
-    @Rule
-    public final DisableNativeTestRule mDisableNative = new DisableNativeTestRule();
 
     @Rule
     public final JniMocker mocker = new JniMocker();

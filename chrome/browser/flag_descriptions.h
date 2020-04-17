@@ -1670,6 +1670,9 @@ extern const char kCloudPrintXpsDescription[];
 extern const char kD3D11VideoDecoderName[];
 extern const char kD3D11VideoDecoderDescription[];
 
+extern const char kElasticOverscrollWinName[];
+extern const char kElasticOverscrollWinDescription[];
+
 extern const char kEnableMediaFoundationVideoCaptureName[];
 extern const char kEnableMediaFoundationVideoCaptureDescription[];
 

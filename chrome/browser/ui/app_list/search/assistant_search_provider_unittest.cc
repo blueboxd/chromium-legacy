@@ -6,7 +6,9 @@
 
 #include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
+#include "ash/public/cpp/assistant/test_support/mock_assistant_controller.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
@@ -14,16 +16,20 @@
 #include "chrome/browser/ui/app_list/search/assistant_search_provider.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "url/gurl.h"
 
 namespace app_list {
 namespace test {
 
-// Aliases.
-using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
-using AssistantSuggestionPtr =
-    chromeos::assistant::mojom::AssistantSuggestionPtr;
+using ash::mojom::AssistantAllowedState;
+using chromeos::assistant::mojom::AssistantSuggestion;
+using chromeos::assistant::mojom::AssistantSuggestionPtr;
+using testing::DoAll;
+using testing::NiceMock;
+using testing::SaveArg;
 
 // Expectations ----------------------------------------------------------------
 
@@ -71,6 +77,7 @@ class ConversationStarterBuilder {
     AssistantSuggestionPtr conversation_starter = AssistantSuggestion::New();
     conversation_starter->id = id_;
     conversation_starter->text = text_;
+    conversation_starter->action_url = action_url_;
     return conversation_starter;
   }
 
@@ -84,9 +91,45 @@ class ConversationStarterBuilder {
     return *this;
   }
 
+  ConversationStarterBuilder& WithActionUrl(const std::string& action_url) {
+    action_url_ = GURL(action_url);
+    return *this;
+  }
+
  private:
   base::UnguessableToken id_;
   std::string text_;
+  GURL action_url_;
+};
+
+// TestAssistantState ----------------------------------------------------------
+
+class TestAssistantState : public ash::AssistantState {
+ public:
+  TestAssistantState() {
+    allowed_state_ = ash::mojom::AssistantAllowedState::ALLOWED;
+    settings_enabled_ = true;
+  }
+
+  TestAssistantState(const TestAssistantState&) = delete;
+  TestAssistantState& operator=(const TestAssistantState&) = delete;
+  ~TestAssistantState() override = default;
+
+  void SetAllowedState(AssistantAllowedState allowed_state) {
+    if (allowed_state_ != allowed_state) {
+      allowed_state_ = allowed_state;
+      for (auto& observer : observers_)
+        observer.OnAssistantFeatureAllowedChanged(allowed_state_.value());
+    }
+  }
+
+  void SetSettingsEnabled(bool enabled) {
+    if (settings_enabled_ != enabled) {
+      settings_enabled_ = enabled;
+      for (auto& observer : observers_)
+        observer.OnAssistantSettingsEnabled(settings_enabled_.value());
+    }
+  }
 };
 
 // TestAssistantSuggestionsController ------------------------------------------
@@ -151,11 +194,19 @@ class AssistantSearchProviderTest : public AppListTestBase {
 
   AssistantSearchProvider& search_provider() { return search_provider_; }
 
+  TestAssistantState& assistant_state() { return assistant_state_; }
+
+  NiceMock<ash::MockAssistantController>& assistant_controller() {
+    return assistant_controller_;
+  }
+
   TestAssistantSuggestionsController& suggestions_controller() {
     return suggestions_controller_;
   }
 
  private:
+  TestAssistantState assistant_state_;
+  NiceMock<ash::MockAssistantController> assistant_controller_;
   TestAssistantSuggestionsController suggestions_controller_;
   AssistantSearchProvider search_provider_;
 };
@@ -173,14 +224,50 @@ TEST_F(AssistantSearchProviderTest, ShouldHaveAnInitialResult) {
   Expect(result).Matches(*conversation_starters.front());
 }
 
-TEST_F(AssistantSearchProviderTest, ShouldClearResultsDynamically) {
+TEST_F(AssistantSearchProviderTest,
+       ShouldUpdateResultsWhenAssistantAllowedStateChanges) {
+  // We default to Assistant allowed, so we should have an initial result.
+  EXPECT_EQ(1u, search_provider().results().size());
+
+  // Test all possible Assistant allowed states.
+  for (int i = 0; i < static_cast<int>(AssistantAllowedState::kMaxValue); ++i) {
+    if (i == static_cast<int>(AssistantAllowedState::ALLOWED))
+      continue;
+
+    // When Assistant becomes not-allowed, results should be cleared.
+    assistant_state().SetAllowedState(static_cast<AssistantAllowedState>(i));
+    EXPECT_TRUE(search_provider().results().empty());
+
+    // When Assistant becomes allowed, we should again have a single result.
+    assistant_state().SetAllowedState(AssistantAllowedState::ALLOWED);
+    EXPECT_EQ(1u, search_provider().results().size());
+  }
+}
+
+TEST_F(AssistantSearchProviderTest,
+       ShouldUpdateResultsWhenAssistantSettingsEnabledChanges) {
+  // We default to Assistant enabled, so we should have an initial result.
+  ASSERT_EQ(1u, search_provider().results().size());
+
+  // When Assistant is disabled, results should be cleared.
+  assistant_state().SetSettingsEnabled(false);
+  EXPECT_TRUE(search_provider().results().empty());
+
+  // When Assistant is enabled, we should again have a single result.
+  assistant_state().SetSettingsEnabled(true);
+  ASSERT_EQ(1u, search_provider().results().size());
+}
+
+TEST_F(AssistantSearchProviderTest,
+       ShouldClearResultsWhenConversationStartersChange) {
   EXPECT_EQ(1u, search_provider().results().size());
 
   suggestions_controller().ClearConversationStarters();
   EXPECT_TRUE(search_provider().results().empty());
 }
 
-TEST_F(AssistantSearchProviderTest, ShouldUpdateResultsDynamically) {
+TEST_F(AssistantSearchProviderTest,
+       ShouldUpdateResultsWhenConversationStartersChange) {
   AssistantSuggestionPtr update = ConversationStarterBuilder()
                                       .WithId(base::UnguessableToken::Create())
                                       .WithText("Updated result")
@@ -191,6 +278,31 @@ TEST_F(AssistantSearchProviderTest, ShouldUpdateResultsDynamically) {
 
   const ChromeSearchResult& result = *search_provider().results().at(0);
   Expect(result).Matches(*update);
+}
+
+TEST_F(AssistantSearchProviderTest,
+       ShouldDelegateOpeningResultsToAssistantController) {
+  suggestions_controller().SetConversationStarter(
+      ConversationStarterBuilder()
+          .WithId(base::UnguessableToken::Create())
+          .WithText("Weather")
+          .WithActionUrl("googleassistant://send-query?q=weather")
+          .Build());
+
+  ASSERT_EQ(1u, search_provider().results().size());
+
+  GURL url;
+  bool in_background = true;
+  bool from_user = true;
+  EXPECT_CALL(assistant_controller(), OpenUrl)
+      .WillOnce(DoAll(SaveArg<0>(&url), SaveArg<1>(&in_background),
+                      SaveArg<2>(&from_user)));
+
+  search_provider().results().at(0)->Open(/*event_flags=*/0);
+
+  EXPECT_EQ(GURL("googleassistant://send-query?q=weather"), url);
+  EXPECT_FALSE(in_background);
+  EXPECT_FALSE(from_user);
 }
 
 }  // namespace test

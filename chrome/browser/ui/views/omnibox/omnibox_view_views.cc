@@ -687,29 +687,6 @@ bool OmniboxViewViews::TextAndUIDirectionMatch() const {
           base::i18n::RIGHT_TO_LEFT) == base::i18n::IsRTL();
 }
 
-views::Button* OmniboxViewViews::GetSecondaryButtonForSelectedLine() const {
-  // TODO(tommycli): If we have a WebUI omnibox popup, we should move the
-  // secondary button logic out of the View and into the OmniboxPopupModel.
-  if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup))
-    return nullptr;
-
-  OmniboxPopupModel* popup_model = model()->popup_model();
-  if (!popup_model)
-    return nullptr;
-
-  size_t selected_line = popup_model->selected_line();
-  if (selected_line == OmniboxPopupModel::kNoMatch)
-    return nullptr;
-
-  // TODO(tommycli): https://crbug.com/1063071
-  // Diving into |popup_view_| was a mistake. Here's a hotfix to stop the crash,
-  // but the ultimate fix should be to move this logic into OmniboxPopupModel.
-  if (!popup_view_ || popup_view_->result_view_at(selected_line) == nullptr)
-    return nullptr;
-
-  return popup_view_->result_view_at(selected_line)->GetSecondaryButton();
-}
-
 bool OmniboxViewViews::DirectionAwareSelectionAtEnd() const {
   // When text and UI direction match, 'end' is as expected,
   // otherwise we use beginning.

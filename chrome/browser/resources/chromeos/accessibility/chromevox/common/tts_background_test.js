@@ -248,3 +248,46 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'SplitUntilSmall', function() {
   assertEqualsJSON(['a'], split('a', 'a'));
   assertEqualsJSON(['a'], split('a', 'b'));
 });
+
+SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Phonetics', function() {
+  const tts = new TtsBackground(false);
+  let spokenStrings = [];
+  tts.speakUsingQueue_ = (utterance, ...rest) => {
+    spokenStrings.push(utterance.textString);
+  };
+
+  // English.
+  tts.speak('t', QueueMode.QUEUE, {lang: 'en-us', phoneticCharacters: true});
+  assertTrue(spokenStrings.includes('T'));
+  assertTrue(spokenStrings.includes('tango'));
+  tts.speak('a', QueueMode.QUEUE, {lang: 'en-us', phoneticCharacters: true});
+  assertTrue(spokenStrings.includes('A'));
+  assertTrue(spokenStrings.includes('alpha'));
+  spokenStrings = [];
+
+  // German.
+  tts.speak('t', QueueMode.QUEUE, {lang: 'de', phoneticCharacters: true});
+  assertTrue(spokenStrings.includes('T'));
+  assertTrue(spokenStrings.includes('Theodor'));
+  tts.speak('a', QueueMode.QUEUE, {lang: 'de', phoneticCharacters: true});
+  assertTrue(spokenStrings.includes('A'));
+  assertTrue(spokenStrings.includes('Anton'));
+  spokenStrings = [];
+
+  // Japanese.
+  tts.speak('t', QueueMode.QUEUE, {lang: 'ja', phoneticCharacters: true});
+  assertTrue(spokenStrings.includes('T'));
+  assertTrue(spokenStrings.includes('ティー タイム'));
+  tts.speak('a', QueueMode.QUEUE, {lang: 'ja', phoneticCharacters: true});
+  assertTrue(spokenStrings.includes('A'));
+  assertTrue(spokenStrings.includes('エイ アニマル'));
+  tts.speak('人', QueueMode.QUEUE, {lang: 'ja', phoneticCharacters: true});
+  assertTrue(spokenStrings.includes('人'));
+  assertTrue(spokenStrings.includes('ヒト，ニンゲン ノ ニン'));
+  spokenStrings = [];
+
+  // Error handling.
+  tts.speak('t', QueueMode.QUEUE, {lang: 'qwerty', phoneticCharacters: true});
+  assertTrue(spokenStrings.includes('T'));
+  assertEquals(1, spokenStrings.length);
+});

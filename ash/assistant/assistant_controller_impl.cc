@@ -142,6 +142,43 @@ void AssistantControllerImpl::DownloadImage(
                                                     std::move(callback));
 }
 
+void AssistantControllerImpl::OpenUrl(const GURL& url,
+                                      bool in_background,
+                                      bool from_server) {
+  if (assistant::util::IsDeepLinkUrl(url)) {
+    NotifyDeepLinkReceived(url);
+    return;
+  }
+
+  auto* android_helper = AndroidIntentHelper::GetInstance();
+  if (IsAndroidIntent(url) && !android_helper) {
+    NOTREACHED();
+    return;
+  }
+
+  // Give observers an opportunity to perform any necessary handling before we
+  // open the specified |url| in a new browser tab.
+  NotifyOpeningUrl(url, in_background, from_server);
+
+  if (IsAndroidIntent(url)) {
+    android_helper->LaunchAndroidIntent(url.spec());
+  } else {
+    // The new tab should be opened with a user activation since the user
+    // interacted with the Assistant to open the url. |in_background| describes
+    // the relationship between |url| and Assistant UI, not the browser. As
+    // such, the browser will always be instructed to open |url| in a new
+    // browser tab and Assistant UI state will be updated downstream to respect
+    // |in_background|.
+    NewWindowDelegate::GetInstance()->NewTabWithUrl(
+        url, /*from_user_interaction=*/true);
+  }
+  NotifyUrlOpened(url, from_server);
+}
+
+base::WeakPtr<ash::AssistantController> AssistantControllerImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void AssistantControllerImpl::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
@@ -151,8 +188,10 @@ void AssistantControllerImpl::OnDeepLinkReceived(
   switch (type) {
     case DeepLinkType::kChromeSettings: {
       // Chrome Settings deep links are opened in a new browser tab.
-      OpenUrl(assistant::util::GetChromeSettingsUrl(
-          assistant::util::GetDeepLinkParam(params, DeepLinkParam::kPage)));
+      OpenUrl(
+          assistant::util::GetChromeSettingsUrl(
+              assistant::util::GetDeepLinkParam(params, DeepLinkParam::kPage)),
+          /*in_background=*/false, /*from_server=*/false);
       break;
     }
     case DeepLinkType::kFeedback:
@@ -223,39 +262,6 @@ void AssistantControllerImpl::OnAccessibilityStatusChanged() {
   // state so that it can turn on/off A11Y features appropriately.
   assistant_->OnAccessibilityStatusChanged(
       Shell::Get()->accessibility_controller()->spoken_feedback_enabled());
-}
-
-void AssistantControllerImpl::OpenUrl(const GURL& url,
-                                      bool in_background,
-                                      bool from_server) {
-  if (assistant::util::IsDeepLinkUrl(url)) {
-    NotifyDeepLinkReceived(url);
-    return;
-  }
-
-  auto* android_helper = AndroidIntentHelper::GetInstance();
-  if (IsAndroidIntent(url) && !android_helper) {
-    NOTREACHED();
-    return;
-  }
-
-  // Give observers an opportunity to perform any necessary handling before we
-  // open the specified |url| in a new browser tab.
-  NotifyOpeningUrl(url, in_background, from_server);
-
-  if (IsAndroidIntent(url)) {
-    android_helper->LaunchAndroidIntent(url.spec());
-  } else {
-    // The new tab should be opened with a user activation since the user
-    // interacted with the Assistant to open the url. |in_background| describes
-    // the relationship between |url| and Assistant UI, not the browser. As
-    // such, the browser will always be instructed to open |url| in a new
-    // browser tab and Assistant UI state will be updated downstream to respect
-    // |in_background|.
-    NewWindowDelegate::GetInstance()->NewTabWithUrl(
-        url, /*from_user_interaction=*/true);
-  }
-  NotifyUrlOpened(url, from_server);
 }
 
 bool AssistantControllerImpl::IsAssistantReady() const {
@@ -344,10 +350,6 @@ void AssistantControllerImpl::BindStateController(
 void AssistantControllerImpl::BindVolumeControl(
     mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) {
   Shell::Get()->assistant_controller()->BindReceiver(std::move(receiver));
-}
-
-base::WeakPtr<AssistantControllerImpl> AssistantControllerImpl::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace ash

@@ -27,8 +27,11 @@ import org.chromium.url.GURL;
 
     /* package */ static final WritableIntPropertyKey SECURITY_ICON = new WritableIntPropertyKey();
 
-    /* package */ static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {URL, TITLE, LOAD_PROGRESS, PROGRESS_VISIBLE, SECURITY_ICON};
+    /* package */ static final WritableObjectPropertyKey<String> SECURITY_ICON_CONTENT_DESCRIPTION =
+            new WritableObjectPropertyKey<>();
+
+    /* package */ static final PropertyKey[] ALL_KEYS = new PropertyKey[] {URL, TITLE,
+            LOAD_PROGRESS, PROGRESS_VISIBLE, SECURITY_ICON, SECURITY_ICON_CONTENT_DESCRIPTION};
 
     // Prevent instantiation.
     private PaymentHandlerToolbarProperties() {}

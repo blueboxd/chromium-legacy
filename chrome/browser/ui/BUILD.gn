@@ -4376,19 +4376,19 @@ static_library("test_support") {
     ]
     sources += [
       "extensions/extension_action_test_helper.h",
+      "views/extensions/extension_action_test_helper_mac.mm",
+      "views/extensions/extension_action_test_helper_views.cc",
+      "views/extensions/extension_action_test_helper_views.h",
       "views/extensions/extensions_menu_test_util.cc",
       "views/extensions/extensions_menu_test_util.h",
       "views/find_bar_host_unittest_util_views.cc",
       "views/payments/test_chrome_payment_request_delegate.cc",
       "views/payments/test_chrome_payment_request_delegate.h",
-      "views/toolbar/extension_action_test_helper_mac.mm",
-      "views/toolbar/extension_action_test_helper_views.cc",
-      "views/toolbar/extension_action_test_helper_views.h",
       "views/webauthn/authenticator_request_dialog_view_test_api.cc",
       "views/webauthn/authenticator_request_dialog_view_test_api.h",
     ]
     if (use_aura) {
-      sources += [ "views/toolbar/extension_action_test_helper_aura.cc" ]
+      sources += [ "views/extensions/extension_action_test_helper_aura.cc" ]
       deps += [
         "//ui/aura",
         "//ui/wm",

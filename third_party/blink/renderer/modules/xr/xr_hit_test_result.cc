@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_hit_test_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_pose.h"
+#include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_space.h"
@@ -40,18 +41,33 @@ XRPose* XRHitTestResult::getPose(XRSpace* other) {
 }
 
 ScriptPromise XRHitTestResult::createAnchor(ScriptState* script_state,
-                                            XRRigidTransform* initial_pose,
+                                            XRRigidTransform* this_from_anchor,
                                             ExceptionState& exception_state) {
   DVLOG(2) << __func__;
 
-  if (!initial_pose) {
+  if (!this_from_anchor) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       XRSession::kNoRigidTransformSpecified);
     return {};
   }
 
-  return session_->CreateAnchor(script_state, initial_pose->TransformMatrix(),
-                                *mojo_from_this_, plane_id_, exception_state);
+  if (plane_id_) {
+    return session_->CreatePlaneAnchorHelper(
+        script_state, this_from_anchor->TransformMatrix(), *plane_id_,
+        exception_state);
+  } else {
+    // Let's create free-floating anchor since plane is unavailable.
+    // TODO(crbug.com/1070380): This assumes that local space is equivalent to
+    // mojo space! Remove the assumption once the bug is fixed.
+
+    auto mojo_from_anchor =
+        *mojo_from_this_ * this_from_anchor->TransformMatrix();
+    auto maybe_native_origin = XRNativeOriginInformation::Create(
+        device::mojom::XRReferenceSpaceCategory::LOCAL);
+
+    return session_->CreateAnchorHelper(script_state, mojo_from_anchor,
+                                        *maybe_native_origin, exception_state);
+  }
 }
 
 void XRHitTestResult::Trace(Visitor* visitor) {

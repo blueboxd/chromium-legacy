@@ -32,7 +32,7 @@ class NavigationObserverImpl : public NavigationObserver {
   }
   ~NavigationObserverImpl() override { controller_->RemoveObserver(this); }
 
-  using Callback = base::OnceCallback<void(Navigation*)>;
+  using Callback = base::RepeatingCallback<void(Navigation*)>;
 
   void SetStartedCallback(Callback callback) {
     started_callback_ = std::move(callback);
@@ -42,29 +42,38 @@ class NavigationObserverImpl : public NavigationObserver {
     redirected_callback_ = std::move(callback);
   }
 
-  void SetFailedClosure(base::OnceClosure closure) {
+  void SetFailedClosure(base::RepeatingClosure closure) {
     failed_closure_ = std::move(closure);
+  }
+
+  void SetCompletedClosure(Callback closure) {
+    completed_closure_ = std::move(closure);
   }
 
   // NavigationObserver:
   void NavigationStarted(Navigation* navigation) override {
     if (started_callback_)
-      std::move(started_callback_).Run(navigation);
+      started_callback_.Run(navigation);
   }
   void NavigationRedirected(Navigation* navigation) override {
     if (redirected_callback_)
-      std::move(redirected_callback_).Run(navigation);
+      redirected_callback_.Run(navigation);
+  }
+  void NavigationCompleted(Navigation* navigation) override {
+    if (completed_closure_)
+      completed_closure_.Run(navigation);
   }
   void NavigationFailed(Navigation* navigation) override {
     if (failed_closure_)
-      std::move(failed_closure_).Run();
+      failed_closure_.Run();
   }
 
  private:
   NavigationController* controller_;
   Callback started_callback_;
   Callback redirected_callback_;
-  base::OnceClosure failed_closure_;
+  Callback completed_closure_;
+  base::RepeatingClosure failed_closure_;
 };
 
 class OneShotNavigationObserver : public NavigationObserver {
@@ -208,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, StopInOnStart) {
   observer.SetStartedCallback(base::BindLambdaForTesting(
       [&](Navigation*) { GetNavigationController()->Stop(); }));
   observer.SetFailedClosure(
-      base::BindOnce(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+      base::BindRepeating(&base::RunLoop::Quit, base::Unretained(&run_loop)));
   GetNavigationController()->Navigate(
       embedded_test_server()->GetURL("/simple_page.html"));
 
@@ -222,12 +231,42 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, StopInOnRedirect) {
   observer.SetRedirectedCallback(base::BindLambdaForTesting(
       [&](Navigation*) { GetNavigationController()->Stop(); }));
   observer.SetFailedClosure(
-      base::BindOnce(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+      base::BindRepeating(&base::RunLoop::Quit, base::Unretained(&run_loop)));
   const GURL original_url = embedded_test_server()->GetURL("/simple_page.html");
   GetNavigationController()->Navigate(embedded_test_server()->GetURL(
       "/server-redirect?" + original_url.spec()));
 
   run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       NavigateFromRendererInitiatedNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigationController* controller = shell()->tab()->GetNavigationController();
+  const GURL final_url = embedded_test_server()->GetURL("/simple_page2.html");
+  int failed_count = 0;
+  int completed_count = 0;
+  NavigationObserverImpl observer(controller);
+  base::RunLoop run_loop;
+  observer.SetFailedClosure(
+      base::BindLambdaForTesting([&]() { failed_count++; }));
+  observer.SetCompletedClosure(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        completed_count++;
+        if (navigation->GetURL().path() == "/simple_page2.html")
+          run_loop.Quit();
+      }));
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        if (navigation->GetURL().path() == "/simple_page.html")
+          controller->Navigate(final_url);
+      }));
+  controller->Navigate(embedded_test_server()->GetURL("/simple_page4.html"));
+  run_loop.Run();
+  EXPECT_EQ(1, failed_count);
+  EXPECT_EQ(2, completed_count);
+  ASSERT_EQ(2, controller->GetNavigationListSize());
+  EXPECT_EQ(final_url, controller->GetNavigationEntryDisplayURL(1));
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeader) {

@@ -23,18 +23,6 @@ NodeBase::~NodeBase() {
 }
 
 // static
-int64_t NodeBase::GetSerializationId(NodeBase* node) {
-  if (!node)
-    return 0u;
-
-  if (!node->serialization_id_)
-    node->serialization_id_ = node->graph()->GetNextNodeSerializationId();
-
-  DCHECK_NE(0u, node->serialization_id_);
-  return node->serialization_id_;
-}
-
-// static
 const NodeBase* NodeBase::FromNode(const Node* node) {
   CHECK_EQ(kNodeBaseType, node->GetImplType());
   return reinterpret_cast<const NodeBase*>(node->GetImpl());

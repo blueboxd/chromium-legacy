@@ -8,7 +8,6 @@
 #include "base/util/type_safety/pass_key.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -16,9 +15,7 @@ class WebGL2RenderingContextBase;
 class WebGLTexture;
 class ExceptionState;
 
-class XRCubeMap : public ScriptWrappable {
-  DEFINE_WRAPPERTYPEINFO();
-
+class XRCubeMap {
  public:
   explicit XRCubeMap(const device::mojom::blink::XRCubeMap& cube_map);
 

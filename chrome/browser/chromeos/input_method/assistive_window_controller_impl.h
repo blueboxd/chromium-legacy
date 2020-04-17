@@ -29,6 +29,7 @@ class AssistiveWindowControllerImpl
   AssistiveWindowControllerImpl();
   ~AssistiveWindowControllerImpl() override;
 
+ private:
   // IMEAssistiveWindowHandlerInterface implementation.
   void SetBounds(const gfx::Rect& cursor_bounds) override;
   void ShowSuggestion(const base::string16& text,
@@ -41,10 +42,7 @@ class AssistiveWindowControllerImpl
 
   void Init();
 
-  // The suggestion window view.
   ui::ime::SuggestionWindowView* suggestion_window_view_ = nullptr;
-
-  bool is_focused_ = false;
   base::string16 suggestion_text_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistiveWindowControllerImpl);

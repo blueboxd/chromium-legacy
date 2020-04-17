@@ -58,6 +58,11 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   // CloudPolicyService::Observer implementation:
   void OnCloudPolicyServiceInitializationCompleted() override;
 
+  // The signin flow may be interrupted after the policy manager was
+  // initialized, but before the account is set as primary account. In this case
+  // the manager must be shutdown manually.
+  void ShutdownUserCloudPolicyManager() override;
+
  protected:
   // UserPolicySigninServiceBase implementation:
   void InitializeUserCloudPolicyManager(
@@ -65,7 +70,6 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
       std::unique_ptr<CloudPolicyClient> client) override;
 
   void PrepareForUserCloudPolicyManagerShutdown() override;
-  void ShutdownUserCloudPolicyManager() override;
 
  private:
   // Fetches an OAuth token to allow the cloud policy service to register with

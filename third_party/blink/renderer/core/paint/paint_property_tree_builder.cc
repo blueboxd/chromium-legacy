@@ -3518,8 +3518,24 @@ PaintPropertyChangeType PaintPropertyTreeBuilder::UpdateForSelf() {
   }
 
   // We need to update property tree states of paint chunks.
-  if (property_changed >= PaintPropertyChangeType::kNodeAddedOrRemoved)
+  if (property_changed >= PaintPropertyChangeType::kNodeAddedOrRemoved) {
     context_.painting_layer->SetNeedsRepaint();
+    if (object_.IsDocumentElement()) {
+      // View background painting depends on existence of the document element's
+      // paint properties (see callsite of ViewPainter::PaintRootGroup()).
+      // Invalidate view background display item clients.
+      // SetBackgroundNeedsFullPaintInvalidation() won't work here because we
+      // have already walked the LayoutView in PrePaintTreeWalk.
+      LayoutView* layout_view = object_.View();
+      layout_view->Layer()->SetNeedsRepaint();
+      auto reason = PaintInvalidationReason::kBackground;
+      static_cast<const DisplayItemClient*>(layout_view)->Invalidate(reason);
+      if (auto* scrollable_area = layout_view->GetScrollableArea()) {
+        scrollable_area->GetScrollingBackgroundDisplayItemClient().Invalidate(
+            reason);
+      }
+    }
+  }
 
   return property_changed;
 }

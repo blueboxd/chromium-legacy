@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 
+#include "base/numerics/ranges.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -31,11 +32,6 @@ const char kCleanFrameWarning[] =
     "Note: The XRSession has completed multiple animation frames without "
     "drawing anything to the baseLayer's framebuffer, resulting in no visible "
     "output.";
-
-// Because including base::ClampToRange would be a dependency violation
-double ClampToRange(const double value, const double min, const double max) {
-  return std::min(std::max(value, min), max);
-}
 
 }  // namespace
 
@@ -119,8 +115,8 @@ XRWebGLLayer* XRWebGLLayer::Create(
     // small to see or unreasonably large.
     // TODO: Would be best to have the max value communicated from the service
     // rather than limited to the native res.
-    framebuffer_scale = ClampToRange(initializer->framebufferScaleFactor(),
-                                     kFramebufferMinScale, max_scale);
+    framebuffer_scale = base::ClampToRange(
+        initializer->framebufferScaleFactor(), kFramebufferMinScale, max_scale);
   }
 
   DoubleSize framebuffers_size = session->DefaultFramebufferSize();

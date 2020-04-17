@@ -13,7 +13,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.base.test.DisableNativeTestRule;
 
 /**
  * Test case to instrument DummyUiActivity for UI testing scenarios.
@@ -32,7 +31,6 @@ public class DummyUiActivityTestCase {
 
     @Rule
     public TestRule ruleChain = RuleChain.outerRule(mActivityTestRule)
-                                        .around(new DisableNativeTestRule())
                                         .around(new TestDriverRule());
 
     /**

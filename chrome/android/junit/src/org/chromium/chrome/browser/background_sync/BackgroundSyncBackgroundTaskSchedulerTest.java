@@ -25,7 +25,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.background_sync.BackgroundSyncBackgroundTaskScheduler.BackgroundSyncTask;
@@ -46,8 +45,6 @@ import java.util.concurrent.TimeUnit;
 public class BackgroundSyncBackgroundTaskSchedulerTest {
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
-    @Rule
-    public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
     @Mock
     private BackgroundTaskScheduler mTaskScheduler;
     @Captor

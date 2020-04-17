@@ -77,6 +77,7 @@
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
+#include "chrome/browser/tab/state/tab_state_db_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/translate/translate_ranker_factory.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
@@ -351,6 +352,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   SupervisedUserServiceFactory::GetInstance();
 #endif
   TabRestoreServiceFactory::GetInstance();
+  TabStateDBFactory::GetInstance();
   TemplateURLFetcherFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();
 #if !defined(OS_ANDROID)

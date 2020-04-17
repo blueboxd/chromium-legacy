@@ -166,9 +166,12 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
     match.allowed_to_be_default_match = true;
     matches.push_back(match);
   }
-  // Give one match an associated keyword for irregular state stepping.
+  // Give the last match an associated keyword for irregular state stepping.
   matches.back().associated_keyword =
       std::make_unique<AutocompleteMatch>(matches.back());
+  // Make the middle match deletable to verify we can step to that.
+  matches[1].deletable = true;
+
   auto* result = &model()->autocomplete_controller()->result_;
   AutocompleteInput input(base::UTF8ToUTF16("match"),
                           metrics::OmniboxEventProto::NTP,
@@ -193,6 +196,8 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
   // Step by states forward.
   for (auto selection : {
            OmniboxPopupModel::Selection(1, OmniboxPopupModel::NORMAL),
+           // Focused button is the Suggestion Removal button.
+           OmniboxPopupModel::Selection(1, OmniboxPopupModel::BUTTON_FOCUSED),
            OmniboxPopupModel::Selection(2, OmniboxPopupModel::NORMAL),
            OmniboxPopupModel::Selection(2, OmniboxPopupModel::KEYWORD),
            OmniboxPopupModel::Selection(0, OmniboxPopupModel::NORMAL),
@@ -206,6 +211,8 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
   // should land on KEYWORD, but stepping backward should not.
   for (auto selection : {
            OmniboxPopupModel::Selection(2, OmniboxPopupModel::NORMAL),
+           // Focused button is the Suggestion Removal button.
+           OmniboxPopupModel::Selection(1, OmniboxPopupModel::BUTTON_FOCUSED),
            OmniboxPopupModel::Selection(1, OmniboxPopupModel::NORMAL),
            OmniboxPopupModel::Selection(0, OmniboxPopupModel::NORMAL),
            OmniboxPopupModel::Selection(2, OmniboxPopupModel::NORMAL),

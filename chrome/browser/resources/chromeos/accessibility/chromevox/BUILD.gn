@@ -140,6 +140,7 @@ chromevox_out_dir = "$root_out_dir/resources/chromeos/accessibility/chromevox"
 group("build") {
   deps = [
     ":chromevox_copied_files",
+    ":chromevox_phonetic_dictionaries_js",
     "//chrome/browser/resources/chromeos/accessibility/braille_ime:braille_ime_manifest",
     "//third_party/chromevox:chromevox_third_party_resources",
     "//third_party/liblouis",
@@ -250,6 +251,20 @@ template("generate_deps_js") {
       deps = invoker.deps
     }
   }
+}
+
+action("chromevox_phonetic_dictionaries_js") {
+  script = "tools/phonetic_dictionaries.py"
+  src_dir = [ "$root_out_dir/resources/chromeos/accessibility/_locales" ]
+  output_file = "$chromevox_out_dir/phonetic_dictionaries.js"
+  outputs = [ output_file ]
+  deps = [
+    "//chrome/browser/resources/chromeos/accessibility:accessibility_strings",
+  ]
+  args = [
+           "-o",
+           rebase_path(output_file, root_build_dir),
+         ] + rebase_path(src_dir, root_build_dir)
 }
 
 if (chromevox_compress_js) {

@@ -108,7 +108,8 @@ void MediaHistoryKeyedService::Shutdown() {
 
   if (auto* store = store_->GetForWrite()) {
     store->db_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&MediaHistoryStore::Close, store));
+        FROM_HERE,
+        base::BindOnce(&MediaHistoryStore::Close, base::RetainedRef(store)));
   }
 }
 
@@ -124,9 +125,9 @@ void MediaHistoryKeyedService::OnURLsDeleted(
     // Destroy the old database and create a new one.
     auto db_task_runner = store->db_task_runner_;
 
-    db_task_runner->PostTask(FROM_HERE,
-                             base::BindOnce(&MediaHistoryStore::RazeAndClose,
-                                            store_->GetForDelete()));
+    db_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(&MediaHistoryStore::RazeAndClose,
+                                  base::RetainedRef(store_->GetForDelete())));
 
     // Create a new internal store.
     store_ = std::make_unique<StoreHolder>(profile_, std::move(db_task_runner));
@@ -154,7 +155,7 @@ void MediaHistoryKeyedService::OnURLsDeleted(
   if (!deleted_origins.empty()) {
     store->db_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MediaHistoryStore::DeleteAllOriginData,
-                                  store, origins));
+                                  base::RetainedRef(store), origins));
   }
 
   // Build a set of all urls in |deleted_rows| that do not have their origin in
@@ -171,8 +172,8 @@ void MediaHistoryKeyedService::OnURLsDeleted(
 
   if (!deleted_urls.empty()) {
     store->db_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&MediaHistoryStore::DeleteAllURLData, store,
-                                  deleted_urls));
+        FROM_HERE, base::BindOnce(&MediaHistoryStore::DeleteAllURLData,
+                                  base::RetainedRef(store), deleted_urls));
   }
 }
 
@@ -180,8 +181,8 @@ void MediaHistoryKeyedService::SavePlayback(
     const content::MediaPlayerWatchTime& watch_time) {
   if (auto* store = store_->GetForWrite()) {
     store->db_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&MediaHistoryStore::SavePlayback, store, watch_time));
+        FROM_HERE, base::BindOnce(&MediaHistoryStore::SavePlayback,
+                                  base::RetainedRef(store), watch_time));
   }
 }
 
@@ -190,7 +191,7 @@ void MediaHistoryKeyedService::GetMediaHistoryStats(
   base::PostTaskAndReplyWithResult(
       store_->GetForRead()->db_task_runner_.get(), FROM_HERE,
       base::BindOnce(&MediaHistoryStore::GetMediaHistoryStats,
-                     store_->GetForRead()),
+                     base::RetainedRef(store_->GetForRead())),
       std::move(callback));
 }
 
@@ -200,7 +201,7 @@ void MediaHistoryKeyedService::GetOriginRowsForDebug(
   base::PostTaskAndReplyWithResult(
       store_->GetForRead()->db_task_runner_.get(), FROM_HERE,
       base::BindOnce(&MediaHistoryStore::GetOriginRowsForDebug,
-                     store_->GetForRead()),
+                     base::RetainedRef(store_->GetForRead())),
       std::move(callback));
 }
 
@@ -210,7 +211,7 @@ void MediaHistoryKeyedService::GetMediaHistoryPlaybackRowsForDebug(
   base::PostTaskAndReplyWithResult(
       store_->GetForRead()->db_task_runner_.get(), FROM_HERE,
       base::BindOnce(&MediaHistoryStore::GetMediaHistoryPlaybackRowsForDebug,
-                     store_->GetForRead()),
+                     base::RetainedRef(store_->GetForRead())),
       std::move(callback));
 }
 
@@ -222,7 +223,8 @@ void MediaHistoryKeyedService::GetPlaybackSessions(
   base::PostTaskAndReplyWithResult(
       store_->GetForRead()->db_task_runner_.get(), FROM_HERE,
       base::BindOnce(&MediaHistoryStore::GetPlaybackSessions,
-                     store_->GetForRead(), num_sessions, std::move(filter)),
+                     base::RetainedRef(store_->GetForRead()), num_sessions,
+                     std::move(filter)),
       std::move(callback));
 }
 
@@ -234,7 +236,8 @@ void MediaHistoryKeyedService::SavePlaybackSession(
   if (auto* store = store_->GetForWrite()) {
     store->db_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MediaHistoryStore::SavePlaybackSession,
-                                  store, url, metadata, position, artwork));
+                                  base::RetainedRef(store), url, metadata,
+                                  position, artwork));
   }
 }
 
@@ -245,7 +248,7 @@ void MediaHistoryKeyedService::GetItemsForMediaFeedForDebug(
   base::PostTaskAndReplyWithResult(
       store_->GetForRead()->db_task_runner_.get(), FROM_HERE,
       base::BindOnce(&MediaHistoryStore::GetItemsForMediaFeedForDebug,
-                     store_->GetForRead(), feed_id),
+                     base::RetainedRef(store_->GetForRead()), feed_id),
       std::move(callback));
 }
 
@@ -260,9 +263,9 @@ void MediaHistoryKeyedService::StoreMediaFeedFetchResult(
   if (auto* store = store_->GetForWrite()) {
     store->db_task_runner_->PostTaskAndReply(
         FROM_HERE,
-        base::BindOnce(&MediaHistoryStore::StoreMediaFeedFetchResult, store,
-                       feed_id, std::move(items), result,
-                       was_fetched_from_cache, logos, display_name),
+        base::BindOnce(&MediaHistoryStore::StoreMediaFeedFetchResult,
+                       base::RetainedRef(store), feed_id, std::move(items),
+                       result, was_fetched_from_cache, logos, display_name),
         std::move(callback));
   }
 }
@@ -273,15 +276,15 @@ void MediaHistoryKeyedService::GetURLsInTableForTest(
   base::PostTaskAndReplyWithResult(
       store_->GetForRead()->db_task_runner_.get(), FROM_HERE,
       base::BindOnce(&MediaHistoryStore::GetURLsInTableForTest,
-                     store_->GetForRead(), table),
+                     base::RetainedRef(store_->GetForRead()), table),
       std::move(callback));
 }
 
 void MediaHistoryKeyedService::DiscoverMediaFeed(const GURL& url) {
   if (auto* store = store_->GetForWrite()) {
     store->db_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&MediaHistoryStore::DiscoverMediaFeed, store, url));
+        FROM_HERE, base::BindOnce(&MediaHistoryStore::DiscoverMediaFeed,
+                                  base::RetainedRef(store), url));
   }
 }
 
@@ -298,7 +301,7 @@ void MediaHistoryKeyedService::GetPendingSafeSearchCheckMediaFeedItems(
       store_->GetForRead()->db_task_runner_.get(), FROM_HERE,
       base::BindOnce(
           &MediaHistoryStore::GetPendingSafeSearchCheckMediaFeedItems,
-          store_->GetForRead()),
+          base::RetainedRef(store_->GetForRead())),
       std::move(callback));
 }
 
@@ -308,7 +311,7 @@ void MediaHistoryKeyedService::StoreMediaFeedItemSafeSearchResults(
     store->db_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&MediaHistoryStore::StoreMediaFeedItemSafeSearchResults,
-                       store, results));
+                       base::RetainedRef(store), results));
   }
 }
 
@@ -338,8 +341,8 @@ void MediaHistoryKeyedService::GetMediaFeeds(
         callback) {
   base::PostTaskAndReplyWithResult(
       store_->GetForRead()->db_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&MediaHistoryStore::GetMediaFeeds, store_->GetForRead(),
-                     request),
+      base::BindOnce(&MediaHistoryStore::GetMediaFeeds,
+                     base::RetainedRef(store_->GetForRead()), request),
       std::move(callback));
 }
 

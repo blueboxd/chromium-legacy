@@ -98,8 +98,7 @@ GamepadList* NavigatorGamepad::Gamepads() {
   }
   is_gamepads_exposed_ = true;
 
-  ExecutionContext* context =
-      DomWindow() ? DomWindow()->GetExecutionContext() : nullptr;
+  ExecutionContext* context = DomWindow();
 
   if (GetFrame() && GetFrame()->IsCrossOriginToMainFrame()) {
     UseCounter::Count(context, WebFeature::kGetGamepadsFromCrossOriginSubframe);
@@ -115,7 +114,6 @@ GamepadList* NavigatorGamepad::Gamepads() {
 void NavigatorGamepad::SampleGamepads() {
   device::Gamepads gamepads;
   gamepad_dispatcher_->SampleGamepads(gamepads);
-
 
   for (uint32_t i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
     device::Gamepad& device_gamepad = gamepads.items[i];
@@ -150,8 +148,7 @@ GamepadHapticActuator* NavigatorGamepad::GetVibrationActuatorForGamepad(
   int pad_index = gamepad.index();
   DCHECK_GE(pad_index, 0);
   if (!vibration_actuators_[pad_index]) {
-    ExecutionContext* context =
-        DomWindow() ? DomWindow()->GetExecutionContext() : nullptr;
+    ExecutionContext* context = DomWindow();
     auto* actuator = GamepadHapticActuator::Create(context, pad_index);
     actuator->SetType(gamepad.GetVibrationActuatorType());
     vibration_actuators_[pad_index] = actuator;

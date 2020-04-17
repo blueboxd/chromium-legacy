@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/observer_list_types.h"
-#include "base/util/type_safety/id_type.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/shared_worker_id.h"
 
 class GURL;
 
@@ -23,8 +23,6 @@ class Origin;
 }
 
 namespace content {
-
-using SharedWorkerId = util::IdType64<class SharedWorkerTag>;
 
 // An interface for managing shared workers. These may be run in a separate
 // process, since multiple renderer processes can be talking to a single shared

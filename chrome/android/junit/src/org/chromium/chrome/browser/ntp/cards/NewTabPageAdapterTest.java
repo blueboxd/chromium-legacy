@@ -54,7 +54,6 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowResources;
 
 import org.chromium.base.Callback;
-import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -109,8 +108,6 @@ import java.util.Locale;
 @DisableFeatures(
         {ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD, ChromeFeatureList.CHROME_DUET})
 public class NewTabPageAdapterTest {
-    @Rule
-    public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
 
     @Rule
     public TestRule mFeatureProcessor = new Features.JUnitProcessor();

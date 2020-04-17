@@ -35,6 +35,10 @@ const char kHitTestSourceUnavailable[] =
     "Unable to obtain hit test results for specified hit test source. Ensure "
     "that it was not already canceled.";
 
+const char kCannotObtainNativeOrigin[] =
+    "The operation was unable to obtain necessary information and could not be "
+    "completed.";
+
 }  // namespace
 
 XRFrame::XRFrame(XRSession* session, XRWorldInformation* world_information)
@@ -167,40 +171,51 @@ XRFrame::getHitTestResultsForTransientInput(
 }
 
 ScriptPromise XRFrame::createAnchor(ScriptState* script_state,
-                                    XRRigidTransform* initial_pose,
+                                    XRRigidTransform* offset_space_from_anchor,
                                     XRSpace* space,
                                     ExceptionState& exception_state) {
   DVLOG(2) << __func__;
 
   if (!is_active_) {
+    DVLOG(2) << __func__ << ": frame not active, failing anchor creation";
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kInactiveFrame);
     return {};
   }
 
-  if (!initial_pose) {
+  if (!offset_space_from_anchor) {
+    DVLOG(2) << __func__
+             << ": offset_space_from_anchor not set, failing anchor creation";
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       XRSession::kNoRigidTransformSpecified);
     return {};
   }
 
   if (!space) {
+    DVLOG(2) << __func__ << ": space not set, failing anchor creation";
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       XRSession::kNoSpaceSpecified);
     return {};
   }
 
-  auto maybe_mojo_from_offset_space = space->MojoFromOffsetMatrix();
+  base::Optional<XRNativeOriginInformation> native_origin =
+      space->NativeOrigin();
 
-  if (!maybe_mojo_from_offset_space) {
+  if (!native_origin) {
+    DVLOG(2) << __func__ << ": native_origin not set, failing anchor creation";
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      XRSession::kUnableToRetrieveMatrix);
-    return ScriptPromise();
+                                      kCannotObtainNativeOrigin);
+    return {};
   }
 
-  return session_->CreateAnchor(script_state, initial_pose->TransformMatrix(),
-                                *maybe_mojo_from_offset_space, base::nullopt,
-                                exception_state);
+  // The passed in space may be an offset space, we need to transform the pose
+  // to account for origin-offset:
+  auto native_origin_from_offset_space = space->NativeFromOffsetMatrix();
+  auto native_origin_from_anchor = native_origin_from_offset_space *
+                                   offset_space_from_anchor->TransformMatrix();
+
+  return session_->CreateAnchorHelper(script_state, native_origin_from_anchor,
+                                      *native_origin, exception_state);
 }
 
 void XRFrame::Trace(Visitor* visitor) {

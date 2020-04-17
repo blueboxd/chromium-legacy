@@ -47,10 +47,6 @@ namespace ui {
 class OSExchangeData;
 }  // namespace ui
 
-namespace views {
-class Button;
-}  // namespace views
-
 // Views-implementation of OmniboxView.
 class OmniboxViewViews : public OmniboxView,
                          public views::Textfield,
@@ -202,10 +198,6 @@ class OmniboxViewViews : public OmniboxView,
   // Informs if text and UI direction match (otherwise what "at end" means must
   // flip.)
   bool TextAndUIDirectionMatch() const;
-
-  // Gets the secondary button (like the tab switch or remove suggestion)
-  // for the selected line. Returns nullptr if there is no secondary button.
-  views::Button* GetSecondaryButtonForSelectedLine() const;
 
   // Like SelectionAtEnd(), but accounts for RTL.
   bool DirectionAwareSelectionAtEnd() const;

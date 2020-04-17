@@ -7,10 +7,13 @@
 #include <string>
 #include <utility>
 
+#include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
@@ -33,11 +36,24 @@ std::string FormatTemplate(int resource_id,
   return ui::ReplaceTemplateExpressions(string_piece, replacements);
 }
 
+std::string ReadBackgroundImageData(const base::FilePath& profile_path) {
+  std::string data_string;
+  base::ReadFileToString(profile_path.AppendASCII("background.jpg"),
+                         &data_string);
+  return data_string;
+}
+
+void ServeBackgroundImageData(content::URLDataSource::GotDataCallback callback,
+                              std::string data_string) {
+  std::move(callback).Run(base::RefCountedString::TakeString(&data_string));
+}
+
 }  // namespace
 
 UntrustedSource::UntrustedSource(Profile* profile)
     : one_google_bar_service_(
           OneGoogleBarServiceFactory::GetForProfile(profile)),
+      profile_(profile),
       promo_service_(PromoServiceFactory::GetForProfile(profile)) {
   // |promo_service_| is null in incognito, or when the feature is
   // disabled.
@@ -99,7 +115,9 @@ void UntrustedSource::StartDataRequest(
     return;
   }
   if ((path == "image" || path == "background_image" || path == "iframe") &&
-      url_param.is_valid() && url_param.SchemeIs(url::kHttpsScheme)) {
+      url_param.is_valid() &&
+      (url_param.SchemeIs(url::kHttpsScheme) ||
+       url_param.SchemeIs(content::kChromeUIUntrustedScheme))) {
     ui::TemplateReplacements replacements;
     replacements["url"] = url_param.spec();
     int resource_id =
@@ -112,12 +130,24 @@ void UntrustedSource::StartDataRequest(
     std::move(callback).Run(base::RefCountedString::TakeString(&html));
     return;
   }
+  if (path == "background.jpg") {
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+        base::BindOnce(&ReadBackgroundImageData, profile_->GetPath()),
+        base::BindOnce(&ServeBackgroundImageData, std::move(callback)));
+    return;
+  }
   std::move(callback).Run(base::MakeRefCounted<base::RefCountedString>());
 }
 
 std::string UntrustedSource::GetMimeType(const std::string& path) {
-  if (base::EndsWith(path, ".js", base::CompareCase::INSENSITIVE_ASCII))
+  const std::string stripped_path = path.substr(0, path.find("?"));
+  if (base::EndsWith(stripped_path, ".js",
+                     base::CompareCase::INSENSITIVE_ASCII))
     return "application/javascript";
+  if (base::EndsWith(stripped_path, ".jpg",
+                     base::CompareCase::INSENSITIVE_ASCII))
+    return "image/jpg";
 
   return "text/html";
 }
@@ -145,7 +175,8 @@ bool UntrustedSource::ShouldServiceRequest(
   const std::string path = url.path().substr(1);
   return path == "one-google-bar" || path == "one_google_bar.js" ||
          path == "promo" || path == "promo.js" || path == "image" ||
-         path == "background_image" || path == "iframe";
+         path == "background_image" || path == "iframe" ||
+         path == "background.jpg";
 }
 
 void UntrustedSource::OnOneGoogleBarDataUpdated() {

@@ -49,8 +49,9 @@ OsSettingsLocalizedStringsProviderFactory::BuildServiceInstanceFor(
   return new OsSettingsLocalizedStringsProvider(
       profile,
       local_search_service::LocalSearchServiceProxyFactory::GetForProfile(
-          Profile::FromBrowserContext(profile))
-          ->GetLocalSearchServiceImpl());
+          profile)
+          ->GetLocalSearchServiceImpl(),
+      multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(profile));
 }
 
 bool OsSettingsLocalizedStringsProviderFactory::ServiceIsNULLWhileTesting()

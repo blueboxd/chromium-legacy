@@ -18,9 +18,9 @@ class CORE_EXPORT LargestContentfulPaint final : public PerformanceEntry {
 
  public:
   LargestContentfulPaint(double start_time,
-                         double render_time,
+                         base::TimeDelta render_time,
                          uint64_t size,
-                         double load_time,
+                         base::TimeDelta load_time,
                          const AtomicString& id,
                          const String& url,
                          Element*);
@@ -30,8 +30,10 @@ class CORE_EXPORT LargestContentfulPaint final : public PerformanceEntry {
   PerformanceEntryType EntryTypeEnum() const override;
 
   uint64_t size() const { return size_; }
-  DOMHighResTimeStamp renderTime() const { return render_time_; }
-  DOMHighResTimeStamp loadTime() const { return load_time_; }
+  DOMHighResTimeStamp renderTime() const {
+    return render_time_.InMillisecondsF();
+  }
+  DOMHighResTimeStamp loadTime() const { return load_time_.InMillisecondsF(); }
   const AtomicString& id() const { return id_; }
   const String& url() const { return url_; }
   Element* element() const;
@@ -42,8 +44,8 @@ class CORE_EXPORT LargestContentfulPaint final : public PerformanceEntry {
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
   uint64_t size_;
-  DOMHighResTimeStamp render_time_;
-  DOMHighResTimeStamp load_time_;
+  base::TimeDelta render_time_;
+  base::TimeDelta load_time_;
   AtomicString id_;
   String url_;
   WeakMember<Element> element_;

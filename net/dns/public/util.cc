@@ -51,9 +51,10 @@ bool IsValidDohTemplate(base::StringPiece server_template,
     return false;
   }
   // If the template contains a dns variable, use GET, otherwise use POST.
-  DCHECK(server_method);
-  *server_method =
-      (vars_found.find("dns") == vars_found.end()) ? "POST" : "GET";
+  if (server_method) {
+    *server_method =
+        (vars_found.find("dns") == vars_found.end()) ? "POST" : "GET";
+  }
   return true;
 }
 

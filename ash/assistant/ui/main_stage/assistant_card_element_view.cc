@@ -10,6 +10,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
@@ -187,7 +188,7 @@ void AssistantCardElementView::DidSuppressNavigation(
   }
   // We delegate navigation to the AssistantController so that it can apply
   // special handling to deep links.
-  delegate_->OpenUrlFromView(url);
+  AssistantController::Get()->OpenUrl(url);
 }
 
 void AssistantCardElementView::DidChangeFocusedNode(

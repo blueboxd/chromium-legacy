@@ -220,8 +220,14 @@ base::Optional<AnchorId> ArCoreAnchorManager::CreateAnchor(
   DCHECK(created) << "This should always be a new anchor, not something we've "
                      "seen previously.";
 
+  // Mark new anchor as updated to ensure we send its information over to blink:
+  updated_anchor_ids_.insert(anchor_id);
+
+  ArTrackingState tracking_state;
+  ArAnchor_getTrackingState(arcore_session_, ar_anchor.get(), &tracking_state);
+
   anchor_id_to_anchor_info_.emplace(
-      anchor_id, AnchorInfo(std::move(ar_anchor), AR_TRACKING_STATE_TRACKING));
+      anchor_id, AnchorInfo(std::move(ar_anchor), tracking_state));
 
   return anchor_id;
 }
@@ -247,8 +253,14 @@ base::Optional<AnchorId> ArCoreAnchorManager::CreateAnchor(
   DCHECK(created) << "This should always be a new anchor, not something we've "
                      "seen previously.";
 
+  // Mark new anchor as updated to ensure we send its information over to blink:
+  updated_anchor_ids_.insert(anchor_id);
+
+  ArTrackingState tracking_state;
+  ArAnchor_getTrackingState(arcore_session_, ar_anchor.get(), &tracking_state);
+
   anchor_id_to_anchor_info_.emplace(
-      anchor_id, AnchorInfo(std::move(ar_anchor), AR_TRACKING_STATE_TRACKING));
+      anchor_id, AnchorInfo(std::move(ar_anchor), tracking_state));
 
   return anchor_id;
 }

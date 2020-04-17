@@ -12,6 +12,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class CWVAutofillController;
 @class CWVBackForwardList;
 @class CWVBackForwardListItem;
 @class CWVScriptCommand;
@@ -115,6 +116,9 @@ CWV_EXPORT
 // A Boolean value indicating whether horizontal swipe gestures will trigger
 // back-forward list navigations.
 @property(nonatomic) BOOL allowsBackForwardNavigationGestures;
+
+// The web view's autofill controller.
+@property(nonatomic, readonly) CWVAutofillController* autofillController;
 
 // An equivalent of
 // https://developer.apple.com/documentation/webkit/wkwebview/1414977-backforwardlist

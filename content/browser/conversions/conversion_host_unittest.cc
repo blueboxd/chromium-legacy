@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/conversions/conversion_test_utils.h"
@@ -17,6 +18,8 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -97,6 +100,7 @@ TEST_F(ConversionHostTest, ConversionInSubframe_BadMessage) {
   conversion_host()->RegisterConversion(std::move(conversion));
   EXPECT_EQ("blink.mojom.ConversionHost can only be used by the main frame.",
             bad_message_observer.WaitForBadMessage());
+  EXPECT_EQ(0u, test_manager_.num_conversions());
 }
 
 TEST_F(ConversionHostTest, ConversionOnInsecurePage_BadMessage) {
@@ -116,6 +120,7 @@ TEST_F(ConversionHostTest, ConversionOnInsecurePage_BadMessage) {
       "blink.mojom.ConversionHost can only be used in secure contexts with a "
       "secure conversion registration origin.",
       bad_message_observer.WaitForBadMessage());
+  EXPECT_EQ(0u, test_manager_.num_conversions());
 }
 
 TEST_F(ConversionHostTest, ConversionWithInsecureReportingOrigin_BadMessage) {
@@ -134,14 +139,15 @@ TEST_F(ConversionHostTest, ConversionWithInsecureReportingOrigin_BadMessage) {
       "blink.mojom.ConversionHost can only be used in secure contexts with a "
       "secure conversion registration origin.",
       bad_message_observer.WaitForBadMessage());
+  EXPECT_EQ(0u, test_manager_.num_conversions());
 }
 
 TEST_F(ConversionHostTest, ValidConversion_NoBadMessage) {
-  // Create a page with an insecure origin.
+  // Create a page with a secure origin.
   contents()->NavigateAndCommit(GURL("https://www.example.com"));
   conversion_host()->SetCurrentTargetFrameForTesting(main_rfh());
 
-  // Create a fake dispatch context to trigger a bad message in.
+  // Create a fake dispatch context to listen for bad messages.
   FakeMojoMessageDispatchContext fake_dispatch_context;
   mojo::test::BadMessageObserver bad_message_observer;
 
@@ -154,6 +160,58 @@ TEST_F(ConversionHostTest, ValidConversion_NoBadMessage) {
   // triggered.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(bad_message_observer.got_bad_message());
+  EXPECT_EQ(1u, test_manager_.num_conversions());
+}
+
+TEST_F(ConversionHostTest, PerPageConversionMetrics) {
+  base::HistogramTester histograms;
+
+  contents()->NavigateAndCommit(GURL("https://www.example.com"));
+
+  // Initial document should not log metrics.
+  histograms.ExpectTotalCount("Conversions.RegisteredConversionsPerPage", 0);
+
+  conversion_host()->SetCurrentTargetFrameForTesting(main_rfh());
+  blink::mojom::ConversionPtr conversion = blink::mojom::Conversion::New();
+  conversion->reporting_origin =
+      url::Origin::Create(GURL("https://secure.com"));
+
+  for (size_t i = 0u; i < 8u; i++) {
+    conversion_host()->RegisterConversion(conversion->Clone());
+    EXPECT_EQ(1u, test_manager_.num_conversions());
+    test_manager_.Reset();
+  }
+
+  // Same document navs should not reset the counter.
+  contents()->NavigateAndCommit(GURL("https://www.example.com#hash"));
+  histograms.ExpectTotalCount("Conversions.RegisteredConversionsPerPage", 0);
+
+  // Re-navigating should reset the counter.
+  contents()->NavigateAndCommit(GURL("https://www.example-next.com"));
+  histograms.ExpectUniqueSample("Conversions.RegisteredConversionsPerPage", 8,
+                                1);
+}
+
+TEST_F(ConversionHostTest, NoManager_NoPerPageConversionMetrics) {
+  // Replace the ConversionHost on the WebContents with one that is backed by a
+  // null ConversionManager.
+  static_cast<WebContentsImpl*>(web_contents())
+      ->RemoveReceiverSetForTesting(blink::mojom::ConversionHost::Name_);
+  auto conversion_host = ConversionHost::CreateForTesting(
+      web_contents(), std::make_unique<TestManagerProvider>(nullptr));
+  contents()->NavigateAndCommit(GURL("https://www.example.com"));
+
+  base::HistogramTester histograms;
+  conversion_host->SetCurrentTargetFrameForTesting(main_rfh());
+  blink::mojom::ConversionPtr conversion = blink::mojom::Conversion::New();
+  conversion->reporting_origin =
+      url::Origin::Create(GURL("https://secure.com"));
+  conversion_host->RegisterConversion(std::move(conversion));
+
+  // Navigate again to trigger histogram code.
+  contents()->NavigateAndCommit(GURL("https://www.example-next.com"));
+  histograms.ExpectBucketCount("Conversions.RegisteredConversionsPerPage", 1,
+                               0);
 }
 
 TEST_F(ConversionHostTest, NavigationWithNoImpression_Ignored) {

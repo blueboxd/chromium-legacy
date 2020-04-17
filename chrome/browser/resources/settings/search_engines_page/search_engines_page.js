@@ -6,10 +6,31 @@
  * @fileoverview 'settings-search-engines-page' is the settings page
  * containing search engines settings.
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/js/cr.m.js';
+import './search_engine_dialog.js';
+import './search_engines_list.js';
+import './omnibox_extension_entry.js';
+import '../settings_shared_css.m.js';
+import '../settings_vars_css.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
+import {routes} from '../route.m.js';
+
+import {SearchEngine, SearchEnginesBrowserProxyImpl, SearchEnginesInfo} from './search_engines_browser_proxy.m.js';
+
 Polymer({
   is: 'settings-search-engines-page',
 
-  behaviors: [settings.GlobalScrollTargetBehavior, WebUIListenerBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [GlobalScrollTargetBehavior, WebUIListenerBehavior],
 
   properties: {
     /** @type {!Array<!SearchEngine>} */
@@ -27,7 +48,7 @@ Polymer({
      */
     subpageRoute: {
       type: Object,
-      value: settings.routes.SEARCH_ENGINES,
+      value: routes.SEARCH_ENGINES,
     },
 
     /** @private {boolean} */
@@ -95,14 +116,13 @@ Polymer({
 
   /** @override */
   ready() {
-    settings.SearchEnginesBrowserProxyImpl.getInstance()
-        .getSearchEnginesList()
-        .then(this.enginesChanged_.bind(this));
+    SearchEnginesBrowserProxyImpl.getInstance().getSearchEnginesList().then(
+        this.enginesChanged_.bind(this));
     this.addWebUIListener(
         'search-engines-changed', this.enginesChanged_.bind(this));
 
     // Sets offset in iron-list that uses the page as a scrollTarget.
-    Polymer.RenderStatus.afterNextRender(this, function() {
+    afterNextRender(this, function() {
       this.$.otherEngines.scrollOffset = this.$.otherEngines.offsetTop;
     });
   },
@@ -122,7 +142,7 @@ Polymer({
   onCloseDialog_() {
     this.showDialog_ = false;
     const anchor = /** @type {!HTMLElement} */ (this.dialogAnchorElement_);
-    cr.ui.focusWithoutInk(anchor);
+    focusWithoutInk(anchor);
     this.dialogModel_ = null;
     this.dialogAnchorElement_ = null;
   },

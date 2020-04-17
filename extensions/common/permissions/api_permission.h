@@ -197,7 +197,7 @@ class APIPermission {
     kWallpaper = 153,
     kWallpaperPrivate = 154,
     kWebcamPrivate = 155,
-    kWebConnectable = 156,  // for externally_connectable manifest key
+    kDeleted_kWebConnectable = 156,  // for externally_connectable manifest key
     kWebNavigation = 157,
     kWebRequest = 158,
     kWebRequestBlocking = 159,

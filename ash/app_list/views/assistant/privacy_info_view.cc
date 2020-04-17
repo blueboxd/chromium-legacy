@@ -7,6 +7,7 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/assistant/util/i18n_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -103,7 +104,7 @@ void PrivacyInfoView::StyledLabelLinkClicked(views::StyledLabel* label,
                                              const gfx::Range& range,
                                              int event_flags) {
   constexpr char url[] = "https://support.google.com/chromebook?p=assistant";
-  view_delegate_->GetAssistantViewDelegate()->OpenUrlFromView(
+  AssistantController::Get()->OpenUrl(
       assistant::util::CreateLocalizedGURL(url));
 }
 

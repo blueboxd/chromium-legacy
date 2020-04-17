@@ -254,8 +254,10 @@ void CanvasRenderingContext2DState::ClipPath(
 }
 
 void CanvasRenderingContext2DState::SetFont(
-    const FontDescription& font_description,
+    const FontDescription& passed_font_description,
     FontSelector* selector) {
+  FontDescription font_description = passed_font_description;
+  font_description.SetSubpixelAscentDescent(true);
   font_ = Font(font_description, selector);
   realized_font_ = true;
   if (selector)

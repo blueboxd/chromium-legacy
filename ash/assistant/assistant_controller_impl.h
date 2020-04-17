@@ -76,6 +76,10 @@ class ASH_EXPORT AssistantControllerImpl
   void DownloadImage(const GURL& url,
                      AssistantImageDownloader::DownloadCallback callback);
 
+  // AssistantController:
+  void OpenUrl(const GURL& url, bool in_background, bool from_server) override;
+  base::WeakPtr<ash::AssistantController> GetWeakPtr() override;
+
   // chromeos::assistant::mojom::AssistantController:
   // TODO(updowndota): Refactor Set() calls to use a factory pattern.
   void SetAssistant(mojo::PendingRemote<chromeos::assistant::mojom::Assistant>
@@ -106,12 +110,6 @@ class ASH_EXPORT AssistantControllerImpl
 
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
-
-  // Opens the specified |url| in a new browser tab. Special handling is applied
-  // to deep links which may cause deviation from this behavior.
-  void OpenUrl(const GURL& url,
-               bool in_background = false,
-               bool from_server = false);
 
   AssistantAlarmTimerController* alarm_timer_controller() {
     return &assistant_alarm_timer_controller_;
@@ -146,8 +144,6 @@ class ASH_EXPORT AssistantControllerImpl
   AssistantViewDelegate* view_delegate() { return &view_delegate_; }
 
   bool IsAssistantReady() const;
-
-  base::WeakPtr<AssistantControllerImpl> GetWeakPtr();
 
  private:
   void NotifyConstructed();
@@ -194,7 +190,7 @@ class ASH_EXPORT AssistantControllerImpl
   // Assistant sub-controllers.
   AssistantAlarmTimerController assistant_alarm_timer_controller_{this};
   AssistantInteractionController assistant_interaction_controller_{this};
-  AssistantNotificationController assistant_notification_controller_{this};
+  AssistantNotificationController assistant_notification_controller_;
   AssistantStateController assistant_state_controller_;
   AssistantScreenContextController assistant_screen_context_controller_{this};
   AssistantSetupController assistant_setup_controller_{this};

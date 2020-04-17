@@ -11,7 +11,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class CWVAutofillDataManager;
 @class CWVPreferences;
+@class CWVSyncController;
 @class CWVUserContentController;
 @class CWVWebsiteDataStore;
 
@@ -33,6 +35,15 @@ CWV_EXPORT
 // The user content controller to associate with web views created using this
 // configuration.
 @property(nonatomic, readonly) CWVUserContentController* userContentController;
+
+// This web view configuration's sync controller.
+// nil if CWVWebViewConfiguration is created with +incognitoConfiguration.
+@property(nonatomic, readonly, nullable) CWVSyncController* syncController;
+
+// This web view configuration's autofill data manager.
+// nil if CWVWebViewConfiguration is created with +incognitoConfiguration.
+@property(nonatomic, readonly, nullable)
+    CWVAutofillDataManager* autofillDataManager;
 
 // YES if it is a configuration with persistent data store which stores all data
 // on disk.

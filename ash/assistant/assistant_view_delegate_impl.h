@@ -57,7 +57,6 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void OnProactiveSuggestionsViewHoverChanged(bool is_hovering) override;
   void OnProactiveSuggestionsViewPressed() override;
   void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;
-  void OpenUrlFromView(const GURL& url) override;
 
  private:
   AssistantControllerImpl* const assistant_controller_;

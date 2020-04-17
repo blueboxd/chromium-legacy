@@ -139,6 +139,13 @@ class TestCascade {
 
   void Reset() { cascade_.Reset(); }
 
+  bool NeedsMatchResultAnalyze() const {
+    return cascade_.needs_match_result_analyze_;
+  }
+  bool NeedsInterpolationsAnalyze() const {
+    return cascade_.needs_interpolations_analyze_;
+  }
+
  private:
   Document& GetDocument() const { return state_.GetDocument(); }
   Element* Body() const { return GetDocument().body(); }
@@ -2773,6 +2780,28 @@ TEST_F(StyleCascadeTest, AnalyzeMatchResultAll) {
   // Random sample from another property affected by 'all'.
   EXPECT_EQ(cascade.GetPriority("color").GetOrigin(), author);
   EXPECT_EQ(cascade.GetPriority("color"), cascade.GetPriority("display"));
+}
+
+TEST_F(StyleCascadeTest, AnalyzeFlagsClean) {
+  AppendSheet(R"HTML(
+     @keyframes test {
+        from { top: 0px; }
+        to { top: 10px; }
+     }
+    )HTML");
+
+  TestCascade cascade(GetDocument());
+
+  cascade.Add("bottom:10px");
+  cascade.Add("animation:test linear 1000s -500s");
+  cascade.Apply();
+  EXPECT_FALSE(cascade.NeedsMatchResultAnalyze());
+  EXPECT_FALSE(cascade.NeedsInterpolationsAnalyze());
+
+  cascade.CalculateAnimationUpdate();
+  cascade.Apply();
+  EXPECT_FALSE(cascade.NeedsMatchResultAnalyze());
+  EXPECT_FALSE(cascade.NeedsInterpolationsAnalyze());
 }
 
 TEST_F(StyleCascadeTest, ApplyMatchResultFilter) {

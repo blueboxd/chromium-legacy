@@ -88,12 +88,9 @@ class ToolbarActionView : public views::MenuButton,
 
   bool IsMenuRunningForTesting() const;
 
-  bool wants_to_run_for_testing() const { return wants_to_run_; }
-
   ExtensionContextMenuController* context_menu_controller_for_testing() const {
     return context_menu_controller_.get();
   }
-
   static const char kClassName[];
 
  private:
@@ -133,9 +130,6 @@ class ToolbarActionView : public views::MenuButton,
   // doesn't hide on mouse press and immediately reshow on mouse release.
   bool suppress_next_release_ = false;
 
-  // The cached value of whether or not the action wants to run on the current
-  // tab.
-  bool wants_to_run_ = false;
 
   // This controller is responsible for showing the context menu for an
   // extension.

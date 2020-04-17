@@ -19,6 +19,7 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -540,7 +541,10 @@ PageInfoBubbleView::PageInfoBubbleView(
 
   // When |web_contents| is not from a Tab, |web_contents| does not have a
   // |TabSpecificContentSettings| and need to create one; otherwise, noop.
-  TabSpecificContentSettings::CreateForWebContents(web_contents);
+  content_settings::TabSpecificContentSettings::CreateForWebContents(
+      web_contents,
+      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+          web_contents));
   presenter_ = std::make_unique<PageInfo>(
       std::make_unique<ChromePageInfoDelegate>(web_contents), web_contents,
       url);

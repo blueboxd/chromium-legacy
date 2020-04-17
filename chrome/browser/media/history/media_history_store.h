@@ -163,6 +163,8 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
   void StoreMediaFeedItemSafeSearchResults(
       std::map<int64_t, media_feeds::mojom::SafeSearchResult> results);
 
+  void UpdateMediaFeedDisplayTime(const int64_t feed_id);
+
   void Close();
 
  private:

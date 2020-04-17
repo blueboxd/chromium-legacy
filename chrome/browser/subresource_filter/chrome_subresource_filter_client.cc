@@ -12,13 +12,13 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/safe_browsing/core/db/database_manager.h"
@@ -163,8 +163,9 @@ void ChromeSubresourceFilterClient::ShowUI(const GURL& url) {
       InfoBarService::FromWebContents(web_contents());
   AdsBlockedInfobarDelegate::Create(infobar_service);
 #endif
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+  content_settings::TabSpecificContentSettings* content_settings =
+      content_settings::TabSpecificContentSettings::FromWebContents(
+          web_contents());
   content_settings->OnContentBlocked(ContentSettingsType::ADS);
 
   LogAction(SubresourceFilterAction::kUIShown);

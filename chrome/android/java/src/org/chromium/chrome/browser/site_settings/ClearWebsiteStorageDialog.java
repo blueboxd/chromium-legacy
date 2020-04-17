@@ -5,11 +5,14 @@
 package org.chromium.chrome.browser.site_settings;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceDialogFragmentCompat;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.R;
 
 /**
  * The fragment used to display the clear website storage confirmation dialog.
@@ -27,6 +30,17 @@ public class ClearWebsiteStorageDialog extends PreferenceDialogFragmentCompat {
         bundle.putString(PreferenceDialogFragmentCompat.ARG_KEY, preference.getKey());
         fragment.setArguments(bundle);
         return fragment;
+    }
+
+    @Override
+    protected void onBindDialogView(View view) {
+        ClearWebsiteStorage preference = (ClearWebsiteStorage) getPreference();
+        TextView signedOutView = view.findViewById(R.id.signed_out_text);
+        TextView offlineTextView = view.findViewById(R.id.offline_text);
+        signedOutView.setText(preference.getSignedOutText());
+        offlineTextView.setText(preference.getOfflineText());
+
+        super.onBindDialogView(view);
     }
 
     @Override

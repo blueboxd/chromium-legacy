@@ -618,7 +618,7 @@ void AppServiceProxy::LoadIconForDialog(
   // Load the family link kite logo icon for the app pause dialog or the app
   // block dialog for the child profile.
   LoadIconFromResource(apps::mojom::IconCompression::kUncompressed, kIconSize,
-                       IDR_FAMILY_LINK_LOGO, kAllowPlaceholderIcon,
+                       IDR_SUPERVISED_USER_ICON, kAllowPlaceholderIcon,
                        IconEffects::kNone, std::move(callback));
 }
 

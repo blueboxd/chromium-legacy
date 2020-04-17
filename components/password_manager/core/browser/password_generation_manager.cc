@@ -51,6 +51,7 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
   PasswordFormMetricsRecorder* GetMetricsRecorder() override;
   base::span<const InteractionsStats> GetInteractionsStats() const override;
   bool IsBlacklisted() const override;
+  bool IsMovableToAccountStore() const override;
   void Save() override;
   void Update(const PasswordForm& credentials_to_update) override;
   void OnUpdateUsernameFromPrompt(const base::string16& new_username) override;
@@ -126,6 +127,11 @@ base::span<const InteractionsStats> PasswordDataForUI::GetInteractionsStats()
 
 bool PasswordDataForUI::IsBlacklisted() const {
   // 'true' would suppress the bubble.
+  return false;
+}
+
+bool PasswordDataForUI::IsMovableToAccountStore() const {
+  // This is irrelevant for the generation conflict resolution bubble.
   return false;
 }
 

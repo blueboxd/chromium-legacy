@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
@@ -66,6 +67,7 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -427,6 +429,29 @@ public class HistoryActivityTest {
         Assert.assertEquals(2, headerGroup.size());
 
         signinController.setSignedInAccountName(null);
+    }
+
+    @Test
+    @SmallTest
+    public void testInfoIcon_OtherFormsOfBrowsingData() throws ExecutionException {
+        final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
+        final MenuItem infoMenuItem = toolbar.getItemById(R.id.info_menu_id);
+        setHasOtherFormsOfBrowsingData(true);
+        Assert.assertTrue("Info icon should be visible.", infoMenuItem.isVisible());
+
+        // Hide disclaimers to simulate setup for https://crbug.com/1071468.
+        TestThreadUtils.runOnUiThreadBlocking(() -> mHistoryManager.onMenuItemClick(infoMenuItem));
+        Assert.assertFalse("Privacy disclaimers should be hidden.",
+                mHistoryManager.shouldShowInfoHeaderIfAvailable());
+
+        // Simulate call indicating there are not other forms of browsing data.
+        setHasOtherFormsOfBrowsingData(false);
+        RecyclerViewTestUtils.waitForStableRecyclerView(mRecyclerView);
+        Assert.assertFalse("Info menu item should be hidden.", infoMenuItem.isVisible());
+
+        // Simulate call indicating there are other forms of browsing data.
+        setHasOtherFormsOfBrowsingData(true);
+        Assert.assertTrue("Info menu item should bre visible.", infoMenuItem.isVisible());
     }
 
     @Test

@@ -33,7 +33,7 @@ class ShelfControlButtonHighlightPathGenerator
       const ShelfControlButtonHighlightPathGenerator&) = delete;
 
   // views::HighlightPathGenerator:
-  base::Optional<RoundRect> GetRoundRect(const gfx::RectF& rect) override {
+  base::Optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
     auto* shelf_config = ShelfConfig::Get();
     // Some control buttons have a slightly larger size to fill the shelf and
     // maximize the click target, but we still want their "visual" size to be
@@ -46,8 +46,7 @@ class ShelfControlButtonHighlightPathGenerator
       visual_bounds.Inset(0,
                           shelf_config->in_app_control_button_height_inset());
     }
-    return base::make_optional(
-        RoundRect{visual_bounds, shelf_config->control_border_radius()});
+    return gfx::RRectF(visual_bounds, shelf_config->control_border_radius());
   }
 };
 

@@ -73,7 +73,8 @@ HRESULT FakeBluetoothAdapterWinrt::get_IsLowEnergySupported(boolean* value) {
 
 HRESULT FakeBluetoothAdapterWinrt::get_IsPeripheralRoleSupported(
     boolean* value) {
-  return E_NOTIMPL;
+  *value = true;
+  return S_OK;
 }
 
 HRESULT FakeBluetoothAdapterWinrt::get_IsCentralRoleSupported(boolean* value) {

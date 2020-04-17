@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PRINTING_PRINTERS_MAP_H_
 #define CHROME_BROWSER_CHROMEOS_PRINTING_PRINTERS_MAP_H_
 
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chromeos/printing/cups_printer_status.h"
 #include "chromeos/printing/printer_configuration.h"
 
 namespace chromeos {
@@ -44,10 +47,16 @@ class PrintersMap {
   // Adds |printer| to |printer_class|.
   void Insert(PrinterClass printer_class, const Printer& printer);
 
+  // Adds |printer| with status |cups_printer_status| to |printer_class|.
+  void Insert(PrinterClass printer_class,
+              const Printer& printer,
+              const CupsPrinterStatus& cups_printer_status);
+
   // Removes all printers in |printer_class|.
   void Clear(PrinterClass printer_class);
 
-  // Replaces the printers in |printer_class| with |printers|.
+  // Replaces the printers in |printer_class| with |printers|. Adds a status to
+  // the printer if a status was previously saved in the printer status map.
   void ReplacePrintersInClass(PrinterClass printer_class,
                               const std::vector<Printer>& printers);
 
@@ -59,6 +68,11 @@ class PrintersMap {
   bool IsPrinterInClass(PrinterClass printer_class,
                         const std::string& printer_id) const;
 
+  // Adds printer status to existing printers in |printers_| map and also saves
+  // to |printer_statuses_| cache for future printer retrievals.
+  void SavePrinterStatus(const std::string& printer_id,
+                         const CupsPrinterStatus& cups_printer_status);
+
  private:
   // Returns true if |printer_class| exists and contains at least 1 printer.
   bool HasPrintersInClass(PrinterClass printer_class) const;
@@ -66,10 +80,21 @@ class PrintersMap {
   // Returns true if |printer_id| exists in any class. Used only for DCHECKs.
   bool IsExistingPrinter(const std::string& printer_id) const;
 
+  base::Optional<CupsPrinterStatus> GetPrinterStatus(
+      const std::string& printer_id) const;
+
+  // Returns set of printer id's for printers in class |printer_class|.
+  std::set<std::string> GetPrinterIdsInClass(PrinterClass printer_class) const;
+
   // Categorized printers. Outer map keyed on PrinterClass, inner map keyed on
   // PrinterId.
   std::unordered_map<PrinterClass, std::unordered_map<std::string, Printer>>
       printers_;
+
+  // Stores printer statuses returned from performing printer status queries.
+  // This map is used to persist the printer statuses so when |printers_| map is
+  // rebuilt, all the statuses aren't lost. Key for this map is a printer id.
+  base::flat_map<std::string, CupsPrinterStatus> printer_statuses_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintersMap);
 };

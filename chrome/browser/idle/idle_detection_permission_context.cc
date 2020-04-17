@@ -5,7 +5,7 @@
 #include "chrome/browser/idle/idle_detection_permission_context.h"
 
 #include "base/logging.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/permissions/permission_request_id.h"
 #include "url/gurl.h"
 
@@ -21,9 +21,9 @@ void IdleDetectionPermissionContext::UpdateTabContext(
     const permissions::PermissionRequestID& id,
     const GURL& requesting_frame,
     bool allowed) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(id.render_process_id(),
-                                              id.render_frame_id());
+  content_settings::TabSpecificContentSettings* content_settings =
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          id.render_process_id(), id.render_frame_id());
   if (!content_settings)
     return;
 

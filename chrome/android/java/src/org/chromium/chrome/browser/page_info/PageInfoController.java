@@ -61,6 +61,7 @@ import org.chromium.url.URI;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.ref.WeakReference;
 import java.net.URISyntaxException;
 
 /**
@@ -116,6 +117,9 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     private CookieControlsBridge mBridge;
 
     private Consumer<Runnable> mRunAfterDismissConsumer;
+
+    // Reference to last created PageInfoController for testing.
+    private static WeakReference<PageInfoController> sLastPageInfoControllerForTesting;
 
     /**
      * Creates the PageInfoController, but does not display it. Also initializes the corresponding
@@ -450,9 +454,14 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             assert false : "Invalid source passed";
         }
 
-        new PageInfoController(activity, webContents,
-                SecurityStateModel.getSecurityLevelForWebContents(webContents), contentPublisher,
-                delegate);
+        sLastPageInfoControllerForTesting = new WeakReference<>(new PageInfoController(activity,
+                webContents, SecurityStateModel.getSecurityLevelForWebContents(webContents),
+                contentPublisher, delegate));
+    }
+
+    static PageInfoController getLastPageInfoControllerForTesting() {
+        return sLastPageInfoControllerForTesting != null ? sLastPageInfoControllerForTesting.get()
+                                                         : null;
     }
 
     @Override

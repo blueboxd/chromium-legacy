@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.status.StatusProperties.StatusIconResource;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -32,7 +33,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 /**
  * Contains the controller logic of the Status component.
  */
-class StatusMediator {
+class StatusMediator implements IncognitoStateProvider.IncognitoStateObserver {
     @VisibleForTesting
     class StatusMediatorDelegate {
         /** @see {@link AutocompleteCoordinatorFactory#qualifyPartialURLQuery} */
@@ -103,6 +104,9 @@ class StatusMediator {
     private float mUrlFocusPercent;
     private String mSearchEngineLogoUrl;
 
+    private boolean mIsIncognito;
+    private Runnable mForceModelViewReconciliationRunnable;
+
     // Factors used to offset the animation of the status icon's alpha adjustment. The full formula
     // used: alpha = (focusAnimationProgress - mTextOffsetThreshold) / (1 - mTextOffsetThreshold)
     // mTextOffsetThreshold will be the % space that the icon takes up during the focus animation.
@@ -112,7 +116,8 @@ class StatusMediator {
     private final float mTextOffsetAdjustedScale;
 
     StatusMediator(PropertyModel model, Resources resources, Context context,
-            UrlBarEditingTextStateProvider urlBarEditingTextStateProvider, boolean isTablet) {
+            UrlBarEditingTextStateProvider urlBarEditingTextStateProvider, boolean isTablet,
+            Runnable forceModelViewReconciliationRunnable) {
         mModel = model;
         mDelegate = new StatusMediatorDelegate();
         updateColorTheme();
@@ -131,6 +136,7 @@ class StatusMediator {
         mTextOffsetAdjustedScale = mTextOffsetThreshold == 1 ? 1 : (1 - mTextOffsetThreshold);
 
         mIsTablet = isTablet;
+        mForceModelViewReconciliationRunnable = forceModelViewReconciliationRunnable;
     }
 
     /**
@@ -271,7 +277,7 @@ class StatusMediator {
         // On tablets, the status icon should always be shown so the following logic doesn't apply.
         assert !mIsTablet : "This logic shouldn't be called on tablets";
 
-        if (!mDelegate.shouldShowSearchEngineLogo(mToolbarCommonPropertiesModel.isIncognito())) {
+        if (!mDelegate.shouldShowSearchEngineLogo(mIsIncognito)) {
             return;
         }
 
@@ -297,7 +303,7 @@ class StatusMediator {
         // On tablets, the status icon should always be shown so the following logic doesn't apply.
         assert !mIsTablet : "This logic shouldn't be called on tablets";
 
-        if (!mDelegate.shouldShowSearchEngineLogo(mToolbarCommonPropertiesModel.isIncognito())) {
+        if (!mDelegate.shouldShowSearchEngineLogo(mIsIncognito)) {
             return;
         }
 
@@ -511,12 +517,10 @@ class StatusMediator {
                 && mToolbarCommonPropertiesModel.getDisplaySearchTerms() != null
                 && mDelegate.doesUrlMatchDefaultSearchEngine(
                         mToolbarCommonPropertiesModel.getCurrentUrl());
-        boolean isIncognito = mToolbarCommonPropertiesModel != null
-                && mToolbarCommonPropertiesModel.isIncognito();
-        if (mDelegate.shouldShowSearchEngineLogo(isIncognito) && mIsSearchEngineStateSetup
+        if (mDelegate.shouldShowSearchEngineLogo(mIsIncognito) && mIsSearchEngineStateSetup
                 && (showIconWhenFocused || showIconWhenScrollingOnNTP
                         || showUnfocusedSearchResultsPage)) {
-            getStatusIconResourceForSearchEngineIcon(isIncognito, (statusIconRes) -> {
+            getStatusIconResourceForSearchEngineIcon(mIsIncognito, (statusIconRes) -> {
                 mModel.set(StatusProperties.STATUS_ICON_RESOURCE, statusIconRes);
             });
             return true;
@@ -594,8 +598,7 @@ class StatusMediator {
     /** Return the resource id for the accessibility description or 0 if none apply. */
     private int getAccessibilityDescriptionRes() {
         if (mUrlHasFocus) {
-            if (SearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                        mToolbarCommonPropertiesModel.isIncognito())) {
+            if (SearchEngineLogoUtils.shouldShowSearchEngineLogo(mIsIncognito)) {
                 return 0;
             } else if (mShowStatusIconWhenUrlFocused) {
                 return R.string.accessibility_toolbar_btn_site_info;
@@ -646,6 +649,42 @@ class StatusMediator {
         }
 
         return urlTextWithAutocomplete;
+    }
+
+    public void setIncognitoStateProvider(IncognitoStateProvider incognitoStateProvider) {
+        if (incognitoStateProvider == null) return;
+        incognitoStateProvider.addIncognitoStateObserverAndTrigger(this);
+    }
+
+    @Override
+    public void onIncognitoStateChanged(boolean isIncognito) {
+        boolean previousIsIcognito = mIsIncognito;
+        mIsIncognito = isIncognito;
+        if (previousIsIcognito != isIncognito) reconcileVisualState();
+    }
+
+    /**
+     * Temporary workaround for the divergent logic for status icon visibility changes for the dse
+     * icon experiment. Should be removed when the dse icon launches (crbug.com/1019488).
+     *
+     * When transitioning to incognito, the first visible view when focused will be assigned to
+     * UrlBar. When the UrlBar is the first visible view when focused, the StatusView's alpha
+     * will be set to 0 in LocationBarPhone#populateFadeAnimations. When transitioning back from
+     * incognito, StatusView's state needs to be reset to match the current state of the status view
+     * {@link org.chromium.chrome.browser.omnibox.LocationBarPhone#updateVisualsForState}.
+     * property model.
+     **/
+    private void reconcileVisualState() {
+        // No reconciliation is needed on tablet because the status icon is always shown.
+        if (mIsTablet) return;
+
+        if (!mShowStatusIconWhenUrlFocused || mIsIncognito
+                || !mDelegate.shouldShowSearchEngineLogo(mIsIncognito)) {
+            return;
+        }
+
+        assert mForceModelViewReconciliationRunnable != null;
+        mForceModelViewReconciliationRunnable.run();
     }
 
     void setDelegateForTesting(StatusMediatorDelegate delegate) {

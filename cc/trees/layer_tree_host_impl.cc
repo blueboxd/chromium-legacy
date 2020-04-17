@@ -4363,11 +4363,24 @@ void LayerTreeHostImpl::ScrollLatchedScroller(ScrollState* scroll_state,
   if (ShouldAnimateScroll(*scroll_state)) {
     DCHECK(!scroll_state->is_in_inertial_phase());
 
-    if (mutator_host_->IsImplOnlyScrollAnimating()) {
+    if (ElementId id = mutator_host_->ImplOnlyScrollAnimatingElement()) {
       TRACE_EVENT_INSTANT0("cc", "UpdateExistingAnimation",
                            TRACE_EVENT_SCOPE_THREAD);
-      bool animation_updated =
-          ScrollAnimationUpdateTarget(scroll_node, delta, delayed_by);
+
+      ScrollTree& scroll_tree = active_tree()->property_trees()->scroll_tree;
+      ScrollNode* animating_scroll_node = scroll_tree.FindNodeFromElementId(id);
+      DCHECK(animating_scroll_node);
+
+      // Usually the CurrentlyScrollingNode will be the currently animating
+      // one. The one exception is the inner viewport. Scrolling the combined
+      // viewport will always set the outer viewport as the currently scrolling
+      // node. However, if an animation is created on the inner viewport we
+      // must use it when updating the animation curve.
+      DCHECK(animating_scroll_node->id == scroll_node.id ||
+             animating_scroll_node->scrolls_inner_viewport);
+
+      bool animation_updated = ScrollAnimationUpdateTarget(
+          *animating_scroll_node, delta, delayed_by);
 
       if (animation_updated) {
         // Because we updated the animation target, consume delta so we notify
@@ -4905,7 +4918,7 @@ void LayerTreeHostImpl::ScrollEnd(bool should_snap) {
 
   // Note that if we deferred the scroll end then we should not snap. We will
   // snap once we deliver the deferred scroll end.
-  if (mutator_host_->IsImplOnlyScrollAnimating()) {
+  if (mutator_host_->ImplOnlyScrollAnimatingElement()) {
     DCHECK(!deferred_scroll_end_);
     deferred_scroll_end_ = true;
     return;
@@ -5446,7 +5459,7 @@ TreePriority LayerTreeHostImpl::GetTreePriority() const {
   return global_tile_state_.tree_priority;
 }
 
-viz::BeginFrameArgs LayerTreeHostImpl::CurrentBeginFrameArgs() const {
+const viz::BeginFrameArgs& LayerTreeHostImpl::CurrentBeginFrameArgs() const {
   // TODO(mithro): Replace call with current_begin_frame_tracker_.Current()
   // once all calls which happens outside impl frames are fixed.
   return current_begin_frame_tracker_.DangerousMethodCurrentOrLast();
@@ -5878,6 +5891,11 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
     const ScrollNode& scroll_node,
     const gfx::Vector2dF& scroll_delta,
     base::TimeDelta delayed_by) {
+  // TODO(bokan): Remove |scroll_node| as a parameter and just use the value
+  // coming from |mutator_host|.
+  DCHECK_EQ(scroll_node.element_id,
+            mutator_host_->ImplOnlyScrollAnimatingElement());
+
   float scale_factor = active_tree()->page_scale_factor_for_scroll();
   gfx::Vector2dF adjusted_delta =
       gfx::ScaleVector2d(scroll_delta, 1.f / scale_factor);

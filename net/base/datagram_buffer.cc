@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "net/base/datagram_buffer.h"
+
+#include <cstring>
+
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 
 namespace net {

@@ -12,23 +12,22 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
+class Profile;
+class StatefulSSLHostStateDelegate;
+
+namespace content_settings {
+class TabSpecificContentSettings;
+}
+
 namespace permissions {
 class ChooserContextBase;
-}
+class PermissionDecisionAutoBlocker;
+}  // namespace permissions
 
 namespace safe_browsing {
 class PasswordProtectionService;
 class ChromePasswordProtectionService;
 }  // namespace safe_browsing
-
-class Profile;
-
-namespace permissions {
-class PermissionDecisionAutoBlocker;
-}  // namespace permissions
-
-class StatefulSSLHostStateDelegate;
-class TabSpecificContentSettings;
 
 class ChromePageInfoDelegate : public PageInfoDelegate {
  public:
@@ -73,7 +72,8 @@ class ChromePageInfoDelegate : public PageInfoDelegate {
   security_state::VisibleSecurityState GetVisibleSecurityState() override;
 
  private:
-  TabSpecificContentSettings* GetTabSpecificContentSettings() const;
+  content_settings::TabSpecificContentSettings* GetTabSpecificContentSettings()
+      const;
   const browsing_data::LocalSharedObjectsContainer& GetAllowedObjects(
       const GURL& site_url);
   const browsing_data::LocalSharedObjectsContainer& GetBlockedObjects(

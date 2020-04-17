@@ -914,8 +914,8 @@ TEST_P(MultipleRulesetsTest, EnabledRulesCount) {
 
 // Ensure that exceeding the rules count limit across rulesets raises an install
 // warning.
-// Fails on Linux. See https://crbug.com/1071403
-#if defined(OS_LINUX)
+// Fails on Linux and debug builds. See https://crbug.com/1071403
+#if defined(OS_LINUX) || defined(DEBUG)
 #define MAYBE_StaticRuleCountExceeded DISABLED_StaticRuleCountExceeded
 #else
 #define MAYBE_StaticRuleCountExceeded StaticRuleCountExceeded

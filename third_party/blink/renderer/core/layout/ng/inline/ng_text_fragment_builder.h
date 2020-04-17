@@ -29,8 +29,7 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
   TextDirection ResolvedDirection() const { return resolved_direction_; }
 
   // NOTE: Takes ownership of the shape result within the item result.
-  void SetItem(NGTextType,
-               const NGInlineItemsData&,
+  void SetItem(const NGInlineItemsData&,
                NGInlineItemResult*,
                LayoutUnit line_height);
 

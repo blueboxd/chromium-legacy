@@ -58,7 +58,7 @@ fuchsia::web::CreateContextParams CreateMainContextParams() {
 
   // TODO(b/141956135): Use CrKey version provided by the Agent.
   create_context_params.set_user_agent_product("CrKey");
-  create_context_params.set_user_agent_version("1.43");
+  create_context_params.set_user_agent_version("1.43.000000");
 
   create_context_params.set_remote_debugging_port(
       CastRunner::kRemoteDebuggingPort);

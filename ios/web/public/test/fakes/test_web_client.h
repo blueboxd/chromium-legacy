@@ -61,7 +61,8 @@ class TestWebClient : public web::WebClient {
                         int64_t navigation_id,
                         base::OnceCallback<void(NSString*)> callback) override;
   UIView* GetWindowedContainer() override;
-  UserAgentType GetDefaultUserAgent(UIView* web_view, const GURL& url) override;
+  UserAgentType GetDefaultUserAgent(id<UITraitEnvironment> web_view,
+                                    const GURL& url) override;
 
   // Sets |plugin_not_supported_text_|.
   void SetPluginNotSupportedText(const base::string16& text);

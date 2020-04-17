@@ -21,7 +21,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_tab_helper.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -96,6 +96,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/client_hints/browser/client_hints.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/download/content/factory/navigation_monitor_factory.h"
 #include "components/download/content/public/download_navigation_observer.h"
@@ -316,7 +317,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents,
       sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(
           profile));
-  TabSpecificContentSettings::CreateForWebContents(web_contents);
+  content_settings::TabSpecificContentSettings::CreateForWebContents(
+      web_contents,
+      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+          web_contents));
   TabUIHelper::CreateForWebContents(web_contents);
   tasks::TaskTabHelper::CreateForWebContents(web_contents);
   if (tracing::NavigationTracingObserver::IsEnabled())

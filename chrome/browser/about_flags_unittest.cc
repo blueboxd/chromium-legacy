@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_enum_reader.h"
 #include "build/build_config.h"
+#include "chrome/common/chrome_version.h"
 #include "components/flags_ui/feature_entry.h"
 #include "components/flags_ui/flags_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +28,7 @@ using Sample = base::HistogramBase::Sample;
 using SwitchToIdMap = std::map<std::string, Sample>;
 
 // Get all associated switches corresponding to defined about_flags.cc entries.
-std::set<std::string> GetAllSwitchesAndFeaturesForTesting() {
+std::set<std::string> GetAllPublicSwitchesAndFeaturesForTesting() {
   std::set<std::string> result;
 
   size_t num_entries = 0;
@@ -36,6 +37,15 @@ std::set<std::string> GetAllSwitchesAndFeaturesForTesting() {
 
   for (size_t i = 0; i < num_entries; ++i) {
     const flags_ui::FeatureEntry& entry = entries[i];
+
+    // Skip over flags that are part of the flags system itself - they don't
+    // have any of the usual metadata or histogram entries for flags, since they
+    // are synthesized during the build process.
+    // TODO(https://crbug.com/1068258): Remove the need for this by generating
+    // histogram entries automatically.
+    if (entry.supported_platforms & flags_ui::kFlagInfrastructure)
+      continue;
+
     switch (entry.type) {
       case flags_ui::FeatureEntry::SINGLE_VALUE:
       case flags_ui::FeatureEntry::SINGLE_DISABLE_VALUE:
@@ -81,7 +91,8 @@ TEST(AboutFlagsTest, NoSeparators) {
 TEST(AboutFlagsTest, EveryFlagHasMetadata) {
   size_t count;
   const flags_ui::FeatureEntry* entries = testing::GetFeatureEntries(&count);
-  flags_ui::testing::EnsureEveryFlagHasMetadata(entries, count);
+  flags_ui::testing::EnsureEveryFlagHasMetadata(
+      base::make_span(entries, count));
 }
 
 // Ensures that all flags marked as never expiring in flag-metadata.json is
@@ -105,6 +116,13 @@ TEST(AboutFlagsTest, OwnersLookValid) {
 // random location!" Prohibit such behavior in the flags files.
 TEST(AboutFlagsTest, FlagsListedInAlphabeticalOrder) {
   flags_ui::testing::EnsureFlagsAreListedInAlphabeticalOrder();
+}
+
+TEST(AboutFlagsTest, RecentUnexpireFlagsArePresent) {
+  size_t count;
+  const flags_ui::FeatureEntry* entries = testing::GetFeatureEntries(&count);
+  flags_ui::testing::EnsureRecentUnexpireFlagsArePresent(
+      base::make_span(entries, count), CHROME_VERSION_MAJOR);
 }
 
 class AboutFlagsHistogramTest : public ::testing::Test {
@@ -166,7 +184,7 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
   }
 
   // Check that all flags in about_flags.cc have entries in login_custom_flags.
-  std::set<std::string> all_flags = GetAllSwitchesAndFeaturesForTesting();
+  std::set<std::string> all_flags = GetAllPublicSwitchesAndFeaturesForTesting();
   for (const std::string& flag : all_flags) {
     // Skip empty placeholders.
     if (flag.empty())

@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/printing/cups_printer_status.h"
 #include "net/base/host_port_pair.h"
 
 namespace net {
@@ -186,6 +187,11 @@ class CHROMEOS_EXPORT Printer {
   // successfully parsed.
   base::Optional<UriComponents> GetUriComponents() const;
 
+  const CupsPrinterStatus& printer_status() const { return printer_status_; }
+  void set_printer_status(const chromeos::CupsPrinterStatus& printer_status) {
+    printer_status_ = printer_status;
+  }
+
  private:
   // Globally unique identifier. Empty indicates a new printer.
   std::string id_;
@@ -237,6 +243,9 @@ class CHROMEOS_EXPORT Printer {
 
   // The datastore which holds this printer.
   Source source_;
+
+  // The current status of the printer
+  chromeos::CupsPrinterStatus printer_status_;
 };
 
 }  // namespace chromeos

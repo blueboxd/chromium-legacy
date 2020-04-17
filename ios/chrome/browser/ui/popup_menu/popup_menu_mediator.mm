@@ -853,7 +853,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   [actionsArray addObject:self.findInPageItem];
 
   // Text Zoom
-  if (base::FeatureList::IsEnabled(web::kWebPageTextAccessibility)) {
+  if (!IsIPadIdiom() &&
+      base::FeatureList::IsEnabled(web::kWebPageTextAccessibility)) {
     self.textZoomItem = CreateTableViewItem(
         IDS_IOS_TOOLS_MENU_TEXT_ZOOM, PopupMenuActionTextZoom,
         @"popup_menu_text_zoom", kToolsMenuTextZoom);

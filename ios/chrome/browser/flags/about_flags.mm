@@ -601,6 +601,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCacheServerCardInfoDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCacheServerCardInfo)},
+    {"infobar-ui-reboot-only-ios13",
+     flag_descriptions::kInfobarUIRebootOnlyiOS13Name,
+     flag_descriptions::kInfobarUIRebootOnlyiOS13Description, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kInfobarUIRebootOnlyiOS13)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -46,7 +46,7 @@ public class OmniboxSuggestionUnitTest {
                 && TextUtils.equals(suggestion1.getDisplayText(), suggestion2.getDisplayText())
                 && TextUtils.equals(suggestion1.getDescription(), suggestion2.getDescription())
                 && TextUtils.equals(suggestion1.getUrl(), suggestion2.getUrl())
-                && suggestion1.isUrlSuggestion() == suggestion2.isUrlSuggestion()
+                && suggestion1.isSearchSuggestion() == suggestion2.isSearchSuggestion()
                 && suggestion1.isStarred() == suggestion2.isStarred()
                 && suggestion1.isDeletable() == suggestion2.isDeletable()
                 && TextUtils.equals(

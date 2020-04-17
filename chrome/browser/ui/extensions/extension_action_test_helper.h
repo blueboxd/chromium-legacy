@@ -73,10 +73,6 @@ class ExtensionActionTestHelper {
   // Hides the given popup and returns whether the hide was successful.
   virtual bool HidePopup() = 0;
 
-  // Tests that the button at the given |index| is displaying that it wants
-  // to run.
-  virtual bool ActionButtonWantsToRun(size_t index) = 0;
-
   // Sets the current width of the browser actions container without resizing
   // the underlying controller. This is to simulate e.g. when the browser window
   // is too small for the preferred width.

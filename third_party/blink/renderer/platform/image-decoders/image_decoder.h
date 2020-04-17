@@ -412,7 +412,7 @@ class PLATFORM_EXPORT ImageDecoder {
   //
   // Image formats which do not use more than one frame do not need to
   // worry about this; see comments on
-  // ImageFrame::required_previous_frame+index_.
+  // ImageFrame::required_previous_frame_index_.
   size_t FindRequiredPreviousFrame(size_t frame_index,
                                    bool frame_rect_is_opaque);
 

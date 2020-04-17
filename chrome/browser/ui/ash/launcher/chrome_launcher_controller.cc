@@ -131,19 +131,6 @@ std::string GetCrostiniAppIdFromContents(content::WebContents* web_contents) {
   return app_id_opt.value_or("");
 }
 
-apps::mojom::LaunchSource ConvertLaunchSource(ash::ShelfLaunchSource source) {
-  switch (source) {
-    case ash::LAUNCH_FROM_UNKNOWN:
-      return apps::mojom::LaunchSource::kUnknown;
-    case ash::LAUNCH_FROM_APP_LIST:
-      return apps::mojom::LaunchSource::kFromAppListGrid;
-    case ash::LAUNCH_FROM_APP_LIST_SEARCH:
-      return apps::mojom::LaunchSource::kFromAppListQuery;
-    case ash::LAUNCH_FROM_SHELF:
-      return apps::mojom::LaunchSource::kFromShelf;
-  }
-}
-
 }  // namespace
 
 // A class to get events from ChromeOS when a user gets changed or added.
@@ -476,17 +463,7 @@ void ChromeLauncherController::LaunchApp(const ash::ShelfID& id,
                                          ash::ShelfLaunchSource source,
                                          int event_flags,
                                          int64_t display_id) {
-  // Handle recording app launch source from the Shelf in Demo Mode.
-  if (source == ash::ShelfLaunchSource::LAUNCH_FROM_SHELF) {
-    chromeos::DemoSession::RecordAppLaunchSourceIfInDemoMode(
-        chromeos::DemoSession::AppLaunchSource::kShelf);
-  }
-
-  const std::string& app_id = id.app_id;
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
-  DCHECK(proxy);
-  proxy->Launch(app_id, event_flags, ConvertLaunchSource(source), display_id);
+  launcher_controller_helper_->LaunchApp(id, source, event_flags, display_id);
 }
 
 void ChromeLauncherController::ActivateApp(const std::string& app_id,

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
@@ -159,12 +160,6 @@ bool ExtensionActionViewController::IsEnabled(
              PageInteractionStatus::kPending;
 }
 
-bool ExtensionActionViewController::WantsToRun(
-    content::WebContents* web_contents) const {
-  return ExtensionIsValid() &&
-         (PageActionWantsToRun(web_contents) || HasBeenBlocked(web_contents));
-}
-
 bool ExtensionActionViewController::HasPopup(
     content::WebContents* web_contents) const {
   if (!ExtensionIsValid())
@@ -224,7 +219,8 @@ void ExtensionActionViewController::OnContextMenuClosed() {
     extensions_container_->UndoPopOut();
 }
 
-bool ExtensionActionViewController::ExecuteAction(bool by_user) {
+bool ExtensionActionViewController::ExecuteAction(bool by_user,
+                                                  InvocationSource source) {
   if (!ExtensionIsValid())
     return false;
 
@@ -234,6 +230,7 @@ bool ExtensionActionViewController::ExecuteAction(bool by_user) {
     return false;
   }
 
+  base::UmaHistogramEnumeration("Extensions.Toolbar.InvocationSource", source);
   return ExecuteAction(SHOW_POPUP, by_user);
 }
 
@@ -372,6 +369,11 @@ ExtensionActionViewController::GetIconImageSourceForTesting(
     content::WebContents* web_contents,
     const gfx::Size& size) {
   return GetIconImageSource(web_contents, size);
+}
+
+bool ExtensionActionViewController::HasBeenBlockedForTesting(
+    content::WebContents* web_contents) const {
+  return HasBeenBlocked(web_contents);
 }
 
 ExtensionActionViewController*

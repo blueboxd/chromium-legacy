@@ -994,7 +994,8 @@
                   'third_party/blink/renderer/bindings/core/v8/origin_trial_features',
     },
     'feed': {
-      'filepath': 'chrome/browser/android/feed/|' \
+      'filepath': 'chrome/android/feed|' \
+                  'chrome/browser/android/feed/|' \
                   'components/feed/'
     },
     'feedback': {
@@ -2462,7 +2463,8 @@
              'dewittj+watch@chromium.org',
              'dimich+watch@chromium.org',
              'harringtond+watch@chromium.org',
-             'petewil+watch@chromium.org'],
+             'petewil+watch@chromium.org',
+             'iwells+watch@chromium.org'],
     'feedback': ['cros-monitoring-forensics+feedback@google.com'],
     'fileapi': ['kinuko+fileapi@chromium.org',
                 'nhiroki@chromium.org'],
@@ -2575,7 +2577,8 @@
                      'pthatcher+watch@chromium.org',
                      'takumif+watch@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
-    'metrics': ['asvitkine+watch@chromium.org'],
+    'metrics': ['asvitkine+watch@chromium.org',
+                'chromiummetricswatch@microsoft.com'],
     'metrics_metadata_files': ['asvitkine+watchxml@chromium.org',
                                'chromium-metrics-reviews@google.com'],
     'metrics_perf': ['cwp-reviews+chromium@google.com'],

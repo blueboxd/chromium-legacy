@@ -20566,6 +20566,14 @@ Called by update_document_policy_enum.py.-->
   <int value="3" label="No app could consume the exported data"/>
 </enum>
 
+<enum name="ExtensionActionInvocationSource">
+  <int value="0" label="Keyboard Shortcut"/>
+  <int value="1" label="Toolbar Button"/>
+  <int value="2" label="Extensions Menu Entry"/>
+  <int value="3" label="Legacy Overflow Menu Entry"/>
+  <int value="4" label="Programmatic API Call"/>
+</enum>
+
 <enum name="ExtensionBackgroundPageType">
   <int value="0" label="None"/>
   <int value="1" label="Persistent"/>

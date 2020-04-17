@@ -1661,27 +1661,28 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame24) {
 }
 
 TEST_F(FrameSequenceTrackerTest, IgnoredFrameTokensRemovedAtPresentation1) {
-  GenerateSequence("b(5)");
+  GenerateSequence("b(5)s(1)e(5,0)P(1)");
   auto args = CreateBeginFrameArgs(/*source_id=*/1u, 1u);
   // Ack to an impl frame that doesn't exist in this tracker.
-  collection_.NotifySubmitFrame(1, /*has_missing_content=*/false,
+  collection_.NotifySubmitFrame(2, /*has_missing_content=*/false,
                                 viz::BeginFrameAck(args, true), args);
   EXPECT_EQ(IgnoredFrameTokens().size(), 1u);
-  args = CreateBeginFrameArgs(1u, 5u);
-  collection_.NotifySubmitFrame(2, false, viz::BeginFrameAck(args, true), args);
-  GenerateSequence("e(5,0)b(6)");
-  // Ack to an impl frame that doesn't exist in this tracker.
-  args = CreateBeginFrameArgs(1u, 1u);
-  collection_.NotifySubmitFrame(3, false, viz::BeginFrameAck(args, true), args);
-  args = CreateBeginFrameArgs(1u, 6u);
-  collection_.NotifySubmitFrame(4, false, viz::BeginFrameAck(args, true), args);
-  EXPECT_EQ(IgnoredFrameTokens().size(), 2u);
-  GenerateSequence("P(2)");
-  // frame_token = 2 is presented, frame_token = 3 remains in the list.
-  EXPECT_EQ(IgnoredFrameTokens().size(), 1u);
-  GenerateSequence("P(4)");
-  // Now frame_token = 4 is presented, frame_token = 3 should be removed.
-  EXPECT_TRUE(IgnoredFrameTokens().empty());
+  GenerateSequence("P(3)");
+  // Any token that is < 3 should have been removed.
+  EXPECT_EQ(IgnoredFrameTokens().size(), 0u);
+}
+
+TEST_F(FrameSequenceTrackerTest, TerminationWithNullPresentationTimeStamp) {
+  GenerateSequence("b(1)s(1)");
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+  EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
+  // Even if the presentation timestamp is null, as long as this presentation
+  // is acking the last impl frame, we consider that impl frame completed and
+  // so the tracker is ready for termination.
+  collection_.NotifyFramePresented(
+      1, {base::TimeTicks(), viz::BeginFrameArgs::DefaultInterval(), 0});
+  GenerateSequence("e(1,0)");
+  EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
 }
 
 // Test the case where the frame tokens wraps around the 32-bit max value.

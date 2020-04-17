@@ -221,6 +221,7 @@ defaults = args.defaults(
     ssd = args.COMPUTE,
     use_clang_coverage = False,
     use_java_coverage = False,
+    resultdb_bigquery_exports = [],
     should_exonerate_flaky_failures = False,
 
     # Provide vars for bucket and executable so users don't have to
@@ -255,6 +256,7 @@ def builder(
     goma_jobs=args.DEFAULT,
     use_clang_coverage=args.DEFAULT,
     use_java_coverage=args.DEFAULT,
+    resultdb_bigquery_exports=args.DEFAULT,
     should_exonerate_flaky_failures=args.DEFAULT,
     **kwargs):
   """Define a builder.
@@ -331,6 +333,9 @@ def builder(
       '$build/code_coverage' property. By default, considered False.
     * should_exonerate_flaky_failures - a boolean indicathing whether the
       builder should exonerate a test failure if it's known to be flaky on ToT.
+    * resultdb_bigquery_exports - a list of resultdb.export_test_results(...)
+      specifying parameters for exporting test results to BigQuery. By default,
+      do not export.
     * kwargs - Additional keyword arguments to forward on to `luci.builder`.
   """
   # We don't have any need of an explicit dimensions dict,
@@ -446,6 +451,8 @@ def builder(
       properties = properties,
       resultdb_settings = resultdb.settings(
           enable = True,
+          bq_exports = defaults.get_value(
+              'resultdb_bigquery_exports', resultdb_bigquery_exports),
       ),
       **kwargs
   )

@@ -26,6 +26,8 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
@@ -110,6 +112,30 @@ base::Optional<std::string> GetAppIdForTab(Profile* profile,
   return base::nullopt;
 }
 
+apps::mojom::LaunchSource ConvertLaunchSource(ash::ShelfLaunchSource source) {
+  switch (source) {
+    case ash::LAUNCH_FROM_UNKNOWN:
+      return apps::mojom::LaunchSource::kUnknown;
+    case ash::LAUNCH_FROM_APP_LIST:
+      return apps::mojom::LaunchSource::kFromAppListGrid;
+    case ash::LAUNCH_FROM_APP_LIST_SEARCH:
+      return apps::mojom::LaunchSource::kFromAppListQuery;
+    case ash::LAUNCH_FROM_SHELF:
+      return apps::mojom::LaunchSource::kFromShelf;
+  }
+}
+
+std::string GetSourceFromAppListSource(ash::ShelfLaunchSource source) {
+  switch (source) {
+    case ash::LAUNCH_FROM_APP_LIST:
+      return std::string(extension_urls::kLaunchSourceAppList);
+    case ash::LAUNCH_FROM_APP_LIST_SEARCH:
+      return std::string(extension_urls::kLaunchSourceAppListSearch);
+    default:
+      return std::string();
+  }
+}
+
 }  // namespace
 
 LauncherControllerHelper::LauncherControllerHelper(Profile* profile)
@@ -188,8 +214,78 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(
   return IsValidIDFromAppService(app_id);
 }
 
+void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
+                                         ash::ShelfLaunchSource source,
+                                         int event_flags,
+                                         int64_t display_id) {
+  // Handle recording app launch source from the Shelf in Demo Mode.
+  if (source == ash::ShelfLaunchSource::LAUNCH_FROM_SHELF) {
+    chromeos::DemoSession::RecordAppLaunchSourceIfInDemoMode(
+        chromeos::DemoSession::AppLaunchSource::kShelf);
+  }
+
+  const std::string& app_id = id.app_id;
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
+  DCHECK(proxy);
+  // Launch apps with AppServiceProxy.Launch.
+  if (proxy->AppRegistryCache().GetAppType(app_id) !=
+      apps::mojom::AppType::kUnknown) {
+    proxy->Launch(app_id, event_flags, ConvertLaunchSource(source), display_id);
+    return;
+  }
+
+  // For extensions, Launch with AppServiceProxy.LaunchAppWithParams.
+
+  // |extension| could be null when it is being unloaded for updating.
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
+          app_id, extensions::ExtensionRegistry::EVERYTHING);
+  if (!extension)
+    return;
+
+  if (!extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_)) {
+    // Do nothing if there is already a running enable flow.
+    if (extension_enable_flow_)
+      return;
+
+    extension_enable_flow_ =
+        std::make_unique<ExtensionEnableFlow>(profile_, app_id, this);
+    extension_enable_flow_->StartForNativeWindow(nullptr);
+    return;
+  }
+
+  apps::AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
+      profile_, extension, event_flags,
+      apps::mojom::AppLaunchSource::kSourceAppLauncher, display_id);
+  if ((source == ash::LAUNCH_FROM_APP_LIST ||
+       source == ash::LAUNCH_FROM_APP_LIST_SEARCH) &&
+      app_id == extensions::kWebStoreAppId) {
+    // Get the corresponding source string.
+    std::string source_value = GetSourceFromAppListSource(source);
+
+    // Set an override URL to include the source.
+    GURL extension_url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
+    params.override_url = net::AppendQueryParameter(
+        extension_url, extension_urls::kWebstoreSourceField, source_value);
+  }
+  params.launch_id = id.launch_id;
+
+  proxy->BrowserAppLauncher().LaunchAppWithParams(params);
+}
+
 ArcAppListPrefs* LauncherControllerHelper::GetArcAppListPrefs() const {
   return ArcAppListPrefs::Get(profile_);
+}
+
+void LauncherControllerHelper::ExtensionEnableFlowFinished() {
+  LaunchApp(ash::ShelfID(extension_enable_flow_->extension_id()),
+            ash::LAUNCH_FROM_UNKNOWN, ui::EF_NONE, display::kInvalidDisplayId);
+  extension_enable_flow_.reset();
+}
+
+void LauncherControllerHelper::ExtensionEnableFlowAborted(bool user_initiated) {
+  extension_enable_flow_.reset();
 }
 
 bool LauncherControllerHelper::IsValidIDForArcApp(

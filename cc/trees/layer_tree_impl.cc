@@ -1631,7 +1631,7 @@ bool LayerTreeImpl::PinchGestureActive() const {
   return host_impl_->pinch_gesture_active();
 }
 
-viz::BeginFrameArgs LayerTreeImpl::CurrentBeginFrameArgs() const {
+const viz::BeginFrameArgs& LayerTreeImpl::CurrentBeginFrameArgs() const {
   return host_impl_->CurrentBeginFrameArgs();
 }
 

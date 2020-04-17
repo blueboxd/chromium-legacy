@@ -913,18 +913,24 @@ void FrameSequenceTracker::ReportFrameEnd(
 void FrameSequenceTracker::ReportFramePresented(
     uint32_t frame_token,
     const gfx::PresentationFeedback& feedback) {
+  // TODO(xidachen): We should early exit if |last_submitted_frame_| = 0, as it
+  // means that we are presenting the same frame_token again.
+  const bool submitted_frame_since_last_presentation = !!last_submitted_frame_;
   // !viz::FrameTokenGT(a, b) is equivalent to b >= a.
   const bool frame_token_acks_last_frame =
       !viz::FrameTokenGT(last_submitted_frame_, frame_token);
 
+  // Even if the presentation timestamp is null, we set last_submitted_frame_ to
+  // 0 such that the tracker can be terminated.
+  if (last_submitted_frame_ && frame_token_acks_last_frame)
+    last_submitted_frame_ = 0;
   // Update termination status if this is scheduled for termination, and it is
   // not waiting for any frames, or it has received the presentation-feedback
   // for the latest frame it is tracking.
   //
   // We should always wait for an impl frame to end, that is, ReportFrameEnd.
   if (termination_status_ == TerminationStatus::kScheduledForTermination &&
-      (last_submitted_frame_ == 0 || frame_token_acks_last_frame) &&
-      !is_inside_frame_) {
+      last_submitted_frame_ == 0 && !is_inside_frame_) {
     termination_status_ = TerminationStatus::kReadyForTermination;
   }
 
@@ -937,26 +943,23 @@ void FrameSequenceTracker::ReportFramePresented(
 
   TRACKER_TRACE_STREAM << "P(" << frame_token << ")";
 
-  if (ignored_frame_tokens_.contains(frame_token))
-    return;
   base::EraseIf(ignored_frame_tokens_, [frame_token](const uint32_t& token) {
     return viz::FrameTokenGT(frame_token, token);
   });
+  if (ignored_frame_tokens_.contains(frame_token))
+    return;
 
   uint32_t impl_frames_produced = 0;
   uint32_t main_frames_produced = 0;
   trace_data_.Advance(feedback.timestamp);
 
   const bool was_presented = !feedback.timestamp.is_null();
-  if (was_presented && last_submitted_frame_) {
+  if (was_presented && submitted_frame_since_last_presentation) {
     DCHECK_LT(impl_throughput().frames_produced,
               impl_throughput().frames_expected)
         << TRACKER_DCHECK_MSG;
     ++impl_throughput().frames_produced;
     ++impl_frames_produced;
-
-    if (frame_token_acks_last_frame)
-      last_submitted_frame_ = 0;
   }
 
   if (was_presented) {

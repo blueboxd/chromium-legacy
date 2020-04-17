@@ -1104,6 +1104,7 @@ static bool IsWillChangeCompositingHintProperty(CSSPropertyID property) {
     case CSSPropertyID::kOpacity:
     case CSSPropertyID::kFilter:
     case CSSPropertyID::kAliasWebkitFilter:
+    case CSSPropertyID::kBackdropFilter:
     case CSSPropertyID::kTop:
     case CSSPropertyID::kLeft:
     case CSSPropertyID::kBottom:

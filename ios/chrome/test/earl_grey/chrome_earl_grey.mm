@@ -161,6 +161,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
+- (NSInteger)getBrowsingHistoryEntryCount {
+  return [ChromeEarlGreyAppInterface getBrowsingHistoryEntryCount];
+}
+
 - (void)removeBrowsingCache {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [ChromeEarlGreyAppInterface removeBrowsingCache]);

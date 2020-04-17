@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
+#include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -91,7 +92,9 @@ void ExtensionBlockedActionsBubbleTest::ShowUi(const std::string& name) {
   ToolbarActionsBar* const toolbar_actions_bar =
       ToolbarActionsBar::FromBrowserWindow(browser()->window());
   ASSERT_EQ(1u, toolbar_actions_bar->GetActions().size());
-  EXPECT_TRUE(toolbar_actions_bar->GetActions()[0]->WantsToRun(tab));
+  auto* view_controller = static_cast<ExtensionActionViewController*>(
+      toolbar_actions_bar->GetActions()[0]);
+  EXPECT_TRUE(view_controller->HasBeenBlockedForTesting(tab));
 
   ExtensionActionTestHelper::Create(browser())->Press(0);
 

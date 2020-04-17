@@ -24,6 +24,17 @@
     ]
   },
 
+  "AutofillCreditCardEnabled": {
+    "os": [ "ios" ],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AutofillCreditCardEnabled": false },
+        "prefs": { "autofill.credit_card_enabled": {} }
+      }
+    ]
+  },
+
   "PasswordManagerEnabled": {
     "os": [ "ios" ],
     "can_be_recommended": true,
@@ -31,6 +42,21 @@
       {
         "policies": { "PasswordManagerEnabled": false },
         "prefs": { "credentials_enable_service": {} }
+      }
+    ]
+  },
+
+  "SavingBrowserHistoryDisabled": {
+    "os": [ "ios" ],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "SavingBrowserHistoryDisabled": false },
+        "prefs": { "history.saving_disabled": {} }
+      },
+      {
+        "policies": { "SavingBrowserHistoryDisabled": true },
+        "prefs": { "history.saving_disabled": {} }
       }
     ]
   },

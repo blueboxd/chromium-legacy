@@ -37,8 +37,6 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
 import org.chromium.chrome.browser.site_settings.Website.StoredDataClearedCallback;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
@@ -542,20 +540,16 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             setCookieSettingsPreference((CookieSettingsState) newValue);
             getInfoForOrigins();
         } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
-            PrefServiceBridge.getInstance().setBoolean(
-                    Pref.BLOCK_THIRD_PARTY_COOKIES, ((boolean) newValue));
+            getPrefs().setBlockThirdPartyCookies((boolean) newValue);
         } else if (NOTIFICATIONS_VIBRATE_TOGGLE_KEY.equals(preference.getKey())) {
-            PrefServiceBridge.getInstance().setBoolean(
-                    Pref.NOTIFICATIONS_VIBRATE_ENABLED, (boolean) newValue);
+            getPrefs().setNotificationsVibrateEnabled((boolean) newValue);
         } else if (NOTIFICATIONS_QUIET_UI_TOGGLE_KEY.equals(preference.getKey())) {
             boolean boolValue = (boolean) newValue;
             if (boolValue) {
-                PrefServiceBridge.getInstance().setBoolean(
-                        Pref.ENABLE_QUIET_NOTIFICATION_PERMISSION_UI, true);
+                getPrefs().setEnableQuietNotificationPermissionUi(true);
             } else {
                 // Clear the pref so if the default changes later the user will get the new default.
-                PrefServiceBridge.getInstance().clearPref(
-                        Pref.ENABLE_QUIET_NOTIFICATION_PERMISSION_UI);
+                getPrefs().clearEnableNotificationPermissionUi();
             }
         }
         return true;
@@ -588,9 +582,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         }
 
         WebsitePreferenceBridge.setCategoryEnabled(ContentSettingsType.COOKIES, allowCookies);
-        PrefServiceBridge.getInstance().setInteger(Pref.COOKIE_CONTROLS_MODE, mode);
-        PrefServiceBridge.getInstance().setBoolean(
-                Pref.BLOCK_THIRD_PARTY_COOKIES, mode == CookieControlsMode.ON);
+        getPrefs().setCookieControlsMode(mode);
+        getPrefs().setBlockThirdPartyCookies(mode == CookieControlsMode.ON);
     }
 
     private boolean cookieSettingsExceptionShouldBlock() {
@@ -1053,13 +1046,10 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 new FourStateCookieSettingsPreference.Params();
         params.allowCookies =
                 WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES);
-        params.blockThirdPartyCookies =
-                PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES);
-        params.cookieControlsMode =
-                PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE);
+        params.blockThirdPartyCookies = getPrefs().getBlockThirdPartyCookies();
+        params.cookieControlsMode = getPrefs().getCookieControlsMode();
         params.cookiesContentSettingEnforced = mCategory.isManaged();
-        params.thirdPartyBlockingEnforced =
-                PrefServiceBridge.getInstance().isManagedPreference(Pref.BLOCK_THIRD_PARTY_COOKIES);
+        params.thirdPartyBlockingEnforced = getPrefs().isBlockThirdPartyCookiesManaged();
         fourStateCookieToggle.setState(params);
     }
 
@@ -1101,16 +1091,14 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         ChromeBaseCheckBoxPreference thirdPartyCookiesPref =
                 (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         THIRD_PARTY_COOKIES_TOGGLE_KEY);
-        thirdPartyCookiesPref.setChecked(
-                PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES));
+        thirdPartyCookiesPref.setChecked(getPrefs().getBlockThirdPartyCookies());
         thirdPartyCookiesPref.setEnabled(
                 WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES));
         thirdPartyCookiesPref.setManagedPreferenceDelegate(new ForwardingManagedPreferenceDelegate(
                 getSiteSettingsClient().getManagedPreferenceDelegate()) {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return PrefServiceBridge.getInstance().isManagedPreference(
-                        Pref.BLOCK_THIRD_PARTY_COOKIES);
+                return getPrefs().isBlockThirdPartyCookiesManaged();
             }
         });
     }
@@ -1138,8 +1126,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 quiet_ui_pref = (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         NOTIFICATIONS_QUIET_UI_TOGGLE_KEY);
             }
-            quiet_ui_pref.setChecked(PrefServiceBridge.getInstance().getBoolean(
-                    Pref.ENABLE_QUIET_NOTIFICATION_PERMISSION_UI));
+            quiet_ui_pref.setChecked(getPrefs().getEnableQuietNotificationPermissionUi());
         } else if (quiet_ui_pref != null) {
             // Save a reference to allow re-adding it to the screen.
             mNotificationsQuietUiPref = quiet_ui_pref;
@@ -1155,5 +1142,9 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         } else {
             ManagedPreferencesUtils.showManagedByAdministratorToast(getActivity());
         }
+    }
+
+    private SiteSettingsPrefClient getPrefs() {
+        return getSiteSettingsClient().getSiteSettingsPrefClient();
     }
 }

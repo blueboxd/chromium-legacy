@@ -56,6 +56,7 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
                          "last_fetch_content_types INTEGER, "
                          "logo BLOB, "
                          "display_name TEXT, "
+                         "last_display_time_s INTEGER, "
                          "CONSTRAINT fk_origin "
                          "FOREIGN KEY (origin_id) "
                          "REFERENCES origin(id) "
@@ -159,7 +160,8 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
       "mediaFeed.last_fetch_play_next_count, "
       "mediaFeed.last_fetch_content_types, "
       "mediaFeed.logo, "
-      "mediaFeed.display_name ");
+      "mediaFeed.display_name, "
+      "mediaFeed.last_display_time_s");
 
   if (request.include_origin_watchtime_percentile_data) {
     // If we need the percentile data we should select rows from the origin
@@ -278,6 +280,11 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
 
     feed->display_name = statement.ColumnString(12);
 
+    if (statement.GetColumnType(13) == sql::ColumnType::kInteger) {
+      feed->last_display_time = base::Time::FromDeltaSinceWindowsEpoch(
+          base::TimeDelta::FromSeconds(statement.ColumnInt64(13)));
+    }
+
     if (request.include_origin_watchtime_percentile_data && origin_count > 1) {
       feed->origin_audio_video_watchtime_percentile =
           (rank / (*origin_count - 1)) * 100;
@@ -367,6 +374,22 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
         8, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
     statement.BindInt64(9, feed_id);
   }
+
+  return statement.Run() && DB()->GetLastChangeCount() == 1;
+}
+
+bool MediaHistoryFeedsTable::UpdateDisplayTime(const int64_t feed_id) {
+  DCHECK_LT(0, DB()->transaction_nesting());
+  if (!CanAccessDatabase())
+    return false;
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE mediaFeed SET last_display_time_s = ? WHERE id = ?"));
+
+  statement.BindInt64(0,
+                      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
+  statement.BindInt64(1, feed_id);
 
   return statement.Run() && DB()->GetLastChangeCount() == 1;
 }

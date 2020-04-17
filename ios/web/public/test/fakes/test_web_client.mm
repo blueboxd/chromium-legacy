@@ -116,8 +116,9 @@ UIView* TestWebClient::GetWindowedContainer() {
   return UIApplication.sharedApplication.keyWindow.rootViewController.view;
 }
 
-UserAgentType TestWebClient::GetDefaultUserAgent(UIView* web_view,
-                                                 const GURL& url) {
+UserAgentType TestWebClient::GetDefaultUserAgent(
+    id<UITraitEnvironment> web_view,
+    const GURL& url) {
   return default_user_agent_;
 }
 

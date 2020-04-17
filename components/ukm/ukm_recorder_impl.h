@@ -117,7 +117,9 @@ class UkmRecorderImpl : public UkmRecorder {
   // UkmRecorder:
   void AddEntry(mojom::UkmEntryPtr entry) override;
   void UpdateSourceURL(SourceId source_id, const GURL& url) override;
-  void UpdateAppURL(SourceId source_id, const GURL& url) override;
+  void UpdateAppURL(SourceId source_id,
+                    const GURL& url,
+                    const AppType app_type) override;
   void RecordNavigation(
       SourceId source_id,
       const UkmSource::NavigationData& navigation_data) override;

@@ -103,10 +103,27 @@ ExternalProtocolDialog::ExternalProtocolDialog(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->GetPrefs()->GetBoolean(
-          prefs::kExternalProtocolDialogShowAlwaysOpenCheckbox)) {
-    ShowRememberSelectionCheckbox();
+  // The checkbox allows the user to opt-in to relaxed security
+  // (i.e. skipping future prompts) for the combination of the
+  // protocol and the origin of the page initiating this external
+  // protocol launch. The checkbox is offered so long as the
+  // group policy to show the checkbox is not explicitly disabled
+  // and there is a trustworthy initiating origin.
+  bool show_remember_selection_checkbox =
+      profile->GetPrefs()->GetBoolean(
+          prefs::kExternalProtocolDialogShowAlwaysOpenCheckbox) &&
+      ExternalProtocolHandler::MayRememberAllowDecisionsForThisOrigin(
+          base::OptionalOrNullptr(initiating_origin_));
+
+  if (show_remember_selection_checkbox) {
+    message_box_view_->SetCheckBoxLabel(l10n_util::GetStringFUTF16(
+        IDS_EXTERNAL_PROTOCOL_CHECKBOX_PER_ORIGIN_TEXT,
+        url_formatter::FormatOriginForSecurityDisplay(
+            initiating_origin_.value(),
+            /*scheme_display = */ url_formatter::SchemeDisplay::
+                OMIT_CRYPTOGRAPHIC)));
   }
+
   constrained_window::ShowWebModalDialogViews(this, web_contents);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTERNAL_PROTOCOL);
 }
@@ -140,11 +157,13 @@ void ExternalProtocolDialog::OnDialogAccepted() {
   }
 
   if (remember) {
+    DCHECK(initiating_origin_);
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
-    ExternalProtocolHandler::SetBlockState(
-        url_.scheme(), ExternalProtocolHandler::DONT_BLOCK, profile);
+    ExternalProtocolHandler::SetBlockState(url_.scheme(), *initiating_origin_,
+                                           ExternalProtocolHandler::DONT_BLOCK,
+                                           profile);
   }
 
   ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url_, web_contents());
@@ -166,14 +185,7 @@ const views::Widget* ExternalProtocolDialog::GetWidget() const {
   return message_box_view_->GetWidget();
 }
 
-void ExternalProtocolDialog::ShowRememberSelectionCheckbox() {
-  message_box_view_->SetCheckBoxLabel(
-      l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));
-}
-
 void ExternalProtocolDialog::SetRememberSelectionCheckboxCheckedForTesting(
     bool checked) {
-  if (!message_box_view_->HasCheckBox())
-    ShowRememberSelectionCheckbox();
   message_box_view_->SetCheckBoxSelected(checked);
 }

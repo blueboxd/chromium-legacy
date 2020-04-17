@@ -350,15 +350,9 @@ void RawResource::DidDownloadToBlob(scoped_refptr<BlobDataHandle> blob) {
     c->DidDownloadToBlob(this, blob);
 }
 
-bool RawResource::MatchPreload(const FetchParameters& params,
-                               base::SingleThreadTaskRunner* task_runner) {
-  if (!Resource::MatchPreload(params, task_runner))
-    return false;
-
+void RawResource::MatchPreload(const FetchParameters& params) {
   matched_with_non_streaming_destination_ =
       !params.GetResourceRequest().UseStreamOnResponse();
-
-  return true;
 }
 
 static bool ShouldIgnoreHeaderForCacheReuse(AtomicString header_name) {

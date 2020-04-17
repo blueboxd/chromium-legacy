@@ -46,6 +46,10 @@ enum {
   kOsIos = 1 << 6,
   kDeprecated = 1 << 7,
   kOsFuchsia = 1 << 8,
+
+  // Flags marked with this are internal to the flags system. Never set this on
+  // a manually-added flag.
+  kFlagInfrastructure = 1 << 9,
 };
 
 // A flag controlling the behavior of the |ConvertFlagsToSwitches| function -

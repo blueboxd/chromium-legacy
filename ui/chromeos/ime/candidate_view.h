@@ -48,6 +48,7 @@ class UI_CHROMEOS_EXPORT CandidateView : public views::Button {
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // The orientation of the candidate view.
   ui::CandidateWindow::Orientation orientation_;

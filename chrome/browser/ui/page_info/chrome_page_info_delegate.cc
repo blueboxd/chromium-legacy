@@ -8,7 +8,7 @@
 #include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
@@ -20,6 +20,7 @@
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/url_constants.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/permissions/chooser_context_base.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
@@ -47,12 +48,16 @@ Profile* ChromePageInfoDelegate::GetProfile() const {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
-TabSpecificContentSettings*
+content_settings::TabSpecificContentSettings*
 ChromePageInfoDelegate::GetTabSpecificContentSettings() const {
   // When |web_contents| is not from a Tab, |web_contents| does not have a
   // |TabSpecificContentSettings| and need to create one; otherwise, noop.
-  TabSpecificContentSettings::CreateForWebContents(web_contents_);
-  return TabSpecificContentSettings::FromWebContents(web_contents_);
+  content_settings::TabSpecificContentSettings::CreateForWebContents(
+      web_contents_,
+      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+          web_contents_));
+  return content_settings::TabSpecificContentSettings::FromWebContents(
+      web_contents_);
 }
 
 permissions::ChooserContextBase* ChromePageInfoDelegate::GetChooserContext(

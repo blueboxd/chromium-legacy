@@ -76,6 +76,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // cleared within a timeout.
 - (void)clearBrowsingHistory;
 
+// Gets the number of entries in the browsing history database.
+- (NSInteger)getBrowsingHistoryEntryCount;
+
 // Clears browsing cache. Raises an EarlGrey exception if history is not
 // cleared within a timeout.
 - (void)removeBrowsingCache;

@@ -346,4 +346,14 @@ void MediaHistoryKeyedService::GetMediaFeeds(
       std::move(callback));
 }
 
+void MediaHistoryKeyedService::UpdateMediaFeedDisplayTime(
+    const int64_t feed_id) {
+  if (auto* store = store_->GetForWrite()) {
+    store->db_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MediaHistoryStore::UpdateMediaFeedDisplayTime, store,
+                       feed_id));
+  }
+}
+
 }  // namespace media_history

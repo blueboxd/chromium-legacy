@@ -41,6 +41,8 @@ function fakeSettingsSearchHandlerSearch(query) {
       },
       urlPathWithParameters: resultArr[1],
       icon: resultArr[2],
+      relevanceScore: 0.5,
+      settingsPageHierarchy: [],
     });
   }
 

@@ -397,13 +397,13 @@ TEST_F(FocusCyclerTest, RemoveWidgetOnDisplayRemoved) {
   Shell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
   EXPECT_TRUE(GetPrimaryShelf()->navigation_widget()->IsActive());
 
-  // Cycle focus to the status area.
-  Shell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_TRUE(GetPrimaryStatusAreaWidget()->IsActive());
-
   // Cycle focus to the hotseat widget.
   Shell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
   EXPECT_TRUE(GetPrimaryShelf()->hotseat_widget()->IsActive());
+
+  // Cycle focus to the status area.
+  Shell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(GetPrimaryStatusAreaWidget()->IsActive());
 
   // Cycle focus should go back to the browser.
   Shell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);

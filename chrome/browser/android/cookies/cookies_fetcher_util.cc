@@ -39,9 +39,6 @@ void OnCookiesFetchFinished(const net::CookieList& cookies) {
 
   int index = 0;
   for (auto i = cookies.cbegin(); i != cookies.cend(); ++i) {
-    std::string domain = i->Domain();
-    if (domain.length() > 1 && domain[0] == '.')
-      domain = domain.substr(1);
     ScopedJavaLocalRef<jobject> java_cookie = Java_CookiesFetcher_createCookie(
         env, base::android::ConvertUTF8ToJavaString(env, i->Name()),
         base::android::ConvertUTF8ToJavaString(env, i->Value()),

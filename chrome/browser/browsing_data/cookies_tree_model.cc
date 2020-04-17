@@ -45,6 +45,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_util.h"
 #include "net/url_request/url_request_context.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1612,13 +1613,14 @@ void CookiesTreeModel::PopulateCookieInfoWithFilter(
   notifier->StartBatchUpdate();
   for (auto it = container->cookie_list_.begin();
        it != container->cookie_list_.end(); ++it) {
-    std::string domain = it->Domain();
-    if (domain.length() > 1 && domain[0] == '.')
-      domain = domain.substr(1);
-
     // Cookies ignore schemes, so group all HTTP and HTTPS cookies together.
-    GURL source(std::string(url::kHttpScheme) + url::kStandardSchemeSeparator +
-                domain + "/");
+    // TODO(crbug.com/1031721): This will not be true when Scheme-Bound Cookies
+    // is implemented. Investigate whether passing it->SourceScheme() instead of
+    // false is appropriate here.
+    GURL source = (it->Domain() == ".")
+                      ? GURL("http://./")
+                      : net::cookie_util::CookieOriginToURL(
+                            it->Domain(), false /* is_https */);
 
     if (filter.empty() || (CookieTreeHostNode::TitleForUrl(source)
                                .find(filter) != base::string16::npos)) {

@@ -21,10 +21,12 @@ class ApplicationControllerImpl : public chromium::cast::ApplicationController {
   ~ApplicationControllerImpl() final;
 
  protected:
+  // chromium::cast::ApplicationController implementation.
   void SetTouchInputEnabled(bool enable) final;
   void GetMediaPlayer(
       ::fidl::InterfaceRequest<fuchsia::media::sessions2::Player> request)
       final;
+  void SetBlockMediaLoading(bool blocked) override;
 
  private:
   fidl::Binding<chromium::cast::ApplicationController> binding_;

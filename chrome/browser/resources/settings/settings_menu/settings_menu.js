@@ -6,10 +6,29 @@
  * @fileoverview
  * 'settings-menu' shows a menu with a hardcoded set of pages and subpages.
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
+import '../i18n_setup.m.js';
+import '../icons.m.js';
+import '../settings_shared_css.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {PageVisibility} from '../page_visibility.m.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+
 Polymer({
   is: 'settings-menu',
 
-  behaviors: [settings.RouteObserverBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [RouteObserverBehavior],
 
   properties: {
     advancedOpened: {
@@ -33,13 +52,13 @@ Polymer({
     pageVisibility: Object,
   },
 
-  /** @param {!settings.Route} newRoute */
+  /** @param {!Route} newRoute */
   currentRouteChanged(newRoute) {
     // Focus the initially selected path.
     const anchors = this.root.querySelectorAll('a');
     for (let i = 0; i < anchors.length; ++i) {
-      const anchorRoute = settings.Router.getInstance().getRouteForPath(
-          anchors[i].getAttribute('href'));
+      const anchorRoute =
+          Router.getInstance().getRouteForPath(anchors[i].getAttribute('href'));
       if (anchorRoute && anchorRoute.contains(newRoute)) {
         this.setSelectedUrl_(anchors[i].href);
         return;
@@ -83,9 +102,9 @@ Polymer({
     this.setSelectedUrl_(event.detail.selected);
 
     const path = new URL(event.detail.selected).pathname;
-    const route = settings.Router.getInstance().getRouteForPath(path);
+    const route = Router.getInstance().getRouteForPath(path);
     assert(route, 'settings-menu has an entry with an invalid route.');
-    settings.Router.getInstance().navigateTo(
+    Router.getInstance().navigateTo(
         route, /* dynamicParams */ null, /* removeSearch */ true);
   },
 

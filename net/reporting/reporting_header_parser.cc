@@ -4,6 +4,7 @@
 
 #include "net/reporting/reporting_header_parser.h"
 
+#include <cstring>
 #include <string>
 #include <utility>
 #include <vector>

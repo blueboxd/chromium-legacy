@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">خواندن و تغییر همه داده‌های شما در وب‌سایت کنونی هنگام فراخوانی</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> می‌خواهد تنظیمات شما را بازنشانی کند.</translation>
 <translation id="1243314992276662751">بارگذاری</translation>
+<translation id="1243436884219965846">بازبینی گذرواژه‌ها</translation>
 <translation id="1244265436519979884">‏درحال‌حاضر بازیابی Linux درحال انجام است</translation>
 <translation id="1244303850296295656">خطای افزونه</translation>
 <translation id="1246158006305844142">‏برنامه‌ها و تنظیماتتان در همه دستگاه‌های «سیستم‌عامل Chrome» که با حساب Google خود در آن‌ها به سیستم وارد شده‌اید همگام‌سازی خواهد شد. برای گزینه‌های همگام‌سازی مرورگر، به <ph name="LINK_BEGIN" />تنظیمات Chrome<ph name="LINK_END" /> بروید.</translation>
@@ -2569,6 +2570,7 @@
 <translation id="4404136731284211429">اسکن دوباره</translation>
 <translation id="4404843640767531781">ولی‌تان <ph name="APP_NAME" /> را مسدود کرده است. از ولی‌تان بخواهید استفاده از این برنامه را مجاز کند.</translation>
 <translation id="4405117686468554883">‏‎*.jpeg،‏ ‎*.jpg،‏ ‎*.png</translation>
+<translation id="4406883609789734330">زیرنویس زنده</translation>
 <translation id="4408599188496843485">را&amp;هنما</translation>
 <translation id="4409697491990005945">حاشیه‌ها</translation>
 <translation id="4410545552906060960">برای باز کردن قفل دستگاه، به‌جای گذرواژه از شماره (پین) استفاده کنید. برای تنظیم پین در فرصتی دیگر، به «تنظیمات» بروید.</translation>
@@ -3973,6 +3975,7 @@
 <translation id="6326855256003666642">تعداد فعالیت‌های زنده‌نگه‌داری</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> از شما می‌خواهد این دستگاه را قبل از مهلت تعیین‌شده به‌روزرسانی کنید.</translation>
 <translation id="6327785803543103246">کشف خودکار پراکسی وب</translation>
+<translation id="6331566915566907158">‏کمک به بهبود ویژگی‌ها و عملکرد سیستم‌عامل Chrome</translation>
 <translation id="6333064448949140209">‏فایل برای اشکال‌زدایی به Google ارسال خواهد شد</translation>
 <translation id="6339668969738228384">ایجاد نمایه جدیدی برای <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">‏به سرور متصل نشد. لطفاً اتصال شبکه‌تان را بررسی کرده و دوباره امتحان کنید. اگر مشکل برطرف نشد، Chromebook خود را بازراه‌اندازی کنید.</translation>
@@ -4933,6 +4936,7 @@
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{پین اشتباه است. یک بار دیگر می‌توانید امتحان کنید.}one{پین اشتباه است. # بار دیگر می‌توانید امتحان کنید.}other{پین اشتباه است. # بار دیگر می‌توانید امتحان کنید.}}</translation>
 <translation id="7671130400130574146">استفاده از نوار عنوان سیستم و مرزها</translation>
 <translation id="767127784612208024">برای تأیید بازنشانی، لمس کنید</translation>
+<translation id="767147716926917172">‏ارسال خودکار داده‌های استفاده و عیب‌یابی به Google</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />، در <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">‏صدایتان را برای Google ارسال کنید تا بتوانید هر فیلد نوشتاری را با دیکته کردن پر کنید.</translation>
 <translation id="7678280409648629969">‏داده‌های مربوط به ورود به سیستم، پس از خروج از حالت ناشناس، در Chrome ذخیره می‌شود. بنابراین، بعداً دوباره می‌توانید در این وب‌سایت از «شناسه لمسی» استفاده کنید.</translation>

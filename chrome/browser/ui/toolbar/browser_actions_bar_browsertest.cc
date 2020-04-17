@@ -286,56 +286,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Visibility) {
   EXPECT_TRUE(toolbar_actions_bar->NeedsOverflow());
 }
 
-// Test that, with the toolbar action redesign, actions that want to run have
-// the proper appearance.
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
-                       TestUiForActionsWantToRun) {
-  LoadExtensions();
-  EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
-
-  // Load an extension with a page action.
-  scoped_refptr<const extensions::Extension> page_action_extension =
-      extensions::ExtensionBuilder("page action")
-          .SetAction(extensions::ExtensionBuilder::ActionType::PAGE_ACTION)
-          .SetLocation(extensions::Manifest::INTERNAL)
-          .Build();
-  extension_service()->AddExtension(page_action_extension.get());
-
-  // Verify that the extension was added at the last index.
-  EXPECT_EQ(4, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_EQ(page_action_extension->id(),
-            browser_actions_bar()->GetExtensionId(3));
-  EXPECT_FALSE(browser_actions_bar()->ActionButtonWantsToRun(3));
-
-  // Make the extension want to run on the current page.
-  ExtensionAction* action = extensions::ExtensionActionManager::Get(profile())->
-      GetExtensionAction(*page_action_extension);
-  ASSERT_TRUE(action);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
-  action->SetIsVisible(tab_id, true);
-  extensions::ExtensionActionAPI* extension_action_api =
-      extensions::ExtensionActionAPI::Get(profile());
-  extension_action_api->NotifyChange(action, web_contents, profile());
-  // Verify that the extension's button has the proper UI.
-  EXPECT_TRUE(browser_actions_bar()->ActionButtonWantsToRun(3));
-
-  // Make the extension not want to run, and check that the special UI goes
-  // away.
-  action->SetIsVisible(tab_id, false);
-  extension_action_api->NotifyChange(action, web_contents, profile());
-  EXPECT_FALSE(browser_actions_bar()->ActionButtonWantsToRun(3));
-
-  // Reduce the visible icon count so that the extension is hidden.
-  toolbar_model()->SetVisibleIconCount(3);
-
-  // The extension should want to run whether or not it's hidden.
-  action->SetIsVisible(tab_id, true);
-  extension_action_api->NotifyChange(action, web_contents, profile());
-  EXPECT_TRUE(browser_actions_bar()->ActionButtonWantsToRun(3));
-}
-
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
                        BrowserActionPopupTest) {
   // Load up two extensions that have browser action popups.
@@ -765,7 +715,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRuntimeHostPermissionsBrowserTest,
   std::vector<ToolbarActionViewController*> actions = actions_bar->GetActions();
   ASSERT_EQ(1u, actions.size());
 
-  EXPECT_TRUE(browser_actions_bar()->ActionButtonWantsToRun(0));
+  auto extension_has_been_blocked = [this, web_contents]() {
+    ToolbarActionsBar* toolbar = browser_actions_bar()->GetToolbarActionsBar();
+    auto* view_controller =
+        static_cast<ExtensionActionViewController*>(toolbar->GetActions()[0]);
+    return view_controller->HasBeenBlockedForTesting(web_contents);
+  };
+  EXPECT_TRUE(extension_has_been_blocked());
 
   {
     // Simulate clicking on the extension icon to allow it to run via a page
@@ -782,7 +738,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRuntimeHostPermissionsBrowserTest,
   // The extension should have run on page reload, so the button shouldn't
   // indicate the extension wants to run.
   ASSERT_TRUE(injection_listener.WaitUntilSatisfied());
-  EXPECT_FALSE(browser_actions_bar()->ActionButtonWantsToRun(0));
+  EXPECT_FALSE(extension_has_been_blocked());
 }
 
 // Tests page access modifications through the context menu which require a page

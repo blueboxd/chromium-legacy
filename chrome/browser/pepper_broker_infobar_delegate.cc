@@ -6,10 +6,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
@@ -26,7 +26,7 @@ void PepperBrokerInfoBarDelegate::Create(
     const GURL& url,
     const base::string16& plugin_name,
     HostContentSettingsMap* content_settings,
-    TabSpecificContentSettings* tab_content_settings,
+    content_settings::TabSpecificContentSettings* tab_content_settings,
     base::OnceCallback<void(bool)> callback) {
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       base::WrapUnique(new PepperBrokerInfoBarDelegate(
@@ -38,7 +38,7 @@ PepperBrokerInfoBarDelegate::PepperBrokerInfoBarDelegate(
     const GURL& url,
     const base::string16& plugin_name,
     HostContentSettingsMap* content_settings,
-    TabSpecificContentSettings* tab_content_settings,
+    content_settings::TabSpecificContentSettings* tab_content_settings,
     base::OnceCallback<void(bool)> callback)
     : url_(url),
       plugin_name_(plugin_name),

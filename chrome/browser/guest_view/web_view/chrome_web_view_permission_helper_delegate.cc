@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/buildflags.h"

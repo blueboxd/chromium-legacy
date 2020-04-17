@@ -473,7 +473,6 @@ android_library("chrome_java") {
     "//chrome/browser:sharing_send_message_result_generated_enum",
     "//chrome/browser/notifications/scheduler/public:jni_enums",
     "//chrome/browser/supervised_user/supervised_user_error_page:enums_srcjar",
-    "//chrome/browser/ui:cookie_controls_enforcement_javagen",
     "//chrome/browser/updates/announcement_notification:jni_enums",
     "//components/autofill_assistant/browser:autofill_assistant_enums_java",
     "//components/browsing_data/core:browsing_data_utils_java",
@@ -651,11 +650,6 @@ java_cpp_enum("chrome_vr_android_java_enums_srcjar") {
 
 java_cpp_enum("sync_user_settings_enums_java") {
   sources = [ "//components/sync/driver/sync_user_settings.h" ]
-}
-
-# TODO(crbug.com/1041473): Remove this when all usages are migrated.
-java_group("chrome_android_java_switches") {
-  deps = [ "//chrome/browser/flags:java" ]
 }
 
 proto_java_library("partner_location_descriptor_proto_java") {
@@ -852,7 +846,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/thumbnail:java",
     "//chrome/browser/thumbnail:javatests",
     "//chrome/browser/ui/android/appmenu:java",
-    "//chrome/browser/ui/android/appmenu:test_support_java",
+    "//chrome/browser/ui/android/appmenu/test:test_support_java",
     "//chrome/browser/ui/android/favicon:java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/upboarding/query_tiles:query_tiles_javatests",

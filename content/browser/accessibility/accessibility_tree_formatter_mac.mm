@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/accessibility/accessibility_tree_formatter_browser.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_base.h"
 
 #import <Cocoa/Cocoa.h>
 

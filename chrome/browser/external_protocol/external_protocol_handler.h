@@ -16,6 +16,10 @@ namespace content {
 class WebContents;
 }
 
+namespace url {
+class Origin;
+}
+
 class GURL;
 class PrefRegistrySimple;
 class Profile;
@@ -61,8 +65,9 @@ class ExternalProtocolHandler {
     virtual void FinishedProcessingCheck() = 0;
 
     virtual void OnSetBlockState(const std::string& scheme,
+                                 const url::Origin& initiating_origin,
                                  ExternalProtocolHandler::BlockState state) {}
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
   };
 
   // UMA histogram metric names.
@@ -72,11 +77,24 @@ class ExternalProtocolHandler {
   // ExternalProtocolHandler::Delegate for testing code.
   static void SetDelegateForTesting(Delegate* delegate);
 
-  // Returns whether we should block a given scheme.
-  static BlockState GetBlockState(const std::string& scheme, Profile* profile);
+  // True if |initiating_origin| is not nullptr and is considered
+  // potentially trustworthy.
+  static bool MayRememberAllowDecisionsForThisOrigin(
+      const url::Origin* initiating_origin);
 
-  // Sets whether we should block a given scheme.
+  // Returns whether we should block a given scheme.
+  // |initiating_origin| can be nullptr if the user is performing a
+  // browser initiated top frame navigation, for example by typing in the
+  // address bar or right-clicking a link and selecting 'Open In New Tab'.
+  // Renderer-initiated navigations will set |initiating_origin| to the origin
+  // of the content requesting the navigation.
+  static BlockState GetBlockState(const std::string& scheme,
+                                  const url::Origin* initiating_origin,
+                                  Profile* profile);
+
+  // Sets whether we should block a given scheme + origin.
   static void SetBlockState(const std::string& scheme,
+                            const url::Origin& initiating_origin,
                             BlockState state,
                             Profile* profile);
 

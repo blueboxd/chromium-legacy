@@ -54,6 +54,9 @@ class CaptionController : public BrowserListObserver, public KeyedService {
   void OnBrowserRemoved(Browser* browser) override;
 
   void OnLiveCaptionEnabledChanged();
+  bool IsLiveCaptionEnabled();
+  void UpdateSpeechRecognitionServiceEnabled();
+  void UpdateUIEnabled();
 
   // Owns us via the KeyedService mechanism.
   Profile* profile_;

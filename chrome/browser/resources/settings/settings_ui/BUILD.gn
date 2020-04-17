@@ -6,29 +6,9 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/polymer.gni")
 import("../settings.gni")
 
-js_type_check("closure_compile") {
-  deps = [ ":settings_ui" ]
-}
-
-js_library("settings_ui") {
-  deps = [
-    "..:global_scroll_target_behavior",
-    "..:page_visibility",
-    "..:route",
-    "..:router",
-    "../prefs",
-    "../settings_main:settings_main",
-    "//ui/webui/resources/cr_elements:cr_container_shadow_behavior",
-    "//ui/webui/resources/cr_elements/cr_drawer:cr_drawer",
-    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar",
-    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_search_field",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator_behavior",
-    "//ui/webui/resources/js:find_shortcut_behavior",
-  ]
-}
-
 js_type_check("closure_compile_module") {
   is_polymer3 = true
+  closure_flags = settings_closure_flags
   deps = [ ":settings_ui.m" ]
 }
 
@@ -40,7 +20,7 @@ js_library("settings_ui.m") {
     "..:route.m",
     "..:router.m",
     "../prefs:prefs.m",
-    "../settings_main:settings_main.m",
+    "../settings_main:settings_main",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements:cr_container_shadow_behavior.m",
     "//ui/webui/resources/cr_elements/cr_drawer:cr_drawer.m",
@@ -63,6 +43,7 @@ polymer_modulizer("settings_ui") {
   js_file = "settings_ui.js"
   html_file = "settings_ui.html"
   html_type = "dom-module"
+  migrated_imports = settings_migrated_imports
   auto_imports = settings_auto_imports + [
                    "chrome/browser/resources/settings/global_scroll_target_behavior.html|setGlobalScrollTarget,resetGlobalScrollTargetForTesting",
                    "chrome/browser/resources/settings/page_visibility.html|PageVisibility,pageVisibility",

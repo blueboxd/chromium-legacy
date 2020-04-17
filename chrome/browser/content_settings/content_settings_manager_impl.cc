@@ -6,8 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
@@ -20,6 +20,8 @@
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #endif
+
+using content_settings::TabSpecificContentSettings;
 
 namespace chrome {
 namespace {

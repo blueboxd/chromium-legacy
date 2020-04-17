@@ -226,6 +226,11 @@ extern const char kInfobarOverlayUIDescription[];
 extern const char kInfobarUIRebootName[];
 extern const char kInfobarUIRebootDescription[];
 
+// Title and description for the flag to enable the new UI Reboot on Infobars
+// only on iOS13.
+extern const char kInfobarUIRebootOnlyiOS13Name[];
+extern const char kInfobarUIRebootOnlyiOS13Description[];
+
 // Title and description for the flag to enable feature_engagement::Tracker
 // demo mode.
 extern const char kInProductHelpDemoModeName[];

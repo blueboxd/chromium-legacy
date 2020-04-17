@@ -538,4 +538,39 @@ TEST_F(TrustTokenRequestIssuanceHelperTest,
             mojom::TrustTokenOperationStatus::kInvalidArgument);
 }
 
+TEST_F(TrustTokenRequestIssuanceHelperTest, RespectsMaximumBatchsize) {
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
+
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(mojom::TrustTokenVerificationKey::New(
+      "key", /*expiry=*/base::Time(), /*label=*/0));
+  key_commitment_result->batch_size =
+      mojom::TrustTokenKeyCommitmentBatchSize::New(
+          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize + 1));
+  auto getter = std::make_unique<FixedKeyCommitmentGetter>(
+      issuer, std::move(key_commitment_result));
+
+  auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
+
+  // The batch size should be clamped to the configured maximum.
+  EXPECT_CALL(*cryptographer,
+              BeginIssuance(kMaximumTrustTokenIssuanceBatchSize))
+      .WillOnce(
+          Return(std::string("this string contains some blinded tokens")));
+
+  TrustTokenRequestIssuanceHelper helper(
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
+      store.get(), std::move(getter), std::move(cryptographer));
+
+  auto request = MakeURLRequest("https://issuer.com/");
+  request->set_initiator(issuer);
+
+  ASSERT_EQ(ExecuteBeginOperationAndWaitForResult(&helper, request.get()),
+            mojom::TrustTokenOperationStatus::kOk);
+}
+
 }  // namespace network

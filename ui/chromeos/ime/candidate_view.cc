@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/chromeos/ime/candidate_view.h"
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/candidate_window.h"
-#include "ui/chromeos/ime/candidate_view.h"
 #include "ui/chromeos/ime/candidate_window_constants.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
@@ -177,6 +180,7 @@ void CandidateView::SetHighlighted(bool highlighted) {
 
   highlighted_ = highlighted;
   if (highlighted) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, false);
     ui::NativeTheme* theme = GetNativeTheme();
     SetBackground(views::CreateSolidBackground(theme->GetSystemColor(
         ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
@@ -278,6 +282,11 @@ gfx::Size CandidateView::CalculatePreferredSize() const {
   size.Enlarge(
       kInfolistIndicatorIconWidth + kInfolistIndicatorIconPadding * 2, 0);
   return size;
+}
+
+void CandidateView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(candidate_label_->GetText());
+  node_data->role = ax::mojom::Role::kMenuItem;
 }
 
 }  // namespace ime

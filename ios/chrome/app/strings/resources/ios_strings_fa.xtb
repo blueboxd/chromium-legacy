@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">کوچک کردن</translation>
 <translation id="2230173723195178503">صفحه وب بار شد</translation>
 <translation id="2239626343334228536">درحال پاک کردن داده‌های محصول مرور…</translation>
+<translation id="2245545499420671379">مسدود کردن کوکی‌های شخص ثالث در «حالت ناشناس»</translation>
 <translation id="2257567812274161158">همگام‌سازی کار نمی‌کند.</translation>
 <translation id="2267753748892043616">افزودن حساب</translation>
 <translation id="2268044343513325586">فیلتر</translation>
@@ -419,6 +420,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 
 داده‌های شما در تاریخ <ph name="TIME" /> با عبارت عبور همگام‌سازی‌تان رمزگذاری شد. برای شروع همگام‌سازی آن را وارد کنید.</translation>
 <translation id="6418346271604475326">‏آماده‌سازی PDF</translation>
+<translation id="6426067060178468363">مجاز کردن کوکی‌ها</translation>
 <translation id="6434591244308415567">خطایی روی داد. بعداً دوباره امتحان کنید.</translation>
 <translation id="6445051938772793705">کشور</translation>
 <translation id="6445981559479772097">پیام ارسال شد.</translation>
@@ -544,6 +546,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8076014560081431679">تنظیمات ذخیره‌شده سایت حذف نمی‌شوند و احتمالاً عادات مرور شما را نشان می‌دهند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">بارگیری فایل دردسترس است. گزینه‌ها نزدیک انتهای صفحه دردسترس است.</translation>
 <translation id="8131740175452115882">تأیید</translation>
+<translation id="8174524257672181687">مسدود کردن همه کوکی‌ها (توصیه نمی‌شود)</translation>
 <translation id="8197543752516192074">ترجمه صفحه</translation>
 <translation id="8205564605687841303">لغو</translation>
 <translation id="8225985093977202398">تصاویر و فایل‌های قرار گرفته در حافظه پنهان</translation>

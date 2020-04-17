@@ -21,6 +21,7 @@
 #include "net/base/url_util.h"
 #include "net/http/http_util.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace net {
 namespace cookie_util {
@@ -74,12 +75,6 @@ bool SaturatedTimeFromUTCExploded(const base::Time::Exploded& exploded,
   return false;
 }
 
-std::string CookieDomainAsHost(const std::string& cookie_domain) {
-  if (DomainIsHostOnly(cookie_domain))
-    return cookie_domain;
-  return cookie_domain.substr(1);
-}
-
 CookieOptions::SameSiteCookieContext::CrossSchemeness ComputeSchemeChange(
     const GURL& url,
     const SiteForCookies& site_for_cookies) {
@@ -130,6 +125,12 @@ bool DomainIsHostOnly(const std::string& domain_string) {
   return (domain_string.empty() || domain_string[0] != '.');
 }
 
+std::string CookieDomainAsHost(const std::string& cookie_domain) {
+  if (DomainIsHostOnly(cookie_domain))
+    return cookie_domain;
+  return cookie_domain.substr(1);
+}
+
 std::string GetEffectiveDomain(const std::string& scheme,
                                const std::string& host) {
   if (scheme == "http" || scheme == "https" || scheme == "ws" ||
@@ -139,9 +140,7 @@ std::string GetEffectiveDomain(const std::string& scheme,
         registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   }
 
-  if (!DomainIsHostOnly(host))
-    return host.substr(1);
-  return host;
+  return CookieDomainAsHost(host);
 }
 
 bool GetCookieDomainWithString(const GURL& url,
@@ -331,18 +330,19 @@ GURL CookieOriginToURL(const std::string& domain, bool is_https) {
   if (domain.empty())
     return GURL();
 
-  const std::string scheme = is_https ? "https" : "http";
-  const std::string host = domain[0] == '.' ? domain.substr(1) : domain;
-  return GURL(scheme + "://" + host);
+  const std::string scheme = is_https ? url::kHttpsScheme : url::kHttpScheme;
+  return GURL(scheme + url::kStandardSchemeSeparator +
+              CookieDomainAsHost(domain) + "/");
 }
 
 GURL SimulatedCookieSource(const CanonicalCookie& cookie,
                            const std::string& source_scheme) {
-  if (cookie.Domain().empty() || source_scheme.empty())
+  // Note: cookie.DomainWithoutDot() could be empty for e.g. file cookies.
+  if (cookie.DomainWithoutDot().empty() || source_scheme.empty())
     return GURL();
 
-  return GURL(source_scheme + "://" + CookieDomainAsHost(cookie.Domain()) +
-              cookie.Path());
+  return GURL(source_scheme + url::kStandardSchemeSeparator +
+              cookie.DomainWithoutDot() + cookie.Path());
 }
 
 bool IsDomainMatch(const std::string& domain, const std::string& host) {

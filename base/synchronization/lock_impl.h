@@ -16,6 +16,7 @@
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <errno.h>
 #include <pthread.h>
+#include <string.h>
 #endif
 
 namespace base {

@@ -53,6 +53,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/unexpire_flags.h"
+#include "chrome/browser/unexpire_flags_gen.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
@@ -1743,6 +1744,9 @@ const FeatureEntry::Choice kWebOtpBackendChoices[] = {
 //
 // When adding a new choice, add it to the end of the list.
 const FeatureEntry kFeatureEntries[] = {
+// Include generated flags for flag unexpiry; see //docs/flag_expiry.md and
+// //tools/flags/generate_unexpire_flags.py.
+#include "chrome/browser/unexpire_flags_gen.inc"
     {"ignore-gpu-blacklist", flag_descriptions::kIgnoreGpuBlacklistName,
      flag_descriptions::kIgnoreGpuBlacklistDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kIgnoreGpuBlacklist)},
@@ -4766,15 +4770,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUsageStatsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kUsageStatsFeature)},
 #endif  // defined(OS_ANDROID)
-
-    // This set of flags is used to temporary reinstate expired flags; see
-    // //docs/flag_expiry.md for details.
-    {"temporary-unexpire-flags-m78", flag_descriptions::kUnexpireFlagsM78Name,
-     flag_descriptions::kUnexpireFlagsM78Description, kOsAll,
-     FEATURE_VALUE_TYPE(flags::kUnexpireFlagsM78)},
-    {"temporary-unexpire-flags-m80", flag_descriptions::kUnexpireFlagsM80Name,
-     flag_descriptions::kUnexpireFlagsM80Description, kOsAll,
-     FEATURE_VALUE_TYPE(flags::kUnexpireFlagsM80)},
 
 #if defined(OS_CHROMEOS)
     {"lock-screen-media-controls",

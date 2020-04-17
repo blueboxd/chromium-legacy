@@ -25,7 +25,7 @@ class RemoteObject : public gin::Wrappable<RemoteObject>,
   // Not copyable or movable
   RemoteObject(const RemoteObject&) = delete;
   RemoteObject& operator=(const RemoteObject&) = delete;
-  ~RemoteObject() override = default;
+  ~RemoteObject() override;
 
   // gin::Wrappable.
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(

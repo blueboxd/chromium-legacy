@@ -5,23 +5,45 @@
 package org.chromium.base;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.content.ContentProvider;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.pm.ProviderInfo;
+import android.content.res.AssetManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileVisitResult;
@@ -32,13 +54,21 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 
 /** Unit tests for {@link Log}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {FileUtilsTest.FakeShadowBitmapFactory.class})
 public class FileUtilsTest {
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    private Context mContext;
+
+    @Before
+    public void setUp() {
+        mContext = ContextUtils.getApplicationContext();
+    }
 
     /**
      * Recursively lists all paths under a directory as relative paths, rendered as a string.
@@ -243,7 +273,38 @@ public class FileUtilsTest {
         // Omit testing content URL deletion.
     }
 
-    // TOOD(huangs): Implement testExtractAsset().
+    @Test
+    public void testExtractAsset() throws IOException {
+        AssetManager assetManager = mContext.getAssets();
+
+        // assetManager from test comes with some .png files. Find and use the first one.
+        String[] assetList = assetManager.list("");
+        String firstPngPath = null;
+        for (String s : assetList) {
+            if (s.endsWith(".png")) {
+                firstPngPath = s;
+                break;
+            }
+        }
+        assertNotNull(firstPngPath); // E.g., "images/android-logo-mask.png"
+
+        // Test successful call to FileUtils.extractAsset().
+        File tempFile1 = temporaryFolder.newFile("temp1.png");
+        assertTrue(FileUtils.extractAsset(mContext, firstPngPath, tempFile1));
+
+        // Read first 4 bytes of |tempFile1|, just check 4 bytes of PNG header.
+        byte[] buffer = new byte[4];
+        InputStream is = new FileInputStream(tempFile1);
+        assertEquals(4, is.read(buffer));
+        is.close();
+        byte[] expected = new byte[] {(byte) 0x89, (byte) 0x50, (byte) 0x4E, (byte) 0x47};
+        Assert.assertArrayEquals(expected, buffer);
+
+        // Test unsuccessful call to FileUtils.extractAsset().
+        File tempFile2 = temporaryFolder.newFile("temp2.png");
+        String nonExistentPngPath = "images/does_not_exist.png";
+        assertFalse(FileUtils.extractAsset(mContext, nonExistentPngPath, tempFile2));
+    }
 
     /**
      * Helper to create a byte array filled with arbitrary, non-repeating data.
@@ -391,5 +452,116 @@ public class FileUtilsTest {
         assertEquals("", FileUtils.getExtension("/./././."));
     }
 
-    // TOOD(huangs): Implement testQueryBitmapFromContentProvider().
+    /**
+     * This class replaces {@link ShadowBitmapFactory} so that decodeFileDescriptor() won't always
+     * return a valid {@link Image}. This enables testing error handing for attempting to load
+     * non-image files. A file is deemed valid if and only if it's non-empty.
+     */
+    @Implements(BitmapFactory.class)
+    public static class FakeShadowBitmapFactory {
+        @Implementation
+        public static Bitmap decodeFileDescriptor(FileDescriptor fd) throws IOException {
+            FileInputStream inStream = new FileInputStream(fd);
+            if (inStream.read() == -1) {
+                return null;
+            }
+            return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        }
+    }
+
+    private static class TestContentProvider extends ContentProvider {
+        private HashMap<String, String> mUriToFilename;
+
+        public TestContentProvider() {
+            mUriToFilename = new HashMap<String, String>();
+        }
+
+        public void insertForTest(String uriString, String filename) {
+            mUriToFilename.put(uriString, filename);
+        }
+
+        @Override
+        public @Nullable ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode)
+                throws FileNotFoundException {
+            String uriString = uri.toString();
+            if (mUriToFilename.containsKey(uriString)) {
+                String filename = mUriToFilename.get(uriString);
+                // Throws FileNotFoundException if |filename| is bogus.
+                return ParcelFileDescriptor.open(
+                        new File(filename), ParcelFileDescriptor.MODE_READ_ONLY);
+            }
+            return null;
+        }
+
+        @Override
+        public boolean onCreate() {
+            return false;
+        }
+
+        @Override
+        public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
+                String sortOrder) {
+            return null;
+        }
+
+        @Override
+        public String getType(Uri uri) {
+            return null;
+        }
+
+        @Override
+        public Uri insert(Uri uri, ContentValues values) {
+            return null;
+        }
+
+        @Override
+        public int delete(Uri uri, String selection, String[] selectionArgs) {
+            return 0;
+        }
+
+        @Override
+        public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+            return 0;
+        }
+    }
+
+    public void markFileAsValidImage(File outFile) throws IOException {
+        FileOutputStream outStream = new FileOutputStream(outFile);
+        outStream.write("Non-empty file is assumed to be valid image.".getBytes());
+        outStream.close();
+    }
+
+    @Test
+    public void testQueryBitmapFromContentProvider() throws IOException {
+        // Set up "org.chromium.test" provider.
+        ProviderInfo info = new ProviderInfo();
+        info.authority = "org.chromium.test";
+        TestContentProvider contentProvider =
+                Robolectric.buildContentProvider(TestContentProvider.class).create(info).get();
+
+        // Fake valid image. Expect success.
+        File tempFile1 = temporaryFolder.newFile("temp1.png");
+        markFileAsValidImage(tempFile1);
+        Uri validImageUri = Uri.parse("content://org.chromium.test/valid.png");
+        contentProvider.insertForTest(validImageUri.toString(), tempFile1.toString());
+
+        // File exists, but not a valid image (empty). Expect failure.
+        File tempFile2 = temporaryFolder.newFile("temp2.txt");
+        Uri invalidImageUri = Uri.parse("content://org.chromium.test/invalid.txt");
+        contentProvider.insertForTest(invalidImageUri.toString(), tempFile2.toString());
+
+        // Uri exists, but file does not exist. Expect failure.
+        Uri bogusFileUri = Uri.parse("content://org.chromium.test/bogus-file.txt");
+        contentProvider.insertForTest(bogusFileUri.toString(), "bogus-to-trigger-file-not-found");
+
+        // Uri does not exist.  Expect failure.
+        Uri nonExistentUri = Uri.parse("content://org.chromium.test/non-existent.txt");
+
+        for (int i = 0; i < 2; ++i) {
+            assertNotNull(FileUtils.queryBitmapFromContentProvider(mContext, validImageUri));
+            assertNull(FileUtils.queryBitmapFromContentProvider(mContext, invalidImageUri));
+            assertNull(FileUtils.queryBitmapFromContentProvider(mContext, bogusFileUri));
+            assertNull(FileUtils.queryBitmapFromContentProvider(mContext, nonExistentUri));
+        }
+    }
 }

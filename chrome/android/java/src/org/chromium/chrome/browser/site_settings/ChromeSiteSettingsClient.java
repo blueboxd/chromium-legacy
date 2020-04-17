@@ -23,6 +23,7 @@ import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
  */
 public class ChromeSiteSettingsClient implements SiteSettingsClient {
     private ChromeNotificationSettingsClient mChromeNotificationSettingsClient;
+    private ChromeSiteSettingsPrefClient mChromeSiteSettingsPrefClient;
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
     @Override
@@ -93,5 +94,13 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
     @Override
     public boolean isQuietNotificationPromptsFeatureEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.QUIET_NOTIFICATION_PROMPTS);
+    }
+
+    @Override
+    public ChromeSiteSettingsPrefClient getSiteSettingsPrefClient() {
+        if (mChromeSiteSettingsPrefClient == null) {
+            mChromeSiteSettingsPrefClient = new ChromeSiteSettingsPrefClient();
+        }
+        return mChromeSiteSettingsPrefClient;
     }
 }

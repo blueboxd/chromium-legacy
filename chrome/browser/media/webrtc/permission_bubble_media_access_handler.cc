@@ -12,13 +12,13 @@
 #include "base/metrics/field_trial.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
@@ -69,12 +69,14 @@ void UpdateTabSpecificContentSettings(
     return;
 
   auto* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
+      content_settings::TabSpecificContentSettings::FromWebContents(
+          web_contents);
   if (!content_settings)
     return;
 
-  TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
-      TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED;
+  content_settings::TabSpecificContentSettings::MicrophoneCameraState
+      microphone_camera_state = content_settings::TabSpecificContentSettings::
+          MICROPHONE_CAMERA_NOT_ACCESSED;
   std::string selected_audio_device;
   std::string selected_video_device;
   std::string requested_audio_device = request.requested_audio_device_id;
@@ -90,10 +92,11 @@ void UpdateTabSpecificContentSettings(
             ? profile->GetPrefs()->GetString(prefs::kDefaultAudioCaptureDevice)
             : requested_audio_device;
     microphone_camera_state |=
-        TabSpecificContentSettings::MICROPHONE_ACCESSED |
+        content_settings::TabSpecificContentSettings::MICROPHONE_ACCESSED |
         (audio_setting == CONTENT_SETTING_ALLOW
              ? 0
-             : TabSpecificContentSettings::MICROPHONE_BLOCKED);
+             : content_settings::TabSpecificContentSettings::
+                   MICROPHONE_BLOCKED);
   }
 
   if (video_setting != CONTENT_SETTING_DEFAULT) {
@@ -102,10 +105,10 @@ void UpdateTabSpecificContentSettings(
             ? profile->GetPrefs()->GetString(prefs::kDefaultVideoCaptureDevice)
             : requested_video_device;
     microphone_camera_state |=
-        TabSpecificContentSettings::CAMERA_ACCESSED |
+        content_settings::TabSpecificContentSettings::CAMERA_ACCESSED |
         (video_setting == CONTENT_SETTING_ALLOW
              ? 0
-             : TabSpecificContentSettings::CAMERA_BLOCKED);
+             : content_settings::TabSpecificContentSettings::CAMERA_BLOCKED);
   }
 
   content_settings->OnMediaStreamPermissionSet(

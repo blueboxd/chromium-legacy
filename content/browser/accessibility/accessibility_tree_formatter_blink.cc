@@ -153,7 +153,7 @@ std::string IntAttrToString(const BrowserAccessibility& node,
 }  // namespace
 
 AccessibilityTreeFormatterBlink::AccessibilityTreeFormatterBlink()
-    : AccessibilityTreeFormatterBrowser() {}
+    : AccessibilityTreeFormatterBase() {}
 
 AccessibilityTreeFormatterBlink::~AccessibilityTreeFormatterBlink() {}
 
@@ -202,6 +202,53 @@ const char* const TREE_DATA_ATTRIBUTES[] = {"TreeData.textSelStartOffset",
 const char* STATE_FOCUSED = "focused";
 const char* STATE_OFFSCREEN = "offscreen";
 
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterBlink::BuildAccessibilityTree(
+    BrowserAccessibility* root) {
+  CHECK(root);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  RecursiveBuildAccessibilityTree(*root, dict.get());
+  return dict;
+}
+
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterBlink::BuildAccessibilityTreeForProcess(
+    base::ProcessId pid) {
+  NOTREACHED();
+  return nullptr;
+}
+
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterBlink::BuildAccessibilityTreeForWindow(
+    gfx::AcceleratedWidget widget) {
+  NOTREACHED();
+  return nullptr;
+}
+
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterBlink::BuildAccessibilityTreeForPattern(
+    const base::StringPiece& pattern) {
+  NOTREACHED();
+  return nullptr;
+}
+
+void AccessibilityTreeFormatterBlink::RecursiveBuildAccessibilityTree(
+    const BrowserAccessibility& node,
+    base::DictionaryValue* dict) const {
+  AddProperties(node, dict);
+
+  auto children = std::make_unique<base::ListValue>();
+
+  for (size_t i = 0; i < ChildCount(node); ++i) {
+    BrowserAccessibility* child_node = GetChild(node, i);
+    std::unique_ptr<base::DictionaryValue> child_dict(
+        new base::DictionaryValue);
+    RecursiveBuildAccessibilityTree(*child_node, child_dict.get());
+    children->Append(std::move(child_dict));
+  }
+  dict->Set(kChildrenDictAttr, std::move(children));
+}
+
 uint32_t AccessibilityTreeFormatterBlink::ChildCount(
     const BrowserAccessibility& node) const {
   if (node.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
@@ -227,7 +274,7 @@ BrowserAccessibility* AccessibilityTreeFormatterBlink::GetChild(
 
 void AccessibilityTreeFormatterBlink::AddProperties(
     const BrowserAccessibility& node,
-    base::DictionaryValue* dict) {
+    base::DictionaryValue* dict) const {
   int id = node.GetId();
   dict->SetInteger("id", id);
 

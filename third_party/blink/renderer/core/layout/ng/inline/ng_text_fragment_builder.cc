@@ -22,24 +22,25 @@ NGTextFragmentBuilder::NGTextFragmentBuilder(
       shape_result_(fragment.TextShapeResult()),
       text_type_(fragment.TextType()) {}
 
-void NGTextFragmentBuilder::SetItem(NGTextType text_type,
-                                    const NGInlineItemsData& items_data,
+void NGTextFragmentBuilder::SetItem(const NGInlineItemsData& items_data,
                                     NGInlineItemResult* item_result,
                                     LayoutUnit line_height) {
-  DCHECK_NE(text_type, NGTextType::kGenerated)
-      << "Please use SetText() instead.";
   DCHECK(item_result);
-  DCHECK(item_result->item->Style());
+  const NGInlineItem* item = item_result->item;
+  DCHECK(item);
+  DCHECK_NE(item->TextType(), NGTextType::kGenerated)
+      << "Please use SetText() instead.";
+  DCHECK(item->Style());
 
-  text_type_ = text_type;
+  text_type_ = item->TextType();
   text_ = items_data.text_content;
   start_offset_ = item_result->start_offset;
   end_offset_ = item_result->end_offset;
-  resolved_direction_ = item_result->item->Direction();
-  SetStyle(item_result->item->Style(), item_result->item->StyleVariant());
+  resolved_direction_ = item->Direction();
+  SetStyle(item->Style(), item->StyleVariant());
   size_ = {item_result->inline_size, line_height};
   shape_result_ = std::move(item_result->shape_result);
-  layout_object_ = item_result->item->GetLayoutObject();
+  layout_object_ = item->GetLayoutObject();
 }
 
 void NGTextFragmentBuilder::SetText(

@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/task/post_task.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
 #include "chrome/browser/vr/xr_runtime_manager_statics.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "content/public/browser/device_service.h"
@@ -390,8 +390,9 @@ void VRUiHostImpl::PollCapturingState() {
 
   // location, microphone, camera, midi.
   CapturingStateModel active_capturing = active_capturing_;
-  TabSpecificContentSettings* settings =
-      TabSpecificContentSettings::FromWebContents(web_contents_);
+  content_settings::TabSpecificContentSettings* settings =
+      content_settings::TabSpecificContentSettings::FromWebContents(
+          web_contents_);
   if (settings) {
     const ContentSettingsUsagesState& usages_state =
         settings->geolocation_usages_state();
@@ -404,15 +405,15 @@ void VRUiHostImpl::PollCapturingState() {
 
     active_capturing.audio_capture_enabled =
         (settings->GetMicrophoneCameraState() &
-         TabSpecificContentSettings::MICROPHONE_ACCESSED) &&
+         content_settings::TabSpecificContentSettings::MICROPHONE_ACCESSED) &&
         !(settings->GetMicrophoneCameraState() &
-          TabSpecificContentSettings::MICROPHONE_BLOCKED);
+          content_settings::TabSpecificContentSettings::MICROPHONE_BLOCKED);
 
     active_capturing.video_capture_enabled =
         (settings->GetMicrophoneCameraState() &
-         TabSpecificContentSettings::CAMERA_ACCESSED) &
+         content_settings::TabSpecificContentSettings::CAMERA_ACCESSED) &
         !(settings->GetMicrophoneCameraState() &
-          TabSpecificContentSettings::CAMERA_BLOCKED);
+          content_settings::TabSpecificContentSettings::CAMERA_BLOCKED);
 
     active_capturing.midi_connected =
         settings->IsContentAllowed(ContentSettingsType::MIDI_SYSEX);

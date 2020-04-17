@@ -311,6 +311,43 @@ IN_PROC_BROWSER_TEST_F(PortalNavigationThrottleBrowserTest,
   GetWebContents()->SetDelegate(old_delegate);
 }
 
+// Ensure navigating while a portal is orphaned does not bypass cross-origin
+// restrictions.
+IN_PROC_BROWSER_TEST_F(PortalNavigationThrottleBrowserTest,
+                       CrossOriginNavigationWhileOrphaned) {
+  WebContentsImpl* predecessor_contents = GetWebContents();
+  GURL predecessor_url =
+      embedded_test_server()->GetURL("portal.test", "/title1.html");
+  GURL orphan_navigation_url =
+      embedded_test_server()->GetURL("not.portal.test", "/notreached");
+  ASSERT_TRUE(NavigateToURL(predecessor_contents, predecessor_url));
+  Portal* portal = InsertAndWaitForPortal(
+      embedded_test_server()->GetURL("portal.test", "/title2.html"));
+
+  // We want the predecessor's navigation to occur before adoption, so we have
+  // the successor hang to keep the predecessor in the orphaned state.
+  EXPECT_TRUE(ExecJs(portal->GetPortalContents(),
+                     "window.addEventListener('portalactivate', (e) => {"
+                     "  while (true);"
+                     "});"));
+
+  TestNavigationObserver navigation_observer(predecessor_contents);
+  // TODO(1058455): Due to a race, navigating immediately after calling
+  // |portal.activate()| always gets canceled. This test would correctly fail
+  // regardless due to an initial request to /notreached, however these next
+  // assertions about whether the navigation was cancelled would trivially pass.
+  // We use a setTimeout for now to make these assertions meaningful.
+  EXPECT_TRUE(ExecJs(predecessor_contents,
+                     JsReplace("document.querySelector('portal').activate();"
+                               "setTimeout(() => {"
+                               "  location.href = $1;"
+                               "});",
+                               orphan_navigation_url)));
+  navigation_observer.Wait();
+  EXPECT_FALSE(navigation_observer.last_navigation_succeeded());
+  EXPECT_EQ(predecessor_contents->GetLastCommittedURL(), predecessor_url);
+}
+
 class PortalNavigationThrottleBrowserTestCrossOrigin
     : public PortalNavigationThrottleBrowserTest {
  protected:

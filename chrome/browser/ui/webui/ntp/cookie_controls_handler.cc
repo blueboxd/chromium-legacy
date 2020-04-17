@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service_factory.h"
 #include "chrome/common/chrome_features.h"
+#include "components/content_settings/core/common/cookie_controls_enforcement.h"
 
 namespace {
 static const char* kPolicyIcon = "cr20:domain";

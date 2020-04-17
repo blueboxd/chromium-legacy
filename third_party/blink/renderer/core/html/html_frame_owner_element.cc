@@ -322,11 +322,12 @@ void HTMLFrameOwnerElement::UpdateContainerPolicy(Vector<String>* messages) {
 
 void HTMLFrameOwnerElement::UpdateRequiredPolicy() {
   const auto* frame = GetDocument().GetFrame();
-  DCHECK(frame);
   DocumentPolicy::FeatureState new_required_policy =
-      DocumentPolicy::MergeFeatureState(
-          ConstructRequiredPolicy(), /* self_required_policy */
-          frame->GetRequiredDocumentPolicy() /* parent_required_policy */);
+      frame
+          ? DocumentPolicy::MergeFeatureState(
+                ConstructRequiredPolicy(), /* self_required_policy */
+                frame->GetRequiredDocumentPolicy() /* parent_required_policy */)
+          : ConstructRequiredPolicy();
 
   // Filter out policies that are disabled by origin trials.
   frame_policy_.required_document_policy.clear();

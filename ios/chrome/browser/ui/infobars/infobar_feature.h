@@ -44,6 +44,11 @@ extern const base::Feature kSaveCardInfobarMessagesUI;
 // Use IsTranslateInfobarMessagesUIEnabled() instead of this constant directly.
 extern const base::Feature kTranslateInfobarMessagesUI;
 
+// Feature to choose whether to use the new Messages Infobar design on iOS13, or
+// the legacy one.
+// Use IsInfobarUIRebootEnabled() instead of this constant directly.
+extern const base::Feature kInfobarUIRebootOnlyiOS13;
+
 // Whether the Messages Infobar UI is enabled. Prefer to use this method instead
 // of kIOSInfobarUIReboot directly.
 bool IsInfobarUIRebootEnabled();

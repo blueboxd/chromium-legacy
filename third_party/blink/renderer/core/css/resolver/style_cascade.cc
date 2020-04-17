@@ -214,7 +214,7 @@ void StyleCascade::AnalyzeIfNeeded() {
   }
   if (needs_interpolations_analyze_) {
     AnalyzeInterpolations();
-    needs_interpolations_analyze_ = true;
+    needs_interpolations_analyze_ = false;
   }
 }
 

@@ -100,15 +100,11 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
        it != origin_cookies_set_map.end(); ++it) {
     const canonical_cookie::CookieHashSet* cookie_list = it->second.get();
     for (const auto& cookie : *cookie_list) {
-      // Strip leading '.'s.
-      std::string cookie_domain = cookie.Domain();
-      if (cookie_domain[0] == '.')
-        cookie_domain = cookie_domain.substr(1);
       // The |domain_url| is only created in order to use the
       // SameDomainOrHost method below. It does not matter which scheme is
       // used as the scheme is ignored by the SameDomainOrHost method.
-      GURL domain_url(std::string(url::kHttpScheme) +
-                      url::kStandardSchemeSeparator + cookie_domain);
+      GURL domain_url = net::cookie_util::CookieOriginToURL(
+          cookie.Domain(), false /* is_https */);
 
       if (origin.SchemeIsHTTPOrHTTPS() && SameDomainOrHost(origin, domain_url))
         ++count;

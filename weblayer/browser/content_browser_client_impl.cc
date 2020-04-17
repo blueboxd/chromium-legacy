@@ -60,6 +60,7 @@
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/tab_impl.h"
+#include "weblayer/browser/tab_specific_content_settings_delegate.h"
 #include "weblayer/browser/web_contents_view_delegate_impl.h"
 #include "weblayer/browser/weblayer_browser_interface_binders.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
@@ -567,6 +568,7 @@ void ContentBrowserClientImpl::RenderProcessWillLaunch(
       /*can_persist_data*/ true,
       /*force_to_support_secure_codecs*/ false));
 #endif
+  TabSpecificContentSettingsDelegate::UpdateRendererContentSettingRules(host);
 }
 
 scoped_refptr<content::QuotaPermissionContext>

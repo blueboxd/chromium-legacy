@@ -260,12 +260,6 @@ TEST_F(ToolbarActionViewUnitTest, MAYBE_BasicToolbarActionViewTest) {
     EXPECT_EQ(old_execute_action_count, controller.execute_action_count());
   }
 
-  // Ensure that the button's want-to-run state reflects that of the controller.
-  controller.SetWantsToRun(true);
-  EXPECT_TRUE(view.wants_to_run_for_testing());
-  controller.SetWantsToRun(false);
-  EXPECT_FALSE(view.wants_to_run_for_testing());
-
   // Create an overflow button.
   views::MenuButton overflow_button(base::string16(), nullptr);
   overflow_button.set_owned_by_client();

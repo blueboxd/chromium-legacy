@@ -15,6 +15,7 @@ import android.support.test.filters.MediumTest;
 import androidx.annotation.NonNull;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -97,7 +98,7 @@ public class ReaderModeTest {
         });
         CustomTabActivity customTabActivity = waitForCustomTabActivity();
         CriteriaHelper.pollUiThread(
-                Criteria.checkThat(customTabActivity::getActivityTab, notNullValue()));
+                () -> Assert.assertThat(customTabActivity.getActivityTab(), notNullValue()));
         @NonNull
         Tab distillerViewerTab = Objects.requireNonNull(customTabActivity.getActivityTab());
         waitForDistillation(TITLE, distillerViewerTab);
@@ -126,7 +127,7 @@ public class ReaderModeTest {
         });
         CustomTabActivity customTabActivity = waitForCustomTabActivity();
         CriteriaHelper.pollUiThread(
-                Criteria.checkThat(customTabActivity::getActivityTab, notNullValue()));
+                () -> Assert.assertThat(customTabActivity.getActivityTab(), notNullValue()));
         @NonNull
         Tab distillerViewerTab = Objects.requireNonNull(customTabActivity.getActivityTab());
         waitForDistillation(TITLE, distillerViewerTab);

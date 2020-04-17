@@ -157,12 +157,6 @@ void AutofillClientImpl::OfferVirtualCardOptions(
 }
 #endif
 
-void AutofillClientImpl::ConfirmSaveAutofillProfile(
-    const autofill::AutofillProfile& profile,
-    base::OnceClosure callback) {
-  NOTREACHED();
-}
-
 void AutofillClientImpl::ConfirmSaveCreditCardLocally(
     const autofill::CreditCard& card,
     SaveCreditCardOptions options,

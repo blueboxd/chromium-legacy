@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include <memory>
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
@@ -130,7 +131,8 @@ class NavigationControllerImpl : public NavigationController,
 
   void NotifyLoadStateChanged();
 
-  void DoNavigate(content::NavigationController::LoadURLParams&& params);
+  void DoNavigate(
+      std::unique_ptr<content::NavigationController::LoadURLParams> params);
 
   base::ObserverList<NavigationObserver>::Unchecked observers_;
   std::map<content::NavigationHandle*, std::unique_ptr<NavigationImpl>>

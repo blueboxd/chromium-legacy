@@ -23,7 +23,9 @@ class PackagedLicenseScreen : public BaseScreen {
     // Show login screen
     DONT_ENROLL,
     // Show enterprise enrollment screen
-    ENROLL
+    ENROLL,
+    // No information about license in the |enrollment_config_|
+    NOT_APPLICABLE
   };
 
   static std::string GetResultString(Result result);
@@ -35,9 +37,18 @@ class PackagedLicenseScreen : public BaseScreen {
   PackagedLicenseScreen& operator=(const PackagedLicenseScreen&) = delete;
   ~PackagedLicenseScreen() override;
 
-  void set_exit_callback_for_testing(const ScreenExitCallback& exit_callback) {
-    exit_callback_ = exit_callback;
+  void AddExitCallbackForTesting(const ScreenExitCallback& testing_callback) {
+    exit_callback_ = base::BindRepeating(
+        [](const ScreenExitCallback& original_callback,
+           const ScreenExitCallback& testing_callback, Result result) {
+          original_callback.Run(result);
+          testing_callback.Run(result);
+        },
+        exit_callback_, testing_callback);
   }
+
+  // BaseScreen
+  bool MaybeSkip() override;
 
  protected:
   // BaseScreen

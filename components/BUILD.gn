@@ -225,6 +225,7 @@ test("components_unittests") {
       "//components/cast_channel:unit_tests",
       "//components/certificate_transparency:unit_tests",
       "//components/content_capture/browser:unit_tests",
+      "//components/content_settings/browser:unit_tests",
       "//components/contextual_search/core:unit_tests",
       "//components/data_use_measurement/core:unit_tests",
       "//components/discardable_memory/common:unit_tests",

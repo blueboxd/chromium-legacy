@@ -43,7 +43,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/interstitials/security_interstitial_idn_test.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/net/profile_network_context_service.h"
@@ -76,6 +75,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/certificate_transparency/pref_names.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/common/content_settings_agent.mojom.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -3620,10 +3620,9 @@ class SSLUIWorkerFetchTest
                 watcher.WaitAndGetTitle());
     }
 
-    EXPECT_EQ(
-        expected_show_blocked,
-        TabSpecificContentSettings::FromWebContents(tab)->IsContentBlocked(
-            ContentSettingsType::MIXEDSCRIPT));
+    EXPECT_EQ(expected_show_blocked,
+              content_settings::TabSpecificContentSettings::FromWebContents(tab)
+                  ->IsContentBlocked(ContentSettingsType::MIXEDSCRIPT));
     ssl_test_util::CheckSecurityState(
         tab, CertError::NONE,
         expected_show_dangerous ? security_state::DANGEROUS
@@ -3644,10 +3643,9 @@ class SSLUIWorkerFetchTest
                 watcher.WaitAndGetTitle());
     }
 
-    EXPECT_EQ(
-        expected_show_blocked_after_allow,
-        TabSpecificContentSettings::FromWebContents(tab)->IsContentBlocked(
-            ContentSettingsType::MIXEDSCRIPT));
+    EXPECT_EQ(expected_show_blocked_after_allow,
+              content_settings::TabSpecificContentSettings::FromWebContents(tab)
+                  ->IsContentBlocked(ContentSettingsType::MIXEDSCRIPT));
     ssl_test_util::CheckSecurityState(
         tab, CertError::NONE,
         expected_show_dangerous_after_allow ? security_state::DANGEROUS
@@ -3672,8 +3670,8 @@ class SSLUIWorkerFetchTest
   void CheckErrorStateIsCleared() {
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_FALSE(
-        TabSpecificContentSettings::FromWebContents(tab)->IsContentBlocked(
-            ContentSettingsType::MIXEDSCRIPT));
+        content_settings::TabSpecificContentSettings::FromWebContents(tab)
+            ->IsContentBlocked(ContentSettingsType::MIXEDSCRIPT));
     ssl_test_util::CheckSecurityState(tab, CertError::NONE,
                                       security_state::NONE, AuthState::NONE);
     EXPECT_FALSE(SecurityStateTabHelper::FromWebContents(tab)

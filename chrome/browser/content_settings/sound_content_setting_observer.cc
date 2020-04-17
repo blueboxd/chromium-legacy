@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -158,8 +158,9 @@ ContentSetting SoundContentSettingObserver::GetCurrentContentSetting() {
 void SoundContentSettingObserver::CheckSoundBlocked(bool is_audible) {
   if (is_audible && GetCurrentContentSetting() == CONTENT_SETTING_BLOCK) {
     // The tab has tried to play sound, but was muted.
-    TabSpecificContentSettings* settings =
-        TabSpecificContentSettings::FromWebContents(web_contents());
+    content_settings::TabSpecificContentSettings* settings =
+        content_settings::TabSpecificContentSettings::FromWebContents(
+            web_contents());
     if (settings)
       settings->OnAudioBlocked();
 

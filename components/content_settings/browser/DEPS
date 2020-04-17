@@ -1,0 +1,10 @@
+include_rules = [
+  "+components/browsing_data/content",
+  "+components/security_state/core",
+  "+components/sync_preferences",
+  "+content/public/browser",
+  "+content/public/common",
+  "+content/public/test",
+  "+net/cookies",
+  "+third_party/blink/public",
+]

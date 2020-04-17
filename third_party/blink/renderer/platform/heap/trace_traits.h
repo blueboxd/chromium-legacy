@@ -55,9 +55,7 @@ struct AdjustPointerTrait<T, true> {
   }
 
   static HeapObjectHeader* GetHeapObjectHeader(const void* self) {
-    const void* payload =
-        static_cast<const T*>(self)->GetTraceDescriptor().base_object_payload;
-    return payload ? HeapObjectHeader::FromPayload(payload) : nullptr;
+    return static_cast<const T*>(self)->GetHeapObjectHeader();
   }
 };
 

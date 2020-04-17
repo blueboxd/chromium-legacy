@@ -60,6 +60,7 @@ import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
+import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
@@ -765,7 +766,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
         @Override
         public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid,
-                ActivityTabProvider provider) {}
+                ActivityTabProvider provider, IncognitoStateProvider incognitoStateProvider) {}
 
         @Override
         public void updateStatusIcon() {

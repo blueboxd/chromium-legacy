@@ -157,6 +157,9 @@ class MediaHistoryKeyedService : public KeyedService,
       base::OnceCallback<void(std::vector<media_feeds::mojom::MediaFeedPtr>)>
           callback);
 
+  // Updates the display time for the Media Feed with |feed_id| to now.
+  void UpdateMediaFeedDisplayTime(const int64_t feed_id);
+
  private:
   class StoreHolder;
 

@@ -42,7 +42,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_permission_request.h"
@@ -163,6 +163,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/captive_portal/core/buildflags.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/find_in_page/find_tab_helper.h"
@@ -1470,8 +1471,9 @@ bool Browser::ShouldAllowRunningInsecureContent(
     // Note: this is a browser-side-translation of the call to
     // DidBlockContentType from inside
     // ContentSettingsObserver::allowRunningInsecureContent.
-    TabSpecificContentSettings* tab_settings =
-        TabSpecificContentSettings::FromWebContents(web_contents);
+    content_settings::TabSpecificContentSettings* tab_settings =
+        content_settings::TabSpecificContentSettings::FromWebContents(
+            web_contents);
     DCHECK(tab_settings);
     tab_settings->OnContentBlocked(ContentSettingsType::MIXEDSCRIPT);
   }
@@ -1995,11 +1997,11 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
   if (registry->SilentlyHandleRegisterHandlerRequest(handler))
     return;
 
-  TabSpecificContentSettings* tab_content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
+  auto* tab_content_settings_delegate =
+      chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents);
   if (!user_gesture && window_) {
-    tab_content_settings->set_pending_protocol_handler(handler);
-    tab_content_settings->set_previous_protocol_handler(
+    tab_content_settings_delegate->set_pending_protocol_handler(handler);
+    tab_content_settings_delegate->set_previous_protocol_handler(
         registry->GetHandlerFor(handler.protocol()));
     window_->GetLocationBar()->UpdateContentSettingsIcons();
     return;
@@ -2008,7 +2010,7 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
   // Make sure content-setting icon is turned off in case the page does
   // ungestured and gestured RPH calls.
   if (window_) {
-    tab_content_settings->ClearPendingProtocolHandler();
+    tab_content_settings_delegate->ClearPendingProtocolHandler();
     window_->GetLocationBar()->UpdateContentSettingsIcons();
   }
 
@@ -2129,8 +2131,9 @@ void Browser::RequestPpapiBrokerPermission(
     return;
   }
 
-  TabSpecificContentSettings* tab_content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
+  content_settings::TabSpecificContentSettings* tab_content_settings =
+      content_settings::TabSpecificContentSettings::FromWebContents(
+          web_contents);
 
   HostContentSettingsMap* content_settings =
       HostContentSettingsMapFactory::GetForProfile(profile);

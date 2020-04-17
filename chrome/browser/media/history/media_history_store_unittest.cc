@@ -904,6 +904,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
       EXPECT_EQ(kExpectedFetchContentTypes, feeds[0]->last_fetch_content_types);
       EXPECT_EQ(GetExpectedLogos(), feeds[0]->logos);
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
+      EXPECT_FALSE(feeds[0]->last_display_time.has_value());
 
       EXPECT_EQ(GetExpectedItems(), items);
     }
@@ -944,6 +945,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
                 feeds[0]->last_fetch_content_types);
       EXPECT_TRUE(feeds[0]->logos.empty());
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
+      EXPECT_FALSE(feeds[0]->last_display_time.has_value());
 
       EXPECT_EQ(GetAltExpectedItems(), items);
 
@@ -984,6 +986,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
                 feeds[0]->last_fetch_content_types);
       EXPECT_TRUE(feeds[0]->logos.empty());
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
+      EXPECT_FALSE(feeds[0]->last_display_time.has_value());
 
       EXPECT_EQ(GetAltExpectedItems(), items);
 
@@ -994,6 +997,24 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
     // The OTR service should have the same data.
     EXPECT_EQ(feeds, GetMediaFeedsSync(otr_service()));
     EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+  }
+
+  service()->UpdateMediaFeedDisplayTime(feed_id);
+  WaitForDB();
+
+  {
+    // The media feed should have a display time.
+    auto feeds = GetMediaFeedsSync(service());
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      EXPECT_EQ(feed_id, feeds[0]->id);
+      EXPECT_TRUE(feeds[0]->last_display_time.has_value());
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(feeds, GetMediaFeedsSync(otr_service()));
   }
 }
 

@@ -569,7 +569,7 @@ extern const char kClickToCallEnabled[];
 
 extern const char kSelectFileLastDirectory[];
 
-extern const char kExcludedSchemes[];
+extern const char kProtocolHandlerPerOriginAllowedProtocols[];
 
 extern const char kLastKnownIntranetRedirectOrigin[];
 extern const char kDNSInterceptionChecksEnabled[];

@@ -1176,9 +1176,10 @@ void NGLineBreaker::ComputeTrailingCollapsibleSpace(NGLineInfo* line_info) {
       return;
     }
     if (item.Type() == NGInlineItem::kControl) {
-      UChar character = text[item.StartOffset()];
-      if (character == kNewlineCharacter)
+      if (item.TextType() == NGTextType::kForcedLineBreak) {
+        DCHECK_EQ(text[item.StartOffset()], kNewlineCharacter);
         continue;
+      }
       trailing_whitespace_ = WhitespaceState::kPreserved;
       trailing_collapsible_space_.reset();
       return;
@@ -1194,39 +1195,42 @@ void NGLineBreaker::ComputeTrailingCollapsibleSpace(NGLineInfo* line_info) {
 void NGLineBreaker::HandleControlItem(const NGInlineItem& item,
                                       NGLineInfo* line_info) {
   DCHECK_GE(item.Length(), 1u);
+  if (item.TextType() == NGTextType::kForcedLineBreak) {
+    DCHECK_EQ(Text()[item.StartOffset()], kNewlineCharacter);
+
+    // Check overflow, because the last item may have overflowed.
+    if (HandleOverflowIfNeeded(line_info))
+      return;
+
+    NGInlineItemResult* item_result = AddItem(item, line_info);
+    item_result->should_create_line_box = true;
+    item_result->has_only_trailing_spaces = true;
+    MoveToNextOf(item);
+
+    // Include following close tags. The difference is visible when they have
+    // margin/border/padding.
+    //
+    // This is not a defined behavior, but legacy/WebKit do this for preserved
+    // newlines and <br>s. Gecko does this only for preserved newlines (but
+    // not for <br>s).
+    const Vector<NGInlineItem>& items = Items();
+    while (item_index_ < items.size()) {
+      const NGInlineItem& next_item = items[item_index_];
+      if (next_item.Type() == NGInlineItem::kCloseTag) {
+        HandleCloseTag(next_item, line_info);
+        continue;
+      }
+      break;
+    }
+
+    is_after_forced_break_ = true;
+    line_info->SetIsLastLine(true);
+    state_ = LineBreakState::kDone;
+    return;
+  }
+  DCHECK_EQ(item.TextType(), NGTextType::kFlowControl);
   UChar character = Text()[item.StartOffset()];
   switch (character) {
-    case kNewlineCharacter: {
-      // Check overflow, because the last item may have overflowed.
-      if (HandleOverflowIfNeeded(line_info))
-        return;
-
-      NGInlineItemResult* item_result = AddItem(item, line_info);
-      item_result->should_create_line_box = true;
-      item_result->has_only_trailing_spaces = true;
-      MoveToNextOf(item);
-
-      // Include following close tags. The difference is visible when they have
-      // margin/border/padding.
-      //
-      // This is not a defined behavior, but legacy/WebKit do this for preserved
-      // newlines and <br>s. Gecko does this only for preserved newlines (but
-      // not for <br>s).
-      const Vector<NGInlineItem>& items = Items();
-      while (item_index_ < items.size()) {
-        const NGInlineItem& next_item = items[item_index_];
-        if (next_item.Type() == NGInlineItem::kCloseTag) {
-          HandleCloseTag(next_item, line_info);
-          continue;
-        }
-        break;
-      }
-
-      is_after_forced_break_ = true;
-      line_info->SetIsLastLine(true);
-      state_ = LineBreakState::kDone;
-      return;
-    }
     case kTabulationCharacter: {
       DCHECK(item.Style());
       const ComputedStyle& style = *item.Style();

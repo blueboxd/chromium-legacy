@@ -932,16 +932,24 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, VerifyNQECacheCleared) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
-                       ExternalProtocolHandlerPrefs) {
+                       ExternalProtocolHandlerPerOriginPrefs) {
   Profile* profile = GetBrowser()->profile();
-  base::DictionaryValue prefs;
-  prefs.SetBoolean("tel", false);
-  profile->GetPrefs()->Set(prefs::kExcludedSchemes, prefs);
+  url::Origin test_origin = url::Origin::Create(GURL("https://example.test/"));
+  const std::string serialized_test_origin = test_origin.Serialize();
+  base::DictionaryValue origin_pref;
+  origin_pref.SetKey(serialized_test_origin,
+                     base::Value(base::Value::Type::DICTIONARY));
+  base::Value* allowed_protocols_for_origin =
+      origin_pref.FindDictKey(serialized_test_origin);
+  allowed_protocols_for_origin->SetBoolKey("tel", true);
+  profile->GetPrefs()->Set(prefs::kProtocolHandlerPerOriginAllowedProtocols,
+                           origin_pref);
   ExternalProtocolHandler::BlockState block_state =
-      ExternalProtocolHandler::GetBlockState("tel", profile);
+      ExternalProtocolHandler::GetBlockState("tel", &test_origin, profile);
   ASSERT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
   RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA);
-  block_state = ExternalProtocolHandler::GetBlockState("tel", profile);
+  block_state =
+      ExternalProtocolHandler::GetBlockState("tel", &test_origin, profile);
   ASSERT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
 }
 

@@ -2657,6 +2657,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "infobar-ui-reboot-only-ios13",
+    "owners": [ "sczs", "thegreenfrog" ],
+    "expiry_milestone": 84
+  },
+  {
     "name": "installable-ink-drop",
     "owners": [ "collinbaker", "pbos" ],
     "expiry_milestone": 82
@@ -3878,16 +3883,6 @@
     "name": "tab-outlines-in-low-contrast-themes",
     "owners": [ "dfried" ],
     "expiry_milestone":  82
-  },
-  {
-    "name": "temporary-unexpire-flags-m78",
-    "owners": [ "ellyjones", "flags-dev" ],
-    "expiry_milestone": 81
-  },
-  {
-    "name": "temporary-unexpire-flags-m80",
-    "owners": [ "ellyjones", "flags-dev" ],
-    "expiry_milestone": 82
   },
   {
     "name": "terminal-system-app",

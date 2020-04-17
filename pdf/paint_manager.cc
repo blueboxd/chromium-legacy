@@ -9,6 +9,7 @@
 
 #include <algorithm>
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/instance.h"
@@ -193,7 +194,7 @@ void PaintManager::EnsureCallbackPending() {
 }
 
 void PaintManager::DoPaint() {
-  in_paint_ = true;
+  base::AutoReset<bool> auto_reset_in_paint(&in_paint_, true);
 
   std::vector<ReadyRect> ready_rects;
   std::vector<pp::Rect> pending_rects;
@@ -234,10 +235,8 @@ void PaintManager::DoPaint() {
   PaintAggregator::PaintUpdate update = aggregator_.GetPendingUpdate();
   client_->OnPaint(update.paint_rects, &ready_rects, &pending_rects);
 
-  if (ready_rects.empty() && pending_rects.empty()) {
-    in_paint_ = false;
+  if (ready_rects.empty() && pending_rects.empty())
     return;  // Nothing was painted, don't schedule a flush.
-  }
 
   std::vector<PaintAggregator::ReadyRect> ready_now;
   if (pending_rects.empty()) {
@@ -272,7 +271,6 @@ void PaintManager::DoPaint() {
     aggregator_.SetIntermediateResults(ready_later, pending_rects);
 
     if (ready_now.empty()) {
-      in_paint_ = false;
       EnsureCallbackPending();
       return;
     }
@@ -285,7 +283,6 @@ void PaintManager::DoPaint() {
 
   Flush();
 
-  in_paint_ = false;
   first_paint_ = false;
 
   if (graphics_need_to_be_bound_) {

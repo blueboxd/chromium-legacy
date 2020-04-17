@@ -33,7 +33,6 @@
     <org.chromium.chrome.browser.site_settings.ClearWebsiteStorage
         android:key="clear_data"
         android:title="@string/webstorage_clear_data_dialog_title"
-        android:dialogMessage="@string/webstorage_clear_data_dialog_message"
         android:positiveButtonText="@string/webstorage_clear_data_dialog_ok_button"
         android:negativeButtonText="@string/cancel"
         android:widgetLayout="@layout/clear_storage" />

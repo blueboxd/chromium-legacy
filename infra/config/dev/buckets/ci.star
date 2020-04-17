@@ -49,6 +49,9 @@ def ci_builder(*, name, **kwargs):
   return builder(
       name = name,
       triggered_by = ['master-gitiles-trigger'],
+      resultdb_bigquery_exports = [resultdb.export_test_results(
+          bq_table = 'luci-resultdb-dev.chromium.ci_test_results',
+      )],
       **kwargs
   )
 

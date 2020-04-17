@@ -1371,6 +1371,9 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     public void testLivePrefetchFailoverRequestMadeAfterOpen()
             throws InterruptedException, TimeoutException {
+        // Test fails with out-of-process network service. crbug.com/1071721
+        if (!ChromeFeatureList.isEnabled("NetworkServiceInProcess")) return;
+
         mFakeServer.reset();
         mFakeServer.setLowPriorityPathInvalid();
         simulateTapSearch("search");

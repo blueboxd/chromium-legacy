@@ -110,10 +110,10 @@ TEST_F(PipTest, ShortcutNavigation) {
 
   // Cycle Backward.
   generator->PressKey(ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN);
-  EXPECT_TRUE(hotseat_widget->IsActive());
+  EXPECT_TRUE(status_area->IsActive());
 
   generator->PressKey(ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN);
-  EXPECT_TRUE(status_area->IsActive());
+  EXPECT_TRUE(hotseat_widget->IsActive());
 
   generator->PressKey(ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(navigation_widget->IsActive());
@@ -132,10 +132,10 @@ TEST_F(PipTest, ShortcutNavigation) {
   EXPECT_TRUE(navigation_widget->IsActive());
 
   generator->PressKey(ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN);
-  EXPECT_TRUE(status_area->IsActive());
+  EXPECT_TRUE(hotseat_widget->IsActive());
 
   generator->PressKey(ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN);
-  EXPECT_TRUE(hotseat_widget->IsActive());
+  EXPECT_TRUE(status_area->IsActive());
 
   generator->PressKey(ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(pip_widget->IsActive());

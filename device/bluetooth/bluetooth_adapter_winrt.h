@@ -43,6 +43,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   bool IsPresent() const override;
   bool CanPower() const override;
   bool IsPowered() const override;
+  bool IsPeripheralRoleSupported() const override;
   bool IsDiscoverable() const override;
   void SetDiscoverable(bool discoverable,
                        const base::Closure& callback,

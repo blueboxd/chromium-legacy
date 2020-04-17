@@ -21,6 +21,33 @@ bool IsPrinterInPrinters(const std::vector<Printer>& printers,
   return false;
 }
 
+CupsPrinterStatus CreatePrinterStatus(const std::string& printer_id) {
+  CupsPrinterStatus cups_printer_status(printer_id);
+  cups_printer_status.AddStatusReason(
+      CupsPrinterStatus::CupsPrinterStatusReason::Reason::kNoError,
+      CupsPrinterStatus::CupsPrinterStatusReason::Severity::kReport);
+  return cups_printer_status;
+}
+
+void ExpectPrinterStatusesEqual(const CupsPrinterStatus expected_printer_status,
+                                const CupsPrinterStatus actual_printer_status) {
+  EXPECT_EQ(expected_printer_status.GetPrinterId(),
+            actual_printer_status.GetPrinterId());
+
+  auto expected_status_reasons = expected_printer_status.GetStatusReasons();
+  auto actual_status_reasons = actual_printer_status.GetStatusReasons();
+  EXPECT_EQ(expected_status_reasons.size(), actual_status_reasons.size());
+
+  for (const auto& expected_status_reason : expected_status_reasons) {
+    for (const auto& actual_status_reason : actual_status_reasons) {
+      EXPECT_EQ(expected_status_reason.GetReason(),
+                actual_status_reason.GetReason());
+      EXPECT_EQ(expected_status_reason.GetSeverity(),
+                actual_status_reason.GetSeverity());
+    }
+  }
+}
+
 }  // namespace
 
 class PrintersMapTest : public testing::Test {
@@ -364,6 +391,224 @@ TEST_F(PrintersMapTest, IsPrinterInClass) {
       printers_map.IsPrinterInClass(PrinterClass::kEnterprise, printer_id));
   EXPECT_FALSE(
       printers_map.IsPrinterInClass(PrinterClass::kDiscovered, printer_id));
+}
+
+TEST_F(PrintersMapTest, PrinterStatusMapSavePrinterStatus) {
+  PrintersMap printers_map;
+  const std::string printer_id = "id";
+  printers_map.Insert(PrinterClass::kDiscovered, Printer(printer_id));
+  printers_map.SavePrinterStatus(printer_id, CupsPrinterStatus(printer_id));
+
+  base::Optional<Printer> printer = printers_map.Get(printer_id);
+  CupsPrinterStatus printer_status = printer->printer_status();
+  EXPECT_EQ(printer_id, printer_status.GetPrinterId());
+}
+
+TEST_F(PrintersMapTest, PrinterStatusMapMultipleStatuses) {
+  PrintersMap printers_map;
+  const std::string printer_id1 = "id1";
+  const std::string printer_id2 = "id2";
+  printers_map.Insert(PrinterClass::kDiscovered, Printer(printer_id1));
+  printers_map.Insert(PrinterClass::kEnterprise, Printer(printer_id2));
+  printers_map.SavePrinterStatus(printer_id1, CupsPrinterStatus(printer_id1));
+  printers_map.SavePrinterStatus(printer_id2, CupsPrinterStatus(printer_id2));
+
+  base::Optional<Printer> printer1 = printers_map.Get(printer_id1);
+  CupsPrinterStatus printer_status1 = printer1->printer_status();
+  EXPECT_EQ(printer_id1, printer_status1.GetPrinterId());
+
+  base::Optional<Printer> printer2 = printers_map.Get(printer_id2);
+  CupsPrinterStatus printer_status2 = printer2->printer_status();
+  EXPECT_EQ(printer_id2, printer_status2.GetPrinterId());
+}
+
+TEST_F(PrintersMapTest, PrinterStatusMapMissingRequestedPrinter) {
+  PrintersMap printers_map;
+  const std::string new_printer_id = "new_printer";
+  const std::string wrong_printer_id = "wrong_printer";
+  printers_map.Insert(PrinterClass::kDiscovered, Printer(new_printer_id));
+  printers_map.Insert(PrinterClass::kDiscovered, Printer(wrong_printer_id));
+  printers_map.SavePrinterStatus(new_printer_id, CupsPrinterStatus());
+
+  base::Optional<Printer> wrong_printer = printers_map.Get(wrong_printer_id);
+  CupsPrinterStatus printer_status = wrong_printer->printer_status();
+  EXPECT_TRUE(printer_status.GetPrinterId().empty());
+}
+
+TEST_F(PrintersMapTest, PrinterStatusMapEmpty) {
+  PrintersMap printers_map;
+  const std::string printer_id = "id";
+  printers_map.Insert(PrinterClass::kDiscovered, Printer(printer_id));
+
+  base::Optional<Printer> printer = printers_map.Get(printer_id);
+  CupsPrinterStatus printer_status = printer->printer_status();
+  EXPECT_TRUE(printer_status.GetPrinterId().empty());
+}
+
+TEST_F(PrintersMapTest, GetByIdWithStatus) {
+  PrintersMap printers_map;
+  const std::string printer_id = "id";
+  printers_map.Insert(PrinterClass::kDiscovered, Printer(printer_id));
+
+  CupsPrinterStatus saved_printer_status = CreatePrinterStatus(printer_id);
+  printers_map.SavePrinterStatus(printer_id, saved_printer_status);
+
+  base::Optional<Printer> printer = printers_map.Get(printer_id);
+  EXPECT_TRUE(printer);
+  ExpectPrinterStatusesEqual(saved_printer_status, printer->printer_status());
+}
+
+TEST_F(PrintersMapTest, GetByIdAndClassWithStatus) {
+  PrintersMap printers_map;
+  const std::string printer_id = "id";
+  printers_map.Insert(PrinterClass::kDiscovered, Printer(printer_id));
+
+  CupsPrinterStatus saved_printer_status = CreatePrinterStatus(printer_id);
+  printers_map.SavePrinterStatus(printer_id, saved_printer_status);
+
+  base::Optional<Printer> printer =
+      printers_map.Get(PrinterClass::kDiscovered, printer_id);
+
+  EXPECT_TRUE(printer);
+  ExpectPrinterStatusesEqual(saved_printer_status, printer->printer_status());
+}
+
+TEST_F(PrintersMapTest, GetByClassWithStatus) {
+  PrintersMap printers_map;
+  const std::string printer_id = "id";
+  printers_map.Insert(PrinterClass::kDiscovered, Printer(printer_id));
+
+  CupsPrinterStatus saved_printer_status = CreatePrinterStatus(printer_id);
+  printers_map.SavePrinterStatus(printer_id, saved_printer_status);
+
+  std::vector<Printer> printers = printers_map.Get(PrinterClass::kDiscovered);
+  EXPECT_EQ(1u, printers.size());
+  for (auto printer : printers) {
+    ExpectPrinterStatusesEqual(saved_printer_status, printer.printer_status());
+  }
+}
+
+TEST_F(PrintersMapTest, GetAllPrintersWithStatus) {
+  PrintersMap printers_map;
+  const std::string printer_id = "id";
+  printers_map.Insert(PrinterClass::kDiscovered, Printer(printer_id));
+
+  CupsPrinterStatus saved_printer_status = CreatePrinterStatus(printer_id);
+  printers_map.SavePrinterStatus(printer_id, saved_printer_status);
+
+  std::vector<Printer> printers = printers_map.Get();
+  EXPECT_EQ(1u, printers.size());
+  for (auto printer : printers) {
+    ExpectPrinterStatusesEqual(saved_printer_status, printer.printer_status());
+  }
+}
+
+TEST_F(PrintersMapTest, GetSecurePrintersWithStatus) {
+  PrintersMap printers_map;
+  const std::string printer_id = "id";
+  Printer ipps_printer = Printer(printer_id);
+  ipps_printer.set_uri("ipps:printer");
+  printers_map.Insert(PrinterClass::kDiscovered, ipps_printer);
+
+  CupsPrinterStatus saved_printer_status = CreatePrinterStatus(printer_id);
+  printers_map.SavePrinterStatus(printer_id, saved_printer_status);
+
+  std::vector<Printer> printers =
+      printers_map.GetSecurePrinters(PrinterClass::kDiscovered);
+  EXPECT_EQ(1u, printers.size());
+  for (auto printer : printers) {
+    ExpectPrinterStatusesEqual(saved_printer_status, printer.printer_status());
+  }
+}
+
+TEST_F(PrintersMapTest, ReplacePrintersInClassAddsStatus) {
+  PrintersMap printers_map;
+  const std::string printer_id1 = "id1";
+  const std::string printer_id2 = "id2";
+  std::vector<Printer> printers{Printer(printer_id1), Printer(printer_id2)};
+
+  CupsPrinterStatus saved_printer_status1 = CreatePrinterStatus(printer_id1);
+  CupsPrinterStatus saved_printer_status2 = CreatePrinterStatus(printer_id2);
+  printers_map.SavePrinterStatus(printer_id1, saved_printer_status1);
+  printers_map.SavePrinterStatus(printer_id2, saved_printer_status2);
+
+  printers_map.ReplacePrintersInClass(PrinterClass::kDiscovered, printers);
+
+  base::Optional<Printer> printer1 = printers_map.Get(printer_id1);
+  ExpectPrinterStatusesEqual(saved_printer_status1, printer1->printer_status());
+  base::Optional<Printer> printer2 = printers_map.Get(printer_id2);
+  ExpectPrinterStatusesEqual(saved_printer_status2, printer2->printer_status());
+}
+
+TEST_F(PrintersMapTest, ReplacePrintersInClassDeletesAllStatuses) {
+  PrintersMap printers_map;
+  const std::string printer_id1 = "id1";
+  const std::string printer_id2 = "id2";
+  printers_map.Insert(PrinterClass::kDiscovered, Printer(printer_id1));
+  printers_map.Insert(PrinterClass::kDiscovered, Printer(printer_id2));
+  CupsPrinterStatus saved_printer_status1 = CreatePrinterStatus(printer_id1);
+  CupsPrinterStatus saved_printer_status2 = CreatePrinterStatus(printer_id2);
+  printers_map.SavePrinterStatus(printer_id1, saved_printer_status1);
+  printers_map.SavePrinterStatus(printer_id2, saved_printer_status2);
+
+  // Only printer1 is part of printers vector so status for printer2 should be
+  // deleted.
+  std::vector<Printer> printer1_list{Printer(printer_id1)};
+  printers_map.ReplacePrintersInClass(PrinterClass::kDiscovered, printer1_list);
+  base::Optional<Printer> printer1 = printers_map.Get(printer_id1);
+  ExpectPrinterStatusesEqual(saved_printer_status1, printer1->printer_status());
+
+  // Add printer2 back to the map so it can be fetched then confirm no status
+  // was leftover from the replace.
+  std::vector<Printer> printer2_list{Printer(printer_id2)};
+  printers_map.ReplacePrintersInClass(PrinterClass::kDiscovered, printer2_list);
+  base::Optional<Printer> printer2 = printers_map.Get(printer_id2);
+  CupsPrinterStatus printer_status2 = printer2->printer_status();
+  EXPECT_TRUE(printer_status2.GetPrinterId().empty());
+}
+
+TEST_F(PrintersMapTest, ReplacePrintersOnlyDeletesStatusInSameClass) {
+  PrintersMap printers_map;
+  const std::string printer_id1 = "id1";
+  const std::string printer_id2 = "id2";
+  printers_map.Insert(PrinterClass::kDiscovered, Printer(printer_id1));
+  printers_map.Insert(PrinterClass::kEnterprise, Printer(printer_id2));
+  CupsPrinterStatus saved_printer_status1 = CreatePrinterStatus(printer_id1);
+  CupsPrinterStatus saved_printer_status2 = CreatePrinterStatus(printer_id2);
+  printers_map.SavePrinterStatus(printer_id1, saved_printer_status1);
+  printers_map.SavePrinterStatus(printer_id2, saved_printer_status2);
+
+  std::vector<Printer> printer1_list{Printer(printer_id1)};
+  printers_map.ReplacePrintersInClass(PrinterClass::kDiscovered, printer1_list);
+  base::Optional<Printer> printer1 = printers_map.Get(printer_id1);
+  ExpectPrinterStatusesEqual(saved_printer_status1, printer1->printer_status());
+
+  base::Optional<Printer> printer2 = printers_map.Get(printer_id2);
+  CupsPrinterStatus printer_status2 = printer2->printer_status();
+  ExpectPrinterStatusesEqual(saved_printer_status2, printer2->printer_status());
+}
+
+TEST_F(PrintersMapTest, RemovePrinterRemovesStatus) {
+  PrintersMap printers_map;
+  const std::string printer_id = "id";
+  printers_map.Insert(PrinterClass::kDiscovered, Printer(printer_id));
+
+  // Confirm the printer status is attached to the printer
+  CupsPrinterStatus saved_printer_status = CreatePrinterStatus(printer_id);
+  printers_map.SavePrinterStatus(printer_id, saved_printer_status);
+  base::Optional<Printer> saved_printer = printers_map.Get(printer_id);
+  CupsPrinterStatus printer_status = saved_printer->printer_status();
+  EXPECT_EQ(printer_id, printer_status.GetPrinterId());
+
+  // Remove then resinsert the printer, retrieve that printer and confirm that
+  // the associated printer status was deleted.
+  printers_map.Remove(PrinterClass::kDiscovered, printer_id);
+  std::vector<Printer> printers{Printer(printer_id)};
+  printers_map.ReplacePrintersInClass(PrinterClass::kDiscovered, printers);
+
+  base::Optional<Printer> printer = printers_map.Get(printer_id);
+  CupsPrinterStatus empty_printer_status = printer->printer_status();
+  EXPECT_TRUE(empty_printer_status.GetPrinterId().empty());
 }
 
 }  // namespace chromeos

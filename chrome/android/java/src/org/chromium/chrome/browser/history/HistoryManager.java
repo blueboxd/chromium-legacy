@@ -505,6 +505,13 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     }
 
     /**
+     * Called to notify when privacy disclaimers visibility has changed.
+     */
+    void onHasPrivacyDisclaimersChanged() {
+        mToolbar.updateInfoMenuItem(shouldShowInfoButton(), shouldShowInfoHeaderIfAvailable());
+    }
+
+    /**
      * @return True if the available privacy disclaimers should be shown.
      * Note that this may return true even if there are currently no privacy disclaimers.
      */

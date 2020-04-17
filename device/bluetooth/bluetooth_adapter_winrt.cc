@@ -533,6 +533,16 @@ bool BluetoothAdapterWinrt::IsPowered() const {
   return GetState(radio_.Get()) == RadioState_On;
 }
 
+bool BluetoothAdapterWinrt::IsPeripheralRoleSupported() const {
+  boolean supported = false;
+  HRESULT hr = adapter_->get_IsPeripheralRoleSupported(&supported);
+  if (FAILED(hr)) {
+    BLUETOOTH_LOG(ERROR) << "Getting IsPeripheralRoleSupported failed: "
+                         << logging::SystemErrorCodeToString(hr);
+  }
+  return supported;
+}
+
 bool BluetoothAdapterWinrt::IsDiscoverable() const {
   NOTIMPLEMENTED();
   return false;

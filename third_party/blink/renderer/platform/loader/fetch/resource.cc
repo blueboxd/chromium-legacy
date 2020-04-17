@@ -1017,11 +1017,9 @@ void Resource::MarkAsPreload() {
   is_unused_preload_ = true;
 }
 
-bool Resource::MatchPreload(const FetchParameters& params,
-                            base::SingleThreadTaskRunner*) {
+void Resource::MatchPreload(const FetchParameters& params) {
   DCHECK(is_unused_preload_);
   is_unused_preload_ = false;
-  return true;
 }
 
 bool Resource::CanReuseRedirectChain() const {

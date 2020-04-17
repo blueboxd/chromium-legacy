@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
+#include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static

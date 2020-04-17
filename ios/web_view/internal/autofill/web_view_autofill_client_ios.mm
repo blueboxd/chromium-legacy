@@ -184,12 +184,6 @@ void WebViewAutofillClientIOS::ShowLocalCardMigrationResults(
   NOTIMPLEMENTED();
 }
 
-void WebViewAutofillClientIOS::ConfirmSaveAutofillProfile(
-    const AutofillProfile& profile,
-    base::OnceClosure callback) {
-  [bridge_ confirmSaveAutofillProfile:profile callback:std::move(callback)];
-}
-
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
     SaveCreditCardOptions options,

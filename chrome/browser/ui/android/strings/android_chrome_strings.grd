@@ -1131,13 +1131,22 @@ Your Google account may have other forms of browsing history like searches and a
         Are you sure you want to reset all site permissions for <ph name="CHOSEN_OBJECT_NAME">%1$s<ex>Weblight</ex></ph>?
       </message>
       <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_TITLE" desc="Title of the confirmation dialog when the user ask to clear all data for an origin">
-        Clear stored data
+        Clear site data?
       </message>
-      <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_MESSAGE" desc="Text of the confirmation dialog when the user ask to clear all data for an origin">
-        All local data stored by this website, including cookies, will be deleted.
+      <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_MESSAGE_SINGLE" desc="Text of the confirmation dialog when the user asks to clear all data (and app) for a single origin">
+        This will clear all data and cookies stored by <ph name="ORIGIN">%1$s<ex>google.com</ex></ph>.
+      </message>
+      <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_MESSAGE_SINGLE_WITH_APP" desc="Text of the confirmation dialog when the user asks to clear all data (and app) for a single origin">
+        This will clear all data and cookies stored by <ph name="ORIGIN">%1$s<ex>google.com</ex></ph> and its app on your Home screen.
+      </message>
+      <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_SIGN_OUT_MESSAGE" desc="Text of the confirmation dialog, explaining that the user will be signed out of the site being cleared.">
+        You'll be signed out of this site.
+      </message>
+      <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_OFFLINE_MESSAGE" desc="Text of the confirmation dialog, explaining that all offline data will be cleared (when clearing a site/sites).">
+        Any offline data will be cleared.
       </message>
       <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_OK_BUTTON" desc="Button confirming site data cleanup [CHAR-LIMIT=20]">
-        Clear all
+        Clear
       </message>
       <message name="IDS_WEBSITE_NOTIFICATION_MANAGED_BY_APP" desc="String used to indicate that notifications are managed by an installed app">
         Managed by <ph name="APP_NAME">%1$s<ex>Notification App Name</ex></ph>

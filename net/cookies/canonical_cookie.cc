@@ -421,6 +421,10 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
   return cc;
 }
 
+std::string CanonicalCookie::DomainWithoutDot() const {
+  return cookie_util::CookieDomainAsHost(domain_);
+}
+
 bool CanonicalCookie::IsEquivalentForSecureCookieMatching(
     const CanonicalCookie& ecc) const {
   return (name_ == ecc.Name() && (ecc.IsDomainMatch(DomainWithoutDot()) ||
@@ -921,12 +925,6 @@ CookieEffectiveSameSite CanonicalCookie::GetEffectiveSameSite(
 
 bool CanonicalCookie::IsRecentlyCreated(base::TimeDelta age_threshold) const {
   return (base::Time::Now() - creation_date_) <= age_threshold;
-}
-
-std::string CanonicalCookie::DomainWithoutDot() const {
-  if (domain_.empty() || domain_[0] != '.')
-    return domain_;
-  return domain_.substr(1);
 }
 
 CanonicalCookie::CookieInclusionStatus::CookieInclusionStatus()

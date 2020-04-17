@@ -1373,8 +1373,7 @@ using ObjectRegistry = HeapHashMap<void*, Member<RegisteringMixin>>;
 class RegisteringMixin : public GarbageCollectedMixin {
  public:
   explicit RegisteringMixin(ObjectRegistry* registry) {
-    HeapObjectHeader* header =
-        TraceTrait<RegisteringMixin>::GetHeapObjectHeader(this);
+    HeapObjectHeader* header = GetHeapObjectHeader();
     const void* uninitialized_value = BlinkGC::kNotFullyConstructedObject;
     EXPECT_EQ(uninitialized_value, header);
     registry->insert(reinterpret_cast<void*>(this), this);
@@ -1438,8 +1437,7 @@ TEST_F(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
 TEST_F(IncrementalMarkingTest, OverrideAfterMixinConstruction) {
   ObjectRegistry registry;
   RegisteringMixin* mixin = MakeGarbageCollected<RegisteringObject>(&registry);
-  HeapObjectHeader* header =
-      TraceTrait<RegisteringMixin>::GetHeapObjectHeader(mixin);
+  HeapObjectHeader* header = mixin->GetHeapObjectHeader();
   const void* uninitialized_value = BlinkGC::kNotFullyConstructedObject;
   EXPECT_NE(uninitialized_value, header);
 }

@@ -5,6 +5,8 @@
 #ifndef BASE_CHECK_OP_H_
 #define BASE_CHECK_OP_H_
 
+#include <string.h>
+
 #include <cstddef>
 #include <type_traits>
 

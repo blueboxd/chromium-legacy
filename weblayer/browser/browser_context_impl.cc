@@ -18,6 +18,7 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
+#include "components/security_state/core/security_state.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/variations_client.h"
 #include "components/variations/variations_http_header_provider.h"
@@ -233,6 +234,7 @@ void BrowserContextImpl::RegisterPrefs(
   StatefulSSLHostStateDelegate::RegisterProfilePrefs(pref_registry);
   HostContentSettingsMap::RegisterProfilePrefs(pref_registry);
   safe_browsing::RegisterProfilePrefs(pref_registry);
+  security_state::RegisterProfilePrefs(pref_registry);
 #if defined(OS_ANDROID)
   cdm::MediaDrmStorageImpl::RegisterProfilePrefs(pref_registry);
   permissions::GeolocationPermissionContextAndroid::RegisterProfilePrefs(

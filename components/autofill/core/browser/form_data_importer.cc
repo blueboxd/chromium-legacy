@@ -382,15 +382,9 @@ bool FormDataImporter::ImportAddressProfileForSection(
     return false;
   }
 
-  // Delaying |SaveImportedProfile| is safe here because PersonalDataManager
-  // outlives this class.
-  client_->ConfirmSaveAutofillProfile(
-      candidate_profile,
-      base::BindOnce(
-          base::IgnoreResult(&PersonalDataManager::SaveImportedProfile),
-          base::Unretained(personal_data_manager_), candidate_profile));
-
-  return true;
+  std::string guid =
+      personal_data_manager_->SaveImportedProfile(candidate_profile);
+  return !guid.empty();
 }
 
 bool FormDataImporter::ImportCreditCard(

@@ -1198,11 +1198,6 @@ extern const char kTrySupportedChannelLayoutsDescription[];
 extern const char kTurnOffStreamingMediaCachingName[];
 extern const char kTurnOffStreamingMediaCachingDescription[];
 
-extern const char kUnexpireFlagsM78Name[];
-extern const char kUnexpireFlagsM78Description[];
-extern const char kUnexpireFlagsM80Name[];
-extern const char kUnexpireFlagsM80Description[];
-
 extern const char kUnsafeWebGPUName[];
 extern const char kUnsafeWebGPUDescription[];
 

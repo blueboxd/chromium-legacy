@@ -39,6 +39,31 @@ class ToolbarActionViewController {
     kActive,
   };
 
+  // The source for the action invocation. Used in UMA; do not reorder or delete
+  // entries.
+  enum class InvocationSource {
+    // The action was invoked from a command (keyboard shortcut).
+    kCommand = 0,
+
+    // The action was invoked by the user activating (via mouse or keyboard)
+    // the button in the toolbar.
+    kToolbarButton = 1,
+
+    // The action was invoked by the user activating (via mouse or keyboard)
+    // the entry in the Extensions Menu.
+    kMenuEntry = 2,
+
+    // The action was invoked by the user activiating (via mouse or keyboard)
+    // the entry in the legacy overflow (3-dot) menu.
+    // TODO(devlin): Remove this entry when the extensions menu fully launches.
+    kLegacyOverflowedEntry = 3,
+
+    // The action was invoked programmatically via an API.
+    kApi = 4,
+
+    kMaxValue = kApi,
+  };
+
   virtual ~ToolbarActionViewController() {}
 
   // Returns the unique ID of this particular action. For extensions, this is
@@ -69,10 +94,6 @@ class ToolbarActionViewController {
   // Returns true if the action should be enabled on the given |web_contents|.
   virtual bool IsEnabled(content::WebContents* web_contents) const = 0;
 
-  // Returns true if the action wants to run, and should be popped out of the
-  // overflow menu on the given |web_contents|.
-  virtual bool WantsToRun(content::WebContents* web_contents) const = 0;
-
   // Returns true if the action has a popup for the given |web_contents|.
   virtual bool HasPopup(content::WebContents* web_contents) const = 0;
 
@@ -100,7 +121,7 @@ class ToolbarActionViewController {
   // |by_user| is true, then this was through a direct user action (as oppposed
   // to, e.g., an API call).
   // Returns true if a popup is shown.
-  virtual bool ExecuteAction(bool by_user) = 0;
+  virtual bool ExecuteAction(bool by_user, InvocationSource source) = 0;
 
   // Updates the current state of the action.
   virtual void UpdateState() = 0;

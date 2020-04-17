@@ -7,7 +7,6 @@
 #include "base/atomic_sequence_num.h"
 #include "components/crx_file/id_util.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
@@ -21,7 +20,7 @@ SourceId AssignNewAppId() {
 SourceId AppSourceUrlRecorder::GetSourceIdForChromeExtension(
     const std::string& id) {
   GURL url("chrome-extension://" + id);
-  return GetSourceIdForUrl(url);
+  return GetSourceIdForUrl(url, AppType::kExtension);
 }
 
 SourceId AppSourceUrlRecorder::GetSourceIdForArc(
@@ -29,14 +28,15 @@ SourceId AppSourceUrlRecorder::GetSourceIdForArc(
   const std::string package_name_hash =
       crx_file::id_util::GenerateId(package_name);
   GURL url("app://play/" + package_name_hash);
-  return GetSourceIdForUrl(url);
+  return GetSourceIdForUrl(url, AppType::kArc);
 }
 
 SourceId AppSourceUrlRecorder::GetSourceIdForPWA(const GURL& url) {
-  return GetSourceIdForUrl(url);
+  return GetSourceIdForUrl(url, AppType::kPWA);
 }
 
-SourceId AppSourceUrlRecorder::GetSourceIdForUrl(const GURL& url) {
+SourceId AppSourceUrlRecorder::GetSourceIdForUrl(const GURL& url,
+                                                 AppType app_type) {
   ukm::DelegatingUkmRecorder* const recorder =
       ukm::DelegatingUkmRecorder::Get();
   if (!recorder)
@@ -44,7 +44,7 @@ SourceId AppSourceUrlRecorder::GetSourceIdForUrl(const GURL& url) {
 
   const SourceId source_id = AssignNewAppId();
   if (base::FeatureList::IsEnabled(kUkmAppLogging)) {
-    recorder->UpdateAppURL(source_id, url);
+    recorder->UpdateAppURL(source_id, url, app_type);
   }
   return source_id;
 }

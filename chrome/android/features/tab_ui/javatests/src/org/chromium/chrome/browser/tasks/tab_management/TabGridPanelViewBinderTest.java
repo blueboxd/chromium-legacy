@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -231,8 +230,11 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
             Assert.assertNotNull(mTabGridDialogParent.getCurrentDialogAnimatorForTesting());
         }
         Assert.assertTrue(mTabGridDialogParent.getPopupWindowForTesting().isShowing());
-        CriteriaHelper.pollUiThread(Criteria.checkThat(
-                mTabGridDialogParent::getCurrentDialogAnimatorForTesting, Matchers.nullValue()));
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> Assert.assertThat(
+                                mTabGridDialogParent.getCurrentDialogAnimatorForTesting(),
+                                Matchers.nullValue()));
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false));
@@ -241,8 +243,11 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
             Assert.assertNotNull(mTabGridDialogParent.getCurrentDialogAnimatorForTesting());
             Assert.assertTrue(mTabGridDialogParent.getPopupWindowForTesting().isShowing());
         }
-        CriteriaHelper.pollUiThread(Criteria.checkThat(
-                mTabGridDialogParent::getCurrentDialogAnimatorForTesting, Matchers.nullValue()));
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> Assert.assertThat(
+                                mTabGridDialogParent.getCurrentDialogAnimatorForTesting(),
+                                Matchers.nullValue()));
         Assert.assertFalse(mTabGridDialogParent.getPopupWindowForTesting().isShowing());
     }
 

@@ -42,7 +42,7 @@ import './languages_page/languages_page.m.js';
 import './printing_page/printing_page.m.js';
 import './reset_page/reset_page.js';
 // <if expr="not chromeos">
-import './system_page/system_page.m.js';
+import './system_page/system_page.js';
 // </if>
 
 // <if expr="not is_macosx">
@@ -90,5 +90,5 @@ export {ContentSettingProvider, SiteSettingsPrefsBrowserProxyImpl} from './site_
 export {WebsiteUsageBrowserProxyImpl} from './site_settings/website_usage_browser_proxy.m.js';
 export {defaultSettingLabel} from './site_settings_page/site_settings_list.m.js';
 // <if expr="not chromeos">
-export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.m.js';
+export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.js';
 // </if>

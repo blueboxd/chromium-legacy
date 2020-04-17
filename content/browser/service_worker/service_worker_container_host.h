@@ -96,24 +96,24 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // origin. |frame_tree_node_id| is FrameTreeNode id. |web_contents_getter|
   // indicates the tab where the navigation is occurring.
   static base::WeakPtr<ServiceWorkerContainerHost> CreateForWindow(
-      base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
       int frame_tree_node_id,
       mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
           host_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-          container_remote);
+          container_remote,
+      base::WeakPtr<ServiceWorkerContextCore> context);
 
   // Used for starting a web worker (dedicated worker or shared worker). Returns
   // a container host for the worker.
   static base::WeakPtr<ServiceWorkerContainerHost> CreateForWebWorker(
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      int process_id,
       blink::mojom::ServiceWorkerContainerType container_type,
+      int process_id,
       mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
           host_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-          container_remote);
+          container_remote,
+      base::WeakPtr<ServiceWorkerContextCore> context);
 
   ServiceWorkerContainerHost(
       blink::mojom::ServiceWorkerContainerType type,

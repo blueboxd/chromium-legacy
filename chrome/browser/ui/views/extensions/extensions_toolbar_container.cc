@@ -335,7 +335,9 @@ bool ExtensionsToolbarContainer::ShowToolbarActionPopupForAPICall(
   // Since this was triggered by an API call, we never want to grant activeTab
   // to the extension.
   constexpr bool kGrantActiveTab = false;
-  return action && action->ExecuteAction(kGrantActiveTab);
+  return action && action->ExecuteAction(
+                       kGrantActiveTab,
+                       ToolbarActionViewController::InvocationSource::kApi);
 }
 
 void ExtensionsToolbarContainer::ShowToolbarActionBubble(

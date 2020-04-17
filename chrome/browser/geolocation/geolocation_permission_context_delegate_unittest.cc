@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_request_manager.h"
@@ -54,7 +55,10 @@ class GeolocationPermissionContextDelegateTests
     ChromeRenderViewHostTestHarness::SetUp();
 
     permissions::PermissionRequestManager::CreateForWebContents(web_contents());
-    TabSpecificContentSettings::CreateForWebContents(web_contents());
+    content_settings::TabSpecificContentSettings::CreateForWebContents(
+        web_contents(),
+        std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+            web_contents()));
 #if defined(OS_ANDROID)
     static_cast<permissions::GeolocationPermissionContextAndroid*>(
         PermissionManagerFactory::GetForProfile(profile())
@@ -71,8 +75,9 @@ class GeolocationPermissionContextDelegateTests
 
   void CheckTabContentsState(const GURL& requesting_frame,
                              ContentSetting expected_content_setting) {
-    TabSpecificContentSettings* content_settings =
-        TabSpecificContentSettings::FromWebContents(web_contents());
+    content_settings::TabSpecificContentSettings* content_settings =
+        content_settings::TabSpecificContentSettings::FromWebContents(
+            web_contents());
     const ContentSettingsUsagesState::StateMap& state_map =
         content_settings->geolocation_usages_state().state_map();
     EXPECT_EQ(1U, state_map.count(requesting_frame.GetOrigin()));

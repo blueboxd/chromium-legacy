@@ -1725,10 +1725,13 @@ const char kClickToCallEnabled[] = "browser.click_to_call_enabled";
 // Extensions which should be opened upon completion.
 const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
 
-// Dictionary of schemes used by the external protocol handler. If a scheme
-// is present with value |false|, the protocol may be launched without first
-// prompting the user.
-const char kExcludedSchemes[] = "protocol_handler.excluded_schemes";
+// Dictionary of origins that have permission to launch at least one protocol
+// without first prompting the user. Each origin is a nested dictionary.
+// Within an origin dictionary, if a protocol is present with value |true|,
+// that protocol may be launched by that origin without first prompting
+// the user.
+const char kProtocolHandlerPerOriginAllowedProtocols[] =
+    "protocol_handler.allowed_origin_protocol_pairs";
 
 // String containing the last known intranet redirect URL, if any.  See
 // intranet_redirect_detector.h for more information.
@@ -2347,7 +2350,7 @@ const char kSigninScreenTimezone[] = "settings.signin_screen_timezone";
 // (user session is controlled by user profile preference
 // kResolveTimezoneByGeolocation)
 //
-// Deprecated. Superseeded by kResolveDeviceTimezoneByGeolocationMethod.
+// Deprecated. Superseded by kResolveDeviceTimezoneByGeolocationMethod.
 // TODO(alemate): https://crbug.com/783367 Remove outdated prefs.
 const char kResolveDeviceTimezoneByGeolocation[] =
     "settings.resolve_device_timezone_by_geolocation";

@@ -5,12 +5,14 @@
 #include "chrome/browser/ui/cookie_controls/cookie_controls_controller.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_view.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -64,7 +66,10 @@ class CookieControlsTest : public ChromeRenderViewHostTestHarness {
     feature_list.InitAndEnableFeature(
         content_settings::kImprovedCookieControls);
     ChromeRenderViewHostTestHarness::SetUp();
-    TabSpecificContentSettings::CreateForWebContents(web_contents());
+    content_settings::TabSpecificContentSettings::CreateForWebContents(
+        web_contents(),
+        std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+            web_contents()));
     profile()->GetPrefs()->SetInteger(
         prefs::kCookieControlsMode,
         static_cast<int>(content_settings::CookieControlsMode::kOn));
@@ -86,8 +91,10 @@ class CookieControlsTest : public ChromeRenderViewHostTestHarness {
 
   MockCookieControlsView* mock() { return &mock_; }
 
-  TabSpecificContentSettings* tab_specific_content_settings() {
-    return TabSpecificContentSettings::FromWebContents(web_contents());
+  content_settings::TabSpecificContentSettings*
+  tab_specific_content_settings() {
+    return content_settings::TabSpecificContentSettings::FromWebContents(
+        web_contents());
   }
 
  private:
@@ -201,8 +208,10 @@ TEST_F(CookieControlsTest, Incognito) {
   std::unique_ptr<content::WebContents> incognito_web_contents =
       content::WebContentsTester::CreateTestWebContents(
           profile()->GetOffTheRecordProfile(), nullptr);
-  TabSpecificContentSettings::CreateForWebContents(
-      incognito_web_contents.get());
+  content_settings::TabSpecificContentSettings::CreateForWebContents(
+      incognito_web_contents.get(),
+      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+          incognito_web_contents.get()));
   auto* tester = content::WebContentsTester::For(incognito_web_contents.get());
   MockCookieControlsView incognito_mock_;
   CookieControlsController incognito_cookie_controls(

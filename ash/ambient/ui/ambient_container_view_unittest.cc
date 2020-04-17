@@ -112,25 +112,4 @@ TEST_F(AmbientContainerViewTest, TimerRunningWhenShowing) {
   EXPECT_FALSE(GetTimer().IsRunning());
 }
 
-// Tests that a mouse click closes the widget and stops the timer.
-TEST_F(AmbientContainerViewTest, MouseClickClosesWidgetAndStopsTimer) {
-  // Show the widget.
-  Toggle();
-  EXPECT_TRUE(GetView());
-
-  // Download |kImageBufferLength| / 2 + 1 images to fill buffer in PhotoModel,
-  // in order to return false in |ShouldFetchImmediately()| and start timer.
-  const int num_image_to_load = kImageBufferLength / 2 + 1;
-  task_environment()->FastForwardBy(kAnimationDuration * num_image_to_load);
-  EXPECT_TRUE(GetTimer().IsRunning());
-
-  // Simulate mouse click to close the widget.
-  ui::test::EventGenerator generator(
-      GetView()->GetWidget()->GetNativeWindow()->GetRootWindow());
-  generator.PressLeftButton();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(GetView());
-  EXPECT_FALSE(GetTimer().IsRunning());
-}
-
 }  // namespace ash

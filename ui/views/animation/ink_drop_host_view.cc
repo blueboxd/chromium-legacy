@@ -182,13 +182,26 @@ void InkDropHostView::ResetInkDropMask() {
 }
 
 bool InkDropHostView::AddInkDropClip(ui::Layer* ink_drop_layer) {
-  base::Optional<HighlightPathGenerator::RoundRect> clipping_data =
+  base::Optional<gfx::RRectF> clipping_data =
       HighlightPathGenerator::GetRoundRectForView(this);
   if (!clipping_data)
     return false;
-  ink_drop_layer->SetClipRect(gfx::ToEnclosingRect(clipping_data->bounds));
-  ink_drop_layer->SetRoundedCornerRadius(
-      gfx::RoundedCornersF(clipping_data->corner_radius));
+
+  ink_drop_layer->SetClipRect(gfx::ToEnclosingRect(clipping_data->rect()));
+  auto get_corner_radii =
+      [&clipping_data](gfx::RRectF::Corner corner) -> float {
+    return clipping_data.value().GetCornerRadii(corner).x();
+  };
+  gfx::RoundedCornersF rounded_corners;
+  rounded_corners.set_upper_left(
+      get_corner_radii(gfx::RRectF::Corner::kUpperLeft));
+  rounded_corners.set_upper_right(
+      get_corner_radii(gfx::RRectF::Corner::kUpperRight));
+  rounded_corners.set_lower_right(
+      get_corner_radii(gfx::RRectF::Corner::kLowerRight));
+  rounded_corners.set_lower_left(
+      get_corner_radii(gfx::RRectF::Corner::kLowerLeft));
+  ink_drop_layer->SetRoundedCornerRadius(rounded_corners);
   ink_drop_layer->SetIsFastRoundedCorner(true);
   return true;
 }

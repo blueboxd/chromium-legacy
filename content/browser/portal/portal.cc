@@ -367,6 +367,8 @@ void Portal::Activate(blink::TransferableMessage data,
                                 kRejectedDueToPredecessorNavigation);
     return;
   }
+  // TODO(1058455): This also cancels navigations requested immediately after
+  // the predecessor calls activate. We should only cancel existing navigations.
   outer_root_node->StopLoading();
 
   DCHECK(!is_closing_) << "Portal should not be shutting down when contents "

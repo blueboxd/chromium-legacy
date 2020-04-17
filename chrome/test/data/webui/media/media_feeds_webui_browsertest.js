@@ -112,6 +112,7 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('service->StoreMediaFeedFetchResult(');
     GEN('  1, std::move(items), media_feeds::mojom::FetchResult::kSuccess,');
     GEN('  false, logos, "Test Feed", base::DoNothing());');
+    GEN('service->UpdateMediaFeedDisplayTime(1);');
     GEN('base::RunLoop run_loop;');
     GEN('service->PostTaskToDBForTest(run_loop.QuitClosure());');
     GEN('run_loop.Run();');
@@ -137,8 +138,8 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
           'ID', 'Url', 'Display Name', 'Last Discovery Time', 'Last Fetch Time',
           'User Status', 'Last Fetch Result', 'Fetch Failed Count',
           'Last Fetch Time (not cache hit)', 'Last Fetch Item Count',
-          'Last Fetch Play Next Count', 'Last Fetch Content Types', 'Logos',
-          'Actions'
+          'Last Fetch Play Next Count', 'Last Fetch Content Types',
+          'Last Display Time', 'Logos', 'Actions'
         ],
         feedsHeaders.map(x => x.textContent.trim()));
 
@@ -155,15 +156,16 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
     assertEquals('1', feedsContents.childNodes[9].textContent.trim());
     assertEquals('1', feedsContents.childNodes[10].textContent.trim());
     assertEquals('Movie', feedsContents.childNodes[11].textContent.trim());
+    assertNotEquals('', feedsContents.childNodes[12].textContent.trim());
     assertEquals(
         'https://www.example.org/logo1.pnghttps://www.example.org/logo2.png',
-        feedsContents.childNodes[12].textContent.trim());
+        feedsContents.childNodes[13].textContent.trim());
     assertEquals(
         'Show ContentsFetch Feed',
-        feedsContents.childNodes[13].textContent.trim());
+        feedsContents.childNodes[14].textContent.trim());
 
     // Click on the show contents button.
-    feedsContents.childNodes[13].firstChild.click();
+    feedsContents.childNodes[14].firstChild.click();
 
     return whenFeedTableIsPopulatedForTest().then(() => {
       assertEquals(

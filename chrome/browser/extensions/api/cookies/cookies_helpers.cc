@@ -161,14 +161,14 @@ void GetAllCookiesFromManager(
 }
 
 GURL GetURLFromCanonicalCookie(const net::CanonicalCookie& cookie) {
-  const std::string& domain_key = cookie.Domain();
-  const std::string scheme =
-      cookie.IsSecure() ? url::kHttpsScheme : url::kHttpScheme;
-  const std::string host =
-      base::StartsWith(domain_key, ".", base::CompareCase::SENSITIVE)
-          ? domain_key.substr(1)
-          : domain_key;
-  return GURL(scheme + url::kStandardSchemeSeparator + host + "/");
+  // This is only ever called for CanonicalCookies that have come from a
+  // CookieStore, which means they should not have an empty domain. Only file
+  // cookies are allowed to have empty domains, and those are only permitted on
+  // Android, and hopefully not for much longer (see crbug.com/582985).
+  DCHECK(!cookie.Domain().empty());
+
+  return net::cookie_util::CookieOriginToURL(cookie.Domain(),
+                                             cookie.IsSecure());
 }
 
 void AppendMatchingCookiesFromCookieListToVector(

@@ -7,26 +7,15 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
-#include "build/build_config.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
 
 namespace metrics {
 
-// Enable the reporting of the user noised birth year gender in UMA by default
-// for the platforms that have browser testing.
-namespace {
-#if defined(OS_IOS)
-constexpr auto default_feature_state = base::FEATURE_DISABLED_BY_DEFAULT;
-#else
-constexpr auto default_feature_state = base::FEATURE_ENABLED_BY_DEFAULT;
-#endif
-}  // namespace
-
 // static
 const base::Feature DemographicMetricsProvider::kDemographicMetricsReporting = {
-    "DemographicMetricsReporting", default_feature_state};
+    "DemographicMetricsReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 DemographicMetricsProvider::DemographicMetricsProvider(
     std::unique_ptr<ProfileClient> profile_client,

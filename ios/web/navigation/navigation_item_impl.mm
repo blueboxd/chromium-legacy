@@ -228,8 +228,6 @@ UserAgentType NavigationItemImpl::GetUserAgentType(
   if (user_agent_type_ == UserAgentType::AUTOMATIC) {
     DCHECK(base::FeatureList::IsEnabled(
         features::kUseDefaultUserAgentInWebClient));
-    // TODO: Find a way to get the WebView. Passed as parameter?
-    UIView* web_view = nil;
     return GetWebClient()->GetDefaultUserAgent(web_view, url_);
   }
   return user_agent_type_;

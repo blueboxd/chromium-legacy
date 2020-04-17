@@ -49,4 +49,11 @@ public interface SiteSettingsClient {
      * @return true if the QuietNotificationPrompts Feature is enabled.
      */
     boolean isQuietNotificationPromptsFeatureEnabled();
+
+    /**
+     * @return The SiteSettingsPrefClient that should be used to access native prefs when rendering
+     *     the SiteSettings UI.
+     */
+    // TODO(crbug.com/1071603): Remove this once PrefServiceBridge is componentized.
+    SiteSettingsPrefClient getSiteSettingsPrefClient();
 }

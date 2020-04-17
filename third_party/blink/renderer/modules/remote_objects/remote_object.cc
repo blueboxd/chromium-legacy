@@ -166,6 +166,14 @@ RemoteObject::RemoteObject(v8::Isolate* isolate,
       gateway_(gateway),
       object_id_(object_id) {}
 
+RemoteObject::~RemoteObject() {
+  // TODO(https://crbug.com/794320): if |this| outlives |gateway_|, the
+  // browser (RemoteObjectImpl.java) needs to handle object ID invalidation when
+  // the RemoteObject mojo pipe is closed.
+  if (gateway_)
+    gateway_->ReleaseObject(object_id_);
+}
+
 gin::ObjectTemplateBuilder RemoteObject::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return gin::Wrappable<RemoteObject>::GetObjectTemplateBuilder(isolate)

@@ -166,10 +166,10 @@ public class InstantStartTest {
             mBitmap = bitmap;
         };
 
-        CriteriaHelper.pollUiThread(Criteria.checkThat(
+        CriteriaHelper.pollUiThread(
                 ()
-                        -> mActivityTestRule.getActivity().getTabContentManager(),
-                Matchers.notNullValue()));
+                        -> Assert.assertThat(mActivityTestRule.getActivity().getTabContentManager(),
+                                Matchers.notNullValue()));
 
         TabContentManager tabContentManager =
                 mActivityTestRule.getActivity().getTabContentManager();
@@ -204,8 +204,10 @@ public class InstantStartTest {
         Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
         Assert.assertTrue(ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(-1));
 
-        CriteriaHelper.pollUiThread(Criteria.checkThat(
-                () -> mActivityTestRule.getActivity().getLayoutManager(), Matchers.notNullValue()));
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> Assert.assertThat(mActivityTestRule.getActivity().getLayoutManager(),
+                                Matchers.notNullValue()));
 
         Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
         assertThat(mActivityTestRule.getActivity().getLayoutManager())
@@ -221,8 +223,10 @@ public class InstantStartTest {
         Assert.assertTrue(mActivityTestRule.getActivity().isTablet());
         Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
 
-        CriteriaHelper.pollUiThread(Criteria.checkThat(
-                () -> mActivityTestRule.getActivity().getLayoutManager(), Matchers.notNullValue()));
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> Assert.assertThat(mActivityTestRule.getActivity().getLayoutManager(),
+                                Matchers.notNullValue()));
 
         Assert.assertTrue(LibraryLoader.getInstance().isInitialized());
         assertThat(mActivityTestRule.getActivity().getLayoutManager())

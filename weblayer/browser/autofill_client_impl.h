@@ -78,8 +78,6 @@ class AutofillClientImpl
       base::OnceCallback<void(const std::string&)> callback) override;
 #endif
 
-  void ConfirmSaveAutofillProfile(const autofill::AutofillProfile& profile,
-                                  base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(
       const autofill::CreditCard& card,
       SaveCreditCardOptions options,

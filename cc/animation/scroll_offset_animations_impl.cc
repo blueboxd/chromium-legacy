@@ -227,6 +227,10 @@ bool ScrollOffsetAnimationsImpl::IsAnimating() const {
   }
 }
 
+ElementId ScrollOffsetAnimationsImpl::GetElementId() const {
+  return scroll_offset_animation_->element_id();
+}
+
 void ScrollOffsetAnimationsImpl::ReattachScrollOffsetAnimationIfNeeded(
     ElementId element_id) {
   if (scroll_offset_animation_->element_id() != element_id) {

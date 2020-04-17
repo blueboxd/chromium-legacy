@@ -93,9 +93,6 @@ class OutOfProcessInstance : public pp::Instance,
   void DidOpen(int32_t result);
   void DidOpenPreview(int32_t result);
 
-  // Called to print without re-entrancy issues.
-  void OnPrint(int32_t);
-
   // PDFEngine::Client implementation.
   void ProposeDocumentLayout(const DocumentLayout& layout) override;
   void Invalidate(const pp::Rect& rect) override;
@@ -261,13 +258,17 @@ class OutOfProcessInstance : public pp::Instance,
                                       int32_t sample,
                                       int32_t boundary_value);
 
+  // Callback to print without re-entrancy issues.
+  void OnPrint(int32_t /*unused_but_required*/);
+
   pp::ImageData image_data_;
   // Used when the plugin is embedded in a page and we have to create the loader
   // ourself.
   pp::URLLoader embed_loader_;
   pp::URLLoader embed_preview_loader_;
 
-  PP_CursorType_Dev cursor_;  // The current cursor.
+  // The current cursor.
+  PP_CursorType_Dev cursor_ = PP_CURSORTYPE_POINTER;
 
   // Size, in pixels, of plugin rectangle.
   pp::Size plugin_size_;
@@ -294,22 +295,25 @@ class OutOfProcessInstance : public pp::Instance,
   };
 
   // Current zoom factor.
-  double zoom_;
+  double zoom_ = 1.0;
   // True if we request a new bitmap rendering.
-  bool needs_reraster_;
+  bool needs_reraster_ = true;
   // The scroll position for the last raster, before any transformations are
   // applied.
   pp::FloatPoint scroll_offset_at_last_raster_;
   // True if last bitmap was smaller than screen.
-  bool last_bitmap_smaller_;
+  bool last_bitmap_smaller_ = false;
   // Current device scale factor. Multiply by |device_scale_| to convert from
   // viewport to screen coordinates. Divide by |device_scale_| to convert from
   // screen to viewport coordinates.
-  float device_scale_;
+  float device_scale_ = 1.0f;
   // True if the plugin is full-page.
-  bool full_;
+  bool full_ = false;
 
   PaintManager paint_manager_;
+
+  // True if we haven't painted the plugin viewport yet.
+  bool first_paint_ = true;
 
   struct BackgroundPart {
     pp::Rect location;
@@ -360,30 +364,30 @@ class OutOfProcessInstance : public pp::Instance,
   // The callback for receiving the password from the page.
   std::unique_ptr<pp::CompletionCallbackWithOutput<pp::Var>> password_callback_;
 
-  // True if we haven't painted the plugin viewport yet.
-  bool first_paint_;
-
-  DocumentLoadState document_load_state_;
-  DocumentLoadState preview_document_load_state_;
+  DocumentLoadState document_load_state_ = LOAD_STATE_LOADING;
+  DocumentLoadState preview_document_load_state_ = LOAD_STATE_COMPLETE;
 
   // A UMA resource for histogram reporting.
   pp::UMAPrivate uma_;
 
   // Used so that we only tell the browser once about an unsupported feature, to
   // avoid the infobar going up more than once.
-  bool told_browser_about_unsupported_feature_;
+  bool told_browser_about_unsupported_feature_ = false;
 
   // Keeps track of which unsupported features we reported, so we avoid spamming
   // the stats if a feature shows up many times per document.
   std::set<std::string> unsupported_features_reported_;
 
+  // True if the plugin is loaded in print preview, otherwise false.
+  bool is_print_preview_ = false;
+
   // Number of pages in print preview mode for non-PDF source, 0 if print
   // previewing a PDF, and -1 if not in print preview mode.
-  int print_preview_page_count_;
+  int print_preview_page_count_ = -1;
 
   // Number of pages loaded in print preview mode for non-PDF source. Always
   // less than or equal to |print_preview_page_count_|.
-  int print_preview_loaded_page_count_;
+  int print_preview_loaded_page_count_ = -1;
 
   // Used to manage loaded print preview page information. A |PreviewPageInfo|
   // consists of data source URL string and the page index in the destination
@@ -400,35 +404,35 @@ class OutOfProcessInstance : public pp::Instance,
   std::unique_ptr<pp::TextInput_Dev> text_input_;
 
   // The last document load progress value sent to the web page.
-  double last_progress_sent_;
+  double last_progress_sent_ = 0.0;
 
   // Whether an update to the number of find results found was sent less than
   // |kFindResultCooldownMs| milliseconds ago.
-  bool recently_sent_find_update_;
+  bool recently_sent_find_update_ = false;
 
   // The tickmarks.
   std::vector<pp::Rect> tickmarks_;
 
   // Whether the plugin has received a viewport changed message. Nothing should
   // be painted until this is received.
-  bool received_viewport_message_;
+  bool received_viewport_message_ = false;
 
   // If true, this means we told the RenderView that we're starting a network
   // request so that it can start the throbber. We will tell it again once the
   // document finishes loading.
-  bool did_call_start_loading_;
+  bool did_call_start_loading_ = false;
 
   // If this is true, then don't scroll the plugin in response to DidChangeView
   // messages. This will be true when the extension page is in the process of
   // zooming the plugin so that flickering doesn't occur while zooming.
-  bool stop_scrolling_;
+  bool stop_scrolling_ = false;
 
   // The background color of the PDF viewer.
-  uint32_t background_color_;
+  uint32_t background_color_ = 0;
 
   // The blank space above the first page of the document reserved for the
   // toolbar.
-  int top_toolbar_height_in_viewport_coords_;
+  int top_toolbar_height_in_viewport_coords_ = 0;
 
   bool edit_mode_ = false;
 
@@ -438,10 +442,7 @@ class OutOfProcessInstance : public pp::Instance,
     ACCESSIBILITY_STATE_OFF,
     ACCESSIBILITY_STATE_PENDING,  // Enabled but waiting for doc to load.
     ACCESSIBILITY_STATE_LOADED
-  } accessibility_state_;
-
-  // True if the plugin is loaded in print preview, otherwise false.
-  bool is_print_preview_;
+  } accessibility_state_ = ACCESSIBILITY_STATE_OFF;
 
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessInstance);
 };

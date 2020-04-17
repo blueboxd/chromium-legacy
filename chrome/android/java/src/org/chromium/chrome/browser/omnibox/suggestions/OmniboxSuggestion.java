@@ -165,10 +165,10 @@ public class OmniboxSuggestion {
     }
 
     /**
-     * @return Whether the suggestion is a URL.
+     * @return Whether the suggestion is a search suggestion.
      */
-    public boolean isUrlSuggestion() {
-        return !mIsSearchType;
+    public boolean isSearchSuggestion() {
+        return mIsSearchType;
     }
 
     /**
@@ -247,7 +247,7 @@ public class OmniboxSuggestion {
                     .putString(KEY_PREFIX_ZERO_SUGGEST_DESCRIPTION + i, suggestion.getDescription())
                     .putInt(KEY_PREFIX_ZERO_SUGGEST_NATIVE_TYPE + i, suggestion.getType())
                     .putBoolean(KEY_PREFIX_ZERO_SUGGEST_IS_SEARCH_TYPE + i,
-                            !suggestion.isUrlSuggestion())
+                            suggestion.isSearchSuggestion())
                     .putBoolean(KEY_PREFIX_ZERO_SUGGEST_IS_DELETABLE + i, suggestion.isDeletable())
                     .putBoolean(KEY_PREFIX_ZERO_SUGGEST_IS_STARRED + i, suggestion.isStarred())
                     .putString(KEY_PREFIX_ZERO_SUGGEST_POST_CONTENT_TYPE + i,

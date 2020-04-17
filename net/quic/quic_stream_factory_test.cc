@@ -819,12 +819,22 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
   }
 
   std::string StreamCancellationQpackDecoderInstruction(int n) const {
+    return StreamCancellationQpackDecoderInstruction(n, true);
+  }
+
+  std::string StreamCancellationQpackDecoderInstruction(
+      int n,
+      bool create_stream) const {
     const quic::QuicStreamId cancelled_stream_id =
         GetNthClientInitiatedBidirectionalStreamId(n);
     EXPECT_LT(cancelled_stream_id, 63u);
 
     const unsigned char opcode = 0x40;
-    return {0x03, opcode | static_cast<unsigned char>(cancelled_stream_id)};
+    if (create_stream) {
+      return {0x03, opcode | static_cast<unsigned char>(cancelled_stream_id)};
+    } else {
+      return {opcode | static_cast<unsigned char>(cancelled_stream_id)};
+    }
   }
 
   std::string ConstructDataHeader(size_t body_len) {
@@ -5778,7 +5788,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyConnectionMigrationDisabled) {
 // asynchronous write error will be blocked during migration on write error. New
 // packets would not be written until the one with write error is rewritten on
 // the new network.
-TEST_P(QuicStreamFactoryTest, DISABLED_MigrateSessionOnAsyncWriteError) {
+TEST_P(QuicStreamFactoryTest, MigrateSessionOnAsyncWriteError) {
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -5839,11 +5849,11 @@ TEST_P(QuicStreamFactoryTest, DISABLED_MigrateSessionOnAsyncWriteError) {
   }
   if (VersionUsesHttp3(version_.transport_version)) {
     socket_data1.AddWrite(
-        SYNCHRONOUS,
-        client_maker_.MakeDataPacket(
-            packet_num++, GetQpackDecoderStreamId(),
-            /* should_include_version = */ true,
-            /* fin = */ false, StreamCancellationQpackDecoderInstruction(1)));
+        SYNCHRONOUS, client_maker_.MakeDataPacket(
+                         packet_num++, GetQpackDecoderStreamId(),
+                         /* should_include_version = */ true,
+                         /* fin = */ false,
+                         StreamCancellationQpackDecoderInstruction(1, false)));
   }
   socket_data1.AddWrite(
       SYNCHRONOUS,
@@ -6835,12 +6845,12 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnWriteErrorNoNewNetworkAsync) {
 }
 
 TEST_P(QuicStreamFactoryTest,
-       DISABLED_MigrateSessionOnWriteErrorWithMultipleRequestsSync) {
+       MigrateSessionOnWriteErrorWithMultipleRequestsSync) {
   TestMigrationOnWriteErrorWithMultipleRequests(SYNCHRONOUS);
 }
 
 TEST_P(QuicStreamFactoryTest,
-       DISABLED_MigrateSessionOnWriteErrorWithMultipleRequestsAsync) {
+       MigrateSessionOnWriteErrorWithMultipleRequestsAsync) {
   TestMigrationOnWriteErrorWithMultipleRequests(ASYNC);
 }
 
@@ -6902,7 +6912,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorWithMultipleRequests(
     socket_data1.AddWrite(
         SYNCHRONOUS, client_maker_.MakeDataPacket(
                          packet_num++, GetQpackDecoderStreamId(), true, false,
-                         StreamCancellationQpackDecoderInstruction(1)));
+                         StreamCancellationQpackDecoderInstruction(1, false)));
   }
   socket_data1.AddWrite(
       SYNCHRONOUS,
@@ -6992,13 +7002,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorWithMultipleRequests(
   EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest,
-       DISABLED_MigrateOnWriteErrorWithMixedRequestsSync) {
+TEST_P(QuicStreamFactoryTest, MigrateOnWriteErrorWithMixedRequestsSync) {
   TestMigrationOnWriteErrorMixedStreams(SYNCHRONOUS);
 }
 
-TEST_P(QuicStreamFactoryTest,
-       DISABLED_MigrateOnWriteErrorWithMixedRequestsAsync) {
+TEST_P(QuicStreamFactoryTest, MigrateOnWriteErrorWithMixedRequestsAsync) {
   TestMigrationOnWriteErrorMixedStreams(ASYNC);
 }
 
@@ -7061,7 +7069,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMixedStreams(
         SYNCHRONOUS,
         client_maker_.MakeAckAndDataPacket(
             packet_number++, false, GetQpackDecoderStreamId(), 1, 1, 1, false,
-            StreamCancellationQpackDecoderInstruction(0)));
+            StreamCancellationQpackDecoderInstruction(0, false)));
     socket_data1.AddWrite(SYNCHRONOUS,
                           client_maker_.MakeRstPacket(
                               packet_number++, false,
@@ -7157,13 +7165,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMixedStreams(
   EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest,
-       DISABLED_MigrateOnWriteErrorWithMixedRequests2Sync) {
+TEST_P(QuicStreamFactoryTest, MigrateOnWriteErrorWithMixedRequests2Sync) {
   TestMigrationOnWriteErrorMixedStreams2(SYNCHRONOUS);
 }
 
-TEST_P(QuicStreamFactoryTest,
-       DISABLED_MigrateOnWriteErrorWithMixedRequests2Async) {
+TEST_P(QuicStreamFactoryTest, MigrateOnWriteErrorWithMixedRequests2Async) {
   TestMigrationOnWriteErrorMixedStreams2(ASYNC);
 }
 
@@ -7234,7 +7240,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMixedStreams2(
         SYNCHRONOUS,
         client_maker_.MakeAckAndDataPacket(
             packet_number++, false, GetQpackDecoderStreamId(), 1, 1, 1, false,
-            StreamCancellationQpackDecoderInstruction(0)));
+            StreamCancellationQpackDecoderInstruction(0, false)));
     socket_data1.AddWrite(SYNCHRONOUS,
                           client_maker_.MakeRstPacket(
                               packet_number++, false,

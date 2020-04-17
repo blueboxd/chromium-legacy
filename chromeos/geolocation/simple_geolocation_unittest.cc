@@ -117,7 +117,7 @@ class TestGeolocationAPILoaderFactory : public network::TestURLLoaderFactory {
   void AddResponseWithCode(int error_code) {
     auto response_head = network::mojom::URLResponseHead::New();
     response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-    response_head->headers->AddHeader("Content-Type: application/json");
+    response_head->headers->SetHeader("Content-Type", "application/json");
     // If AddResponse() is called multiple times for the same URL, the last
     // one is the one used so there is no need for ClearResponses().
     AddResponse(url_, std::move(response_head), response_,

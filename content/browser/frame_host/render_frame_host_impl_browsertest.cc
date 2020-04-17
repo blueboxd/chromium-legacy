@@ -34,6 +34,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -188,6 +189,11 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
+
+    // TODO(https://crbug.com/794320): Remove this when the new Java Bridge code
+    // is integrated into WebView.
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kJavaScriptFlags, "--expose_gc");
   }
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
@@ -4135,8 +4141,8 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest,
   EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 }
 
-// TODO(crbug.com/794320): the code below is temporary and will be removed when
-// Java Bridge is mojofied.
+// TODO(https://crbug.com/794320): the code below is temporary and will be
+// removed when Java Bridge is mojofied.
 #if defined(OS_ANDROID)
 
 struct ObjectData {
@@ -4230,8 +4236,8 @@ class MockObjectHost : public blink::mojom::RemoteObjectHost {
     }
   }
 
-  void ReleaseObject(int32_t) override {
-    // TODO(crbug.com/794320): implement this.
+  void ReleaseObject(int32_t object_id) override {
+    release_object_called_[object_id] = true;
   }
 
   mojo::PendingRemote<blink::mojom::RemoteObjectHost> GetRemote() {
@@ -4240,9 +4246,15 @@ class MockObjectHost : public blink::mojom::RemoteObjectHost {
 
   MockObject* GetMockObject() const { return mock_object_.get(); }
 
+  bool release_object_called_for_object(int32_t object_id) const {
+    return release_object_called_.at(object_id);
+  }
+
  private:
   mojo::Receiver<blink::mojom::RemoteObjectHost> receiver_{this};
   std::unique_ptr<MockObject> mock_object_;
+  std::map<int32_t, bool> release_object_called_{{kMainObject.id, false},
+                                                 {kInnerObject.id, false}};
 };
 
 class RemoteObjectInjector : public WebContentsObserver {
@@ -4283,7 +4295,7 @@ void SetupRemoteObjectInvocation(Shell* shell, const GURL& url) {
 }
 }  // namespace
 
-// TODO(crbug.com/794320): Remove this when the new Java Bridge code is
+// TODO(https://crbug.com/794320): Remove this when the new Java Bridge code is
 // integrated into WebView.
 // This test is a temporary way of verifying that the renderer part
 // works as expected.
@@ -4371,6 +4383,32 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                                   error_message);
   auto error = EvalJs(web_contents, kScript).error;
   EXPECT_NE(error.find(error_message), std::string::npos);
+}
+
+// Based on testReturnedObjectIsGarbageCollected.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, RemoteObjectRelease) {
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
+
+  WebContents* web_contents = shell()->web_contents();
+  RemoteObjectInjector injector(web_contents);
+  SetupRemoteObjectInvocation(shell(), url);
+
+  EXPECT_EQ(
+      "object",
+      EvalJs(
+          web_contents,
+          "globalInner = testObject.getInnerObject(); typeof globalInner; "));
+
+  EXPECT_FALSE(injector.GetObjectHost().release_object_called_for_object(
+      kInnerObject.id));
+  EXPECT_EQ("object", EvalJs(web_contents, "gc(); typeof globalInner;"));
+  EXPECT_FALSE(injector.GetObjectHost().release_object_called_for_object(
+      kInnerObject.id));
+  EXPECT_EQ(
+      "undefined",
+      EvalJs(web_contents, "delete globalInner; gc(); typeof globalInner;"));
+  EXPECT_TRUE(injector.GetObjectHost().release_object_called_for_object(
+      kInnerObject.id));
 }
 
 #endif  // OS_ANDROID

@@ -135,6 +135,6 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kUserFeedbackAllowed, true);
   registry->RegisterBooleanPref(prefs::kAllowSyncXHRInPageDismissal, false);
   registry->RegisterBooleanPref(
-      prefs::kExternalProtocolDialogShowAlwaysOpenCheckbox, false);
+      prefs::kExternalProtocolDialogShowAlwaysOpenCheckbox, true);
   registry->RegisterBooleanPref(prefs::kScreenCaptureAllowed, true);
 }

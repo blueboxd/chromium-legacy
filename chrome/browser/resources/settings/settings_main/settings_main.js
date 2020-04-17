@@ -3,18 +3,42 @@
 // found in the LICENSE file.
 
 /**
+ * @fileoverview
+ * 'settings-main' displays the selected settings page.
+ */
+import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/js/search_highlight_utils.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '../about_page/about_page.m.js';
+import '../basic_page/basic_page.m.js';
+import '../prefs/prefs.m.js';
+import '../search_settings.m.js';
+import '../settings_shared_css.m.js';
+import '../settings_vars_css.m.js';
+
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {PageVisibility} from '../page_visibility.m.js';
+import {routes} from '../route.m.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+
+/**
  * @typedef {{about: boolean, settings: boolean}}
  */
 let MainPageVisibility;
 
-/**
- * @fileoverview
- * 'settings-main' displays the selected settings page.
- */
 Polymer({
   is: 'settings-main',
 
-  behaviors: [settings.RouteObserverBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [RouteObserverBehavior],
 
   properties: {
     /**
@@ -121,11 +145,11 @@ Polymer({
   /**
    * Updates the hidden state of the about and settings pages based on the
    * current route.
-   * @param {!settings.Route} newRoute
+   * @param {!Route} newRoute
    */
   currentRouteChanged(newRoute) {
-    const inAbout = settings.routes.ABOUT.contains(
-        settings.Router.getInstance().getCurrentRoute());
+    const inAbout =
+        routes.ABOUT.contains(Router.getInstance().getCurrentRoute());
     this.showPages_ = {about: inAbout, settings: !inAbout};
 
     if (!newRoute.isSubpage()) {
@@ -168,17 +192,16 @@ Polymer({
 
   /**
    * Returns the root page (if it exists) for a route.
-   * @param {!settings.Route} route
+   * @param {!Route} route
    * @return {(?SettingsAboutPageElement|?SettingsBasicPageElement)}
    */
   getPage_(route) {
-    if (settings.routes.ABOUT.contains(route)) {
+    if (routes.ABOUT.contains(route)) {
       return /** @type {?SettingsAboutPageElement} */ (
           this.$$('settings-about-page'));
     }
-    if (settings.routes.BASIC.contains(route) ||
-        (settings.routes.ADVANCED &&
-         settings.routes.ADVANCED.contains(route))) {
+    if (routes.BASIC.contains(route) ||
+        (routes.ADVANCED && routes.ADVANCED.contains(route))) {
       return /** @type {?SettingsBasicPageElement} */ (
           this.$$('settings-basic-page'));
     }
@@ -197,7 +220,7 @@ Polymer({
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         const whenSearchDone =
-            assert(this.getPage_(settings.routes.BASIC)).searchContents(query);
+            assert(this.getPage_(routes.BASIC)).searchContents(query);
         whenSearchDone.then(result => {
           resolve();
           if (result.canceled) {
@@ -213,7 +236,7 @@ Polymer({
               this.inSearchMode_ && !result.didFindMatches;
 
           if (this.inSearchMode_) {
-            Polymer.IronA11yAnnouncer.requestAvailability();
+            IronA11yAnnouncer.requestAvailability();
             this.fire('iron-announce', {
               text: this.showNoResultsFound_ ?
                   loadTimeData.getString('searchNoResults') :

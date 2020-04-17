@@ -295,8 +295,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
 
   void MarkAsPreload();
   // Returns true if |this| resource is matched with the given parameters.
-  virtual bool MatchPreload(const FetchParameters&,
-                            base::SingleThreadTaskRunner*);
+  virtual void MatchPreload(const FetchParameters&);
 
   bool CanReuseRedirectChain() const;
   bool MustRevalidateDueToCacheHeaders(bool allow_stale) const;

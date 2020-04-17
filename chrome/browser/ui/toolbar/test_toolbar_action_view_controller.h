@@ -26,13 +26,12 @@ class TestToolbarActionViewController : public ToolbarActionViewController {
   base::string16 GetTooltip(content::WebContents* web_contents)
       const override;
   bool IsEnabled(content::WebContents* web_contents) const override;
-  bool WantsToRun(content::WebContents* web_contents) const override;
   bool HasPopup(content::WebContents* web_contents) const override;
   bool IsShowingPopup() const override;
   void HidePopup() override;
   gfx::NativeView GetPopupNativeView() override;
   ui::MenuModel* GetContextMenu() override;
-  bool ExecuteAction(bool by_user) override;
+  bool ExecuteAction(bool by_user, InvocationSource source) override;
   void UpdateState() override;
   bool DisabledClickOpensMenu() const override;
   PageInteractionStatus GetPageInteractionStatus(
@@ -46,7 +45,6 @@ class TestToolbarActionViewController : public ToolbarActionViewController {
   void SetAccessibleName(const base::string16& name);
   void SetTooltip(const base::string16& tooltip);
   void SetEnabled(bool is_enabled);
-  void SetWantsToRun(bool wants_to_run);
   void SetDisabledClickOpensMenu(bool disabled_click_opens_menu);
 
   int execute_action_count() const { return execute_action_count_; }
@@ -70,9 +68,6 @@ class TestToolbarActionViewController : public ToolbarActionViewController {
 
   // Whether or not the action is enabled.
   bool is_enabled_ = true;
-
-  // Whether or not the action wants to run.
-  bool wants_to_run_ = false;
 
   // Whether or not a click on a disabled action should open the context menu.
   bool disabled_click_opens_menu_ = false;

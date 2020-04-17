@@ -97,13 +97,7 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
      * when we know we have a valid and large enough site favicon to present.
      */
     private @SuggestionIcon int getSuggestionIconType(OmniboxSuggestion suggestion) {
-        if (suggestion.isUrlSuggestion()) {
-            if (suggestion.isStarred()) {
-                return SuggestionIcon.BOOKMARK;
-            } else {
-                return SuggestionIcon.GLOBE;
-            }
-        } else /* Search suggestion */ {
+        if (suggestion.isSearchSuggestion()) {
             switch (suggestion.getType()) {
                 case OmniboxSuggestionType.VOICE_SUGGEST:
                     return SuggestionIcon.VOICE;
@@ -114,6 +108,12 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
 
                 default:
                     return SuggestionIcon.MAGNIFIER;
+            }
+        } else {
+            if (suggestion.isStarred()) {
+                return SuggestionIcon.BOOKMARK;
+            } else {
+                return SuggestionIcon.GLOBE;
             }
         }
     }
@@ -164,7 +164,7 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
         SuggestionSpannable textLine2 = null;
         boolean urlHighlighted = false;
 
-        if (suggestion.isUrlSuggestion()) {
+        if (!suggestion.isSearchSuggestion()) {
             if (!TextUtils.isEmpty(suggestion.getUrl())) {
                 SuggestionSpannable str = new SuggestionSpannable(suggestion.getDisplayText());
                 urlHighlighted = applyHighlightToMatchRegions(
@@ -176,10 +176,10 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
         }
 
         final SuggestionSpannable textLine1 =
-                getSuggestedQuery(suggestion, suggestion.isUrlSuggestion(), !urlHighlighted);
+                getSuggestedQuery(suggestion, !suggestion.isSearchSuggestion(), !urlHighlighted);
 
         updateSuggestionIcon(suggestion, model);
-        model.set(SuggestionViewProperties.IS_SEARCH_SUGGESTION, !suggestion.isUrlSuggestion());
+        model.set(SuggestionViewProperties.IS_SEARCH_SUGGESTION, suggestion.isSearchSuggestion());
         model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT, textLine1);
         model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT, textLine2);
         fetchSuggestionFavicon(model, suggestion.getUrl(), mIconBridgeSupplier.get(), () -> {

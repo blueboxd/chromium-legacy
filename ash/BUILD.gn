@@ -641,6 +641,8 @@ component("ash") {
     "shelf/hotseat_transition_animator.h",
     "shelf/hotseat_widget.cc",
     "shelf/hotseat_widget.h",
+    "shelf/in_app_to_home_nudge_controller.cc",
+    "shelf/in_app_to_home_nudge_controller.h",
     "shelf/login_shelf_gesture_controller.cc",
     "shelf/login_shelf_gesture_controller.h",
     "shelf/login_shelf_view.cc",

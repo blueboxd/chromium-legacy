@@ -65,6 +65,9 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
   // Returns the feed rows in the database.
   std::vector<media_feeds::mojom::MediaFeedPtr> GetRows(
       const MediaHistoryKeyedService::GetMediaFeedsRequest& request);
+
+  // Updates the display time to now and returns a boolean if it was saved.
+  bool UpdateDisplayTime(const int64_t feed_id);
 };
 
 }  // namespace media_history

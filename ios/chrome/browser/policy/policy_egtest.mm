@@ -4,8 +4,6 @@
 
 #include "ios/testing/earl_grey/earl_grey_test.h"
 
-#include <memory>
-
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -17,6 +15,7 @@
 #include "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #include "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/earl_grey/app_launch_configuration.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -62,7 +61,7 @@ void SetPolicy(bool enabled, const std::string& policy_key) {
 //    - INTEGER
 //    - STRING
 //    - LIST (and subtypes, e.g. int list, string list, etc)
-//    - DICTIONARY (and subtypes, e.g. int list, string list, etc)
+//    - DICTIONARY (and subtypes, e.g. int dictionary, string dictionary, etc)
 //    - Deleting a policy value
 //    - Setting multiple policies at once
 
@@ -111,16 +110,62 @@ void VerifyBoolPolicy(const std::string& policy_key,
                                                     IDS_POLICY_SHOW_UNSET)];
 }
 
-// Tests for the SearchSuggestEnabled policy.
-- (void)testSearchSuggestEnabled {
-  VerifyBoolPolicy(policy::key::kSearchSuggestEnabled,
-                   prefs::kSearchSuggestEnabled);
-}
-
 // Tests for the PasswordManagerEnabled policy.
 - (void)testPasswordManagerEnabled {
   VerifyBoolPolicy(policy::key::kPasswordManagerEnabled,
                    password_manager::prefs::kCredentialsEnableService);
+}
+
+// Tests for the SavingBrowserHistoryDisabled policy.
+- (void)testSavingBrowserHistoryDisabled {
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL testURL = self.testServer->GetURL("/pony.html");
+  const std::string pageText = "pony";
+
+  // Set history to a clean state and verify it is clean.
+  [ChromeEarlGrey clearBrowsingHistory];
+  [ChromeEarlGrey resetBrowsingDataPrefs];
+  GREYAssertEqual([ChromeEarlGrey getBrowsingHistoryEntryCount], 0,
+                  @"History was unexpectedly non-empty");
+
+  // Verify that the unmanaged pref's default value is false. While we generally
+  // don't want to assert default pref values, in this case we need to start
+  // from a well-known default value due to the order of the checks we make for
+  // the history panel. If the default value ever changes for this pref, we'll
+  // need to adjust the order of the history panel checks.
+  GREYAssertFalse(
+      [ChromeEarlGrey userBooleanPref:prefs::kSavingBrowserHistoryDisabled],
+      @"Unexpected default value");
+
+  // Force the preference to true via policy (disables history).
+  SetPolicy(true, policy::key::kSavingBrowserHistoryDisabled);
+  GREYAssertTrue(
+      [ChromeEarlGrey userBooleanPref:prefs::kSavingBrowserHistoryDisabled],
+      @"Disabling browser history preference was unexpectedly false");
+
+  // Perform a navigation and make sure the history isn't changed.
+  [ChromeEarlGrey loadURL:testURL];
+  [ChromeEarlGrey waitForWebStateContainingText:pageText];
+  GREYAssertEqual([ChromeEarlGrey getBrowsingHistoryEntryCount], 0,
+                  @"History was unexpectedly non-empty");
+
+  // Force the preference to false via policy (enables history).
+  SetPolicy(false, policy::key::kSavingBrowserHistoryDisabled);
+  GREYAssertFalse(
+      [ChromeEarlGrey userBooleanPref:prefs::kSavingBrowserHistoryDisabled],
+      @"Disabling browser history preference was unexpectedly true");
+
+  // Perform a navigation and make sure history is being saved.
+  [ChromeEarlGrey loadURL:testURL];
+  [ChromeEarlGrey waitForWebStateContainingText:pageText];
+  GREYAssertEqual([ChromeEarlGrey getBrowsingHistoryEntryCount], 1,
+                  @"History had an unexpected entry count");
+}
+
+// Tests for the SearchSuggestEnabled policy.
+- (void)testSearchSuggestEnabled {
+  VerifyBoolPolicy(policy::key::kSearchSuggestEnabled,
+                   prefs::kSearchSuggestEnabled);
 }
 
 @end

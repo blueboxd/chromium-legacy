@@ -49,7 +49,9 @@ class METRICS_EXPORT DelegatingUkmRecorder : public UkmRecorder {
 
   // UkmRecorder:
   void UpdateSourceURL(SourceId source_id, const GURL& url) override;
-  void UpdateAppURL(SourceId source_id, const GURL& url) override;
+  void UpdateAppURL(SourceId source_id,
+                    const GURL& url,
+                    const AppType app_type) override;
   void RecordNavigation(
       SourceId source_id,
       const UkmSource::NavigationData& navigation_data) override;
@@ -64,7 +66,9 @@ class METRICS_EXPORT DelegatingUkmRecorder : public UkmRecorder {
     ~Delegate();
 
     void UpdateSourceURL(SourceId source_id, const GURL& url);
-    void UpdateAppURL(SourceId source_id, const GURL& url);
+    void UpdateAppURL(SourceId source_id,
+                      const GURL& url,
+                      const AppType app_type);
     void RecordNavigation(SourceId source_id,
                           const UkmSource::NavigationData& navigation_data);
     void AddEntry(mojom::UkmEntryPtr entry);

@@ -54,6 +54,25 @@ bool FakeFormFetcher::IsBlacklisted() const {
 
 bool FakeFormFetcher::IsMovingBlocked(const autofill::GaiaIdHash& destination,
                                       const base::string16& username) const {
+  // This is analogous to the implementation in
+  // MultiStoreFormFetcher::IsMovingBlocked().
+  for (const std::vector<const PasswordForm*>& matches_vector :
+       {federated_, non_federated_}) {
+    for (const PasswordForm* form : matches_vector) {
+      // Only local entries can be moved to the account store (though
+      // account store matches should never have |moving_blocked_for_list|
+      // entries anyway).
+      if (form->IsUsingAccountStore())
+        continue;
+      // Ignore PSL matches for blocking moving.
+      if (form->is_public_suffix_match)
+        continue;
+      if (form->username_value != username)
+        continue;
+      if (base::Contains(form->moving_blocked_for_list, destination))
+        return true;
+    }
+  }
   return false;
 }
 

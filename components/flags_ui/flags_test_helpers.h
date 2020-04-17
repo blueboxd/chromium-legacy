@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_FLAGS_UI_FLAGS_TEST_HELPERS_H_
 #define COMPONENTS_FLAGS_UI_FLAGS_TEST_HELPERS_H_
 
+#include "base/containers/span.h"
 #include "components/flags_ui/feature_entry.h"
 
 namespace flags_ui {
@@ -13,8 +14,12 @@ namespace testing {
 
 // Ensures that all flags in |entries| has associated metadata. |count| is the
 // number of flags in |entries|.
+// TODO(ellyjones): remove the version of this that takes (entries, count)
+// separately after updating the iOS tests.
 void EnsureEveryFlagHasMetadata(const flags_ui::FeatureEntry* entries,
                                 size_t count);
+void EnsureEveryFlagHasMetadata(
+    const base::span<const flags_ui::FeatureEntry>& entries);
 
 // Ensures that all flags marked as never expiring in flag-metadata.json is
 // listed in flag-never-expire-list.json.
@@ -29,6 +34,12 @@ void EnsureOwnersLookValid();
 // Ensures that flags are listed in alphabetical order in flag-metadata.json and
 // flag-never-expire-list.json.
 void EnsureFlagsAreListedInAlphabeticalOrder();
+
+// Ensures that unexpire flags are present for the most recent two milestones,
+// in accordance with the policy in //docs/flag_expiry.md.
+void EnsureRecentUnexpireFlagsArePresent(
+    const base::span<const FeatureEntry>& entries,
+    int current_milestone);
 
 }  // namespace testing
 

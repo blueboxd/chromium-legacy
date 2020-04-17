@@ -427,29 +427,8 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
     : pp::Instance(instance),
       pp::Find_Private(this),
       pp::Printing_Dev(this),
-      cursor_(PP_CURSORTYPE_POINTER),
-      zoom_(1.0),
-      needs_reraster_(true),
-      last_bitmap_smaller_(false),
-      device_scale_(1.0),
-      full_(false),
       paint_manager_(this, this, true),
-      first_paint_(true),
-      document_load_state_(LOAD_STATE_LOADING),
-      preview_document_load_state_(LOAD_STATE_COMPLETE),
-      uma_(this),
-      told_browser_about_unsupported_feature_(false),
-      print_preview_page_count_(-1),
-      print_preview_loaded_page_count_(-1),
-      last_progress_sent_(0),
-      recently_sent_find_update_(false),
-      received_viewport_message_(false),
-      did_call_start_loading_(false),
-      stop_scrolling_(false),
-      background_color_(0),
-      top_toolbar_height_in_viewport_coords_(0),
-      accessibility_state_(ACCESSIBILITY_STATE_OFF),
-      is_print_preview_(false) {
+      uma_(this) {
   callback_factory_.Initialize(this);
   pp::Module::Get()->AddPluginInterface(kPPPPdfInterface, &ppp_private);
   AddPerInstanceObject(kPPPPdfInterface, this);
@@ -1581,10 +1560,6 @@ void OutOfProcessInstance::Print() {
   pp::Module::Get()->core()->CallOnMainThread(0, callback);
 }
 
-void OutOfProcessInstance::OnPrint(int32_t) {
-  pp::PDF::Print(this);
-}
-
 void OutOfProcessInstance::SubmitForm(const std::string& url,
                                       const void* data,
                                       int length) {
@@ -2062,6 +2037,10 @@ void OutOfProcessInstance::HistogramEnumerationDeprecated(
   if (IsPrintPreview())
     return;
   uma_.HistogramEnumeration(name, sample, boundary_value);
+}
+
+void OutOfProcessInstance::OnPrint(int32_t /*unused_but_required*/) {
+  pp::PDF::Print(this);
 }
 
 void OutOfProcessInstance::PrintSettings::Clear() {

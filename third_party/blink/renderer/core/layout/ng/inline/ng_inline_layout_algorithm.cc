@@ -249,13 +249,10 @@ void NGInlineLayoutAlgorithm::CreateLine(
                                  baseline_type_);
       }
 
-      if (UNLIKELY(item.IsSymbolMarker())) {
-        text_builder.SetItem(NGTextType::kSymbolMarker, line_info->ItemsData(),
-                             &item_result, box->text_height);
-      } else {
-        text_builder.SetItem(NGTextType::kNormal, line_info->ItemsData(),
-                             &item_result, box->text_height);
-      }
+      DCHECK(item.TextType() == NGTextType::kNormal ||
+             item.TextType() == NGTextType::kSymbolMarker);
+      text_builder.SetItem(line_info->ItemsData(), &item_result,
+                           box->text_height);
       if (UNLIKELY(item_result.hyphen_shape_result)) {
         LayoutUnit hyphen_inline_size = item_result.HyphenInlineSize();
         line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
@@ -414,26 +411,31 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
   DCHECK_EQ(item.Type(), NGInlineItem::kControl);
   DCHECK_GE(item.Length(), 1u);
   DCHECK(!item.TextShapeResult());
+#if DCHECK_IS_ON()
   UChar character = line_info.ItemsData().text_content[item.StartOffset()];
-  NGTextType type;
+  NGTextType text_type;
   switch (character) {
     case kNewlineCharacter:
-      type = NGTextType::kForcedLineBreak;
+      text_type = NGTextType::kForcedLineBreak;
       break;
     case kTabulationCharacter:
-      type = NGTextType::kFlowControl;
+      text_type = NGTextType::kFlowControl;
       break;
     case kZeroWidthSpaceCharacter:
-      // Don't generate fragments if this is a generated (not in DOM) break
-      // opportunity during the white space collapsing in NGInlineItemBuilder.
-      if (item.IsGeneratedForLineBreak())
-        return;
-      type = NGTextType::kFlowControl;
+      text_type = NGTextType::kFlowControl;
       break;
     default:
       NOTREACHED();
       return;
   }
+  DCHECK_EQ(item.TextType(), text_type);
+#endif
+
+  // Don't generate fragments if this is a generated (not in DOM) break
+  // opportunity during the white space collapsing in NGInlineItemBuilder.
+  if (UNLIKELY(item.IsGeneratedForLineBreak()))
+    return;
+
   DCHECK(item.GetLayoutObject());
   DCHECK(item.GetLayoutObject()->IsText());
   ClearNeedsLayoutIfNeeded(item.GetLayoutObject());
@@ -442,8 +444,7 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
     box->EnsureTextMetrics(*item.Style(), baseline_type_);
 
   NGTextFragmentBuilder text_builder(ConstraintSpace().GetWritingMode());
-  text_builder.SetItem(type, line_info.ItemsData(), item_result,
-                       box->text_height);
+  text_builder.SetItem(line_info.ItemsData(), item_result, box->text_height);
   text_builder.SetIsFirstForNode(item_result->IsFirstForNode());
   line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
                      item_result->inline_size, item.BidiLevel());

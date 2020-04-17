@@ -524,6 +524,9 @@ const char kAmbientModeTopicSource[] = "settings.ambient_mode.topic_source";
 const char kPrintingAllowedPageSizes[] = "printing.allowed_page_sizes";
 #endif  // defined(OS_CHROMEOS)
 
+// Deprecated 4/2020
+const char kExcludedSchemes[] = "protocol_handler.excluded_schemes";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -616,6 +619,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(kAmbientModeTopicSource, 0);
   registry->RegisterListPref(kPrintingAllowedPageSizes);
 #endif  // defined(OS_CHROMEOS)
+
+  registry->RegisterDictionaryPref(kExcludedSchemes);
 }
 
 }  // namespace
@@ -1222,4 +1227,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 4/2020.
   profile_prefs->ClearPref(kPrintingAllowedPageSizes);
 #endif
+
+  // Added 4/2020
+  profile_prefs->ClearPref(kExcludedSchemes);
 }

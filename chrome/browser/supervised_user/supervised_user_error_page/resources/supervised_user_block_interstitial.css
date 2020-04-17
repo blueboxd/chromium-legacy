@@ -104,7 +104,7 @@ p {
 
 #family-link-kite {
   content: -webkit-image-set(
-      url(default_100_percent/family_link_logo.png) 1x);
+      url(../../resources/supervised_user_icon.png) 1x);
   height: 72px;
   width: 72px;
 }

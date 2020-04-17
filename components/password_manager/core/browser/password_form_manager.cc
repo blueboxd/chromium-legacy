@@ -30,11 +30,14 @@
 #include "components/password_manager/core/browser/possible_username_data.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "google_apis/gaia/core_account_id.h"
 
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormSignature;
 using autofill::FormStructure;
+using autofill::GaiaIdHash;
 using autofill::NOT_USERNAME;
 using autofill::PasswordForm;
 using autofill::SINGLE_USERNAME;
@@ -265,6 +268,38 @@ base::span<const InteractionsStats> PasswordFormManager::GetInteractionsStats()
 
 bool PasswordFormManager::IsBlacklisted() const {
   return form_fetcher_->IsBlacklisted() || newly_blacklisted_;
+}
+
+bool PasswordFormManager::IsMovableToAccountStore() const {
+  signin::IdentityManager* identity_manager = client_->GetIdentityManager();
+  if (!identity_manager)
+    return false;
+  const std::string gaia_id =
+      identity_manager
+          ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+          .gaia;
+  // If there is no signed in user, we cannot move the credentials to the
+  // account store.
+  if (gaia_id.empty())
+    return false;
+
+  const base::string16& username = GetPendingCredentials().username_value;
+  const base::string16& password = GetPendingCredentials().password_value;
+  const std::vector<const PasswordForm*> matches =
+      form_fetcher_->GetBestMatches();
+  // If no match in the profile store with the same username and password exist,
+  // then there is nothing to move.
+  if (std::none_of(matches.cbegin(), matches.cend(),
+                   [&](const PasswordForm* match) {
+                     return !match->IsUsingAccountStore() &&
+                            match->username_value == username &&
+                            match->password_value == password;
+                   })) {
+    return false;
+  }
+
+  return !form_fetcher_->IsMovingBlocked(GaiaIdHash::FromGaiaId(gaia_id),
+                                         username);
 }
 
 void PasswordFormManager::Save() {

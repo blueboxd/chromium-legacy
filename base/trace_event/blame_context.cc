@@ -4,6 +4,8 @@
 
 #include "base/trace_event/blame_context.h"
 
+#include <cstring>
+
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"

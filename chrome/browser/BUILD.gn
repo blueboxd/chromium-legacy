@@ -349,8 +349,8 @@ jumbo_static_library("browser") {
     "content_settings/mixed_content_settings_tab_helper.h",
     "content_settings/sound_content_setting_observer.cc",
     "content_settings/sound_content_setting_observer.h",
-    "content_settings/tab_specific_content_settings.cc",
-    "content_settings/tab_specific_content_settings.h",
+    "content_settings/tab_specific_content_settings_delegate.cc",
+    "content_settings/tab_specific_content_settings_delegate.h",
     "crash_upload_list/crash_upload_list.cc",
     "crash_upload_list/crash_upload_list.h",
     "crash_upload_list/crash_upload_list_android.cc",
@@ -1962,6 +1962,7 @@ jumbo_static_library("browser") {
     ":permissions_proto",
     ":resource_prefetch_predictor_proto",
     ":tab_state_db_content_proto",
+    ":unexpire_flags",
     "//base:i18n",
     "//base/allocator:buildflags",
     "//base/util/memory_pressure:memory_pressure",
@@ -2027,6 +2028,7 @@ jumbo_static_library("browser") {
     "//components/component_updater/installer_policies",
     "//components/consent_auditor",
     "//components/content_capture/browser",
+    "//components/content_settings/browser",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/contextual_search/content:browser",
@@ -5723,6 +5725,29 @@ action("expired_flags_list_gen") {
 source_set("expired_flags_list") {
   deps = [ ":expired_flags_list_gen" ]
   sources = [ "$root_gen_dir/chrome/browser/expired_flags_list.cc" ]
+}
+
+action("unexpire_flags_gen") {
+  script = "//tools/flags/generate_unexpire_flags.py"
+  inputs = [ "//chrome/VERSION" ]
+  outputs = [
+    "$root_gen_dir/chrome/browser/unexpire_flags_gen.cc",
+    "$root_gen_dir/chrome/browser/unexpire_flags_gen.h",
+    "$root_gen_dir/chrome/browser/unexpire_flags_gen.inc",
+  ]
+  args = rebase_path(outputs, root_build_dir)
+}
+
+source_set("unexpire_flags") {
+  deps = [
+    ":unexpire_flags_gen",
+    "//base",
+  ]
+  sources = [
+    "$root_gen_dir/chrome/browser/unexpire_flags_gen.cc",
+    "$root_gen_dir/chrome/browser/unexpire_flags_gen.h",
+    "$root_gen_dir/chrome/browser/unexpire_flags_gen.inc",
+  ]
 }
 
 # Use a static library here because many test binaries depend on this but don't

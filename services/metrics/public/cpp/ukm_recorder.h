@@ -38,6 +38,12 @@ class DelegatingUkmRecorder;
 class TestRecordingHelper;
 class UkmBackgroundRecorderService;
 
+enum class AppType {
+  kArc,
+  kPWA,
+  kExtension,
+};
+
 namespace internal {
 class SourceUrlRecorderWebContentsObserver;
 }  // namespace internal
@@ -70,7 +76,9 @@ class METRICS_EXPORT UkmRecorder {
  protected:
   // Type-safe wrappers for Update<X> functions.
   void RecordOtherURL(base::UkmSourceId source_id, const GURL& url);
-  void RecordAppURL(base::UkmSourceId source_id, const GURL& url);
+  void RecordAppURL(base::UkmSourceId source_id,
+                    const GURL& url,
+                    const AppType app_type);
 
   // Gets new source Id for WEBAPK_ID type and updates the manifest url. This
   // method should only be called by WebApkUkmRecorder class.
@@ -106,7 +114,9 @@ class METRICS_EXPORT UkmRecorder {
 
   // Associates the SourceId with an app URL for APP_ID sources. This method
   // should only be called by AppSourceUrlRecorder and DelegatingUkmRecorder.
-  virtual void UpdateAppURL(SourceId source_id, const GURL& url) = 0;
+  virtual void UpdateAppURL(SourceId source_id,
+                            const GURL& url,
+                            const AppType app_type) = 0;
 
   // Associates navigation data with the UkmSource keyed by |source_id|. This
   // should only be called by SourceUrlRecorderWebContentsObserver, for

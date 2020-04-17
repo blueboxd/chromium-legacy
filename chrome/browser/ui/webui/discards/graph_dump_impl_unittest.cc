@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -283,6 +284,53 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
       impl_raw->GetNodeIdForTesting(mock_graph.page.get()));
   ASSERT_TRUE(main_page_it != change_stream.page_map().end());
   EXPECT_EQ(kAnotherURL, main_page_it->second->main_frame_url);
+
+  task_environment.RunUntilIdle();
+
+  // Test RequestNodeDescriptions.
+  std::vector<int64_t> descriptions_requested;
+  for (int64_t node_id : change_stream.id_set()) {
+    descriptions_requested.push_back(node_id);
+  }
+  // Increase the last ID by one. As the entries are in increasing order, this
+  // results in a request for all but one nodes, and one non-existent node id.
+  descriptions_requested.back() += 1;
+
+  {
+    base::RunLoop run_loop;
+    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
+
+    graph_dump_remote->RequestNodeDescriptions(
+        descriptions_requested,
+        base::BindLambdaForTesting(
+            [&descriptions_requested,
+             &quit_closure](const base::flat_map<int64_t, std::string>&
+                                node_descriptions_json) {
+              std::vector<int64_t> keys_received;
+              // Check that the descriptions make sense.
+              for (auto kv : node_descriptions_json) {
+                keys_received.push_back(kv.first);
+                base::Optional<base::Value> v =
+                    base::JSONReader::Read(kv.second);
+                EXPECT_TRUE(v->is_dict());
+                std::string* str = v->FindStringKey("test");
+                EXPECT_TRUE(str);
+                if (str) {
+                  EXPECT_TRUE(*str == "frame" || *str == "page" ||
+                              *str == "process" || *str == "worker");
+                }
+              }
+
+              EXPECT_THAT(keys_received,
+                          ::testing::UnorderedElementsAreArray(
+                              descriptions_requested.data(),
+                              descriptions_requested.size() - 1));
+
+              quit_closure.Run();
+            }));
+
+    run_loop.Run();
+  }
 
   task_environment.RunUntilIdle();
 

@@ -49,9 +49,7 @@ static ShouldRespectOverflowClipType ShouldRespectOverflowClip(
 }
 
 bool PaintLayerPainter::PaintedOutputInvisible(const ComputedStyle& style) {
-  // TODO(pdr): When will-change: backdrop-filter is a compositing trigger, this
-  // should be changed to |HasNonInitialBackdropFilter()|.
-  if (style.HasBackdropFilter())
+  if (style.HasNonInitialBackdropFilter())
     return false;
 
   // Always paint when 'will-change: opacity' is present. Reduces jank for

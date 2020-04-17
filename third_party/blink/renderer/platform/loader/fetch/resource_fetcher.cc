@@ -1279,11 +1279,7 @@ Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
     return nullptr;
   }
 
-  if (!resource->MatchPreload(params, task_runner_.get())) {
-    PrintPreloadWarning(resource, Resource::MatchStatus::kUnknownFailure);
-    return nullptr;
-  }
-
+  resource->MatchPreload(params);
   preloads_.erase(it);
   matched_preloads_.push_back(resource);
   return resource;

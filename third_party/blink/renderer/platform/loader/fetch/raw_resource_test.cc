@@ -255,7 +255,7 @@ TEST_F(RawResourceTest, PreloadWithAsynchronousAddClient) {
 
   FetchParameters params(std::move(request));
   params.MutableResourceRequest().SetUseStreamOnResponse(false);
-  raw->MatchPreload(params, platform_->test_task_runner().get());
+  raw->MatchPreload(params);
   raw->AddClient(dummy_client, platform_->test_task_runner().get());
 
   raw->ResponseBodyReceived(*body_loader, platform_->test_task_runner());

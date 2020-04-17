@@ -11,7 +11,6 @@
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -28,6 +27,7 @@
 #include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/browsing_data/content/local_storage_helper.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -416,8 +416,9 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
 }
 
 std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents_);
+  content_settings::TabSpecificContentSettings* content_settings =
+      content_settings::TabSpecificContentSettings::FromWebContents(
+          web_contents_);
 
   // Create the controls that go into the pane.
   auto allowed_label = std::make_unique<views::Label>(
@@ -471,8 +472,9 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
 }
 
 std::unique_ptr<views::View> CollectedCookiesViews::CreateBlockedPane() {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents_);
+  content_settings::TabSpecificContentSettings* content_settings =
+      content_settings::TabSpecificContentSettings::FromWebContents(
+          web_contents_);
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());

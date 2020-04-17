@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
+#include "components/media_control/renderer/media_playback_options.h"
 #include "content/public/renderer/render_frame.h"
 #include "fuchsia/engine/renderer/on_load_script_injector.h"
 #include "fuchsia/engine/renderer/web_engine_url_loader_throttle_provider.h"
@@ -136,6 +137,9 @@ void WebEngineContentRendererClient::RenderFrameCreated(
   auto iter = url_request_receivers_by_id_.emplace(render_frame_id,
                                                    std::move(rules_receiver));
   DCHECK(iter.second);
+
+  // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
+  new media_control::MediaPlaybackOptions(render_frame);
 }
 
 std::unique_ptr<content::URLLoaderThrottleProvider>
@@ -220,4 +224,22 @@ bool WebEngineContentRendererClient::IsSupportedVideoType(
   }
 
   return IsSupportedHardwareVideoCodec(type);
+}
+
+// TODO(crbug.com/1067435): Look into the ChromiumContentRendererClient version
+// of this method and how it may apply here.
+bool WebEngineContentRendererClient::DeferMediaLoad(
+    content::RenderFrame* render_frame,
+    bool has_played_media_before,
+    base::OnceClosure closure) {
+  return RunClosureWhenInForeground(render_frame, std::move(closure));
+}
+
+bool WebEngineContentRendererClient::RunClosureWhenInForeground(
+    content::RenderFrame* render_frame,
+    base::OnceClosure closure) {
+  auto* playback_options =
+      media_control::MediaPlaybackOptions::Get(render_frame);
+  DCHECK(playback_options);
+  return playback_options->RunWhenInForeground(std::move(closure));
 }

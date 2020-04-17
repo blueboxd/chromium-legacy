@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/services/local_search_service/local_search_service_impl.h"
 #include "chrome/services/local_search_service/public/mojom/types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -17,6 +19,15 @@ namespace settings {
 namespace {
 
 const int32_t kLocalSearchServiceMaxResults = 10;
+
+// TODO(https://crbug.com/1071700): Delete this function.
+std::vector<base::string16> GenerateDummySettingsHierarchy(
+    const char* url_path_with_parameters) {
+  std::vector<base::string16> hierarchy;
+  hierarchy.push_back(l10n_util::GetStringUTF16(IDS_INTERNAL_APP_SETTINGS));
+  hierarchy.push_back(base::ASCIIToUTF16(url_path_with_parameters));
+  return hierarchy;
+}
 
 }  // namespace
 
@@ -92,9 +103,12 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
   if (!concept)
     return nullptr;
 
-  return mojom::SearchResult::New(l10n_util::GetStringUTF16(message_id),
-                                  concept->url_path_with_parameters,
-                                  concept->icon);
+  // TODO(https://crbug.com/1071700): Generate real hierarchy instead of using
+  // GenerateDummySettingsHierarchy().
+  return mojom::SearchResult::New(
+      l10n_util::GetStringUTF16(message_id), concept->url_path_with_parameters,
+      concept->icon, result.score,
+      GenerateDummySettingsHierarchy(concept->url_path_with_parameters));
 }
 
 void SearchHandler::Shutdown() {

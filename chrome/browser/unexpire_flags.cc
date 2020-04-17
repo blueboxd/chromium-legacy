@@ -6,6 +6,8 @@
 
 #include "base/no_destructor.h"
 #include "chrome/browser/expired_flags_list.h"
+#include "chrome/browser/unexpire_flags_gen.h"
+#include "chrome/common/chrome_version.h"
 
 namespace flags {
 
@@ -34,45 +36,38 @@ class FlagPredicateSingleton {
 
 }  // namespace
 
-const base::Feature kUnexpireFlagsM78{"TemporaryUnexpireFlagsM78",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kUnexpireFlagsM80{"TemporaryUnexpireFlagsM80",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool ExpiryEnabledForMstone(int mstone) {
-  // generate_expired_list.py will never emit flags with expiry milestone -1, to
-  // keep binary size down. However, if a bug *did* cause that to happen, and
-  // this function did not handle that case, disaster could ensue: all the -1
-  // flags that are supposed to never expire would in fact expire instantly,
-  // since -1 < x for any valid mstone x.
-  // As such, there's an extra error-check here: never allow flags with mstone
-  // -1 to expire.
-  DCHECK(mstone != -1);
-  if (mstone == -1)
-    return false;
-
-  // In M78 this expired flags with their expirations set to M76 or earlier.
-  // In M79 this expires flags with their expirations set to M78 or earlier.
-  // In M80 and later, this will expire any flags whose expiration is <= the
-  // current mstone, and this block comment will go away along with these
-  // special cases.
-  if (mstone <= 76)
-    return true;
-  if (mstone == 77 || mstone == 78)
-    return !base::FeatureList::IsEnabled(kUnexpireFlagsM78);
-  if (mstone == 79 || mstone == 80)
-    return !base::FeatureList::IsEnabled(kUnexpireFlagsM80);
-  return false;
-}
-
 bool IsFlagExpired(const char* internal_name) {
+  constexpr int kChromeVersion[] = {CHROME_VERSION};
+  constexpr int kChromeVersionMajor = kChromeVersion[0];
+
   if (FlagPredicateSingleton::GetPredicate())
     return FlagPredicateSingleton::GetPredicate().Run(internal_name);
 
   for (int i = 0; kExpiredFlags[i].name; ++i) {
     const ExpiredFlag* f = &kExpiredFlags[i];
-    if (!strcmp(f->name, internal_name) && ExpiryEnabledForMstone(f->mstone))
-      return true;
+    if (strcmp(f->name, internal_name))
+      continue;
+
+    // To keep the size of the expired flags list down,
+    // //tools/flags/generate_expired_flags.py doesn't emit flags with expiry
+    // mstone -1; it makes no sense for these flags to be in the expiry list
+    // anyway. However, if a bug did cause that to happen, and this function
+    // didn't handle that case, all flags with expiration -1 would immediately
+    // expire, which would be very bad. As such there's an extra error-check
+    // here: a DCHECK to catch bugs in the script, and a regular if to ensure we
+    // never expire flags that should never expire.
+    DCHECK_NE(f->mstone, -1);
+    if (f->mstone == -1)
+      continue;
+
+    const base::Feature* expiry_feature =
+        GetUnexpireFeatureForMilestone(f->mstone);
+
+    // If there's an unexpiry feature, and the unexpiry feature is *disabled*,
+    // then the flag is expired. The double-negative is very unfortunate.
+    if (expiry_feature)
+      return !base::FeatureList::IsEnabled(*expiry_feature);
+    return f->mstone < kChromeVersionMajor;
   }
   return false;
 }

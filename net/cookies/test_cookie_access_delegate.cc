@@ -48,7 +48,7 @@ void TestCookieAccessDelegate::SetIgnoreSameSiteRestrictionsScheme(
 std::string TestCookieAccessDelegate::GetKeyForDomainValue(
     const std::string& domain) const {
   DCHECK(!domain.empty());
-  return domain[0] == '.' ? domain.substr(1) : domain;
+  return cookie_util::CookieDomainAsHost(domain);
 }
 
 }  // namespace net

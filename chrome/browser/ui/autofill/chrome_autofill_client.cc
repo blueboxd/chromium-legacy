@@ -363,14 +363,6 @@ void ChromeAutofillClient::OfferVirtualCardOptions(
 }
 #endif
 
-void ChromeAutofillClient::ConfirmSaveAutofillProfile(
-    const AutofillProfile& profile,
-    base::OnceClosure callback) {
-  // Since there is no confirmation needed to save an Autofill Profile,
-  // running |callback| will proceed with saving |profile|.
-  std::move(callback).Run();
-}
-
 void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
     SaveCreditCardOptions options,

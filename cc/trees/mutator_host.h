@@ -156,8 +156,9 @@ class MutatorHost {
 
   virtual void ScrollAnimationAbort() = 0;
 
-  // True when there is an ongoing scroll animation on Impl.
-  virtual bool IsImplOnlyScrollAnimating() const = 0;
+  // If there is an ongoing scroll animation on Impl, return the ElementId of
+  // the scroller. Otherwise returns an invalid ElementId.
+  virtual ElementId ImplOnlyScrollAnimatingElement() const = 0;
 
   virtual size_t CompositedAnimationsCount() const = 0;
   virtual size_t MainThreadAnimationsCount() const = 0;

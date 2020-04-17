@@ -16,7 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -50,6 +51,7 @@
 #endif
 
 using content::WebContents;
+using content_settings::TabSpecificContentSettings;
 
 // The image models hierarchy:
 //
@@ -514,11 +516,11 @@ ContentSettingRPHImageModel::ContentSettingRPHImageModel()
 
 bool ContentSettingRPHImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (!content_settings)
+  auto* content_settings_delegate =
+      chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents);
+  if (!content_settings_delegate)
     return false;
-  if (content_settings->pending_protocol_handler().IsEmpty())
+  if (content_settings_delegate->pending_protocol_handler().IsEmpty())
     return false;
 
   return true;

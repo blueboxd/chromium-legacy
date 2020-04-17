@@ -84,9 +84,13 @@ void AddEduStrings(content::WebUIDataSource* source,
                     chrome::kAccountRecoveryURL);
 
   source->AddLocalizedString("parentInfoTitle", IDS_EDU_LOGIN_INFO_TITLE);
-  source->AddLocalizedString("parentInfoBody", IDS_EDU_LOGIN_INFO_BODY);
   source->AddLocalizedString("parentInfoParentSettingsText",
                              IDS_EDU_LOGIN_INFO_PARENT_SETTINGS);
+  source->AddString(
+      "parentInfoBody",
+      l10n_util::GetStringFUTF16(
+          IDS_EDU_LOGIN_INFO_BODY,
+          base::ASCIIToUTF16(chrome::kGsuiteTermsEducationPrivacyURL)));
   source->AddString(
       "parentInfoDataProtectionText",
       l10n_util::GetStringFUTF16(

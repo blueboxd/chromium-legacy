@@ -300,6 +300,10 @@ wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/createBindGroupLay
 crbug.com/dawn/243 wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/validation/createTexture:validation_of_sampleCount={"sampleCount":4,"arrayLayerCount":2} [ Failure ]
 crbug.com/dawn/243 wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/createTexture:validation_of_sampleCount={"sampleCount":4,"arrayLayerCount":2} [ Failure ]
 
+# Fails because we don't gracefully handle calls with objects from multiple devices
+crbug.com/dawn/383 wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/validation/fences:signal_a_fence_on_a_different_device_than_it_was_created_on_is_invalid= [ Skip ]
+crbug.com/dawn/383 wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/fences:signal_a_fence_on_a_different_device_than_it_was_created_on_is_invalid= [ Skip ]
+
 # Somehow these incorrectly pass locally under run_web_tests.py, but correctly
 # fail when run alone.
 crbug.com/966582 wpt_internal/webgpu/cts.html?worker=0&q=webgpu:web-platform/copyImageBitmapToTexture:from_canvas~ [ Failure ]

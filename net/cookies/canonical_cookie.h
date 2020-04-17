@@ -106,6 +106,10 @@ class NET_EXPORT CanonicalCookie {
 
   const std::string& Name() const { return name_; }
   const std::string& Value() const { return value_; }
+  // We represent the cookie's host-only-flag as the absence of a leading dot in
+  // Domain(). See IsDomainCookie() and IsHostCookie() below.
+  // If you want the "cookie's domain" as described in RFC 6265bis, use
+  // DomainWithoutDot().
   const std::string& Domain() const { return domain_; }
   const std::string& Path() const { return path_; }
   const base::Time& CreationDate() const { return creation_date_; }
@@ -123,6 +127,10 @@ class NET_EXPORT CanonicalCookie {
   bool IsDomainCookie() const {
     return !domain_.empty() && domain_[0] == '.'; }
   bool IsHostCookie() const { return !IsDomainCookie(); }
+
+  // Returns the cookie's domain, with the leading dot removed, if present.
+  // This corresponds to the "cookie's domain" as described in RFC 6265bis.
+  std::string DomainWithoutDot() const;
 
   bool IsExpired(const base::Time& current) const {
     return !expiry_date_.is_null() && current >= expiry_date_;
@@ -303,9 +311,6 @@ class NET_EXPORT CanonicalCookie {
 
   // Returns whether the cookie was created at most |age_threshold| ago.
   bool IsRecentlyCreated(base::TimeDelta age_threshold) const;
-
-  // Returns the cookie's domain, with the leading dot removed, if present.
-  std::string DomainWithoutDot() const;
 
   std::string name_;
   std::string value_;

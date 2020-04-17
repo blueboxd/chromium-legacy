@@ -458,7 +458,7 @@ public class ChromeTabbedActivity
      * Constructs a ChromeTabbedActivity.
      */
     public ChromeTabbedActivity() {
-        mMainIntentMetrics = new MainIntentBehaviorMetrics(this);
+        mMainIntentMetrics = new MainIntentBehaviorMetrics();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             mMultiInstanceManager = new MultiInstanceManager(this, mTabModelSelectorSupplier,
                     getMultiWindowModeStateDispatcher(), getLifecycleDispatcher(), this);
@@ -1173,9 +1173,7 @@ public class ChromeTabbedActivity
                     || (shouldShowTabSwitcherOnStart()
                             && !mTabModelSelectorImpl.isIncognitoSelected());
 
-            mMainIntentMetrics.setIgnoreEvents(true);
             mTabModelSelectorImpl.restoreTabs(activeTabBeingRestored);
-            mMainIntentMetrics.setIgnoreEvents(false);
 
             // Only create an initial tab if no tabs were restored and no intent was handled.
             // Also, check whether the active tab was supposed to be restored and that the total
@@ -1190,9 +1188,7 @@ public class ChromeTabbedActivity
 
                 mPendingInitialTabCreation = true;
                 PartnerBrowserCustomizations.getInstance().setOnInitializeAsyncFinished(() -> {
-                    mMainIntentMetrics.setIgnoreEvents(true);
                     createInitialTab();
-                    mMainIntentMetrics.setIgnoreEvents(false);
                 }, INITIAL_TAB_CREATION_TIMEOUT_MS);
             }
         } finally {
@@ -1795,7 +1791,6 @@ public class ChromeTabbedActivity
     }
 
     private void onOmniboxFocusChanged(boolean hasFocus) {
-        mMainIntentMetrics.onOmniboxFocused();
         mTabModalHandler.onOmniboxFocusChanged(hasFocus);
     }
 

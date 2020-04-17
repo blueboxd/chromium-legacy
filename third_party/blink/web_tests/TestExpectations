@@ -921,7 +921,6 @@ crbug.com/591099 [ Mac ] paint/text/text-match-highlights-big-line-height.html [
 crbug.com/591099 [ Mac ] fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-auto.html [ Failure ]
 crbug.com/591099 [ Mac ] paint/invalidation/flexbox/remove-inline-block-descendant-of-flex.html [ Failure ]
 crbug.com/591099 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.html [ Failure ]
-crbug.com/591099 [ Mac10.11 ] virtual/audio-service/media/track/track-cue-rendering-position-auto-rtl.html [ Failure ]
 
 # A few other lines for this test are commented out above to avoid conflicting expectations.
 # If they are not also fixed, reinstate them when removing these lines.
@@ -3153,6 +3152,21 @@ crbug.com/1067277 external/wpt/css/css-content/element-replacement-on-replaced-e
 crbug.com/1069300 external/wpt/css/css-pseudo/active-selection-063.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-list-style-image.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-list-style-image.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-list-style-image.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-border-image.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-border-image.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-border-image.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/white-space-intrinsic-size-013.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/white-space-intrinsic-size-013.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text/white-space/white-space-intrinsic-size-013.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-background-image.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-background-image.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-background-image.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/white-space-intrinsic-size-014.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/white-space-intrinsic-size-014.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text/white-space/white-space-intrinsic-size-014.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/svg/painting/reftests/display-none-mask.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/svg/painting/reftests/display-none-mask.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/svg/painting/reftests/display-none-mask.html [ Failure ]
@@ -5756,6 +5770,10 @@ crbug.com/963141 [ Linux ] virtual/audio-service/media/video-object-fit.html [ P
 crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
 crbug.com/965389 [ Mac ] virtual/audio-service/media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
 
+# Flaky test on all platforms.
+crbug.com/979323 media/track/track-cue-rendering-position-auto-rtl.html [ Pass Failure ]
+crbug.com/979323 virtual/audio-service/media/track/track-cue-rendering-position-auto-rtl.html [ Pass Failure ]
+
 # Failing because of revert of If931c1faff528a87d8a78808f30225ebe2377072.
 crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_tracks.html [ Failure ]
 crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/3_tracks.html [ Failure ]
@@ -5814,7 +5832,6 @@ crbug.com/979253 external/wpt/css/css-pseudo/first-line-with-out-of-flow.html [ 
 crbug.com/979193 [ Mac ] paint/invalidation/svg/relative-sized-use-on-symbol.xhtml [ Pass Failure ]
 crbug.com/979193 [ Mac ] paint/invalidation/svg/remove-background-property-on-root.html [ Pass Failure ]
 crbug.com/979243 [ Mac ] editing/selection/inline-closest-leaf-child.html [ Pass Failure ]
-crbug.com/979323 [ Mac ] media/track/track-cue-rendering-position-auto-rtl.html [ Pass Failure ]
 crbug.com/979336 [ Mac ] fast/dynamic/anonymous-block-orphaned-lines.html [ Pass Failure ]
 
 # Sheriff 2019-06-28
@@ -6008,8 +6025,7 @@ crbug.com/630695 compositing/masks/mask-with-removed-filters.html [ Pass Failure
 crbug.com/1005128 crypto/subtle/abandon-crypto-operation2.html [ Pass Crash ]
 
 # Sheriff 2019-09-27
-crbug.com/1008826 [ Retina ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Pass Failure Timeout ]
-crbug.com/1008826 [ Mac10.14 ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Pass Failure Timeout ]
+crbug.com/1008826 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Pass Failure Timeout ]
 
 # Sheriff 2019-09-30
 crbug.com/1003715 [ Win10 ] http/tests/notifications/serviceworker-notification-properties.html [ Pass Failure Timeout ]
@@ -6672,6 +6688,9 @@ crbug.com/1069714 [ Mac10.13 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.htt
 
 # Sheriff 2020-04-10
 crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html [ Pass Failure Timeout ]
+
+# Sheriff 2020-04-17
+crbug.com/1071909 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw.https.html [ Pass Timeout ]
 
 # QUIC reordered versions to prefer IETF QUIC
 crbug.com/1070747 external/wpt/webrtc-quic/* [ Skip ]

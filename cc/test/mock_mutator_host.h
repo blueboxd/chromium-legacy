@@ -96,7 +96,7 @@ class MockMutatorHost : public MutatorHost {
                     base::TimeTicks frame_monotonic_time,
                     base::TimeDelta delayed_by));
   MOCK_METHOD0(ScrollAnimationAbort, void());
-  MOCK_CONST_METHOD0(IsImplOnlyScrollAnimating, bool());
+  MOCK_CONST_METHOD0(ImplOnlyScrollAnimatingElement, ElementId());
   MOCK_CONST_METHOD0(CompositedAnimationsCount, size_t());
   MOCK_CONST_METHOD0(MainThreadAnimationsCount, size_t());
   MOCK_CONST_METHOD0(HasCustomPropertyAnimations, bool());

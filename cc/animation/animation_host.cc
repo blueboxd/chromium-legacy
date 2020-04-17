@@ -692,9 +692,12 @@ void AnimationHost::ScrollAnimationAbort() {
       false /* needs_completion */);
 }
 
-bool AnimationHost::IsImplOnlyScrollAnimating() const {
+ElementId AnimationHost::ImplOnlyScrollAnimatingElement() const {
   DCHECK(scroll_offset_animations_impl_);
-  return scroll_offset_animations_impl_->IsAnimating();
+  if (!scroll_offset_animations_impl_->IsAnimating())
+    return ElementId();
+
+  return scroll_offset_animations_impl_->GetElementId();
 }
 
 void AnimationHost::AddToTicking(scoped_refptr<Animation> animation) {

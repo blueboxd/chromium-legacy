@@ -1,8 +1,8 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
+# Copyright 2016 The Chromium Authors.All rights reserved.
+# Use of this source code is governed by a BSD - style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chrome_build.gni")
+  import("//build/config/chrome_build.gni")
 import("//components/vector_icons/vector_icons.gni")
 
 aggregate_vector_icons("ash_vector_icons") {
@@ -172,7 +172,6 @@ aggregate_vector_icons("ash_vector_icons") {
     "system_menu_cast_enabled.icon",
     "system_menu_cast_generic.icon",
     "system_menu_cast_message.icon",
-    "system_menu_child_user.icon",
     "system_menu_computer.icon",
     "system_menu_gamepad.icon",
     "system_menu_guest.icon",
@@ -182,6 +181,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "system_menu_info.icon",
     "system_menu_keyboard.icon",
     "system_menu_keyboard_brightness.icon",
+    "system_menu_legacy_supervised_user.icon",
     "system_menu_lock.icon",
     "system_menu_mouse.icon",
     "system_menu_phone.icon",
@@ -211,7 +211,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "system_tray_caps_lock.icon",
     "system_tray_cast.icon",
     "system_tray_do_not_disturb.icon",
-    "system_tray_family_link.icon",
+    "system_tray_supervised_user.icon",
     "system_tray_managed.icon",
     "system_tray_notification_counter_plus.icon",
     "system_tray_recording.icon",

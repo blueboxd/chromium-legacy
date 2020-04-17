@@ -21,9 +21,9 @@ const gfx::VectorIcon& GetSupervisedUserIcon() {
 
   if (session_controller->IsUserSupervised() &&
       session_controller->IsUserChild())
-    return kSystemMenuChildUserIcon;
+    return kSystemMenuSupervisedUserIcon;
 
-  return kSystemMenuSupervisedUserIcon;
+  return kSystemMenuLegacySupervisedUserIcon;
 }
 
 base::string16 GetSupervisedUserMessage() {

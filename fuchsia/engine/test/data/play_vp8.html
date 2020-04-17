@@ -1,9 +1,21 @@
 <html>
+  <head><title>initial title</title></head>
   <body>
     <script>
       var bear = document.createElement('video');
+      var isMetadataLoaded = false;
+
+      var autoplay = (window.location.href.indexOf("autoplay") > 0);
+      if (autoplay) {
+        bear.autoplay = true;
+      }
+
       bear.onerror = function() { document.title = 'error'; }
       bear.onloadeddata = function() { document.title = 'loaded'; }
+      bear.onloadedmetadata = function() { isMetadataLoaded = true; }
+      bear.onpause = function () { isPlaying = false; }
+      bear.onplay = function() { document.title = 'playing'; }
+      bear.onstalled = function() { document.title = 'stalled'; }
       bear.src = 'bear-vp8a.webm';
     </script>
   </body>

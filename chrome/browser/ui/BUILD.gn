@@ -435,8 +435,10 @@ jumbo_static_library("ui") {
     "//components/captive_portal/core:buildflags",
     "//components/client_hints/browser",
     "//components/consent_auditor/",
+    "//components/content_settings/browser",
     "//components/content_settings/common:mojom",
     "//components/content_settings/core/browser",
+    "//components/content_settings/core/common",
     "//components/country_codes",
     "//components/crx_file",
     "//components/data_reduction_proxy/core/browser",
@@ -4469,10 +4471,6 @@ if (is_chromeos) {
 }
 
 if (is_android) {
-  java_cpp_enum("cookie_controls_enforcement_javagen") {
-    sources = [ "cookie_controls/cookie_controls_service.h" ]
-  }
-
   java_cpp_enum("tab_model_enums_java") {
     sources = [ "android/tab_model/tab_model.h" ]
   }

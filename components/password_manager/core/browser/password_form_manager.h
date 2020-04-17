@@ -145,6 +145,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   PasswordFormMetricsRecorder* GetMetricsRecorder() override;
   base::span<const InteractionsStats> GetInteractionsStats() const override;
   bool IsBlacklisted() const override;
+  bool IsMovableToAccountStore() const override;
 
   void Save() override;
   void Update(const autofill::PasswordForm& credentials_to_update) override;

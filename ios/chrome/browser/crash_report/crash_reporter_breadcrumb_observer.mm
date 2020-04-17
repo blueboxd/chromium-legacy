@@ -12,6 +12,10 @@
 #error "This file requires ARC support."
 #endif
 
+// The breadcrumbs size cannot be larger than the maximum length of a single
+// Breakpad product data value (currently 2550 bytes).
+const NSUInteger kMaxBreadcrumbsDataLength = 1530;
+
 @interface CrashReporterBreadcrumbObserver () {
   // Map associating the observed BreadcrumbManager with the corresponding
   // observer bridge instances.
@@ -42,7 +46,6 @@
 - (instancetype)init {
   if ((self = [super init])) {
     _breadcrumbs = [[NSMutableString alloc] init];
-    _maxProductDataLength = 1530U;  // 6 keys * 255 bytes/key
   }
   return self;
 }
@@ -80,26 +83,14 @@
   NSString* eventWithSeperator = [NSString stringWithFormat:@"%@\n", event];
   [_breadcrumbs insertString:eventWithSeperator atIndex:0];
 
-  NSUInteger maxBreadcrumbsLength =
-      self.breadcrumbsKeyCount * self.maxProductDataLength;
-  if (_breadcrumbs.length > maxBreadcrumbsLength) {
-    NSRange trimRange = NSMakeRange(maxBreadcrumbsLength,
-                                    _breadcrumbs.length - maxBreadcrumbsLength);
+  if (_breadcrumbs.length > kMaxBreadcrumbsDataLength) {
+    NSRange trimRange =
+        NSMakeRange(kMaxBreadcrumbsDataLength,
+                    _breadcrumbs.length - kMaxBreadcrumbsDataLength);
     [_breadcrumbs deleteCharactersInRange:trimRange];
   }
 
-  // Cut breadcrumbs strings into multiple pieces and upload with separate keys.
-  NSMutableArray* breadcrumbs =
-      [[NSMutableArray alloc] initWithCapacity:self.breadcrumbsKeyCount];
-  for (NSUInteger i = 0; i < self.breadcrumbsKeyCount &&
-                         (i * self.maxProductDataLength) < _breadcrumbs.length;
-       i++) {
-    NSUInteger location = i * self.maxProductDataLength;
-    NSRange range = NSMakeRange(location, MIN(self.maxProductDataLength,
-                                              _breadcrumbs.length - location));
-    [breadcrumbs addObject:[_breadcrumbs substringWithRange:range]];
-  }
-  breakpad_helper::SetBreadcrumbEvents(breadcrumbs);
+  breakpad_helper::SetBreadcrumbEvents(_breadcrumbs);
 }
 
 @end

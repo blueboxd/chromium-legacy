@@ -32,8 +32,8 @@ PasswordModelTypeController::PasswordModelTypeController(
       sync_service_(sync_service),
       state_changed_callback_(state_changed_callback),
       account_storage_opt_in_watcher_(
-          identity_manager_,
           pref_service_,
+          sync_service_,
           base::BindRepeating(
               &PasswordModelTypeController::OnOptInStateMaybeChanged,
               base::Unretained(this))) {

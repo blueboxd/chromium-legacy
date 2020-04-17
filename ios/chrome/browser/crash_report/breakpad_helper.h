@@ -12,10 +12,8 @@
 
 namespace breakpad_helper {
 
-// Key format for breadcrumbs attached to crash reports. Format string contains
-// %lu for index as there are multiple breadcrumbs keys uploaded to crash
-// server.
-extern NSString* const kBreadcrumbs;
+// Key for breadcrumbs attached to crash reports.
+extern NSString* const kBreadcrumbsProductDataKey;
 
 // Starts the crash handlers. This must be run as soon as possible to catch
 // early crashes.
@@ -133,10 +131,8 @@ void SetGridToVisibleTabAnimation(NSString* to_view_controller,
 // tab.
 void RemoveGridToVisibleTabAnimation();
 
-// Sets keys with the given |breadcrumbs|. Each item in |breadcrumbs| will be
-// stored separately with kBreadcrumbs+<index> key (where kBreadcrumbs0 stores
-// the latest breadscrumbs).
-void SetBreadcrumbEvents(NSArray* breadcrumbs);
+// Sets a key with the given |breadcrumbs| events.
+void SetBreadcrumbEvents(NSString* breadcrumbs);
 
 // Sets a key in browser to store the playback state of media player (audio or
 // video). This function records a new start. This function is called for each

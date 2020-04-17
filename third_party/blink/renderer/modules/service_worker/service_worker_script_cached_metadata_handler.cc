@@ -48,6 +48,8 @@ void ServiceWorkerScriptCachedMetadataHandler::SetCachedMetadata(
 
 void ServiceWorkerScriptCachedMetadataHandler::ClearCachedMetadata(
     ClearCacheType type) {
+  if (type == kDiscardLocally)
+    return;
   cached_metadata_ = nullptr;
   if (type != kClearPersistentStorage)
     return;

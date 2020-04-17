@@ -78,6 +78,7 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationsImpl
       base::Optional<base::TimeDelta> local_time) override {}
 
   bool IsAnimating() const;
+  ElementId GetElementId() const;
 
  private:
   void ScrollAnimationCreateInternal(ElementId element_id,

@@ -8,18 +8,19 @@
 
 #include "base/callback.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/sync/driver/sync_service.h"
 
 namespace password_manager {
 
 PasswordAccountStorageOptInWatcher::PasswordAccountStorageOptInWatcher(
-    signin::IdentityManager* identity_manager,
     PrefService* pref_service,
+    syncer::SyncService* sync_service,
     base::RepeatingClosure change_callback)
-    : identity_manager_(identity_manager),
+    : sync_service_(sync_service),
       change_callback_(std::move(change_callback)) {
   // The opt-in state is per-account, so it can change whenever the state of the
-  // signed-in account (aka unconsented primary account) changes.
-  identity_manager_->AddObserver(this);
+  // account used by Sync changes.
+  sync_service_->AddObserver(this);
   // The opt-in state is stored in a pref, so changes to the pref might indicate
   // a change to the opt-in state.
   pref_change_registrar_.Init(pref_service);
@@ -29,11 +30,11 @@ PasswordAccountStorageOptInWatcher::PasswordAccountStorageOptInWatcher(
 }
 
 PasswordAccountStorageOptInWatcher::~PasswordAccountStorageOptInWatcher() {
-  identity_manager_->RemoveObserver(this);
+  sync_service_->RemoveObserver(this);
 }
 
-void PasswordAccountStorageOptInWatcher::OnUnconsentedPrimaryAccountChanged(
-    const CoreAccountInfo& unconsented_primary_account_info) {
+void PasswordAccountStorageOptInWatcher::OnStateChanged(
+    syncer::SyncService* sync_service) {
   change_callback_.Run();
 }
 

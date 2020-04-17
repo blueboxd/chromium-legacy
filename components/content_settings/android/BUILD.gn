@@ -27,5 +27,8 @@ source_set("android") {
 }
 
 java_cpp_enum("content_setting_javagen") {
-  sources = [ "../core/common/content_settings.h" ]
+  sources = [
+    "../core/common/content_settings.h",
+    "../core/common/cookie_controls_enforcement.h",
+  ]
 }

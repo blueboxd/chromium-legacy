@@ -65,6 +65,7 @@ include_rules = [
   "+components/consent_auditor",
   "+components/constrained_window",
   "+components/content_capture/browser",
+  "+components/content_settings/browser",
   "+components/content_settings/core/browser",
   "+components/content_settings/core/test",
   "+components/contextual_search/buildflags.h",

@@ -215,14 +215,6 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
       CompositeToPdfCallback callback);
   void HandleDocumentCompletionRequest();
 
-  // Document content composition support functions when document is compiled
-  // using individual pages' content.  These are not used when document is
-  // composited with a separate metafile object.
-  mojom::PrintCompositor::Status PrepareForDocumentToPdf();
-  mojom::PrintCompositor::Status UpdateDocumentMetadata(uint32_t page_count);
-  mojom::PrintCompositor::Status CompleteDocumentToPdf(
-      base::ReadOnlySharedMemoryRegion* region);
-
   // Composite the content of a subframe.
   void CompositeSubframe(FrameInfo* frame_info);
 

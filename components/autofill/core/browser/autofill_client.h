@@ -61,7 +61,6 @@ namespace autofill {
 class AddressNormalizer;
 class AutocompleteHistoryManager;
 class AutofillPopupDelegate;
-class AutofillProfile;
 class CardUnmaskDelegate;
 class CreditCard;
 class FormDataImporter;
@@ -353,10 +352,6 @@ class AutofillClient : public RiskDataLoader {
       const std::vector<CreditCard*>& candidates,
       base::OnceCallback<void(const std::string&)> callback) = 0;
 #endif
-
-  // Runs |callback| if the |profile| should be imported as personal data.
-  virtual void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
-                                          base::OnceClosure callback) = 0;
 
   // Runs |callback| once the user makes a decision with respect to the
   // offer-to-save prompt. On desktop, shows the offer-to-save bubble if

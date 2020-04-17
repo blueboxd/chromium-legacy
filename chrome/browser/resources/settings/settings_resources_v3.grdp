@@ -323,8 +323,8 @@
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_MENU_SETTINGS_MENU_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/settings_menu/settings_menu.m.js"
+  <include name="IDR_SETTINGS_MENU_SETTINGS_MENU_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/settings_menu/settings_menu.js"
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
@@ -605,8 +605,8 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/search_settings.m.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SETTINGS_MAIN_SETTINGS_MAIN_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/settings_main/settings_main.m.js"
+  <include name="IDR_SETTINGS_SETTINGS_MAIN_SETTINGS_MAIN_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/settings_main/settings_main.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_SETTINGS_PAGE_MAIN_PAGE_BEHAVIOR_M_JS"
@@ -797,12 +797,11 @@
              file="${root_gen_dir}/chrome/browser/resources/settings/printing_page/printing_browser_proxy.m.js"
              use_base_dir="false"
              compress="false" type="BINDATA" />
-    <include name="IDR_SETTINGS_SYSTEM_PAGE_BROWSER_PROXY_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/system_page/system_page_browser_proxy.m.js"
-             use_base_dir="false"
+    <include name="IDR_SETTINGS_SYSTEM_PAGE_BROWSER_PROXY_JS"
+             file="system_page/system_page_browser_proxy.js"
              compress="false" type="BINDATA" />
-    <include name="IDR_SETTINGS_SYSTEM_PAGE_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/system_page/system_page.m.js"
+    <include name="IDR_SETTINGS_SYSTEM_PAGE_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/system_page/system_page.js"
              use_base_dir="false"
              compress="false" type="BINDATA"
              preprocess="true" />

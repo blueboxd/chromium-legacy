@@ -7,32 +7,34 @@
 
 #include "base/callback_forward.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/sync/driver/sync_service_observer.h"
 
 class PrefService;
+
+namespace syncer {
+class SyncService;
+}  // namespace syncer
 
 namespace password_manager {
 
 // Helper class to watch for changes to the opt-in state for the account-scoped
 // password storage (see password_manager_util::IsOptedInForAccountStorage()).
-class PasswordAccountStorageOptInWatcher
-    : public signin::IdentityManager::Observer {
+class PasswordAccountStorageOptInWatcher : public syncer::SyncServiceObserver {
  public:
-  // |identity_manager| and |pref_service| must not be null and must outlive
-  // this object.
+  // |pref_service| and |sync_service| must not be null and must outlive this
+  // object.
   // |change_callback| will be invoked whenever the state of
   // password_manager_util::IsOptedInForAccountStorage() might have changed.
-  PasswordAccountStorageOptInWatcher(signin::IdentityManager* identity_manager,
-                                     PrefService* pref_service,
+  PasswordAccountStorageOptInWatcher(PrefService* pref_service,
+                                     syncer::SyncService* sync_service,
                                      base::RepeatingClosure change_callback);
   ~PasswordAccountStorageOptInWatcher() override;
 
-  // identity::IdentityManager::Observer:
-  void OnUnconsentedPrimaryAccountChanged(
-      const CoreAccountInfo& unconsented_primary_account_info) override;
+  // syncer::SyncServiceObserver:
+  void OnStateChanged(syncer::SyncService* sync_service) override;
 
  private:
-  signin::IdentityManager* const identity_manager_;
+  syncer::SyncService* const sync_service_;
   base::RepeatingClosure change_callback_;
 
   PrefChangeRegistrar pref_change_registrar_;

@@ -138,7 +138,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* FindActiveTreeLayerById(int id);
   LayerImpl* FindPendingTreeLayerById(int id);
   bool PinchGestureActive() const;
-  viz::BeginFrameArgs CurrentBeginFrameArgs() const;
+  const viz::BeginFrameArgs& CurrentBeginFrameArgs() const;
   base::TimeDelta CurrentBeginFrameInterval() const;
   const gfx::Rect ViewportRectForTilePriority() const;
   std::unique_ptr<ScrollbarAnimationController>

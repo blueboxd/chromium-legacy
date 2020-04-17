@@ -1657,9 +1657,7 @@ std::string CookieMonster::GetKey(base::StringPiece domain) {
   if (effective_domain.empty())
     effective_domain = std::string(domain);
 
-  if (!effective_domain.empty() && effective_domain[0] == '.')
-    return effective_domain.substr(1);
-  return effective_domain;
+  return cookie_util::CookieDomainAsHost(effective_domain);
 }
 
 bool CookieMonster::HasCookieableScheme(const GURL& url) {

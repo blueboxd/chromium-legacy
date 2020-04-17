@@ -144,8 +144,8 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
       password_account_storage_opt_in_watcher_(
           std::make_unique<
               password_manager::PasswordAccountStorageOptInWatcher>(
-              IdentityManagerFactory::GetForProfile(profile_),
               profile_->GetPrefs(),
+              ProfileSyncServiceFactory::GetForProfile(profile_),
               base::BindRepeating(&PasswordsPrivateDelegateImpl::
                                       OnAccountStorageOptInStateChanged,
                                   base::Unretained(this)))),

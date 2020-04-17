@@ -8,7 +8,6 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/focus_cycler.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
@@ -346,7 +345,6 @@ void Shelf::CreateNavigationWidget(aura::Window* container) {
   navigation_widget_->Initialize(container);
   navigation_widget_metrics_reporter_ =
       std::make_unique<NavigationWidgetAnimationMetricsReporter>(this);
-  Shell::Get()->focus_cycler()->AddWidget(navigation_widget_.get());
 }
 
 void Shelf::CreateHotseatWidget(aura::Window* container) {
@@ -370,7 +368,6 @@ void Shelf::CreateStatusAreaWidget(aura::Window* status_container) {
   status_area_widget_ =
       std::make_unique<StatusAreaWidget>(status_container, this);
   status_area_widget_->Initialize();
-  Shell::Get()->focus_cycler()->AddWidget(status_area_widget_.get());
 }
 
 void Shelf::CreateShelfWidget(aura::Window* root) {

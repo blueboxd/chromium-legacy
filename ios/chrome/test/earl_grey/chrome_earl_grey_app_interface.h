@@ -25,6 +25,10 @@
 // operation failed.
 + (NSError*)clearBrowsingHistory;
 
+// Returns the number of entries in the history database. Returns -1 if there
+// was an error.
++ (NSInteger)getBrowsingHistoryEntryCount;
+
 // Clears browsing cache. Returns nil on success, or else an NSError indicating
 // the operation failed.
 + (NSError*)removeBrowsingCache;

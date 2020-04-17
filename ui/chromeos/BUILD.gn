@@ -42,6 +42,7 @@ component("chromeos") {
     "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
     "//skia",
+    "//ui/accessibility:ax_base",
     "//ui/aura",
     "//ui/base",
     "//ui/base/ime",

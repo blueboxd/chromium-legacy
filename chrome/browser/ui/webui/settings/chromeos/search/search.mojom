@@ -21,6 +21,19 @@ struct SearchResult {
 
   // Icon to display for the search result.
   SearchResultIcon icon;
+
+  // Relevance score, in the range [0, 1]. A score of 1 indicates a perfect
+  // string match.
+  double relevance_score;
+
+  // List of names of the sections/subpages for this result, which may contain
+  // names of sections and/or subpages. Names are all localized String16s, ready
+  // to be displayed directly (e.g., as breadcrumbs).
+  //
+  // Example 1 - Wi-Fi subpage: ["Settings", "Network", "Wi-Fi"]
+  // Example 2 - External storage: ["Settings", "Device", "Storage management",
+  //                                "External storage preferences"]
+  array<mojo_base.mojom.String16> settings_page_hierarchy;
 };
 
 // Provides settings search results. Implemented in the browser process;

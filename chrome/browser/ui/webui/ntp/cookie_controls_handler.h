@@ -9,6 +9,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
+#include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {

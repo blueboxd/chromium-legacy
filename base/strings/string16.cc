@@ -13,6 +13,8 @@
 
 #elif defined(WCHAR_T_IS_UTF32)
 
+#include <string.h>
+
 #include <ostream>
 
 #include "base/strings/string_piece.h"

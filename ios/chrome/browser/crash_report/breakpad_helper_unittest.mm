@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
 
+#include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
+#include "ios/chrome/browser/crash_report/crash_reporter_breadcrumb_observer.h"
 #include "ios/chrome/browser/crash_report/main_thread_freeze_detector.h"
 #import "ios/chrome/test/ocmock/OCMockObject+BreakpadControllerTesting.h"
 #import "ios/testing/scoped_block_swizzler.h"
@@ -78,18 +80,9 @@ TEST_F(BreakpadHelperTest, CrashReportUserApplicationStateAllKeys) {
       @"presented_view_controller", @"parent_view_controller");
   breakpad_helper::MediaStreamPlaybackDidStart();
 
-  // Build a sample breadcrumbs string greater than the maximum value size as
-  // defined in Breakpad.h at the BreakpadSetKeyValue function comment.
-  NSMutableString* breadcrumbs = [[NSMutableString alloc] init];
-  while (breadcrumbs.length < 255) {
-    [breadcrumbs appendString:@"12:01 Fake Breadcrumb Event/n"];
-  }
-
-  NSMutableArray* events = [[NSMutableArray alloc] init];
-  for (int i = 0; i < breakpad::kBreadcrumbsKeyCount; i++) {
-    [events addObject:breadcrumbs];
-  }
-  breakpad_helper::SetBreadcrumbEvents(events);
+  // Set a max-length breadcrumbs string.
+  std::string breadcrumbs(kMaxBreadcrumbsDataLength, 'A');
+  breakpad_helper::SetBreadcrumbEvents(base::SysUTF8ToNSString(breadcrumbs));
 }
 
 TEST_F(BreakpadHelperTest, GetCrashReportCount) {

@@ -10,10 +10,10 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/permissions/permission_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -157,9 +157,9 @@ void ProtectedMediaIdentifierPermissionContext::UpdateTabContext(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // WebContents may have gone away.
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(id.render_process_id(),
-                                              id.render_frame_id());
+  content_settings::TabSpecificContentSettings* content_settings =
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          id.render_process_id(), id.render_frame_id());
   if (content_settings) {
     content_settings->OnProtectedMediaIdentifierPermissionSet(
         requesting_frame.GetOrigin(), allowed);

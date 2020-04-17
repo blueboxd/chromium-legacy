@@ -32,6 +32,12 @@ class WebEngineContentRendererClient : public content::ContentRendererClient {
   std::unique_ptr<content::URLLoaderThrottleProvider>
   CreateURLLoaderThrottleProvider(
       content::URLLoaderThrottleProviderType type) override;
+  bool DeferMediaLoad(content::RenderFrame* render_frame,
+                      bool has_played_media_before,
+                      base::OnceClosure closure) override;
+
+  bool RunClosureWhenInForeground(content::RenderFrame* render_frame,
+                                  base::OnceClosure closure);
 
   // Map of rules receivers per RenderFrame ID.
   std::map<int, std::unique_ptr<UrlRequestRulesReceiver>>

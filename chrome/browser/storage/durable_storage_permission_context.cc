@@ -10,7 +10,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -22,6 +21,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/origin_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-shared.h"
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;

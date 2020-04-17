@@ -48,6 +48,13 @@ NET_EXPORT bool GetCookieDomainWithString(const GURL& url,
 // i.e. it doesn't begin with a leading '.' character.
 NET_EXPORT bool DomainIsHostOnly(const std::string& domain_string);
 
+// If |cookie_domain| is nonempty and starts with a "." character, this returns
+// the substring of |cookie_domain| without the leading dot. (Note only one
+// leading dot is stripped, if there are multiple.) Otherwise it returns
+// |cookie_domain|. This is useful for converting from CanonicalCookie's
+// representation of a cookie domain to the RFC's notion of a cookie's domain.
+NET_EXPORT std::string CookieDomainAsHost(const std::string& cookie_domain);
+
 // Parses the string with the cookie expiration time (very forgivingly).
 // Returns the "null" time on failure.
 //

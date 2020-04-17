@@ -36,6 +36,8 @@ jumbo_static_library("browser") {
     "autofill_browser_util.h",
     "autofill_client.cc",
     "autofill_client.h",
+    "autofill_credit_card_policy_handler.cc",
+    "autofill_credit_card_policy_handler.h",
     "autofill_data_util.cc",
     "autofill_data_util.h",
     "autofill_download_manager.cc",
@@ -317,8 +319,6 @@ jumbo_static_library("browser") {
     sources += [
       "autofill_address_policy_handler.cc",
       "autofill_address_policy_handler.h",
-      "autofill_credit_card_policy_handler.cc",
-      "autofill_credit_card_policy_handler.h",
       "autofill_policy_handler.cc",
       "autofill_policy_handler.h",
       "payments/credit_card_fido_authenticator.cc",
@@ -354,6 +354,8 @@ jumbo_static_library("browser") {
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//components/os_crypt",
+    "//components/policy/core/browser",
+    "//components/policy/core/common",
     "//components/pref_registry",
     "//components/prefs",
     "//components/signin/public/base",
@@ -385,11 +387,7 @@ jumbo_static_library("browser") {
   ]
 
   if (!is_ios) {
-    deps += [
-      "//components/policy/core/browser",
-      "//components/policy/core/common",
-      "//third_party/blink/public/common",
-    ]
+    deps += [ "//third_party/blink/public/common" ]
   }
 
   if (!is_android && !is_ios) {
@@ -541,6 +539,7 @@ source_set("unit_tests") {
     "address_normalizer_impl_unittest.cc",
     "address_rewriter_unittest.cc",
     "autocomplete_history_manager_unittest.cc",
+    "autofill_credit_card_policy_handler_unittest.cc",
     "autofill_data_util_unittest.cc",
     "autofill_download_manager_unittest.cc",
     "autofill_driver_factory_unittest.cc",
@@ -624,7 +623,6 @@ source_set("unit_tests") {
   if (!is_ios) {
     sources += [
       "autofill_address_policy_handler_unittest.cc",
-      "autofill_credit_card_policy_handler_unittest.cc",
       "autofill_policy_handler_unittest.cc",
       "payments/credit_card_fido_authenticator_unittest.cc",
     ]
@@ -657,6 +655,7 @@ source_set("unit_tests") {
     "//components/leveldb_proto",
     "//components/os_crypt",
     "//components/os_crypt:test_support",
+    "//components/policy/core/common",
     "//components/prefs:test_support",
     "//components/resources",
     "//components/security_state/core",
@@ -690,10 +689,7 @@ source_set("unit_tests") {
   ]
 
   if (!is_ios) {
-    deps += [
-      "//components/policy/core/common",
-      "//third_party/blink/public/common",
-    ]
+    deps += [ "//third_party/blink/public/common" ]
   }
 }
 

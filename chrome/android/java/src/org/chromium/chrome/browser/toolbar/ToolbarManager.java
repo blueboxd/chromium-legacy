@@ -404,7 +404,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mLocationBar.setDefaultTextEditActionModeCallback(
                 mActionModeController.getActionModeCallback());
         mLocationBar.initializeControls(new WindowDelegate(mActivity.getWindow()),
-                mActivity.getWindowAndroid(), mActivityTabProvider);
+                mActivity.getWindowAndroid(), mActivityTabProvider, mIncognitoStateProvider);
         mLocationBar.addUrlFocusChangeListener(mLocationBarFocusObserver);
         mProgressBarCoordinator =
                 new LoadProgressCoordinator(mActivityTabProvider, mToolbar.getProgressBar());

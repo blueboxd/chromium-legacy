@@ -101,6 +101,13 @@ if (is_android) {
   }
 }
 
+mojom("common_mojom") {
+  disable_variants = true
+
+  sources = [ "common/renderer_configuration.mojom" ]
+  deps = [ "//components/content_settings/core/common:mojo_bindings" ]
+}
+
 source_set("weblayer_lib_base") {
   sources = [
     "app/content_main_delegate_impl.cc",
@@ -172,6 +179,8 @@ source_set("weblayer_lib_base") {
     "browser/system_network_context_manager.h",
     "browser/tab_impl.cc",
     "browser/tab_impl.h",
+    "browser/tab_specific_content_settings_delegate.cc",
+    "browser/tab_specific_content_settings_delegate.h",
     "browser/url_bar/autocomplete_scheme_classifier_impl.cc",
     "browser/url_bar/autocomplete_scheme_classifier_impl.h",
     "browser/url_bar/url_bar_controller_impl.cc",
@@ -223,6 +232,8 @@ source_set("weblayer_lib_base") {
     "renderer/error_page_helper.h",
     "renderer/weblayer_render_frame_observer.cc",
     "renderer/weblayer_render_frame_observer.h",
+    "renderer/weblayer_render_thread_observer.cc",
+    "renderer/weblayer_render_thread_observer.h",
     "utility/content_utility_client_impl.cc",
     "utility/content_utility_client_impl.h",
   ]
@@ -236,6 +247,7 @@ source_set("weblayer_lib_base") {
 
   public_deps = [ ":android_descriptors" ]
   deps = [
+    ":common_mojom",
     "//base",
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
@@ -247,6 +259,8 @@ source_set("weblayer_lib_base") {
     "//components/captive_portal/core:buildflags",
     "//components/cdm/renderer",
     "//components/client_hints/browser",
+    "//components/content_settings/browser",
+    "//components/content_settings/common:mojom",
     "//components/content_settings/common:mojom",
     "//components/content_settings/core/browser",
     "//components/content_settings/renderer",
@@ -269,6 +283,7 @@ source_set("weblayer_lib_base") {
     "//components/security_interstitials/content/renderer:security_interstitial_page_controller",
     "//components/security_interstitials/core",
     "//components/security_state/content",
+    "//components/services/storage/public/mojom",
     "//components/sessions",
     "//components/spellcheck:buildflags",
     "//components/ssl_errors",

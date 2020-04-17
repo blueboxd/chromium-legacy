@@ -15,6 +15,7 @@ namespace blink {
 
 template <typename T>
 class GarbageCollected;
+class HeapObjectHeader;
 
 // GC_PLUGIN_IGNORE is used to make the plugin ignore a particular class or
 // field when checking for proper usage.  When using GC_PLUGIN_IGNORE
@@ -106,6 +107,10 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
   // scenarios, e.g., initializing stores. As a result, we cannot depend on the
   // write barriers for catching writes to member fields and thus have to
   // process the object (instead of just marking only the header).
+  virtual HeapObjectHeader* GetHeapObjectHeader() const {
+    return reinterpret_cast<HeapObjectHeader*>(
+        BlinkGC::kNotFullyConstructedObject);
+  }
   virtual TraceDescriptor GetTraceDescriptor() const {
     return {BlinkGC::kNotFullyConstructedObject, nullptr};
   }
@@ -113,11 +118,15 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
 
 #define DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(TYPE)                         \
  public:                                                                     \
-  TraceDescriptor GetTraceDescriptor() const override {                      \
+  HeapObjectHeader* GetHeapObjectHeader() const override {                   \
     static_assert(                                                           \
         WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type,    \
                                   blink::GarbageCollected>::value,           \
         "only garbage collected objects can have garbage collected mixins"); \
+    return HeapObjectHeader::FromPayload(static_cast<const TYPE*>(this));    \
+  }                                                                          \
+                                                                             \
+  TraceDescriptor GetTraceDescriptor() const override {                      \
     return {const_cast<TYPE*>(static_cast<const TYPE*>(this)),               \
             TraceTrait<TYPE>::Trace};                                        \
   }                                                                          \
@@ -157,6 +166,10 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
 //  };
 #define MERGE_GARBAGE_COLLECTED_MIXINS()                   \
  public:                                                   \
+  HeapObjectHeader* GetHeapObjectHeader() const override { \
+    return reinterpret_cast<HeapObjectHeader*>(            \
+        BlinkGC::kNotFullyConstructedObject);              \
+  }                                                        \
   TraceDescriptor GetTraceDescriptor() const override {    \
     return {BlinkGC::kNotFullyConstructedObject, nullptr}; \
   }                                                        \

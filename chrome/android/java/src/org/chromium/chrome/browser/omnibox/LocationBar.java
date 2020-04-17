@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
@@ -135,10 +136,13 @@ public interface LocationBar extends UrlBarDelegate, FakeboxDelegate {
      * Initialize controls that will act as hooks to various functions.
      * @param windowDelegate {@link WindowDelegate} that will provide {@link Window} related info.
      * @param windowAndroid {@link WindowAndroid} that is used by the owning {@link Activity}.
-     * @param provider An {@link ActivityTabProvider} to access the activity's current tab.
+     * @param activityTabProvider An {@link ActivityTabProvider} to access the activity's current
+     *         tab.
+     * @param incognitoStateProvider An {@link IncognitoStateProvider} to access the current
+     *         incognito state.
      */
     void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid,
-            ActivityTabProvider provider);
+            ActivityTabProvider activityTabProvider, IncognitoStateProvider incognitoStateProvider);
 
     /**
      * Triggers the cursor to be visible in the UrlBar without triggering any of the focus animation

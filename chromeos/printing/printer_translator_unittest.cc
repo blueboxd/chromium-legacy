@@ -2,18 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
+#include "chromeos/printing/printer_translator.h"
+
+#include <string>
 
 #include "base/memory/ptr_util.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chromeos/printing/cups_printer_status.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "chromeos/printing/printer_translator.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+
+using CupsPrinterStatusReason = CupsPrinterStatus::CupsPrinterStatusReason;
 
 namespace {
 
@@ -315,6 +319,63 @@ TEST(PrinterTranslatorTest, GetCupsPrinterInfoAutoconfPrinter) {
   // Since this is an autoconf printer we expect "printerPpdReference.autoconf"
   // to be true.
   ExpectDictBooleanValue(true, *printer_info, "printerPpdReference.autoconf");
+}
+
+TEST(PrinterTranslatorTest, GetCupsPrinterStatusOneReason) {
+  CupsPrinterStatus cups_printer_status("id");
+  cups_printer_status.AddStatusReason(
+      CupsPrinterStatusReason::Reason::kDoorOpen,
+      CupsPrinterStatusReason::Severity::kError);
+
+  base::Value printer_status_dict =
+      CreateCupsPrinterStatusDictionary(cups_printer_status);
+
+  EXPECT_EQ("id", *printer_status_dict.FindStringPath("printerId"));
+  EXPECT_EQ(cups_printer_status.GetTimestamp().ToJsTimeIgnoringNull(),
+            *printer_status_dict.FindDoublePath("timestamp"));
+
+  const base::Value* status_reasons =
+      printer_status_dict.FindListPath("status_reasons");
+  EXPECT_EQ(1u, status_reasons->GetList().size());
+
+  for (const base::Value& status_reason : status_reasons->GetList()) {
+    EXPECT_EQ(static_cast<int>(CupsPrinterStatusReason::Reason::kDoorOpen),
+              *status_reason.FindIntPath("reason"));
+    EXPECT_EQ(static_cast<int>(CupsPrinterStatusReason::Severity::kError),
+              *status_reason.FindIntPath("severity"));
+  }
+}
+
+TEST(PrinterTranslatorTest, GetCupsPrinterStatusTwoReasons) {
+  CupsPrinterStatus cups_printer_status("id");
+  cups_printer_status.AddStatusReason(
+      CupsPrinterStatusReason::Reason::kLowOnPaper,
+      CupsPrinterStatusReason::Severity::kWarning);
+  cups_printer_status.AddStatusReason(
+      CupsPrinterStatusReason::Reason::kPaperJam,
+      CupsPrinterStatusReason::Severity::kError);
+
+  base::Value printer_status_dict =
+      CreateCupsPrinterStatusDictionary(cups_printer_status);
+
+  EXPECT_EQ("id", *printer_status_dict.FindStringPath("printerId"));
+  EXPECT_EQ(cups_printer_status.GetTimestamp().ToJsTimeIgnoringNull(),
+            *printer_status_dict.FindDoublePath("timestamp"));
+
+  const base::Value* status_reasons =
+      printer_status_dict.FindListPath("status_reasons");
+
+  auto status_reasons_list = status_reasons->GetList();
+  EXPECT_EQ(2u, status_reasons_list.size());
+  EXPECT_EQ(static_cast<int>(CupsPrinterStatusReason::Reason::kLowOnPaper),
+            status_reasons_list[0].FindIntPath("reason"));
+  EXPECT_EQ(static_cast<int>(CupsPrinterStatusReason::Severity::kWarning),
+            status_reasons_list[0].FindIntPath("severity"));
+
+  EXPECT_EQ(static_cast<int>(CupsPrinterStatusReason::Reason::kPaperJam),
+            status_reasons_list[1].FindIntPath("reason"));
+  EXPECT_EQ(static_cast<int>(CupsPrinterStatusReason::Severity::kError),
+            status_reasons_list[1].FindIntPath("severity"));
 }
 
 }  // namespace chromeos

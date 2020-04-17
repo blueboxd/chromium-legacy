@@ -385,24 +385,6 @@ mojom::PrintCompositor::Status PrintCompositorImpl::CompositeToPdf(
   return mojom::PrintCompositor::Status::kSuccess;
 }
 
-mojom::PrintCompositor::Status PrintCompositorImpl::CompleteDocumentToPdf(
-    base::ReadOnlySharedMemoryRegion* region) {
-  docinfo_->doc->close();
-
-  base::MappedReadOnlyRegion region_mapping =
-      base::ReadOnlySharedMemoryRegion::Create(
-          docinfo_->compositor_stream.bytesWritten());
-  if (!region_mapping.IsValid()) {
-    DLOG(ERROR)
-        << "CompleteDocumentToPdf: Cannot create new shared memory region.";
-    return mojom::PrintCompositor::Status::kHandleMapError;
-  }
-
-  docinfo_->compositor_stream.copyToAndReset(region_mapping.mapping.memory());
-  *region = std::move(region_mapping.region);
-  return mojom::PrintCompositor::Status::kSuccess;
-}
-
 void PrintCompositorImpl::CompositeSubframe(FrameInfo* frame_info) {
   frame_info->composited = true;
 
@@ -448,8 +430,24 @@ void PrintCompositorImpl::FulfillRequest(
 
 void PrintCompositorImpl::CompleteDocumentRequest(
     CompleteDocumentToPdfCallback callback) {
+  mojom::PrintCompositor::Status status;
   base::ReadOnlySharedMemoryRegion region;
-  auto status = CompleteDocumentToPdf(&region);
+
+  docinfo_->doc->close();
+
+  base::MappedReadOnlyRegion region_mapping =
+      base::ReadOnlySharedMemoryRegion::Create(
+          docinfo_->compositor_stream.bytesWritten());
+  if (region_mapping.IsValid()) {
+    docinfo_->compositor_stream.copyToAndReset(region_mapping.mapping.memory());
+    region = std::move(region_mapping.region);
+    status = mojom::PrintCompositor::Status::kSuccess;
+  } else {
+    DLOG(ERROR) << "CompleteDocumentRequest: "
+                << "Cannot create new shared memory region.";
+    status = mojom::PrintCompositor::Status::kHandleMapError;
+  }
+
   std::move(callback).Run(status, std::move(region));
 }
 

@@ -14,7 +14,8 @@ namespace paint_preview {
 class FileWStream : public SkWStream {
  public:
   // Note: |file| must support writing.
-  FileWStream(base::File file);
+  explicit FileWStream(base::File file);
+  FileWStream(base::File file, size_t max_size);
   ~FileWStream() override;
 
   bool write(const void* buffer, size_t size) override;
@@ -24,9 +25,13 @@ class FileWStream : public SkWStream {
   // Closes the file (occurs automatically on destruction).
   void Close();
 
+  bool DidWriteFail() const { return has_write_failed_; }
+
  private:
   base::File file_;
+  size_t max_size_;
   size_t bytes_written_;
+  bool has_write_failed_;
 
   FileWStream(const FileWStream&) = delete;
   FileWStream& operator=(const FileWStream&) = delete;
@@ -37,7 +42,7 @@ class FileWStream : public SkWStream {
 class FileRStream : public SkStream {
  public:
   // Note: |file| must support reading. It *cannot* be modified while streaming.
-  FileRStream(base::File file);
+  explicit FileRStream(base::File file);
   ~FileRStream() override;
 
   size_t read(void* buffer, size_t size) override;

@@ -91,7 +91,7 @@ class ItemsBuilderForMarkLineBoxesDirty {
   void AppendOutOfFlowPositioned(LayoutObject*) {
     has_floating_or_out_of_flow_positioned_ = true;
   }
-  void SetIsSymbolMarker(bool) {}
+  void SetIsSymbolMarker() {}
   void EnterBlock(const ComputedStyle*) {}
   void ExitBlock() {}
   void EnterInline(LayoutInline* layout_inline) {
@@ -265,7 +265,7 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
       builder->AppendText(layout_text, previous_data);
 
       if (symbol == layout_text)
-        builder->SetIsSymbolMarker(true);
+        builder->SetIsSymbolMarker();
 
       builder->ClearNeedsLayout(layout_text);
 

@@ -1638,7 +1638,12 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:11-', 'android:30-'],
+      'supported_on': [
+        'chrome.*:8-',
+        'chrome_os:11-',
+        'android:30-',
+        'ios:84-',
+      ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -3101,6 +3106,7 @@
         'chrome.*:63-',
         'chrome_os:63-',
         'android:63-',
+        'ios:84-',
       ],
       'features': {
         'can_be_recommended': True,
@@ -19741,9 +19747,9 @@
       'tags': [],
       'desc': ''' This policy controls whether or not the "Always open" checkbox is shown on external protocol launch confirmation prompts.
 
-      If this policy is set to True, when an external protocol confirmation is shown, the user may choose to "Always open" the protocol without future confirmation prompts.
+      If this policy is set to True or not set, when an external protocol confirmation is shown, the user can select "Always allow" to skip all future confirmation prompts for the protocol on this site.
 
-      If this policy is set to False or not set, the "Always open" checkbox is not displayed and the user will be prompted each time an external protocol is invoked.'''
+      If this policy is set to False, the "Always allow" checkbox is not displayed and the user will be prompted each time an external protocol is invoked.'''
     },
     {
       'name': 'DefaultInsecureContentSetting',

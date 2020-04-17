@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service_factory.h"
+#include "components/content_settings/core/common/cookie_controls_enforcement.h"
 
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"

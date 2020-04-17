@@ -53,6 +53,9 @@ struct MediaFeed {
   // the number of other origins with less watchtime divided by the total
   // number of other origins. The value is between 0.0 and 100.0.
   double origin_audio_video_watchtime_percentile;
+
+  // The last time this feed was displayed in the UI.
+  mojo_base.mojom.Time? last_display_time;
 };
 
 // The result of fetching the feed. This enum is committed to storage so do not

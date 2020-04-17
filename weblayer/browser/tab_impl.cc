@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/autofill_provider.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/client_hints/browser/client_hints.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/find_in_page/find_types.h"
 #include "components/permissions/permission_manager.h"
@@ -41,6 +42,7 @@
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/profile_impl.h"
+#include "weblayer/browser/tab_specific_content_settings_delegate.h"
 #include "weblayer/common/isolated_world_ids.h"
 #include "weblayer/public/fullscreen_delegate.h"
 #include "weblayer/public/new_tab_delegate.h"
@@ -219,6 +221,9 @@ TabImpl::TabImpl(ProfileImpl* profile,
       HostContentSettingsMapFactory::GetForBrowserContext(
           web_contents_->GetBrowserContext()),
       GetUserAgentMetadata());
+  content_settings::TabSpecificContentSettings::CreateForWebContents(
+      web_contents_.get(), std::make_unique<TabSpecificContentSettingsDelegate>(
+                               web_contents_.get()));
 
 #if defined(OS_ANDROID)
   javascript_dialogs::TabModalDialogManager::CreateForWebContents(

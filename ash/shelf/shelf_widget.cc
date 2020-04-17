@@ -686,8 +686,13 @@ void ShelfWidget::OnTabletModeChanged() {
 }
 
 void ShelfWidget::PostCreateShelf() {
-  SetFocusCycler(Shell::Get()->focus_cycler());
-  hotseat_widget()->SetFocusCycler(Shell::Get()->focus_cycler());
+  ash::FocusCycler* focus_cycler = Shell::Get()->focus_cycler();
+  SetFocusCycler(focus_cycler);
+
+  // Add widgets to |focus_cycler| in the desired focus order in LTR.
+  focus_cycler->AddWidget(navigation_widget());
+  hotseat_widget()->SetFocusCycler(focus_cycler);
+  focus_cycler->AddWidget(status_area_widget());
 
   shelf_layout_manager_->LayoutShelf();
   shelf_layout_manager_->UpdateAutoHideState();

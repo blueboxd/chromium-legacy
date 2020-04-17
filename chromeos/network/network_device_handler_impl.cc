@@ -610,6 +610,8 @@ void NetworkDeviceHandlerImpl::UpdatePrimaryEnabledUsbEthernetDevice() {
   }
 
   // Nothing change, primary USB Ethernet device still enabled.
+  // Note that if |primary_enabled_usb_ethernet_device_path_| is empty, this
+  // will be IsUsbEnabledDevice(nullptr) which returns false.
   if (IsUsbEnabledDevice(network_state_handler_->GetDeviceState(
           primary_enabled_usb_ethernet_device_path_))) {
     return;

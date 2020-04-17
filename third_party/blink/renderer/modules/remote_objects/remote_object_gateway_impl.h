@@ -57,6 +57,7 @@ class MODULES_EXPORT RemoteObjectGatewayImpl
   void BindRemoteObjectReceiver(
       int32_t object_id,
       mojo::PendingReceiver<mojom::blink::RemoteObject>);
+  void ReleaseObject(int32_t object_id);
 
  private:
   // mojom::blink::RemoteObjectGateway

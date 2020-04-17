@@ -28,6 +28,7 @@ class MockPasswordFormManagerForUI : public PasswordFormManagerForUI {
   MOCK_CONST_METHOD0(GetInteractionsStats,
                      base::span<const InteractionsStats>());
   MOCK_CONST_METHOD0(IsBlacklisted, bool());
+  MOCK_CONST_METHOD0(IsMovableToAccountStore, bool());
   MOCK_METHOD0(Save, void());
   MOCK_METHOD1(Update,
                void(const autofill::PasswordForm& credentials_to_update));

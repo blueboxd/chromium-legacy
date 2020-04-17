@@ -108,8 +108,6 @@ class ChromeAutofillClient
       const std::vector<CreditCard*>& candidates,
       base::OnceCallback<void(const std::string&)> callback) override;
 #endif  // !defined(OS_ANDROID)
-  void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
-                                  base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(
       const CreditCard& card,
       SaveCreditCardOptions options,

@@ -54,6 +54,7 @@ namespace ash {
 enum class AnimationChangeType;
 class DragWindowFromShelfController;
 class HomeToOverviewNudgeController;
+class InAppToHomeNudgeController;
 class PanelLayoutManagerTest;
 class PresentationTimeRecorder;
 class Shelf;
@@ -635,6 +636,9 @@ class ASH_EXPORT ShelfLayoutManager
 
   std::unique_ptr<HomeToOverviewNudgeController>
       home_to_overview_nudge_controller_;
+
+  // Controller for the visibility of the InAppToHome gesture contextual nudge.
+  std::unique_ptr<InAppToHomeNudgeController> in_app_to_home_nudge_controller_;
 
   // Whether upward fling from shelf should be handled as potential gesture from
   // overview to home. This is set when the swipe would otherwise be handled by

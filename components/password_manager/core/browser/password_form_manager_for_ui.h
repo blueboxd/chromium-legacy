@@ -58,6 +58,12 @@ class PasswordFormManagerForUI {
   // Determines if the user opted to 'never remember' passwords for this form.
   virtual bool IsBlacklisted() const = 0;
 
+  // Determines whether the submitted credentials returned by
+  // GetPendingCredentials() can be moved to the signed in account store.
+  // Returns true if the submitted credentials are stored in the profile store
+  // and the current signed in user didn't block moving them.
+  virtual bool IsMovableToAccountStore() const = 0;
+
   // Handles save-as-new or update of the form managed by this manager.
   virtual void Save() = 0;
 

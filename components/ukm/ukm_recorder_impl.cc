@@ -540,8 +540,10 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
   RecordSource(std::make_unique<UkmSource>(source_id, sanitized_url));
 }
 
-void UkmRecorderImpl::UpdateAppURL(SourceId source_id, const GURL& url) {
-  if (!extensions_enabled_) {
+void UkmRecorderImpl::UpdateAppURL(SourceId source_id,
+                                   const GURL& url,
+                                   const AppType app_type) {
+  if (app_type != AppType::kPWA && !extensions_enabled_) {
     RecordDroppedSource(DroppedDataReason::EXTENSION_URLS_DISABLED);
     return;
   }

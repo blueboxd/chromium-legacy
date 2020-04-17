@@ -591,7 +591,13 @@
 <meta name=variant content='?worker=0&q=webgpu:api/validation/createTexture:it_is_invalid_to_have_an_output_attachment_texture_with_non_renderable_format~'>
 <meta name=variant content='?worker=0&q=webgpu:api/validation/createView:'>
 <meta name=variant content='?worker=0&q=webgpu:api/validation/error_scope:'>
-<meta name=variant content='?worker=0&q=webgpu:api/validation/fences:'>
+<meta name=variant content='?worker=0&q=webgpu:api/validation/fences:wait_on_a_fence_without_signaling_the_value_is_invalid~'>
+<meta name=variant content='?worker=0&q=webgpu:api/validation/fences:wait_on_a_fence_with_a_value_greater_than_signaled_value_is_invalid~'>
+<meta name=variant content='?worker=0&q=webgpu:api/validation/fences:signal_a_value_lower_than_signaled_value_is_invalid~'>
+<meta name=variant content='?worker=0&q=webgpu:api/validation/fences:signal_a_value_equal_to_signaled_value_is_invalid~'>
+<meta name=variant content='?worker=0&q=webgpu:api/validation/fences:increasing_fence_value_by_more_than_1_succeeds~'>
+<meta name=variant content='?worker=0&q=webgpu:api/validation/fences:signal_a_fence_on_a_different_device_than_it_was_created_on_is_invalid='>
+<meta name=variant content='?worker=0&q=webgpu:api/validation/fences:signal_a_fence_on_a_different_device_does_not_update_fence_signaled_value~'>
 <meta name=variant content='?worker=0&q=webgpu:api/validation/queue_submit:'>
 <meta name=variant content='?worker=0&q=webgpu:api/validation/render_pass:'>
 <meta name=variant content='?worker=0&q=webgpu:api/validation/render_pass_descriptor:'>
@@ -1174,7 +1180,13 @@
 <meta name=variant content='?worker=1&q=webgpu:api/validation/createTexture:it_is_invalid_to_have_an_output_attachment_texture_with_non_renderable_format~'>
 <meta name=variant content='?worker=1&q=webgpu:api/validation/createView:'>
 <meta name=variant content='?worker=1&q=webgpu:api/validation/error_scope:'>
-<meta name=variant content='?worker=1&q=webgpu:api/validation/fences:'>
+<meta name=variant content='?worker=1&q=webgpu:api/validation/fences:wait_on_a_fence_without_signaling_the_value_is_invalid~'>
+<meta name=variant content='?worker=1&q=webgpu:api/validation/fences:wait_on_a_fence_with_a_value_greater_than_signaled_value_is_invalid~'>
+<meta name=variant content='?worker=1&q=webgpu:api/validation/fences:signal_a_value_lower_than_signaled_value_is_invalid~'>
+<meta name=variant content='?worker=1&q=webgpu:api/validation/fences:signal_a_value_equal_to_signaled_value_is_invalid~'>
+<meta name=variant content='?worker=1&q=webgpu:api/validation/fences:increasing_fence_value_by_more_than_1_succeeds~'>
+<meta name=variant content='?worker=1&q=webgpu:api/validation/fences:signal_a_fence_on_a_different_device_than_it_was_created_on_is_invalid='>
+<meta name=variant content='?worker=1&q=webgpu:api/validation/fences:signal_a_fence_on_a_different_device_does_not_update_fence_signaled_value~'>
 <meta name=variant content='?worker=1&q=webgpu:api/validation/queue_submit:'>
 <meta name=variant content='?worker=1&q=webgpu:api/validation/render_pass:'>
 <meta name=variant content='?worker=1&q=webgpu:api/validation/render_pass_descriptor:'>
@@ -1203,4 +1215,5 @@
 <meta name=variant content='?worker=1&q=webgpu:api/validation/vertex_state:check_attribute_offset_overflow~'>
 <meta name=variant content='?worker=1&q=webgpu:examples:'>
 <meta name=variant content='?worker=1&q=webgpu:web-platform/canvas/context_creation:'>
-<meta name=variant content='?worker=1&q=webgpu:web-platform/copyImageBitmapToTexture:'>
+<meta name=variant content='?worker=1&q=webgpu:web-platform/copyImageBitmapToTexture:from_ImageData~'>
+<meta name=variant content='?worker=1&q=webgpu:web-platform/copyImageBitmapToTexture:from_canvas~'>

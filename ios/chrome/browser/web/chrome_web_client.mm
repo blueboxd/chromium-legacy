@@ -273,8 +273,9 @@ bool ChromeWebClient::ForceMobileVersionByDefault(const GURL& url) {
   return false;
 }
 
-web::UserAgentType ChromeWebClient::GetDefaultUserAgent(UIView* web_view,
-                                                        const GURL& url) {
+web::UserAgentType ChromeWebClient::GetDefaultUserAgent(
+    id<UITraitEnvironment> web_view,
+    const GURL& url) {
   DCHECK(base::FeatureList::IsEnabled(
       web::features::kUseDefaultUserAgentInWebClient));
   if (ForceMobileVersionByDefault(url))

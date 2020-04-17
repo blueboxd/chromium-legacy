@@ -44,9 +44,9 @@ WEAK_CUPS_FN(httpConnect2);
 // able to start and respond on all systems within this duration.
 constexpr base::TimeDelta kCupsTimeout = base::TimeDelta::FromSeconds(5);
 
-// CUPS default max copies value (taken from default cupsMaxCopies parsing in
-// cups/ppd-cache.c).
+// CUPS default max copies value (parsed from kCupsMaxCopies PPD attribute).
 constexpr int32_t kDefaultMaxCopies = 9999;
+constexpr char kCupsMaxCopies[] = "cupsMaxCopies";
 
 constexpr char kColorDevice[] = "ColorDevice";
 constexpr char kColorModel[] = "ColorModel";
@@ -160,6 +160,16 @@ void MarkLpOptions(base::StringPiece printer_name, ppd_file_t* ppd) {
       cupsFreeOptions(num_options, options);
     }
   }
+}
+
+int32_t GetCopiesMax(ppd_file_t* ppd) {
+  ppd_attr_t* attr = ppdFindAttr(ppd, kCupsMaxCopies, nullptr);
+  if (!attr || !attr->value) {
+    return kDefaultMaxCopies;
+  }
+
+  int32_t ret;
+  return base::StringToInt(attr->value, &ret) ? ret : kDefaultMaxCopies;
 }
 
 void GetDuplexSettings(ppd_file_t* ppd,
@@ -612,8 +622,7 @@ bool ParsePpdCapabilities(base::StringPiece printer_name,
   PrinterSemanticCapsAndDefaults caps;
   caps.collate_capable = true;
   caps.collate_default = true;
-  // TODO(crbug.com/1027830): Parse PPD for cupsMaxCopies value.
-  caps.copies_max = kDefaultMaxCopies;
+  caps.copies_max = GetCopiesMax(ppd);
 
   GetDuplexSettings(ppd, &caps.duplex_modes, &caps.duplex_default);
 

@@ -55,12 +55,13 @@ class ExternalProtocolDialogBrowserTest
   }
 
   // DialogBrowserTest:
-  void ShowUi(const std::string& name) override {
+  void ShowUi(const std::string& initiating_origin) override {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    dialog_ = new ExternalProtocolDialog(web_contents, GURL("telnet://12345"),
-                                         base::UTF8ToUTF16("/usr/bin/telnet"),
-                                         base::nullopt);
+    dialog_ = new ExternalProtocolDialog(
+        web_contents, GURL("telnet://12345"),
+        base::UTF8ToUTF16("/usr/bin/telnet"),
+        url::Origin::Create(GURL(initiating_origin)));
   }
 
   void SetChecked(bool checked) {
@@ -91,8 +92,11 @@ class ExternalProtocolDialogBrowserTest
     url_did_launch_ = true;
   }
   void FinishedProcessingCheck() override {}
-  void OnSetBlockState(const std::string& scheme, BlockState state) override {
+  void OnSetBlockState(const std::string& scheme,
+                       const url::Origin& initiating_origin,
+                       BlockState state) override {
     blocked_scheme_ = scheme;
+    blocked_origin_ = initiating_origin;
     blocked_state_ = state;
   }
 
@@ -101,6 +105,7 @@ class ExternalProtocolDialogBrowserTest
  protected:
   ExternalProtocolDialog* dialog_ = nullptr;
   std::string blocked_scheme_;
+  url::Origin blocked_origin_;
   BlockState blocked_state_ = BlockState::UNKNOWN;
   bool url_did_launch_ = false;
 
@@ -109,7 +114,7 @@ class ExternalProtocolDialogBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestAccept) {
-  ShowUi(std::string());
+  ShowUi(std::string("https://example.test"));
   dialog_->AcceptDialog();
   EXPECT_EQ(blocked_state_, BlockState::UNKNOWN);
   EXPECT_TRUE(url_did_launch_);
@@ -120,10 +125,11 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestAccept) {
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
                        TestAcceptWithChecked) {
-  ShowUi(std::string());
+  ShowUi(std::string("https://example.test"));
   SetChecked(true);
   dialog_->AcceptDialog();
   EXPECT_EQ(blocked_scheme_, "telnet");
+  EXPECT_EQ(blocked_origin_, url::Origin::Create(GURL("https://example.test")));
   EXPECT_EQ(blocked_state_, BlockState::DONT_BLOCK);
   EXPECT_TRUE(url_did_launch_);
   histogram_tester_.ExpectBucketCount(
@@ -131,11 +137,23 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
       ExternalProtocolHandler::CHECKED_LAUNCH, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
+                       TestAcceptWithUntrustworthyOrigin) {
+  ShowUi(std::string("http://example.test"));
+  SetChecked(true);  // This will no-opt because http:// is not trustworthy
+  dialog_->AcceptDialog();
+  EXPECT_EQ(blocked_state_, BlockState::UNKNOWN);
+  EXPECT_TRUE(url_did_launch_);
+  histogram_tester_.ExpectBucketCount(
+      ExternalProtocolHandler::kHandleStateMetric,
+      ExternalProtocolHandler::LAUNCH, 1);
+}
+
 // Regression test for http://crbug.com/835216. The OS owns the dialog, so it
 // may may outlive the WebContents it is attached to.
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
                        TestAcceptAfterCloseTab) {
-  ShowUi(std::string());
+  ShowUi(std::string("https://example.test"));
   SetChecked(true);  // |remember_| must be true for the segfault to occur.
   browser()->tab_strip_model()->CloseAllTabs();
   dialog_->AcceptDialog();
@@ -146,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestCancel) {
-  ShowUi(std::string());
+  ShowUi(std::string("https://example.test"));
   dialog_->CancelDialog();
   EXPECT_EQ(blocked_state_, BlockState::UNKNOWN);
   EXPECT_FALSE(url_did_launch_);
@@ -157,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestCancel) {
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
                        TestCancelWithChecked) {
-  ShowUi(std::string());
+  ShowUi(std::string("https://example.test"));
   SetChecked(true);
   dialog_->CancelDialog();
   // Cancel() should not enforce the remember checkbox.
@@ -170,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestClose) {
   // Closing the dialog should be the same as canceling, except for histograms.
-  ShowUi(std::string());
+  ShowUi(std::string("https://example.test"));
   EXPECT_TRUE(dialog_->Close());
   EXPECT_EQ(blocked_state_, BlockState::UNKNOWN);
   EXPECT_FALSE(url_did_launch_);
@@ -182,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestClose) {
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
                        TestCloseWithChecked) {
   // Closing the dialog should be the same as canceling, except for histograms.
-  ShowUi(std::string());
+  ShowUi(std::string("https://example.test"));
   SetChecked(true);
   EXPECT_TRUE(dialog_->Close());
   EXPECT_EQ(blocked_state_, BlockState::UNKNOWN);
@@ -201,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, InvokeUi_default) {
 // Tests that keyboard focus works when the dialog is shown. Regression test for
 // https://crbug.com/1025343.
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestFocus) {
-  ShowUi(std::string());
+  ShowUi(std::string("https://example.test"));
   gfx::NativeWindow window = browser()->window()->GetNativeWindow();
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   views::FocusManager* focus_manager = widget->GetFocusManager();

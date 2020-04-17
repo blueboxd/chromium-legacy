@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/test_protocol_handler_registry_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -28,6 +28,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -41,13 +42,17 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebContentsTester;
+using content_settings::TabSpecificContentSettings;
 
 class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
  protected:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    TabSpecificContentSettings::CreateForWebContents(web_contents());
+    TabSpecificContentSettings::CreateForWebContents(
+        web_contents(),
+        std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+            web_contents()));
     InfoBarService::CreateForWebContents(web_contents());
   }
 
@@ -834,10 +839,8 @@ TEST_F(ContentSettingBubbleModelTest, FileURL) {
 TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
   const GURL page_url("http://toplevel.example/");
   NavigateAndCommit(page_url);
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-  content_settings->set_pending_protocol_handler(
-      ProtocolHandler::CreateProtocolHandler(
+  chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents())
+      ->set_pending_protocol_handler(ProtocolHandler::CreateProtocolHandler(
           "mailto", GURL("http://www.toplevel.example/")));
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
@@ -861,8 +864,9 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
 
   const GURL page_url("http://toplevel.example/");
   NavigateAndCommit(page_url);
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+  auto* content_settings =
+      chrome::TabSpecificContentSettingsDelegate::FromWebContents(
+          web_contents());
   ProtocolHandler test_handler = ProtocolHandler::CreateProtocolHandler(
       "mailto", GURL("http://www.toplevel.example/"));
   content_settings->set_pending_protocol_handler(test_handler);
@@ -927,8 +931,9 @@ TEST_F(ContentSettingBubbleModelTest, RPHDefaultDone) {
 
   const GURL page_url("http://toplevel.example/");
   NavigateAndCommit(page_url);
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+  auto* content_settings =
+      chrome::TabSpecificContentSettingsDelegate::FromWebContents(
+          web_contents());
   ProtocolHandler test_handler = ProtocolHandler::CreateProtocolHandler(
       "mailto", GURL("http://www.toplevel.example/"));
   content_settings->set_pending_protocol_handler(test_handler);

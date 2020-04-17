@@ -5,7 +5,7 @@
 #include "chrome/browser/generic_sensor/sensor_permission_context.h"
 
 #include "base/feature_list.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_request_id.h"
@@ -25,8 +25,9 @@ void SensorPermissionContext::UpdateTabContext(
     const permissions::PermissionRequestID& id,
     const GURL& requesting_frame,
     bool allowed) {
-  auto* content_settings = TabSpecificContentSettings::GetForFrame(
-      id.render_process_id(), id.render_frame_id());
+  auto* content_settings =
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          id.render_process_id(), id.render_frame_id());
   if (!content_settings)
     return;
 

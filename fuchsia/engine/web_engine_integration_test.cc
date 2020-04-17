@@ -163,6 +163,18 @@ class WebEngineIntegrationTest : public testing::Test {
     return value ? value->GetString() : std::string();
   }
 
+  double ExecuteJavaScriptWithDoubleResult(base::StringPiece script) {
+    base::Optional<base::Value> value =
+        cr_fuchsia::ExecuteJavaScript(frame_.get(), script);
+    return value ? value->GetDouble() : 0.0;
+  }
+
+  bool ExecuteJavaScriptWithBoolResult(base::StringPiece script) {
+    base::Optional<base::Value> value =
+        cr_fuchsia::ExecuteJavaScript(frame_.get(), script);
+    return value ? value->GetBool() : false;
+  }
+
  protected:
   void RunPermissionTest(bool grant);
 
@@ -464,14 +476,9 @@ TEST_F(WebEngineIntegrationTest, PlayAudio) {
   static uint16_t kTestMediaSessionId = 43;
   frame_->SetMediaSessionId(kTestMediaSessionId);
 
-  fuchsia::web::LoadUrlParams load_url_params;
-
-  // |was_user_activated| needs to be set to ensure the page can play audio
-  // without user gesture.
-  load_url_params.set_was_user_activated(true);
-
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      navigation_controller_.get(), std::move(load_url_params),
+      navigation_controller_.get(),
+      cr_fuchsia::CreateLoadUrlParamsWithUserActivation(),
       "fuchsia-dir://testdata/play_audio.html"));
 
   navigation_listener_->RunUntilTitleEquals("ended");
@@ -544,4 +551,78 @@ TEST_F(WebEngineIntegrationTest, MicrophoneAccess_WithoutPermission) {
       embedded_test_server_.GetURL("/mic.html?NoPermission").spec()));
 
   navigation_listener_->RunUntilTitleEquals("ended");
+}
+
+TEST_F(WebEngineIntegrationTest, SetBlockMediaLoading_Blocked) {
+  StartWebEngine();
+
+  fuchsia::web::CreateContextParams create_params =
+      DefaultContextParamsWithTestData();
+  auto features = fuchsia::web::ContextFeatureFlags::AUDIO;
+  create_params.set_features(features);
+  CreateContextAndFrame(std::move(create_params));
+
+  frame_->SetBlockMediaLoading(true);
+
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      navigation_controller_.get(),
+      cr_fuchsia::CreateLoadUrlParamsWithUserActivation(),
+      "fuchsia-dir://testdata/play_vp8.html?autoplay"));
+
+  // Check different indicators that media has not loaded and is not playing.
+  navigation_listener_->RunUntilTitleEquals("stalled");
+  EXPECT_EQ(0 /*HAVE_NOTHING*/,
+            ExecuteJavaScriptWithDoubleResult("bear.readyState"));
+  EXPECT_EQ(0.0, ExecuteJavaScriptWithDoubleResult("bear.currentTime"));
+  EXPECT_FALSE(ExecuteJavaScriptWithBoolResult("isMetadataLoaded"));
+}
+
+// Initially, set media blocking to be true. When media is unblocked, check that
+// it begins playing, since autoplay=true.
+TEST_F(WebEngineIntegrationTest, SetBlockMediaLoading_AfterUnblock) {
+  StartWebEngine();
+
+  fuchsia::web::CreateContextParams create_params =
+      DefaultContextParamsWithTestData();
+  auto features = fuchsia::web::ContextFeatureFlags::AUDIO;
+  create_params.set_features(features);
+  CreateContextAndFrame(std::move(create_params));
+
+  frame_->SetBlockMediaLoading(true);
+
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      navigation_controller_.get(),
+      cr_fuchsia::CreateLoadUrlParamsWithUserActivation(),
+      "fuchsia-dir://testdata/play_vp8.html?autoplay"));
+
+  // Check that media loading has been blocked.
+  navigation_listener_->RunUntilTitleEquals("stalled");
+
+  // Unblock media from loading and see if media loads and plays, since
+  // autoplay=true.
+  frame_->SetBlockMediaLoading(false);
+  navigation_listener_->RunUntilTitleEquals("playing");
+  EXPECT_TRUE(ExecuteJavaScriptWithBoolResult("isMetadataLoaded"));
+}
+
+// Check that when autoplay=false and media loading was blocked after the
+// element has started loading that media will play when play() is called.
+TEST_F(WebEngineIntegrationTest, SetBlockMediaLoading_SetBlockedAfterLoading) {
+  StartWebEngine();
+
+  fuchsia::web::CreateContextParams create_params =
+      DefaultContextParamsWithTestData();
+  auto features = fuchsia::web::ContextFeatureFlags::AUDIO;
+  create_params.set_features(features);
+  CreateContextAndFrame(std::move(create_params));
+
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      navigation_controller_.get(),
+      cr_fuchsia::CreateLoadUrlParamsWithUserActivation(),
+      "fuchsia-dir://testdata/play_vp8.html"));
+
+  navigation_listener_->RunUntilTitleEquals("loaded");
+  frame_->SetBlockMediaLoading(true);
+  cr_fuchsia::ExecuteJavaScript(frame_.get(), "bear.play()");
+  navigation_listener_->RunUntilTitleEquals("playing");
 }

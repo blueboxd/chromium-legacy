@@ -115,9 +115,9 @@ void MaybeCreateLoaderOnCoreThread(
     if (params.resource_type == blink::mojom::ResourceType::kMainFrame ||
         params.resource_type == blink::mojom::ResourceType::kSubFrame) {
       container_host = ServiceWorkerContainerHost::CreateForWindow(
-          context_core->AsWeakPtr(), params.are_ancestors_secure,
-          params.frame_tree_node_id, std::move(host_receiver),
-          std::move(client_remote));
+          params.are_ancestors_secure, params.frame_tree_node_id,
+          std::move(host_receiver), std::move(client_remote),
+          context_core->AsWeakPtr());
     } else {
       DCHECK(params.resource_type == blink::mojom::ResourceType::kWorker ||
              params.resource_type == blink::mojom::ResourceType::kSharedWorker);
@@ -126,8 +126,8 @@ void MaybeCreateLoaderOnCoreThread(
               ? blink::mojom::ServiceWorkerContainerType::kForDedicatedWorker
               : blink::mojom::ServiceWorkerContainerType::kForSharedWorker;
       container_host = ServiceWorkerContainerHost::CreateForWebWorker(
-          context_core->AsWeakPtr(), params.process_id, container_type,
-          std::move(host_receiver), std::move(client_remote));
+          container_type, params.process_id, std::move(host_receiver),
+          std::move(client_remote), context_core->AsWeakPtr());
     }
     DCHECK(container_host);
     handle_core->set_container_host(container_host);

@@ -10,6 +10,8 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/chromeos/ime/candidate_view.h"
 #include "ui/chromeos/ime/candidate_window_constants.h"
 #include "ui/display/display.h"
@@ -409,6 +411,10 @@ void CandidateWindowView::ButtonPressed(views::Button* sender,
       return;
     }
   }
+}
+
+void CandidateWindowView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kMenu;
 }
 
 }  // namespace ime

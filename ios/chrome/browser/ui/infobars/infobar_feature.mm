@@ -37,12 +37,22 @@ const base::Feature kSaveCardInfobarMessagesUI{
 // Feature enabled by default since it will always be guarded with
 // |kIOSInfobarUIReboot|, meaning that if necessary,
 // |kTranslateInfobarMessagesUI| can be used as a kill switch.
-// TODO(crbug.com/1014959): Enabled flag once feature is ready.
 const base::Feature kTranslateInfobarMessagesUI{
     "TranslateInfobarMessagesUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kInfobarUIRebootOnlyiOS13{
+    "InfobarUIRebootOnlyiOS13", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsInfobarUIRebootEnabled() {
-  return base::FeatureList::IsEnabled(kIOSInfobarUIReboot);
+  if (base::FeatureList::IsEnabled(kInfobarUIRebootOnlyiOS13)) {
+    if (@available(iOS 13, *)) {
+      return base::FeatureList::IsEnabled(kIOSInfobarUIReboot);
+    } else {
+      return NO;
+    }
+  } else {
+    return base::FeatureList::IsEnabled(kIOSInfobarUIReboot);
+  }
 }
 
 bool IsInfobarOverlayUIEnabled() {

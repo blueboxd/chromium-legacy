@@ -1238,6 +1238,71 @@ TEST_F(LayoutBoxModelObjectTest, ChangingWillChangeFilter) {
   EXPECT_FALSE(ToLayoutBoxModelObject(target->GetLayoutObject())->Layer());
 }
 
+TEST_F(LayoutBoxModelObjectTest, ChangingBackdropFilterWithWillChange) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        width: 100px;
+        height: 100px;
+        will-change: backdrop-filter;
+      }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  // Adding a backdrop-filter should not need to check for paint invalidation
+  // because will-change: backdrop-filter is present.
+  auto* target = GetDocument().getElementById("target");
+  target->setAttribute(html_names::kStyleAttr, "backdrop-filter: grayscale(1)");
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_FALSE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+
+  // Removing a backdrop-filter should not need to check for paint invalidation
+  // because will-change: backdrop-filter is present.
+  target->removeAttribute(html_names::kStyleAttr);
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_FALSE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+}
+
+TEST_F(LayoutBoxModelObjectTest, ChangingWillChangeBackdropFilter) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .willChange {
+        will-change: backdrop-filter;
+      }
+      #filter {
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  // Adding will-change: backdrop-filter should check for paint invalidation and
+  // create a PaintLayer.
+  auto* target = GetDocument().getElementById("target");
+  target->classList().Add("willChange");
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_TRUE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+  EXPECT_TRUE(ToLayoutBoxModelObject(target->GetLayoutObject())->Layer());
+
+  // A lifecycle update should clear dirty bits.
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+  EXPECT_TRUE(ToLayoutBoxModelObject(target->GetLayoutObject())->Layer());
+
+  // Removing will-change: backdrop-filter should check for paint invalidation
+  // and remove the PaintLayer.
+  target->classList().Remove("willChange");
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_TRUE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+  EXPECT_FALSE(ToLayoutBoxModelObject(target->GetLayoutObject())->Layer());
+}
+
 TEST_F(LayoutBoxModelObjectTest, UpdateStackingContextForOption) {
   // We do not create LayoutObject for option elements inside multiple selects
   // on platforms where DelegatesMenuListRendering() returns true like Android.

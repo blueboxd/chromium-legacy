@@ -28,12 +28,8 @@ bool DomainMatchesDomains(const net::CanonicalCookie& cookie,
   // If the cookie's domain is is not parsed as belonging to a registry
   // (e.g. for IP addresses or internal hostnames) an empty string will be
   // returned.  In this case, use the domain in the cookie.
-  if (effective_domain.empty()) {
-    if (cookie.IsDomainCookie())
-      effective_domain = cookie.Domain().substr(1);
-    else
-      effective_domain = cookie.Domain();
-  }
+  if (effective_domain.empty())
+    effective_domain = cookie.DomainWithoutDot();
 
   return match_domains.count(effective_domain) != 0;
 }

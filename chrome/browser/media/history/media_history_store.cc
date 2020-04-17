@@ -733,6 +733,27 @@ bool MediaHistoryStore::CanAccessDatabase() const {
   return initialization_successful_ && db_ && db_->is_open();
 }
 
+void MediaHistoryStore::UpdateMediaFeedDisplayTime(const int64_t feed_id) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!initialization_successful_)
+    return;
+
+  if (!feeds_table_)
+    return;
+
+  if (!DB()->BeginTransaction()) {
+    LOG(ERROR) << "Failed to begin the transaction.";
+    return;
+  }
+
+  if (!feeds_table_->UpdateDisplayTime(feed_id)) {
+    DB()->RollbackTransaction();
+    return;
+  }
+
+  DB()->CommitTransaction();
+}
+
 void MediaHistoryStore::Close() {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 

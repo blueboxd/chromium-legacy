@@ -36,3 +36,7 @@ void ApplicationControllerImpl::GetMediaPlayer(
     fidl::InterfaceRequest<fuchsia::media::sessions2::Player> request) {
   frame_->GetMediaPlayer(std::move(request));
 }
+
+void ApplicationControllerImpl::SetBlockMediaLoading(bool blocked) {
+  frame_->SetBlockMediaLoading(blocked);
+}

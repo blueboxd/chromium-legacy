@@ -686,7 +686,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // TODO(mithro): Remove this methods which exposes the internal
   // viz::BeginFrameArgs to external callers.
-  virtual viz::BeginFrameArgs CurrentBeginFrameArgs() const;
+  virtual const viz::BeginFrameArgs& CurrentBeginFrameArgs() const;
 
   // Expected time between two begin impl frame calls.
   base::TimeDelta CurrentBeginFrameInterval() const;

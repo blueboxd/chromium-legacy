@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_context_base.h"
 #include "components/permissions/permission_request.h"
@@ -36,6 +36,8 @@
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+
+using content_settings::TabSpecificContentSettings;
 
 class MediaStreamDevicesControllerTest : public WebRtcTestBase {
  public:

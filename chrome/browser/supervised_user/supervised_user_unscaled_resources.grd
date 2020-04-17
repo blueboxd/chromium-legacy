@@ -8,7 +8,7 @@
   </outputs>
   <release seq="1">
     <includes>
-        <include name="IDR_FAMILY_LINK_LOGO" file="supervised_user_error_page/resources/default_100_percent/family_link_logo.png" type="BINDATA" />
+        <include name="IDR_SUPERVISED_USER_ICON" file="resources/supervised_user_icon.png" type="BINDATA" />
     </includes>
   </release>
 </grit>

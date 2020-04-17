@@ -55,22 +55,41 @@ void CaptionController::Init() {
       prefs::kLiveCaptionEnabled,
       base::BindRepeating(&CaptionController::OnLiveCaptionEnabledChanged,
                           base::Unretained(this)));
+
+  enabled_ = IsLiveCaptionEnabled();
+  if (enabled_)
+    UpdateUIEnabled();
 }
 
 void CaptionController::OnLiveCaptionEnabledChanged() {
-  PrefService* profile_prefs = profile_->GetPrefs();
-  bool enabled = profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled);
+  bool enabled = IsLiveCaptionEnabled();
   if (enabled == enabled_)
     return;
   enabled_ = enabled;
 
+  UpdateSpeechRecognitionServiceEnabled();
+  UpdateUIEnabled();
+}
+
+bool CaptionController::IsLiveCaptionEnabled() {
+  PrefService* profile_prefs = profile_->GetPrefs();
+  return profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled);
+}
+
+void CaptionController::UpdateSpeechRecognitionServiceEnabled() {
   if (enabled_) {
     // Register SODA component and download speech model.
     component_updater::RegisterSODAComponent(
-        g_browser_process->component_updater(), profile_prefs,
+        g_browser_process->component_updater(), profile_->GetPrefs(),
         base::BindOnce(&component_updater::SODAComponentInstallerPolicy::
                            UpdateSODAComponentOnDemand));
+  } else {
+    // TODO(evliu): Unregister SODA component.
+  }
+}
 
+void CaptionController::UpdateUIEnabled() {
+  if (enabled_) {
     // Create captions UI in each browser view.
     for (Browser* browser : *BrowserList::GetInstance()) {
       OnBrowserAdded(browser);
@@ -79,8 +98,6 @@ void CaptionController::OnLiveCaptionEnabledChanged() {
     // Add observers to the BrowserList for new browser views being added.
     BrowserList::GetInstance()->AddObserver(this);
   } else {
-    // TODO(evliu): Unregister SODA component.
-
     // Destroy caption bubble controllers.
     caption_bubble_controllers_.clear();
 

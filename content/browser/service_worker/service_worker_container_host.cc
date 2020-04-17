@@ -83,13 +83,13 @@ class ServiceWorkerContainerHost::PendingUpdateVersion {
 // static
 base::WeakPtr<ServiceWorkerContainerHost>
 ServiceWorkerContainerHost::CreateForWindow(
-    base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure,
     int frame_tree_node_id,
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
         host_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-        container_remote) {
+        container_remote,
+    base::WeakPtr<ServiceWorkerContextCore> context) {
   DCHECK(context);
   auto container_host = std::make_unique<ServiceWorkerContainerHost>(
       blink::mojom::ServiceWorkerContainerType::kForWindow,
@@ -111,13 +111,13 @@ ServiceWorkerContainerHost::CreateForWindow(
 // static
 base::WeakPtr<ServiceWorkerContainerHost>
 ServiceWorkerContainerHost::CreateForWebWorker(
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    int process_id,
     blink::mojom::ServiceWorkerContainerType container_type,
+    int process_id,
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
         host_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-        container_remote) {
+        container_remote,
+    base::WeakPtr<ServiceWorkerContextCore> context) {
   DCHECK(context);
   using ServiceWorkerContainerType = blink::mojom::ServiceWorkerContainerType;
   DCHECK((base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker) &&

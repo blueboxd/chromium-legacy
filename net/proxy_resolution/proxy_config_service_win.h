@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "net/base/net_export.h"
+#include "net/base/network_change_notifier.h"
 #include "net/proxy_resolution/polling_proxy_config_service.h"
 #include "net/proxy_resolution/proxy_config_with_annotation.h"
 
@@ -49,13 +50,17 @@ namespace net {
 // change, or in case we got it wrong (and are not checking all possible
 // registry dependencies).
 class NET_EXPORT_PRIVATE ProxyConfigServiceWin
-    : public PollingProxyConfigService {
+    : public PollingProxyConfigService,
+      public NetworkChangeNotifier::NetworkChangeObserver {
  public:
   ProxyConfigServiceWin(const NetworkTrafficAnnotationTag& traffic_annotation);
   ~ProxyConfigServiceWin() override;
 
   // Overrides a function from PollingProxyConfigService.
   void AddObserver(Observer* observer) override;
+
+  // NetworkChangeObserver implementation.
+  void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProxyConfigServiceWinTest, SetFromIEConfig);

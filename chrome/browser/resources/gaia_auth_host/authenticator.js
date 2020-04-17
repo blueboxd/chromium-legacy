@@ -55,7 +55,6 @@ cr.define('cr.login', function() {
    *   isLoginPrimaryAccount: boolean,
    *   email: string,
    *   constrained: string,
-   *   platformVersion: string,
    *   readOnlyEmail: boolean,
    *   service: string,
    *   dontResizeNonEmbeddedPages: boolean,

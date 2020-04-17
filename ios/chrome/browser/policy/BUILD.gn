@@ -20,6 +20,7 @@ source_set("policy") {
 
   deps = [
     "//base",
+    "//components/autofill/core/browser",
     "//components/bookmarks/managed",
     "//components/password_manager/core/common",
     "//components/policy:generated",
@@ -130,6 +131,7 @@ source_set("eg2_tests") {
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
+    "//net:test_support",
     "//ui/base",
   ]
 

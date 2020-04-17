@@ -215,7 +215,7 @@ public class LocationBarLayoutTest {
         Assert.assertEquals(getDeleteButton().getVisibility(), VISIBLE);
         ClickUtils.clickButton(getDeleteButton());
         CriteriaHelper.pollUiThread(
-                Criteria.checkThat(() -> getDeleteButton().getVisibility(), Matchers.not(VISIBLE)));
+                () -> Assert.assertThat(getDeleteButton().getVisibility(), Matchers.not(VISIBLE)));
         Assert.assertEquals("", getUrlText(getUrlBar()));
     }
 

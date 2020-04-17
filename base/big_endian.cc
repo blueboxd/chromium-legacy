@@ -4,6 +4,8 @@
 
 #include "base/big_endian.h"
 
+#include <string.h>
+
 #include "base/numerics/checked_math.h"
 #include "base/strings/string_piece.h"
 

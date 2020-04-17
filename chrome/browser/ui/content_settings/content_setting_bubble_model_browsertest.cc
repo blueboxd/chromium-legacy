@@ -10,7 +10,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/common/content_switches.h"
@@ -31,6 +31,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/events/event_constants.h"
+
+using content_settings::TabSpecificContentSettings;
 
 class ContentSettingBubbleModelMixedScriptTest : public InProcessBrowserTest {
  public:

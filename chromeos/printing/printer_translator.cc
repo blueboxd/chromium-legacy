@@ -6,10 +6,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chromeos/printing/cups_printer_status.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/printing/uri_components.h"
 
@@ -229,4 +231,27 @@ std::unique_ptr<base::DictionaryValue> GetCupsPrinterInfo(
   return printer_info;
 }
 
+base::Value CreateCupsPrinterStatusDictionary(
+    const CupsPrinterStatus& cups_printer_status) {
+  base::Value printer_status(base::Value::Type::DICTIONARY);
+
+  printer_status.SetKey("printerId",
+                        base::Value(cups_printer_status.GetPrinterId()));
+  printer_status.SetKey(
+      "timestamp",
+      base::Value(cups_printer_status.GetTimestamp().ToJsTimeIgnoringNull()));
+
+  base::Value status_reasons(base::Value::Type::LIST);
+  for (auto reason : cups_printer_status.GetStatusReasons()) {
+    base::Value status_reason(base::Value::Type::DICTIONARY);
+    status_reason.SetKey("reason",
+                         base::Value(static_cast<int>(reason.GetReason())));
+    status_reason.SetKey("severity",
+                         base::Value(static_cast<int>(reason.GetSeverity())));
+    status_reasons.Append(std::move(status_reason));
+  }
+  printer_status.SetKey("status_reasons", std::move(status_reasons));
+
+  return printer_status;
+}
 }  // namespace chromeos

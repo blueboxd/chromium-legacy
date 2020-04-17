@@ -39,9 +39,12 @@ ProxyConfigServiceWin::ProxyConfigServiceWin(
     const NetworkTrafficAnnotationTag& traffic_annotation)
     : PollingProxyConfigService(base::TimeDelta::FromSeconds(kPollIntervalSec),
                                 &ProxyConfigServiceWin::GetCurrentProxyConfig,
-                                traffic_annotation) {}
+                                traffic_annotation) {
+  NetworkChangeNotifier::AddNetworkChangeObserver(this);
+}
 
 ProxyConfigServiceWin::~ProxyConfigServiceWin() {
+  NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   // The registry functions below will end up going to disk.  TODO: Do this on
   // another thread to avoid slowing the current thread.  http://crbug.com/61453
   base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -54,6 +57,20 @@ void ProxyConfigServiceWin::AddObserver(Observer* observer) {
 
   // Let the super-class do its work now.
   PollingProxyConfigService::AddObserver(observer);
+}
+
+void ProxyConfigServiceWin::OnNetworkChanged(
+    NetworkChangeNotifier::ConnectionType type) {
+  // Proxy settings on Windows may change when the active connection changes.
+  // For instance, after connecting to a VPN, the proxy settings for the active
+  // connection will be that for the VPN. (And ProxyConfigService only reports
+  // proxy settings for the default connection).
+
+  // This is conditioned on CONNECTION_NONE to avoid duplicating work, as
+  // NetworkChangeNotifier additionally sends it preceding completion.
+  // See https://crbug.com/1071901.
+  if (type == NetworkChangeNotifier::CONNECTION_NONE)
+    CheckForChangesNow();
 }
 
 void ProxyConfigServiceWin::StartWatchingRegistryForChanges() {

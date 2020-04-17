@@ -273,6 +273,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     public void hasOtherFormsOfBrowsingData(boolean hasOtherForms) {
         mHasOtherFormsOfBrowsingData = hasOtherForms;
         setPrivacyDisclaimer();
+        mHistoryManager.onHasPrivacyDisclaimersChanged();
     }
 
     @Override

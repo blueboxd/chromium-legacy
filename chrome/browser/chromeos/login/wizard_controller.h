@@ -136,19 +136,6 @@ class WizardController {
   // Returns true if the current wizard instance has reached the login screen.
   bool login_screen_started() const { return login_screen_started_; }
 
-  // Returns true if packaged license screen should be shown.
-  // License screen should be shown when device packed with license and other
-  // enrollment flows are not triggered by the device state.
-  bool should_show_packaged_license_screen() const {
-    return prescribed_enrollment_config_.is_license_packaged_with_device &&
-           !prescribed_enrollment_config_.should_enroll();
-  }
-
-  void set_prescribed_enrollment_config_for_testing(
-      policy::EnrollmentConfig config) {
-    prescribed_enrollment_config_ = config;
-  }
-
   // Returns true if a given screen exists.
   bool HasScreen(OobeScreenId screen_id);
 

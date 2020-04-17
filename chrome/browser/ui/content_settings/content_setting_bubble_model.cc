@@ -20,7 +20,7 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -43,6 +43,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/common/content_settings_agent.mojom.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -76,10 +77,11 @@
 
 using base::UserMetricsAction;
 using content::WebContents;
+using content_settings::SETTING_SOURCE_NONE;
+using content_settings::SETTING_SOURCE_USER;
 using content_settings::SettingInfo;
 using content_settings::SettingSource;
-using content_settings::SETTING_SOURCE_USER;
-using content_settings::SETTING_SOURCE_NONE;
+using content_settings::TabSpecificContentSettings;
 
 namespace {
 
@@ -389,8 +391,8 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
       registry_(registry),
       pending_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_handler_(ProtocolHandler::EmptyProtocolHandler()) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
+  auto* content_settings =
+      chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents);
   pending_handler_ = content_settings->pending_protocol_handler();
   previous_handler_ = content_settings->previous_protocol_handler();
 
@@ -440,8 +442,8 @@ void ContentSettingRPHBubbleModel::CommitChanges() {
 
   // The user has one chance to deal with the RPH content setting UI,
   // then we remove it.
-  auto* settings = TabSpecificContentSettings::FromWebContents(web_contents());
-  settings->ClearPendingProtocolHandler();
+  chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents())
+      ->ClearPendingProtocolHandler();
   content_settings::UpdateLocationBarUiForWebContents(web_contents());
 }
 
@@ -451,21 +453,21 @@ void ContentSettingRPHBubbleModel::RegisterProtocolHandler() {
   registry_->RemoveIgnoredHandler(pending_handler_);
 
   registry_->OnAcceptRegisterProtocolHandler(pending_handler_);
-  TabSpecificContentSettings::FromWebContents(web_contents())
+  chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents())
       ->set_pending_protocol_handler_setting(CONTENT_SETTING_ALLOW);
 }
 
 void ContentSettingRPHBubbleModel::UnregisterProtocolHandler() {
   registry_->OnDenyRegisterProtocolHandler(pending_handler_);
-  auto* settings = TabSpecificContentSettings::FromWebContents(web_contents());
-  settings->set_pending_protocol_handler_setting(CONTENT_SETTING_BLOCK);
+  chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents())
+      ->set_pending_protocol_handler_setting(CONTENT_SETTING_BLOCK);
   ClearOrSetPreviousHandler();
 }
 
 void ContentSettingRPHBubbleModel::IgnoreProtocolHandler() {
   registry_->OnIgnoreRegisterProtocolHandler(pending_handler_);
-  auto* settings = TabSpecificContentSettings::FromWebContents(web_contents());
-  settings->set_pending_protocol_handler_setting(CONTENT_SETTING_DEFAULT);
+  chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents())
+      ->set_pending_protocol_handler_setting(CONTENT_SETTING_DEFAULT);
   ClearOrSetPreviousHandler();
 }
 

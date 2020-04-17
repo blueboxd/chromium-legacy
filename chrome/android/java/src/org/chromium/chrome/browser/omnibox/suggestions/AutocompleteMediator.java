@@ -684,17 +684,17 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      */
     private void onRefineSuggestion(OmniboxSuggestion suggestion) {
         stopAutocomplete(false);
-        boolean isUrlSuggestion = suggestion.isUrlSuggestion();
+        boolean isSearchSuggestion = suggestion.isSearchSuggestion();
         String refineText = suggestion.getFillIntoEdit();
-        if (!isUrlSuggestion) refineText = TextUtils.concat(refineText, " ").toString();
+        if (isSearchSuggestion) refineText = TextUtils.concat(refineText, " ").toString();
 
         mDelegate.setOmniboxEditingText(refineText);
         onTextChanged(mUrlBarEditingTextProvider.getTextWithoutAutocomplete(),
                 mUrlBarEditingTextProvider.getTextWithAutocomplete());
-        if (isUrlSuggestion) {
-            RecordUserAction.record("MobileOmniboxRefineSuggestion.Url");
-        } else {
+        if (isSearchSuggestion) {
             RecordUserAction.record("MobileOmniboxRefineSuggestion.Search");
+        } else {
+            RecordUserAction.record("MobileOmniboxRefineSuggestion.Url");
         }
     }
 

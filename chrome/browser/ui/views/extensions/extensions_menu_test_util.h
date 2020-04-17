@@ -36,7 +36,6 @@ class ExtensionsMenuTestUtil : public ExtensionActionTestHelper {
   gfx::NativeView GetPopupNativeView() override;
   bool HasPopup() override;
   bool HidePopup() override;
-  bool ActionButtonWantsToRun(size_t index) override;
   void SetWidth(int width) override;
   ToolbarActionsBar* GetToolbarActionsBar() override;
   ExtensionsContainer* GetExtensionsContainer() override;

@@ -12,9 +12,12 @@
 
 namespace base {
 class DictionaryValue;
+class Value;
 }
 
 namespace chromeos {
+
+class CupsPrinterStatus;
 
 CHROMEOS_EXPORT extern const char kPrinterId[];
 
@@ -29,6 +32,9 @@ CHROMEOS_EXPORT std::unique_ptr<Printer> RecommendedPrinterToPrinter(
 CHROMEOS_EXPORT std::unique_ptr<base::DictionaryValue> GetCupsPrinterInfo(
     const Printer& printer);
 
+// Returns a JSON representation of a CupsPrinterStatus
+CHROMEOS_EXPORT base::Value CreateCupsPrinterStatusDictionary(
+    const CupsPrinterStatus& cups_printer_status);
 }  // namespace chromeos
 
 #endif  // CHROMEOS_PRINTING_PRINTER_TRANSLATOR_H_

@@ -48,4 +48,10 @@ base::Optional<base::Value> ExecuteJavaScript(fuchsia::web::Frame* frame,
   return base::JSONReader::Read(result_json);
 }
 
+fuchsia::web::LoadUrlParams CreateLoadUrlParamsWithUserActivation() {
+  fuchsia::web::LoadUrlParams load_url_params;
+  load_url_params.set_was_user_activated(true);
+  return load_url_params;
+}
+
 }  // namespace cr_fuchsia

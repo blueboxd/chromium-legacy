@@ -707,6 +707,7 @@ static CompositingReasons CompositingReasonsForTransformProperty() {
   // starting/stopping an animation. See: https://crbug.com/942681.
   reasons |= CompositingReason::kWillChangeOpacity;
   reasons |= CompositingReason::kWillChangeFilter;
+  reasons |= CompositingReason::kWillChangeBackdropFilter;
   return reasons;
 }
 
@@ -1204,7 +1205,8 @@ static CompositingReasons CompositingReasonsForFilterProperty() {
   // In CompositeAfterPaint, this also avoids decomposition of the filter when
   // the object is forced compositing with will-change.
   reasons |= CompositingReason::kWillChangeTransform |
-             CompositingReason::kWillChangeOpacity;
+             CompositingReason::kWillChangeOpacity |
+             CompositingReason::kWillChangeBackdropFilter;
   return reasons;
 }
 

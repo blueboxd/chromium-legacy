@@ -300,7 +300,8 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
       navigation_controller_(web_contents_.get()),
       log_level_(kLogSeverityNone),
       url_request_rewrite_rules_manager_(web_contents_.get()),
-      binding_(this, std::move(frame_request)) {
+      binding_(this, std::move(frame_request)),
+      media_blocker_(web_contents_.get()) {
   DCHECK(!WebContentsToFrameImplMap()[web_contents_.get()]);
   WebContentsToFrameImplMap()[web_contents_.get()] = this;
 
@@ -887,6 +888,10 @@ void FrameImpl::SetPermissionState(
 void FrameImpl::CloseContents(content::WebContents* source) {
   DCHECK_EQ(source, web_contents_.get());
   context_->DestroyFrame(this);
+}
+
+void FrameImpl::SetBlockMediaLoading(bool blocked) {
+  media_blocker_.BlockMediaLoading(blocked);
 }
 
 bool FrameImpl::DidAddMessageToConsole(

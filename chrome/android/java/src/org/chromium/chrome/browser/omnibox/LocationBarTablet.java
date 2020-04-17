@@ -234,7 +234,7 @@ public class LocationBarTablet extends LocationBarLayout {
         super.onSuggestionsChanged(autocompleteText);
         mStatusViewCoordinator.setFirstSuggestionIsSearchType(
                 mAutocompleteCoordinator.getSuggestionCount() > 0
-                && !mAutocompleteCoordinator.getSuggestionAt(0).isUrlSuggestion());
+                && mAutocompleteCoordinator.getSuggestionAt(0).isSearchSuggestion());
     }
 
     @Override

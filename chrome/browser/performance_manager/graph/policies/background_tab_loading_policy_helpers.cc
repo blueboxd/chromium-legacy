@@ -5,6 +5,7 @@
 #include "chrome/browser/performance_manager/graph/policies/background_tab_loading_policy_helpers.h"
 
 #include <math.h>
+#include <limits>
 
 #include "base/logging.h"
 

@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -158,9 +159,17 @@ GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_with_flush_on_mac(
     // Conditional may be optimized out because droppable_call is set at compile
     // time.
     if (!droppable_call || !HasInitializedNullDrawGLBindings()) {
-      glFlush();
+      {
+        TRACE_EVENT0(
+            "gpu", "CreateGrGLInterface - bind_with_flush_on_mac - beforefunc")
+        glFlush();
+      }
       func(args...);
-      glFlush();
+      {
+        TRACE_EVENT0("gpu",
+                     "CreateGrGLInterface - bind_with_flush_on_mac - afterfunc")
+        glFlush();
+      }
     }
   };
 #else

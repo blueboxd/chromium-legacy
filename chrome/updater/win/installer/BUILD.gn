@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/timestamp.gni")
 import("//chrome/process_version_rc_template.gni")
 import("//testing/test.gni")
 
@@ -76,6 +77,8 @@ template("generate_installer") {
       "--setup_runtime_deps",
       rebase_path(updater_runtime_deps, root_build_dir),
       "--output_name=updater",
+      "--timestamp",
+      build_timestamp,
 
       # Optional argument for verbose archiving output.
       #"--verbose",

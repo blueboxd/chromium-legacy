@@ -289,61 +289,171 @@ TEST_F(ExternalProtocolHandlerTest, TestUrlEscape) {
 
 TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateUnknown) {
   ExternalProtocolHandler::BlockState block_state =
-      ExternalProtocolHandler::GetBlockState("tel", profile_.get());
+      ExternalProtocolHandler::GetBlockState("tel", nullptr, profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
   EXPECT_TRUE(
-      profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+      profile_->GetPrefs()
+          ->GetDictionary(prefs::kProtocolHandlerPerOriginAllowedProtocols)
+          ->empty());
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateDefaultBlock) {
   ExternalProtocolHandler::BlockState block_state =
-      ExternalProtocolHandler::GetBlockState("afp", profile_.get());
-  EXPECT_EQ(ExternalProtocolHandler::BLOCK, block_state);
-  block_state = ExternalProtocolHandler::GetBlockState("res", profile_.get());
+      ExternalProtocolHandler::GetBlockState("afp", nullptr, profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::BLOCK, block_state);
   block_state =
-      ExternalProtocolHandler::GetBlockState("ie.http", profile_.get());
+      ExternalProtocolHandler::GetBlockState("res", nullptr, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::BLOCK, block_state);
+  block_state = ExternalProtocolHandler::GetBlockState("ie.http", nullptr,
+                                                       profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::BLOCK, block_state);
   EXPECT_TRUE(
-      profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+      profile_->GetPrefs()
+          ->GetDictionary(prefs::kProtocolHandlerPerOriginAllowedProtocols)
+          ->empty());
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateDefaultDontBlock) {
   ExternalProtocolHandler::BlockState block_state =
-      ExternalProtocolHandler::GetBlockState("mailto", profile_.get());
+      ExternalProtocolHandler::GetBlockState("mailto", nullptr, profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
   EXPECT_TRUE(
-      profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+      profile_->GetPrefs()
+          ->GetDictionary(prefs::kProtocolHandlerPerOriginAllowedProtocols)
+          ->empty());
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestSetBlockState) {
-  const char kScheme[] = "custom";
+  const char kScheme_1[] = "custom1";
+  const char kScheme_2[] = "custom2";
+  url::Origin example_origin_1 =
+      url::Origin::Create(GURL("https://example.test"));
+  url::Origin example_origin_2 =
+      url::Origin::Create(GURL("https://example2.test"));
   ExternalProtocolHandler::BlockState block_state =
-      ExternalProtocolHandler::GetBlockState(kScheme, profile_.get());
+      ExternalProtocolHandler::GetBlockState(kScheme_1, &example_origin_1,
+                                             profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme_2, &example_origin_1, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme_1, &example_origin_2, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme_2, &example_origin_2, profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
   EXPECT_TRUE(
-      profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+      profile_->GetPrefs()
+          ->GetDictionary(prefs::kProtocolHandlerPerOriginAllowedProtocols)
+          ->empty());
 
-  // Set to DONT_BLOCK, and make sure it is written to prefs.
-  ExternalProtocolHandler::SetBlockState(
-      kScheme, ExternalProtocolHandler::DONT_BLOCK, profile_.get());
-  block_state = ExternalProtocolHandler::GetBlockState(kScheme, profile_.get());
+  // Set to DONT_BLOCK for {kScheme_1, example_origin_1}, and make sure it is
+  // written to prefs.
+  ExternalProtocolHandler::SetBlockState(kScheme_1, example_origin_1,
+                                         ExternalProtocolHandler::DONT_BLOCK,
+                                         profile_.get());
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme_1, &example_origin_1, profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
-  base::Value expected_excluded_schemes(base::Value::Type::DICTIONARY);
-  expected_excluded_schemes.SetKey(kScheme, base::Value(false));
-  EXPECT_EQ(expected_excluded_schemes,
-            *profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes));
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme_2, &example_origin_1, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme_1, &example_origin_2, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme_2, &example_origin_2, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+
+  // Set to DONT_BLOCK for {kScheme_2, example_origin_2}, and make sure it is
+  // written to prefs independently of {kScheme_1, example_origin_1}.
+  ExternalProtocolHandler::SetBlockState(kScheme_2, example_origin_2,
+                                         ExternalProtocolHandler::DONT_BLOCK,
+                                         profile_.get());
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme_1, &example_origin_1, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme_2, &example_origin_1, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme_1, &example_origin_2, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme_2, &example_origin_2, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
+
+  const base::DictionaryValue* protocol_origin_pairs =
+      profile_->GetPrefs()->GetDictionary(
+          prefs::kProtocolHandlerPerOriginAllowedProtocols);
+  base::Value expected_allowed_protocols_for_example_origin_1(
+      base::Value::Type::DICTIONARY);
+  expected_allowed_protocols_for_example_origin_1.SetKey(kScheme_1,
+                                                         base::Value(true));
+  const base::Value* allowed_protocols_for_example_origin_1 =
+      protocol_origin_pairs->FindDictKey(example_origin_1.Serialize());
+  EXPECT_EQ(expected_allowed_protocols_for_example_origin_1,
+            *allowed_protocols_for_example_origin_1);
+  base::Value expected_allowed_protocols_for_example_origin_2(
+      base::Value::Type::DICTIONARY);
+  expected_allowed_protocols_for_example_origin_2.SetKey(kScheme_2,
+                                                         base::Value(true));
+  const base::Value* allowed_protocols_for_example_origin_2 =
+      protocol_origin_pairs->FindDictKey(example_origin_2.Serialize());
+  EXPECT_EQ(expected_allowed_protocols_for_example_origin_2,
+            *allowed_protocols_for_example_origin_2);
 
   // Note: BLOCK is no longer supported (it triggers a DCHECK in SetBlockState;
   // see https://crbug.com/724919).
 
   // Set back to UNKNOWN, and make sure this results in an empty dictionary.
-  ExternalProtocolHandler::SetBlockState(
-      kScheme, ExternalProtocolHandler::UNKNOWN, profile_.get());
-  block_state = ExternalProtocolHandler::GetBlockState(kScheme, profile_.get());
+  ExternalProtocolHandler::SetBlockState(kScheme_1, example_origin_1,
+                                         ExternalProtocolHandler::UNKNOWN,
+                                         profile_.get());
+  ExternalProtocolHandler::SetBlockState(kScheme_2, example_origin_2,
+                                         ExternalProtocolHandler::UNKNOWN,
+                                         profile_.get());
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme_1, &example_origin_1, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme_2, &example_origin_2, profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
   EXPECT_TRUE(
-      profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+      profile_->GetPrefs()
+          ->GetDictionary(prefs::kProtocolHandlerPerOriginAllowedProtocols)
+          ->empty());
+}
+
+TEST_F(ExternalProtocolHandlerTest, TestSetBlockStateWithUntrustowrthyOrigin) {
+  const char kScheme[] = "custom";
+  // This origin is untrustworthy because it is "http://"
+  url::Origin untrustworthy_origin =
+      url::Origin::Create(GURL("http://example.test"));
+
+  ExternalProtocolHandler::BlockState block_state =
+      ExternalProtocolHandler::GetBlockState(kScheme, &untrustworthy_origin,
+                                             profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+  EXPECT_TRUE(
+      profile_->GetPrefs()
+          ->GetDictionary(prefs::kProtocolHandlerPerOriginAllowedProtocols)
+          ->empty());
+
+  // Set to DONT_BLOCK for {kScheme, untrustworthy_origin}, and make sure it is
+  // not written to prefs. Calling SetBlockState with a non-trustworthy origin
+  // should not persist any state to prefs.
+  ExternalProtocolHandler::SetBlockState(kScheme, untrustworthy_origin,
+                                         ExternalProtocolHandler::DONT_BLOCK,
+                                         profile_.get());
+  block_state = ExternalProtocolHandler::GetBlockState(
+      kScheme, &untrustworthy_origin, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+  EXPECT_TRUE(
+      profile_->GetPrefs()
+          ->GetDictionary(prefs::kProtocolHandlerPerOriginAllowedProtocols)
+          ->empty());
 }
 
 // Test that an opaque initiating origin gets transformed to its precursor

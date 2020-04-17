@@ -22,7 +22,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
@@ -84,11 +86,13 @@ scoped_refptr<shell_integration::DefaultProtocolClientWorker> CreateShellWorker(
 
 ExternalProtocolHandler::BlockState GetBlockStateWithDelegate(
     const std::string& scheme,
+    const url::Origin* initiating_origin,
     ExternalProtocolHandler::Delegate* delegate,
     Profile* profile) {
   if (delegate)
     return delegate->GetBlockState(scheme, profile);
-  return ExternalProtocolHandler::GetBlockState(scheme, profile);
+  return ExternalProtocolHandler::GetBlockState(scheme, initiating_origin,
+                                                profile);
 }
 
 void RunExternalProtocolDialogWithDelegate(
@@ -214,9 +218,16 @@ void ExternalProtocolHandler::SetDelegateForTesting(Delegate* delegate) {
   g_external_protocol_handler_delegate = delegate;
 }
 
-// static
+bool ExternalProtocolHandler::MayRememberAllowDecisionsForThisOrigin(
+    const url::Origin* initiating_origin) {
+  return initiating_origin &&
+         network::IsOriginPotentiallyTrustworthy(*initiating_origin);
+}
+
+// static.
 ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
     const std::string& scheme,
+    const url::Origin* initiating_origin,
     Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -245,15 +256,20 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
 
   PrefService* profile_prefs = profile->GetPrefs();
   if (profile_prefs) {  // May be NULL during testing.
-    const base::DictionaryValue* update_excluded_schemas_profile =
-        profile_prefs->GetDictionary(prefs::kExcludedSchemes);
-    bool should_block;
-    // Ignore stored block decisions. These are now not possible through the UI,
-    // and previous block decisions should be ignored to allow users to recover
-    // from accidental blocks.
-    if (update_excluded_schemas_profile->GetBoolean(scheme, &should_block) &&
-        !should_block) {
-      return DONT_BLOCK;
+    if (MayRememberAllowDecisionsForThisOrigin(initiating_origin)) {
+      // Check if there is a matching {Origin+Protocol} pair exemption:
+      const base::DictionaryValue* allowed_origin_protocol_pairs =
+          profile_prefs->GetDictionary(
+              prefs::kProtocolHandlerPerOriginAllowedProtocols);
+      const base::Value* allowed_protocols_for_origin =
+          allowed_origin_protocol_pairs->FindDictKey(
+              initiating_origin->Serialize());
+      if (allowed_protocols_for_origin) {
+        base::Optional<bool> allow =
+            allowed_protocols_for_origin->FindBoolKey(scheme);
+        if (allow.has_value() && allow.value())
+          return DONT_BLOCK;
+      }
     }
   }
 
@@ -261,25 +277,48 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
 }
 
 // static
-void ExternalProtocolHandler::SetBlockState(const std::string& scheme,
-                                            BlockState state,
-                                            Profile* profile) {
+// This is only called when the "remember" check box is selected from the
+// External Protocol Prompt dialog, and that check box is only shown when there
+// is a non-empty, potentially-trustworthy initiating origin.
+void ExternalProtocolHandler::SetBlockState(
+    const std::string& scheme,
+    const url::Origin& initiating_origin,
+    BlockState state,
+    Profile* profile) {
   // Setting the state to BLOCK is no longer supported through the UI.
   DCHECK_NE(state, BLOCK);
 
   // Set in the stored prefs.
-  PrefService* profile_prefs = profile->GetPrefs();
-  if (profile_prefs) {  // May be NULL during testing.
-    DictionaryPrefUpdate update_excluded_schemas_profile(
-        profile_prefs, prefs::kExcludedSchemes);
-    if (state == DONT_BLOCK)
-      update_excluded_schemas_profile->SetBoolean(scheme, false);
-    else
-      update_excluded_schemas_profile->Remove(scheme, nullptr);
+  if (MayRememberAllowDecisionsForThisOrigin(&initiating_origin)) {
+    PrefService* profile_prefs = profile->GetPrefs();
+    if (profile_prefs) {  // May be NULL during testing.
+      DictionaryPrefUpdate update_allowed_origin_protocol_pairs(
+          profile_prefs, prefs::kProtocolHandlerPerOriginAllowedProtocols);
+
+      const std::string serialized_origin = initiating_origin.Serialize();
+      base::Value* allowed_protocols_for_origin =
+          update_allowed_origin_protocol_pairs->FindDictKey(serialized_origin);
+      if (!allowed_protocols_for_origin) {
+        update_allowed_origin_protocol_pairs->SetKey(
+            serialized_origin, base::Value(base::Value::Type::DICTIONARY));
+        allowed_protocols_for_origin =
+            update_allowed_origin_protocol_pairs->FindDictKey(
+                serialized_origin);
+      }
+      if (state == DONT_BLOCK) {
+        allowed_protocols_for_origin->SetBoolKey(scheme, true);
+      } else {
+        allowed_protocols_for_origin->RemoveKey(scheme);
+        if (allowed_protocols_for_origin->DictEmpty())
+          update_allowed_origin_protocol_pairs->RemoveKey(serialized_origin);
+      }
+    }
   }
 
-  if (g_external_protocol_handler_delegate)
-    g_external_protocol_handler_delegate->OnSetBlockState(scheme, state);
+  if (g_external_protocol_handler_delegate) {
+    g_external_protocol_handler_delegate->OnSetBlockState(
+        scheme, initiating_origin, state);
+  }
 }
 
 // static
@@ -307,7 +346,8 @@ void ExternalProtocolHandler::LaunchUrl(
   if (web_contents)  // Maybe NULL during testing.
     profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   BlockState block_state = GetBlockStateWithDelegate(
-      escaped_url.scheme(), g_external_protocol_handler_delegate, profile);
+      escaped_url.scheme(), base::OptionalOrNullptr(initiating_origin),
+      g_external_protocol_handler_delegate, profile);
   if (block_state == BLOCK) {
     if (g_external_protocol_handler_delegate)
       g_external_protocol_handler_delegate->BlockRequest();
@@ -384,11 +424,12 @@ void ExternalProtocolHandler::RecordHandleStateMetrics(bool checkbox_selected,
 
 // static
 void ExternalProtocolHandler::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kExcludedSchemes);
+  registry->RegisterDictionaryPref(
+      prefs::kProtocolHandlerPerOriginAllowedProtocols);
 }
 
 // static
 void ExternalProtocolHandler::ClearData(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
-  prefs->ClearPref(prefs::kExcludedSchemes);
+  prefs->ClearPref(prefs::kProtocolHandlerPerOriginAllowedProtocols);
 }

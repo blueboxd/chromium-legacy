@@ -17,6 +17,7 @@ class LocalInterfaceProvider;
 }  // namespace service_manager
 
 namespace weblayer {
+class WebLayerRenderThreadObserver;
 
 class ContentRendererClientImpl : public content::ContentRendererClient {
  public:
@@ -44,6 +45,8 @@ class ContentRendererClientImpl : public content::ContentRendererClient {
       local_interface_provider_;
   std::unique_ptr<SpellCheck> spellcheck_;
 #endif
+
+  std::unique_ptr<WebLayerRenderThreadObserver> weblayer_observer_;
 
   scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
       browser_interface_broker_;

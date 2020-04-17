@@ -2568,6 +2568,56 @@ TEST_F(DisplayTest, CompositorFrameWithCombinedSharedQuadState) {
   }
 }
 
+// Remove overlapping quads in non-root render passes.
+TEST_F(DisplayTest, DrawOcclusionWithMultipleRenderPass) {
+  SetUpGpuDisplay(RendererSettings());
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+
+  CompositorFrame frame = CompositorFrameBuilder()
+                              .AddDefaultRenderPass()
+                              .AddDefaultRenderPass()
+                              .Build();
+
+  // rect 3 is inside of combined rect of rect 1 and rect 2.
+  // rect 4 is identical to rect 3, but in a separate render pass.
+  gfx::Rect rects[4] = {
+      gfx::Rect(0, 0, 100, 100),
+      gfx::Rect(100, 0, 60, 60),
+      gfx::Rect(10, 10, 120, 30),
+      gfx::Rect(10, 10, 120, 30),
+  };
+
+  SharedQuadState* shared_quad_states[4];
+  SolidColorDrawQuad* quads[4];
+  for (int i = 0; i < 4; i++) {
+    // add all but quad 4 into non-root render pass.
+    auto& render_pass =
+        i == 3 ? frame.render_pass_list.back() : frame.render_pass_list.front();
+    shared_quad_states[i] = render_pass->CreateAndAppendSharedQuadState();
+    quads[i] =
+        render_pass->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+    shared_quad_states[i]->SetAll(
+        gfx::Transform(), rects[i], rects[i], gfx::RRectF(), rects[i],
+        false /*is_clipped*/, true /*are_contents_opaque*/, 1.f /*opacity*/,
+        SkBlendMode::kSrcOver, 0 /*sorting_context_id*/);
+    quads[i]->SetNew(shared_quad_states[i], rects[i], rects[i], SK_ColorBLACK,
+                     false /*force_anti_aliasing_off*/);
+  }
+
+  auto& render_pass = frame.render_pass_list.front();
+  auto& root_render_pass = frame.render_pass_list.back();
+  EXPECT_EQ(3u, NumVisibleRects(render_pass->quad_list));
+  EXPECT_EQ(1u, NumVisibleRects(root_render_pass->quad_list));
+  display_->RemoveOverdrawQuads(&frame);
+  EXPECT_EQ(2u, NumVisibleRects(render_pass->quad_list));
+  EXPECT_EQ(1u, NumVisibleRects(root_render_pass->quad_list));
+  EXPECT_EQ(rects[0], render_pass->quad_list.ElementAt(0)->visible_rect);
+  EXPECT_EQ(rects[1], render_pass->quad_list.ElementAt(1)->visible_rect);
+  EXPECT_EQ(rects[3], root_render_pass->quad_list.ElementAt(0)->visible_rect);
+}
+
+// Occlusion tracking should not persist across render passes.
 TEST_F(DisplayTest, CompositorFrameWithMultipleRenderPass) {
   RendererSettings settings;
   SetUpGpuDisplay(settings);

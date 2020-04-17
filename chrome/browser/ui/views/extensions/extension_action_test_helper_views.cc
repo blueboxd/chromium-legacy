@@ -103,7 +103,8 @@ gfx::Image ExtensionActionTestHelperViews::GetIcon(int index) {
 void ExtensionActionTestHelperViews::Press(int index) {
   browser_actions_container_->GetToolbarActionViewAt(index)
       ->view_controller()
-      ->ExecuteAction(true);
+      ->ExecuteAction(
+          true, ToolbarActionViewController::InvocationSource::kToolbarButton);
 }
 
 std::string ExtensionActionTestHelperViews::GetExtensionId(int index) {
@@ -132,11 +133,6 @@ bool ExtensionActionTestHelperViews::HasPopup() {
 bool ExtensionActionTestHelperViews::HidePopup() {
   GetToolbarActionsBar()->HideActivePopup();
   return !HasPopup();
-}
-
-bool ExtensionActionTestHelperViews::ActionButtonWantsToRun(size_t index) {
-  return browser_actions_container_->GetToolbarActionViewAt(index)
-      ->wants_to_run_for_testing();
 }
 
 void ExtensionActionTestHelperViews::SetWidth(int width) {

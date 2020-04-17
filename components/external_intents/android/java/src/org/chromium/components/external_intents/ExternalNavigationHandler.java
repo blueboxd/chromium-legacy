@@ -7,6 +7,7 @@ package org.chromium.components.external_intents;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -40,6 +41,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -1117,6 +1119,39 @@ public class ExternalNavigationHandler {
         return intent.filterEquals(other)
                 && (intent.getSelector() == other.getSelector()
                         || intent.getSelector().filterEquals(other.getSelector()));
+    }
+
+    // TODO(crbug.com/1071390): Make this method private once its consumers have been moved into
+    // this class.
+    public static boolean matchResolveInfoExceptWildCardHost(
+            ResolveInfo info, String filterPackageName) {
+        IntentFilter intentFilter = info.filter;
+        if (intentFilter == null) {
+            // Error on the side of classifying ResolveInfo as generic.
+            return false;
+        }
+        if (intentFilter.countDataAuthorities() == 0 && intentFilter.countDataPaths() == 0) {
+            // Don't count generic handlers.
+            return false;
+        }
+        boolean isWildCardHost = false;
+        Iterator<IntentFilter.AuthorityEntry> it = intentFilter.authoritiesIterator();
+        while (it != null && it.hasNext()) {
+            IntentFilter.AuthorityEntry entry = it.next();
+            if ("*".equals(entry.getHost())) {
+                isWildCardHost = true;
+                break;
+            }
+        }
+        if (isWildCardHost) {
+            return false;
+        }
+        if (!TextUtils.isEmpty(filterPackageName)
+                && (info.activityInfo == null
+                        || !info.activityInfo.packageName.equals(filterPackageName))) {
+            return false;
+        }
+        return true;
     }
 
     private void recordIntentActionMetrics(Intent intent) {

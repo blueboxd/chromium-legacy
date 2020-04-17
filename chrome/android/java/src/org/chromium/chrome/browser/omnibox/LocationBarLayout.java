@@ -60,6 +60,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
+import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
@@ -282,13 +283,15 @@ public class LocationBarLayout extends FrameLayout
 
     @Override
     public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid,
-            ActivityTabProvider provider) {
+            ActivityTabProvider activityTabProvider,
+            IncognitoStateProvider incognitoStateProvider) {
         mWindowDelegate = windowDelegate;
         mWindowAndroid = windowAndroid;
 
         mUrlCoordinator.setWindowDelegate(windowDelegate);
         mAutocompleteCoordinator.setWindowAndroid(windowAndroid);
-        mAutocompleteCoordinator.setActivityTabProvider(provider);
+        mAutocompleteCoordinator.setActivityTabProvider(activityTabProvider);
+        mStatusViewCoordinator.setIncognitoStateProvider(incognitoStateProvider);
     }
 
     /**

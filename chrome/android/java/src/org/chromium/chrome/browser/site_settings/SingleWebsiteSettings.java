@@ -28,6 +28,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
@@ -330,7 +331,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         if (PREF_SITE_TITLE.equals(preference.getKey())) {
             preference.setTitle(mSite.getTitle());
         } else if (PREF_CLEAR_DATA.equals(preference.getKey())) {
-            setUpClearDataPreference(preference);
+            setUpClearDataPreference((ClearWebsiteStorage) preference);
         } else if (PREF_RESET_SITE.equals(preference.getKey())) {
             preference.setOnPreferenceClickListener(this);
         } else {
@@ -367,13 +368,17 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         }
     }
 
-    private void setUpClearDataPreference(Preference preference) {
+    private void setUpClearDataPreference(ClearWebsiteStorage preference) {
         long usage = mSite.getTotalUsage();
         if (usage > 0) {
+            WebappRegistry registry = WebappRegistry.getInstance();
+            Set<String> originsWithApps = registry.getOriginsWithInstalledApp();
+            boolean appFound = originsWithApps.contains(mSite.getAddress().getOrigin());
             Context context = preference.getContext();
             preference.setTitle(
                     String.format(context.getString(R.string.origin_settings_storage_usage_brief),
                             Formatter.formatShortFileSize(context, usage)));
+            preference.setDataForDisplay(mSite.getTitle(), appFound);
         } else {
             getPreferenceScreen().removePreference(preference);
         }

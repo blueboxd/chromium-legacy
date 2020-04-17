@@ -75,6 +75,8 @@ component("web_engine_core") {
     "//base:base_static",
     "//base/util/memory_pressure",
     "//components/cdm/renderer",
+    "//components/media_control/browser",
+    "//components/media_control/renderer",
     "//components/version_info",
     "//content/public/app:both",
     "//content/public/browser",

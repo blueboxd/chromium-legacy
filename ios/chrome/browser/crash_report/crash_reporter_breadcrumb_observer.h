@@ -12,8 +12,8 @@
 
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer_bridge.h"
 
-// The maximum string length for product data supported by Breakpad.
-extern const int kMaxProductDataLength;
+// The maximum string length for breadcrumbs data.
+extern const NSUInteger kMaxBreadcrumbsDataLength;
 
 // Combines breadcrumbs from multiple BreadcrumbManagers and sends the merged
 // breadcrumb events to breakpad for attachment to crash reports.
@@ -23,12 +23,6 @@ extern const int kMaxProductDataLength;
 
 // Creates a singleton instance.
 + (CrashReporterBreadcrumbObserver*)uniqueInstance;
-
-// Number of product data keys to use for breadcrumbs.
-@property(nonatomic) NSUInteger breadcrumbsKeyCount;
-
-// Maximum allowed length for a single product data value.
-@property(nonatomic) NSUInteger maxProductDataLength;
 
 // Starts collecting breadcrumb events logged to |breadcrumbManager|.
 - (void)observeBreadcrumbManager:(BreadcrumbManager*)breadcrumbManager;

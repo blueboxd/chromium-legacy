@@ -138,8 +138,10 @@ are typically allocated only when a vulnerability is found. You should follow
 the version number convention such that, when that does occur in future, we'll
 be notified. If no CPE is available, please specify "unknown".
 
-You may sometimes find that your package lacks a CPE, in which case this line
-can be omitted. If it does have a CPE, though, you should specify it.
+If you're using a patched or modified version which is halfway between two
+public versions, please "round downwards" to the lower of the public versions
+(it's better for us to be notified of false-positive vulnerabilities than
+false-negatives).
 
 ### Add a LICENSE file and run related checks
 

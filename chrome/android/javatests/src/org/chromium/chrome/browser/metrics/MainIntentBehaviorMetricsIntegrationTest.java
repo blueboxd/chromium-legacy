@@ -18,7 +18,6 @@ import android.support.test.filters.MediumTest;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,27 +32,17 @@ import org.chromium.chrome.browser.bookmarks.BookmarkActivity;
 import org.chromium.chrome.browser.download.DownloadActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryActivity;
-import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.DummySettingsForTest;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
-import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.MenuUtils;
-import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.content_public.common.ContentUrlConstants;
-
-import java.util.concurrent.Callable;
 
 /**
  * Tests the metrics recording for main intent behaviours.
@@ -72,96 +61,9 @@ public class MainIntentBehaviorMetricsIntegrationTest {
 
     private UserActionTester mActionTester;
 
-    @Before
-    public void setUp() {
-        MainIntentBehaviorMetrics.setShouldTrackBehaviorSourceForTesting(true);
-    }
-
     @After
     public void tearDown() {
-        MainIntentBehaviorMetrics.setShouldTrackBehaviorSourceForTesting(false);
         if (mActionTester != null) mActionTester.tearDown();
-    }
-
-    @MediumTest
-    @Test
-    public void testFocusOmnibox() {
-        startActivity(true);
-        assertMainIntentBehavior(null);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
-            OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
-        });
-        assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.FOCUS_OMNIBOX);
-    }
-
-    @MediumTest
-    @Test
-    @DisabledTest(message = "crbug.com/972759")
-    public void testSwitchTabs() {
-        startActivity(true);
-        assertMainIntentBehavior(null);
-        TestThreadUtils.runOnUiThreadBlocking(
-            (Runnable) () -> mActivityTestRule.getActivity().getTabCreator(false).createNewTab(
-                                new LoadUrlParams(ContentUrlConstants.ABOUT_BLANK_URL),
-                                TabLaunchType.FROM_RESTORE, null));
-        CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount();
-            }
-        }));
-        assertMainIntentBehavior(null);
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> TabModelUtils.setIndex(
-                                mActivityTestRule.getActivity().getCurrentTabModel(), 1));
-        assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.SWITCH_TABS);
-    }
-
-    @MediumTest
-    @Test
-    public void testBackgrounded() {
-        startActivity(true);
-        assertMainIntentBehavior(null);
-        TestThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().finish());
-        assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.BACKGROUNDED);
-    }
-
-    @MediumTest
-    @Test
-    public void testCreateNtp() {
-        // startActivity(true) creates a NTP which is problematical for this test if
-        // ChromeTabbedActivity.setupCompositorContent runs before that NTP is created because
-        // that creates a SimpleAnimationLayout which tries to hide the page resulting in a
-        // MainIntentActionType.SWITCH_TABS. Starting from about:blank avoids this confusion.
-        startActivityWithAboutBlank(true);
-        assertMainIntentBehavior(null);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().getTabCreator(false).launchNTP());
-        assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.NTP_CREATED);
-    }
-
-    @MediumTest
-    @Test
-    public void testContinuation() {
-        try {
-            MainIntentBehaviorMetrics.setTimeoutDurationMsForTesting(500);
-            startActivity(true);
-            assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.CONTINUATION);
-        } finally {
-            MainIntentBehaviorMetrics.setTimeoutDurationMsForTesting(
-                    MainIntentBehaviorMetrics.TIMEOUT_DURATION_MS);
-        }
-    }
-
-    @MediumTest
-    @Test
-    public void testMainIntentWithoutLauncherCategory() {
-        startActivity(false);
-        assertMainIntentBehavior(null);
-        Assert.assertFalse(mActivityTestRule.getActivity().getMainIntentBehaviorMetricsForTesting()
-                .getPendingActionRecordForMainIntent());
     }
 
     @MediumTest
@@ -333,23 +235,5 @@ public class MainIntentBehaviorMetricsIntegrationTest {
 
         mActivityTestRule.startActivityCompletely(intent);
         mActivityTestRule.waitForActivityNativeInitializationComplete();
-    }
-
-    private void assertMainIntentBehavior(Integer expected) {
-        CriteriaHelper.pollUiThread(Criteria.equals(expected, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                MainIntentBehaviorMetrics behaviorMetrics =
-                        mActivityTestRule.getActivity().getMainIntentBehaviorMetricsForTesting();
-                Integer actual = behaviorMetrics.getLastMainIntentBehaviorForTesting();
-                if (actual != null && !actual.equals(expected)) {
-                    IllegalStateException ex = new IllegalStateException(
-                            "Expected main behavior: " + expected + ", actual: " + actual);
-                    ex.setStackTrace(behaviorMetrics.getMainIntentBehaviorSourceForTesting());
-                    throw ex;
-                }
-                return actual;
-            }
-        }));
     }
 }

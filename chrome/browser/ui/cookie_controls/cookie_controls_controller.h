@@ -7,8 +7,9 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/page_info/android/cookie_controls_status.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_contents.h"
@@ -47,10 +48,12 @@ class CookieControlsController {
   // object, so we need an inner class that can be recreated when necessary.
   // TODO(dullweber): Make it possible to change the observed class and maybe
   // convert SiteDataObserver to a pure virtual interface.
-  class TabObserver : public TabSpecificContentSettings::SiteDataObserver {
+  class TabObserver
+      : public content_settings::TabSpecificContentSettings::SiteDataObserver {
    public:
     TabObserver(CookieControlsController* cookie_controls,
-                TabSpecificContentSettings* tab_specific_content_settings);
+                content_settings::TabSpecificContentSettings*
+                    tab_specific_content_settings);
 
     // TabSpecificContentSettings::SiteDataObserver:
     void OnSiteDataAccessed() override;

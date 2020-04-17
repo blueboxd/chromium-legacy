@@ -150,12 +150,6 @@ bool ExtensionsMenuTestUtil::HidePopup() {
   return !HasPopup();
 }
 
-bool ExtensionsMenuTestUtil::ActionButtonWantsToRun(size_t index) {
-  // TODO(devlin): Investigate if wants-to-run behavior is still necessary.
-  NOTREACHED();
-  return false;
-}
-
 void ExtensionsMenuTestUtil::SetWidth(int width) {
   extensions_container_->SetSize(
       gfx::Size(width, extensions_container_->height()));

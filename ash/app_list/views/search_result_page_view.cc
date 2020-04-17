@@ -338,7 +338,7 @@ void SearchResultPageView::ReorderSearchResultContainers() {
     if (i > 0) {
       HorizontalSeparator* separator = separators_[i - 1];
       // Hides the separator above the container that has no results.
-      if (!view->container_score())
+      if (!view->num_results())
         separator->SetVisible(false);
       else
         separator->SetVisible(true);

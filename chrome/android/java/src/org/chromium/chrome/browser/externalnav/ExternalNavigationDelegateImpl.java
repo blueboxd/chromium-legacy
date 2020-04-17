@@ -12,7 +12,6 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -53,6 +52,7 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
+import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.components.external_intents.RedirectHandlerImpl;
@@ -68,7 +68,6 @@ import org.chromium.ui.base.PermissionCallback;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -233,7 +232,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         }
 
         for (ResolveInfo info : infos) {
-            if (!matchResolveInfoExceptWildCardHost(info, filterPackageName)) {
+            if (!ExternalNavigationHandler.matchResolveInfoExceptWildCardHost(
+                        info, filterPackageName)) {
                 continue;
             }
 
@@ -249,37 +249,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             }
         }
         return result;
-    }
-
-    private static boolean matchResolveInfoExceptWildCardHost(
-            ResolveInfo info, String filterPackageName) {
-        IntentFilter intentFilter = info.filter;
-        if (intentFilter == null) {
-            // Error on the side of classifying ResolveInfo as generic.
-            return false;
-        }
-        if (intentFilter.countDataAuthorities() == 0 && intentFilter.countDataPaths() == 0) {
-            // Don't count generic handlers.
-            return false;
-        }
-        boolean isWildCardHost = false;
-        Iterator<IntentFilter.AuthorityEntry> it = intentFilter.authoritiesIterator();
-        while (it != null && it.hasNext()) {
-            IntentFilter.AuthorityEntry entry = it.next();
-            if ("*".equals(entry.getHost())) {
-                isWildCardHost = true;
-                break;
-            }
-        }
-        if (isWildCardHost) {
-            return false;
-        }
-        if (!TextUtils.isEmpty(filterPackageName)
-                && (info.activityInfo == null
-                        || !info.activityInfo.packageName.equals(filterPackageName))) {
-            return false;
-        }
-        return true;
     }
 
     /**

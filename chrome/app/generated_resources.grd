@@ -7614,8 +7614,8 @@ the Bookmarks menu.">
         <message name="IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT" desc="Button in External Protocol Dialog that does not launch the application associated with the protocol">
           Cancel
         </message>
-        <message name="IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT" desc="Checkbox to ask the user whether they would like their decision remembered.">
-          Always open links of this type in the associated app
+        <message name="IDS_EXTERNAL_PROTOCOL_CHECKBOX_PER_ORIGIN_TEXT" desc="The External Protocol Dialog is shown when a navigation is started from a webpage, such as https://google.com, to a URL where the protocol indicates that a different software application on the machine should be opened, external to the browser. For example, 'skype:' may indicate that the Skype application be opened. This string describes a checkbox that allows the user to opt out of seeing this confirmation dialog in the future from pages with the same origin as the current page, when trying to launch the same protocol currently being launched">
+          Always allow <ph name="ORIGIN">$1<ex>https://google.com</ex></ph> to open links of this type in the associated app
         </message>
       </if>
       <if expr="chromeos">
@@ -7710,7 +7710,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_RECENTLY_CLOSED_WINDOW" desc="In Title Case: Title of recently closed windows in Recent Tabs menu. [ICU_Syntax]">
           {NUM_TABS, plural, =1 {1 Tab} other {# Tabs}}
         </message>
-        <message name="IDS_RECENT_TABS_NO_DEVICE_TABS" desc="In Title Case: The label in the Recent Tabs menu in the wrench menu when there's no tabs from other devices.">
+        <message name="IDS_RECENT_TABS_NO_DEVICE_TABS" desc="In Title Case: The label in the Recent Tabs menu in the wrench menu when the re's no tabs from other devices.">
           No Tabs From Other Devices
         </message>
       </if>

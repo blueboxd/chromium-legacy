@@ -42,6 +42,7 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -368,7 +369,11 @@ TEST_F(PopupMenuMediatorTest, TestReadLaterDisabled) {
 }
 
 // Tests that the "Text Zoom..." button is disabled on non-HTML pages.
-TEST_F(PopupMenuMediatorTest, TextTextZoomDisabled) {
+TEST_F(PopupMenuMediatorTest, TestTextZoomDisabled) {
+  // This feature is currently disabled on iPad. See crbug.com/1061119.
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    return;
+  }
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(web::kWebPageTextAccessibility);
 
@@ -387,4 +392,25 @@ TEST_F(PopupMenuMediatorTest, TextTextZoomDisabled) {
   web::FakeNavigationContext context;
   web_state_->OnNavigationFinished(&context);
   EXPECT_TRUE(HasItem(consumer, kToolsMenuTextZoom, /*enabled=*/NO));
+}
+
+// Tests that this feature is disabled on iPad, no matter the state of the
+// Feature flag. See crbug.com/1061119.
+TEST_F(PopupMenuMediatorTest, TestTextZoomDisabledIPad) {
+  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
+    return;
+  }
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(web::kWebPageTextAccessibility);
+
+  CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
+                 /*trigger_incognito_hint=*/NO);
+  mediator_.webStateList = web_state_list_.get();
+
+  FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
+  mediator_.popupMenu = consumer;
+  FontSizeTabHelper::CreateForWebState(web_state_list_->GetWebStateAt(0));
+  SetUpActiveWebState();
+  EXPECT_FALSE(HasItem(consumer, kToolsMenuTextZoom, /*enabled=*/YES));
 }

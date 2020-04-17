@@ -272,6 +272,7 @@ void GLContext::DestroyBackpressureFences() {
 void GLContext::FlushForDriverCrashWorkaround() {
   if (!IsCurrent(nullptr))
     return;
+  TRACE_EVENT0("gpu", "GLContext::FlushForDriverCrashWorkaround");
   glFlush();
 }
 #endif

@@ -875,9 +875,9 @@ class WebAppNonClientFrameViewAshTest
   ContentSettingImageView* GrantGeolocationPermission() {
     content::RenderFrameHost* frame =
         app_browser_->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-    TabSpecificContentSettings* content_settings =
-        TabSpecificContentSettings::GetForFrame(frame->GetProcess()->GetID(),
-                                                frame->GetRoutingID());
+    content_settings::TabSpecificContentSettings* content_settings =
+        content_settings::TabSpecificContentSettings::GetForFrame(
+            frame->GetProcess()->GetID(), frame->GetRoutingID());
     content_settings->OnGeolocationPermissionSet(GetAppURL().GetOrigin(), true);
 
     return *std::find_if(

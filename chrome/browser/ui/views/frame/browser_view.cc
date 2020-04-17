@@ -1367,14 +1367,13 @@ void BrowserView::FocusToolbar() {
 }
 
 ExtensionsContainer* BrowserView::GetExtensionsContainer() {
-  ExtensionsToolbarContainer* const extensions_toolbar_container =
-      toolbar_button_provider_->GetExtensionsToolbarContainer();
-  if (extensions_toolbar_container)
-    return extensions_toolbar_container;
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    return toolbar_button_provider_->GetExtensionsToolbarContainer();
 
-  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
   BrowserActionsContainer* container =
       toolbar_button_provider_->GetBrowserActionsContainer();
+  // Note that in some cases (such as an app window), there is no extensions
+  // container.
   return container ? container->toolbar_actions_bar() : nullptr;
 }
 

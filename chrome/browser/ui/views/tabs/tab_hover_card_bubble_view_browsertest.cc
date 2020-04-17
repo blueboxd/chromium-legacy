@@ -27,31 +27,6 @@
 
 using views::Widget;
 
-// Helper to wait until a window is deactivated.
-class WindowDeactivedWaiter : public views::WidgetObserver {
- public:
-  explicit WindowDeactivedWaiter(BrowserView* window) : window_(window) {
-    window_->frame()->AddObserver(this);
-  }
-  ~WindowDeactivedWaiter() override { window_->frame()->RemoveObserver(this); }
-
-  void Wait() {
-    if (!window_->IsActive())
-      return;
-    run_loop_.Run();
-  }
-
-  // WidgetObserver overrides:
-  void OnWidgetActivationChanged(Widget* widget, bool active) override {
-    if (!active)
-      run_loop_.Quit();
-  }
-
- private:
-  BrowserView* const window_;
-  base::RunLoop run_loop_;
-};
-
 class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
  public:
   TabHoverCardBubbleViewBrowserTest()
@@ -318,8 +293,8 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
   ASSERT_EQ(2u, active_browser_list_->size());
   Browser* active_window = active_browser_list_->get(0);
   Browser* inactive_window = active_browser_list_->get(1);
-  WindowDeactivedWaiter waiter(
-      BrowserView::GetBrowserViewForBrowser(inactive_window));
+  views::test::WidgetActivationWaiter waiter(
+      BrowserView::GetBrowserViewForBrowser(inactive_window)->frame(), false);
   BrowserView::GetBrowserViewForBrowser(active_window)->Activate();
   waiter.Wait();
   ASSERT_FALSE(

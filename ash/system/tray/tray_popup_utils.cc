@@ -126,8 +126,7 @@ class HighlightPathGenerator : public views::HighlightPathGenerator {
   HighlightPathGenerator& operator=(const HighlightPathGenerator&) = delete;
 
   // views::HighlightPathGenerator:
-  base::Optional<HighlightPathGenerator::RoundRect> GetRoundRect(
-      const gfx::RectF& rect) override {
+  base::Optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
     gfx::RectF bounds = rect;
     bounds.Inset(GetInkDropInsets(ink_drop_style_));
     float corner_radius = 0.f;
@@ -143,8 +142,7 @@ class HighlightPathGenerator : public views::HighlightPathGenerator {
         break;
     }
 
-    return base::make_optional(
-        HighlightPathGenerator::RoundRect{bounds, corner_radius});
+    return gfx::RRectF(bounds, corner_radius);
   }
 
  private:

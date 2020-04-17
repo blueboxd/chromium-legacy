@@ -777,10 +777,7 @@ void WizardController::ShowDiscoverScreen() {
 }
 
 void WizardController::ShowPackagedLicenseScreen() {
-  if (should_show_packaged_license_screen())
-    SetCurrentScreen(GetScreen(PackagedLicenseView::kScreenId));
-  else
-    ShowLoginScreen();
+  SetCurrentScreen(GetScreen(PackagedLicenseView::kScreenId));
 }
 
 void WizardController::SkipToLoginForTesting() {
@@ -1256,6 +1253,7 @@ void WizardController::OnPackagedLicenseScreenExit(
                PackagedLicenseScreen::GetResultString(result));
   switch (result) {
     case PackagedLicenseScreen::Result::DONT_ENROLL:
+    case PackagedLicenseScreen::Result::NOT_APPLICABLE:
       ShowLoginScreen();
       break;
     case PackagedLicenseScreen::Result::ENROLL:

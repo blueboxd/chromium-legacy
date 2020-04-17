@@ -5,6 +5,12 @@
 /** @fileoverview Runs tests for the OS settings search box. */
 
 suite('OSSettingsSearchBox', () => {
+  /** @const {number} */
+  const DEFAULT_RELEVANCE_SCORE = 0.5;
+
+  /** @const {!Array<mojoBase.mojom.String16>} */
+  const DEFAULT_PAGE_HIERARCHY = [];
+
   /** @type {?OsToolbar} */
   let toolbar;
 
@@ -57,6 +63,8 @@ suite('OSSettingsSearchBox', () => {
       },
       urlPathWithParameters: urlPathWithParameters,
       icon: icon ? icon : chromeos.settings.mojom.SearchResultIcon.MIN_VALUE,
+      relevanceScore: DEFAULT_RELEVANCE_SCORE,
+      settingsPageHierarchy: DEFAULT_PAGE_HIERARCHY,
     });
   }
 

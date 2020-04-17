@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_UKM_APP_SOURCE_URL_RECORDER_H_
 #define COMPONENTS_UKM_APP_SOURCE_URL_RECORDER_H_
 
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 #include "base/feature_list.h"
@@ -45,7 +46,7 @@ class AppSourceUrlRecorder {
   static SourceId GetSourceIdForPWA(const GURL& url);
 
   // For internal use only.
-  static SourceId GetSourceIdForUrl(const GURL& url);
+  static SourceId GetSourceIdForUrl(const GURL& url, const AppType);
 };
 
 }  // namespace ukm

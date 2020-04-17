@@ -23,6 +23,8 @@ jumbo_component("views_examples_lib") {
     "checkbox_example.h",
     "combobox_example.cc",
     "combobox_example.h",
+    "create_examples.cc",
+    "create_examples.h",
     "dialog_example.cc",
     "dialog_example.h",
     "example_base.cc",

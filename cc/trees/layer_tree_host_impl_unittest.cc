@@ -4197,7 +4197,7 @@ TEST_F(LayerTreeHostImplTest, AnimatedGranularityCausesSmoothScroll) {
     update_state->data()->delta_granularity =
         ui::ScrollGranularity::kScrollByPixel;
 
-    ASSERT_FALSE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+    ASSERT_FALSE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
 
     // Perform a scrollbar-like scroll (one injected by the
     // ScrollbarController). It should cause an animation to be created.
@@ -4207,13 +4207,13 @@ TEST_F(LayerTreeHostImplTest, AnimatedGranularityCausesSmoothScroll) {
                 host_impl_->OuterViewportScrollNode());
 
       host_impl_->ScrollUpdate(update_state.get());
-      EXPECT_TRUE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+      EXPECT_TRUE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
 
       host_impl_->ScrollEnd();
     }
 
     GetImplAnimationHost()->ScrollAnimationAbort();
-    ASSERT_FALSE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+    ASSERT_FALSE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
 
     // Perform a scrollbar-like scroll (one injected by the
     // ScrollbarController). This time we change the granularity to precise (as
@@ -4229,7 +4229,7 @@ TEST_F(LayerTreeHostImplTest, AnimatedGranularityCausesSmoothScroll) {
                 host_impl_->OuterViewportScrollNode());
 
       host_impl_->ScrollUpdate(update_state.get());
-      EXPECT_FALSE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+      EXPECT_FALSE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
 
       host_impl_->ScrollEnd();
     }
@@ -4264,7 +4264,7 @@ TEST_F(LayerTreeHostImplTest, NonAnimatedGranularityCausesInstantScroll) {
     update_state->data()->delta_granularity =
         ui::ScrollGranularity::kScrollByPixel;
 
-    ASSERT_FALSE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+    ASSERT_FALSE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
 
     // Perform a scrollbar-like scroll (one injected by the
     // ScrollbarController). It should cause an animation to be created.
@@ -4274,7 +4274,7 @@ TEST_F(LayerTreeHostImplTest, NonAnimatedGranularityCausesInstantScroll) {
                 host_impl_->OuterViewportScrollNode());
 
       host_impl_->ScrollUpdate(update_state.get());
-      EXPECT_FALSE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+      EXPECT_FALSE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
 
       host_impl_->ScrollEnd();
     }
@@ -4299,17 +4299,17 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
                           nullptr,
                           nullptr) {}
 
-  viz::BeginFrameArgs CurrentBeginFrameArgs() const override {
-    return viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1,
-                                               fake_current_physical_time_);
+  const viz::BeginFrameArgs& CurrentBeginFrameArgs() const override {
+    return current_begin_frame_args_;
   }
 
   void SetCurrentPhysicalTimeTicksForTest(base::TimeTicks fake_now) {
-    fake_current_physical_time_ = fake_now;
+    current_begin_frame_args_ = viz::CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, 0, 1, fake_now);
   }
 
  private:
-  base::TimeTicks fake_current_physical_time_;
+  viz::BeginFrameArgs current_begin_frame_args_;
 };
 
 class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
@@ -12300,14 +12300,14 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimatedLatching) {
     host_impl_->DidFinishImplFrame(begin_frame_args);
 
     EXPECT_NE(gfx::ScrollOffset(), CurrentScrollOffset(outer_scroll));
-    EXPECT_TRUE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+    EXPECT_TRUE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
   }
 
   // End the scroll gesture. We should still be latched to the scroll layer
   // since the animation is still in progress.
   {
     host_impl_->ScrollEnd();
-    EXPECT_TRUE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+    EXPECT_TRUE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
     EXPECT_EQ(outer_scroll->scroll_tree_index(),
               host_impl_->CurrentlyScrollingNode()->id);
 
@@ -12318,7 +12318,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimatedLatching) {
     host_impl_->UpdateAnimationState(true);
     host_impl_->DidFinishImplFrame(begin_frame_args);
 
-    EXPECT_TRUE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+    EXPECT_TRUE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
     EXPECT_EQ(outer_scroll->scroll_tree_index(),
               host_impl_->CurrentlyScrollingNode()->id);
   }
@@ -12347,7 +12347,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimatedLatching) {
     host_impl_->UpdateAnimationState(true);
     host_impl_->DidFinishImplFrame(begin_frame_args);
 
-    EXPECT_FALSE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+    EXPECT_FALSE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
     EXPECT_EQ(outer_scroll->scroll_tree_index(),
               host_impl_->CurrentlyScrollingNode()->id);
   }
@@ -12432,6 +12432,108 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimatedWhileZoomed) {
     host_impl_->UpdateAnimationState(true);
 
     EXPECT_EQ(15, CurrentScrollOffset(scrolling_layer).y());
+    host_impl_->DidFinishImplFrame(begin_frame_args);
+  }
+}
+
+// Ensures a scroll updating an in progress animation works correctly when the
+// inner viewport is animating. Specifically this test makes sure the animation
+// update doesn't get confused between the currently scrolling node and the
+// currently animating node which are different. See https://crbug.com/1070561.
+TEST_F(LayerTreeHostImplTest, ScrollAnimatedUpdateInnerViewport) {
+  const gfx::Size content_size(210, 1000);
+  const gfx::Size viewport_size(200, 200);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+
+  DrawFrame();
+
+  // Zoom in to 2X and ensure both viewports have scroll extent in every
+  // direction.
+  {
+    float min_page_scale = 1, max_page_scale = 4;
+    float page_scale_factor = 2;
+    host_impl_->active_tree()->PushPageScaleFromMainThread(
+        page_scale_factor, min_page_scale, max_page_scale);
+    host_impl_->active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
+
+    SetScrollOffsetDelta(InnerViewportScrollLayer(), gfx::Vector2d(50, 50));
+    SetScrollOffsetDelta(OuterViewportScrollLayer(), gfx::Vector2d(5, 400));
+  }
+
+  // Start an animated scroll on the inner viewport.
+  {
+    auto begin_state = BeginState(gfx::Point(10, 10), gfx::Vector2d(0, 60),
+                                  ScrollInputType::kWheel);
+    host_impl_->ScrollBegin(begin_state.get(), ScrollInputType::kWheel);
+    host_impl_->ScrollUpdate(
+        AnimatedUpdateState(gfx::Point(10, 10), gfx::Vector2d(0, 60)).get());
+
+    // Scrolling the inner viewport happens through the Viewport class which
+    // uses the outer viewport to represent "latched to the viewport".
+    EXPECT_EQ(OuterViewportScrollLayer()->scroll_tree_index(),
+              host_impl_->CurrentlyScrollingNode()->id);
+
+    // However, the animating scroll node should be the inner viewport.
+    ASSERT_TRUE(InnerViewportScrollLayer()->element_id());
+    EXPECT_EQ(InnerViewportScrollLayer()->element_id(),
+              GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
+  }
+
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+
+  viz::BeginFrameArgs begin_frame_args =
+      viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+
+  // Tick a frame to get the animation started.
+  {
+    begin_frame_args.frame_time = start_time;
+    begin_frame_args.frame_id.sequence_number++;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
+    host_impl_->UpdateAnimationState(true);
+
+    // The inner viewport should have scrolled a bit from its initial position;
+    // the outer viewport should be still. Neither should move horizontally.
+    EXPECT_LT(50, CurrentScrollOffset(InnerViewportScrollLayer()).y());
+    EXPECT_EQ(400, CurrentScrollOffset(OuterViewportScrollLayer()).y());
+
+    EXPECT_EQ(50, CurrentScrollOffset(InnerViewportScrollLayer()).x());
+    EXPECT_EQ(5, CurrentScrollOffset(OuterViewportScrollLayer()).x());
+    host_impl_->DidFinishImplFrame(begin_frame_args);
+  }
+
+  // Do another scroll update which should update the existing animation curve.
+  {
+    // This scroll will cause the target to be at the max scroll offset. Inner
+    // viewport max offset is 100px. Initial offset is 50px. We scrolled 60px +
+    // 60px divided by scale factor 2 so 60px total.
+    host_impl_->ScrollUpdate(
+        AnimatedUpdateState(gfx::Point(10, 10), gfx::Vector2d(0, 60)).get());
+
+    // While we're animating the curve, we don't distribute to the outer
+    // viewport so this scroll update should be a no-op.
+    host_impl_->ScrollUpdate(
+        AnimatedUpdateState(gfx::Point(10, 10), gfx::Vector2d(0, 60)).get());
+  }
+
+  // Tick ahead to the end of the animation. The inner viewport should be
+  // scrolled to the maximum offset. The outer viewport should not have
+  // scrolled.
+  {
+    begin_frame_args.frame_time =
+        start_time + base::TimeDelta::FromMilliseconds(1000);
+    begin_frame_args.frame_id.sequence_number++;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
+    host_impl_->UpdateAnimationState(true);
+
+    EXPECT_EQ(100, CurrentScrollOffset(InnerViewportScrollLayer()).y());
+    EXPECT_EQ(400, CurrentScrollOffset(OuterViewportScrollLayer()).y());
+
+    // Ensure no horizontal delta is produced.
+    EXPECT_EQ(50, CurrentScrollOffset(InnerViewportScrollLayer()).x());
+    EXPECT_EQ(5, CurrentScrollOffset(OuterViewportScrollLayer()).x());
     host_impl_->DidFinishImplFrame(begin_frame_args);
   }
 }

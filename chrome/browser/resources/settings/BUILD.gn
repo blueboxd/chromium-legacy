@@ -80,10 +80,7 @@ group("closure_compile") {
     "privacy_page:closure_compile",
     "safety_check_page:closure_compile",
     "search_engines_page:closure_compile",
-    "settings_main:closure_compile",
-    "settings_menu:closure_compile",
     "settings_page:closure_compile",
-    "settings_ui:closure_compile",
     "site_settings:closure_compile",
     "site_settings_page:closure_compile",
   ]
@@ -96,10 +93,7 @@ group("closure_compile") {
   }
 
   if (!is_chromeos) {
-    deps += [
-      "default_browser_page:closure_compile",
-      "system_page:closure_compile",
-    ]
+    deps += [ "default_browser_page:closure_compile" ]
   }
 
   if (is_chromeos) {

@@ -11,8 +11,10 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 
 class ArcAppListPrefs;
+class ExtensionEnableFlow;
 class Profile;
 
 namespace content {
@@ -20,10 +22,10 @@ class WebContents;
 }
 
 // Assists the LauncherController with ExtensionService interaction.
-class LauncherControllerHelper {
+class LauncherControllerHelper : public ExtensionEnableFlowDelegate {
  public:
   explicit LauncherControllerHelper(Profile* profile);
-  virtual ~LauncherControllerHelper();
+  ~LauncherControllerHelper() override;
 
   // Helper function to return the title associated with |app_id|.
   // Returns an empty title if no matching extension can be found.
@@ -39,6 +41,11 @@ class LauncherControllerHelper {
   // Note that already running applications are ignored by the restore process.
   virtual bool IsValidIDForCurrentUser(const std::string& app_id) const;
 
+  void LaunchApp(const ash::ShelfID& id,
+                 ash::ShelfLaunchSource source,
+                 int event_flags,
+                 int64_t display_id);
+
   virtual ArcAppListPrefs* GetArcAppListPrefs() const;
 
   Profile* profile() { return profile_; }
@@ -46,6 +53,10 @@ class LauncherControllerHelper {
   void set_profile(Profile* profile) { profile_ = profile; }
 
  private:
+  // ExtensionEnableFlowDelegate:
+  void ExtensionEnableFlowFinished() override;
+  void ExtensionEnableFlowAborted(bool user_initiated) override;
+
   // Returns true if |id| is a valid ARC app for the currently active profile.
   bool IsValidIDForArcApp(const std::string& app_id) const;
 
@@ -55,6 +66,7 @@ class LauncherControllerHelper {
 
   // The currently active profile for the usage of |GetAppID|.
   Profile* profile_;
+  std::unique_ptr<ExtensionEnableFlow> extension_enable_flow_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherControllerHelper);
 };

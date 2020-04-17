@@ -16,7 +16,6 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -278,45 +277,6 @@ ExtensionIdSet InstallSigner::GetForcedNotFromWebstore() {
   return ExtensionIdSet(ids.begin(), ids.end());
 }
 
-namespace {
-
-int g_request_count = 0;
-
-base::LazyInstance<base::TimeTicks>::DestructorAtExit g_last_request_time =
-    LAZY_INSTANCE_INITIALIZER;
-
-base::LazyInstance<base::ThreadChecker>::DestructorAtExit
-    g_single_thread_checker = LAZY_INSTANCE_INITIALIZER;
-
-void LogRequestStartHistograms() {
-  // Make sure we only ever call this from one thread, so that we don't have to
-  // worry about race conditions setting g_last_request_time.
-  DCHECK(g_single_thread_checker.Get().CalledOnValidThread());
-
-  // Process::Current().CreationTime is only defined on some platforms.
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-  const base::Time process_creation_time =
-      base::Process::Current().CreationTime();
-  UMA_HISTOGRAM_COUNTS_1M(
-      "ExtensionInstallSigner.UptimeAtTimeOfRequest",
-      (base::Time::Now() - process_creation_time).InSeconds());
-#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-
-  base::TimeDelta delta;
-  base::TimeTicks now = base::TimeTicks::Now();
-  if (!g_last_request_time.Get().is_null())
-    delta = now - g_last_request_time.Get();
-  g_last_request_time.Get() = now;
-  UMA_HISTOGRAM_COUNTS_1M("ExtensionInstallSigner.SecondsSinceLastRequest",
-                          delta.InSeconds());
-
-  g_request_count += 1;
-  UMA_HISTOGRAM_COUNTS_100("ExtensionInstallSigner.RequestCount",
-                           g_request_count);
-}
-
-}  // namespace
-
 void InstallSigner::GetSignature(SignatureCallback callback) {
   CHECK(!simple_loader_.get());
   CHECK(callback_.is_null());
@@ -405,7 +365,6 @@ void InstallSigner::GetSignature(SignatureCallback callback) {
                                                     traffic_annotation);
   simple_loader_->AttachStringForUpload(json, kContentTypeJSON);
 
-  LogRequestStartHistograms();
   request_start_time_ = base::Time::Now();
   VLOG(1) << "Sending request: " << json;
 
@@ -424,9 +383,6 @@ void InstallSigner::ReportErrorViaCallback() {
 
 void InstallSigner::ParseFetchResponse(
     std::unique_ptr<std::string> response_body) {
-  UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.FetchSuccess", !!response_body);
-  UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.GetResponseSuccess",
-                        !!response_body && !response_body->empty());
   if (!response_body || response_body->empty()) {
     ReportErrorViaCallback();
     return;
@@ -447,8 +403,6 @@ void InstallSigner::ParseFetchResponse(
   std::unique_ptr<base::Value> parsed =
       base::JSONReader::ReadDeprecated(*response_body);
   bool json_success = parsed.get() && parsed->GetAsDictionary(&dictionary);
-  UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.ParseJsonSuccess",
-                        json_success);
   if (!json_success) {
     ReportErrorViaCallback();
     return;
@@ -467,8 +421,6 @@ void InstallSigner::ParseFetchResponse(
       protocol_version == 1 && !signature_base64.empty() &&
       ValidateExpireDateFormat(expire_date) &&
       base::Base64Decode(signature_base64, &signature);
-  UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.ParseFieldsSuccess",
-                        fields_success);
   if (!fields_success) {
     ReportErrorViaCallback();
     return;
@@ -505,11 +457,7 @@ void InstallSigner::HandleSignatureResult(const std::string& signature,
     result->signature = signature;
     result->expire_date = expire_date;
     result->timestamp = request_start_time_;
-    bool verified = VerifySignature(*result);
-    UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.ResultWasValid", verified);
-    UMA_HISTOGRAM_COUNTS_100("ExtensionInstallSigner.InvalidCount",
-                             invalid_ids.size());
-    if (!verified)
+    if (!VerifySignature(*result))
       result.reset();
   }
 

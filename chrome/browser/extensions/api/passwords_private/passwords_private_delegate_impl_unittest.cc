@@ -308,11 +308,11 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestShouldReauthForOptIn) {
   scoped_feature_list.InitAndEnableFeature(
       password_manager::features::kEnablePasswordsAccountStorage);
 
-  PasswordsPrivateDelegateImpl delegate(&profile_);
-
   auto* test_sync_service = static_cast<syncer::SyncService*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           &profile_, base::BindRepeating(&BuildTestSyncService)));
+
+  PasswordsPrivateDelegateImpl delegate(&profile_);
 
   password_manager_util::SetAccountStorageOptIn(profile_.GetPrefs(),
                                                 test_sync_service, false);
@@ -329,11 +329,11 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestShouldNotReauthForOptOut) {
   scoped_feature_list.InitAndEnableFeature(
       password_manager::features::kEnablePasswordsAccountStorage);
 
-  PasswordsPrivateDelegateImpl delegate(&profile_);
-
   auto* test_sync_service = static_cast<syncer::SyncService*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           &profile_, base::BindRepeating(&BuildTestSyncService)));
+
+  PasswordsPrivateDelegateImpl delegate(&profile_);
 
   password_manager_util::SetAccountStorageOptIn(profile_.GetPrefs(),
                                                 test_sync_service, true);

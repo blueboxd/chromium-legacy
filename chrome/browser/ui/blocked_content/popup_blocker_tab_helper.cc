@@ -9,7 +9,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/android/content_settings/popup_blocked_infobar_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/render_messages.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
@@ -86,7 +86,8 @@ void PopupBlockerTabHelper::DidFinishNavigation(
 
 void PopupBlockerTabHelper::HidePopupNotification() {
   if (!web_contents()->IsBeingDestroyed()) {
-    TabSpecificContentSettings::FromWebContents(web_contents())
+    content_settings::TabSpecificContentSettings::FromWebContents(
+        web_contents())
         ->ClearPopupsBlocked();
   }
 }
@@ -103,7 +104,7 @@ void PopupBlockerTabHelper::AddBlockedPopup(
   next_id_++;
   blocked_popups_[id] = std::make_unique<BlockedRequest>(
       std::move(*params), window_features, block_type);
-  TabSpecificContentSettings::FromWebContents(web_contents())
+  content_settings::TabSpecificContentSettings::FromWebContents(web_contents())
       ->OnContentBlocked(ContentSettingsType::POPUPS);
   manager_.NotifyObservers(id, blocked_popups_[id]->params.url);
 

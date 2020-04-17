@@ -75,7 +75,7 @@ ChromeAutocompleteSchemeClassifier::GetInputTypeForScheme(
   // external protocol handler because we don't want pages to open them, but
   // users still can.
   const ExternalProtocolHandler::BlockState block_state =
-      ExternalProtocolHandler::GetBlockState(scheme, profile_);
+      ExternalProtocolHandler::GetBlockState(scheme, nullptr, profile_);
   switch (block_state) {
     case ExternalProtocolHandler::DONT_BLOCK:
       return metrics::OmniboxInputType::URL;

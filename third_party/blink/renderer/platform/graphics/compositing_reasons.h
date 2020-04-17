@@ -35,6 +35,7 @@ using CompositingReasons = uint64_t;
   V(WillChangeTransform)                                                      \
   V(WillChangeOpacity)                                                        \
   V(WillChangeFilter)                                                         \
+  V(WillChangeBackdropFilter)                                                 \
   /* This flag is needed only when none of the explicit kWillChange* reasons  \
      are set. */                                                              \
   V(WillChangeOther)                                                          \
@@ -120,7 +121,7 @@ class PLATFORM_EXPORT CompositingReason {
     kComboAllDirectStyleDeterminedReasons =
         k3DTransform | kBackfaceVisibilityHidden | kComboActiveAnimation |
         kWillChangeTransform | kWillChangeOpacity | kWillChangeFilter |
-        kWillChangeOther | kBackdropFilter,
+        kWillChangeOther | kBackdropFilter | kWillChangeBackdropFilter,
 
     kComboAllDirectNonStyleDeterminedReasons =
         kVideo | kCanvas | kPlugin | kIFrame | kOverflowScrollingParent |
@@ -158,9 +159,9 @@ class PLATFORM_EXPORT CompositingReason {
         kActiveTransformAnimation,
     kDirectReasonsForScrollTranslationProperty =
         kRootScroller | kOverflowScrolling,
-    kDirectReasonsForEffectProperty = kActiveOpacityAnimation |
-                                      kWillChangeOpacity | kBackdropFilter |
-                                      kActiveBackdropFilterAnimation,
+    kDirectReasonsForEffectProperty =
+        kActiveOpacityAnimation | kWillChangeOpacity | kBackdropFilter |
+        kWillChangeBackdropFilter | kActiveBackdropFilterAnimation,
     kDirectReasonsForFilterProperty =
         kActiveFilterAnimation | kWillChangeFilter,
   };

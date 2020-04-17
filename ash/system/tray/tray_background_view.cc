@@ -99,12 +99,11 @@ class HighlightPathGenerator : public views::HighlightPathGenerator {
   HighlightPathGenerator& operator=(const HighlightPathGenerator&) = delete;
 
   // HighlightPathGenerator:
-  base::Optional<RoundRect> GetRoundRect(const gfx::RectF& rect) override {
+  base::Optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
     const float focus_ring_padding = 1.f;
     gfx::RectF bounds(tray_background_view_->GetBackgroundBounds());
     bounds.Inset(focus_ring_padding, focus_ring_padding);
-    return base::make_optional(
-        RoundRect{bounds, ShelfConfig::Get()->control_border_radius()});
+    return gfx::RRectF(bounds, ShelfConfig::Get()->control_border_radius());
   }
 
  private:

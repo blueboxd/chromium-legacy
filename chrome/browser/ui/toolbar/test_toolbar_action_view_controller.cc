@@ -54,11 +54,6 @@ bool TestToolbarActionViewController::IsEnabled(
   return is_enabled_;
 }
 
-bool TestToolbarActionViewController::WantsToRun(
-    content::WebContents* web_contents) const {
-  return wants_to_run_;
-}
-
 bool TestToolbarActionViewController::HasPopup(
     content::WebContents* web_contents) const {
   return true;
@@ -81,7 +76,8 @@ ui::MenuModel* TestToolbarActionViewController::GetContextMenu() {
   return nullptr;
 }
 
-bool TestToolbarActionViewController::ExecuteAction(bool by_user) {
+bool TestToolbarActionViewController::ExecuteAction(bool by_user,
+                                                    InvocationSource source) {
   ++execute_action_count_;
   return false;
 }
@@ -125,11 +121,6 @@ void TestToolbarActionViewController::SetTooltip(
 
 void TestToolbarActionViewController::SetEnabled(bool is_enabled) {
   is_enabled_ = is_enabled;
-  UpdateDelegate();
-}
-
-void TestToolbarActionViewController::SetWantsToRun(bool wants_to_run) {
-  wants_to_run_ = wants_to_run;
   UpdateDelegate();
 }
 

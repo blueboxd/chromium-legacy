@@ -30,6 +30,7 @@
 #include "ash/shelf/drag_handle.h"
 #include "ash/shelf/home_to_overview_nudge_controller.h"
 #include "ash/shelf/hotseat_widget.h"
+#include "ash/shelf/in_app_to_home_nudge_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_metrics.h"
@@ -612,23 +613,14 @@ void ShelfLayoutManager::UpdateContextualNudges() {
 
   contextual_tooltip::SetDragHandleNudgeDisabledForHiddenShelf(!IsVisible());
 
-  if (in_app_shelf && in_tablet_mode) {
-    if (contextual_tooltip::ShouldShowNudge(
-            Shell::Get()->session_controller()->GetLastActiveUserPrefService(),
-            contextual_tooltip::TooltipType::kInAppToHome, nullptr)) {
-      shelf_widget_->ScheduleShowDragHandleNudge();
-    } else if (!shelf_widget_->GetDragHandle()
-                    ->gesture_nudge_target_visibility()) {
-      // If the drag handle is not yet shown, HideDragHandleNudge() should
-      // cancel any scheduled show requests.
-      shelf_widget_->HideDragHandleNudge(
-          contextual_tooltip::DismissNudgeReason::kOther);
-    }
-  } else {
-    shelf_widget_->HideDragHandleNudge(
-        in_tablet_mode
-            ? contextual_tooltip::DismissNudgeReason::kExitToHomeScreen
-            : contextual_tooltip::DismissNudgeReason::kSwitchToClamshell);
+  if (in_app_shelf && in_tablet_mode && !in_app_to_home_nudge_controller_) {
+    in_app_to_home_nudge_controller_ =
+        std::make_unique<InAppToHomeNudgeController>(shelf_widget_);
+  }
+
+  if (in_app_to_home_nudge_controller_) {
+    in_app_to_home_nudge_controller_->SetNudgeAllowedForCurrentShelf(
+        in_tablet_mode, in_app_shelf);
   }
 
   // Create home to overview nudge controller if home to overview nudge is

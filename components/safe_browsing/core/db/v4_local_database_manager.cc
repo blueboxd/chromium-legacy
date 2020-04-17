@@ -18,6 +18,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "crypto/sha2.h"
@@ -52,15 +53,21 @@ ListInfos GetListInfos() {
 // - The list doesn't have hash prefixes to match. All requests lead to full
 //   hash checks. For instance: GetChromeUrlApiId()
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if defined(OS_IOS)
+  const bool kSyncOnlyOnChromeBuilds = false;
+  const bool kSyncOnlyOnDesktopBuilds = false;
+#elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const bool kSyncOnlyOnChromeBuilds = true;
+  const bool kSyncOnlyOnDesktopBuilds = true;
 #else
   const bool kSyncOnlyOnChromeBuilds = false;
+  const bool kSyncOnlyOnDesktopBuilds = true;
 #endif
+
   const bool kSyncAlways = true;
   const bool kSyncNever = false;
   return ListInfos({
-      ListInfo(kSyncAlways, "IpMalware.store", GetIpMalwareId(),
+      ListInfo(kSyncOnlyOnDesktopBuilds, "IpMalware.store", GetIpMalwareId(),
                SB_THREAT_TYPE_UNUSED),
       ListInfo(kSyncAlways, "UrlSoceng.store", GetUrlSocEngId(),
                SB_THREAT_TYPE_URL_PHISHING),
@@ -68,10 +75,10 @@ ListInfos GetListInfos() {
                SB_THREAT_TYPE_URL_MALWARE),
       ListInfo(kSyncAlways, "UrlUws.store", GetUrlUwsId(),
                SB_THREAT_TYPE_URL_UNWANTED),
-      ListInfo(kSyncAlways, "UrlMalBin.store", GetUrlMalBinId(),
+      ListInfo(kSyncOnlyOnDesktopBuilds, "UrlMalBin.store", GetUrlMalBinId(),
                SB_THREAT_TYPE_URL_BINARY_MALWARE),
-      ListInfo(kSyncAlways, "ChromeExtMalware.store", GetChromeExtMalwareId(),
-               SB_THREAT_TYPE_EXTENSION),
+      ListInfo(kSyncOnlyOnDesktopBuilds, "ChromeExtMalware.store",
+               GetChromeExtMalwareId(), SB_THREAT_TYPE_EXTENSION),
       ListInfo(kSyncOnlyOnChromeBuilds, "CertCsdDownloadWhitelist.store",
                GetCertCsdDownloadWhitelistId(), SB_THREAT_TYPE_UNUSED),
       ListInfo(kSyncOnlyOnChromeBuilds, "ChromeUrlClientIncident.store",

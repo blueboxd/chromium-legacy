@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_segment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_type.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
@@ -71,6 +72,19 @@ class CORE_EXPORT NGInlineItem {
 
   NGInlineItemType Type() const { return type_; }
   const char* NGInlineItemTypeToString(int val) const;
+
+  NGTextType TextType() const { return static_cast<NGTextType>(text_type_); }
+  void SetTextType(NGTextType text_type) {
+    text_type_ = static_cast<unsigned>(text_type);
+  }
+  bool IsSymbolMarker() const {
+    return TextType() == NGTextType::kSymbolMarker;
+  }
+  void SetIsSymbolMarker() {
+    DCHECK(TextType() == NGTextType::kNormal ||
+           TextType() == NGTextType::kSymbolMarker);
+    SetTextType(NGTextType::kSymbolMarker);
+  }
 
   const ShapeResult* TextShapeResult() const { return shape_result_.get(); }
 
@@ -224,9 +238,6 @@ class CORE_EXPORT NGInlineItem {
   void AssertOffset(unsigned offset) const;
   void AssertEndOffset(unsigned offset) const;
 
-  bool IsSymbolMarker() const { return is_symbol_marker_; }
-  void SetIsSymbolMarker(bool b) { is_symbol_marker_ = b; }
-
   String ToString() const;
 
  private:
@@ -238,6 +249,7 @@ class CORE_EXPORT NGInlineItem {
   LayoutObject* layout_object_;
 
   NGInlineItemType type_;
+  unsigned text_type_ : 3;          // NGTextType
   unsigned style_variant_ : 2;      // NGStyleVariant
   unsigned end_collapse_type_ : 2;  // NGCollapseType
   unsigned bidi_level_ : 8;         // UBiDiLevel is defined as uint8_t.
@@ -246,7 +258,6 @@ class CORE_EXPORT NGInlineItem {
   unsigned is_empty_item_ : 1;
   unsigned is_block_level_ : 1;
   unsigned is_end_collapsible_newline_ : 1;
-  unsigned is_symbol_marker_ : 1;
   unsigned is_generated_for_line_break_ : 1;
   unsigned is_first_for_node_ : 1;
   friend class NGInlineNode;

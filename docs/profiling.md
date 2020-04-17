@@ -125,6 +125,54 @@ Open devtools, and in the console, use `chrome.gpuBenchmarking.startProfiling` a
 
     > chrome.gpuBenchmarking.startProfiling('perf.data'); chrome.gpuBenchmarking.smoothScrollBy(1000, () => { chrome.gpuBenchmarking.stopProfiling() });
 
+### Profiling content_shell with callgrind
+
+This section contains instructions on how to do profiling using the callgrind/cachegrind tools provided by valgrind. This is not a sampling profiler, but a profiler based on running on a simulated CPU. The instructions are Linux-centered, but might work on other platforms too.
+
+#### GN configuration
+
+As with the other options you typically profile a release build with symbols. In order to do so, add enable_profiling to `args.gn`:
+
+```
+enable_profiling = true
+```
+
+#### Install valgrind
+
+```
+sudo apt-get install valgrind
+```
+
+#### Profile
+
+Run `content_shell` with callgrind to create a profile. A `callgrind.<pid>` file will be dumped when exiting the browser or stopped with CTRL-C:
+
+```
+valgrind --tool=callgrind content_shell --single-process --no-sandbox <url>
+```
+
+Alternatively use cachegrind which will give you CPU cycles per code line:
+
+```
+valgrind --tool=cachegrind content_shell --single-process --no-sandbox <url>
+```
+
+Using single-process is for simple profiling of the renderer. It should be possible to run in multi-process and attach to a renderer process.
+
+#### Install KCachegrind
+
+Warning: this will install a bunch of KDE dependencies.
+
+```
+sudo apt-get install kcachegrind
+```
+
+#### Explore with KCachegrind
+
+```
+kcachegrind callgrind.<pid>
+```
+
 ## Profiling on Android
 
 Android (Nougat and later) supports profiling using the [simpleperf](https://developer.android.com/ndk/guides/simpleperf) tool.

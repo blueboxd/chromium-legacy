@@ -1438,20 +1438,31 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveExternalProtocolData) {
   TestingProfile* profile = GetProfile();
+  url::Origin test_origin = url::Origin::Create(GURL("https://example.test"));
+  const std::string serialized_test_origin = test_origin.Serialize();
   // Add external protocol data on profile.
   base::DictionaryValue prefs;
-  prefs.SetBoolean("tel", true);
-  profile->GetPrefs()->Set(prefs::kExcludedSchemes, prefs);
+  prefs.SetKey(serialized_test_origin,
+               base::Value(base::Value::Type::DICTIONARY));
+  base::Value* allowed_protocols_for_origin =
+      prefs.FindDictKey(serialized_test_origin);
+  allowed_protocols_for_origin->SetBoolKey("tel", true);
+  profile->GetPrefs()->Set(prefs::kProtocolHandlerPerOriginAllowedProtocols,
+                           prefs);
 
   EXPECT_FALSE(
-      profile->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+      profile->GetPrefs()
+          ->GetDictionary(prefs::kProtocolHandlerPerOriginAllowedProtocols)
+          ->empty());
 
   BlockUntilBrowsingDataRemoved(
       AnHourAgo(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_EXTERNAL_PROTOCOL_DATA,
       false);
   EXPECT_TRUE(
-      profile->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+      profile->GetPrefs()
+          ->GetDictionary(prefs::kProtocolHandlerPerOriginAllowedProtocols)
+          ->empty());
 }
 
 // Check that clearing browsing data (either history or cookies with other site

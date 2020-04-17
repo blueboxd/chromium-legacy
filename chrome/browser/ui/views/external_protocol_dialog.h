@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTERNAL_PROTOCOL_DIALOG_H_
 
 #include "base/macros.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "url/gurl.h"
@@ -45,7 +46,6 @@ class ExternalProtocolDialog : public views::DialogDelegateView,
  private:
   friend class test::ExternalProtocolDialogTestApi;
 
-  void ShowRememberSelectionCheckbox();
   void SetRememberSelectionCheckboxCheckedForTesting(bool checked);
   void OnDialogAccepted();
 

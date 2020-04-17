@@ -18,12 +18,6 @@ class WebStateList;
 
 namespace breakpad {
 
-// Number of product data keys to use for breadcrumbs. Each product key allows
-// to upload limited amount of data (kMaxProductDataLength), so having
-// multiple keys makes breadcrumbs more useful by having access to more
-// breadcrumbs on crash reports.
-extern const int kBreadcrumbsKeyCount;
-
 // Monitors the urls loaded by |web_state| to allow crash reports to contain the
 // current loading url.
 void MonitorURLsForWebState(web::WebState* web_state);

@@ -48,7 +48,6 @@
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
@@ -191,6 +190,7 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/certificate_matching/certificate_principal_pattern.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -2359,7 +2359,8 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnIO(
   if (!wc_getter.is_null()) {
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&TabSpecificContentSettings::ServiceWorkerAccessed,
+        base::BindOnce(&content_settings::TabSpecificContentSettings::
+                           ServiceWorkerAccessed,
                        std::move(wc_getter), scope, !allow_javascript,
                        !allow_cookies));
   }
@@ -2408,7 +2409,7 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnUI(
   // Record access to database for potential display in UI.
   // Only post the task if this is for a specific tab.
   if (!wc_getter.is_null()) {
-    TabSpecificContentSettings::ServiceWorkerAccessed(
+    content_settings::TabSpecificContentSettings::ServiceWorkerAccessed(
         std::move(wc_getter), scope, !allow_javascript, !allow_cookies);
   }
   return allow_javascript && allow_cookies;
@@ -2431,7 +2432,7 @@ bool ChromeContentBrowserClient::AllowSharedWorker(
           ->IsCookieAccessAllowed(worker_url, site_for_cookies,
                                   top_frame_origin);
 
-  TabSpecificContentSettings::SharedWorkerAccessed(
+  content_settings::TabSpecificContentSettings::SharedWorkerAccessed(
       render_process_id, render_frame_id, worker_url, name, constructor_origin,
       !allow);
   return allow;
@@ -2515,7 +2516,7 @@ void ChromeContentBrowserClient::FileSystemAccessed(
     bool allow) {
   // Record access to file system for potential display in UI.
   for (const auto& it : render_frames) {
-    TabSpecificContentSettings::FileSystemAccessed(
+    content_settings::TabSpecificContentSettings::FileSystemAccessed(
         it.child_id, it.frame_routing_id, url, !allow);
   }
   std::move(callback).Run(allow);
@@ -2532,7 +2533,7 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
 
   // Record access to IndexedDB for potential display in UI.
   for (const auto& it : render_frames) {
-    TabSpecificContentSettings::IndexedDBAccessed(
+    content_settings::TabSpecificContentSettings::IndexedDBAccessed(
         it.child_id, it.frame_routing_id, url, !allow);
   }
 
@@ -2549,7 +2550,7 @@ bool ChromeContentBrowserClient::AllowWorkerCacheStorage(
 
   // Record access to CacheStorage for potential display in UI.
   for (const auto& it : render_frames) {
-    TabSpecificContentSettings::CacheStorageAccessed(
+    content_settings::TabSpecificContentSettings::CacheStorageAccessed(
         it.child_id, it.frame_routing_id, url, !allow);
   }
 

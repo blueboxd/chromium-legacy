@@ -74,11 +74,6 @@ std::unique_ptr<TestProfileClient> MakeTestProfileClient(
 
 TEST(DemographicMetricsProviderTest,
      ProvideSyncedUserNoisedBirthYearAndGender_FeatureEnabled) {
-  // Enable demographics reporting feature.
-  base::test::ScopedFeatureList local_feature;
-  local_feature.InitAndEnableFeature(
-      DemographicMetricsProvider::kDemographicMetricsReporting);
-
   base::HistogramTester histogram;
 
   // Run demographics provider.
@@ -102,11 +97,6 @@ TEST(DemographicMetricsProviderTest,
 
 TEST(DemographicMetricsProviderTest,
      ProvideSyncedUserNoisedBirthYearAndGender_NoSyncService) {
-  // Enable demographics reporting feature.
-  base::test::ScopedFeatureList local_feature;
-  local_feature.InitAndEnableFeature(
-      DemographicMetricsProvider::kDemographicMetricsReporting);
-
   base::HistogramTester histogram;
 
   // Run demographics provider.
@@ -155,11 +145,6 @@ TEST(DemographicMetricsProviderTest,
 
 TEST(DemographicMetricsProviderTest,
      ProvideSyncedUserNoisedBirthYearAndGender_NotExactlyOneProfile) {
-  // Enable demographics reporting feature.
-  base::test::ScopedFeatureList local_feature;
-  local_feature.InitAndEnableFeature(
-      DemographicMetricsProvider::kDemographicMetricsReporting);
-
   base::HistogramTester histogram;
 
   // Run demographics provider with not exactly one Profile on disk.
@@ -182,11 +167,6 @@ TEST(DemographicMetricsProviderTest,
 
 TEST(DemographicMetricsProviderTest,
      ProvideSyncedUserNoisedBirthYearAndGender_NoUserDemographics) {
-  // Enable demographics reporting feature.
-  base::test::ScopedFeatureList local_feature;
-  local_feature.InitAndEnableFeature(
-      DemographicMetricsProvider::kDemographicMetricsReporting);
-
   base::HistogramTester histogram;
 
   // Run demographics provider with a ProfileClient that does not provide
@@ -214,11 +194,6 @@ TEST(DemographicMetricsProviderTest,
 
 TEST(DemographicMetricsProviderTest,
      ProvideSyncedUserNoisedBirthYearAndGenderToReport) {
-  // Enable demographics reporting feature.
-  base::test::ScopedFeatureList local_feature;
-  local_feature.InitAndEnableFeature(
-      DemographicMetricsProvider::kDemographicMetricsReporting);
-
   base::HistogramTester histogram;
 
   // Run demographics provider.

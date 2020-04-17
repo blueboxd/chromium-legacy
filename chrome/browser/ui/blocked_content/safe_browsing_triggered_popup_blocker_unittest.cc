@@ -14,7 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
@@ -24,6 +24,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
@@ -74,7 +75,10 @@ class SafeBrowsingTriggeredPopupBlockerTest
     scoped_feature_list_ = DefaultFeatureList();
     PopupBlockerTabHelper::CreateForWebContents(web_contents());
     InfoBarService::CreateForWebContents(web_contents());
-    TabSpecificContentSettings::CreateForWebContents(web_contents());
+    content_settings::TabSpecificContentSettings::CreateForWebContents(
+        web_contents(),
+        std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+            web_contents()));
     popup_blocker_ =
         SafeBrowsingTriggeredPopupBlocker::FromWebContents(web_contents());
   }

@@ -7,6 +7,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
+#include "components/content_settings/core/common/cookie_controls_enforcement.h"
 
 // Communicates between CookieControlsService (C++ backend) and observers
 // in the Incognito NTP Java UI.

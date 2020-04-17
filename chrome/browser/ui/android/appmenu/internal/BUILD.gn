@@ -5,6 +5,12 @@
 import("//build/config/android/rules.gni")
 
 android_library("java") {
+  visibility = [
+    ":*",
+    "//chrome/android:chrome_all_java",
+    "//chrome/browser/ui/android/appmenu/test:*",
+  ]
+
   sources = [
     "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenu.java",
     "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuAdapter.java",
@@ -64,7 +70,7 @@ android_library("javatests") {
     "//base:base_java_test_support",
     "//chrome/browser/android/lifecycle:java",
     "//chrome/browser/ui/android/appmenu:java",
-    "//chrome/browser/ui/android/appmenu:test_support_java",
+    "//chrome/browser/ui/android/appmenu/test:test_support_java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/browser_ui/widget/android:test_support_java",
     "//content/public/test/android:content_java_test_support",

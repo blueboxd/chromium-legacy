@@ -186,6 +186,18 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
 
     RunTest(test_harness_file, "accessibility/test-harness");
   }
+
+ protected:
+  // Override from DumpAccessibilityTestBase.
+  void ChooseFeatures(std::vector<base::Feature>* enabled_features,
+                      std::vector<base::Feature>* disabled_features) override {
+    // http://crbug.com/1063155 - temporary until this is enabled
+    // everywhere.
+    enabled_features->emplace_back(
+        features::kEnableAccessibilityExposeHTMLElement);
+    DumpAccessibilityTestBase::ChooseFeatures(enabled_features,
+                                              disabled_features);
+  }
 };
 
 void DumpAccessibilityTreeTest::AddDefaultFilters(
@@ -224,61 +236,6 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Range(size_t{0},
                      AccessibilityTreeFormatter::GetTestPasses().size()),
     DumpAccessibilityTreeTestPassToString());
-
-// http://crbug.com/1063155 - subclass of DumpAccessibilityTreeTest
-// that enables exposing the HTML element. Temporary until this is enabled
-// everywhere.
-class DumpAccessibilityTreeTestWithHTMLElement
-    : public DumpAccessibilityTreeTest {
- private:
-  void ChooseFeatures(std::vector<base::Feature>* enabled_features,
-                      std::vector<base::Feature>* disabled_features) override {
-    enabled_features->emplace_back(
-        features::kEnableAccessibilityExposeHTMLElement);
-    DumpAccessibilityTreeTest::ChooseFeatures(enabled_features,
-                                              disabled_features);
-  }
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    DumpAccessibilityTreeTestWithHTMLElement,
-    ::testing::Range(size_t{0},
-                     AccessibilityTreeFormatter::GetTestPasses().size()),
-    DumpAccessibilityTreeTestPassToString());
-
-// TODO(crbug.com/1063155): put these back in sorted order once they pass
-// with the kEnableAccessibilityExposeHTMLElement flag.
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityAriaProgressbar) {
-  RunAriaTest(FILE_PATH_LITERAL("aria-progressbar.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCanvas) {
-  RunHtmlTest(FILE_PATH_LITERAL("canvas.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityModalDialogClosed) {
-  RunHtmlTest(FILE_PATH_LITERAL("modal-dialog-closed.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityDialog) {
-  RunHtmlTest(FILE_PATH_LITERAL("dialog.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityListMarkers) {
-  RunHtmlTest(FILE_PATH_LITERAL("list-markers.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityUl) {
-  RunHtmlTest(FILE_PATH_LITERAL("ul.html"));
-}
-
-// TODO(crbug.com/1063155): in process of refactoring all tests to enable the
-// kEnableAccessibilityExposeHTMLElement flag, without doing all at the
-// same time.
-#define DumpAccessibilityTreeTest DumpAccessibilityTreeTestWithHTMLElement
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSColor) {
   RunCSSTest(FILE_PATH_LITERAL("color.html"));
@@ -980,6 +937,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaPressed) {
   RunAriaTest(FILE_PATH_LITERAL("aria-pressed.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaProgressbar) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-progressbar.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaRadio) {
   RunAriaTest(FILE_PATH_LITERAL("aria-radio.html"));
 }
@@ -1326,6 +1288,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityButtonNameCalc) {
   RunHtmlTest(FILE_PATH_LITERAL("button-name-calc.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCanvas) {
+  RunHtmlTest(FILE_PATH_LITERAL("canvas.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCanvasFallback) {
   RunHtmlTest(FILE_PATH_LITERAL("canvas-fallback.html"));
 }
@@ -1374,6 +1340,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityDetails) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityDfn) {
   RunHtmlTest(FILE_PATH_LITERAL("dfn.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityDialog) {
+  RunHtmlTest(FILE_PATH_LITERAL("dialog.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityDisabled) {
@@ -1553,13 +1523,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunAriaTest(FILE_PATH_LITERAL("hidden-labelled-by.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTestWithHTMLElement,
-                       AccessibilityHR) {
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityHR) {
   RunHtmlTest(FILE_PATH_LITERAL("hr.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTestWithHTMLElement,
-                       AccessibilityHTML) {
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityHTML) {
   RunHtmlTest(FILE_PATH_LITERAL("html.html"));
 }
 
@@ -1950,6 +1918,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("list-marker-styles.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityListMarkers) {
+  RunHtmlTest(FILE_PATH_LITERAL("list-markers.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityLongText) {
   RunHtmlTest(FILE_PATH_LITERAL("long-text.html"));
 }
@@ -1977,6 +1949,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityMeta) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityMeter) {
   RunHtmlTest(FILE_PATH_LITERAL("meter.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityModalDialogClosed) {
+  RunHtmlTest(FILE_PATH_LITERAL("modal-dialog-closed.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
@@ -2272,6 +2249,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityTruncateLabel) {
   RunHtmlTest(FILE_PATH_LITERAL("truncate-label.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityUl) {
+  RunHtmlTest(FILE_PATH_LITERAL("ul.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityVar) {

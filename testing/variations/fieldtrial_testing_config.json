@@ -6063,24 +6063,6 @@
             ]
         }
     ],
-    "UmaAndUkmDemographics": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "UMA_Enabled_202002",
-                    "enable_features": [
-                        "DemographicMetricsReporting"
-                    ],
-                    "disable_features": [
-                        "UkmReportNoisedUserBirthYearAndGender"
-                    ]
-                }
-            ]
-        }
-    ],
     "UnidoOnSignInV2": [
         {
             "platforms": [

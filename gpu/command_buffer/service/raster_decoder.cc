@@ -399,6 +399,7 @@ class RasterDecoderImpl final : public RasterDecoder,
     // macOS OpenGL driver.
     // https://crbug.com/906453
     if (!flush_workaround_disabled_for_test_) {
+      TRACE_EVENT0("gpu", "RasterDecoderImpl::FlushToWorkAroundMacCrashes");
       if (gr_context())
         gr_context()->flush();
       api()->glFlushFn();

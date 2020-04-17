@@ -10,13 +10,14 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_view.h"
 #include "components/browsing_data/content/local_shared_objects_container.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/page_info/android/cookie_controls_status.h"
 #include "components/prefs/pref_service.h"
@@ -61,9 +62,11 @@ void CookieControlsController::OnUiClosing() {
 void CookieControlsController::Update(content::WebContents* web_contents) {
   DCHECK(web_contents);
   if (!tab_observer_ || GetWebContents() != web_contents) {
-    DCHECK(TabSpecificContentSettings::FromWebContents(web_contents));
+    DCHECK(content_settings::TabSpecificContentSettings::FromWebContents(
+        web_contents));
     tab_observer_ = std::make_unique<TabObserver>(
-        this, TabSpecificContentSettings::FromWebContents(web_contents));
+        this, content_settings::TabSpecificContentSettings::FromWebContents(
+                  web_contents));
   }
   auto status = GetStatus(web_contents);
   int blocked_count = GetBlockedCookieCount();
@@ -156,8 +159,8 @@ void CookieControlsController::RemoveObserver(CookieControlsView* obs) {
 
 CookieControlsController::TabObserver::TabObserver(
     CookieControlsController* cookie_controls,
-    TabSpecificContentSettings* tab_specific_content_settings)
-    : TabSpecificContentSettings::SiteDataObserver(
+    content_settings::TabSpecificContentSettings* tab_specific_content_settings)
+    : content_settings::TabSpecificContentSettings::SiteDataObserver(
           tab_specific_content_settings),
       cookie_controls_(cookie_controls) {}
 

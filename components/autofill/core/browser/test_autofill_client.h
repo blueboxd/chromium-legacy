@@ -83,8 +83,6 @@ class TestAutofillClient : public AutofillClient {
       const std::vector<CreditCard*>& candidates,
       base::OnceCallback<void(const std::string&)> callback) override;
 #endif
-  void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
-                                  base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(
       const CreditCard& card,
       SaveCreditCardOptions options,
@@ -186,6 +184,10 @@ class TestAutofillClient : public AutofillClient {
   }
 #endif
 
+  void set_should_save_autofill_profiles(bool value) {
+    should_save_autofill_profiles_ = value;
+  }
+
   bool ConfirmSaveCardLocallyWasCalled() {
     return confirm_save_credit_card_locally_called_;
   }
@@ -229,6 +231,8 @@ class TestAutofillClient : public AutofillClient {
 
   security_state::SecurityLevel security_level_ =
       security_state::SecurityLevel::NONE;
+
+  bool should_save_autofill_profiles_ = true;
 
   bool confirm_save_credit_card_locally_called_ = false;
 

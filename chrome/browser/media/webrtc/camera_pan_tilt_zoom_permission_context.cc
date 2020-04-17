@@ -4,8 +4,8 @@
 
 #include "chrome/browser/media/webrtc/camera_pan_tilt_zoom_permission_context.h"
 
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "components/permissions/permission_request_id.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-shared.h"
 
 CameraPanTiltZoomPermissionContext::CameraPanTiltZoomPermissionContext(
     content::BrowserContext* browser_context)

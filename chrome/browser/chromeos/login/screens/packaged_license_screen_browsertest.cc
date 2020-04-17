@@ -6,13 +6,18 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/browser/ui/webui/chromeos/login/packaged_license_screen_handler.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 namespace chromeos {
 
@@ -25,19 +30,28 @@ class PackagedLicenseScreenTest : public OobeBaseTest {
     PackagedLicenseScreen* screen = static_cast<PackagedLicenseScreen*>(
         WizardController::default_controller()->screen_manager()->GetScreen(
             PackagedLicenseView::kScreenId));
-    screen->set_exit_callback_for_testing(base::BindRepeating(
+    screen->AddExitCallbackForTesting(base::BindRepeating(
         &PackagedLicenseScreenTest::HandleScreenExit, base::Unretained(this)));
-    policy::EnrollmentConfig config;
-    config.is_license_packaged_with_device = true;
-    WizardController::default_controller()
-        ->set_prescribed_enrollment_config_for_testing(config);
 
     OobeBaseTest::SetUpOnMainThread();
+  }
+
+  void SetUpLicense(bool value) {
+    DictionaryPrefUpdate dict(local_state(), prefs::kServerBackedDeviceState);
+    if (value) {
+      dict.Get()->Set(policy::kDeviceStatePackagedLicense,
+                      std::make_unique<base::Value>(true));
+    } else {
+      dict.Get()->Remove(policy::kDeviceStatePackagedLicense, nullptr);
+    }
   }
 
   void ShowPackagedLicenseScreen() {
     WizardController::default_controller()->AdvanceToScreen(
         PackagedLicenseView::kScreenId);
+  }
+
+  void WaitForScreenShown() {
     OobeScreenWaiter(PackagedLicenseView::kScreenId).Wait();
   }
 
@@ -53,6 +67,10 @@ class PackagedLicenseScreenTest : public OobeBaseTest {
     EXPECT_EQ(result_, result);
   }
 
+  PrefService* local_state() { return g_browser_process->local_state(); }
+
+  base::HistogramTester histogram_tester_;
+
  private:
   void HandleScreenExit(PackagedLicenseScreen::Result result) {
     screen_exited_ = true;
@@ -67,21 +85,51 @@ class PackagedLicenseScreenTest : public OobeBaseTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PackagedLicenseScreenTest, DontEnroll) {
+  SetUpLicense(true);
   ShowPackagedLicenseScreen();
+  WaitForScreenShown();
 
   test::OobeJS().TapOnPath({"packaged-license", "dont-enroll-button"});
 
   WaitForScreenExit();
   CheckResult(PackagedLicenseScreen::Result::DONT_ENROLL);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Packaged-license.Enroll", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Packaged-license.DontEnroll", 1);
+  histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Packaged-license",
+                                     1);
 }
 
 IN_PROC_BROWSER_TEST_F(PackagedLicenseScreenTest, Enroll) {
+  SetUpLicense(true);
   ShowPackagedLicenseScreen();
+  WaitForScreenShown();
 
   test::OobeJS().TapOnPath({"packaged-license", "enroll-button"});
 
   WaitForScreenExit();
   CheckResult(PackagedLicenseScreen::Result::ENROLL);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Packaged-license.Enroll", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Packaged-license.DontEnroll", 0);
+  histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Packaged-license",
+                                     1);
+}
+
+IN_PROC_BROWSER_TEST_F(PackagedLicenseScreenTest, NoLicense) {
+  SetUpLicense(false);
+  ShowPackagedLicenseScreen();
+
+  WaitForScreenExit();
+  CheckResult(PackagedLicenseScreen::Result::NOT_APPLICABLE);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Packaged-license.Enroll", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Packaged-license.DontEnroll", 0);
+  histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Packaged-license",
+                                     0);
 }
 
 }  // namespace chromeos

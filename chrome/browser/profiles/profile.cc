@@ -299,7 +299,8 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kMediaRouterTabMirroringSources);
 
   registry->RegisterDictionaryPref(prefs::kWebShareVisitedTargets);
-  registry->RegisterDictionaryPref(prefs::kExcludedSchemes);
+  registry->RegisterDictionaryPref(
+      prefs::kProtocolHandlerPerOriginAllowedProtocols);
 
   // Instead of registering new prefs here, please create a static method and
   // invoke it from RegisterProfilePrefs() in

@@ -226,6 +226,28 @@ void DiscardsGraphDumpImpl::SubscribeToChanges(
   graph_->AddWorkerNodeObserver(this);
 }
 
+void DiscardsGraphDumpImpl::RequestNodeDescriptions(
+    const std::vector<int64_t>& node_ids,
+    RequestNodeDescriptionsCallback callback) {
+  base::flat_map<int64_t, std::string> descriptions;
+  performance_manager::NodeDataDescriberRegistry* describer_registry =
+      graph_->GetNodeDataDescriberRegistry();
+  for (int64_t node_id : node_ids) {
+    auto it = nodes_by_id_.find(NodeId::FromUnsafeValue(node_id));
+    // The requested node may have been removed by the time the request arrives,
+    // in which case no description is returned for that node ID.
+    if (it != nodes_by_id_.end()) {
+      const performance_manager::Node* node = it->second;
+      base::Value description = describer_registry->DescribeNodeData(node);
+
+      if (!description.is_none())
+        descriptions[node_id] = ToJSON(description);
+    }
+  }
+
+  std::move(callback).Run(descriptions);
+}
+
 void DiscardsGraphDumpImpl::OnPassedToGraph(performance_manager::Graph* graph) {
   DCHECK(!graph_);
   graph_ = graph;
@@ -358,11 +380,17 @@ void DiscardsGraphDumpImpl::OnBeforeClientWorkerRemoved(
 
 void DiscardsGraphDumpImpl::AddNode(const performance_manager::Node* node) {
   DCHECK(node_ids_.find(node) == node_ids_.end());
-  node_ids_.insert(std::make_pair(node, node_id_generator_.GenerateNextId()));
+  NodeId new_id = node_id_generator_.GenerateNextId();
+  node_ids_.insert(std::make_pair(node, new_id));
+  nodes_by_id_.insert(std::make_pair(new_id, node));
 }
 
 void DiscardsGraphDumpImpl::RemoveNode(const performance_manager::Node* node) {
-  size_t erased = node_ids_.erase(node);
+  auto it = node_ids_.find(node);
+  DCHECK(it != node_ids_.end());
+  NodeId node_id = it->second;
+  node_ids_.erase(it);
+  size_t erased = nodes_by_id_.erase(node_id);
   DCHECK_EQ(1u, erased);
 }
 

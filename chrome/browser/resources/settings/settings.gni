@@ -145,7 +145,9 @@ settings_closure_flags =
     ]
 
 settings_migrated_imports = [
-  "chrome/browser/resources/settings/reset_page/reset_profile_banner.html",
   "chrome/browser/resources/settings/on_startup_page/on_startup_page.html",
+  "chrome/browser/resources/settings/reset_page/reset_profile_banner.html",
   "chrome/browser/resources/settings/search_page/search_page.html",
+  "chrome/browser/resources/settings/settings_main/settings_main.html",
+  "chrome/browser/resources/settings/settings_menu/settings_menu.html",
 ]

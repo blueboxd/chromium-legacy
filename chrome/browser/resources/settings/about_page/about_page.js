@@ -7,8 +7,33 @@
  * information.
  */
 
+import '../icons.m.js';
+import '../prefs/prefs.m.js';
+import '../settings_page/settings_section.m.js';
+import '../settings_page_css.m.js';
+import '../settings_shared_css.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {parseHtmlSubset} from 'chrome://resources/js/parse_html_subset.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {LifetimeBrowserProxy, LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.m.js';
+import {Router} from '../router.m.js';
+
+import {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, PromoteUpdaterStatus, UpdateStatus, UpdateStatusChangedEvent} from './about_page_browser_proxy.m.js';
+
 Polymer({
   is: 'settings-about-page',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [
     WebUIListenerBehavior,
@@ -82,24 +107,23 @@ Polymer({
     // </if>
   ],
 
-  /** @private {?settings.AboutPageBrowserProxy} */
+  /** @private {?AboutPageBrowserProxy} */
   aboutBrowserProxy_: null,
 
-  /** @private {?settings.LifetimeBrowserProxy} */
+  /** @private {?LifetimeBrowserProxy} */
   lifetimeBrowserProxy_: null,
 
   /** @override */
   attached() {
-    this.aboutBrowserProxy_ = settings.AboutPageBrowserProxyImpl.getInstance();
+    this.aboutBrowserProxy_ = AboutPageBrowserProxyImpl.getInstance();
     this.aboutBrowserProxy_.pageReady();
 
-    this.lifetimeBrowserProxy_ =
-        settings.LifetimeBrowserProxyImpl.getInstance();
+    this.lifetimeBrowserProxy_ = LifetimeBrowserProxyImpl.getInstance();
 
     // <if expr="not chromeos">
     this.startListening_();
-    if (settings.Router.getInstance().getQueryParameters().get(
-            'checkForUpdate') == 'true') {
+    if (Router.getInstance().getQueryParameters().get('checkForUpdate') ==
+        'true') {
       this.onUpdateStatusChanged_({status: UpdateStatus.CHECKING});
       this.aboutBrowserProxy_.requestUpdate();
     }

@@ -376,7 +376,12 @@ class LoginPasswordView::DisplayPasswordButton
     const gfx::ImageSkia visible_icon = gfx::CreateVectorIcon(
         kLockScreenPasswordVisibleIcon, kDisplayPasswordButtonSizeDp,
         login_constants::kButtonEnabledColor);
+    const gfx::ImageSkia visible_icon_disabled = gfx::CreateVectorIcon(
+        kLockScreenPasswordVisibleIcon, kDisplayPasswordButtonSizeDp,
+        SkColorSetA(login_constants::kButtonEnabledColor,
+                    login_constants::kButtonDisabledAlpha));
     SetImage(views::Button::STATE_NORMAL, visible_icon);
+    SetImage(views::Button::STATE_DISABLED, visible_icon_disabled);
     SetToggledImage(views::Button::STATE_NORMAL, &invisible_icon);
 
     SetTooltipText(l10n_util::GetStringUTF16(
@@ -664,6 +669,9 @@ void LoginPasswordView::ContentsChanged(views::Textfield* sender,
   // Only reset the timer if the display password feature is enabled.
   if (display_password_button_->GetVisible())
     clear_password_timer_->Reset();
+  // For UX purposes, hide back the password when the user is typing.
+  HidePassword(false /*chromevox_exception*/);
+  display_password_button_->SetEnabled(!new_contents.empty());
 }
 
 // Implements swapping active user with arrow keys

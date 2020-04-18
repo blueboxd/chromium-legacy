@@ -7,7 +7,7 @@
 
 #include "base/observer_list_types.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_controller.h"
-#include "components/page_info/android/cookie_controls_status.h"
+#include "components/content_settings/core/common/cookie_controls_status.h"
 
 // Interface for the CookieControls UI.
 class CookieControlsView : public base::CheckedObserver {

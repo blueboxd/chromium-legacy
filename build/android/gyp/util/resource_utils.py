@@ -841,6 +841,7 @@ class _ResourceBuildContext(object):
     if temp_dir:
       self.temp_dir = temp_dir
       self.remove_on_exit = not keep_files
+      os.makedirs(temp_dir)
     else:
       self.temp_dir = tempfile.mkdtemp()
       self.remove_on_exit = True

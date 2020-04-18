@@ -18,6 +18,9 @@ namespace {
 const char kEnded[] = "ENDED";
 const char kError[] = "ERROR";
 const char kFailed[] = "FAILED";
+
+const char kClearKeyKeySystem[] = "org.w3.clearkey";
+const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
 }
 
 class CastNavigationBrowserTest : public CastBrowserTest {
@@ -37,6 +40,17 @@ class CastNavigationBrowserTest : public CastBrowserTest {
   }
   void PlayVideo(const std::string& media_file) {
     PlayMedia("video", media_file);
+  }
+  void PlayEncryptedMedia(const std::string& key_system,
+                          const std::string& media_type,
+                          const std::string& media_file) {
+    base::StringPairs query_params;
+    query_params.emplace_back("mediaFile", media_file);
+    query_params.emplace_back("mediaType", media_type);
+    query_params.emplace_back("keySystem", key_system);
+    query_params.emplace_back("useMSE", "1");
+
+    RunMediaTestPage("eme_player.html", query_params, kEnded);
   }
 
  private:
@@ -88,6 +102,10 @@ IN_PROC_BROWSER_TEST_F(CastNavigationBrowserTest, DISABLED_VideoPlaybackMp4) {
   PlayVideo("bear.mp4");
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(CastNavigationBrowserTest, ClearKeySupport) {
+  PlayEncryptedMedia(kClearKeyKeySystem, kWebMAudioOnly, "bear-a_enc-a.webm");
+}
 
 }  // namespace shell
 }  // namespace chromecast

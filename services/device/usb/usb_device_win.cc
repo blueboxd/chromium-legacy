@@ -43,10 +43,10 @@ void UsbDeviceWin::Open(OpenCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   scoped_refptr<UsbDeviceHandle> device_handle;
-  if (base::EqualsCaseInsensitiveASCII(driver_name_, L"winusb"))
-    device_handle = new UsbDeviceHandleWin(this, /*composite=*/false);
-  else if (base::EqualsCaseInsensitiveASCII(driver_name_, L"usbccgp"))
-    device_handle = new UsbDeviceHandleWin(this, /*composite=*/true);
+  if (base::EqualsCaseInsensitiveASCII(driver_name_, L"winusb") ||
+      base::EqualsCaseInsensitiveASCII(driver_name_, L"usbccgp")) {
+    device_handle = new UsbDeviceHandleWin(this);
+  }
 
   if (device_handle)
     handles().push_back(device_handle.get());

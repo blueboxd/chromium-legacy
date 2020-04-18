@@ -22668,6 +22668,8 @@ Called by update_extension_histograms.py.-->
   <int value="1464" label="CRYPTOTOKENPRIVATE_RECORDSIGNREQUEST"/>
   <int value="1465" label="VIRTUALKEYBOARDPRIVATE_SETWINDOWBOUNDSINSCREEN"/>
   <int value="1466" label="AUTOTESTPRIVATE_SETWINDOWBOUNDS"/>
+  <int value="1467" label="AUTOTESTPRIVATE_STARTSMOOTHNESSTRACKING"/>
+  <int value="1468" label="AUTOTESTPRIVATE_STOPSMOOTHNESSTRACKING"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -26995,6 +26997,23 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3230" label="RequiredDocumentPolicy"/>
   <int value="3231" label="PerformanceObserverEntryTypesAndBuffered"/>
   <int value="3232" label="PerformanceObserverTypeError"/>
+  <int value="3233" label="ImageCaptureWhiteBalanceMode"/>
+  <int value="3234" label="ImageCaptureExposureMode"/>
+  <int value="3235" label="ImageCaptureFocusMode"/>
+  <int value="3236" label="ImageCapturePointsOfInterest"/>
+  <int value="3237" label="ImageCaptureExposureCompensation"/>
+  <int value="3238" label="ImageCaptureExposureTime"/>
+  <int value="3239" label="ImageCaptureColorTemperature"/>
+  <int value="3240" label="ImageCaptureIso"/>
+  <int value="3241" label="ImageCaptureBrightness"/>
+  <int value="3242" label="ImageCaptureContrast"/>
+  <int value="3243" label="ImageCaptureSaturation"/>
+  <int value="3244" label="ImageCaptureSharpness"/>
+  <int value="3245" label="ImageCaptureFocusDistance"/>
+  <int value="3246" label="ImageCapturePan"/>
+  <int value="3247" label="ImageCaptureTilt"/>
+  <int value="3248" label="ImageCaptureZoom"/>
+  <int value="3249" label="ImageCaptureTorch"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38183,6 +38202,8 @@ from previous Chrome versions.
   <int value="-1605567628" label="disable-overlay-scrollbar"/>
   <int value="-1604051051" label="SpecialLocale:disabled"/>
   <int value="-1603404046" label="V8VmFuture:disabled"/>
+  <int value="-1603026968"
+      label="AlignFontDisplayAutoTimeoutWithLCPGoal:disabled"/>
   <int value="-1601374850" label="DialMediaRouteProvider:disabled"/>
   <int value="-1599538279" label="enable-md-policy-page"/>
   <int value="-1596859081" label="WebAuthenticationPINSupport:enabled"/>
@@ -38610,6 +38631,8 @@ from previous Chrome versions.
   <int value="-1154394293"
       label="UpdateNotificationScheduleServiceImmediateShowOption:enabled"/>
   <int value="-1154343236" label="VrBrowsingTabsView:disabled"/>
+  <int value="-1153892430"
+      label="AlignFontDisplayAutoTimeoutWithLCPGoal:enabled"/>
   <int value="-1151766565" label="enable-fullscreen-tab-detaching"/>
   <int value="-1145905507" label="SendTabToSelfWhenSignedIn:disabled"/>
   <int value="-1145702446" label="ChromeHomeInactivitySheetExpansion:enabled"/>
@@ -66556,6 +66579,12 @@ Full version information for the fingerprint enum values:
   <int value="3" label="No app shim"/>
 </enum>
 
+<enum name="UpdateAppBadgeTypes">
+  <int value="0" label="Set numeric badge"/>
+  <int value="1" label="Set flag badge"/>
+  <int value="2" label="Clear badge"/>
+</enum>
+
 <enum name="UpdateCheckStatus">
   <int value="0" label="Unknown"/>
   <int value="1" label="Ok"/>
@@ -68989,6 +69018,20 @@ Full version information for the fingerprint enum values:
     Terminated unexpectedly after starting launch.
   </int>
   <int value="2" label="Error">Launching the Chrome process failed.</int>
+</enum>
+
+<enum name="WebAppLauncherUpdateResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed to create temp dir">
+    Failed to create temporary directory in launcher's web-app data directory.
+  </int>
+  <int value="2" label="Failed to replace launcher">
+    Failed to atomically replace launcher with a copy or hardlink of
+    chrome_pwa_launcher.exe.
+  </int>
+  <int value="3" label="Latest version path does not exist">
+    Failed to find chrome_pwa_launcher.exe at the expected path.
+  </int>
 </enum>
 
 <enum name="WebAppManifestUpdateResult">

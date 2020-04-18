@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
-cr.define('settings', function() {
   /** @interface */
-  /* #export */ class DownloadsBrowserProxy {
+  export class DownloadsBrowserProxy {
     initializeDownloads() {}
     selectDownloadLocation() {}
     resetAutoOpenFileTypes() {}
@@ -22,9 +21,9 @@ cr.define('settings', function() {
   }
 
   /**
-   * @implements {settings.DownloadsBrowserProxy}
+   * @implements {DownloadsBrowserProxy}
    */
-  /* #export */ class DownloadsBrowserProxyImpl {
+  export class DownloadsBrowserProxyImpl {
     /** @override */
     initializeDownloads() {
       chrome.send('initializeDownloads');
@@ -43,16 +42,10 @@ cr.define('settings', function() {
     // <if expr="chromeos">
     /** @override */
     getDownloadLocationText(path) {
-      return cr.sendWithPromise('getDownloadLocationText', path);
+      return sendWithPromise('getDownloadLocationText', path);
     }
     // </if>
   }
 
-  cr.addSingletonGetter(DownloadsBrowserProxyImpl);
+  addSingletonGetter(DownloadsBrowserProxyImpl);
 
-  // #cr_define_end
-  return {
-    DownloadsBrowserProxy: DownloadsBrowserProxy,
-    DownloadsBrowserProxyImpl: DownloadsBrowserProxyImpl,
-  };
-});

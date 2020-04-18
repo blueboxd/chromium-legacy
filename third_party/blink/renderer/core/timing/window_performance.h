@@ -73,7 +73,8 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                            base::TimeTicks start_time,
                            base::TimeTicks processing_start,
                            base::TimeTicks processing_end,
-                           bool cancelable);
+                           bool cancelable,
+                           Node*);
 
   void AddElementTiming(const AtomicString& name,
                         const String& url,

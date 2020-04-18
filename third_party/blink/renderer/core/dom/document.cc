@@ -666,7 +666,7 @@ Document::Document(const DocumentInit& initializer,
       // pointer?
       dom_window_(frame_ ? frame_->DomWindow() : nullptr),
       imports_controller_(initializer.ImportsController()),
-      security_context_(security_initializer, SecurityContext::kLocal),
+      security_context_(security_initializer, SecurityContext::kWindow),
       use_counter_during_construction_(initializer.GetUseCounter()),
       context_document_(initializer.ContextDocument()),
       context_features_(ContextFeatures::DefaultSwitch()),

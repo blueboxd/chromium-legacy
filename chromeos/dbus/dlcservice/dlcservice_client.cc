@@ -286,11 +286,14 @@ class DlcserviceClientImpl : public DlcserviceClient {
   }
 
   void OnInstall(dbus::Response* response, dbus::ErrorResponse* err_response) {
+    if (response)
+      return;
+
+    // Perform DCHECKs only when an error occurs, platform dlcservice currently
+    // sends a signal prior to DBus method callback on quick install scenarios.
     DCHECK(install_field_holder_.has_value());
     DCHECK(install_callback_holder_.has_value());
     DCHECK(progress_callback_holder_.has_value());
-    if (response)
-      return;
 
     const auto err = DlcserviceErrorResponseHandler(err_response).get_err();
     if (err == dlcservice::kErrorBusy) {

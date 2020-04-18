@@ -329,8 +329,7 @@ void CompositorFrameReporter::MissedDeadlineFrame() {
 }
 
 void CompositorFrameReporter::TerminateReporter() {
-  if (frame_termination_status_ == FrameTerminationStatus::kUnknown)
-    TerminateFrame(FrameTerminationStatus::kUnknown, base::TimeTicks::Now());
+  DCHECK_NE(frame_termination_status_, FrameTerminationStatus::kUnknown);
   DCHECK_EQ(current_stage_.start_time, base::TimeTicks());
   bool report_compositor_latency = false;
   bool report_event_latency = false;

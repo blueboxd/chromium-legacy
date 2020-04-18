@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/util/process_version.gni")
 import("//chrome/process_version_rc_template.gni")
+import("//chrome/updater/branding.gni")
 import("//testing/test.gni")
 
 # This target builds the updater executable, its installer, and unittests.
@@ -33,9 +35,16 @@ executable("updater") {
   data_deps = [ ":uninstall.cmd" ]
 }
 
-copy("uninstall.cmd") {
-  sources = [ "setup/uninstall.cmd" ]
-  outputs = [ "$target_gen_dir/uninstall.cmd" ]
+process_version("uninstall.cmd") {
+  template_file = "setup/uninstall.cmd"
+  output = "$target_gen_dir/uninstall.cmd"
+  process_only = true
+  extra_args = [
+    "-e",
+    "PRODUCT_FULLNAME=\"$updater_product_full_name\"",
+    "-e",
+    "COMPANY_SHORTNAME=\"$updater_company_short_name\"",
+  ]
 }
 
 process_version_rc_template("version_resources") {

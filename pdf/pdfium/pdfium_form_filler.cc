@@ -51,6 +51,8 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
   FPDF_FORMFILLINFO::FFI_DoURIAction = Form_DoURIAction;
   FPDF_FORMFILLINFO::FFI_DoGoToAction = Form_DoGoToAction;
   FPDF_FORMFILLINFO::FFI_OnFocusChange = Form_OnFocusChange;
+  FPDF_FORMFILLINFO::FFI_DoURIActionWithKeyboardModifier =
+      Form_DoURIActionWithKeyboardModifier;
 #if defined(PDF_ENABLE_XFA)
   FPDF_FORMFILLINFO::xfa_disabled = false;
   FPDF_FORMFILLINFO::FFI_EmailTo = Form_EmailTo;
@@ -309,6 +311,24 @@ void PDFiumFormFiller::Form_DoGoToAction(FPDF_FORMFILLINFO* param,
                                          int size_of_array) {
   PDFiumEngine* engine = GetEngine(param);
   engine->ScrollToPage(page_index);
+}
+
+// static
+void PDFiumFormFiller::Form_DoURIActionWithKeyboardModifier(
+    FPDF_FORMFILLINFO* param,
+    FPDF_BYTESTRING uri,
+    int modifiers) {
+  PDFiumEngine* engine = GetEngine(param);
+  bool middle_button = !!(modifiers & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN);
+  bool alt_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_ALTKEY);
+  bool ctrl_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_CONTROLKEY);
+  bool meta_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_METAKEY);
+  bool shift_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_SHIFTKEY);
+
+  WindowOpenDisposition disposition = ui::DispositionFromClick(
+      middle_button, alt_key, ctrl_key, meta_key, shift_key);
+
+  engine->client_->NavigateTo(std::string(uri), disposition);
 }
 
 #if defined(PDF_ENABLE_XFA)

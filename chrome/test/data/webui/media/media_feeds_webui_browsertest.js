@@ -77,6 +77,12 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('item->tv_episode->identifiers.push_back(');
     GEN('  media_feeds::mojom::Identifier::New(');
     GEN('    media_feeds::mojom::Identifier::Type::kPartnerId, "TEST3"));');
+    GEN('item->tv_episode->duration =');
+    GEN('    base::TimeDelta::FromSeconds(20);');
+    GEN('item->tv_episode->live = media_feeds::mojom::LiveDetails::New();');
+    GEN('item->tv_episode->live->start_time = ');
+    GEN('      base::Time::FromDeltaSinceWindowsEpoch(');
+    GEN('      base::TimeDelta::FromSeconds(30));');
     GEN('item->play_next_candidate = ');
     GEN('    media_feeds::mojom::PlayNextCandidate::New();');
     GEN('item->play_next_candidate->name = "Next TV Episode Name";');
@@ -211,7 +217,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
       assertTrue(
           feedItemsContents.childNodes[11].textContent.trim().includes('Live'));
       assertEquals(
-          'TV Episode Name EpisodeNumber=2 SeasonNumber=1 PartnerId=TEST3',
+          'TV Episode Name EpisodeNumber=2 SeasonNumber=1 PartnerId=TEST3 DurationSecs=20 LiveDetails=Live StartTime=12/31/1600, 4:07:32 PM',
           feedItemsContents.childNodes[12].textContent.trim());
       assertEquals(
           'Next TV Episode Name EpisodeNumber=3 SeasonNumber=1 PartnerId=TEST4 ActionURL=https://www.example.com/ ActionStartTimeSecs=3 DurationSecs=10',

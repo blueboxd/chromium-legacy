@@ -49,6 +49,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "align-font-display-auto-lcp",
+    "owners": [ "xiaochengh" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "allow-disable-mouse-acceleration",
     "owners": [ "zentaro" ],
     "expiry_milestone": 82
@@ -456,12 +461,12 @@
   {
     "name": "chrome-share-screenshot",
     "owners": ["jeffreycohen","kristipark"],
-    "expiry_milestone": 83
+    "expiry_milestone": 86
   },
   {
     "name": "chrome-sharing-hub",
     "owners": ["kmilka"],
-    "expiry_milestone": 83
+    "expiry_milestone": 86
   },
   {
     "name": "chromeos-video-decoder",
@@ -3607,7 +3612,7 @@
   {
     "name": "share-button-in-top-toolbar",
     "owners": ["jeffreycohen"],
-    "expiry_milestone": 83
+    "expiry_milestone": 86
   },
   {
     "name": "shared-clipboard-receiver",
@@ -3642,7 +3647,7 @@
   {
     "name": "sharing-qr-code-generator",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 86
   },
   {
     "name": "sharing-rename-devices",
@@ -4063,6 +4068,12 @@
     // backend on Windows. Its usage is small enough that it isn't worth
     // promoting this to a chrome://settings entry, but it needs to be readily
     // available.
+    "expiry_milestone": -1
+  },
+  {
+    "name": "use-custom-messages-domain",
+    "owners": [ "azeemarshad", "jonmann", "vecore" ],
+    // This flag is used for QA and development.
     "expiry_milestone": -1
   },
   {

@@ -809,6 +809,9 @@
         "test_target": "//chromeos:cros_browser_sanity_test"
       },
       {
+        "args": [
+          "--strip-chrome"
+        ],
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -874,6 +877,9 @@
         "test_target": "//chromeos:cros_browser_sanity_test"
       },
       {
+        "args": [
+          "--strip-chrome"
+        ],
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -1060,6 +1066,9 @@
         "test_target": "//crypto:crypto_unittests"
       },
       {
+        "args": [
+          "--strip-chrome"
+        ],
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -1601,6 +1610,9 @@
         }
       },
       {
+        "args": [
+          "--strip-chrome"
+        ],
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -1762,6 +1774,9 @@
         }
       },
       {
+        "args": [
+          "--strip-chrome"
+        ],
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
         },

@@ -261,6 +261,9 @@ class OutOfProcessInstance : public pp::Instance,
   // Callback to print without re-entrancy issues.
   void OnPrint(int32_t /*unused_but_required*/);
 
+  // Callback to do invalidation after painting finishes.
+  void InvalidateAfterPaintDone(int32_t /*unused_but_required*/);
+
   pp::ImageData image_data_;
   // Used when the plugin is embedded in a page and we have to create the loader
   // ourself.
@@ -314,6 +317,10 @@ class OutOfProcessInstance : public pp::Instance,
 
   // True if we haven't painted the plugin viewport yet.
   bool first_paint_ = true;
+  // Whether OnPaint() is in progress or not.
+  bool in_paint_ = false;
+  // Deferred invalidates while |in_paint_| is true.
+  std::vector<pp::Rect> deferred_invalidates_;
 
   struct BackgroundPart {
     pp::Rect location;

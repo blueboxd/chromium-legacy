@@ -315,6 +315,10 @@ void FetchHandler::ContinueWithAuth(
 void FetchHandler::GetResponseBody(
     const String& requestId,
     std::unique_ptr<GetResponseBodyCallback> callback) {
+  if (!interceptor_) {
+    callback->sendFailure(Response::ServerError("Fetch domain is not enabled"));
+    return;
+  }
   auto weapped_callback = std::make_unique<CallbackWrapper<
       GetResponseBodyCallback,
       DevToolsURLLoaderInterceptor::GetResponseBodyForInterceptionCallback,
@@ -325,6 +329,10 @@ void FetchHandler::GetResponseBody(
 void FetchHandler::TakeResponseBodyAsStream(
     const String& requestId,
     std::unique_ptr<TakeResponseBodyAsStreamCallback> callback) {
+  if (!interceptor_) {
+    callback->sendFailure(Response::ServerError("Fetch domain is not enabled"));
+    return;
+  }
   interceptor_->TakeResponseBodyPipe(
       requestId,
       base::BindOnce(&FetchHandler::OnResponseBodyPipeTaken,

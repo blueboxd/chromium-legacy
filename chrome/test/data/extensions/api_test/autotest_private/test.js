@@ -17,6 +17,28 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Returns a promise that gets resolved after "window.requestAnimationFrame"
+// callbacks happened on a front window.
+var pendingRafPromise = null;
+function raf() {
+  chrome.test.assertTrue(pendingRafPromise === null);
+
+  var res;
+  pendingRafPromise = new Promise((resolve) => {
+    res = resolve;
+  });
+  pendingRafPromise.resolve = res;
+
+  chrome.windows.create({'url': 'raf.html'}, function() {});
+  return pendingRafPromise;
+}
+function onRaf(rafWin) {
+  chrome.test.assertTrue(pendingRafPromise !== null);
+  pendingRafPromise.resolve();
+  pendingRafPromise = null;
+  rafWin.close();
+}
+
 var defaultTests = [
   // logout/restart/shutdown don't do anything as we don't want to kill the
   // browser with these tests.
@@ -799,6 +821,51 @@ var defaultTests = [
                       });
                 });
           });
+    });
+  },
+
+  function startSmoothnessTracking() {
+    chrome.autotestPrivate.startSmoothnessTracking(async function() {
+      chrome.test.assertNoLastError();
+
+      // Wait for a few frames.
+      await raf();
+
+      chrome.autotestPrivate.stopSmoothnessTracking(function(smoothness) {
+        chrome.test.assertNoLastError();
+        chrome.test.assertTrue(smoothness >= 0 && smoothness <= 100);
+        chrome.test.succeed();
+      });
+    });
+  },
+  function startSmoothnessTrackingExplicitDisplay() {
+    const badDisplay = '-1';
+    chrome.autotestPrivate.startSmoothnessTracking(badDisplay, function() {
+      chrome.test.assertEq(chrome.runtime.lastError.message,
+          'Invalid display_id; no root window found for the display id -1');
+      chrome.system.display.getInfo(function(info) {
+        var displayId = info[0].id;
+        chrome.autotestPrivate.startSmoothnessTracking(displayId,
+                                                       async function() {
+          chrome.test.assertNoLastError();
+
+          // Wait for a few frames.
+          await raf();
+
+          chrome.autotestPrivate.stopSmoothnessTracking(badDisplay,
+                                                        function(smoothness) {
+            chrome.test.assertEq(chrome.runtime.lastError.message,
+                'Smoothness is not tracked for display: -1');
+
+            chrome.autotestPrivate.stopSmoothnessTracking(displayId,
+                                                          function(smoothness) {
+              chrome.test.assertNoLastError();
+              chrome.test.assertTrue(smoothness >= 0 && smoothness <= 100);
+              chrome.test.succeed();
+            });
+          });
+        });
+      });
     });
   },
 

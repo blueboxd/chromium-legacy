@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/cookie_controls/cookie_controls_view.h"
 #include "chrome/browser/ui/views/location_bar/cookie_controls_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
-#include "components/page_info/android/cookie_controls_status.h"
+#include "components/content_settings/core/common/cookie_controls_status.h"
 
 // View for the cookie control icon in the Omnibox.
 class CookieControlsIconView : public PageActionIconView,

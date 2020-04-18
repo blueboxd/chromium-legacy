@@ -84,7 +84,7 @@ InternetStringsProvider::InternetStringsProvider(Profile* profile,
 InternetStringsProvider::~InternetStringsProvider() = default;
 
 void InternetStringsProvider::AddUiStrings(
-    content::WebUIDataSource* html_source) const {
+    content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"internetAddConnection", IDS_SETTINGS_INTERNET_ADD_CONNECTION},
       {"internetAddConnectionExpandA11yLabel",

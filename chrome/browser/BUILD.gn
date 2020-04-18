@@ -4082,6 +4082,8 @@ jumbo_static_library("browser") {
         "google/google_update_policy_fetcher_win.h",
         "google/google_update_win.cc",
         "google/google_update_win.h",
+        "google/switches.cc",
+        "google/switches.h",
         "win/conflicts/incompatible_applications_updater.cc",
         "win/conflicts/incompatible_applications_updater.h",
         "win/conflicts/installed_applications.cc",

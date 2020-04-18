@@ -366,7 +366,14 @@ const base::Feature kGlobalMediaControlsOverlayControls{
 
 // Show picture-in-picture button in Global Media Controls.
 const base::Feature kGlobalMediaControlsPictureInPicture{
-    "GlobalMediaControlsPictureInPicture", base::FEATURE_DISABLED_BY_DEFAULT};
+  "GlobalMediaControlsPictureInPicture",
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.

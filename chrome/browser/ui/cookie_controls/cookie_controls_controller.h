@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
-#include "components/page_info/android/cookie_controls_status.h"
+#include "components/content_settings/core/common/cookie_controls_status.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_contents.h"
 

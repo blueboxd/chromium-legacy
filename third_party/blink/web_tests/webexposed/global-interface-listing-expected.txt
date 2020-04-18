@@ -5946,6 +5946,7 @@ interface PerformanceEventTiming : PerformanceEntry
     getter cancelable
     getter processingEnd
     getter processingStart
+    getter target
     method constructor
     method toJSON
 interface PerformanceLongTaskTiming : PerformanceEntry

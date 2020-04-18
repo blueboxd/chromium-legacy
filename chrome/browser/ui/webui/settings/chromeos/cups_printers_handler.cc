@@ -94,18 +94,6 @@ void RecordIppQueryResult(const PrinterQueryResult& result) {
   }
 }
 
-// Returns true if |printer_uri| is an IPP uri.
-bool IsIppUri(base::StringPiece printer_uri) {
-  base::StringPiece::size_type separator_location =
-      printer_uri.find(url::kStandardSchemeSeparator);
-  if (separator_location == base::StringPiece::npos) {
-    return false;
-  }
-
-  base::StringPiece scheme_part = printer_uri.substr(0, separator_location);
-  return scheme_part == kIppScheme || scheme_part == kIppsScheme;
-}
-
 // Query an IPP printer to check for autoconf support where the printer is
 // located at |printer_uri|.  Results are reported through |callback|.  It is an
 // error to attempt this with a non-IPP printer.

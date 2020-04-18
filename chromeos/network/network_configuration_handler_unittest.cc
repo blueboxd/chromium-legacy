@@ -584,13 +584,13 @@ TEST_F(NetworkConfigurationHandlerTest,
 TEST_F(NetworkConfigurationHandlerTest, StubSetAndClearProperties) {
   // TODO(stevenjb): Remove dependency on default Stub service.
   const std::string service_path("/service/wifi1");
-  const std::string test_identity("test_identity");
+  const std::string test_check_portal("auto");
   const std::string test_passphrase("test_passphrase");
 
   // Set Properties
   base::DictionaryValue properties_to_set;
-  properties_to_set.SetKey(shill::kIdentityProperty,
-                           base::Value(test_identity));
+  properties_to_set.SetKey(shill::kCheckPortalProperty,
+                           base::Value(test_check_portal));
   properties_to_set.SetKey(shill::kPassphraseProperty,
                            base::Value(test_passphrase));
   network_configuration_handler_->SetShillProperties(
@@ -602,19 +602,19 @@ TEST_F(NetworkConfigurationHandlerTest, StubSetAndClearProperties) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ("SetProperties", success_callback_name_);
-  std::string identity, passphrase;
-  EXPECT_TRUE(GetServiceStringProperty(service_path, shill::kIdentityProperty,
-                                       &identity));
+  std::string check_portal, passphrase;
+  EXPECT_TRUE(GetServiceStringProperty(
+                  service_path, shill::kCheckPortalProperty, &check_portal));
   EXPECT_TRUE(GetServiceStringProperty(service_path, shill::kPassphraseProperty,
                                        &passphrase));
-  EXPECT_EQ(test_identity, identity);
+  EXPECT_EQ(test_check_portal, check_portal);
   EXPECT_EQ(test_passphrase, passphrase);
   EXPECT_EQ(1, network_state_handler_observer_->PropertyUpdatesForService(
                    service_path));
 
   // Clear Properties
   std::vector<std::string> properties_to_clear;
-  properties_to_clear.push_back(shill::kIdentityProperty);
+  properties_to_clear.push_back(shill::kCheckPortalProperty);
   properties_to_clear.push_back(shill::kPassphraseProperty);
   network_configuration_handler_->ClearShillProperties(
       service_path, properties_to_clear,
@@ -624,10 +624,10 @@ TEST_F(NetworkConfigurationHandlerTest, StubSetAndClearProperties) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ("ClearProperties", success_callback_name_);
-  EXPECT_FALSE(GetServiceStringProperty(service_path, shill::kIdentityProperty,
-                                        &identity));
-  EXPECT_FALSE(GetServiceStringProperty(service_path, shill::kIdentityProperty,
-                                        &passphrase));
+  EXPECT_FALSE(GetServiceStringProperty(
+                   service_path, shill::kCheckPortalProperty, &check_portal));
+  EXPECT_FALSE(GetServiceStringProperty(
+                   service_path, shill::kPassphraseProperty, &passphrase));
   EXPECT_EQ(2, network_state_handler_observer_->PropertyUpdatesForService(
                    service_path));
 }

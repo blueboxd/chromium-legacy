@@ -812,6 +812,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   // true, we ignore any local search engine changes, since we triggered them.
   bool processing_syncer_changes_ = false;
 
+  // We never want reentrancy while applying a default search engine change.
+  // This can happen when deleting keyword conflicts. crbug.com/1031506
+  bool applying_default_search_engine_change_ = false;
+
   // Sync's syncer::SyncChange handler. We push all our changes through this.
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
 

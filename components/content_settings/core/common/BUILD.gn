@@ -22,6 +22,7 @@ jumbo_static_library("common") {
     "content_settings_utils.cc",
     "content_settings_utils.h",
     "cookie_controls_enforcement.h",
+    "cookie_controls_status.h",
     "cookie_settings_base.cc",
     "cookie_settings_base.h",
     "pref_names.cc",

@@ -147,6 +147,11 @@ class NetInternalsTest::MessageHandler : public content::WebUIMessageHandler {
 
   NetInternalsTest* net_internals_test_;
 
+  // Single NetworkIsolationKey used for all DNS lookups, so repeated lookups
+  // use the same cache key.
+  net::NetworkIsolationKey network_isolation_key_{
+      net::NetworkIsolationKey::CreateTransient()};
+
   base::WeakPtrFactory<MessageHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MessageHandler);
@@ -230,8 +235,7 @@ void NetInternalsTest::MessageHandler::DnsLookup(
                                      weak_factory_.GetWeakPtr()));
   content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
       ->GetNetworkContext()
-      ->ResolveHost(net::HostPortPair(hostname, 80),
-                    net::NetworkIsolationKey::CreateTransient(),
+      ->ResolveHost(net::HostPortPair(hostname, 80), network_isolation_key_,
                     std::move(resolve_host_parameters), std::move(client));
 }
 

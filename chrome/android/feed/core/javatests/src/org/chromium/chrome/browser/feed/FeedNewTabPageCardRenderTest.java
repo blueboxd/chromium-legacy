@@ -96,9 +96,6 @@ import java.util.List;
         mNtp = (FeedNewTabPage) mTab.getNativePage();
         mTileGridLayout = mNtp.getView().findViewById(R.id.tile_grid_layout);
         Assert.assertEquals(mSiteSuggestions.size(), mTileGridLayout.getChildCount());
-
-        // Set 10 diff threshold. It is a value in RGBA channel, not pixel count.
-        mRenderTestRule.setPixelDiffThreshold(10);
     }
 
     @Test

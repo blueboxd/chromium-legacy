@@ -9,7 +9,7 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_controller.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_view.h"
-#include "components/page_info/android/cookie_controls_status.h"
+#include "components/content_settings/core/common/cookie_controls_status.h"
 
 // Communicates between CookieControlsController (C++ backend) and PageInfoView
 // (Java UI).

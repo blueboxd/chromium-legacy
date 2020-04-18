@@ -53,17 +53,17 @@ class ShillIPConfigClientTest : public ShillClientUnittestBase {
 
 TEST_F(ShillIPConfigClientTest, PropertyChanged) {
   // Create a signal.
-  const base::Value kConnected(true);
+  const base::Value kMtu(100);
   dbus::Signal signal(shill::kFlimflamIPConfigInterface,
                       shill::kMonitorPropertyChanged);
   dbus::MessageWriter writer(&signal);
-  writer.AppendString(shill::kConnectedProperty);
-  dbus::AppendBasicTypeValueDataAsVariant(&writer, kConnected);
+  writer.AppendString(shill::kMtuProperty);
+  dbus::AppendBasicTypeValueDataAsVariant(&writer, kMtu);
 
   // Set expectations.
   MockPropertyChangeObserver observer;
-  EXPECT_CALL(observer, OnPropertyChanged(shill::kConnectedProperty,
-                                          ValueEq(ByRef(kConnected))))
+  EXPECT_CALL(observer, OnPropertyChanged(shill::kMtuProperty,
+                                          ValueEq(ByRef(kMtu))))
       .Times(1);
 
   // Add the observer

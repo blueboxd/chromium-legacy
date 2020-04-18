@@ -9,6 +9,7 @@
 #include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_pointer_properties.h"
+#include "third_party/blink/public/mojom/input/gesture_event.mojom-shared.h"
 #include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -19,12 +20,7 @@ namespace blink {
 
 class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
  public:
-  enum class InertialPhaseState : uint8_t {
-    kUnknownMomentum = 0,  // No phase information.
-    kNonMomentum,          // Regular scrolling phase.
-    kMomentum,             // Momentum phase.
-    kMaxValue = kMomentum,
-  };
+  using InertialPhaseState = mojom::InertialPhaseState;
 
   bool is_source_touch_event_set_non_blocking = false;
 
@@ -32,12 +28,13 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
   WebPointerProperties::PointerType primary_pointer_type =
       WebPointerProperties::PointerType::kUnknown;
 
-  // If the WebGestureEvent has source_device == WebGestureDevice::kTouchscreen,
-  // this field contains the unique identifier for the touch event that released
-  // this event at TouchDispositionGestureFilter. If the WebGestureEvents was
-  // not released through a touch event (e.g. timer-released gesture events or
-  // gesture events with source_device != WebGestureDevice::kTouchscreen), the
-  // field contains 0. See crbug.com/618738.
+  // If the WebGestureEvent has source_device ==
+  // mojom::GestureDevice::kTouchscreen, this field contains the unique
+  // identifier for the touch event that released this event at
+  // TouchDispositionGestureFilter. If the WebGestureEvents was not released
+  // through a touch event (e.g. timer-released gesture events or gesture events
+  // with source_device != mojom::GestureDevice::kTouchscreen), the field
+  // contains 0. See crbug.com/618738.
   uint32_t unique_touch_event_id = 0;
 
   union {
@@ -180,13 +177,14 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
   // Screen coordinate
   gfx::PointF position_in_screen_;
 
-  WebGestureDevice source_device_ = WebGestureDevice::kUninitialized;
+  mojom::GestureDevice source_device_ = mojom::GestureDevice::kUninitialized;
 
  public:
-  WebGestureEvent(Type type,
-                  int modifiers,
-                  base::TimeTicks time_stamp,
-                  WebGestureDevice device = WebGestureDevice::kUninitialized)
+  WebGestureEvent(
+      Type type,
+      int modifiers,
+      base::TimeTicks time_stamp,
+      mojom::GestureDevice device = mojom::GestureDevice::kUninitialized)
       : WebInputEvent(type, modifiers, time_stamp), source_device_(device) {
     memset(&data, 0, sizeof(data));
   }
@@ -206,8 +204,8 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
     position_in_screen_ = point;
   }
 
-  WebGestureDevice SourceDevice() const { return source_device_; }
-  void SetSourceDevice(WebGestureDevice device) { source_device_ = device; }
+  mojom::GestureDevice SourceDevice() const { return source_device_; }
+  void SetSourceDevice(mojom::GestureDevice device) { source_device_ = device; }
 
   float DeltaXInRootFrame() const;
   float DeltaYInRootFrame() const;
@@ -270,7 +268,7 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
   bool IsTouchpadZoomEvent() const {
     // Touchpad GestureDoubleTap also causes a page scale change like a touchpad
     // pinch gesture.
-    return source_device_ == WebGestureDevice::kTouchpad &&
+    return source_device_ == mojom::GestureDevice::kTouchpad &&
            (WebInputEvent::IsPinchGestureEventType(type_) ||
             type_ == kGestureDoubleTap);
   }

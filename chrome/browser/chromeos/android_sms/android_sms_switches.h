@@ -8,12 +8,9 @@
 namespace switches {
 
 // When specified with a url string as parameter, the given url overrides the
-// Android Messages for Web url used by AndroidSmsService.
-extern const char kAlternateAndroidMessagesUrl[];
-
-// When specified with a url string as parameter, the given url overrides the
-// Android Messages for Web PWA installation url used by AndroidSmsService.
-extern const char kAlternateAndroidMessagesInstallUrl[];
+// Android Messages for Web PWA installation and app urls using a base of the
+// given domain with approrpiate suffixes.
+extern const char kCustomAndroidMessagesDomain[];
 
 }  // namespace switches
 

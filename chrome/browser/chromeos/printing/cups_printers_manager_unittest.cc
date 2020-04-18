@@ -891,5 +891,18 @@ TEST_F(CupsPrintersManagerTest,
       usb_notif_controller_->IsConfigurationNotification("Discovered"));
 }
 
+TEST_F(CupsPrintersManagerTest, IsIppUri) {
+  // IPP protocol
+  ASSERT_TRUE(IsIppUri("ipp://1.2.3.4"));
+  // IPPS protocol
+  ASSERT_TRUE(IsIppUri("ipps://1.2.3.4"));
+  // USB protocol
+  ASSERT_FALSE(IsIppUri("usb://1.2.3.4"));
+  // Malformed URI
+  ASSERT_FALSE(IsIppUri("ipp/1.2.3.4"));
+  // Empty URI
+  ASSERT_FALSE(IsIppUri(""));
+}
+
 }  // namespace
 }  // namespace chromeos

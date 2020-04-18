@@ -9,6 +9,8 @@ import "content/common/input/synchronous_compositor.mojom";
 import "content/common/native_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "third_party/blink/public/mojom/input/gesture_event.mojom";
+import "third_party/blink/public/mojom/input/input_event.mojom";
 import "third_party/blink/public/mojom/input/pointer_lock_result.mojom";
 import "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom";
 import "ui/base/ime/mojom/ime_types.mojom";
@@ -46,7 +48,7 @@ struct PointerData {
   int32 tilt_y;
   float tangential_pressure;
   int32 twist;
-  Button button;
+  blink.mojom.Button button;
   PointerType pointer_type;
   int32 movement_x;
   int32 movement_y;
@@ -65,7 +67,7 @@ struct WheelData {
   float acceleration_ratio_y;
   uint8 phase;
   uint8 momentum_phase;
-  Cancelability cancelable;
+  blink.mojom.DispatchType cancelable;
   uint8 event_action;
   uint8 delta_units;
 };
@@ -85,7 +87,7 @@ struct ScrollData {
   float delta_y;
   ui.mojom.ScrollGranularity delta_units;
   bool target_viewport;
-  InertialPhaseState inertial_phase;
+  blink.mojom.InertialPhaseState inertial_phase;
   bool synthetic;
   int32 pointer_count;
   ScrollUpdate? update_details;
@@ -120,7 +122,7 @@ struct TapData {
 struct GestureData {
   gfx.mojom.PointF screen_position;
   gfx.mojom.PointF widget_position;
-  GestureDevice source_device;
+  blink.mojom.GestureDevice source_device;
   bool is_source_touch_event_set_non_blocking;
   PointerType primary_pointer_type;
   int32 unique_touch_event_id;
@@ -142,7 +144,7 @@ struct TouchPoint {
 };
 
 struct TouchData {
-  Cancelability cancelable;
+  blink.mojom.DispatchType cancelable;
   bool moved_beyond_slop_region;
   bool touch_start_or_first_move;
   bool hovering;

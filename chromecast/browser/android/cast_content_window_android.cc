@@ -100,11 +100,13 @@ void CastContentWindowAndroid::CreateWindowForWebContents(
 }
 
 void CastContentWindowAndroid::GrantScreenAccess() {
-  NOTIMPLEMENTED();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CastContentWindowAndroid_grantScreenAccess(env, java_window_);
 }
 
 void CastContentWindowAndroid::RevokeScreenAccess() {
-  NOTIMPLEMENTED();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CastContentWindowAndroid_revokeScreenAccess(env, java_window_);
 }
 
 void CastContentWindowAndroid::EnableTouchInput(bool enabled) {

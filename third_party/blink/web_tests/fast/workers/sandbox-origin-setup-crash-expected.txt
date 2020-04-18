@@ -1,0 +1,2 @@
+CONSOLE ERROR: line 3: Content Security Policies delivered via a <meta> element may not contain the sandbox directive.
+PASS if no crash.

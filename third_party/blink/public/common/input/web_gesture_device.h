@@ -26,23 +26,13 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INPUT_WEB_GESTURE_DEVICE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_INPUT_WEB_GESTURE_DEVICE_H_
 
+#include "third_party/blink/public/mojom/input/gesture_event.mojom-shared.h"
+
 namespace blink {
 
-enum class WebGestureDevice {
-  kUninitialized,
-  kTouchpad,
-  kTouchscreen,
-  kSyntheticAutoscroll,
-
-  // This is the device type used when generating synthetic gesture scrolls for
-  // compositor thread scrollbar scrolling. Please refer to
-  // ui::InputHandlerProxy::InjectScrollbarGestureScroll to see how this is
-  // consumed. Explainer:
-  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/Scrolling/ImplScrollbars/dev-diagram.md
-  kScrollbar,
-
-  kMaxValue = kScrollbar,
-};
+// TODO(dtapuska): Eventually remove all usage of this file.
+// Just alias this for now to minimize changes to other files.
+using WebGestureDevice = mojom::GestureDevice;
 
 }  // namespace blink
 

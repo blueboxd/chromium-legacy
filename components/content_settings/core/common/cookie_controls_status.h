@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAGE_INFO_ANDROID_COOKIE_CONTROLS_STATUS_H_
-#define COMPONENTS_PAGE_INFO_ANDROID_COOKIE_CONTROLS_STATUS_H_
+#ifndef COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_COOKIE_CONTROLS_STATUS_H_
+#define COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_COOKIE_CONTROLS_STATUS_H_
 
 // Status of the Cookie controls controller, used by CookieControlsIconView
 // and CookieControlsBubbleView.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.page_info
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.content_settings
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: CookieControlsStatus
 enum class CookieControlsStatus {
   kUninitialized,
@@ -20,4 +20,4 @@ enum class CookieControlsStatus {
   kDisabledForSite,
 };
 
-#endif  // COMPONENTS_PAGE_INFO_ANDROID_COOKIE_CONTROLS_STATUS_H_
+#endif  // COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_COOKIE_CONTROLS_STATUS_H_

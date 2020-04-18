@@ -2570,6 +2570,23 @@ enum WebFeature {
   kRequiredDocumentPolicy = 3230,
   kPerformanceObserverEntryTypesAndBuffered = 3231,
   kPerformanceObserverTypeError = 3232,
+  kImageCaptureWhiteBalanceMode = 3233,
+  kImageCaptureExposureMode = 3234,
+  kImageCaptureFocusMode = 3235,
+  kImageCapturePointsOfInterest = 3236,
+  kImageCaptureExposureCompensation = 3237,
+  kImageCaptureExposureTime = 3238,
+  kImageCaptureColorTemperature = 3239,
+  kImageCaptureIso = 3240,
+  kImageCaptureBrightness = 3241,
+  kImageCaptureContrast = 3242,
+  kImageCaptureSaturation = 3243,
+  kImageCaptureSharpness = 3244,
+  kImageCaptureFocusDistance = 3245,
+  kImageCapturePan = 3246,
+  kImageCaptureTilt = 3247,
+  kImageCaptureZoom = 3248,
+  kImageCaptureTorch = 3249,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

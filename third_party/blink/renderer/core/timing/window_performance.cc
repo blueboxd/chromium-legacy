@@ -334,7 +334,8 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
                                             base::TimeTicks start_time,
                                             base::TimeTicks processing_start,
                                             base::TimeTicks processing_end,
-                                            bool cancelable) {
+                                            bool cancelable,
+                                            Node* target) {
   // |start_time| could be null in some tests that inject input.
   DCHECK(!processing_start.is_null());
   DCHECK(!processing_end.is_null());
@@ -348,7 +349,7 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
   PerformanceEventTiming* entry = PerformanceEventTiming::Create(
       event_type, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(processing_start),
-      MonotonicTimeToDOMHighResTimeStamp(processing_end), cancelable);
+      MonotonicTimeToDOMHighResTimeStamp(processing_end), cancelable, target);
   event_timings_.push_back(entry);
   // Only queue a swap promise when |event_timings_| was empty. All of the
   // elements in |event_timings_| will be processed in a single call of

@@ -739,7 +739,6 @@ TEST(JSONReaderTest, InvalidSanity) {
     JSONReader reader;
     LOG(INFO) << "Sanity test " << i << ": <" << kInvalidJson[i] << ">";
     EXPECT_FALSE(reader.ReadToValue(kInvalidJson[i]));
-    EXPECT_NE(JSONReader::JSON_NO_ERROR, reader.error_code());
     EXPECT_NE("", reader.GetErrorMessage());
   }
 }
@@ -749,7 +748,7 @@ TEST(JSONReaderTest, IllegalTrailingNull) {
   std::string json_string(json, sizeof(json));
   JSONReader reader;
   EXPECT_FALSE(reader.ReadToValue(json_string));
-  EXPECT_EQ(JSONReader::JSON_UNEXPECTED_DATA_AFTER_ROOT, reader.error_code());
+  EXPECT_NE("", reader.GetErrorMessage());
 }
 
 TEST(JSONReaderTest, ASCIIControlCodes) {

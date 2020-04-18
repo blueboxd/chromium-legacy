@@ -182,6 +182,9 @@
         "test_target": "//crypto:crypto_unittests"
       },
       {
+        "args": [
+          "--strip-chrome"
+        ],
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -763,6 +766,9 @@
         }
       },
       {
+        "args": [
+          "--strip-chrome"
+        ],
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
         },

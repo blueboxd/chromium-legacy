@@ -83,8 +83,6 @@
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/browser/ui/webui/settings/search_engines_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_cookies_view_handler.h"
-#include "chrome/browser/ui/webui/settings/settings_localized_strings_provider.h"
-#include "chrome/browser/ui/webui/settings/settings_media_devices_selection_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/tts_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -137,10 +135,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   // This handler is for chrome://os-settings.
   html_source->AddBoolean("isOSSettings", true);
 
-  // Needed for JS code shared between browser and OS settings (for example,
-  // page_visibility.js).
-  html_source->AddBoolean("showOSSettings", true);
-
   html_source->AddBoolean(
       "showParentalControls",
       chromeos::settings::ShouldShowParentalControls(profile));
@@ -160,8 +154,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<::settings::FontHandler>(web_ui));
   AddSettingsPageUIHandler(
       std::make_unique<::settings::LanguagesHandler>(web_ui));
-  AddSettingsPageUIHandler(
-      std::make_unique<::settings::MediaDevicesSelectionHandler>(profile));
   if (chromeos::features::IsSplitSettingsSyncEnabled())
     AddSettingsPageUIHandler(std::make_unique<OSSyncHandler>(profile));
   AddSettingsPageUIHandler(
@@ -241,9 +233,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("search/search.mojom-lite.js",
                                IDR_OS_SETTINGS_SEARCH_MOJOM_LITE_JS);
 
-  // AddOsLocalizedStrings must be added after AddBrowserLocalizedStrings
-  // as repeated keys used by the OS strings should override the same keys
-  // that may be used in the Browser string provider.
   OsSettingsLocalizedStringsProviderFactory::GetForProfile(profile)
       ->AddOsLocalizedStrings(html_source, profile);
 

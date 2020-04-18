@@ -76,7 +76,8 @@ class CORE_EXPORT SecurityContext {
   DISALLOW_NEW();
 
  public:
-  enum SecurityContextType { kLocal, kRemote };
+  // Used only for safety CHECKs.
+  enum SecurityContextType { kWindow, kWorker, kRemoteFrame };
 
   SecurityContext(const SecurityContextInit&, SecurityContextType context_type);
   virtual ~SecurityContext() = default;
@@ -184,7 +185,7 @@ class CORE_EXPORT SecurityContext {
 
   SecureContextMode GetSecureContextMode() const {
     // secure_context_mode_ is not initialized for RemoteSecurityContexts.
-    DCHECK_EQ(context_type_, kLocal);
+    DCHECK_NE(context_type_for_asserts_, kRemoteFrame);
     return secure_context_mode_;
   }
 
@@ -209,7 +210,7 @@ class CORE_EXPORT SecurityContext {
   mojom::blink::InsecureRequestPolicy insecure_request_policy_;
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
   bool require_safe_types_;
-  const SecurityContextType context_type_;
+  const SecurityContextType context_type_for_asserts_;
   Member<Agent> agent_;
   SecureContextMode secure_context_mode_;
   Member<OriginTrialContext> origin_trial_context_;

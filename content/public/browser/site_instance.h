@@ -96,7 +96,7 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // RenderProcessHost (and a new ID).  Note that renderer process crashes leave
   // the current RenderProcessHost (and ID) in place.
   //
-  // For sites that require process-per-site mode (e.g., WebUI), this will
+  // For sites that require process-per-site mode (e.g., NTP), this will
   // ensure only one RenderProcessHost for the site exists within the
   // BrowserContext.
   virtual content::RenderProcessHost* GetProcess() = 0;
@@ -167,8 +167,10 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
 
   // Factory method to get the appropriate SiteInstance for the given URL, in
   // a new BrowsingInstance.  Use this instead of Create when you know the URL,
-  // since it allows special site grouping rules to be applied (for example,
-  // to group chrome-ui pages into the same instance).
+  // since it allows special site grouping rules to be applied (for example, to
+  // obey process-per-site for sites that require it, such as NTP, or to use a
+  // default SiteInstance for sites that don't require a dedicated process on
+  // Android).
   static scoped_refptr<SiteInstance> CreateForURL(
       content::BrowserContext* browser_context,
       const GURL& url);

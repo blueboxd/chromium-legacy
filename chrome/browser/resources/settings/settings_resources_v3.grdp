@@ -24,7 +24,7 @@
            compress="false" type="BINDATA"
            preprocess="true" />
   <include name="IDR_SETTINGS_ABOUT_PAGE_ABOUT_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/about_page/about_page.m.js"
+           file="${root_gen_dir}/chrome/browser/resources/settings/about_page/about_page.js"
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
@@ -147,17 +147,16 @@
            compress="false" type="BINDATA"
            preprocess="true" />
   <if expr="is_win">
-    <include name="IDR_SETTINGS_CHROME_CLEANUP_PROXY_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/chrome_cleanup_page/chrome_cleanup_proxy.m.js"
-             use_base_dir="false"
+    <include name="IDR_SETTINGS_CHROME_CLEANUP_PROXY_JS"
+             file="chrome_cleanup_page/chrome_cleanup_proxy.js"
              compress="false" type="BINDATA" />
-    <include name="IDR_SETTINGS_CHROME_CLEANUP_PAGE_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/chrome_cleanup_page/chrome_cleanup_page.m.js"
+    <include name="IDR_SETTINGS_CHROME_CLEANUP_PAGE_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/chrome_cleanup_page/chrome_cleanup_page.js"
              use_base_dir="false"
              compress="false" type="BINDATA"
              preprocess="true" />
-    <include name="IDR_SETTINGS_CHROME_CLEANUP_ITEMS_TO_REMOVE_LIST_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/chrome_cleanup_page/items_to_remove_list.m.js"
+    <include name="IDR_SETTINGS_CHROME_CLEANUP_ITEMS_TO_REMOVE_LIST_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/chrome_cleanup_page/items_to_remove_list.js"
              use_base_dir="false"
              compress="false" type="BINDATA" />
   </if>
@@ -240,13 +239,12 @@
              use_base_dir="false"
              compress="false" type="BINDATA" />
   </if>
-  <include name="IDR_SETTINGS_DOWNLOADS_BROWSER_PROXY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/downloads_page/downloads_browser_proxy.m.js"
-           use_base_dir="false"
+  <include name="IDR_SETTINGS_DOWNLOADS_PAGE_DOWNLOADS_BROWSER_PROXY_JS"
+           file="downloads_page/downloads_browser_proxy.js"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_DOWNLOADS_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/downloads_page/downloads_page.m.js"
+  <include name="IDR_SETTINGS_DOWNLOADS_PAGE_DOWNLOADS_PAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/downloads_page/downloads_page.js"
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
@@ -444,12 +442,12 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/prefs/pref_util.m.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRINTING_PAGE_CLOUD_PRINTERS_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/printing_page/cloud_printers.m.js"
+  <include name="IDR_SETTINGS_PRINTING_PAGE_CLOUD_PRINTERS_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/printing_page/cloud_printers.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRINTING_PAGE_PRINTING_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/printing_page/printing_page.m.js"
+  <include name="IDR_SETTINGS_PRINTING_PAGE_PRINTING_PAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/printing_page/printing_page.js"
            use_base_dir="false"
            preprocess="true"
            compress="false" type="BINDATA" />
@@ -793,9 +791,8 @@
            compress="false" type="BINDATA"
            preprocess="true" />
   <if expr="not chromeos">
-    <include name="IDR_SETTINGS_PRINTING_PAGE_PRINTING_BROWSER_PROXY_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/printing_page/printing_browser_proxy.m.js"
-             use_base_dir="false"
+    <include name="IDR_SETTINGS_PRINTING_PAGE_PRINTING_BROWSER_PROXY_JS"
+             file="printing_page/printing_browser_proxy.js"
              compress="false" type="BINDATA" />
     <include name="IDR_SETTINGS_SYSTEM_PAGE_BROWSER_PROXY_JS"
              file="system_page/system_page_browser_proxy.js"

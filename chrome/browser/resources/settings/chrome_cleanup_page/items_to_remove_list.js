@@ -2,7 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('settings', function() {
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import '../settings_shared_css.m.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ChromeCleanupProxyImpl} from './chrome_cleanup_proxy.js';
+
   /**
    * For each line in the item list, the text field will be shown in normal
    * style at front of the line. The highlightSuffix will be appended to the end
@@ -12,13 +19,13 @@ cr.define('settings', function() {
    *   highlightSuffix: ?string,
    * }}
    */
-  /* #export */ let ChromeCleanupRemovalListItem;
+  export let ChromeCleanupRemovalListItem;
 
   /**
    * The default number of items to show for files, registry keys and extensions
    * on the detailed view when user-initiated cleanups are enabled.
    */
-  /* #export */ const CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW = 4;
+  export const CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW = 4;
 
   /**
    * @fileoverview
@@ -41,13 +48,15 @@ cr.define('settings', function() {
   Polymer({
     is: 'items-to-remove-list',
 
+    _template: html`{__html_template__}`,
+
     properties: {
       title: {
         type: String,
         value: '',
       },
 
-      /** @type {!Array<settings.ChromeCleanupRemovalListItem>} */
+      /** @type {!Array<ChromeCleanupRemovalListItem>} */
       itemsToShow: {
         type: Array,
         observer: 'updateVisibleState_',
@@ -65,7 +74,7 @@ cr.define('settings', function() {
       /**
        * The first |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW| items of |itemsToShow|
        * if the list is longer than |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|.
-       * @private {?Array<settings.ChromeCleanupRemovalListItem>}
+       * @private {?Array<ChromeCleanupRemovalListItem>}
        */
       initialItems_: Array,
 
@@ -73,7 +82,7 @@ cr.define('settings', function() {
        * The remaining items to be presented that are not included in
        * |initialItems_|. Items in this list are only shown to the user if
        * |expanded_| is true.
-       * @private {?Array<settings.ChromeCleanupRemovalListItem>}
+       * @private {?Array<ChromeCleanupRemovalListItem>}
        */
       remainingItems_: Array,
 
@@ -105,13 +114,12 @@ cr.define('settings', function() {
      * to the user will contain exactly |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|
      *    elements, and the last one will be the "show more" link.
      *
-     * @param {!Array<settings.ChromeCleanupRemovalListItem>} itemsToShow
+     * @param {!Array<ChromeCleanupRemovalListItem>} itemsToShow
      */
     updateVisibleState_(itemsToShow) {
       // Start expanded if there are less than
       // |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW| items to show.
-      this.expanded_ =
-          itemsToShow.length <= CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW;
+      this.expanded_ = itemsToShow.length <= CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW;
 
       if (this.expanded_) {
         this.initialItems_ = itemsToShow;
@@ -125,7 +133,7 @@ cr.define('settings', function() {
       this.remainingItems_ =
           itemsToShow.slice(CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW - 1);
 
-      const browserProxy = settings.ChromeCleanupProxyImpl.getInstance();
+      const browserProxy = ChromeCleanupProxyImpl.getInstance();
       browserProxy.getMoreItemsPluralString(this.remainingItems_.length)
           .then(linkText => {
             this.moreItemsLinkText_ = linkText;
@@ -142,7 +150,7 @@ cr.define('settings', function() {
     },
 
     /**
-     * @param {settings.ChromeCleanupRemovalListItem} item
+     * @param {ChromeCleanupRemovalListItem} item
      * @return {boolean} Whether a highlight suffix exists.
      * @private
      */
@@ -150,7 +158,3 @@ cr.define('settings', function() {
       return item.highlightSuffix !== null;
     },
   });
-
-  // #cr_define_end
-  return {ChromeCleanupRemovalListItem, CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW};
-});

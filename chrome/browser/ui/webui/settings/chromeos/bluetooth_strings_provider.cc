@@ -61,7 +61,7 @@ BluetoothStringsProvider::~BluetoothStringsProvider() {
 }
 
 void BluetoothStringsProvider::AddUiStrings(
-    content::WebUIDataSource* html_source) const {
+    content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"bluetoothConnected", IDS_SETTINGS_BLUETOOTH_CONNECTED},
       {"bluetoothConnectedWithBattery",

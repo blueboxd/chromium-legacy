@@ -8,7 +8,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
-import org.chromium.components.page_info.CookieControlsStatus;
+import org.chromium.components.content_settings.CookieControlsStatus;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -32,7 +32,6 @@ public class CookieControlsBridge {
          */
         public void onBlockedCookiesCountChanged(int blockedCookies);
     }
-
     private long mNativeCookieControlsBridge;
     private CookieControlsObserver mObserver;
 

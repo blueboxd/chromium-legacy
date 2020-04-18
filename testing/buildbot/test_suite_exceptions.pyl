@@ -628,6 +628,12 @@
       'android-kitkat-arm-rel', # https://crbug.com/1060245
     ],
     'modifications': {
+      'Android CFI': {
+        'args': [
+          '--exclude-annotation',
+          'Feature=RenderTest', # https://crbug.com/1068294
+        ],
+      },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'shards': 20,

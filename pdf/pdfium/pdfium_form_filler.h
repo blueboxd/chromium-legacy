@@ -69,6 +69,9 @@ class PDFiumFormFiller : public FPDF_FORMFILLINFO, public IPDF_JSPLATFORM {
                                 int zoom_mode,
                                 float* position_array,
                                 int size_of_array);
+  static void Form_DoURIActionWithKeyboardModifier(FPDF_FORMFILLINFO* param,
+                                                   FPDF_BYTESTRING uri,
+                                                   int modifiers);
 
 #if defined(PDF_ENABLE_XFA)
   static void Form_EmailTo(FPDF_FORMFILLINFO* param,

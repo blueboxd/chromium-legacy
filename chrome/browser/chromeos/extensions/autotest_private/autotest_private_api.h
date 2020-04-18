@@ -1201,6 +1201,27 @@ class AutotestPrivateSetWindowBoundsFunction : public ExtensionFunction {
   std::unique_ptr<WindowBoundsChangeObserver> window_bounds_observer_;
 };
 
+class AutotestPrivateStartSmoothnessTrackingFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.startSmoothnessTracking",
+                             AUTOTESTPRIVATE_STARTSMOOTHNESSTRACKING)
+
+ private:
+  ~AutotestPrivateStartSmoothnessTrackingFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateStopSmoothnessTrackingFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.stopSmoothnessTracking",
+                             AUTOTESTPRIVATE_STOPSMOOTHNESSTRACKING)
+
+ private:
+  ~AutotestPrivateStopSmoothnessTrackingFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

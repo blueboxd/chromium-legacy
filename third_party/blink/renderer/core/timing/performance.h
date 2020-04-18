@@ -63,6 +63,7 @@ class ExceptionState;
 class LargestContentfulPaint;
 class LayoutShift;
 class MemoryInfo;
+class Node;
 class PerformanceElementTiming;
 class PerformanceEventTiming;
 class PerformanceMark;
@@ -297,6 +298,9 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
                                    const ResourceResponse&,
                                    const SecurityOrigin&,
                                    ExecutionContext*);
+
+  // Determine whether a given Node can be exposed via a Web Perf API.
+  static bool CanExposeNode(Node*);
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 

@@ -1801,6 +1801,14 @@ void TemplateURLService::ApplyDefaultSearchChange(
 bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
     const TemplateURLData* data,
     DefaultSearchManager::Source source) {
+  // We do not want any sort of reentrancy while changing the default search
+  // engine. This can occur when resolving conflicting entries. In those cases,
+  // it's best to early exit and let the original process finish.
+  if (applying_default_search_engine_change_)
+    return false;
+  base::AutoReset<bool> applying_change(&applying_default_search_engine_change_,
+                                        true);
+
   if (!loaded_) {
     // Set |initial_default_search_provider_| from the preferences. This is
     // mainly so we can hold ownership until we get to the point where the list
@@ -1818,15 +1826,6 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
     default_search_provider_source_ = source;
     return changed;
   }
-
-  // Prevent recursion if we update the value stored in default_search_manager_.
-  // Note that we exclude the case of data == NULL because that could cause a
-  // false positive for recursion when the initial_default_search_provider_ is
-  // NULL due to policy. We'll never actually get recursion with data == NULL.
-  if (source == default_search_provider_source_ && data != nullptr &&
-      TemplateURL::MatchesData(default_search_provider_, data,
-                               search_terms_data()))
-    return false;
 
   // This may be deleted later. Use exclusively for pointer comparison to detect
   // a change.

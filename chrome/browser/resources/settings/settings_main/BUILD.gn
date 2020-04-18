@@ -18,7 +18,7 @@ js_library("settings_main") {
     "..:route.m",
     "..:router.m",
     "..:search_settings.m",
-    "../about_page:about_page.m",
+    "../about_page:about_page",
     "../about_page:about_page_browser_proxy.m",
     "../basic_page:basic_page.m",
     "../settings_page:main_page_behavior.m",

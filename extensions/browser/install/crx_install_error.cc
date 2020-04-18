@@ -4,6 +4,8 @@
 
 #include "extensions/browser/install/crx_install_error.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
 

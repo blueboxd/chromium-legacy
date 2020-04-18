@@ -533,6 +533,10 @@ namespace autotestPrivate {
   };
   callback WindowBoundsCallback = void (SetWindowBoundsResult result);
 
+  // Callback invoked to report the smoothness after StopSmoothnessTracking is
+  // called. |smoothness| is a percentage number between 0 to 100.
+  callback StopSmoothnessTrackingCallback = void (long smoothness);
+
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
     static void initializeEvents();
@@ -994,6 +998,18 @@ namespace autotestPrivate {
         Bounds bounds,
         DOMString displayId,
         WindowBoundsCallback callback);
+
+    // Starts smoothness tracking for a display. If the display id is not
+    // specified, the primary display is used. Otherwise, the display specified
+    // by the display id is used.
+    static void startSmoothnessTracking(optional DOMString displayId,
+                                        VoidCallback callback);
+
+    // Stops smoothness tracking for a display and report the smoothness. If
+    // the display id is not specified, the primary display is used. Otherwise,
+    // the display specified by the display id is used.
+    static void stopSmoothnessTracking(optional DOMString displayId,
+                                       StopSmoothnessTrackingCallback callback);
   };
 
   interface Events {

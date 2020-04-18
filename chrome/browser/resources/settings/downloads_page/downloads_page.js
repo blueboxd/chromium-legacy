@@ -7,8 +7,25 @@
  * 'settings-downloads-page' is the settings page containing downloads
  * settings.
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '../controls/controlled_button.m.js';
+import '../controls/settings_toggle_button.m.js';
+import '../settings_shared_css.m.js';
+
+import {listenOnce} from 'chrome://resources/js/util.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+
+import {DownloadsBrowserProxy, DownloadsBrowserProxyImpl} from './downloads_browser_proxy.js';
+
 Polymer({
   is: 'settings-downloads-page',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [WebUIListenerBehavior, PrefsBehavior],
 
@@ -41,12 +58,12 @@ Polymer({
   ],
   // </if>
 
-  /** @private {?settings.DownloadsBrowserProxy} */
+  /** @private {?DownloadsBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   created() {
-    this.browserProxy_ = settings.DownloadsBrowserProxyImpl.getInstance();
+    this.browserProxy_ = DownloadsBrowserProxyImpl.getInstance();
   },
 
   /** @override */

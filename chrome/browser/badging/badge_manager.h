@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom.h"
 #include "url/gurl.h"
@@ -27,6 +28,19 @@ class RenderProcessHost;
 
 namespace badging {
 class BadgeManagerDelegate;
+
+// Records different types of update badge event.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum UpdateBadgeType {
+  // Set badge to a positive integer value.
+  kSetNumericBadge = 0,
+  // Set badge without value, display a plain dot.
+  kSetFlagBadge = 1,
+  // Clear badge with either navigator.setAppBadge(0)
+  // or navigator.clearAppBadge().
+  kClearBadge = 2,
+};
 
 // The maximum value of badge contents before saturation occurs.
 constexpr uint64_t kMaxBadgeContent = 99u;
@@ -58,8 +72,13 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   // badged.
   base::Optional<BadgeValue> GetBadgeValue(const web_app::AppId& app_id);
 
-  void SetBadgeForTesting(const web_app::AppId& app_id, BadgeValue value);
-  void ClearBadgeForTesting(const web_app::AppId& app_id);
+  void SetBadgeForTesting(
+      const web_app::AppId& app_id,
+      BadgeValue value,
+      ukm::UkmRecorder* test_recorder = ukm::TestUkmRecorder::Get());
+  void ClearBadgeForTesting(
+      const web_app::AppId& app_id,
+      ukm::UkmRecorder* test_recorder = ukm::TestUkmRecorder::Get());
 
  private:
   // The BindingContext of a mojo request. Allows mojo calls to be tied back
@@ -73,7 +92,8 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
     // Gets the list of app IDs to badge, based on the state of this
     // BindingContext.  Returns an empty list when no apps exist for this
     // BindingContext.
-    virtual std::vector<web_app::AppId> GetAppIdsForBadging() const = 0;
+    virtual std::vector<std::tuple<web_app::AppId, GURL>>
+    GetAppIdsAndUrlsForBadging() const = 0;
   };
 
   // The BindingContext for Window execution contexts.
@@ -85,7 +105,8 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
 
     // Returns the AppId that matches the frame's URL.  Returns either 0 or 1
     // AppIds.
-    std::vector<web_app::AppId> GetAppIdsForBadging() const override;
+    std::vector<std::tuple<web_app::AppId, GURL>> GetAppIdsAndUrlsForBadging()
+        const override;
 
    private:
     int process_id_;
@@ -101,7 +122,8 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
 
     // Returns the list of AppIds within the service worker's scope. Returns
     // either 0, 1 or more AppIds.
-    std::vector<web_app::AppId> GetAppIdsForBadging() const override;
+    std::vector<std::tuple<web_app::AppId, GURL>> GetAppIdsAndUrlsForBadging()
+        const override;
 
    private:
     int process_id_;

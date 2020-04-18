@@ -5,7 +5,7 @@
     "VPN": {
         "Host": "terminus.muc",
         "OpenVPN": {
-            "ClientCertPKCS11Id": "1:123456abcdef",
+            "ClientCertPKCS11Id": "123456abcdef",
             "ClientCertType": "PKCS11Id",
             "SaveCredentials": true,
             "Username": "hans"

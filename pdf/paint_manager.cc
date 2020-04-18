@@ -29,24 +29,13 @@ PaintManager::PaintManager(pp::Instance* instance,
                            bool is_always_opaque)
     : instance_(instance),
       client_(client),
-      is_always_opaque_(is_always_opaque),
-      callback_factory_(nullptr),
-      manual_callback_pending_(false),
-      flush_pending_(false),
-      flush_requested_(false),
-      has_pending_resize_(false),
-      graphics_need_to_be_bound_(false),
-      pending_device_scale_(1.0),
-      device_scale_(1.0),
-      in_paint_(false),
-      first_paint_(true),
-      view_size_changed_waiting_for_paint_(false) {
+      is_always_opaque_(is_always_opaque) {
+  DCHECK(instance_);
+  DCHECK(client_);
+
   // Set the callback object outside of the initializer list to avoid a
   // compiler warning about using "this" in an initializer list.
   callback_factory_.Initialize(this);
-
-  // You can not use a NULL client pointer.
-  DCHECK(client);
 }
 
 PaintManager::~PaintManager() = default;
@@ -86,19 +75,11 @@ pp::Size PaintManager::GetNewContextSize(const pp::Size& current_context_size,
   return result;
 }
 
-void PaintManager::Initialize(pp::Instance* instance,
-                              Client* client,
-                              bool is_always_opaque) {
-  DCHECK(!instance_ && !client_);  // Can't initialize twice.
-  instance_ = instance;
-  client_ = client;
-  is_always_opaque_ = is_always_opaque;
-}
-
 void PaintManager::SetSize(const pp::Size& new_size, float device_scale) {
   if (GetEffectiveSize() == new_size &&
-      GetEffectiveDeviceScale() == device_scale)
+      GetEffectiveDeviceScale() == device_scale) {
     return;
+  }
 
   has_pending_resize_ = true;
   pending_size_ = new_size;
@@ -306,12 +287,12 @@ void PaintManager::Flush() {
   // use one device, swap it with another, then swap it back, we won't know
   // that we've already scheduled a Flush on the first device. It's best to not
   // re-use devices in this way.
-  DCHECK(result != PP_ERROR_INPROGRESS);
+  DCHECK_NE(PP_ERROR_INPROGRESS, result);
 
   if (result == PP_OK_COMPLETIONPENDING) {
     flush_pending_ = true;
   } else {
-    DCHECK(result == PP_OK);  // Catch all other errors in debug mode.
+    DCHECK_EQ(PP_OK, result);  // Catch all other errors in debug mode.
   }
 }
 

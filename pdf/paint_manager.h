@@ -50,6 +50,7 @@ class PaintManager {
     pp::ImageData image_data;
     bool flush_now;
   };
+
   class Client {
    public:
     // Paints the given invalid area of the plugin to the given graphics
@@ -104,7 +105,8 @@ class PaintManager {
   // You will need to call SetSize before this class will do anything. Normally
   // you do this from the ViewChanged method of your plugin instance.
   PaintManager(pp::Instance* instance, Client* client, bool is_always_opaque);
-
+  PaintManager(const PaintManager&) = delete;
+  PaintManager& operator=(const PaintManager&) = delete;
   ~PaintManager();
 
   // Returns the size of the graphics context to allocate for a given plugin
@@ -113,12 +115,6 @@ class PaintManager {
   // zooming (which can result in flickering).
   static pp::Size GetNewContextSize(const pp::Size& current_context_size,
                                     const pp::Size& plugin_size);
-
-  // You must call this function before using if you use the 0-arg constructor.
-  // See the constructor for what these arguments mean.
-  void Initialize(pp::Instance* instance,
-                  Client* client,
-                  bool is_always_opaque);
 
   // Sets the size of the plugin. If the size is the same as the previous call,
   // this will be a NOP. If the size has changed, a new device will be
@@ -160,10 +156,6 @@ class PaintManager {
   void ClearTransform();
 
  private:
-  // Disallow copy and assign (these are unimplemented).
-  PaintManager(const PaintManager&);
-  PaintManager& operator=(const PaintManager&);
-
   // Makes sure there is a callback that will trigger a paint at a later time.
   // This will be either a Flush callback telling us we're allowed to generate
   // more data, or, if there's no flush callback pending, a manual call back
@@ -183,12 +175,12 @@ class PaintManager {
   // pending.
   void OnManualCallbackComplete(int32_t);
 
-  pp::Instance* instance_;
+  pp::Instance* const instance_;
 
   // Non-owning pointer. See the constructor.
-  Client* client_;
+  Client* const client_;
 
-  bool is_always_opaque_;
+  const bool is_always_opaque_;
 
   pp::CompletionCallbackFactory<PaintManager> callback_factory_;
 
@@ -199,28 +191,28 @@ class PaintManager {
   PaintAggregator aggregator_;
 
   // See comment for EnsureCallbackPending for more on how these work.
-  bool manual_callback_pending_;
-  bool flush_pending_;
-  bool flush_requested_;
+  bool manual_callback_pending_ = false;
+  bool flush_pending_ = false;
+  bool flush_requested_ = false;
 
   // When we get a resize, we don't bind right away (see SetSize). The
   // has_pending_resize_ tells us that we need to do a resize for the next
   // paint operation. When true, the new size is in pending_size_.
-  bool has_pending_resize_;
-  bool graphics_need_to_be_bound_;
+  bool has_pending_resize_ = false;
+  bool graphics_need_to_be_bound_ = false;
   pp::Size pending_size_;
   pp::Size plugin_size_;
-  float pending_device_scale_;
-  float device_scale_;
+  float pending_device_scale_ = 1.0f;
+  float device_scale_ = 1.0f;
 
   // True iff we're in the middle of a paint.
-  bool in_paint_;
+  bool in_paint_ = false;
 
   // True if we haven't painted the plugin viewport yet.
-  bool first_paint_;
+  bool first_paint_ = true;
 
   // True when the view size just changed and we're waiting for a paint.
-  bool view_size_changed_waiting_for_paint_;
+  bool view_size_changed_waiting_for_paint_ = false;
 };
 
 #endif  // PDF_PAINT_MANAGER_H_

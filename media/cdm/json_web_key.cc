@@ -172,16 +172,15 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set,
     return false;
   }
 
-  std::unique_ptr<base::Value> root(
-      base::JSONReader().ReadToValueDeprecated(jwk_set));
-  if (!root.get() || root->type() != base::Value::Type::DICTIONARY) {
-    DVLOG(1) << "Not valid JSON: " << jwk_set << ", root: " << root.get();
+  base::Optional<base::Value> root = base::JSONReader::Read(jwk_set);
+  if (!root || root->type() != base::Value::Type::DICTIONARY) {
+    DVLOG(1) << "Not valid JSON: " << jwk_set;
     return false;
   }
 
   // Locate the set from the dictionary.
   base::DictionaryValue* dictionary =
-      static_cast<base::DictionaryValue*>(root.get());
+      static_cast<base::DictionaryValue*>(&root.value());
   base::ListValue* list_val = NULL;
   if (!dictionary->GetList(kKeysTag, &list_val)) {
     DVLOG(1) << "Missing '" << kKeysTag
@@ -242,9 +241,8 @@ bool ExtractKeyIdsFromKeyIdsInitData(const std::string& input,
     return false;
   }
 
-  std::unique_ptr<base::Value> root(
-      base::JSONReader().ReadToValueDeprecated(input));
-  if (!root.get() || root->type() != base::Value::Type::DICTIONARY) {
+  base::Optional<base::Value> root = base::JSONReader::Read(input);
+  if (!root || root->type() != base::Value::Type::DICTIONARY) {
     error_message->assign("Not valid JSON: ");
     error_message->append(ShortenTo64Characters(input));
     return false;
@@ -252,7 +250,7 @@ bool ExtractKeyIdsFromKeyIdsInitData(const std::string& input,
 
   // Locate the set from the dictionary.
   base::DictionaryValue* dictionary =
-      static_cast<base::DictionaryValue*>(root.get());
+      static_cast<base::DictionaryValue*>(&root.value());
   base::ListValue* list_val = NULL;
   if (!dictionary->GetList(kKeyIdsTag, &list_val)) {
     error_message->assign("Missing '");
@@ -376,16 +374,15 @@ bool ExtractFirstKeyIdFromLicenseRequest(const std::vector<uint8_t>& license,
     return false;
   }
 
-  std::unique_ptr<base::Value> root(
-      base::JSONReader().ReadToValueDeprecated(license_as_str));
-  if (!root.get() || root->type() != base::Value::Type::DICTIONARY) {
+  base::Optional<base::Value> root = base::JSONReader::Read(license_as_str);
+  if (!root || root->type() != base::Value::Type::DICTIONARY) {
     DVLOG(1) << "Not valid JSON: " << license_as_str;
     return false;
   }
 
   // Locate the set from the dictionary.
   base::DictionaryValue* dictionary =
-      static_cast<base::DictionaryValue*>(root.get());
+      static_cast<base::DictionaryValue*>(&root.value());
   base::ListValue* list_val = NULL;
   if (!dictionary->GetList(kKeyIdsTag, &list_val)) {
     DVLOG(1) << "Missing '" << kKeyIdsTag << "' parameter or not a list";

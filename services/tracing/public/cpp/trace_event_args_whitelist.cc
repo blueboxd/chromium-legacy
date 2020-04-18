@@ -26,6 +26,8 @@ struct WhitelistEntry {
 
 const char* const kScopedBlockingCallAllowedArgs[] = {"file_name",
                                                       "function_name", nullptr};
+const char* const kPeekMessageAllowedArgs[] = {"sent_messages_in_queue",
+                                               nullptr};
 const char* const kFallbackFontAllowedArgs[] = {"font_name",
                                                 "primary_font_name", nullptr};
 const char* const kGetFallbackFontsAllowedArgs[] = {"script", nullptr};
@@ -52,6 +54,8 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "chrome_library_module", nullptr},
     {"__metadata", "stackFrames", nullptr},
     {"__metadata", "typeNames", nullptr},
+    {"base", "MessagePumpForUI::ProcessNextWindowsMessage PeekMessage",
+     kPeekMessageAllowedArgs},
     {"base", "MultiSourceMemoryPressureMonitor::OnMemoryPressureLevelChanged",
      kMemoryPressureEventsAllowedArgs},
     {"base", "ScopedAllowBaseSyncPrimitivesOutsideBlockingScope",

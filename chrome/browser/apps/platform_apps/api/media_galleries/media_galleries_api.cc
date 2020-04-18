@@ -111,7 +111,7 @@ GalleryWatchManager* gallery_watch_manager() {
 // Checks whether the MediaGalleries API is currently accessible (it may be
 // disallowed even if an extension has the requisite permission). Then
 // initializes the MediaGalleriesPreferences
-bool Setup(Profile* profile, std::string* error, base::Closure callback) {
+bool Setup(Profile* profile, std::string* error, base::OnceClosure callback) {
   if (!ChromeSelectFilePolicy::FileSelectDialogsAllowed()) {
     *error =
         std::string(kDisallowedByPolicy) + prefs::kAllowFileSelectionDialogs;
@@ -120,7 +120,7 @@ bool Setup(Profile* profile, std::string* error, base::Closure callback) {
 
   MediaGalleriesPreferences* preferences =
       media_file_system_registry()->GetPreferences(profile);
-  preferences->EnsureInitialized(callback);
+  preferences->EnsureInitialized(std::move(callback));
   return true;
 }
 
@@ -407,8 +407,9 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunAsync() {
 
   return Setup(
       GetProfile(), &error_,
-      base::Bind(&MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit,
-                 this, interactive));
+      base::BindOnce(
+          &MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit, this,
+          interactive));
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit(
@@ -508,7 +509,7 @@ bool MediaGalleriesAddUserSelectedFolderFunction::RunAsync() {
   ::media_galleries::UsageCount(::media_galleries::ADD_USER_SELECTED_FOLDER);
   return Setup(
       GetProfile(), &error_,
-      base::Bind(
+      base::BindOnce(
           &MediaGalleriesAddUserSelectedFolderFunction::OnPreferencesInit,
           this));
 }
@@ -618,9 +619,10 @@ bool MediaGalleriesGetMetadataFunction::RunAsync() {
   if (!options)
     return false;
 
-  return Setup(GetProfile(), &error_,
-               base::Bind(&MediaGalleriesGetMetadataFunction::OnPreferencesInit,
-                          this, options->metadata_type, blob_uuid));
+  return Setup(
+      GetProfile(), &error_,
+      base::BindOnce(&MediaGalleriesGetMetadataFunction::OnPreferencesInit,
+                     this, options->metadata_type, blob_uuid));
 }
 
 void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
@@ -798,8 +800,8 @@ bool MediaGalleriesAddGalleryWatchFunction::RunAsync() {
       g_browser_process->media_file_system_registry()->GetPreferences(
           GetProfile());
   preferences->EnsureInitialized(
-      base::Bind(&MediaGalleriesAddGalleryWatchFunction::OnPreferencesInit,
-                 this, params->gallery_id));
+      base::BindOnce(&MediaGalleriesAddGalleryWatchFunction::OnPreferencesInit,
+                     this, params->gallery_id));
 
   return true;
 }
@@ -873,9 +875,9 @@ bool MediaGalleriesRemoveGalleryWatchFunction::RunAsync() {
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(
           GetProfile());
-  preferences->EnsureInitialized(
-      base::Bind(&MediaGalleriesRemoveGalleryWatchFunction::OnPreferencesInit,
-                 this, params->gallery_id));
+  preferences->EnsureInitialized(base::BindOnce(
+      &MediaGalleriesRemoveGalleryWatchFunction::OnPreferencesInit, this,
+      params->gallery_id));
   return true;
 }
 

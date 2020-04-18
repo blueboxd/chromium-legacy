@@ -55,7 +55,7 @@ const skipEvery = targetMainFps > 0 ? parseInt(60 / targetMainFps) : 0;
 
 const query = window.location.search.substr(1).split('&');
 const shouldJank = query.indexOf('jank') >= 0;
-// Delay the start of the main thread animation by 2 seconds to test the
+// Delay the start of the main thread animation by 1 seconds to test the
 // aggregation of the main and compositor thread throughput.
 const shouldDelay = query.indexOf('delay') >= 0;
 
@@ -72,8 +72,9 @@ var frameCount = 0;
 var startTime;
 
 function animateStep() {
-  if (skipEvery && ++frameCount % skipEvery == 0 &&
-      (new Date() - startTime) >= 1000) {
+  const shouldStart = (skipEvery && ++frameCount % skipEvery == 0) &&
+    (!shouldDelay || (new Date() - startTime) >= 1000);
+  if (shouldStart) {
     if (incrementing) {
       currentValue += valueChange;
       if (currentValue >= maxValue)

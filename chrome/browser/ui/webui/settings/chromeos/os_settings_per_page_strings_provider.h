@@ -52,7 +52,7 @@ class OsSettingsPerPageStringsProvider {
       const OsSettingsPerPageStringsProvider& other) = delete;
 
   // Adds strings to be displayed in the UI via loadTimeData.
-  virtual void AddUiStrings(content::WebUIDataSource* html_source) const = 0;
+  virtual void AddUiStrings(content::WebUIDataSource* html_source) = 0;
 
  protected:
   static base::string16 GetHelpUrlWithBoard(const std::string& original_url);

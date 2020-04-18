@@ -348,7 +348,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       kGeneratedPath, IDR_SETTINGS_SETTINGS_V3_HTML);
 #endif
 
-  AddBrowserLocalizedStrings(html_source, profile, web_ui->GetWebContents());
+  AddLocalizedStrings(html_source, profile, web_ui->GetWebContents());
 
   ManagedUIHandler::Initialize(web_ui, html_source);
 

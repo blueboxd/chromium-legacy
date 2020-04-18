@@ -42,12 +42,6 @@ Polymer({
     /** @private {boolean} Whether the system possesses a lid. */
     hasLid_: Boolean,
 
-    /** @private {number} Current AC idle behavior */
-    currAcIdleBehavior_: Number,
-
-    /** @private {number} Current battery idle behavior */
-    currBatteryIdleBehavior_: Number,
-
     /**
      * List of available dual-role power sources, if enablePowerSettings is on.
      * @private {!Array<!settings.PowerSource>|undefined}
@@ -77,7 +71,10 @@ Polymer({
       computed: 'computePowerSourceName_(powerSources_, lowPowerCharger_)',
     },
 
-    /** @private {Array<!{value: settings.IdleBehavior, name: string}>} */
+    /**
+       @private {Array<!{value: settings.IdleBehavior, name: string, selected:
+           boolean}>}
+     */
     acIdleOptions_: {
       type: Array,
       value() {
@@ -85,7 +82,10 @@ Polymer({
       },
     },
 
-    /** @private {Array<!{value: settings.IdleBehavior, name: string}>} */
+    /**
+       @private {Array<!{value: settings.IdleBehavior, name: string, selected:
+           boolean}>}
+     */
     batteryIdleOptions_: {
       type: Array,
       value() {
@@ -280,31 +280,37 @@ Polymer({
 
   /**
    * @param {!settings.IdleBehavior} idleBehavior
-   * @return {{value: settings.IdleBehavior, name: string}} Idle option
-   *     object that maps to idleBehavior.
+   * @param {!settings.IdleBehavior} currIdleBehavior
+   * @return {{value: settings.IdleBehavior, name: string, selected:boolean }}
+   *     Idle option object that maps to idleBehavior.
    * @private
    */
-  getIdleOption_(idleBehavior) {
+  getIdleOption_(idleBehavior, currIdleBehavior) {
+    const selected = idleBehavior == currIdleBehavior;
     switch (idleBehavior) {
       case settings.IdleBehavior.DISPLAY_OFF_SLEEP:
         return {
           value: idleBehavior,
-          name: loadTimeData.getString('powerIdleDisplayOffSleep')
+          name: loadTimeData.getString('powerIdleDisplayOffSleep'),
+          selected: selected
         };
       case settings.IdleBehavior.DISPLAY_OFF:
         return {
           value: idleBehavior,
-          name: loadTimeData.getString('powerIdleDisplayOff')
+          name: loadTimeData.getString('powerIdleDisplayOff'),
+          selected: selected
         };
       case settings.IdleBehavior.DISPLAY_ON:
         return {
           value: idleBehavior,
-          name: loadTimeData.getString('powerIdleDisplayOn')
+          name: loadTimeData.getString('powerIdleDisplayOn'),
+          selected: selected
         };
       case settings.IdleBehavior.OTHER:
         return {
           value: idleBehavior,
-          name: loadTimeData.getString('powerIdleOther')
+          name: loadTimeData.getString('powerIdleOther'),
+          selected: selected
         };
       default:
         assertNotReached('Unknown IdleBehavior type');
@@ -316,13 +322,15 @@ Polymer({
    * @param {!Array<!settings.IdleBehavior>} batteryIdleBehaviors
    * @private
    */
-  updateIdleOptions_(acIdleBehaviors, batteryIdleBehaviors) {
+  updateIdleOptions_(
+      acIdleBehaviors, batteryIdleBehaviors, currAcIdleBehavior,
+      currBatteryIdleBehavior) {
     this.acIdleOptions_ = acIdleBehaviors.map((idleBehavior) => {
-      return this.getIdleOption_(idleBehavior);
+      return this.getIdleOption_(idleBehavior, currAcIdleBehavior);
     });
 
     this.batteryIdleOptions_ = batteryIdleBehaviors.map((idleBehavior) => {
-      return this.getIdleOption_(idleBehavior);
+      return this.getIdleOption_(idleBehavior, currBatteryIdleBehavior);
     });
   },
 
@@ -334,19 +342,15 @@ Polymer({
   powerManagementSettingsChanged_(powerManagementSettings) {
     this.updateIdleOptions_(
         powerManagementSettings.possibleAcIdleBehaviors || [],
-        powerManagementSettings.possibleBatteryIdleBehaviors || []);
+        powerManagementSettings.possibleBatteryIdleBehaviors || [],
+        powerManagementSettings.currentAcIdleBehavior,
+        powerManagementSettings.currentBatteryIdleBehavior);
     this.acIdleManaged_ = powerManagementSettings.acIdleManaged;
     this.batteryIdleManaged_ = powerManagementSettings.batteryIdleManaged;
     this.hasLid_ = powerManagementSettings.hasLid;
     this.updateLidClosedLabelAndPref_(
         powerManagementSettings.lidClosedBehavior,
         powerManagementSettings.lidClosedControlled);
-    // Make sure that the option is there before we potentially try to select
-    // it.
-    Polymer.dom.flush();
-    this.currAcIdleBehavior_ = powerManagementSettings.currentAcIdleBehavior;
-    this.currBatteryIdleBehavior_ =
-        powerManagementSettings.currentBatteryIdleBehavior;
   },
 
   /**

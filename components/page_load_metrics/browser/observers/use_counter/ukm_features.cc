@@ -106,6 +106,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kTextFragmentAnchorMatchFound,
           WebFeature::kCookieNoSameSite,
           WebFeature::kCookieInsecureAndSameSiteNone,
+          WebFeature::kCookieStoreAPI,
           WebFeature::kDeviceOrientationSecureOrigin,
           WebFeature::kDeviceOrientationAbsoluteSecureOrigin,
           WebFeature::kDeviceMotionSecureOrigin,

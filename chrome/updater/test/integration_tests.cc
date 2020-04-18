@@ -4,6 +4,7 @@
 
 #include "chrome/updater/test/integration_tests.h"
 
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,15 +23,12 @@ class IntegrationTest : public ::testing::Test {
     ExpectClean();
     Clean();
   }
+
+ private:
+  base::test::TaskEnvironment environment_;
 };
 
-// TODO(crbug.com/1063064): Fix the test on Windows.
-#if defined(OS_WIN)
-#define MAYBE_InstallUninstall DISABLED_InstallUninstall
-#else
-#define MAYBE_InstallUninstall InstallUninstall
-#endif
-TEST_F(IntegrationTest, MAYBE_InstallUninstall) {
+TEST_F(IntegrationTest, InstallUninstall) {
   Install();
   ExpectInstalled();
   Uninstall();

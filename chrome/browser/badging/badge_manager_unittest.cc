@@ -15,10 +15,12 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_id.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -71,7 +73,14 @@ class BadgeManagerUnittest : public ::testing::Test {
 };
 
 TEST_F(BadgeManagerUnittest, SetFlagBadgeForApp) {
-  badge_manager()->SetBadgeForTesting(kAppId, base::nullopt);
+  ukm::TestUkmRecorder test_recorder;
+  badge_manager()->SetBadgeForTesting(kAppId, base::nullopt, &test_recorder);
+
+  auto entries =
+      test_recorder.GetEntriesByName(ukm::builders::Badging::kEntryName);
+  ASSERT_EQ(entries.size(), 1u);
+  test_recorder.ExpectEntryMetric(
+      entries[0], ukm::builders::Badging::kUpdateAppBadgeName, kSetFlagBadge);
 
   EXPECT_EQ(1UL, delegate()->set_badges().size());
   EXPECT_EQ(kAppId, delegate()->set_badges().front().first);
@@ -79,9 +88,15 @@ TEST_F(BadgeManagerUnittest, SetFlagBadgeForApp) {
 }
 
 TEST_F(BadgeManagerUnittest, SetBadgeForApp) {
-  badge_manager()->SetBadgeForTesting(kAppId,
-                                      base::make_optional(kBadgeContents));
-
+  ukm::TestUkmRecorder test_recorder;
+  badge_manager()->SetBadgeForTesting(
+      kAppId, base::make_optional(kBadgeContents), &test_recorder);
+  auto entries =
+      test_recorder.GetEntriesByName(ukm::builders::Badging::kEntryName);
+  ASSERT_EQ(entries.size(), 1u);
+  test_recorder.ExpectEntryMetric(entries[0],
+                                  ukm::builders::Badging::kUpdateAppBadgeName,
+                                  kSetNumericBadge);
   EXPECT_EQ(1UL, delegate()->set_badges().size());
   EXPECT_EQ(kAppId, delegate()->set_badges().front().first);
   EXPECT_EQ(kBadgeContents, delegate()->set_badges().front().second);
@@ -122,10 +137,16 @@ TEST_F(BadgeManagerUnittest, SetBadgeForAppAfterClear) {
 }
 
 TEST_F(BadgeManagerUnittest, ClearBadgeForBadgedApp) {
+  ukm::TestUkmRecorder test_recorder;
+
   badge_manager()->SetBadgeForTesting(kAppId,
                                       base::make_optional(kBadgeContents));
-  badge_manager()->ClearBadgeForTesting(kAppId);
-
+  badge_manager()->ClearBadgeForTesting(kAppId, &test_recorder);
+  auto entries =
+      test_recorder.GetEntriesByName(ukm::builders::Badging::kEntryName);
+  ASSERT_EQ(entries.size(), 1u);
+  test_recorder.ExpectEntryMetric(
+      entries[0], ukm::builders::Badging::kUpdateAppBadgeName, kClearBadge);
   EXPECT_EQ(1UL, delegate()->cleared_badges().size());
   EXPECT_EQ(kAppId, delegate()->cleared_badges().front());
 }

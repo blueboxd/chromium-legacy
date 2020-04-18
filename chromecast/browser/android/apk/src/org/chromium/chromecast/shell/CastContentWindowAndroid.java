@@ -11,6 +11,8 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chromecast.base.Controller;
+import org.chromium.chromecast.base.Unit;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -30,6 +32,10 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
     private long mNativeCastContentWindowAndroid;
     private Context mContext;
     private CastWebContentsComponent mComponent;
+
+    private final Controller<Unit> mScreenAccess = new Controller<>();
+    private final Controller<CastWebContentsComponent.StartParams> mStartParams =
+            new Controller<>();
 
     private static int sInstanceId = 1;
 
@@ -55,6 +61,11 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
         // CastWebContentsComponent.
         mComponent = new CastWebContentsComponent(sessionId, this, this, isHeadless,
                 enableTouchInput, isRemoteControlMode, turnOnScreen);
+
+        mScreenAccess.subscribe(x -> mStartParams.subscribe(startParams -> {
+            mComponent.start(startParams);
+            return () -> mComponent.stop(mContext);
+        }));
     }
 
     @SuppressWarnings("unused")
@@ -63,8 +74,22 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
         if (DEBUG) Log.d(TAG, "createWindowForWebContents");
         String appId = CastContentWindowAndroidJni.get().getId(
                 mNativeCastContentWindowAndroid, CastContentWindowAndroid.this);
-        mComponent.start(new CastWebContentsComponent.StartParams(
+        mStartParams.set(new CastWebContentsComponent.StartParams(
                 mContext, webContents, appId, visisbilityPriority));
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void grantScreenAccess() {
+        if (DEBUG) Log.d(TAG, "grantScreenAccess");
+        mScreenAccess.set(Unit.unit());
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void revokeScreenAccess() {
+        if (DEBUG) Log.d(TAG, "revokeScreenAccess");
+        mScreenAccess.reset();
     }
 
     @SuppressWarnings("unused")

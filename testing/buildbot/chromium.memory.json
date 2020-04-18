@@ -792,7 +792,9 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--exclude-annotation",
+          "Feature=RenderTest"
         ],
         "merge": {
           "args": [

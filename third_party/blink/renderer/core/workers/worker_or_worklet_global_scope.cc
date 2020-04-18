@@ -199,7 +199,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
           SecurityContextInit(origin,
                               MakeGarbageCollected<OriginTrialContext>(),
                               agent),
-          SecurityContext::kLocal),
+          SecurityContext::kWorker),
       name_(name),
       parent_devtools_token_(parent_devtools_token),
       worker_clients_(worker_clients),

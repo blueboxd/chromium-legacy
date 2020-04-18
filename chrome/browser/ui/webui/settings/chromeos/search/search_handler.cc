@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/services/local_search_service/local_search_service_impl.h"
-#include "chrome/services/local_search_service/public/mojom/types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {

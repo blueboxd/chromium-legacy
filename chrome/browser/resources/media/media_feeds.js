@@ -213,30 +213,20 @@ class MediaFeedsTableDelegate {
       // Format an array of strings.
       td.textContent = data.join(', ');
     } else if (key == 'live') {
-      // Format LiveDetails.
-      td.textContent = 'Live';
-
-      if (data.startTime) {
-        td.textContent += ' ' +
-            'StartTime=' +
-            convertMojoTimeToJS(
-                /** @type {mojoBase.mojom.Time} */ (data.startTime))
-                .toLocaleString();
-      }
-
-      if (data.endTime) {
-        td.textContent += ' ' +
-            'EndTime=' +
-            convertMojoTimeToJS(
-                /** @type {mojoBase.mojom.Time} */ (data.endTime))
-                .toLocaleString();
-      }
+      td.textContent =
+          formatLiveDetails(/** @type {mediaFeeds.mojom.LiveDetails} */ (data));
     } else if (key == 'tvEpisode') {
       // Format a TV Episode.
       td.textContent = data.name + ' EpisodeNumber=' + data.episodeNumber +
           ' SeasonNumber=' + data.seasonNumber + ' ' +
           formatIdentifiers(/** @type {Array<mediaFeeds.mojom.Identifier>} */ (
-              data.identifiers));
+              data.identifiers))  + ' DurationSecs=' +
+              timeDeltaToSeconds(data.duration);
+      if (data.live) {
+        td.textContent +=
+            ' LiveDetails=' + formatLiveDetails(
+            /** @type {mediaFeeds.mojom.LiveDetails} */ (data.live));
+      }
     } else if (key == 'playNextCandidate') {
       // Format a Play Next Candidate.
       td.textContent = data.name + ' EpisodeNumber=' + data.episodeNumber +
@@ -331,6 +321,33 @@ function formatIdentifiers(mojoIdentifiers) {
   });
 
   return identifiers.join(' ');
+}
+
+/**
+ * Formats a LiveDetails struct for display.
+ * @param {mediaFeeds.mojom.LiveDetails} mojoLiveDetails
+ * @returns {string}
+ */
+function formatLiveDetails(mojoLiveDetails) {
+  let textContent = 'Live';
+
+  if (mojoLiveDetails.startTime) {
+    textContent += ' ' +
+        'StartTime=' +
+        convertMojoTimeToJS(
+            /** @type {mojoBase.mojom.Time} */ (mojoLiveDetails.startTime))
+            .toLocaleString();
+  }
+
+  if (mojoLiveDetails.endTime) {
+    textContent += ' ' +
+        'EndTime=' +
+        convertMojoTimeToJS(
+            /** @type {mojoBase.mojom.Time} */ (mojoLiveDetails.endTime))
+            .toLocaleString();
+  }
+
+  return textContent;
 }
 
 /**

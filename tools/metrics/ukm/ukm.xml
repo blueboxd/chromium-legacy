@@ -1593,6 +1593,27 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Badging">
+  <owner>phillis@chromium.org</owner>
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    Metrics that measure the use of Badging API
+  </summary>
+  <metric name="UpdateAppBadge" enum="UpdateAppBadgeTypes">
+    <summary>
+      Logged when navigator.setAppBadge or navigator.clearAppBadge is called.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="enumeration"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="Blink.FindInPage" singular="True">
   <owner>vmpstr@chromium.org</owner>
   <owner>chrishtr@chromium.org</owner>

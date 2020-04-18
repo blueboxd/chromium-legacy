@@ -318,6 +318,7 @@ crbug.com/1012294 external/wpt/css/css-lists/list-style-type-string-007.html [ P
 
 ### external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-horiz-002.xhtml [ Failure ]
+crbug.com/886592 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-margin-002.html [ Failure ]
 
 ### external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/ib-split/
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/ib-split/emptyspan-1.html [ Failure ]

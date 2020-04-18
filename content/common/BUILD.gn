@@ -571,14 +571,6 @@ mojom("mojo_bindings") {
     {
       types = [
         {
-          mojom = "content.mojom.Button"
-          cpp = "::blink::WebPointerProperties::Button"
-        },
-        {
-          mojom = "content.mojom.Cancelability"
-          cpp = "::blink::WebInputEvent::DispatchType"
-        },
-        {
           mojom = "content.mojom.ContentSecurityPolicy"
           cpp = "::content::ContentSecurityPolicy"
         },
@@ -602,14 +594,6 @@ mojom("mojo_bindings") {
         {
           mojom = "content.mojom.FrameReplicationState"
           cpp = "::content::FrameReplicationState"
-        },
-        {
-          mojom = "content.mojom.GestureDevice"
-          cpp = "::blink::WebGestureDevice"
-        },
-        {
-          mojom = "content.mojom.InertialPhaseState"
-          cpp = "::blink::WebGestureEvent::InertialPhaseState"
         },
         {
           mojom = "content.mojom.InputEventAckSource"
@@ -693,8 +677,6 @@ mojom("mojo_bindings") {
         "//content/public/common/input_event_ack_state.h",
         "//content/public/common/web_preferences.h",
         "//net/base/network_change_notifier.h",
-        "//third_party/blink/public/common/input/web_gesture_device.h",
-        "//third_party/blink/public/common/input/web_gesture_event.h",
         "//third_party/blink/public/common/input/web_input_event.h",
         "//third_party/blink/public/common/input/web_mouse_wheel_event.h",
         "//third_party/blink/public/common/input/web_pointer_properties.h",

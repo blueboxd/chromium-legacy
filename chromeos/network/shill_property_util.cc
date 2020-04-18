@@ -316,24 +316,16 @@ bool IsLoggableShillProperty(const std::string& key) {
   if (!s_skip_properties) {
     s_skip_properties = new std::set<std::string>;
     s_skip_properties->insert(shill::kApnPasswordProperty);
-    s_skip_properties->insert(shill::kEapCaCertNssProperty);
     s_skip_properties->insert(shill::kEapCaCertPemProperty);
     s_skip_properties->insert(shill::kEapCaCertProperty);
-    s_skip_properties->insert(shill::kEapClientCertNssProperty);
-    s_skip_properties->insert(shill::kEapClientCertProperty);
     s_skip_properties->insert(shill::kEapPasswordProperty);
     s_skip_properties->insert(shill::kEapPinProperty);
-    s_skip_properties->insert(shill::kEapPrivateKeyPasswordProperty);
-    s_skip_properties->insert(shill::kEapPrivateKeyProperty);
     s_skip_properties->insert(shill::kL2tpIpsecCaCertPemProperty);
     s_skip_properties->insert(shill::kL2tpIpsecPasswordProperty);
     s_skip_properties->insert(shill::kL2tpIpsecPinProperty);
     s_skip_properties->insert(shill::kL2tpIpsecPskProperty);
     s_skip_properties->insert(shill::kOpenVPNAuthUserPassProperty);
-    s_skip_properties->insert(shill::kOpenVPNCaCertNSSProperty);
     s_skip_properties->insert(shill::kOpenVPNCaCertPemProperty);
-    s_skip_properties->insert(shill::kOpenVPNCaCertProperty);
-    s_skip_properties->insert(shill::kOpenVPNCertProperty);
     s_skip_properties->insert(shill::kOpenVPNExtraCertPemProperty);
     s_skip_properties->insert(shill::kOpenVPNOTPProperty);
     s_skip_properties->insert(shill::kOpenVPNPasswordProperty);

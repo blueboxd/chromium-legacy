@@ -6,9 +6,6 @@
 
 namespace switches {
 
-const char kAlternateAndroidMessagesUrl[] = "alternate-android-messages-url";
-
-const char kAlternateAndroidMessagesInstallUrl[] =
-    "alternate-android-messages-install-url";
+const char kCustomAndroidMessagesDomain[] = "custom-android-messages-domain";
 
 }  // namespace switches

@@ -27,7 +27,7 @@ NullExecutionContext::NullExecutionContext(
               origin_trial_context,
               MakeGarbageCollected<Agent>(v8::Isolate::GetCurrent(),
                                           base::UnguessableToken::Null())),
-          SecurityContext::kLocal),
+          SecurityContext::kWindow),
       scheduler_(scheduler::CreateDummyFrameScheduler()) {
   if (origin_trial_context)
     origin_trial_context->BindExecutionContext(this);

@@ -139,7 +139,7 @@ bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!is_printing_enabled_.GetValue()) {
-    // Reply with NULL query.
+    // Reply with null query.
     OnGetDefaultPrintSettingsReply(nullptr, reply_msg);
     return;
   }
@@ -229,10 +229,18 @@ void PrintingMessageFilter::OnUpdatePrintSettings(int document_cookie,
                                                   base::Value job_settings,
                                                   IPC::Message* reply_msg) {
   if (!is_printing_enabled_.GetValue()) {
-    // Reply with NULL query.
+    // Reply with null query.
     OnUpdatePrintSettingsReply(nullptr, reply_msg);
     return;
   }
+
+  if (!job_settings.is_dict() ||
+      !job_settings.FindIntKey(kSettingPrinterType)) {
+    // Reply with null query.
+    OnUpdatePrintSettingsReply(nullptr, reply_msg);
+    return;
+  }
+
   std::unique_ptr<PrinterQuery> printer_query =
       queue_->PopPrinterQuery(document_cookie);
   if (!printer_query) {

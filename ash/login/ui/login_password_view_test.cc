@@ -199,7 +199,7 @@ TEST_F(LoginPasswordViewTest, CtrlZDisabled) {
   EXPECT_TRUE(is_password_field_empty_);
 }
 
-// Verifies that the password textfield  clear after a delay when the display
+// Verifies that the password textfield clears after a delay when the display
 // password button is shown.
 TEST_F(LoginPasswordViewTest, PasswordAutoClearsAndHides) {
   LoginPasswordView::TestApi test_api(view_);
@@ -227,6 +227,7 @@ TEST_F(LoginPasswordViewTest, PasswordAutoClearsAndHides) {
 
   // Verify hiding timer works; set the password visible first then fire the
   // hiding timer and check it is hidden.
+  generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
   generator->MoveMouseTo(
@@ -238,6 +239,36 @@ TEST_F(LoginPasswordViewTest, PasswordAutoClearsAndHides) {
             ui::TEXT_INPUT_TYPE_PASSWORD);
   // Hide an empty password already hidden and make sure a second fire works.
   hide_timer->Fire();
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(),
+            ui::TEXT_INPUT_TYPE_PASSWORD);
+}
+
+// Verifies that the password textfield hides back when the content changes.
+TEST_F(LoginPasswordViewTest, PasswordHidesAfterTyping) {
+  LoginPasswordView::TestApi test_api(view_);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  // Show the password.
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(),
+            ui::TEXT_INPUT_TYPE_PASSWORD);
+  generator->MoveMouseTo(
+      test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_TEXT);
+
+  // Type and check if the password textfield hides back.
+  generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(),
+            ui::TEXT_INPUT_TYPE_PASSWORD);
+
+  // Click again to show the password.
+  generator->MoveMouseTo(
+      test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_TEXT);
+
+  // Modifies the content programmatically and check it is still triggered.
+  test_api.textfield()->InsertText(base::ASCIIToUTF16("test"));
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
 }

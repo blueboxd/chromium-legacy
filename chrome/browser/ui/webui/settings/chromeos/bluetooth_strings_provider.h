@@ -28,7 +28,7 @@ class BluetoothStringsProvider : public OsSettingsPerPageStringsProvider,
 
  private:
   // OsSettingsPerPageStringsProvider:
-  void AddUiStrings(content::WebUIDataSource* html_source) const override;
+  void AddUiStrings(content::WebUIDataSource* html_source) override;
 
   // device::BluetoothAdapter::Observer:
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,

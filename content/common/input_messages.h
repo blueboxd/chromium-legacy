@@ -59,17 +59,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     content::SyntheticPointerActionParams::Button::BUTTON_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventDispatchType,
                           content::InputEventDispatchType::DISPATCH_TYPE_MAX)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebPointerProperties::Button,
-                              blink::WebPointerProperties::Button::kNoButton,
-                              blink::WebPointerProperties::Button::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPointerProperties::PointerType,
                           blink::WebPointerProperties::PointerType::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGestureDevice,
-                          blink::WebGestureDevice::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebInputEvent::DispatchType,
-                          blink::WebInputEvent::DispatchType::kLastDispatchType)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGestureEvent::InertialPhaseState,
-                          blink::WebGestureEvent::InertialPhaseState::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTouchPoint::State,
                           blink::WebTouchPoint::State::kStateMax)
 IPC_ENUM_TRAITS_MAX_VALUE(

@@ -385,3 +385,26 @@ QUIC_FLAG(bool,
 
 // The divisor that controls how often MAX_STREAMS frames are sent.
 QUIC_FLAG(int32_t, FLAGS_quic_max_streams_window_divisor, 2)
+
+// If true, QUIC BBRv2\'s PROBE_BW mode will not reduce cwnd below
+// BDP+ack_height.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bbr2_avoid_too_low_probe_bw_cwnd,
+          false)
+
+// When true, the 1RTT and 2RTT connection options decrease the number of round
+// trips in BBRv2 STARTUP without a 25% bandwidth increase to 1 or 2 round trips
+// respectively.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bbr2_fewer_startup_round_trips,
+          false)
+
+// If true, remove draining_streams_ from QuicSession.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_deprecate_draining_streams,
+          false)
+
+// If true, break session/stream close loop.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_break_session_stream_close_loop,
+          false)

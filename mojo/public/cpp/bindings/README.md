@@ -1330,10 +1330,6 @@ methods:
   must return a `bool` to indicate whether the incoming data is accepted
   (`true`) or rejected (`false`).
 
-There are other methods a `StructTraits` specialization may define to satisfy
-some less common requirements. See
-[Advanced StructTraits Usage](#Advanced-StructTraits-Usage) for details.
-
 In order to define the mapping for `gfx::Rect`, we want the following
 `StructTraits` specialization, which we'll define in
 `//ui/gfx/geometry/mojo/geometry_mojom_traits.h`:
@@ -1464,7 +1460,6 @@ for details on the above definition and other supported parameters.
 With this extra configuration present, any mojom references to `gfx.mojom.Rect`
 (e.g. for method parameters or struct fields) will be `gfx::Rect` references in
 generated C++ code.
-```
 
 For the Blink variant of bindings, add to the `blink_cpp_typemaps` list instead.
 

@@ -41,9 +41,6 @@ enum NetworkConnectionType;
 struct WebCursor;
 
 [Native]
-enum Button;
-
-[Native]
 enum PointerType;
 
 [Native]
@@ -57,15 +54,6 @@ enum InputEventAckSource;
 
 [Native]
 enum EventType;
-
-[Native]
-enum Cancelability;
-
-[Native]
-enum GestureDevice;
-
-[Native]
-enum InertialPhaseState;
 
 [Native]
 enum TouchState;

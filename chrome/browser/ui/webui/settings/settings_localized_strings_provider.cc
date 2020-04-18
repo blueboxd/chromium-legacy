@@ -2029,9 +2029,9 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
 
 }  // namespace
 
-void AddBrowserLocalizedStrings(content::WebUIDataSource* html_source,
-                                Profile* profile,
-                                content::WebContents* web_contents) {
+void AddLocalizedStrings(content::WebUIDataSource* html_source,
+                         Profile* profile,
+                         content::WebContents* web_contents) {
   AddA11yStrings(html_source);
   AddAboutStrings(html_source, profile);
   AddAutofillStrings(html_source, profile, web_contents);

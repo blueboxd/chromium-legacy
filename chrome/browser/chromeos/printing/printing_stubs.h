@@ -31,6 +31,8 @@ class StubCupsPrintersManager : public CupsPrintersManager {
                         bool is_automatic,
                         PrinterSetupSource source) override {}
   void RecordSetupAbandoned(const Printer& printer) override {}
+  void FetchPrinterStatus(const std::string& printer_id,
+                          PrinterStatusCallback cb) override {}
 };
 
 class StubPrinterConfigurer : public PrinterConfigurer {

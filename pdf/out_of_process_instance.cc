@@ -12,6 +12,7 @@
 #include <list>
 #include <memory>
 
+#include "base/auto_reset.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -1151,6 +1152,7 @@ void OutOfProcessInstance::StopFind() {
 void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,
                                    std::vector<PaintManager::ReadyRect>* ready,
                                    std::vector<pp::Rect>* pending) {
+  base::AutoReset<bool> auto_reset_in_paint(&in_paint_, true);
   if (image_data_.is_null()) {
     DCHECK(plugin_size_.IsEmpty());
     return;
@@ -1214,6 +1216,12 @@ void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,
   }
 
   engine_->PostPaint();
+
+  if (!deferred_invalidates_.empty()) {
+    pp::CompletionCallback callback = callback_factory_.NewCallback(
+        &OutOfProcessInstance::InvalidateAfterPaintDone);
+    pp::Module::Get()->core()->CallOnMainThread(0, callback);
+  }
 }
 
 void OutOfProcessInstance::DidOpen(int32_t result) {
@@ -1302,6 +1310,11 @@ void OutOfProcessInstance::ProposeDocumentLayout(const DocumentLayout& layout) {
 }
 
 void OutOfProcessInstance::Invalidate(const pp::Rect& rect) {
+  if (in_paint_) {
+    deferred_invalidates_.push_back(rect);
+    return;
+  }
+
   pp::Rect offset_rect(rect);
   offset_rect.Offset(available_area_.point());
   paint_manager_.InvalidateRect(offset_rect);
@@ -1694,6 +1707,7 @@ void OutOfProcessInstance::SetTwoUpView(bool enable_two_up_view) {
   engine_->SetTwoUpView(enable_two_up_view);
 }
 
+// static
 std::string OutOfProcessInstance::GetFileNameFromUrl(const std::string& url) {
   // Generate a file name. Unfortunately, MIME type can't be provided, since it
   // requires IO.
@@ -2041,6 +2055,14 @@ void OutOfProcessInstance::HistogramEnumerationDeprecated(
 
 void OutOfProcessInstance::OnPrint(int32_t /*unused_but_required*/) {
   pp::PDF::Print(this);
+}
+
+void OutOfProcessInstance::InvalidateAfterPaintDone(
+    int32_t /*unused_but_required*/) {
+  DCHECK(!in_paint_);
+  for (const pp::Rect& rect : deferred_invalidates_)
+    Invalidate(rect);
+  deferred_invalidates_.clear();
 }
 
 void OutOfProcessInstance::PrintSettings::Clear() {

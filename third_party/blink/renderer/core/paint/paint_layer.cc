@@ -181,6 +181,8 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       descendant_needs_compositing_layer_assignment_(false),
       has_self_painting_layer_descendant_(false),
       needs_reorder_overlay_overflow_controls_(false),
+      static_inline_edge_(InlineEdge::kInlineStart),
+      static_block_edge_(BlockEdge::kBlockStart),
 #if DCHECK_IS_ON()
       layer_list_mutation_allowed_(true),
 #endif

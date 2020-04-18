@@ -169,10 +169,6 @@ class BASE_EXPORT JSONReader {
   // Non-static version of Read() above.
   std::unique_ptr<Value> ReadToValueDeprecated(StringPiece json);
 
-  // Returns the error code if the last call to ReadToValue() failed.
-  // Returns JSON_NO_ERROR otherwise.
-  JsonParseError error_code() const;
-
   // Converts error_code_ to a human-readable string, including line and column
   // numbers if appropriate.
   std::string GetErrorMessage() const;

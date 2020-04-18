@@ -734,7 +734,6 @@ crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-rtl-002.html [ Failure ]
 crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-vertWM-001.html [ Failure ]
 crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-vertWM-002.html [ Failure ]
-crbug.com/886592 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-margin-002.html [ Failure ]
 crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-001.html [ Failure ]
 crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-002.html [ Failure ]
 crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-img-001.html [ Failure ]
@@ -1449,11 +1448,12 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/text/* [ Skip ]
 
 # Flexbox in NG
 
-crbug.com/1060408 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-fallback-justify-content-001.html [ Failure ]
+crbug.com/1066859 external/wpt/css/css-flexbox/position-absolute-009.html [ Failure ]
 
 # Fail in NG flex, pass in legacy flex.
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/quirks-auto-block-size-with-percentage-item.html [ Pass Failure ]
 crbug.com/846557 [ Mac ] virtual/layout_ng_flex_box/css3/flexbox/button.html [ Failure ]
+crbug.com/1066859 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/position-absolute-009.html [ Failure ]
 
 # Fail in both legacy flex and NG flex
 crbug.com/249112 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-005.xht [ Failure ]
@@ -3152,6 +3152,9 @@ crbug.com/1067277 external/wpt/css/css-content/element-replacement-on-replaced-e
 crbug.com/1069300 external/wpt/css/css-pseudo/active-selection-063.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/mathml/relations/css-styling/color-002.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/mathml/relations/css-styling/color-002.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/mathml/relations/css-styling/color-002.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-list-style-image.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-list-style-image.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-list-style-image.html [ Failure ]
@@ -6273,7 +6276,6 @@ virtual/omt-worker-fetch/http/tests/origin_trials/sample-api-script-added-after-
 # Sheriff 2020-01-16
 crbug.com/1042205 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-filter.https.html [ Pass Timeout ]
 crbug.com/1042681 external/wpt/html/cross-origin-embedder-policy/blob.https.html [ Pass Failure ]
-crbug.com/1042694 fast/forms/form-control-with-state-eager-tracing-crashTest.html [ Pass Timeout ]
 crbug.com/1042689 [ Linux ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
 crbug.com/1042689 [ Win ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
 
@@ -6691,6 +6693,9 @@ crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html 
 
 # Sheriff 2020-04-17
 crbug.com/1071909 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw.https.html [ Pass Timeout ]
+
+crbug.com/1042694 fast/forms/form-control-with-state-eager-tracing-crashTest.html [ Pass Timeout ]
+crbug.com/1042694 virtual/form-controls-refresh-disabled/fast/forms/form-control-with-state-eager-tracing-crashTest.html [ Pass Timeout ]
 
 # QUIC reordered versions to prefer IETF QUIC
 crbug.com/1070747 external/wpt/webrtc-quic/* [ Skip ]

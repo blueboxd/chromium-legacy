@@ -71,7 +71,7 @@ SecurityContext::SecurityContext(const SecurityContextInit& init,
       insecure_request_policy_(
           mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone),
       require_safe_types_(false),
-      context_type_(context_type),
+      context_type_for_asserts_(context_type),
       agent_(init.GetAgent()),
       secure_context_mode_(init.GetSecureContextMode()),
       origin_trial_context_(init.GetOriginTrialContext()),
@@ -90,13 +90,21 @@ void SecurityContext::SetSecurityOrigin(
   CHECK(security_origin);
   // The purpose of this check is to ensure that the SecurityContext does not
   // change after script has executed in the ExecutionContext. If this is a
-  // RemoteSecurityContext, then there is no local script execution, so it is
-  // safe for the SecurityOrigin to change.
-  // Exempting null ExecutionContexts is also necessary because RemoteFrames and
-  // RemoteSecurityContexts do not change when a cross-origin navigation happens
-  // remotely.
-  CHECK(context_type_ == kRemote || !security_origin_ ||
-        security_origin_->CanAccess(security_origin.get()));
+  // RemoteSecurityContext, then there is no local script execution and the
+  // context is permitted to represent multiple origins over its lifetime, so it
+  // is safe for the SecurityOrigin to change.
+  // NOTE: A worker may need to make its origin opaque after the main worker
+  // script is loaded if the worker is origin-sandboxed. Specifically exempt
+  // that transition. See https://crbug.com/1068008. It would be great if we
+  // could get rid of this exemption.
+  bool is_worker_transition_to_opaque =
+      context_type_for_asserts_ == kWorker &&
+      IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin) &&
+      security_origin->IsOpaque() &&
+      security_origin->GetOriginOrPrecursorOriginIfOpaque() == security_origin_;
+  CHECK(context_type_for_asserts_ == kRemoteFrame || !security_origin_ ||
+        security_origin_->CanAccess(security_origin.get()) ||
+        is_worker_transition_to_opaque);
   security_origin_ = std::move(security_origin);
 }
 

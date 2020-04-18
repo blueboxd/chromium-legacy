@@ -19,6 +19,9 @@ namespace app_list {
 class AppLaunchEventLogger;
 }  // namespace app_list
 
+namespace badging {
+class BadgeManager;
+}  // namespace badging
 namespace ukm {
 
 const base::Feature kUkmAppLogging{"UkmAppLogging",
@@ -29,6 +32,8 @@ class AppSourceUrlRecorder {
   friend class AppSourceUrlRecorderTest;
 
   friend class app_list::AppLaunchEventLogger;
+
+  friend class badging::BadgeManager;
 
   // TODO(lukasza): https://crbug.com/920638: Remove the friendship declaration
   // below, after gathering sufficient data for the

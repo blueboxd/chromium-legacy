@@ -427,12 +427,12 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
       return;
     }
 
-    // For composite devices Windows loads the usbccgp driver, which creates
-    // child device notes for each of the device functions. It is these device
-    // paths for these children which must be opened in order to communicate
-    // with the WinUSB driver.
     std::vector<std::pair<int, base::string16>> function_paths;
     if (base::EqualsCaseInsensitiveASCII(service_name, L"usbccgp")) {
+      // For composite devices Windows loads the usbccgp driver, which creates
+      // child device nodes for each of the device functions. It is these device
+      // paths for these children which must be opened in order to communicate
+      // with the WinUSB driver.
       for (const base::string16& instance_id : child_instance_ids) {
         int interface_number = GetInterfaceNumber(instance_id);
         if (interface_number != -1) {
@@ -440,6 +440,10 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
                                       GetWinUsbDevicePath(instance_id));
         }
       }
+    } else if (base::EqualsCaseInsensitiveASCII(service_name, L"winusb")) {
+      // A non-composite device has a single device node for all interfaces as
+      // it only has a single function.
+      function_paths.emplace_back(0, device_path);
     }
 
     base::string16& hub_path = hub_paths_[parent_instance_id];

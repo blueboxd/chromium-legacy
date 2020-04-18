@@ -37,6 +37,7 @@
 
 #include "base/time/time.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/mojom/input/input_event.mojom-shared.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -265,23 +266,7 @@ class BLINK_COMMON_EXPORT WebInputEvent {
     kNoModifiers = 0,
   };
 
-  // Indicates whether the browser needs to block on the ACK result for
-  // this event, and if not, why (for metrics/diagnostics purposes).
-  // These values are direct mappings of the values in PlatformEvent
-  // so the values can be cast between the enumerations. static_asserts
-  // checking this are in web/WebInputEventConversion.cpp.
-  enum DispatchType {
-    // Event can be canceled.
-    kBlocking,
-    // Event can not be canceled.
-    kEventNonBlocking,
-    // All listeners are passive; not cancelable.
-    kListenersNonBlockingPassive,
-    // This value represents a state which would have normally blocking
-    // but was forced to be non-blocking during fling; not cancelable.
-    kListenersForcedNonBlockingDueToFling,
-    kLastDispatchType = kListenersForcedNonBlockingDueToFling,
-  };
+  using DispatchType = mojom::DispatchType;
 
   // The rail mode for a wheel event specifies the axis on which scrolling is
   // expected to stick. If this axis is set to Free, then scrolling is not

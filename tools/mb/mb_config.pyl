@@ -1470,6 +1470,9 @@
 
     'chromeos_betty-pi-arc_cfi_thin_lto_official': [
       'chromeos_device', 'betty-pi-arc', 'cfi_full', 'thin_lto', 'official',
+      # The CrOS ebuild pins concurrent_links to just 1 on LTO builds.
+      # Experiment with bumping it up on these builders.
+      'chromeos_lto_link_jobs',
     ],
 
     'chromeos_betty-pi-arc_include_unwind_tables_official': [
@@ -2334,6 +2337,10 @@
     'chromeos_device': {
       'gn_args': 'is_chromeos_device=true ozone_platform_headless=true',
       'mixins': ['goma'],
+    },
+
+    'chromeos_lto_link_jobs': {
+      'gn_args': 'concurrent_links=2',
     },
 
     'chromeos_with_codecs': {

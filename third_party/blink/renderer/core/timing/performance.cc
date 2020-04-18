@@ -1021,6 +1021,19 @@ DOMHighResTimeStamp Performance::now() const {
   return MonotonicTimeToDOMHighResTimeStamp(unified_clock_->NowTicks());
 }
 
+// static
+bool Performance::CanExposeNode(Node* node) {
+  if (!node || !node->isConnected() || node->IsInShadowTree())
+    return false;
+
+  // Do not expose |node| when the document is not 'fully active'.
+  const Document& document = node->GetDocument();
+  if (!document.IsActive() || !document.GetFrame())
+    return false;
+
+  return true;
+}
+
 ScriptValue Performance::toJSONForBinding(ScriptState* script_state) const {
   V8ObjectBuilder result(script_state);
   BuildJSONValue(result);

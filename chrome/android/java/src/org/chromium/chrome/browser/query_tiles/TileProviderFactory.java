@@ -31,6 +31,12 @@ public class TileProviderFactory {
         sTileProvider = provider;
     }
 
+    // TODO(shaktisahu): Remove this function once we have the real provider.
+    public static void setFakeTileProvider(FakeTileProvider provider) {
+        if (sTileProvider != null) return;
+        sTileProvider = provider;
+    }
+
     @NativeMethods
     interface Natives {
         TileProvider getForProfile(Profile profile);

@@ -427,6 +427,10 @@
       },
       'cros_browser_sanity_test': {},
       'disk_usage_tast_test': {
+        "args": [
+          # Stripping gives more accurate disk usage data.
+          "--strip-chrome",
+        ],
         'merge': {
           'script': '//tools/perf/process_perf_results.py',
         },

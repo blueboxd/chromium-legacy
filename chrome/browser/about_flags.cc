@@ -34,6 +34,7 @@
 #include "cc/base/features.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_switches.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -2076,6 +2077,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"use_messages_staging_url", flag_descriptions::kUseMessagesStagingUrlName,
      flag_descriptions::kUseMessagesStagingUrlDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kUseMessagesStagingUrl)},
+    {"use-custom-messages-domain",
+     flag_descriptions::kUseCustomMessagesDomainName,
+     flag_descriptions::kUseCustomMessagesDomainDescription, kOsCrOS,
+     ORIGIN_LIST_VALUE_TYPE(switches::kCustomAndroidMessagesDomain, "")},
     {"disable-cancel-all-touches",
      flag_descriptions::kDisableCancelAllTouchesName,
      flag_descriptions::kDisableCancelAllTouchesDescription, kOsCrOS,
@@ -5258,6 +5263,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableStickyPaymentsBubble)},
+
+    {"align-font-display-auto-lcp",
+     flag_descriptions::kAlignFontDisplayAutoTimeoutWithLCPGoalName,
+     flag_descriptions::kAlignFontDisplayAutoTimeoutWithLCPGoalDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         blink::features::kAlignFontDisplayAutoTimeoutWithLCPGoal)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

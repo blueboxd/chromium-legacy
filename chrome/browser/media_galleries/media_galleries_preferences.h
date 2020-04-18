@@ -188,7 +188,7 @@ class MediaGalleriesPreferences
   // This call also ensures that the StorageMonitor is initialized.
   // Note for unit tests: This requires an active TaskEnvironment and
   // EnsureMediaDirectoriesExists instance to complete reliably.
-  void EnsureInitialized(base::Closure callback);
+  void EnsureInitialized(base::OnceClosure callback);
 
   // Return true if the storage monitor has already been initialized.
   bool IsInitialized() const;
@@ -348,7 +348,7 @@ class MediaGalleriesPreferences
   void SetExtensionPrefsForTesting(extensions::ExtensionPrefs* extension_prefs);
 
   bool initialized_;
-  std::vector<base::Closure> on_initialize_callbacks_;
+  std::vector<base::OnceClosure> on_initialize_callbacks_;
 
   // The profile that owns |this|.
   Profile* profile_;

@@ -20,7 +20,8 @@ class CORE_EXPORT PerformanceEventTiming final : public PerformanceEntry {
                                         DOMHighResTimeStamp start_time,
                                         DOMHighResTimeStamp processing_start,
                                         DOMHighResTimeStamp processing_end,
-                                        bool cancelable);
+                                        bool cancelable,
+                                        Node* target);
 
   static PerformanceEventTiming* CreateFirstInputTiming(
       PerformanceEventTiming* entry);
@@ -30,7 +31,8 @@ class CORE_EXPORT PerformanceEventTiming final : public PerformanceEntry {
                          DOMHighResTimeStamp start_time,
                          DOMHighResTimeStamp processing_start,
                          DOMHighResTimeStamp processing_end,
-                         bool cancelable);
+                         bool cancelable,
+                         Node* target);
   ~PerformanceEventTiming() override;
 
   AtomicString entryType() const override { return entry_type_; }
@@ -40,6 +42,8 @@ class CORE_EXPORT PerformanceEventTiming final : public PerformanceEntry {
 
   DOMHighResTimeStamp processingStart() const;
   DOMHighResTimeStamp processingEnd() const;
+
+  Node* target() const;
 
   void SetDuration(double duration);
 
@@ -52,6 +56,7 @@ class CORE_EXPORT PerformanceEventTiming final : public PerformanceEntry {
   DOMHighResTimeStamp processing_start_;
   DOMHighResTimeStamp processing_end_;
   bool cancelable_;
+  WeakMember<Node> target_;
 };
 }  // namespace blink
 

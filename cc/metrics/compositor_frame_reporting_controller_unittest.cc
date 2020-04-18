@@ -108,11 +108,13 @@ class CompositorFrameReportingControllerTest : public testing::Test {
     if (!reporting_controller_.reporters()
              [CompositorFrameReportingController::PipelineStage::kActivate])
       SimulateActivate();
-    CHECK(reporting_controller_.reporters()
-              [CompositorFrameReportingController::PipelineStage::kActivate]);
-    reporting_controller_.DidSubmitCompositorFrame(frame_token, current_id_,
-                                                   last_activated_id_,
-                                                   std::move(events_metrics));
+    auto& reporter =
+        reporting_controller_.reporters()
+            [CompositorFrameReportingController::PipelineStage::kActivate];
+    DCHECK(reporter);
+    reporting_controller_.DidSubmitCompositorFrame(
+        frame_token, reporter->frame_id_, last_activated_id_,
+        std::move(events_metrics));
   }
 
   void SimulatePresentCompositorFrame() {
@@ -510,9 +512,6 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted2) {
   viz::BeginFrameId current_id_2(1, 2);
   viz::BeginFrameArgs args_2 = SimulateBeginFrameArgs(current_id_2);
 
-  viz::BeginFrameId current_id_3(1, 3);
-  viz::BeginFrameArgs args_3 = SimulateBeginFrameArgs(current_id_3);
-
   reporting_controller_.WillBeginImplFrame(args_1);
   reporting_controller_.OnFinishImplFrame(current_id_1);
   reporting_controller_.WillBeginMainFrame(args_1);
@@ -543,44 +542,6 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted2) {
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.SubmitCompositorFrameToPresentationCompositorFrame",
       2);
-  reporting_controller_.DidSubmitCompositorFrame(2, current_id_2, current_id_1,
-                                                 {});
-  reporting_controller_.DidPresentCompositorFrame(2, details);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 2);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.SendBeginMainFrameToCommit", 2);
-  histogram_tester.ExpectTotalCount("CompositorLatency.Commit", 1);
-  histogram_tester.ExpectTotalCount("CompositorLatency.EndCommitToActivation",
-                                    1);
-  histogram_tester.ExpectTotalCount("CompositorLatency.Activation", 1);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.EndActivateToSubmitCompositorFrame", 2);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.SubmitCompositorFrameToPresentationCompositorFrame",
-      2);
-  reporting_controller_.WillBeginImplFrame(args_3);
-  reporting_controller_.OnFinishImplFrame(current_id_3);
-  reporting_controller_.DidSubmitCompositorFrame(3, current_id_3, current_id_1,
-                                                 {});
-  reporting_controller_.DidPresentCompositorFrame(3, details);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 3);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.SendBeginMainFrameToCommit", 2);
-  histogram_tester.ExpectTotalCount("CompositorLatency.Commit", 1);
-  histogram_tester.ExpectTotalCount("CompositorLatency.EndCommitToActivation",
-                                    1);
-  histogram_tester.ExpectTotalCount("CompositorLatency.Activation", 1);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.EndActivateToSubmitCompositorFrame", 3);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.SubmitCompositorFrameToPresentationCompositorFrame",
-      3);
 }
 
 TEST_F(CompositorFrameReportingControllerTest, LongMainFrame) {
@@ -744,42 +705,33 @@ TEST_F(CompositorFrameReportingControllerTest, BlinkBreakdown) {
   blink_breakdown->composite_commit = base::TimeDelta::FromMicroseconds(2);
   blink_breakdown->update_layers = base::TimeDelta::FromMicroseconds(1);
 
-  SimulateActivate();
   SimulateCommit(std::move(blink_breakdown));
+  SimulateActivate();
   SimulatePresentCompositorFrame();
 
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.SendBeginMainFrameToCommit", 1);
   histogram_tester.ExpectUniqueSample(
-      "CompositorLatency.SendBeginMainFrameToCommit.HandleInputEvents",
-      base::TimeDelta::FromMicroseconds(10).InMilliseconds(), 1);
+      "CompositorLatency.SendBeginMainFrameToCommit.HandleInputEvents", 10, 1);
   histogram_tester.ExpectUniqueSample(
-      "CompositorLatency.SendBeginMainFrameToCommit.Animate",
-      base::TimeDelta::FromMicroseconds(9).InMilliseconds(), 1);
+      "CompositorLatency.SendBeginMainFrameToCommit.Animate", 9, 1);
   histogram_tester.ExpectUniqueSample(
-      "CompositorLatency.SendBeginMainFrameToCommit.StyleUpdate",
-      base::TimeDelta::FromMicroseconds(8).InMilliseconds(), 1);
+      "CompositorLatency.SendBeginMainFrameToCommit.StyleUpdate", 8, 1);
   histogram_tester.ExpectUniqueSample(
-      "CompositorLatency.SendBeginMainFrameToCommit.LayoutUpdate",
-      base::TimeDelta::FromMicroseconds(7).InMilliseconds(), 1);
+      "CompositorLatency.SendBeginMainFrameToCommit.LayoutUpdate", 7, 1);
   histogram_tester.ExpectUniqueSample(
-      "CompositorLatency.SendBeginMainFrameToCommit.Prepaint",
-      base::TimeDelta::FromMicroseconds(6).InMilliseconds(), 1);
+      "CompositorLatency.SendBeginMainFrameToCommit.Prepaint", 6, 1);
   histogram_tester.ExpectUniqueSample(
-      "CompositorLatency.SendBeginMainFrameToCommit.Composite",
-      base::TimeDelta::FromMicroseconds(5).InMilliseconds(), 1);
+      "CompositorLatency.SendBeginMainFrameToCommit.Composite", 5, 1);
   histogram_tester.ExpectUniqueSample(
-      "CompositorLatency.SendBeginMainFrameToCommit.Paint",
-      base::TimeDelta::FromMicroseconds(4).InMilliseconds(), 1);
+      "CompositorLatency.SendBeginMainFrameToCommit.Paint", 4, 1);
   histogram_tester.ExpectUniqueSample(
-      "CompositorLatency.SendBeginMainFrameToCommit.ScrollingCoordinator",
-      base::TimeDelta::FromMicroseconds(3).InMilliseconds(), 1);
+      "CompositorLatency.SendBeginMainFrameToCommit.ScrollingCoordinator", 3,
+      1);
   histogram_tester.ExpectUniqueSample(
-      "CompositorLatency.SendBeginMainFrameToCommit.CompositeCommit",
-      base::TimeDelta::FromMicroseconds(2).InMilliseconds(), 1);
+      "CompositorLatency.SendBeginMainFrameToCommit.CompositeCommit", 2, 1);
   histogram_tester.ExpectUniqueSample(
-      "CompositorLatency.SendBeginMainFrameToCommit.UpdateLayers",
-      base::TimeDelta::FromMicroseconds(1).InMilliseconds(), 1);
+      "CompositorLatency.SendBeginMainFrameToCommit.UpdateLayers", 1, 1);
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.SendBeginMainFrameToCommit.BeginMainSentToStarted", 1);
 }

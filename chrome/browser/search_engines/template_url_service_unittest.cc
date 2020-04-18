@@ -1774,6 +1774,49 @@ TEST_F(TemplateURLServiceTest, CheckEnginesWithSameKeywords) {
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("common_keyword")));
 }
 
+// Verifies that we don't have reentrant behavior when resolving default search
+// provider keyword conflicts. crbug.com/1031506
+TEST_F(TemplateURLServiceTest, DefaultSearchProviderKeywordConflictReentrancy) {
+  // Merely loading should increment the count once.
+  test_util()->VerifyLoad();
+  EXPECT_EQ(1, test_util()->dsp_set_to_google_callback_count());
+
+  // We use a fake {google:baseURL} to take advantage of our existing
+  // dsp_change_callback mechanism. The actual behavior we are testing is common
+  // to all search providers - this is just for testing convenience.
+  //
+  // Add two of these with different keywords. Note they should be replaceable,
+  // so that we can trigger the reentrant behavior.
+  TemplateURL* google_1 =
+      AddKeywordWithDate("name1", "key1", "{google:baseURL}/{searchTerms}",
+                         std::string(), std::string(), std::string(), true);
+  TemplateURL* google_2 =
+      AddKeywordWithDate("name2", "key2", "{google:baseURL}/{searchTerms}",
+                         std::string(), std::string(), std::string(), true);
+  ASSERT_TRUE(google_1);
+  ASSERT_TRUE(google_2);
+  EXPECT_NE(google_1->data().sync_guid, google_2->data().sync_guid);
+
+  // Set the DSE to google_1, and see that we've changed the DSP twice now.
+  model()->SetUserSelectedDefaultSearchProvider(google_1);
+  EXPECT_EQ(2, test_util()->dsp_set_to_google_callback_count());
+
+  // Set the DSE to the google_2 (with a different GUID), but with a keyword
+  // that conflicts with the google_1. This should remove google_1.
+  TemplateURLData google_2_data_copy = google_2->data();
+  google_2_data_copy.SetKeyword(base::ASCIIToUTF16("key1"));
+  TemplateURL google_2_copy(google_2_data_copy);
+  model()->SetUserSelectedDefaultSearchProvider(&google_2_copy);
+
+  // Verify that we only changed the DSP one additional time for a total of 3.
+  // If this fails with a larger count, likely the code is doing something
+  // reentrant or thrashing the DSP in other ways that can cause undesirable
+  // behavior.
+  EXPECT_EQ(3, test_util()->dsp_set_to_google_callback_count())
+      << "A failure here means you're likey getting undesired reentrant "
+         "behavior on ApplyDefaultSearchChangeNoMetrics.";
+}
+
 TEST_F(TemplateURLServiceTest, ConflictingReplaceableEnginesShouldOverwrite) {
   test_util()->VerifyLoad();
   // Add 2 replaceable user engine with different keywords.

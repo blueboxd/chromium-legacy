@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
-#include "components/page_info/android/cookie_controls_status.h"
+#include "components/content_settings/core/common/cookie_controls_status.h"
 #include "ui/views/bubble/tooltip_icon.h"
 #include "ui/views/controls/button/button.h"
 

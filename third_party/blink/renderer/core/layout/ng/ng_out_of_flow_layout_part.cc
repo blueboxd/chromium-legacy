@@ -37,13 +37,15 @@ bool IsAnonymousContainer(const LayoutObject* layout_object) {
 // paint-layer.
 void SaveStaticPositionForLegacy(const LayoutBox* layout_box,
                                  const LayoutObject* container,
-                                 const LogicalOffset& offset) {
+                                 const NGLogicalStaticPosition& position) {
   const LayoutObject* parent = layout_box->Parent();
   if (parent == container ||
       (parent->IsLayoutInline() && parent->ContainingBlock() == container)) {
     DCHECK(layout_box->Layer());
-    layout_box->Layer()->SetStaticInlinePosition(offset.inline_offset);
-    layout_box->Layer()->SetStaticBlockPosition(offset.block_offset);
+    layout_box->Layer()->SetStaticInlinePosition(position.offset.inline_offset);
+    layout_box->Layer()->SetStaticBlockPosition(position.offset.block_offset);
+    layout_box->Layer()->SetStaticInlineEdge(position.inline_edge);
+    layout_box->Layer()->SetStaticBlockEdge(position.block_edge);
   }
 }
 
@@ -442,7 +444,7 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
       } else {
         SaveStaticPositionForLegacy(layout_box,
                                     container_builder_->GetLayoutObject(),
-                                    candidate.static_position.offset);
+                                    candidate.static_position);
         container_builder_->AddOutOfFlowDescendant(candidate);
       }
     }

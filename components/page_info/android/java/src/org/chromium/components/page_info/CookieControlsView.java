@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
 
 import org.chromium.base.Callback;
+import org.chromium.components.content_settings.CookieControlsStatus;
 
 /**
  * View showing a toggle and a description for third-party cookie blocking for a site.

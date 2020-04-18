@@ -4,6 +4,7 @@
 
 #include "chrome/browser/badging/badge_manager.h"
 
+#include <tuple>
 #include <utility>
 
 #include "base/i18n/number_formatting.h"
@@ -17,10 +18,13 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "components/ukm/app_source_url_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "services/metrics/public/cpp/delegating_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -96,11 +100,27 @@ base::Optional<BadgeManager::BadgeValue> BadgeManager::GetBadgeValue(
 }
 
 void BadgeManager::SetBadgeForTesting(const web_app::AppId& app_id,
-                                      BadgeValue value) {
+                                      BadgeValue value,
+                                      ukm::UkmRecorder* test_recorder) {
+  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+  if (value == base::nullopt) {
+    ukm::builders::Badging(source_id)
+        .SetUpdateAppBadge(kSetFlagBadge)
+        .Record(test_recorder);
+  } else {
+    ukm::builders::Badging(source_id)
+        .SetUpdateAppBadge(kSetNumericBadge)
+        .Record(test_recorder);
+  }
   UpdateBadge(app_id, value);
 }
 
-void BadgeManager::ClearBadgeForTesting(const web_app::AppId& app_id) {
+void BadgeManager::ClearBadgeForTesting(const web_app::AppId& app_id,
+                                        ukm::UkmRecorder* test_recorder) {
+  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+  ukm::builders::Badging(source_id)
+      .SetUpdateAppBadge(kClearBadge)
+      .Record(test_recorder);
   UpdateBadge(app_id, base::nullopt);
 }
 
@@ -125,39 +145,65 @@ void BadgeManager::SetBadge(blink::mojom::BadgeValuePtr mojo_value) {
     return;
   }
 
-  const std::vector<web_app::AppId> app_ids =
-      receivers_.current_context()->GetAppIdsForBadging();
+  const std::vector<std::tuple<web_app::AppId, GURL>> app_ids_and_urls =
+      receivers_.current_context()->GetAppIdsAndUrlsForBadging();
 
   // Convert the mojo badge representation into a BadgeManager::BadgeValue.
   BadgeValue value = mojo_value->is_flag()
                          ? base::nullopt
                          : base::make_optional(mojo_value->get_number());
 
-  for (const auto& app_id : app_ids)
-    UpdateBadge(app_id, base::make_optional(value));
+  // ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+  ukm::UkmRecorder* recorder = ukm::UkmRecorder::Get();
+  for (const auto& app : app_ids_and_urls) {
+    GURL url = std::get<1>(app);
+    // The app's start_url is used to identify the app
+    // for recording badging usage per app.
+    ukm::SourceId source_id = ukm::AppSourceUrlRecorder::GetSourceIdForPWA(url);
+    if (value == base::nullopt) {
+      ukm::builders::Badging(source_id)
+          .SetUpdateAppBadge(kSetFlagBadge)
+          .Record(recorder);
+    } else {
+      ukm::builders::Badging(source_id)
+          .SetUpdateAppBadge(kSetNumericBadge)
+          .Record(recorder);
+    }
+
+    UpdateBadge(/*app_id=*/std::get<0>(app), base::make_optional(value));
+  }
 }
 
 void BadgeManager::ClearBadge() {
-  const std::vector<web_app::AppId> app_ids =
-      receivers_.current_context()->GetAppIdsForBadging();
+  const std::vector<std::tuple<web_app::AppId, GURL>> app_ids =
+      receivers_.current_context()->GetAppIdsAndUrlsForBadging();
 
-  for (const auto& app_id : app_ids)
-    UpdateBadge(app_id, base::nullopt);
+  ukm::UkmRecorder* recorder = ukm::UkmRecorder::Get();
+  for (const auto& app : app_ids) {
+    // The app's start_url is used to identify the app
+    // for recording badging usage per app.
+    GURL url = std::get<1>(app);
+    ukm::SourceId source_id = ukm::AppSourceUrlRecorder::GetSourceIdForPWA(url);
+    ukm::builders::Badging(source_id)
+        .SetUpdateAppBadge(kClearBadge)
+        .Record(recorder);
+    UpdateBadge(/*app_id=*/std::get<0>(app), base::nullopt);
+  }
 }
 
-std::vector<web_app::AppId>
-BadgeManager::FrameBindingContext::GetAppIdsForBadging() const {
+std::vector<std::tuple<web_app::AppId, GURL>>
+BadgeManager::FrameBindingContext::GetAppIdsAndUrlsForBadging() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::RenderFrameHost* frame =
       content::RenderFrameHost::FromID(process_id_, frame_id_);
   if (!frame)
-    return std::vector<web_app::AppId>{};
+    return std::vector<std::tuple<web_app::AppId, GURL>>{};
 
   content::WebContents* contents =
       content::WebContents::FromRenderFrameHost(frame);
   if (!contents)
-    return std::vector<web_app::AppId>{};
+    return std::vector<std::tuple<web_app::AppId, GURL>>{};
 
   const web_app::AppRegistrar& registrar =
       web_app::WebAppProviderBase::GetProviderBase(
@@ -167,25 +213,30 @@ BadgeManager::FrameBindingContext::GetAppIdsForBadging() const {
   const base::Optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(frame->GetLastCommittedURL());
   if (!app_id)
-    return std::vector<web_app::AppId>{};
-  return std::vector<web_app::AppId>{app_id.value()};
+    return std::vector<std::tuple<web_app::AppId, GURL>>{};
+  return std::vector<std::tuple<web_app::AppId, GURL>>{std::make_tuple(
+      app_id.value(), registrar.GetAppLaunchURL(app_id.value()))};
 }
 
-std::vector<web_app::AppId>
-BadgeManager::ServiceWorkerBindingContext::GetAppIdsForBadging() const {
+std::vector<std::tuple<web_app::AppId, GURL>>
+BadgeManager::ServiceWorkerBindingContext::GetAppIdsAndUrlsForBadging() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::RenderProcessHost* render_process_host =
       content::RenderProcessHost::FromID(process_id_);
   if (!render_process_host)
-    return std::vector<web_app::AppId>{};
+    return std::vector<std::tuple<web_app::AppId, GURL>>{};
 
   const web_app::AppRegistrar& registrar =
       web_app::WebAppProviderBase::GetProviderBase(
           Profile::FromBrowserContext(render_process_host->GetBrowserContext()))
           ->registrar();
-
-  return registrar.FindAppsInScope(scope_);
+  std::vector<std::tuple<web_app::AppId, GURL>> app_ids_urls{};
+  for (const auto& app_id : registrar.FindAppsInScope(scope_)) {
+    app_ids_urls.push_back(
+        std::make_tuple(app_id, registrar.GetAppLaunchURL(app_id)));
+  }
+  return app_ids_urls;
 }
 
 std::string GetBadgeString(base::Optional<uint64_t> badge_content) {

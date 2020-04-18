@@ -85,7 +85,7 @@ MultiDeviceStringsProvider::~MultiDeviceStringsProvider() {
 }
 
 void MultiDeviceStringsProvider::AddUiStrings(
-    content::WebUIDataSource* html_source) const {
+    content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"multidevicePageTitle", IDS_SETTINGS_MULTIDEVICE},
       {"multideviceSetupButton", IDS_SETTINGS_MULTIDEVICE_SETUP_BUTTON},

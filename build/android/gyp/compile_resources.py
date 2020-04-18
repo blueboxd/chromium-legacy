@@ -18,7 +18,7 @@ import contextlib
 import filecmp
 import hashlib
 import logging
-import multiprocessing.pool
+import multiprocessing.dummy
 import os
 import re
 import shutil
@@ -529,7 +529,7 @@ def _CreateKeepPredicate(resource_exclusion_regex,
 
 
 def _ConvertToWebP(webp_binary, png_files, path_info, webp_cache_dir):
-  pool = multiprocessing.pool.ThreadPool(10)
+  pool = multiprocessing.dummy.Pool(10)
 
   build_utils.MakeDirectory(webp_cache_dir)
 
@@ -585,9 +585,11 @@ def _ConvertToWebP(webp_binary, png_files, path_info, webp_cache_dir):
   png_files = [
       f for f in png_files if not _PNG_WEBP_EXCLUSION_PATTERN.match(f[0])
   ]
-  pool.map(get_converted_image, png_files)
-  pool.close()
-  pool.join()
+  try:
+    pool.map(get_converted_image, png_files)
+  finally:
+    pool.close()
+    pool.join()
   logging.debug('png->webp: cache: %d/%d sha1 time: %.1fms cwebp time: %.1fms',
                 cache_hits[0], len(png_files), sha1_time[0], cwebp_time[0])
 
@@ -643,7 +645,7 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
       # TODO(wnwen): Turn this on once aapt2 forces 9-patch to be crunched.
       # '--no-crunch',
   ]
-  pool = multiprocessing.pool.ThreadPool(10)
+  pool = multiprocessing.dummy.Pool(10)
 
   def compile_partial(params):
     index, dep_path = params
@@ -651,11 +653,8 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
     unique_name = '{}_{}'.format(index, basename)
     partial_path = os.path.join(partials_dir, '{}.zip'.format(unique_name))
 
-    jetify_dir = os.path.join(partials_dir, 'jetify')
-    build_utils.MakeDirectory(jetify_dir)
-    working_jetify_path = os.path.join(jetify_dir, 'jetify_' + partial_path)
-    jetified_dep = _JetifyArchive(dep_path, working_jetify_path)
-    dep_path = jetified_dep
+    new_path = os.path.join(temp_dir, 'jetify', '{}.zip'.format(unique_name))
+    dep_path = _JetifyArchive(dep_path, new_path)
 
     compile_command = (
         partial_compile_command + ['--dir', dep_path, '-o', partial_path])
@@ -670,10 +669,11 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
                 output, r'ignoring configuration .* for (styleable|attribute)'))
     return partial_path
 
-  partials = pool.map(compile_partial, enumerate(dep_subdirs))
-  pool.close()
-  pool.join()
-  return partials
+  try:
+    return pool.map(compile_partial, enumerate(dep_subdirs))
+  finally:
+    pool.close()
+    pool.join()
 
 
 def _ProcessProtoItem(item):
@@ -1124,7 +1124,6 @@ def _OnStaleMd5(options):
     # path of resources: crbug.com/939984
     path = path + '.tmpdir'
   build_utils.DeleteDirectory(path)
-  build_utils.MakeDirectory(path)
 
   with resource_utils.BuildContext(
       temp_dir=path, keep_files=bool(debug_temp_resources_dir)) as build:

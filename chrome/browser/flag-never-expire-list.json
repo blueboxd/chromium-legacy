@@ -90,6 +90,7 @@
   "unsafely-treat-insecure-origin-as-secure",
   "update-menu-item-custom-summary",
   "use-angle",
+  "use-custom-messages-domain",
   "use-fake-device-for-media-stream",
   "use_messages_staging_url",
   "use-sync-sandbox",

@@ -15,6 +15,7 @@
 #include "base/sequence_checker.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/printing/automatic_usb_printer_configurer.h"
+#include "chrome/browser/chromeos/printing/cups_printer_status_creator.h"
 #include "chrome/browser/chromeos/printing/enterprise_printers_provider.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/ppd_resolution_tracker.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
+#include "chrome/browser/chromeos/printing/printer_info.h"
 #include "chrome/browser/chromeos/printing/printers_map.h"
 #include "chrome/browser/chromeos/printing/server_printers_provider.h"
 #include "chrome/browser/chromeos/printing/server_printers_provider_factory.h"
@@ -33,6 +35,9 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/printing/cups_printer_status.h"
+#include "chromeos/printing/printing_constants.h"
+#include "chromeos/printing/uri_components.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/policy/policy_constants.h"
@@ -41,9 +46,24 @@
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "printing/printer_query_result.h"
 
 namespace chromeos {
+
+bool IsIppUri(base::StringPiece printer_uri) {
+  base::StringPiece::size_type separator_location =
+      printer_uri.find(url::kStandardSchemeSeparator);
+  if (separator_location == base::StringPiece::npos) {
+    return false;
+  }
+
+  base::StringPiece scheme_part = printer_uri.substr(0, separator_location);
+  return scheme_part == kIppScheme || scheme_part == kIppsScheme;
+}
+
 namespace {
+
+using printing::PrinterQueryResult;
 
 class CupsPrintersManagerImpl
     : public CupsPrintersManager,
@@ -293,6 +313,99 @@ class CupsPrintersManagerImpl
                          << "Number of server printers: " << printers.size();
     }
     OnPrintersFound(kPrintServerDetector, printers);
+  }
+
+  void FetchPrinterStatus(const std::string& printer_id,
+                          PrinterStatusCallback cb) override {
+    base::Optional<Printer> printer = GetPrinter(printer_id);
+    if (!printer) {
+      PRINTER_LOG(ERROR) << "Unable to complete printer status request. "
+                         << "Printer not found. Printer id: " << printer_id;
+      CupsPrinterStatus printer_status(printer_id);
+      printer_status.AddStatusReason(
+          CupsPrinterStatus::CupsPrinterStatusReason::Reason::kUnknownReason,
+          CupsPrinterStatus::CupsPrinterStatusReason::Severity::kWarning);
+      std::move(cb).Run(std::move(printer_status));
+      return;
+    }
+
+    base::Optional<UriComponents> parsed_uri = ParseUri(printer->uri());
+    // Behavior for querying a non-IPP uri is undefined and disallowed.
+    if (!parsed_uri || !IsIppUri(printer->uri())) {
+      PRINTER_LOG(ERROR) << "Unable to complete printer status request. "
+                         << "Printer uri is invalid. Printer id: "
+                         << printer_id;
+      CupsPrinterStatus printer_status(printer_id);
+      printer_status.AddStatusReason(
+          CupsPrinterStatus::CupsPrinterStatusReason::Reason::kUnknownReason,
+          CupsPrinterStatus::CupsPrinterStatusReason::Severity::kWarning);
+      std::move(cb).Run(std::move(printer_status));
+      return;
+    }
+
+    const UriComponents& uri = parsed_uri.value();
+    QueryIppPrinter(
+        uri.host(), uri.port(), uri.path(), uri.encrypted(),
+        base::BindOnce(&CupsPrintersManagerImpl::OnPrinterInfoFetched,
+                       weak_ptr_factory_.GetWeakPtr(), printer_id,
+                       std::move(cb)));
+  }
+
+  // Callback for FetchPrinterStatus
+  void OnPrinterInfoFetched(const std::string& printer_id,
+                            PrinterStatusCallback cb,
+                            PrinterQueryResult result,
+                            const ::printing::PrinterStatus& printer_status,
+                            const std::string& make,
+                            const std::string& model,
+                            const std::string& make_and_model,
+                            const std::vector<std::string>& document_formats,
+                            bool ipp_everywhere) {
+    SendPrinterStatus(printer_id, std::move(cb), result, printer_status);
+  }
+
+  void SendPrinterStatus(const std::string& printer_id,
+                         PrinterStatusCallback cb,
+                         PrinterQueryResult result,
+                         const ::printing::PrinterStatus& printer_status) {
+    if (result == PrinterQueryResult::UNREACHABLE) {
+      PRINTER_LOG(ERROR)
+          << "Printer status request failed. Could not reach printer "
+          << printer_id;
+      CupsPrinterStatus error_printer_status(printer_id);
+      error_printer_status.AddStatusReason(
+          CupsPrinterStatus::CupsPrinterStatusReason::Reason::
+              kPrinterUnreachable,
+          CupsPrinterStatus::CupsPrinterStatusReason::Severity::kError);
+      std::move(cb).Run(std::move(error_printer_status));
+      return;
+    }
+
+    if (result == PrinterQueryResult::UNKNOWN_FAILURE) {
+      PRINTER_LOG(ERROR) << "Printer status request failed. Unknown failure "
+                            "trying to reach printer "
+                         << printer_id;
+      CupsPrinterStatus error_printer_status(printer_id);
+      error_printer_status.AddStatusReason(
+          CupsPrinterStatus::CupsPrinterStatusReason::Reason::kUnknownReason,
+          CupsPrinterStatus::CupsPrinterStatusReason::Severity::kWarning);
+      std::move(cb).Run(std::move(error_printer_status));
+      return;
+    }
+
+    if (result == PrinterQueryResult::SUCCESS) {
+      // Convert printing::PrinterStatus to printing::CupsPrinterStatus
+      CupsPrinterStatus cups_printers_status =
+          PrinterStatusToCupsPrinterStatus(printer_id, printer_status);
+
+      // Save the PrinterStatus so it can be attached along side future Printer
+      // retrievals.
+      printers_.SavePrinterStatus(printer_id, cups_printers_status);
+
+      // Send status back to the handler through PrinterStatusCallback.
+      std::move(cb).Run(std::move(cups_printers_status));
+      return;
+    }
   }
 
  private:

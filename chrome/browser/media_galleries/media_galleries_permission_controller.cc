@@ -71,9 +71,9 @@ MediaGalleriesPermissionController::MediaGalleriesPermissionController(
   // Passing unretained pointer is safe, since the dialog controller
   // is self-deleting, and so won't be deleted until it can be shown
   // and then closed.
-  preferences_->EnsureInitialized(
-      base::Bind(&MediaGalleriesPermissionController::OnPreferencesInitialized,
-                 base::Unretained(this)));
+  preferences_->EnsureInitialized(base::BindOnce(
+      &MediaGalleriesPermissionController::OnPreferencesInitialized,
+      base::Unretained(this)));
 
   // Unretained is safe because |this| owns |context_menu_|.
   context_menu_.reset(

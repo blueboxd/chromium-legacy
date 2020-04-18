@@ -1,0 +1,31 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+// Enumerates the different buttons on a pointing device.
+enum Button {
+  kNoButton = -1,
+  kLeft,
+  kMiddle,
+  kRight,
+  kBarrel = kRight,  // Barrel is aliased per pointer event spec
+  kBack,
+  kForward,
+  kEraser,
+};
+
+// Indicates whether the browser needs to block on the ACK result for
+// this event, and if not, why (for metrics/diagnostics purposes).
+enum DispatchType {
+  // Event can be canceled.
+  kBlocking,
+  // Event can not be canceled.
+  kEventNonBlocking,
+  // All listeners are passive; not cancelable.
+  kListenersNonBlockingPassive,
+  // This value represents a state which would have normally blocking
+  // but was forced to be non-blocking during fling; not cancelable.
+  kListenersForcedNonBlockingDueToFling,
+};

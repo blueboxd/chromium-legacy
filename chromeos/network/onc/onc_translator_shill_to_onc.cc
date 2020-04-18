@@ -249,7 +249,7 @@ void ShillToONCTranslator::TranslateOpenVPN() {
   }
 
   SetPKCS11Id(shill_dictionary_, shill::kOpenVPNClientCertIdProperty,
-              shill::kOpenVPNClientCertSlotProperty, onc_object_.get());
+              "", onc_object_.get());
 
   TranslateWithTableAndSet(shill::kOpenVPNCompressProperty,
                            kOpenVpnCompressionAlgorithmTable,

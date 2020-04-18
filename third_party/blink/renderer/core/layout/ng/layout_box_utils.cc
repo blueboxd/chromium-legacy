@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
 
@@ -115,12 +116,20 @@ NGLogicalStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
         MinimumValueForLength(logical_top, containing_block_logical_height);
   }
 
+  NGLogicalStaticPosition::BlockEdge block_edge =
+      box.Layer()->StaticBlockEdge();
+  NGLogicalStaticPosition::InlineEdge inline_edge =
+      box.Layer()->StaticInlineEdge();
+
+  if (!IsLtr(parent_direction)) {
+    if (inline_edge == NGLogicalStaticPosition::InlineEdge::kInlineStart)
+      inline_edge = NGLogicalStaticPosition::InlineEdge::kInlineEnd;
+    else if (inline_edge == NGLogicalStaticPosition::InlineEdge::kInlineEnd)
+      inline_edge = NGLogicalStaticPosition::InlineEdge::kInlineStart;
+  }
+
   NGLogicalStaticPosition logical_static_position{
-      {static_line, static_block},
-      IsLtr(parent_direction)
-          ? NGLogicalStaticPosition::InlineEdge::kInlineStart
-          : NGLogicalStaticPosition::InlineEdge::kInlineEnd,
-      NGLogicalStaticPosition::BlockEdge::kBlockStart};
+      {static_line, static_block}, inline_edge, block_edge};
 
   // Determine the physical available-size, remember that the available-size is
   // currently in the *descendant's* writing-mode.

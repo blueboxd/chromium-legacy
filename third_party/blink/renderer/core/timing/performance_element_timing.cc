@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
+#include "third_party/blink/renderer/core/timing/performance.h"
 
 namespace blink {
 
@@ -67,15 +68,7 @@ PerformanceEntryType PerformanceElementTiming::EntryTypeEnum() const {
 }
 
 Element* PerformanceElementTiming::element() const {
-  if (!element_ || !element_->isConnected() || element_->IsInShadowTree())
-    return nullptr;
-
-  // Do not expose |element_| when the document is not 'fully active'.
-  const Document& document = element_->GetDocument();
-  if (!document.IsActive() || !document.GetFrame())
-    return nullptr;
-
-  return element_;
+  return Performance::CanExposeNode(element_) ? element_ : nullptr;
 }
 
 void PerformanceElementTiming::BuildJSONValue(V8ObjectBuilder& builder) const {

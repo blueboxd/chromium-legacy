@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_switches.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "url/gurl.h"
@@ -27,6 +28,25 @@ const char kProdGoogleInstallUrl[] =
 const char kStagingAppUrl[] = "https://messages-web.sandbox.google.com/web/";
 const char kStagingInstallUrl[] =
     "https://messages-web.sandbox.google.com/web/authentication";
+
+GURL GetCustomDomain(bool use_install_url) {
+  std::string custom_domain =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kCustomAndroidMessagesDomain);
+  if (custom_domain.empty()) {
+    return GURL::EmptyGURL();
+  }
+
+  GURL url(custom_domain);
+  GURL::Replacements path;
+  if (use_install_url) {
+    path.SetPathStr("/web/authentication");
+  } else {  // App url.
+    path.SetPathStr("/web/");
+  }
+
+  return url.ReplaceComponents(path);
+}
 
 }  // namespace
 
@@ -53,21 +73,11 @@ PwaDomain GetPreferredPwaDomain() {
 }
 
 GURL GetAndroidMessagesURL(bool use_install_url, PwaDomain pwa_domain) {
-  // If present, use commandline override for the preferred domain.
+  // If present, use custom override for the preferred domain.
   if (pwa_domain == GetPreferredPwaDomain()) {
-    std::string url_from_command_line_arg;
-    if (use_install_url) {
-      url_from_command_line_arg =
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kAlternateAndroidMessagesInstallUrl);
-    } else {
-      url_from_command_line_arg =
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kAlternateAndroidMessagesUrl);
-    }
-
-    if (!url_from_command_line_arg.empty())
-      return GURL(url_from_command_line_arg);
+    GURL custom_url = GetCustomDomain(use_install_url);
+    if (!custom_url.is_empty())
+      return custom_url;
   }
 
   switch (pwa_domain) {

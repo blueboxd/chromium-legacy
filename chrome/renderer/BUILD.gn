@@ -126,6 +126,8 @@ jumbo_static_library("renderer") {
 
   defines = []
 
+  public_deps = [ "//components/contextual_search:buildflags" ]
+
   deps = [
     "//chrome:resources",
     "//chrome:strings",
@@ -343,7 +345,7 @@ jumbo_static_library("renderer") {
       "//media/cast:sender",
       "//services/network/public/cpp",
     ]
-    public_deps = [ "//ipc" ]
+    public_deps += [ "//ipc" ]
   }
   if (enable_extensions) {
     sources += [

@@ -3986,11 +3986,12 @@
             ],
             "experiments": [
                 {
-                    "name": "PartitionConnectionsAndSSLSessionsAndQuic",
+                    "name": "Enabled4",
                     "enable_features": [
                         "PartitionConnectionsByNetworkIsolationKey",
                         "PartitionHttpServerPropertiesByNetworkIsolationKey",
-                        "PartitionSSLSessionsByNetworkIsolationKey"
+                        "PartitionSSLSessionsByNetworkIsolationKey",
+                        "SplitHostCacheByNetworkIsolationKey"
                     ]
                 }
             ]
@@ -5062,6 +5063,25 @@
                     },
                     "enable_features": [
                         "SafeBrowsingRealTimeUrlLookupEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingRealTimeUrlLookupEnabledWithToken": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingRealTimeUrlLookupEnabledWithToken"
                     ]
                 }
             ]

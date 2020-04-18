@@ -4,8 +4,10 @@
 
 #include "base/task/sequence_manager/work_queue.h"
 
+#include "base/debug/alias.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/work_queue_sets.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace sequence_manager {
@@ -200,8 +202,31 @@ bool WorkQueue::RemoveAllCanceledTasksFromFront() {
   if (!work_queue_sets_)
     return false;
   bool task_removed = false;
-  while (!tasks_.empty() &&
-         (!tasks_.front().task || tasks_.front().task.IsCancelled())) {
+  while (!tasks_.empty()) {
+    const auto& pending_task = tasks_.front();
+#if !defined(OS_NACL)
+    // Record some debugging information about the task.
+    // TODO(skyostil): Remove once crbug.com/1071475 is resolved.
+    DEBUG_ALIAS_FOR_CSTR(debug_file_name,
+                         pending_task.posted_from.file_name()
+                             ? pending_task.posted_from.file_name()
+                             : "",
+                         16);
+    DEBUG_ALIAS_FOR_CSTR(debug_function_name,
+                         pending_task.posted_from.function_name()
+                             ? pending_task.posted_from.function_name()
+                             : "",
+                         16);
+    int debug_line_number = pending_task.posted_from.line_number();
+    const void* debug_pc = pending_task.posted_from.program_counter();
+    const void* debug_bind_state =
+        reinterpret_cast<const void*>(&pending_task.task);
+    base::debug::Alias(&debug_line_number);
+    base::debug::Alias(&debug_pc);
+    base::debug::Alias(&debug_bind_state);
+#endif  // !defined(OS_NACL)
+    if (pending_task.task && !pending_task.task.IsCancelled())
+      break;
     tasks_.pop_front();
     task_removed = true;
   }

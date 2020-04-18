@@ -237,6 +237,7 @@ class TastTest(RemoteTest):
     self._suite_name = args.suite_name
     self._tests = args.tests
     self._conditional = args.conditional
+    self._should_strip = args.strip_chrome
 
     if not self._llvm_profile_var and not self._logs_dir:
       # The host-side Tast bin returns 0 when tests fail, so we need to capture
@@ -309,7 +310,8 @@ class TastTest(RemoteTest):
     else:
       # Mounting the browser gives it enough disk space to not need stripping,
       # but only for browsers not instrumented with code coverage.
-      self._test_cmd.append('--nostrip')
+      if not self._should_strip:
+        self._test_cmd.append('--nostrip')
       # Capture tast's results in the logs dir as well.
       if self._logs_dir:
         self._test_cmd += [
@@ -894,6 +896,10 @@ def main():
       dest='conditional',
       help='A boolean expression whose matching tests will run '
       '(eg: ("dep:chrome")).')
+  tast_test_parser.add_argument(
+      '--strip-chrome',
+      action='store_true',
+      help='Strips symbols from the browser before deploying to the device.')
   tast_test_parser.add_argument(
       '--test',
       '-t',

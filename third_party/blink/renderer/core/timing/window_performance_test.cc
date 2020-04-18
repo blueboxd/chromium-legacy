@@ -239,7 +239,7 @@ TEST_F(WindowPerformanceTest, EventTimingEntryBuffering) {
   base::TimeTicks processing_end =
       GetTimeOrigin() + base::TimeDelta::FromSecondsD(3.8);
   performance_->RegisterEventTiming("click", start_time, processing_start,
-                                    processing_end, false);
+                                    processing_end, false, nullptr);
   base::TimeTicks swap_time =
       GetTimeOrigin() + base::TimeDelta::FromSecondsD(6.0);
   SimulateSwapPromise(swap_time);
@@ -251,7 +251,7 @@ TEST_F(WindowPerformanceTest, EventTimingEntryBuffering) {
       ->GetTiming()
       .MarkLoadEventStart();
   performance_->RegisterEventTiming("click", start_time, processing_start,
-                                    processing_end, true);
+                                    processing_end, true, nullptr);
   SimulateSwapPromise(swap_time);
   EXPECT_EQ(2u, performance_->getBufferedEntriesByType("event").size());
 
@@ -259,7 +259,7 @@ TEST_F(WindowPerformanceTest, EventTimingEntryBuffering) {
   GetFrame()->DetachDocument();
   EXPECT_FALSE(page_holder_->GetFrame().Loader().GetDocumentLoader());
   performance_->RegisterEventTiming("click", start_time, processing_start,
-                                    processing_end, false);
+                                    processing_end, false, nullptr);
   SimulateSwapPromise(swap_time);
   EXPECT_EQ(3u, performance_->getBufferedEntriesByType("event").size());
 }
@@ -273,12 +273,12 @@ TEST_F(WindowPerformanceTest, Expose100MsEvents) {
   base::TimeTicks processing_end =
       processing_start + base::TimeDelta::FromMilliseconds(10);
   performance_->RegisterEventTiming("mousedown", start_time, processing_start,
-                                    processing_end, false);
+                                    processing_end, false, nullptr);
 
   base::TimeTicks start_time2 =
       start_time + base::TimeDelta::FromMicroseconds(200);
   performance_->RegisterEventTiming("click", start_time2, processing_start,
-                                    processing_end, false);
+                                    processing_end, false, nullptr);
 
   // The swap time is 100.1 ms after |start_time| but only 99.9 ms after
   // |start_time2|.
@@ -301,24 +301,24 @@ TEST_F(WindowPerformanceTest, EventTimingDuration) {
   base::TimeTicks processing_end =
       GetTimeOrigin() + base::TimeDelta::FromMilliseconds(1002);
   performance_->RegisterEventTiming("click", start_time, processing_start,
-                                    processing_end, false);
+                                    processing_end, false, nullptr);
   base::TimeTicks short_swap_time =
       GetTimeOrigin() + base::TimeDelta::FromMilliseconds(1003);
   SimulateSwapPromise(short_swap_time);
   EXPECT_EQ(0u, performance_->getBufferedEntriesByType("event").size());
 
   performance_->RegisterEventTiming("click", start_time, processing_start,
-                                    processing_end, true);
+                                    processing_end, true, nullptr);
   base::TimeTicks long_swap_time =
       GetTimeOrigin() + base::TimeDelta::FromMilliseconds(2000);
   SimulateSwapPromise(long_swap_time);
   EXPECT_EQ(1u, performance_->getBufferedEntriesByType("event").size());
 
   performance_->RegisterEventTiming("click", start_time, processing_start,
-                                    processing_end, true);
+                                    processing_end, true, nullptr);
   SimulateSwapPromise(short_swap_time);
   performance_->RegisterEventTiming("click", start_time, processing_start,
-                                    processing_end, false);
+                                    processing_end, false, nullptr);
   SimulateSwapPromise(long_swap_time);
   EXPECT_EQ(2u, performance_->getBufferedEntriesByType("event").size());
 }
@@ -335,7 +335,7 @@ TEST_F(WindowPerformanceTest, MultipleEventsSameSwap) {
     base::TimeTicks processing_end =
         start_time + base::TimeDelta::FromMilliseconds(200);
     performance_->RegisterEventTiming("click", start_time, processing_start,
-                                      processing_end, false);
+                                      processing_end, false, nullptr);
     EXPECT_EQ(0u, performance_->getBufferedEntriesByType("event").size());
   }
   base::TimeTicks swap_time =
@@ -357,7 +357,7 @@ TEST_F(WindowPerformanceTest, FirstInput) {
     performance_->RegisterEventTiming(
         input.event_type, GetTimeOrigin(),
         GetTimeOrigin() + base::TimeDelta::FromMilliseconds(1),
-        GetTimeOrigin() + base::TimeDelta::FromMilliseconds(2), false);
+        GetTimeOrigin() + base::TimeDelta::FromMilliseconds(2), false, nullptr);
     SimulateSwapPromise(GetTimeOrigin() + base::TimeDelta::FromMilliseconds(3));
     PerformanceEntryVector firstInputs =
         performance_->getEntriesByType("first-input");
@@ -375,7 +375,7 @@ TEST_F(WindowPerformanceTest, FirstInputAfterIgnored) {
     performance_->RegisterEventTiming(
         event, GetTimeOrigin(),
         GetTimeOrigin() + base::TimeDelta::FromMilliseconds(1),
-        GetTimeOrigin() + base::TimeDelta::FromMilliseconds(2), false);
+        GetTimeOrigin() + base::TimeDelta::FromMilliseconds(2), false, nullptr);
   }
   SimulateSwapPromise(GetTimeOrigin() + base::TimeDelta::FromMilliseconds(3));
   ASSERT_EQ(1u, performance_->getEntriesByType("first-input").size());
@@ -393,11 +393,11 @@ TEST_F(WindowPerformanceTest, FirstPointerUp) {
   base::TimeTicks swap_time =
       GetTimeOrigin() + base::TimeDelta::FromMilliseconds(3);
   performance_->RegisterEventTiming("pointerdown", start_time, processing_start,
-                                    processing_end, false);
+                                    processing_end, false, nullptr);
   SimulateSwapPromise(swap_time);
   EXPECT_EQ(0u, performance_->getEntriesByType("first-input").size());
   performance_->RegisterEventTiming("pointerup", start_time, processing_start,
-                                    processing_end, false);
+                                    processing_end, false, nullptr);
   SimulateSwapPromise(swap_time);
   EXPECT_EQ(1u, performance_->getEntriesByType("first-input").size());
   // The name of the entry should be "pointerdown".

@@ -14,7 +14,7 @@
 namespace blink {
 
 RemoteSecurityContext::RemoteSecurityContext()
-    : SecurityContext(SecurityContextInit(), kRemote) {
+    : SecurityContext(SecurityContextInit(), kRemoteFrame) {
   // RemoteSecurityContext's origin is expected to stay uninitialized until
   // we set it using replicated origin data from the browser process.
   DCHECK(!GetSecurityOrigin());

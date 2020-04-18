@@ -30,7 +30,7 @@ class InternetStringsProvider
 
  private:
   // OsSettingsPerPageStringsProvider:
-  void AddUiStrings(content::WebUIDataSource* html_source) const override;
+  void AddUiStrings(content::WebUIDataSource* html_source) override;
 
   // network_config::mojom::CrosNetworkConfigObserver:
   void OnActiveNetworksChanged(

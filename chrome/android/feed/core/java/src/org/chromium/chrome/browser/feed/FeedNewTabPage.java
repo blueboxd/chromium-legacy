@@ -51,7 +51,7 @@ public class FeedNewTabPage
      * @param fullscreenManager {@link ChromeFullscreenManager} to observe for offset changes.
      * @param activityTabProvider Provides the current active tab.
      * @param overviewModeBehavior Overview mode to observe for mode changes.
-     * @param snackbarManager {@link SnackBarManager} object.
+     * @param snackbarManager {@link SnackbarManager} object.
      * @param lifecycleDispatcher Activity lifecycle dispatcher.
      * @param tabModelSelector {@link TabModelSelector} object.
      * @param isTablet {@code true} if running on a Tablet device.

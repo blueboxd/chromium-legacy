@@ -188,6 +188,7 @@ android_library("java") {
     "//chrome/browser/util:java",
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/widget/android:java",
+    "//components/content_settings/android:content_settings_enums_java",
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/feature_engagement:feature_engagement_java",

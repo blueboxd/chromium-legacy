@@ -62,6 +62,22 @@ public class CastWebContentsComponent {
             this.appId = appId;
             visibilityPriority = priority;
         }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == this) {
+                return true;
+            }
+
+            if (!(other instanceof StartParams)) {
+                return false;
+            }
+
+            StartParams params = (StartParams) other;
+            return params.context == this.context && params.webContents == this.webContents
+                    && params.appId.equals(this.appId)
+                    && params.visibilityPriority == this.visibilityPriority;
+        }
     }
 
     @VisibleForTesting

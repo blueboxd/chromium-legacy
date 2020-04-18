@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/hit_testing_transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_static_position.h"
 #include "third_party/blink/renderer/core/paint/clip_rects_cache.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_clipper.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
@@ -491,6 +492,17 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetStaticBlockPosition(LayoutUnit position) {
     static_block_position_ = position;
   }
+
+  using InlineEdge = NGLogicalStaticPosition::InlineEdge;
+  using BlockEdge = NGLogicalStaticPosition::BlockEdge;
+  InlineEdge StaticInlineEdge() const {
+    return static_cast<InlineEdge>(static_inline_edge_);
+  }
+  void SetStaticInlineEdge(InlineEdge edge) { static_inline_edge_ = edge; }
+  BlockEdge StaticBlockEdge() const {
+    return static_cast<BlockEdge>(static_block_edge_);
+  }
+  void SetStaticBlockEdge(BlockEdge edge) { static_block_edge_ = edge; }
 
   PhysicalOffset SubpixelAccumulation() const;
   void SetSubpixelAccumulation(const PhysicalOffset&);
@@ -1348,6 +1360,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned has_self_painting_layer_descendant_ : 1;
 
   unsigned needs_reorder_overlay_overflow_controls_ : 1;
+  unsigned static_inline_edge_ : 2;
+  unsigned static_block_edge_ : 2;
 
 #if DCHECK_IS_ON()
   mutable unsigned layer_list_mutation_allowed_ : 1;

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <map>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -19,6 +20,7 @@
 #include "ash/public/cpp/autotest_private_api_utils.h"
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/desks_helper.h"
+#include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/login_screen.h"
@@ -40,6 +42,7 @@
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/strcat.h"
@@ -677,6 +680,27 @@ int GetMouseEventFlags(api::autotest_private::MouseButton button) {
       NOTREACHED();
   }
   return ui::EF_NONE;
+}
+
+// Gets display id out of an optional DOMString display id argument. Returns
+// false if optional display id is given but in bad format. Otherwise returns
+// true and fills |display_id| with either the primary display id when the
+// optional arg is not given or the parsed display id out of the arg
+bool GetDisplayIdFromOptionalArg(const std::unique_ptr<std::string>& arg,
+                                 int64_t* display_id) {
+  if (arg.get() && !arg->empty()) {
+    return base::StringToInt64(*arg, display_id);
+  }
+
+  *display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  return true;
+}
+
+using DisplaySmoothnessTrackers =
+    std::map<int64_t, std::unique_ptr<ash::FpsCounter>>;
+DisplaySmoothnessTrackers* GetDisplaySmoothnessTrackers() {
+  static base::NoDestructor<DisplaySmoothnessTrackers> trackers;
+  return trackers.get();
 }
 
 }  // namespace
@@ -4285,6 +4309,81 @@ void AutotestPrivateSetWindowBoundsFunction::WindowBoundsChanged(
     Respond(
         OneArgument(BuildSetWindowBoundsResult(bounds_in_display, display_id)));
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateStartSmoothnessTrackingFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateStartSmoothnessTrackingFunction::
+    ~AutotestPrivateStartSmoothnessTrackingFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateStartSmoothnessTrackingFunction::Run() {
+  auto params(
+      api::autotest_private::StartSmoothnessTracking::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  int64_t display_id;
+  if (!GetDisplayIdFromOptionalArg(params->display_id, &display_id)) {
+    return RespondNow(
+        Error(base::StrCat({"Invalid display id: ", *params->display_id})));
+  }
+
+  auto* trackers = GetDisplaySmoothnessTrackers();
+  if (trackers->find(display_id) != trackers->end()) {
+    return RespondNow(
+        Error(base::StrCat({"Smoothness already tracked for display: ",
+                            base::NumberToString(display_id)})));
+  }
+
+  auto* root_window = ash::Shell::GetRootWindowForDisplayId(display_id);
+  if (!root_window) {
+    return RespondNow(Error(base::StrCat(
+        {"Invalid display_id; no root window found for the display id ",
+         base::NumberToString(display_id)})));
+  }
+
+  (*trackers)[display_id] =
+      std::make_unique<ash::FpsCounter>(root_window->layer()->GetCompositor());
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateStopSmoothnessTrackingFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateStopSmoothnessTrackingFunction::
+    ~AutotestPrivateStopSmoothnessTrackingFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateStopSmoothnessTrackingFunction::Run() {
+  auto params(
+      api::autotest_private::StopSmoothnessTracking::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  int64_t display_id;
+  if (!GetDisplayIdFromOptionalArg(params->display_id, &display_id)) {
+    return RespondNow(
+        Error(base::StrCat({"Invalid display id: ", *params->display_id})));
+  }
+
+  auto* trackers = GetDisplaySmoothnessTrackers();
+  auto it = trackers->find(display_id);
+  if (it == trackers->end()) {
+    return RespondNow(
+        Error(base::StrCat({"Smoothness is not tracked for display: ",
+                            base::NumberToString(display_id)})));
+  }
+
+  auto fps_tracker = std::move(it->second);
+  trackers->erase(it);
+
+  const int smoothness = fps_tracker->ComputeSmoothness();
+  if (smoothness == -1)
+    return RespondNow(Error("Could not compute smoothness."));
+
+  return RespondNow(OneArgument(std::make_unique<base::Value>(smoothness)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

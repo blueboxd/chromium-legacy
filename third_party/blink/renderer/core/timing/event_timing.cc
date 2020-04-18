@@ -110,9 +110,10 @@ std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
 }
 
 void EventTiming::DidDispatchEvent(const Event& event) {
+  Node* target = event.target() ? event.target()->ToNode() : nullptr;
   performance_->RegisterEventTiming(event.type(), event_timestamp_,
                                     processing_start_, Now(),
-                                    event.cancelable());
+                                    event.cancelable(), target);
 }
 
 // static

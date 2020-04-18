@@ -49,15 +49,22 @@
 #include "components/download/public/common/download_task_runner.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/app/service_manager_environment.h"
+#include "content/browser/browser_main.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/gpu/gpu_main_thread_factory.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_helper.h"
 #include "content/browser/tracing/memory_instrumentation_util.h"
+#include "content/browser/utility_process_host.h"
+#include "content/child/field_trial.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/url_schemes.h"
+#include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/app/content_main_delegate.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_descriptor_keys.h"
@@ -67,6 +74,11 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/sandbox_init.h"
+#include "content/public/gpu/content_gpu_client.h"
+#include "content/public/renderer/content_renderer_client.h"
+#include "content/public/utility/content_utility_client.h"
+#include "content/renderer/in_process_renderer_thread.h"
+#include "content/utility/in_process_utility_thread.h"
 #include "gin/v8_initializer.h"
 #include "media/base/media.h"
 #include "media/media_buildflags.h"
@@ -135,27 +147,6 @@
 
 #endif  // OS_LINUX
 
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-#include "content/child/field_trial.h"
-#include "content/public/gpu/content_gpu_client.h"
-#include "content/public/renderer/content_renderer_client.h"
-#include "content/public/utility/content_utility_client.h"
-#endif
-
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-#include "content/browser/browser_main.h"
-#include "content/public/browser/content_browser_client.h"
-#endif
-
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER) && !defined(CHROME_MULTIPLE_DLL_CHILD)
-#include "content/browser/gpu/gpu_main_thread_factory.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/utility_process_host.h"
-#include "content/gpu/in_process_gpu_thread.h"
-#include "content/renderer/in_process_renderer_thread.h"
-#include "content/utility/in_process_utility_thread.h"
-#endif
-
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "content/browser/sandbox_host_linux.h"
 #include "media/base/media_switches.h"
@@ -220,9 +211,7 @@ void LoadV8SnapshotFile() {
   }
 #endif  // OS_POSIX && !OS_MACOSX
 
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
-#endif  // !CHROME_MULTIPLE_DLL_BROWSER
 }
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
@@ -415,12 +404,9 @@ class ContentClientInitializer {
   static void Set(const std::string& process_type,
                   ContentMainDelegate* delegate) {
     ContentClient* content_client = GetContentClient();
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
     if (process_type.empty())
       content_client->browser_ = delegate->CreateContentBrowserClient();
-#endif  // !CHROME_MULTIPLE_DLL_CHILD
 
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
     base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
     if (process_type == switches::kGpuProcess ||
         cmd->HasSwitch(switches::kSingleProcess) ||
@@ -434,7 +420,6 @@ class ContentClientInitializer {
     if (process_type == switches::kUtilityProcess ||
         cmd->HasSwitch(switches::kSingleProcess))
       content_client->utility_ = delegate->CreateContentUtilityClient();
-#endif  // !CHROME_MULTIPLE_DLL_BROWSER
   }
 };
 
@@ -500,26 +485,13 @@ int RunZygote(ContentMainDelegate* delegate) {
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
 static void RegisterMainThreadFactories() {
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   UtilityProcessHost::RegisterUtilityMainThreadFactory(
       CreateInProcessUtilityThread);
   RenderProcessHostImpl::RegisterRendererMainThreadFactory(
       CreateInProcessRendererThread);
   content::RegisterGpuMainThreadFactory(CreateInProcessGpuThread);
-#else
-  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kSingleProcess)) {
-    LOG(FATAL)
-        << "--single-process is not supported in chrome multiple dll browser.";
-  }
-  if (command_line.HasSwitch(switches::kInProcessGPU)) {
-    LOG(FATAL)
-        << "--in-process-gpu is not supported in chrome multiple dll browser.";
-  }
-#endif  // !CHROME_MULTIPLE_DLL_BROWSER && !CHROME_MULTIPLE_DLL_CHILD
 }
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
 // Run the main function for browser process.
 // Returns the exit code for this process.
 int RunBrowserProcessMain(const MainFunctionParams& main_function_params,
@@ -529,14 +501,12 @@ int RunBrowserProcessMain(const MainFunctionParams& main_function_params,
     return exit_code;
   return BrowserMain(main_function_params);
 }
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 // Run the FooMain() for a given process type.
 // Returns the exit code for this process.
 int RunOtherNamedProcessTypeMain(const std::string& process_type,
                                  const MainFunctionParams& main_function_params,
                                  ContentMainDelegate* delegate) {
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
   static const MainFunction kMainFunctions[] = {
 #if BUILDFLAG(ENABLE_PLUGINS)
     {switches::kPpapiPluginProcess, PpapiPluginMain},
@@ -555,7 +525,6 @@ int RunOtherNamedProcessTypeMain(const std::string& process_type,
       return kMainFunctions[i].function(main_function_params);
     }
   }
-#endif  // !CHROME_MULTIPLE_DLL_BROWSER
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
   // Zygote startup is special -- see RunZygote comments above
@@ -853,7 +822,6 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
   // Run this logic on all child processes. Zygotes will run this at a later
   // point in time when the command line has been updated.
   if (!process_type.empty() &&
@@ -861,7 +829,6 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
     InitializeFieldTrialAndFeatureList();
     delegate_->PostFieldTrialInitialization();
   }
-#endif
 
   MainFunctionParams main_params(command_line);
   main_params.ui_task = ui_task_;
@@ -874,15 +841,12 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
 
   RegisterMainThreadFactories();
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   if (process_type.empty())
     return RunServiceManager(main_params, start_service_manager_only);
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
   return RunOtherNamedProcessTypeMain(process_type, main_params, delegate_);
 }
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
 int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
                                              bool start_service_manager_only) {
   TRACE_EVENT0("startup", "ContentMainRunnerImpl::RunServiceManager");
@@ -979,15 +943,12 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
   main_params.startup_data = startup_data_.get();
   return RunBrowserProcessMain(main_params, delegate_);
 }
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 void ContentMainRunnerImpl::Shutdown() {
   DCHECK(is_initialized_);
   DCHECK(!is_shutdown_);
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   service_manager_environment_.reset();
-#endif
 
   if (completed_basic_startup_) {
     const base::CommandLine& command_line =
@@ -998,11 +959,9 @@ void ContentMainRunnerImpl::Shutdown() {
     delegate_->ProcessExiting(process_type);
   }
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   service_manager_environment_.reset();
   // The BrowserTaskExecutor needs to be destroyed before |exit_manager_|.
   BrowserTaskExecutor::Shutdown();
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 #if defined(OS_WIN)
 #ifdef _CRTDBG_MAP_ALLOC

@@ -74,17 +74,6 @@
       设置 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />（值为 1）会仅允许将那些被视为重要的安全性或稳定性修复程序的变体应用于 <ph name="PRODUCT_OS_NAME" />。
 
       设置 <ph name="VARIATIONS_DISABLED_OPTION_NAME" />（值为 2）会禁止在登录屏幕上将任何变体应用于该浏览器。请注意，我们不建议您使用此模式，因为它可能会妨碍 <ph name="PRODUCT_OS_NAME" /> 开发者及时提供重要的安全性修复程序。</translation>
-<translation id="1078643757670228170">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
-
-          指定当使用交流电源供电时系统应在设备闲置多久后关闭屏幕。
-
-          如果将此政策设为大于 0 的值，那么只要设备闲置时长达到了此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会关闭屏幕。
-
-          如果将此政策设为 0，那么在设备闲置时，<ph name="PRODUCT_OS_NAME" />不会关闭屏幕。
-
-          如果未设置此政策，那么系统将使用默认时间长度。
-
-          指定的政策值应以毫秒为单位，且不得大于闲置延迟时间。</translation>
 <translation id="1079801999187584280">禁止使用开发者工具</translation>
 <translation id="1087437665304381368">此政策仅用于控制 <ph name="PRODUCT_OS_NAME" />开发者模式。如果您想阻止对 Android 开发者选项的访问，则需设置 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 政策。</translation>
 <translation id="1087707496788636333">Chrome 企业版政策列表迁址了！请更新您的书签以改用 <ph name="POLICY_DOCUMENTATION_URL" />。</translation>
@@ -240,13 +229,6 @@
       此政策会影响所有类型的音频输出（而不仅仅是内置扬声器）。音频辅助功能也受此政策约束。如果用户需要使用屏幕阅读器，请勿启用此政策。
 
       如果不设置此政策或将其设为 true，用户将可以在其设备上使用所有支持的音频输出。</translation>
-<translation id="1358050607773151553">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
-
-          如果设置了此政策，即是指定了当设备闲置时长超过所设的闲置延迟时间后 <ph name="PRODUCT_OS_NAME" />会执行的操作；闲置延迟时间可另行配置。
-
-          如果未设置此政策，系统会执行默认操作，即暂停。
-
-          如果需要执行的操作是暂停，您还可另行配置 <ph name="PRODUCT_OS_NAME" />在暂停前是否锁定屏幕。</translation>
 <translation id="1359553908012294236">如果此政策设为 true 或未配置，<ph name="PRODUCT_NAME" /> 将允许使用访客身份登录。访客身份是指 <ph name="PRODUCT_NAME" /> 个人资料，使用此类个人资料登录后，所有窗口均处于隐身模式。
 
       如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将禁止使用访客个人资料登录。</translation>
@@ -261,11 +243,6 @@
           如果未设置此政策，系统将会对所有网站使用“DefaultNotificationsSetting”政策中的全局默认值（倘若已设置“DefaultNotificationsSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultNotificationsSetting”政策）。
 
           要详细了解有效网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
-<translation id="1377134027840513298">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
-
-          此政策可为更具体的 <ph name="IDLE_ACTION_AC_POLICY_NAME" /> 和 <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> 政策提供后备值。如果设置了此政策，但未分别设置更具体的政策，系统就会使用此值。
-
-          如果未设置此政策，更具体政策的行为不会受到影响。</translation>
 <translation id="1384459581748403878">参考页面：<ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">报告操作系统更新状态</translation>
 <translation id="1393485621820363363">已启用企业设备打印机</translation>
@@ -613,17 +590,6 @@
       如果停用了此设置，“自动填充”功能便绝不会提供相关建议或填充地址信息，也不会保存用户可能会在浏览网页时提交的其他地址信息。
 
       如果启用了此设置或未设定任何值，用户将能够控制是否要在界面中自动填充地址信息。</translation>
-<translation id="1959613237819575097">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
-
-          指定当使用电池供电时系统应在设备闲置多久后关闭屏幕。
-
-          如果将此政策设为大于 0 的值，那么只要设备闲置时长达到了此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会关闭屏幕。
-
-          如果将此政策设为 0，那么在设备闲置时，<ph name="PRODUCT_OS_NAME" />不会关闭屏幕。
-
-          如果未设置此政策，那么系统将使用默认时间长度。
-
-          指定的政策值应以毫秒为单位，且不得大于闲置延迟时间。</translation>
 <translation id="1962273523772270623">允许从 Google 服务收集 WebRTC 事件日志</translation>
 <translation id="1964634611280150550">隐身模式已停用</translation>
 <translation id="1964802606569741174">此政策对 Android 版 YouTube 应用没有任何影响。如果应在 YouTube 中强制启用安全模式，则应禁止安装 Android 版 YouTube 应用。</translation>
@@ -730,6 +696,13 @@
 
       如果未设置此政策，系统将会启用遮挡检测功能。</translation>
 <translation id="2166472654199325139">不滤除提供成人内容的网站</translation>
+<translation id="2166746572083670600">配置供 <ph name="PRODUCT_NAME" /> 用于存储用户数据的目录。
+
+      如果您设置了此政策，那么无论用户是否已指定“--user-data-dir”标记，<ph name="PRODUCT_NAME" /> 都会使用所提供的目录。为避免丢失数据或发生其他意外错误，请勿将此政策设为一个用于其他用途的目录（因为 <ph name="PRODUCT_NAME" /> 会管理它的内容）。
+
+      要查看可用变量的列表，请参阅 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如果您未设置此政策，系统将会使用默认的个人资料路径，而且用户将能够使用“--user-data-dir”命令行标记来替换此路径。</translation>
 <translation id="2168397434410358693">使用交流电源供电时的闲置延迟时间</translation>
 <translation id="217013996107840632">用于从替代浏览器切换至 Chrome 的命令行参数。</translation>
 <translation id="2170233653554726857">启用WPAD优化</translation>
@@ -848,11 +821,6 @@
       格式有误的模板将被忽略。</translation>
 <translation id="2345547870894930157">启用 DNS-over-HTTPS，且禁止改用不安全的查询</translation>
 <translation id="2386362615870139244">允许使用屏幕唤醒锁定</translation>
-<translation id="2398554235599593694"> 此政策用于控制在出现外部协议启动确认提示时是否显示“始终打开”复选框。
-
-      如果此政策设为 True，当系统显示外部协议确认提示时，用户可选择“始终打开”该协议，以使系统不再显示此类提示。
-
-      如果此政策设为 False 或未设置，系统将不会显示“始终打开”复选框，并且在每次调用外部协议时都会提示用户。</translation>
 <translation id="2406820201690307634">让您能够设置一系列网址格式，从而指定不允许哪些网站显示图片。
 
           如果未设置此政策，系统将会对所有网站使用“DefaultImagesSetting”政策中的全局默认值（倘若已设置“DefaultImagesSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultImagesSetting”政策）。
@@ -897,19 +865,6 @@
       如果此设置未指定，那么用户可以决定是否使用此功能。
 
       29 版及更高版本的 <ph name="PRODUCT_NAME" /> 中已取消此设置。</translation>
-<translation id="2430828513262055658">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />。
-
-          指定当使用交流电源供电时系统应在设备闲置多久后锁定屏幕。
-
-          如果将此政策设为大于 0 的值，那么只要设备闲置时长达到了此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会锁定屏幕。
-
-          如果将此政策设为 0，那么在设备闲置时，<ph name="PRODUCT_OS_NAME" />不会锁定屏幕。
-
-          如果未设置此政策，那么系统将使用默认时间长度。
-
-          要在设备闲置时锁定屏幕，您最好采用以下方式：让系统在进入暂停状态时锁定屏幕，并指示 <ph name="PRODUCT_OS_NAME" />在闲置延迟时间过后进入暂停状态。只有在以下情况下才应使用此政策：屏幕锁定时间应显著早于系统进入暂停状态的时间，或者完全不需要在设备闲置时暂停系统。
-
-          指定的政策值应以毫秒为单位，且必须小于闲置延迟时间。</translation>
 <translation id="2433412232489478893">此政策可控制是否允许用户在 <ph name="PRODUCT_NAME" />上使用网络文件共享功能。
 
       如果未配置此政策或将其设为“True”，用户将能够使用网络文件共享功能。
@@ -1287,7 +1242,6 @@
 <translation id="2856674246949497058">如果操作系统版本比目标版本新，则回滚到并持续使用目标版本。在此过程中，系统会执行 Powerwash 操作。</translation>
 <translation id="2869762730352628426">在登录屏幕上启用自动点击</translation>
 <translation id="2872961005593481000">关机</translation>
-<translation id="2873651257716068683">替换默认打印页面大小。如果这种页面大小不适用，则忽略此政策。</translation>
 <translation id="2874209944580848064">针对支持 Android 应用的 <ph name="PRODUCT_OS_NAME" />设备的注意事项：</translation>
 <translation id="2874901846804525128">阻止用户使用来源不受信任的 Android 应用。</translation>
 <translation id="2875192972412983412">指定要让系统为确认是否有可用的服务器打印机而查询的部分打印服务器。
@@ -1716,19 +1670,6 @@
           如果未设置此政策，则“随选朗读”最初会处于停用状态，但用户可以随时启用该功能。</translation>
 <translation id="3591527072193107424">启用“旧版浏览器支持”功能。</translation>
 <translation id="3591584750136265240">配置登录身份验证行为</translation>
-<translation id="3602332793276340697">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />。
-
-          指定当使用电池供电时系统应在设备闲置多久后锁定屏幕。
-
-          如果将此政策设为大于 0 的值，那么只要设备闲置时长达到了此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会锁定屏幕。
-
-          如果将此政策设为 0，那么在设备闲置时，<ph name="PRODUCT_OS_NAME" />不会锁定屏幕。
-
-          如果未设置此政策，那么系统将使用默认时间长度。
-
-          要在设备闲置时锁定屏幕，您最好采用以下方式：让系统在进入暂停状态时锁定屏幕，并指示 <ph name="PRODUCT_OS_NAME" />在闲置延迟时间过后进入暂停状态。只有在以下情况下才应使用此政策：屏幕锁定时间应显著早于系统进入暂停状态的时间，或者完全不需要在设备闲置时暂停系统。
-
-          指定的政策值应以毫秒为单位，且必须小于闲置延迟时间。</translation>
 <translation id="3624515566460517364">检查上传内容和下载内容是否违反敏感数据保护规则</translation>
 <translation id="3627678165642179114">启用或停用拼写检查网络服务</translation>
 <translation id="3628480121685794414">启用单面打印</translation>
@@ -2767,6 +2708,12 @@
 
       应以毫秒为单位来指定此政策。</translation>
 <translation id="523505283826916779">无障碍设置</translation>
+<translation id="5236004592041099233">配置企业登录网址（仅限 HTTP 和 HTTPS 方案）列表。密码保护服务会在这些网址上捕获密码的加盐哈希值，并会使用它们来检测密码重用情况。
+      为了使 <ph name="PRODUCT_NAME" /> 能够正确捕获密码的加盐哈希值，请务必确保您的登录页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的准则。
+
+      如果您启用了此设置，密码保护服务就会在这些网址上捕获密码的加盐哈希值，以用于检测密码重用情况。
+      如果您停用了或未设定此设置，密码保护服务则会仅在 https://accounts.google.com 上捕获密码的加盐哈希值。
+      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 专业版或企业版实例。</translation>
 <translation id="5236882091572996759">如果将此政策设置为 true 或未设置此政策，则播放音频时计算机不会被视为闲置。这样就不会导致闲置超时，系统也不会执行闲置操作。不过，在达到配置的超时值后，屏幕会变暗、关闭和锁定（而不考虑音频活动）。
 
           如果将此政策设置为 false，则音频活动不会影响系统将计算机视为闲置状态。</translation>
@@ -2782,17 +2729,6 @@
       另请访问 https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types。</translation>
 <translation id="5249453807420671499">用户可以添加 Kerberos 帐号</translation>
 <translation id="5255162913209987122">可推荐</translation>
-<translation id="5261766238868915624">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
-
-          指定当使用电池供电时系统应在设备闲置多久后降低屏幕亮度。
-
-          如果将此政策设为大于 0 的值，那么只要设备闲置时长达到了此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会降低屏幕亮度。
-
-          如果将此政策设为 0，那么在设备闲置时，<ph name="PRODUCT_OS_NAME" />不会降低屏幕亮度。
-
-          如果未设置此政策，那么系统将使用默认时间长度。
-
-          指定的政策值应以毫秒为单位，且不得大于屏幕关闭延迟时间（若已设置）和闲置延迟时间。</translation>
 <translation id="527237119693897329">允许您指定不应加载哪些本地消息传递主机。
 
           如果黑名单的值为“*”，则意味着所有本地消息传递主机均将列入黑名单（除非这些主机已明确列入白名单）。
@@ -2821,13 +2757,6 @@
        如果此政策设为 false，系统将不会自动升级音频和视频内容，也不会为图片内容显示任何警告。
        此政策不会影响除音频、视频和图片之外的其他类型混合内容。
        从 <ph name="PRODUCT_NAME" /> 84 版开始，此政策将不再产生任何效力。</translation>
-<translation id="5278367296164377827">这项企业政策只是短期的适应性措施，将在 M82 中移除。
-
-      为配合 M80 稳定版的逐步推出，Chrome 的默认引荐来源网址政策正从其当前值 no-referrer-when-downgrade 强化为更安全的 strict-origin-when-cross-origin。
-
-      在 M80 稳定版发布前，这项企业政策将不会产生任何效力。在 M80 稳定版发布后，当这项企业政策处于启用状态时，Chrome 的默认引荐来源网址政策值将被设为 M80 预发布版本中采用的值 no-referrer-when-downgrade。
-
-      默认情况下，这项企业政策会处于停用状态。</translation>
 <translation id="5283457834853986457">停用插件查找器（已弃用）</translation>
 <translation id="5285315763984334157">拦截恶意下载内容</translation>
 <translation id="5288772341821359899">如果此政策已设置，则 WebRTC 使用的 UDP 端口范围将仅限于指定的端口区间（包括端点）。
@@ -3462,6 +3391,7 @@
 <translation id="6221175752766085998">允许使用由本地信任锚颁发的缺少 subjectAlternativeName 扩展项的证书</translation>
 <translation id="6224304369267200483">自动允许直接安全密钥认证的网址/网域</translation>
 <translation id="6233173491898450179">设置下载目录</translation>
+<translation id="6234177445959386333">配置企业登录网址列表，以便密码保护服务从这些网址中捕获密码的加盐哈希值。</translation>
 <translation id="6242147107333796512">报告与崩溃报告相关的信息，例如远程 ID、捕获时间戳和原因。
 
       如果此政策设为 false 或未设置，系统将不会报告崩溃报告信息。如果此政策设为 true，系统将会报告崩溃报告信息。</translation>
@@ -3496,17 +3426,6 @@
 <translation id="6281043242780654992">配置本地消息传递政策。不允许黑名单中列出的本地消息传递主机（除非相应主机已列入白名单）。</translation>
 <translation id="6282799760374509080">是否允许音频捕获</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6293957650182823856">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
-
-          指定当使用交流电源供电时系统应在设备闲置多久后显示警告对话框。
-
-          如果设置了此政策，那么只要设备闲置时长达到了此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会显示警告对话框，让用户知道系统即将执行闲置操作。
-
-          如果未设置此政策，系统便不会显示警告对话框。
-
-          指定的政策值应以毫秒为单位，且不得大于闲置延迟时间。
-
-          仅当闲置操作为注销或关机时，系统才会显示警告消息。</translation>
 <translation id="6310223829319187614">允许在用户登录期间自动填充域名</translation>
 <translation id="631081324835911099">当用户主帐号的身份验证令牌失效后，强制用户退出登录状态。
         此政策可避免用户访问 Google 网络媒体资源上的受限内容。
@@ -3903,6 +3822,12 @@
       如果未设置此政策，工具栏将默认放置在屏幕底部，但用户可以更改工具栏的位置。</translation>
 <translation id="7040229947030068419">值示例：</translation>
 <translation id="7044883996351280650">控制 Android 备份和恢复服务</translation>
+<translation id="705089873294344912">配置用于更改密码的网址（仅限 HTTP 和 HTTPS 方案）。当浏览器显示警告后，密码保护服务即会将用户转到此网址，以便其更改密码。
+      为了使 <ph name="PRODUCT_NAME" /> 能够在这一用于更改密码的页面上正确捕获新密码的加盐哈希值，请务必确保该页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的准则。
+
+      如果您启用了此设置，当浏览器中显示警告后，密码保护服务即会将用户转到此网址，以便其更改密码。
+      如果您停用了或未配置此设置，密码保护服务则会将用户转到 https://myaccount.google.com，以便其更改密码。
+      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 专业版或企业版实例。</translation>
 <translation id="7053678646221257043">如果启用此政策，就会强制从当前默认浏览器导入书签，还会影响导入对话框。如果停用此政策，就不会导入书签。如果未设置此政策，系统就会询问用户是否导入书签，或者系统自动进行导入。</translation>
 <translation id="7063895219334505671">在这些网站上允许弹出式窗口</translation>
 <translation id="706669471845501145">允许网站显示桌面通知</translation>
@@ -4910,17 +4835,6 @@
       此政策会致使系统将 X-GoogApps-Allowed-Domains 标头附加到向所有 google.com 网域发送的所有 HTTP 和 HTTPS 请求中，如 https://support.google.com/a/answer/1668854 中所述。
 
       用户无法更改或替换此设置。</translation>
-<translation id="8618139576368821933">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
-
-          指定当使用交流电源供电时系统应在设备闲置多久后降低屏幕亮度。
-
-          如果将此政策设为大于 0 的值，那么只要设备闲置时长达到了此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会降低屏幕亮度。
-
-          如果将此政策设为 0，那么在设备闲置时，<ph name="PRODUCT_OS_NAME" />不会降低屏幕亮度。
-
-          如果未设置此政策，那么系统将使用默认时间长度。
-
-          指定的政策值应以毫秒为单位，且不得大于屏幕关闭延迟时间（若已设置）和闲置延迟时间。</translation>
 <translation id="8625234016727663537">让您能够以列表的形式设置一系列网址，以指定自动授权哪些网站在登录屏幕上访问具有给定供应商 ID 和产品 ID 的 USB 设备。列表中的每项内容都必须包含设备和网址这两个部分，此政策才会有效。设备部分中的每项都可包含供应商 ID 和产品 ID 字段。被省略的任何 ID 都会被视为通配符，但例外情况是：如果未指定供应商 ID，便无法指定产品 ID。否则，此政策将会无效并会被忽略。
 
         USB 权限模型会使用发出相应请求的网站的网址（“请求网址”）和顶级框架网站的网址（“嵌入网址”）来授权请求网址访问 USB 设备。如果发出请求的网站是在 iframe 中加载的，则请求网址可能会与嵌入网址不同。因此，“urls”字段最多可包含 2 个以英文逗号分隔的网址字符串，以分别指定请求网址和嵌入网址。如果仅指定了 1 个网址，系统将会在请求网址与这个网址相符（无论嵌入网址的状态为何）时向该网站授予对相应 USB 设备的访问权限。“urls”字段中的网址必须是有效网址，否则系统会忽略此政策。
@@ -4997,17 +4911,6 @@
       基于扩展程序的打印机也称为打印提供程序目的地，包括 <ph name="PRODUCT_NAME" /> 扩展程序名下的所有目的地。
 
       本地打印机也称为本机打印目的地，包括可供本地计算机使用的目的地以及共享的网络打印机。</translation>
-<translation id="8752541111574086388">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
-
-          指定当使用电池供电时系统应在设备闲置多久后显示警告对话框。
-
-          如果设置了此政策，那么只要设备闲置时长达到了此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会显示警告对话框，让用户知道系统即将执行闲置操作。
-
-          如果未设置此政策，系统便不会显示警告对话框。
-
-          指定的政策值应以毫秒为单位，且不得大于闲置延迟时间。
-
-          仅当闲置操作为注销或关机时，系统才会显示警告消息。</translation>
 <translation id="8757552286070680084">Wilco DTC 配置</translation>
 <translation id="8758831693895931466">启用强制性云管理注册</translation>
 <translation id="8759829385824155666">允许的 Kerberos 加密类型</translation>
@@ -5098,24 +5001,6 @@
       如果此政策设为 false 或未设置，系统将不会报告显示状态和图形状态。如果此政策设为 true，系统将会报告显示状态和图形状态。</translation>
 <translation id="891435090623616439">已编码为 JSON 字符串。有关详情，请访问 <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">允许用户管理已安装的 CA 证书。</translation>
-<translation id="8926275581598789324">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
-
-          指定当使用电池供电时系统应在设备闲置多久后采取闲置操作。
-
-          如果设置了此政策，那么只要设备闲置时长达到了此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会采取闲置操作（可另行配置）。
-
-          如果未设置此政策，那么系统将使用默认时间长度。
-
-          指定的政策值应以毫秒为单位。</translation>
-<translation id="8929997566627164343">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
-
-          指定当使用交流电源供电时系统应在设备闲置多久后采取闲置操作。
-
-          如果设置了此政策，那么只要设备闲置时长达到了此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会采取闲置操作（可另行配置）。
-
-          如果未设置此政策，那么系统将使用默认时间长度。
-
-          指定的政策值应以毫秒为单位。</translation>
 <translation id="8934944553121392674">控制用户可以使用 <ph name="DEVICE_PRINTERS_POLICY" /> 中的哪些打印机。
 
       指定对批量打印机配置使用哪项访问政策。如果选择 <ph name="PRINTERS_ALLOW_ALL" />，则系统会显示所有打印机。如果选择 <ph name="PRINTERS_BLACKLIST" />，则系统会使用 <ph name="DEVICE_PRINTERS_BLACKLIST" /> 来限制用户使用指定的打印机。如果选择 <ph name="PRINTERS_WHITELIST" />，则 <ph name="DEVICE_PRINTERS_WHITELIST" /> 只会指定可供用户选择的打印机。

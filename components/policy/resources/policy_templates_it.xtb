@@ -77,17 +77,6 @@
       Se imposti <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valore 1), è possibile applicare a <ph name="PRODUCT_OS_NAME" /> soltanto le varianti considerate correzioni fondamentali per la sicurezza o la stabilità.
 
       L'impostazione di <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valore 2) impedisce di applicare al browser tutte le varianti nella schermata di accesso. Questa modalità potrebbe impedire agli sviluppatori di <ph name="PRODUCT_OS_NAME" /> di fornire tempestivamente correzioni fondamentali per la sicurezza ed è pertanto sconsigliata.</translation>
-<translation id="1078643757670228170">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene disattivato quando viene usata la corrente alternata.
-
-          Se questo criterio viene impostato su un valore maggiore di zero, specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> disattivi lo schermo.
-
-          Se questo criterio viene impostato su zero, <ph name="PRODUCT_OS_NAME" /> non disattiva lo schermo quando l'utente diventa inattivo.
-
-          Se questo criterio non viene impostato, viene usato un periodo di tempo predefinito.
-
-          Il valore del criterio deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di inattività.</translation>
 <translation id="1079801999187584280">Non consentire l'utilizzo degli Strumenti per sviluppatori</translation>
 <translation id="1087437665304381368">Questa norma consente di controllare esclusivamente la modalità sviluppatore di <ph name="PRODUCT_OS_NAME" />. Se vuoi impedire l'accesso alle Opzioni sviluppatore Android, devi impostare la norma <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">L'elenco dei criteri di Chrome Enterprise è in fase di trasferimento. Aggiorna i tuoi preferiti con l'URL <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -241,13 +230,6 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
       Questa norma si applica a tutti i tipi di uscite audio e non solo agli altoparlanti integrati. Anche le funzioni di accessibilità audio vengono bloccate da questa norma. Non attivare questa norma se l'utente deve utilizzare uno screen reader.
 
       Se questa impostazione viene impostata su true o non viene configurata, gli utenti potranno utilizzare tutte le uscite audio supportate sul loro dispositivo.</translation>
-<translation id="1358050607773151553">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Se viene impostato, questo criterio specifica l'azione compiuta da <ph name="PRODUCT_OS_NAME" /> quando l'utente rimane inattivo per il periodo di tempo indicato dal ritardo di inattività, che può essere configurato separatamente.
-
-          Se il criterio non viene impostato, viene compiuta l'azione predefinita, ossia la sospensione.
-
-          Se l'azione è la sospensione, è possibile configurare separatamente <ph name="PRODUCT_OS_NAME" /> in modo che blocchi o meno lo schermo prima della sospensione.</translation>
 <translation id="1359553908012294236">Se questa norma viene impostata su true o non viene configurata, in <ph name="PRODUCT_NAME" /> verranno attivati gli accessi come ospite, che sono profili <ph name="PRODUCT_NAME" /> in cui tutte le finestre sono in modalità di navigazione in incognito.
 
       Se questa norma viene impostata su false, in <ph name="PRODUCT_NAME" /> non sarà possibile avviare profili ospite.</translation>
@@ -262,11 +244,6 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
           Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultNotificationsSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
 
           Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="1377134027840513298">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Questo criterio consente di fornire un valore di riserva per i criteri più specifici <ph name="IDLE_ACTION_AC_POLICY_NAME" /> e <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" />. Se questo criterio viene impostato, il suo valore viene utilizzato se non viene impostato il rispettivo criterio più specifico.
-
-          Se questo criterio non viene impostato, il comportamento dei criteri più specifici rimane invariato.</translation>
 <translation id="1384459581748403878">Riferimento: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Indica lo stato di aggiornamento del sistema operativo</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
@@ -617,17 +594,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa impostazione è disattivata, la funzione Compilazione automatica non suggerirà o non inserirà mai i dati relativi all'indirizzo, né salverà altre informazioni relative ad altri indirizzi che l'utente potrebbe inviare durante la navigazione sul Web.
 
       Se questa impostazione è attivata o non è impostata su alcun valore, l'utente potrà gestire la funzione Compilazione automatica per gli indirizzi nell'interfaccia utente.</translation>
-<translation id="1959613237819575097">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene disattivato quando viene usata la batteria.
-
-          Se questo criterio viene impostato su un valore maggiore di zero, specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> disattivi lo schermo.
-
-          Se questo criterio viene impostato su zero, <ph name="PRODUCT_OS_NAME" /> non disattiva lo schermo quando l'utente diventa inattivo.
-
-          Se questo criterio non viene impostato, viene usato un periodo di tempo predefinito.
-
-          Il valore del criterio deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di inattività.</translation>
 <translation id="1962273523772270623">Consenti la raccolta di log eventi WebRTC dai servizi Google</translation>
 <translation id="1964634611280150550">Modalità di navigazione in incognito non attiva</translation>
 <translation id="1964802606569741174">Questa norma non ha effetto sull'app YouTube per Android. Se è necessario applicare la modalità di protezione di YouTube, l'installazione dell'app YouTube per Android non deve essere consentita.</translation>
@@ -740,6 +706,13 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se questo criterio non viene impostato, il rilevamento della copertura della finestra verrà attivato.</translation>
 <translation id="2166472654199325139">Non filtrare i siti di contenuti per adulti</translation>
+<translation id="2166746572083670600">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> userà per memorizzare i dati utente.
+
+      Se imposti questo criterio, <ph name="PRODUCT_NAME" /> userà la directory specificata a prescindere dalla specifica o meno da parte dell'utente del flag "--user-data-dir". Per evitare perdite di dati o altri errori imprevisti, questo criterio non deve essere impostato su una directory usata per altri scopi perché <ph name="PRODUCT_NAME" /> gestisce i relativi contenuti.
+
+      Visita la pagina https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.
+
+      Se questo criterio non viene impostato, verrà usato il percorso del profilo predefinito e l'utente potrà ignorarlo con il flag della riga di comando "--user-data-dir".</translation>
 <translation id="2168397434410358693">Ritardo inattività in caso di utilizzo di CA</translation>
 <translation id="217013996107840632">Parametri della riga di comando per cambiare il browser alternativo.</translation>
 <translation id="2170233653554726857">Attiva ottimizzazione WPAD</translation>
@@ -861,11 +834,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       I modelli con formato errato verranno ignorati.</translation>
 <translation id="2345547870894930157">Attiva DNS over HTTPS senza fallback non sicuro</translation>
 <translation id="2386362615870139244">Consenti Wakelock dello schermo</translation>
-<translation id="2398554235599593694"> Questo criterio consente di stabilire se mostrare o meno la casella di controllo "Apri sempre" nei messaggi di conferma di avvio di protocolli esterni.
-
-      Se questo criterio viene impostato su true, quando viene mostrato un messaggio di conferma di un protocollo esterno, l'utente può scegliere di "aprire sempre" il protocollo senza ricevere ulteriori messaggi di conferma.
-
-      Se questo criterio viene impostato su false o non viene impostato, la casella di controllo "Apri sempre" non viene visualizzata e l'utente riceverà un messaggio ogni volta che viene richiamato un protocollo esterno.</translation>
 <translation id="2406820201690307634">Consente di impostare un elenco di pattern URL che specificano i siti nei quali non è consentita la visualizzazione di immagini.
 
           Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultImagesSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
@@ -910,19 +878,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
       Se l'impostazione non viene impostata, l'utente può decidere se utilizzare o meno la funzione.
 
       L'impostazione è stata rimossa da <ph name="PRODUCT_NAME" /> 29 e versioni successive.</translation>
-<translation id="2430828513262055658">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
-
-          Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene bloccato quando viene usata la corrente alternata.
-
-          Se questo criterio viene impostato su un valore maggiore di zero, specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> blocchi lo schermo.
-
-          Se questo criterio viene impostato su zero, <ph name="PRODUCT_OS_NAME" /> non blocca lo schermo quando l'utente diventa inattivo.
-
-          Se questo criterio non viene impostato, viene usato un periodo di tempo predefinito.
-
-          Il metodo consigliato per bloccare lo schermo in caso di inattività consiste nell'attivare il blocco dello schermo in caso di sospensione e fare in modo che <ph name="PRODUCT_OS_NAME" /> entri in sospensione dopo il ritardo di inattività. Questo criterio dovrebbe essere usato soltanto quando il blocco dello schermo dovrebbe avvenire molto tempo prima della sospensione o quando non si vuole affatto la sospensione in caso di inattività.
-
-          Il valore del criterio deve essere specificato in millisecondi. I valori devono essere inferiori al ritardo di inattività.</translation>
 <translation id="2433412232489478893">Questa norma controlla se per un utente è consentita o meno la funzione Condivisioni file di rete per <ph name="PRODUCT_NAME" />.
 
       Quando questa norma non è configurata o è impostata su True, gli utenti possono utilizzare la funzione Condivisioni file di rete.
@@ -1301,7 +1256,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2856674246949497058">Esegui il rollback e rimani nella versione target se la versione del sistema operativo è più recente di quella target. Esegui un powerwash durante la procedura.</translation>
 <translation id="2869762730352628426">Attiva la funzione di clic automatico nella schermata di accesso</translation>
 <translation id="2872961005593481000">Spegni</translation>
-<translation id="2873651257716068683">Consente di eseguire l'override delle dimensioni predefinite delle pagine di stampa. Se le dimensioni della pagina non sono disponibili, questa norma viene ignorata.</translation>
 <translation id="2874209944580848064">Nota per i dispositivi <ph name="PRODUCT_OS_NAME" /> che supportano le app Android:</translation>
 <translation id="2874901846804525128">Impedisci all'utente di usare app Android di fonti non attendibili</translation>
 <translation id="2875192972412983412">Consente di specificare il sottoinsieme di server di stampa a cui verranno inviate query sulle stampanti.
@@ -1733,19 +1687,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
           Se questo criterio non viene impostato, inizialmente la funzione Seleziona per ascoltare è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="3591527072193107424">Attiva la funzionalità Supporto dei browser precedenti.</translation>
 <translation id="3591584750136265240">Configura il comportamento di autenticazione dell'accesso</translation>
-<translation id="3602332793276340697">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
-
-          Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene bloccato quando viene usata la batteria.
-
-          Se questo criterio viene impostato su un valore maggiore di zero, specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> blocchi lo schermo.
-
-          Se questo criterio viene impostato su zero, <ph name="PRODUCT_OS_NAME" /> non blocca lo schermo quando l'utente diventa inattivo.
-
-          Se questo criterio non viene impostato, viene usato un periodo di tempo predefinito.
-
-          Il metodo consigliato per bloccare lo schermo in caso di inattività consiste nell'attivare il blocco dello schermo in caso di sospensione e fare in modo che <ph name="PRODUCT_OS_NAME" /> entri in sospensione dopo il ritardo di inattività. Questo criterio dovrebbe essere usato soltanto quando il blocco dello schermo dovrebbe avvenire molto tempo prima della sospensione o quando non si vuole affatto la sospensione in caso di inattività.
-
-          Il valore del criterio deve essere specificato in millisecondi. I valori devono essere inferiori al ritardo di inattività.</translation>
 <translation id="3624515566460517364">Verifica eventuali violazioni delle regole relative alla protezione dei dati sensibili di caricamenti e download</translation>
 <translation id="3627678165642179114">Attiva o disattiva il servizio web di controllo ortografico</translation>
 <translation id="3628480121685794414">Attiva stampa su un lato</translation>
@@ -2786,6 +2727,12 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 
       Questa norma è specificata in millisecondi.</translation>
 <translation id="523505283826916779">Impostazioni di accessibilità</translation>
+<translation id="5236004592041099233">Consente di configurare l'elenco di URL di accesso aziendale (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password acquisirà gli hash con salt delle password in questi URL e li userà per il rilevamento del riutilizzo delle password.
+      Per consentire a <ph name="PRODUCT_NAME" /> di acquisire correttamente gli hash con salt delle password, assicurati che le pagine di accesso rispettino le linee guida disponibili all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Se questa impostazione viene attivata, il servizio di protezione tramite password acquisirà gli hash con salt delle password in questi URL per il rilevamento del riutilizzo delle password.
+      Se questa impostazione viene disattivata o non viene configurata, il servizio di protezione tramite password acquisirà soltanto gli hash con salt delle password sul sito https://accounts.google.com.
+      Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" />, così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="5236882091572996759">Se questa norma è impostata su True o non viene impostata, l'utente non verrà considerato inattivo durante la riproduzione dell'audio. In questo modo non viene raggiunto il timeout di inattività e non viene compiuta l'azione per l'inattività. Tuttavia, lo schermo viene oscurato, disattivato e bloccato dopo i timeout configurati, a prescindere dall'attività audio.
 
           Se questa norma viene impostata su False, l'attività audio non impedisce di considerare inattivo l'utente.</translation>
@@ -2801,17 +2748,6 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
       Visita anche la pagina https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5249453807420671499">Gli utenti possono aggiungere account Kerberos</translation>
 <translation id="5255162913209987122">Può essere consigliata</translation>
-<translation id="5261766238868915624">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene oscurato quando viene usata la batteria.
-
-          Se questo criterio viene impostato su un valore maggiore di zero, specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> oscuri lo schermo.
-
-          Se questo criterio viene impostato su zero, <ph name="PRODUCT_OS_NAME" /> non oscura lo schermo quando l'utente diventa inattivo.
-
-          Se questo criterio non viene impostato, viene usato un periodo di tempo predefinito.
-
-          Il valore del criterio deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di disattivazione dello schermo (se impostato) e al ritardo di inattività.</translation>
 <translation id="527237119693897329">Consente di specificare gli host di messaggi nativi che non devono essere caricati.
 
 Il valore della lista nera "*" indica che tutti gli host di messaggi nativi non sono autorizzati, a meno che vengano elencati espressamente nella whitelist.
@@ -2840,13 +2776,6 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
        Se il criterio viene impostato su false, vengono disattivati gli upgrade automatici di audio e video e non viene mostrato un avviso per le immagini.
        Questo criterio non influisce su tipi di contenuti misti diversi da audio, video e immagini.
        Questo criterio non avrà più effetto dalla versione 84 di <ph name="PRODUCT_NAME" />.</translation>
-<translation id="5278367296164377827">Questo criterio aziendale è finalizzato al periodo di transizione e verrà rimosso nella versione M82.
-
-      Il criterio relativo al referrer predefinito di Chrome sarà rafforzato passando dal relativo valore corrente no-referrer-when-downgrade al più sicuro strict-origin-when-cross-origin tramite un rilascio graduale della release stabile di M80.
-
-      Prima del lancio, questo criterio aziendale non avrà alcun effetto. Dopo il lancio, una volta attivato questo criterio aziendale, il criterio relativo al referrer predefinito di Chrome verrà impostato sul suo valore della pre-release M80, no-referrer-when-downgrade.
-
-      Questo criterio aziendale è disattivato per impostazione predefinita.</translation>
 <translation id="5283457834853986457">Disattiva la ricerca dei plug-in (ritirata)</translation>
 <translation id="5285315763984334157">Blocca download dannosi</translation>
 <translation id="5288772341821359899">Se la norma viene impostata, l'intervallo di porte UDP utilizzato da WebRTC viene limitato all'intervallo di porte specificato (endpoint inclusi).
@@ -3501,6 +3430,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6221175752766085998">Consenti i certificati privi dell'estensione subjectAlternativeName emessi dai trust anchor locali</translation>
 <translation id="6224304369267200483">URL/domini per cui è consentita automaticamente l'attestazione diretta dei token di sicurezza</translation>
 <translation id="6233173491898450179">Imposta directory di download</translation>
+<translation id="6234177445959386333">Configura l'elenco di URL di accesso aziendale in cui il servizio di protezione tramite password deve acquisire gli hash con salt delle password.</translation>
 <translation id="6242147107333796512">Segnala informazioni relative ai rapporti sugli arresti anomali, come ID remoto,
       timestamp di acquisizione e causa.
 
@@ -3538,17 +3468,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6281043242780654992">Consente di configurare le norme per i messaggi nativi. Gli host di messaggi nativi non autorizzati non saranno consentiti se non vengono aggiunti alla whitelist.</translation>
 <translation id="6282799760374509080">Consenti o nega acquisizione audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6293957650182823856">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale viene mostrata una finestra di dialogo di avviso quando viene usata la corrente alternata.
-
-          Se viene impostato, questo criterio specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> mostri una finestra di dialogo di avviso per comunicare all'utente che sta per essere compiuta l'azione stabilita in caso di inattività.
-
-          Se questo criterio non viene impostato, non viene visualizzata alcuna finestra di dialogo di avviso.
-
-          Il valore del criterio deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di inattività.
-
-          L'avviso viene mostrato solo se l'azione stabilita in caso di inattività è la disconnessione o lo spegnimento.</translation>
 <translation id="6310223829319187614">Consente il completamento automatico del nome di dominio durante l'accesso dell'utente</translation>
 <translation id="631081324835911099">Consente di forzare la disconnessione dell'utente quando il token di autenticazione del suo account principale non è più valido.
         Questo criterio può proteggere l'utente dall'accesso a contenuti con limitazioni sulle proprietà web di Google.
@@ -3946,6 +3865,12 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       Se il criterio non viene impostato, la shelf verrà posizionata per impostazione predefinita nella parte inferiore dello schermo, ma l'utente potrà cambiare la posizione.</translation>
 <translation id="7040229947030068419">Valore di esempio:</translation>
 <translation id="7044883996351280650">Controlla il servizio backup e ripristino di Android</translation>
+<translation id="705089873294344912">Consente di configurare l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password indirizzerà gli utenti a questo URL per modificare la password, dopo la visualizzazione di un avviso nel browser.
+      Per consentire a <ph name="PRODUCT_NAME" /> di acquisire correttamente l'hash con salt della nuova password in questa pagina di modifica della password, assicurati che tale pagina rispetti le linee guida disponibili all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Se questa impostazione viene attivata, il servizio di protezione tramite password indirizzerà gli utenti a questo URL per modificare la password, dopo la visualizzazione di un avviso nel browser.
+      Se questa impostazione viene disattivata o non viene configurata, il servizio di protezione tramite password indirizzerà gli utenti alla pagina https://myaccount.google.com per modificare la password.
+      Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" />, così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="7053678646221257043">Se è attiva, questa norma impone l'importazione dei Preferiti dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, i Preferiti non vengono importati. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="7063895219334505671">Consenti popup su questi siti</translation>
 <translation id="706669471845501145">Consenti la visualizzazione di notifiche desktop da parte dei siti</translation>
@@ -4952,17 +4877,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
       Questa norma comporta l'aggiunta dell'intestazione X-GoogApps-Allowed-Domains a tutte le richieste HTTP e HTTPS inviate a tutti i domini google.com, come descritto all'indirizzo https://support.google.com/a/answer/1668854.
 
       L'utente non può modificare o ignorare questa impostazione.</translation>
-<translation id="8618139576368821933">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene oscurato quando viene usata la corrente alternata.
-
-          Se questo criterio viene impostato su un valore maggiore di zero, specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> oscuri lo schermo.
-
-          Se questo criterio viene impostato su zero, <ph name="PRODUCT_OS_NAME" /> non oscura lo schermo quando l'utente diventa inattivo.
-
-          Se questo criterio non viene impostato, viene usato un periodo di tempo predefinito.
-
-          Il valore del criterio deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di disattivazione dello schermo (se impostato) e al ritardo di inattività.</translation>
 <translation id="8625234016727663537">Consente di impostare un elenco di URL che specifica a quali siti verrà concessa automaticamente l'autorizzazione per accedere a un dispositivo USB con gli ID prodotto e fornitore indicati nella schermata di accesso. Perché il criterio sia valido, ogni elemento dell'elenco deve contenere sia dispositivi sia URL. Ogni elemento nei dispositivi può contenere un campo ID fornitore e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza aver specificato un ID fornitore. In caso contrario, il criterio non sarà valido e verrà ignorato.
 
         Il modello di autorizzazione USB utilizza l'URL del sito richiedente ("URL richiedente") e l'URL del sito frame di livello principale ("URL di incorporamento") per concedere all'URL richiedente l'autorizzazione di accesso al dispositivo USB. L'URL richiedente può essere diverso dall'URL di incorporamento quando il sito richiedente viene caricato in un iframe. Di conseguenza il campo "URL" può contenere fino a due stringhe URL delimitate da virgola per specificare rispettivamente l'URL richiedente e l'URL di incorporamento. Se è specificato un solo URL, l'accesso ai dispositivi USB corrispondenti viene concesso quando l'URL del sito richiedente corrisponde all'URL, a prescindere dallo stato di incorporamento. Gli URL in "URL" devono essere validi, altrimenti il criterio viene ignorato.
@@ -5039,17 +4953,6 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
       Le stampanti estensione sono note anche come destinazioni dei provider di stampa e includono le eventuali destinazioni appartenenti a un'estensione di <ph name="PRODUCT_NAME" />.
 
       Le stampanti locali sono note anche come destinazioni di stampa native e includono le destinazioni disponibili per le stampanti di computer locali e le stampanti di rete condivise.</translation>
-<translation id="8752541111574086388">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale viene mostrata una finestra di dialogo di avviso quando viene usata la batteria.
-
-          Se viene impostato, questo criterio specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> mostri una finestra di dialogo di avviso per comunicare all'utente che sta per essere compiuta l'azione stabilita in caso di inattività.
-
-          Se questo criterio non viene impostato, non viene visualizzata alcuna finestra di dialogo di avviso.
-
-          Il valore del criterio deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di inattività.
-
-          L'avviso viene mostrato solo se l'azione stabilita in caso di inattività è la disconnessione o lo spegnimento.</translation>
 <translation id="8757552286070680084">Configurazione di DTC wilco</translation>
 <translation id="8758831693895931466">Attiva la registrazione alla gestione della cloud obbligatoria</translation>
 <translation id="8759829385824155666">Tipi di crittografia Kerberos consentiti</translation>
@@ -5145,24 +5048,6 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
       Se il criterio viene impostato su false o non viene impostato, gli stati relativi a display e grafica non vengono segnalati. Se viene impostato su true, gli stati relativi a display e grafica vengono segnalati.</translation>
 <translation id="891435090623616439">codificato sotto forma di stringa JSON; per informazioni dettagliate, visita la pagina <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Consenti agli utenti di gestire i certificati CA installati.</translation>
-<translation id="8926275581598789324">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale viene compiuta l'azione stabilita per l'inattività quando viene usata la batteria.
-
-          Se viene impostato, questo criterio specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> compia l'azione stabilita in caso di inattività, che può essere configurata separatamente.
-
-          Se questo criterio non viene impostato, viene usato un periodo di tempo predefinito.
-
-          Il valore del criterio deve essere specificato in millisecondi.</translation>
-<translation id="8929997566627164343">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale viene compiuta l'azione stabilita per l'inattività quando viene usata la corrente alternata.
-
-          Se viene impostato, questo criterio specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> compia l'azione stabilita in caso di inattività, che può essere configurata separatamente.
-
-          Se questo criterio non viene impostato, viene usato un periodo di tempo predefinito.
-
-          Il valore del criterio deve essere specificato in millisecondi.</translation>
 <translation id="8934944553121392674">Consente di stabilire quali stampanti della norma <ph name="DEVICE_PRINTERS_POLICY" /> mettere a disposizione degli utenti.
 
       Determina quale norma di accesso usare per la configurazione collettiva delle stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_ALLOW_ALL" />, vengono mostrate tutte le stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_BLACKLIST" />, viene usata la norma <ph name="DEVICE_PRINTERS_BLACKLIST" /> per limitare l'accesso a stampanti specifiche. Se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" />, la norma <ph name="DEVICE_PRINTERS_WHITELIST" /> stabilisce soltanto le stampanti selezionabili.

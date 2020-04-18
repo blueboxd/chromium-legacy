@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Paus</translation>
 <translation id="1188239144602654184">Starta AR</translation>
 <translation id="1197267115302279827">Flytta bokmärken</translation>
-<translation id="119944043368869598">Ta bort alla</translation>
 <translation id="1201402288615127009">Nästa</translation>
 <translation id="1204037785786432551">Ladda ned länk</translation>
 <translation id="1206892813135768548">Kopiera länktext</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Grunder</translation>
 <translation id="1671236975893690980">Nedladdning väntar …</translation>
 <translation id="1672586136351118594">Visa inte igen</translation>
+<translation id="1688867105868176567">Vill du ta bort webbplatsdata?</translation>
 <translation id="1692118695553449118">Synkronisering är på</translation>
 <translation id="169515064810179024">Blockera webbplatser från att använda enhetens rörelsesensorer</translation>
 <translation id="1717218214683051432">Rörelsesensorer</translation>
@@ -507,7 +507,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4751476147751820511">Rörelse- eller ljussensorer</translation>
 <translation id="4759238208242260848">Nedladdningar</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 nedladdning har slutförts.}other{# nedladdningar har slutförts.}}</translation>
-<translation id="4797039098279997504">Tryck här om du vill återgå till <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Betalningsmetoder och adresser från Google Pay omfattas inte av kryptering med lösenfras.
 
 <ph name="BEGIN_LINK" />Återställ synkroniseringen<ph name="END_LINK" /> om du vill ändra den här inställningen.</translation>
@@ -534,7 +533,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4932247056774066048">Eftersom du loggar ut från ett konto som hanteras av <ph name="DOMAIN_NAME" /> raderas din Chrome-data från den här enheten. Den finns kvar på ditt Google-konto.</translation>
 <translation id="4943703118917034429">Virtuell verklighet</translation>
 <translation id="4943872375798546930">Inga resultat</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> delar skärmen</translation>
 <translation id="4961107849584082341">Översätt den här sidan till vilket språk som helst</translation>
 <translation id="4962975101802056554">Återkalla alla behörigheter för enheten</translation>
 <translation id="4970824347203572753">Inte tillgängligt i ditt land</translation>
@@ -559,7 +557,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5129038482087801250">Installera webbapp</translation>
 <translation id="5132942445612118989">Synkronisera lösenord, historik med mera på alla dina enheter</translation>
 <translation id="5139940364318403933">Lär dig använda Google Drive</translation>
-<translation id="515227803646670480">Ta bort sparad data</translation>
 <translation id="5152843274749979095">Inga appar som stöds finns installerade</translation>
 <translation id="5161254044473106830">Titel krävs</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 nedladdning misslyckades.}other{# nedladdningar misslyckades.}}</translation>
@@ -667,7 +664,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5869522115854928033">Sparade lösenord</translation>
 <translation id="5876056640971328065">Pausa video</translation>
 <translation id="5884076754568147479">Innehållet på en webbplats där du använder Google Assistent, dess webbadress samt information som du skickar via assistenten överförs till Google så att du kan få uppgifterna utförda</translation>
-<translation id="5902828464777634901">All data som sparats lokalt av webbplatsen tas bort, inklusive cookies.</translation>
 <translation id="5919204609460789179">Uppdatera <ph name="PRODUCT_NAME" /> för att starta synkronisering</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> har sparats</translation>
 <translation id="5939518447894949180">Återställ</translation>
@@ -787,7 +783,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="671481426037969117">Timern för <ph name="FQDN" /> har löpt ut. Den börjar om igen i morgon.</translation>
 <translation id="6738867403308150051">Laddar ned …</translation>
 <translation id="6766622839693428701">Svep nedåt när du vill stänga.</translation>
-<translation id="6766758767654711248">Tryck här för att besöka webbplatsen</translation>
 <translation id="6767294960381293877">Listan över enheter som fliken kan delas med öppnades och tar upp halva skärmen.</translation>
 <translation id="6782111308708962316">Hindra att webbplatser från tredje part sparar och läser cookiedata</translation>
 <translation id="6790428901817661496">Spela</translation>
@@ -1048,7 +1043,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8812260976093120287">På vissa webbplatser kan du betala med ovanstående betalningsappar som stöds på enheten.</translation>
 <translation id="8816026460808729765">Blockera webbplatser från att använda enhetens sensorer</translation>
 <translation id="8820817407110198400">Bokmärken</translation>
-<translation id="8833831881926404480">En webbplats delar din skärm</translation>
 <translation id="883806473910249246">Ett fel uppstod när innehållet skulle laddas ned.</translation>
 <translation id="8840953339110955557">Sidan kan skilja sig från onlineversionen.</translation>
 <translation id="8847988622838149491">USB</translation>

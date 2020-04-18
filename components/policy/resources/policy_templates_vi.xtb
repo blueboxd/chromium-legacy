@@ -77,17 +77,6 @@
       Việc đặt <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (giá trị 1) sẽ chỉ cho phép áp dụng những biến thể được xem là bản sửa lỗi quan trọng về độ bảo mật hoặc độ ổn định cho <ph name="PRODUCT_OS_NAME" />.
 
       Việc đặt <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (giá trị 2) sẽ không cho phép áp dụng tất cả các biến thể cho trình duyệt trên màn hình đăng nhập. Xin lưu ý rằng chế độ này có thể khiến nhà phát triển <ph name="PRODUCT_OS_NAME" /> không thể cung cấp kịp thời các bản sửa lỗi bảo mật quan trọng nên không được khuyên dùng.</translation>
-<translation id="1078643757670228170">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình bị tắt khi chạy trên nguồn AC.
-
-          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> tắt màn hình.
-
-          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không tắt màn hình khi người dùng ở chế độ tạm vắng.
-
-          Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
-
-          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ tạm vắng.</translation>
 <translation id="1079801999187584280">Không cho phép sử dụng Công cụ dành cho nhà phát triển</translation>
 <translation id="1087437665304381368">Chính sách này chỉ kiểm soát chế độ nhà phát triển của <ph name="PRODUCT_OS_NAME" />. Nếu muốn ngăn khả năng truy cập vào Tùy chọn của nhà phát triển Android, bạn cần đặt chính sách <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">Danh sách chính sách của Chrome Enterprise sẽ chuyển sang vị trí mới! Vui lòng cập nhật dấu trang của bạn thành <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -256,13 +245,6 @@
       Chính sách này không chỉ ảnh hưởng tới loa tích hợp sẵn mà còn ảnh hưởng đến tất cả các loại đầu ra âm thanh. Chính sách này cũng cấm các tính năng hỗ trợ tiếp cận bằng âm thanh. Không bật chính sách này nếu người dùng cần phải sử dụng trình đọc màn hình.
 
       Nếu bạn không định cấu hình hoặc nếu bạn đặt tùy chọn cài đặt này thành true, thì người dùng có thể sử dụng tất cả các đầu ra âm thanh được hỗ trợ trên thiết bị của họ.</translation>
-<translation id="1358050607773151553">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Khi bạn đặt, chính sách này sẽ chỉ định hành động mà <ph name="PRODUCT_OS_NAME" /> thực hiện khi người dùng tạm vắng trong khoảng thời gian cho trước theo thời gian chờ khi tạm vắng. Bạn có thể định cấu hình riêng biệt khoảng thời gian này.
-
-          Khi bạn không đặt chính sách này, hành động mặc định là tạm ngưng sẽ được thực hiện.
-
-          Nếu hành động là tạm ngưng, bạn có thể định cấu hình <ph name="PRODUCT_OS_NAME" /> một cách riêng biệt thành khóa hoặc không khóa màn hình trước khi tạm ngưng.</translation>
 <translation id="1359553908012294236">Nếu chính sách này được đặt thành true hoặc không được định cấu hình, <ph name="PRODUCT_NAME" /> sẽ bật chế độ đăng nhập khách. Chế độ đăng nhập khách là hồ sơ <ph name="PRODUCT_NAME" /> trong đó tất cả cửa sổ đều ở chế độ ẩn danh.
 
       Nếu chính sách này được đặt thành false, <ph name="PRODUCT_NAME" /> sẽ không cho phép bắt đầu hồ sơ khách.</translation>
@@ -277,11 +259,6 @@
           Nếu bạn không đặt chính sách này, thì giá trị mặc định chung của chính sách "DefaultNotificationsSetting" (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.
 
           Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="1377134027840513298">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Chính sách này cung cấp giá trị dự phòng cho các chính sách <ph name="IDLE_ACTION_AC_POLICY_NAME" /> và <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> cụ thể hơn. Nếu bạn đặt chính sách này, thì giá trị của chính sách sẽ được sử dụng trong trường hợp bạn không đặt chính sách cụ thể hơn tương ứng.
-
-          Khi bạn không đặt chính sách này, thì hoạt động của các chính sách cụ thể hơn sẽ không bị ảnh hưởng.</translation>
 <translation id="1384459581748403878">Tham khảo: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Báo cáo trạng thái cập nhật hệ điều hành</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
@@ -645,17 +622,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
       Nếu bạn tắt tùy chọn cài đặt này, thì tính năng Tự động điền sẽ không bao giờ gợi ý hoặc điền thông tin địa chỉ, đồng thời sẽ không lưu thông tin địa chỉ bổ sung mà người dùng có thể gửi trong khi duyệt web.
 
       Nếu bạn bật hoặc không đặt giá trị nào cho tùy chọn cài đặt này, thì người dùng có thể kiểm soát tính năng Tự động điền cho địa chỉ trong giao diện người dùng.</translation>
-<translation id="1959613237819575097">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình bị tắt khi chạy trên nguồn pin.
-
-          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> tắt màn hình.
-
-          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không tắt màn hình khi người dùng ở chế độ tạm vắng.
-
-          Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
-
-          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ tạm vắng.</translation>
 <translation id="1962273523772270623">Cho phép thu thập nhật ký sự kiện WebRTC từ các dịch vụ của Google</translation>
 <translation id="1964634611280150550">Đã tắt chế độ ẩn danh</translation>
 <translation id="1964802606569741174">Chính sách này không ảnh hưởng đến ứng dụng YouTube trên Android. Nếu bị buộc phải sử dụng Chế độ an toàn trên YouTube thì việc cài đặt ứng dụng YouTube trên Android sẽ không được cho phép.</translation>
@@ -778,6 +744,13 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 
       Nếu bạn không đặt chính sách này, thì tính năng phát hiện che kín sẽ bật.</translation>
 <translation id="2166472654199325139">Không lọc các trang web có nội dung người lớn</translation>
+<translation id="2166746572083670600">Định cấu hình thư mục mà <ph name="PRODUCT_NAME" /> sẽ dùng để lưu trữ dữ liệu người dùng.
+
+      Nếu bạn đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ dùng thư mục được cung cấp bất kể người dùng có chỉ định cờ '--user-data-dir' hay không. Để tránh mất mát dữ liệu hoặc các lỗi không mong muốn khác, bạn không nên chọn tùy chọn thư mục dùng cho các mục đích khác cho chính sách này, bởi vì <ph name="PRODUCT_NAME" /> quản lý các nội dung trong thư mục này.
+
+      Truy cập vào https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để xem danh sách các biến có thể dùng.
+
+      Nếu bạn không đặt chính sách này, thì đường dẫn mặc định của hồ sơ sẽ được dùng và người dùng có thể ghi đè chính sách này bằng cờ dòng lệnh '--user-data-dir'.</translation>
 <translation id="2168397434410358693">Độ trễ lúc không sử dụng khi chạy trên nguồn AC</translation>
 <translation id="217013996107840632">Các tham số dòng lệnh để chuyển từ trình duyệt thay thế.</translation>
 <translation id="2170233653554726857">Bật tối ưu hóa WPAD</translation>
@@ -901,11 +874,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
       Các mẫu không đúng định dạng sẽ bị bỏ qua.</translation>
 <translation id="2345547870894930157">Bật chế độ DNS qua HTTPS không có phương án dự phòng cho truy vấn không an toàn</translation>
 <translation id="2386362615870139244">Cho phép khóa chế độ thức màn hình</translation>
-<translation id="2398554235599593694"> Chính sách này kiểm soát việc hộp kiểm "Luôn mở" có hiển thị trên lời nhắc xác nhận chạy giao thức bên ngoài hay không.
-
-      Nếu bạn đặt chính sách này thành True, thì một lời nhắc xác nhận giao thức bên ngoài sẽ hiển thị, người dùng có thể chọn "Luôn mở" giao thức mà không nhắc xác nhận trong tương lai.
-
-      Nếu bạn đặt chính sách này thành False hoặc không đặt, thì hộp kiểm "Luôn mở" sẽ không hiển thị và người dùng sẽ nhận được lời nhắc mỗi khi hệ thống gọi giao thức bên ngoài.</translation>
 <translation id="2406820201690307634">Cho phép bạn thiết lập danh sách mẫu URL để chỉ định các trang web không được phép hiển thị hình ảnh.
 
           Nếu bạn không đặt chính sách này, thì giá trị mặc định chung của chính sách "DefaultImagesSetting" (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.
@@ -949,19 +917,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
       Nếu cài đặt này không được đặt, người dùng có thể quyết định sử dụng chức năng này hay không.
 
       Cài đặt này đã bị xóa khỏi phiên bản <ph name="PRODUCT_NAME" /> 29 và các phiên bản cao hơn.</translation>
-<translation id="2430828513262055658">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
-
-          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình bị khóa khi chạy trên nguồn AC.
-
-          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> khóa màn hình.
-
-          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không khóa màn hình khi người dùng ở chế độ tạm vắng.
-
-          Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
-
-          Để khóa màn hình khi ở chế độ tạm vắng, bạn nên bật phương thức khóa màn hình khi tạm ngưng và đặt <ph name="PRODUCT_OS_NAME" /> tạm ngưng sau thời gian chờ khi ở chế độ tạm vắng. Bạn chỉ nên sử dụng chính sách này khi muốn khóa màn hình sớm hơn đáng kể so với thời gian tạm ngưng hoặc khi không muốn tạm ngưng ở chế độ tạm vắng.
-
-          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn thời gian chờ khi ở chế độ tạm vắng.</translation>
 <translation id="2433412232489478893">Chính sách này kiểm soát việc có cho phép người dùng sử dụng tính năng Chia sẻ tệp trong mạng cho <ph name="PRODUCT_NAME" /> hay không.
 
       Khi chưa định cấu hình chính sách này hoặc khi đặt chính sách thành True, người dùng sẽ có thể sử dụng tính năng Chia sẻ tệp trong mạng.
@@ -1351,7 +1306,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2856674246949497058">Hạ cấp và tiếp tục sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Thực hiện powerwash trong quá trình này.</translation>
 <translation id="2869762730352628426">Bật chế độ tự động nhấp trên màn hình đăng nhập</translation>
 <translation id="2872961005593481000">Tắt</translation>
-<translation id="2873651257716068683">Ghi đè kích thước trang in mặc định. Nếu không có kích thước trang in này thì chính sách sẽ bị bỏ qua.</translation>
 <translation id="2874209944580848064">Lưu ý dành cho thiết bị <ph name="PRODUCT_OS_NAME" /> hỗ trợ ứng dụng Android:</translation>
 <translation id="2874901846804525128">Không cho phép người dùng sử dụng ứng dụng Android từ các nguồn không tin cậy.</translation>
 <translation id="2875192972412983412">Chỉ định tập hợp con các máy chủ máy in sẽ được truy vấn khi hệ thống tìm máy chủ máy in.
@@ -1790,19 +1744,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Nếu bạn không đặt chính sách này, thì ban đầu, tính năng chọn để nói sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="3591527072193107424">Bật tính năng Hỗ trợ trình duyệt cũ.</translation>
 <translation id="3591584750136265240">Định cấu hình hành vi xác thực thông tin đăng nhập</translation>
-<translation id="3602332793276340697">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
-
-          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình bị khóa khi chạy trên nguồn pin.
-
-          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> khóa màn hình.
-
-          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không khóa màn hình khi người dùng ở chế độ tạm vắng.
-
-          Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
-
-          Để khóa màn hình khi ở chế độ tạm vắng, bạn nên bật phương thức khóa màn hình khi tạm ngưng và đặt <ph name="PRODUCT_OS_NAME" /> tạm ngưng sau thời gian chờ khi ở chế độ tạm vắng. Bạn chỉ nên sử dụng chính sách này khi muốn khóa màn hình sớm hơn đáng kể so với thời gian tạm ngưng hoặc khi không muốn tạm ngưng ở chế độ tạm vắng.
-
-          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn thời gian chờ khi ở chế độ tạm vắng.</translation>
 <translation id="3624515566460517364">Kiểm tra tệp đã tải lên và tệp đã tải xuống để xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không</translation>
 <translation id="3627678165642179114">Bật hoặc tắt dịch vụ web kiểm tra lỗi chính tả</translation>
 <translation id="3628480121685794414">Bật chế độ in một mặt</translation>
@@ -2887,6 +2828,12 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Chính sách này được chỉ định bằng đơn vị mili giây.</translation>
 <translation id="523505283826916779">Hỗ trợ tiếp cận</translation>
+<translation id="5236004592041099233">Định cấu hình danh sách URL đăng nhập của doanh nghiệp (chỉ dành cho giao thức HTTP và HTTPS). Dịch vụ bảo vệ mật khẩu sẽ ghi lại hàm băm có chuỗi ngẫu nhiên của mật khẩu trên các URL này và dùng cho mục đích phát hiện trường hợp sử dụng lại mật khẩu.
+      Để <ph name="PRODUCT_NAME" /> ghi lại chính xác hàm băm có chuỗi ngẫu nhiên của mật khẩu, hãy đảm bảo trang đăng nhập của bạn tuân thủ các nguyên tắc trên https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Nếu bạn bật tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ ghi lại hàm băm có chuỗi ngẫu nhiên của mật khẩu trên các URL này cho mục đích phát hiện trường hợp sử dụng lại mật khẩu.
+      Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ chỉ ghi lại hàm băm có chuỗi ngẫu nhiên của mật khẩu trên trang web https://accounts.google.com.
+      Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký phần mềm quản lý thiết bị.</translation>
 <translation id="5236882091572996759">Nếu bạn không đặt chính sách này hoặc đặt thành True, người dùng sẽ không được coi là không sử dụng khi âm thanh đang phát. Điều này ngăn đạt tới thời gian chờ khi không sử dụng và việc thực hiện hành động khi không sử dụng. Tuy nhiên, việc làm mờ màn hình, tắt màn hình và khóa màn hình sẽ vẫn được thực hiện sau khoảng thời gian chờ đã định cấu hình, bất kể hoạt động âm thanh.
 
           Nếu bạn đặt chính sách này thành False, hoạt động âm thanh sẽ không ngăn việc coi người dùng là không sử dụng.</translation>
@@ -2902,17 +2849,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Ngoài ra, hãy truy cập vào https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5249453807420671499">Người dùng có thể thêm các tài khoản Kerberos</translation>
 <translation id="5255162913209987122">Có thể được đề xuất</translation>
-<translation id="5261766238868915624">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình giảm độ sáng khi chạy trên nguồn pin.
-
-          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> giảm độ sáng màn hình.
-
-          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không giảm độ sáng màn hình khi người dùng ở chế độ tạm vắng.
-
-          Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
-
-          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ tắt màn hình (nếu có đặt thời gian này) và thời gian chờ khi ở chế độ tạm vắng.</translation>
 <translation id="527237119693897329">Cho phép bạn chỉ định máy chủ nhắn tin gốc nào không được tải.
 
           Giá trị danh sách cấm '*' nghĩa là tất cả máy chủ nhắn tin gốc được đưa vào danh sách cấm trừ khi chúng được liệt kê rõ ràng trong danh sách cho phép.
@@ -2941,13 +2877,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
        Nếu bạn đặt chính sách này thành false, thì âm thanh và video sẽ không được nâng cấp tự động, còn với hình ảnh thì sẽ không hiển thị cảnh báo nào.
        Chính sách này không ảnh hưởng đến các loại nội dung hỗn hợp khác ngoài âm thanh, video và hình ảnh.
        Chính sách này sẽ không có hiệu lực từ <ph name="PRODUCT_NAME" /> phiên bản 84 nữa.</translation>
-<translation id="5278367296164377827">Chính sách doanh nghiệp này chỉ áp dụng trong một khoảng thời gian ngắn và sẽ bị xóa trong phiên bản M82.
-
-      Chúng tôi đang củng cố chính sách liên kết giới thiệu mặc định của Chrome bằng cách chuyển từ giá trị hiện tại no-referrer-when-downgrade sang giá trị strict-origin-when-cross-origin có mức độ bảo mật cao hơn nhằm mục đích phát hành dần bản M80 chính thức.
-
-      Chính sách này sẽ chỉ có hiệu lực sau khi chúng tôi triển khai phiên bản nêu trên. Sau khi triển khai bản M80 và bật chính sách doanh nghiệp này, chúng tôi sẽ đặt chính sách liên kết giới thiệu mặc định của Chrome về giá trị của bản phát hành trước M80 là no-referrer-when-downgrade.
-
-      Chính sách doanh nghiệp này bị tắt theo mặc định.</translation>
 <translation id="5283457834853986457">Tắt trình tìm kiếm plugin (không được dùng nữa)</translation>
 <translation id="5285315763984334157">Chặn tệp độc hại đã tải xuống</translation>
 <translation id="5288772341821359899">Nếu đã đặt chính sách, phạm vi cổng UDP mà WebRTC sử dụng sẽ được hạn chế đến phạm vi cổng được chỉ định (đã bao gồm cả điểm cuối).
@@ -3615,6 +3544,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="6221175752766085998">Cho phép các chứng chỉ do các neo tin cậy cục bộ phát hành mà không có tiện ích subjectAlternativeName</translation>
 <translation id="6224304369267200483">URL/miền đã tự động cho phép chứng thực Khóa bảo mật trực tiếp</translation>
 <translation id="6233173491898450179">Đặt thư mục tải xuống</translation>
+<translation id="6234177445959386333">Định cấu hình danh sách các URL đăng nhập của doanh nghiệp mà dịch vụ bảo vệ mật khẩu sẽ ghi lại hàm băm có chuỗi ngẫu nhiên của mật khẩu.</translation>
 <translation id="6242147107333796512">Báo cáo thông tin liên quan đến báo cáo sự cố, chẳng hạn như mã nhận dạng từ xa,
       dấu thời gian chụp và nguyên nhân.
 
@@ -3656,17 +3586,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="6281043242780654992">Định cấu hình chính sách cho Nhắn tin gốc. Máy chủ nhắn tin gốc được đưa vào danh sách cấm sẽ không được phép trừ khi chúng được đưa vào danh sách cho phép.</translation>
 <translation id="6282799760374509080">Cho phép hoặc từ chối ghi âm</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6293957650182823856">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm hộp thoại cảnh báo hiển thị khi chạy trên nguồn AC.
-
-          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ tạm vắng đó sắp được thực hiện.
-
-          Khi bạn không đặt chính sách này, sẽ không có hộp thoại cảnh báo nào hiển thị.
-
-          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ tạm vắng.
-
-          Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ tạm vắng là hành động đăng xuất hoặc tắt nguồn.</translation>
 <translation id="6310223829319187614">Bật tự động hoàn tất tên miền trong khi người dùng đăng nhập</translation>
 <translation id="631081324835911099">Buộc đăng xuất người dùng khi mã xác thực cho tài khoản chính của người đó không hợp lệ.
         Chính sách này có thể ngăn người dùng truy cập vào nội dung bị hạn chế trên các thuộc tính web của Google.
@@ -4072,6 +3991,12 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu bạn không đặt chính sách này, thì giá sẽ được đặt ở cuối màn hình theo mặc định và người dùng có thể thay đổi vị trí của giá.</translation>
 <translation id="7040229947030068419">Giá trị mẫu:</translation>
 <translation id="7044883996351280650">Kiểm soát dịch vụ sao lưu và khôi phục trên thiết bị Android</translation>
+<translation id="705089873294344912">Định cấu hình URL thay đổi mật khẩu (chỉ dành cho giao thức HTTP và HTTPS). Dịch vụ bảo vệ mật khẩu sẽ chuyển hướng người dùng đến URL này để thay đổi mật khẩu của họ sau khi thấy cảnh báo trên trình duyệt.
+      Để <ph name="PRODUCT_NAME" /> ghi lại chính xác hàm băm có chuỗi ngẫu nhiên của mật khẩu mới trên trang thay đổi mật khẩu này, hãy đảm bảo trang thay đổi mật khẩu của bạn tuân thủ các nguyên tắc trên https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Nếu bạn bật tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ chuyển hướng người dùng đến URL này để thay đổi mật khẩu của họ sau khi thấy cảnh báo trên trình duyệt.
+      Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ chuyển hướng người dùng đến trang web https://myaccount.google.com để thay đổi mật khẩu của họ.
+      Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký phần mềm quản lý thiết bị.</translation>
 <translation id="7053678646221257043">Chính sách này nếu được bật sẽ buộc dấu trang phải được nhập từ trình duyệt mặc định hiện tại. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
 
       Nếu tắt chính sách này, sẽ không có dấu trang nào được nhập.
@@ -5102,17 +5027,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       https://support.google.com/a/answer/1668854.
 
       Người dùng không thể thay đổi hoặc ghi đè tùy chọn cài đặt này.</translation>
-<translation id="8618139576368821933">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình giảm độ sáng khi chạy trên nguồn AC.
-
-          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> giảm độ sáng màn hình.
-
-          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không giảm độ sáng màn hình khi người dùng ở chế độ tạm vắng.
-
-          Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
-
-          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ tắt màn hình (nếu có đặt thời gian này) và thời gian chờ khi ở chế độ tạm vắng.</translation>
 <translation id="8625234016727663537">Cho phép bạn đặt danh sách các URL chỉ định những trang web sẽ tự động được cấp quyền truy cập vào thiết bị USB bằng mã sản phẩm và mã nhà cung cấp trên màn hình đăng nhập. Mỗi mục trong danh sách phải chứa cả thiết bị và URL để chính sách có hiệu lực. Mỗi mục trong các thiết bị có thể chứa trường mã sản phẩm và mã nhà cung cấp. Bất kỳ mã nào bị bỏ qua đều được coi là ký tự đại diện có ngoại lệ. Ngoại lệ đó là khi hệ thống không thể chỉ định mã sản phẩm nếu không có mã nhà cung cấp. Nếu không thuộc trường hợp ngoại lệ này thì chính sách sẽ không có hiệu lực và bị bỏ qua.
 
         Mô hình cấp phép của USB sử dụng URL của trang web yêu cầu ("URL yêu cầu") và URL của trang web khung cấp cao nhất ("URL nhúng") để cấp cho URL yêu cầu quyền truy cập vào thiết bị USB. URL yêu cầu có thể khác với URL nhúng khi bạn tải trang web yêu cầu trong khung nội tuyến. Do đó, trường "urls" có thể chứa tối đa 2 chuỗi URL phân tách bằng dấu phẩy để chỉ định URL yêu cầu và URL nhúng tương ứng. Nếu chỉ có một URL được chỉ định, thì quyền truy cập vào các thiết bị USB tương ứng sẽ được cấp khi URL của trang web yêu cầu khớp với URL này bất kể trạng thái nhúng. Các URL trong "urls" phải là các URL hợp lệ, nếu không, chính sách này sẽ bị bỏ qua.
@@ -5193,17 +5107,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Máy in ở dạng tiện ích còn gọi là đích cung cấp dịch vụ in và bao gồm mọi đích thuộc tiện ích của <ph name="PRODUCT_NAME" />.
 
       Máy in cục bộ (hay còn gọi là đích in gốc) bao gồm các đích dùng được cho thiết bị cục bộ và máy in dùng chung qua mạng.</translation>
-<translation id="8752541111574086388">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm hệ thống hiển thị hộp thoại cảnh báo khi chạy trên nguồn pin.
-
-          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ tạm vắng đó sắp được thực hiện.
-
-          Khi bạn không đặt chính sách này, sẽ không có hộp thoại cảnh báo nào hiển thị.
-
-          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ tạm vắng.
-
-          Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ tạm vắng là hành động đăng xuất hoặc tắt nguồn.</translation>
 <translation id="8757552286070680084">Cấu hình bộ điều khiển chẩn đoán và đo từ xa (DTC) wilco</translation>
 <translation id="8758831693895931466">Bật đăng ký quản lý đám mây bắt buộc</translation>
 <translation id="8759829385824155666">Các loại mã hóa Kerberos được cho phép</translation>
@@ -5305,24 +5208,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       sẽ được báo cáo.</translation>
 <translation id="891435090623616439">được mã hóa dưới dạng chuỗi JSON, để biết chi tiết hãy xem <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Cho phép người dùng quản lý các chứng chỉ CA đã cài đặt.</translation>
-<translation id="8926275581598789324">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm hệ thống thực hiện hành động ở chế độ tạm vắng khi chạy trên nguồn pin.
-
-          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> thực hiện hành động ở chế độ tạm vắng mà bạn có thể định cấu hình riêng.
-
-          Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
-
-          Bạn phải chỉ định giá trị của chính sách bằng mili giây.</translation>
-<translation id="8929997566627164343">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm thực hiện hành động ở chế độ tạm vắng đó khi chạy trên nguồn AC.
-
-          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> thực hiện hành động ở chế độ tạm vắng mà bạn có thể định cấu hình riêng.
-
-          Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
-
-          Bạn phải chỉ định giá trị của chính sách bằng mili giây.</translation>
 <translation id="8934944553121392674">Kiểm soát máy in người dùng được phép sử dụng từ <ph name="DEVICE_PRINTERS_POLICY" />.
 
       Chỉ định chính sách truy cập dùng cho cấu hình máy in số lượng lớn. Nếu bạn chọn <ph name="PRINTERS_ALLOW_ALL" />, thì tất cả máy in sẽ hiển thị. Nếu bạn chọn <ph name="PRINTERS_BLACKLIST" />, thì <ph name="DEVICE_PRINTERS_BLACKLIST" /> sẽ dùng để hạn chế truy cập vào các máy in đã chỉ định. Nếu bạn chọn <ph name="PRINTERS_WHITELIST" />, thì <ph name="DEVICE_PRINTERS_WHITELIST" /> sẽ chỉ chỉ định những máy in có thể chọn được.

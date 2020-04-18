@@ -62,7 +62,7 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
   // Should be called before any InProcessBrowserTestMixin functions.
   void AppendRegularUsers(int n);
   void AppendManagedUsers(int n);
-  void AppendSupervisedUsers(int n);
+  void AppendLegacySupervisedUsers(int n);
 
   explicit LoginManagerMixin(InProcessBrowserTestMixinHost* host);
   LoginManagerMixin(InProcessBrowserTestMixinHost* host,
@@ -115,6 +115,10 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
   // Currently works for the primary user only.
   // Returns whether the newly logged in user is active when the method exits.
   bool LoginAndWaitForActiveSession(const UserContext& user_context);
+
+  // Logs in as a regular user with default user context. Should be used for
+  // proceeding into the session from the login screen.
+  void LoginAsNewReguarUser();
 
  private:
   UserList initial_users_;

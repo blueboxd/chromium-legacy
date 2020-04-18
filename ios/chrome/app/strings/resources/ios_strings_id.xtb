@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Perkecil</translation>
 <translation id="2230173723195178503">Halaman web dimuat</translation>
 <translation id="2239626343334228536">Menghapus data browsing...</translation>
+<translation id="2245545499420671379">Blokir Cookie Pihak Ketiga dalam mode Samaran</translation>
 <translation id="2257567812274161158">Sinkronisasi tidak berfungsi.</translation>
 <translation id="2267753748892043616">Tambahkan Akun</translation>
 <translation id="2268044343513325586">Saring</translation>
@@ -306,7 +307,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="4979397965658815378">Login dengan Akun Google untuk mendapatkan bookmark, sandi, histori, dan setelan lainnya di semua perangkat Anda.</translation>
 <translation id="5005498671520578047">Salin sandi</translation>
 <translation id="5010803260590204777">Buka tab samaran untuk menjelajahi web secara pribadi.</translation>
-<translation id="5039020240289137291">Memblokir cookie pihak ketiga</translation>
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="5059136629401106827">Oke</translation>
 <translation id="5062321486222145940">Instal Google Drive</translation>
@@ -419,6 +419,7 @@ Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat And
 
 Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME" />. Loginkan frasa sandi untuk memulai sinkronisasi.</translation>
 <translation id="6418346271604475326">Menyiapkan PDF</translation>
+<translation id="6426067060178468363">Izinkan Cookie</translation>
 <translation id="6434591244308415567">Terjadi error. Harap coba lagi nanti.</translation>
 <translation id="6445051938772793705">Negara</translation>
 <translation id="6445981559479772097">Pesan terkirim.</translation>
@@ -544,6 +545,7 @@ Karena akun Anda dikelola oleh <ph name="HOSTED_DOMAIN" />, data Chrome Anda aka
 <translation id="8076014560081431679">Setelan situs yang disimpan tidak akan dihapus dan dapat mencerminkan kebiasaan penjelajahan Anda. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Download file tersedia. Opsi tersedia di dekat bagian bawah layar.</translation>
 <translation id="8131740175452115882">Konfirmasi</translation>
+<translation id="8174524257672181687">Blokir Semua Cookie (tidak direkomendasikan)</translation>
 <translation id="8197543752516192074">Terjemahkan Halaman</translation>
 <translation id="8205564605687841303">Batal</translation>
 <translation id="8225985093977202398">Gambar &amp; File dalam Cache</translation>

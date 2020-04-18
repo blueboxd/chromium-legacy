@@ -4063,10 +4063,6 @@ jumbo_static_library("browser") {
       ]
     }
 
-    if (is_multi_dll_chrome) {
-      defines += [ "CHROME_MULTIPLE_DLL_BROWSER" ]
-    }
-
     if (is_chrome_branded) {
       deps += [
         "//chrome/browser/win/conflicts:module_list_proto",

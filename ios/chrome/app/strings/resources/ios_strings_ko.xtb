@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">축소</translation>
 <translation id="2230173723195178503">웹페이지 로드됨</translation>
 <translation id="2239626343334228536">인터넷 사용 기록 삭제 중...</translation>
+<translation id="2245545499420671379">시크릿 모드에서 타사 쿠키 차단</translation>
 <translation id="2257567812274161158">동기화가 작동하지 않습니다.</translation>
 <translation id="2267753748892043616">계정 추가</translation>
 <translation id="2268044343513325586">상세검색</translation>
@@ -306,7 +307,6 @@
 <translation id="4979397965658815378">Google 계정으로 로그인하면 모든 기기에서 북마크, 비밀번호, 방문 기록 및 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="5005498671520578047">비밀번호 복사</translation>
 <translation id="5010803260590204777">시크릿 탭을 열어 웹을 비공개로 탐색하세요.</translation>
-<translation id="5039020240289137291">타사 쿠키 차단</translation>
 <translation id="5039804452771397117">허용</translation>
 <translation id="5059136629401106827">확인</translation>
 <translation id="5062321486222145940">Google 드라이브 설치</translation>
@@ -419,6 +419,7 @@
 
 <ph name="TIME" />에 동기화 암호로 데이터가 암호화되었습니다. 동기화를 시작하려면 입력하세요.</translation>
 <translation id="6418346271604475326">PDF 준비 중</translation>
+<translation id="6426067060178468363">쿠키 허용</translation>
 <translation id="6434591244308415567">오류가 발생했습니다. 나중에 다시 시도해 보세요.</translation>
 <translation id="6445051938772793705">국가</translation>
 <translation id="6445981559479772097">메시지가 전송되었습니다.</translation>
@@ -544,6 +545,7 @@
 <translation id="8076014560081431679">저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관이 반영될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">파일을 다운로드할 수 있습니다. 화면 하단에서 옵션을 선택할 수 있습니다.</translation>
 <translation id="8131740175452115882">확인</translation>
+<translation id="8174524257672181687">모든 쿠키 차단(권장되지 않음)</translation>
 <translation id="8197543752516192074">페이지 번역</translation>
 <translation id="8205564605687841303">취소</translation>
 <translation id="8225985093977202398">캐시된 이미지 및 파일</translation>

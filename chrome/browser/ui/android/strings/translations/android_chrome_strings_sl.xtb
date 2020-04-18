@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Prekini</translation>
 <translation id="1188239144602654184">Začni RR</translation>
 <translation id="1197267115302279827">Premakni zavihke</translation>
-<translation id="119944043368869598">Izbriši vse</translation>
 <translation id="1201402288615127009">Naprej</translation>
 <translation id="1204037785786432551">Prenesi povezavo</translation>
 <translation id="1206892813135768548">Kopiraj besedilo povezave</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Osnovno</translation>
 <translation id="1671236975893690980">Prenos na čakanju …</translation>
 <translation id="1672586136351118594">Tega ne prikaži več</translation>
+<translation id="1688867105868176567">Ali želite izbrisati podatke spletnega mesta?</translation>
 <translation id="1692118695553449118">Sinhroniziranje je vklopljeno</translation>
 <translation id="169515064810179024">Spletnim mestom prepreči dostop do tipal gibanja</translation>
 <translation id="1717218214683051432">Tipala gibanja</translation>
@@ -507,7 +507,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4751476147751820511">Tipala za gibanje in svetlobo</translation>
 <translation id="4759238208242260848">Prenosi</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 prenos je končan.}one{# prenos je končan.}two{# prenosa sta končana.}few{# prenosi so končani.}other{# prenosov je končanih.}}</translation>
-<translation id="4797039098279997504">Dotaknite se, če se želite vrniti na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Šifriranje gesla ne vključuje plačilnih sredstev in naslovov iz Googla Pay.
 
 Če želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4932247056774066048">Ker se odjavljate iz računa, ki ga upravlja <ph name="DOMAIN_NAME" />, bodo podatki v Chromu izbrisani iz te naprave. Ostali bodo v računu Google.</translation>
 <translation id="4943703118917034429">Navidezna resničnost</translation>
 <translation id="4943872375798546930">Ni rezultatov</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> dostopa do vašega zaslona</translation>
 <translation id="4961107849584082341">Prevedite to stran v kateri koli jezik</translation>
 <translation id="4962975101802056554">Umik vseh dovoljenj za napravo</translation>
 <translation id="4970824347203572753">Ni na voljo na vaši lokaciji</translation>
@@ -559,7 +557,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5129038482087801250">Namesti spletno aplikacijo</translation>
 <translation id="5132942445612118989">Sinhronizirajte gesla, zgodovino in drugo v vseh napravah</translation>
 <translation id="5139940364318403933">Naučite se uporabljati Google Drive</translation>
-<translation id="515227803646670480">Izbris shranjenih podatkov</translation>
 <translation id="5152843274749979095">Nameščena ni nobena podprta aplikacija</translation>
 <translation id="5161254044473106830">Naslov je obvezen</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 prenos ni uspel.}one{# prenos ni uspel.}two{# prenosa nista uspela.}few{# prenosi niso uspeli.}other{# prenosov ni uspelo.}}</translation>
@@ -667,7 +664,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5869522115854928033">Shranjena gesla</translation>
 <translation id="5876056640971328065">Začasna zaustavitev videa</translation>
 <translation id="5884076754568147479">Zaradi zagotavljanja pomoči pri dokončanju opravil bo Google prejel URL-je in vsebino spletnih mest, na katerih uporabljate Pomočnika, ter podatke, ki jih pošljete prek Pomočnika.</translation>
-<translation id="5902828464777634901">Vsi lokalni podatki, ki jih je shranilo to spletno mesto, vključno s piškotki, bodo izbrisani.</translation>
 <translation id="5919204609460789179">Posodobite izdelek <ph name="PRODUCT_NAME" />, če želite začeti sinhronizacijo</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> prihranka pri količini prenesenih podatkov</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
@@ -787,7 +783,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="671481426037969117">Merilnik časa za <ph name="FQDN" /> je potekel. Jutri se začne znova.</translation>
 <translation id="6738867403308150051">Prenašanje ...</translation>
 <translation id="6766622839693428701">Povlecite navzdol, da zaprete.</translation>
-<translation id="6766758767654711248">Dotaknite se, če želite na spletno mesto</translation>
 <translation id="6767294960381293877">Seznam naprav, s katerimi želite deliti zavihek, odprt pri polovični višini.</translation>
 <translation id="6782111308708962316">Drugim spletnim mestom prepreči shranjevanje in branje podatkov piškotkov</translation>
 <translation id="6790428901817661496">Predvajanje</translation>
@@ -1048,7 +1043,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8812260976093120287">Na nekaterih spletnih mestih je mogoče plačevati z zgoraj navedenimi podprtimi aplikacijami v napravi.</translation>
 <translation id="8816026460808729765">Preprečevanje spletnim mestom dostopa do tipal</translation>
 <translation id="8820817407110198400">Zaznamki</translation>
-<translation id="8833831881926404480">Spletno mesto souporablja vaš zaslon.</translation>
 <translation id="883806473910249246">Pri prenosu vsebine je prišlo do napake.</translation>
 <translation id="8840953339110955557">Ta stran se morda razlikuje od spletne različice.</translation>
 <translation id="8847988622838149491">USB</translation>

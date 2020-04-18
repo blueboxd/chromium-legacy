@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">暂停</translation>
 <translation id="1188239144602654184">进入 AR 会话</translation>
 <translation id="1197267115302279827">移动书签</translation>
-<translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1204037785786432551">下载链接</translation>
 <translation id="1206892813135768548">复制链接文字</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">基本</translation>
 <translation id="1671236975893690980">正在等待下载…</translation>
 <translation id="1672586136351118594">不再显示</translation>
+<translation id="1688867105868176567">要清除网站数据吗？</translation>
 <translation id="1692118695553449118">同步功能已开启</translation>
 <translation id="169515064810179024">禁止网站使用动态传感器</translation>
 <translation id="1717218214683051432">动态传感器</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">动态传感器或光传感器</translation>
 <translation id="4759238208242260848">下载内容</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{已完成 1 项下载。}other{已完成 # 项下载。}}</translation>
-<translation id="4797039098279997504">触摸即可返回到 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">密码加密不包括 Google Pay 中的付款方式和地址。
 
 要更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048">您将要退出由 <ph name="DOMAIN_NAME" /> 管理的帐号，因此您的 Chrome 数据将会从这部设备中删除，但仍会保留在您的 Google 帐号中。</translation>
 <translation id="4943703118917034429">虚拟实境</translation>
 <translation id="4943872375798546930">找不到结果</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> 正在共享您的屏幕</translation>
 <translation id="4961107849584082341">将此页面翻译成任何语言</translation>
 <translation id="4962975101802056554">撤消设备的所有权限</translation>
 <translation id="4970824347203572753">无法在您所在的国家/地区使用</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">安装网络应用</translation>
 <translation id="5132942445612118989">将您的密码、历史记录等信息同步到所有设备上</translation>
 <translation id="5139940364318403933">了解如何使用 Google 云端硬盘</translation>
-<translation id="515227803646670480">清除存储的数据</translation>
 <translation id="5152843274749979095">尚未安装任何支持的应用</translation>
 <translation id="5161254044473106830">必须提供标题</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 项下载失败。}other{# 项下载失败。}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">已保存的密码</translation>
 <translation id="5876056640971328065">暂停视频</translation>
 <translation id="5884076754568147479">为了帮助您执行各种操作，Google 将会收到您使用 Google 助理时所在网站的网址和内容，以及您通过 Google 助理提交的信息</translation>
-<translation id="5902828464777634901">该网站存储的所有本地数据（包括 Cookie）都将被删除。</translation>
 <translation id="5919204609460789179">需更新 <ph name="PRODUCT_NAME" />，才能开始同步</translation>
 <translation id="5937580074298050696">已节省 <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">重置</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117">您的 <ph name="FQDN" /> 计时器已结束计时。它将于明天重新开始。</translation>
 <translation id="6738867403308150051">正在下载…</translation>
 <translation id="6766622839693428701">向下滑动即可关闭。</translation>
-<translation id="6766758767654711248">点按即可转到网站</translation>
 <translation id="6767294960381293877">要与之分享标签页的设备的列表已半屏打开。</translation>
 <translation id="6782111308708962316">阻止第三方网站保存和读取 Cookie 数据</translation>
 <translation id="6790428901817661496">播放</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">在某些网站上，您可以使用自己的设备通过上述支持的付款应用付款。</translation>
 <translation id="8816026460808729765">禁止网站使用传感器</translation>
 <translation id="8820817407110198400">书签</translation>
-<translation id="8833831881926404480">网站正在共享您的屏幕</translation>
 <translation id="883806473910249246">下载此内容时出错。</translation>
 <translation id="8840953339110955557">此网页可能与在线版本有所不同。</translation>
 <translation id="8847988622838149491">USB</translation>

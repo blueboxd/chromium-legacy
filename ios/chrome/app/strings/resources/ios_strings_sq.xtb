@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Zvogëlo</translation>
 <translation id="2230173723195178503">Faqja e uebit u ngarkua</translation>
 <translation id="2239626343334228536">Të dhënat e shfletimit po pastrohen...</translation>
+<translation id="2245545499420671379">Blloko kukit e palëve të treta në modalitetin "I fshehtë"</translation>
 <translation id="2257567812274161158">Sinkronizimi nuk po punon.</translation>
 <translation id="2267753748892043616">Shto një llogari</translation>
 <translation id="2268044343513325586">Ripërpuno</translation>
@@ -306,7 +307,6 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="4979397965658815378">Identifikohu me llogarinë e Google për të marrë faqeshënuesit, fjalëkalimet, historikun dhe cilësime të tjera në të gjitha pajisjet e tua.</translation>
 <translation id="5005498671520578047">Kopjo fjalëkalimin</translation>
 <translation id="5010803260590204777">Hap një skedë "të fshehtë" për të shfletuar uebin privatisht.</translation>
-<translation id="5039020240289137291">Bllokimi i kukive të palëve të treta</translation>
 <translation id="5039804452771397117">Lejo</translation>
 <translation id="5059136629401106827">Në rregull</translation>
 <translation id="5062321486222145940">Instalo "Diskun e Google"</translation>
@@ -419,6 +419,7 @@ Handoff duhet gjithashtu të jetë i aktivizuar në seksionin "Të përgjithshme
 
 Të dhënat e tua janë koduar me frazën tënde të kalimit më <ph name="TIME" />. Fute atë për të nisur sinkronizmin.</translation>
 <translation id="6418346271604475326">Po përgatit PDF</translation>
+<translation id="6426067060178468363">Lejo kukit</translation>
 <translation id="6434591244308415567">Ndodhi një gabim. Provo përsëri më vonë.</translation>
 <translation id="6445051938772793705">Shteti</translation>
 <translation id="6445981559479772097">Mesazhi u dërgua.</translation>
@@ -544,6 +545,7 @@ Duke qenë se llogaria jote menaxhohet nga <ph name="HOSTED_DOMAIN" />, të dhë
 <translation id="8076014560081431679">Cilësimet e ruajtura të sajteve nuk do të fshihen dhe mund të pasqyrojnë zakonet e tua të shfletimit. <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Ofrohet shkarkimi i skedarit. Opsionet ofrohen pranë fundit të ekranit.</translation>
 <translation id="8131740175452115882">Konfirmo</translation>
+<translation id="8174524257672181687">Blloko të gjitha kukit (nuk rekomandohet)</translation>
 <translation id="8197543752516192074">Përkthe faqen</translation>
 <translation id="8205564605687841303">Anulo</translation>
 <translation id="8225985093977202398">Imazhet dhe skedarët në memorien specifike</translation>

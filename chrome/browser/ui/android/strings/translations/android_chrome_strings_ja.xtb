@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="1188239144602654184">AR を開始</translation>
 <translation id="1197267115302279827">ブックマークを移動</translation>
-<translation id="119944043368869598">すべて削除</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1204037785786432551">リンクをダウンロード</translation>
 <translation id="1206892813135768548">リンクテキストをコピー</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">基本設定</translation>
 <translation id="1671236975893690980">ダウンロードを待機しています...</translation>
 <translation id="1672586136351118594">次回から表示しない</translation>
+<translation id="1688867105868176567">サイトデータを削除しますか？</translation>
 <translation id="1692118695553449118">同期は有効です</translation>
 <translation id="169515064810179024">サイトによるモーション センサーへのアクセスをブロックする</translation>
 <translation id="1717218214683051432">モーション センサー</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">モーション センサーまたは光センサー</translation>
 <translation id="4759238208242260848">ダウンロード</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 件のダウンロードが完了しました。}other{# 件のダウンロードが完了しました。}}</translation>
-<translation id="4797039098279997504">タップすると <ph name="URL_OF_THE_CURRENT_TAB" /> に戻ります</translation>
 <translation id="4802417911091824046">パスフレーズ暗号化の対象に Google Pay のお支払い方法と住所は含まれません。
 
 この設定を変更する場合は<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />してください</translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048"><ph name="DOMAIN_NAME" /> で管理されているアカウントからログアウトするにあたり、Chrome データはこのデバイスから削除されます。Google アカウントからはデータは削除されません。</translation>
 <translation id="4943703118917034429">バーチャル リアリティ</translation>
 <translation id="4943872375798546930">結果はありません</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> が画面を共有しています</translation>
 <translation id="4961107849584082341">このページを任意の言語に翻訳できます</translation>
 <translation id="4962975101802056554">デバイスのすべての権限を取り消します</translation>
 <translation id="4970824347203572753">お住まいの地域ではご利用になれません</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">ウェブアプリをインストール</translation>
 <translation id="5132942445612118989">すべてのデバイスでパスワード、履歴、その他の設定を同期する</translation>
 <translation id="5139940364318403933">Google ドライブの使い方を見る</translation>
-<translation id="515227803646670480">保存したデータの削除</translation>
 <translation id="5152843274749979095">サポートされているアプリがインストールされていません</translation>
 <translation id="5161254044473106830">タイトルが必要です</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 件のダウンロードが失敗しました。}other{# 件のダウンロードが失敗しました。}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">保存したパスワード</translation>
 <translation id="5876056640971328065">動画を一時停止</translation>
 <translation id="5884076754568147479">タスクを完了するため、アシスタントを使用したサイトの URL とコンテンツ、およびアシスタントで送信した情報が Google に送られます。</translation>
-<translation id="5902828464777634901">このウェブサイトで保存したすべてのローカルデータ（Cookie を含む）を削除します。</translation>
 <translation id="5919204609460789179">同期を開始するには <ph name="PRODUCT_NAME" /> を更新してください</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> 節約</translation>
 <translation id="5939518447894949180">リセット</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117"><ph name="FQDN" /> のタイマーが切れました。タイマーはまた明日開始されます。</translation>
 <translation id="6738867403308150051">ダウンロードしています…</translation>
 <translation id="6766622839693428701">閉じるには下にスワイプします。</translation>
-<translation id="6766758767654711248">タップしてサイトに移動する</translation>
 <translation id="6767294960381293877">タブを共有するデバイスのリストが画面の下半分に表示されました。</translation>
 <translation id="6782111308708962316">サードパーティのウェブサイトが Cookie データを保存したり読み取ったりできないようにします</translation>
 <translation id="6790428901817661496">再生</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">一部のウェブサイトでは、デバイスでサポートされている上記のお支払いアプリを使って支払いができます。</translation>
 <translation id="8816026460808729765">サイトによるセンサーへのアクセスをブロックする</translation>
 <translation id="8820817407110198400">ブックマーク</translation>
-<translation id="8833831881926404480">サイトが画面を共有しています</translation>
 <translation id="883806473910249246">コンテンツのダウンロード中にエラーが発生しました。</translation>
 <translation id="8840953339110955557">このページはオンライン版とは異なる可能性があります。</translation>
 <translation id="8847988622838149491">USB</translation>

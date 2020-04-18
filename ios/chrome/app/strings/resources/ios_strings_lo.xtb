@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">ຊູມອອກ</translation>
 <translation id="2230173723195178503">ໂຫຼດໜ້າເວັບແລ້ວ</translation>
 <translation id="2239626343334228536">ກຳລັງລຶບລ້າງຂໍ້ມູນທ່ອງເວັບ...</translation>
+<translation id="2245545499420671379">ບລັອກຄຸກກີ້ພາກສ່ວນທີສາມໃນໂໝດບໍ່ເປີດເຜີຍຕົວຕົນ</translation>
 <translation id="2257567812274161158">ການຊິ້ງຂໍ້ມູນໃຊ້ບໍ່ໄດ້.</translation>
 <translation id="2267753748892043616">ເພີ່ມ​ບັນ​ຊີ</translation>
 <translation id="2268044343513325586">ກັ່ນ​ຕອງ</translation>
@@ -306,7 +307,6 @@
 <translation id="4979397965658815378">ເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີ Google ຂອງທ່ານເພື່ອໃຊ້ບຸກມາກ, ລະຫັດຜ່ານ, ປະຫວັດ ແລະ ການຕັ້ງຄ່າອື່ນຢູ່ໃນທຸກອຸປະກອນຂອງທ່ານ</translation>
 <translation id="5005498671520578047">ອັດ​ສຳ​ເນົາ​ລະ​ຫັດ​ຜ່ານ</translation>
 <translation id="5010803260590204777">ເປີດ​ແຖບ​ບໍ່​ເຜີຍ​​ຕົນ​ຕົວ ເພື່ອ​ທ່ອງ​ເວັບ​ເປັນ​ສ່ວນ​ຕົວ.</translation>
-<translation id="5039020240289137291">ການບລັອກຄຸກກີ້ພາກສ່ວນທີສາມ</translation>
 <translation id="5039804452771397117">ອະ​ນຸ​ຍາດ​</translation>
 <translation id="5059136629401106827">ຕົກລົງ</translation>
 <translation id="5062321486222145940">ຕິດ​ຕັ້ງ Google Drive</translation>
@@ -419,6 +419,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 
 ຂໍ້ມູນຂອງທ່ານຖືກເຂົ້າລະຫັດໄວ້ດ້ວຍວະລີຜ່ານການຊິ້ງຂອງທ່ານໃນວັນທີ <ph name="TIME" />. ໃຫ້ປ້ອນມັນເພື່ອເລີ່ມການຊິ້ງຂໍ້ມູນ.</translation>
 <translation id="6418346271604475326">ກຳລັງກະກຽມ PDF</translation>
+<translation id="6426067060178468363">ອະນຸຍາດຄຸກກີ້</translation>
 <translation id="6434591244308415567">ເກີດຄວາມຜິດພາດຂຶ້ນ. ກະລຸນາລອງໃໝ່ໃນພາຍຫຼັງ.</translation>
 <translation id="6445051938772793705">ປະ​ເທດ</translation>
 <translation id="6445981559479772097">ສົ່ງ​ຂໍ້​ຄວາມ​ແລ້ວ.</translation>
@@ -544,6 +545,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="8076014560081431679">ການຕັ້ງຄ່າເວັບໄຊທີ່ບັນທຶກໄວ້ຈະບໍ່ຖືກລຶບ ແລະ ອາດຈະສະທ້ອນເຖິງນິໄສການທ່ອງເວັບຂອງທ່ານ. <ph name="BEGIN_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">ການດາວໂຫຼດໄຟລ໌ບໍ່ສາມາດໃຊ້ໄດ້. ມີຕົວເລືອກຕ່າງໆຢູ່ໃກ້ສ່ວນລຸ່ມຂອງໜ້າຈໍ.</translation>
 <translation id="8131740175452115882">ຢືນ​ຢັນ</translation>
+<translation id="8174524257672181687">ບລັອກຄຸກກີ້ທັງໝົດ (ບໍ່ແນະນຳ)</translation>
 <translation id="8197543752516192074">ແປໜ້າ</translation>
 <translation id="8205564605687841303">ຍົກເລີກ</translation>
 <translation id="8225985093977202398">ຮູບ ແລະ ໄຟລ໌ທີ່ຖືກແຄດຊ໌</translation>

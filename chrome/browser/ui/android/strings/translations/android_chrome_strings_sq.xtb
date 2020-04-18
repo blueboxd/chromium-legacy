@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Pauzë</translation>
 <translation id="1188239144602654184">Hyr në AR</translation>
 <translation id="1197267115302279827">Zhvendos faqeshënuesit</translation>
-<translation id="119944043368869598">Pastroji të gjitha</translation>
 <translation id="1201402288615127009">Tjetra</translation>
 <translation id="1204037785786432551">Lidhja e shkarkimit</translation>
 <translation id="1206892813135768548">Kopjo tekstin e lidhjes</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Themeloret</translation>
 <translation id="1671236975893690980">Shkarkimi në pritje...</translation>
 <translation id="1672586136351118594">Mos e shfaq përsëri</translation>
+<translation id="1688867105868176567">Të spastrohen të dhënat e sajtit?</translation>
 <translation id="1692118695553449118">Sinkronizimi është aktiv</translation>
 <translation id="169515064810179024">Bllokojua faqeve hapjen e sensorëve të lëvizjes</translation>
 <translation id="1717218214683051432">Sensorët e lëvizjes</translation>
@@ -507,7 +507,6 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="4751476147751820511">Sensorët e lëvizjes ose të dritës</translation>
 <translation id="4759238208242260848">Shkarkimet</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 shkarkim përfundoi.}other{# shkarkime përfunduan.}}</translation>
-<translation id="4797039098279997504">Preke për t'u kthyer te <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Enkriptimi me frazën e kalimit nuk përfshin mënyrat e pagesës dhe adresat nga Google Pay.
 
 Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizimin<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="4932247056774066048">Duke qenë se po del nga një llogari e menaxhuar nga <ph name="DOMAIN_NAME" />, të dhënat e tua të Chrome do të fshihen nga kjo pajisje. Ato do të mbeten në "Llogarinë tënde të Google".</translation>
 <translation id="4943703118917034429">Realiteti virtual</translation>
 <translation id="4943872375798546930">Asnjë rezultat</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> po ndan ekranin tënd</translation>
 <translation id="4961107849584082341">Përktheje këtë faqe në çdo gjuhë</translation>
 <translation id="4962975101802056554">Anulo të gjitha lejet për pajisjen</translation>
 <translation id="4970824347203572753">Nuk ofrohet në vendndodhjen tënde</translation>
@@ -559,7 +557,6 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5129038482087801250">Instalo aplikacionin e uebit</translation>
 <translation id="5132942445612118989">Sinkronizo fjalëkalimet, historikun etj. në të gjitha pajisjet</translation>
 <translation id="5139940364318403933">Mëso se si të përdorësh "Diskun e Google"</translation>
-<translation id="515227803646670480">Pastro të dhënat e ruajtura</translation>
 <translation id="5152843274749979095">Nuk është instaluar asnjë aplikacion i mbështetur</translation>
 <translation id="5161254044473106830">Kërkohet titulli</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 shkarkim pa sukses.}other{# shkarkime pa sukses.}}</translation>
@@ -667,7 +664,6 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5869522115854928033">Fjalëkalimet e ruajtura</translation>
 <translation id="5876056640971328065">Vendose videon në pauzë</translation>
 <translation id="5884076754568147479">Për të të ndihmuar të përfundosh detyrat, Google do të marrë URL-të dhe përmbajtjet e sajteve ku ti përdor "Asistentin", si dhe informacionet që dërgon nëpërmjet "Asistentit"</translation>
-<translation id="5902828464777634901">Të gjitha të dhënat e ruajtura në këtë faqe, përfshi kukit, do të fshihen.</translation>
 <translation id="5919204609460789179">Përditëso <ph name="PRODUCT_NAME" /> për të nisur sinkronizimin</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> të ruajtura</translation>
 <translation id="5939518447894949180">Rivendos</translation>
@@ -787,7 +783,6 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="671481426037969117">Kohëmatësi <ph name="FQDN" /> përfundoi. Do të fillojë përsëri nesër.</translation>
 <translation id="6738867403308150051">Po shkarkon...</translation>
 <translation id="6766622839693428701">Rrëshqit shpejt poshtë për ta mbyllur.</translation>
-<translation id="6766758767654711248">Trokit për të shkuar te sajti</translation>
 <translation id="6767294960381293877">Lista e pajisjeve për të ndarë një skedë e hapur në gjysmë lartësi.</translation>
 <translation id="6782111308708962316">Parandalo sajtet e uebit të palëve të treta që të ruajnë dhe lexojnë të dhënat e kukive</translation>
 <translation id="6790428901817661496">Luaj</translation>
@@ -1048,7 +1043,6 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="8812260976093120287">Në disa sajte uebi, mund të paguash me aplikacionet e mësipërme të mbështetura të pagesës në pajisjen tënde.</translation>
 <translation id="8816026460808729765">Bllokojua faqeve hapjen e sensorëve</translation>
 <translation id="8820817407110198400">Faqeshënuesit</translation>
-<translation id="8833831881926404480">Një sajt po ndan ekranin tënd</translation>
 <translation id="883806473910249246">Ndodhi një gabim gjatë shkarkimit të përmbajtjes.</translation>
 <translation id="8840953339110955557">Kjo faqe mund të ndryshojë nga versioni në linjë.</translation>
 <translation id="8847988622838149491">USB</translation>

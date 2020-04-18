@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">ছোট করে দেখুন</translation>
 <translation id="2230173723195178503">Webpage loaded</translation>
 <translation id="2239626343334228536">ব্রাউজিং ডেটা মোছা হচ্ছে…</translation>
+<translation id="2245545499420671379">ছদ্মবেশী মোডে থার্ড-পার্টি কুকি ব্লক করুন</translation>
 <translation id="2257567812274161158">সিঙ্ক কাজ করছে না।</translation>
 <translation id="2267753748892043616">অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="2268044343513325586">রিফাইন করুন</translation>
@@ -306,7 +307,6 @@
 <translation id="4979397965658815378">আপনার সব ডিভাইসে আপনার বুকমার্ক, পাসওয়ার্ড, ইতিহাস এবং অন্যান্য সেটিংস পেতে আপনার Google অ্যাকাউন্টে সাইন-ইন করুন</translation>
 <translation id="5005498671520578047">পাসওয়ার্ড কপি করুন</translation>
 <translation id="5010803260590204777">ব্যক্তিগতভাবে ওয়েব ব্রাউজ করার জন্য একটি ছদ্মবেশী ট্যাব খুলুন।</translation>
-<translation id="5039020240289137291">থার্ড-পার্টি কুকি ব্লক করা হচ্ছে</translation>
 <translation id="5039804452771397117">অনুমতি দিন</translation>
 <translation id="5059136629401106827">ঠিক আছে</translation>
 <translation id="5062321486222145940">Google ড্রাইভ ইনস্টল করুন</translation>
@@ -420,6 +420,7 @@
 
 আপনার সিঙ্ক পাসফ্রেজের মাধ্যমে আপনার ডেটা <ph name="TIME" /> এ এনক্রিপটেড হয়েছে। সিঙ্ক শুরু করতে এটি লিখুন।</translation>
 <translation id="6418346271604475326">পিডিএফ প্রস্তুত হচ্ছে</translation>
+<translation id="6426067060178468363">কুকি ব্যবহার করার অনুমতি দিন</translation>
 <translation id="6434591244308415567">কোনও সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।</translation>
 <translation id="6445051938772793705">দেশ</translation>
 <translation id="6445981559479772097">বার্তা পাঠানো হয়েছে৷</translation>
@@ -545,6 +546,7 @@
 <translation id="8076014560081431679">সংরক্ষিত সাইটের সেটিংস মোছা হবে না এবং আপনার ব্রাউজিং অভ্যাস প্রতিফলিত হতে পারে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">ফাইল ডাউনলোড করা যাবে। স্ক্রিনের নিচের দিকে বিকল্পগুলি উপলভ্য।</translation>
 <translation id="8131740175452115882">নিশ্চিত হন</translation>
+<translation id="8174524257672181687">সব সাইটের কুকি ব্লক করুন (সাজেস্ট করা হচ্ছে না)</translation>
 <translation id="8197543752516192074">পৃষ্ঠাটি অনুবাদ করুন</translation>
 <translation id="8205564605687841303">বাতিল করুন</translation>
 <translation id="8225985093977202398">ক্যাশ করা ছবি এবং ফাইল</translation>

@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1188239144602654184">Entra in AR</translation>
 <translation id="1197267115302279827">Sposta i Preferiti</translation>
-<translation id="119944043368869598">Cancella tutto</translation>
 <translation id="1201402288615127009">Avanti</translation>
 <translation id="1204037785786432551">Link di download</translation>
 <translation id="1206892813135768548">Copia testo link</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Base</translation>
 <translation id="1671236975893690980">Download in attesa...</translation>
 <translation id="1672586136351118594">Non visualizzare più</translation>
+<translation id="1688867105868176567">Cancellare i dati del sito?</translation>
 <translation id="1692118695553449118">La sincronizzazione è attiva</translation>
 <translation id="169515064810179024">Impedisci ai siti di accedere ai sensori di movimento</translation>
 <translation id="1717218214683051432">Sensori di movimento</translation>
@@ -507,7 +507,6 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4751476147751820511">Sensori di movimento o della luce</translation>
 <translation id="4759238208242260848">Download</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download completato.}other{# download completati.}}</translation>
-<translation id="4797039098279997504">Tocca per tornare a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">La crittografia della passphrase non include metodi di pagamento e indirizzi di Google Pay.
 
 Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" />.</translation>
@@ -534,7 +533,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="4932247056774066048">Poiché stai uscendo da un account gestito da <ph name="DOMAIN_NAME" />, i tuoi dati di Chrome verranno eliminati da questo dispositivo. Rimarranno memorizzati nel tuo Account Google.</translation>
 <translation id="4943703118917034429">Realtà virtuale</translation>
 <translation id="4943872375798546930">Nessun risultato</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> sta condividendo il tuo schermo</translation>
 <translation id="4961107849584082341">Traduci questa pagina in qualsiasi lingua</translation>
 <translation id="4962975101802056554">Revoca tutte le autorizzazioni per il dispositivo</translation>
 <translation id="4970824347203572753">Non disponibile nel tuo paese</translation>
@@ -559,7 +557,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5129038482087801250">Installa app web</translation>
 <translation id="5132942445612118989">Sincronizza le tue password, la tua cronologia e altro su tutti i tuoi dispositivi</translation>
 <translation id="5139940364318403933">Impara a utilizzare Google Drive</translation>
-<translation id="515227803646670480">Cancella dati memorizzati</translation>
 <translation id="5152843274749979095">Nessuna app supportata installata</translation>
 <translation id="5161254044473106830">Titolo obbligatorio</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 download non riuscito.}other{# download non riusciti.}}</translation>
@@ -667,7 +664,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5869522115854928033">Password salvate</translation>
 <translation id="5876056640971328065">Metti in pausa il video</translation>
 <translation id="5884076754568147479">Per aiutarti a completare le attività, Google riceverà gli URL e i contenuti dei siti su cui utilizzi l'assistente, oltre alle informazioni che invii attraverso l'assistente</translation>
-<translation id="5902828464777634901">Tutti i dati locali memorizzati da questo sito web, inclusi i cookie, verranno eliminati.</translation>
 <translation id="5919204609460789179">Aggiorna <ph name="PRODUCT_NAME" /> per avviare la sincronizzazione</translation>
 <translation id="5937580074298050696">Dati risparmiati: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Reimposta</translation>
@@ -787,7 +783,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="671481426037969117">Il timer di <ph name="FQDN" /> è scaduto. Verrà riavviato domani.</translation>
 <translation id="6738867403308150051">Download in corso…</translation>
 <translation id="6766622839693428701">Fai scorrere verso il basso per chiudere.</translation>
-<translation id="6766758767654711248">Tocca per visitare il sito</translation>
 <translation id="6767294960381293877">Elenco di dispositivi con cui condividere una scheda aperto nella parte inferiore dello schermo.</translation>
 <translation id="6782111308708962316">Impedisci ai siti web di terze parti di salvare e leggere i dati dei cookie</translation>
 <translation id="6790428901817661496">Play</translation>
@@ -1048,7 +1043,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8812260976093120287">In alcuni siti web puoi pagare con le suddette app di pagamento supportate sul tuo dispositivo.</translation>
 <translation id="8816026460808729765">Impedisci ai siti di accedere ai sensori</translation>
 <translation id="8820817407110198400">Preferiti</translation>
-<translation id="8833831881926404480">Un sito sta condividendo il tuo schermo</translation>
 <translation id="883806473910249246">Si è verificato un errore durante il download dei contenuti.</translation>
 <translation id="8840953339110955557">Questa pagina potrebbe essere diversa dalla versione online.</translation>
 <translation id="8847988622838149491">USB</translation>

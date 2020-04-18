@@ -377,6 +377,7 @@
 <translation id="1508491105858779599">Coloque o dedo no sensor de impressões digitais para desbloquear o dispositivo.</translation>
 <translation id="1508575541972276599">A versão atual é Debian 9 (Stretch).</translation>
 <translation id="1509281256533087115">Aceder a qualquer <ph name="DEVICE_NAME_AND_VENDOR" /> através de USB</translation>
+<translation id="1509960214886564027">As funcionalidades em muitos sites podem falhar.</translation>
 <translation id="1510030919967934016">Esta página foi bloqueada de monitorizar a sua localização.</translation>
 <translation id="1510055949674985293">Gerar código QR para esta imagem</translation>
 <translation id="1510238584712386396">Launcher</translation>
@@ -1046,7 +1047,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="237828693408258535">Pretende traduzir esta página?</translation>
 <translation id="2378346380592252785">Atualize as credenciais de <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Selecione o diretório da extensão.</translation>
-<translation id="2379232090534544565">Um site está a aceder à entrada de áudio e de vídeo.</translation>
 <translation id="2379281330731083556">Imprimir utilizando a caixa de diálogo do sistema... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
 <translation id="2382818385048255866">Verifique as suas extensões</translation>
@@ -1454,7 +1454,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2903457445916429186">Abrir itens selecionados</translation>
 <translation id="2903882649406874750">Impedir sempre que <ph name="HOST" /> aceda aos sensores</translation>
 <translation id="2904456025988372123">Perguntar sempre que um site tentar transferir ficheiros automaticamente após o primeiro ficheiro</translation>
-<translation id="2905789169763945526">Quando estiver na Navegação anónima, os sites não podem utilizar cookies para ver a sua atividade de navegação em diferentes sites, por exemplo, para personalizar anúncios. Alguns sites podem não funcionar corretamente.</translation>
 <translation id="2907619724991574506">URLs de arranque</translation>
 <translation id="2907798539022650680">Falha ao ligar a "<ph name="NAME" />": <ph name="DETAILS" />
     Mensagem do servidor: <ph name="SERVER_MSG" /></translation>
@@ -1585,7 +1584,6 @@ Pretende pará-lo?</translation>
 <translation id="3088128611727407543">A preparar o perfil da app…</translation>
 <translation id="3088325635286126843">&amp;Mudar o nome...</translation>
 <translation id="3089137131053189723">Pesquisa limpa.</translation>
-<translation id="3090193911106258841">A aceder à entrada de áudio e de vídeo</translation>
 <translation id="3090819949319990166">Não é possível copiar o ficheiro crx externo para <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" sincronizado</translation>
 <translation id="3092699946856346803">Introduza o SIM e tente novamente.</translation>
@@ -1647,7 +1645,6 @@ Pretende pará-lo?</translation>
 <translation id="3165390001037658081">Alguns operadores podem bloquear esta funcionalidade.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Também pode ignorar o início de sessão e <ph name="LINK_START" />navegar como Convidado<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">Um site está a aceder à entrada de vídeo.</translation>
 <translation id="3177909033752230686">Idioma da página:</translation>
 <translation id="3179982752812949580">Tipo de letra do texto</translation>
 <translation id="3181954750937456830">Navegação segura (protege o utilizador e o seu dispositivo contra sites perigosos)</translation>
@@ -1858,7 +1855,6 @@ Pretende pará-lo?</translation>
 <translation id="3459697287128633276">Para permitir que a sua conta aceda à Google Play Store, realize a autenticação junto do seu Fornecedor de identidade.</translation>
 <translation id="3462311546193741693">A sua sessão é terminada na maioria dos sites. Continua com sessão iniciada na sua Conta Google para poder limpar os dados sincronizados.</translation>
 <translation id="3462413494201477527">Pretende cancelar a configuração da conta?</translation>
-<translation id="3464012987031883895">Um site está a aceder à entrada de áudio.</translation>
 <translation id="346431825526753">Esta é uma conta para crianças gerida por <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468298837301810372">Etiqueta</translation>
 <translation id="3468999815377931311">Telemóvel Android</translation>
@@ -1880,7 +1876,6 @@ Pretende pará-lo?</translation>
 <translation id="3487007233252413104">função anónima</translation>
 <translation id="348780365869651045">A aguardar pela AppCache...</translation>
 <translation id="3488065109653206955">Parcialmente activado</translation>
-<translation id="3489025949017384019">Muitos sites podem não funcionar corretamente.</translation>
 <translation id="3492788708641132712">A sincronização não está a funcionar. Tente iniciar sessão novamente.</translation>
 <translation id="3493486281776271508">É necessária uma ligação à Internet.</translation>
 <translation id="3493881266323043047">Validade</translation>
@@ -1942,7 +1937,6 @@ Pretende pará-lo?</translation>
 <translation id="3574210789297084292">iniciar sessão</translation>
 <translation id="3574917942258583917">Pretende sair do modo de navegação anónima mesmo assim?</translation>
 <translation id="3575121482199441727">Permitir neste site</translation>
-<translation id="3575919114596668130">As suas definições parentais do Family Link continuarão a ser aplicadas. Se bloqueou uma app ou um site anteriormente, não terá de o fazer novamente.</translation>
 <translation id="3576324189521867626">Instalação com êxito</translation>
 <translation id="3578594933904494462">O conteúdo deste separador está a ser partilhado.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; pretende partilhar uma impressora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; com um grupo de que é proprietário: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Se aceitar, todos os membros do grupo poderão utilizar a impressora.</translation>
@@ -3727,7 +3721,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6006484371116297560">Clássico</translation>
 <translation id="6007240208646052708">A pesquisa por voz não está disponível no seu idioma.</translation>
 <translation id="6009781704028455063">Sensor integrado</translation>
-<translation id="6010869025736512584">A aceder à entrada de vídeo</translation>
 <translation id="6011074160056912900">Rede Ethernet</translation>
 <translation id="6011193465932186973">Impressão digital</translation>
 <translation id="6011449291337289699">Limpar dados do site</translation>
@@ -4116,7 +4109,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">Está ligado a uma rede <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Partilhar</translation>
-<translation id="6528189551082329571">Abrir sempre links deste tipo na aplicação associada</translation>
 <translation id="6528513914570774834">Permitir que outros utilizadores deste dispositivo utilizem esta rede</translation>
 <translation id="652948702951888897">Histórico do Chrome</translation>
 <translation id="6530186581263215931">Estas definições são aplicadas pelo seu administrador</translation>
@@ -4686,7 +4678,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7310598146671372464">Não é possível iniciar sessão. O servidor não suporta os tipos de encriptação Kerberos especificados. Contacte o administrador.</translation>
 <translation id="7311079019872751559">Acesso de plug-in sem isolamento de processos</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">Os sites não podem utilizar cookies para ver a sua atividade de navegação em diferentes sites, por exemplo, para personalizar anúncios.  Alguns sites podem não funcionar corretamente.</translation>
 <translation id="7321545336522791733">Servidor inacessível</translation>
 <translation id="7324297612904500502">Fórum da versão beta</translation>
 <translation id="7325209047678309347">O papel está encravado</translation>
@@ -5084,7 +5075,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Nota:<ph name="END_BOLD" /> o sistema será reiniciado durante o processo.</translation>
 <translation id="7828731929332799387">Esta ação eliminará todos os cookies e dados de sites disponíveis em contextos de terceiros. Pretende continuar?</translation>
-<translation id="7829298379596169484">A aceder à entrada de áudio</translation>
 <translation id="7829877209233347340">Peça a um dos seus pais para lhe conceder autorização para adicionar uma conta escolar.</translation>
 <translation id="7830594666202422257">Ligar ao Linux</translation>
 <translation id="7831491651892296503">Ocorreu um erro ao configurar a rede.</translation>
@@ -5822,7 +5812,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8800004011501252845">A mostrar destinos para</translation>
 <translation id="8800034312320686233">O site não funciona?</translation>
 <translation id="8803953437405899238">Abra um novo separador com um clique.</translation>
-<translation id="8804398419035066391">Comunicar com Sites de cooperação</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Mover separador para outra janela}other{Mover separadores para outra janela}}</translation>
 <translation id="8805140816472474147">Confirme as definições de sincronização para iniciar a sincronização.</translation>
 <translation id="8806680466228877631">O atalho <ph name="SHORTCUT" /> pode reabrir separadores fechados acidentalmente.</translation>
@@ -6032,7 +6021,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9055636786322918818">Aplicar a encriptação RC4. A utilização desta opção aumenta o seu risco, uma vez que as cifras RC4 são inseguras.</translation>
 <translation id="9056810968620647706">Não foram encontradas correspondências.</translation>
 <translation id="9057354806206861646">Atualizar programação</translation>
-<translation id="9058976525724291037">A criança pretende adicionar outra Conta Google a este dispositivo. Só é possível adicionar contas do G Suite for Education a dispositivos geridos do Family Link.</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Erro da linha <ph name="ERROR_LINE_START" /> até <ph name="ERROR_LINE_END" />.</translation>
 <translation id="9064142312330104323">Fotografia do Perfil do Google (a carregar)</translation>

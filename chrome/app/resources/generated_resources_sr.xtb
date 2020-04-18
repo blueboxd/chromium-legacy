@@ -377,6 +377,7 @@
 <translation id="1508491105858779599">Ставите прст на сензор за отисак прста да бисте откључали уређај.</translation>
 <translation id="1508575541972276599">Актуелна верзија је Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Приступај било ком уређају <ph name="DEVICE_NAME_AND_VENDOR" /> преко USB-а</translation>
+<translation id="1509960214886564027">Функције на многим сајтовима могу да престану са радом</translation>
 <translation id="1510030919967934016">Овој страници је онемогућено да прати локацију на којој се налазите.</translation>
 <translation id="1510055949674985293">Генериши QR кôд за ову слику</translation>
 <translation id="1510238584712386396">Покретач</translation>
@@ -1043,7 +1044,6 @@
 <translation id="237828693408258535">Желите ли да преведете ову страницу?</translation>
 <translation id="2378346380592252785">Ажурирајте акредитиве за: <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Избор директоријума додатка.</translation>
-<translation id="2379232090534544565">Сајт приступа аудио и видео улазу</translation>
 <translation id="2379281330731083556">Штампај помоћу системског дијалога... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Питај пре слања (препоручује се)</translation>
 <translation id="2382818385048255866">Проверите додатке</translation>
@@ -1452,7 +1452,6 @@
 <translation id="2903457445916429186">Отворите изабране ставке</translation>
 <translation id="2903882649406874750">Никад не дозвољавај да <ph name="HOST" /> приступа сензорима</translation>
 <translation id="2904456025988372123">Питај када сајт покуша аутоматски да преузима датотеке после прве датотеке</translation>
-<translation id="2905789169763945526">Када сте у режиму без архивирања, сајтови не могу да користе колачиће да би видели ваше активности прегледања на различитим сајтовима, на пример, за персонализацију огласа. Неки сајтови можда неће правилно функционисати.</translation>
 <translation id="2907619724991574506">URL-ови за покретање</translation>
 <translation id="2907798539022650680">Повезивање са „<ph name="NAME" />“ није успело: <ph name="DETAILS" />
     Порука сервера: <ph name="SERVER_MSG" /></translation>
@@ -1582,7 +1581,6 @@
 <translation id="3088128611727407543">Припрема се профил апликације...</translation>
 <translation id="3088325635286126843">&amp;Преименуј...</translation>
 <translation id="3089137131053189723">Претрага је обрисана</translation>
-<translation id="3090193911106258841">Приступа се аудио и видео улазу</translation>
 <translation id="3090819949319990166">Није успело копирање спољне crx датотеке у датотеку <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">Упарили сте „<ph name="DEVICE_NAME" />“</translation>
 <translation id="3092699946856346803">Убаците SIM картицу и пробајте поново</translation>
@@ -1644,7 +1642,6 @@
 <translation id="3165390001037658081">Неки мобилни оператери могу да блокирају ову функцију.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Можете и да прескочите пријављивање и да <ph name="LINK_START" />прегледате као гост<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">Сајт приступа видео улазу</translation>
 <translation id="3177909033752230686">Језик странице:</translation>
 <translation id="3179982752812949580">Фонт текста</translation>
 <translation id="3181954750937456830">Безбедно прегледање (штити вас и уређај од опасних сајтова)</translation>
@@ -1855,7 +1852,6 @@
 <translation id="3459697287128633276">Да бисте омогућили налогу да приступа Google Play продавници, потврдите идентитет помоћу добављача идентитета.</translation>
 <translation id="3462311546193741693">Одјављује вас са већине сајтова. Не одјављује вас са Google налога, па синхронизовани подаци могу да се обришу.</translation>
 <translation id="3462413494201477527">Желите ли да откажете подешавање налога?</translation>
-<translation id="3464012987031883895">Сајт приступа аудио улазу</translation>
 <translation id="346431825526753">Ово је налог за децу којим управља <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468298837301810372">Ознака</translation>
 <translation id="3468999815377931311">Android телефон</translation>
@@ -1877,7 +1873,6 @@
 <translation id="3487007233252413104">анонимна функција</translation>
 <translation id="348780365869651045">Чека се AppCache...</translation>
 <translation id="3488065109653206955">Делимично активирано</translation>
-<translation id="3489025949017384019">Многи сајтови можда неће исправно радити</translation>
 <translation id="3492788708641132712">Синхронизација не функционише. Пробајте поново да се пријавите.</translation>
 <translation id="3493486281776271508">Треба вам интернет веза</translation>
 <translation id="3493881266323043047">Валидност</translation>
@@ -1939,7 +1934,6 @@
 <translation id="3574210789297084292">пријави ме</translation>
 <translation id="3574917942258583917">Желите ли да ипак изађете из режима без архивирања?</translation>
 <translation id="3575121482199441727">Дозволи за овај сајт</translation>
-<translation id="3575919114596668130">И даље важе Family Link подешавања родитеља. Ако сте раније блокирали апликацију или сајт, не морате то поново да радите.</translation>
 <translation id="3576324189521867626">Инсталирано је</translation>
 <translation id="3578594933904494462">Садржај ове картице се дели.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; жели да дели штампач &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; са групом чији сте власник: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ако прихватите, сви чланови групе ће моћи да штампају помоћу штампача.</translation>
@@ -3724,7 +3718,6 @@
 <translation id="6006484371116297560">Класична</translation>
 <translation id="6007240208646052708">Гласовна претрага на вашем језику није доступна.</translation>
 <translation id="6009781704028455063">Уграђени сензор</translation>
-<translation id="6010869025736512584">Приступа се видео улазу</translation>
 <translation id="6011074160056912900">Етернет мрежа</translation>
 <translation id="6011193465932186973">Дигитални отисак</translation>
 <translation id="6011449291337289699">Обришите податке сајта</translation>
@@ -4113,7 +4106,6 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">Повезани сте на <ph name="NETWORK_TYPE" /> мрежу.</translation>
 <translation id="6527303717912515753">Дели</translation>
-<translation id="6528189551082329571">Увек отварај овај тип линкова у повезаној апликацији</translation>
 <translation id="6528513914570774834">Дозволите другим корисницима овог уређаја да користе ову мрежу</translation>
 <translation id="652948702951888897">Историја Chrome-а</translation>
 <translation id="6530186581263215931">Администратор примењује ова подешавања</translation>
@@ -4683,7 +4675,6 @@
 <translation id="7310598146671372464">Пријављивање није успело. Сервер не подржава наведене Kerberos типове шифровања. Контактирајте администратора.</translation>
 <translation id="7311079019872751559">Приступ помоћу додатне компоненте ван заштићеног окружења</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">Сајтови не могу да користе колачиће да би видели ваше активности прегледања на различитим сајтовима, на пример, за персонализацију огласа.  Неки сајтови можда неће правилно функционисати.</translation>
 <translation id="7321545336522791733">Сервер није доступан</translation>
 <translation id="7324297612904500502">Форум за бета верзију</translation>
 <translation id="7325209047678309347">Папир је заглављен</translation>
@@ -5081,7 +5072,6 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Напомена:<ph name="END_BOLD" /> Систем ће се рестартовати током овог процеса.</translation>
 <translation id="7828731929332799387">Овим ћете избрисати све колачиће и податке о сајтовима који су доступни у контекстима трећих страна. Желите ли да наставите?</translation>
-<translation id="7829298379596169484">Приступа се аудио улазу</translation>
 <translation id="7829877209233347340">Затражи од родитеља да се пријави да би дао дозволу за додавање школског налога</translation>
 <translation id="7830594666202422257">Повежи са Linux-ом</translation>
 <translation id="7831491651892296503">Грешка при конфигурацији мреже</translation>
@@ -5820,7 +5810,6 @@
 <translation id="8800004011501252845">Приказивање одредишта за</translation>
 <translation id="8800034312320686233">Да ли сајт не ради?</translation>
 <translation id="8803953437405899238">Отворите нову картицу једним кликом</translation>
-<translation id="8804398419035066391">Комуникација са веб-сајтовима за сарадњу</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Премести картицу у други прозор}one{Премести картице у други прозор}few{Премести картице у други прозор}other{Премести картице у други прозор}}</translation>
 <translation id="8805140816472474147">Потврдите подешавања синхронизације да бисте започели синхронизацију.</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> може поново да отвори картице које сте случајно затворили</translation>
@@ -6030,7 +6019,6 @@
 <translation id="9055636786322918818">Примењује RC4 шифровање. Коришћење ове опције вас излаже већем ризику јер су RC4 шифре небезбедне.</translation>
 <translation id="9056810968620647706">Није пронађено ниједно подударање.</translation>
 <translation id="9057354806206861646">Ажурирајте распоред</translation>
-<translation id="9058976525724291037">Дете жели да дода још један Google налог на овај уређај. Само G Suite for Education налози могу да се додају на уређаје којима се управља помоћу Family Link-а.</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Грешка од <ph name="ERROR_LINE_START" />. до <ph name="ERROR_LINE_END" />. реда</translation>
 <translation id="9064142312330104323">Слика Google профила (учитавање)</translation>

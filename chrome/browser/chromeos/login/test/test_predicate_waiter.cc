@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 
 #include "base/callback.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 namespace test {
@@ -32,6 +33,7 @@ void TestPredicateWaiter::Wait() {
   timer_.Start(FROM_HERE, kPredicateCheckFrequency, this,
                &TestPredicateWaiter::CheckPredicate);
   run_loop_.Run();
+  ASSERT_TRUE(is_fulfilled_.Run());
 }
 
 void TestPredicateWaiter::CheckPredicate() {

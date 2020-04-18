@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/files/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
@@ -185,6 +186,7 @@ void UntrustedSource::OnOneGoogleBarDataUpdated() {
   std::string html;
   if (data.has_value()) {
     ui::TemplateReplacements replacements;
+    replacements["textdirection"] = base::i18n::IsRTL() ? "rtl" : "ltr";
     replacements["barHtml"] = data->bar_html;
     replacements["inHeadScript"] = data->in_head_script;
     replacements["inHeadStyle"] = data->in_head_style;
@@ -210,6 +212,7 @@ void UntrustedSource::OnPromoDataUpdated() {
   std::string html;
   if (data.has_value() && !data->promo_html.empty()) {
     ui::TemplateReplacements replacements;
+    replacements["textdirection"] = base::i18n::IsRTL() ? "rtl" : "ltr";
     replacements["data"] = data->promo_html;
     html = FormatTemplate(IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_HTML, replacements);
   }

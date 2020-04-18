@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Interrompre</translation>
 <translation id="1188239144602654184">Démarrer la RA</translation>
 <translation id="1197267115302279827">Déplacer les favoris</translation>
-<translation id="119944043368869598">Tout effacer</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1204037785786432551">Télécharger le lien</translation>
 <translation id="1206892813135768548">Copier le texte du lien</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">De base</translation>
 <translation id="1671236975893690980">Téléchargement en attente…</translation>
 <translation id="1672586136351118594">Ne plus afficher</translation>
+<translation id="1688867105868176567">Effacer les données du site?</translation>
 <translation id="1692118695553449118">La synchronisation est activée</translation>
 <translation id="169515064810179024">Empêcher les sites d'accéder aux capteurs de mouvement</translation>
 <translation id="1717218214683051432">Capteurs de mouvements</translation>
@@ -507,7 +507,6 @@ D'autres formes d'historique de navigation, telles que les recherches et l'activ
 <translation id="4751476147751820511">Capteurs de mouvement ou de luminosité</translation>
 <translation id="4759238208242260848">Téléchargements</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 téléchargement terminé.}one{# téléchargement terminé.}other{# téléchargements terminés.}}</translation>
-<translation id="4797039098279997504">Appuyez pour revenir à <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Le chiffrement par phrase de passe ne couvre pas les modes de paiement ni les adresses de Google Pay.
 
 Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4932247056774066048">Comme vous vous déconnectez d'un compte géré par <ph name="DOMAIN_NAME" />, vos données Chrome seront supprimées de cet appareil. Elles resteront toutefois dans votre compte Google.</translation>
 <translation id="4943703118917034429">Réalité virtuelle</translation>
 <translation id="4943872375798546930">Aucun résultat</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> partage votre écran</translation>
 <translation id="4961107849584082341">Traduire cette page vers n'importe quelle langue</translation>
 <translation id="4962975101802056554">Révoquer toutes les autorisations pour l'appareil</translation>
 <translation id="4970824347203572753">Cette fonctionnalité n'est pas offerte dans votre région</translation>
@@ -559,7 +557,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5129038482087801250">Installer l'application Web</translation>
 <translation id="5132942445612118989">Synchronisez vos mots de passe, votre historique et plus encore sur tous vos appareils</translation>
 <translation id="5139940364318403933">Apprenez à utiliser Google Disque</translation>
-<translation id="515227803646670480">Effacer les données stockées</translation>
 <translation id="5152843274749979095">Aucune application compatible n'est installée</translation>
 <translation id="5161254044473106830">Titre requis</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Échec de 1 téléchargement.}one{Échec de # téléchargement.}other{Échec de # téléchargements.}}</translation>
@@ -667,7 +664,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5869522115854928033">Mots de passe enregistrés</translation>
 <translation id="5876056640971328065">Suspendre la vidéo</translation>
 <translation id="5884076754568147479">Pour vous aider à effectuer des tâches, Google recevra les URL et le contenu des sites avec lesquels vous utilisez l'Assistant, ainsi que l'information que vous envoyez par l'intermédiaire de l'Assistant</translation>
-<translation id="5902828464777634901">Toutes les données locales stockées par ce site, y compris les témoins, seront supprimées.</translation>
 <translation id="5919204609460789179">Mettez à jour <ph name="PRODUCT_NAME" /> pour commencer la synchronisation</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> enregistré(s)</translation>
 <translation id="5939518447894949180">Recommencer</translation>
@@ -787,7 +783,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="671481426037969117">Votre minuterie <ph name="FQDN" /> a expiré. Elle recommencera demain.</translation>
 <translation id="6738867403308150051">Téléchargement en cours…</translation>
 <translation id="6766622839693428701">Glissez le doigt vers le bas pour fermer.</translation>
-<translation id="6766758767654711248">Touchez pour accéder au site</translation>
 <translation id="6767294960381293877">La liste d'appareils avec lesquels partager un onglet est ouverte à la mi-hauteur.</translation>
 <translation id="6782111308708962316">Empêcher les sites Web tiers d'enregistrer et de lire les données des témoins</translation>
 <translation id="6790428901817661496">Jouer</translation>
@@ -1048,7 +1043,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8812260976093120287">Sur certains sites Web, vous pouvez payer avec les applications de paiement prises en charge indiquées ci-dessus sur votre appareil.</translation>
 <translation id="8816026460808729765">Empêcher les sites d'accéder aux capteurs</translation>
 <translation id="8820817407110198400">Favoris</translation>
-<translation id="8833831881926404480">Un site partage votre écran</translation>
 <translation id="883806473910249246">Une erreur s'est produite lors du téléchargement du contenu.</translation>
 <translation id="8840953339110955557">Cette page peut différer de la version en ligne.</translation>
 <translation id="8847988622838149491">USB</translation>

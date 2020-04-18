@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Durdurun</translation>
 <translation id="1188239144602654184">AR-ə başlayın</translation>
 <translation id="1197267115302279827">Əlfəcinləri köçürün</translation>
-<translation id="119944043368869598">Hamısını silin</translation>
 <translation id="1201402288615127009">Növbəti</translation>
 <translation id="1204037785786432551">Linki endirin</translation>
 <translation id="1206892813135768548">Link mətnini kopyalayın</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Əsas</translation>
 <translation id="1671236975893690980">Endirilmə gözlənilir...</translation>
 <translation id="1672586136351118594">Daha göstərməyin</translation>
+<translation id="1688867105868176567">Sayt datası təmizlənsin?</translation>
 <translation id="1692118695553449118">Sinxronizasiya aktivdir</translation>
 <translation id="169515064810179024">Saytların hərəkət sensorlarına girişini blok edin</translation>
 <translation id="1717218214683051432">Hərəkət sensorları</translation>
@@ -507,7 +507,6 @@ Kamerada görünəni ancaq siz görə bilərsiniz. Sayt kameranızdakı şəkill
 <translation id="4751476147751820511">Hərəkət və ışıq sensorları</translation>
 <translation id="4759238208242260848">Endirmələr</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 endirmə tamamlandı.}other{# endirmə tamamlandı.}}</translation>
-<translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> linkinə qayıtmaq üçün toxunun</translation>
 <translation id="4802417911091824046">Google Pay'dəki ödəniş metodları və ünvanlar parol şifrələməsinə daxil deyil.
 
 Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlayın<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="4932247056774066048"><ph name="DOMAIN_NAME" /> tərəfindən idarə edilən hesabdan çıxdığınıza görə Chrome datanız bu cihazdan silinəcək. Bu, Google Hesabında qalacaq.</translation>
 <translation id="4943703118917034429">Virtual Reallıq</translation>
 <translation id="4943872375798546930">Nəticə yoxdur</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ekranınızı paylaşır</translation>
 <translation id="4961107849584082341">Bu səhifəni istədiyiniz dilə tərcümə edin</translation>
 <translation id="4962975101802056554">Cihaz üçün bütün icazələri ləğv edin</translation>
 <translation id="4970824347203572753">Ərazinizdə əlçatan deyil</translation>
@@ -559,7 +557,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5129038482087801250">Veb tətbiqini quraşdırın</translation>
 <translation id="5132942445612118989">Bütün cihazlarda parol, tarixçə və s. sinxronizasiya edin</translation>
 <translation id="5139940364318403933">Google Diskdən istifadə etməyi öyrənin</translation>
-<translation id="515227803646670480">Saxlanılan datanı silin</translation>
 <translation id="5152843274749979095">Heç bir dəstəklənən tətbiq quraşdırılmayıb</translation>
 <translation id="5161254044473106830">Başlıq tələb olunur</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 endirmə alınmadı.}other{# endirmə alınmadı.}}</translation>
@@ -667,7 +664,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5869522115854928033">Saxlanılmış parollar</translation>
 <translation id="5876056640971328065">Videoya pauza verin</translation>
 <translation id="5884076754568147479">Tapşırıqları tamamlamaqda sizə kömək etmək üçün Google Assistentdən istifadə etdiyiniz saytların URL və məzmunlarını, eləcə də Assistent vasitəsilə təqdim etdiyiniz məlumatları əldə edəcək</translation>
-<translation id="5902828464777634901">Bu sayt tərəfindən saxlanmış bütün lokal data silinəcək.</translation>
 <translation id="5919204609460789179">Sinxronizasiyanı başlatmaq üçün <ph name="PRODUCT_NAME" /> məhsulunu yeniləyin</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> istifadə edildi</translation>
 <translation id="5939518447894949180">Sıfırlayın</translation>
@@ -785,7 +781,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="671481426037969117"><ph name="FQDN" /> taymerinin vaxtı bitir. Sabah yenidən başlayacaq.</translation>
 <translation id="6738867403308150051">Endirilir...</translation>
 <translation id="6766622839693428701">Bağlamaq üçün aşağı sürüşdürün.</translation>
-<translation id="6766758767654711248">Sayta keçmək üçün klikləyin</translation>
 <translation id="6767294960381293877">Yarı hündürlükdə açılan tabı paylaşa biləcəyiniz cihazların siyahısı.</translation>
 <translation id="6782111308708962316">Üçüncü tərəf veb saytları tərəfindən kuki datasının yadda saxlanılması və oxunmasının qarşısını alın</translation>
 <translation id="6790428901817661496">Oxudun</translation>
@@ -1046,7 +1041,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="8812260976093120287">Bəzi veb saytlarda cihazda dəstəklənən ödəniş tətbiqləri ilə ödəyə bilərsiniz</translation>
 <translation id="8816026460808729765">Saytların sensorlara girişini blok edin</translation>
 <translation id="8820817407110198400">Əlfəcinlər</translation>
-<translation id="8833831881926404480">Sayt ekranınızı paylaşır</translation>
 <translation id="883806473910249246">Kontent endirilən zaman xəta baş verdi.</translation>
 <translation id="8840953339110955557">Bu səhifə onlayn versiyadan fərqli ola bilər.</translation>
 <translation id="8847988622838149491">USB</translation>

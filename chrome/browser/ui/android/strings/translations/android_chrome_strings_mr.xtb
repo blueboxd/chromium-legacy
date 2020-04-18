@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">विराम द्या</translation>
 <translation id="1188239144602654184">AR सुरू करा</translation>
 <translation id="1197267115302279827">बुकर्माक हलवा</translation>
-<translation id="119944043368869598">सर्व साफ करा</translation>
 <translation id="1201402288615127009">पुढील</translation>
 <translation id="1204037785786432551">लिंक डाउनलोड करा</translation>
 <translation id="1206892813135768548">लिंक मजकूर कॉपी करा</translation>
@@ -34,7 +33,7 @@
 <translation id="1209206284964581585">आतासाठी लपवा</translation>
 <translation id="1227058898775614466">नेव्हिगेशन इतिहास</translation>
 <translation id="1231733316453485619">सिंक सुरू करायचे का?</translation>
-<translation id="123724288017357924">कॅश केलेला आशय दुर्लक्षित करून, सद्य पेज रीलोड करा</translation>
+<translation id="123724288017357924">कॅशे केलेला आशय दुर्लक्षित करून, सद्य पेज रीलोड करा</translation>
 <translation id="124116460088058876">आणखी भाषा...</translation>
 <translation id="1242008676835033345"><ph name="WEBSITE_URL" /> वर एम्बेड केले</translation>
 <translation id="124678866338384709">वर्तमान टॅब बंद करा</translation>
@@ -44,7 +43,7 @@
 <translation id="1272079795634619415">थांबा</translation>
 <translation id="1283039547216852943">विस्तृत करण्यासाठी टॅप करा</translation>
 <translation id="1285320974508926690">या साइटचा कधीही भाषांतर करु नका</translation>
-<translation id="1291207594882862231">इतिहास, कुकी, साइट डेटा, कॅशे साफ करा…</translation>
+<translation id="1291207594882862231">इतिहास, कुकी, साइट डेटा, कॅशे  साफ करा…</translation>
 <translation id="129382876167171263">वेबसाइटद्वारे सेव्ह केलेल्या फाइल येथे दिसतील</translation>
 <translation id="129553762522093515">अलीकडे बंद केलेले</translation>
 <translation id="1303339473099049190">तो पासवर्ड सापडत नाही. तुमचे शब्दलेखन तपासा आणि पुन्हा प्रयत्न करा.</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">मूलभूत</translation>
 <translation id="1671236975893690980">डाउनलोड प्रलंबित आहे</translation>
 <translation id="1672586136351118594">पुन्हा दाखवू नका</translation>
+<translation id="1688867105868176567">साइट डेटा साफ करायचा?</translation>
 <translation id="1692118695553449118">संकालन सुरू आहे</translation>
 <translation id="169515064810179024">साइटना मोशन सेन्सर ॲक्सेसपासून ब्लॉक करा</translation>
 <translation id="1717218214683051432">मोशन सेन्सर</translation>
@@ -221,7 +221,7 @@
 <translation id="2567385386134582609">इमेज</translation>
 <translation id="257088987046510401">थीम</translation>
 <translation id="2570922361219980984">या डिव्हाइसाठी स्थान अ‍ॅक्सेस देखील बंद आहे, <ph name="BEGIN_LINK" />Android सेटिंग्‍ज<ph name="END_LINK" /> मध्‍ये हे सुरू करा.</translation>
-<translation id="2581165646603367611">हे सर्व कुकी, कॅशे आणि साइटचा अन्य डेटा साफ करेल जो Chrome ला महत्त्वाचा वाटत नाही.</translation>
+<translation id="2581165646603367611">हे सर्व कुकी, कॅशे  आणि साइटचा अन्य डेटा साफ करेल जो Chrome ला महत्त्वाचा वाटत नाही.</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
 <translation id="2587052924345400782">अधिक नवीन आवृत्ती उपलब्ध आहे</translation>
 <translation id="2593272815202181319">मोनोस्पेस</translation>
@@ -231,7 +231,7 @@
 <translation id="2631006050119455616">वाचवला</translation>
 <translation id="2647434099613338025">भाषा जोडा</translation>
 <translation id="2650751991977523696">फाइल पुन्हा डाउनलोड करायची?</translation>
-<translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ऑडिओ फाइल}other{# ऑडिओ फायली}}</translation>
+<translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ऑडिओ फाइल}other{# ऑडिओ फाइल}}</translation>
 <translation id="2687403674020088961">सर्व कुकी ब्लॉक करा (शिफारस केली जात नाही)</translation>
 <translation id="2689830683995595741">Chrome वापरून, तुम्ही <ph name="BEGIN_LINK1" />Google सेवा अटी<ph name="END_LINK1" /> आणि <ph name="BEGIN_LINK2" />Google Chrome व Chrome OS अतिरिक्त सेवा अटी<ph name="END_LINK2" /> यांना सहमती दर्शवता. <ph name="BEGIN_LINK3" />Family Link सोबत व्यवस्थापित केलेली Google खाती यांसाठी गोपनीयतेची सूचना<ph name="END_LINK3" /> देखील लागू होते.</translation>
 <translation id="2707726405694321444">पृष्ठ रिफ्रेश करा</translation>
@@ -495,7 +495,7 @@
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अधिक}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अधिक}}</translation>
 <translation id="4696983787092045100">तुमच्या डिव्हाइसवर एसएमएस पाठवा</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> मध्ये ऑफलाइन पाहा</translation>
-<translation id="4699172675775169585">कॅश   इमेज आणि फायली</translation>
+<translation id="4699172675775169585">कॅशे   इमेज आणि फायली</translation>
 <translation id="4714588616299687897">तुमचा सुमारे 60% डेटा वाचवा</translation>
 <translation id="4719927025381752090">भाषांतर करण्यास ऑफर करा</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> मध्‍ये उघडा</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">मोशन किंवा प्रकाश सेन्सर</translation>
 <translation id="4759238208242260848">डाउनलोड</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{एक डाउनलोड पूर्ण झाला आहे.}other{# डाउनलोड पूर्ण झाले आहेत.}}</translation>
-<translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> वर परत येण्‍यासाठी स्पर्श करा</translation>
 <translation id="4802417911091824046">पासफ्रेज एंक्रिप्शनमध्ये Google Pay वरील पेमेंट पद्धतींचा आणि पत्त्यांचा समावेश नसतो.
 
 हे सेटिंग बदलण्यासाठी, <ph name="BEGIN_LINK" />सिंक रीसेट करा<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048"><ph name="DOMAIN_NAME" /> द्वारे व्यवस्थापित केलेल्या खात्यामधून तुम्ही साइन आउट करत असल्यामुळे, या डिव्हाइसवरून Chrome डेटा हटवला जाईल. तो तुमच्या Google खात्यामध्ये तसाच राहिल.</translation>
 <translation id="4943703118917034429">आभासी वास्तविकता</translation>
 <translation id="4943872375798546930">परिणाम नाहीत</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> तुमची स्क्रीन शेअर करत आहे</translation>
 <translation id="4961107849584082341">या पेजचे कोणत्याही भाषेत भाषांतर करा</translation>
 <translation id="4962975101802056554">डिव्हाइससाठीच्या सर्व परवानग्या रद्द करा</translation>
 <translation id="4970824347203572753">तुमच्या स्थानामध्ये उपलब्ध नाही</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">वेब अ‍ॅप इंस्टॉल करा</translation>
 <translation id="5132942445612118989">सर्व डिव्हाइसवर तुमचे पासवर्ड, इतिहास आणि बरेच काही सिंक करा</translation>
 <translation id="5139940364318403933">Google ड्राइव्ह कसे वापरावे ते जाणून घ्या</translation>
-<translation id="515227803646670480">संचयित डेटा साफ करा</translation>
 <translation id="5152843274749979095">कोणतेही समर्थित ॲप्स इंस्टॉल केले नाहीत</translation>
 <translation id="5161254044473106830">शीर्षक आवश्यक</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{एक डाउनलोड होऊ शकला नाही.}other{# डाउनलोड होऊ शकले नाहीत.}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">सेव्ह केलेले पासवर्ड</translation>
 <translation id="5876056640971328065">व्हिडिओ थांबवा</translation>
 <translation id="5884076754568147479">टास्क पूर्ण करण्यात तुम्हाला मदत व्हावी म्हणून Google ला तुम्ही Assistant वापरून सबमिट करता त्या माहितीच्या समावेशासह तुम्ही Assistant वापरता त्या साइटचा आशय आणि URL मिळतील</translation>
-<translation id="5902828464777634901">कुकीजसह, या वेबसाइटवर संचयित केलेला डेटा, हटवला जाईल.</translation>
 <translation id="5919204609460789179">सिंक सुरू करण्यासाठी <ph name="PRODUCT_NAME" /> अपडेट करा</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> वाचवला</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117">तुमचा <ph name="FQDN" /> टायमर झाला आहे. तो उद्या पुन्हा सुरू होईल.</translation>
 <translation id="6738867403308150051">डाउनलोड करीत आहे…</translation>
 <translation id="6766622839693428701">बंद करण्यासाठी खाली स्वाइप करा.</translation>
-<translation id="6766758767654711248">साइटवर जाण्यासाठी टॅप करा</translation>
 <translation id="6767294960381293877">अर्ध्या उंचीवर उघडलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="6782111308708962316">तृतीय-पक्ष वेबसाइटना कुकी डेटा सेव्ह करण्यास आणि वाचण्यास प्रतिबंधित करा</translation>
 <translation id="6790428901817661496">प्ले करा</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">काही वेबसाइटवर, तुम्ही आपल्या डिव्हाइसवर वरील समर्थित पेमेंट ॲप्ससह पेमेंट देऊ शकता.</translation>
 <translation id="8816026460808729765">साइटना सेन्सर ॲक्सेस करण्यापासून ब्लॉक करा</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
-<translation id="8833831881926404480">साइट तुमची स्क्रीन शेअर करत आहे</translation>
 <translation id="883806473910249246">आशय डाउनलोड करताना एरर आली.</translation>
 <translation id="8840953339110955557">हे पेज ऑनलाइन आवृत्तीपेक्षा वेगळे असू शकते.</translation>
 <translation id="8847988622838149491">USB</translation>

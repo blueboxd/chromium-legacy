@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1188239144602654184">Start AR</translation>
 <translation id="1197267115302279827">Flyt bogmærker</translation>
-<translation id="119944043368869598">Ryd alle</translation>
 <translation id="1201402288615127009">Næste</translation>
 <translation id="1204037785786432551">Download link</translation>
 <translation id="1206892813135768548">Kopiér linktekst</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Grundlæggende</translation>
 <translation id="1671236975893690980">Download afventer…</translation>
 <translation id="1672586136351118594">Vis ikke igen</translation>
+<translation id="1688867105868176567">Ville du rydde websitets data?</translation>
 <translation id="1692118695553449118">Synkronisering er slået til</translation>
 <translation id="169515064810179024">Bloker adgang til bevægelsessensorer på websites</translation>
 <translation id="1717218214683051432">Bevægelsessensorer</translation>
@@ -507,7 +507,6 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="4751476147751820511">Bevægelses- eller lyssensorer</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download er fuldført.}one{# download er fuldført.}other{# downloads er fuldført.}}</translation>
-<translation id="4797039098279997504">Tryk for at gå tilbage til <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay.
 
 Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkronisering<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="4932247056774066048">Da du er ved at logge ud af en konto, der administreres af <ph name="DOMAIN_NAME" />, slettes dine Chrome-data fra denne enhed. Dataene vil stadig være at finde på din Google-konto.</translation>
 <translation id="4943703118917034429">Virtual reality</translation>
 <translation id="4943872375798546930">Ingen resultater</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> deler din skærm</translation>
 <translation id="4961107849584082341">Oversæt denne side til et hvilket som helst sprog</translation>
 <translation id="4962975101802056554">Tilbagekald alle tilladelser for enheden</translation>
 <translation id="4970824347203572753">Ikke tilgængelig på din placering</translation>
@@ -559,7 +557,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5129038482087801250">Installer webapp</translation>
 <translation id="5132942445612118989">Synkroniser dine adgangskoder, din historik og meget mere på alle enheder</translation>
 <translation id="5139940364318403933">Få oplysninger om, hvordan du bruger Google Drev</translation>
-<translation id="515227803646670480">Ryd lagrede data</translation>
 <translation id="5152843274749979095">Der er ikke installeret nogen understøttede apps</translation>
 <translation id="5161254044473106830">Der skal angives en titel</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 download mislykkedes.}one{# download mislykkedes.}other{# downloads mislykkedes.}}</translation>
@@ -667,7 +664,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5869522115854928033">Gemte adgangskoder</translation>
 <translation id="5876056640971328065">Sæt video på pause</translation>
 <translation id="5884076754568147479">For at hjælpe dig med at udføre opgaver modtager Google webadresser for og indhold på websites, hvor du bruger Assistent, samt oplysninger du indsender via Assistent</translation>
-<translation id="5902828464777634901">Alle lokale data, der gemmes af websitet, herunder cookies, slettes</translation>
 <translation id="5919204609460789179">Opdater <ph name="PRODUCT_NAME" /> for at starte synkroniseringen</translation>
 <translation id="5937580074298050696">Du har sparet <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Nulstil</translation>
@@ -787,7 +783,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="671481426037969117">Din timer for <ph name="FQDN" /> udløb. Den starter igen i morgen.</translation>
 <translation id="6738867403308150051">Downloader…</translation>
 <translation id="6766622839693428701">Stryg ned for at lukke.</translation>
-<translation id="6766758767654711248">Tryk for at gå til websitet</translation>
 <translation id="6767294960381293877">Åben liste i halv højde over enheder, der skal deles en fane med.</translation>
 <translation id="6782111308708962316">Undgå, at tredjepartswebsites gemmer og læser cookiedata</translation>
 <translation id="6790428901817661496">Afspil</translation>
@@ -1048,7 +1043,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8812260976093120287">På nogle websites kan du betale med ovenstående understøttede betalingsapps på din enhed.</translation>
 <translation id="8816026460808729765">Bloker adgang til sensorer på websites</translation>
 <translation id="8820817407110198400">Bogmærker</translation>
-<translation id="8833831881926404480">Et website deler din skærm</translation>
 <translation id="883806473910249246">Der opstod en fejl under download af indholdet.</translation>
 <translation id="8840953339110955557">Denne side kan afvige fra onlineversionen.</translation>
 <translation id="8847988622838149491">USB</translation>

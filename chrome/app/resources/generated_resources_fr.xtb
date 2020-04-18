@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Accéder à toutes vos données sur le site Web actuellement consulté et les modifier</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> souhaite rétablir vos paramètres.</translation>
 <translation id="1243314992276662751">Importer</translation>
+<translation id="1243436884219965846">Vérifier les mots de passe</translation>
 <translation id="1244265436519979884">Restauration Linux…</translation>
 <translation id="1244303850296295656">Erreur au niveau des extensions.</translation>
 <translation id="1246158006305844142">Vos applications et paramètres seront synchronisés sur tous les appareils Chrome OS où vous êtes connecté à votre compte Google. Pour les options de synchronisation du navigateur, accédez aux <ph name="LINK_BEGIN" />paramètres Chrome<ph name="LINK_END" />.</translation>
@@ -376,6 +377,7 @@
 <translation id="1508491105858779599">Placez votre doigt sur le lecteur d'empreinte digitale pour déverrouiller l'appareil.</translation>
 <translation id="1508575541972276599">Version actuelle : Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Accéder à n'importe quel appareil <ph name="DEVICE_NAME_AND_VENDOR" /> via USB</translation>
+<translation id="1509960214886564027">Des fonctionnalités sur de nombreux sites risquent de ne pas fonctionner</translation>
 <translation id="1510030919967934016">Le suivi de votre position géographique a été bloqué pour cette page.</translation>
 <translation id="1510055949674985293">Générer un code QR pour cette image</translation>
 <translation id="1510238584712386396">Lanceur d'applications</translation>
@@ -1045,7 +1047,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="237828693408258535">Traduire cette page ?</translation>
 <translation id="2378346380592252785">Mettre à jour les identifiants pour <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Sélectionner le répertoire de l'extension</translation>
-<translation id="2379232090534544565">Un site accède à vos entrées audio et vidéo</translation>
 <translation id="2379281330731083556">Imprimer via la boîte de dialogue du système... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Demander l'autorisation avant d'envoyer (recommandé)</translation>
 <translation id="2382818385048255866">Vérifiez vos extensions</translation>
@@ -1454,7 +1455,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2903457445916429186">Ouvrir les éléments sélectionnés</translation>
 <translation id="2903882649406874750">Toujours bloquer l'accès aux capteurs pour <ph name="HOST" /></translation>
 <translation id="2904456025988372123">Me demander lorsqu'un site tente de télécharger des fichiers automatiquement après le premier fichier</translation>
-<translation id="2905789169763945526">Lorsque vous êtes en mode navigation privée, les sites ne peuvent pas utiliser vos cookies pour voir votre activité de navigation sur l'ensemble des différents sites (par exemple, pour personnaliser les annonces). Certains d'entre eux risquent de ne pas fonctionner correctement.</translation>
 <translation id="2907619724991574506">URL de démarrage</translation>
 <translation id="2907798539022650680">Échec de la connexion à "<ph name="NAME" />" : <ph name="DETAILS" />
     Message du serveur : <ph name="SERVER_MSG" /></translation>
@@ -1584,7 +1584,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3088128611727407543">Préparation du profil de l'application…</translation>
 <translation id="3088325635286126843">&amp;Renommer...</translation>
 <translation id="3089137131053189723">Recherche effacée</translation>
-<translation id="3090193911106258841">Accès à l'entrée audio et vidéo en cours…</translation>
 <translation id="3090819949319990166">Impossible de copier le fichier crx externe dans <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" associé.</translation>
 <translation id="3092699946856346803">Veuillez insérer votre carte SIM et réessayer</translation>
@@ -1646,7 +1645,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3165390001037658081">Certains opérateurs peuvent bloquer cette fonctionnalité.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Vous pouvez également ignorer l'étape de connexion et <ph name="LINK_START" />naviguer en tant qu'invité<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">Un site accède à votre entrée vidéo</translation>
 <translation id="3177909033752230686">Langue de la page :</translation>
 <translation id="3179982752812949580">Police du texte</translation>
 <translation id="3181954750937456830">Navigation sécurisée (assure votre protection et celle de votre appareil contre les sites dangereux)</translation>
@@ -1857,7 +1855,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3459697287128633276">Pour accéder au Google Play Store avec votre compte, authentifiez-vous à l'aide de votre fournisseur d'identité.</translation>
 <translation id="3462311546193741693">Cette option vous déconnecte de la plupart des sites. Vous restez cependant connecté à votre compte Google afin que vos données synchronisées puissent être effacées.</translation>
 <translation id="3462413494201477527">Annuler la configuration du compte ?</translation>
-<translation id="3464012987031883895">Un site accède à votre entrée audio</translation>
 <translation id="346431825526753">Il s'agit d'un compte pour enfants géré par <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468298837301810372">Libellé</translation>
 <translation id="3468999815377931311">Téléphone Android</translation>
@@ -1879,7 +1876,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3487007233252413104">fonction anonyme</translation>
 <translation id="348780365869651045">En attente du cache de l'application…</translation>
 <translation id="3488065109653206955">Partiellement activé</translation>
-<translation id="3489025949017384019">De nombreux sites risquent de ne pas fonctionner correctement</translation>
 <translation id="3492788708641132712">La synchronisation ne fonctionne pas. Essayez de vous reconnecter.</translation>
 <translation id="3493486281776271508">Connexion Internet requise</translation>
 <translation id="3493881266323043047">Validité</translation>
@@ -1941,7 +1937,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3574210789297084292">connexion</translation>
 <translation id="3574917942258583917">Voulez-vous vraiment quitter le mode navigation privée ?</translation>
 <translation id="3575121482199441727">Autoriser pour ce site</translation>
-<translation id="3575919114596668130">Les paramètres parentaux Family Link restent en vigueur. Si vous avez précédemment bloqué une application ou un site, vous n'avez pas à les bloquer une deuxième fois.</translation>
 <translation id="3576324189521867626">L'application a bien été installée.</translation>
 <translation id="3578594933904494462">Le contenu de cet onglet est en cours de partage</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; souhaite partager une imprimante &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; avec un groupe que vous gérez : &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si vous acceptez, tous les membres du groupe seront en mesure d'imprimer sur cette imprimante.</translation>
@@ -2572,6 +2567,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4404136731284211429">Analyser de nouveau</translation>
 <translation id="4404843640767531781">L'application <ph name="APP_NAME" /> est bloquée par l'un de tes parents. Tu as besoin de leur autorisation pour l'utiliser.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Sous-titres instantanés</translation>
 <translation id="4408599188496843485">&amp;Aide</translation>
 <translation id="4409697491990005945">Marges</translation>
 <translation id="4410545552906060960">Utilisez un numéro (code) au lieu d'un mot de passe pour déverrouiller votre appareil. Pour définir votre code ultérieurement, accédez aux paramètres.</translation>
@@ -3725,7 +3721,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6006484371116297560">Classique</translation>
 <translation id="6007240208646052708">La recherche vocale n'est pas disponible dans votre langue.</translation>
 <translation id="6009781704028455063">Capteur intégré</translation>
-<translation id="6010869025736512584">Accès à l'entrée vidéo en cours…</translation>
 <translation id="6011074160056912900">Réseau Ethernet</translation>
 <translation id="6011193465932186973">Empreinte digitale</translation>
 <translation id="6011449291337289699">Effacer les données de sites</translation>
@@ -3977,6 +3972,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6326855256003666642">Nombre d'activités en cours</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> exige que vous mettiez à jour cet appareil avant la date limite.</translation>
 <translation id="6327785803543103246">Recherche automatique du proxy Web</translation>
+<translation id="6331566915566907158">Contribuer à l'amélioration des fonctionnalités et des performances de Chrome OS</translation>
 <translation id="6333064448949140209">Le fichier sera envoyé à Google pour être débogué.</translation>
 <translation id="6339668969738228384">Créer un profil pour <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Impossible de se connecter au serveur. Veuillez vérifier votre connexion réseau et réessayer. Si le problème persiste, redémarrez votre Chromebook.</translation>
@@ -4113,7 +4109,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">Vous êtes connecté à un réseau <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Partager</translation>
-<translation id="6528189551082329571">Toujours ouvrir les liens de ce type dans l'application associée</translation>
 <translation id="6528513914570774834">Autoriser les autres utilisateurs de cet appareil à employer ce réseau</translation>
 <translation id="652948702951888897">Historique Chrome</translation>
 <translation id="6530186581263215931">Ces paramètres sont appliqués par votre administrateur</translation>
@@ -4683,7 +4678,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7310598146671372464">Échec de la connexion. Le serveur n'accepte pas les types de chiffrement Kerberos spécifiés. Veuillez contacter votre administrateur.</translation>
 <translation id="7311079019872751559">Accès via un plug-in sans système de bac à sable</translation>
 <translation id="73174032666024687"><ph name="SHEETS_LABEL" /> <ph name="NUMBER_OF_SHEETS" /></translation>
-<translation id="732018663949361753">Les sites ne peuvent pas utiliser vos cookies pour voir votre activité de navigation sur l'ensemble des différents sites (par exemple, pour personnaliser les annonces).  Certains d'entre eux risquent de ne pas fonctionner correctement.</translation>
 <translation id="7321545336522791733">Serveur inaccessible</translation>
 <translation id="7324297612904500502">Forum bêta</translation>
 <translation id="7325209047678309347">Bourrage papier</translation>
@@ -4937,6 +4931,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Code incorrect. Il vous reste une tentative.}one{Code incorrect. Il vous reste # tentative.}other{Code incorrect. Il vous reste # tentatives.}}</translation>
 <translation id="7671130400130574146">Utiliser la barre de titre et les bordures de fenêtre du système</translation>
 <translation id="767127784612208024">Appuyez pour confirmer la réinitialisation</translation>
+<translation id="767147716926917172">Envoyer automatiquement des données de diagnostic et d'utilisation à Google</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> sur <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Transmettez votre voix à Google pour pouvoir dicter ce que vous voulez dans n'importe quelle zone de texte.</translation>
 <translation id="7678280409648629969">Les données de connexion sont stockées dans Chrome lorsque vous quittez le mode navigation privée. Vous pouvez ainsi réutiliser plus tard la fonctionnalité Touch ID avec ce site Web.</translation>
@@ -5080,7 +5075,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Remarque<ph name="END_BOLD" /> : Le système redémarre au cours de ce processus.</translation>
 <translation id="7828731929332799387">Cette action supprimera l'ensemble des cookies et données de sites disponibles dans des contextes tiers. Voulez-vous continuer ?</translation>
-<translation id="7829298379596169484">Accès à l'entrée audio en cours…</translation>
 <translation id="7829877209233347340">Demande à l'un de tes parents de t'autoriser à ajouter un compte scolaire</translation>
 <translation id="7830594666202422257">Connecter à Linux</translation>
 <translation id="7831491651892296503">Erreur lors de la configuration du réseau</translation>
@@ -5819,7 +5813,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8800004011501252845">Affichage des emplacements de destination pour</translation>
 <translation id="8800034312320686233">Impossible d'accéder au site ?</translation>
 <translation id="8803953437405899238">Ouvrez un nouvel onglet d'un simple clic</translation>
-<translation id="8804398419035066391">Communiquer avec des sites Web associés</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Déplacer l'onglet vers une autre fenêtre}one{Move Tabs to Another Window}other{Déplacer les onglets vers une autre fenêtre}}</translation>
 <translation id="8805140816472474147">Confirmez les paramètres de synchronisation pour lancer la synchronisation.</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> permet de rouvrir les onglets fermés involontairement</translation>
@@ -6029,7 +6022,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9055636786322918818">Appliquez le chiffrement RC4. L'activation de cette option est risquée, car les algorithmes de chiffrement RC4 ne sont pas sécurisés.</translation>
 <translation id="9056810968620647706">Aucune correspondance trouvée</translation>
 <translation id="9057354806206861646">Calendrier des mises à jour</translation>
-<translation id="9058976525724291037">Votre enfant souhaite ajouter un compte Google à cet appareil. Seuls les comptes G Suite for Education peuvent être ajoutés aux appareils gérés via Family Link.</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Erreur de la ligne <ph name="ERROR_LINE_START" /> à la ligne <ph name="ERROR_LINE_END" /></translation>
 <translation id="9064142312330104323">Photo du profil Google (chargement en cours)</translation>

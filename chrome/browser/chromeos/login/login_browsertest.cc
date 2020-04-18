@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
@@ -44,10 +45,6 @@ using ::testing::Return;
 namespace chromeos {
 namespace {
 
-const char kGaiaId[] = "12345";
-const char kTestUser[] = "test-user@gmail.com";
-const char kPassword[] = "password";
-
 class LoginUserTest : public InProcessBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -67,37 +64,20 @@ class LoginCursorTest : public OobeBaseTest {
   ~LoginCursorTest() override = default;
 };
 
-class LoginSigninTest : public InProcessBrowserTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kLoginManager);
-    command_line->AppendSwitch(switches::kForceLoginManagerInTests);
-  }
+using LoginSigninTest = LoginManagerTest;
 
-  void SetUpOnMainThread() override {
-    LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
-  }
-};
-
-class LoginTest : public MixinBasedInProcessBrowserTest {
+class LoginOfflineTest : public LoginManagerTest {
  public:
-  LoginTest() = default;
-  ~LoginTest() override {}
-
-  void SetUpOnMainThread() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+  LoginOfflineTest() {
+    login_manager_.AppendRegularUsers(1);
+    test_account_id_ = login_manager_.users()[0].account_id;
   }
+  ~LoginOfflineTest() override {}
 
  protected:
-  const LoginManagerMixin::TestUserInfo test_user_{
-      AccountId::FromUserEmailGaiaId(kTestUser, kGaiaId),
-      user_manager::USER_TYPE_REGULAR};
-
-  LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
+  AccountId test_account_id_;
+  LoginManagerMixin login_manager_{&mixin_host_};
   OfflineGaiaTestMixin offline_gaia_test_mixin_{&mixin_host_};
-  EmbeddedTestServerSetupMixin embedded_test_server_{&mixin_host_,
-                                                     embedded_test_server()};
   // We need Fake gaia to avoid network errors that can be caused by
   // attempts to load real GAIA.
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
@@ -182,16 +162,17 @@ IN_PROC_BROWSER_TEST_F(LoginSigninTest, WebUIVisible) {
       .Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
+IN_PROC_BROWSER_TEST_F(LoginOfflineTest, PRE_GaiaAuthOffline) {
   offline_gaia_test_mixin_.PrepareOfflineGaiaLogin();
 }
 
-IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
+IN_PROC_BROWSER_TEST_F(LoginOfflineTest, GaiaAuthOffline) {
   offline_gaia_test_mixin_.GoOffline();
-  offline_gaia_test_mixin_.InitOfflineLogin(test_user_.account_id, kPassword);
+  offline_gaia_test_mixin_.InitOfflineLogin(test_account_id_,
+                                            LoginManagerTest::kPassword);
   offline_gaia_test_mixin_.CheckManagedStatus(false);
   offline_gaia_test_mixin_.SubmitGaiaAuthOfflineForm(
-      test_user_.account_id.GetUserEmail(), kPassword,
+      test_account_id_.GetUserEmail(), LoginManagerTest::kPassword,
       true /* wait for sign-in */);
   TestSystemTrayIsVisible(false);
 }

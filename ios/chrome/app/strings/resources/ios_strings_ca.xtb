@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Redueix</translation>
 <translation id="2230173723195178503">La pàgina web s'ha carregat</translation>
 <translation id="2239626343334228536">S'estan esborrant les dades de navegació...</translation>
+<translation id="2245545499420671379">Bloqueja les galetes de tercers en mode d'incògnit</translation>
 <translation id="2257567812274161158">La sincronització no funciona.</translation>
 <translation id="2267753748892043616">Afegeix un compte</translation>
 <translation id="2268044343513325586">Restringeix</translation>
@@ -306,7 +307,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="4979397965658815378">Inicia la sessió amb el compte de Google per tenir les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració en tots els dispositius.</translation>
 <translation id="5005498671520578047">Copia la contrasenya</translation>
 <translation id="5010803260590204777">Obriu una pestanya d'incògnit per navegar pel web de manera privada.</translation>
-<translation id="5039020240289137291">Bloqueja les galetes de tercers</translation>
 <translation id="5039804452771397117">Permet</translation>
 <translation id="5059136629401106827">D'acord</translation>
 <translation id="5062321486222145940">Instal. de Google Drive</translation>
@@ -419,6 +419,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 
 Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase de contrasenya de sincronització. Introduïu-la per començar la sincronització.</translation>
 <translation id="6418346271604475326">Preparant el PDF</translation>
+<translation id="6426067060178468363">Permet les galetes</translation>
 <translation id="6434591244308415567">S'ha produït un error. Torna-ho a provar més tard.</translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="6445981559479772097">Missatge enviat.</translation>
@@ -544,6 +545,7 @@ Com que <ph name="HOSTED_DOMAIN" /> gestiona el teu compte, les dades de Chrome 
 <translation id="8076014560081431679">La configuració desada del lloc no se suprimirà i és possible que reflecteixi els vostres hàbits de navegació. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">La baixada de fitxers està disponible. Opcions disponibles a la part inferior de la pantalla.</translation>
 <translation id="8131740175452115882">Confirma</translation>
+<translation id="8174524257672181687">Bloqueja totes les galetes (opció no recomanada)</translation>
 <translation id="8197543752516192074">Tradueix la pàgina</translation>
 <translation id="8205564605687841303">Cancel·la</translation>
 <translation id="8225985093977202398">Fitxers i imatges a memòria cau</translation>

@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Pauzēt</translation>
 <translation id="1188239144602654184">Ievadīt PR</translation>
 <translation id="1197267115302279827">Pārvietot grāmatzīmes</translation>
-<translation id="119944043368869598">Notīrīt visu</translation>
 <translation id="1201402288615127009">Tālāk</translation>
 <translation id="1204037785786432551">Lejupielādēt saiti</translation>
 <translation id="1206892813135768548">Kopēt saites tekstu</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Pamata</translation>
 <translation id="1671236975893690980">Lejupielāde tiek gaidīta...</translation>
 <translation id="1672586136351118594">Vairs nerādīt</translation>
+<translation id="1688867105868176567">Vai notīrīt vietnes datus?</translation>
 <translation id="1692118695553449118">Sinhronizācija ieslēgta</translation>
 <translation id="169515064810179024">Bloķēt vietņu piekļuvi kustību sensoriem</translation>
 <translation id="1717218214683051432">Kustību sensori</translation>
@@ -507,7 +507,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4751476147751820511">Kustību vai gaismas sensori</translation>
 <translation id="4759238208242260848">Lejupielādes</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 lejupielāde ir pabeigta.}zero{# lejupielādes ir pabeigtas.}one{# lejupielāde ir pabeigta.}other{# lejupielādes ir pabeigtas.}}</translation>
-<translation id="4797039098279997504">Pieskarieties, lai atgrieztos cilnē <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Ieejas frāzes šifrējumā nav iekļauti maksājumu veidi un adreses no pakalpojuma Google Pay.
 
 Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāciju<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="4932247056774066048">Jūs izrakstāties no konta, ko pārvalda <ph name="DOMAIN_NAME" />, tāpēc jūsu Chrome dati tiks izdzēsti no šīs ierīces. Tie joprojām būs pieejami jūsu Google kontā.</translation>
 <translation id="4943703118917034429">Virtuālā realitāte</translation>
 <translation id="4943872375798546930">Nav rezultātu</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> kopīgo jūsu ekrānu</translation>
 <translation id="4961107849584082341">Tulkojiet šīs lapas saturu jebkurā valodā.</translation>
 <translation id="4962975101802056554">Atsaukt visas atļaujas, kas piešķirtas ierīcei</translation>
 <translation id="4970824347203572753">Nav pieejams jūsu atrašanās vietā</translation>
@@ -559,7 +557,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5129038482087801250">Instalēt tīmekļa lietotni</translation>
 <translation id="5132942445612118989">Sinhronizējiet paroles, vēsturi un citu saturu visās ierīcēs</translation>
 <translation id="5139940364318403933">Uzzināt, kā izmantot Google disku</translation>
-<translation id="515227803646670480">Saglabāto datu notīrīšana</translation>
 <translation id="5152843274749979095">Nav instalēta neviena atbalstīta lietotne</translation>
 <translation id="5161254044473106830">Jānorāda nosaukums</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 lejupielāde neizdevās.}zero{# lejupielādes neizdevās.}one{# lejupielāde neizdevās.}other{# lejupielādes neizdevās.}}</translation>
@@ -667,7 +664,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5869522115854928033">Saglabātās paroles</translation>
 <translation id="5876056640971328065">Apturēt video atskaņošanu</translation>
 <translation id="5884076754568147479">Lai palīdzētu jums paveikt uzdevumus, Google saņems to vietņu vietrāžus URL un saturu, kurās izmantojat Asistentu, kā arī informāciju, ko iesniedzat, izmantojot Asistentu.</translation>
-<translation id="5902828464777634901">Visi šīs vietnes saglabātie lokālie dati, tostarp sīkfaili, tiks dzēsti.</translation>
 <translation id="5919204609460789179">Lai sāktu sinhronizēšanu, atjauniniet <ph name="PRODUCT_NAME" /></translation>
 <translation id="5937580074298050696">Saglabāts: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
@@ -787,7 +783,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="671481426037969117">Jūsu lietotnes <ph name="FQDN" /> taimera laiks ir beidzies. Tas atkal sāksies rīt.</translation>
 <translation id="6738867403308150051">Notiek lejupielāde…</translation>
 <translation id="6766622839693428701">Velciet uz leju, lai aizvērtu.</translation>
-<translation id="6766758767654711248">Pieskarieties, lai atvērtu vietni</translation>
 <translation id="6767294960381293877">Ierīču saraksts, ar ko kopīgot cilni, ir atvērts pusekrāna augstumā.</translation>
 <translation id="6782111308708962316">Neļaut trešo pušu vietnēm saglabāt un nolasīt sīkfailu datus</translation>
 <translation id="6790428901817661496">Atskaņot</translation>
@@ -1048,7 +1043,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8812260976093120287">Dažās vietnēs var norēķināties, ierīcē izmantojot iepriekš norādītās atbalstītās maksājumu lietotnes.</translation>
 <translation id="8816026460808729765">Bloķēt vietņu piekļuvi sensoriem</translation>
 <translation id="8820817407110198400">Grāmatzīmes</translation>
-<translation id="8833831881926404480">Vietne kopīgo jūsu ekrānu</translation>
 <translation id="883806473910249246">Lejupielādējot saturu, radās kļūda.</translation>
 <translation id="8840953339110955557">Šī lapas versija var atšķirties no tiešsaises versijas.</translation>
 <translation id="8847988622838149491">USB</translation>

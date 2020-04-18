@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Pausatu</translation>
 <translation id="1188239144602654184">Sartu errealitate areagotuan</translation>
 <translation id="1197267115302279827">Mugitu laster-markak</translation>
-<translation id="119944043368869598">Garbitu guztiak</translation>
 <translation id="1201402288615127009">Hurrengoa</translation>
 <translation id="1204037785786432551">Deskargatu estekako edukia</translation>
 <translation id="1206892813135768548">Kopiatu estekaren testua</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Oinarrizkoa</translation>
 <translation id="1671236975893690980">Deskargatzeko zain…</translation>
 <translation id="1672586136351118594">Ez erakutsi berriro</translation>
+<translation id="1688867105868176567">Webguneko datuak garbitu nahi dituzu?</translation>
 <translation id="1692118695553449118">Sinkronizazioa aktibatuta dago</translation>
 <translation id="169515064810179024">Ez utzi webguneei mugimendu-sentsoreak atzitzen</translation>
 <translation id="1717218214683051432">Mugimendu-sentsoreak</translation>
@@ -507,7 +507,6 @@ Baliteke Google kontuak arakatze-historiako bestelako datu batzuk (adibidez, bil
 <translation id="4751476147751820511">Mugimenduaren eta argiaren sentsoreak</translation>
 <translation id="4759238208242260848">Deskargak</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 deskarga amaitu da.}other{# deskarga amaitu dira.}}</translation>
-<translation id="4797039098279997504">Ukitu hau hona itzultzeko: <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Pasaesaldi bidezko enkriptatzeak ez ditu hartzen barne Google Pay-ko ordainketa-metodoak eta helbideak.
 
 Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="END_LINK" />.</translation>
@@ -534,7 +533,6 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="4932247056774066048"><ph name="DOMAIN_NAME" /> domeinuak kudeatutako kontu batean saioa amaitzera zoazenez, Chrome-ko datuak ezabatu egingo dira gailu honetatik. Datuek Google-ko kontuan gordeta jarraituko dute.</translation>
 <translation id="4943703118917034429">Errealitate birtuala</translation>
 <translation id="4943872375798546930">Ez dago emaitzarik</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> zure pantaila partekatzen ari da</translation>
 <translation id="4961107849584082341">Itzuli orria edozein hizkuntzatara</translation>
 <translation id="4962975101802056554">Baliogabetu gailuaren baimen guztiak</translation>
 <translation id="4970824347203572753">Ez dago erabilgarri zure kokapenean</translation>
@@ -559,7 +557,6 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5129038482087801250">Instalatu sareko aplikazioa</translation>
 <translation id="5132942445612118989">Sinkronizatu pasahitzak, historia eta beste gauza asko gailu guztietan</translation>
 <translation id="5139940364318403933">Lortu Google Drive erabiltzeari buruzko informazioa</translation>
-<translation id="515227803646670480">Garbitu gordetako datuak</translation>
 <translation id="5152843274749979095">Ez dago aplikazio bateragarririk instalatuta</translation>
 <translation id="5161254044473106830">Izena behar da</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Ezin izan da gauzatu 1 deskarga.}other{Ezin izan dira gauzatu # deskarga.}}</translation>
@@ -667,7 +664,6 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5869522115854928033">Gordetako pasahitzak</translation>
 <translation id="5876056640971328065">Pausatu bideoa</translation>
 <translation id="5884076754568147479">Zereginak osatzen laguntzeko, Laguntzailea eginbidearen bidez erabiltzen dituzun webguneen URLak eta edukia jasoko ditu Google-k, baita Laguntzailea erabilita bidaltzen duzun informazioa ere</translation>
-<translation id="5902828464777634901">Webgune honek gordetako gailuko datu guztiak, cookieak barne, ezabatuko dira.</translation>
 <translation id="5919204609460789179">Sinkronizatzen hasteko, eguneratu <ph name="PRODUCT_NAME" /></translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> aurreztu dira</translation>
 <translation id="5939518447894949180">Berrezarri</translation>
@@ -787,7 +783,6 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="671481426037969117">Agortu da <ph name="FQDN" /> tenporizadorearen denbora. Bihar hasiko da berriro.</translation>
 <translation id="6738867403308150051">Deskargatzen…</translation>
 <translation id="6766622839693428701">Pasatu hatza behera ixteko.</translation>
-<translation id="6766758767654711248">Sakatu webgunera joateko</translation>
 <translation id="6767294960381293877">Fitxa partekatzeko hautatutako gailuen zerrenda irekita dago, eta altuera erdia hartzen du.</translation>
 <translation id="6782111308708962316">Eragotzi hirugarrenen webguneek cookieen datuak gordetzea eta irakurtzea</translation>
 <translation id="6790428901817661496">Erreproduzitu</translation>
@@ -1048,7 +1043,6 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="8812260976093120287">Webgune batzuetan, gailuko ordainketa-aplikazio bateragarri horiek erabil ditzakezu ordainketak egiteko.</translation>
 <translation id="8816026460808729765">Ez utzi webguneei sentsoreak erabiltzen</translation>
 <translation id="8820817407110198400">Laster-markak</translation>
-<translation id="8833831881926404480">Webgune bat pantaila partekatzen ari da</translation>
 <translation id="883806473910249246">Errore bat gertatu da edukia deskargatzen.</translation>
 <translation id="8840953339110955557">Baliteke orri hau sareko bertsioarekin bat ez etortzea.</translation>
 <translation id="8847988622838149491">USB</translation>

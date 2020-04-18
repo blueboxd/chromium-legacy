@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Suspendre</translation>
 <translation id="1188239144602654184">Lancer</translation>
 <translation id="1197267115302279827">Déplacer les favoris</translation>
-<translation id="119944043368869598">Tout effacer</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1204037785786432551">Télécharger le lien</translation>
 <translation id="1206892813135768548">Copier le texte du lien</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Général</translation>
 <translation id="1671236975893690980">Téléchargement en attente…</translation>
 <translation id="1672586136351118594">Ne plus afficher</translation>
+<translation id="1688867105868176567">Effacer les données du site ?</translation>
 <translation id="1692118695553449118">Synchronisation activée</translation>
 <translation id="169515064810179024">Empêcher les sites d'accéder aux capteurs de mouvement</translation>
 <translation id="1717218214683051432">Capteurs de mouvement</translation>
@@ -507,7 +507,6 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="4751476147751820511">Capteurs de mouvement ou de lumière</translation>
 <translation id="4759238208242260848">Téléchargements</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 téléchargement terminé.}one{# téléchargement terminé.}other{# téléchargements terminés.}}</translation>
-<translation id="4797039098279997504">Appuyer ici pour revenir à l'adresse <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Le chiffrement par phrase secrète ne s'applique pas aux modes de paiement et adresses Google Pay.
 
 Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4932247056774066048">Vous vous déconnectez d'un compte géré par <ph name="DOMAIN_NAME" />. Vos données Chrome seront donc supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
 <translation id="4943703118917034429">Réalité virtuelle</translation>
 <translation id="4943872375798546930">Aucun résultat</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> partage votre écran.</translation>
 <translation id="4961107849584082341">Traduire cette page dans n'importe quelle langue</translation>
 <translation id="4962975101802056554">Révoquer toutes les autorisations de l'appareil</translation>
 <translation id="4970824347203572753">Fonctionnalité non disponible dans votre pays</translation>
@@ -559,7 +557,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5129038482087801250">Installer l'application Web</translation>
 <translation id="5132942445612118989">Synchroniser vos mots de passe, votre historique et plus encore sur tous les appareils</translation>
 <translation id="5139940364318403933">Découvrez comment utiliser Google Drive</translation>
-<translation id="515227803646670480">Effacer les données stockées</translation>
 <translation id="5152843274749979095">Aucune application compatible n'est installée</translation>
 <translation id="5161254044473106830">Veuillez saisir un titre.</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Échec de 1 téléchargement.}one{Échec de # téléchargement.}other{Échec de # téléchargements.}}</translation>
@@ -667,7 +664,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5869522115854928033">Mots de passe enregistrés</translation>
 <translation id="5876056640971328065">Mettre la vidéo en pause</translation>
 <translation id="5884076754568147479">Pour vous aider à effectuer des tâches, Google recevra les URL et le contenu des sites sur lesquels vous utilisez l'Assistant, ainsi que les informations que vous envoyez via celui-ci</translation>
-<translation id="5902828464777634901">Toutes les données locales stockées par ce site, y compris les cookies, seront supprimées.</translation>
 <translation id="5919204609460789179">Mettre à jour <ph name="PRODUCT_NAME" /> pour lancer la synchronisation</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> économisé(s)</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
@@ -787,7 +783,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="671481426037969117">Votre minuteur <ph name="FQDN" /> a expiré. Il redémarrera demain.</translation>
 <translation id="6738867403308150051">Téléchargement en cours…</translation>
 <translation id="6766622839693428701">Balayez l'écran vers le bas pour fermer la feuille.</translation>
-<translation id="6766758767654711248">Appuyez pour accéder au site</translation>
 <translation id="6767294960381293877">La liste des appareils avec lesquels vous pouvez partager un onglet est ouverte à mi-hauteur.</translation>
 <translation id="6782111308708962316">Empêcher les sites Web tiers d'enregistrer et de lire les données des cookies</translation>
 <translation id="6790428901817661496">Lire</translation>
@@ -1048,7 +1043,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8812260976093120287">Sur certains sites Web, vous pouvez payer depuis votre appareil avec les applications de paiement compatibles indiquées ci-dessus.</translation>
 <translation id="8816026460808729765">Bloque l'accès aux capteurs pour certains sites</translation>
 <translation id="8820817407110198400">Favoris</translation>
-<translation id="8833831881926404480">Votre écran est partagé par un site</translation>
 <translation id="883806473910249246">Une erreur s'est produite lors du téléchargement du contenu.</translation>
 <translation id="8840953339110955557">Cette page peut différer de la version en ligne.</translation>
 <translation id="8847988622838149491">USB</translation>

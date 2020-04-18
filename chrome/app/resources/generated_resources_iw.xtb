@@ -376,6 +376,7 @@
 <translation id="1508491105858779599">הנח את האצבע על חיישן טביעות האצבע כדי לבטל את נעילת המכשיר.</translation>
 <translation id="1508575541972276599">‏הגרסה הנוכחית היא Debian 9 ‏(Stretch)</translation>
 <translation id="1509281256533087115">‏גישה לכל מכשיר של <ph name="DEVICE_NAME_AND_VENDOR" /> באמצעות USB</translation>
+<translation id="1509960214886564027">ייתכן שהתכונות של חלק גדול מהאתרים לא יפעלו כראוי</translation>
 <translation id="1510030919967934016">דף זה נחסם ממעקב אחר מיקומך.</translation>
 <translation id="1510055949674985293">‏יצירת קוד QR לתמונה זו</translation>
 <translation id="1510238584712386396">מרכז האפליקציות</translation>
@@ -1042,7 +1043,6 @@
 <translation id="237828693408258535">לתרגם את הדף הזה?</translation>
 <translation id="2378346380592252785">עדכון פרטי הכניסה אל <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">בחר את ספריית ההרחבה.</translation>
-<translation id="2379232090534544565">אתר ניגש אל קלט וידאו ואודיו</translation>
 <translation id="2379281330731083556">הדפס באמצעות תיבת דו-שיח של המערכת... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">שאל לפני שליחה (מומלץ)</translation>
 <translation id="2382818385048255866">בדיקת התוספים</translation>
@@ -1452,7 +1452,6 @@
 <translation id="2903457445916429186">פתיחת הפריטים הנבחרים</translation>
 <translation id="2903882649406874750">יש לחסום תמיד את הגישה של <ph name="HOST" /> אל החיישנים</translation>
 <translation id="2904456025988372123">שאל כאשר אתר מנסה להוריד קבצים באופן אוטומטי לאחר הקובץ הראשון</translation>
-<translation id="2905789169763945526">‏במצב אנונימי אתרים לא יכולים להשתמש בקובצי cookie כדי לראות את פעילות הגלישה שלך באתרים שונים, למשל לצורך התאמה אישית של מודעות. ייתכן שאתרים מסוימים לא יפעלו כראוי.</translation>
 <translation id="2907619724991574506">כתובות אתרים בהפעלה</translation>
 <translation id="2907798539022650680">הניסיון להתחבר אל '<ph name="NAME" />' נכשל: <ph name="DETAILS" />
 הודעת שרת: <ph name="SERVER_MSG" /></translation>
@@ -1582,7 +1581,6 @@
 <translation id="3088128611727407543">פרופיל האפליקציה בהכנה...</translation>
 <translation id="3088325635286126843">&amp;שנה שם...</translation>
 <translation id="3089137131053189723">החיפוש נוקה</translation>
-<translation id="3090193911106258841">גישה לקלט אודיו ווידאו</translation>
 <translation id="3090819949319990166">‏לא ניתן להעתיק קובץ crx חיצוני ל-<ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" מותאם</translation>
 <translation id="3092699946856346803">‏יש להכניס את כרטיס ה-SIM ולנסות שוב</translation>
@@ -1644,7 +1642,6 @@
 <translation id="3165390001037658081">ייתכן שספקים מסוימים חוסמים את התכונה הזו.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">ניתן גם לדלג על הכניסה ו<ph name="LINK_START" />לגלוש כאורח<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">אתר ניגש אל קלט וידאו</translation>
 <translation id="3177909033752230686">שפת הדף:</translation>
 <translation id="3179982752812949580">גופן הטקסט</translation>
 <translation id="3181954750937456830">גלישה בטוחה (מגנה עליך ועל המכשיר מפני אתרים מסוכנים)</translation>
@@ -1855,7 +1852,6 @@
 <translation id="3459697287128633276">‏כדי לאפשר לחשבונך לגשת אל חנות Google Play, עליך לבצע אימות אצל ספק הזהות שלך.</translation>
 <translation id="3462311546193741693">‏הפעולה הזו תוציא אותך מרוב האתרים אך לא מחשבון Google, כדי שניתן יהיה לנקות את הנתונים המסונכרנים.</translation>
 <translation id="3462413494201477527">האם לבטל את הגדרת החשבון?</translation>
-<translation id="3464012987031883895">אתר ניגש אל קלט אודיו</translation>
 <translation id="346431825526753">זהו חשבון לילדים, המנוהל על-ידי <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468298837301810372">תווית</translation>
 <translation id="3468999815377931311">‏טלפון Android</translation>
@@ -1877,7 +1873,6 @@
 <translation id="3487007233252413104">פונקציה אנונימית</translation>
 <translation id="348780365869651045">‏ממתין ל-AppCache...</translation>
 <translation id="3488065109653206955">מופעל חלקית</translation>
-<translation id="3489025949017384019">ייתכן שאתרים רבים לא יפעלו כראוי</translation>
 <translation id="3492788708641132712">הסנכרון לא פועל. נסה להיכנס שוב.</translation>
 <translation id="3493486281776271508">דרוש חיבור לאינטרנט</translation>
 <translation id="3493881266323043047">תוקף</translation>
@@ -1939,7 +1934,6 @@
 <translation id="3574210789297084292">כניסה</translation>
 <translation id="3574917942258583917">לצאת בכל זאת ממצב גלישה בסתר?</translation>
 <translation id="3575121482199441727">אישור לאתר הזה</translation>
-<translation id="3575919114596668130">‏הגדרות ההורים ב-Family Link ימשיכו לחול. אם חסמת בעבר אפליקציה או אתר, לא יהיה צורך לחסום אותם מחדש.</translation>
 <translation id="3576324189521867626">הותקן בהצלחה</translation>
 <translation id="3578594933904494462">התוכן בכרטיסייה הזו משותף.</translation>
 <translation id="357886715122934472">‏&lt;strong&gt;‏<ph name="SENDER" />&lt;/strong&gt; רוצה לשתף את המדפסת &lt;strong&gt;‏<ph name="PRINTER_NAME" />&lt;/strong&gt; עם קבוצה בבעלותך: &lt;strong&gt;‏<ph name="GROUP_NAME" />&lt;/strong&gt;. אם תסכים, כל חברי הקבוצה יוכלו להדפיס במדפסת זו.</translation>
@@ -3722,7 +3716,6 @@
 <translation id="6006484371116297560">קלאסי</translation>
 <translation id="6007240208646052708">לא ניתן לבצע חיפוש קולי בשפה שלך.</translation>
 <translation id="6009781704028455063">חיישן מובנה</translation>
-<translation id="6010869025736512584">גישה לפלט אודיו</translation>
 <translation id="6011074160056912900">‏רשת Ethernet</translation>
 <translation id="6011193465932186973">טביעת אצבע</translation>
 <translation id="6011449291337289699">מחיקה של נתוני אתר</translation>
@@ -4110,7 +4103,6 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">התחברת אל רשת <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">שיתוף</translation>
-<translation id="6528189551082329571">יש תמיד לפתוח קישורים מהסוג הזה באפליקציה המשויכת להם</translation>
 <translation id="6528513914570774834">אפשר למשתמשים האחרים במכשיר הזה להשתמש ברשת הזו</translation>
 <translation id="652948702951888897">‏היסטוריה של Chrome</translation>
 <translation id="6530186581263215931">את ההגדרות האלה אוכף מנהל המערכת</translation>
@@ -4680,7 +4672,6 @@
 <translation id="7310598146671372464">‏ההתחברות נכשלה. השרת לא תומך בסוגי הצפנת Kerberos שצוינו. צריך לפנות אל מנהל המערכת.</translation>
 <translation id="7311079019872751559">גישה לפלאגין ללא ארגז חול</translation>
 <translation id="73174032666024687"><ph name="SHEETS_LABEL" /><ph name="NUMBER_OF_SHEETS" /></translation>
-<translation id="732018663949361753">‏אתרים לא יכולים להשתמש בקובצי ה-cookie שלך כדי לראות את פעילות הגלישה באתרים שונים, למשל לצורך התאמה אישית של מודעות.  ייתכן שאתרים מסוימים לא יפעלו כראוי.</translation>
 <translation id="7321545336522791733">השרת אינו נגיש</translation>
 <translation id="7324297612904500502">פורום ביטא</translation>
 <translation id="7325209047678309347">נייר נתקע</translation>
@@ -5076,7 +5067,6 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />הערה:<ph name="END_BOLD" /> המערכת תבצע הפעלה מחדש בזמן התהליך.</translation>
 <translation id="7828731929332799387">‏הפעולה הזו תמחק את כל קובצי ה-cookie ונתוני האתרים הזמינים בהקשרים של צד שלישי. להמשיך?</translation>
-<translation id="7829298379596169484">גישה לקלט אודיו</translation>
 <translation id="7829877209233347340">צריך לבקש מהורה להיכנס לחשבון כדי לאשר הוספה של חשבון בית ספרי</translation>
 <translation id="7830594666202422257">‏חיבור ל-Linux</translation>
 <translation id="7831491651892296503">אירעה שגיאה בהגדרת הרשת</translation>
@@ -5817,7 +5807,6 @@
 <translation id="8800004011501252845">מציג יעדים עבור</translation>
 <translation id="8800034312320686233">האתר לא פועל?</translation>
 <translation id="8803953437405899238">פתח כרטיסייה חדשה בקליק אחד</translation>
-<translation id="8804398419035066391">יצירת קשר עם אתרים שמשתפים פעולה</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{העברת כרטיסייה לחלון אחר}two{העברת כרטיסיות לחלון אחר}many{העברת כרטיסיות לחלון אחר}other{העברת כרטיסיות לחלון אחר}}</translation>
 <translation id="8805140816472474147">אשר הגדרות סינכרון כדי להתחיל בסינכרון.</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> מאפשר לפתוח מחדש כרטיסיות שנסגרו בטעות</translation>
@@ -6027,7 +6016,6 @@
 <translation id="9055636786322918818">‏אכיפה של הצפנת RC4. שימוש באפשרות הזו מגדילה את הסיכון, כי הצפנות RC4 אינן מאובטחות.</translation>
 <translation id="9056810968620647706">לא נמצאו התאמות.</translation>
 <translation id="9057354806206861646">לוח זמנים של עדכונים</translation>
-<translation id="9058976525724291037">‏הילד או הילדה שלך רוצים להוסיף עוד חשבון Google למכשיר הזה. אם מכשירים מנוהלים באמצעות Family Link, אפשר להוסיף אליהם רק חשבונות G Suite for Education.</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">שגיאה משורה <ph name="ERROR_LINE_START" /> עד <ph name="ERROR_LINE_END" /></translation>
 <translation id="9064142312330104323">‏תמונת פרופיל Google (בטעינה)</translation>

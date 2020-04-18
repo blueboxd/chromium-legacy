@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Membaca dan mengubah semua data di situs saat ini jika diminta</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> ingin menyetel ulang setelan Anda.</translation>
 <translation id="1243314992276662751">Upload</translation>
+<translation id="1243436884219965846">Tinjau sandi</translation>
 <translation id="1244265436519979884">Pemulihan Linux saat ini sedang berlangsung</translation>
 <translation id="1244303850296295656">Kesalahan ekstensi</translation>
 <translation id="1246158006305844142">Aplikasi dan setelan Anda akan disinkronkan di semua perangkat Chrome OS tempat Anda login dengan Akun Google. Untuk opsi sinkronisasi browser, buka <ph name="LINK_BEGIN" />setelan Chrome<ph name="LINK_END" />.</translation>
@@ -376,6 +377,7 @@
 <translation id="1508491105858779599">Letakkan jari Anda pada sensor sidik jari untuk membuka kunci perangkat.</translation>
 <translation id="1508575541972276599">Versi saat ini adalah Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Akses <ph name="DEVICE_NAME_AND_VENDOR" /> apa pun via USB</translation>
+<translation id="1509960214886564027">Fitur di banyak situs mungkin error</translation>
 <translation id="1510030919967934016">Halaman ini telah dicekal agar tidak melacak lokasi Anda.</translation>
 <translation id="1510055949674985293">Hasilkan kode QR untuk Gambar ini</translation>
 <translation id="1510238584712386396">Peluncur</translation>
@@ -1045,7 +1047,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="237828693408258535">Terjemahkan halaman ini?</translation>
 <translation id="2378346380592252785">Perbarui kredensial untuk <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Pilih direktori ekstensi.</translation>
-<translation id="2379232090534544565">Satu situs sedang mengakses masukan video dan audio</translation>
 <translation id="2379281330731083556">Cetak menggunakan dialog sistem... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Tanyakan sebelum mengirim (disarankan)</translation>
 <translation id="2382818385048255866">Periksa ekstensi</translation>
@@ -1454,7 +1455,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2903457445916429186">Buka item yang dipilih</translation>
 <translation id="2903882649406874750">Selalu blokir <ph name="HOST" /> agar tidak mengakses sensor</translation>
 <translation id="2904456025988372123">Tanyakan saat situs mencoba mendownload file secara otomatis setelah file pertama</translation>
-<translation id="2905789169763945526">Selama dalam mode Samaran, situs tidak dapat menggunakan cookie Anda untuk melihat aktivitas penjelajahan Anda di berbagai situs, misalnya untuk mempersonalisasi iklan. Beberapa situs mungkin tidak berfungsi dengan baik.</translation>
 <translation id="2907619724991574506">URL Memulai</translation>
 <translation id="2907798539022650680">Gagal tersambung ke '<ph name="NAME" />': <ph name="DETAILS" />
     Pesan server: <ph name="SERVER_MSG" /></translation>
@@ -1584,7 +1584,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3088128611727407543">Menyiapkan profil aplikasi ...</translation>
 <translation id="3088325635286126843">&amp;Ubah nama...</translation>
 <translation id="3089137131053189723">Penelusuran dihapus</translation>
-<translation id="3090193911106258841">Mengakses masukan audio dan video</translation>
 <translation id="3090819949319990166">Tidak dapat menyalin file crx eksternal ke <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" disandingkan</translation>
 <translation id="3092699946856346803">Masukkan SIM Anda dan coba lagi</translation>
@@ -1644,7 +1643,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3165390001037658081">Beberapa operator mungkin memblokir fitur ini.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Anda juga dapat melewati proses masuk dan <ph name="LINK_START" />menjelajah sebagai tamu<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">Satu situs sedang mengakses masukan video</translation>
 <translation id="3177909033752230686">Bahasa Halaman:</translation>
 <translation id="3179982752812949580">Font teks</translation>
 <translation id="3181954750937456830">Safe Browsing (melindungi Anda dan perangkat dari situs berbahaya)</translation>
@@ -1855,7 +1853,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3459697287128633276">Agar akun Anda dapat mengakses Google Play Store, harap lakukan autentikasi dengan Penyedia Identitas Anda.</translation>
 <translation id="3462311546193741693">Membuat Anda logout dari sebagian besar situs. Anda akan tetap login di Akun Google sehingga data yang disinkronkan dapat dihapus.</translation>
 <translation id="3462413494201477527">Batalkan penyiapan akun?</translation>
-<translation id="3464012987031883895">Satu situs sedang mengakses masukan audio</translation>
 <translation id="346431825526753">Ini adalah akun untuk anak yang dikelola oleh <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468298837301810372">Label</translation>
 <translation id="3468999815377931311">Ponsel Android</translation>
@@ -1877,7 +1874,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3487007233252413104">fungsi anonim</translation>
 <translation id="348780365869651045">Menunggu AppCache...</translation>
 <translation id="3488065109653206955">Diaktifkan sebagian</translation>
-<translation id="3489025949017384019">Ada banyak situs yang mungkin tidak berfungsi dengan baik</translation>
 <translation id="3492788708641132712">Sinkronisasi tidak berjalan. Coba masuk lagi.</translation>
 <translation id="3493486281776271508">Diperlukan sambungan Internet</translation>
 <translation id="3493881266323043047">Validitas</translation>
@@ -1939,7 +1935,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3574210789297084292">login</translation>
 <translation id="3574917942258583917">Tetap keluar dari mode samaran?</translation>
 <translation id="3575121482199441727">Izinkan untuk situs ini</translation>
-<translation id="3575919114596668130">Setelan orang tua Family Link Anda akan tetap berlaku. Jika sebelumnya Anda telah memblokir aplikasi atau situs, Anda tidak perlu melakukannya lagi.</translation>
 <translation id="3576324189521867626">Berhasil dipasang</translation>
 <translation id="3578594933904494462">Konten tab ini sedang dibagikan.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ingin membagikan printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; dengan grup yang Anda miliki: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Jika Anda menerima, semua anggota grup akan dapat mencetak pada printer tersebut.</translation>
@@ -2570,6 +2565,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4404136731284211429">Pindai lagi</translation>
 <translation id="4404843640767531781"><ph name="APP_NAME" /> diblokir oleh orang tuamu. Minta izin orang tuamu untuk menggunakan aplikasi ini.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Teks Otomatis</translation>
 <translation id="4408599188496843485">Bantuan</translation>
 <translation id="4409697491990005945">Margin</translation>
 <translation id="4410545552906060960">Gunakan nomor (PIN), bukan sandi, untuk membuka kunci perangkat Anda. Untuk menyetel PIN di lain waktu, buka Setelan.</translation>
@@ -3722,7 +3718,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="6006484371116297560">Klasik</translation>
 <translation id="6007240208646052708">Penelusuran suara dalam bahasa Anda tidak tersedia.</translation>
 <translation id="6009781704028455063">Sensor yang ada di perangkat</translation>
-<translation id="6010869025736512584">Mengakses masukan video</translation>
 <translation id="6011074160056912900">Jaringan ethernet</translation>
 <translation id="6011193465932186973">Sidik jari</translation>
 <translation id="6011449291337289699">Hapus data situs</translation>
@@ -3974,6 +3969,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="6326855256003666642">Jumlah aktivitas yang Tetap Aktif</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> mengharuskan Anda mengupdate perangkat ini sebelum tiba batas waktu.</translation>
 <translation id="6327785803543103246">Penemuan otomatis proksi web</translation>
+<translation id="6331566915566907158">Bantu sempurnakan fitur dan performa Chrome OS</translation>
 <translation id="6333064448949140209">File akan dikirim ke Google untuk proses debug</translation>
 <translation id="6339668969738228384">Buat profil baru untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Tidak dapat terhubung dengan server. Harap periksa koneksi jaringan dan coba lagi. Jika masalah berlanjut, nyalakan ulang Chromebook.</translation>
@@ -4110,7 +4106,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">Anda tersambung ke jaringan <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Bagikan</translation>
-<translation id="6528189551082329571">Selalu buka link jenis ini di aplikasi terkait</translation>
 <translation id="6528513914570774834">Izinkan pengguna lain di perangkat ini untuk menggunakan jaringan ini</translation>
 <translation id="652948702951888897">Histori Chrome</translation>
 <translation id="6530186581263215931">Setelan ini diberlakukan oleh administrator</translation>
@@ -4680,7 +4675,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7310598146671372464">Gagal login. Server tidak mendukung jenis enkripsi Kerberos yang ditentukan. Harap hubungi administrator.</translation>
 <translation id="7311079019872751559">Akses plugin yang tidak dimasukkan kotak pasir</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">Situs tidak dapat menggunakan cookie Anda untuk melihat aktivitas penjelajahan Anda di berbagai situs, misalnya untuk mempersonalisasi iklan.  Beberapa situs mungkin tidak berfungsi dengan baik.</translation>
 <translation id="7321545336522791733">Server tidak dapat dijangkau</translation>
 <translation id="7324297612904500502">Forum Beta</translation>
 <translation id="7325209047678309347">Kertas macet</translation>
@@ -4934,6 +4928,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN salah. Anda memiliki satu kesempatan lagi.}other{PIN salah. Anda memiliki # kesempatan lagi.}}</translation>
 <translation id="7671130400130574146">Gunakan bilah judul dan batas sistem</translation>
 <translation id="767127784612208024">Sentuh untuk mengonfirmasi penyetelan ulang</translation>
+<translation id="767147716926917172">Otomatis mengirimkan data diagnostik dan penggunaan ke Google</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, di <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Kirimkan suara Anda ke Google untuk memungkinkan pengetikan dengan suara ke kolom teks.</translation>
 <translation id="7678280409648629969">Data login akan disimpan di Chrome setelah Anda keluar dari mode Samaran. Tindakan ini akan memungkinkan Anda menggunakan Touch ID dengan situs ini di lain waktu.</translation>
@@ -5077,7 +5072,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Catatan:<ph name="END_BOLD" />  Sistem akan reboot selama proses berlangsung.</translation>
 <translation id="7828731929332799387">Ini akan menghapus semua cookie dan data situs yang tersedia dalam konteks pihak ketiga. Ingin melanjutkan?</translation>
-<translation id="7829298379596169484">Mengakses masukan audio</translation>
 <translation id="7829877209233347340">Minta orang tua login dan memberikan izin untuk menambahkan akun sekolah</translation>
 <translation id="7830594666202422257">Sambungkan ke Linux</translation>
 <translation id="7831491651892296503">Terjadi error saat mengonfigurasi jaringan</translation>
@@ -5816,7 +5810,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8800004011501252845">Menunjukkan tujuan untuk</translation>
 <translation id="8800034312320686233">Situs tidak berfungsi?</translation>
 <translation id="8803953437405899238">Buka tab baru dengan sekali klik</translation>
-<translation id="8804398419035066391">Berkomunikasi dengan situs web yang bekerja sama</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Pindahkan Tab ke Jendela Lain}other{Pindahkan Beberapa Tab ke Jendela Lain}}</translation>
 <translation id="8805140816472474147">Konfirmasi setelan sinkronisasi untuk memulai sinkronisasi.</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> dapat membuka kembali tab yang ditutup secara tidak sengaja</translation>
@@ -6026,7 +6019,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9055636786322918818">Terapkan enkripsi RC4. Penggunaan opsi ini akan meningkatkan risiko, karena cipher RC4 tidak aman.</translation>
 <translation id="9056810968620647706">Tidak ditemukan kecocokan.</translation>
 <translation id="9057354806206861646">Update jadwal</translation>
-<translation id="9058976525724291037">Anak Anda ingin menambahkan Akun Google lain ke perangkat ini. Hanya akun G Suite for Education yang dapat ditambahkan ke perangkat yang dikelola dengan Family Link.</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Error dari baris <ph name="ERROR_LINE_START" /> ke <ph name="ERROR_LINE_END" /></translation>
 <translation id="9064142312330104323">Foto Google profil (memuat)</translation>

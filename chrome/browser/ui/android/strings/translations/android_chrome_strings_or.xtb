@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">ବିରତି</translation>
 <translation id="1188239144602654184">AR ଲେଖନ୍ତୁ</translation>
 <translation id="1197267115302279827">ବୁକ୍‍ମାର୍କଗୁଡ଼ିକ ଘୁଞ୍ଚାନ୍ତୁ</translation>
-<translation id="119944043368869598">ସମସ୍ତ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="1201402288615127009">ପରବର୍ତ୍ତୀ</translation>
 <translation id="1204037785786432551">ଲିଙ୍କ୍ ଡାଉନ୍‍‍ଲୋଡ୍ କରନ୍ତୁ</translation>
 <translation id="1206892813135768548">ଲିଙ୍କ୍‍ର ଟେକ୍ସଟ୍ କପି କରନ୍ତୁ</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">ମୌଳିକ</translation>
 <translation id="1671236975893690980">ଡାଉନ୍‌ଲୋଡ୍ ବାକି ଅଛି…</translation>
 <translation id="1672586136351118594">ପୁଣି ଦେଖାନ୍ତୁ ନାହିଁ</translation>
+<translation id="1688867105868176567">ସାଇଟ୍‍ ଡାଟା ଖାଲି କରିବେ?</translation>
 <translation id="1692118695553449118">ସିଙ୍କ୍ ଚାଲୁ ଅଛି</translation>
 <translation id="169515064810179024">ମୋସନ୍ ସେନ୍ସର୍ ଆକ୍ସେସ୍ କରିବାରୁ ସାଇଟ୍‍ଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="1717218214683051432">ମୋସନ୍ ସେନ୍ସର୍</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">ମୋସନ୍ କିମ୍ବା ଲାଇଟ୍ ସେନ୍ସର୍</translation>
 <translation id="4759238208242260848">ଡାଉନଲୋଡସମୂହ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1ଟି ଡାଉନ୍‍‍‍ଲୋଡ୍ ସମୂର୍ଣ୍ଣ ହେଲା।}other{# ଟି ଡାଉନ୍‍‍‍ଲୋଡ୍ ସମୂର୍ଣ୍ଣ ହେଲା।}}</translation>
-<translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" />କୁ ଫେରିବା ପାଇଁ ସ୍ପର୍ଶ କରନ୍ତୁ</translation>
 <translation id="4802417911091824046">ପାସଫ୍ରେଜ୍ ଏନକ୍ରିପ୍ସନ୍, Google Payରୁ ପେମେଣ୍ଟ ପଦ୍ଧତି ଓ ଠିକଣାଗୁଡ଼ିକୁ ଅନ୍ତର୍ଭୁକ୍ତ କରେ ନାହିଁ।
 
 ଏହି ସେଟିଂ ପରିବର୍ତ୍ତନ କରିବାକୁ, <ph name="BEGIN_LINK" />ସିଙ୍କ୍‌ ରିସେଟ୍‍ କରନ୍ତୁ<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048">ଯେହେତୁ ଆପଣ <ph name="DOMAIN_NAME" />ଙ୍କ ଦ୍ଵାରା ପରିଚାଳିତ ଏକ ଆକାଉଣ୍ଟରୁ ସାଇନ୍ ଆଉଟ୍ କରୁଛନ୍ତି, ଏହି ଡିଭାଇସ୍‌ରୁ ଆପଣଙ୍କର Chrome ଡାଟା ଡିଲିଟ୍ କରାଯିବ। ଏହା ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟରେ ରହିବ।</translation>
 <translation id="4943703118917034429">ଭର୍ଚୁଆଲ୍ ରିଅଲିଟି</translation>
 <translation id="4943872375798546930">କୌଣସି ଫଳାଫଳ ନାହିଁ</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ଆପଣଙ୍କର ସ୍କ୍ରିନ୍ ସେୟାର୍ କରୁଛି</translation>
 <translation id="4961107849584082341">ଏହି ପୃଷ୍ଠାକୁ ଯେକୌଣସି ଭାଷାରେ ଅନୁବାଦ କରନ୍ତୁ</translation>
 <translation id="4962975101802056554">ଡିଭାଇସ୍‌ପାଇଁ ଥିବା ସମସ୍ତ ଅନୁମତିଗୁଡ଼ିକ ପ୍ରତ୍ୟାହାର କରନ୍ତୁ</translation>
 <translation id="4970824347203572753">ଆପଣଙ୍କର ଲୋକେସନ୍‌ରେ ଉପଲବ୍ଧ ନାହିଁ</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">ୱେବ୍ ଆପ୍ ଇନ୍‍ଷ୍ଟଲ୍‍ କରନ୍ତୁ</translation>
 <translation id="5132942445612118989">ସମସ୍ତ ଡିଭାଇସ୍‌ଗୁଡ଼ିକରେ ଆପଣଙ୍କର ପାସ୍‌ୱାର୍ଡ, ଇତିବୃତ୍ତି ଏବଂ ଆହୁରି ଅନେକ କିଛି ସିଙ୍କ୍‌ କରନ୍ତୁ</translation>
 <translation id="5139940364318403933">Google Drive କିପରି ବ୍ୟବହାର କରିବେ, ତାହା ଜାଣନ୍ତୁ</translation>
-<translation id="515227803646670480">ଷ୍ଟୋର୍ ହୋଇଥିବା ଡାଟାକୁ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="5152843274749979095">କୌଣସି ସମର୍ଥିତ ଆପ୍ ଇନ୍‌ଷ୍ଟଲ୍ କରାଯାଇନାହିଁ</translation>
 <translation id="5161254044473106830">ଟାଇଟେଲ୍ ଆବଶ୍ୟକ</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1ଟି ଡାଉନ୍‌ଲୋଡ୍ ବିଫଳ ହୋଇଛି।}other{# ଟି ଡାଉନ୍‌ଲୋଡ୍ ବିଫଳ ହୋଇଛି।}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">ସଞ୍ଚିତ ପାସୱାର୍ଡସମୂହ</translation>
 <translation id="5876056640971328065">ଭିଡିଓ ବିରତ କରନ୍ତୁ</translation>
 <translation id="5884076754568147479">କାର୍ଯ୍ୟଗୁଡ଼ିକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବାରେ ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିବା ନିମନ୍ତେ, ଆପଣ Assistant ବ୍ୟବହାର କରିଥିବା ସାଇଟଗୁଡ଼ିକର URL ଏବଂ ବିଷୟବସ୍ତୁଗୁଡ଼ିକ ସହିତ Assistant ମାଧ୍ୟମରେ ଆପଣ ଦାଖଲ କରିଥିବା ସୂଚନା Google ପ୍ରାପ୍ତ କରିବ</translation>
-<translation id="5902828464777634901">ଏହି ୱେବ୍‍ସାଇଟ୍‍ ଦ୍ୱାରା ଷ୍ଟୋର୍‌ କରାଯାଇଥିବା ସମସ୍ତ ସ୍ଥାନୀୟ ଡାଟା ସହିତ କୁକୀକୁ ଡିଲିଟ୍‌ କରାଯିବ।</translation>
 <translation id="5919204609460789179">ସିଙ୍କ ଆରମ୍ଭ କରିବା ପାଇଁ <ph name="PRODUCT_NAME" /> ଅପ୍‍‍ଡେଟ୍ କରନ୍ତୁ</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" />କୁ ସେଭ୍ କରାଗଲା</translation>
 <translation id="5939518447894949180">ପୁନଃସେଟ୍</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117">ଆପଣଙ୍କର <ph name="FQDN" /> ଟାଇମର୍‌ର ସମୟ ସମାପ୍ତ ହୋଇଗଲା। ଏହା ଆସନ୍ତାକାଲି କାର୍ଯ୍ୟାରମ୍ଭ କରିବ।</translation>
 <translation id="6738867403308150051">ଡାଉନ୍‍‍‍ଲୋଡ୍ ହେଉଛି…</translation>
 <translation id="6766622839693428701">ବନ୍ଦ କରିବା ପାଇଁ ତଳକୁ ସ୍ଵାଇପ୍ କରନ୍ତୁ</translation>
-<translation id="6766758767654711248">ସାଇଟ୍‌କୁ ଯିବାକୁ ଟାପ୍‌ କରନ୍ତୁ</translation>
 <translation id="6767294960381293877">ଏକ ଟାବ୍ ସେୟାର୍ କରିବା ପାଇଁ ଡିଭାଇସ୍‌ର ତାଲିକା ଅଧା ସ୍କ୍ରିନ୍‌ରେ ଖୋଲାଯାଇଛି।</translation>
 <translation id="6782111308708962316">ଡାଟା ସେଭ୍‍ କରିବା ଏବଂ ପଢ଼ିବାରୁ ତୃତୀୟ ପକ୍ଷ ୱେବ୍‌ସାଇଟ୍‍ଗୁଡ଼ିକୁ ନିବୃତ୍ତ କରେ</translation>
 <translation id="6790428901817661496">ଚଲାନ୍ତୁ</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">ଆପଣଙ୍କ ଡିଭାଇସ୍‌ରେ ଥିବା ଉପରୋକ୍ତ ସମର୍ଥିତ ପେମେଣ୍ଟ୍ ଆପ୍ସ ସାହାଯ୍ୟରେ ଆପଣ କେତେକ ୱେବସାଇଟ୍‌ରେ ପେମେଣ୍ଟ କରିପାରିବେ।</translation>
 <translation id="8816026460808729765">ସେନ୍ସରଗୁଡ଼ିକୁ ଆକ୍ସେସ୍ କରିବାରୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="8820817407110198400">ବୁକମାର୍କଗୁଡିକ</translation>
-<translation id="8833831881926404480">ଗୋଟିଏ ସାଇଟ୍ ଆପଣଙ୍କ ସ୍କ୍ରିନ୍‍କୁ ସେୟାର୍ କରୁଛି</translation>
 <translation id="883806473910249246">ବିଷୟବସ୍ତୁ ଡାଉନ୍‌ଲୋଡ୍ କରିବା ସମୟରେ ଏକ ତ୍ରୁଟି ଦେଖାଗଲା।</translation>
 <translation id="8840953339110955557">ଏହି ପୃଷ୍ଠା ଅନ୍‌ଲାଇନ୍ ସଂସ୍କରଣ ଠାରୁ ଅଲଗା ହୋଇପାରେ।</translation>
 <translation id="8847988622838149491">USB</translation>

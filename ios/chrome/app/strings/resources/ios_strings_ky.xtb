@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Кичирейтүү</translation>
 <translation id="2230173723195178503">Веб баракча жүктөлдү</translation>
 <translation id="2239626343334228536">Серептөө дайындары тазаланууда…</translation>
+<translation id="2245545499420671379">Жашыруун режимде үчүнчү тараптын cookie файлдарын бөгөттөө</translation>
 <translation id="2257567812274161158">Шайкештирүү иштебей жатат.</translation>
 <translation id="2267753748892043616">Аккаунтту кошуу</translation>
 <translation id="2268044343513325586">Мыктылоо</translation>
@@ -306,7 +307,6 @@
 <translation id="4979397965658815378">Бардык түзмөктөрүңүздөн кыстармалар, сырсөздөр, таржымал жана башка жөндөөлөрүңүздү алуу үчүн аккаунтка кириңиз</translation>
 <translation id="5005498671520578047">Сырсөздү көчүрүү</translation>
 <translation id="5010803260590204777">Интернетте купуя серептөө үчүн жашыруун өтмөк ачыңыз.</translation>
-<translation id="5039020240289137291">Үчүнчү тараптын cookie файлдарын бөгөттөө</translation>
 <translation id="5039804452771397117">Уруксат берүү</translation>
 <translation id="5059136629401106827">Жарайт</translation>
 <translation id="5062321486222145940">Google Drive'ды орнотуу</translation>
@@ -419,6 +419,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 
 Дайын-даректериңиз саат <ph name="TIME" /> купуя сөз айкашы менен шифрлеген. Шайкештирип баштоо үчүн аны киргизиңиз.</translation>
 <translation id="6418346271604475326">PDF даярдалууда</translation>
+<translation id="6426067060178468363">Cookie файлдарына уруксат берүү</translation>
 <translation id="6434591244308415567">Ката кетти. Бир аздан кийин кайталап көрүңүз.</translation>
 <translation id="6445051938772793705">Өлкө</translation>
 <translation id="6445981559479772097">Билдирүү жөнөтүлдү.</translation>
@@ -544,6 +545,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="8076014560081431679">Сакталган сайт жөндөөлөрү өзгөрүлбөйт, андыктан, сайттарды адаттагыдай карай бересиз. <ph name="BEGIN_LINK" />Көбүрөөк маалымат алуу<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Файлды жүктөп алууга болот. Параметрлер экрандын төмөн жагында берилген.</translation>
 <translation id="8131740175452115882">Ырастоо</translation>
+<translation id="8174524257672181687">Бардык cookie файлдарды бөгөттөө (Сунушталбайт)</translation>
 <translation id="8197543752516192074">Баракты которуу</translation>
 <translation id="8205564605687841303">Жокко чыгаруу</translation>
 <translation id="8225985093977202398">Кештелген сүрөттөр жана файлдар</translation>

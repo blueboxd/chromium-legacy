@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Դադար</translation>
 <translation id="1188239144602654184">Սկսել AR աշխատաշրջանը</translation>
 <translation id="1197267115302279827">Տեղափոխել էջանիշները</translation>
-<translation id="119944043368869598">Մաքրել բոլորը</translation>
 <translation id="1201402288615127009">Հաջորդը</translation>
 <translation id="1204037785786432551">Ներբեռնել հղումը</translation>
 <translation id="1206892813135768548">Պատճենել հղման տեքստը</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Հիմնական</translation>
 <translation id="1671236975893690980">Պատրաստվում է ներբեռնման…</translation>
 <translation id="1672586136351118594">Այլևս ցույց չտալ</translation>
+<translation id="1688867105868176567">Ջնջե՞լ կայքի տվյալները</translation>
 <translation id="1692118695553449118">Համաժամացումը միացված է</translation>
 <translation id="169515064810179024">Արգելել կայքերին օգտագործել շարժման տվիչները</translation>
 <translation id="1717218214683051432">Շարժման տվիչներ</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">Շարժման և լուսավորության տվիչներ</translation>
 <translation id="4759238208242260848">Ներբեռնումներ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ֆայլ ներբեռնվեց։}one{# ֆայլ ներբեռնվեց։}other{# ֆայլ ներբեռնվեց։}}</translation>
-<translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> վերադառնալու համար հպեք</translation>
 <translation id="4802417911091824046">Անցաբառով գաղտնագրումը չի կիրառվում վճարման եղանակների և Google Pay-ի հասցեների համար։
 
 Այս կարգավորումը փոփոխելու համար <ph name="BEGIN_LINK" />վերակայեք համաժամացումը<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048">Դուք դուրս եք գալիս <ph name="DOMAIN_NAME" /> տիրույթի ադմինիստրատորի կողմից կառավարվող հաշվից: Chrome-ի ձեր տվյալները կհեռացվեն այս սարքից, սակայն կպահպանվեն Google հաշվում:</translation>
 <translation id="4943703118917034429">Վիրտուալ իրականություն</translation>
 <translation id="4943872375798546930">Արդյունքներ չկան</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> էջը կիսվում է ձեր էկրանով</translation>
 <translation id="4961107849584082341">Թարգմանել կայքը</translation>
 <translation id="4962975101802056554">Չեղարկել սարքի բոլոր թույլտվությունները</translation>
 <translation id="4970824347203572753">Գործառույթը հասանելի չէ ձեր երկրում</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">Տեղադրել վեբ հավելվածը</translation>
 <translation id="5132942445612118989">Համաժամացրեք ձեր գաղտնաբառերը, պատմությունն ու մյուս կարգավորումները ձեր բոլոր սարքերում</translation>
 <translation id="5139940364318403933">Իմացեք, թե ինչպես օգտագործել Google Drive-ը</translation>
-<translation id="515227803646670480">Պահված տվյալների մաքրում</translation>
 <translation id="5152843274749979095">Աջակցվող հավելվածներ չեն տեղադրվել</translation>
 <translation id="5161254044473106830">Վերնագիրը պարտադիր է</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Չհաջողվեց ներբեռնել 1 ֆայլ։}one{Չհաջողվեց ներբեռնել # ֆայլ։}other{Չհաջողվեց ներբեռնել # ֆայլ։}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">Պահված գաղտնաբառեր</translation>
 <translation id="5876056640971328065">Դադարեցնել</translation>
 <translation id="5884076754568147479">Ձեր աշխատանքը հեշտացնելու համար Google-ը կստանա կայքերի հասցեներն ու բովանդակությունը, որոնցում օգտվում եք Օգնականից, ինչպես նաև տվյալները, որոնք ուղարկում եք Օգնականի միջոցով։</translation>
-<translation id="5902828464777634901">Այս կայքի պահած բոլոր տեղային տվյալները կջնջվեն, այդ թվում նաև քուքիները:</translation>
 <translation id="5919204609460789179">Թարմացրեք <ph name="PRODUCT_NAME" />-ը՝ համաժամացումը սկսելու համար</translation>
 <translation id="5937580074298050696">Խնայվել է <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Վերակայել</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117"><ph name="FQDN" /> հավելվածի ժամաչափի ժամանակը լրացել է։ Վաղը այն նորից կաշխատի:</translation>
 <translation id="6738867403308150051">Ներբեռնում…</translation>
 <translation id="6766622839693428701">Փակելու համար մատը սահեցրեք ներքև։</translation>
-<translation id="6766758767654711248">Հպեք՝ կայք անցնելու համար</translation>
 <translation id="6767294960381293877">Սարքերը, որոնց հետ կիսվելու եք ներդիրով, ցուցադրված են էկրանի կեսով:</translation>
 <translation id="6782111308708962316">Թույլ չտալ երրորդ կողմի կայքերին պահել և կարդալ քուքիների տվյալները</translation>
 <translation id="6790428901817661496">Նվագարկել</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">Որոշ կայքերում կարող եք վճարել ձեր սարքից՝ վերոնշյալ աջակցվող վճարային հավելվածների օգնությամբ:</translation>
 <translation id="8816026460808729765">Արգելել կայքերին օգտագործել տվիչները</translation>
 <translation id="8820817407110198400">Էջանիշներ</translation>
-<translation id="8833831881926404480">Կայքին հասանելի է ձեր էկրանը</translation>
 <translation id="883806473910249246">Բովանդակությունը ներբեռնելիս սխալ առաջացավ:</translation>
 <translation id="8840953339110955557">Այս էջը կարող է տարբերվել առցանց տարբերակից։</translation>
 <translation id="8847988622838149491">USB</translation>

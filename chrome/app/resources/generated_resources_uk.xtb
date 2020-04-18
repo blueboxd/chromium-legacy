@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Читати та змінювати всі ваші дані на поточному веб-сайті, коли він викликається</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> хоче скинути ваші налаштування.</translation>
 <translation id="1243314992276662751">Завантажити</translation>
+<translation id="1243436884219965846">Перевірити паролі</translation>
 <translation id="1244265436519979884">Триває відновлення Linux</translation>
 <translation id="1244303850296295656">Помилка розширення</translation>
 <translation id="1246158006305844142">Ваші додатки й налаштування буде синхронізовано на всіх пристроях з ОС Chrome, де ви ввійшли в обліковий запис Google. Щоб переглянути параметри синхронізації веб-переглядача, перейдіть у <ph name="LINK_BEGIN" />налаштування Chrome<ph name="LINK_END" />.</translation>
@@ -376,6 +377,7 @@
 <translation id="1508491105858779599">Щоб розблокувати пристрій, прикладіть палець до сканера відбитків пальців.</translation>
 <translation id="1508575541972276599">Поточна версія: Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Отримувати доступ до будь-якого пристрою <ph name="DEVICE_NAME_AND_VENDOR" /> через USB</translation>
+<translation id="1509960214886564027">Функції на багатьох сайтах можуть не працювати</translation>
 <translation id="1510030919967934016">Цій сторінці заборонено відстежувати ваше місцезнаходження.</translation>
 <translation id="1510055949674985293">Створити QR-код цього зображення</translation>
 <translation id="1510238584712386396">Панель запуску</translation>
@@ -1045,7 +1047,6 @@
 <translation id="237828693408258535">Перекласти цю сторінку?</translation>
 <translation id="2378346380592252785">Оновити облікові дані для <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Виберіть каталог розширення.</translation>
-<translation id="2379232090534544565">Сайт має доступ до аудіо- й відеовходу</translation>
 <translation id="2379281330731083556">Друкувати за допомогою діалогового вікна системи... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Запитувати, перш ніж надсилати (рекомендується)</translation>
 <translation id="2382818385048255866">Перевірте розширення</translation>
@@ -1454,7 +1455,6 @@
 <translation id="2903457445916429186">Відкрити вибрані елементи</translation>
 <translation id="2903882649406874750">Завжди блокувати доступ до датчиків для хосту <ph name="HOST" /></translation>
 <translation id="2904456025988372123">Запитувати, якщо сайт намагається завантажити файли автоматично після першого файлу</translation>
-<translation id="2905789169763945526">В анонімному режимі сайти не можуть використовувати файли cookie для перегляду ваших дій у веб-переглядачі, зокрема, щоб персоналізувати рекламу. Деякі сайти можуть працювати неналежним чином.</translation>
 <translation id="2907619724991574506">URL-адреси автозавантаження</translation>
 <translation id="2907798539022650680">Не вдалося під’єднатися до мережі "<ph name="NAME" />": <ph name="DETAILS" />
     Повідомлення сервера: <ph name="SERVER_MSG" /></translation>
@@ -1584,7 +1584,6 @@
 <translation id="3088128611727407543">Готується профіль додатка…</translation>
 <translation id="3088325635286126843">&amp;Перейменувати...</translation>
 <translation id="3089137131053189723">Пошук очищено</translation>
-<translation id="3090193911106258841">Отримання доступу до аудіо- й відеовходу</translation>
 <translation id="3090819949319990166">Не вдається скопіювати зовнішній файл .crx у файл <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558"><ph name="DEVICE_NAME" />: підключено</translation>
 <translation id="3092699946856346803">Вставте SIM-карту й повторіть спробу</translation>
@@ -1646,7 +1645,6 @@
 <translation id="3165390001037658081">Деякі оператори можуть блокувати цю функцію.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Можна також пропустити вхід і <ph name="LINK_START" />працювати в режимі "Гість"<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">Сайт має доступ до відеовходу</translation>
 <translation id="3177909033752230686">Мова сторінки:</translation>
 <translation id="3179982752812949580">Шрифт тексту</translation>
 <translation id="3181954750937456830">Безпечний перегляд (захищає вас і ваш пристрій від небезпечних сайтів)</translation>
@@ -1857,7 +1855,6 @@
 <translation id="3459697287128633276">Щоб надати своєму обліковому запису доступ до Google Play, автентифікуйтеся за допомогою постачальника ідентифікаторів.</translation>
 <translation id="3462311546193741693">Ви вийдете з більшості сайтів, але не з облікового запису Google. Тому синхронізовані дані можуть бути очищені.</translation>
 <translation id="3462413494201477527">Скасувати створення облікового запису?</translation>
-<translation id="3464012987031883895">Сайт має доступ до аудіовходу</translation>
 <translation id="346431825526753"><ph name="CUSTODIAN_EMAIL" /> керує цим обліковим записом для дітей.</translation>
 <translation id="3468298837301810372">Мітка</translation>
 <translation id="3468999815377931311">Телефон Android</translation>
@@ -1879,7 +1876,6 @@
 <translation id="3487007233252413104">анонімна функція</translation>
 <translation id="348780365869651045">Очікування AppCache...</translation>
 <translation id="3488065109653206955">Частково активовано</translation>
-<translation id="3489025949017384019">Багато сайтів можуть працювати неналежним чином</translation>
 <translation id="3492788708641132712">Синхронізація не працює. Спробуйте ввійти ще раз.</translation>
 <translation id="3493486281776271508">Потрібне інтернет-з'єднання</translation>
 <translation id="3493881266323043047">Чинність</translation>
@@ -1941,7 +1937,6 @@
 <translation id="3574210789297084292">увійти</translation>
 <translation id="3574917942258583917">Усе одно вийти з режиму анонімного перегляду?</translation>
 <translation id="3575121482199441727">Дозволити для цього сайту</translation>
-<translation id="3575919114596668130">Застосовуватимуться ваші налаштування для батьків із Family Link. Якщо ви заблокували додаток або сайт раніше, не потрібно блокувати його знову.</translation>
 <translation id="3576324189521867626">Установлено</translation>
 <translation id="3578594933904494462">До вмісту цієї вкладки надано доступ.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; хоче надати групі &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;, якою ви керуєте, доступ до принтера &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;. Якщо ви приймете це запрошення, усі учасники групи зможуть користуватися цим принтером.</translation>
@@ -2572,6 +2567,7 @@
 <translation id="4404136731284211429">Шукати знову</translation>
 <translation id="4404843640767531781">Додаток <ph name="APP_NAME" /> заблоковано батьками. Попроси в них дозвіл використовувати цей додаток.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Живі субтитри</translation>
 <translation id="4408599188496843485">Д&amp;овідка</translation>
 <translation id="4409697491990005945">Поля</translation>
 <translation id="4410545552906060960">Використовуйте для розблокування пристрою число (PIN-код) замість пароля. Щоб установити PIN-код пізніше, перейдіть в налаштування.</translation>
@@ -3724,7 +3720,6 @@
 <translation id="6006484371116297560">Класична</translation>
 <translation id="6007240208646052708">Голосовий пошук недоступний вашою мовою.</translation>
 <translation id="6009781704028455063">Вбудований датчик</translation>
-<translation id="6010869025736512584">Отримання доступу до відеовходу</translation>
 <translation id="6011074160056912900">Мережа Ethernet</translation>
 <translation id="6011193465932186973">Відбиток пальця</translation>
 <translation id="6011449291337289699">Очистити дані веб-сайту</translation>
@@ -3976,6 +3971,7 @@
 <translation id="6326855256003666642">Кількість процесів, які використовуються розширеннями</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> вимагає, щоб ви оновили цей пристрій до кінцевого терміну.</translation>
 <translation id="6327785803543103246">Автоматичне виявлення веб-проксі</translation>
+<translation id="6331566915566907158">Сприяти покращенню функцій і підвищенню продуктивності ОС Chrome</translation>
 <translation id="6333064448949140209">Файл буде надіслано в Google для налагодження</translation>
 <translation id="6339668969738228384">Створити новий профіль для облікового запису <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Не вдалося з’єднатись із сервером. Перевірте з’єднання з мережею та повторіть спробу. Якщо проблема не зникне, перезапустіть Chromebook.</translation>
@@ -4112,7 +4108,6 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">Пристрій під'єднано до такої мережі: <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Надіслати</translation>
-<translation id="6528189551082329571">Завжди відкривати посилання цього типу у зв'язаному додатку</translation>
 <translation id="6528513914570774834">Надіти іншим користувачам цього пристрою доступ до цієї мережі</translation>
 <translation id="652948702951888897">Історія Chrome</translation>
 <translation id="6530186581263215931">Ці налаштування застосовує адміністратор</translation>
@@ -4682,7 +4677,6 @@
 <translation id="7310598146671372464">Не вдалося ввійти. Сервер не підтримує вказані типи шифрування Kerberos. Зв’яжіться з адміністратором.</translation>
 <translation id="7311079019872751559">Доступ плагіна з неізольованим програмним середовищем</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">Сайти не можуть використовувати файли cookie для перегляду ваших дій у веб-переглядачі, зокрема, щоб персоналізувати рекламу.  Деякі сайти можуть працювати неналежним чином.</translation>
 <translation id="7321545336522791733">Сервер недоступний</translation>
 <translation id="7324297612904500502">Форум бета-версії</translation>
 <translation id="7325209047678309347">Застряг папір</translation>
@@ -4936,6 +4930,7 @@
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Неправильний PIN-код. У вас залишилася одна спроба.}one{Неправильний PIN-код. У вас залишилася # спроба.}few{Неправильний PIN-код. У вас залишилося # спроби.}many{Неправильний PIN-код. У вас залишилося # спроб.}other{Неправильний PIN-код. У вас залишилося # спроби.}}</translation>
 <translation id="7671130400130574146">Використовувати системні границі та рядок заголовка</translation>
 <translation id="767127784612208024">Торкніться, щоб підтвердити скидання</translation>
+<translation id="767147716926917172">Автоматично надсилає в Google дані про діагностику та використання</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, на сторінці <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Надішліть зразок свого голосу в Google, щоб дозволити диктування в будь-якому текстовому полі.</translation>
 <translation id="7678280409648629969">Дані для входу зберігатимуться в Chrome після виходу з режиму анонімного перегляду. Так ви зможете знову скористатися Touch ID на цьому веб-сайті.</translation>
@@ -5079,7 +5074,6 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Примітка.<ph name="END_BOLD" /> Під час процедури система перезавантажиться.</translation>
 <translation id="7828731929332799387">Буде видалено всі файли cookie та дані із сайтів, доступні в ресурсах третіх сторін. Продовжити?</translation>
-<translation id="7829298379596169484">Отримання доступу до аудіовходу</translation>
 <translation id="7829877209233347340">Щоб додати обліковий запис навчального закладу, попросіть когось із батьків увійти в їхній обліковий запис</translation>
 <translation id="7830594666202422257">Підключити до Linux</translation>
 <translation id="7831491651892296503">Помилка налаштування мережі</translation>
@@ -5818,7 +5812,6 @@
 <translation id="8800004011501252845">Показано місця призначення для</translation>
 <translation id="8800034312320686233">Сайт не працює?</translation>
 <translation id="8803953437405899238">Відкривайте нову вкладку одним кліком</translation>
-<translation id="8804398419035066391">Обмінюватися даними з певними веб-сайтами</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Перемістити вкладку в інше вікно}one{Перемістити вкладки в інше вікно}few{Перемістити вкладки в інше вікно}many{Перемістити вкладки в інше вікно}other{Перемістити вкладки в інше вікно}}</translation>
 <translation id="8805140816472474147">Щоб почати синхронізацію, підтвердьте її налаштування.</translation>
 <translation id="8806680466228877631">За допомогою комбінації клавіш <ph name="SHORTCUT" /> можна знову відкрити випадково закриті вкладки</translation>
@@ -6028,7 +6021,6 @@
 <translation id="9055636786322918818">Застосовує шифрування RC4. Використання цієї опції підвищує ризик, оскільки шифри RC4 ненадійні.</translation>
 <translation id="9056810968620647706">Збігів не знайдено.</translation>
 <translation id="9057354806206861646">Оновити розклад</translation>
-<translation id="9058976525724291037">Ваша дитина хоче додати інший обліковий запис Google на цей пристрій. На пристрої, що керуються через Family Link, можна додати тільки облікові записи G Suite for Education.</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Помилка в рядках <ph name="ERROR_LINE_START" />–<ph name="ERROR_LINE_END" /></translation>
 <translation id="9064142312330104323">Фото профілю Google (завантаження)</translation>

@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Tolinti</translation>
 <translation id="2230173723195178503">TInklalapis įkeltas</translation>
 <translation id="2239626343334228536">Išvalomi naršymo duomenis...</translation>
+<translation id="2245545499420671379">Blokuoti trečiųjų šalių slapukus inkognito režimu</translation>
 <translation id="2257567812274161158">Sinchronizavimas neveikia.</translation>
 <translation id="2267753748892043616">Pridėti paskyrą</translation>
 <translation id="2268044343513325586">Patikslinti</translation>
@@ -306,7 +307,6 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="4979397965658815378">Prisijunkite naudodami „Google“ paskyrą, kad gautumėte žymes, slaptažodžius, istoriją ir kitus nustatymus visuose įrenginiuose</translation>
 <translation id="5005498671520578047">Kopijuoti slaptažodį</translation>
 <translation id="5010803260590204777">Norėdami naršyti žiniatinklį privačiai, atidarykite inkognito skirtuką.</translation>
-<translation id="5039020240289137291">Trečiosios šalies slapukų blokavimas</translation>
 <translation id="5039804452771397117">Leisti</translation>
 <translation id="5059136629401106827">Gerai</translation>
 <translation id="5062321486222145940">Įdiegti „Google“ diską</translation>
@@ -419,6 +419,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 
 <ph name="TIME" /> duomenys buvo užšifruoti naudojant sinchronizavimo slaptafrazę. Įveskite ją, kad pradėtumėte sinchronizuoti.</translation>
 <translation id="6418346271604475326">Ruošiamas PDF</translation>
+<translation id="6426067060178468363">Leisti slapukus</translation>
 <translation id="6434591244308415567">Įvyko klaida. Vėliau bandykite dar kartą.</translation>
 <translation id="6445051938772793705">Šalis</translation>
 <translation id="6445981559479772097">Pran. išsiųstas.</translation>
@@ -544,6 +545,7 @@ Kadangi paskyrą tvarko <ph name="HOSTED_DOMAIN" />, atsijungus „Chrome“ duo
 <translation id="8076014560081431679">Išsaugoti svetainių nustatymai nebus ištrinti ir gali nurodyti naršymo įpročius. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Galima atsisiųsti failą. Parinktys pasiekiamos netoli ekrano apačios.</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
+<translation id="8174524257672181687">Blokuoti visus slapukus (nerekomenduojama)</translation>
 <translation id="8197543752516192074">Versti puslapį</translation>
 <translation id="8205564605687841303">Atšaukti</translation>
 <translation id="8225985093977202398">Talp. vaiz. ir fail.</translation>

@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Oddialiť</translation>
 <translation id="2230173723195178503">Načítala sa webová stránka</translation>
 <translation id="2239626343334228536">Vymazávajú sa dáta prehliadania…</translation>
+<translation id="2245545499420671379">Blokovať súbory cookie tretích strán v anonymnom režime</translation>
 <translation id="2257567812274161158">Synchronizácia nefunguje.</translation>
 <translation id="2267753748892043616">Pridať účet</translation>
 <translation id="2268044343513325586">Upraviť</translation>
@@ -306,7 +307,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="4979397965658815378">Prihláste sa účtom Google a používajte svoje záložky, heslá, históriu a ďalšie nastavenia vo všetkých svojich zariadeniach</translation>
 <translation id="5005498671520578047">Kopírovanie hesla</translation>
 <translation id="5010803260590204777">Otvorte kartu inkognito a prehliadajte web v súkromí.</translation>
-<translation id="5039020240289137291">Blokovanie súborov cookie tretej strany</translation>
 <translation id="5039804452771397117">Povoliť</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Nainštalovať Disk Google</translation>
@@ -419,6 +419,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 
 Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej frázy synchronizácie. Keď ju zadáte, synchronizácia sa spustí.</translation>
 <translation id="6418346271604475326">Príprava PDF</translation>
+<translation id="6426067060178468363">Povoliť súbory cookie</translation>
 <translation id="6434591244308415567">Vyskytla sa chyba. Skúste to znova neskôr.</translation>
 <translation id="6445051938772793705">Krajina</translation>
 <translation id="6445981559479772097">Správa sa odoslala.</translation>
@@ -544,6 +545,7 @@ Váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, takže vaše údaje C
 <translation id="8076014560081431679">Uložené nastavenia webov sa neodstránia a môžu odrážať vaše návyky prehliadania. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Súbor je k dispozícii na stiahnutie. Možnosti sú k dispozícii v dolnej časti obrazovky.</translation>
 <translation id="8131740175452115882">Potvrdiť</translation>
+<translation id="8174524257672181687">Blokovať všetky súbory cookie (neodporúča sa)</translation>
 <translation id="8197543752516192074">Preložiť stránku</translation>
 <translation id="8205564605687841303">Zrušiť</translation>
 <translation id="8225985093977202398">Obrázky a súbory vo vyrovnávacej pamäti</translation>

@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1188239144602654184">Aceder à realidade aumentada</translation>
 <translation id="1197267115302279827">Mover marcadores</translation>
-<translation id="119944043368869598">Limpar tudo</translation>
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="1204037785786432551">Transferir link</translation>
 <translation id="1206892813135768548">Copiar texto do link</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Básico</translation>
 <translation id="1671236975893690980">Transferência pendente…</translation>
 <translation id="1672586136351118594">Não mostrar de novo</translation>
+<translation id="1688867105868176567">Pretende limpar os dados do site?</translation>
 <translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="169515064810179024">Impedir que os sites acedam aos sensores de movimentos</translation>
 <translation id="1717218214683051432">Sensores de movimento</translation>
@@ -507,7 +507,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4751476147751820511">Sensores de movimento ou de luz</translation>
 <translation id="4759238208242260848">Transferências</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 transferência concluída.}other{# transferências concluídas.}}</translation>
-<translation id="4797039098279997504">Toque para voltar a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">A encriptação da frase de acesso não inclui métodos de pagamento nem endereços do Google Pay.
 
 Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" />.</translation>
@@ -534,7 +533,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="4932247056774066048">Uma vez que está a terminar sessão numa conta gerida pelo domínio <ph name="DOMAIN_NAME" />, os dados do Chrome serão eliminados deste dispositivo. Estes irão permanecer na sua Conta Google.</translation>
 <translation id="4943703118917034429">Realidade virtual</translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> está a partilhar o seu ecrã</translation>
 <translation id="4961107849584082341">Traduzir esta página para qualquer idioma</translation>
 <translation id="4962975101802056554">Revogar todas as autorizações do dispositivo</translation>
 <translation id="4970824347203572753">Não disponível na sua localização</translation>
@@ -559,7 +557,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5129038482087801250">Instalar aplicação Web</translation>
 <translation id="5132942445612118989">Sincronize as suas palavras-passe, o histórico e muito mais em todos os dispositivos</translation>
 <translation id="5139940364318403933">Saiba como utilizar o Google Drive</translation>
-<translation id="515227803646670480">Limpar dados armazenados</translation>
 <translation id="5152843274749979095">Nenhuma aplicação compatível instalada</translation>
 <translation id="5161254044473106830">Título obrigatório</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 transferência com falha.}other{# transferências com falha.}}</translation>
@@ -667,7 +664,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5869522115854928033">Palavras-passe guardadas</translation>
 <translation id="5876056640971328065">Colocar vídeo em pausa</translation>
 <translation id="5884076754568147479">Para ajudar a concluir as tarefas, a Google vai receber os URLs e os conteúdos dos sites nos quais utiliza o Assistente, bem como as informações que envia através do mesmo</translation>
-<translation id="5902828464777634901">Todos os dados armazenados por este Website, incluindo cookies, são eliminados.</translation>
 <translation id="5919204609460789179">Atualizar <ph name="PRODUCT_NAME" /> para iniciar a sincronização</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> poupado(s)</translation>
 <translation id="5939518447894949180">Repor</translation>
@@ -787,7 +783,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="671481426037969117">O temporizador da aplicação <ph name="FQDN" /> terminou. Recomeça amanhã.</translation>
 <translation id="6738867403308150051">A transferir...</translation>
 <translation id="6766622839693428701">Deslize rapidamente para baixo para fechar.</translation>
-<translation id="6766758767654711248">Toque para aceder ao site.</translation>
 <translation id="6767294960381293877">Lista de dispositivos com os quais pretende partilhar um separador aberta a meia altura.</translation>
 <translation id="6782111308708962316">Impedir que os Sites de terceiros guardem e leiam dados de cookies</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
@@ -1048,7 +1043,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8812260976093120287">Nalguns Sites, é possível pagar com as aplicações de pagamento compatíveis acima no dispositivo.</translation>
 <translation id="8816026460808729765">Impedir que os sites acedam aos sensores</translation>
 <translation id="8820817407110198400">Marcadores</translation>
-<translation id="8833831881926404480">Um site está a partilhar o seu ecrã</translation>
 <translation id="883806473910249246">Ocorreu um erro ao transferir o conteúdo.</translation>
 <translation id="8840953339110955557">Esta página pode ser diferente da versão online.</translation>
 <translation id="8847988622838149491">USB</translation>

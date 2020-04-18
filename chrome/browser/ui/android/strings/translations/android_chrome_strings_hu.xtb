@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Szünet</translation>
 <translation id="1188239144602654184">AR indítása</translation>
 <translation id="1197267115302279827">Könyvjelzők áthelyezése</translation>
-<translation id="119944043368869598">Összes törlése</translation>
 <translation id="1201402288615127009">Tovább</translation>
 <translation id="1204037785786432551">Link letöltése</translation>
 <translation id="1206892813135768548">Link szövegének másolása</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Alapok</translation>
 <translation id="1671236975893690980">Letöltés függőben…</translation>
 <translation id="1672586136351118594">Ne jelenjen meg többé</translation>
+<translation id="1688867105868176567">Törli a webhelyadatokat?</translation>
 <translation id="1692118695553449118">Szinkronizálás bekapcsolva</translation>
 <translation id="169515064810179024">A mozgásérzékelőkhöz való hozzáférés letiltása a webhelyek számára</translation>
 <translation id="1717218214683051432">Mozgásérzékelők</translation>
@@ -507,7 +507,6 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4751476147751820511">Mozgás- és fényérzékelők</translation>
 <translation id="4759238208242260848">Letöltések</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 letöltés befejeződött.}other{# letöltés befejeződött.}}</translation>
-<translation id="4797039098279997504">Érintse meg, hogy visszatérjen ide: <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Az összetett jelszavas titkosítás nem tartalmazza a Google Payben megadott fizetési módokat és címeket.
 
 A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szinkronizálást<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="4932247056774066048">Mivel kijelentkezik a(z) <ph name="DOMAIN_NAME" /> által kezelt fiókból, a rendszer törli az Ön Chrome-adatait erről az eszközről. Google-fiókjában továbbra is megmaradnak ezek az adatok.</translation>
 <translation id="4943703118917034429">Virtuális valóság</translation>
 <translation id="4943872375798546930">Nincs találat</translation>
-<translation id="4958708863221495346">A(z) <ph name="URL_OF_THE_CURRENT_TAB" /> webhely megosztja az Ön képernyőjét</translation>
 <translation id="4961107849584082341">Bármely nyelvre lefordíthatja ezt az oldalt</translation>
 <translation id="4962975101802056554">Az eszköz összes engedélyének visszavonása</translation>
 <translation id="4970824347203572753">Nem áll rendelkezésre az Ön tartózkodási helyén</translation>
@@ -559,7 +557,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5129038482087801250">Webes alkalmazás telepítése</translation>
 <translation id="5132942445612118989">Jelszavak, előzmények és egyebek szinkronizálása valamennyi eszközén</translation>
 <translation id="5139940364318403933">További információ a Google Drive használatáról</translation>
-<translation id="515227803646670480">Tárolt adatok törlése</translation>
 <translation id="5152843274749979095">Nincs telepítve támogatott alkalmazás</translation>
 <translation id="5161254044473106830">Cím megadása kötelező</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 letöltés nem sikerült.}other{# letöltés nem sikerült.}}</translation>
@@ -667,7 +664,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5869522115854928033">Mentett jelszavak</translation>
 <translation id="5876056640971328065">Videó szüneteltetése</translation>
 <translation id="5884076754568147479">Annak érdekében, hogy segíteni tudjon a feladatok elvégzésében, a Google megkapja azoknak a webhelyeknek az URL-jeit és tartalmait, amelyeken Ön használta Segédjét, valamint megkapja a Segéden keresztül elküldött információkat</translation>
-<translation id="5902828464777634901">A webhely által tárolt összes adat törlődik (a cookie-kat is beleértve).</translation>
 <translation id="5919204609460789179">A szinkronizálás megkezdéséhez frissítse a következőt: <ph name="PRODUCT_NAME" /></translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> megtakarított adatmennyiség</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
@@ -787,7 +783,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="671481426037969117">A(z) <ph name="FQDN" /> alkalmazás időzítése lejárt. Holnap újraindul.</translation>
 <translation id="6738867403308150051">Letöltés…</translation>
 <translation id="6766622839693428701">A bezáráshoz csúsztasson lefelé.</translation>
-<translation id="6766758767654711248">Koppintson a webhely felkereséséhez</translation>
 <translation id="6767294960381293877">Lap megosztására szolgáló eszközök listája félmagasságban megnyitva.</translation>
 <translation id="6782111308708962316">Megakadályozza, hogy harmadik felek webhelyei mentsék és olvassák a cookie-adatokat.</translation>
 <translation id="6790428901817661496">Játék</translation>
@@ -1048,7 +1043,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8812260976093120287">Bizonyos webhelyeken fizethet eszközén a fenti támogatott fizetési alkalmazásokkal.</translation>
 <translation id="8816026460808729765">Az érzékelőkhöz való hozzáférés tiltása a webhelyek számára</translation>
 <translation id="8820817407110198400">Könyvjelzők</translation>
-<translation id="8833831881926404480">Az egyik webhely jelenleg megosztja a képernyőt</translation>
 <translation id="883806473910249246">Hiba történt a tartalom letöltésekor.</translation>
 <translation id="8840953339110955557">Az oldal eltérhet az online változattól.</translation>
 <translation id="8847988622838149491">USB</translation>

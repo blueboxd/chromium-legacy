@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 
 #include "base/bind.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -37,7 +38,13 @@ void ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenViewForTesting(
 ArcTermsOfServiceOobeNegotiator::ArcTermsOfServiceOobeNegotiator() = default;
 
 ArcTermsOfServiceOobeNegotiator::~ArcTermsOfServiceOobeNegotiator() {
-  DCHECK(!screen_view_);
+  // During tests shutdown screen_view_ might still be alive.
+  if (!screen_view_)
+    return;
+
+  DCHECK(g_browser_process->IsShuttingDown());
+  // Handle test shutdown gracefully.
+  screen_view_->RemoveObserver(this);
 }
 
 void ArcTermsOfServiceOobeNegotiator::StartNegotiationImpl() {

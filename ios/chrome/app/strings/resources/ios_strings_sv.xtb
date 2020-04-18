@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Zooma ut</translation>
 <translation id="2230173723195178503">Webbsidan har lästs in</translation>
 <translation id="2239626343334228536">Tar bort webbinformation …</translation>
+<translation id="2245545499420671379">Blockera cookies från tredje part i inkognitoläge</translation>
 <translation id="2257567812274161158">Det går inte att synkronisera.</translation>
 <translation id="2267753748892043616">Lägg till konto</translation>
 <translation id="2268044343513325586">Finjustera</translation>
@@ -306,7 +307,6 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="4979397965658815378">Logga in med ditt Google-konto så att du kan använda bokmärken, lösenord, historik med mera på alla dina enheter</translation>
 <translation id="5005498671520578047">Kopiera lösenord</translation>
 <translation id="5010803260590204777">Öppna en inkognitoflik om du vill surfa privat på webben.</translation>
-<translation id="5039020240289137291">Cookies från tredje part blockeras</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Installera Google Drive</translation>
@@ -419,6 +419,7 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 
 Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vill starta synkroniseringen.</translation>
 <translation id="6418346271604475326">Förbereder PDF</translation>
+<translation id="6426067060178468363">Tillåt cookies</translation>
 <translation id="6434591244308415567">Ett fel uppstod. Försök igen senare.</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">SMS skickat.</translation>
@@ -544,6 +545,7 @@ Eftersom ditt konto hanteras av <ph name="HOSTED_DOMAIN" /> raderas din data i C
 <translation id="8076014560081431679">Sparade webbplatsinställningar raderas inte och kan visa dina surfvanor. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">En filnedladdning är tillgänglig. Alternativ visas nära skärmens nederkant.</translation>
 <translation id="8131740175452115882">Bekräfta</translation>
+<translation id="8174524257672181687">Blockera alla cookies (rekommenderas inte)</translation>
 <translation id="8197543752516192074">Översätt sidan</translation>
 <translation id="8205564605687841303">Avbryt</translation>
 <translation id="8225985093977202398">Cachelagrade bilder och filer</translation>

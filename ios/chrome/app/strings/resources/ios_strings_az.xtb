@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Kiçildin</translation>
 <translation id="2230173723195178503">Veb səhifə yükləndi</translation>
 <translation id="2239626343334228536">Brauzinq datası silinir...</translation>
+<translation id="2245545499420671379">Anonim rejimdə üçüncü tərəf kukilərini bloklayın</translation>
 <translation id="2257567812274161158">Sinxronlaşdırma işləmir.</translation>
 <translation id="2267753748892043616">Hesab Əlavə edin</translation>
 <translation id="2268044343513325586">Silin</translation>
@@ -306,7 +307,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="4979397965658815378">Bütün cihazlarınızda əlfəcin, tarixçə, parol və digər ayarları əldə etmək üçün Google Hesabınız ilə daxil olun.</translation>
 <translation id="5005498671520578047">Parolu kopyalayın</translation>
 <translation id="5010803260590204777">Vebə özəl olaraq baxmaq üçün gizli panel açın.</translation>
-<translation id="5039020240289137291">Üçüncü tərəf kukilər bloklanır</translation>
 <translation id="5039804452771397117">İcazə verin</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Google Diski quraşdırın</translation>
@@ -419,6 +419,7 @@ Handoff Ayarların Ümumi bölməsindən də aktiv edilə bilər və cihazların
 
 Datanız <ph name="TIME" /> tarixində sinxronizasiya parol sözü ilə şifrələndi. Sinxronizasiyanı başlamaq üçün onu daxil edin.</translation>
 <translation id="6418346271604475326">PDF hazırlanır</translation>
+<translation id="6426067060178468363">Kukilərə icazə verin</translation>
 <translation id="6434591244308415567">Xəta baş verdi. Yenidən cəhd edin.</translation>
 <translation id="6445051938772793705">Ölkə</translation>
 <translation id="6445981559479772097">Mesaj göndərildi.</translation>
@@ -544,6 +545,7 @@ Hesabınız <ph name="HOSTED_DOMAIN" /> tərəfindən idarə edildiyinə görə,
 <translation id="8076014560081431679">Yadda saxlanmış sayt ayarları silinməyəcək və axtarış təcrübənizə təsir edə bilər. <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Fayl endirilməsi əlçatandır. Seçimlər ekranın aşağısında əlçatandır.</translation>
 <translation id="8131740175452115882">Təsdiq edin</translation>
+<translation id="8174524257672181687">Bütün kukiləri bloklayın (tövsiyə edilmir)</translation>
 <translation id="8197543752516192074">Səhifəni tərcümə edin</translation>
 <translation id="8205564605687841303">Ləğv edin</translation>
 <translation id="8225985093977202398">Keşlənmiş Şəkillər və Fayllar</translation>

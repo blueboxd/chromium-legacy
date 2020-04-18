@@ -30,6 +30,7 @@ import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.content_settings.CookieControlsMode;
+import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.content_settings.CookieControlsStatus;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -42,7 +43,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @EnableFeatures(ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS)
 public class CookieControlsBridgeTest {
-    private class TestCallbackHandler implements CookieControlsBridge.CookieControlsObserver {
+    private class TestCallbackHandler implements CookieControlsObserver {
         private CallbackHelper mHelper;
 
         public TestCallbackHandler(CallbackHelper helper) {

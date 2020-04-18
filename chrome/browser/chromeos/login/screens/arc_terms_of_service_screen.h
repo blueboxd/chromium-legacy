@@ -39,6 +39,10 @@ class ArcTermsOfServiceScreen : public BaseScreen,
   void OnAccept(bool review_arc_settings) override;
   void OnViewDestroyed(ArcTermsOfServiceScreenView* view) override;
 
+  void set_exit_callback_for_testing(ScreenExitCallback exit_callback) {
+    exit_callback_ = exit_callback;
+  }
+
  protected:
   // BaseScreen:
   void ShowImpl() override;

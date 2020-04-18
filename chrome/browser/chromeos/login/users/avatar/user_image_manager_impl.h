@@ -76,7 +76,7 @@ class UserImageManagerImpl : public UserImageManager,
   static const char kImageURLNodeName[];
 
  private:
-  friend class UserImageManagerTest;
+  friend class UserImageManagerTestBase;
 
   // Every image load or update is encapsulated by a Job. Whenever an image load
   // or update is requested for a user, the Job currently running for that user

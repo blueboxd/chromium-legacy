@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Zoom ud</translation>
 <translation id="2230173723195178503">Websiden er indlæst</translation>
 <translation id="2239626343334228536">Browserdata ryddes...</translation>
+<translation id="2245545499420671379">Bloker tredjepartscookies i inkognitotilstand</translation>
 <translation id="2257567812274161158">Der kunne ikke synkroniseres.</translation>
 <translation id="2267753748892043616">Tilføj konto</translation>
 <translation id="2268044343513325586">Juster</translation>
@@ -306,7 +307,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="4979397965658815378">Log ind med din Google-konto for at få adgang til dine bogmærker, dine adgangskoder, din historik og andre indstillinger på alle dine enheder.</translation>
 <translation id="5005498671520578047">Kopiér adgangskode</translation>
 <translation id="5010803260590204777">Åbn en inkognitofane for at søge på nettet uden at blive registreret.</translation>
-<translation id="5039020240289137291">Blokerer cookies fra tredjeparter</translation>
 <translation id="5039804452771397117">Tillad</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Installer Google Drev</translation>
@@ -419,6 +419,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 
 Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name="TIME" />. Angiv adgangssætningen for at starte synkroniseringen.</translation>
 <translation id="6418346271604475326">Forbereder PDF</translation>
+<translation id="6426067060178468363">Tillad cookies</translation>
 <translation id="6434591244308415567">Der opstod en fejl. Prøv igen senere.</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">Beskeden er sendt.</translation>
@@ -544,6 +545,7 @@ Eftersom din konto administreres af <ph name="HOSTED_DOMAIN" />, slettes dine Ch
 <translation id="8076014560081431679">Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Filer kan downloades. Se valgmulighederne nederst på skærmen.</translation>
 <translation id="8131740175452115882">Bekræft</translation>
+<translation id="8174524257672181687">Bloker alle cookies (anbefales ikke)</translation>
 <translation id="8197543752516192074">Oversæt side</translation>
 <translation id="8205564605687841303">Annuller</translation>
 <translation id="8225985093977202398">Billeder og filer, der er gemt i cache</translation>

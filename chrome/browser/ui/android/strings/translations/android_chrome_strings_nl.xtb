@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Onderbreken</translation>
 <translation id="1188239144602654184">AR starten</translation>
 <translation id="1197267115302279827">Bladwijzers verplaatsen</translation>
-<translation id="119944043368869598">Alles wissen</translation>
 <translation id="1201402288615127009">Volgende</translation>
 <translation id="1204037785786432551">Link downloaden</translation>
 <translation id="1206892813135768548">Linktekst kopiëren</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Basis</translation>
 <translation id="1671236975893690980">Download in behandeling…</translation>
 <translation id="1672586136351118594">Niet opnieuw weergeven</translation>
+<translation id="1688867105868176567">Sitegegevens wissen?</translation>
 <translation id="1692118695553449118">Synchronisatie is ingeschakeld</translation>
 <translation id="169515064810179024">Sites geen toegang tot bewegingssensoren geven</translation>
 <translation id="1717218214683051432">Bewegingssensoren</translation>
@@ -507,7 +507,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4751476147751820511">Bewegings- of lichtsensoren</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download voltooid.}other{# downloads voltooid.}}</translation>
-<translation id="4797039098279997504">Tik om terug te gaan naar <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Wachtwoordzinversleuteling is niet van toepassing op betaalmethoden en adressen van Google Pay.
 
 <ph name="BEGIN_LINK" />Reset de synchronisatie<ph name="END_LINK" /> als je deze instelling wilt wijzigen.</translation>
@@ -534,7 +533,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4932247056774066048">Omdat je uitlogt van een account dat wordt beheerd door <ph name="DOMAIN_NAME" />, worden je Chrome-gegevens verwijderd. De gegevens blijven in je Google-account staan.</translation>
 <translation id="4943703118917034429">Virtual reality</translation>
 <translation id="4943872375798546930">Geen resultaten</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> heeft toegang tot je scherm</translation>
 <translation id="4961107849584082341">Vertaal deze pagina in een andere taal</translation>
 <translation id="4962975101802056554">Alle rechten voor apparaat intrekken</translation>
 <translation id="4970824347203572753">Niet beschikbaar op jouw locatie</translation>
@@ -559,7 +557,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5129038482087801250">Web-app installeren</translation>
 <translation id="5132942445612118989">Je wachtwoorden, geschiedenis en meer synchroniseren op al je apparaten</translation>
 <translation id="5139940364318403933">Meer informatie over het gebruik van Google Drive</translation>
-<translation id="515227803646670480">Opgeslagen gegevens wissen</translation>
 <translation id="5152843274749979095">Geen ondersteunde apps geïnstalleerd</translation>
 <translation id="5161254044473106830">Titel is vereist</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 download mislukt.}other{# downloads mislukt.}}</translation>
@@ -667,7 +664,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5869522115854928033">Opgeslagen wachtwoorden</translation>
 <translation id="5876056640971328065">Video pauzeren</translation>
 <translation id="5884076754568147479">Google kan je helpen taken sneller te voltooien en ontvangt daarom de URL's en content van sites waarop je de Assistent gebruikt en informatie die je via de Assistent indient</translation>
-<translation id="5902828464777634901">Alle lokale gegevens die zijn opgeslagen door deze website, inclusief cookies, worden verwijderd.</translation>
 <translation id="5919204609460789179">Update <ph name="PRODUCT_NAME" /> om de synchronisatie te starten</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> bespaard</translation>
 <translation id="5939518447894949180">Resetten</translation>
@@ -787,7 +783,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="671481426037969117">Je <ph name="FQDN" />-timer is afgelopen. Deze begint morgen opnieuw.</translation>
 <translation id="6738867403308150051">Downloaden...</translation>
 <translation id="6766622839693428701">Veeg omlaag om te sluiten.</translation>
-<translation id="6766758767654711248">Tik om naar de site te gaan</translation>
 <translation id="6767294960381293877">De lijst met apparaten om een tabblad mee te delen, is op halve hoogte geopend.</translation>
 <translation id="6782111308708962316">Voorkomen dat websites van derden cookiegegevens opslaan en lezen</translation>
 <translation id="6790428901817661496">Spelen</translation>
@@ -1048,7 +1043,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8812260976093120287">Op sommige websites kun je betalen met de bovenstaande ondersteunde betaal-apps op je apparaat.</translation>
 <translation id="8816026460808729765">Sites geen toegang tot sensoren geven</translation>
 <translation id="8820817407110198400">Bladwijzers</translation>
-<translation id="8833831881926404480">Een site deelt je scherm</translation>
 <translation id="883806473910249246">Er is een fout opgetreden tijdens het downloaden van de content.</translation>
 <translation id="8840953339110955557">Deze pagina kan afwijken van de online versie.</translation>
 <translation id="8847988622838149491">USB</translation>

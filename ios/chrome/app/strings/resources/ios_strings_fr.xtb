@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Zoom arrière</translation>
 <translation id="2230173723195178503">Page Web chargée</translation>
 <translation id="2239626343334228536">Effacement des données de navigation…</translation>
+<translation id="2245545499420671379">Bloquer les cookies tiers en mode navigation privée</translation>
 <translation id="2257567812274161158">La synchronisation ne fonctionne pas.</translation>
 <translation id="2267753748892043616">Ajouter un compte</translation>
 <translation id="2268044343513325586">Affiner</translation>
@@ -306,7 +307,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4979397965658815378">Connectez-vous à votre compte Google pour synchroniser favoris, mots de passe, historique et autres paramètres sur tous vos appareils.</translation>
 <translation id="5005498671520578047">Copier mot de passe</translation>
 <translation id="5010803260590204777">Ouvrez un onglet de navigation privée pour naviguer sur le Web en toute confidentialité.</translation>
-<translation id="5039020240289137291">Bloquer les cookies tiers</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Installer Google Drive</translation>
@@ -419,6 +419,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 
 Vos données ont été chiffrées avec votre phrase secrète de synchronisation le <ph name="TIME" />. Saisissez-la pour lancer la synchronisation.</translation>
 <translation id="6418346271604475326">PDF en prépa.</translation>
+<translation id="6426067060178468363">Autoriser les cookies</translation>
 <translation id="6434591244308415567">Une erreur s'est produite. Réessayez plus tard.</translation>
 <translation id="6445051938772793705">Pays</translation>
 <translation id="6445981559479772097">Message envoyé.</translation>
@@ -544,6 +545,7 @@ Votre compte étant géré par <ph name="HOSTED_DOMAIN" />, vos données Chrome 
 <translation id="8076014560081431679">Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Vous pouvez télécharger des fichiers. Différentes options sont disponibles au bas de l'écran.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
+<translation id="8174524257672181687">Bloquer tous les cookies (non recommandé)</translation>
 <translation id="8197543752516192074">Traduire la page</translation>
 <translation id="8205564605687841303">Annuler</translation>
 <translation id="8225985093977202398">Img/fich. en cache</translation>

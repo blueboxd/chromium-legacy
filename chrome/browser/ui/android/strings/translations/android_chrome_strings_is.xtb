@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Gera hlé</translation>
 <translation id="1188239144602654184">Fara inn í AR</translation>
 <translation id="1197267115302279827">Færa bókamerki</translation>
-<translation id="119944043368869598">Hreinsa allt</translation>
 <translation id="1201402288615127009">Áfram</translation>
 <translation id="1204037785786432551">Hlaða niður tengli</translation>
 <translation id="1206892813135768548">Afrita texta tengils</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Grunnatriði</translation>
 <translation id="1671236975893690980">Niðurhal í bið…</translation>
 <translation id="1672586136351118594">Ekki sýna þetta aftur</translation>
+<translation id="1688867105868176567">Viltu hreinsa vefsvæðagögn?</translation>
 <translation id="1692118695553449118">Kveikt er á samstillingu</translation>
 <translation id="169515064810179024">Loka fyrir aðgang vefsvæða að hreyfiskynjurum</translation>
 <translation id="1717218214683051432">Hreyfiskynjarar</translation>
@@ -507,7 +507,6 @@ Google reikningurinn þinn kann að vera með annars konar vefskoðunarferil, sv
 <translation id="4751476147751820511">Hreyfi- eða birtuskynjarar</translation>
 <translation id="4759238208242260848">Niðurhal</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Ein skrá var sótt.}one{# skrá var sótt.}other{# skrár voru sóttar.}}</translation>
-<translation id="4797039098279997504">Snertu til að fara aftur á <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Dulkóðun aðgangsorðs inniheldur ekki greiðslumáta og heimilisföng af Google Pay.
 
 Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla samstillingu<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="4932247056774066048">Þar sem þú ert að skrá þig út af reikningi sem er stjórnað af <ph name="DOMAIN_NAME" /> verður Chrome gögnum þínum eytt úr þessu tæki. Þau verða áfram á Google reikningnum þínum.</translation>
 <translation id="4943703118917034429">Sýndarveruleiki</translation>
 <translation id="4943872375798546930">Engar niðurstöður</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> deilir skjánum þínum</translation>
 <translation id="4961107849584082341">Þýddu þessa síðu yfir á hvaða tungumál sem er</translation>
 <translation id="4962975101802056554">Afturkalla allar heimildir fyrir þetta tæki</translation>
 <translation id="4970824347203572753">Ekki í boði á þínum stað</translation>
@@ -559,7 +557,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5129038482087801250">Setja upp vefforrit</translation>
 <translation id="5132942445612118989">Samstilltu aðgangsorðin, ferilinn og fleira í öllum tækjum</translation>
 <translation id="5139940364318403933">Lærðu að nota Google Drive</translation>
-<translation id="515227803646670480">Hreinsa vistuð gögn</translation>
 <translation id="5152843274749979095">Engin studd forrit uppsett</translation>
 <translation id="5161254044473106830">Titil vantar</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Mistókst að sækja 1 skrá.}one{Mistókst að sækja # skrá.}other{Mistókst að sækja # skrár.}}</translation>
@@ -667,7 +664,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5869522115854928033">Vistuð aðgangsorð</translation>
 <translation id="5876056640971328065">Gera hlé á spilun</translation>
 <translation id="5884076754568147479">Google fær vefslóðir og innihald vefsvæða þar sem þú notar hjálparann, auk upplýsinga sem þú sendir með hjálparanum, til að hjálpa þér að ljúka við verkefni</translation>
-<translation id="5902828464777634901">Öllum staðbundnum gögnum sem vefsvæðið geymir verður eytt, að fótsporum meðtöldum.</translation>
 <translation id="5919204609460789179">Uppfærðu <ph name="PRODUCT_NAME" /> til að hefja samstillingu</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> spöruð</translation>
 <translation id="5939518447894949180">Endurstilla</translation>
@@ -787,7 +783,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="671481426037969117">Tímamælir <ph name="FQDN" /> rann út. Hann byrjar aftur á morgun.</translation>
 <translation id="6738867403308150051">Sækir…</translation>
 <translation id="6766622839693428701">Strjúktu niður til að loka.</translation>
-<translation id="6766758767654711248">Ýttu til að fara á síðu</translation>
 <translation id="6767294960381293877">Tækjalisti fyrir deilingu flipa opinn á hálfum skjánum.</translation>
 <translation id="6782111308708962316">Koma í veg fyrir að vefsvæði þriðju aðila geti vistað og lesið fótsporagögn</translation>
 <translation id="6790428901817661496">Spila</translation>
@@ -1048,7 +1043,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="8812260976093120287">Á sumum vefsvæðum er hægt að greiða í tækinu þínu með studdum greiðsluforritum hér að ofan.</translation>
 <translation id="8816026460808729765">Loka fyrir aðgang vefsvæða að skynjurum</translation>
 <translation id="8820817407110198400">Bókamerki</translation>
-<translation id="8833831881926404480">Síða er að deila skjánum þínum</translation>
 <translation id="883806473910249246">Villa kom upp við að sækja efnið.</translation>
 <translation id="8840953339110955557">Þessi síða gæti verið frábrugðin útgáfunni sem er á netinu.</translation>
 <translation id="8847988622838149491">USB</translation>

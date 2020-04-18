@@ -547,6 +547,9 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
       // Prevent encryption migration screen from showing up after user login
       // with ARC available.
       command_line->AppendSwitch(switches::kDisableEncryptionMigration);
+      command_line->AppendSwitchASCII(
+          switches::kArcTosHostForTests,
+          arc_tos_server_->GetURL("/arc-tos").spec());
     }
   }
 
@@ -580,12 +583,6 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
               base::BindRepeating(arc::FakeArcSession::Create)));
       EXPECT_TRUE(arc::ExpandPropertyFilesForTesting(
           arc::ArcSessionManager::Get(), arc_temp_dir_.GetPath()));
-
-      if (arc_tos_server_) {
-        test::OobeJS().Evaluate(base::StringPrintf(
-            "login.ArcTermsOfServiceScreen.setTosHostNameForTesting('%s');",
-            arc_tos_server_->GetURL("/arc-tos").spec().c_str()));
-      }
     }
   }
   void TearDownInProcessBrowserTestFixture() override {

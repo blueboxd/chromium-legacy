@@ -226,8 +226,8 @@ std::unique_ptr<TestConditionWaiter> JSChecker::CreateHasClassWaiter(
   }
   std::string description;
   description.append(DescribePath(element_ids))
-      .append(" has ")
-      .append(has_class ? "no " : "")
+      .append(" has")
+      .append(has_class ? "" : " no")
       .append(" css class ")
       .append(css_class);
   return CreateWaiterWithDescription(js_condition, description);

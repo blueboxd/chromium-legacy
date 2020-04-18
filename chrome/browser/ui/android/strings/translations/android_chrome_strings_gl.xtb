@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Pausar</translation>
 <translation id="1188239144602654184">Iniciar realidade aumentada</translation>
 <translation id="1197267115302279827">Mover marcadores</translation>
-<translation id="119944043368869598">Borrar todo</translation>
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="1204037785786432551">Descargar ligazón</translation>
 <translation id="1206892813135768548">Copiar texto da ligazón</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Opcións básicas</translation>
 <translation id="1671236975893690980">Descarga pendente…</translation>
 <translation id="1672586136351118594">Non mostrar outra vez</translation>
+<translation id="1688867105868176567">Queres borrar os datos do sitio?</translation>
 <translation id="1692118695553449118">A sincronización está activada</translation>
 <translation id="169515064810179024">Impide que os sitios accedan aos sensores de movemento</translation>
 <translation id="1717218214683051432">Sensores de movemento</translation>
@@ -507,7 +507,6 @@ Só ti podes ver a que apunta a túa cámara. O sitio non pode ver as imaxes da 
 <translation id="4751476147751820511">Sensores de movemento ou de luz</translation>
 <translation id="4759238208242260848">Descargas</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 descarga completada.}other{# descargas completadas.}}</translation>
-<translation id="4797039098279997504">Toca para volver a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">A encriptación mediante frase de acceso non inclúe métodos de pago nin enderezos de Google Pay.
 
 Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />restablecer a sincronización<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="4932247056774066048">Dado que estás pechando sesión nunha conta xestionada por <ph name="DOMAIN_NAME" />, os teus datos de Chrome eliminaranse deste dispositivo. Permanecerá na túa Conta de Google.</translation>
 <translation id="4943703118917034429">Realidade virtual</translation>
 <translation id="4943872375798546930">Non hai resultados</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> está compartindo a túa pantalla</translation>
 <translation id="4961107849584082341">Traduce esta páxina a calquera idioma</translation>
 <translation id="4962975101802056554">Revogar todos os permisos do dispositivo</translation>
 <translation id="4970824347203572753">Non está dispoñible na túa localización</translation>
@@ -559,7 +557,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5129038482087801250">Instalar aplicación web</translation>
 <translation id="5132942445612118989">Sincroniza os teus contrasinais, o historial e moito máis en todos os dispositivos</translation>
 <translation id="5139940364318403933">Aprender a utilizar Google Drive</translation>
-<translation id="515227803646670480">Borrar datos almacenados</translation>
 <translation id="5152843274749979095">Non hai aplicacións compatibles instaladas</translation>
 <translation id="5161254044473106830">Título obrigatorio</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Produciuse un erro en 1 descarga.}other{Produciuse un erro en # descargas.}}</translation>
@@ -667,7 +664,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5869522115854928033">Contrasinais gardados</translation>
 <translation id="5876056640971328065">Pór en pausa o vídeo</translation>
 <translation id="5884076754568147479">Para axudarche a completar tarefas, Google recibirá os URL e os contidos dos sitios nos que uses o Asistente, ademais da información que envíes a través del</translation>
-<translation id="5902828464777634901">Eliminaranse todos os datos locais almacenados por este sitio web, incluídas as cookies.</translation>
 <translation id="5919204609460789179">Actualiza <ph name="PRODUCT_NAME" /> para iniciar a sincronización</translation>
 <translation id="5937580074298050696">Datos aforrados: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Restablecer</translation>
@@ -787,7 +783,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="671481426037969117">O temporizador de <ph name="FQDN" /> chegou ao final. Volverá comezar mañá.</translation>
 <translation id="6738867403308150051">Descargando...</translation>
 <translation id="6766622839693428701">Pasa o dedo cara abaixo para pechar o panel inferior.</translation>
-<translation id="6766758767654711248">Toca para acceder ao sitio</translation>
 <translation id="6767294960381293877">A lista de dispositivos cos que compartir unha pestana está aberta a media pantalla.</translation>
 <translation id="6782111308708962316">Evitar que sitios web de terceiros garden e lean datos de cookies</translation>
 <translation id="6790428901817661496">Reproducir</translation>
@@ -1048,7 +1043,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8812260976093120287">Nalgúns sitios web, podes pagar no teu dispositivo coas aplicacións de pago compatibles mencionadas anteriormente.</translation>
 <translation id="8816026460808729765">Impide que os sitios accedan aos sensores</translation>
 <translation id="8820817407110198400">Marcadores</translation>
-<translation id="8833831881926404480">Un sitio está compartindo a túa pantalla</translation>
 <translation id="883806473910249246">Produciuse un erro ao descargar o contido.</translation>
 <translation id="8840953339110955557">Esta páxina pode ser diferente da versión en liña.</translation>
 <translation id="8847988622838149491">USB</translation>

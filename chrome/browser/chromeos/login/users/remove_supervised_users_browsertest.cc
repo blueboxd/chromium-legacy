@@ -20,7 +20,7 @@ class RemoveSupervisedUsersBrowserTest : public LoginManagerTest {
  public:
   RemoveSupervisedUsersBrowserTest() : LoginManagerTest() {
     login_mixin_.AppendRegularUsers(2);
-    login_mixin_.AppendSupervisedUsers(1);
+    login_mixin_.AppendLegacySupervisedUsers(1);
   }
 
   ~RemoveSupervisedUsersBrowserTest() override = default;

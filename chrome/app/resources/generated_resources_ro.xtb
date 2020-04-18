@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Citește și modifică toate datele tale de pe site-ul actual (când se invocă)</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> dorește să restabilească setările.</translation>
 <translation id="1243314992276662751">Încărcați</translation>
+<translation id="1243436884219965846">Examinează parolele</translation>
 <translation id="1244265436519979884">O restabilire Linux este în desfășurare</translation>
 <translation id="1244303850296295656">Eroare privind extensiile</translation>
 <translation id="1246158006305844142">Aplicațiile și setările se vor sincroniza pe toate dispozitivele cu sistemul de operare Chrome pe care te-ai conectat folosind contul Google. Pentru opțiunile de sincronizare a browserului, accesează <ph name="LINK_BEGIN" />Setările Chrome<ph name="LINK_END" />.</translation>
@@ -376,6 +377,7 @@
 <translation id="1508491105858779599">Pune degetul pe senzorul de amprentă pentru a debloca dispozitivul.</translation>
 <translation id="1508575541972276599">Versiunea actuală este Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Accesează orice <ph name="DEVICE_NAME_AND_VENDOR" /> prin USB</translation>
+<translation id="1509960214886564027">Este posibil ca funcțiile de pe mai multe site-uri să fie întrerupte</translation>
 <translation id="1510030919967934016">Urmărirea locației tale de către această pagină a fost blocată.</translation>
 <translation id="1510055949674985293">Generează un cod QR pentru această imagine</translation>
 <translation id="1510238584712386396">Lansator</translation>
@@ -1045,7 +1047,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="237828693408258535">Traduci această pagină?</translation>
 <translation id="2378346380592252785">Actualizează datele de conectare pentru <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Selectează directorul extensiei.</translation>
-<translation id="2379232090534544565">Un site accesează intrările audio și video</translation>
 <translation id="2379281330731083556">Printați utilizând caseta de dialog a sistemului... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Solicită permisiunea înainte de trimitere (recomandat)</translation>
 <translation id="2382818385048255866">Verifică extensiile</translation>
@@ -1454,7 +1455,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2903457445916429186">Deschide elementele selectate</translation>
 <translation id="2903882649406874750">Blochează întotdeauna accesul <ph name="HOST" /> la senzori</translation>
 <translation id="2904456025988372123">Întreabă-mă atunci când un site încearcă să descarce automat fișiere după primul fișier</translation>
-<translation id="2905789169763945526">În modul incognito, site-urile nu pot folosi cookie-urile pentru a vedea activitatea ta de navigare de pe diferite site-uri, de exemplu, pentru a personaliza anunțurile. Unele site-uri pot să nu funcționeze corect.</translation>
 <translation id="2907619724991574506">Adrese URL de pornire</translation>
 <translation id="2907798539022650680">Nu s-a putut stabili conexiunea la „<ph name="NAME" />”: <ph name="DETAILS" />
 Mesaj de la server: <ph name="SERVER_MSG" /></translation>
@@ -1584,7 +1584,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3088128611727407543">Se pregătește profilul aplicației...</translation>
 <translation id="3088325635286126843">&amp;Redenumiți...</translation>
 <translation id="3089137131053189723">Căutarea a fost ștearsă</translation>
-<translation id="3090193911106258841">Se accesează intrările audio și video</translation>
 <translation id="3090819949319990166">Fișierul crx extern nu se poate copia în <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">„<ph name="DEVICE_NAME" />” conectată</translation>
 <translation id="3092699946856346803">Introdu cardul SIM și încearcă din nou</translation>
@@ -1646,7 +1645,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3165390001037658081">Este posibil ca unii operatori să blocheze funcția.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">De asemenea, puteți să omiteți conectarea și să <ph name="LINK_START" />navigați ca invitat<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">Un site accesează intrarea video</translation>
 <translation id="3177909033752230686">Limba paginii:</translation>
 <translation id="3179982752812949580">Fontul textului</translation>
 <translation id="3181954750937456830">Navigare sigură (protecție împotriva site-urilor periculoase)</translation>
@@ -1857,7 +1855,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3459697287128633276">Pentru a permite contului să acceseze Magazinul Google Play, autentifică-te folosind Furnizorul de identitate.</translation>
 <translation id="3462311546193741693">Te deconectează de pe majoritatea site-urilor. Vei rămâne conectat(ă) la Contul Google, astfel încât datele sincronizate să poată fi șterse.</translation>
 <translation id="3462413494201477527">Anulezi configurarea contului?</translation>
-<translation id="3464012987031883895">Un site accesează intrarea audio</translation>
 <translation id="346431825526753">Acesta este un cont pentru copii gestionat de <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468298837301810372">Etichetă</translation>
 <translation id="3468999815377931311">Telefon Android</translation>
@@ -1879,7 +1876,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3487007233252413104">funcție anonimă</translation>
 <translation id="348780365869651045">Se așteaptă AppCache...</translation>
 <translation id="3488065109653206955">Activat parțial</translation>
-<translation id="3489025949017384019">Multe site-uri pot să nu funcționeze corect</translation>
 <translation id="3492788708641132712">Sincronizarea nu funcționează. Încearcă să te conectezi din nou.</translation>
 <translation id="3493486281776271508">Este necesară o conexiune la internet</translation>
 <translation id="3493881266323043047">Validitate</translation>
@@ -1941,7 +1937,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3574210789297084292">conectați-vă</translation>
 <translation id="3574917942258583917">Ieși oricum din modul incognito?</translation>
 <translation id="3575121482199441727">Permite pentru acest site</translation>
-<translation id="3575919114596668130">Setările pentru părinți din Family Link se aplică în continuare. Dacă ai blocat anterior o aplicație sau un site, nu trebuie să o faci din nou.</translation>
 <translation id="3576324189521867626">S-a instalat</translation>
 <translation id="3578594933904494462">La conținutul acestei file se permite accesul.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; dorește să permită accesul la o imprimantă &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; pentru un grup pe care îl deții: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Dacă accepți, toți membrii grupului vor putea printa la imprimantă.</translation>
@@ -2572,6 +2567,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4404136731284211429">Verifică din nou</translation>
 <translation id="4404843640767531781">Aplicația <ph name="APP_NAME" /> a fost blocată de părintele tău. Solicită părintelui permisiunea de a folosi această aplicație.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Subtitrări live</translation>
 <translation id="4408599188496843485">&amp;Ajutor</translation>
 <translation id="4409697491990005945">Margini</translation>
 <translation id="4410545552906060960">Folosește un număr (PIN) în locul unei parole pentru a debloca dispozitivul. Pentru a-ți seta codul PIN mai târziu, accesează Setări.</translation>
@@ -3724,7 +3720,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6006484371116297560">Tema clasică</translation>
 <translation id="6007240208646052708">Căutarea vocală în limba ta nu este disponibilă.</translation>
 <translation id="6009781704028455063">Senzor încorporat</translation>
-<translation id="6010869025736512584">Se accesează intrarea video</translation>
 <translation id="6011074160056912900">Rețeaua ethernet</translation>
 <translation id="6011193465932186973">Amprentă</translation>
 <translation id="6011449291337289699">Șterge datele site-ului</translation>
@@ -3976,6 +3971,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6326855256003666642">Număr necesar pentru stare activă</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> solicită să actualizezi dispozitivul înainte de termenul limită.</translation>
 <translation id="6327785803543103246">Web Proxy Auto-Discovery</translation>
+<translation id="6331566915566907158">Contribuie la îmbunătățirea funcțiilor și a performanței sistemului de operare Chrome</translation>
 <translation id="6333064448949140209">Fișierul va fi trimis la Google pentru remedierea erorilor</translation>
 <translation id="6339668969738228384">Creează un profil nou pentru <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Nu s-a putut conecta la server. Verifică conexiunea la rețea și încearcă din nou. Dacă problema persistă, repornește Chromebookul.</translation>
@@ -4112,7 +4108,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">Te-ai conectat la o rețea <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Trimite</translation>
-<translation id="6528189551082329571">Deschide întotdeauna acest tip de linkuri în aplicația asociată</translation>
 <translation id="6528513914570774834">Permite altor utilizatori ai dispozitivului să folosească această rețea</translation>
 <translation id="652948702951888897">Istoricul Chrome</translation>
 <translation id="6530186581263215931">Aceste setări sunt impuse de administrator</translation>
@@ -4682,7 +4677,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7310598146671372464">Conectarea nu a reușit. Serverul nu acceptă tipurile de criptare Kerberos specificate. Contactează administratorul.</translation>
 <translation id="7311079019872751559">Acces pluginuri scoase din mediul de testare</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">Site-urile nu pot folosi cookie-uri pentru a vedea activitatea ta de navigare de pe diferite site-uri, de exemplu, pentru a personaliza anunțurile.  Unele site-uri pot să nu funcționeze corect.</translation>
 <translation id="7321545336522791733">Serverul nu poate fi accesat</translation>
 <translation id="7324297612904500502">Forumul pentru versiunea beta</translation>
 <translation id="7325209047678309347">Hârtia s-a blocat</translation>
@@ -4936,6 +4930,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Codul PIN este incorect. Mai ai o încercare.}few{Codul PIN este incorect. Mai ai # încercări.}other{Codul PIN este incorect. Mai ai # de încercări.}}</translation>
 <translation id="7671130400130574146">Folosește bara de titlu și chenarele definite în sistem</translation>
 <translation id="767127784612208024">Atinge pentru a confirma resetarea</translation>
+<translation id="767147716926917172">Trimite automat date de diagnosticare și de utilizare la Google</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, în <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Trimite-ți vocea la Google pentru a permite dictarea în orice câmp de text.</translation>
 <translation id="7678280409648629969">Datele de conectare sunt stocate în Chrome după ce ieși din modul incognito. Vei putea să folosești din nou Touch ID cu acest site mai târziu.</translation>
@@ -5079,7 +5074,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Notă:<ph name="END_BOLD" /> sistemul va reporni în timpul acestui proces.</translation>
 <translation id="7828731929332799387">Vor fi șterse toate cookie-urile și datele privind site-urile disponibile în contexte terță parte. Dorești să continui?</translation>
-<translation id="7829298379596169484">Se accesează intrarea audio</translation>
 <translation id="7829877209233347340">Roagă-ți părintele să se conecteze pentru a-ți acorda permisiunea să adaugi un cont de la școală</translation>
 <translation id="7830594666202422257">Conectează-te la Linux</translation>
 <translation id="7831491651892296503">Eroare la configurarea rețelei</translation>
@@ -5818,7 +5812,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8800004011501252845">Se afișează destinații pentru</translation>
 <translation id="8800034312320686233">Site-ul nu funcționează?</translation>
 <translation id="8803953437405899238">Deschide o filă nouă cu un singur clic</translation>
-<translation id="8804398419035066391">Comunicarea cu site-urile web cooperante</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Mută fila în altă fereastră}few{Mută filele în altă fereastră}other{Mută filele în altă fereastră}}</translation>
 <translation id="8805140816472474147">Pentru a începe sincronizarea, confirmă setările de sincronizare.</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> poate să redeschidă accidental filele închise</translation>
@@ -6028,7 +6021,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9055636786322918818">Aplică criptarea RC4. Folosirea acestei opțiuni îți mărește riscul, deoarece suitele de codificare RC4 sunt nesecurizate.</translation>
 <translation id="9056810968620647706">Nu s-a găsit nicio potrivire.</translation>
 <translation id="9057354806206861646">Actualizează programul</translation>
-<translation id="9058976525724291037">Copilul tău vrea să adauge alt cont Google pe dispozitiv. Numai conturile G Suite for Education pot fi adăugate pe dispozitivele gestionate cu Family Link.</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Eroare de la linia <ph name="ERROR_LINE_START" /> la linia <ph name="ERROR_LINE_END" /></translation>
 <translation id="9064142312330104323">Fotografie de profil Google (se încarcă)</translation>

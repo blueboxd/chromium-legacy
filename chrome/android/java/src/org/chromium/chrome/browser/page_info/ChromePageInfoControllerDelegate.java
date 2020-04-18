@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.CookieControlsBridge;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.page_info.PageInfoControllerDelegate;
@@ -74,6 +75,9 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
     private String mOfflinePageCreationDate;
     private @OfflinePageState int mOfflinePageState;
     private OfflinePageLoadUrlDelegate mOfflinePageLoadUrlDelegate;
+
+    // Bridge updating the CookieControlsView when cookie settings change.
+    private CookieControlsBridge mBridge;
 
     public ChromePageInfoControllerDelegate(ChromeActivity activity, WebContents webContents,
             OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate) {
@@ -314,6 +318,30 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
     @Override
     public void showSiteSettings(String url) {
         SiteSettingsHelper.showSiteSettings(mActivity, url);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void createCookieControlsBridge(CookieControlsObserver observer) {
+        mBridge = new CookieControlsBridge(observer, mWebContents);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void onUiClosing() {
+        mBridge.onUiClosing();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setThirdPartyCookieBlockingEnabledForSite(boolean blockCookies) {
+        mBridge.setThirdPartyCookieBlockingEnabledForSite(blockCookies);
     }
 
     @VisibleForTesting

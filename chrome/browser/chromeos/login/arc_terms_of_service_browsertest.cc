@@ -15,6 +15,8 @@
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/webview_content_extractor.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -27,7 +29,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
@@ -53,9 +55,6 @@ using net::test_server::HttpResponse;
 namespace chromeos {
 
 namespace {
-
-constexpr char kTestUser[] = "test-user@gmail.com";
-constexpr char kTestUserGaiaId[] = "1234567890";
 
 constexpr char kTosPath[] = "/about/play-terms.html";
 constexpr char kTosContent[] = "Arc TOS for test.";
@@ -141,55 +140,43 @@ class WebViewLoadWaiter {
 
 }  // namespace
 
-class ArcTermsOfServiceScreenTest : public MixinBasedInProcessBrowserTest {
+class ArcTermsOfServiceScreenTest : public OobeBaseTest {
  public:
-  ArcTermsOfServiceScreenTest() = default;
+  ArcTermsOfServiceScreenTest() {
+    // To reuse existing wizard controller in the flow.
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kOobeScreensPriority);
+  }
   ~ArcTermsOfServiceScreenTest() override = default;
 
-  void SetUp() override {
+  void RegisterAdditionalRequestHandlers() override {
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &ArcTermsOfServiceScreenTest::HandleRequest, base::Unretained(this)));
-    MixinBasedInProcessBrowserTest::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kArcAvailability,
                                     "officially-supported");
-    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(chromeos::switches::kDisableEncryptionMigration);
+    command_line->AppendSwitchASCII(switches::kArcTosHostForTests,
+                                    TestServerBaseUrl());
+    OobeBaseTest::SetUpCommandLine(command_line);
   }
 
-  void SetUpOnMainThread() override {
-    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
-    host_resolver()->AddRule("*", "127.0.0.1");
-
-    login_manager_mixin_.LoginAndWaitForActiveSession(
-        LoginManagerMixin::CreateDefaultUserContext(test_user_));
-
+  void TriggerArcTosScreen() {
+    ArcTermsOfServiceScreen* terms_of_service_screen =
+        static_cast<ArcTermsOfServiceScreen*>(
+            WizardController::default_controller()->screen_manager()->GetScreen(
+                ArcTermsOfServiceScreenView::kScreenId));
+    terms_of_service_screen->set_exit_callback_for_testing(
+        base::BindRepeating(&ArcTermsOfServiceScreenTest::ScreenExitCallback,
+                            base::Unretained(this)));
     // Enable ARC for testing.
     arc::ArcServiceLauncher::Get()->ResetForTesting();
-
-    // Creates LoginDisplayHost and WizardController.
-    ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
-    OverrideTermsOfServiceUrlForTest();
-
-    WizardController::default_controller()
-        ->screen_manager()
-        ->DeleteScreenForTesting(ArcTermsOfServiceScreenView::kScreenId);
-    ArcTermsOfServiceScreen* terms_of_service_screen =
-        new ArcTermsOfServiceScreen(
-            chromeos::LoginDisplayHost::default_host()
-                ->GetOobeUI()
-                ->GetView<ArcTermsOfServiceScreenHandler>(),
-            base::BindRepeating(
-                &ArcTermsOfServiceScreenTest::ScreenExitCallback,
-                base::Unretained(this)));
-    WizardController::default_controller()
-        ->screen_manager()
-        ->SetScreenForTesting(base::WrapUnique(terms_of_service_screen));
-
-    terms_of_service_screen->Show();
-
-    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+    login_manager_mixin_.LoginAsNewReguarUser();
+    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+    LoginDisplayHost::default_host()->StartWizard(
+        ArcTermsOfServiceScreenView::kScreenId);
   }
 
  protected:
@@ -225,14 +212,6 @@ class ArcTermsOfServiceScreenTest : public MixinBasedInProcessBrowserTest {
   }
 
  private:
-  void WaitForOobeJSReady() {
-    base::RunLoop run_loop;
-    if (!LoginDisplayHost::default_host()->GetOobeUI()->IsJSReady(
-            run_loop.QuitClosure())) {
-      run_loop.Run();
-    }
-  }
-
   void ScreenExitCallback(ArcTermsOfServiceScreen::Result result) {
     ASSERT_FALSE(screen_exit_result_.has_value());
     screen_exit_result_ = result;
@@ -247,16 +226,6 @@ class ArcTermsOfServiceScreenTest : public MixinBasedInProcessBrowserTest {
                embedded_test_server()->base_url().GetOrigin().spec(), "/",
                base::TrimPositions::TRIM_TRAILING)
         .as_string();
-  }
-
-  // Override the URL ARC Terms Of Service screen JS uses to fetch the
-  // terms of service content.
-  void OverrideTermsOfServiceUrlForTest() {
-    std::string test_url = TestServerBaseUrl();
-    WaitForOobeJSReady();
-    test::OobeJS().Evaluate(base::StringPrintf(
-        "login.ArcTermsOfServiceScreen.setTosHostNameForTesting('%s');",
-        test_url.c_str()));
   }
 
   // Handles both Terms of Service and Privacy policy requests.
@@ -300,22 +269,17 @@ class ArcTermsOfServiceScreenTest : public MixinBasedInProcessBrowserTest {
 
   base::OnceClosure on_screen_exit_called_ = base::DoNothing();
 
-  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
+  LoginManagerMixin login_manager_mixin_{&mixin_host_};
 
-  EmbeddedTestServerSetupMixin embedded_test_server_{&mixin_host_,
-                                                     embedded_test_server()};
-
-  LoginManagerMixin::TestUserInfo test_user_{
-      AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId)};
-  LoginManagerMixin login_manager_mixin_{&mixin_host_, {test_user_}};
-
+  base::test::ScopedFeatureList feature_list_;
   DISALLOW_COPY_AND_ASSIGN(ArcTermsOfServiceScreenTest);
 };
 
 // Tests that screen fetches the terms of service from the specified URL
 // and the content is displayed as a <webview>.
 IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, TermsOfServiceContent) {
-  WaitForTermsOfServiceWebViewToLoad();
+  TriggerArcTosScreen();
+  ASSERT_NO_FATAL_FAILURE(WaitForTermsOfServiceWebViewToLoad());
   EXPECT_EQ(kTosContent,
             test::GetWebViewContents({"arc-tos-root", "arcTosView"}));
 
@@ -325,7 +289,8 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, TermsOfServiceContent) {
 // Tests that clicking on "More" button unhides some terms of service paragraphs
 // of the screen.
 IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, ClickOnMore) {
-  WaitForTermsOfServiceWebViewToLoad();
+  TriggerArcTosScreen();
+  ASSERT_NO_FATAL_FAILURE(WaitForTermsOfServiceWebViewToLoad());
   // By default, these paragraphs should be hidden.
   test::OobeJS().ExpectHiddenPath({"arc-tos-root", "arcExtraContent"});
   test::OobeJS().ExpectHiddenPath({"arc-tos-root", "arcTosAcceptButton"});
@@ -342,7 +307,8 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, ClickOnMore) {
 
 // Tests that all "learn more" links opens correct popup dialog.
 IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, LearnMoreDialogs) {
-  WaitForTermsOfServiceWebViewToLoad();
+  TriggerArcTosScreen();
+  ASSERT_NO_FATAL_FAILURE(WaitForTermsOfServiceWebViewToLoad());
   test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosNextButton"});
 
   // List of pairs of {html element ids, html pop up dialog id}.
@@ -372,7 +338,8 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, LearnMoreDialogs) {
 // Test that checking the "review after signing" checkbox updates pref
 // kShowArcSettingsOnSessionStart.
 IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, ReviewPlayOptions) {
-  WaitForTermsOfServiceWebViewToLoad();
+  TriggerArcTosScreen();
+  ASSERT_NO_FATAL_FAILURE(WaitForTermsOfServiceWebViewToLoad());
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
   EXPECT_FALSE(
@@ -393,7 +360,8 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, ReviewPlayOptions) {
 IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, PrivacyPolicy) {
   // Privacy policy link is parsed from the footer of the TOS content response.
   set_serve_tos_with_privacy_policy_footer(true);
-  WaitForTermsOfServiceWebViewToLoad();
+  TriggerArcTosScreen();
+  ASSERT_NO_FATAL_FAILURE(WaitForTermsOfServiceWebViewToLoad());
 
   WebViewLoadWaiter waiter({"arc-tos-root", "arcTosOverlayWebview"});
   test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosNextButton"});
@@ -431,7 +399,7 @@ class ParameterizedArcTermsOfServiceScreenTest
       ArcPlayTermsOfServiceConsent play_consent,
       ArcBackupAndRestoreConsent backup_and_restore_consent,
       ArcGoogleLocationServiceConsent location_service_consent) {
-    WaitForTermsOfServiceWebViewToLoad();
+    ASSERT_NO_FATAL_FAILURE(WaitForTermsOfServiceWebViewToLoad());
     test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosNextButton"});
 
     // Wait for checkboxes to become visible.
@@ -479,6 +447,8 @@ class ParameterizedArcTermsOfServiceScreenTest
 // When TOS are accepted we should also record whether backup restores and
 // location services are enabled.
 IN_PROC_BROWSER_TEST_P(ParameterizedArcTermsOfServiceScreenTest, ClickAccept) {
+  TriggerArcTosScreen();
+  ASSERT_NO_FATAL_FAILURE(WaitForTermsOfServiceWebViewToLoad());
   ArcPlayTermsOfServiceConsent play_consent =
       BuildArcPlayTermsOfServiceConsent(true);
   ArcBackupAndRestoreConsent backup_and_restore_consent =

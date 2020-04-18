@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/service_factory.h"
 #include "printing/buildflags/buildflags.h"
 
-#if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if BUILDFLAG(ENABLE_PRINTING)
 #include "components/services/print_compositor/print_compositor_impl.h"
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
 #endif
@@ -25,7 +25,7 @@ base::LazyInstance<
     HeadlessContentUtilityClient::NetworkBinderCreationCallback>::Leaky
     g_network_binder_creation_callback = LAZY_INSTANCE_INITIALIZER;
 
-#if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if BUILDFLAG(ENABLE_PRINTING)
 auto RunPrintCompositor(
     mojo::PendingReceiver<printing::mojom::PrintCompositor> receiver) {
   return std::make_unique<printing::PrintCompositorImpl>(
@@ -51,7 +51,7 @@ HeadlessContentUtilityClient::~HeadlessContentUtilityClient() = default;
 mojo::ServiceFactory*
 HeadlessContentUtilityClient::GetMainThreadServiceFactory() {
   static base::NoDestructor<mojo::ServiceFactory> factory {
-#if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if BUILDFLAG(ENABLE_PRINTING)
     RunPrintCompositor,
 #endif
   };

@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">I-pause</translation>
 <translation id="1188239144602654184">Pumasok sa AR</translation>
 <translation id="1197267115302279827">Ilipat ang mga bookmark</translation>
-<translation id="119944043368869598">I-clear lahat</translation>
 <translation id="1201402288615127009">Susunod</translation>
 <translation id="1204037785786432551">Link sa pag-download</translation>
 <translation id="1206892813135768548">Kopyahin ang text ng link</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Pangunahin</translation>
 <translation id="1671236975893690980">Nakabinbin ang pag-download...</translation>
 <translation id="1672586136351118594">Huwag ipakitang muli</translation>
+<translation id="1688867105868176567">I-clear ang data ng site?</translation>
 <translation id="1692118695553449118">Naka-on ang pag-sync</translation>
 <translation id="169515064810179024">I-block ang mga site sa pag-access sa mga sensor ng paggalaw</translation>
 <translation id="1717218214683051432">Mga sensor ng paggalaw</translation>
@@ -507,7 +507,6 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="4751476147751820511">Mga motion o light sensor</translation>
 <translation id="4759238208242260848">Mga Download </translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Tapos na ang 1 pag-download.}one{Tapos na ang # pag-download.}other{Tapos na ang # na pag-download.}}</translation>
-<translation id="4797039098279997504">Pindutin upang bumalik sa <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Hindi kasama sa pag-encrypt ng passphrase ang mga paraan ng pagbabayad at address mula sa Google Pay.
 
 Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="4932247056774066048">Dahil nagsa-sign out ka sa isang account na pinapamahalaan ng <ph name="DOMAIN_NAME" />, made-delete ang data ng Chrome sa device na ito. Mananatili ito sa iyong Google Account.</translation>
 <translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">Walang mga resulta</translation>
-<translation id="4958708863221495346">Ibinabahagi ng <ph name="URL_OF_THE_CURRENT_TAB" /> ang iyong screen</translation>
 <translation id="4961107849584082341">Isalin ang page na ito sa anumang wika</translation>
 <translation id="4962975101802056554">Bawiin ang lahat ng pahintulot para sa device</translation>
 <translation id="4970824347203572753">Hindi available sa iyong lokasyon</translation>
@@ -559,7 +557,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5129038482087801250">I-install ang web app</translation>
 <translation id="5132942445612118989">I-sync ang iyong mga password, history, at higit pa sa lahat ng device</translation>
 <translation id="5139940364318403933">Alamin kung paano gamitin ang Google Drive</translation>
-<translation id="515227803646670480">I-clear ang naka-store na data</translation>
 <translation id="5152843274749979095">Walang naka-install na sinusuportahang app</translation>
 <translation id="5161254044473106830">Kailangan ng pamagat</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 ang hindi na-download.}one{# ang hindi na-download.}other{# ang hindi na-download.}}</translation>
@@ -667,7 +664,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5869522115854928033">Mga naka-save na password</translation>
 <translation id="5876056640971328065">I-pause ang video</translation>
 <translation id="5884076754568147479">Para tulungan kang tapusin ang mga gawain, matatanggap ng Google ang mga URL at content ng mga site kung saan ka gumamit ng Assistant, gayundin ang impormasyong isinumite mo sa pamamagitan ng Assistant</translation>
-<translation id="5902828464777634901">Made-delete ang lahat ng lokal na data na ini-store ng website na ito, kasama ang cookies.</translation>
 <translation id="5919204609460789179">I-update ang <ph name="PRODUCT_NAME" /> upang simulan ang pag-sync</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ang natipid</translation>
 <translation id="5939518447894949180">I-reset</translation>
@@ -787,7 +783,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="671481426037969117">Natapos na ang iyong timer ng <ph name="FQDN" />. Magsisimula itong muli bukas.</translation>
 <translation id="6738867403308150051">Nagda-download...</translation>
 <translation id="6766622839693428701">Mag-swipe pababa para isara.</translation>
-<translation id="6766758767654711248">I-tap para pumunta sa site</translation>
 <translation id="6767294960381293877">Nakabukas ang listahan ng mga device kung saan magbabahagi ng tab nang kalahati ang taas.</translation>
 <translation id="6782111308708962316">Pigilan ang mga third-party na website na mag-save at magbasa ng data ng cookie</translation>
 <translation id="6790428901817661496">I-play</translation>
@@ -1048,7 +1043,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8812260976093120287">Sa ilang website, maaari kang magbayad sa iyong device gamit ang mga sinusuportahang app sa pagbabayad sa itaas.</translation>
 <translation id="8816026460808729765">I-block ang mga site sa pag-access sa mga sensor</translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>
-<translation id="8833831881926404480">Ibinabahagi ng isang site ang iyong screen</translation>
 <translation id="883806473910249246">Nagka-error habang dina-download ang content.</translation>
 <translation id="8840953339110955557">Maaaring iba ang page na ito sa online na bersyon.</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">პაუზა</translation>
 <translation id="1188239144602654184">AR-ში შესვლა</translation>
 <translation id="1197267115302279827">სანიშნეების გადატანა</translation>
-<translation id="119944043368869598">ყველაფრის გასუფთავება</translation>
 <translation id="1201402288615127009">შემდეგი</translation>
 <translation id="1204037785786432551">ბმულის ჩამოტვირთვა</translation>
 <translation id="1206892813135768548">დააკოპირეთ ბმულის ტექსტი</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">ძირითადი</translation>
 <translation id="1671236975893690980">ჩამოტვირთვა მოლოდინის რეჟიმშია…</translation>
 <translation id="1672586136351118594">აღარ გამოჩნდეს</translation>
+<translation id="1688867105868176567">გსურთ საიტის მონაცემების გასუფთავება?</translation>
 <translation id="1692118695553449118">სინქრონიზაცია ჩართულია</translation>
 <translation id="169515064810179024">საიტებისთვის მოძრაობის სენსორებზე წვდომის აკრძალვა</translation>
 <translation id="1717218214683051432">მოძრაობის სენსორები</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">მოძრაობის ან განათების სენსორები</translation>
 <translation id="4759238208242260848">ჩამოტვირთვები</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ჩამოტვირთვა დასრულდა.}other{# ჩამოტვირთვა დასრულდა.}}</translation>
-<translation id="4797039098279997504">შეეხეთ <ph name="URL_OF_THE_CURRENT_TAB" />-ზე დასაბრუნებლად</translation>
 <translation id="4802417911091824046">საიდუმლო ფრაზით დაშიფვრა არ მოიცავს Google Pay-ში შენახულ გადახდის მეთოდებსა და მისამართებს.
 
 ამ პარამეტრის შესაცვლელად საჭიროა <ph name="BEGIN_LINK" />სინქრონიზაციის გადაყენება<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048">ვინაიდან <ph name="DOMAIN_NAME" />-ის მიერ მართული ანგარიშიდან გადიხართ, თქვენი Chrome მონაცემები წაიშლება ამ მოწყობილობიდან. ისინი შენარჩუნდება თქვენს Google ანგარიშში.</translation>
 <translation id="4943703118917034429">ვირტუალური რეალობა</translation>
 <translation id="4943872375798546930">შედეგები არ არის</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> აზიარებს თქვენს ეკრანს</translation>
 <translation id="4961107849584082341">თარგმნეთ ეს გვერდი ნებისმიერ ენაზე</translation>
 <translation id="4962975101802056554">მოწყობილობისთვის ყველა ნებართვის გაუქმება</translation>
 <translation id="4970824347203572753">მიუწვდომელია თქვენთან</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">ვებ-აპის ინსტალაცია</translation>
 <translation id="5132942445612118989">მოახდინეთ თქვენი პაროლების, ისტორიისა და სხვა კონტენტის სინქრონიზაცია თქვენს ყველა მოწყობილობაზე</translation>
 <translation id="5139940364318403933">ისწავლეთ Google Drive-ის გამოყენება</translation>
-<translation id="515227803646670480">მონაცემების გასუფთავება</translation>
 <translation id="5152843274749979095">მხარდაჭერილი აპები დაინსტალირებული არ არის</translation>
 <translation id="5161254044473106830">საჭიროა სათაური</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 ჩამოტვირთვა ვერ მოხერხდა.}other{# ჩამოტვირთვა ვერ მოხერხდა.}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">შენახული პაროლები</translation>
 <translation id="5876056640971328065">ვიდეოს დაპაუზება</translation>
 <translation id="5884076754568147479">ამოცანების შესრულებაში დასახმარებლად Google მიიღებს იმ საიტების URL-ებსა და კონტენტს, რომლებზეც ასისტენტს იყენებთ, ასევე, თქვენ მიერ ასისტენტის მეშვეობით გადაგზავნილ ინფორმაციას</translation>
-<translation id="5902828464777634901">წაიშლება ყველა ადგილობრივი მონაცემი, შენახული ამ ვებგვერდის მიერ, მათ შორის ქუქი ფაილები.</translation>
 <translation id="5919204609460789179">სინქრონიზაციის დასაწყებად, განაახლეთ <ph name="PRODUCT_NAME" /></translation>
 <translation id="5937580074298050696">დაზოგილია <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">გადატვირთვა</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117">თქვენი <ph name="FQDN" />-ის ტაიმერი ამოიწურა. ხვალ ის ხელახლა დაიწყება.</translation>
 <translation id="6738867403308150051">ჩამოტვირთვა…</translation>
 <translation id="6766622839693428701">დასახურად გადაფურცლეთ ქვემოთ.</translation>
-<translation id="6766758767654711248">შეეხეთ საიტზე გასასვლელად</translation>
 <translation id="6767294960381293877">მოწყობილობების სია, რომლებთანაც უნდა გაზიარდეს ჩანართი, გახსნილია ნახევარ სიმაღლეზე.</translation>
 <translation id="6782111308708962316">მესამე მხარის ვებსაიტებისთვის ქუქი-ჩანაწერების მონაცემების შენახვისა და წაკითხვის აკრძალვა</translation>
 <translation id="6790428901817661496">დაკვრა</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">ზოგიერთ ვებსაიტზე თქვენი მოწყობილობით გადახდა შესაძლებელია ზემოჩამოთვლილი აპების მეშვეობით.</translation>
 <translation id="8816026460808729765">საიტებისთვის სენსორებზე წვდომის აკრძალვა</translation>
 <translation id="8820817407110198400">სანიშნეები</translation>
-<translation id="8833831881926404480">საიტი აზიარებს თქვენს ეკრანს</translation>
 <translation id="883806473910249246">კონტენტის ჩამოტვირთვისას შეცდომა მოხდა.</translation>
 <translation id="8840953339110955557">ეს გვერდი შეიძლება განსხვავდებოდეს ონლაინ-ვერსიისგან.</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -572,8 +572,7 @@ group("gn_all") {
   if (is_android || (is_linux && !is_chromeos)) {
     deps += [
       "//components/network_hints/browser",
-      "//content/public/app:browser",
-      "//content/public/app:child",
+      "//content/public/app:both",
       "//mojo:mojo_perftests",
       "//services/service_manager/public/cpp",
       "//testing/gmock:gmock_main",

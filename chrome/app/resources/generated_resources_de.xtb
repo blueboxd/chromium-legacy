@@ -376,6 +376,7 @@
 <translation id="1508491105858779599">Legen Sie den Finger auf den Fingerabdrucksensor, um das Gerät zu entsperren.</translation>
 <translation id="1508575541972276599">Aktuell verwenden Sie Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Auf <ph name="DEVICE_NAME_AND_VENDOR" /> per USB zugreifen</translation>
+<translation id="1509960214886564027">Funktionen auf vielen Websites funktionieren möglicherweise nicht mehr</translation>
 <translation id="1510030919967934016">Diese Seite darf Ihren Standort nicht verfolgen.</translation>
 <translation id="1510055949674985293">QR-Code für dieses Bild generieren</translation>
 <translation id="1510238584712386396">Launcher</translation>
@@ -1042,7 +1043,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="237828693408258535">Diese Seite übersetzen?</translation>
 <translation id="2378346380592252785">Anmeldedaten für <ph name="SHARE_PATH" /> aktualisieren.</translation>
 <translation id="2378982052244864789">Erweiterungsverzeichnis auswählen</translation>
-<translation id="2379232090534544565">Eine Website greift auf Ihre Audio- und Videoeingaben zu</translation>
 <translation id="2379281330731083556">Über das Systemdialogfeld drucken... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Vor dem Senden nachfragen (empfohlen)</translation>
 <translation id="2382818385048255866">Erweiterungen überprüfen</translation>
@@ -1450,7 +1450,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2903457445916429186">Ausgewählte Elemente öffnen</translation>
 <translation id="2903882649406874750">Immer verhindern, dass <ph name="HOST" /> auf Sensoren zugreift</translation>
 <translation id="2904456025988372123">Nachfragen, wenn eine Website versucht, nach der ersten Datei weitere Dateien automatisch herunterzuladen</translation>
-<translation id="2905789169763945526">Wenn der Inkognitomodus aktiviert ist, können Websites nicht Ihre Cookies verwenden, um Ihre Browseraktivitäten auf anderen Websites zu sehen, beispielsweise um Werbung zu personalisieren. Einige Websites funktionieren dann eventuell nicht richtig.</translation>
 <translation id="2907619724991574506">"Beim Start"-URLs</translation>
 <translation id="2907798539022650680">Fehler bei der Verbindung mit "<ph name="NAME" />": <ph name="DETAILS" />
 Servernachricht: <ph name="SERVER_MSG" /></translation>
@@ -1580,7 +1579,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3088128611727407543">App-Profil wird vorbereitet...</translation>
 <translation id="3088325635286126843">&amp;Umbenennen...</translation>
 <translation id="3089137131053189723">Suche gelöscht</translation>
-<translation id="3090193911106258841">Zugriff auf Audio- und Video-Eingang</translation>
 <translation id="3090819949319990166">Externe CRX-Datei konnte nicht als <ph name="TEMP_CRX_FILE" /> kopiert werden.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" ist gekoppelt</translation>
 <translation id="3092699946856346803">Bitte die SIM-Karte einsetzen und noch einmal versuchen</translation>
@@ -1642,7 +1640,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3165390001037658081">Einige Mobilfunkanbieter blockieren diese Funktion möglicherweise.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Sie können die Anmeldung auch überspringen und <ph name="LINK_START" />als Gast surfen<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">Eine Website greift auf Ihre Videoeingaben zu</translation>
 <translation id="3177909033752230686">Sprache der Seite:</translation>
 <translation id="3179982752812949580">Schriftart für Text</translation>
 <translation id="3181954750937456830">Safe Browsing (mich und mein Gerät vor schädlichen Websites schützen)</translation>
@@ -1853,7 +1850,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3459697287128633276">Damit Ihr Konto Zugriff auf den Google Play Store hat, müssen Sie sich bei Ihrem Identitätsanbieter authentifizieren.</translation>
 <translation id="3462311546193741693">Hiermit werden Sie von den meisten Websites abgemeldet. Sie bleiben jedoch in Ihrem Google-Konto angemeldet, sodass Ihre synchronisierten Daten gelöscht werden können.</translation>
 <translation id="3462413494201477527">Kontoeinrichtung abbrechen?</translation>
-<translation id="3464012987031883895">Eine Website greift auf Ihre Audioeingaben zu</translation>
 <translation id="346431825526753">Dies ist ein Konto für Kinder, das von <ph name="CUSTODIAN_EMAIL" /> verwaltet wird.</translation>
 <translation id="3468298837301810372">Label</translation>
 <translation id="3468999815377931311">Android-Smartphone</translation>
@@ -1875,7 +1871,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3487007233252413104">Anonyme Funktion</translation>
 <translation id="348780365869651045">Warten auf AppCache...</translation>
 <translation id="3488065109653206955">Teilweise aktiviert</translation>
-<translation id="3489025949017384019">Viele Websites funktionieren dann eventuell nicht richtig</translation>
 <translation id="3492788708641132712">Die Synchronisierung funktioniert nicht. Melden Sie sich noch einmal an.</translation>
 <translation id="3493486281776271508">Es ist eine Internetverbindung erforderlich</translation>
 <translation id="3493881266323043047">Gültigkeit</translation>
@@ -1937,7 +1932,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3574210789297084292">Anmelden</translation>
 <translation id="3574917942258583917">Inkognitomodus trotzdem beenden?</translation>
 <translation id="3575121482199441727">Für diese Website zulassen</translation>
-<translation id="3575919114596668130">Ihre Einstellungen für Eltern in Family Link gelten weiterhin. Wenn Sie eine App oder Website bereits blockiert haben, müssen Sie das nicht noch einmal tun.</translation>
 <translation id="3576324189521867626">Installation war erfolgreich</translation>
 <translation id="3578594933904494462">Der Inhalt dieses Tabs wird geteilt.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; möchte den Drucker &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; für eine Gruppe freigeben, deren Inhaber Sie sind: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Falls Sie zustimmen, können alle Gruppenmitglieder diesen Drucker nutzen.</translation>
@@ -3720,7 +3714,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6006484371116297560">Klassisch</translation>
 <translation id="6007240208646052708">Die Sprachsuche ist nicht in Ihrer Sprache verfügbar.</translation>
 <translation id="6009781704028455063">Integrierter Sensor</translation>
-<translation id="6010869025736512584">Zugriff auf Video-Eingang</translation>
 <translation id="6011074160056912900">Ethernet-Netzwerk</translation>
 <translation id="6011193465932186973">Fingerabdruck</translation>
 <translation id="6011449291337289699">Websitedaten löschen</translation>
@@ -4108,7 +4101,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">Sie sind mit einem <ph name="NETWORK_TYPE" />-Netzwerk verbunden.</translation>
 <translation id="6527303717912515753">Teilen</translation>
-<translation id="6528189551082329571">Links dieses Typs immer in der verknüpften App öffnen</translation>
 <translation id="6528513914570774834">Anderen Nutzern des Geräts erlauben, dieses Netzwerk zu verwenden</translation>
 <translation id="652948702951888897">Chrome-Verlauf</translation>
 <translation id="6530186581263215931">Diese Einstellungen werden von Ihrem Administrator erzwungen</translation>
@@ -4678,7 +4670,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7310598146671372464">Fehler beim Anmelden. Der Server unterstützt keine angegebenen Kerberos-Verschlüsselungstypen. Bitte wenden Sie sich an Ihren Administrator.</translation>
 <translation id="7311079019872751559">Plug-in-Zugriff ohne Sandbox</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">Websites können Ihre Cookies nicht zum Einsehen Ihrer Browseraktivitäten auf anderen Websites verwenden, beispielsweise um Werbung zu personalisieren.  Einige Websites funktionieren dann eventuell nicht richtig.</translation>
 <translation id="7321545336522791733">Server nicht erreichbar</translation>
 <translation id="7324297612904500502">Beta-Forum</translation>
 <translation id="7325209047678309347">Papierstau</translation>
@@ -5075,7 +5066,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Hinweis<ph name="END_BOLD" />: Das System wird während des Vorgangs neu gestartet.</translation>
 <translation id="7828731929332799387">Dadurch werden alle Cookies und Websitedaten von Drittanbietern gelöscht. Möchten Sie fortfahren?</translation>
-<translation id="7829298379596169484">Zugriff auf Audio-Eingang</translation>
 <translation id="7829877209233347340">Es muss sich zuerst ein Elternteil anmelden und seine Zustimmung geben, damit das Konto einer Bildungseinrichtung hinzugefügt werden kann</translation>
 <translation id="7830594666202422257">Mit Linux verbinden</translation>
 <translation id="7831491651892296503">Fehler bei der Netzwerkkonfiguration</translation>
@@ -5813,7 +5803,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8800004011501252845">Ziele werden angezeigt für</translation>
 <translation id="8800034312320686233">Website funktioniert nicht?</translation>
 <translation id="8803953437405899238">Neuen Tab mit nur einem Klick öffnen</translation>
-<translation id="8804398419035066391">Mit zusammenarbeitenden Websites kommunizieren</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Tab in ein anderes Fenster verschieben}other{Tabs in ein anderes Fenster verschieben}}</translation>
 <translation id="8805140816472474147">Synchronisierungseinstellungen bestätigen, um die Synchronisierung zu starten.</translation>
 <translation id="8806680466228877631">Mit "<ph name="SHORTCUT" />" lassen sich versehentlich geschlossene Tabs wieder öffnen</translation>
@@ -6023,7 +6012,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9055636786322918818">RC4-Verschlüsselung durchsetzen. Mit dieser Option ist ein höheres Risiko verbunden, da RC4-Verschlüsselungen nicht sicher sind.</translation>
 <translation id="9056810968620647706">Keine Übereinstimmungen gefunden.</translation>
 <translation id="9057354806206861646">Aktualisierungszeitplan</translation>
-<translation id="9058976525724291037">Ihr Kind möchte auf diesem Gerät ein weiteres Google-Konto hinzufügen. Zu mit Family Link verwalteten Geräten können nur G Suite for Education-Konten hinzugefügt werden.</translation>
 <translation id="9062468308252555888">14-fach</translation>
 <translation id="9063208415146866933">Fehler von Zeile <ph name="ERROR_LINE_START" /> bis <ph name="ERROR_LINE_END" /></translation>
 <translation id="9064142312330104323">Google Profile-Foto (wird geladen)</translation>

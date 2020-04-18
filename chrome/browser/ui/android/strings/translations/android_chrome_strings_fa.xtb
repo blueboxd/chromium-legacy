@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">مکث</translation>
 <translation id="1188239144602654184">‏وارد شدن به AR</translation>
 <translation id="1197267115302279827">انتقال نشانک‌ها</translation>
-<translation id="119944043368869598">پاک کردن همه</translation>
 <translation id="1201402288615127009">بعدی</translation>
 <translation id="1204037785786432551">بارگیری پیوند</translation>
 <translation id="1206892813135768548">کپی نوشتار پیوند</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">پایه</translation>
 <translation id="1671236975893690980">بارگیری معلق است…</translation>
 <translation id="1672586136351118594">دیگر نشان داده نشود</translation>
+<translation id="1688867105868176567">داده‌های سایت پاک شود؟</translation>
 <translation id="1692118695553449118">همگام‌سازی روشن است</translation>
 <translation id="169515064810179024">سایت‌ها نمی‌توانند به حسگرهای حرکتی دسترسی داشته باشند</translation>
 <translation id="1717218214683051432">حسگرهای حرکتی</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">حسگرهای نوری یا حرکتی</translation>
 <translation id="4759238208242260848">بارگیری‌ها</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{۱ بارگیری کامل شد.}one{# بارگیری کامل شد.}other{# بارگیری کامل شد.}}</translation>
-<translation id="4797039098279997504">برای برگشتن به <ph name="URL_OF_THE_CURRENT_TAB" />، لمس کنید</translation>
 <translation id="4802417911091824046">‏رمزگذاری عبارت ورود شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay نمی‌شود.
 
 برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048">‏از آنجایی‌که درحال خروج از سیستم حساب مدیریت‌شده توسط <ph name="DOMAIN_NAME" /> هستید، داده‌های Chrome شما از این دستگاه حذف می‌شود. این مورد در حساب Google شما باقی می‌ماند.</translation>
 <translation id="4943703118917034429">واقعیت مجازی</translation>
 <translation id="4943872375798546930">نتیجه‌ای پیدا نشد</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> درحال اشتراک‌گذاری صفحه شما است</translation>
 <translation id="4961107849584082341">ترجمه این صفحه به زبان‌های دیگر</translation>
 <translation id="4962975101802056554">لغو همه مجوزها برای دستگاه</translation>
 <translation id="4970824347203572753">در مکان شما دردسترس نیست</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">نصب برنامه وب</translation>
 <translation id="5132942445612118989">همگام‌سازی گذرواژه‌ها، سابقه و موارد دیگر در همه دستگاه‌ها</translation>
 <translation id="5139940364318403933">‏آشنایی با نحوه استفاده از Google Drive</translation>
-<translation id="515227803646670480">پاک کردن داده ذخیره شده</translation>
 <translation id="5152843274749979095">هیچ برنامه پشتیبانی‌شده‌ای نصب نشده است</translation>
 <translation id="5161254044473106830">عنوان مورد نیاز است</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{۱ بارگیری انجام نشد.}one{# بارگیری انجام نشد.}other{# بارگیری انجام نشد.}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
 <translation id="5876056640971328065">مکث ویدیو</translation>
 <translation id="5884076754568147479">‏برای کمک به انجام کارها، Google نشانی‌های وب و محتوای سایت‌هایی را که در آن‌ها از «دستیار» استفاده می‌کنید، و همچنین اطلاعاتی را که ازطریق «دستیار» ارسال می‌کنید دریافت خواهد کرد</translation>
-<translation id="5902828464777634901">تمام داده‌های محلی ذخیره شده مرتبط با این وب‌سایت، از جمله کوکی‌ها، حذف می‌شوند.</translation>
 <translation id="5919204609460789179">برای شروع همگام‌سازی، <ph name="PRODUCT_NAME" /> را به‌روزرسانی کنید</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> صرفه‌جویی‌شده</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117">تایمر <ph name="FQDN" /> شما متوقف شد. دوباره فردا شروع به کار می‌کند.</translation>
 <translation id="6738867403308150051">در حال بارگیری…</translation>
 <translation id="6766622839693428701">برای بستن، تند به پایین بکشید.</translation>
-<translation id="6766758767654711248">برای رفتن به سایت، ضربه بزنید</translation>
 <translation id="6767294960381293877">فهرست نیمه‌باز دستگاه‌هایی که می‌توان با آن‌ها برگه هم‌رسانی کرد.</translation>
 <translation id="6782111308708962316">جلوگیری از ذخیره کردن و خواندن داده‌های کوکی توسط وب‌سایت‌های شخص ثالث</translation>
 <translation id="6790428901817661496">پخش</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">در بعضی از وب‌سایت‌ها، می‌توانید با برنامه‌های پرداخت پشتیبانی‌شده بالا در دستگاهتان پرداخت کنید.</translation>
 <translation id="8816026460808729765">سایت‌ها نمی‌توانند به حسگرها دسترسی داشته باشند</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
-<translation id="8833831881926404480">سایتی درحال به‌اشتراک گذاشتن صفحه‌تان است</translation>
 <translation id="883806473910249246">هنگام بارگیری محتوا خطایی روی داد.</translation>
 <translation id="8840953339110955557">ممکن است این صفحه با نسخه آنلاین متفاوت باشد.</translation>
 <translation id="8847988622838149491">USB</translation>

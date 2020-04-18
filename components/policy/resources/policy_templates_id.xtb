@@ -74,17 +74,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi penggun
       Jika <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (nilai 1) ditetapkan, hanya variasi yang dianggap sebagai perbaikan keamanan atau stabilitas penting yang akan dapat diterapkan pada <ph name="PRODUCT_OS_NAME" />.
 
       Jika <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (nilai 2) ditetapkan, semua variasi tidak akan dapat diterapkan pada browser di layar login. Perlu diketahui, mode ini tidak direkomendasikan karena berpotensi menyebabkan developer <ph name="PRODUCT_OS_NAME" /> tidak dapat menyediakan perbaikan keamanan penting secara tepat waktu.</translation>
-<translation id="1078643757670228170">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Menentukan durasi waktu tanpa input pengguna sebelum layar dinonaktifkan saat menggunakan daya AC.
-
-          Jika kebijakan ini ditetapkan ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan durasi waktu pengguna harus tetap tidak aktif sebelum <ph name="PRODUCT_OS_NAME" /> menonaktifkan layar.
-
-          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan menonaktifkan layar saat pengguna tidak aktif.
-
-          Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
-
-          Nilai kebijakan harus ditentukan dalam milidetik. Nilai dikunci agar kurang dari atau sama dengan penundaan masa tidak aktif.</translation>
 <translation id="1079801999187584280">Larang penggunaan Developer Tools</translation>
 <translation id="1087437665304381368">Kebijakan ini hanya mengontrol mode developer<ph name="PRODUCT_OS_NAME" />. Jika ingin mencegah akses ke Opsi Developer Android, Anda perlu menetapkan kebijakan <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">Daftar kebijakan Chrome Enterprise berpindah! Update bookmark ke <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -241,13 +230,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Kebijakan ini memengaruhi semua jenis output audio, tidak hanya speaker bawaan. Fitur aksesibilitas audio juga dibatasi oleh kebijakan ini. Jangan aktifkan kebijakan ini jika pengguna memerlukan pembaca layar.
 
       Jika setelan ini ditetapkan ke True atau tidak dikonfigurasi, maka pengguna dapat menggunakan semua output audio yang didukung pada perangkatnya.</translation>
-<translation id="1358050607773151553">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Jika ditetapkan, kebijakan ini menentukan tindakan yang diambil <ph name="PRODUCT_OS_NAME" /> saat pengguna tetap tidak aktif selama durasi waktu yang ditentukan oleh penundaan masa tidak aktif, yang dapat dikonfigurasi secara terpisah.
-
-          Jika tidak ditetapkan, tindakan default akan diambil, yaitu penangguhan.
-
-          Jika tindakannya adalah penangguhan, <ph name="PRODUCT_OS_NAME" /> dapat dikonfigurasi secara terpisah untuk mengunci atau tidak mengunci layar sebelum ditangguhkan.</translation>
 <translation id="1359553908012294236">Jika kebijakan ini disetel ke True atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mengaktifkan proses masuk tamu. Proses masuk tamu adalah profil <ph name="PRODUCT_NAME" /> dengan semua jendela dalam mode samaran.
 
       Jika kebijakan ini disetel ke False, <ph name="PRODUCT_NAME" /> tidak akan mengizinkan profil tamu dimulai.</translation>
@@ -262,11 +244,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
           Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs, yaitu dari kebijakan 'DefaultNotificationsSetting' jika ditetapkan, atau dari konfigurasi pribadi pengguna jika tidak ditetapkan.
 
           Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="1377134027840513298">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Kebijakan ini memberikan nilai fallback untuk <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> dan kebijakan <ph name="IDLE_ACTION_AC_POLICY_NAME" /> yang lebih spesifik. Jika kebijakan ini ditetapkan, nilainya akan digunakan jika masing-masing kebijakan yang lebih spesifik tidak ditetapkan.
-
-          Jika kebijakan ini tidak ditetapkan, perilaku kebijakan yang lebih spesifik tetap tidak terpengaruh.</translation>
 <translation id="1384459581748403878">Referensi: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Melaporkan status update OS</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
@@ -630,17 +607,6 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
       Jika setelan ini dinonaktifkan, IsiOtomatis tidak akan menyarankan atau mengisi informasi alamat, serta tidak akan menyimpan informasi alamat tambahan yang mungkin dikirim oleh pengguna saat browsing web.
 
       Jika setelan ini diaktifkan atau tidak memiliki nilai, pengguna dapat mengontrol fitur IsiOtomatis untuk alamat di UI.</translation>
-<translation id="1959613237819575097">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Menentukan durasi waktu tanpa input pengguna sebelum layar dinonaktifkan saat menggunakan daya baterai.
-
-          Jika kebijakan ini ditetapkan ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan durasi waktu pengguna harus tetap tidak aktif sebelum <ph name="PRODUCT_OS_NAME" /> menonaktifkan layar.
-
-          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan menonaktifkan layar saat pengguna tidak aktif.
-
-          Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
-
-          Nilai kebijakan harus ditentukan dalam milidetik. Nilai dikunci agar kurang dari atau sama dengan penundaan masa tidak aktif.</translation>
 <translation id="1962273523772270623">Mengizinkan pengumpulan log aktivitas WebRTC dari layanan Google</translation>
 <translation id="1964634611280150550">Mode samaran dinonaktifkan</translation>
 <translation id="1964802606569741174">Kebijakan ini tidak memengaruhi aplikasi YouTube Android. Jika Mode Perlindungan di YouTube harus diterapkan, pemasangan aplikasi YouTube Android harus dilarang.</translation>
@@ -763,6 +729,13 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 
       Jika kebijakan ini tidak ditetapkan, deteksi penghalangan akan diaktifkan.</translation>
 <translation id="2166472654199325139">Jangan filter konten khusus dewasa dari situs</translation>
+<translation id="2166746572083670600">Mengonfigurasi direktori yang akan digunakan <ph name="PRODUCT_NAME" /> untuk menyimpan data pengguna.
+
+      Jika Anda menetapkan kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang disediakan, terlepas apakah pengguna telah menetapkan tanda '--user-data-dir' atau belum. Agar tidak kehilangan data atau mengalami error tak terduga, kebijakan ini harus disetel ke direktori yang digunakan untuk tujuan lain, karena <ph name="PRODUCT_NAME" /> mengelola kontennya.
+
+      Buka https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mengetahui daftar variabel yang dapat digunakan.
+
+      Jika kebijakan ini tidak ditetapkan, jalur profil default akan digunakan dan pengguna akan dapat menggantinya dengan tanda command line '--user-data-dir'.</translation>
 <translation id="2168397434410358693">Menunda waktu menganggur saat menggunakan daya AC</translation>
 <translation id="217013996107840632">Parameter command line untuk beralih dari browser alternatif.</translation>
 <translation id="2170233653554726857">Aktifkan pengoptimalan WPAD</translation>
@@ -879,11 +852,6 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
       Template dengan format yang salah akan diabaikan.</translation>
 <translation id="2345547870894930157">Aktifkan DNS-over-HTTPS tanpa fallback yang tidak aman</translation>
 <translation id="2386362615870139244">Izinkan penguncian layar saat bangun</translation>
-<translation id="2398554235599593694"> Kebijakan ini mengontrol apakah kotak centang "Always open" ditampilkan atau tidak pada perintah konfirmasi peluncuran protokol eksternal.
-
-      Jika kebijakan ini ditetapkan ke True, saat konfirmasi protokol eksternal ditampilkan, pengguna dapat memilih untuk "Always open" protokol tanpa perintah konfirmasi di waktu mendatang.
-
-      Jika kebijakan ini ditetapkan ke False atau tidak ditetapkan, kotak centang "Always open" tidak akan ditampilkan dan pengguna akan diminta untuk mengonfirmasi setiap kali protokol eksternal dipanggil.</translation>
 <translation id="2406820201690307634">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan untuk menampilkan gambar.
 
           Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs, yaitu dari kebijakan 'DefaultImagesSetting' jika ditetapkan, atau dari konfigurasi pribadi pengguna jika tidak ditetapkan.
@@ -928,19 +896,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Jika setelan ini tidak disetel, pengguna dapat memutuskan untuk menggunakan fungsi ini atau tidak.
 
       Setelan ini telah dibuang dari <ph name="PRODUCT_NAME" /> 29 dan versi yang lebih tinggi.</translation>
-<translation id="2430828513262055658">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
-
-          Menentukan durasi waktu tanpa input pengguna sebelum layar terkunci saat menggunakan daya AC.
-
-          Jika kebijakan ini ditetapkan ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan durasi waktu pengguna harus tetap tidak aktif sebelum <ph name="PRODUCT_OS_NAME" /> mengunci layar.
-
-          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan mengunci layar ketika pengguna tidak aktif.
-
-          Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
-
-          Cara yang direkomendasikan untuk mengunci layar saat tidak aktif adalah dengan mengaktifkan penguncian layar selama penangguhan dan menangguhkan <ph name="PRODUCT_OS_NAME" /> setelah penundaan masa tidak aktif. Kebijakan ini sebaiknya hanya digunakan jika penguncian layar terjadi pada waktu yang jauh lebih awal daripada penangguhan, atau saat penangguhan pada waktu tidak aktif tidak diinginkan sama sekali.
-
-          Nilai kebijakan harus ditentukan dalam milidetik. Nilai dikunci agar kurang dari penundaan masa tidak aktif.</translation>
 <translation id="2433412232489478893">Kebijakan ini mengontrol apakah fitur Berbagi File Jaringan untuk <ph name="PRODUCT_NAME" /> diizinkan untuk pengguna.
 
       Jika kebijakan ini tidak dikonfigurasi atau disetel ke True, pengguna dapat menggunakan fitur Berbagi File Jaringan.
@@ -1321,7 +1276,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 <translation id="2856674246949497058">Rollback dan tetap menggunakan versi target jika versi OS lebih baru dari target. Lakukan powerwash selama prosesnya.</translation>
 <translation id="2869762730352628426">Mengaktifkan klik otomatis di layar login</translation>
 <translation id="2872961005593481000">Matikan</translation>
-<translation id="2873651257716068683">Mengganti ukuran halaman pencetakan default. Jika ukuran halaman tidak tersedia, kebijakan ini akan diabaikan.</translation>
 <translation id="2874209944580848064">Catatan untuk perangkat <ph name="PRODUCT_OS_NAME" /> yang mendukung aplikasi Android:</translation>
 <translation id="2874901846804525128">Mencegah pengguna menggunakan aplikasi Android dari sumber yang tidak tepercaya.</translation>
 <translation id="2875192972412983412">Menentukan subset server cetak yang akan dikueri untuk server printer.
@@ -1753,19 +1707,6 @@ Jika ditetapkan ke False, <ph name="PRODUCT_NAME" /> tidak akan menggunakan noti
           Jika kebijakan ini tidak ditetapkan, fitur klik untuk diucapkan mula-mula dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="3591527072193107424">Mengaktifkan fitur Dukungan Browser Lama.</translation>
 <translation id="3591584750136265240">Mengonfigurasi perilaku autentikasi proses masuk</translation>
-<translation id="3602332793276340697">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
-
-          Menentukan durasi waktu tanpa input pengguna sebelum layar dikunci saat menggunakan daya baterai.
-
-          Jika kebijakan ini ditetapkan ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan durasi waktu pengguna harus tetap tidak aktif sebelum <ph name="PRODUCT_OS_NAME" /> mengunci layar.
-
-          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan mengunci layar ketika pengguna tidak aktif.
-
-          Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
-
-          Cara yang direkomendasikan untuk mengunci layar saat tidak aktif adalah dengan mengaktifkan penguncian layar selama penangguhan dan menangguhkan <ph name="PRODUCT_OS_NAME" /> setelah penundaan masa tidak aktif. Kebijakan ini sebaiknya hanya digunakan jika penguncian layar terjadi pada waktu yang jauh lebih awal daripada penangguhan, atau saat penangguhan pada waktu tidak aktif tidak diinginkan sama sekali.
-
-          Nilai kebijakan harus ditentukan dalam milidetik. Nilai dikunci agar kurang dari penundaan masa tidak aktif.</translation>
 <translation id="3624515566460517364">Memeriksa pelanggaran aturan perlindungan data sensitif pada file yang diupload dan didownload.</translation>
 <translation id="3627678165642179114">Mengaktifkan atau menonaktifkan layanan web memeriksa ejaan</translation>
 <translation id="3628480121685794414">Aktifkan pencetakan simpleks</translation>
@@ -2823,6 +2764,12 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Kebijakan ini ditentukan dalam milidetik.</translation>
 <translation id="523505283826916779">Setelan aksesibilitas</translation>
+<translation id="5236004592041099233">Mengonfigurasi daftar URL login perusahaan (khusus skema HTTP dan HTTPS). Layanan perlindungan sandi akan merekam hash sandi yang dilengkapi salt di URL ini dan menggunakannya untuk deteksi penggunaan ulang sandi.
+      Agar <ph name="PRODUCT_NAME" /> dapat merekam hash sandi yang dilengkapi salt dengan benar, pastikan halaman login Anda mengikuti pedoman di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Jika setelan ini diaktifkan, layanan perlindungan sandi akan merekam hash sandi yang dilengkapi salt di URL ini untuk tujuan deteksi penggunaan ulang sandi.
+      Jika setelan ini dinonaktifkan atau tidak ditetapkan, layanan perlindungan sandi hanya akan merekam hash sandi yang dilengkapi salt di https://accounts.google.com.
+      Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="5236882091572996759">Jika kebijakan ini ditetapkan ke True atau tidak ditetapkan, pengguna tidak dianggap menganggur selama audio diputar. Hal ini mencegah tercapainya waktu tunggu menganggur dan mencegah diambilnya tindakan menganggur. Namun, peredupan layar, penonaktifan layar, dan penguncian layar akan dilakukan setelah waktu tunggu yang dikonfigurasi tercapai, tanpa mempertimbangkan aktivitas audio.
 
           Jika kebijakan ini ditetapkan ke False, aktivitas audio tidak mencegah pengguna untuk dianggap menganggur.</translation>
@@ -2838,17 +2785,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Lihat juga https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5249453807420671499">Pengguna dapat menambahkan akun Kerberos</translation>
 <translation id="5255162913209987122">Dapat Direkomendasikan</translation>
-<translation id="5261766238868915624">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Menentukan durasi waktu tanpa input pengguna sebelum layar diredupkan saat menggunakan daya baterai.
-
-          Jika kebijakan ini ditetapkan ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan durasi waktu pengguna harus tetap tidak aktif sebelum <ph name="PRODUCT_OS_NAME" /> meredupkan layar.
-
-          Jika kebijakan ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan meredupkan layar saat pengguna tidak aktif.
-
-          Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
-
-          Nilai kebijakan harus ditentukan dalam milidetik. Nilai dikunci agar kurang dari atau sama dengan penundaan penonaktifan layar (jika disetel) dan penundaan masa tidak aktif.</translation>
 <translation id="527237119693897329">Memungkinkan Anda menentukan hosting perpesanan asli mana yang seharusnya tidak dimuat.
 
           Nilai daftar hitam '*' menunjukkan bahwa semua hosting perpesanan asli dimasukkan daftar hitam kecuali dicantumkan dalam daftar putih dengan jelas.
@@ -2877,13 +2813,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
        Jika kebijakan ditetapkan ke false, upgrade otomatis akan dinonaktifkan untuk audio dan video, dan tidak ada peringatan yang akan ditampilkan untuk gambar.
        Kebijakan ini tidak memengaruhi jenis konten campuran selain audio, video, dan gambar.
        Kebijakan ini tidak akan berpengaruh lagi mulai <ph name="PRODUCT_NAME" /> 84.</translation>
-<translation id="5278367296164377827">Kebijakan perusahaan ini berlaku untuk adaptasi jangka pendek dan akan dihapus di M82.
-
-      Kebijakan perujuk default Chrome sedang diperkuat dari nilainya saat ini, yaitu no-referrer-when-downgrade, ke strict-origin-when-cross-origin yang lebih aman melalui peluncuran bertahap yang menargetkan M80 stabil.
-
-      Sebelum peluncuran, kebijakan perusahaan tidak akan berlaku. Setelah peluncuran, ketika kebijakan perusahaan ini diaktifkan, kebijakan perujuk default Chrome akan ditetapkan ke nilai pra-M80, yaitu no-referrer-when-downgrade.
-
-      Kebijakan perusahaan ini dinonaktifkan secara default.</translation>
 <translation id="5283457834853986457">Nonaktifkan pencari plugin (tidak digunakan lagi)</translation>
 <translation id="5285315763984334157">Memblokir download berbahaya</translation>
 <translation id="5288772341821359899">Jika kebijakan disetel, rentang port UDP yang digunakan oleh WebRTC dibatasi ke interval port yang ditentukan (termasuk titik akhir).
@@ -3521,6 +3450,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6221175752766085998">Mengizinkan sertifikat yang dikeluarkan oleh sumber tepercaya setempat tanpa ekstensi subjectAlternativeName</translation>
 <translation id="6224304369267200483">URL/domain otomatis mengizinkan pengesahan langsung Kunci Keamanan</translation>
 <translation id="6233173491898450179">Setel direktori download</translation>
+<translation id="6234177445959386333">Mengonfigurasi daftar URL login perusahaan tempat layanan perlindungan sandi harus merekam hash sandi yang dilengkapi salt.</translation>
 <translation id="6242147107333796512">Melaporkan informasi terkait laporan kerusakan, seperti id remote,
       stempel waktu perekaman, dan penyebabnya.
 
@@ -3558,17 +3488,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6281043242780654992">Mengonfigurasikan kebijakan untuk Perpesanan Asli. Hosting perpesanan asli yang dimasukkan dalam daftar hitam tidak akan diizinkan kecuali telah dimasukkan dalam daftar putih.</translation>
 <translation id="6282799760374509080">Izinkan atau tolak penangkapan audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6293957650182823856">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Menentukan durasi waktu tanpa input pengguna sebelum dialog peringatan ditampilkan saat menggunakan daya AC.
-
-          Jika ditetapkan, kebijakan ini akan menentukan durasi waktu pengguna harus tetap tidak aktif sebelum <ph name="PRODUCT_OS_NAME" /> menampilkan dialog peringatan yang memberi tahu pengguna bahwa tindakan menganggur akan segera diambil.
-
-          Jika kebijakan ini tidak ditetapkan, dialog peringatan tidak akan ditampilkan.
-
-          Nilai kebijakan harus ditentukan dalam milidetik. Nilai dikunci agar kurang dari atau sama dengan penundaan masa tidak aktif.
-
-          Pesan peringatan hanya ditampilkan jika tindakan menganggurnya adalah logout atau matikan.</translation>
 <translation id="6310223829319187614">Mengaktifkan pelengkapan otomatis nama domain saat pengguna login</translation>
 <translation id="631081324835911099">Memaksa pengguna logout saat token autentikasi akun utama mereka menjadi tidak valid.
         Kebijakan ini dapat melindungi pengguna dari akses ke konten yang dibatasi di properti web Google.
@@ -3967,6 +3886,12 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       Jika kebijakan ini tidak ditetapkan, rak akan ditempatkan di bagian bawah layar secara default dan pengguna dapat mengubah posisi rak.</translation>
 <translation id="7040229947030068419">Nilai contoh:</translation>
 <translation id="7044883996351280650">Mengontrol layanan pencadangan dan pemulihan Android</translation>
+<translation id="705089873294344912">Mengonfigurasi URL ubah sandi (khusus skema HTTP dan HTTPS). Layanan perlindungan sandi akan mengarahkan pengguna ke URL ini untuk mengubah sandinya setelah melihat peringatan di browser.
+      Agar <ph name="PRODUCT_NAME" /> dapat merekam hash sandi baru yang dilengkapi salt dengan benar di halaman ubah sandi ini, pastikan halaman ubah sandi Anda mengikuti pedoman di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Jika setelan ini diaktifkan, layanan perlindungan sandi akan mengarahkan pengguna ke URL ini untuk mengubah sandinya setelah melihat peringatan di browser.
+      Jika setelan ini dinonaktifkan atau tidak ditetapkan, layanan perlindungan sandi akan mengarahkan pengguna ke https://myaccount.google.com untuk mengubah sandinya.
+      Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="7053678646221257043">Kebijakan ini memaksa bookmark diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada bookmark yang diimpor. Jika tidak disetel, pengguna mungkin akan diminta untuk mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="7063895219334505671">Izinkan pop-up di situs ini</translation>
 <translation id="706669471845501145">Izinkan situs menampilkan pemberitahuan desktop</translation>
@@ -4976,17 +4901,6 @@ semua permintaan HTTP dan HTTPS ke semua domain google.com, seperti yang dijelas
 https://support.google.com/a/answer/1668854.
 
 Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
-<translation id="8618139576368821933">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Menentukan durasi waktu tanpa input pengguna sebelum layar diredupkan saat menggunakan daya AC.
-
-          Jika kebijakan ini ditetapkan ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan durasi waktu pengguna harus tetap tidak aktif sebelum <ph name="PRODUCT_OS_NAME" /> meredupkan layar.
-
-          Jika kebijakan ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan meredupkan layar saat pengguna tidak aktif.
-
-          Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
-
-          Nilai kebijakan harus ditentukan dalam milidetik. Nilai dikunci agar kurang dari atau sama dengan penundaan penonaktifan layar (jika disetel) dan penundaan masa tidak aktif.</translation>
 <translation id="8625234016727663537">Memungkinkan Anda menetapkan daftar URL yang menentukan situs mana yang akan diberi izin secara otomatis untuk mengakses perangkat USB dengan ID produk dan vendor tertentu pada layar login. Setiap item dalam daftar harus berisi URL dan perangkat agar kebijakan menjadi valid. Setiap item di perangkat dapat berisi kolom ID produk dan ID vendor. ID yang dihapus diperlakukan sebagai karakter pengganti dengan satu pengecualian, yaitu ID produk tidak dapat ditentukan jika ID vendor juga tidak ditentukan. Jika tidak, kebijakan akan menjadi tidak valid dan akan diabaikan.
 
         Model izin USB menggunakan URL situs yang meminta ("URL yang meminta") dan URL situs bingkai level teratas ("URL sematan") untuk memberikan izin ke URL yang meminta guna mengakses perangkat USB. URL yang meminta mungkin berbeda dengan URL sematan saat situs yang meminta dimuat dalam iframe. Oleh karena itu, kolom "url" dapat berisi hingga dua string URL yang dipisahkan dengan koma, untuk menentukan masing-masing URL yang meminta dan URL sematan. Jika hanya ada satu URL yang ditentukan, akses ke perangkat USB yang sesuai akan diberikan saat URL situs yang meminta cocok dengan URL ini, terlepas dari status sematannya. URL dalam "url" harus berupa URL yang valid. Jika tidak, kebijakan akan diabaikan.
@@ -5063,17 +4977,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Printer ekstensi juga disebut sebagai tujuan penyedia cetak, dan menyertakan semua tujuan yang termasuk dalam ekstensi <ph name="PRODUCT_NAME" />.
 
       Printer lokal juga disebut sebagai tujuan cetak native, dan menyertakan tujuan yang tersedia untuk mesin lokal dan printer jaringan bersama.</translation>
-<translation id="8752541111574086388">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Menentukan durasi waktu tanpa input pengguna sebelum dialog peringatan ditampilkan saat menggunakan daya baterai.
-
-          Jika ditetapkan, kebijakan ini akan menentukan durasi waktu pengguna harus tetap tidak aktif sebelum <ph name="PRODUCT_OS_NAME" /> menampilkan dialog peringatan yang memberi tahu pengguna bahwa tindakan menganggur akan segera diambil.
-
-          Jika kebijakan ini tidak ditetapkan, dialog peringatan tidak akan ditampilkan.
-
-          Nilai kebijakan harus ditentukan dalam milidetik. Nilai dikunci agar kurang dari atau sama dengan penundaan masa tidak aktif.
-
-          Pesan peringatan hanya ditampilkan jika tindakan menganggurnya adalah logout atau matikan.</translation>
 <translation id="8757552286070680084">Konfigurasi DTC wilco</translation>
 <translation id="8758831693895931466">Aktifkan pendaftaran pengelolaan cloud wajib</translation>
 <translation id="8759829385824155666">Jenis enkripsi Kerberos yang diizinkan</translation>
@@ -5171,24 +5074,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       akan dilaporkan.</translation>
 <translation id="891435090623616439">dienkode sebagai string JSON, untuk detailnya lihat <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Izinkan pengguna mengelola sertifikat CA yang terinstal.</translation>
-<translation id="8926275581598789324">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          ﻿Menentukan durasi waktu tanpa input pengguna sebelum tindakan menganggur diambil, saat menggunakan daya baterai.
-
-          Jika ditetapkan, kebijakan ini akan menentukan durasi waktu pengguna harus tetap tidak aktif sebelum <ph name="PRODUCT_OS_NAME" /> mengambil tindakan menganggur, yang dapat dikonfigurasi secara terpisah.
-
-          Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
-
-          Nilai kebijakan harus ditentukan dalam milidetik.</translation>
-<translation id="8929997566627164343">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Menentukan durasi waktu tanpa input pengguna sebelum tindakan menganggur diambil, saat menggunakan daya AC.
-
-          Jika ditetapkan, kebijakan ini akan menentukan durasi waktu pengguna harus tetap tidak aktif sebelum <ph name="PRODUCT_OS_NAME" /> mengambil tindakan menganggur, yang dapat dikonfigurasi secara terpisah.
-
-          Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
-
-          Nilai kebijakan harus ditentukan dalam milidetik.</translation>
 <translation id="8934944553121392674">Mengontrol printer mana dari <ph name="DEVICE_PRINTERS_POLICY" /> yang tersedia bagi pengguna.
 
       Menetapkan kebijakan akses yang digunakan untuk konfigurasi printer massal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua printer akan ditampilkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="DEVICE_PRINTERS_BLACKLIST" /> digunakan untuk membatasi akses ke printer yang ditentukan.  Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="DEVICE_PRINTERS_WHITELIST" /> hanya menetapkan printer yang dapat dipilih.

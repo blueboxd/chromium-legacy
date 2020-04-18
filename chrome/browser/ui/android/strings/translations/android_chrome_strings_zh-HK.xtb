@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">暫停</translation>
 <translation id="1188239144602654184">啟動 AR</translation>
 <translation id="1197267115302279827">移動書籤</translation>
-<translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">下一個</translation>
 <translation id="1204037785786432551">下載連結</translation>
 <translation id="1206892813135768548">複製連結文字</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">基本設定</translation>
 <translation id="1671236975893690980">正在等待下載…</translation>
 <translation id="1672586136351118594">不要再顯示</translation>
+<translation id="1688867105868176567">要清除網站資料嗎？</translation>
 <translation id="1692118695553449118">同步處理已開啟</translation>
 <translation id="169515064810179024">禁止網站存取動作感應器</translation>
 <translation id="1717218214683051432">動作感應器</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">動態或光線感應器</translation>
 <translation id="4759238208242260848">下載</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{已完成 1 項下載。}other{已完成 # 項下載。}}</translation>
-<translation id="4797039098279997504">輕觸即可返回「<ph name="URL_OF_THE_CURRENT_TAB" />」</translation>
 <translation id="4802417911091824046">密碼短語加密的資料並不包括 Google Pay 上的付款方法和地址。
 
 如要變更此設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048">您即將登出由 <ph name="DOMAIN_NAME" /> 管理的帳戶，因此您的 Chrome 資料亦會從此裝置上刪除，但仍會保留在您的 Google 帳戶中。</translation>
 <translation id="4943703118917034429">虛擬實境</translation>
 <translation id="4943872375798546930">沒有結果</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> 正在共用您的螢幕</translation>
 <translation id="4961107849584082341">將此網頁翻譯成任何語言</translation>
 <translation id="4962975101802056554">撤銷裝置所有的權限</translation>
 <translation id="4970824347203572753">此功能無法在您所在的地區使用</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">安裝網絡應用程式</translation>
 <translation id="5132942445612118989">將您的書籤、密碼、記錄等資料同步至所有裝置</translation>
 <translation id="5139940364318403933">瞭解如何使用 Google 雲端硬碟</translation>
-<translation id="515227803646670480">清除儲存的資料</translation>
 <translation id="5152843274749979095">尚未安裝任何支援的應用程式</translation>
 <translation id="5161254044473106830">必須提供標題</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 項下載操作失敗。}other{# 項下載操作失敗。}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">已儲存的密碼</translation>
 <translation id="5876056640971328065">暫停影片</translation>
 <translation id="5884076754568147479">為協助您完成工作，系統會將您使用「Google 助理」的網站網址和內容，以及您透過「Google 助理」提交的資料傳送給 Google</translation>
-<translation id="5902828464777634901">這個網站儲存的所有本機資料 (包括 Cookie) 將被刪除。</translation>
 <translation id="5919204609460789179">更新 <ph name="PRODUCT_NAME" /> 即可開始同步處理</translation>
 <translation id="5937580074298050696">已節省 <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">重設</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117">「<ph name="FQDN" />」計時器已結束計時，將於明天重新開始。</translation>
 <translation id="6738867403308150051">下載中…</translation>
 <translation id="6766622839693428701">向下掃就可以閂咗佢。</translation>
-<translation id="6766758767654711248">輕按即可前往網站</translation>
 <translation id="6767294960381293877">要共用分頁嘅裝置清單宜家顯示喺畫面下半部。</translation>
 <translation id="6782111308708962316">禁止第三方網站儲存及讀取 Cookie 資料</translation>
 <translation id="6790428901817661496">播放</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">在部分網站上，您可以透過裝置使用上述支援的付款應用程式付款。</translation>
 <translation id="8816026460808729765">禁止網站存取感應器</translation>
 <translation id="8820817407110198400">書籤</translation>
-<translation id="8833831881926404480">有網站正在共用您的螢幕畫面。</translation>
 <translation id="883806473910249246">下載內容時發生錯誤。</translation>
 <translation id="8840953339110955557">此網頁可能與網上版本不同。</translation>
 <translation id="8847988622838149491">USB</translation>

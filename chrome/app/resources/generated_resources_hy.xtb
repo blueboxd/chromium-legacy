@@ -377,6 +377,7 @@
 <translation id="1508491105858779599">Սարքն ապակողպելու համար մատը դրեք մատնահետքի սենսորի վրա։</translation>
 <translation id="1508575541972276599">Ընթացիկ տարբերակ՝ Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Մուտք գործեք ցանկացած <ph name="DEVICE_NAME_AND_VENDOR" /> սարք USB-ի միջոցով</translation>
+<translation id="1509960214886564027">Շատ կայքերում գործառույթները կարող են չաշխատել։</translation>
 <translation id="1510030919967934016">Այս էջը չի կարող հետագծել ձեր տեղադրությունը:</translation>
 <translation id="1510055949674985293">Ստեղծել QR կոդ այս պատկերի համար</translation>
 <translation id="1510238584712386396">Գործարկիչ</translation>
@@ -1046,7 +1047,6 @@
 <translation id="237828693408258535">Թարգմանե՞լ այս էջը</translation>
 <translation id="2378346380592252785">Թարմացրեք <ph name="SHARE_PATH" />-ի տվյալները</translation>
 <translation id="2378982052244864789">Ընտրեք ընդլայնման գրացուցակը:</translation>
-<translation id="2379232090534544565">Կայքին հասանելի են աուդիո և վիդեո մուտքերը</translation>
 <translation id="2379281330731083556">Տպում համակարգի երկխոսության պատուհանի միջոցով… <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Հարցնել՝ մինչ ուղարկելը (խորհուրդ է տրվում)</translation>
 <translation id="2382818385048255866">Ստուգեք ձեր ընդլայնումները</translation>
@@ -1455,7 +1455,6 @@
 <translation id="2903457445916429186">Բացեք ընտրված տարրերը</translation>
 <translation id="2903882649406874750">Միշտ արգելել <ph name="HOST" />-ին օգտագործել տվիչները</translation>
 <translation id="2904456025988372123">Հարցնել, երբ կայքն ուզում է առաջին ֆայլից հետո լրացուցիչ ֆայլեր ներբեռնել</translation>
-<translation id="2905789169763945526">Ինկոգնիտո ռեժիմում կայքերը չեն կարող օգտագործել քուքիներ՝ դիտարկիչում ձեր գործողությունները տեսնելու համար, օրինակ, գովազդի անհատականացման նպատակով։ Որոշ կայքեր կարող են սխալներով աշխատել։</translation>
 <translation id="2907619724991574506">Մեկնարկի URL-հասցեներ</translation>
 <translation id="2907798539022650680">Չհաջողվեց միանալ «<ph name="NAME" />»-ին՝ <ph name="DETAILS" />
     Սերվերի հաղորդագրությունը՝ <ph name="SERVER_MSG" /></translation>
@@ -1585,7 +1584,6 @@
 <translation id="3088128611727407543">Հավելվածի պրոֆիլը պատրաստվում է…</translation>
 <translation id="3088325635286126843">&amp;Վերանվանել...</translation>
 <translation id="3089137131053189723">Որոնման դաշտը մաքրվեց</translation>
-<translation id="3090193911106258841">Ձայնային և վիդեո մուտքերի մատչում</translation>
 <translation id="3090819949319990166">Չհաջողվեց պատճենել արտաքին CRX ֆայլը <ph name="TEMP_CRX_FILE" />-ում:</translation>
 <translation id="3090871774332213558">«<ph name="DEVICE_NAME" />» սարքը զուգակցված է</translation>
 <translation id="3092699946856346803">Տեղադրեք ձեր SIM քարտը և նորից փորձեք</translation>
@@ -1647,7 +1645,6 @@
 <translation id="3165390001037658081">Որոշ մատակարարներ կարող են արգելափակել այս գործառույթը։</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Դուք կարող եք նաև մուտք չգործել և <ph name="LINK_START" />սկսել հյուրի աշխատաշրջան<ph name="LINK_END" />:</translation>
-<translation id="3172045848207518317">Կայքին հասանելի են մուտքային տեսազանգերը</translation>
 <translation id="3177909033752230686">Էջի լեզուն՝</translation>
 <translation id="3179982752812949580">Տեքստի տառատեսակը</translation>
 <translation id="3181954750937456830">Անվտանգ դիտարկում (պաշտպանում է ձեզ և ձեր սարքը վտանգավոր կայքերից)</translation>
@@ -1858,7 +1855,6 @@
 <translation id="3459697287128633276">Google Play Խանութը ձեր հաշվին հասանելի դարձնելու համար մուտքագրեք նույնակացնացման մատակարարի կողմից տրամադրված տվյալները։</translation>
 <translation id="3462311546193741693">Դուք դուրս կգրվեք կայքերի մեծ մասից, սակայն կմնաք Google հաշվում, որպեսզի համաժամացված տվյալները հնարավոր լինի ջնջել:</translation>
 <translation id="3462413494201477527">Չեղարկե՞լ հաշվի կարգավորումը:</translation>
-<translation id="3464012987031883895">Կայքին հասանելի են մուտքային զանգերը</translation>
 <translation id="346431825526753">Սա երեխայի հաշիվ է, որը կառավարվում է <ph name="CUSTODIAN_EMAIL" />-ի կողմից:</translation>
 <translation id="3468298837301810372">Պիտակ</translation>
 <translation id="3468999815377931311">Android հեռախոս</translation>
@@ -1880,7 +1876,6 @@
 <translation id="3487007233252413104">անանուն գործառույթ</translation>
 <translation id="348780365869651045">AppCache-ի սպասում…</translation>
 <translation id="3488065109653206955">Մասամբ ակտիվացված</translation>
-<translation id="3489025949017384019">Որոշ կայքեր կարող են սխալներով աշխատել։</translation>
 <translation id="3492788708641132712">Համաժամացումը չի աշխատում։ Փորձեք նորից մուտք գործել։</translation>
 <translation id="3493486281776271508">Պահանջվում է իներնետ կապ</translation>
 <translation id="3493881266323043047">Վավերականություն</translation>
@@ -1942,7 +1937,6 @@
 <translation id="3574210789297084292">մուտք գործել</translation>
 <translation id="3574917942258583917">Փակե՞լ ինկոգնիտո ռեժիմը։</translation>
 <translation id="3575121482199441727">Թույլատրել այս կայքի համար</translation>
-<translation id="3575919114596668130">Family Link-ի միջոցով սահմանված ծնողական վերահսկողության կարգավորումները նախկինի պես կգործեն։ Եթե դուք նախկինում արգելափակել եք որևէ հավելված կամ կայք, կարիք չի լինի դա նորից անել։</translation>
 <translation id="3576324189521867626">Հաջողությամբ տեղադրվեց</translation>
 <translation id="3578594933904494462">Այս ներդիրի բովանդակությունը համօգտագործվում է:</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;-ն ուզում է համօգտագործել &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; տպիչը ձեր խմբի հետ՝ &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;: Համաձայնելու դեպքում խմբի բոլոր անդամները կկարողանան տպել այդ տպիչի օգնությամբ:</translation>
@@ -3729,7 +3723,6 @@
 <translation id="6006484371116297560">Դասական</translation>
 <translation id="6007240208646052708">Ձայնային որոնումը ձեր լեզվով հասանելի չէ:</translation>
 <translation id="6009781704028455063">Ներկառուցված տվիչ</translation>
-<translation id="6010869025736512584">Վիդեո մուտքի մատչում</translation>
 <translation id="6011074160056912900">Ethernet ցանց</translation>
 <translation id="6011193465932186973">Մատնահետք</translation>
 <translation id="6011449291337289699">Մաքրել կայքի տվյալները</translation>
@@ -4118,7 +4111,6 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">Դուք միացած եք <ph name="NETWORK_TYPE" /> ցանցին:</translation>
 <translation id="6527303717912515753">Կիսվել</translation>
-<translation id="6528189551082329571">Միշտ բացել նման տեսակի հղումները համապատասխան հավելվածում</translation>
 <translation id="6528513914570774834">Թույլատրել սարքի մյուս օգտատերերին օգտագործել այս ցանցը</translation>
 <translation id="652948702951888897">Chrome-ի պատմություն</translation>
 <translation id="6530186581263215931">Այս կարգավորումները պարտադրված են ձեր ադմինիստրատորի կողմից</translation>
@@ -4688,7 +4680,6 @@
 <translation id="7310598146671372464">Չհաջողվեց մտնել հաշիվ: Սերվերը չի աջակցում Kerberos գաղտնագրման նշված տեսակները: Կապվեք ձեր ադմինիստրատորի հետ:</translation>
 <translation id="7311079019872751559">Պաշտպանված միջավայրից դուրս փլագինի օգտագործում</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /><ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">Կայքերը չեն կարող օգտագործել քուքիներ՝ դիտարկիչում ձեր գործողությունները տեսնելու համար, օրինակ, գովազդի անհատականացման նպատակով։  Որոշ կայքեր կարող են սխալներով աշխատել։</translation>
 <translation id="7321545336522791733">Սերվերն անհասանելի է</translation>
 <translation id="7324297612904500502">Բետա ֆորում</translation>
 <translation id="7325209047678309347">Թուղթը խցանվել է</translation>
@@ -5085,7 +5076,6 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Ուշադրություն.<ph name="END_BOLD" /> գործողության ժամանակ համակարգը կվերաբեռնվի:</translation>
 <translation id="7828731929332799387">Երրորդ կողմի բոլոր քուքիներն ու կայքերի տվյալները կջնջվեն։ Շարունակե՞լ։</translation>
-<translation id="7829298379596169484">Ձայնային մուտքի մատչում</translation>
 <translation id="7829877209233347340">Խնդրեք ծնողին մուտք գործել հաշիվ և ուսումնական հաշիվ ավելացնելու թույլտվություն տալ</translation>
 <translation id="7830594666202422257">Միացնել Լինուքսին</translation>
 <translation id="7831491651892296503">Չհաջողվեց կազմաձևել ցանցը</translation>
@@ -5823,7 +5813,6 @@
 <translation id="8800004011501252845">Ցուցադրվում են նպատակակետերը հետևյալի համար</translation>
 <translation id="8800034312320686233">Կայքը չի՞ աշխատում</translation>
 <translation id="8803953437405899238">Բացեք նոր ներդիր մեկ սեղմումով</translation>
-<translation id="8804398419035066391">Տվյալներ փոխանակել որոշակի վեբկայքերի հետ</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Բացել ներդիրն այլ պատուհանում}one{Բացել ներդիրներն այլ պատուհանում}other{Բացել ներդիրներն այլ պատուհանում}}</translation>
 <translation id="8805140816472474147">Հաստատեք կարգավորումները՝ համաժամացումը սկսելու համար։</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> դյուրանցումը կարող է նորից բացել պատահական փակված ներդիրները</translation>
@@ -6033,7 +6022,6 @@
 <translation id="9055636786322918818">Օգտագործել RC4 գաղտնագրումը։ Այս տարբերակի օգտագործումն ապահով չէ, քանի որ RC4 գաղտնագրերը հուսալի չեն։</translation>
 <translation id="9056810968620647706">Համընկնումներ չեն գտնվել:</translation>
 <translation id="9057354806206861646">Ժամանակացույցի թարմացում</translation>
-<translation id="9058976525724291037">Ձեր երեխան ուզում է այս սարքում ևս մի Google հաշիվ ավելացնել։ Family Link-ի կողմից կառավարվող սարքերում կարելի է ավելացնել միայն G Suite for Education հաշիվներ։</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Սխալ <ph name="ERROR_LINE_START" />-<ph name="ERROR_LINE_END" /> տողերում</translation>
 <translation id="9064142312330104323">Google պրոֆիլի լուսանկար (բեռնում)</translation>

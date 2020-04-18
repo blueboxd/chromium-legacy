@@ -27,6 +27,8 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_resource_bundle_helper.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/metrics/chrome_feature_list_creator.h"
+#include "chrome/browser/startup_data.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
@@ -50,6 +52,7 @@
 #include "components/gwp_asan/buildflags/buildflags.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
+#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -160,18 +163,11 @@
 #include "components/nacl/renderer/plugin/ppapi_entrypoints.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS) && (defined(CHROME_MULTIPLE_DLL_CHILD) || \
-    !defined(CHROME_MULTIPLE_DLL_BROWSER))
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "pdf/pdf_ppapi.h"
 #endif
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-#include "chrome/browser/metrics/chrome_feature_list_creator.h"
-#include "chrome/browser/startup_data.h"
-#include "components/startup_metric_utils/browser/startup_metric_utils.h"
-#endif
-
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER) && BUILDFLAG(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PDF)
 #include "chrome/child/pdf_child_init.h"
 #endif
 
@@ -179,14 +175,12 @@
 #include "components/gwp_asan/client/gwp_asan.h"  // nogncheck
 #endif
 
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 base::LazyInstance<ChromeContentGpuClient>::DestructorAtExit
     g_chrome_content_gpu_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ChromeContentRendererClient>::DestructorAtExit
     g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ChromeContentUtilityClient>::DestructorAtExit
     g_chrome_content_utility_client = LAZY_INSTANCE_INITIALIZER;
-#endif
 
 extern int NaClMain(const content::MainFunctionParams&);
 
@@ -490,7 +484,6 @@ void InitLogging(const std::string& process_type) {
 }
 #endif
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
 void RecordMainStartupMetrics(base::TimeTicks application_start_time) {
   const base::TimeTicks now = base::TimeTicks::Now();
 
@@ -517,7 +510,6 @@ void RecordMainStartupMetrics(base::TimeTicks application_start_time) {
 
   startup_metric_utils::RecordChromeMainEntryTime(now);
 }
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 }  // namespace
 
@@ -525,19 +517,16 @@ ChromeMainDelegate::ChromeMainDelegate()
     : ChromeMainDelegate(base::TimeTicks()) {}
 
 ChromeMainDelegate::ChromeMainDelegate(base::TimeTicks exe_entry_point_ticks) {
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   // Record startup metrics in the browser process. For component builds, there
   // is no way to know the type of process (process command line is not yet
   // initialized), so the function below will also be called in renderers.
   // This doesn't matter as it simply sets global variables.
   RecordMainStartupMetrics(exe_entry_point_ticks);
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 }
 
 ChromeMainDelegate::~ChromeMainDelegate() {
 }
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
 void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   // Chrome disallows cookies by default. All code paths that want to use
   // cookies need to go through one of Chrome's URLRequestContexts which have
@@ -594,8 +583,6 @@ bool ChromeMainDelegate::ShouldCreateFeatureList() {
   // Chrome creates the FeatureList, so content should not.
   return false;
 }
-
-#endif
 
 void ChromeMainDelegate::PostFieldTrialInitialization() {
   std::string process_type =
@@ -697,7 +684,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   tracing_sampler_profiler_ =
       tracing::TracingSamplerProfiler::CreateOnMainThread();
 
-#if defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if defined(OS_WIN)
   v8_crashpad_support::SetUp();
 #endif
 
@@ -748,7 +735,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 // references anymore. Not sure if that means this can be enabled on Android or
 // not though.  As there is no easily accessible command line on Android, I'm
 // not sure this is a big deal.
-#if !defined(OS_ANDROID) && !defined(CHROME_MULTIPLE_DLL_CHILD)
+#if !defined(OS_ANDROID)
   // If we are in diagnostics mode this is the end of the line: after the
   // diagnostics are run the process will invariably exit.
   if (command_line.HasSwitch(switches::kDiagnostics)) {
@@ -1075,7 +1062,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
   // line for crash reporting.
   crash_keys::SetCrashKeysFromCommandLine(command_line);
 
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER) && BUILDFLAG(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PDF)
   MaybeInitializeGDI();
 #endif
 }
@@ -1091,7 +1078,6 @@ void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
   SuppressWindowsErrorDialogs();
 #endif
 
-#if defined(CHROME_MULTIPLE_DLL_CHILD) || !defined(CHROME_MULTIPLE_DLL_BROWSER)
 #if BUILDFLAG(ENABLE_NACL)
   ChromeContentClient::SetNaClEntryFunctions(
       nacl_plugin::PPP_GetInterface,
@@ -1103,7 +1089,6 @@ void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
       chrome_pdf::PPP_GetInterface,
       chrome_pdf::PPP_InitializeModule,
       chrome_pdf::PPP_ShutdownModule);
-#endif
 #endif
 }
 
@@ -1117,8 +1102,7 @@ int ChromeMainDelegate::RunProcess(
   NOTREACHED();  // Android provides a subclass and shares no code here.
 #else
   static const MainFunction kMainFunctions[] = {
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(CHROME_MULTIPLE_DLL_CHILD) && \
-    !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
     {switches::kCloudPrintServiceProcess, CloudPrintServiceProcessMain},
 #endif
 
@@ -1128,12 +1112,11 @@ int ChromeMainDelegate::RunProcess(
 
     // This entry is not needed on Linux, where the NaCl loader
     // process is launched via nacl_helper instead.
-#if BUILDFLAG(ENABLE_NACL) && !defined(CHROME_MULTIPLE_DLL_BROWSER) && \
-    !defined(OS_LINUX)
+#if BUILDFLAG(ENABLE_NACL) && !defined(OS_LINUX)
     {switches::kNaClLoaderProcess, NaClMain},
 #else
-    {"<invalid>", NULL},  // To avoid constant array of size 0
-                          // when NaCl disabled and CHROME_MULTIPLE_DLL_CHILD
+    {"<invalid>", nullptr},  // To avoid constant array of size 0
+                             // when NaCl disabled
 #endif
   };
 
@@ -1203,9 +1186,6 @@ content::ContentClient* ChromeMainDelegate::CreateContentClient() {
 
 content::ContentBrowserClient*
 ChromeMainDelegate::CreateContentBrowserClient() {
-#if defined(CHROME_MULTIPLE_DLL_CHILD)
-  return NULL;
-#else
   if (chrome_content_browser_client_ == nullptr) {
     DCHECK(!startup_data_);
     startup_data_ = std::make_unique<StartupData>();
@@ -1214,33 +1194,20 @@ ChromeMainDelegate::CreateContentBrowserClient() {
         std::make_unique<ChromeContentBrowserClient>(startup_data_.get());
   }
   return chrome_content_browser_client_.get();
-#endif
 }
 
 content::ContentGpuClient* ChromeMainDelegate::CreateContentGpuClient() {
-#if defined(CHROME_MULTIPLE_DLL_BROWSER)
-  return nullptr;
-#else
   return g_chrome_content_gpu_client.Pointer();
-#endif
 }
 
 content::ContentRendererClient*
 ChromeMainDelegate::CreateContentRendererClient() {
-#if defined(CHROME_MULTIPLE_DLL_BROWSER)
-  return NULL;
-#else
   return g_chrome_content_renderer_client.Pointer();
-#endif
 }
 
 content::ContentUtilityClient*
 ChromeMainDelegate::CreateContentUtilityClient() {
-#if defined(CHROME_MULTIPLE_DLL_BROWSER)
-  return NULL;
-#else
   return g_chrome_content_utility_client.Pointer();
-#endif
 }
 
 service_manager::ProcessType ChromeMainDelegate::OverrideProcessType() {

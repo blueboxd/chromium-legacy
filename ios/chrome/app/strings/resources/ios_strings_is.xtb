@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Minnka aðdrátt</translation>
 <translation id="2230173723195178503">Vefsíða sótt</translation>
 <translation id="2239626343334228536">Hreinsar vefskoðunargögn...</translation>
+<translation id="2245545499420671379">Loka á fótspor þriðju aðila í huliðsstillingu</translation>
 <translation id="2257567812274161158">Samstilling virkar ekki.</translation>
 <translation id="2267753748892043616">Bæta reikningi við</translation>
 <translation id="2268044343513325586">Þrengja</translation>
@@ -306,7 +307,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="4979397965658815378">Skráðu þig inn með Google reikningnum þínum til að fá bókamerkin þín, ferilinn, aðgangsorð og aðrar stillingar í öll tækin þín</translation>
 <translation id="5005498671520578047">Afrita aðgangsorð</translation>
 <translation id="5010803260590204777">Opnaðu huliðsflipa til að vafra í einrúmi.</translation>
-<translation id="5039020240289137291">Lokað á fótspor frá þriðju aðilum</translation>
 <translation id="5039804452771397117">Leyfa</translation>
 <translation id="5059136629401106827">Í lagi</translation>
 <translation id="5062321486222145940">Setja upp Google Drive</translation>
@@ -419,6 +419,7 @@ Einnig þarf að vera kveikt á Handoff í hlutanum General í Settings og tæki
 
 Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" />. Sláðu það inn til að hefja samstillingu.</translation>
 <translation id="6418346271604475326">Undirbýr PDF</translation>
+<translation id="6426067060178468363">Leyfa fótspor</translation>
 <translation id="6434591244308415567">Villa kom upp. Reyndu aftur síðar.</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">Skilaboð send.</translation>
@@ -544,6 +545,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="8076014560081431679">Vistuðum stillingum vefsvæða verður ekki eytt og þær kunna að endurspegla vefnotkun þína. <ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Hægt er að sækja skrá. Valkostir eru í boði neðarlega á skjánum.</translation>
 <translation id="8131740175452115882">Staðfesta</translation>
+<translation id="8174524257672181687">Loka á öll fótspor (ekki mælt með)</translation>
 <translation id="8197543752516192074">Þýða síðu</translation>
 <translation id="8205564605687841303">Hætta við</translation>
 <translation id="8225985093977202398">Myndir/skrár í skyndiminni</translation>

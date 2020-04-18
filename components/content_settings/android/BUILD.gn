@@ -9,8 +9,12 @@ generate_jni("content_settings_jni_headers") {
 }
 
 android_library("java") {
-  sources = [ "java/src/org/chromium/components/content_settings/ContentSettingsFeatureList.java" ]
+  sources = [
+    "java/src/org/chromium/components/content_settings/ContentSettingsFeatureList.java",
+    "java/src/org/chromium/components/content_settings/CookieControlsObserver.java",
+  ]
   deps = [
+    ":content_settings_enums_java",
     "//base:base_java",
     "//base:jni_java",
   ]

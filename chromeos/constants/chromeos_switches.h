@@ -52,6 +52,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kArcPlayStoreAutoUpdate[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcScale[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcStartMode[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcTosHostForTests[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kArcTransitionMigrationRequired[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kCellularFirst[];

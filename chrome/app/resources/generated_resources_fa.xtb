@@ -377,6 +377,7 @@
 <translation id="1508491105858779599">برای باز کردن قفل دستگاه، انگشتتان را روی حسگر اثر انگشت قرار دهید.</translation>
 <translation id="1508575541972276599">‏نسخه کنونی Debian 9 ‏(Stretch) است</translation>
 <translation id="1509281256533087115">‏دسترسی به هر <ph name="DEVICE_NAME_AND_VENDOR" /> از طریق USB</translation>
+<translation id="1509960214886564027">ویژگی‌های بسیاری از سایت‌ها ممکن است درست کار نکنند</translation>
 <translation id="1510030919967934016">این صفحه برای ردیابی مکان شما مسدود شده است.</translation>
 <translation id="1510055949674985293">‏ایجاد کد QR برای این تصویر</translation>
 <translation id="1510238584712386396">راه‌انداز</translation>
@@ -1043,7 +1044,6 @@
 <translation id="237828693408258535">این صفحه ترجمه شود؟</translation>
 <translation id="2378346380592252785">اطلاعات کاربری را برای <ph name="SHARE_PATH" /> به‌روزرسانی کنید.</translation>
 <translation id="2378982052244864789">دایرکتوری برنامهٔ افزودنی را انتخاب کنید.</translation>
-<translation id="2379232090534544565">سایتی درحال دسترسی به ورودی‌های صوتی و ویدیویی است</translation>
 <translation id="2379281330731083556">چاپ با استفاده از گفتگوی سیستم... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">قبل از ارسال سؤال شود (توصیه می‌شود)</translation>
 <translation id="2382818385048255866">بررسی افزونه‌ها</translation>
@@ -1452,7 +1452,6 @@
 <translation id="2903457445916429186">باز کردن موارد انتخاب‌شده</translation>
 <translation id="2903882649406874750">همیشه دسترسی <ph name="HOST" /> به حسگرها مسدود شود</translation>
 <translation id="2904456025988372123">وقتی سایتی تلاش می‌کند پس از اولین فایل، فایل‌ها را به‌طور خودکار بارگیری کند، سؤال شود</translation>
-<translation id="2905789169763945526">در حالت ناشناس، سایت‌ها نمی‌توانند از کوکی‌های شما برای دیدن فعالیت مرور شما در سایت‌های مختلف و استفاده از آن برای اهدافی مثل شخصی‌سازی آگهی‌ها استفاده کنند. ممکن است برخی سایت‌ها به‌درستی کار نکنند.</translation>
 <translation id="2907619724991574506">نشانی‌های وب راه‌اندازی</translation>
 <translation id="2907798539022650680">اتصال به «<ph name="NAME" />» ناموفق بود: <ph name="DETAILS" />
     پیام سرور: <ph name="SERVER_MSG" /></translation>
@@ -1582,7 +1581,6 @@
 <translation id="3088128611727407543">درحال آماده‌سازی نمایه برنامه...</translation>
 <translation id="3088325635286126843">&amp;تغییر‌نام...</translation>
 <translation id="3089137131053189723">جستجو پاک شد</translation>
-<translation id="3090193911106258841">در حال دسترسی به ورودی صوتی و ویدئویی</translation>
 <translation id="3090819949319990166">‏فایل خارجی crx در <ph name="TEMP_CRX_FILE" /> کپی نمی‌شود.</translation>
 <translation id="3090871774332213558">«<ph name="DEVICE_NAME" />» مرتبط شد</translation>
 <translation id="3092699946856346803">لطفاً سیم‌کارت را وارد کنید و دوباره امتحان کنید.</translation>
@@ -1644,7 +1642,6 @@
 <translation id="3165390001037658081">برخی شرکت‌های مخابراتی ممکن است این قابلیت را مسدود کنند.</translation>
 <translation id="3169472444629675720">کشف کردن</translation>
 <translation id="3170072451822350649">همچنین می‌توانید از ورود به سیستم صرف‌نظر کرده، <ph name="LINK_START" />به عنوان مهمان مرور کنید<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">سایتی درحال دسترسی به ورودی ویدیویی است</translation>
 <translation id="3177909033752230686">زبان صفحه:</translation>
 <translation id="3179982752812949580">قلم نوشتار</translation>
 <translation id="3181954750937456830">مرور ایمن (از شما و دستگاهتان درمقابل سایت‌های خطرناک محافظت می‌کند)</translation>
@@ -1855,7 +1852,6 @@
 <translation id="3459697287128633276">‏برای فعال کردن حسابتان جهت دسترسی به «فروشگاه Google Play»، لطفاً با استفاده از «ارائه‌دهنده هویت» احراز هویت کنید.</translation>
 <translation id="3462311546193741693">‏شما از سیستم بیشتر سایت‌ها خارج می‌کند. از حساب Google خارج نخواهید شد بنابراین می‌توانید داده‌های همگام‌سازی‌شده‌تان را پاک کنید.</translation>
 <translation id="3462413494201477527">راه‌اندازی حساب لغو شود؟</translation>
-<translation id="3464012987031883895">سایتی درحال دسترسی به ورودی صوتی است</translation>
 <translation id="346431825526753">این یک حساب مخصوص بچه‌ها است که توسط <ph name="CUSTODIAN_EMAIL" /> مدیریت می‌شود.</translation>
 <translation id="3468298837301810372">برچسب</translation>
 <translation id="3468999815377931311">‏تلفن Android</translation>
@@ -1877,7 +1873,6 @@
 <translation id="3487007233252413104">تابع ناشناس</translation>
 <translation id="348780365869651045">‏در حال انتظار برای AppCache...</translation>
 <translation id="3488065109653206955">به‌طور نسبی فعال شده است</translation>
-<translation id="3489025949017384019">ممکن است بسیاری از سایت‌ها درست کار نکنند</translation>
 <translation id="3492788708641132712">همگام‌سازی کار نمی‌کند. دوباره به سیستم وارد شوید.</translation>
 <translation id="3493486281776271508">به اتصال اینترنت نیاز است</translation>
 <translation id="3493881266323043047">اعتبار</translation>
@@ -1939,7 +1934,6 @@
 <translation id="3574210789297084292">ورود به سیستم</translation>
 <translation id="3574917942258583917">درهرصورت از حالت ناشناس خارج می‌شوید؟</translation>
 <translation id="3575121482199441727">مجاز برای این سایت</translation>
-<translation id="3575919114596668130">‏تنظیمات والدینی Family Link شما همچنان اعمال خواهد شد. اگر قبلاً برنامه یا سایتی را مسدود کرده باشید، نیازی نیست این کار را دوباره انجام دهید.</translation>
 <translation id="3576324189521867626">نصب موفقیت‌آمیز بود</translation>
 <translation id="3578594933904494462">محتوای این برگه اشتراک‌گذاری می‌شود.</translation>
 <translation id="357886715122934472">‏&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; می‌خواهد چاپگر &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; را با گروهی که شما مالک آن هستید، به اشتراک بگذارد: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. اگر بپذیرید، تمام اعضای گروه می‌توانند با چاپگر چاپ کنند.</translation>
@@ -3723,7 +3717,6 @@
 <translation id="6006484371116297560">کلاسيک</translation>
 <translation id="6007240208646052708">جستجوی گفتاری به زبان شما در دسترس نیست.</translation>
 <translation id="6009781704028455063">حسگر داخلی</translation>
-<translation id="6010869025736512584">در حال دسترسی به ورودی ویدئویی</translation>
 <translation id="6011074160056912900">شبکه اترنت</translation>
 <translation id="6011193465932186973">اثر انگشت</translation>
 <translation id="6011449291337289699">پاک کردن داده‌های سایت</translation>
@@ -4112,7 +4105,6 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">به یک شبکه <ph name="NETWORK_TYPE" /> متصل شده‌اید.</translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
-<translation id="6528189551082329571">همیشه این نوع پیوندها در برنامه مرتبط باز شود</translation>
 <translation id="6528513914570774834">به سایر کاربران این دستگاه اجازه داده شود از این شبکه استفاده کنند</translation>
 <translation id="652948702951888897">‏سابقه Chrome</translation>
 <translation id="6530186581263215931">این تنظیمات توسط سرپرست سیستم شما اعمال شده است</translation>
@@ -4682,7 +4674,6 @@
 <translation id="7310598146671372464">‏ورود به سیستم انجام نشد. این سرور از رمزگذاری‌های Kerberos مشخص‌شده پشتیبانی نمی‌کند. لطفاً با سرپرست سیستم تماس بگیرید.</translation>
 <translation id="7311079019872751559">دسترسی به افزایه خارج از جعبه ایمنی</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /><ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">سایت‌ها نمی‌توانند از کوکی‌های شما برای دیدن فعالیت مرور شما در سایت‌های مختلف و استفاده از آن برای اهدافی مثل شخصی‌سازی آگهی‌ها استفاده کنند.  ممکن است برخی سایت‌ها به‌درستی کار نکنند.</translation>
 <translation id="7321545336522791733">سرور غیرقابل دسترسی است</translation>
 <translation id="7324297612904500502">تالار گفتمان بتا</translation>
 <translation id="7325209047678309347">کاغذ گیر کرده است</translation>
@@ -5080,7 +5071,6 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />نکته:<ph name="END_BOLD" /> سیستم هنگام پردازش راه‌اندازی مجدد می‌شود.</translation>
 <translation id="7828731929332799387">با این کار همه کوکی‌ها و داده‌های سایت موجود در بافت‌های شخص ثالث حذف می‌شود. می‌خواهید ادامه دهید؟</translation>
-<translation id="7829298379596169484">در حال دسترسی به ورودی صوتی</translation>
 <translation id="7829877209233347340">از ولی خود بخواهید به سیستم وارد شود و با افزودن حساب محل تحصیل موافقت کند</translation>
 <translation id="7830594666202422257">‏اتصال به Linux</translation>
 <translation id="7831491651892296503">خطا در پیکربندی شبکه</translation>
@@ -5819,7 +5809,6 @@
 <translation id="8800004011501252845">نمایش مقصدها برای</translation>
 <translation id="8800034312320686233">سایت کار نمی‌کند؟</translation>
 <translation id="8803953437405899238">با یک کلیک، برگه جدیدی باز کنید</translation>
-<translation id="8804398419035066391">ارتباط با وب‌سایت‌های همکار</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{انتقال برگه به پنجره‌ای دیگر}one{انتقال برگه‌ها به پنجره‌ای دیگر}other{انتقال برگه‌ها به پنجره‌ای دیگر}}</translation>
 <translation id="8805140816472474147">برای شروع همگام‌سازی، تنظیمات همگام‌سازی را تأیید کنید.</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> می‌تواند برگه‌هایی را که به‌طور تصادفی بسته شده‌اند دوباره باز کند</translation>
@@ -6029,7 +6018,6 @@
 <translation id="9055636786322918818">‏اجرای اجباری رمزگذاری RC4. استفاده از این گزینه احتمال خطر را بالا می‌برد، زیرا رمزهای RC4 امن نیست.</translation>
 <translation id="9056810968620647706">مورد منطبقی یافت نشد.</translation>
 <translation id="9057354806206861646">زمان‌بندی به‌روزرسانی</translation>
-<translation id="9058976525724291037">‏فرزندتان می‌خواهد حساب Google دیگری را به این دستگاه اضافه کند. فقط حساب‌های G Suite for Education را می‌توان به دستگاه‌های مدیریت‌شده توسط Family Link اضافه کرد.</translation>
 <translation id="9062468308252555888">۱۴ برابر</translation>
 <translation id="9063208415146866933">خطا از خط <ph name="ERROR_LINE_START" /> تا <ph name="ERROR_LINE_END" /></translation>
 <translation id="9064142312330104323">‏عکس نمایهٔ Google (در حال بارگیری)</translation>

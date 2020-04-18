@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">缩小</translation>
 <translation id="2230173723195178503">已加载网页</translation>
 <translation id="2239626343334228536">正在清除浏览数据…</translation>
+<translation id="2245545499420671379">在无痕模式下阻止第三方 Cookie</translation>
 <translation id="2257567812274161158">同步功能无法正常运行。</translation>
 <translation id="2267753748892043616">添加帐号</translation>
 <translation id="2268044343513325586">优化</translation>
@@ -306,7 +307,6 @@
 <translation id="4979397965658815378">登录 Google 帐号，即可获取您在任何登录过的设备上的书签、密码、历史记录及其他设置</translation>
 <translation id="5005498671520578047">复制密码</translation>
 <translation id="5010803260590204777">打开一个隐身标签页即可私密地浏览网络。</translation>
-<translation id="5039020240289137291">阻止第三方 Cookie</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5059136629401106827">知道了</translation>
 <translation id="5062321486222145940">安装Google云端硬盘</translation>
@@ -419,6 +419,7 @@
 
 您的数据已于 <ph name="TIME" />使用您的同步密码加密。输入该密码即可开始同步。</translation>
 <translation id="6418346271604475326">正在准备 PDF 文件</translation>
+<translation id="6426067060178468363">允许使用 Cookie</translation>
 <translation id="6434591244308415567">发生错误，请稍后重试。</translation>
 <translation id="6445051938772793705">国家/地区</translation>
 <translation id="6445981559479772097">短信已发送。</translation>
@@ -544,6 +545,7 @@
 <translation id="8076014560081431679">已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">已可下载文件。选项位于屏幕底部附近。</translation>
 <translation id="8131740175452115882">确认</translation>
+<translation id="8174524257672181687">阻止所有 Cookie（不建议）</translation>
 <translation id="8197543752516192074">翻译网页</translation>
 <translation id="8205564605687841303">取消</translation>
 <translation id="8225985093977202398">缓存的图片和文件</translation>

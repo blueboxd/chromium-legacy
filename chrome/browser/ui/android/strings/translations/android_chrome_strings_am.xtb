@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">ለአፍታ አቁም</translation>
 <translation id="1188239144602654184">AR ያስገቡ</translation>
 <translation id="1197267115302279827">ዕልባቶችን ውሰድ</translation>
-<translation id="119944043368869598">ሁሉንም አጽዳ</translation>
 <translation id="1201402288615127009">ቀጣይ</translation>
 <translation id="1204037785786432551">የማውረጃ አገናኝ</translation>
 <translation id="1206892813135768548">የአገናኝ ጽሑፍ ቅዳ</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">መሠረታዊ</translation>
 <translation id="1671236975893690980">ውርድ በመጠባበቅ ላይ...</translation>
 <translation id="1672586136351118594">ዳግም አታሳይ</translation>
+<translation id="1688867105868176567">የጣቢያ ውሂብ ይጸዳ?</translation>
 <translation id="1692118695553449118">አመሳስል በርቷል</translation>
 <translation id="169515064810179024">ጣቢያዎች የእንቅስቃሴ ዳሳሾችን እንዳይደርሱ ያግዱ</translation>
 <translation id="1717218214683051432">የእንቅስቃሴ ዳሳሾች</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">የእንቅስቃሴ ወይም የብርሃን ዳሳሾች</translation>
 <translation id="4759238208242260848">የወረዱ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ውርድ ተጠናቅቋል}one{# ውርዶች ተጠናቅቀዋል}other{# ውርዶች ተጠናቅቀዋል}}</translation>
-<translation id="4797039098279997504">ወደ <ph name="URL_OF_THE_CURRENT_TAB" /> ለመመለስ ይንኩ</translation>
 <translation id="4802417911091824046">የይለፍ ሐረግ ምስጠራ ከGoogle Pay የመክፈያ ዘዴዎችን እና አድራሻዎችን አያካትትም።
 
 ይህን ቅንብር ለመቀየር <ph name="BEGIN_LINK" />ስምረትን ዳግም ያስጀምሩ<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048">በ<ph name="DOMAIN_NAME" /> ከሚተዳደር መለያ ዘግተው እየወጡ ስለሆነ የChrome ውሂብዎ ከዚህ መሣሪያ ይሰረዛል። በGoogle መለያዎ ውስጥ እንዳለ ይቆያል።</translation>
 <translation id="4943703118917034429">ምናባዊ እውነታ</translation>
 <translation id="4943872375798546930">ውጤቶች የሉም</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ማያ ገጽዎን እያጋራ ነው</translation>
 <translation id="4961107849584082341">ይህን ገጽ ወደ ማንኛውም ቋንቋ ያስተርጉሙ</translation>
 <translation id="4962975101802056554">ሁሉንም የመሣሪያ ፈቃዶች ይሻሩ</translation>
 <translation id="4970824347203572753">በአካባቢዎ ውስጥ አይገኝም</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">የድር መተግበሪያን ጫን</translation>
 <translation id="5132942445612118989">የእርስዎን የይለፍ ቃላት፣ ታሪክ እና ተጨማሪ ነገሮች በሁሉም መሣሪያዎች ላይ ያስምሩ</translation>
 <translation id="5139940364318403933">እንዴት Google Driveን መጠቀም እንደሚችሉ ይወቁ</translation>
-<translation id="515227803646670480">የተከማቸ ውሂብን አጽዳ</translation>
 <translation id="5152843274749979095">ምንም የሚደገፉ መተግበሪያዎች አልተጫኑም</translation>
 <translation id="5161254044473106830">ርዕስ ያስፈልጋል</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 ውርድ አልተሳካም።}one{# ውርዶች አልተሳኩም።}other{# ውርዶች አልተሳኩም።}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">የተቀመጡ የይለፍ ቃሎች</translation>
 <translation id="5876056640971328065">ቪዲዮ ባለበት አቁም</translation>
 <translation id="5884076754568147479">ተግባራትን እንዲያጠናቅቁ ለማገዝ Google ረዳትን የሚጠቀሙባቸው የጣቢያዎች ዩአርኤሎች እና ይዘቶችና እንዲሁም በረዳት በኩል የሚያስገቡት መረጃን ይቀበላል</translation>
-<translation id="5902828464777634901">ኩኪዎችንም ጨምሮ በዚህ ድር ጣቢያ የተከማቸ ሁሉም አካባቢያዊ ውሂብ ይሰረዛል።</translation>
 <translation id="5919204609460789179">ስምረትን ለመጀመር <ph name="PRODUCT_NAME" />ን ያዘምኑ</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ተቀምጧል</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117">የእርስዎ <ph name="FQDN" /> ሰዓት ቆጣሪ ጊዜ አልቋል። ነገ እንደገና ይጀመራል።</translation>
 <translation id="6738867403308150051">በማውረድ ላይ…</translation>
 <translation id="6766622839693428701">ለመዝጋት ወደታች ያንሸራትቱ።</translation>
-<translation id="6766758767654711248">ወደ ጣቢያ ለመሄዴ መታ ያድርጉ</translation>
 <translation id="6767294960381293877">በግማሽ ቁመቱ ላይ የተከፈተ ትር የሚጋሩ የመሣሪያዎች ዝርዝር።</translation>
 <translation id="6782111308708962316">የሦስተኛ ወገን ድር ጣቢያዎች የኩኪ ውሂብን እንዳያስቀምጡ እና እንዳያነብቡ ከልክል</translation>
 <translation id="6790428901817661496">አጫውት</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">በአንዳንድ ድር ጣቢያዎች ላይ ከላይ ባሉ የሚደገፉ የክፍያ መተግበሪያዎች በመሣሪያዎ ላይ መክፈል ይችላሉ።</translation>
 <translation id="8816026460808729765">ጣቢያዎች ዳሳሾችን እንዳይደርሱ ያግዱ</translation>
 <translation id="8820817407110198400">ዕልባቶች</translation>
-<translation id="8833831881926404480">አንድ ጣቢያ ማያ ገጽዎን እያጋራ ነው</translation>
 <translation id="883806473910249246">ይዘቱን በማውረድ ላይ ሳለ አንድ ስህተት ተከስቷል።</translation>
 <translation id="8840953339110955557">ይህ ገጽ ከመስመር ላይ ስሪቱ የተለየ ሊሆን ይችላል።</translation>
 <translation id="8847988622838149491">ዩ ኤስ ቢ</translation>

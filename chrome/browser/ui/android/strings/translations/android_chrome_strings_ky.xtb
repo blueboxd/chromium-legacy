@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Бир азга токтотуу</translation>
 <translation id="1188239144602654184">AR режимине кирүү</translation>
 <translation id="1197267115302279827">Кыстармаларды жылдыруу</translation>
-<translation id="119944043368869598">Баарын тазалоо</translation>
 <translation id="1201402288615127009">Кийинки</translation>
 <translation id="1204037785786432551">Жүктөп алуу шилтемеси</translation>
 <translation id="1206892813135768548">Шилтеме текстин көчүрүү</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Негизги</translation>
 <translation id="1671236975893690980">Жүктөп алуу күтүлүүдө…</translation>
 <translation id="1672586136351118594">Экинчи көрсөтүлбөсүн</translation>
+<translation id="1688867105868176567">Сайттын дайындары тазалансынбы?</translation>
 <translation id="1692118695553449118">Шайкештештирүү күйүк</translation>
 <translation id="169515064810179024">Сайттардын сенсорлорду колдонуусун бөгөттөө</translation>
 <translation id="1717218214683051432">Кыймыл сенсорлору</translation>
@@ -507,7 +507,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="4751476147751820511">Кыймыл же жарык сенсорлору</translation>
 <translation id="4759238208242260848">Жүктөлүп алынгандар</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 жүктөп алуу аяктады.}other{# жүктөп алуу аяктады.}}</translation>
-<translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> дарегине кайтуу үчүн тийип коюңуз</translation>
 <translation id="4802417911091824046">Купуя сөз айкашы менен шифрлөө Google Pay'деги төлөм ыкмалары менен даректерине карата колдонулбайт.
 
 Бул жөндөөнү өзгөртүү үчүн <ph name="BEGIN_LINK" />шайкештирүүнү баштапкы абалга келтириңиз<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="4932247056774066048"><ph name="DOMAIN_NAME" /> домениндеги аккаунтуңуздан чыгып жатканыңызга байланыштуу Chrome’догу дайын-даректериңиз бул түзмөктөн өчүрүлөт. Дайындар Google аккаунтуңузда сакталат.</translation>
 <translation id="4943703118917034429">Виртуалдык чындык</translation>
 <translation id="4943872375798546930">Натыйжалар жок</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> экраныңыз менен бөлүшүүдө</translation>
 <translation id="4961107849584082341">Бул баракты каалаган тилге котортуп алыңыз</translation>
 <translation id="4962975101802056554">Түзмөктөгү бардык уруксаттар жоюлсун</translation>
 <translation id="4970824347203572753">Сиз жашаган өлкөдө жеткиликсиз</translation>
@@ -559,7 +557,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5129038482087801250">Веб колдонмону орнотуу</translation>
 <translation id="5132942445612118989">Бардык түзмөктөрдөгү сырсөздөрдү, таржымалды жана башкаларды шайкештирүү</translation>
 <translation id="5139940364318403933">Google Drive'ты колдонгонду үйрөнүп алыңыз</translation>
-<translation id="515227803646670480">Сакталгн дайындрд тазлоо</translation>
 <translation id="5152843274749979095">Колдоого алынган колдонмолор орнотулган эмес</translation>
 <translation id="5161254044473106830">Аталышы керек</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 файл жүктөлүп алынбай калды.}other{# файл жүктөлүп алынбай калды.}}</translation>
@@ -667,7 +664,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5869522115854928033">Сакталган сырсөздөр</translation>
 <translation id="5876056640971328065">Видеону тындыруу</translation>
 <translation id="5884076754568147479">Тапшырмаларды аткарууга жардам берүү үчүн Google Жардамчыны колдонгон сайттардын URL даректерин жана мазмунун, ошондой эле Жардамчы аркылуу тапшырган маалыматты алат</translation>
-<translation id="5902828464777634901">Бул вебсайтта сакталган жергиликтүү дайындардын баары, ошондой эле кукилер өчүрүлөт.</translation>
 <translation id="5919204609460789179">Шайкештирүүнү баштоо үчүн <ph name="PRODUCT_NAME" /> жаңыртыңыз</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> үнөмдөлдү</translation>
 <translation id="5939518447894949180">Кайра коюу</translation>
@@ -787,7 +783,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="671481426037969117"><ph name="FQDN" /> таймериңиздин убакыты бүттү. Ал эртең кайра башталат.</translation>
 <translation id="6738867403308150051">Жүктөлүп алынууда…</translation>
 <translation id="6766622839693428701">Жабуу үчүн ылдый сүрүңүз.</translation>
-<translation id="6766758767654711248">Сайтка өтүү үчүн таптап коюңуз</translation>
 <translation id="6767294960381293877">Жалпы түзмөктөрдүн тизмеси көрсөтүлгөн өтмөк экрандын жарымында ачылды.</translation>
 <translation id="6782111308708962316">Үчүнчү тараптардын вебсайттарына cookie файлдарын окуп, сактаганга тыюу салынат</translation>
 <translation id="6790428901817661496">Ойнотуу</translation>
@@ -1048,7 +1043,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="8812260976093120287">Айрым вебсайттарда, товарлардын акысын жогоруда көрсөтүлгөн төлөм колдонмолору аркылуу түзмөгүңүздөн төлөй аласыз.</translation>
 <translation id="8816026460808729765">Сайттардын сенсорлорду колдонуусун бөгөттөө</translation>
 <translation id="8820817407110198400">Кыстармалар</translation>
-<translation id="8833831881926404480">Сайт экраныңызды бөлүшүүдө</translation>
 <translation id="883806473910249246">Мазмун жүктөлүп алынып жатканда ката кетти.</translation>
 <translation id="8840953339110955557">Бул барак онлайн версиясынан айырмаланышы мүмкүн.</translation>
 <translation id="8847988622838149491">USB</translation>

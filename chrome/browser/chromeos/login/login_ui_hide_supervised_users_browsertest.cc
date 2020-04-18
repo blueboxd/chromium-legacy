@@ -18,7 +18,7 @@ class LoginUIHideSupervisedUsersTest : public LoginManagerTest {
  public:
   LoginUIHideSupervisedUsersTest() : LoginManagerTest() {
     login_mixin_.AppendRegularUsers(2);
-    login_mixin_.AppendSupervisedUsers(1);
+    login_mixin_.AppendLegacySupervisedUsers(1);
   }
 
  protected:

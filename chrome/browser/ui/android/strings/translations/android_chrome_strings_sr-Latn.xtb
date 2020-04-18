@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Pauziraj</translation>
 <translation id="1188239144602654184">Uđi u PR</translation>
 <translation id="1197267115302279827">Premesti obeleživače</translation>
-<translation id="119944043368869598">Obriši sve</translation>
 <translation id="1201402288615127009">Dalje</translation>
 <translation id="1204037785786432551">Preuzmi link</translation>
 <translation id="1206892813135768548">Kopiraj tekst linka</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Osnovna</translation>
 <translation id="1671236975893690980">Preuzimanje je na čekanju…</translation>
 <translation id="1672586136351118594">Ne prikazuj ponovo</translation>
+<translation id="1688867105868176567">Želite li da obrišete podatke sajta?</translation>
 <translation id="1692118695553449118">Sinhronizacija je uključena</translation>
 <translation id="169515064810179024">Ne dozvoljavaj sajtovima da pristupaju senzorima za pokret</translation>
 <translation id="1717218214683051432">Senzori pokreta</translation>
@@ -507,7 +507,6 @@ Google nalog možda ima druge oblike istorije pregledanja, poput pretraga i akti
 <translation id="4751476147751820511">Senzori za pokret ili svetlo</translation>
 <translation id="4759238208242260848">Preuzimanja</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 preuzimanje je dovršeno.}one{# preuzimanje je dovršeno.}few{# preuzimanja su dovršena.}other{# preuzimanja je dovršeno.}}</translation>
-<translation id="4797039098279997504">Dodirnite da biste se vratili na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Šifrovanje pomoću pristupne fraze ne obuhvata načine plaćanja i adrese iz Google Pay-a.
 
 Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhronizaciju<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="4932247056774066048">Pošto se odjavljujete sa naloga kojim upravlja <ph name="DOMAIN_NAME" />, Chrome podaci biće izbrisani sa ovog uređaja. Ostaće na vašem Google nalogu.</translation>
 <translation id="4943703118917034429">Virtuelna realnost</translation>
 <translation id="4943872375798546930">Nema rezultata</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> deli ekran</translation>
 <translation id="4961107849584082341">Prevedite ovu stranicu na bilo koji jezik</translation>
 <translation id="4962975101802056554">Opozovite sve dozvole za uređaj</translation>
 <translation id="4970824347203572753">Nije dostupno na vašoj lokaciji</translation>
@@ -559,7 +557,6 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="5129038482087801250">Instaliraj veb-aplikaciju</translation>
 <translation id="5132942445612118989">Sinhronizujte lozinke, istoriju i drugi sadržaj na svim uređajima</translation>
 <translation id="5139940364318403933">Saznajte kako da koristite Google disk</translation>
-<translation id="515227803646670480">Obrišite sačuvane podatke</translation>
 <translation id="5152843274749979095">Nije instalirana nijedna podržana aplikacija</translation>
 <translation id="5161254044473106830">Naslov je obavezan</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 preuzimanje nije uspelo.}one{# preuzimanje nije uspelo.}few{# preuzimanja nisu uspela.}other{# preuzimanja nije uspelo.}}</translation>
@@ -667,7 +664,6 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="5869522115854928033">Sačuvane lozinke</translation>
 <translation id="5876056640971328065">Pauziraj video</translation>
 <translation id="5884076754568147479">Da bi vam pomogao u obavljanju zadataka, Google će dobijati URL-ove i sadržaj sajtova na kojima koristite Pomoćnik, kao i informacije koje pošaljete preko Pomoćnika</translation>
-<translation id="5902828464777634901">Svi lokalni podaci koje ovaj veb-sajt čuva, uključujući kolačiće, biće izbrisani.</translation>
 <translation id="5919204609460789179">Ažurirajte <ph name="PRODUCT_NAME" /> da biste započeli sinhronizaciju</translation>
 <translation id="5937580074298050696">Uštedeli ste <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetuj</translation>
@@ -787,7 +783,6 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="671481426037969117">Tajmer aplikacije <ph name="FQDN" /> je istekao. Počeće ponovo sutra.</translation>
 <translation id="6738867403308150051">Preuzima se...</translation>
 <translation id="6766622839693428701">Prevucite nadole da biste zatvorili.</translation>
-<translation id="6766758767654711248">Dodirnite da biste otišli na sajt</translation>
 <translation id="6767294960381293877">Lista uređaja sa kojima se deli kartica je otvorena na pola visine.</translation>
 <translation id="6782111308708962316">Spreči veb-sajtove treće strane da čuvaju i čitaju podatke kolačića</translation>
 <translation id="6790428901817661496">Pusti</translation>
@@ -1048,7 +1043,6 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="8812260976093120287">Na nekim veb-sajtovima možete da plaćate pomoću prethodno navedenih podržanih aplikacija za plaćanje na uređaju.</translation>
 <translation id="8816026460808729765">Ne dozvoljavaj sajtovima da pristupaju senzorima</translation>
 <translation id="8820817407110198400">Obeleživači</translation>
-<translation id="8833831881926404480">Sajt deli vaš ekran</translation>
 <translation id="883806473910249246">Došlo je do greške pri preuzimanju sadržaja.</translation>
 <translation id="8840953339110955557">Ova stranica može da se razlikuje od onlajn verzije.</translation>
 <translation id="8847988622838149491">USB</translation>

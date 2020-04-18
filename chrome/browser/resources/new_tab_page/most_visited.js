@@ -78,9 +78,15 @@ class MostVisitedElement extends PolymerElement {
     return {
       /** @private */
       columnCount_: {
-        type: Boolean,
+        type: Number,
         computed: `computeColumnCount_(tiles_, screenWidth_, maxTiles_,
             visible_)`,
+      },
+
+      /** @private */
+      rowCount_: {
+        type: Number,
+        computed: 'computeRowCount_(columnCount_, tiles_)',
       },
 
       /** @private */
@@ -269,6 +275,19 @@ class MostVisitedElement extends PolymerElement {
    * @return {number}
    * @private
    */
+  computeRowCount_() {
+    if (this.columnCount_ === 0) {
+      return 0;
+    }
+
+    const shortcutCount = this.tiles_ ? this.tiles_.length : 0;
+    return this.columnCount_ <= shortcutCount ? 2 : 1;
+  }
+
+  /**
+   * @return {number}
+   * @private
+   */
   computeMaxTiles_() {
     return !this.visible_ ? 0 : (this.customLinksEnabled_ ? 10 : 8);
   }
@@ -416,8 +435,8 @@ class MostVisitedElement extends PolymerElement {
    */
   getFaviconUrl_(url) {
     const faviconUrl = new URL('chrome://favicon2/');
-    faviconUrl.searchParams.set('size', '32');
-    faviconUrl.searchParams.set('scale_factor', '2x');
+    faviconUrl.searchParams.set('size', '24');
+    faviconUrl.searchParams.set('scale_factor', '1x');
     faviconUrl.searchParams.set('show_fallback_monogram', '');
     faviconUrl.searchParams.set('page_url', url.url);
     return faviconUrl.href;

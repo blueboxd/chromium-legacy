@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">调用时可读取和更改您在当前网站上的所有数据</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />要重置您的设置。</translation>
 <translation id="1243314992276662751">上传</translation>
+<translation id="1243436884219965846">查看密码</translation>
 <translation id="1244265436519979884">正在进行 Linux 恢复</translation>
 <translation id="1244303850296295656">扩展程序错误</translation>
 <translation id="1246158006305844142">您的应用和设置会在您使用自己的 Google 帐号登录的所有 Chrome 操作系统设备上保持同步。如需了解浏览器同步选项，请转到 <ph name="LINK_BEGIN" />Chrome 设置<ph name="LINK_END" />。</translation>
@@ -376,6 +377,7 @@
 <translation id="1508491105858779599">请将手指放在指纹传感器上以解锁设备。</translation>
 <translation id="1508575541972276599">当前所用版本为 Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">通过 USB 访问任何<ph name="DEVICE_NAME_AND_VENDOR" /></translation>
+<translation id="1509960214886564027">很多网站上的功能可能会无法正常运作</translation>
 <translation id="1510030919967934016">系统已阻止此网页跟踪您的位置。</translation>
 <translation id="1510055949674985293">为此图片生成二维码</translation>
 <translation id="1510238584712386396">启动器</translation>
@@ -1042,7 +1044,6 @@
 <translation id="237828693408258535">翻译此页？</translation>
 <translation id="2378346380592252785">更新 <ph name="SHARE_PATH" /> 的凭据。</translation>
 <translation id="2378982052244864789">选择扩展程序目录。</translation>
-<translation id="2379232090534544565">网站正在使用音频和视频输入</translation>
 <translation id="2379281330731083556">使用系统对话框进行打印...<ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">发送前先询问（推荐）</translation>
 <translation id="2382818385048255866">检查您的扩展程序</translation>
@@ -1450,7 +1451,6 @@
 <translation id="2903457445916429186">打开所选项</translation>
 <translation id="2903882649406874750">始终禁止 <ph name="HOST" /> 使用传感器</translation>
 <translation id="2904456025988372123">当网站下载第一个文件后要自动下载更多文件时询问您</translation>
-<translation id="2905789169763945526">在无痕模式下，网站无法使用 Cookie 查看您在各个不同网站上的浏览活动，因而无法实现某些功能或目的（例如为您展示个性化广告）。某些网站可能会无法正常运行。</translation>
 <translation id="2907619724991574506">启动网址</translation>
 <translation id="2907798539022650680">无法连接到“<ph name="NAME" />”：<ph name="DETAILS" />
 服务器消息：<ph name="SERVER_MSG" /></translation>
@@ -1580,7 +1580,6 @@
 <translation id="3088128611727407543">正在准备应用配置文件…</translation>
 <translation id="3088325635286126843">重命名(&amp;R)...</translation>
 <translation id="3089137131053189723">搜索记录已清除</translation>
-<translation id="3090193911106258841">正在存取音频和视频输入</translation>
 <translation id="3090819949319990166">无法将外部 crx 文件复制到 <ph name="TEMP_CRX_FILE" />。</translation>
 <translation id="3090871774332213558">“<ph name="DEVICE_NAME" />”已配对</translation>
 <translation id="3092699946856346803">请插入 SIM 卡，然后重试</translation>
@@ -1642,7 +1641,6 @@
 <translation id="3165390001037658081">有些运营商可能会屏蔽此功能。</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">您也可以跳过登录步骤，<ph name="LINK_START" />以访客身份浏览<ph name="LINK_END" />。</translation>
-<translation id="3172045848207518317">网站正在使用视频输入</translation>
 <translation id="3177909033752230686">网页语言：</translation>
 <translation id="3179982752812949580">文本字体</translation>
 <translation id="3181954750937456830">安全浏览（保护您和您的设备不受危险网站的侵害）</translation>
@@ -1853,7 +1851,6 @@
 <translation id="3459697287128633276">若想让您的帐号有权访问 Google Play 商店，请通过您的身份提供商进行身份验证。</translation>
 <translation id="3462311546193741693">会致使您从大多数网站退出。但您的 Google 帐号仍会保持登录状态，以便清除您的已同步数据。</translation>
 <translation id="3462413494201477527">要取消帐号设置吗？</translation>
-<translation id="3464012987031883895">网站正在使用音频输入</translation>
 <translation id="346431825526753">此帐号是由 <ph name="CUSTODIAN_EMAIL" /> 管理的未成年人帐号。</translation>
 <translation id="3468298837301810372">标签</translation>
 <translation id="3468999815377931311">Android 手机</translation>
@@ -1875,7 +1872,6 @@
 <translation id="3487007233252413104">匿名函数</translation>
 <translation id="348780365869651045">正在等待 AppCache...</translation>
 <translation id="3488065109653206955">部分激活</translation>
-<translation id="3489025949017384019">很多网站可能会无法正常运行</translation>
 <translation id="3492788708641132712">无法同步。请尝试重新登录。</translation>
 <translation id="3493486281776271508">需要互联网连接</translation>
 <translation id="3493881266323043047">有效期</translation>
@@ -1937,7 +1933,6 @@
 <translation id="3574210789297084292">登录</translation>
 <translation id="3574917942258583917">仍要退出无痕模式？</translation>
 <translation id="3575121482199441727">允许此网站显示通知</translation>
-<translation id="3575919114596668130">您的 Family Link 家长设置仍然适用。如果您之前已屏蔽某个应用或网站，则无需再次执行此操作。</translation>
 <translation id="3576324189521867626">已成功安装</translation>
 <translation id="3578594933904494462">此标签页的内容正在共享中。</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;希望与您拥有的以下群组共享打印机&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;：&lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;。如果您接受，该群组的所有成员都可以将内容发送到该打印机进行打印。</translation>
@@ -2567,6 +2562,7 @@
 <translation id="4404136731284211429">重新扫描</translation>
 <translation id="4404843640767531781">“<ph name="APP_NAME" />”已被您的家长禁用。请让您的家长授权您使用此应用。</translation>
 <translation id="4405117686468554883">*.jpeg、*.jpg、*.png</translation>
+<translation id="4406883609789734330">实时字幕</translation>
 <translation id="4408599188496843485">帮助(&amp;E)</translation>
 <translation id="4409697491990005945">边距</translation>
 <translation id="4410545552906060960">使用数字（PIN 码）代替密码来解锁设备。若想在晚些时候设置 PIN 码，请前往“设置”。</translation>
@@ -3719,7 +3715,6 @@
 <translation id="6006484371116297560">经典</translation>
 <translation id="6007240208646052708">不支持使用您所用的语言执行语音搜索。</translation>
 <translation id="6009781704028455063">内置传感器</translation>
-<translation id="6010869025736512584">正在存取视频输入</translation>
 <translation id="6011074160056912900">以太网</translation>
 <translation id="6011193465932186973">指纹</translation>
 <translation id="6011449291337289699">清除网站数据</translation>
@@ -3971,6 +3966,7 @@
 <translation id="6326855256003666642">正在使用相应扩展程序的活动数</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" />要求您在截止日期之前更新此设备。</translation>
 <translation id="6327785803543103246">网络代理自动发现</translation>
+<translation id="6331566915566907158">帮助改进 Chrome 操作系统的功能和性能</translation>
 <translation id="6333064448949140209">文件将发送到 Google 进行调试</translation>
 <translation id="6339668969738228384">为 <ph name="USER_EMAIL_ADDRESS" /> 创建新的个人资料</translation>
 <translation id="6340017061976355871">无法与此服务器建立连接。请检查您的网络连接，然后重试。如果问题仍然存在，请重新启动您的 Chromebook。</translation>
@@ -4107,7 +4103,6 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">您已连接到<ph name="NETWORK_TYPE" />网络。</translation>
 <translation id="6527303717912515753">分享</translation>
-<translation id="6528189551082329571">始终在关联的应用中打开此类链接</translation>
 <translation id="6528513914570774834">允许此设备的其他用户使用此网络</translation>
 <translation id="652948702951888897">Chrome 历史记录</translation>
 <translation id="6530186581263215931">这些设置是由您的管理员强制指定的</translation>
@@ -4677,7 +4672,6 @@
 <translation id="7310598146671372464">未能成功登录。服务器不支持指定的 Kerberos 加密类型。请与您的管理员联系。</translation>
 <translation id="7311079019872751559">未经过沙盒屏蔽的插件访问</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">网站无法使用 Cookie 查看您在各个不同网站上的浏览活动，因而无法实现某些功能或目的（例如为您展示个性化广告）。某些网站可能会无法正常运行。</translation>
 <translation id="7321545336522791733">无法连接到服务器</translation>
 <translation id="7324297612904500502">Chrome（测试版）论坛</translation>
 <translation id="7325209047678309347">纸张卡住了</translation>
@@ -4931,6 +4925,7 @@
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN 码不正确。您还剩 1 次尝试机会。}other{PIN 码不正确。您还剩 # 次尝试机会。}}</translation>
 <translation id="7671130400130574146">使用系统标题栏和边框</translation>
 <translation id="767127784612208024">轻触以确认重置</translation>
+<translation id="767147716926917172">自动向 Google 发送诊断数据和使用情况数据</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />（在 <ph name="PAGE_TITLE" /> 中）。</translation>
 <translation id="7676867886086876795">将您的语音内容发送给 Google，以便能向任何文本字段输入语音内容。</translation>
 <translation id="7678280409648629969">在您退出无痕模式后，登录数据会存储在 Chrome 中。这样，当您以后再次访问该网站时，就可以使用 Touch ID 登录了。</translation>
@@ -5074,7 +5069,6 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />注意<ph name="END_BOLD" />：在恢复过程中，系统将会重新启动。</translation>
 <translation id="7828731929332799387">这将会删除第三方环境下的所有可用 Cookie 和网站数据。要继续吗？</translation>
-<translation id="7829298379596169484">正在存取音频输入</translation>
 <translation id="7829877209233347340">如需添加学校帐号，请让家长登录并向您授权</translation>
 <translation id="7830594666202422257">连接到 Linux</translation>
 <translation id="7831491651892296503">配置网络时出错</translation>
@@ -5812,7 +5806,6 @@
 <translation id="8800004011501252845">目前显示的是以下帐号的目标打印机：</translation>
 <translation id="8800034312320686233">网站无法正常运行？</translation>
 <translation id="8803953437405899238">只需点击一下，即可打开一个新标签页</translation>
-<translation id="8804398419035066391">与合作网站通信</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{将标签页移至另一个窗口}other{将标签页移至另一个窗口}}</translation>
 <translation id="8805140816472474147">请确认同步设置以开始同步。</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> 可以重新打开意外关闭的标签页</translation>
@@ -6022,7 +6015,6 @@
 <translation id="9055636786322918818">强制执行 RC4 加密。选中此选项会令您面临更大的风险，因为 RC4 加密不安全。</translation>
 <translation id="9056810968620647706">未找到匹配项。</translation>
 <translation id="9057354806206861646">更新时间表</translation>
-<translation id="9058976525724291037">您的孩子想在此设备上再添加一个 Google 帐号。在通过 Family Link 管理的设备中，只能添加 G Suite 教育版帐号。</translation>
 <translation id="9062468308252555888">14 倍</translation>
 <translation id="9063208415146866933">第 <ph name="ERROR_LINE_START" /> 行到第 <ph name="ERROR_LINE_END" /> 行存在错误</translation>
 <translation id="9064142312330104323">Google 个人资料照片（正在加载）</translation>

@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Pristabdyti</translation>
 <translation id="1188239144602654184">Įveskite AR</translation>
 <translation id="1197267115302279827">Perkelti žymes</translation>
-<translation id="119944043368869598">Valyti viską</translation>
 <translation id="1201402288615127009">Kitas</translation>
 <translation id="1204037785786432551">Atsisiųsti nuorodą</translation>
 <translation id="1206892813135768548">Kopijuoti nuorodos tekstą</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Bendrieji</translation>
 <translation id="1671236975893690980">Laukiama atsisiuntimo...</translation>
 <translation id="1672586136351118594">Daugiau neberodyti</translation>
+<translation id="1688867105868176567">Išvalyti svetainės duomenis?</translation>
 <translation id="1692118695553449118">Sinchronizavimas įjungtas</translation>
 <translation id="169515064810179024">Svetainės užblokuotos, kad nepasiektų judesio jutiklių</translation>
 <translation id="1717218214683051432">Judesių jutikliai</translation>
@@ -507,7 +507,6 @@ Adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> gali 
 <translation id="4751476147751820511">Judesio arba šviesos jutikliai</translation>
 <translation id="4759238208242260848">Atsisiuntimai</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Baigtas 1 atsisiuntimas.}one{Baigtas # atsisiuntimas.}few{Baigti # atsisiuntimai.}many{Baigta # atsisiuntimo.}other{Baigta # atsisiuntimų.}}</translation>
-<translation id="4797039098279997504">Palieskite, kad grįžtumėte į <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Slaptafrazės šifruotė neapima mokėjimo metodų ir adresų iš „Google Pay“.
 
 Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatykite sinchronizavimą<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="4932247056774066048">Atsijungiate nuo paskyros, kurią valdo <ph name="DOMAIN_NAME" />, todėl jūsų „Chrome“ duomenys bus ištrinti iš šio įrenginio. Duomenys liks „Google“ paskyroje.</translation>
 <translation id="4943703118917034429">Virtualioji realybė</translation>
 <translation id="4943872375798546930">Rezultatų nėra</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> bendrina jūsų ekrano vaizdą</translation>
 <translation id="4961107849584082341">Išverskite šį puslapį į bet kokią kalbą</translation>
 <translation id="4962975101802056554">Anuliuoti visus įrenginio leidimus</translation>
 <translation id="4970824347203572753">Nepasiekiama jūsų vietovėje</translation>
@@ -559,7 +557,6 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5129038482087801250">Įdiegti žiniatinklio progr.</translation>
 <translation id="5132942445612118989">Sinchronizuokite slaptažodžius, istoriją ir daugiau visuose įrenginiuose</translation>
 <translation id="5139940364318403933">Sužinokite, kaip naudoti „Google Drive“</translation>
-<translation id="515227803646670480">Valyti išsaugotus duomenis</translation>
 <translation id="5152843274749979095">Neįdiegta jokių palaikomų programų</translation>
 <translation id="5161254044473106830">Būtina nurodyti pavadinimą</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Nepavyko atlikti 1 atsisiuntimo.}one{Nepavyko atlikti # atsisiuntimo.}few{Nepavyko atlikti # atsisiuntimų.}many{Nepavyko atlikti # atsisiuntimo.}other{Nepavyko atlikti # atsisiuntimų.}}</translation>
@@ -667,7 +664,6 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5869522115854928033">Išsaugoti slaptažodžiai</translation>
 <translation id="5876056640971328065">Pristabdyti vaizdo įrašą</translation>
 <translation id="5884076754568147479">Kad padėtų atlikti užduotis, „Google“ gaus svetainių, kuriose naudojate Padėjėją, URL ir turinį bei informaciją, kurią pateikiate naudodami Padėjėją.</translation>
-<translation id="5902828464777634901">Visi šioje svetainėje saugomi vietiniai duomenys, įskaitant slapukus, bus ištrinti.</translation>
 <translation id="5919204609460789179">Atnaujinkite „<ph name="PRODUCT_NAME" />“, kad galėtumėte pradėti sinchronizuoti</translation>
 <translation id="5937580074298050696">Išsaugota <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
@@ -787,7 +783,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="671481426037969117"><ph name="FQDN" /> laikmatis sustojo. Jis vėl bus paleistas rytoj.</translation>
 <translation id="6738867403308150051">Atsisiunčiama...</translation>
 <translation id="6766622839693428701">Perbraukite žemyn, kad uždarytumėte.</translation>
-<translation id="6766758767654711248">Palieskite, kad apsilankytumėte svetainėje</translation>
 <translation id="6767294960381293877">Įrenginių, su kuriais reikia bendrinti skirtuką, sąrašas atidarytas (pusė aukščio).</translation>
 <translation id="6782111308708962316">Neleisti trečiosios šalies svetainėms išsaugoti ir skaityti slapukų duomenų</translation>
 <translation id="6790428901817661496">Žaisti</translation>
@@ -1048,7 +1043,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="8812260976093120287">Kai kuriose svetainėse galite mokėti naudodami įrenginyje įdiegtas anksčiau nurodytas palaikomas mokėjimo programas.</translation>
 <translation id="8816026460808729765">Svetainės blokuojamos, kad nepasiektų jutiklių</translation>
 <translation id="8820817407110198400">Žymės</translation>
-<translation id="8833831881926404480">Svetainė bendrina jūsų ekraną</translation>
 <translation id="883806473910249246">Atsisiunčiant turinį įvyko klaida.</translation>
 <translation id="8840953339110955557">Šis puslapis gali skirtis nuo prisijungus pateiktos versijos.</translation>
 <translation id="8847988622838149491">USB</translation>

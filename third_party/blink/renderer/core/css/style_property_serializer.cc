@@ -402,9 +402,10 @@ String StylePropertySerializer::CommonShorthandChecks(
     const CSSValue& value = *longhands[i];
     if (!allow_initial && value.IsInitialValue())
       return g_empty_string;
-    if (value.IsInheritedValue() || value.IsUnsetValue() ||
-        value.IsPendingSubstitutionValue())
+    if ((value.IsCSSWideKeyword() && !value.IsInitialValue()) ||
+        value.IsPendingSubstitutionValue()) {
       return g_empty_string;
+    }
     if (value.IsVariableReferenceValue())
       return g_empty_string;
   }

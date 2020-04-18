@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">호출할 경우 현재 웹사이트에 있는 모든 데이터를 읽고 변경합니다.</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />에서 설정을 재설정하려 합니다.</translation>
 <translation id="1243314992276662751">업로드</translation>
+<translation id="1243436884219965846">비밀번호 검토</translation>
 <translation id="1244265436519979884">현재 Linux 복원이 진행 중입니다.</translation>
 <translation id="1244303850296295656">확장 프로그램 오류</translation>
 <translation id="1246158006305844142">앱 및 설정은 Google 계정으로 로그인한 모든 Chrome OS 기기와 동기화됩니다. 브라우저 동기화 옵션을 보려면 <ph name="LINK_BEGIN" />Chrome 설정<ph name="LINK_END" />으로 이동하세요.</translation>
@@ -376,6 +377,7 @@
 <translation id="1508491105858779599">지문 센서에 손가락을 갖다 대 기기를 잠금 해제합니다.</translation>
 <translation id="1508575541972276599">현재 버전은 Debian 9(Stretch)입니다.</translation>
 <translation id="1509281256533087115">USB를 통해 모든 <ph name="DEVICE_NAME_AND_VENDOR" />에 액세스</translation>
+<translation id="1509960214886564027">다수의 사이트에서 기능이 작동하지 않을 수 있음</translation>
 <translation id="1510030919967934016">이 페이지는 위치 추적이 차단되었습니다.</translation>
 <translation id="1510055949674985293">이 이미지의 QR 코드 생성</translation>
 <translation id="1510238584712386396">런처</translation>
@@ -1045,7 +1047,6 @@
 <translation id="237828693408258535">이 페이지를 번역하시겠습니까?</translation>
 <translation id="2378346380592252785"><ph name="SHARE_PATH" /> 사용자 인증 정보 업데이트</translation>
 <translation id="2378982052244864789">확장 프로그램 디렉터리를 선택합니다.</translation>
-<translation id="2379232090534544565">사이트에서 오디오 및 동영상 입력을 공유하는 중입니다.</translation>
 <translation id="2379281330731083556">시스템 대화상자를 사용하여 인쇄... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">보내기 전에 확인(권장)</translation>
 <translation id="2382818385048255866">확장 프로그램 확인</translation>
@@ -1454,7 +1455,6 @@
 <translation id="2903457445916429186">선택한 항목 열기</translation>
 <translation id="2903882649406874750">항상 <ph name="HOST" />의 센서 액세스 차단</translation>
 <translation id="2904456025988372123">사이트에서 첫 파일 다운로드 후 자동으로 파일을 다운로드하려고 할 때 확인</translation>
-<translation id="2905789169763945526">시크릿 모드에 있는 동안에는 사이트에서 사용자의 다양한 사이트 탐색 활동 정보를 이용해 광고 맞춤설정 등의 작업을 하기 위해 쿠키를 사용할 수 없습니다. 일부 사이트는 제대로 작동하지 않을 수 있습니다.</translation>
 <translation id="2907619724991574506">시작 URL</translation>
 <translation id="2907798539022650680">'<ph name="NAME" />'에 연결하지 못함: <ph name="DETAILS" />
     서버 메시지: <ph name="SERVER_MSG" /></translation>
@@ -1584,7 +1584,6 @@
 <translation id="3088128611727407543">앱 프로필 준비 중...</translation>
 <translation id="3088325635286126843">이름 바꾸기(&amp;R)...</translation>
 <translation id="3089137131053189723">검색 기록이 삭제되었습니다</translation>
-<translation id="3090193911106258841">오디오 및 비디오 입력 장치에 액세스</translation>
 <translation id="3090819949319990166">외부 crx 파일을 <ph name="TEMP_CRX_FILE" />에 복사할 수 없습니다.</translation>
 <translation id="3090871774332213558">'<ph name="DEVICE_NAME" />' 페어링됨</translation>
 <translation id="3092699946856346803">SIM을 삽입하고 다시 시도해 주세요.</translation>
@@ -1646,7 +1645,6 @@
 <translation id="3165390001037658081">일부 이동통신사는 이 기능을 차단할 수도 있습니다.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">로그인을 건너뛰고 <ph name="LINK_START" />게스트로 로그인<ph name="LINK_END" />할 수도 있습니다.</translation>
-<translation id="3172045848207518317">사이트에서 동영상 입력을 공유하는 중입니다.</translation>
 <translation id="3177909033752230686">페이지 언어:</translation>
 <translation id="3179982752812949580">텍스트 글꼴</translation>
 <translation id="3181954750937456830">세이프 브라우징(사용자와 사용자의 기기를 위험한 사이트로부터 보호)</translation>
@@ -1857,7 +1855,6 @@
 <translation id="3459697287128633276">내 계정으로 Google Play 스토어에 액세스하려면 ID 공급업체를 통해 인증해 주세요.</translation>
 <translation id="3462311546193741693">대부분의 사이트에서 로그아웃됩니다. 동기화된 데이터를 삭제할 수 있도록 Google 계정에서는 로그아웃되지 않습니다.</translation>
 <translation id="3462413494201477527">계정 설정을 취소하시겠습니까?</translation>
-<translation id="3464012987031883895">사이트에서 오디오 입력을 공유하는 중입니다.</translation>
 <translation id="346431825526753"><ph name="CUSTODIAN_EMAIL" />님이 관리하는 어린이용 계정입니다.</translation>
 <translation id="3468298837301810372">라벨</translation>
 <translation id="3468999815377931311">Android 휴대전화</translation>
@@ -1879,7 +1876,6 @@
 <translation id="3487007233252413104">익명의 함수</translation>
 <translation id="348780365869651045">AppCache를 기다리는 중...</translation>
 <translation id="3488065109653206955">부분적으로 활성화됨</translation>
-<translation id="3489025949017384019">다수의 사이트가 제대로 작동하지 않을 수 있습니다.</translation>
 <translation id="3492788708641132712">동기화가 작동하지 않습니다. 다시 로그인하세요.</translation>
 <translation id="3493486281776271508">인터넷에 연결되어 있어야 합니다.</translation>
 <translation id="3493881266323043047">유효성</translation>
@@ -1941,7 +1937,6 @@
 <translation id="3574210789297084292">로그인</translation>
 <translation id="3574917942258583917">시크릿 모드를 종료하시겠습니까?</translation>
 <translation id="3575121482199441727">이 사이트에 허용</translation>
-<translation id="3575919114596668130">Family Link 부모 설정은 계속 적용됩니다. 이전에 앱 또는 사이트를 차단했다면 다시 차단하지 않아도 됩니다.</translation>
 <translation id="3576324189521867626">설치되었습니다.</translation>
 <translation id="3578594933904494462">이 탭의 콘텐츠를 공유 중입니다.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;님이 내가 소유한 그룹(&lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;)과의 프린터(&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;) 공유를 요청했습니다. 동의하면 모든 그룹 회원이 해당 프린터로 인쇄할 수 있게 됩니다.</translation>
@@ -2570,6 +2565,7 @@
 <translation id="4404136731284211429">다시 검색</translation>
 <translation id="4404843640767531781">부모님이 <ph name="APP_NAME" /> 앱을 차단했습니다. 이 앱을 사용하려면 부모님에게 권한을 요청하세요.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">실시간 자막</translation>
 <translation id="4408599188496843485">도움말(&amp;E)</translation>
 <translation id="4409697491990005945">여백</translation>
 <translation id="4410545552906060960">기기를 잠금 해제하려면 비밀번호 대신 번호(PIN)를 사용하세요. 나중에 PIN을 설정하려면 설정으로 이동하세요.</translation>
@@ -3722,7 +3718,6 @@
 <translation id="6006484371116297560">기본</translation>
 <translation id="6007240208646052708">사용자의 언어로 음성 검색을 이용할 수 없습니다.</translation>
 <translation id="6009781704028455063">내장 센서</translation>
-<translation id="6010869025736512584">비디오 입력 장치에 액세스 중</translation>
 <translation id="6011074160056912900">이더넷 네트워크</translation>
 <translation id="6011193465932186973">지문</translation>
 <translation id="6011449291337289699">사이트 데이터 삭제</translation>
@@ -3974,6 +3969,7 @@
 <translation id="6326855256003666642">프로그램 사용자 수</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" />에서 기한 전에 기기를 업데이트할 것을 요청합니다.</translation>
 <translation id="6327785803543103246">웹 프록시 자동검색</translation>
+<translation id="6331566915566907158">Chrome OS의 기능 및 성능 개선에 참여</translation>
 <translation id="6333064448949140209">디버깅을 위해 파일이 Google로 전송됩니다.</translation>
 <translation id="6339668969738228384"><ph name="USER_EMAIL_ADDRESS" />의 새 프로필을 만드세요.</translation>
 <translation id="6340017061976355871">서버에 연결할 수 없습니다. 네트워크 연결을 확인하고 다시 시도해 주세요. 문제가 지속되면 Chromebook을 다시 시작하세요.</translation>
@@ -4110,7 +4106,6 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641"><ph name="NETWORK_TYPE" /> 네트워크에 연결되어 있습니다.</translation>
 <translation id="6527303717912515753">공유</translation>
-<translation id="6528189551082329571">항상 이러한 유형의 링크를 연결된 앱에서 열기</translation>
 <translation id="6528513914570774834">이 기기의 다른 사용자가 이 네트워크를 사용하도록 허용</translation>
 <translation id="652948702951888897">Chrome 방문 기록</translation>
 <translation id="6530186581263215931">이 설정은 관리자가 시행합니다.</translation>
@@ -4680,7 +4675,6 @@
 <translation id="7310598146671372464">로그인하지 못했습니다. 서버가 지정된 Kerberos 암호화 유형을 지원하지 않습니다. 관리자에게 문의하세요.</translation>
 <translation id="7311079019872751559">샌드박스 처리되지 않은 플러그인 액세스</translation>
 <translation id="73174032666024687"><ph name="SHEETS_LABEL" /> <ph name="NUMBER_OF_SHEETS" />장</translation>
-<translation id="732018663949361753">사이트에서 사용자의 다양한 사이트 탐색 활동 정보를 이용해 광고 맞춤설정 등의 작업을 하기 위해 쿠키를 사용할 수 없습니다.  일부 사이트는 제대로 작동하지 않을 수 있습니다.</translation>
 <translation id="7321545336522791733">서버에 연결할 수 없음</translation>
 <translation id="7324297612904500502">베타 포럼</translation>
 <translation id="7325209047678309347">용지 걸림</translation>
@@ -4934,6 +4928,7 @@
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{잘못된 PIN입니다. 앞으로 1번 더 시도할 수 있습니다.}other{잘못된 PIN입니다. 앞으로 #번 더 시도할 수 있습니다.}}</translation>
 <translation id="7671130400130574146">시스템 제목 표시줄 및 테두리 사용</translation>
 <translation id="767127784612208024">터치하여 초기화 여부 확인</translation>
+<translation id="767147716926917172">진단 및 사용 데이터를 Google에 자동으로 전송</translation>
 <translation id="7672520070349703697"><ph name="PAGE_TITLE" />에 포함된 <ph name="HUNG_IFRAME_URL" /></translation>
 <translation id="7676867886086876795">모든 텍스트 입력란에서 음성기록 기능을 지원하기 위해 Google에 음성이 전송됩니다.</translation>
 <translation id="7678280409648629969">시크릿 모드를 종료하면 Chrome에 로그인 데이터가 저장됩니다. 이 데이터를 통해 나중에 이 웹사이트에서 Touch ID를 사용할 수 있습니다.</translation>
@@ -5077,7 +5072,6 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />참고:<ph name="END_BOLD" /> 시스템이 절차 진행 중에 재부팅됩니다.</translation>
 <translation id="7828731929332799387">타사와 관련하여 제공되는 모든 쿠키 및 사이트 데이터가 삭제됩니다. 계속하시겠습니까?</translation>
-<translation id="7829298379596169484">오디오 입력 장치에 액세스 중</translation>
 <translation id="7829877209233347340">부모님에게 로그인하여 학교 계정을 추가할 권한을 부여해 달라고 요청하세요.</translation>
 <translation id="7830594666202422257">Linux에 연결</translation>
 <translation id="7831491651892296503">네트워크를 설정하는 중에 오류가 발생했습니다</translation>
@@ -5816,7 +5810,6 @@
 <translation id="8800004011501252845">해당 목적지 사용자 표시</translation>
 <translation id="8800034312320686233">사이트가 작동하지 않나요?</translation>
 <translation id="8803953437405899238">클릭 한 번으로 새 탭을 열 수 있습니다.</translation>
-<translation id="8804398419035066391">협력 중인 웹사이트와 통신</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{탭을 다른 창으로 이동}other{탭을 다른 창으로 이동}}</translation>
 <translation id="8805140816472474147">동기화를 시작하려면 동기화 설정을 확인하세요.</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> 키를 눌러 실수로 닫은 탭 다시 열기</translation>
@@ -6026,7 +6019,6 @@
 <translation id="9055636786322918818">RC4 암호화를 적용합니다. RC4 암호화는 안전하지 않으므로 이 옵션을 사용하면 보안 위험도가 높아집니다.</translation>
 <translation id="9056810968620647706">일치하는 항목이 없습니다.</translation>
 <translation id="9057354806206861646">업데이트 일정</translation>
-<translation id="9058976525724291037">자녀가 기기에 다른 Google 계정을 추가하려고 합니다. Family Link 관리 기기에는 G Suite for Education 계정만 추가할 수 있습니다.</translation>
 <translation id="9062468308252555888">14배</translation>
 <translation id="9063208415146866933"><ph name="ERROR_LINE_START" />행부터 <ph name="ERROR_LINE_END" />행까지에 오류가 있음</translation>
 <translation id="9064142312330104323">Google 프로필 사진(로드 중)</translation>

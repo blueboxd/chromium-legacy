@@ -377,6 +377,7 @@
 <translation id="1508491105858779599">መሣሪያውን ለመክፈት ጣትዎን በጣት አሻራ ዳሳሹ ላይ ያስቀምጡት።</translation>
 <translation id="1508575541972276599">የአሁኑ ስሪት Debian 9 (Stretch) ነው</translation>
 <translation id="1509281256533087115">በዩኤስቢ በኩል ማንኛውም <ph name="DEVICE_NAME_AND_VENDOR" /> ይደርሳል</translation>
+<translation id="1509960214886564027">በበርካታ ጣቢያዎች ላይ ያሉ ባሕሪያት ሊሰበሩ ይችላሉ</translation>
 <translation id="1510030919967934016">ይህ ገጽ አካባቢዎን ከመከታተል ታግዷል።</translation>
 <translation id="1510055949674985293">ለዚህ ምስል የQR ኮድ ያመንጩ</translation>
 <translation id="1510238584712386396">ማስጀመሪያ</translation>
@@ -1046,7 +1047,6 @@
 <translation id="237828693408258535">ይህ ገጽ ይተርጎም?</translation>
 <translation id="2378346380592252785">ለ <ph name="SHARE_PATH" /> የዕውቅና ማረጋገጫዎችን ያዘምኑ።</translation>
 <translation id="2378982052244864789">የቅጥያውን ማውጫ ይምረጡ።</translation>
-<translation id="2379232090534544565">አንድ ጣቢያ የኦዲዮ እና የቪዲዮ ግቤትን እየደረሰ ነው</translation>
 <translation id="2379281330731083556">የስርዓት መገናኛ ተጠቅመው ያትሙ... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">ከመላክ በፊት ጠይቅ (የሚመከር)</translation>
 <translation id="2382818385048255866">ቅጥያዎችዎን ያረጋግጡ</translation>
@@ -1454,7 +1454,6 @@
 <translation id="2903457445916429186">የተመረጡ ንጥሎችን ይክፈቱ</translation>
 <translation id="2903882649406874750"><ph name="HOST" /> ሁልጊዜ ዳሳሾችን እንዳይደርስ አግድ</translation>
 <translation id="2904456025988372123">አንድ ጣቢያ ከመጀመሪያው ፋይል በኋላ በራስ-ሰር ፋይሎችን ለማውረድ ሲሞክር ጠይቅ</translation>
-<translation id="2905789169763945526">ማንነት በማያሳውቅ ሁነታ ላይ ሳሉ ጣቢያዎች ላይ ለምሳሌ ማስታወቂያዎችን ግላዊነት ለማላበስ በተለያዩ ጣቢያዎች የእርስዎን የአሰሳ እንቅስቃሴ ለመመልከት ኩኪዎችን መጠቀም አይችሉም። አንዳንድ ጣቢያዎች በአግባቡ ላይሠሩ ይችላሉ።</translation>
 <translation id="2907619724991574506">ጀማሪ ዩ አር ኤሎች</translation>
 <translation id="2907798539022650680">ከ«<ph name="NAME" />» ጋር መገናኘት አልተቻለም፦ <ph name="DETAILS" />
 የአገልጋይ መልዕክት፦ <ph name="SERVER_MSG" /></translation>
@@ -1584,7 +1583,6 @@
 <translation id="3088128611727407543">የመተግበሪያ መገለጫን በማዘጋጀት ላይ...</translation>
 <translation id="3088325635286126843">እንደገና &amp;ሰይም...</translation>
 <translation id="3089137131053189723">ፍለጋ ጸድቷል</translation>
-<translation id="3090193911106258841">የኦዲዮ እና የቪዲዮ ግብዓትን በመድረስ ላይ</translation>
 <translation id="3090819949319990166">ውጫዊ የcrx ፋይል ወደ <ph name="TEMP_CRX_FILE" /> መቅዳት አልተቻለም።</translation>
 <translation id="3090871774332213558">«<ph name="DEVICE_NAME" />» ተጣምሯል</translation>
 <translation id="3092699946856346803">እባክዎ የእርስዎን ሲም ያስገቡና እንደገና ይሞክሩ</translation>
@@ -1646,7 +1644,6 @@
 <translation id="3165390001037658081">አንዳንድ የአገልግሎት አቅራቢዎች ይህን ባህሪ ሊያግዱት ይችላሉ።</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">እንዲሁም መግባቱን ትተው <ph name="LINK_START" />እንደ እንግዳ ማሰስ<ph name="LINK_END" /> ይችላሉ።</translation>
-<translation id="3172045848207518317">አንድ ጣቢያ የቪዲዮ ግቤትን እየደረሰ ነው</translation>
 <translation id="3177909033752230686">የገጽ ቋንቋ፦</translation>
 <translation id="3179982752812949580">የጽሑፍ ቅርጸ ቁምፊ</translation>
 <translation id="3181954750937456830">ደኅንነቱ የተጠበቀ አሰሳ (እርስዎን እና የእርስዎን መሣሪያ ከአደገኛ ጣቢያዎች ጥበቃ ያደርግላችኋል)</translation>
@@ -1857,7 +1854,6 @@
 <translation id="3459697287128633276">የእርስዎ መለያ የGoogle Play መደብርን እንዲደርስ ለማንቃት እባክዎ በእርስዎ የማንነት አቅራቢ በኩል ያረጋግጡ።</translation>
 <translation id="3462311546193741693">ከአብዛኛዎቹ ጣቢያዎች ዘግተው ያስወጣዎታል። በእርስዎ የGoogle መለያ ውስጥ በመለያ እንደገቡ ስለሚቆዩ የእርስዎ የሰመረ ውሂብ ሊጸዳ ይችላል።</translation>
 <translation id="3462413494201477527">የመለያ ቅንብር ይተው?</translation>
-<translation id="3464012987031883895">አንድ ጣቢያ የኦዲዮ ግቤትን እየደረሰ ነው</translation>
 <translation id="346431825526753">ይሄ በ<ph name="CUSTODIAN_EMAIL" /> የሚቀናበር የህጻናት መለያ ነው።</translation>
 <translation id="3468298837301810372">መለያ</translation>
 <translation id="3468999815377931311">የAndroid ስልክ</translation>
@@ -1879,7 +1875,6 @@
 <translation id="3487007233252413104">ስም-አልባ ተግባር</translation>
 <translation id="348780365869651045">AppCacheን በመጠበቅ ላይ...</translation>
 <translation id="3488065109653206955">በከፊል ገብሯል</translation>
-<translation id="3489025949017384019">ብዙ ጣቢያዎች በአግባቡ ላይሠሩ ይችላሉ</translation>
 <translation id="3492788708641132712">ስምረት እየሰራ አይደለም። እንደገና ለመግባት ይሞክሩ።</translation>
 <translation id="3493486281776271508">የበየነ መረብ ግንኙነት ያስፈልጋል</translation>
 <translation id="3493881266323043047">ተገቢነት</translation>
@@ -1941,7 +1936,6 @@
 <translation id="3574210789297084292">ግባ</translation>
 <translation id="3574917942258583917">ለማንኛውም ማንነት ከማያሳውቅ ሁነታ ይውጡ?</translation>
 <translation id="3575121482199441727">ለዚህ ጣቢያ ፍቀድ</translation>
-<translation id="3575919114596668130">የFamily Link ወላጅ ቅንብሮችዎ አሁንም ይተገበራሉ። ከዚህ ቀደም አንድ መተግበሪያ ወይም ጣቢያ ካገዱ ዳግም ማድረግ አይኖርብዎትም።</translation>
 <translation id="3576324189521867626">በተሳካ ሁኔታ ተጭኗል</translation>
 <translation id="3578594933904494462">የዚህ ትር ይዘት በመጋራት ላይ ነው።</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; የ&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; አታሚ እርስዎ ባለቤት ለሆኑበት ቡድን ማጋራት ይፈልጋሉ፦ &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;። ከተቀበሉ ሁሉም የቡድን አባላት ወደ አታሚው ማተም ይችላሉ።</translation>
@@ -3723,7 +3717,6 @@
 <translation id="6006484371116297560">የታወቀ ገጽታ</translation>
 <translation id="6007240208646052708">የድምጽ ፍለጋ በቋንቋዎ አይገኝም።</translation>
 <translation id="6009781704028455063">አብሮገነብ ዳሳሽ</translation>
-<translation id="6010869025736512584">የቪዲዮ ግብዓትን በመድረስ ላይ</translation>
 <translation id="6011074160056912900">የኤተርኔት አውታረ መረብ</translation>
 <translation id="6011193465932186973">የጣት አሻራ</translation>
 <translation id="6011449291337289699">የጣቢያ ውሂብን አጽዳ</translation>
@@ -4112,7 +4105,6 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">ወደ <ph name="NETWORK_TYPE" /> አውታረ መረብ ተገናኝተዋል።</translation>
 <translation id="6527303717912515753">አጋራ</translation>
-<translation id="6528189551082329571">በተጣመረው መተግበሪያ ውስጥ ይህን ዓይነቶቹን አገናኞች ሁልጊዜ ክፈት</translation>
 <translation id="6528513914570774834">ሌሎች የዚህ መሣሪያ ተጠቃሚዎች ይህን አውታረ መረብ እንዲጠቀሙ ይፍቀዱላቸው</translation>
 <translation id="652948702951888897">የChrome ታሪክ</translation>
 <translation id="6530186581263215931">እነዚህ ቅንብሮች በአስተዳዳሪዎ ነው የሚፈጸሙት</translation>
@@ -4682,7 +4674,6 @@
 <translation id="7310598146671372464">በመለያ መግባት አልተሳካም። አገልጋዩ የተጠቀሱትን የKerberos ምሥጠራ ዓይነቶች አይደግፍም። እባክዎ የእርስዎን አስተዳዳሪ ያነጋግሩ።</translation>
 <translation id="7311079019872751559">በማጠሪያ ውስጥ ያልገባ ተሰኪ መዳረሻ</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">ጣቢያዎች በተለያዩ ጣቢያዎች ላይ ለምሳሌ ማስታወቂያዎችን ግላዊነት ለማላበስ የእርስዎን የአሰሳ እንቅስቃሴ ለመመልከት ኩኪዎችን መጠቀም አይችሉም።  አንዳንድ ጣቢያዎች በአግባቡ ላይሠሩ ይችላሉ።</translation>
 <translation id="7321545336522791733">አገልጋይ አይደረስበትም</translation>
 <translation id="7324297612904500502">የቅድመ-ይሁንታ ሙከራ መድረክ</translation>
 <translation id="7325209047678309347">ወረቀት ታጭቋል</translation>
@@ -5080,7 +5071,6 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />ማስታወሻ፦<ph name="END_BOLD" />  ስርዓቱ በሂደቱ ጊዜ ዳግም ይነሳል።</translation>
 <translation id="7828731929332799387">ይህ በሦስተኛ ወገን ዓውደ አገባቦች ውስጥ የሚገኙ ሁሉንም ኩኪዎች እና የጣቢያ ውሂብ ይሰርዛል። መቀጠል ይፈልጋሉ?</translation>
-<translation id="7829298379596169484">የኦዲዮ ግብዓትን በመድረስ ላይ</translation>
 <translation id="7829877209233347340">አንድ ወላጅ የትምህርት ቤት መለያ ለማከል ፈቃድ እንዲሰጡ ይጠይቋቸው</translation>
 <translation id="7830594666202422257">ከLinux ጋር ተገናኝ</translation>
 <translation id="7831491651892296503">አውታረ መረብን ማዋቀር ላይ ስህተት</translation>
@@ -5823,7 +5813,6 @@ nil</translation>
 <translation id="8800004011501252845">መድረሻዎችን በማሳየት ላይ ለ፦</translation>
 <translation id="8800034312320686233">ጣቢያው እየሰራ አይደለም?</translation>
 <translation id="8803953437405899238">በአንድ ጠቅታ አዲስ ትር ይክፈቱ</translation>
-<translation id="8804398419035066391">ከተባባሪ ድር ጣቢያዎች ጋር በመገናኘት ላይ</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{ትር ወደ ሌላ መስኮት ውሰድ}one{ትሮችን ወደ ሌላ መስኮት ውሰድ}other{ትሮችን ወደ ሌላ መስኮት ውሰድ}}</translation>
 <translation id="8805140816472474147">ስምረትን ለመጀመር የስምረት ቅንብሮችን ያረጋግጡ።</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> በስህተት የተዘጉ ትሮችን ዳግም መክፈት ይችላል</translation>
@@ -6033,7 +6022,6 @@ nil</translation>
 <translation id="9055636786322918818">የRC4 ምሥጠራን አስገድድ። የRC4 ምሥጠራዎች ለደህንነት አስተማማኝ ስላልሆኑ ይህን አማራጭ መጠቀም የእርስዎን አደጋ ይጨምራል።</translation>
 <translation id="9056810968620647706">ምንም ተዛማጆች አልተገኙም።</translation>
 <translation id="9057354806206861646">መርሐግብርን አዘምን</translation>
-<translation id="9058976525724291037">የእርስዎ ልጅ ሌላ የGoogle መለያ በዚህ መሣሪያ ላይ ማከል ይፈልጋሉ። የG Suite for Education መለያዎች ብቻ ናቸው በFamily Link ወደሚተዳደሩ መሣሪያዎች መታከል የሚችሉት።</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">ከመስመር <ph name="ERROR_LINE_START" /> እስከ <ph name="ERROR_LINE_END" /> ስህተት</translation>
 <translation id="9064142312330104323">Google የመገለጫ ፎቶ (በመጫን ላይ)</translation>

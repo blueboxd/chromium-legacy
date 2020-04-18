@@ -21,12 +21,12 @@ inline void AddCustom(const CSSPropertyName& name,
     result.stored_value->value = priority;
 }
 
-inline void AddNative(size_t index,
+inline void AddNative(CSSPropertyID id,
                       CascadePriority priority,
                       CascadeMap::NativeMap& map) {
-  CascadePriority* p = map.Buffer() + index;
-  if (!map.Bits().test(index) || *p < priority) {
-    map.Bits().set(index);
+  CascadePriority* p = map.Buffer() + static_cast<size_t>(id);
+  if (!map.Bits().Has(id) || *p < priority) {
+    map.Bits().Set(id);
     new (p) CascadePriority(priority);
   }
 }
@@ -43,7 +43,7 @@ inline CascadePriority* FindNative(const CSSPropertyName& name,
                                    CascadeMap::NativeMap& map) {
   size_t index = static_cast<size_t>(name.Id());
   DCHECK_LT(index, static_cast<size_t>(numCSSProperties));
-  return map.Bits().test(index) ? (map.Buffer() + index) : nullptr;
+  return map.Bits().Has(name.Id()) ? (map.Buffer() + index) : nullptr;
 }
 
 inline CascadePriority AtCustom(const CSSPropertyName& name,
@@ -55,7 +55,7 @@ inline CascadePriority AtNative(const CSSPropertyName& name,
                                 const CascadeMap::NativeMap& map) {
   size_t index = static_cast<size_t>(name.Id());
   DCHECK_LT(index, static_cast<size_t>(numCSSProperties));
-  return map.Bits().test(index) ? map.Buffer()[index] : CascadePriority();
+  return map.Bits().Has(name.Id()) ? map.Buffer()[index] : CascadePriority();
 }
 
 }  // namespace
@@ -129,17 +129,17 @@ void CascadeMap::Add(const CSSPropertyName& name, CascadePriority priority) {
     high_priority_ |= (1ull << index);
 
   if (origin <= CascadeOrigin::kUserAgent)
-    AddNative(index, priority, native_ua_properties_);
+    AddNative(id, priority, native_ua_properties_);
   if (origin <= CascadeOrigin::kUser)
-    AddNative(index, priority, native_user_properties_);
-  AddNative(index, priority, native_properties_);
+    AddNative(id, priority, native_user_properties_);
+  AddNative(id, priority, native_properties_);
 }
 
 void CascadeMap::Reset() {
   high_priority_ = 0;
-  native_properties_.Bits().reset();
-  native_ua_properties_.Bits().reset();
-  native_user_properties_.Bits().reset();
+  native_properties_.Bits().Reset();
+  native_ua_properties_.Bits().Reset();
+  native_user_properties_.Bits().Reset();
   custom_properties_.clear();
   custom_user_properties_.clear();
 }

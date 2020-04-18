@@ -52,7 +52,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   void Shutdown() override;
 
  private:
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   int RunServiceManager(MainFunctionParams& main_function_params,
                         bool start_service_manager_only);
 
@@ -65,7 +64,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       discardable_shared_memory_manager_;
   std::unique_ptr<StartupDataImpl> startup_data_;
   std::unique_ptr<ServiceManagerEnvironment> service_manager_environment_;
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
   // True if the runner has been initialized.
   bool is_initialized_ = false;

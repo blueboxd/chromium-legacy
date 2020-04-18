@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">縮小</translation>
 <translation id="2230173723195178503">已載入網頁</translation>
 <translation id="2239626343334228536">正在清除瀏覽資料...</translation>
+<translation id="2245545499420671379">在無痕模式中封鎖第三方 Cookie</translation>
 <translation id="2257567812274161158">同步功能無法正常運作。</translation>
 <translation id="2267753748892043616">新增帳戶</translation>
 <translation id="2268044343513325586">修正搜尋</translation>
@@ -306,7 +307,6 @@
 <translation id="4979397965658815378">只要登入 Google 帳戶，即可在你的所有裝置上使用自己的書籤、密碼、歷史記錄和其他設定。</translation>
 <translation id="5005498671520578047">複製密碼</translation>
 <translation id="5010803260590204777">透過新開啟的無痕式分頁以私密模式瀏覽網頁。</translation>
-<translation id="5039020240289137291">封鎖第三方 Cookie</translation>
 <translation id="5039804452771397117">允許</translation>
 <translation id="5059136629401106827">確定</translation>
 <translation id="5062321486222145940">安裝 Google 雲端硬碟</translation>
@@ -419,6 +419,7 @@
 
 您已在 <ph name="TIME" />使用同步通關密語對資料進行加密，請輸入通關密語開始進行同步。</translation>
 <translation id="6418346271604475326">正在準備 PDF</translation>
+<translation id="6426067060178468363">允許 Cookie</translation>
 <translation id="6434591244308415567">發生錯誤，請稍後再試。</translation>
 <translation id="6445051938772793705">國家/地區</translation>
 <translation id="6445981559479772097">訊息已送出。</translation>
@@ -544,6 +545,7 @@
 <translation id="8076014560081431679">已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">可下載檔案，相關選項位於畫面底部。</translation>
 <translation id="8131740175452115882">確認</translation>
+<translation id="8174524257672181687">封鎖所有 Cookie (不建議)</translation>
 <translation id="8197543752516192074">翻譯網頁</translation>
 <translation id="8205564605687841303">取消</translation>
 <translation id="8225985093977202398">快取圖片和檔案</translation>

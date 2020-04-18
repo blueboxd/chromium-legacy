@@ -9,19 +9,17 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
-#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
-#include "chrome/browser/chromeos/login/test/oobe_screens_utils.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
@@ -146,22 +144,10 @@ class SyncConsentTest : public OobeBaseTest {
   }
 
   void LoginToSyncConsentScreen() {
-    WizardController::default_controller()->SkipToLoginForTesting();
-    WaitForGaiaPageEvent("ready");
-    LoginDisplayHost::default_host()
-        ->GetOobeUI()
-        ->GetView<GaiaScreenHandler>()
-        ->ShowSigninScreenForTest(FakeGaiaMixin::kFakeUserEmail,
-                                  FakeGaiaMixin::kFakeUserPassword,
-                                  FakeGaiaMixin::kEmptyUserServices);
-
-    test::CreateOobeScreenWaiter("sync-consent")->Wait();
-
-    // Skip the Assistant opt-in flow screen to avoid it blocking the test.
-    auto* screen = static_cast<AssistantOptInFlowScreen*>(
-        WizardController::default_controller()->GetScreen(
-            AssistantOptInFlowScreenView::kScreenId));
-    screen->SetSkipForTesting();
+    login_manager_mixin_.LoginAsNewReguarUser();
+    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+    LoginDisplayHost::default_host()->StartWizard(
+        SyncConsentScreenView::kScreenId);
   }
 
  protected:
@@ -220,7 +206,7 @@ class SyncConsentTest : public OobeBaseTest {
 
   std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
   std::vector<int> expected_consent_ids_;
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  LoginManagerMixin login_manager_mixin_{&mixin_host_};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncConsentTest);
@@ -319,13 +305,13 @@ IN_PROC_BROWSER_TEST_P(SyncConsentPolicyDisabledTest,
 
   SyncConsentScreen* screen = GetSyncConsentScreen();
 
+  OobeScreenExitWaiter waiter(SyncConsentScreenView::kScreenId);
+
   screen->SetProfileSyncDisabledByPolicyForTesting(true);
   screen->SetProfileSyncEngineInitializedForTesting(GetParam());
   screen->OnStateChanged(nullptr);
 
-  // Expect for other screens to be skipped and begin user session.
-  test::WaitForLastScreenAndTapGetStarted();
-  test::WaitForPrimaryUserSessionStart();
+  waiter.Wait();
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

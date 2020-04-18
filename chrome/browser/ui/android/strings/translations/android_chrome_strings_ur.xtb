@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">موقوف کریں</translation>
 <translation id="1188239144602654184">‏AR میں داخل ہوں</translation>
 <translation id="1197267115302279827">بُک مارکس منتقل کریں</translation>
-<translation id="119944043368869598">سب کو صاف کریں</translation>
 <translation id="1201402288615127009">اگلا</translation>
 <translation id="1204037785786432551">ڈاؤن لوڈ کا لنک</translation>
 <translation id="1206892813135768548">لنک کا متن کاپی کریں</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">بنیادی</translation>
 <translation id="1671236975893690980">ڈاؤن لوڈ زير التوا ہے…</translation>
 <translation id="1672586136351118594">دوبارہ نہ دکھائیں</translation>
+<translation id="1688867105868176567">سائٹ کا ڈیٹا صاف کریں؟</translation>
 <translation id="1692118695553449118">مطابقت پذیری آن ہے</translation>
 <translation id="169515064810179024">سائٹس کو موشن سینسرز تک رسائی حاصل کرنے سے مسدود کریں</translation>
 <translation id="1717218214683051432">موشن سینسرز</translation>
@@ -506,7 +506,6 @@
 <translation id="4751476147751820511">موشن یا لائٹ سینسرز</translation>
 <translation id="4759238208242260848">ڈاؤن لوڈز</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ڈاؤن لوڈ مکمل ہو گیا۔}other{# ڈاؤن لوڈز مکمل ہو گئے۔}}</translation>
-<translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> پر واپس لوٹنے کیلئے ٹچ کریں</translation>
 <translation id="4802417911091824046">‏پاس فریز کی مرموز کاری میں Google Pay سے ادائیگی کے طریقے اور پتے شامل نہیں ہوتے ہیں۔
 
 اس ترتیب کو تبدیل کرنے کیلئے، <ph name="BEGIN_LINK" />مطابقت پذیری کو دوبارہ ترتیب دیں<ph name="END_LINK" /></translation>
@@ -533,7 +532,6 @@
 <translation id="4932247056774066048">‏چونکہ آپ <ph name="DOMAIN_NAME" /> کے زیر نظم اکاؤنٹ سے سائن آؤٹ ہو رہے ہیں اسلئے آپ کا Chrome ڈیٹا اس آلہ سے حذف کردیا جائے گا۔ یہ آپ کے Google اکاؤنٹ میں باقی رہے گا۔</translation>
 <translation id="4943703118917034429">ورچوئل رئیلٹی</translation>
 <translation id="4943872375798546930">کوئی نتائج نہیں ہیں</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> آپ کی اسکرین کا اشتراک کر رہا ہے</translation>
 <translation id="4961107849584082341">اس صفحہ کا کسی بھی زبان میں ترجمہ کریں</translation>
 <translation id="4962975101802056554">آلہ کے لیے سبھی اجازتوں کو کالعدم کریں</translation>
 <translation id="4970824347203572753">آپ کے مقام پر دستیاب نہیں ہے</translation>
@@ -558,7 +556,6 @@
 <translation id="5129038482087801250">ویب ایپ انسٹال کریں</translation>
 <translation id="5132942445612118989">سبھی آلات پر اپنے پاس ورڈز اور سرگزشت کی مطابقت پذیری اور مزید بہت کچھ کریں</translation>
 <translation id="5139940364318403933">‏Google Drive استعمال کرنے کا طریقہ جانیں</translation>
-<translation id="515227803646670480">اسٹور کردہ ڈیٹا صاف کریں</translation>
 <translation id="5152843274749979095">کوئی تعاون یافتہ ایپ انسٹال نہیں کی گئی</translation>
 <translation id="5161254044473106830">عنوان درکار ہے</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 ڈاؤن لوڈ ناکام ہو گیا۔}other{# ڈاؤن لوڈز ناکام ہو گئے۔}}</translation>
@@ -666,7 +663,6 @@
 <translation id="5869522115854928033">محفوظ کردہ پاس ورڈز</translation>
 <translation id="5876056640971328065">ویڈیو موقوف کریں</translation>
 <translation id="5884076754568147479">‏ٹاسکس کو مکمل کرنے میں آپ کی مدد کرنے کے لیے، Google کو ان سائٹس کے URLs اور مواد موصول ہوں گے جن پر آپ اسسٹنٹ استعمال کرتے ہیں، نیز اسسٹنٹ کے ذریعے آپ کی جمع کروائی ہوئی معلومات بھی موصول ہوں گی</translation>
-<translation id="5902828464777634901">کوکیز سمیت، اس ویب سائٹ کی جانب سے اسٹور کردہ سبھی مقامی ڈیٹا حذف کر دیا جائے گا۔</translation>
 <translation id="5919204609460789179">مطابقت پذیری شروع کرنے کیلئے <ph name="PRODUCT_NAME" /> کو اپ ڈیٹ کریں</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> کی بچت ہوئی</translation>
 <translation id="5939518447894949180">دوبارہ ترتیب دیں</translation>
@@ -786,7 +782,6 @@
 <translation id="671481426037969117">آپ کا <ph name="FQDN" /> ٹائمر بند ہو گیا ہے۔ یہ کل دوبارہ شروع ہو جائے گا۔</translation>
 <translation id="6738867403308150051">ڈاؤن لوڈ ہو رہے ہیں…</translation>
 <translation id="6766622839693428701">بند کرنے کے لئے نیچے سوائپ کریں۔</translation>
-<translation id="6766758767654711248">سائٹ پر جانے کیلئے تھپتھپائیں</translation>
 <translation id="6767294960381293877">ان آلات کی فہرست جن کے ساتھ ٹیب کا اشتراک کرنا ہے نصف اونچائی پر کھلی ہوئی ہے۔</translation>
 <translation id="6782111308708962316">فریق ثالث ویب سائٹس کو کوکی ڈیٹا محفوظ کرنے اور پڑھنے سے روکیں</translation>
 <translation id="6790428901817661496">چلائیں</translation>
@@ -1047,7 +1042,6 @@
 <translation id="8812260976093120287">کچھ ویب سائٹس پر، آپ اپنے آلہ پر اوپر موجود تعاون یافتہ ادائیگی ایپس کے ساتھ ادائیگی کر سکتے ہیں۔</translation>
 <translation id="8816026460808729765">سینسرز تک رسائی حاصل کرنے سے سائٹس کو مسدود کریں</translation>
 <translation id="8820817407110198400">بُک مارکس</translation>
-<translation id="8833831881926404480">ایک سائٹ آپ کی اسکرین کا اشتراک کر رہی ہے</translation>
 <translation id="883806473910249246">مواد ڈاؤن لوڈ کرتے وقت ایک خرابی پیش آ گئی۔</translation>
 <translation id="8840953339110955557">یہ صفحہ آن لائن ورژن سے مختلف ہو سکتا ہے۔</translation>
 <translation id="8847988622838149491">USB</translation>

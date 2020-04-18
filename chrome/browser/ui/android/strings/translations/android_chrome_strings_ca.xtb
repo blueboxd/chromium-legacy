@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Posa en pausa</translation>
 <translation id="1188239144602654184">Entra a la realitat augmentada</translation>
 <translation id="1197267115302279827">Mou les adreces d'interès</translation>
-<translation id="119944043368869598">Esborra-ho tot</translation>
 <translation id="1201402288615127009">Següent</translation>
 <translation id="1204037785786432551">Baixa l'enllaç</translation>
 <translation id="1206892813135768548">Copia el text de l'enllaç</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Configuració bàsica</translation>
 <translation id="1671236975893690980">Baixada pendent…</translation>
 <translation id="1672586136351118594">No m'ho tornis a mostrar</translation>
+<translation id="1688867105868176567">Vols esborrar les dades del lloc web?</translation>
 <translation id="1692118695553449118">La sincronització està activada</translation>
 <translation id="169515064810179024">Impedeix que els llocs web accedeixin als sensors de moviment</translation>
 <translation id="1717218214683051432">Sensors de moviment</translation>
@@ -507,7 +507,6 @@ Només tu pots veure allò que la càmera veu. El lloc web no pot veure les imat
 <translation id="4751476147751820511">Sensors de moviment o de llum</translation>
 <translation id="4759238208242260848">Baixades</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{S'ha completat 1 baixada.}other{S'han completat # baixades.}}</translation>
-<translation id="4797039098279997504">Toqueu per tornar a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">L'encriptació de frases de contrasenya no inclou les formes de pagament ni les adreces de Google Pay.
 
 Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronització<ph name="END_LINK" />.</translation>
@@ -534,7 +533,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="4932247056774066048">Com que estàs tancant la sessió d'un compte gestionat per <ph name="DOMAIN_NAME" />, les teves dades de Chrome se suprimiran d'aquest dispositiu. Tanmateix, es conservaran al teu Compte de Google.</translation>
 <translation id="4943703118917034429">Realitat virtual</translation>
 <translation id="4943872375798546930">No hi ha cap resultat</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> comparteix la teva pantalla</translation>
 <translation id="4961107849584082341">Tradueix aquesta pàgina a qualsevol idioma</translation>
 <translation id="4962975101802056554">Revoca tots els permisos del dispositiu</translation>
 <translation id="4970824347203572753">No està disponible a la teva ubicació</translation>
@@ -559,7 +557,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5129038482087801250">Instal·la l'aplicació web</translation>
 <translation id="5132942445612118989">Sincronitza les contrasenyes, l'historial i altres elements en tots els dispositius</translation>
 <translation id="5139940364318403933">Obtén informació sobre com pots utilitzar Google Drive</translation>
-<translation id="515227803646670480">Esborra les dades emmagatzemades</translation>
 <translation id="5152843274749979095">No hi ha cap aplicació admesa instal·lada</translation>
 <translation id="5161254044473106830">Cal indicar un títol</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{No s'ha pogut completar 1 baixada.}other{No s'han pogut completar # baixades.}}</translation>
@@ -667,7 +664,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5869522115854928033">Contrasenyes desades</translation>
 <translation id="5876056640971328065">Posa en pausa el vídeo</translation>
 <translation id="5884076754568147479">Per ajudar-te a dur a terme tasques, Google rebrà els URL i el contingut dels llocs web en què facis servir l'Assistent, així com la informació que enviïs amb l'Assistent</translation>
-<translation id="5902828464777634901">Se suprimiran totes les dades que aquest lloc web hagi emmagatzemat, incloses les galetes.</translation>
 <translation id="5919204609460789179">Actualitza <ph name="PRODUCT_NAME" /> per iniciar la sincronització</translation>
 <translation id="5937580074298050696">Dades estalviades: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Restableix</translation>
@@ -787,7 +783,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="671481426037969117">S'ha esgotat el temps definit al temporitzador per a <ph name="FQDN" />. Es tornarà a iniciar demà.</translation>
 <translation id="6738867403308150051">S'està baixant...</translation>
 <translation id="6766622839693428701">Llisca cap avall per tancar el full.</translation>
-<translation id="6766758767654711248">Toca per anar al lloc web</translation>
 <translation id="6767294960381293877">La llista de dispositius amb què es compartirà una pestanya ocupa la meitat inferior de la pantalla.</translation>
 <translation id="6782111308708962316">Impedeix que els llocs web de tercers desin i llegeixin les dades de les galetes</translation>
 <translation id="6790428901817661496">Reprodueix</translation>
@@ -1048,7 +1043,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8812260976093120287">En alguns llocs web, pots fer servir el teu dispositiu per pagar amb les aplicacions de pagament anteriors admeses.</translation>
 <translation id="8816026460808729765">Impedeix que els llocs web accedeixin als sensors</translation>
 <translation id="8820817407110198400">Adreces d'interès</translation>
-<translation id="8833831881926404480">Un lloc web està compartint la teva pantalla</translation>
 <translation id="883806473910249246">S'ha produït un error en baixar el contingut.</translation>
 <translation id="8840953339110955557">Aquesta pàgina pot ser diferent de la versió en línia.</translation>
 <translation id="8847988622838149491">USB</translation>

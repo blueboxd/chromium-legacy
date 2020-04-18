@@ -131,6 +131,9 @@ const char kArcScale[] = "arc-scale";
 // If it is not set, then ARC is started in default mode.
 const char kArcStartMode[] = "arc-start-mode";
 
+// Sets ARC Terms Of Service hostname url for testing.
+const char kArcTosHostForTests[] = "arc-tos-host-for-tests";
+
 // If this flag is present then the device had ARC M available and gets ARC N
 // when updating.
 // TODO(pmarko): Remove this when we assess that it's not necessary anymore:

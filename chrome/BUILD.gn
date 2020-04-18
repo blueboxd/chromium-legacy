@@ -78,25 +78,6 @@ if (is_win) {
     ]
     deps = [ ":chrome_initial" ]
   }
-
-  if (!is_multi_dll_chrome) {
-    # Remove the chrome_child.dll build artifacts from the build directory if
-    # they're not needed to avoid packaging them in the installer.
-    # TODO(sebmarchand): Remove this once the multi DLL build isn't supported.
-    action("remove_chrome_child_artifacts") {
-      script = "//build/rm.py"
-      stamp = "$target_gen_dir/chrome_child_clean_up_stamp"
-      outputs = [ stamp ]
-      args = [
-        "--stamp",
-        rebase_path(stamp, root_build_dir),
-        "-f",
-        "chrome_child.dll",
-        "chrome_child.dll.lib",
-        "chrome_child.dll.pdb",
-      ]
-    }
-  }
 }
 
 # This target exists above chrome and it's main components in the dependency
@@ -113,10 +94,7 @@ group("assert_no_deps") {
   }
 
   if (is_win) {
-    deps += [
-      ":chrome_dll",
-      ":main_dll",
-    ]
+    deps += [ ":chrome_dll" ]
   }
 
   # This should not pull in installer strings. This is will bloat the binary
@@ -124,7 +102,6 @@ group("assert_no_deps") {
   # //chrome/installer/util/BUILD.gn.
   assert_no_deps = [ "//chrome/installer/util:strings" ]
 }
-
 if (!is_android && !is_mac) {
   group("chrome") {
     public_deps = [ ":chrome_initial" ]
@@ -324,27 +301,11 @@ if (!is_android && !is_mac) {
       "//chrome/browser/resources/media/mei_preload:component",
       "//third_party/widevine/cdm",
     ]
-
-    if (is_multi_dll_chrome) {
-      defines += [ "CHROME_MULTIPLE_DLL" ]
-      data_deps += [ ":chrome_child" ]
-    }
   }
 }  # !is_android && !is_mac
 
 if (is_win) {
-  # This target is a forwarding target to compile the necessary DLLs used
-  # by Chrome.
-  group("chrome_dll") {
-    data_deps = [ ":main_dll" ]
-    if (is_multi_dll_chrome) {
-      data_deps += [ ":chrome_child" ]
-    } else {
-      deps = [ ":remove_chrome_child_artifacts" ]
-    }
-  }
-
-  shared_library("main_dll") {
+  shared_library("chrome_dll") {
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
     defines = []
 
@@ -386,82 +347,20 @@ if (is_win) {
     ]
 
     configs += [ "//build/config/win:delayloads" ]
-    if (is_multi_dll_chrome) {
-      configs += [ "//build/config/win:delayloads_not_for_child_dll" ]
-    }
 
     if (use_aura) {
       deps += [ "//ui/compositor" ]
     }
 
-    if (is_multi_dll_chrome) {
-      defines += [ "CHROME_MULTIPLE_DLL_BROWSER" ]
-      deps += [ "//content/public/app:browser" ]
-      assert_no_deps = [
-        # The browser DLL may not depend on blink or v8.
-        "//gin",
-        "//third_party/blink/public:blink",
-        "//v8",
-
-        # Ditto for PDFium.
-        "//third_party/pdfium",
-      ]
-    } else {
-      deps += [
-        ":child_dependencies",
-        "//content/public/app:both",
-        "//headless:headless_renderer",
-      ]
-    }
+    deps += [
+      ":child_dependencies",
+      "//content/public/app:both",
+      "//headless:headless_renderer",
+    ]
 
     configs += [ "//build/config/compiler:chrome_orderfile_config" ]
   }
 
-  if (is_multi_dll_chrome) {
-    # This manifest matches what GYP produced. It may not even be necessary.
-    windows_manifest("chrome_child_manifest") {
-      sources = [ as_invoker_manifest ]
-    }
-
-    shared_library("chrome_child") {
-      sources = [
-        "app/chrome_main.cc",
-        "app/chrome_main_delegate.cc",
-        "app/chrome_main_delegate.h",
-      ]
-
-      configs += [ "//build/config/compiler:wexit_time_destructors" ]
-      defines = [ "CHROME_MULTIPLE_DLL_CHILD" ]
-
-      deps = [
-        ":child_dependencies",
-        ":chrome_child_manifest",
-        ":chrome_dll_version",
-        "//chrome/browser/policy:path_parser",
-        "//chrome/chrome_elf",
-        "//chrome/common:buildflags",
-        "//chrome/common/profiler",
-        "//chrome/install_static:install_static_util",
-        "//chrome/install_static:secondary_module",
-        "//components/browser_watcher:browser_watcher_client",
-        "//components/crash/core/app",
-        "//content/public/app:child",
-        "//content/public/common:service_names",
-        "//headless:headless_shell_child_lib",
-        "//services/service_manager/embedder",
-      ]
-
-      configs += [ "//build/config/win:delayloads" ]
-
-      if (symbol_level == 2) {
-        # Incremental linking doesn't work on this target in debug mode with
-        # full symbols, but does work in other cases, including minimal
-        # symbols.
-        configs -= [ "//build/config/win:default_incremental_linking" ]
-        configs += [ "//build/config/win:no_incremental_linking" ]
-      }
-    }
-  }
   copy("copy_first_run") {
     sources = [ "app/FirstRun" ]
     outputs = [ "$root_out_dir/First Run" ]
@@ -1621,12 +1520,8 @@ if (enable_resource_whitelist_generation) {
       deps = [ "//chrome/android:libchrome" ]
       inputs = [ "$root_out_dir/lib.unstripped/libchrome$shlib_extension" ]
     } else if (is_win) {
-      deps = [ ":main_dll" ]
+      deps = [ ":chrome_dll" ]
       inputs = [ "$root_out_dir/chrome.dll.pdb" ]
-      if (is_multi_dll_chrome) {
-        deps += [ ":chrome_child" ]
-        inputs += [ "$root_out_dir/chrome_child.dll.pdb" ]
-      }
     } else {
       assert(false, "unsupported platform for whitelist generation")
     }

@@ -47,12 +47,7 @@ void AddCdmHostFilePaths(
       chrome::kBrowserProcessExecutableName};
 
   static const base::FilePath::CharType* const kVersionedFiles[] = {
-#if defined(CHROME_MULTIPLE_DLL)
-    chrome::kBrowserResourcesDll,
-    chrome::kChildDll
-#else
     chrome::kBrowserResourcesDll
-#endif  // defined(CHROME_MULTIPLE_DLL)
   };
 
   // Find where chrome.exe is installed.

@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Anhalten</translation>
 <translation id="1188239144602654184">AR-Sitzung starten</translation>
 <translation id="1197267115302279827">Lesezeichen verschieben</translation>
-<translation id="119944043368869598">Alle löschen</translation>
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1204037785786432551">Link herunterladen</translation>
 <translation id="1206892813135768548">Linktext kopieren</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Grundlegend</translation>
 <translation id="1671236975893690980">Download ausstehend...</translation>
 <translation id="1672586136351118594">Nicht mehr anzeigen</translation>
+<translation id="1688867105868176567">Websitedaten löschen?</translation>
 <translation id="1692118695553449118">Synchronisierung ist aktiviert</translation>
 <translation id="169515064810179024">Zugriff auf Bewegungssensoren für Websites blockieren</translation>
 <translation id="1717218214683051432">Bewegungssensoren</translation>
@@ -507,7 +507,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4751476147751820511">Bewegungs- oder Lichtsensoren</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 Download abgeschlossen.}other{# Downloads abgeschlossen.}}</translation>
-<translation id="4797039098279997504">Tippen, um zu <ph name="URL_OF_THE_CURRENT_TAB" /> zurückzukehren</translation>
 <translation id="4802417911091824046">Die Passphrasenverschlüsselung enthält keine Zahlungsmethoden oder Adressen von Google Pay.
 
 Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4932247056774066048">Da Sie sich von einem Konto abmelden, das von <ph name="DOMAIN_NAME" /> verwaltet wird, werden Ihre Chrome-Daten auf diesem Gerät gelöscht. Die Daten bleiben jedoch in Ihrem Google-Konto.</translation>
 <translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> hat Ihren Bildschirm freigegeben</translation>
 <translation id="4961107849584082341">Lassen Sie sich diese Seite in eine beliebige Sprache übersetzen</translation>
 <translation id="4962975101802056554">Alle Berechtigungen für Gerät entziehen</translation>
 <translation id="4970824347203572753">In Ihrem Land nicht verfügbar</translation>
@@ -559,7 +557,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5129038482087801250">Web-App installieren</translation>
 <translation id="5132942445612118989">Passwörter, Verlauf und mehr auf allen Geräten synchronisieren</translation>
 <translation id="5139940364318403933">So nutzen Sie Google Drive</translation>
-<translation id="515227803646670480">Gespeich. Daten löschen</translation>
 <translation id="5152843274749979095">Keine unterstützten Apps installiert</translation>
 <translation id="5161254044473106830">Titel erforderlich</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 Download fehlgeschlagen.}other{# Downloads fehlgeschlagen.}}</translation>
@@ -667,7 +664,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
 <translation id="5876056640971328065">Video anhalten</translation>
 <translation id="5884076754568147479">Wenn Sie in Chrome mit Assistant Aufgaben erledigen, werden die URLs und Inhalte der Websites, auf denen Sie Assistant verwenden, sowie die Daten, die Sie über Assistant weitergeben, an Google gesendet</translation>
-<translation id="5902828464777634901">Alle von dieser Website gespeicherten lokalen Daten, einschließlich Cookies, werden gelöscht.</translation>
 <translation id="5919204609460789179">Zur Synchronisierung müssen Sie <ph name="PRODUCT_NAME" /> aktualisieren</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> gespeichert</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
@@ -787,7 +783,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="671481426037969117">Ihr <ph name="FQDN" />-Timer ist abgelaufen. Morgen startet er neu.</translation>
 <translation id="6738867403308150051">Wird heruntergeladen...</translation>
 <translation id="6766622839693428701">Zum Schließen nach unten wischen.</translation>
-<translation id="6766758767654711248">Tippen, um zur Website zu wechseln</translation>
 <translation id="6767294960381293877">Die Liste von Geräten, mit denen ein Tab geteilt werden kann, ist halb geöffnet.</translation>
 <translation id="6782111308708962316">Websites von Drittanbietern am Speichern und Lesen von Cookiedaten hindern</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
@@ -1048,7 +1043,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8812260976093120287">Auf manchen Websites können Sie über Ihr Gerät mit den obigen unterstützten Zahlungs-Apps bezahlen.</translation>
 <translation id="8816026460808729765">Zugriff auf Sensoren für Websites blockieren</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
-<translation id="8833831881926404480">Eine Website teilt Ihren Bildschirm</translation>
 <translation id="883806473910249246">Beim Herunterladen des Inhalts ist ein Fehler aufgetreten.</translation>
 <translation id="8840953339110955557">Diese Seite unterscheidet sich gegebenenfalls von der Onlineversion.</translation>
 <translation id="8847988622838149491">USB</translation>

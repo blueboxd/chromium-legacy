@@ -377,6 +377,7 @@
 <translation id="1508491105858779599">Place your finger on the fingerprint sensor to unlock the device.</translation>
 <translation id="1508575541972276599">Current version is Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Access any <ph name="DEVICE_NAME_AND_VENDOR" /> via USB</translation>
+<translation id="1509960214886564027">Features on many sites may break</translation>
 <translation id="1510030919967934016">This page has been blocked from tracking your location.</translation>
 <translation id="1510055949674985293">Generate QR code for this Image</translation>
 <translation id="1510238584712386396">Launcher</translation>
@@ -1046,7 +1047,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="237828693408258535">Translate this page?</translation>
 <translation id="2378346380592252785">Update credentials for <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Select the extension directory.</translation>
-<translation id="2379232090534544565">A site is accessing audio and video input</translation>
 <translation id="2379281330731083556">Print using system dialogue... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Ask before sending (recommended)</translation>
 <translation id="2382818385048255866">Check your extensions</translation>
@@ -1455,7 +1455,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2903457445916429186">Open selected items</translation>
 <translation id="2903882649406874750">Always block <ph name="HOST" /> from accessing sensors</translation>
 <translation id="2904456025988372123">Ask when a site tries to download files automatically after the first file</translation>
-<translation id="2905789169763945526">While in Incognito, sites can't use your cookies to see your browsing activity across different sites, for example, to personalise ads. Some sites may not work properly.</translation>
 <translation id="2907619724991574506">Startup URLs</translation>
 <translation id="2907798539022650680">Failed to connect to '<ph name="NAME" />': <ph name="DETAILS" />
     Server message: <ph name="SERVER_MSG" /></translation>
@@ -1585,7 +1584,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3088128611727407543">Preparing app profile…</translation>
 <translation id="3088325635286126843">&amp;Rename...</translation>
 <translation id="3089137131053189723">Search cleared</translation>
-<translation id="3090193911106258841">Accessing audio and video input</translation>
 <translation id="3090819949319990166">Can't copy external crx file to <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" paired</translation>
 <translation id="3092699946856346803">Please insert your SIM and try again</translation>
@@ -1647,7 +1645,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3165390001037658081">Some operators might block this feature.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">You may also skip signing in and <ph name="LINK_START" />browse as Guest<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">A site is accessing video input</translation>
 <translation id="3177909033752230686">Page language:</translation>
 <translation id="3179982752812949580">Text font</translation>
 <translation id="3181954750937456830">Safe Browsing (protects you and your device from dangerous sites)</translation>
@@ -1858,7 +1855,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3459697287128633276">To enable your account to access the Google Play Store, please authenticate with your Identity Provider.</translation>
 <translation id="3462311546193741693">Signs you out of most sites. You'll stay signed in to your Google Account so that your synced data can be cleared.</translation>
 <translation id="3462413494201477527">Cancel account setup?</translation>
-<translation id="3464012987031883895">A site is accessing audio input</translation>
 <translation id="346431825526753">This is an account for kids managed by <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468298837301810372">Label</translation>
 <translation id="3468999815377931311">Android phone</translation>
@@ -1880,7 +1876,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3487007233252413104">anonymous function</translation>
 <translation id="348780365869651045">Waiting for AppCache...</translation>
 <translation id="3488065109653206955">Partially activated</translation>
-<translation id="3489025949017384019">Many sites may not work properly</translation>
 <translation id="3492788708641132712">Sync isn’t working. Try signing in again.</translation>
 <translation id="3493486281776271508">Internet connection required</translation>
 <translation id="3493881266323043047">Validity</translation>
@@ -1942,7 +1937,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3574210789297084292">sign in</translation>
 <translation id="3574917942258583917">Exit incognito mode anyway?</translation>
 <translation id="3575121482199441727">Allow for this site</translation>
-<translation id="3575919114596668130">Your Family Link parental settings will still apply. If you've previously blocked an app or site, you won't have to do it again.</translation>
 <translation id="3576324189521867626">Successfully installed</translation>
 <translation id="3578594933904494462">This tab's content is being shared.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; wants to share a printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; with a group that you own: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. If you accept, all group members will be able to print to the printer.</translation>
@@ -3726,7 +3720,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6006484371116297560">Classic</translation>
 <translation id="6007240208646052708">Voice search in your language is not available.</translation>
 <translation id="6009781704028455063">Built-in sensor</translation>
-<translation id="6010869025736512584">Accessing video input</translation>
 <translation id="6011074160056912900">Ethernet network</translation>
 <translation id="6011193465932186973">Fingerprint</translation>
 <translation id="6011449291337289699">Clear site data</translation>
@@ -4115,7 +4108,6 @@ You can manage this account’s settings by installing the Family Link app on yo
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">You're connected to a <ph name="NETWORK_TYPE" /> network.</translation>
 <translation id="6527303717912515753">Share</translation>
-<translation id="6528189551082329571">Always open links of this type in the associated app</translation>
 <translation id="6528513914570774834">Allow other users of this device to use this network</translation>
 <translation id="652948702951888897">Chrome history</translation>
 <translation id="6530186581263215931">These settings are enforced by your administrator</translation>
@@ -4685,7 +4677,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7310598146671372464">Failed to log in. The server does not support specified Kerberos encryption types. Please contact your administrator.</translation>
 <translation id="7311079019872751559">Unsandboxed plug-in access</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">Sites can't use your cookies to see your browsing activity across different sites, for example, to personalise ads.  Some sites may not work properly.</translation>
 <translation id="7321545336522791733">Server unreachable</translation>
 <translation id="7324297612904500502">Beta forum</translation>
 <translation id="7325209047678309347">Paper is jammed</translation>
@@ -5083,7 +5074,6 @@ You can manage this account’s settings by installing the Family Link app on yo
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Note:<ph name="END_BOLD" /> The system will reboot during the process.</translation>
 <translation id="7828731929332799387">This will delete all cookies and site data available in third-party contexts. Do you want to continue?</translation>
-<translation id="7829298379596169484">Accessing audio input</translation>
 <translation id="7829877209233347340">Ask a parent to sign in to grant permission to add a school account</translation>
 <translation id="7830594666202422257">Connect to Linux</translation>
 <translation id="7831491651892296503">Error configuring network</translation>
@@ -5822,7 +5812,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8800004011501252845">Showing destinations for</translation>
 <translation id="8800034312320686233">Site not working?</translation>
 <translation id="8803953437405899238">Open a new tab with one click</translation>
-<translation id="8804398419035066391">Communicate with cooperating websites</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Move tab to another window}other{Move tabs to another window}}</translation>
 <translation id="8805140816472474147">Confirm sync settings to start sync.</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> can reopen accidentally closed tabs</translation>
@@ -6032,7 +6021,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9055636786322918818">Enforce RC4 encryption. Using this option increases your risk, as the RC4 ciphers are insecure.</translation>
 <translation id="9056810968620647706">No matches were found.</translation>
 <translation id="9057354806206861646">Update schedule</translation>
-<translation id="9058976525724291037">Your child wants to add another Google Account to this device. Only G Suite for Education accounts may be added to Family Link managed devices.</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Error from line <ph name="ERROR_LINE_START" /> to <ph name="ERROR_LINE_END" /></translation>
 <translation id="9064142312330104323">Google Profile photo (loading)</translation>

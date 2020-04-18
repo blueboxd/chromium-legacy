@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CASCADE_MAP_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CASCADE_MAP_H_
 
-#include <bitset>
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/properties/css_bitset.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_priority.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -50,8 +50,8 @@ class CORE_EXPORT CascadeMap {
     STACK_ALLOCATED();
 
    public:
-    std::bitset<numCSSProperties>& Bits() { return bits_; }
-    const std::bitset<numCSSProperties>& Bits() const { return bits_; }
+    CSSBitset& Bits() { return bits_; }
+    const CSSBitset& Bits() const { return bits_; }
 
     CascadePriority* Buffer() {
       return reinterpret_cast<CascadePriority*>(properties_);
@@ -62,9 +62,9 @@ class CORE_EXPORT CascadeMap {
 
    private:
     // For performance reasons, a char-array is used to prevent construction of
-    // CascadePriority objects. A companion std::bitset keeps track of which
+    // CascadePriority objects. A companion bitset keeps track of which
     // properties are initialized.
-    std::bitset<numCSSProperties> bits_;
+    CSSBitset bits_;
     alignas(CascadePriority) char properties_[numCSSProperties *
                                               sizeof(CascadePriority)];
   };

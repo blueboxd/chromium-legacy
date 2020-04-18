@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">縮小</translation>
 <translation id="2230173723195178503">ウェブページを読み込みました</translation>
 <translation id="2239626343334228536">閲覧データを削除しています...</translation>
+<translation id="2245545499420671379">シークレット モードでサードパーティの Cookie をブロックする</translation>
 <translation id="2257567812274161158">同期が機能していません。</translation>
 <translation id="2267753748892043616">アカウントを追加</translation>
 <translation id="2268044343513325586">絞り込み</translation>
@@ -306,7 +307,6 @@
 <translation id="4979397965658815378">Google アカウントでログインすると、どのデバイスからでも同じブックマーク、パスワード、履歴などの設定を利用できるようになります。</translation>
 <translation id="5005498671520578047">パスワードのコピー</translation>
 <translation id="5010803260590204777">ウェブをプライベートモードで閲覧するにはシークレットタブを開きます。</translation>
-<translation id="5039020240289137291">サードパーティの Cookie をブロックします</translation>
 <translation id="5039804452771397117">許可</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">ドライブをインストール</translation>
@@ -419,6 +419,7 @@
 
 データは <ph name="TIME" /> に同期パスフレーズで暗号化されました。同期を開始するには、同期パスフレーズを入力してください。</translation>
 <translation id="6418346271604475326">PDF を準備しています</translation>
+<translation id="6426067060178468363">Cookie を許可する</translation>
 <translation id="6434591244308415567">エラーが発生しました。しばらくしてからもう一度お試しください。</translation>
 <translation id="6445051938772793705">国名</translation>
 <translation id="6445981559479772097">メッセージ送信完了。</translation>
@@ -544,6 +545,7 @@
 <translation id="8076014560081431679">保存済みのサイト設定は削除されず、普段の閲覧行動を反映した設定などが残る場合があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">ファイルのダウンロードが利用可能です。画面の下の方にオプションがあります。</translation>
 <translation id="8131740175452115882">確認</translation>
+<translation id="8174524257672181687">すべての Cookie をブロックする（推奨されません）</translation>
 <translation id="8197543752516192074">ページを翻訳する</translation>
 <translation id="8205564605687841303">キャンセル</translation>
 <translation id="8225985093977202398">キャッシュされた画像とファイル</translation>

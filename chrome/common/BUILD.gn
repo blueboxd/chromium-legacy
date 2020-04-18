@@ -500,9 +500,6 @@ static_library("common") {
   }
 
   if (enable_cdm_host_verification) {
-    if (is_win && is_multi_dll_chrome) {
-      defines += [ "CHROME_MULTIPLE_DLL" ]
-    }
     sources += [
       "media/cdm_host_file_path.cc",
       "media/cdm_host_file_path.h",

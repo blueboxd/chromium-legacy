@@ -9,6 +9,7 @@ import android.content.Intent;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Consumer;
+import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -104,4 +105,22 @@ public interface PageInfoControllerDelegate {
      * @param url The URL to show site settings for.
      */
     void showSiteSettings(String url);
+
+    // TODO(crbug.com/1052375): Remove the next three methods when cookie controls UI
+    // has been componentized.
+    /**
+     * Creates Cookie Controls Bridge.
+     * @param The CookieControlsObserver to create the bridge with.
+     */
+    void createCookieControlsBridge(CookieControlsObserver observer);
+
+    /**
+     * Called when cookie controls UI is closed.
+     */
+    void onUiClosing();
+
+    /**
+     * Notes whether third party cookies should be blocked for the site.
+     */
+    void setThirdPartyCookieBlockingEnabledForSite(boolean blockCookies);
 }

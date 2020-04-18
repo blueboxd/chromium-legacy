@@ -9,6 +9,8 @@ import("//ppapi/buildflags/buildflags.gni")
 # Implements "content_main" given the defines and visibility. On Windows this
 # is compiled with a different define for browser and child, but all code needs
 # to be shared.
+# TODO(https://crbug.com/1056290): Inline the template now that it only has
+# a single use.
 template("implement_content_app") {
   runner_target_name = "content_main_runner_" + target_name
   main_target_name = target_name
@@ -64,7 +66,7 @@ template("implement_content_app") {
     ]
   }
 
-  if (!is_multi_dll_chrome && enable_plugins) {
+  if (enable_plugins) {
     content_app_deps += [ "//content/ppapi_plugin:ppapi_plugin_sources" ]
   }
 
@@ -180,23 +182,5 @@ group("both_for_content_tests") {
   visibility = [ "//content/test/*" ]
   if (!is_component_build) {
     public_deps = [ ":both" ]
-  }
-}
-
-if (is_multi_dll_chrome) {
-  # It doesn't make sense to do the browser/child dll split in component mode.
-  assert(!is_component_build)
-
-  implement_content_app("browser") {
-    visibility = [ "//content/public/app:browser" ]
-    defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
-    deps = [ ":content_app_browser_deps" ]
-    include_browser_sources = true
-  }
-
-  implement_content_app("child") {
-    visibility = [ "//content/public/app:child" ]
-    defines = [ "CHROME_MULTIPLE_DLL_CHILD" ]
-    deps = [ ":content_app_child_deps" ]
   }
 }

@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Pomanjšaj</translation>
 <translation id="2230173723195178503">Spletna stran je naložena</translation>
 <translation id="2239626343334228536">Brisanje podatkov brskanja …</translation>
+<translation id="2245545499420671379">Blokiraj piškotke drugih mest v načinu brez beleženja dejavnosti</translation>
 <translation id="2257567812274161158">Sinhronizacija ne deluje</translation>
 <translation id="2267753748892043616">Dodaj račun</translation>
 <translation id="2268044343513325586">Izboljšaj iskanje</translation>
@@ -306,7 +307,6 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="4979397965658815378">Prijavite se z Google Računom, da boste zaznamke, gesla, zgodovino in druge nastavitve imeli na voljo v vseh napravah.</translation>
 <translation id="5005498671520578047">Kopiranje gesla</translation>
 <translation id="5010803260590204777">Open an incognito tab to browse the web privately.</translation>
-<translation id="5039020240289137291">Blokiranje piškotkov drugih spletnih mest</translation>
 <translation id="5039804452771397117">Dovoli</translation>
 <translation id="5059136629401106827">V redu</translation>
 <translation id="5062321486222145940">Namesti Google Drive</translation>
@@ -419,6 +419,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 
 Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />. Vnesite ga, če želite začeti sinhronizacijo.</translation>
 <translation id="6418346271604475326">Preparing PDF</translation>
+<translation id="6426067060178468363">Dovoli piškotke</translation>
 <translation id="6434591244308415567">Prišlo je do napake. Poskusite znova pozneje.</translation>
 <translation id="6445051938772793705">Država</translation>
 <translation id="6445981559479772097">Sporočilo poslano.</translation>
@@ -544,6 +545,7 @@ Ker vaš račun upravlja <ph name="HOSTED_DOMAIN" />, bodo podatki v Chromu ob o
 <translation id="8076014560081431679">Shranjene nastavitve spletnih mest ne bodo izbrisane in morda odražajo vaše brskalne navade. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Prenos datotek je na voljo. Možnosti so na voljo pri dnu zaslona.</translation>
 <translation id="8131740175452115882">Potrdi</translation>
+<translation id="8174524257672181687">Blokiraj vse piškotke (ni priporočljivo)</translation>
 <translation id="8197543752516192074">Prevedi stran</translation>
 <translation id="8205564605687841303">Prekliči</translation>
 <translation id="8225985093977202398">Cached Images and Files</translation>

@@ -23,11 +23,33 @@ def VerifyFileExpectation(expectation_name, expectation, variable_expander):
   Raises:
     AssertionError: If an expectation is not satisfied.
   """
+
+  def GetDirContents(path):
+    """Returns a list of all files and directories in a directory."""
+    contents = []
+    for dirpath, dirnames, filenames in os.walk(path):
+      for a_dir in dirnames:
+        contents.append('%s\\' % os.path.join(dirpath, a_dir))
+      for a_file in filenames:
+        contents.append(os.path.join(dirpath, a_file))
+    contents.sort()
+    return '\n'.join(contents)
+
   file_path = variable_expander.Expand(expectation_name)
   file_exists = os.path.exists(file_path)
-  assert expectation['exists'] == file_exists, \
-      ('File %s exists' % file_path) if file_exists else \
-      ('File %s is missing' % file_path)
+  if file_exists:
+    is_dir = False
+    try:
+      is_dir = stat.S_ISDIR(os.lstat(file_path).st_mode)
+    except WindowsError:
+      pass
+    if is_dir:
+      assert expectation['exists'], ('Directory %s exists with contents: %s\n'
+                                     % (file_path, GetDirContents(file_path)))
+    else:
+      assert expectation['exists'], ('File %s exists' % file_path)
+  else:
+    assert not expectation['exists'], ('File %s is missing' % file_path)
 
 
 def CleanFile(expectation_name, expectation, variable_expander):

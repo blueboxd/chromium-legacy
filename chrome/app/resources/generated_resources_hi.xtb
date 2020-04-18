@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">लागू किए जाने पर अभी वाली वेबसाइट पर मौजूद आपका डेटा पढ़ और बदल सकता है</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> आपकी सेटिंग को रीसेट करना चाहता है.</translation>
 <translation id="1243314992276662751">अपलोड करें</translation>
+<translation id="1243436884219965846">पासवर्ड की समीक्षा करें</translation>
 <translation id="1244265436519979884">फ़िलहाल, Linux की बहाल करने की प्रक्रिया जारी है</translation>
 <translation id="1244303850296295656">एक्‍सटेंशन गड़बड़ी</translation>
 <translation id="1246158006305844142">आपके ऐप्लिकेशन और सेटिंग उन सभी Chrome OS डिवाइस में सिंक हो जाएंगी जिनमें आपने अपने Google खाते से साइन किया है. ब्राउज़र को सिंक करने के विकल्पों के लिए,<ph name="LINK_BEGIN" />Chrome की सेटिंग<ph name="LINK_END" /> पर जाएं.</translation>
@@ -376,6 +377,7 @@
 <translation id="1508491105858779599">डिवाइस को अनलॉक करने के लिए अपनी उंगली फ़िंगरप्रिंट सेंसर पर रखें.</translation>
 <translation id="1508575541972276599">मौजूदा वर्शन Debian 9 (Stretch) है</translation>
 <translation id="1509281256533087115">USB के ज़रिए किसी भी <ph name="DEVICE_NAME_AND_VENDOR" /> को ऐक्सेस करें</translation>
+<translation id="1509960214886564027">शायद कई साइटों पर सुविधाएं ठीक से काम न करें</translation>
 <translation id="1510030919967934016">इस पेज को आपकी स्थिति ट्रैक करने से अवरोधित कर दिया गया है.</translation>
 <translation id="1510055949674985293">इस इमेज के लिए क्यूआर कोड जनरेट करें</translation>
 <translation id="1510238584712386396">लॉन्चर</translation>
@@ -1045,7 +1047,6 @@
 <translation id="237828693408258535">क्या इस पेज का अनुवाद करना चाहते हैं?</translation>
 <translation id="2378346380592252785"><ph name="SHARE_PATH" /> के क्रेडेंशियल अपडेट करें.</translation>
 <translation id="2378982052244864789">विस्तार निर्देशिका को चुनें.</translation>
-<translation id="2379232090534544565">एक साइट ऑडियो और वीडियो इनपुट ऐक्सेस कर रही है</translation>
 <translation id="2379281330731083556">सिस्‍टम डॉयलॉग का उपयोग करके प्रिंट करें… <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">भेजने से पहले पूछें (अनुशंसित)</translation>
 <translation id="2382818385048255866">अपने एक्सटेंशन की जांच करें</translation>
@@ -1454,7 +1455,6 @@
 <translation id="2903457445916429186">चुने गए आइटम खोलें</translation>
 <translation id="2903882649406874750"><ph name="HOST" /> को सेंसर ऐक्सेस करने से हमेशा ब्लॉक करें</translation>
 <translation id="2904456025988372123">जब कोई साइट पहली फ़ाइल के बाद फ़ाइलों को अपने आप डाउनलोड करने का प्रयास करे, तो पूछें</translation>
-<translation id="2905789169763945526">गुप्त मोड इस्तेमाल करने पर, कोई भी साइट कुकी की मदद से आपकी ब्राउज़िंग गतिविधि की जानकारी का इस्तेमाल, आपकी पसंद को ध्यान में रखकर विज्ञापन दिखाने के लिए नहीं कर पाएगी. कुछ साइटें शायद ठीक से काम नहीं करेंगी.</translation>
 <translation id="2907619724991574506">स्टार्टअप यूआरएल</translation>
 <translation id="2907798539022650680">'<ph name="NAME" />' से कनेक्ट करने में विफल: <ph name="DETAILS" />
     सर्वर का संदेश: <ph name="SERVER_MSG" /></translation>
@@ -1584,7 +1584,6 @@
 <translation id="3088128611727407543">ऐप्लिकेशन की प्रोफ़ाइल तैयार हो रही है...</translation>
 <translation id="3088325635286126843">&amp;नाम बदलें...</translation>
 <translation id="3089137131053189723">खोज हटाई गई</translation>
-<translation id="3090193911106258841">ऑडियो और वीडियो इनपुट ऐक्सेस हो रहा है</translation>
 <translation id="3090819949319990166">बाहरी crx फ़ाइल की <ph name="TEMP_CRX_FILE" /> में कॉपी नहीं बनाई जा सकती.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" युग्मित किया गया</translation>
 <translation id="3092699946856346803">अपना सिम कार्ड डालें और फिर से कोशिश करें</translation>
@@ -1646,7 +1645,6 @@
 <translation id="3165390001037658081">कुछ वाहक इस सुविधा को बंद कर सकते हैं.</translation>
 <translation id="3169472444629675720">तलाश करें</translation>
 <translation id="3170072451822350649">आप प्रवेश करना छोड़ भी सकते हैं और <ph name="LINK_START" />अतिथि के रूप में ब्राउज़<ph name="LINK_END" /> कर सकते हैं.</translation>
-<translation id="3172045848207518317">एक साइट वीडियो इनपुट ऐक्सेस कर रही है</translation>
 <translation id="3177909033752230686">पेज की भाषा:</translation>
 <translation id="3179982752812949580">टेक्स्ट का फ़ॉन्ट</translation>
 <translation id="3181954750937456830">सुरक्षित ब्राउज़िंग (आपकी और आपके डिवाइस की खतरनाक साइट से सुरक्षा करती है)</translation>
@@ -1857,7 +1855,6 @@
 <translation id="3459697287128633276">Google Play स्टोर एक्सेस करने को अपना खाता चालू करने के लिए, कृपया अपनी पहचान देने वाली सेवा के ज़रिए पुष्टि करें.</translation>
 <translation id="3462311546193741693">आपको अधिकतर साइटों से साइन आउट कर देता है. आप अपने 'Google खाते' में साइन इन रहते हैं ताकि आपका सिंक किया हुआ डेटा साफ़ हो जाए.</translation>
 <translation id="3462413494201477527">खाता सेटअप रहने दें?</translation>
-<translation id="3464012987031883895">एक साइट ऑडियो इनपुट ऐक्सेस कर रही है</translation>
 <translation id="346431825526753">यह बच्‍चों के लिए बनाया गया खाता है जिसे <ph name="CUSTODIAN_EMAIL" /> द्वारा प्रबंधित किया जाता है.</translation>
 <translation id="3468298837301810372">लेबल</translation>
 <translation id="3468999815377931311">Android फ़ोन</translation>
@@ -1879,7 +1876,6 @@
 <translation id="3487007233252413104">अनाम फ़ंक्शन</translation>
 <translation id="348780365869651045">AppCache की प्रतीक्षा कर रहा है...</translation>
 <translation id="3488065109653206955">आंशिक रूप से सक्रिय किया गया</translation>
-<translation id="3489025949017384019">हो सकता है कि कई साइटें ठीक से काम न करें</translation>
 <translation id="3492788708641132712">सिंक काम नहीं कर रहा है. फिर से प्रवेश करने का प्रयास करें.</translation>
 <translation id="3493486281776271508">इंटरनेट कनेक्शन ज़रूरी है</translation>
 <translation id="3493881266323043047">मान्यता</translation>
@@ -1941,7 +1937,6 @@
 <translation id="3574210789297084292">साइन इन करें</translation>
 <translation id="3574917942258583917">फिर भी गुप्त मोड से बाहर निकलना चाहते हैं?</translation>
 <translation id="3575121482199441727">इस साइट के लिए सूचनाओं को अनुमति दें</translation>
-<translation id="3575919114596668130">आपकी Family Link वाली पैरंट सेटिंग अब भी लागू रहेंगी. अगर आपने पहले किसी ऐप्लिकेशन या साइट को ब्लॉक किया था, तो आपको फिर से ऐसा करने की ज़रूरत नहीं है.</translation>
 <translation id="3576324189521867626">सफलतापूर्वक इंस्टॉल हो गया है</translation>
 <translation id="3578594933904494462">इस टैब की सामग्री को शेयर किया जा रहा है.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; आपके स्‍वामित्‍व वाले समूह: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt; से &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; प्रिंटर शेयर करना चाहता है. अगर आप स्‍वीकार करते हैं, तो समूह के सभी सदस्‍य प्रिंटर से प्रिंट कर पाएंगे.</translation>
@@ -2571,6 +2566,7 @@
 <translation id="4404136731284211429">फिर से स्कैन करें</translation>
 <translation id="4404843640767531781">आपके माता-पिता ने <ph name="APP_NAME" /> को ब्लॉक किया है. उनसे इस ऐप्लिकेशन का इस्तेमाल करने की अनुमति लें.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">लाइव कैप्शन</translation>
 <translation id="4408599188496843485">स&amp;हायता</translation>
 <translation id="4409697491990005945">मार्जिन</translation>
 <translation id="4410545552906060960">अपने डिवाइस को अनलॉक करने के लिए नंबर (पिन) के बजाय पासवर्ड का इस्तेमाल करें. बाद में अपना पिन सेट करने के लिए, सेटिंग पर जाएं.</translation>
@@ -3723,7 +3719,6 @@
 <translation id="6006484371116297560">क्लासिक</translation>
 <translation id="6007240208646052708">आपकी भाषा में बोलकर खोजने की सुविधा उपलब्ध नहीं है.</translation>
 <translation id="6009781704028455063">पहले से मौजूद सेंसर</translation>
-<translation id="6010869025736512584">वीडियो इनपुट ऐक्सेस हो रहा है</translation>
 <translation id="6011074160056912900">ईथरनेट नेटवर्क</translation>
 <translation id="6011193465932186973">फ़िंगरप्रिंट</translation>
 <translation id="6011449291337289699">साइट डेटा साफ़ करें</translation>
@@ -3975,6 +3970,7 @@
 <translation id="6326855256003666642">कीपअलाइव की गणना</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> ने कहा है कि आप तय समय से पहले इस डिवाइस को अपडेट करें.</translation>
 <translation id="6327785803543103246">वेब प्रॉक्सी अपने आप खोज</translation>
+<translation id="6331566915566907158">Chrome OS की सुविधाओं और परफ़ॉर्मेंस को बेहतर बनाने में मदद करें</translation>
 <translation id="6333064448949140209">डीबग करने के लिए फ़ाइल Google को भेजी जाएगी</translation>
 <translation id="6339668969738228384"><ph name="USER_EMAIL_ADDRESS" /> के लिए एक नया प्रोफ़ाइल बनाएं</translation>
 <translation id="6340017061976355871">सर्वर से नहीं जुड़ सका. कृपया अपना नेटवर्क कनेक्शन जाँचें और दोबारा कोशिश करें. अगर समस्या बनी रहती है, तो अपना Chromebook फिर से चालू करें.</translation>
@@ -4111,7 +4107,6 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">आप <ph name="NETWORK_TYPE" /> नेटवर्क से जुड़े हुए हैं.</translation>
 <translation id="6527303717912515753">शेयर करें</translation>
-<translation id="6528189551082329571">इस तरह के लिंक को हमेशा असोसिएट ऐप्लिकेशन में खोलें</translation>
 <translation id="6528513914570774834">इस डिवाइस के दूसरे उपयोगकर्ताओं को इस नेटवर्क का उपयोग करने दें</translation>
 <translation id="652948702951888897">Chrome इतिहास</translation>
 <translation id="6530186581263215931">ये सेटिंग आपके एडमिन ने लागू की हैं</translation>
@@ -4681,7 +4676,6 @@
 <translation id="7310598146671372464">लॉगिन नहीं कर पाए. सर्वर पर बताए गए केर्बेरोस सुरक्षा प्रकार काम नहीं करते हैं. कृपया अपने एडमिन से संपर्क करें.</translation>
 <translation id="7311079019872751559">सैंडबॉक्‍स नहीं किए गए प्‍लग इन की एक्सेस</translation>
 <translation id="73174032666024687"><ph name="SHEETS_LABEL" /> <ph name="NUMBER_OF_SHEETS" /></translation>
-<translation id="732018663949361753">साइटें अलग-अलग साइटों पर की गई आपकी ब्राउज़िंग गतिविधियों के बारे में जानने के लिए, कुकी का इस्तेमाल नहीं कर सकती हैं. जैसे, दर्शकों की पसंद को ध्यान में रखकर विज्ञापन दिखाने के लिए.  कुछ साइटें शायद ठीक से काम नहीं करेंगी.</translation>
 <translation id="7321545336522791733">सर्वर पहुंच योग्य नहीं है</translation>
 <translation id="7324297612904500502">बीटा फ़ोरम</translation>
 <translation id="7325209047678309347">कागज़ फंस गया है</translation>
@@ -4935,6 +4929,7 @@
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{गलत पिन. आप एक बार और कोशिश कर सकते हैं.}one{गलत पिन. आप # बार और कोशिश कर सकते हैं.}other{गलत पिन. आप # बार और कोशिश कर सकते हैं.}}</translation>
 <translation id="7671130400130574146">सिस्टम शीर्षक बार और बॉर्डर का उपयोग करें</translation>
 <translation id="767127784612208024">रीसेट की पुष्टि करने के लिए छुएं</translation>
+<translation id="767147716926917172">गड़बड़ी की जानकारी और इस्तेमाल से जुड़ा डेटा Google को अपने-आप भेजा जाता है</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, <ph name="PAGE_TITLE" /> में.</translation>
 <translation id="7676867886086876795">किसी भी लेख फ़ील्ड में बोलकर टाइप करने की सुविधा देने के लिए आपकी आवाज़ Google को भेजी जाती है.</translation>
 <translation id="7678280409648629969">जब आप 'गुप्त मोड' से बाहर निकल जाएंगे तब साइन-इन का डेटा Chrome में सेव किया जाएगा. इससे आप बाद में इस वेबसाइट में 'टच आईडी' का इस्तेमाल कर पाएंगे.</translation>
@@ -5077,7 +5072,6 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />नोट:<ph name="END_BOLD" />  इस प्रक्रिया के दौरान सिस्टम फिर चालू होगा.</translation>
 <translation id="7828731929332799387">इससे तीसरे पक्ष से जुड़ी सभी उपलब्ध कुकी और साइट डेटा मिट जाएंगे. क्या आप जारी रखना चाहते हैं?</translation>
-<translation id="7829298379596169484">ऑडियो इनपुट ऐक्सेस हो रहा है</translation>
 <translation id="7829877209233347340">स्कूल वाला खाता जोड़ने की अनुमति देने के लिए, अपने माता-पिता से साइन इन करने को कहें</translation>
 <translation id="7830594666202422257">Linux से कनेक्ट करें</translation>
 <translation id="7831491651892296503">नेटवर्क कॉन्फ़िगर करने में गड़बड़ी</translation>
@@ -5816,7 +5810,6 @@
 <translation id="8800004011501252845">इसके लिए गंतव्य दिखा रहा है:</translation>
 <translation id="8800034312320686233">साइट काम नहीं कर रही है?</translation>
 <translation id="8803953437405899238">एक क्लिक में नया टैब खोलें</translation>
-<translation id="8804398419035066391">सहयोगी वेबसाइटों से डॉयलॉग करें</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{टैब को किसी और विंडो पर ले जाएं}one{टैब को किसी और विंडो पर ले जाएं}other{टैब को किसी और विंडो पर ले जाएं}}</translation>
 <translation id="8805140816472474147">सिंक शुरू करने के लिए सिंक सेटिंग की पुष्टि करें.</translation>
 <translation id="8806680466228877631">गलती से बंद हुए टैब <ph name="SHORTCUT" /> की मदद से खोले जा सकते हैं</translation>
@@ -6026,7 +6019,6 @@
 <translation id="9055636786322918818">RC4 सुरक्षा लागू करें. इस विकल्प का इस्तेमाल करने से आपका खतरा बढ़ जाता है, क्योंकि RC4 सिफ़र सुरक्षित नहीं होते हैं.</translation>
 <translation id="9056810968620647706">कोई मिलान नहीं मिले.</translation>
 <translation id="9057354806206861646">शेड्यूल को अपडेट करें</translation>
-<translation id="9058976525724291037">आपका बच्चा इस डिवाइस पर दूसरा Google खाता जोड़ना चाहता है. शिक्षा के लिए G Suite खाते ही Family Link से प्रबंधित डिवाइस पर जोड़े जा सकते हैं.</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">लाइन <ph name="ERROR_LINE_START" /> से <ph name="ERROR_LINE_END" /> तक में गड़बड़ी</translation>
 <translation id="9064142312330104323">Google प्रोफ़ाइल फ़ोटो (लोड हो रहा है)</translation>

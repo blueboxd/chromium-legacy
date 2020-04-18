@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Tauko</translation>
 <translation id="1188239144602654184">Lisää AR</translation>
 <translation id="1197267115302279827">Siirrä kirjanmerkkejä</translation>
-<translation id="119944043368869598">Tyhjennä kaikki</translation>
 <translation id="1201402288615127009">Seuraava</translation>
 <translation id="1204037785786432551">Lataa linkin kohde</translation>
 <translation id="1206892813135768548">Kopioi linkin teksti</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Perusasetukset</translation>
 <translation id="1671236975893690980">Lataus odottaa…</translation>
 <translation id="1672586136351118594">Älä näytä uudelleen</translation>
+<translation id="1688867105868176567">Tyhjennetäänkö sivustotiedot?</translation>
 <translation id="1692118695553449118">Synkronointi on päällä</translation>
 <translation id="169515064810179024">Estä sivustoja käyttämästä liiketunnistimien lukemia</translation>
 <translation id="1717218214683051432">Liiketunnistimet</translation>
@@ -507,7 +507,6 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="4751476147751820511">Liike- tai valotunnistimet</translation>
 <translation id="4759238208242260848">Lataukset</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 lataus on valmis}other{# latausta on valmiina}}</translation>
-<translation id="4797039098279997504">Palaa osoitteeseen <ph name="URL_OF_THE_CURRENT_TAB" /> koskettamalla.</translation>
 <translation id="4802417911091824046">Google Payn maksutapoja tai osoitteita ei salata tunnuslauseella.
 
 Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" />.</translation>
@@ -534,7 +533,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="4932247056774066048">Koska olet kirjautumassa ulos tililtä, jota <ph name="DOMAIN_NAME" /> ylläpitää, Chrome-datasi poistetaan tältä laitteelta. Se pysyy Google-tililläsi.</translation>
 <translation id="4943703118917034429">Virtuaalitodellisuus</translation>
 <translation id="4943872375798546930">Ei tuloksia</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> jakaa näyttösi.</translation>
 <translation id="4961107849584082341">Käännä sivu mille tahansa kielelle</translation>
 <translation id="4962975101802056554">Peru kaikki laitteen käyttöoikeudet</translation>
 <translation id="4970824347203572753">Ei käytettävissä sijainnissasi</translation>
@@ -559,7 +557,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5129038482087801250">Asenna verkkosovellus</translation>
 <translation id="5132942445612118989">Synkronoi salasanasi, historiasi ja paljon muuta kaikilla laitteilla</translation>
 <translation id="5139940364318403933">Ohjeet Google Driven käyttöön</translation>
-<translation id="515227803646670480">Poista tallennetut tiedot</translation>
 <translation id="5152843274749979095">Ei asennettuja tuettuja sovelluksia</translation>
 <translation id="5161254044473106830">Nimike vaaditaan</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 lataus epäonnistui}other{# latausta epäonnistui}}</translation>
@@ -667,7 +664,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5869522115854928033">Tallennetut salasanat</translation>
 <translation id="5876056640971328065">Keskeytä video</translation>
 <translation id="5884076754568147479">Jotta tehtävien hoitaminen sujuisi helpommin, Google saa tiedot niiden sivustojen URL-osoitteista ja sisällöstä, joilla käytät Assistantia, sekä Assistantin kautta lähettämäsi tiedot</translation>
-<translation id="5902828464777634901">Kaikki tämän sivuston tallentamat paikalliset tiedot (myös evästeet) poistetaan.</translation>
 <translation id="5919204609460789179">Aloita synkronointi päivittämällä <ph name="PRODUCT_NAME" /></translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> säästetty</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
@@ -787,7 +783,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="671481426037969117">Ajastimesta (<ph name="FQDN" />) loppui aika. Se alkaa alusta huomenna.</translation>
 <translation id="6738867403308150051">Ladataan…</translation>
 <translation id="6766622839693428701">Sulje pyyhkäisemällä alas.</translation>
-<translation id="6766758767654711248">Siirry sivustolle napauttamalla.</translation>
 <translation id="6767294960381293877">Välilehden jakamisen laiteluettelo avataan puolen näytön korkeudella.</translation>
 <translation id="6782111308708962316">Estä kolmannen osapuolen verkkosivustoja tallentamasta ja lukemasta evästetietoja</translation>
 <translation id="6790428901817661496">Toista</translation>
@@ -1048,7 +1043,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8812260976093120287">Tietyt sivustot tukevat yllä mainittuja laitteesi yhteensopivia maksusovelluksia.</translation>
 <translation id="8816026460808729765">Estä sivustoja käyttämästä tunnistimia</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>
-<translation id="8833831881926404480">Sivusto jakaa näyttösi</translation>
 <translation id="883806473910249246">Sisältöä ladattaessa tapahtui virhe.</translation>
 <translation id="8840953339110955557">Tämä sivu saattaa poiketa verkossa olevasta versiosta.</translation>
 <translation id="8847988622838149491">USB</translation>

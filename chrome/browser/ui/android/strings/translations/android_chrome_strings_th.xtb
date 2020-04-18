@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
 <translation id="1188239144602654184">เริ่ม AR</translation>
 <translation id="1197267115302279827">ย้ายบุ๊กมาร์ก</translation>
-<translation id="119944043368869598">ล้างทั้งหมด</translation>
 <translation id="1201402288615127009">ถัดไป</translation>
 <translation id="1204037785786432551">ดาวน์โหลดลิงก์</translation>
 <translation id="1206892813135768548">คัดลอกข้อความลิงก์</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">พื้นฐาน</translation>
 <translation id="1671236975893690980">การดาวน์โหลดรอดำเนินการ…</translation>
 <translation id="1672586136351118594">ไม่ต้องแสดงอีก</translation>
+<translation id="1688867105868176567">ล้างข้อมูลเว็บไซต์ไหม</translation>
 <translation id="1692118695553449118">การซิงค์เปิดอยู่</translation>
 <translation id="169515064810179024">บล็อกไม่ให้เว็บไซต์เข้าถึงเซ็นเซอร์ตรวจจับความเคลื่อนไหว</translation>
 <translation id="1717218214683051432">เซ็นเซอร์ตรวจจับความเคลื่อนไหว</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">เซ็นเซอร์จับความเคลื่อนไหวหรือเซ็นเซอร์แสง</translation>
 <translation id="4759238208242260848">ดาวน์โหลด</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{การดาวน์โหลด 1 รายการเสร็จสมบูรณ์}other{การดาวน์โหลด # รายการเสร็จสมบูรณ์}}</translation>
-<translation id="4797039098279997504">แตะเพื่อกลับไปยัง <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">การเข้ารหัสลับด้วยรหัสผ่านจะไม่รวมข้อมูลวิธีการชำระเงินและที่อยู่จาก Google Pay
 
 หากต้องการเปลี่ยนแปลงการตั้งค่านี้ ให้<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048">เนื่องจากคุณกำลังจะออกจากระบบบัญชีที่จัดการโดย <ph name="DOMAIN_NAME" /> ข้อมูลใน Chrome จะถูกลบออกจากอุปกรณ์นี้ แต่จะยังคงอยู่ในบัญชี Google</translation>
 <translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">ไม่มีผลการค้นหา</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> กำลังแชร์หน้าจอของคุณ</translation>
 <translation id="4961107849584082341">แปลหน้านี้เป็นภาษาใดก็ได้</translation>
 <translation id="4962975101802056554">เพิกถอนสิทธิ์ทั้งหมดสำหรับอุปกรณ์</translation>
 <translation id="4970824347203572753">ไม่พร้อมใช้งานในประเทศของคุณ</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">ติดตั้งเว็บแอป</translation>
 <translation id="5132942445612118989">ซิงค์รหัสผ่าน ประวัติการเข้าชม และอื่นๆ ในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="5139940364318403933">ดูวิธีใช้ Google ไดรฟ์</translation>
-<translation id="515227803646670480">ล้างข้อมูลที่เก็บไว้</translation>
 <translation id="5152843274749979095">ไม่มีแอปที่รองรับติดตั้งอยู่</translation>
 <translation id="5161254044473106830">ต้องระบุชื่อ</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{การดาวน์โหลดล้มเหลว 1 รายการ}other{การดาวน์โหลดล้มเหลว # รายการ}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
 <translation id="5876056640971328065">หยุดวิดีโอชั่วคราว</translation>
 <translation id="5884076754568147479">Google จะได้รับ URL และเนื้อหาของเว็บไซต์ต่างๆ ที่คุณใช้งาน Assistant ด้วย รวมถึงข้อมูลที่คุณส่งผ่าน Assistant เพื่อช่วยทำงานที่ต้องการให้เสร็จสิ้น</translation>
-<translation id="5902828464777634901">ระบบจะลบข้อมูลในเครื่องทั้งหมดที่เว็บไซต์นี้จัดเก็บ รวมถึงคุกกี้</translation>
 <translation id="5919204609460789179">อัปเดต <ph name="PRODUCT_NAME" /> เพื่อเริ่มซิงค์</translation>
 <translation id="5937580074298050696">ประหยัดได้ <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117">ตัวจับเวลา <ph name="FQDN" /> หมดเวลาแล้ว และจะเริ่มอีกครั้งพรุ่งนี้</translation>
 <translation id="6738867403308150051">กำลังดาวน์โหลด…</translation>
 <translation id="6766622839693428701">เลื่อนลงเพื่อปิด</translation>
-<translation id="6766758767654711248">แตะเพื่อไปที่เว็บไซต์</translation>
 <translation id="6767294960381293877">รายการอุปกรณ์ที่จะแชร์แท็บด้วยเปิดอยู่ที่ระดับความสูงครึ่งหนึ่งของหน้าจอ</translation>
 <translation id="6782111308708962316">ป้องกันไม่ให้เว็บไซต์ของบุคคลที่สามบันทึกและอ่านข้อมูลคุกกี้</translation>
 <translation id="6790428901817661496">เล่น</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">ในบางเว็บไซต์ คุณสามารถชำระเงินด้วยแอปชำระเงินที่รองรับด้านบนในอุปกรณ์ของคุณ</translation>
 <translation id="8816026460808729765">บล็อกไม่ให้เว็บไซต์เข้าถึงเซ็นเซอร์</translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>
-<translation id="8833831881926404480">มีเว็บไซต์กำลังแชร์หน้าจอของคุณ</translation>
 <translation id="883806473910249246">เกิดข้อผิดพลาดขณะดาวน์โหลดเนื้อหา</translation>
 <translation id="8840953339110955557">หน้าเว็บนี้อาจแตกต่างไปจากเวอร์ชันที่ออนไลน์</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Thu nhỏ</translation>
 <translation id="2230173723195178503">Đã tải trang web</translation>
 <translation id="2239626343334228536">Đang xóa dữ liệu duyệt web...</translation>
+<translation id="2245545499420671379">Chặn các cookie của bên thứ ba trong chế độ ẩn danh</translation>
 <translation id="2257567812274161158">Tính năng đồng bộ hóa hiện không hoạt động.</translation>
 <translation id="2267753748892043616">Thêm tài khoản</translation>
 <translation id="2268044343513325586">Tinh chỉnh</translation>
@@ -306,7 +307,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="4979397965658815378">Đăng nhập bằng Tài khoản Google để nhận dấu trang, mật khẩu, lịch sử và các cài đặt khác trên tất cả thiết bị của bạn</translation>
 <translation id="5005498671520578047">Sao chép mật khẩu</translation>
 <translation id="5010803260590204777">Mở tab ẩn danh để duyệt web một cách riêng tư.</translation>
-<translation id="5039020240289137291">Chặn cookie bên thứ ba</translation>
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Cài đặt Google Drive</translation>
@@ -419,6 +419,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 
 Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng bộ hóa của bạn vào <ph name="TIME" />. Nhập cụm mật khẩu đó để bắt đầu đồng bộ hóa.</translation>
 <translation id="6418346271604475326">Đang chuẩn bị PDF</translation>
+<translation id="6426067060178468363">Cho phép cookie</translation>
 <translation id="6434591244308415567">Đã xảy ra lỗi. Hãy thử lại sau.</translation>
 <translation id="6445051938772793705">Quốc gia</translation>
 <translation id="6445981559479772097">Đã gửi tin nhắn.</translation>
@@ -544,6 +545,7 @@ Vì tài khoản của bạn do <ph name="HOSTED_DOMAIN" /> quản lý, nên d�
 <translation id="8076014560081431679">Cài đặt trang web đã lưu sẽ không bị xóa và có thể phản ánh thói quen duyệt web của bạn. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Hiện đã có tệp tải xuống. Bạn có thể sử dụng các tùy chọn ở gần cuối màn hình.</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
+<translation id="8174524257672181687">Chặn tất cả các cookie (Không khuyến nghị)</translation>
 <translation id="8197543752516192074">Dịch trang</translation>
 <translation id="8205564605687841303">Hủy</translation>
 <translation id="8225985093977202398">Tệp và hình ảnh được lưu vào bộ nhớ đệm</translation>

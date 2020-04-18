@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Duraklat</translation>
 <translation id="1188239144602654184">AR'ye gir</translation>
 <translation id="1197267115302279827">Yer işaretlerini taşı</translation>
-<translation id="119944043368869598">Tümünü temizle</translation>
 <translation id="1201402288615127009">İleri</translation>
 <translation id="1204037785786432551">Bağlantıyı indir</translation>
 <translation id="1206892813135768548">Bağlantı metnini kopyala</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Temel</translation>
 <translation id="1671236975893690980">İndirme işlemi beklemede…</translation>
 <translation id="1672586136351118594">Bir daha gösterme</translation>
+<translation id="1688867105868176567">Site verileri temizlensin mi?</translation>
 <translation id="1692118695553449118">Senkronizasyon açık.</translation>
 <translation id="169515064810179024">Sitelerin hareket sensörlerine erişimini engelle</translation>
 <translation id="1717218214683051432">Hareket sensörleri</translation>
@@ -507,7 +507,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4751476147751820511">Hareket veya ışık sensörleri</translation>
 <translation id="4759238208242260848">İndirilenler</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 indirme işlemi tamamlandı.}other{# indirme işlemi tamamlandı.}}</translation>
-<translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> adresine dönmek için dokunun</translation>
 <translation id="4802417911091824046">Parolayla şifreleme, Google Pay'deki adresleri ve ödeme yöntemlerini kapsamaz.
 
 Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="4932247056774066048"><ph name="DOMAIN_NAME" /> tarafından yönetilen bir hesabın oturumunu kapattığınız için Chrome verileriniz bu cihazdan silinecektir. Verileriniz Google Hesabınızda kalacaktır.</translation>
 <translation id="4943703118917034429">Sanal Gerçeklik</translation>
 <translation id="4943872375798546930">Sonuç yok</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ekranınızı paylaşıyor</translation>
 <translation id="4961107849584082341">Bu sayfayı istediğiniz dile çevirin</translation>
 <translation id="4962975101802056554">Cihaz için tüm izinleri iptal eder</translation>
 <translation id="4970824347203572753">Bulunduğunuz konumda kullanılamıyor</translation>
@@ -559,7 +557,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5129038482087801250">Web uygulamasını yükle</translation>
 <translation id="5132942445612118989">Tüm cihazlardaki şifreleriniz, geçmişiniz ve diğer öğelerinizi senkronize edin</translation>
 <translation id="5139940364318403933">Google Drive'ın nasıl kullanılacağını öğrenin</translation>
-<translation id="515227803646670480">Depolanmış verileri sil</translation>
 <translation id="5152843274749979095">Desteklenen yüklü uygulama yok</translation>
 <translation id="5161254044473106830">Başlık gerekiyor</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 indirme işlemi başarısız oldu.}other{# indirme işlemi başarısız oldu.}}</translation>
@@ -667,7 +664,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5869522115854928033">Kayıtlı şifreler</translation>
 <translation id="5876056640971328065">Videoyu duraklat</translation>
 <translation id="5884076754568147479">Google, görevleri tamamlamanıza yardımcı olmak için Asistan'ı kullandığınız sitelerin URL'lerinin ve içeriklerinin yanı sıra Asistan aracılığıyla gönderdiğiniz bilgileri alır</translation>
-<translation id="5902828464777634901">Çerezler dahil bu web sitesinin depoladığı tüm yerel veriler silinecek.</translation>
 <translation id="5919204609460789179">Senkronizasyonu başlatmak için <ph name="PRODUCT_NAME" /> adlı uygulamayı güncelleyin</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> tasarruf edildi</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
@@ -787,7 +783,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="671481426037969117"><ph name="FQDN" /> zamanlayıcınızın süresi doldu. Yarın tekrar başlatılacak.</translation>
 <translation id="6738867403308150051">İndiriliyor…</translation>
 <translation id="6766622839693428701">Kapatmak için aşağı kaydırın.</translation>
-<translation id="6766758767654711248">Siteye gitmek için dokunun</translation>
 <translation id="6767294960381293877">Sekme paylaşılacak cihazların listesi yarım yükseklikte açıldı.</translation>
 <translation id="6782111308708962316">Üçüncü taraf web sitelerinin çerez verilerini kaydetmesini ve okumasını engelle</translation>
 <translation id="6790428901817661496">Oynat</translation>
@@ -1048,7 +1043,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8812260976093120287">Bazı web sitelerinde, yukarıdaki desteklenen ödeme uygulamalarıyla cihazınızdan ödeme yapabilirsiniz.</translation>
 <translation id="8816026460808729765">Sitelerin sensörlere erişimini engelle</translation>
 <translation id="8820817407110198400">Favoriler</translation>
-<translation id="8833831881926404480">Bir site, ekranınızı paylaşıyor</translation>
 <translation id="883806473910249246">İçerik indirilirken bir hata oluştu.</translation>
 <translation id="8840953339110955557">Bu sayfa, web'deki sürümden farklı olabilir.</translation>
 <translation id="8847988622838149491">USB</translation>

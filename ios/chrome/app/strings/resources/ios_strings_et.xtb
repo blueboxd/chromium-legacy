@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Suumi välja</translation>
 <translation id="2230173723195178503">Veebileht laaditi</translation>
 <translation id="2239626343334228536">Sirvimisandmete kustutamine …</translation>
+<translation id="2245545499420671379">Blokeeri kolmanda osapoole küpsisefailid inkognito režiimis</translation>
 <translation id="2257567812274161158">Sünkroonimine ei tööta.</translation>
 <translation id="2267753748892043616">Lisa konto</translation>
 <translation id="2268044343513325586">Täpsustamine</translation>
@@ -306,7 +307,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="4979397965658815378">Logige sisse oma Google'i kontoga, et näha oma järjehoidjaid, paroole, ajalugu ja muid seadeid kõigis oma seadmetes</translation>
 <translation id="5005498671520578047">Parooli kopeerimine</translation>
 <translation id="5010803260590204777">Avage inkognito vaheleht ja sirvige veebi privaatselt.</translation>
-<translation id="5039020240289137291">Kolmanda osapoole küpsisefailide blokeerimine</translation>
 <translation id="5039804452771397117">Luba</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Installi Google Drive</translation>
@@ -419,6 +419,7 @@ Handoff peab olema lubatud seadete jaotises General ja seadmed peavad kasutama s
 
 Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisestage see sünkroonimise alustamiseks.</translation>
 <translation id="6418346271604475326">PDF-i ettevalm.</translation>
+<translation id="6426067060178468363">Luba küpsisefailid</translation>
 <translation id="6434591244308415567">Ilmnes viga. Proovige hiljem uuesti.</translation>
 <translation id="6445051938772793705">Riik</translation>
 <translation id="6445981559479772097">Sõnum on saadetud.</translation>
@@ -544,6 +545,7 @@ Kuna teie kontot haldab domeen <ph name="HOSTED_DOMAIN" />, kustutatakse teie Ch
 <translation id="8076014560081431679">Saitide salvestatud seadeid ei kustutata ja need võivad kajastada teie sirvimisharjumusi. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Allalaaditav fail on saadaval. Valikud kuvatakse ekraani alaosas.</translation>
 <translation id="8131740175452115882">Kinnita</translation>
+<translation id="8174524257672181687">Blokeeri kõik küpsised (ei ole soovitatav)</translation>
 <translation id="8197543752516192074">Tõlgi leht</translation>
 <translation id="8205564605687841303">Tühista</translation>
 <translation id="8225985093977202398">Vahem. salv. kujut. ja failid</translation>

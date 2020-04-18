@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_translate_mediator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_language_selection_table_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_table_view_controller.h"
@@ -95,9 +96,11 @@ NSString* const kTranslateNotificationSnackbarCategory =
                                    type:InfobarType::kInfobarTypeTranslate];
   if (self) {
     _translateInfobarDelegate = infoBarDelegate;
-    _translateInfobarDelegateObserver =
-        std::make_unique<TranslateInfobarDelegateObserverBridge>(
-            infoBarDelegate, self);
+    if (!base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
+      _translateInfobarDelegateObserver =
+          std::make_unique<TranslateInfobarDelegateObserverBridge>(
+              infoBarDelegate, self);
+    }
     _userAction = UserActionNone;
     _currentStep = translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE;
     // Legacy TranslateInfobarController logs this impression metric on init, so

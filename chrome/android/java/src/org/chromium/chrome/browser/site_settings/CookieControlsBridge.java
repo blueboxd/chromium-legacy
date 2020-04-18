@@ -8,6 +8,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
+import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.content_settings.CookieControlsStatus;
 import org.chromium.content_public.browser.WebContents;
 
@@ -15,23 +16,6 @@ import org.chromium.content_public.browser.WebContents;
  * Communicates between CookieControlsController (C++ backend) and PageInfoView (Java UI).
  */
 public class CookieControlsBridge {
-    /**
-     * Interface for a class that wants to receive cookie updates from CookieControlsBridge.
-     */
-    public interface CookieControlsObserver {
-        /**
-         * Called when the cookie blocking status for the current page changes.
-         * @param status An enum indicating the cookie blocking status.
-         */
-        public void onCookieBlockingStatusChanged(
-                @CookieControlsStatus int status, @CookieControlsEnforcement int enforcement);
-
-        /**
-         * Called when there is an update in the cookies that are currently being blocked.
-         * @param blockedCookies An integer indicating the number of cookies being blocked.
-         */
-        public void onBlockedCookiesCountChanged(int blockedCookies);
-    }
     private long mNativeCookieControlsBridge;
     private CookieControlsObserver mObserver;
 

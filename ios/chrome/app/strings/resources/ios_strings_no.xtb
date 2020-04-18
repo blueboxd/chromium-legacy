@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Zoom ut</translation>
 <translation id="2230173723195178503">Nettsiden er lastet inn</translation>
 <translation id="2239626343334228536">Sletter nettlesingsdata …</translation>
+<translation id="2245545499420671379">Blokkér informasjonskapsler fra tredjepart i inkognitomodus</translation>
 <translation id="2257567812274161158">Synkroniseringen fungerer ikke.</translation>
 <translation id="2267753748892043616">Legg til konto</translation>
 <translation id="2268044343513325586">Finstem</translation>
@@ -306,7 +307,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="4979397965658815378">Logg på med Google-kontoen din for å få bokmerkene, passordene, loggoppføringene og de andre innstillingene dine på alle enhetene du bruker</translation>
 <translation id="5005498671520578047">Kopiér passordet</translation>
 <translation id="5010803260590204777">Åpne en inkognitofane for å surfe privat på nettet.</translation>
-<translation id="5039020240289137291">Informasjonskapsler fra tredjepart blokkeres</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Installer Google Disk</translation>
@@ -419,6 +419,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 
 Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME" />. Skriv den inn for å starte synkroniseringen.</translation>
 <translation id="6418346271604475326">Forbereder PDF</translation>
+<translation id="6426067060178468363">Tillat informasjonskapsler</translation>
 <translation id="6434591244308415567">Det oppsto en feil. Prøv på nytt senere.</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">Melding sendt.</translation>
@@ -544,6 +545,7 @@ Fordi kontoen din administreres av <ph name="HOSTED_DOMAIN" />, slettes Chrome-d
 <translation id="8076014560081431679">Lagrede nettstedsinnstillinger slettes ikke og kan gjenspeile nettleserbruken din. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Filnedlasting er tilgjengelig. Du finner alternativer på nedre del av skjermen.</translation>
 <translation id="8131740175452115882">Bekreft</translation>
+<translation id="8174524257672181687">Blokkér alle informasjonskapsler (anbefales ikke)</translation>
 <translation id="8197543752516192074">Oversett siden</translation>
 <translation id="8205564605687841303">Avbryt</translation>
 <translation id="8225985093977202398">Bufrede bilder og filer</translation>

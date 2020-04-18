@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">زوم آؤٹ کریں</translation>
 <translation id="2230173723195178503">ویب صفحہ لوڈ کر دیا گیا ہے</translation>
 <translation id="2239626343334228536">براؤزنگ ڈیٹا صاف ہو رہا ہے...</translation>
+<translation id="2245545499420671379">پوشیدگی میں فریق ثالث کی کوکیز کو مسدود کریں</translation>
 <translation id="2257567812274161158">مطابقت پذیری کام نہیں کر رہی ہے۔</translation>
 <translation id="2267753748892043616">اکاؤنٹ شامل کریں</translation>
 <translation id="2268044343513325586">بہتر بنائیں</translation>
@@ -306,7 +307,6 @@
 <translation id="4979397965658815378">‏اپنے سبھی آلات پر اپنے بُک مارکس، پاس ورڈز، سرگزشت اور دیگر ترتیبات حاصل کرنے کیلئے اپنے Google اکاؤنٹ کے ساتھ سائن ان کریں</translation>
 <translation id="5005498671520578047">پاس ورڈ کاپی کریں</translation>
 <translation id="5010803260590204777">ویب کو نجی طور پر براؤز کرنے کیلئے ایک پوشیدگی ٹیب کھولیں۔</translation>
-<translation id="5039020240289137291">فریق ثالث کوکیز کو مسدود کرنا</translation>
 <translation id="5039804452771397117">اجازت دیں</translation>
 <translation id="5059136629401106827">ٹھیک ہے</translation>
 <translation id="5062321486222145940">‏Google Drive انسٹال کریں</translation>
@@ -419,6 +419,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 
 آپ کے ڈیٹا کی آپ کے مطابقت پذیر پاس فریز کے ساتھ <ph name="TIME" /> پر مرموز کاری کی گئی تھی۔ مطابقت پذیری شروع کرنے کیلئے اسے درج کریں۔</translation>
 <translation id="6418346271604475326">‏PDF تیار ہو رہی ہے</translation>
+<translation id="6426067060178468363">کوکیز کی اجازت دیں</translation>
 <translation id="6434591244308415567">ایک خرابی پیش آ گئی۔ بعد میں دوبارہ کوشش کریں۔</translation>
 <translation id="6445051938772793705">ملک</translation>
 <translation id="6445981559479772097">پیغام بھیج دیا گیا۔</translation>
@@ -544,6 +545,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8076014560081431679">محفوظ کردہ سائٹ کی ترتیبات حذف نہیں کی جائیں گی اور یہ آپ کے براؤزنگ کی عادات کی عکاسی کر سکتی ہے۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">فائل ڈاؤن لوڈ دستیاب ہے۔ اختیارات اسکرین کے نچلے حصے کے قریب دستیاب ہیں۔</translation>
 <translation id="8131740175452115882">تصدیق کریں</translation>
+<translation id="8174524257672181687">سبھی کوکیز مسدود کریں (تجویز نہیں کی جاتی ہے)</translation>
 <translation id="8197543752516192074">صفحہ کا ترجمہ کریں</translation>
 <translation id="8205564605687841303">منسوخ کریں</translation>
 <translation id="8225985093977202398">کیش کردہ تصاویر اور فائلیں</translation>

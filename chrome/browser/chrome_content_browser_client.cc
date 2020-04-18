@@ -3642,16 +3642,8 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
-    // Allow loading Chrome's DLLs. The name of this depends on whether
-    // is_multi_dll_chrome is defined or not. For multi-DLL Chrome,
-    // chrome_child.dll is loaded, but for single-DLL Chrome, it would be the
-    // same DLL as the browser process.
-#if defined(CHROME_MULTIPLE_DLL_BROWSER)
-  constexpr auto* child_dll_path = chrome::kChildDll;
-#else
-  constexpr auto* child_dll_path = chrome::kBrowserResourcesDll;
-#endif
-  for (const auto* dll : {child_dll_path, chrome::kElfDll}) {
+  // Allow loading Chrome's DLLs.
+  for (const auto* dll : {chrome::kBrowserResourcesDll, chrome::kElfDll}) {
     result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_SIGNED_BINARY,
                              sandbox::TargetPolicy::SIGNED_ALLOW_LOAD,
                              GetModulePath(dll).value().c_str());

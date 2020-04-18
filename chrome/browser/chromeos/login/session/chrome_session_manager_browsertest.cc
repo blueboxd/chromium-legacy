@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
@@ -34,13 +35,6 @@
 namespace chromeos {
 
 namespace {
-
-struct {
-  const char* email;
-  const char* gaia_id;
-} const kTestUsers[] = {{"test-user1@consumer.example.com", "1111111111"},
-                        {"test-user2@consumer.example.com", "2222222222"},
-                        {"test-user3@consumer.example.com", "3333333333"}};
 
 // Helper class to wait for user adding screen to finish.
 class UserAddingScreenWaiter : public UserAddingScreen::Observer {
@@ -108,14 +102,15 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
 
   // Login via fake gaia to add a new user.
   fake_gaia_.SetupFakeGaiaForLoginManager();
-  fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(kTestUsers[0].email,
-                                                    "fake_sid", "fake_lsid");
+  fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
+      FakeGaiaMixin::kFakeUserEmail, "fake_sid", "fake_lsid");
   StartSignInScreen();
 
   LoginDisplayHost::default_host()
       ->GetOobeUI()
       ->GetView<GaiaScreenHandler>()
-      ->ShowSigninScreenForTest(kTestUsers[0].email, "fake_password", "[]");
+      ->ShowSigninScreenForTest(FakeGaiaMixin::kFakeUserEmail, "fake_password",
+                                "[]");
 
   test::WaitForPrimaryUserSessionStart();
 
@@ -124,14 +119,17 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
   EXPECT_EQ(1u, manager->sessions().size());
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, PRE_LoginExistingUsers) {
-  for (const auto& user : kTestUsers) {
-    RegisterUser(AccountId::FromUserEmailGaiaId(user.email, user.gaia_id));
+class ChromeSessionManagerExistingUsersTest : public ChromeSessionManagerTest {
+ public:
+  ChromeSessionManagerExistingUsersTest() {
+    login_manager_.AppendRegularUsers(3);
   }
-  StartupUtils::MarkOobeCompleted();
-}
 
-IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, LoginExistingUsers) {
+  LoginManagerMixin login_manager_{&mixin_host_};
+};
+
+IN_PROC_BROWSER_TEST_F(ChromeSessionManagerExistingUsersTest,
+                       LoginExistingUsers) {
   // Verify that session state is LOGIN_PRIMARY with existing user data dir.
   session_manager::SessionManager* manager =
       session_manager::SessionManager::Get();
@@ -139,16 +137,14 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, LoginExistingUsers) {
             manager->session_state());
   EXPECT_EQ(0u, manager->sessions().size());
 
-  std::vector<AccountId> test_users;
-  test_users.push_back(AccountId::FromUserEmailGaiaId(kTestUsers[0].email,
-                                                      kTestUsers[0].gaia_id));
+  const auto& users = login_manager_.users();
   // Verify that session state is ACTIVE with one user session after signing
   // in a user.
-  LoginUser(test_users[0]);
+  LoginUser(users[0].account_id);
   EXPECT_EQ(session_manager::SessionState::ACTIVE, manager->session_state());
   EXPECT_EQ(1u, manager->sessions().size());
 
-  for (size_t i = 1; i < base::size(kTestUsers); ++i) {
+  for (size_t i = 1; i < users.size(); ++i) {
     // Verify that session state is LOGIN_SECONDARY during user adding.
     UserAddingScreen::Get()->Start();
     base::RunLoop().RunUntilIdle();
@@ -158,9 +154,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, LoginExistingUsers) {
     // Verify that session state is ACTIVE with 1+i user sessions after user
     // is added and new user session is started..
     UserAddingScreenWaiter waiter;
-    test_users.push_back(AccountId::FromUserEmailGaiaId(kTestUsers[i].email,
-                                                        kTestUsers[i].gaia_id));
-    AddUser(test_users.back());
+    AddUser(users[i].account_id);
     waiter.Wait();
     base::RunLoop().RunUntilIdle();
 
@@ -169,9 +163,9 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, LoginExistingUsers) {
   }
 
   // Verify that session manager has the correct user session info.
-  ASSERT_EQ(test_users.size(), manager->sessions().size());
-  for (size_t i = 0; i < test_users.size(); ++i) {
-    EXPECT_EQ(test_users[i], manager->sessions()[i].user_account_id);
+  ASSERT_EQ(users.size(), manager->sessions().size());
+  for (size_t i = 0; i < users.size(); ++i) {
+    EXPECT_EQ(users[i].account_id, manager->sessions()[i].user_account_id);
   }
 }
 
@@ -192,14 +186,15 @@ class ChromeSessionManagerRlzTest : public ChromeSessionManagerTest {
 
     // Login via fake gaia to add a new user.
     fake_gaia_.SetupFakeGaiaForLoginManager();
-    fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(kTestUsers[0].email,
-                                                      "fake_sid", "fake_lsid");
+    fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
+        FakeGaiaMixin::kFakeUserEmail, "fake_sid", "fake_lsid");
     StartSignInScreen();
 
     LoginDisplayHost::default_host()
         ->GetOobeUI()
         ->GetView<GaiaScreenHandler>()
-        ->ShowSigninScreenForTest(kTestUsers[0].email, "fake_password", "[]");
+        ->ShowSigninScreenForTest(FakeGaiaMixin::kFakeUserEmail,
+                                  "fake_password", "[]");
 
     test::WaitForPrimaryUserSessionStart();
 

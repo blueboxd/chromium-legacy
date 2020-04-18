@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1188239144602654184">Masuk ke AR</translation>
 <translation id="1197267115302279827">Alihkan penanda halaman</translation>
-<translation id="119944043368869598">Kosongkan semua</translation>
 <translation id="1201402288615127009">Seterusnya</translation>
 <translation id="1204037785786432551">Muat turun pautan</translation>
 <translation id="1206892813135768548">Salin teks pautan</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Asas</translation>
 <translation id="1671236975893690980">Muat turun belum selesai...</translation>
 <translation id="1672586136351118594">Jangan tunjukkan lagi</translation>
+<translation id="1688867105868176567">Kosongkan data tapak?</translation>
 <translation id="1692118695553449118">Penyegerakan dihidupkan</translation>
 <translation id="169515064810179024">Sekat tapak daripada mengakses penderia gerakan</translation>
 <translation id="1717218214683051432">Penderia gerakan</translation>
@@ -507,7 +507,6 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4751476147751820511">Penderia gerakan atau cahaya</translation>
 <translation id="4759238208242260848">Muat turun</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 muat turun selesai.}other{# muat turun selesai.}}</translation>
-<translation id="4797039098279997504">Sentuh untuk kembali ke <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Penyulitan ungkapan laluan tidak termasuk kaedah pembayaran dan alamat daripada Google Pay.
 
 Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="4932247056774066048">Oleh sebab anda log keluar daripada akaun yang diurus oleh <ph name="DOMAIN_NAME" />, data Chrome anda akan dipadamkan daripada peranti ini. Data tersebut akan kekal dalam Akaun Google anda.</translation>
 <translation id="4943703118917034429">Realiti Maya</translation>
 <translation id="4943872375798546930">Tiada hasil carian</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> berkongsi skrin anda</translation>
 <translation id="4961107849584082341">Terjemahkan halaman ini ke sebarang bahasa</translation>
 <translation id="4962975101802056554">Batalkan semua kebenaran untuk peranti</translation>
 <translation id="4970824347203572753">Tidak tersedia di lokasi anda</translation>
@@ -559,7 +557,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5129038482087801250">Pasang apl web</translation>
 <translation id="5132942445612118989">Segerakkan kata laluan, sejarah &amp; pelbagai lagi pada semua peranti</translation>
 <translation id="5139940364318403933">Ketahui cara menggunakan Google Drive</translation>
-<translation id="515227803646670480">Buang data yg disimpan</translation>
 <translation id="5152843274749979095">Tiada apl yang disokong dipasang</translation>
 <translation id="5161254044473106830">Tajuk diperlukan</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 muat turun gagal.}other{# muat turun gagal.}}</translation>
@@ -667,7 +664,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5869522115854928033">Kata laluan disimpan</translation>
 <translation id="5876056640971328065">Jeda video</translation>
 <translation id="5884076754568147479">Untuk membantu anda menyelesaikan tugasan, Google akan menerima URL dan kandungan tapak tempat anda menggunakan Assistant, serta maklumat yang anda serahkan melalui Assistant</translation>
-<translation id="5902828464777634901">Semua data setempat yang disimpan oleh tapak web ini, termasuk kuki, akan dipadamkan.</translation>
 <translation id="5919204609460789179">Kemas kini <ph name="PRODUCT_NAME" /> untuk memulakan penyegerakan</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> disimpan</translation>
 <translation id="5939518447894949180">Tetapkan semula</translation>
@@ -787,7 +783,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="671481426037969117">Pemasa <ph name="FQDN" /> anda sudah tamat. Pemasa akan bermula lagi esok.</translation>
 <translation id="6738867403308150051">Memuat turun…</translation>
 <translation id="6766622839693428701">Leret ke bawah untuk tutup.</translation>
-<translation id="6766758767654711248">Ketik untuk pergi ke tapak</translation>
 <translation id="6767294960381293877">Senarai peranti untuk berkongsi tab dibuka pada ketinggian separuh.</translation>
 <translation id="6782111308708962316">Halang tapak web pihak ketiga daripada menyimpan dan membaca data kuki</translation>
 <translation id="6790428901817661496">Mainkan</translation>
@@ -1048,7 +1043,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8812260976093120287">Pada sesetengah tapak web, anda boleh membayar menggunakan apl pembayaran yang disokong di atas pada peranti anda.</translation>
 <translation id="8816026460808729765">Sekat tapak daripada mengakses penderia</translation>
 <translation id="8820817407110198400">Penanda buku</translation>
-<translation id="8833831881926404480">Satu tapak sedang berkongsi skrin anda</translation>
 <translation id="883806473910249246">Ralat berlaku semasa memuat turun kandungan.</translation>
 <translation id="8840953339110955557">Halaman ini mungkin berbeza daripada versi dalam talian.</translation>
 <translation id="8847988622838149491">USB</translation>

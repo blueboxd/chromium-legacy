@@ -29,9 +29,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.site_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
+import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.content_settings.CookieControlsStatus;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -69,7 +69,7 @@ import java.net.URISyntaxException;
  */
 public class PageInfoController implements ModalDialogProperties.Controller,
                                            SystemSettingsActivityRequiredListener,
-                                           CookieControlsBridge.CookieControlsObserver {
+                                           CookieControlsObserver {
     @IntDef({OpenedFromSource.MENU, OpenedFromSource.TOOLBAR, OpenedFromSource.VR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface OpenedFromSource {
@@ -112,9 +112,6 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     // A task that should be run once the page info popup is animated out and dismissed. Null if no
     // task is pending.
     private Runnable mPendingRunAfterDismissTask;
-
-    // Bridge updating the CookieControlsView when cookie settings change.
-    private CookieControlsBridge mBridge;
 
     private Consumer<Runnable> mRunAfterDismissConsumer;
 
@@ -240,14 +237,14 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                 activity, mWindowAndroid, mFullUrl, showTitle, this, mView::setPermissions);
 
         mNativePageInfoController = PageInfoControllerJni.get().init(this, mWebContents);
-        mBridge = new CookieControlsBridge(this, webContents);
+        mDelegate.createCookieControlsBridge(this);
         CookieControlsView.CookieControlsParams cookieControlsParams =
                 new CookieControlsView.CookieControlsParams();
-        cookieControlsParams.onUiClosingCallback = mBridge::onUiClosing;
+        cookieControlsParams.onUiClosingCallback = mDelegate::onUiClosing;
         cookieControlsParams.onCheckedChangedCallback = (Boolean blockCookies) -> {
             recordAction(blockCookies ? PageInfoAction.PAGE_INFO_COOKIE_BLOCKED_FOR_SITE
                                       : PageInfoAction.PAGE_INFO_COOKIE_ALLOWED_FOR_SITE);
-            mBridge.setThirdPartyCookieBlockingEnabledForSite(blockCookies);
+            mDelegate.setThirdPartyCookieBlockingEnabledForSite(blockCookies);
         };
         mView.getCookieControlsView().setParams(cookieControlsParams);
 

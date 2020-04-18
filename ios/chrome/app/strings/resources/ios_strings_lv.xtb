@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Tālināt</translation>
 <translation id="2230173723195178503">Tīmekļa lapa ielādēta</translation>
 <translation id="2239626343334228536">Notiek pārlūkošanas datu notīrīšana…</translation>
+<translation id="2245545499420671379">Inkognito režīmā bloķēt trešo pušu sīkfailus</translation>
 <translation id="2257567812274161158">Sinhronizācija nedarbojas.</translation>
 <translation id="2267753748892043616">Pievienot kontu</translation>
 <translation id="2268044343513325586">Uzlabot</translation>
@@ -306,7 +307,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="4979397965658815378">Pierakstieties Google kontā, lai izmantotu savas grāmatzīmes, paroles, vēsturi un citus Chrome datus visās jūsu ierīcēs.</translation>
 <translation id="5005498671520578047">Paroles kopēšana</translation>
 <translation id="5010803260590204777">Atveriet inkognito režīma cilni, lai privāti pārlūkotu tīmekli.</translation>
-<translation id="5039020240289137291">Bloķēt trešo pušu sīkfailus</translation>
 <translation id="5039804452771397117">Atļaut</translation>
 <translation id="5059136629401106827">Labi</translation>
 <translation id="5062321486222145940">Instalēt Google disku</translation>
@@ -419,6 +419,7 @@ Funkcija Handoff ir jāiespējo arī iestatījumu sadaļā General (Vispārīgi)
 
 Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šādā datumā: <ph name="TIME" />. Lai sāktu sinhronizēšanu, ievadiet ieejas frāzi.</translation>
 <translation id="6418346271604475326">PDF sagatave</translation>
+<translation id="6426067060178468363">Atļaut sīkfailus</translation>
 <translation id="6434591244308415567">Radās kļūda. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="6445051938772793705">Valsts</translation>
 <translation id="6445981559479772097">Īsziņa ir nosūtīta.</translation>
@@ -544,6 +545,7 @@ Tā kā jūsu kontu pārvalda <ph name="HOSTED_DOMAIN" />, jūsu Chrome dati tik
 <translation id="8076014560081431679">Saglabātie vietņu iestatījumi netiks dzēsti, un tie var atspoguļot jūsu pārlūkošanas ieradumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="8114753159095730575">Pieejama failu lejupielāde. Pieejamās opcijas redzamas ekrāna apakšdaļā.</translation>
 <translation id="8131740175452115882">Apstiprināt</translation>
+<translation id="8174524257672181687">Bloķēt visus sīkfailus (nav ieteicams)</translation>
 <translation id="8197543752516192074">Tulkot lapu</translation>
 <translation id="8205564605687841303">Atcelt</translation>
 <translation id="8225985093977202398">Kešatmiņa</translation>

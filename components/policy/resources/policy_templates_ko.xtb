@@ -76,17 +76,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />을(를) 설정하면(값 1) 중요한 보안 문제 또는 안정성 관련 수정사항으로 간주되는 변형만 <ph name="PRODUCT_OS_NAME" />에 적용 가능합니다.
 
       <ph name="VARIATIONS_DISABLED_OPTION_NAME" />을(를) 설정하면(값 2) 로그인 화면에서 브라우저에 어떤 변형도 적용할 수 없습니다. 이 모드는 <ph name="PRODUCT_OS_NAME" /> 개발자가 중요한 보안 수정사항을 신속히 제공하지 못하게 할 수 있으므로 권장되지 않습니다.</translation>
-<translation id="1078643757670228170">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
-
-          AC 전원으로 실행할 때 사용자 입력이 없어서 화면이 꺼지기까지 걸리는 시간을 지정합니다.
-
-          이 정책이 0보다 큰 값으로 설정되어 있으면 <ph name="PRODUCT_OS_NAME" />에서 화면을 끄기 전에 사용자가 유휴 상태를 유지해야 하는 시간을 지정합니다.
-
-          0으로 설정되어 있으면 사용자가 유휴 상태가 되어도 <ph name="PRODUCT_OS_NAME" />에서 화면을 끄지 않습니다.
-
-          설정되어 있지 않으면 기본 설정된 시간이 적용됩니다.
-
-          정책 값은 밀리초로 지정되어야 합니다. 값은 유휴 지연보다 작거나 같게 고정됩니다.</translation>
 <translation id="1079801999187584280">Developer Tools 사용 금지</translation>
 <translation id="1087437665304381368">이 정책은 <ph name="PRODUCT_OS_NAME" /> 개발자 모드만 제어합니다. Android 개발자 옵션에 액세스하지 못하게 하려면 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 정책을 설정해야 합니다.</translation>
 <translation id="1087707496788636333">Chrome Enterprise 정책 목록이 이동됩니다. 북마크를 <ph name="POLICY_DOCUMENTATION_URL" /> 페이지로 업데이트하세요.</translation>
@@ -255,13 +244,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책은 내장 스피커뿐만 아니라 모든 유형의 오디오 출력에 적용됩니다. 오디오 접근성 기능도 이 정책에 의해 사용 중지됩니다. 사용자에게 스크린 리더가 필요하다면 이 정책을 사용 중지하세요.
 
       이 설정을 true로 설정하거나 설정하지 않으면 사용자가 기기에서 지원하는 모든 오디오 출력을 사용할 수 있습니다.</translation>
-<translation id="1358050607773151553">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
-
-          이 정책이 설정되어 있으면 사용자가 유휴 지연 시간으로 지정된 시간 동안 유휴 상태에 있을 때 <ph name="PRODUCT_OS_NAME" />에서 실행할 작업을 지정하며, 유휴 지연 시간은 별도로 설정할 수 있습니다.
-
-          이 정책이 설정되어 있지 않으면 기본 작업인 일시중지가 실행됩니다.
-
-          작업이 일시중지면 일시중지되기 전에 <ph name="PRODUCT_OS_NAME" />에서 화면을 잠그거나 잠그지 않도록 별도로 설정할 수 있습니다.</translation>
 <translation id="1359553908012294236">이 정책이 'true'로 설정되거나 설정되지 않으면 <ph name="PRODUCT_NAME" />에서 게스트 로그인을 사용합니다. 게스트 로그인은 모든 창이 시크릿 모드로 실행되는 <ph name="PRODUCT_NAME" /> 프로필입니다.
 
       이 정책이 'false'로 설정되면 <ph name="PRODUCT_NAME" />에서 게스트 프로필을 사용할 수 없습니다.</translation>
@@ -276,11 +258,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책을 설정하지 않으면 'DefaultNotificationsSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
 
           올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
-<translation id="1377134027840513298">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
-
-          이 정책은 <ph name="IDLE_ACTION_AC_POLICY_NAME" /> 및 <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> 정책과 같이 더 구체적인 정책의 대체 값을 제공합니다. 더 구체적인 정책이 설정되지 않은 경우 이 정책에 설정된 대체 값이 사용됩니다.
-
-          이 정책이 설정되지 않아도 더 구체적인 정책 사용에 영향을 주지 않습니다.</translation>
 <translation id="1384459581748403878">참고: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">OS 업데이트 상태 보고</translation>
 <translation id="1393485621820363363">사용 설정된 엔터프라이즈 기기 프린터</translation>
@@ -646,17 +623,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       설정이 사용 중지되면 주소 정보 자동 완성이 제안되거나 실행되지 않으며, 사용자가 웹 탐색 중에 제출하는 주소 정보가 추가로 저장되지도 않습니다.
 
       설정이 사용되거나 값이 지정되지 않으면 사용자가 UI에서 주소 정보 자동 완성 기능을 관리할 수 있게 됩니다.</translation>
-<translation id="1959613237819575097">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
-
-          배터리 전원으로 실행할 때 사용자 입력이 없어서 화면이 꺼지기까지 걸리는 시간을 지정합니다.
-
-          이 정책이 0보다 큰 값으로 설정되어 있으면 <ph name="PRODUCT_OS_NAME" />에서 화면을 끄기 전에 사용자가 유휴 상태를 유지해야 하는 시간을 지정합니다.
-
-          0으로 설정되어 있으면 사용자가 유휴 상태가 되어도 <ph name="PRODUCT_OS_NAME" />에서 화면을 끄지 않습니다.
-
-          설정되어 있지 않으면 기본 설정된 시간이 적용됩니다.
-
-          정책 값은 밀리초로 지정되어야 합니다. 값은 유휴 지연보다 작거나 같게 고정됩니다.</translation>
 <translation id="1962273523772270623">Google 서비스의 WebRTC 이벤트 로그 수집 허용</translation>
 <translation id="1964634611280150550">시크릿 모드 사용이 중지됨</translation>
 <translation id="1964802606569741174">이 정책은 Android YouTube 앱에 아무런 영향도 미치지 않습니다. YouTube의 안전 모드를 실행해야 하는 경우 Android YouTube 앱 설치를 허용하지 않아야 합니다.</translation>
@@ -775,6 +741,13 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       이 정책을 설정하지 않으면 오클루전 감지가 사용 설정됩니다.</translation>
 <translation id="2166472654199325139">사이트에 성인용 콘텐츠 필터링을 적용하지 않음</translation>
+<translation id="2166746572083670600"><ph name="PRODUCT_NAME" />이(가) 사용자 데이터를 저장하는 데 사용할 디렉터리를 설정합니다
+
+      이 정책을 설정하면 <ph name="PRODUCT_NAME" />에서 사용자가 '--user-data-dir' 플래그를 지정했는지와 관계없이 제공된 디렉터리를 사용합니다. <ph name="PRODUCT_NAME" />에서 정책의 콘텐츠를 관리하므로, 데이터 손실 또는 기타 예상치 못한 오류를 피하려면 다른 용도로 사용되는 디렉터리를 이 정책에 설정해서는 안 됩니다.
+
+      https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables에서 사용 가능한 변수 목록을 확인하세요.
+
+      이 정책을 설정하지 않은 경우 기본 프로필 경로가 사용되며 사용자는 '--user-data-dir' 명령줄 플래그를 사용하여 경로를 재정의할 수 있습니다.</translation>
 <translation id="2168397434410358693">AC 전원으로 실행할 때 유휴 지연</translation>
 <translation id="217013996107840632">다른 브라우저에서 Chrome으로 전환하기 위한 명령줄 매개변수입니다.</translation>
 <translation id="2170233653554726857">WPAD 최적화 사용</translation>
@@ -898,11 +871,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       잘못된 형식의 템플릿은 무시됩니다.</translation>
 <translation id="2345547870894930157">안전하지 않은 대체 없이 DNS-over-HTTPS 사용</translation>
 <translation id="2386362615870139244">화면 잠금 허용</translation>
-<translation id="2398554235599593694"> 이 정책은 '항상 열기' 대화상자를 외부 프로토콜 시작 확인 메시지에 표시할지 여부를 제어합니다.
-
-      정책이 True로 설정되어 있으면 외부 프로토콜 확인이 표시될 때 사용자가 나중에 확인 메시지 없이 프로토콜을 '항상 열도록' 선택할 수 있습니다.
-
-      False로 설정되어 있거나 설정되어 있지 않으면 '항상 열기' 체크박스가 표시되지 않고 외부 프로토콜이 호출될 때마다 사용자에게 메시지가 표시됩니다.</translation>
 <translation id="2406820201690307634">이미지 표시가 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않으면 'DefaultImagesSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
@@ -947,19 +915,6 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
       이 정책이 설정되어 있지 않은 경우 사용자가 이 기능의 사용 여부를 결정할 수 있습니다.
 
       이 설정은 <ph name="PRODUCT_NAME" /> 29 이상 버전에서 제거되었습니다.</translation>
-<translation id="2430828513262055658">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" /> 정책을 사용하세요.
-
-          AC 전원으로 실행할 때 사용자의 입력 없이 어느 정도의 시간이 지나면 화면이 잠길지 지정합니다.
-
-          정책이 0보다 큰 값으로 설정되어 있으면 <ph name="PRODUCT_OS_NAME" />에서 화면을 잠그기 전에 사용자가 유휴 상태를 유지해야 하는 시간을 지정합니다.
-
-          0으로 설정되어 있으면 사용자가 유휴 상태가 되어도 <ph name="PRODUCT_OS_NAME" />에서 화면을 잠그지 않습니다.
-
-          설정되어 있지 않으면 기본 설정된 시간이 적용됩니다.
-
-          유휴 상태에서 화면을 잠글 때는 일시중지 시 화면 잠금을 사용하도록 설정하고 유휴 지연 시간 이후 <ph name="PRODUCT_OS_NAME" />을(를) 일시중지하는 것이 좋습니다. 이 정책은 일시중지보다 훨씬 일찍 화면을 잠가야 할 때 또는 유휴 상태에서 일시중지가 적합하지 않을 때만 사용해야 합니다.
-
-          정책 값은 밀리초로 지정되어야 합니다. 유휴 지연 시간보다 적도록 값이 잘립니다.</translation>
 <translation id="2433412232489478893">이 정책은 사용자에게 <ph name="PRODUCT_NAME" />의 네트워크 파일 공유 기능을 허용할지 여부를 제어합니다.
 
       이 정책이 구성되어 있지 않거나 True로 설정되어 있으면 사용자가 네트워크 파일 공유를 사용할 수 있습니다.
@@ -1348,7 +1303,6 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="2856674246949497058">OS 버전이 대상 버전보다 높은 경우 대상 버전으로 롤백하고 버전을 유지합니다. 이 과정 중에 파워워시를 실행합니다.</translation>
 <translation id="2869762730352628426">로그인 화면에서 자동 클릭 사용</translation>
 <translation id="2872961005593481000">종료</translation>
-<translation id="2873651257716068683">기본 인쇄 페이지 크기를 덮어씁니다. 페이지 크기를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
 <translation id="2874209944580848064">Android 앱을 지원하는 <ph name="PRODUCT_OS_NAME" /> 기기 관련 주의사항:</translation>
 <translation id="2874901846804525128">사용자가 신뢰할 수 없는 출처의 Android 앱을 사용하는 것을 방지</translation>
 <translation id="2875192972412983412">서버 프린터를 검색할 프린트 서버의 하위 집합을 지정합니다.
@@ -1789,19 +1743,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           정책이 설정되지 않으면 처음에는 텍스트 읽어주기가 사용 중지되지만 사용자가 언제든 기능을 사용 설정할 수 있습니다.</translation>
 <translation id="3591527072193107424">이전 브라우저 지원 기능을 사용 설정합니다.</translation>
 <translation id="3591584750136265240">로그인 인증 동작 설정</translation>
-<translation id="3602332793276340697">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" /> 정책을 사용하세요.
-
-          배터리 전원으로 실행할 때 사용자 입력이 없어서 화면이 잠기기까지 걸리는 시간을 지정합니다.
-
-          정책이 0보다 큰 값으로 설정되어 있으면 <ph name="PRODUCT_OS_NAME" />에서 화면을 잠그기 전에 사용자가 유휴 상태를 유지해야 하는 시간을 지정합니다.
-
-          0으로 설정되어 있으면 사용자가 유휴 상태가 되어도 <ph name="PRODUCT_OS_NAME" />에서 화면을 잠그지 않습니다.
-
-          설정되어 있지 않으면 기본 설정된 시간이 적용됩니다.
-
-          유휴 상태에서 화면을 잠글 때는 일시중지 시 화면 잠금을 사용하도록 설정하고 유휴 지연 시간 이후 <ph name="PRODUCT_OS_NAME" />을(를) 일시중지하는 것이 좋습니다. 이 정책은 일시중지보다 훨씬 일찍 화면을 잠가야 할 때 또는 유휴 상태에서 일시중지가 적합하지 않을 때만 사용해야 합니다.
-
-          정책 값은 밀리초로 지정되어야 합니다. 유휴 지연 시간보다 적도록 값이 잘립니다.</translation>
 <translation id="3624515566460517364">업로드 및 다운로드 시 민감한 정보 보호 규칙 위반 여부 검사</translation>
 <translation id="3627678165642179114">맞춤법 검사 웹 서비스 사용 또는 사용 중지</translation>
 <translation id="3628480121685794414">단면 인쇄 사용 설정</translation>
@@ -2884,6 +2825,12 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       정책 값은 밀리초 단위로 지정됩니다.</translation>
 <translation id="523505283826916779">접근성 설정</translation>
+<translation id="5236004592041099233">엔터프라이즈 로그인 URL(HTTP 및 HTTPS 스키마만 해당) 목록을 설정합니다. 비밀번호 보호 서비스는 이러한 URL에서 비밀번호의 솔트 처리된 해시를 캡처하여 비밀번호 재사용 감지에 사용합니다.
+      <ph name="PRODUCT_NAME" />이(가) 비밀번호의 솔트 처리된 해시를 제대로 캡처하게 하려면 로그인 페이지가 다음 페이지의 가이드라인을 준수하는지 확인하세요. https://www.chromium.org/developers/design-documents/create-amazing-password-forms
+
+      이 설정이 사용되면 비밀번호 보호 서비스가 비밀번호 재사용 감지에 사용할 비밀번호의 솔트 처리된 해시를 이러한 URL에서 캡처합니다.
+      이 설정을 사용 중지하거나 설정하지 않으면 비밀번호 보호 서비스는 https://accounts.google.com에서만 비밀번호의 솔트 처리된 해시를 캡처합니다.
+      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 연결된 Windows 인스턴스 또는 기기 관리에 등록된 Windows 10 Pro/Enterprise 인스턴스에서만 사용할 수 있습니다.</translation>
 <translation id="5236882091572996759">이 정책이 True로 설정되어 있거나 설정되어 있지 않으면 오디오가 재생되는 동안 사용자가 유휴 상태인 것으로 간주되지 않습니다. 이로 인해 유휴 시간제한에 도달하거나 유휴 작업이 실행되지 않습니다. 하지만 설정된 시간제한 이후에는 오디오 활동과 관계없이 화면 어둡게 하기, 화면 꺼짐 및 화면 잠금이 실행됩니다.
 
           이 정책이 False로 설정되어 있으면 오디오가 활동해도 사용자가 유휴 상태인 것으로 간주됩니다.</translation>
@@ -2899,17 +2846,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types 페이지도 참조해 보시기 바랍니다.</translation>
 <translation id="5249453807420671499">사용자가 Kerberos 계정을 추가할 수 있음</translation>
 <translation id="5255162913209987122">권장 가능</translation>
-<translation id="5261766238868915624">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
-
-          배터리 전원으로 실행할 때 사용자 입력이 없어서 화면이 어둡게 되기까지 걸리는 시간을 지정합니다.
-
-          이 정책이 0보다 큰 값으로 설정되어 있으면 이는 <ph name="PRODUCT_OS_NAME" />에서 화면을 어둡게 하기 전에 사용자가 유휴 상태를 유지해야 하는 시간을 지정합니다.
-
-          0으로 설정되어 있으면 사용자가 유휴 상태가 되어도 <ph name="PRODUCT_OS_NAME" />에서 화면을 어둡게 하지 않습니다.
-
-          설정되어 있지 않으면 기본 설정된 시간이 적용됩니다.
-
-          정책 값은 밀리초로 지정되어야 합니다. 화면 꺼짐 지연 시간(설정된 경우) 및 유휴 지연 시간보다 작거나 같도록 값이 잘립니다.</translation>
 <translation id="527237119693897329">로드되지 않아야 할 기본 메시지 호스트를 지정하도록 허용합니다.
 
           차단 목록 * 값은 허용 목록에 별도로 표시하지 않으면 모든 기본 메시지 호스트가 차단됨을 나타냅니다.
@@ -2938,13 +2874,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
        false로 설정되면 오디오 및 동영상의 자동 업그레이드가 사용 중지되며 이미지에도 경고가 표시되지 않습니다.
        이 정책은 오디오, 동영상, 이미지 외 유형의 혼합 콘텐츠에 영향을 주지 않습니다.
        또한 <ph name="PRODUCT_NAME" /> 84부터 더 이상 효력을 갖지 않습니다.</translation>
-<translation id="5278367296164377827">이 기업 정책은 단기적인 적응을 위해 마련되었으며 M82에서는 삭제될 예정입니다.
-
-      Chrome의 기본 리퍼러 정책은 M80 공개 버전을 대상으로 하는 점진적 출시를 통해 현재 값인 no-referrer-when-downgrade에서 더욱 안전한 strict-origin-when-cross-origin으로 강화되는 중입니다.
-
-      출시 전에는 이 기업 정책이 적용되지 않습니다. 출시 후 기업 정책을 사용 설정하면 Chrome의 기본 리퍼러 정책이 M80 이전 값인 no-referrer-when-downgrade로 설정됩니다.
-
-      이 기업 정책은 기본적으로 사용 중지되어 있습니다.</translation>
 <translation id="5283457834853986457">플러그인 Finder 사용 중지(지원 중단됨)</translation>
 <translation id="5285315763984334157">악성 다운로드 차단</translation>
 <translation id="5288772341821359899">정책이 설정된 경우 WebRTC가 사용하는 UDP 포트 범위는 지정한 포트 간격(엔드포인트 포함)으로 제한됩니다.
@@ -3614,6 +3543,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="6221175752766085998">로컬 트러스트 앵커에서 발급되었으나 subjectAlternativeName 확장 프로그램이 없는 인증서를 허용합니다.</translation>
 <translation id="6224304369267200483">자동으로 직접 보안 키 인증을 허용하는 URL/도메인</translation>
 <translation id="6233173491898450179">다운로드 디렉터리 설정</translation>
+<translation id="6234177445959386333">비밀번호 보호 서비스로 비밀번호의 솔트 처리된 해시를 캡처할 엔터프라이즈 로그인 URL 목록을 설정합니다.</translation>
 <translation id="6242147107333796512">원격 ID 등 비정상 종료 보고서와 관련된 정보를 보고하고
       타임스탬프와 원인을 기록합니다.
 
@@ -3655,17 +3585,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="6281043242780654992">기본 메시지의 정책을 설정합니다. 차단된 기본 메시지 호스트는 허용 목록에 추가되지 않는 한 허용되지 않습니다.</translation>
 <translation id="6282799760374509080">오디오 캡처 허용 또는 거부</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6293957650182823856">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
-
-          AC 전원을 사용할 때 사용자의 입력 없이 어느 정도의 시간이 지나면 경고 대화상자가 표시될지 지정합니다.
-
-          이 정책이 설정되어 있으면 <ph name="PRODUCT_OS_NAME" />에서 사용자에게 유휴 작업이 곧 실행된다고 알리는 경고 대화상자를 표시하기 전 사용자가 유휴 상태를 유지해야 하는 시간을 지정합니다.
-
-          정책이 설정되어 있지 않으면 경고 대화상자가 표시되지 않습니다.
-
-          정책 값은 밀리초로 지정되어야 합니다. 값은 유휴 지연보다 작거나 같게 고정됩니다.
-
-          유휴 작업이 로그아웃 또는 종료인 경우에만 경고 메시지가 표시됩니다.</translation>
 <translation id="6310223829319187614">사용자가 로그인할 때 도메인 이름 자동완성 기능을 사용합니다.</translation>
 <translation id="631081324835911099">기본 계정의 인증 토큰이 무효화되면 사용자를 강제로 로그아웃합니다.
         이 정책을 사용하면 Google 웹 서비스의 제한된 콘텐츠에 사용자가 액세스하지 못하게 할 수 있습니다.
@@ -4072,6 +3991,12 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       정책이 설정되지 않으면 실행기가 기본적으로 화면 하단에 배치되며 사용자가 실행기의 위치를 변경할 수 있습니다.</translation>
 <translation id="7040229947030068419">예시:</translation>
 <translation id="7044883996351280650">Android 백업 및 복원 서비스 제어</translation>
+<translation id="705089873294344912">비밀번호 변경 URL(HTTP 및 HTTPS 스키마만 해당)을 설정합니다. 브라우저에 경고가 표시된 후 사용자가 비밀번호를 변경하도록 비밀번호 보호 서비스에서 사용자를 이 URL로 안내합니다.
+      <ph name="PRODUCT_NAME" />이(가) 비밀번호 변경 페이지에서 새로운 비밀번호의 솔트 처리된 해시를 제대로 캡처하게 하려면 비밀번호 변경 페이지가 다음 페이지의 가이드라인을 준수하는지 확인하세요. https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      이 설정이 사용되면 브라우저에 경고가 표시된 후 사용자가 비밀번호를 변경하도록 비밀번호 보호 서비스에서 사용자를 이 URL로 안내합니다.
+      설정이 사용 중지되거나 설정되지 않으면 사용자가 비밀번호를 변경하도록 비밀번호 보호 서비스에서 사용자를 https://myaccount.google.com 페이지로 안내합니다.
+      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 연결된 Windows 인스턴스 또는 기기 관리에 등록된 Windows 10 Pro/Enterprise 인스턴스에서만 사용할 수 있습니다.</translation>
 <translation id="7053678646221257043">이 정책을 사용하도록 설정하면 현재 기본 브라우저에서 북마크를 강제로 가져옵니다. 또한 가져오기 대화상자에 영향을 미칩니다.
 
       사용하지 않으면 북마크를 가져오지 않습니다.
@@ -5113,17 +5038,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       (https://support.google.com/a/answer/1668854 참조).
 
       사용자는 이 설정을 변경하거나 재정의할 수 없습니다.</translation>
-<translation id="8618139576368821933">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
-
-          AC 전원으로 실행할 때 사용자 입력이 없어서 화면이 어둡게 되기까지 걸리는 시간을 지정합니다.
-
-          이 정책이 0보다 큰 값으로 설정되어 있으면 이는 <ph name="PRODUCT_OS_NAME" />에서 화면을 어둡게 하기 전에 사용자가 유휴 상태를 유지해야 하는 시간을 지정합니다.
-
-          0으로 설정되어 있으면 사용자가 유휴 상태가 되어도 <ph name="PRODUCT_OS_NAME" />에서 화면을 어둡게 하지 않습니다.
-
-          설정되어 있지 않으면 기본 설정된 시간이 적용됩니다.
-
-          정책 값은 밀리초로 지정되어야 합니다. 화면 꺼짐 지연 시간(설정된 경우) 및 유휴 지연 시간보다 작거나 같도록 값이 잘립니다.</translation>
 <translation id="8625234016727663537">로그인 화면에서 주어진 공급업체 및 제품 ID를 사용하여 USB 기기에 액세스할 수 있는 권한이 자동으로 부여되는 사이트를 URL 목록 설정을 통해 지정할 수 있습니다. 이 정책이 유효하려면 목록의 각 항목에 기기 및 URL이 모두 포함되어 있어야 합니다. 기기의 각 항목에는 공급업체 ID 및 제품 ID 입력란이 포함될 수 있습니다. 생략된 모든 ID는 공급업체 ID가 지정되지 않으면 제품 ID도 지정될 수 없다는 한 가지 예외 사항을 제외하고는 와일드 카드로 취급됩니다. 그렇지 않은 경우 정책은 유효하지 않게 되며 무시됩니다.
 
         USB 권한 모델은 요청하는 사이트의 URL('요청 URL')과 최상위 프레임 사이트의 URL('삽입 URL')을 사용하여 요청 URL에 USB 기기 액세스 권한을 부여합니다. 요청하는 사이트가 iframe에서 로드되는 경우 요청 URL과 삽입 URL이 다를 수 있습니다. 따라서 'URL' 입력란에는 요청 URL과 삽입 URL을 구분하여 지정할 수 있도록 쉼표로 구분된 URL 문자열이 2개까지 포함될 수 있습니다. URL이 하나만 지정된 경우 삽입 상태와 관계없이 요청하는 사이트의 URL이 이 URL과 일치하면 해당하는 USB 기기에 액세스할 권한이 부여됩니다. 'URL' 입력란의 URL은 유효한 URL이어야 하며, 그렇지 않으면 정책이 무시됩니다.
@@ -5204,17 +5118,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       확장 프로그램 프린터는 인쇄 제공업체 대상이라고도 하며, <ph name="PRODUCT_NAME" /> 확장 프로그램에 속한 모든 대상을 포함합니다.
 
       로컬 프린터는 기본 인쇄 대상이라고도 하며, 로컬 컴퓨터에서 사용 가능한 인쇄 대상과 공유 네트워크 프린터를 포함합니다.</translation>
-<translation id="8752541111574086388">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
-
-          배터리 전원을 사용할 때 사용자의 입력 없이 어느 정도의 시간이 지나면 경고 대화상자가 표시될지 지정합니다.
-
-          이 정책이 설정되어 있으면 <ph name="PRODUCT_OS_NAME" />에서 사용자에게 유휴 작업이 곧 실행된다고 알리는 경고 대화상자를 표시하기 전 사용자가 유휴 상태를 유지해야 하는 시간을 지정합니다.
-
-          정책이 설정되어 있지 않으면 경고 대화상자가 표시되지 않습니다.
-
-          정책 값은 밀리초로 지정되어야 합니다. 값은 유휴 지연보다 작거나 같게 고정됩니다.
-
-          유휴 작업이 로그아웃 또는 종료인 경우에만 경고 메시지가 표시됩니다.</translation>
 <translation id="8757552286070680084">Wilco DTC 설정입니다.</translation>
 <translation id="8758831693895931466">필수 클라우드 관리 등록 사용</translation>
 <translation id="8759829385824155666">허용된 Kerberos 암호화 유형</translation>
@@ -5314,24 +5217,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       보고됩니다.</translation>
 <translation id="891435090623616439">JSON 문자열로 인코딩됨, 자세한 내용은 <ph name="COMPLEX_POLICIES_URL" /> 참조</translation>
 <translation id="8917070657147922192">사용자가 설치된 CA 인증을 관리하도록 허용합니다.</translation>
-<translation id="8926275581598789324">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
-
-          배터리 전원으로 실행할 때 사용자 입력이 없어서 유휴 작업이 수행되기까지 걸리는 시간을 지정합니다.
-
-          이 정책이 설정되어 있으면 이는 <ph name="PRODUCT_OS_NAME" />에서 유휴 작업을 수행하기 전에 사용자가 유휴 상태를 유지해야 하는 시간을 지정하며, 유휴 작업은 별도로 설정할 수 있습니다.
-
-          설정되어 있지 않으면 기본 설정된 시간이 적용됩니다.
-
-          정책 값은 밀리초로 지정되어야 합니다.</translation>
-<translation id="8929997566627164343">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
-
-          AC 전원으로 실행할 때 사용자 입력이 없어서 유휴 작업이 수행되기까지 걸리는 시간을 지정합니다.
-
-          이 정책이 설정되어 있으면 이는 <ph name="PRODUCT_OS_NAME" />에서 유휴 작업을 수행하기 전에 사용자가 유휴 상태를 유지해야 하는 시간을 지정하며, 유휴 작업은 별도로 설정할 수 있습니다.
-
-          설정되어 있지 않으면 기본 설정된 시간이 적용됩니다.
-
-          정책 값은 밀리초로 지정되어야 합니다.</translation>
 <translation id="8934944553121392674"><ph name="DEVICE_PRINTERS_POLICY" />에 명시된 프린터 중 어떤 프린터를 사용자에게 제공할지 관리합니다.
 
       일괄 프린터 설정에 사용할 액세스 정책을 지정합니다. <ph name="PRINTERS_ALLOW_ALL" />을(를) 선택하면 모든 프린터가 표시됩니다. <ph name="PRINTERS_BLACKLIST" />을(를) 선택하면 <ph name="DEVICE_PRINTERS_BLACKLIST" />이(가) 사용되어 특정 프린터에 관한 액세스 권한이 제한됩니다. <ph name="PRINTERS_WHITELIST" />을(를) 선택하면 <ph name="DEVICE_PRINTERS_WHITELIST" />이(가) 사용되어 선택 가능한 프린터만 지정됩니다.

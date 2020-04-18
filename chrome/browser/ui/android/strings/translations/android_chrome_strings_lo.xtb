@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">ຢຸດຊົ່ວຄາວ</translation>
 <translation id="1188239144602654184">ເຂົ້າຫາ AR</translation>
 <translation id="1197267115302279827">ຍ້າຍ​ບຸກ​ມາກ​ສ໌</translation>
-<translation id="119944043368869598">ລຶບທັງ​ຫມົດ</translation>
 <translation id="1201402288615127009">ຕໍ່ໄປ</translation>
 <translation id="1204037785786432551">ດາວໂຫຼດລິ້ງ</translation>
 <translation id="1206892813135768548">ກັອບປີ້ຂໍ້ຄວາມລິ້ງ</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">ພື້ນ​ຖານ</translation>
 <translation id="1671236975893690980">ການດາວໂຫຼດຍັງລໍຖ້າຢູ່...</translation>
 <translation id="1672586136351118594">ຢ່າສະແດງອີກ</translation>
+<translation id="1688867105868176567">ລຶບລ້າງຂໍ້ມູນເວັບໄຊບໍ?</translation>
 <translation id="1692118695553449118">ຊິງຄ໌ເປີດຢູ່</translation>
 <translation id="169515064810179024">ບລັອກເວັບໄຊບໍ່ໃຫ້ເຂົ້າເຖິງເຊັນເຊີກວດຈັບການເຄື່ອນໄຫວ</translation>
 <translation id="1717218214683051432">ເຊັນກວດຈັບການເຄື່ອນໄຫວ</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">ເຊັນເຊີກວດຈັບການເຄື່ອນໄຫວ ຫຼື ແສງ</translation>
 <translation id="4759238208242260848">ດາວ​ໂຫຼດ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{ສຳເລັດ 1 ການດາວໂຫຼດແລ້ວ.}other{ສຳເລັດ # ການດາວໂຫຼດແລ້ວ.}}</translation>
-<translation id="4797039098279997504">ສຳພັດເພື່ອກັບຄືນຫາ <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">ການເຂົ້າລະຫັດໂດຍໃຊ້ລະຫັດຜ່ານບໍ່ຮວມເອົາວິທີການຈ່າຍເງິນ ແລະ ທີ່ຢູ່ຈາກ Google Pay.
 
 ເພື່ອປ່ຽນການຕັ້ງຄ່ານີ້, ກະລຸນາ <ph name="BEGIN_LINK" />ຣີເຊັດການຊິິ້ງຂໍ້ມູນ<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048">ເພາະວ່າທ່ານກຳລັງອອກຈາກລະບົບບັນຊີທີ່ຈັດການໂດຍ <ph name="DOMAIN_NAME" />, ຂໍ້ມູນ Chrome ຂອງທ່ານຈະຖືກລຶບອອກຈາກອຸປະກອນນີ້. ມັນຈະຍັງຄົງຢູ່ໃນບັນຊີ Google ຂອງທ່ານ.</translation>
 <translation id="4943703118917034429">ເວີຊົວ ຣິອາລິຕີ</translation>
 <translation id="4943872375798546930">ບໍ່​ມີ​ຜົນ​ໄດ້​ຮັບ</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ກຳລັງແບ່ງປັນໜ້າຈໍຂອງທ່ານ</translation>
 <translation id="4961107849584082341">ແປໜ້ານີ້ເປັນພາສາໃດໆກໍໄດ້</translation>
 <translation id="4962975101802056554">ຖອນການອະນຸຍາດທັງໝົດສຳລັບອຸປະກອນ</translation>
 <translation id="4970824347203572753">ບໍ່ມີໃຫ້ນຳໃຊ້ໃນສະຖານທີ່ຂອງທ່ານ</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">ຕິດຕັ້ງແອັບເວັບ</translation>
 <translation id="5132942445612118989">ຊິ້ງຂໍ້ມູນລະຫັດຜ່ານ, ປະຫວັດຂອງທ່ານ ແລະ ອື່ນໆອີກຢູ່ໃນທຸກອຸປະກອນ</translation>
 <translation id="5139940364318403933">ຮຽນຮູ້ວິທີໃຊ້ Google Drive</translation>
-<translation id="515227803646670480">ລຶບຂໍ້​ມູນ​ເກັບ​​ໄວ້​</translation>
 <translation id="5152843274749979095">ບໍ່ມີແອັບທີ່ຮອງຮັບຕິດຕັ້ງໄວ້</translation>
 <translation id="5161254044473106830">ຈຳ​ເປັນ​ຕ້ອງ​ມີ​ຫົວ​ຂໍ້</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 ການດາວໂຫຼດບໍ່ສຳເລັດ.}other{# ການດາວໂຫຼດບໍ່ສຳເລັດ.}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">ລະ​ຫັດ​ຜ່ານ​ທີ່ບັນທຶກໄວ້</translation>
 <translation id="5876056640971328065">ຢຸດວິດີໂອໄວ້ຊົ່ວຄາວ</translation>
 <translation id="5884076754568147479">ເພື່ອຊ່ວຍທ່ານເຮັດສຳເລັດໜ້າວຽກ, Google ຈະໄດ້ຮັບ URL ແລະ ເນື້ອຫາຂອງເວັບໄຊທີ່ທ່ານໃຊ້ຜູ້ຊ່ວຍ, ພ້ອມກັບຂໍ້ມູນທີ່ທ່ານສົ່ງຜ່ານຜູ້ຊ່ວຍ</translation>
-<translation id="5902828464777634901">ຂໍ້​ມູນ​ໃນ​ເຄື່ອງທັງ​ຫມົດ​ທີ່ເກັບໄວ້​ໂດຍ​ເວັບ​ໄຊທ໌​ນີ້, ລວມ​ທັງ​ຄຸກ​ກີ້, ​ຈະຖືກ​ລຶບອອກ.</translation>
 <translation id="5919204609460789179">ອັບເດດ <ph name="PRODUCT_NAME" /> ເພື່ອເລີ່ມການຊິ້ງຂໍ້ມູນ</translation>
 <translation id="5937580074298050696">ປະຢັດໄດ້ <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">ຕັ້ງຄ່າຄືນໃໝ່</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117">ເວລາແອັບ <ph name="FQDN" /> ຂອງທ່ານໝົດແລ້ວ. ມັນຈະເລີ່ມໃໝ່ໃນມື້ອື່ນ.</translation>
 <translation id="6738867403308150051">ກໍາລັງດາວ​ໂຫຼດ...</translation>
 <translation id="6766622839693428701">ປັດລົງເພື່ອປິດ.</translation>
-<translation id="6766758767654711248">ແຕະເພື່ອໄປຫາເວັບໄຊ</translation>
 <translation id="6767294960381293877">ລາຍການອຸປະກອນທີ່ຈະແບ່ງປັນແຖບນຳໂດຍເປີດຢູ່ທີ່ລະດັບລວງສູງເຄິ່ງຈໍ.</translation>
 <translation id="6782111308708962316">ປ້ອງກັນບໍ່ໃຫ້ເວັບໄຊພາກສ່ວນທີສາມບັນທຶກ ແລະ ອ່ານຂໍ້ມູນຄຸກກີ້</translation>
 <translation id="6790428901817661496">​ຫຼິ້ນ</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">ໃນບາງເວັບໄຊ, ທ່ານສາມາດຈ່າຍດ້ວຍແອັບການຈ່າຍເງິນທີ່ຮອງຮັບຢູ່ຂ້າງເທິງໃນອຸປະກອນຂອງທ່ານໄດ້.</translation>
 <translation id="8816026460808729765">ບລັອກເວັບໄຊບໍ່ໃຫ້ເຂົາເຖິງເຊັນເຊີ</translation>
 <translation id="8820817407110198400">ບຸກມາກສ໌</translation>
-<translation id="8833831881926404480">ເວັບໄຊກຳລັງແບ່ງປັນໜ້າຈໍຂອງທ່ານ</translation>
 <translation id="883806473910249246">ເກີດຄວາມຜິດພາດຂຶ້ນ ໃນຂະນະທີ່ດາວໂຫຼດເນື້ອຫາ.</translation>
 <translation id="8840953339110955557">ໜ້ານີ້ອາດຈະແຕກຕ່າງຈາກເວີຊັນອອນລາຍ.</translation>
 <translation id="8847988622838149491">USB</translation>

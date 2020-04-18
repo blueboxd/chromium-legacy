@@ -3,7 +3,7 @@
     --ntp-theme-shortcut-background-color: rgb(229, 231, 232);
     --ntp-theme-text-color: var(--google-grey-800);
     --ntp-theme-text-shadow: none;
-    --ntp-one-google-bar-height: 64px;
+    --ntp-one-google-bar-height: 56px;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -37,7 +37,7 @@
   }
 
   #backgroundGradient {
-    background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
+    background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, .3));
   }
 
   #contentContainer {
@@ -76,26 +76,38 @@
     width: 100%;
   }
 
+  #customizeButtonSpacer {
+    flex-grow: 1;
+  }
+
   #customizeButtonContainer {
+    align-self: flex-end;
     background-color: var(--ntp-background-override-color);
-    border-radius: calc(0.5 * var(--cr-button-height));
+    border-radius: calc(.5 * var(--cr-button-height));
     bottom: 16px;
-    position: fixed;
+    margin-inline-end: 16px;
+    position: sticky;
   }
 
-  :host-context([dir='ltr']) #customizeButtonContainer {
-    right: 16px;
+  :host([show-background-image_]) #customizeButtonContainer {
+    background-color: transparent;
   }
 
-  :host-context([dir='rtl']) #customizeButtonContainer {
-    left: 16px;
+  :host([show-background-image_]) #customizeButtonContainer:hover {
+    background-color: rgba(255, 255, 255, .1);
   }
 
   #customizeButton {
     border: none;
-    border-radius: calc(0.5 * var(--cr-button-height));
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.23);
+    border-radius: calc(.5 * var(--cr-button-height));
+    box-shadow: 0 3px 6px rgba(0, 0, 0, .16), 0 1px 2px rgba(0, 0, 0, .23);
     font-weight: 400;
+    min-width: 32px;
+  }
+
+  :host([show-background-image_]) #customizeButton {
+    box-shadow: none;
+    padding: 0;
   }
 
   #customizeIcon {
@@ -106,6 +118,25 @@
     height: 16px;
     margin-inline-end: 8px;
     width: 16px;
+  }
+
+  :host([show-background-image_]) #customizeIcon {
+    background-color: white;
+    margin: 0;
+  }
+
+  @media (max-width: 550px) {
+    #customizeButton {
+      padding: 0;
+    }
+
+    #customizeIcon {
+      margin: 0;
+    }
+
+    #customizeText {
+      display: none;
+    }
   }
 
   #backgroundImageAttribution {
@@ -155,11 +186,11 @@
   }
 
   #backgroundImageAttribution1 {
-    font-size: 0.875rem;
+    font-size: .875rem;
   }
 
   #backgroundImageAttribution2 {
-    font-size: 0.75rem;
+    font-size: .75rem;
   }
 </style>
 <div id="background"
@@ -199,13 +230,16 @@
       </dom-if>
       <ntp-untrusted-iframe id="promo" path="promo" hidden$="[[!promoLoaded_]]">
       </ntp-untrusted-iframe>
+      <div id="customizeButtonSpacer"></div>
       <!-- cr-button is transparent on hover. This leads to incorrect results
            when a custom background is set. Therefore, wrap customize button in
            container to enfore solid background color. -->
       <div id="customizeButtonContainer">
         <cr-button id="customizeButton" on-click="onCustomizeClick_">
           <div id="customizeIcon"></div>
-          $i18n{customizeButton}
+          <div id="customizeText" hidden$="[[showBackgroundImage_]]">
+            $i18n{customizeButton}
+          </div>
         </cr-button>
       </div>
       <a id="backgroundImageAttribution"

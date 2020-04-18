@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Pozastaviť</translation>
 <translation id="1188239144602654184">Spustiť VR</translation>
 <translation id="1197267115302279827">Presunúť záložky</translation>
-<translation id="119944043368869598">Vymazať všetko</translation>
 <translation id="1201402288615127009">Ďalej</translation>
 <translation id="1204037785786432551">Stiahnuť obsah odkazu</translation>
 <translation id="1206892813135768548">Kopírovať text odkazu</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Základné</translation>
 <translation id="1671236975893690980">Čaká sa na stiahnutie…</translation>
 <translation id="1672586136351118594">Nabudúce nezobrazovať</translation>
+<translation id="1688867105868176567">Vymazať dáta webu?</translation>
 <translation id="1692118695553449118">Synchronizácia je zapnutá.</translation>
 <translation id="169515064810179024">Blokovať webom prístup k senzorom pohybu</translation>
 <translation id="1717218214683051432">Senzory pohybu</translation>
@@ -507,7 +507,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4751476147751820511">Senzory pohybu alebo svetla</translation>
 <translation id="4759238208242260848">Stiahnuté</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Dokončilo sa sťahovanie 1 položky.}few{Dokončilo sa sťahovanie # položiek.}many{# downloads complete.}other{Dokončilo sa sťahovanie # položiek.}}</translation>
-<translation id="4797039098279997504">Klepnutím sa vrátite na kartu <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Šifrovanie prístupovej frázy nezahŕňa spôsoby platby a adresy zo služby Google Pay.
 
 Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchronizáciu<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="4932247056774066048">Keďže sa odhlasujete z účtu spravovaného doménou <ph name="DOMAIN_NAME" />, budú údaje Chromu z tohto zariadenia odstránené. Zostanú vo vašom účte Google.</translation>
 <translation id="4943703118917034429">Virtuálna realita</translation>
 <translation id="4943872375798546930">Žiadne výsledky</translation>
-<translation id="4958708863221495346">Web <ph name="URL_OF_THE_CURRENT_TAB" /> zdieľa vašu obrazovku</translation>
 <translation id="4961107849584082341">Preložte si túto stránku do ľubovoľného jazyka</translation>
 <translation id="4962975101802056554">Odvolať všetky povolenia pre zariadenie</translation>
 <translation id="4970824347203572753">Nie je k dispozícii vo vašej krajine</translation>
@@ -559,7 +557,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5129038482087801250">Inštalovať webovú aplikáciu</translation>
 <translation id="5132942445612118989">Synchronizujte svoje heslá, históriu a ďalší obsah vo všetkých zariadeniach</translation>
 <translation id="5139940364318403933">Ako používať Disk Google</translation>
-<translation id="515227803646670480">Vymazanie uložených dát</translation>
 <translation id="5152843274749979095">Nie sú nainštalované žiadne podporované aplikácie</translation>
 <translation id="5161254044473106830">Musíte zadať názov</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Nepodarilo sa stiahnuť 1 položku.}few{Nepodarilo sa stiahnuť # položky.}many{# downloads failed.}other{Nepodarilo sa stiahnuť # položiek.}}</translation>
@@ -667,7 +664,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5869522115854928033">Uložené heslá</translation>
 <translation id="5876056640971328065">Pozastaviť video</translation>
 <translation id="5884076754568147479">Google bude dostávať webové adresy a obsah webov, kde používate Asistenta, ako aj informácie, ktoré prostredníctvom neho odošlete, aby vám mohol pomáhať s dokončovaním úloh</translation>
-<translation id="5902828464777634901">Všetky miestne údaje uložené týmto webom, vrátane súborov cookie, budú odstránené.</translation>
 <translation id="5919204609460789179">Ak chcete spustiť synchronizáciu, aktualizujte aplikáciu <ph name="PRODUCT_NAME" /></translation>
 <translation id="5937580074298050696">Ušetrené: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetovať</translation>
@@ -787,7 +783,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="671481426037969117">Časovač aplikácie <ph name="FQDN" /> vypršal. Spustí sa zase zajtra.</translation>
 <translation id="6738867403308150051">Sťahuje sa...</translation>
 <translation id="6766622839693428701">Zatvorte potiahnutím dole.</translation>
-<translation id="6766758767654711248">Kliknutím prejdite na web</translation>
 <translation id="6767294960381293877">Zoznam zariadení, s ktorými sa má zdieľať karta, je otvorený na polovičnú výšku.</translation>
 <translation id="6782111308708962316">Brániť webom tretích strán ukladať a čítať súbory cookie</translation>
 <translation id="6790428901817661496">Prehrať</translation>
@@ -1048,7 +1043,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8812260976093120287">Na niektorých weboch môžete platiť pomocou podporovaných platobných aplikácií na zariadení.</translation>
 <translation id="8816026460808729765">Zablokovať webom prístup k senzorom</translation>
 <translation id="8820817407110198400">Záložky</translation>
-<translation id="8833831881926404480">Nejaký web zdieľa vašu obrazovku</translation>
 <translation id="883806473910249246">Pri sťahovaní obsahu sa vyskytla chyba.</translation>
 <translation id="8840953339110955557">Táto stránka sa môže líšiť od online verzie.</translation>
 <translation id="8847988622838149491">USB</translation>

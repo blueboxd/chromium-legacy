@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Жижигрүүлэх</translation>
 <translation id="2230173723195178503">Вэб хуудсыг ачаалласан</translation>
 <translation id="2239626343334228536">Хөтчийн өгөгдлийг устгаж байна...</translation>
+<translation id="2245545499420671379">Нууцлалтай горимд гуравдагч талын күүкиг блоклох</translation>
 <translation id="2257567812274161158">Синк хийх ажиллахгүй байна.</translation>
 <translation id="2267753748892043616">Бүртгэл нэмэх</translation>
 <translation id="2268044343513325586">Боловсронгуй болгох</translation>
@@ -305,7 +306,6 @@
 <translation id="4979397965658815378">Хавчуурга, нууц үг, түүх болон бусад тохиргоог бүх төхөөрөмждөө авахын тулд Google Бүртгэлээрээ нэвтэрнэ үү</translation>
 <translation id="5005498671520578047">Нууц үг хуулах</translation>
 <translation id="5010803260590204777">Вэбэд нууцлалтайгаар зочилохын тулд мэдээллийн нууцлалтай цонхыг нээнэ үү.</translation>
-<translation id="5039020240289137291">Гуравдагч талын күүкиг блоклож байна</translation>
 <translation id="5039804452771397117">Зөвшөөрөх</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Google Drive суулгах</translation>
@@ -418,6 +418,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 
 Таны өгөгдлийг таны синк хийх нэвтрэх үгтэй <ph name="TIME" />-д шифрлэсэн байна. Синкийг эхлүүлэхийн тулд үүнийг оруулна уу.</translation>
 <translation id="6418346271604475326">PDF форматыг бэлдэж байна</translation>
+<translation id="6426067060178468363">Күүкиг зөвшөөрөх</translation>
 <translation id="6434591244308415567">Алдаа гарлаа. Дараа дахин оролдоно уу.</translation>
 <translation id="6445051938772793705">Улс</translation>
 <translation id="6445981559479772097">Зурвас илгээгдсэн.</translation>
@@ -543,6 +544,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="8076014560081431679">Сайтын хадгалсан тохиргоо устахгүй бөгөөд таны хайлтын тохиргоонд нөлөөлж болзошгүй. <ph name="BEGIN_LINK" />Дэлгэрэнгүй үзэх<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Файл татаж авах боломжтой. Дэлгэцийн доод хэсгийн сонголтууд боломжтой.</translation>
 <translation id="8131740175452115882">Батлах</translation>
+<translation id="8174524257672181687">Бүх күүкиг блоклох (зөвлөдөггүй)</translation>
 <translation id="8197543752516192074">Хуудсыг орчуулах</translation>
 <translation id="8205564605687841303">Цуцлах</translation>
 <translation id="8225985093977202398">Нөөцөлсөн зураг болон файлууд</translation>

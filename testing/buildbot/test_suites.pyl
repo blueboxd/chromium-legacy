@@ -3919,6 +3919,7 @@
   'compound_suites': {
     'android_10_rel_gtests': [
       'android_trichrome_smoke_tests',
+      'android_ar_gtests',
     ],
 
     'android_lollipop_marshmallow_gtests': [

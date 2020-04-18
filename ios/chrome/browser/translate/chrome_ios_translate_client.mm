@@ -97,7 +97,10 @@ std::unique_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
     TranslateInfobarCoordinator* coordinator =
         [[TranslateInfobarCoordinator alloc]
             initWithInfoBarDelegate:delegate.get()];
-    return std::make_unique<InfoBarIOS>(coordinator, std::move(delegate));
+    bool skip_banner = delegate->translate_step() ==
+                       translate::TranslateStep::TRANSLATE_STEP_TRANSLATING;
+    return std::make_unique<InfoBarIOS>(coordinator, std::move(delegate),
+                                        skip_banner);
   } else {
     TranslateInfoBarController* controller = [[TranslateInfoBarController alloc]
         initWithInfoBarDelegate:delegate.get()];

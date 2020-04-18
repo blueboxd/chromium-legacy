@@ -75,17 +75,6 @@
       Si se establece <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), solo se permitirá que se apliquen a <ph name="PRODUCT_OS_NAME" /> las variaciones que se consideren correcciones críticas de estabilidad o seguridad.
 
       Si se establece <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no podrá aplicarse ninguna variación en el navegador para la pantalla de acceso. Ten en cuenta que no se recomienda este modo porque podría impedir que los desarrolladores de <ph name="PRODUCT_OS_NAME" /> proporcionen correcciones críticas de seguridad de manera oportuna.</translation>
-<translation id="1078643757670228170">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Especifica el período sin intervención del usuario después del cual se apagará la pantalla cuando el dispositivo esté funcionando con CA.
-
-          Si se le asigna a la política un valor mayor que cero, este valor especificará el tiempo que debe transcurrir sin intervención del usuario para que <ph name="PRODUCT_OS_NAME" /> apague la pantalla.
-
-          Si se le asigna el valor 0, <ph name="PRODUCT_OS_NAME" /> no apagará la pantalla cuando no haya intervención del usuario.
-
-          Si no se establece, se utilizará un período predeterminado.
-
-          El valor de la política debe especificarse en milisegundos. Los valores deben ser menores o iguales que la demora de inactividad.</translation>
 <translation id="1079801999187584280">No permitir el uso de las Herramientas para desarrolladores</translation>
 <translation id="1087437665304381368">Esta política controla solo el modo de desarrollador de <ph name="PRODUCT_OS_NAME" />. Si quieres impedir el acceso a las Opciones para desarrolladores de Android, deberás configurar la política <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">La lista de políticas de Chrome Enterprise cambia de sitio. Guarda <ph name="POLICY_DOCUMENTATION_URL" /> en tus favoritos.</translation>
@@ -254,13 +243,6 @@
       Esta política afecta a todos los tipos de salida de audio y no solo a los altavoces integrados. Las funciones de accesibilidad de audio también se inhiben por esta política. No habilites esta política si es necesario que el usuario tenga un lector de pantalla.
 
       Si esta configuración se configura como verdadera o no se configura, los usuarios podrán utilizar todas las salidas de audio compatibles en su dispositivo.</translation>
-<translation id="1358050607773151553">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Cuando se configura esta política, se especifica la acción que <ph name="PRODUCT_OS_NAME" /> realizará si no hay intervención del usuario durante el período de la demora de inactividad, que se puede configurar de forma independiente.
-
-          Si no se configura esta política, se implementará la acción predeterminada, es decir, la suspensión.
-
-          Si la acción es la suspensión, se podrá configurar <ph name="PRODUCT_OS_NAME" /> por separado para que la pantalla se bloquee o no antes de la suspensión.</translation>
 <translation id="1359553908012294236">Si esta política no se configura o se establece en true, <ph name="PRODUCT_NAME" /> permitirá acceder como invitado. Los accesos como invitado son perfiles de <ph name="PRODUCT_NAME" /> en los que todas las ventanas están en modo de navegación de incógnito.
 
       Si esta política se establece en false, <ph name="PRODUCT_NAME" /> no permitirá que se inicien perfiles de invitado.</translation>
@@ -275,11 +257,6 @@
           Si no se establece esta política, se usará el valor predeterminado general para todos los sitios, ya sea de la política "DefaultNotificationsSetting" si se establece o, en caso contrario, de la configuración personal del usuario.
 
           Para obtener información detallada sobre los patrones de URL válidos, consulta: https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="1377134027840513298">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Esta política proporciona un valor de resguardo para las políticas <ph name="IDLE_ACTION_AC_POLICY_NAME" /> y <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> más específicas. Si se configura esta política, se utilizará su valor cuando no se establece la política más específica correspondiente.
-
-          Si no se configura, no se verá afectado el comportamiento de las políticas más específicas.</translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Informa el estado de la actualización del SO</translation>
 <translation id="1393485621820363363">Impresoras empresariales habilitadas asociadas a dispositivos</translation>
@@ -639,17 +616,6 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
       Si se inhabilita esta configuración, "Autocompletar" nunca sugerirá ni completará direcciones. Tampoco guardará información adicional de direcciones que el usuario haya enviado cuando navegaba en la Web.
 
       Si se habilita esta configuración o no se establece ningún valor, el usuario podrá controlar la función "Autocompletar" para las direcciones en la IU.</translation>
-<translation id="1959613237819575097">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Especifica el período sin intervención del usuario después del cual se apagará la pantalla cuando el dispositivo esté funcionando con batería.
-
-          Si se le asigna a la política un valor mayor que cero, este valor especificará el tiempo que debe transcurrir sin intervención del usuario para que <ph name="PRODUCT_OS_NAME" /> apague la pantalla.
-
-          Si se le asigna el valor 0, <ph name="PRODUCT_OS_NAME" /> no apagará la pantalla cuando no haya intervención del usuario.
-
-          Si no se establece, se utilizará un período predeterminado.
-
-          El valor de la política debe especificarse en milisegundos. Los valores deben ser menores o iguales que la demora de inactividad.</translation>
 <translation id="1962273523772270623">Permitir la recopilación de registro de acontecimientos de WebRTC que provienen de los servicios de Google</translation>
 <translation id="1964634611280150550">Modo incógnito inhabilitado</translation>
 <translation id="1964802606569741174">Esta política no tiene efecto en la app de YouTube de Android. Si se debe aplicar el modo de seguridad en YouTube, se debe inhabilitar la instalación de la app de YouTube de Android.</translation>
@@ -762,6 +728,13 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 
       Si no se establece esta política, se habilitará la detección de oclusión.</translation>
 <translation id="2166472654199325139">No aplicar filtros de contenido para adultos a los sitios</translation>
+<translation id="2166746572083670600">Configura el directorio que <ph name="PRODUCT_NAME" /> usará para almacenar datos del usuario.
+
+      Si se establece esta política, <ph name="PRODUCT_NAME" /> usará el directorio independientemente de si el usuario ha especificado la función experimental "--user-data-dir" o no. Para evitar pérdida de datos u otros errores inesperados, no debe establecerse esta política en un directorio que se use para otros propósitos, porque <ph name="PRODUCT_NAME" /> administra su contenido.
+
+      Consulta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver una lista de las variables que se pueden usar.
+
+      Si no se establece esta política, se usará la ruta predeterminada de acceso al perfil, y el usuario podrá anularla con la función experimental de la línea de comandos "--user-data-dir".</translation>
 <translation id="2168397434410358693">Demora de inactividad con alimentación de CA</translation>
 <translation id="217013996107840632">Parámetros de la línea de comandos para cambiar del navegador alternativo</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
@@ -880,11 +853,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Se omitirán las plantillas con formato incorrecto.</translation>
 <translation id="2345547870894930157">Habilitar DNS sobre HTTPS sin resguardo inseguro</translation>
 <translation id="2386362615870139244">Permitir bloqueos de activación de pantalla</translation>
-<translation id="2398554235599593694"> Esta política determina si se muestra la casilla de verificación "Always open" en mensajes de confirmación de lanzamiento en protocolos externos.
-
-      Si se establece esta política como verdadera, es posible que el usuario establezca "Always open" para el protocolo sin futuros mensajes de confirmación (cuando se muestre un mensaje de confirmación del protocolo externo).
-
-      Si se establece esta política como falsa o no se establece, no se mostrará la casilla de verificación "Always open" y el usuario deberá realizar una acción cuando se invoque un protocolo externo.</translation>
 <translation id="2406820201690307634">Te permite configurar una lista de patrones de URL donde se indiquen los sitios que no pueden mostrar imágenes.
 
           Si no se establece esta política, se usará el valor predeterminado general para todos los sitios, ya sea de la política "DefaultImagesSetting" si se establece o, en caso contrario, de la configuración personal del usuario.
@@ -929,19 +897,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Si no se establece esta opción, el usuario podrá decidir si quiere o no utilizar esta función.
 
       Esta opción se eliminó de la versión 29 de <ph name="PRODUCT_NAME" /> y versiones posteriores.</translation>
-<translation id="2430828513262055658">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
-
-          Especifica el período sin intervención del usuario después del cual se bloqueará la pantalla cuando el dispositivo esté funcionando con CA.
-
-          Si se le asigna a la política un valor mayor que cero, este valor especificará el tiempo que debe transcurrir sin intervención del usuario para que <ph name="PRODUCT_OS_NAME" /> bloquee la pantalla.
-
-          Si se le asigna el valor cero, <ph name="PRODUCT_OS_NAME" /> no bloqueará la pantalla cuando no haya intervención del usuario.
-
-          Si no se establece, se utilizará un período predeterminado.
-
-          Para bloquear la pantalla cuando está inactiva, se recomienda habilitar el bloqueo de pantalla en la suspensión y que se suspenda <ph name="PRODUCT_OS_NAME" /> después de la demora de inactividad. Esta política solo debe usarse si el bloqueo de pantalla ocurre mucho antes que la suspensión o si no se desea la suspensión por inactividad.
-
-          El valor de la política debe especificarse en milisegundos. Se establecerán los valores de modo que sean inferiores a la demora de inactividad.</translation>
 <translation id="2433412232489478893">Esta política controla si un usuario puede usar la función "Network File Shares" para <ph name="PRODUCT_NAME" />.
 
       Cuando no se configura o se establece como verdadera, los usuarios podrán usar esta función.
@@ -1320,7 +1275,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="2856674246949497058">Implementa la reversión y mantén la versión objetivo si la versión del sistema operativo es más reciente que la objetivo. Aplica la función Powerwash durante el proceso.</translation>
 <translation id="2869762730352628426">Habilita la función de clic automático en la pantalla de acceso</translation>
 <translation id="2872961005593481000">Cerrar</translation>
-<translation id="2873651257716068683">Anula el tamaño predeterminado para la página de impresión. Si el tamaño de la página no está disponible, se ignorará esta política.</translation>
 <translation id="2874209944580848064">Nota para dispositivos <ph name="PRODUCT_OS_NAME" /> compatibles con apps de Android:</translation>
 <translation id="2874901846804525128">Impide que el usuario use apps para Android de fuentes no confiables.</translation>
 <translation id="2875192972412983412">Especifica el subconjunto de servidores de impresión que se consultará para las impresoras de servidor.
@@ -1750,19 +1704,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           Si no la estableces, la función estará inicialmente inhabilitada, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="3591527072193107424">Habilitar la función "Compatibilidad con navegadores heredados"</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de autenticación en el acceso</translation>
-<translation id="3602332793276340697">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
-
-          Especifica el período sin intervención del usuario después del cual se bloqueará la pantalla cuando el dispositivo esté funcionando con batería.
-
-          Si se le asigna a la política un valor mayor que cero, este valor especificará el tiempo que debe transcurrir sin intervención del usuario para que <ph name="PRODUCT_OS_NAME" /> bloquee la pantalla.
-
-          Si se le asigna el valor cero, <ph name="PRODUCT_OS_NAME" /> no bloqueará la pantalla cuando no haya intervención del usuario.
-
-          Si no se establece, se utilizará un período predeterminado.
-
-          Para bloquear la pantalla cuando está inactiva, se recomienda habilitar el bloqueo de pantalla en la suspensión y que se suspenda <ph name="PRODUCT_OS_NAME" /> después de la demora de inactividad. Esta política solo debe usarse si el bloqueo de pantalla ocurre mucho antes que la suspensión o si no se desea la suspensión por inactividad.
-
-          El valor de la política debe especificarse en milisegundos. Se establecerán los valores de modo que sean inferiores a la demora de inactividad.</translation>
 <translation id="3624515566460517364">Revisar las cargas y descargar para detectar si se infringen las normas relacionadas con la protección de datos sensibles</translation>
 <translation id="3627678165642179114">Habilita o inhabilita el servicio web de revisión ortográfica.</translation>
 <translation id="3628480121685794414">Permitir impresión simple</translation>
@@ -2819,6 +2760,12 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Esta política se especifica en milisegundos.</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>
+<translation id="5236004592041099233">Configura la lista de las URL de acceso empresariales (solo en esquemas HTTP y HTTPS). El servicio de protección de contraseñas capturará los hash con sal de las contraseñas de estas URL y los usará para detectar la reutilización de contraseñas.
+      Para que <ph name="PRODUCT_NAME" /> capture los hash con sal de las contraseñas correctamente, asegúrate de que tus páginas de acceso cumplan con los lineamientos que se indican en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Si se habilita esta configuración, el servicio de protección de contraseñas capturará los hash con sal de la contraseña en estas URL para detectar la reutilización de contraseñas.
+      Si se inhabilita esta configuración o no se establece, el servicio de protección de contraseñas solo capturará los hash con sal de la contraseña en https://accounts.google.com.
+      Esta política solo está disponible en instancias de Windows conectadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="5236882091572996759">Si esta política se configura como verdadera o no se configura, el usuario no se considerará inactivo mientras se reproduce el audio. Esto evitará que se alcance el tiempo de espera de inactividad y se tome la medida de inactividad. Sin embargo, se realizará la atenuación de pantalla, la pantalla apagada y el bloqueo de pantalla luego de los tiempos de espera configurados, independientemente de la actividad de audio.
 
           Si esta política se configura como falsa, la actividad de audio no evitará que el usuario se considere inactivo.</translation>
@@ -2834,17 +2781,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Consulta también https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5249453807420671499">Los usuarios pueden agregar cuentas de Kerberos</translation>
 <translation id="5255162913209987122">Se puede recomendar</translation>
-<translation id="5261766238868915624">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Especifica el período sin intervención del usuario después del cual se atenuará la pantalla cuando el dispositivo esté funcionando con batería.
-
-          Si se le asigna a la política un valor mayor que cero, este valor especificará el tiempo que debe transcurrir sin intervención del usuario para que <ph name="PRODUCT_OS_NAME" /> atenúe la pantalla.
-
-          Si se le asigna el valor cero, <ph name="PRODUCT_OS_NAME" /> no atenuará la pantalla cuando no haya intervención del usuario.
-
-          Si no se establece, se utilizará un período predeterminado.
-
-          El valor de la política debe especificarse en milisegundos. Los valores deben ser menores o iguales que la demora de pantalla apagada (si está configurada) y la demora por inactividad.</translation>
 <translation id="527237119693897329">Permite especificar los hosts de mensajería nativa que no se deben cargar.
 
           Un valor de lista negra de '*' significa que todos los hosts de mensajería nativa están incluidos en la lista negra, a menos que se indique explícitamente que están en la lista blanca.
@@ -2873,13 +2809,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
        Si se establece la política como falsa, se inhabilitarán las actualizaciones automáticas para el audio y el video y no se mostrarán advertencias para las imágenes.
        Esta política no afecta otros tipos de contenido mixto que no sean imágenes, audio y video.
        A partir de <ph name="PRODUCT_NAME" /> 84, esta política dejará de tener efecto.</translation>
-<translation id="5278367296164377827">Esta política es una adaptación por corto plazo y se quitará en M82.
-
-      Para fortalecer la política del referente predeterminado de Chrome, su valor actual de "sin referente cuando cambia a una versión inferior" cambia al valor más seguro "origen estricto cuando el origen es cruzado" mediante un lanzamiento gradual que apunta a la versión M80 estable.
-
-      Antes del lanzamiento, esta política empresarial no tendrá efecto. Después del lanzamiento, cuando se habilite esta política empresarial, se configurará la política del referente predeterminado de Chrome al valor previo al lanzamiento de la versión M80: "sin referente cuando cambia a una versión inferior".
-
-      De forma predeterminada, esta política empresarial está inhabilitada.</translation>
 <translation id="5283457834853986457">Inhabilitar el buscador de complementos (obsoleto)</translation>
 <translation id="5285315763984334157">Bloquear descargas con contenido malicioso</translation>
 <translation id="5288772341821359899">Si se establece la política, el intervalo de puertos UDP que usa WebRTC está restringido al intervalo de puertos especificado (extremos incluidos).
@@ -3533,6 +3462,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="6221175752766085998">Permitir los certificados emitidos por anclajes de confianza locales sin la extensión subjectAlternativeName</translation>
 <translation id="6224304369267200483">Las URL y los dominios permiten automáticamente la atestación directa de llaves de seguridad</translation>
 <translation id="6233173491898450179">Establecer el directorio de descarga</translation>
+<translation id="6234177445959386333">Configura la lista de las URL de acceso empresariales donde el servicio de protección de contraseñas debe capturar los hash con sal de las contraseñas.</translation>
 <translation id="6242147107333796512">Proporciona datos relacionados con informes de fallas, como id remota,
       marca de tiempo de captura y causa.
 
@@ -3570,17 +3500,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="6281043242780654992">Permite configurar las políticas de mensajería nativa. A menos que se incluyan en la lista blanca, los hosts de mensajería nativa incluidos en la lista negra estarán bloqueados.</translation>
 <translation id="6282799760374509080">Permitir o rechazar la captura de audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6293957650182823856">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Especifica el período sin intervención del usuario que debe transcurrir para que se muestre un cuadro de diálogo de advertencia cuando el equipo esté funcionando con CA.
-
-          Cuando se establece esta política, este valor especificará el tiempo que debe transcurrir sin intervención del usuario antes de que <ph name="PRODUCT_OS_NAME" /> muestre un cuadro de diálogo de advertencia que indica al usuario que la acción de inactividad está a punto de llevarse a cabo.
-
-          Cuando no se establece esta política, no se muestra ningún cuadro de diálogo de advertencia.
-
-          El valor de la política debe especificarse en milisegundos. Los valores deben ser menores o iguales que la demora de inactividad.
-
-          Solo se muestra el mensaje de advertencia si la acción de inactividad es salir de la cuenta o apagar el dispositivo.</translation>
 <translation id="6310223829319187614">Habilitar la opción de autocompletar el nombre de dominio durante el accceso del usuario</translation>
 <translation id="631081324835911099">Fuerza el cierre de sesión del usuario cuando el token de autenticación de la cuenta principal deja de ser válido.
         Esta política puede proteger al usuario del acceso a contenido restringido en propiedades web de Google.
@@ -3981,6 +3900,12 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si no la estableces, se ubicará la biblioteca de forma predeterminada en la parte inferior de la pantalla y el usuario podrá cambiar su posición.</translation>
 <translation id="7040229947030068419">Valor de ejemplo:</translation>
 <translation id="7044883996351280650">Controlar el servicio de restablecimiento y copias de seguridad</translation>
+<translation id="705089873294344912">Configura la URL de cambio de contraseña (solo esquemas HTTP y HTTPS). El servicio de protección de contraseñas enviará a los usuarios a esta URL para que cambien sus contraseñas en el caso de que vean una advertencia en el navegador.
+      Para que <ph name="PRODUCT_NAME" /> capture el hash con sal de la nueva contraseña correctamente en esta página de cambio de contraseña, asegúrate de que la página cumpla con los lineamientos que se indican en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Si se habilita esta configuración, el servicio de protección de contraseñas enviará a los usuarios a esta URL para que cambien sus contraseñas en el caso de que vean una advertencia en el navegador.
+      Si se inhabilita esta configuración o no se establece, el servicio de protección de contraseñas enviará a los usuarios a https://myaccount.google.com para que cambien sus contraseñas.
+      Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="7053678646221257043">Esta política, si se habilita, fuerza la importación de los favoritos del navegador predeterminado actual. Si se habilita, esta política también afecta el cuadro de diálogo de importación. Si se inhabilita, no se importará ningún marcador. Si no se configura, se le puede preguntar al usuario si desea importar o la importación puede realizarse de forma automática.</translation>
 <translation id="7063895219334505671">Permitir ventanas emergentes en estos sitios</translation>
 <translation id="706669471845501145">Permitir que los sitios muestren notificaciones de escritorio.</translation>
@@ -5020,17 +4945,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       https://support.google.com/a/answer/1668854.
 
       Los usuarios no pueden cambiar ni anular esta configuración.</translation>
-<translation id="8618139576368821933">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Especifica el período sin intervención del usuario después del cual se atenuará la pantalla cuando el dispositivo esté funcionando con CA.
-
-          Si se le asigna a la política un valor mayor que cero, este valor especificará el tiempo que debe transcurrir sin intervención del usuario para que <ph name="PRODUCT_OS_NAME" /> atenúe la pantalla.
-
-          Si se le asigna el valor cero, <ph name="PRODUCT_OS_NAME" /> no atenuará la pantalla cuando no haya intervención del usuario.
-
-          Si no se establece, se utilizará un período predeterminado.
-
-          El valor de la política debe especificarse en milisegundos. Los valores deben ser menores o iguales que la demora de pantalla apagada (si está configurada) y la demora por inactividad.</translation>
 <translation id="8625234016727663537">Te permite establecer una lista de URL en la que se especifiquen los sitios a los que se les otorgará permiso para acceder de forma automática a un dispositivo USB con los ID del producto y proveedor correspondientes en la pantalla de acceso. Para que la política sea válida, cada elemento en la lista debe contener tanto los dispositivos como las URL. Cada elemento en los dispositivos puede contener un campo de ID del producto y del proveedor. Los ID que se omitan se considerarán como comodín con una excepción: no podrá especificarse un ID del producto sin que se especifique un ID del proveedor; de lo contrario, la política no será válida y se ignorará.
 
         El modelo del permiso para USB utiliza la URL del sitio que lo solicita ("URL que solicita permiso") y la URL del sitio del marco principal ("URL de incorporación") para otorgar permiso a la URL que lo solicita a fin de acceder al dispositivo USB. Es posible que esa URL no sea la misma que la de incorporación cuando se carga el sitio que solicita permiso en un iframe. Por lo tanto, el campo "urls" puede incluir hasta dos strings de URL delimitados por una coma para especificar la URL que solicita permiso y la URL de incorporación, respectivamente. Si solo se especifica una URL, se otorgará el acceso a los dispositivos USB correspondientes cuando la URL del sitio que lo solicita coincida con esta URL más allá del estado de incorporación. Las URL en el campo "urls" deben ser válidas; de lo contrario, se ignorará la política.
@@ -5107,17 +5021,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Las impresoras de extensiones, también conocidas como destinos del proveedor de impresión, incluyen los destinos que pertenecen a las extensiones de <ph name="PRODUCT_NAME" />.
 
       Las impresoras locales, también conocidas como destinos nativos de impresión, incluyen los destinos disponibles en la máquina local y las impresoras de redes compartidas.</translation>
-<translation id="8752541111574086388">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Especifica el período sin intervención del usuario que debe transcurrir para que se muestre un cuadro de diálogo de advertencia cuando el dispositivo esté funcionando con batería.
-
-          Cuando se establece esta política, este valor especificará el tiempo que debe transcurrir sin intervención del usuario antes de que <ph name="PRODUCT_OS_NAME" /> muestre un cuadro de diálogo de advertencia que indica al usuario que la acción de inactividad está a punto de llevarse a cabo.
-
-          Cuando no se establece esta política, no se muestra ningún cuadro de diálogo de advertencia.
-
-          El valor de la política debe especificarse en milisegundos. Los valores deben ser menores o iguales que la demora de inactividad.
-
-          Solo se muestra el mensaje de advertencia si la acción de inactividad es salir de la cuenta o apagar el dispositivo.</translation>
 <translation id="8757552286070680084">Configuración de DTC wilco</translation>
 <translation id="8758831693895931466">Habilitar la inscripción obligatoria en la administración de la nube</translation>
 <translation id="8759829385824155666">Se permiten los tipos de encriptación de Kerberos</translation>
@@ -5215,24 +5118,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       estos estados.</translation>
 <translation id="891435090623616439">codificada como cadena JSON; para obtener detalles, se puede consultar <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Permite que los usuarios administren los Certificados de CA instalados</translation>
-<translation id="8926275581598789324">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Especifica el período sin intervención del usuario después del cual se ejecutará la acción de inactividad cuando el dispositivo esté funcionando con batería.
-
-          Si se establece esta política, se especifica la cantidad de tiempo que el usuario deberá permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> ejecute la acción de inactividad, la cual puede configurarse de forma independiente.
-
-          Si no se establece, se utilizará un período predeterminado.
-
-          El valor de la política debe especificarse en milisegundos.</translation>
-<translation id="8929997566627164343">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
-
-          Especifica el período sin intervención del usuario después del cual se ejecutará la acción de inactividad cuando el dispositivo esté funcionando con CA.
-
-          Si se establece esta política, se especifica la cantidad de tiempo que el usuario deberá permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> ejecute la acción de inactividad, la cual puede configurarse de forma independiente.
-
-          Si no se establece, se utilizará un período predeterminado.
-
-          El valor de la política debe especificarse en milisegundos.</translation>
 <translation id="8934944553121392674">Controla a qué impresoras de <ph name="DEVICE_PRINTERS_POLICY" /> pueden acceder los usuarios.
 
       Designa la política de acceso que se usa para la configuración de impresoras en lote. Si se selecciona <ph name="PRINTERS_ALLOW_ALL" />, se muestran todas las impresoras. Si se selecciona <ph name="PRINTERS_BLACKLIST" />, se usa <ph name="DEVICE_PRINTERS_BLACKLIST" /> para restringir el acceso a las impresoras especificadas. Si se selecciona <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> designa solo las impresoras que se pueden seleccionar.

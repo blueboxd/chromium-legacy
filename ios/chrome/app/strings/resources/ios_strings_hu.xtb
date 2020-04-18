@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Kicsinyítés</translation>
 <translation id="2230173723195178503">A weboldal betöltött</translation>
 <translation id="2239626343334228536">Böngészési adatok törlése…</translation>
+<translation id="2245545499420671379">Harmadik felektől származó cookie-k letiltása inkognitómódban</translation>
 <translation id="2257567812274161158">A szinkronizálás nem működik.</translation>
 <translation id="2267753748892043616">Fiók hozzáadása</translation>
 <translation id="2268044343513325586">Pontosítás</translation>
@@ -306,7 +307,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="4979397965658815378">Jelentkezzen be Google-fiókjába, így könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérheti.</translation>
 <translation id="5005498671520578047">Jelszó másolása</translation>
 <translation id="5010803260590204777">Nyisson meg egy inkognitólapot a privát böngészéshez.</translation>
-<translation id="5039020240289137291">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="5039804452771397117">Engedélyezés</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Google Drive telepítése</translation>
@@ -419,6 +419,7 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 
 Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a következő időpontban: <ph name="TIME" />. Adja meg a jelszót a szinkronizálás megkezdéséhez.</translation>
 <translation id="6418346271604475326">PDF előkészítése</translation>
+<translation id="6426067060178468363">Cookie-k engedélyezése</translation>
 <translation id="6434591244308415567">Hiba történt, próbálja újra később.</translation>
 <translation id="6445051938772793705">Ország</translation>
 <translation id="6445981559479772097">Üzenet elküldve.</translation>
@@ -544,6 +545,7 @@ Mivel fiókját a(z) <ph name="HOSTED_DOMAIN" /> kezeli, Chrome-adatai törölve
 <translation id="8076014560081431679">A mentett webhelybeállítások nem törlődnek, és tájékozódási alapul szolgálhatnak böngészési szokásait illetően. <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">A fájlletöltés megvalósítható. A beállításokat a képernyő alján nyithatja meg.</translation>
 <translation id="8131740175452115882">Megerősítés</translation>
+<translation id="8174524257672181687">Az összes cookie letiltása (nem ajánlott)</translation>
 <translation id="8197543752516192074">Oldal lefordítása</translation>
 <translation id="8205564605687841303">Mégse</translation>
 <translation id="8225985093977202398">A gyorsítótárban lévő képek és fájlok</translation>

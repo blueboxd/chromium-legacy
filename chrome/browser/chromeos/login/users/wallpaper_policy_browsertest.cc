@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -133,12 +134,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
  protected:
   WallpaperPolicyTest()
       : LoginManagerTest(), owner_key_util_(new ownership::MockOwnerKeyUtil()) {
-    testUsers_.push_back(
-        AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kEnterpriseUser1,
-                                       FakeGaiaMixin::kEnterpriseUser1GaiaId));
-    testUsers_.push_back(
-        AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kEnterpriseUser2,
-                                       FakeGaiaMixin::kEnterpriseUser2GaiaId));
+    login_manager_.AppendManagedUsers(2);
   }
 
   std::unique_ptr<policy::UserPolicyBuilder> GetUserPolicyBuilder(
@@ -186,13 +182,6 @@ class WallpaperPolicyTest : public LoginManagerTest,
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Set the same switches as LoginManagerTest, except that kMultiProfiles is
-    // only set when GetParam() is true and except that kLoginProfile is set
-    // when GetParam() is false.  The latter seems to be required for the sane
-    // start-up of user profiles.
-    command_line->AppendSwitch(switches::kLoginManager);
-    command_line->AppendSwitch(switches::kForceLoginManagerInTests);
-
     // Allow policy fetches to fail - these tests instead invoke InjectPolicy()
     // to directly inject and modify policy dynamically.
     command_line->AppendSwitch(switches::kAllowFailedPolicyFetchForTest);
@@ -205,8 +194,10 @@ class WallpaperPolicyTest : public LoginManagerTest,
     WallpaperControllerClient::Get()->AddObserver(this);
 
     // Set up policy signing.
-    user_policy_builders_[0] = GetUserPolicyBuilder(testUsers_[0]);
-    user_policy_builders_[1] = GetUserPolicyBuilder(testUsers_[1]);
+    user_policy_builders_[0] =
+        GetUserPolicyBuilder(login_manager_.users()[0].account_id);
+    user_policy_builders_[1] =
+        GetUserPolicyBuilder(login_manager_.users()[1].account_id);
   }
 
   void TearDownOnMainThread() override {
@@ -263,7 +254,8 @@ class WallpaperPolicyTest : public LoginManagerTest,
   // empty |filename| to clear policy.
   void InjectPolicy(int user_number, const std::string& filename) {
     ASSERT_TRUE(user_number == 0 || user_number == 1);
-    const AccountId& account_id = testUsers_[user_number];
+    const AccountId& account_id =
+        login_manager_.users()[user_number].account_id;
     policy::UserPolicyBuilder* builder =
         user_policy_builders_[user_number].get();
     if (!filename.empty()) {
@@ -310,10 +302,10 @@ class WallpaperPolicyTest : public LoginManagerTest,
   std::unique_ptr<policy::UserPolicyBuilder> user_policy_builders_[2];
   policy::DevicePolicyBuilder device_policy_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
-  std::vector<AccountId> testUsers_;
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
   DeviceStateMixin device_state_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+  LoginManagerMixin login_manager_{&mixin_host_};
 
  private:
   // The average ARGB color of the current wallpaper.
@@ -324,12 +316,6 @@ class WallpaperPolicyTest : public LoginManagerTest,
   DISALLOW_COPY_AND_ASSIGN(WallpaperPolicyTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_SetResetClear) {
-  RegisterUser(testUsers_[0]);
-  RegisterUser(testUsers_[1]);
-  StartupUtils::MarkOobeCompleted();
-}
-
 // Verifies that the wallpaper can be set and re-set through policy and that
 // setting policy for a user that is not logged in doesn't affect the current
 // user.  Also verifies that after the policy has been cleared, the wallpaper
@@ -338,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_SetResetClear) {
 // Disabled due to flakiness: https://crbug.com/873908.
 IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, DISABLED_SetResetClear) {
   SetSystemSalt();
-  LoginUser(testUsers_[0]);
+  LoginUser(login_manager_.users()[0].account_id);
 
   // First user: Stores the average color of the default wallpaper (set
   // automatically) to be compared against later.
@@ -366,12 +352,6 @@ IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, DISABLED_SetResetClear) {
   ASSERT_EQ(3, wallpaper_change_count_);
 }
 
-IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_DevicePolicyTest) {
-  SetSystemSalt();
-  RegisterUser(testUsers_[0]);
-  StartupUtils::MarkOobeCompleted();
-}
-
 // Test that if device policy wallpaper and user policy wallpaper are both
 // specified, the device policy wallpaper is used in the login screen and the
 // user policy wallpaper is used inside of a user session.
@@ -386,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, DevicePolicyTest) {
 
   // Log in a test user. The default wallpaper should be shown to replace the
   // device policy wallpaper.
-  LoginUser(testUsers_[0]);
+  LoginUser(login_manager_.users()[0].account_id);
   RunUntilWallpaperChangeToColor(original_wallpaper_color);
 
   // Now set the user wallpaper policy. The user policy controlled wallpaper

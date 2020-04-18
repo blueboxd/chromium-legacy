@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1188239144602654184">Enter AR</translation>
 <translation id="1197267115302279827">Move bookmarks</translation>
-<translation id="119944043368869598">Clear all</translation>
 <translation id="1201402288615127009">Next</translation>
 <translation id="1204037785786432551">Download link</translation>
 <translation id="1206892813135768548">Copy link text</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Basic</translation>
 <translation id="1671236975893690980">Download pending...</translation>
 <translation id="1672586136351118594">Don‘t show again</translation>
+<translation id="1688867105868176567">Clear site data?</translation>
 <translation id="1692118695553449118">Sync is on</translation>
 <translation id="169515064810179024">Block sites from accessing motion sensors</translation>
 <translation id="1717218214683051432">Motion sensors</translation>
@@ -507,7 +507,6 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4751476147751820511">Motion or light sensors</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download complete.}other{# downloads complete.}}</translation>
-<translation id="4797039098279997504">Touch to return to <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Passphrase encryption doesn’t include payment methods and addresses from Google Pay.
 
 To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4932247056774066048">Because you're signing out of an account managed by <ph name="DOMAIN_NAME" />, your Chrome data will be deleted from this device. It will remain in your Google account.</translation>
 <translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">No results</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> is sharing your screen</translation>
 <translation id="4961107849584082341">Translate this page to any language</translation>
 <translation id="4962975101802056554">Revoke all permissions for device</translation>
 <translation id="4970824347203572753">Not available in your location</translation>
@@ -559,7 +557,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5129038482087801250">Install web app</translation>
 <translation id="5132942445612118989">Sync your passwords, history and more on all devices</translation>
 <translation id="5139940364318403933">Learn how to use Google Drive</translation>
-<translation id="515227803646670480">Clear stored data</translation>
 <translation id="5152843274749979095">No supported apps installed</translation>
 <translation id="5161254044473106830">Title required</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 download failed.}other{# downloads failed.}}</translation>
@@ -667,7 +664,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5869522115854928033">Saved passwords</translation>
 <translation id="5876056640971328065">Pause video</translation>
 <translation id="5884076754568147479">To help you complete tasks, Google will receive the URLs and contents of sites on which you use Assistant, as well as information that you submit through Assistant</translation>
-<translation id="5902828464777634901">All local data stored by this website, including cookies, will be deleted.</translation>
 <translation id="5919204609460789179">Update <ph name="PRODUCT_NAME" /> to start sync</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> saved</translation>
 <translation id="5939518447894949180">Reset</translation>
@@ -787,7 +783,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="671481426037969117">Your <ph name="FQDN" /> timer ran out. It will start again tomorrow.</translation>
 <translation id="6738867403308150051">Downloading…</translation>
 <translation id="6766622839693428701">Swipe down to close.</translation>
-<translation id="6766758767654711248">Tap to go to site</translation>
 <translation id="6767294960381293877">List of devices to share a tab with, opened at half height.</translation>
 <translation id="6782111308708962316">Prevent third-party websites from saving and reading cookie data</translation>
 <translation id="6790428901817661496">Play</translation>
@@ -1048,7 +1043,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8812260976093120287">On some websites, you can pay with above supported payment apps on your device.</translation>
 <translation id="8816026460808729765">Block sites from accessing sensors</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
-<translation id="8833831881926404480">A site is sharing your screen</translation>
 <translation id="883806473910249246">An error occurred while downloading the content.</translation>
 <translation id="8840953339110955557">This page may differ from the online version.</translation>
 <translation id="8847988622838149491">USB</translation>

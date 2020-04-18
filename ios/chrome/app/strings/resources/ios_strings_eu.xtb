@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Txikitu</translation>
 <translation id="2230173723195178503">Kargatu da webgunea</translation>
 <translation id="2239626343334228536">Arakatze-datuak garbitzen…</translation>
+<translation id="2245545499420671379">Blokeatu hirugarrenen cookieak ezkutuko moduan</translation>
 <translation id="2257567812274161158">Sinkronizazioa ez dabil.</translation>
 <translation id="2267753748892043616">Gehitu kontu bat</translation>
 <translation id="2268044343513325586">Mugatu</translation>
@@ -306,7 +307,6 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="4979397965658815378">Hasi saioa Google-ko kontuarekin laster-markak, historia, pasahitzak eta bestelako ezarpenak gailu guztietan eskura izateko</translation>
 <translation id="5005498671520578047">Kopiatu pasahitza</translation>
 <translation id="5010803260590204777">Sarea modu pribatuan arakatzeko, ireki ezkutuko fitxa bat.</translation>
-<translation id="5039020240289137291">Hirugarrenen cookieak blokeatzen</translation>
 <translation id="5039804452771397117">Baimendu</translation>
 <translation id="5059136629401106827">Ados</translation>
 <translation id="5062321486222145940">Instalatu Google Drive</translation>
@@ -419,6 +419,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 
 Sinkronizatzeko pasaesaldiaren bidez enkriptatu dira datuak (<ph name="TIME" />). Idatz ezazu sinkronizatzen hasteko.</translation>
 <translation id="6418346271604475326">Prestatzen</translation>
+<translation id="6426067060178468363">Onartu cookieak</translation>
 <translation id="6434591244308415567">Errore bat gertatu da. Saiatu berriro geroago.</translation>
 <translation id="6445051938772793705">Herrialdea</translation>
 <translation id="6445981559479772097">Mezua bidali da.</translation>
@@ -544,6 +545,7 @@ Kontua <ph name="HOSTED_DOMAIN" /> domeinuak kudeatzen duenez, saioa amaitzen du
 <translation id="8076014560081431679">Ez dira ezabatuko webgunearen gordetako ezarpenak, eta baliteke arakatze-ohiturak islatzea. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Fitxategi bat deskargatzeko prest dago. Pantailaren behealdean agertzen dira horretarako aukerak.</translation>
 <translation id="8131740175452115882">Berretsi</translation>
+<translation id="8174524257672181687">Blokeatu cookie guztiak (ez da gomendatzen)</translation>
 <translation id="8197543752516192074">Itzuli orria</translation>
 <translation id="8205564605687841303">Utzi</translation>
 <translation id="8225985093977202398">Cachean gordetakoak</translation>

@@ -34,6 +34,10 @@ namespace {
 // Ensure LoginManagerMixin is only created once.
 bool g_instance_created = false;
 
+constexpr char kGmailDomain[] = "@gmail.com";
+constexpr char kManagedDomain[] = "@example.com";
+constexpr char kLegacySupervisedDomain[] = "@locally-managed.localhost";
+
 void AppendUsers(LoginManagerMixin::UserList* users,
                  const std::string& domain,
                  int n) {
@@ -57,15 +61,15 @@ UserContext LoginManagerMixin::CreateDefaultUserContext(
 }
 
 void LoginManagerMixin::AppendRegularUsers(int n) {
-  AppendUsers(&initial_users_, "@gmail.com", n);
+  AppendUsers(&initial_users_, kGmailDomain, n);
 }
 
 void LoginManagerMixin::AppendManagedUsers(int n) {
-  AppendUsers(&initial_users_, "@example.com", n);
+  AppendUsers(&initial_users_, kManagedDomain, n);
 }
 
-void LoginManagerMixin::AppendSupervisedUsers(int n) {
-  AppendUsers(&initial_users_, "@locally-managed.localhost", n);
+void LoginManagerMixin::AppendLegacySupervisedUsers(int n) {
+  AppendUsers(&initial_users_, kLegacySupervisedDomain, n);
 }
 
 LoginManagerMixin::LoginManagerMixin(InProcessBrowserTestMixinHost* host)
@@ -171,6 +175,16 @@ bool LoginManagerMixin::LoginAndWaitForActiveSession(
       user_manager::UserManager::Get()->GetActiveUser();
   return active_user &&
          active_user->GetAccountId() == user_context.GetAccountId();
+}
+
+void LoginManagerMixin::LoginAsNewReguarUser() {
+  ASSERT_FALSE(session_manager::SessionManager::Get()->IsSessionStarted());
+  const std::string email = "test_user" + std::string(kGmailDomain);
+  const std::string gaia_id = "111111111";
+  TestUserInfo test_user(AccountId::FromUserEmailGaiaId(email, gaia_id));
+  UserContext user_context = CreateDefaultUserContext(test_user);
+  AttemptLoginUsingAuthenticator(
+      user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
 }
 
 }  // namespace chromeos

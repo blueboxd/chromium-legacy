@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Oddálit</translation>
 <translation id="2230173723195178503">Webová stránka byla načtena</translation>
 <translation id="2239626343334228536">Mazání údajů o prohlížení...</translation>
+<translation id="2245545499420671379">V anonymním režimu blokovat soubory cookie třetích stran</translation>
 <translation id="2257567812274161158">Synchronizace nefunguje.</translation>
 <translation id="2267753748892043616">Přidat účet</translation>
 <translation id="2268044343513325586">Upřesnit</translation>
@@ -306,7 +307,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="4979397965658815378">Přihlaste se pomocí účtu Google a získejte záložky, hesla, historii a další nastavení do všech svých zařízení.</translation>
 <translation id="5005498671520578047">Kopírování hesla</translation>
 <translation id="5010803260590204777">Chcete-li prohlížet internet v soukromí, otevřete novou anonymní kartu.</translation>
-<translation id="5039020240289137291">Blokování souborů cookie třetích stran</translation>
 <translation id="5039804452771397117">Povolit</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Instalace Disku Google</translation>
@@ -419,6 +419,7 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 
 Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro synchronizaci. Chcete-li zahájit synchronizaci, zadejte ji.</translation>
 <translation id="6418346271604475326">Příprava souboru PDF</translation>
+<translation id="6426067060178468363">Povolit soubory cookie</translation>
 <translation id="6434591244308415567">Došlo k chybě, zkuste to později.</translation>
 <translation id="6445051938772793705">Země</translation>
 <translation id="6445981559479772097">Zpráva odeslána</translation>
@@ -544,6 +545,7 @@ Protože váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, při odhlá�
 <translation id="8076014560081431679">Uložená nastavení webů nebudou smazána a mohou vypovídat o vašich zvycích při prohlížení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Je k dispozici soubor ke stažení. Možnosti jsou k dispozici ve spodní části obrazovky.</translation>
 <translation id="8131740175452115882">Potvrdit</translation>
+<translation id="8174524257672181687">Blokovat všechny soubory cookie (nedoporučujeme)</translation>
 <translation id="8197543752516192074">Přeložit stránku</translation>
 <translation id="8205564605687841303">Zrušit</translation>
 <translation id="8225985093977202398">Obrázky a soubory v mezipaměti</translation>

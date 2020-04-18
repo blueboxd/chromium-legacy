@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1188239144602654184">Почати сеанс у режимі доповненої реальності</translation>
 <translation id="1197267115302279827">Перемістити закладки</translation>
-<translation id="119944043368869598">Очистити все</translation>
 <translation id="1201402288615127009">Далі</translation>
 <translation id="1204037785786432551">Завантажити дані за посиланням</translation>
 <translation id="1206892813135768548">Копіювати текст посилання</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Основні параметри</translation>
 <translation id="1671236975893690980">Очікується завантаження…</translation>
 <translation id="1672586136351118594">Більше не показувати</translation>
+<translation id="1688867105868176567">Очистити дані сайту?</translation>
 <translation id="1692118695553449118">Синхронізацію ввімкнено</translation>
 <translation id="169515064810179024">Заборонити сайтам доступ до датчиків руху</translation>
 <translation id="1717218214683051432">Датчики руху</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">Датчики руху та світла</translation>
 <translation id="4759238208242260848">Завантаження</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 файл завантажено.}one{# файл завантажено.}few{# файли завантажено.}many{# файлів завантажено.}other{# файлу завантажено.}}</translation>
-<translation id="4797039098279997504">Торкніться, щоб повернутися на сторінку <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Парольна фраза не стосується способів оплати й адрес із Google Pay.
 
 Щоб змінити це налаштування, <ph name="BEGIN_LINK" />скиньте параметри синхронізації<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048">Оскільки ви виходите з облікового запису, зареєстрованого в домені <ph name="DOMAIN_NAME" />, ваші дані Chrome буде видалено з цього пристрою. Вони залишаться у вашому обліковому записі Google.</translation>
 <translation id="4943703118917034429">Віртуальна реальність</translation>
 <translation id="4943872375798546930">Не знайдено жодного результату</translation>
-<translation id="4958708863221495346">Сторінка <ph name="URL_OF_THE_CURRENT_TAB" /> показує ваш екран</translation>
 <translation id="4961107849584082341">Перекладіть цю сторінку будь-якою мовою</translation>
 <translation id="4962975101802056554">Скасувати всі дозволи для пристрою</translation>
 <translation id="4970824347203572753">Функція недоступна у вашій країні</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">Установити веб-додаток</translation>
 <translation id="5132942445612118989">Синхронізуйте свої паролі, історію тощо на всіх пристроях</translation>
 <translation id="5139940364318403933">Як користуватися Google Диском</translation>
-<translation id="515227803646670480">Очистити збережені дані</translation>
 <translation id="5152843274749979095">Немає підтримуваних додатків</translation>
 <translation id="5161254044473106830">Введіть назву</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Не вдалося завантажити 1 файл.}one{Не вдалося завантажити # файл.}few{Не вдалося завантажити # файли.}many{Не вдалося завантажити # файлів.}other{Не вдалося завантажити # файлу.}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">Збережені паролі</translation>
 <translation id="5876056640971328065">Призупинити відео</translation>
 <translation id="5884076754568147479">Щоб допомагати вам виконувати завдання, Google отримуватиме URL-адреси та вміст веб-сайтів, на яких ви користуєтесь Асистентом, а також інформацію, яку надсилаєте через нього</translation>
-<translation id="5902828464777634901">Буде видалено всі локальні дані, які зберіг цей веб-сайт, зокрема файли cookie.</translation>
 <translation id="5919204609460789179">Оновіть <ph name="PRODUCT_NAME" />, щоб почати синхронізацію</translation>
 <translation id="5937580074298050696">Заощаджено <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Скинути</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117">Вийшов час на таймері веб-сайту <ph name="FQDN" />. Завтра він знову запрацює.</translation>
 <translation id="6738867403308150051">Завантаження…</translation>
 <translation id="6766622839693428701">Проведіть пальцем униз, щоб закрити.</translation>
-<translation id="6766758767654711248">Натисніть, щоб перейти на сайт</translation>
 <translation id="6767294960381293877">Список пристроїв, з якими можна ділитися вкладкою, відкрито на половину висоти.</translation>
 <translation id="6782111308708962316">Забороняти стороннім веб-сайтам зберігати та переглядати дані файлів cookie</translation>
 <translation id="6790428901817661496">Відтворити</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">На деяких веб-сайтах ви можна оплачувати за допомогою перелічених вище підтримуваних додатків для платежів на вашому пристрої.</translation>
 <translation id="8816026460808729765">Заборонити сайтам доступ до датчиків</translation>
 <translation id="8820817407110198400">Закладки</translation>
-<translation id="8833831881926404480">Сайт показує ваш екран</translation>
 <translation id="883806473910249246">Не вдалося завантажити вміст.</translation>
 <translation id="8840953339110955557">Ця сторінка може відрізнятися від онлайн-версії.</translation>
 <translation id="8847988622838149491">USB</translation>

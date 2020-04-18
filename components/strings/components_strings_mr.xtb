@@ -33,11 +33,11 @@
 <translation id="1110994991967754504"><ph name="PERMISSION_NAME" /> ची परवानगी निवडा</translation>
 <translation id="1113869188872983271">&amp;पुनर्क्रमित करा पूर्ववत करा</translation>
 <translation id="1125573121925420732">वेबसाइट त्यांची सुरक्षितता अपडेट करत असताना चेतावण्या सामान्य असू शकतात. यात लवकरच सुधारणा व्हावी.</translation>
-<translation id="112840717907525620">धोरण कॅशे ठीक</translation>
+<translation id="112840717907525620">धोरण कॅशे  ठीक</translation>
 <translation id="1131264053432022307">तुम्ही कॉपी केलेली इमेज</translation>
 <translation id="1150979032973867961">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता प्रमाणपत्र तुमच्या कॉंप्युटरच्या ऑपरेटिंग प्रणालीद्वारे विश्वसनीय नाही. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने तुमचे कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते.</translation>
 <translation id="1151972924205500581">पासवर्ड आवश्यक</translation>
-<translation id="1152921474424827756"><ph name="URL" /> च्या <ph name="BEGIN_LINK" />कॅशे केलेली कॉपी<ph name="END_LINK" /> ॲक्सेस करा</translation>
+<translation id="1152921474424827756"><ph name="URL" /> च्या <ph name="BEGIN_LINK" />कॅशे  केलेली कॉपी<ph name="END_LINK" /> ॲक्सेस करा</translation>
 <translation id="1156303062776767266">तुम्ही स्थानिक किंवा शेअर केलेली फाइल पाहत आहात</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> नी कनेक्शन अनपेक्षितरित्या बंद केले.</translation>
 <translation id="115926840831309955">तुमचे CVC तपासा आणि पुन्हा प्रयत्न करा किंवा एक्स्पायरीची तारीख अपडेट करा</translation>
@@ -410,7 +410,7 @@
 <translation id="2701514975700770343">फेस डाउन</translation>
 <translation id="2702801445560668637">वाचन सूची</translation>
 <translation id="2704283930420550640">मूल्य स्वरुपनाशी जुळत नाही.</translation>
-<translation id="2705137772291741111">या साइटची सेव्ह (कॅश   केलेली) केलेली प्रत वाचण्याजोगी नव्हती.</translation>
+<translation id="2705137772291741111">या साइटची सेव्ह (कॅशे   केलेली) केलेली प्रत वाचण्याजोगी नव्हती.</translation>
 <translation id="2709516037105925701">ऑटोफिल</translation>
 <translation id="2713444072780614174">पांढरा</translation>
 <translation id="2720342946869265578">जवळपास</translation>
@@ -1585,7 +1585,7 @@
 <translation id="7714464543167945231">सर्टिफिकेट</translation>
 <translation id="7716147886133743102">तुमच्या ॲडमिनिस्ट्रेटरने ब्लॉक केलेले</translation>
 <translation id="7716375162095500223">अजून अपलोड केले नाही किंवा दुर्लक्षित केले आहे</translation>
-<translation id="7716424297397655342">ही साइट कॅशे मधून लोड करणे शक्य नाही</translation>
+<translation id="7716424297397655342">ही साइट कॅशे  मधून लोड करणे शक्य नाही</translation>
 <translation id="7723047071702270851">कार्ड संपादित करा</translation>
 <translation id="7740996059027112821">मानक</translation>
 <translation id="774634243536837715">धोकादायक आशय ब्लॉक केला.</translation>

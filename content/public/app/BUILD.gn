@@ -112,57 +112,9 @@ if (is_component_build) {
     ]
   }
 
-  if (is_multi_dll_chrome) {
-    source_set("browser") {
-      check_includes = false  # See comment above.
-
-      sources = public_app_shared_sources
-
-      defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
-      configs += [ "//content:content_implementation" ]
-
-      deps = public_app_shared_deps + [
-               "//content/app:browser",
-               "//content/public/browser",
-               "//content/public/common",
-             ]
-
-      allow_circular_includes_from = [
-        # This target is a pair with the non-public version. They always go
-        # together and include headers from each other.
-        "//content/app:browser",
-      ]
-    }
-
-    source_set("child") {
-      check_includes = false  # See comment above.
-
-      sources = public_app_shared_sources
-
-      defines = [ "CHROME_MULTIPLE_DLL_CHILD" ]
-      configs += [ "//content:content_implementation" ]
-
-      deps = public_app_shared_deps + [
-               "//content/app:child",
-               "//content/public/common",
-             ]
-
-      allow_circular_includes_from = [
-        # This target is a pair with the non-public version. They always go
-        # together and include headers from each other.
-        "//content/app:child",
-      ]
-    }
-  } else {
-    # When the multi-DLL build is disabled, there is only one type of the
-    # "app" target, and "browser" and "child" are the same as "both".
-    group("browser") {
-      deps = [ ":both" ]
-    }
-    group("child") {
-      deps = [ ":both" ]
-    }
-  }
+  # When the multi-DLL build is disabled, there is only one type of the
+  # "app" target, and "browser" and "child" are the same as "both".
+  # TODO(https://crbug.com/1056290): Remove these now that they are pointless.
 }
 
 source_set("content_browser_manifest") {

@@ -113,11 +113,7 @@ HMODULE MainDllLoader::Load(base::FilePath* module) {
   if (ProcessTypeUsesMainDll(process_type_)) {
     dll_name = installer::kChromeDll;
   } else {
-#if defined(CHROME_MULTIPLE_DLL)
-    dll_name = installer::kChromeChildDll;
-#else
     dll_name = installer::kChromeDll;
-#endif
   }
 
   *module = GetModulePath(dll_name);

@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">อ่านและเปลี่ยนแปลงข้อมูลทั้งหมดในเว็บไซต์ปัจจุบันเมื่อเรียกใช้</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> ต้องการรีเซ็ตการตั้งค่าของคุณ</translation>
 <translation id="1243314992276662751">อัปโหลด</translation>
+<translation id="1243436884219965846">ตรวจสอบรหัสผ่าน</translation>
 <translation id="1244265436519979884">กำลังดำเนินการคืนค่า Linux</translation>
 <translation id="1244303850296295656">ข้อผิดพลาดของส่วนขยาย</translation>
 <translation id="1246158006305844142">แอปและการตั้งค่าของคุณจะซิงค์กับอุปกรณ์ Chrome OS ทั้งหมดที่คุณลงชื่อเข้าใช้ไว้ด้วยบัญชี Google ดูตัวเลือกการซิงค์เบราว์เซอร์ได้ที่<ph name="LINK_BEGIN" />การตั้งค่า Chrome<ph name="LINK_END" /></translation>
@@ -376,6 +377,7 @@
 <translation id="1508491105858779599">วางนิ้วของคุณบนเซ็นเซอร์ลายนิ้วมือเพื่อปลดล็อกอุปกรณ์</translation>
 <translation id="1508575541972276599">เวอร์ชันปัจจุบันคือ Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">เข้าถึง <ph name="DEVICE_NAME_AND_VENDOR" /> ใดก็ได้ผ่าน USB</translation>
+<translation id="1509960214886564027">ฟีเจอร์ในหลายเว็บไซต์อาจใช้งานไม่ได้</translation>
 <translation id="1510030919967934016">หน้านี้ถูกปิดกั้นไม่ให้ติดตามตำแหน่งของคุณ</translation>
 <translation id="1510055949674985293">สร้างคิวอาร์โค้ดสำหรับรูปภาพนี้</translation>
 <translation id="1510238584712386396">ตัวเรียกใช้งาน</translation>
@@ -1045,7 +1047,6 @@
 <translation id="237828693408258535">แปลหน้านี้ไหม</translation>
 <translation id="2378346380592252785">อัปเดตข้อมูลเข้าสู่ระบบสำหรับ <ph name="SHARE_PATH" /></translation>
 <translation id="2378982052244864789">เลือกไดเรกทอรีของส่วนขยาย</translation>
-<translation id="2379232090534544565">มีเว็บไซต์กำลังเข้าถึงอินพุตเสียงและวิดีโอ</translation>
 <translation id="2379281330731083556">พิมพ์โดยใช้ช่องโต้ตอบของระบบ... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">ถามก่อนที่จะส่ง (แนะนำ)</translation>
 <translation id="2382818385048255866">ตรวจสอบส่วนขยาย</translation>
@@ -1454,7 +1455,6 @@
 <translation id="2903457445916429186">เปิดรายการที่เลือก</translation>
 <translation id="2903882649406874750">บล็อก <ph name="HOST" /> ไม่ให้เข้าถึงเซ็นเซอร์เสมอ</translation>
 <translation id="2904456025988372123">ถามเมื่อเว็บไซต์พยายามดาวน์โหลดไฟล์โดยอัตโนมัติหลังจากไฟล์แรก</translation>
-<translation id="2905789169763945526">ขณะอยู่ในโหมดไม่ระบุตัวตน เว็บไซต์จะใช้คุกกี้เพื่อดูกิจกรรมการท่องเว็บของคุณในเว็บไซต์ต่างๆ ไม่ได้ เช่น เพื่อปรับโฆษณาตามโปรไฟล์ของคุณ บางเว็บไซต์อาจทำงานไม่ถูกต้อง</translation>
 <translation id="2907619724991574506">URL เริ่มต้นทำงาน</translation>
 <translation id="2907798539022650680">การเชื่อมต่อกับ "<ph name="NAME" />" ล้มเหลว: <ph name="DETAILS" />
     ข้อความเซิร์ฟเวอร์: <ph name="SERVER_MSG" /></translation>
@@ -1584,7 +1584,6 @@
 <translation id="3088128611727407543">กำลังเตรียมโปรไฟล์แอป...</translation>
 <translation id="3088325635286126843">&amp;เปลี่ยนชื่อ...</translation>
 <translation id="3089137131053189723">ล้างการค้นหาแล้ว</translation>
-<translation id="3090193911106258841">กำลังเข้าถึงอินพุตเสียงและวิดีโอ</translation>
 <translation id="3090819949319990166">ไม่สามารถคัดลอกไฟล์ crx ภายนอกไปยัง <ph name="TEMP_CRX_FILE" /></translation>
 <translation id="3090871774332213558">จับคู่ "<ph name="DEVICE_NAME" />" แล้ว</translation>
 <translation id="3092699946856346803">โปรดใส่ซิมแล้วลองอีกครั้ง</translation>
@@ -1646,7 +1645,6 @@
 <translation id="3165390001037658081">ผู้ให้บริการบางรายอาจบล็อกฟีเจอร์นี้</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">คุณสามารถข้ามการลงชื่อเข้าใช้และ<ph name="LINK_START" />เรียกดูในฐานะผู้เยี่ยมชม<ph name="LINK_END" />ได้ด้วย</translation>
-<translation id="3172045848207518317">มีเว็บไซต์กำลังเข้าถึงอินพุตวิดีโอ</translation>
 <translation id="3177909033752230686">ภาษาหน้าเว็บ:</translation>
 <translation id="3179982752812949580">แบบอักษรของข้อความ</translation>
 <translation id="3181954750937456830">Google Safe Browsing (ปกป้องคุณและอุปกรณ์จากเว็บไซต์ที่เป็นอันตราย)</translation>
@@ -1857,7 +1855,6 @@
 <translation id="3459697287128633276">หากต้องการเปิดใช้การเข้าถึง Google Play Store ให้แก่บัญชี โปรดใช้ผู้ให้บริการข้อมูลประจำตัวเพื่อตรวจสอบสิทธิ์ของคุณ</translation>
 <translation id="3462311546193741693">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่ แต่คุณจะยังลงชื่อเข้าใช้บัญชี Google อยู่เพื่อให้ล้างข้อมูลที่ซิงค์ได้</translation>
 <translation id="3462413494201477527">ยกเลิกการสร้างบัญชีใช่ไหม</translation>
-<translation id="3464012987031883895">มีเว็บไซต์กำลังเข้าถึงอินพุตเสียง</translation>
 <translation id="346431825526753">นี่เป็นบัญชีสำหรับเด็กที่จัดการโดย <ph name="CUSTODIAN_EMAIL" /></translation>
 <translation id="3468298837301810372">ป้ายกำกับ</translation>
 <translation id="3468999815377931311">โทรศัพท์ Android</translation>
@@ -1879,7 +1876,6 @@
 <translation id="3487007233252413104">ฟังก์ชันที่ไม่ระบุชื่อ</translation>
 <translation id="348780365869651045">กำลังรอ AppCache...</translation>
 <translation id="3488065109653206955">เปิดการใช้งานบางส่วน</translation>
-<translation id="3489025949017384019">หลายเว็บไซต์อาจทำงานไม่ถูกต้อง</translation>
 <translation id="3492788708641132712">การซิงค์ไม่ทำงาน ลองลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="3493486281776271508">ต้องเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="3493881266323043047">ความถูกต้อง</translation>
@@ -1941,7 +1937,6 @@
 <translation id="3574210789297084292">ลงชื่อเข้าใช้</translation>
 <translation id="3574917942258583917">ต้องการออกจากโหมดไม่ระบุตัวตนไหม</translation>
 <translation id="3575121482199441727">อนุญาตสำหรับเว็บไซต์นี้</translation>
-<translation id="3575919114596668130">การตั้งค่า Family Link ของผู้ปกครองจะยังมีผลอยู่ หากเคยบล็อกแอปหรือเว็บไซต์ไว้ คุณก็ไม่ต้องบล็อกซ้ำอีก</translation>
 <translation id="3576324189521867626">ติดตั้งเรียบร้อยแล้ว</translation>
 <translation id="3578594933904494462">เนื้อหาของแท็บนี้กำลังถูกแชร์</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ต้องการแชร์เครื่องพิมพ์ &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; กับกลุ่มที่คุณเป็นเจ้าของ: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt; หากคุณยอมรับ สมาชิกในกลุ่มทั้งหมดจะสามารถสั่งพิมพ์ไปยังเครื่องพิมพ์ดังกล่าวได้</translation>
@@ -2572,6 +2567,7 @@
 <translation id="4404136731284211429">สแกนอีกครั้ง</translation>
 <translation id="4404843640767531781">ผู้ปกครองของคุณบล็อก <ph name="APP_NAME" /> ไว้ โปรดขอสิทธิ์จากผู้ปกครองเพื่อใช้แอปนี้</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">คำบรรยายสด</translation>
 <translation id="4408599188496843485">ความ&amp;ช่วยเหลือ</translation>
 <translation id="4409697491990005945">ระยะขอบ</translation>
 <translation id="4410545552906060960">ใช้หมายเลข (PIN) แทนรหัสผ่านเพื่อปลดล็อกอุปกรณ์ หากต้องการกำหนด PIN ทีหลัง ให้ไปที่การตั้งค่า</translation>
@@ -3724,7 +3720,6 @@
 <translation id="6006484371116297560">คลาสสิก</translation>
 <translation id="6007240208646052708">ภาษาของคุณไม่มีการค้นหาด้วยเสียง</translation>
 <translation id="6009781704028455063">เซ็นเซอร์ในเครื่อง</translation>
-<translation id="6010869025736512584">กำลังเข้าถึงอินพุตวิดีโอ</translation>
 <translation id="6011074160056912900">เครือข่ายอีเธอร์เน็ต</translation>
 <translation id="6011193465932186973">ลายนิ้วมือ</translation>
 <translation id="6011449291337289699">ล้างข้อมูลเว็บไซต์</translation>
@@ -3976,6 +3971,7 @@
 <translation id="6326855256003666642">จำนวนที่เชื่อมต่อแบบคงอยู่</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> ต้องการให้คุณอัปเดตอุปกรณ์นี้ก่อนเวลาที่กำหนด</translation>
 <translation id="6327785803543103246">การค้นหาเว็บพร็อกซีอัตโนมัติ</translation>
+<translation id="6331566915566907158">ช่วยปรับปรุงฟีเจอร์และประสิทธิภาพของ Chrome OS</translation>
 <translation id="6333064448949140209">ระบบจะส่งไฟล์ไปยัง Google เพื่อแก้ไขข้อบกพร่อง</translation>
 <translation id="6339668969738228384">สร้างโปรไฟล์ใหม่สำหรับ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">เชื่อมต่อกับเซิร์ฟเวอร์ไม่ได้ โปรดตรวจสอบการเชื่อมต่อและลองอีกครั้ง หากยังพบปัญหาอยู่ ให้รีสตาร์ท Chromebook</translation>
@@ -4112,7 +4108,6 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">คุณเชื่อมต่ออยู่กับเครือข่าย <ph name="NETWORK_TYPE" /></translation>
 <translation id="6527303717912515753">แชร์</translation>
-<translation id="6528189551082329571">เปิดลิงก์ประเภทนี้ในแอปที่เชื่อมโยงทุกครั้ง</translation>
 <translation id="6528513914570774834">อนุญาตให้ผู้ใช้อุปกรณ์นี้คนอื่นๆ ใช้เครือข่ายนี้ได้</translation>
 <translation id="652948702951888897">ประวัติการเข้าชมใน Chrome</translation>
 <translation id="6530186581263215931">ผู้ดูแลระบบกำหนดให้ใช้การตั้งค่าเหล่านี้</translation>
@@ -4682,7 +4677,6 @@
 <translation id="7310598146671372464">เข้าสู่ระบบไม่สำเร็จ เซิร์ฟเวอร์ไม่รองรับประเภทการเข้ารหัส Kerberos ที่ระบุ โปรดติดต่อผู้ดูแลระบบ</translation>
 <translation id="7311079019872751559">การเข้าถึงปลั๊กอินที่ไม่ได้อยู่ในแซนด์บ็อกซ์</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">เว็บไซต์จะใช้คุกกี้เพื่อดูกิจกรรมการท่องเว็บของคุณในเว็บไซต์ต่างๆ ไม่ได้ เช่น เพื่อปรับโฆษณาตามโปรไฟล์ของคุณ  บางเว็บไซต์อาจทำงานไม่ถูกต้อง</translation>
 <translation id="7321545336522791733">ไม่สามารถเข้าถึงเซิร์ฟเวอร์</translation>
 <translation id="7324297612904500502">ฟอรัมเบต้า</translation>
 <translation id="7325209047678309347">กระดาษติด</translation>
@@ -4936,6 +4930,7 @@
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN ไม่ถูกต้อง คุณป้อน PIN ได้อีก 1 ครั้ง}other{PIN ไม่ถูกต้อง คุณป้อน PIN ได้อีก # ครั้ง}}</translation>
 <translation id="7671130400130574146">ใช้แถบชื่อและเส้นขอบของระบบ</translation>
 <translation id="767127784612208024">แตะเพื่อยืนยันการรีเซ็ต</translation>
+<translation id="767147716926917172">ส่งข้อมูลการวินิจฉัยและการใช้งานให้ Google โดยอัตโนมัติ</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> ใน <ph name="PAGE_TITLE" /></translation>
 <translation id="7676867886086876795">ส่งเสียงของคุณไปยัง Google เพื่อให้พิมพ์ตามคำบอกในช่องข้อความต่างๆ</translation>
 <translation id="7678280409648629969">ข้อมูลการลงชื่อเข้าใช้จะจัดเก็บอยู่ใน Chrome หลังจากที่คุณออกจากโหมดไม่ระบุตัวตน การดำเนินการนี้จะทำให้คุณใช้ Touch ID กับเว็บไซต์นี้ได้อีกในภายหลัง</translation>
@@ -5079,7 +5074,6 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />หมายเหตุ:<ph name="END_BOLD" />  ระบบจะเริ่มต้นใหม่ระหว่างการดำเนินการ</translation>
 <translation id="7828731929332799387">การดำเนินการนี้จะลบคุกกี้และข้อมูลเว็บไซต์ทั้งหมดที่มีอยู่ในบริบทของบุคคลที่สาม ต้องการทำต่อไหม</translation>
-<translation id="7829298379596169484">กำลังเข้าถึงอินพุตเสียง</translation>
 <translation id="7829877209233347340">ขอให้ผู้ปกครองลงชื่อเข้าใช้เพื่อให้สิทธิ์ในการเพิ่มบัญชีโรงเรียน</translation>
 <translation id="7830594666202422257">เชื่อมต่อกับ Linux</translation>
 <translation id="7831491651892296503">เกิดข้อผิดพลาดในการกำหนดค่าเครือข่าย</translation>
@@ -5818,7 +5812,6 @@
 <translation id="8800004011501252845">แสดงปลายทางสำหรับ</translation>
 <translation id="8800034312320686233">หากเว็บไซต์ไม่ทำงาน</translation>
 <translation id="8803953437405899238">เปิดแท็บใหม่ในคลิกเดียว</translation>
-<translation id="8804398419035066391">ติดต่อกับเว็บไซต์ที่ร่วมมือ</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{ย้ายแท็บไปที่หน้าต่างใหม่}other{ย้ายหลายแท็บไปที่หน้าต่างใหม่}}</translation>
 <translation id="8805140816472474147">ยืนยันการตั้งค่าการซิงค์เพื่อเริ่มซิงค์</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> จะเปิดแท็บที่ปิดไปโดยไม่ได้ตั้งใจขึ้นมาอีกครั้งได้</translation>
@@ -6028,7 +6021,6 @@
 <translation id="9055636786322918818">บังคับใช้การเข้ารหัส RC4 การใช้ตัวเลือกนี้เป็นการเพิ่มความเสี่ยงเนื่องจากการเข้ารหัส RC4 นั้นไม่ปลอดภัย</translation>
 <translation id="9056810968620647706">ไม่พบรายการที่ตรงกัน</translation>
 <translation id="9057354806206861646">อัปเดตกำหนดการ</translation>
-<translation id="9058976525724291037">บุตรหลานต้องการเพิ่มบัญชี Google อีกบัญชีหนึ่งลงในอุปกรณ์นี้ การเพิ่มบัญชีลงในอุปกรณ์ที่จัดการโดย Family Link จะทำได้เฉพาะบัญชี G Suite for Education เท่านั้น</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">เกิดข้อผิดพลาดในบรรทัดที่ <ph name="ERROR_LINE_START" /> ถึง <ph name="ERROR_LINE_END" /></translation>
 <translation id="9064142312330104323">รูปภาพ Google โปรไฟล์ (กำลังโหลด)</translation>

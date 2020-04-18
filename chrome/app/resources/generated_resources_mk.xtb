@@ -377,6 +377,7 @@
 <translation id="1508491105858779599">Поставете го прстот на сензорот за отпечатоци за да го отклучите уредот.</translation>
 <translation id="1508575541972276599">Тековната верзија е Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Пристапи на секој <ph name="DEVICE_NAME_AND_VENDOR" /> преку USB</translation>
+<translation id="1509960214886564027">Функциите на многу сајтови може да не функционираат</translation>
 <translation id="1510030919967934016">Страницата е блокирана да не ја следи вашата локација.</translation>
 <translation id="1510055949674985293">Генерирајте QR-код за сликава</translation>
 <translation id="1510238584712386396">Стартер</translation>
@@ -1046,7 +1047,6 @@
 <translation id="237828693408258535">Да се преведе страницава?</translation>
 <translation id="2378346380592252785">Ажурирајте ги акредитивите за <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Изберете го директориумот за наставките.</translation>
-<translation id="2379232090534544565">Еден сајт пристапува до аудио и видеозаписи</translation>
 <translation id="2379281330731083556">Печатете со помош на системски дијалог... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Прашај пред да испратиш (препорачано)</translation>
 <translation id="2382818385048255866">Проверете ги екстензиите</translation>
@@ -1455,7 +1455,6 @@
 <translation id="2903457445916429186">Отвори ги избраните ставки</translation>
 <translation id="2903882649406874750">Секогаш блокирај го пристапот на <ph name="HOST" /> до сензорите</translation>
 <translation id="2904456025988372123">Прашај кога некој сајт се обидува автоматски да преземе датотеки по првата датотека</translation>
-<translation id="2905789169763945526">Додека сте во „Инкогнито“, сајтовите не може да ги користат колачињата за да ја гледаат вашата активност од прелистувањето на различни сајтови, на пример, за персонализирање реклами. Некои сајтови може да не работат правилно.</translation>
 <translation id="2907619724991574506">URL-врски за стартување</translation>
 <translation id="2907798539022650680">Не успеа да се поврзе на „<ph name="NAME" />“: <ph name="DETAILS" />
     Порака од серверот: <ph name="SERVER_MSG" /></translation>
@@ -1585,7 +1584,6 @@
 <translation id="3088128611727407543">Се подготвува профилот на апликацијата…</translation>
 <translation id="3088325635286126843">&amp;Преименувај...</translation>
 <translation id="3089137131053189723">Пребарувањето е избришано</translation>
-<translation id="3090193911106258841">Пристап до аудио- и видеовлез</translation>
 <translation id="3090819949319990166">Не може да ја копира надворешната crx датотека на <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">„<ph name="DEVICE_NAME" />“ се спари</translation>
 <translation id="3092699946856346803">Вметнете ја вашата SIM-картичка и обидете се повторно.</translation>
@@ -1647,7 +1645,6 @@
 <translation id="3165390001037658081">Некои оператори може да ја блокираат функцијава.</translation>
 <translation id="3169472444629675720">Откриј</translation>
 <translation id="3170072451822350649">Може да прескокнете и најавување и <ph name="LINK_START" />да прелистувате како Гостин<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">Еден сајт пристапува до видеозапис</translation>
 <translation id="3177909033752230686">Јазик на страницата:</translation>
 <translation id="3179982752812949580">Фонт на текстот</translation>
 <translation id="3181954750937456830">Безбедно прелистување (ве заштитува вас и вашиот уред од опасни сајтови)</translation>
@@ -1858,7 +1855,6 @@
 <translation id="3459697287128633276">За да овозможите сметката да пристапува до Google Play Store, извршете проверка со вашиот oбезбедувач на идентитет.</translation>
 <translation id="3462311546193741693">Ќе ве одјави од повеќето сајтови. Ќе останете најавени на вашата сметка на Google за да може да ги избришете синхронизираните податоци.</translation>
 <translation id="3462413494201477527">Откажи го поставувањето на сметка?</translation>
-<translation id="3464012987031883895">Еден сајт пристапува до аудиозапис</translation>
 <translation id="346431825526753">Ова е сметка за деца управувана од <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468298837301810372">Ознака</translation>
 <translation id="3468999815377931311">Телефон со Android</translation>
@@ -1880,7 +1876,6 @@
 <translation id="3487007233252413104">анонимна функција</translation>
 <translation id="348780365869651045">Се чека AppCache...</translation>
 <translation id="3488065109653206955">Делумно активиран</translation>
-<translation id="3489025949017384019">Многу сајтови може да не работат правилно</translation>
 <translation id="3492788708641132712">Синхронизацијата не функционира. Обидете се да се најавите повторно.</translation>
 <translation id="3493486281776271508">Потребна е интернет-врска</translation>
 <translation id="3493881266323043047">Важност</translation>
@@ -1942,7 +1937,6 @@
 <translation id="3574210789297084292">најави се</translation>
 <translation id="3574917942258583917">Сепак да се излезе од режим „Инкогнито“?</translation>
 <translation id="3575121482199441727">Дозволи за овој сајт</translation>
-<translation id="3575919114596668130">Родителските поставки за Family Link сѐ уште ќе важат. Ако претходно сте блокирале апликација или сајт, нема да мора да го правите тоа повторно.</translation>
 <translation id="3576324189521867626">Успешно е инсталирана</translation>
 <translation id="3578594933904494462">Содржината на картичкава се споделува.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; сака да сподели печатач &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; со група којашто ја поседувате: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Доколку прифатите, сите членови на групата ќе можат да печатат на печатачот.</translation>
@@ -3726,7 +3720,6 @@
 <translation id="6006484371116297560">Класична</translation>
 <translation id="6007240208646052708">Гласовно пребарување на вашиот јазик не е достапно.</translation>
 <translation id="6009781704028455063">Вграден сензор</translation>
-<translation id="6010869025736512584">Се пристапува до видеовлезот</translation>
 <translation id="6011074160056912900">Етернет-мрежа</translation>
 <translation id="6011193465932186973">Отпечаток</translation>
 <translation id="6011449291337289699">Избришете ги сите податоци</translation>
@@ -4115,7 +4108,6 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">Поврзани сте на <ph name="NETWORK_TYPE" /> мрежа.</translation>
 <translation id="6527303717912515753">Сподели</translation>
-<translation id="6528189551082329571">Секогаш отворај ги линковите од овој тип во поврзаната апликација</translation>
 <translation id="6528513914570774834">Дозволи други корисници на уредов да ја користат мрежава</translation>
 <translation id="652948702951888897">Историја на Chrome</translation>
 <translation id="6530186581263215931">Овие поставки ги наметнува вашиот администратор</translation>
@@ -4685,7 +4677,6 @@
 <translation id="7310598146671372464">Неуспешно најавување. Серверот не ги поддржува одредените типови шифрирање на Kerberos. Контактирајте со администраторот.</translation>
 <translation id="7311079019872751559">Пристап за неизолиран приклучок</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">Сајтовите не може да користат колачиња за да ја гледаат вашата активност од прелистувањето на различни сајтови, на пример, за персонализирање реклами.  Некои сајтови може да не работат правилно.</translation>
 <translation id="7321545336522791733">Серверот е недостапен</translation>
 <translation id="7324297612904500502">Форум за Beta Chrome</translation>
 <translation id="7325209047678309347">Хартијата е заглавена</translation>
@@ -5083,7 +5074,6 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Напомена:<ph name="END_BOLD" /> системот ќе се рестартира во текот на процесот.</translation>
 <translation id="7828731929332799387">Ова ќе ги избрише сите колачиња и податоците за сајтовите што се достапни во контексти на трета страна. Дали сакате да продолжите?</translation>
-<translation id="7829298379596169484">Пристап до аудиовлез</translation>
 <translation id="7829877209233347340">Побарај од родителот да се најави за да даде дозвола за додавање училишна сметка</translation>
 <translation id="7830594666202422257">Поврзи се со Linux</translation>
 <translation id="7831491651892296503">Грешка при конфигурирање на мрежата</translation>
@@ -5824,7 +5814,6 @@
 <translation id="8800004011501252845">Се прикажуваат дестинации за</translation>
 <translation id="8800034312320686233">Дали сајтот не работи?</translation>
 <translation id="8803953437405899238">Отворете нова картичка со едно кликнување</translation>
-<translation id="8804398419035066391">Комуницирај со веб-локации што соработуваат</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Преместете ја картичката во друг прозорец}one{Преместете ги картичките во друг прозорец}other{Преместете ги картичките во друг прозорец}}</translation>
 <translation id="8805140816472474147">Потврдете ги поставките за синхронизација за да започнете со синхронизирање.</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> може повторно да ги отвори случајно затворените картички</translation>
@@ -6034,7 +6023,6 @@
 <translation id="9055636786322918818">Наметнете RC4-шифрирање. Ако ја користите опцијава, ви се зголемува ризикот бидејќи RC4-шифрите се небезбедни.</translation>
 <translation id="9056810968620647706">Не се најдени совпаѓања.</translation>
 <translation id="9057354806206861646">Распоред за ажурирање</translation>
-<translation id="9058976525724291037">Вашето дете сака да додаде друга сметка на Google на уредов. Само сметките на G Suite for Education може да се додаваат на уреди управувани со Family Link.</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Грешка од ред <ph name="ERROR_LINE_START" /> до <ph name="ERROR_LINE_END" /></translation>
 <translation id="9064142312330104323">Фотографија на Профил на Google (се вчитува)</translation>

@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Pauziraj</translation>
 <translation id="1188239144602654184">Pristupi AR-u</translation>
 <translation id="1197267115302279827">Premjesti oznake</translation>
-<translation id="119944043368869598">Očisti sve</translation>
 <translation id="1201402288615127009">Naprijed</translation>
 <translation id="1204037785786432551">Link za preuzimanje</translation>
 <translation id="1206892813135768548">Kopiraj tekst linka</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Osnovni</translation>
 <translation id="1671236975893690980">Čeka se preuzimanje…</translation>
 <translation id="1672586136351118594">Ne prikazuj ponovo</translation>
+<translation id="1688867105868176567">Obrisati podatke web lokacije?</translation>
 <translation id="1692118695553449118">Sinhronizacija je uključena</translation>
 <translation id="169515064810179024">Blokiraj web lokacijama pristup senzorima pokreta</translation>
 <translation id="1717218214683051432">Senzori pokreta</translation>
@@ -507,7 +507,6 @@ Vaš Google račun može imati druge oblike historije pregledanja kao što su pr
 <translation id="4751476147751820511">Senzori pokreta ili svjetla</translation>
 <translation id="4759238208242260848">Preuzimanja</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Završeno je jedno preuzimanje.}one{Završeno je # preuzimanje.}few{Završena su # preuzimanja.}other{Završeno je # preuzimanja.}}</translation>
-<translation id="4797039098279997504">Dodirnite za povratak na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Enkripcija šifrom ne uključuje načine plaćanja i adrese s Google Paya.
 
 Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizaciju<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="4932247056774066048">S obzirom na to da se odjavljujete s računa kojim upravlja domena <ph name="DOMAIN_NAME" />, vaši podaci iz Chromea će se izbrisati s ovog uređaja. Ostat će na vašem Google računu.</translation>
 <translation id="4943703118917034429">Virtuelna realnost</translation>
 <translation id="4943872375798546930">Nema rezultata</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> dijeli vaš ekran</translation>
 <translation id="4961107849584082341">Prevedite ovu stranicu na bilo koji jezik</translation>
 <translation id="4962975101802056554">Opoziv svih dopuštenja za uređaj</translation>
 <translation id="4970824347203572753">Nije dostupno na vašoj lokaciji</translation>
@@ -559,7 +557,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5129038482087801250">Instaliraj web aplikaciju</translation>
 <translation id="5132942445612118989">Sinhronizacija lozinki, historije i ostalog na svim uređajima</translation>
 <translation id="5139940364318403933">Naučite koristiti Google Disk</translation>
-<translation id="515227803646670480">Obrišite pohranjene podatke</translation>
 <translation id="5152843274749979095">Nisu instalirane podržane aplikacije</translation>
 <translation id="5161254044473106830">Naslov je obavezan</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 preuzimanje nije uspjelo.}one{# preuzimanje nije uspjelo.}few{# preuzimanja nisu uspjela.}other{# preuzimanja nije uspjelo.}}</translation>
@@ -667,7 +664,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5869522115854928033">Sačuvane lozinke</translation>
 <translation id="5876056640971328065">Pauziranje videozapisa</translation>
 <translation id="5884076754568147479">Radi lakšeg završavanja zadataka, Google će primati URL-ove i sadržaj web lokacija na kojima koristite Asistenta, kao i informacije koje pošaljete putem Asistenta</translation>
-<translation id="5902828464777634901">Svi lokalni podaci koje pohrani ova web lokacija, uključujući kolačiće, bit će izbrisani.</translation>
 <translation id="5919204609460789179">Ažurirajte proizvod <ph name="PRODUCT_NAME" /> da započnete sinhronizaciju</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> sačuvano</translation>
 <translation id="5939518447894949180">Ponovno postavi</translation>
@@ -787,7 +783,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="671481426037969117">Tajmer aplikacije <ph name="FQDN" /> je istekao. Počet će ponovo sutra.</translation>
 <translation id="6738867403308150051">Preuzimanje…</translation>
 <translation id="6766622839693428701">Prevucite prema dolje da zatvorite.</translation>
-<translation id="6766758767654711248">Dodirnite da posjetite web lokaciju</translation>
 <translation id="6767294960381293877">Spisak uređaja s kojim će se dijeliti kartica je otvoren na pola visine.</translation>
 <translation id="6782111308708962316">Spriječi web lokacije treće strane da pohranjuju i čitaju podatke kolačića</translation>
 <translation id="6790428901817661496">Pokreni</translation>
@@ -1048,7 +1043,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="8812260976093120287">Na nekim web lokacijama možete platiti gore navedenim aplikacijama za plaćanje na vašem uređaju.</translation>
 <translation id="8816026460808729765">Blokiranje web lokacijama pristup senzorima</translation>
 <translation id="8820817407110198400">Oznake</translation>
-<translation id="8833831881926404480">Web lokacija dijeli vaš ekran</translation>
 <translation id="883806473910249246">Došlo je do greške prilikom preuzimanja sadržaja.</translation>
 <translation id="8840953339110955557">Ova stranica se može razlikovati od online verzije.</translation>
 <translation id="8847988622838149491">USB</translation>

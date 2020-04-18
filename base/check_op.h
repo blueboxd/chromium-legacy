@@ -105,7 +105,7 @@ CheckOpValueStr(const T& v) {
 class CheckOpResult {
  public:
   // An empty result signals success.
-  constexpr CheckOpResult() : message_(nullptr) {}
+  constexpr CheckOpResult() = default;
 
   // A non-success result. expr_str is something like "foo != bar". v1_str and
   // v2_str are the stringified run-time values of foo and bar. Takes ownership
@@ -118,7 +118,7 @@ class CheckOpResult {
   friend class CheckError;
 
  private:
-  char* message_;
+  char* message_ = nullptr;
 };
 
 #if defined(OFFICIAL_BUILD) && defined(NDEBUG)
@@ -154,17 +154,15 @@ class CheckOpResult {
       const T& v1, const U& v2, const char* expr_str) {                        \
     if (ANALYZER_ASSUME_TRUE(v1 op v2))                                        \
       return ::logging::CheckOpResult();                                       \
-    else                                                                       \
-      return ::logging::CheckOpResult(expr_str, CheckOpValueStr(v1),           \
-                                      CheckOpValueStr(v2));                    \
+    return ::logging::CheckOpResult(expr_str, CheckOpValueStr(v1),             \
+                                    CheckOpValueStr(v2));                      \
   }                                                                            \
   constexpr ::logging::CheckOpResult Check##name##Impl(int v1, int v2,         \
                                                        const char* expr_str) { \
     if (ANALYZER_ASSUME_TRUE(v1 op v2))                                        \
       return ::logging::CheckOpResult();                                       \
-    else                                                                       \
-      return ::logging::CheckOpResult(expr_str, CheckOpValueStr(v1),           \
-                                      CheckOpValueStr(v2));                    \
+    return ::logging::CheckOpResult(expr_str, CheckOpValueStr(v1),             \
+                                    CheckOpValueStr(v2));                      \
   }
 
 #pragma clang diagnostic push

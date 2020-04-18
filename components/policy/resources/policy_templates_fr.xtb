@@ -76,17 +76,6 @@
       Si vous définissez <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> sur "1", seules les variantes considérées comme des correctifs essentiels de sécurité ou de stabilité peuvent être appliquées à <ph name="PRODUCT_OS_NAME" />.
 
       Si vous définissez <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> sur "2", aucune variante ne peut être appliquée au navigateur sur l'écran de connexion. Veuillez noter que ce mode n'est pas recommandé, car il est susceptible d'empêcher les développeurs <ph name="PRODUCT_OS_NAME" /> de fournir des correctifs essentiels de sécurité en temps voulu.</translation>
-<translation id="1078643757670228170">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
-
-          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran est éteint (lorsque l'appareil fonctionne sur secteur).
-
-          Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> éteint l'écran au terme du délai d'inactivité de l'utilisateur.
-
-          Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> n'éteint pas l'écran en cas d'inactivité de l'utilisateur.
-
-          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
-
-          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure ou égale au délai d'inactivité.</translation>
 <translation id="1079801999187584280">Interdire l'utilisation des outils pour les développeurs</translation>
 <translation id="1087437665304381368">Cette règle permet de ne contrôler que le mode développeur <ph name="PRODUCT_OS_NAME" />. Si vous voulez bloquer l'accès aux options pour les développeurs Android, vous devez définir la règle <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">La liste des règles Chrome Enterprise a changé d'adresse ! Pensez à mettre à jour vos favoris. Le lien correct est le suivant : <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -255,13 +244,6 @@
       Cette règle s'applique à tous les types de sortie audio, et pas seulement aux haut-parleurs intégrés. Elle désactive également les fonctionnalités d'accessibilité audio. N'activez pas cette règle si l'utilisateur a besoin d'utiliser un lecteur d'écran.
 
       Si ce paramètre est défini sur "True" ou s'il n'est pas configuré, toutes les sorties audio compatibles sur l'appareil peuvent être utilisées.</translation>
-<translation id="1358050607773151553">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
-
-          Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> met en œuvre l'action à effectuer en cas d'inactivité de l'utilisateur (laquelle peut être définie séparément) au terme du délai d'inactivité de l'utilisateur.
-
-          Si cette règle n'est pas configurée, l'action par défaut est effectuée, à savoir l'arrêt temporaire.
-
-          Dans ce cas, <ph name="PRODUCT_OS_NAME" /> peut être configuré séparément pour verrouiller ou non l'écran avant l'arrêt provisoire.</translation>
 <translation id="1359553908012294236">Si cette règle est définie sur "True" ou n'est pas définie, <ph name="PRODUCT_NAME" /> autorisera les connexions en tant qu'invité. Les connexions en tant qu'invité correspondent à des profils <ph name="PRODUCT_NAME" /> où toutes les fenêtres s'ouvrent en mode navigation privée.
 
       Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> n'autorisera pas la création de profils d'invités.</translation>
@@ -276,11 +258,6 @@
           Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultNotificationsSetting" si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
 
           Pour en savoir plus sur les formats d'URL valides, consultez cette page : https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="1377134027840513298">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
-
-          Cette règle fournit une valeur de secours pour les règles <ph name="IDLE_ACTION_AC_POLICY_NAME" /> et <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" />, qui sont plus spécifiques. Si cette règle est configurée, sa valeur est utilisée si la règle correspondante plus spécifique ne l'est pas.
-
-          Si cette règle n'est pas configurée, le comportement des règles plus spécifiques n'est pas modifié.</translation>
 <translation id="1384459581748403878">Référence : <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Indiquer l'état de la mise à jour du système</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
@@ -652,17 +629,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si ce paramètre est désactivé, ces informations ne sont jamais suggérées ni saisies automatiquement. De même, les informations complémentaires relatives à l'adresse que l'utilisateur est susceptible de fournir sur une page Web ne sont pas enregistrées.
 
       Si ce paramètre est activé ou vide, l'utilisateur peut contrôler la saisie automatique pour les adresses dans l'interface utilisateur.</translation>
-<translation id="1959613237819575097">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
-
-          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran est éteint (lorsque l'appareil fonctionne sur batterie).
-
-          Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> éteint l'écran au terme du délai d'inactivité de l'utilisateur.
-
-          Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> n'éteint pas l'écran en cas d'inactivité de l'utilisateur.
-
-          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
-
-          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure ou égale au délai d'inactivité.</translation>
 <translation id="1962273523772270623">Autoriser la collecte des journaux d'événements WebRTC à partir des services Google</translation>
 <translation id="1964634611280150550">Mode navigation privée désactivé</translation>
 <translation id="1964802606569741174">Cette règle n'a aucun effet sur l'application YouTube pour Android. Vous ne devez pas autoriser son installation si le mode sécurisé de YouTube doit être appliqué.</translation>
@@ -787,6 +753,13 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
 
       Si vous ne définissez pas ce paramètre, la détection du recouvrement sera activée.</translation>
 <translation id="2166472654199325139">Ne pas filtrer les sites de contenus réservés aux adultes</translation>
+<translation id="2166746572083670600">Permet de configurer le répertoire utilisé par <ph name="PRODUCT_NAME" /> pour le stockage des données de l'utilisateur.
+
+      Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilisera le répertoire fourni, que l'utilisateur ait ou non spécifié l'indicateur "--user-data-dir". Pour éviter la perte de données ou d'autres erreurs inattendues, ne définissez pas cette règle sur un répertoire utilisé à d'autres fins, car <ph name="PRODUCT_NAME" /> gère son contenu.
+
+      Pour connaître la liste des variables acceptées, consultez la page https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Si cette règle n'est pas définie, le chemin de profil par défaut sera utilisé, et l'utilisateur pourra le remplacer avec l'indicateur de ligne de commande "--user-data-dir".</translation>
 <translation id="2168397434410358693">Délai d'inactivité (secteur)</translation>
 <translation id="217013996107840632">Paramètres de ligne de commande pour basculer vers Chrome à partir du navigateur secondaire.</translation>
 <translation id="2170233653554726857">Activer l'optimisation WPAD</translation>
@@ -911,11 +884,6 @@ Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé 
       Les modèles dont le format est incorrect sont ignorés.</translation>
 <translation id="2345547870894930157">Activer DNS-over-HTTPS sans solution de secours à risque</translation>
 <translation id="2386362615870139244">Autoriser les WakeLock forçant l'activation de l'écran</translation>
-<translation id="2398554235599593694"> Cette règle permet de spécifier si la case "Toujours ouvrir" doit être affichée ou non dans une invite de confirmation du lancement d'un protocole externe.
-
-      Si cette règle est définie sur "True", lorsqu'une invite de confirmation de lancement d'un protocole externe s'affiche, l'utilisateur peut choisir de "toujours ouvrir" le protocole sans invite de confirmation par la suite.
-
-      Si cette règle est définie sur "False" ou si elle n'est pas configurée, la case "Toujours ouvrir" n'est pas affichée, et l'utilisateur est invité à confirmer à chaque fois le lancement d'un protocole externe.</translation>
 <translation id="2406820201690307634">Permet de définir une liste de formats d'URL indiquant les sites non autorisés à afficher des images.
 
           Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultImagesSetting" si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
@@ -960,19 +928,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
       Si vous ne définissez pas ce paramètre, les utilisateurs peuvent choisir d'appliquer cette fonctionnalité ou non.
 
       Ce paramètre a été supprimé de <ph name="PRODUCT_NAME" /> 29 et versions ultérieures.</translation>
-<translation id="2430828513262055658">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.)
-
-          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran est verrouillé (lorsque l'appareil fonctionne sur secteur).
-
-          Si cette règle est définie sur une valeur supérieure à zéro, la valeur correspond au délai d'inactivité au terme duquel <ph name="PRODUCT_OS_NAME" /> verrouille l'écran.
-
-          Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> ne verrouille pas l'écran en cas d'inactivité de l'utilisateur.
-
-          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
-
-          Pour verrouiller l'écran en cas d'inactivité, il est recommandé d'activer le verrouillage de l'écran lors de l'arrêt temporaire, et de configurer l'arrêt temporaire de <ph name="PRODUCT_OS_NAME" /> au terme du délai d'inactivité. Cette règle ne doit être utilisée que lorsque le verrouillage de l'écran doit intervenir bien avant l'arrêt temporaire de l'appareil ou lorsque l'utilisateur ne souhaite absolument pas que l'appareil soit arrêté temporairement en cas d'inactivité.
-
-          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure au délai d'inactivité.</translation>
 <translation id="2433412232489478893">Cette règle permet de déterminer si la fonctionnalité Partages de fichiers en réseau pour <ph name="PRODUCT_NAME" /> est autorisée pour un utilisateur.
 
       Si cette règle n'est pas configurée ou définie sur "True", les utilisateurs peuvent utiliser la fonctionnalité Partages de fichiers en réseau.
@@ -1361,7 +1316,6 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 <translation id="2856674246949497058">Rétablissez et conservez la version cible si elle est antérieure à la version de l'OS. Effectuez un Powerwash pendant le processus.</translation>
 <translation id="2869762730352628426">Activer le clic automatique sur l'écran de connexion</translation>
 <translation id="2872961005593481000">Éteindre</translation>
-<translation id="2873651257716068683">Remplace le format de page d'impression par défaut. Si la taille de la page est indisponible, cette règle est ignorée.</translation>
 <translation id="2874209944580848064">Remarque concernant les appareils <ph name="PRODUCT_OS_NAME" /> compatibles avec les applications Android :</translation>
 <translation id="2874901846804525128">Empêchez l'utilisateur de se servir des applications Android provenant de sources non approuvées.</translation>
 <translation id="2875192972412983412">Permet de spécifier le sous-ensemble des serveurs d'impression qui sont interrogés pour accéder aux imprimantes disponibles qui y sont associées.
@@ -1798,19 +1752,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
           Si cette règle n'est pas définie, la fonctionnalité Sélectionner pour prononcer est initialement désactivée, mais les utilisateurs peuvent l'activer à tout moment.</translation>
 <translation id="3591527072193107424">Activer la fonctionnalité Legacy Browser Support.</translation>
 <translation id="3591584750136265240">Configurer le mode d'authentification lors de la connexion</translation>
-<translation id="3602332793276340697">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.)
-
-          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran est verrouillé (lorsque l'appareil fonctionne sur batterie).
-
-          Si cette règle est définie sur une valeur supérieure à zéro, la valeur correspond au délai d'inactivité au terme duquel <ph name="PRODUCT_OS_NAME" /> verrouille l'écran.
-
-          Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> ne verrouille pas l'écran en cas d'inactivité de l'utilisateur.
-
-          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
-
-          Pour verrouiller l'écran en cas d'inactivité, il est recommandé d'activer le verrouillage de l'écran lors de l'arrêt temporaire, et de configurer l'arrêt temporaire de <ph name="PRODUCT_OS_NAME" /> au terme du délai d'inactivité. Cette règle ne doit être utilisée que lorsque le verrouillage de l'écran doit intervenir bien avant l'arrêt temporaire de l'appareil ou lorsque l'utilisateur ne souhaite absolument pas que l'appareil soit arrêté temporairement en cas d'inactivité.
-
-          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure au délai d'inactivité.</translation>
 <translation id="3624515566460517364">Vérifier si les importations et les téléchargements respectent les règles de protection des données sensibles</translation>
 <translation id="3627678165642179114">Activer ou désactiver le service Web de correction orthographique</translation>
 <translation id="3628480121685794414">Activer l'impression recto</translation>
@@ -2891,6 +2832,12 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
 
       Cette règle est définie en millisecondes.</translation>
 <translation id="523505283826916779">Paramètres d'accessibilité</translation>
+<translation id="5236004592041099233">Permet de configurer la liste des URL de connexion d'entreprise (protocoles HTTP et HTTPS uniquement). Le service de protection par mot de passe enregistre des copies hachées et salées des mots de passe au niveau de ces URL afin de détecter les mots de passe réutilisés.
+      Afin que <ph name="PRODUCT_NAME" /> enregistre correctement une copie hachée et salée de vos mots de passe, vérifiez que vos pages de connexion respectent bien les consignes indiquées à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Si cette règle est activée, le service de protection par mot de passe enregistre une copie hachée et salée du mot de passe au niveau de ces URL afin de détecter les mots de passe réutilisés.
+      Si ce paramètre est désactivé ou s'il n'est pas défini, le service de protection par mot de passe n'enregistre que les copies hachées et salées de mots de passe sur https://accounts.google.com.
+      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="5236882091572996759">Lorsque cette règle est définie sur "True" ou si elle n'est pas définie, l'utilisateur n'est pas considéré comme inactif pendant la lecture audio. Le délai d'inactivité ne peut ainsi pas être atteint, et l'action à effectuer en cas d'inactivité n'est pas appliquée. L'assombrissement, l'arrêt et le verrouillage de l'écran sont toutefois appliqués au terme des délais configurés, indépendamment de l'activité audio.
 
           Si cette règle est définie sur "False", l'activité audio n'empêche pas l'utilisateur d'être considéré comme inactif.</translation>
@@ -2906,17 +2853,6 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
       Consultez également la page https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5249453807420671499">Les utilisateurs peuvent ajouter des comptes Kerberos</translation>
 <translation id="5255162913209987122">Peut être recommandée</translation>
-<translation id="5261766238868915624">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
-
-          Elle permet de spécifier le délai d'inactivité de l'utilisation au terme duquel l'écran s'assombrit (lorsque l'appareil fonctionne sur batterie).
-
-          Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> assombrit l'écran au terme du délai d'inactivité de l'utilisateur.
-
-          Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> n'assombrit pas l'écran en cas d'inactivité de l'utilisateur.
-
-          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
-
-          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure ou égale au délai d'arrêt de l'écran (le cas échéant) et au délai d'inactivité.</translation>
 <translation id="527237119693897329">Cette règle vous permet de spécifier les hôtes de messagerie native qui ne doivent pas être chargés.
 
           Si vous définissez la valeur liée à la liste noire sur "*", cela signifie que tous les hôtes de messagerie native figurent sur la liste noire tant qu'ils n'ont pas été explicitement ajoutés à la liste blanche.
@@ -2945,13 +2881,6 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
        Si cette règle est définie sur "False", le contenu audio et vidéo n'est pas mis à niveau automatiquement, et aucun avertissement ne s'affiche pour les images.
        Cette règle n'influe pas sur les types de contenus mixtes autres que les images et les contenus audio/vidéo.
        Notez également qu'elle ne sera plus applicable à compter de la version 84 de <ph name="PRODUCT_NAME" />.</translation>
-<translation id="5278367296164377827">Cette règle permet d'assurer la transition vers la version M82, de laquelle elle sera supprimée.
-
-      La règle par défaut de Chrome en matière d'URL de provenance est renforcée. L'objectif est de favoriser une transition progressive de sa valeur actuelle (no-referrer-when-downgrade) à une nouvelle valeur plus sécurisée (strict-origin-when-cross-origin) afin d'obtenir une version M80 stable.
-
-      Avant le déploiement, cette règle n'a aucun d'effet. Après le déploiement, lorsque cette règle est activée, la règle par défaut de Chrome en matière d'URL de provenance reprend sa valeur antérieure à celle de la version M80 (no-referrer-when-downgrade).
-
-      Cette règle est désactivée par défaut.</translation>
 <translation id="5283457834853986457">Désactiver l'outil de recherche de plug-ins (obsolète)</translation>
 <translation id="5285315763984334157">Bloquer les téléchargements malveillants</translation>
 <translation id="5288772341821359899">Si cette règle est définie, la portée du port UDP utilisé par WebRTC est restreinte à l'intervalle de port spécifié (points de terminaison inclus).
@@ -3616,6 +3545,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="6221175752766085998">Autoriser les certificats émis par les ancres d'approbation locales sans l'extension subjectAlternativeName</translation>
 <translation id="6224304369267200483">URL/domaines automatiquement autorisés à recevoir une attestation de clé de sécurité</translation>
 <translation id="6233173491898450179">Définir le répertoire de téléchargement</translation>
+<translation id="6234177445959386333">Configurez la liste des URL de connexion d'entreprise pour lesquelles le service de protection par mot de passe doit enregistrer une copie hachée et salée des mots de passe.</translation>
 <translation id="6242147107333796512">Transmettre les informations liées aux rapports d'erreur, comme l'ID distant, la cause et l'horodatage du problème relevé.
 
       Si cette règle est définie sur "False" ou si elle n'est pas configurée, ces informations ne sont pas transmises. Si cette règle est définie sur "True", ces informations sont transmises.</translation>
@@ -3654,17 +3584,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6281043242780654992">Cette règle permet de configurer le comportement de la messagerie native. Les hôtes de messagerie native qui figurent sur la liste noire ne sont pas autorisés tant qu'ils n'ont pas été ajoutés à la liste blanche.</translation>
 <translation id="6282799760374509080">Autoriser ou interdire la capture audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6293957650182823856">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
-
-          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel un message d'avertissement s'affiche (lorsque l'appareil fonctionne sur secteur).
-
-          Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> affiche un message d'avertissement pour signaler à l'utilisateur que l'action à effectuer en cas d'inactivité est sur le point d'être mise en œuvre au terme du délai d'inactivité.
-
-          Si cette règle n'est pas configurée, aucun message d'avertissement ne s'affiche.
-
-          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure ou égale au délai d'inactivité.
-
-          Le message d'avertissement ne s'affiche que si l'action à effectuer en cas d'inactivité de l'utilisateur consiste à déconnecter ou arrêter l'appareil.</translation>
 <translation id="6310223829319187614">Activer la saisie automatique du nom de domaine lors de la connexion de l'utilisateur</translation>
 <translation id="631081324835911099">Forcer la déconnexion de l'utilisateur lorsque le jeton d'authentification de son compte principal n'est plus valide.
         Cette règle peut empêcher l'utilisateur d'accéder à un contenu soumis à des restrictions sur les propriétés Web Google.
@@ -4064,6 +3983,12 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle n'est pas configurée, l'étagère est placée par défaut au bas de l'écran. Toutefois, l'utilisateur peut la mettre à un autre endroit.</translation>
 <translation id="7040229947030068419">Exemple de valeur :</translation>
 <translation id="7044883996351280650">Gérer le service de sauvegarde et de restauration Android</translation>
+<translation id="705089873294344912">Permet de configurer l'URL de modification de mot de passe (protocoles HTTP et HTTPS uniquement). Le service de protection par mot de passe dirige les utilisateurs vers cette URL afin qu'ils modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
+      Afin que <ph name="PRODUCT_NAME" /> enregistre correctement une copie hachée et salée du nouveau mot de passe sur la page de modification de celui-ci, vérifiez si cette page respecte bien les consignes indiquées à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Si ce paramètre est activé, le service de protection par mot de passe dirige les utilisateurs vers cette URL afin qu'ils modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
+      Si ce paramètre est désactivé ou n'est pas défini, le service de protection par mot de passe dirige les utilisateurs vers la page https://myaccount.google.com afin qu'ils modifient leur mot de passe.
+      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="7053678646221257043">Lorsqu'elle est activée, cette règle force l'importation des favoris à partir du navigateur par défaut actuel. Si elle est activée, elle affecte également la boîte de dialogue d'importation. 
 
 Si elle est désactivée, les favoris ne sont pas importés. 
@@ -5093,17 +5018,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
       domaines google.com, comme décrit sur la page https://support.google.com/a/answer/1668854.
 
       Les utilisateurs ne peuvent pas modifier ni remplacer ce paramètre.</translation>
-<translation id="8618139576368821933">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
-
-          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran s'assombrit (lorsque l'appareil fonctionne sur secteur).
-
-          Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> assombrit l'écran au terme du délai d'inactivité de l'utilisateur.
-
-          Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> n'assombrit pas l'écran en cas d'inactivité de l'utilisateur.
-
-          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
-
-          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure ou égale au délai d'arrêt de l'écran (le cas échéant) et au délai d'inactivité.</translation>
 <translation id="8625234016727663537">Vous permet de définir une liste d'URL spécifiant les sites automatiquement autorisés à accéder à un appareil USB correspondant aux ID de fournisseur et de produit indiqués sur l'écran de connexion. Chaque élément de la liste doit contenir à la fois les appareils et les URL pour que la règle soit valide. Chaque élément des appareils peut comporter un champ d'ID de produit et d'ID de fournisseur. Les ID non renseignés sont traités comme des caractères génériques, à une exception près : un ID de produit ne peut pas être spécifié si un ID de fournisseur n'est pas aussi spécifié. Sinon, la règle n'est pas valide et est ignorée.
 
         Le modèle d'autorisation USB utilise l'URL du site à l'origine de la demande ("URL de requête") et l'URL du site du cadre de premier niveau ("URL d'intégration") pour autoriser l'URL de requête à accéder à l'appareil USB. L'URL de requête peut être différente de l'URL d'intégration si le site à l'origine de la demande est chargé dans un iFrame. Le champ "URL" peut de ce fait contenir jusqu'à deux chaînes d'URL séparées par une virgule, afin d'indiquer l'URL de requête et l'URL d'intégration, respectivement. Si une seule URL est spécifiée, l'accès aux appareils USB concernés est autorisé si l'URL du site à l'origine de la demande correspond à cette URL, quel que soit l'état d'intégration. Si les URL indiquées dans le champ "URL" ne sont pas valides, la règle est ignorée.
@@ -5184,17 +5098,6 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
       Les extensions permettant d'imprimer depuis un navigateur, ou destinations des fournisseurs d'impression, englobent toutes les destinations appartenant à une extension <ph name="PRODUCT_NAME" />.
 
       Les imprimantes locales, ou destinations d'impression native, englobent les destinations disponibles sur l'ordinateur local et les imprimantes réseau partagées.</translation>
-<translation id="8752541111574086388">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
-
-          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel un message d'avertissement s'affiche (lorsque l'appareil fonctionne sur batterie).
-
-          Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> affiche un message d'avertissement pour signaler à l'utilisateur que l'action à effectuer en cas d'inactivité est sur le point d'être mise en œuvre au terme du délai d'inactivité.
-
-          Si cette règle n'est pas configurée, aucun message d'avertissement ne s'affiche.
-
-          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure ou égale au délai d'inactivité.
-
-          Le message d'avertissement ne s'affiche que si l'action à effectuer en cas d'inactivité de l'utilisateur consiste à déconnecter ou arrêter l'appareil.</translation>
 <translation id="8757552286070680084">Configuration d'un dispositif DTC de Wilco</translation>
 <translation id="8758831693895931466">Activer l'inscription obligatoire à la gestion cloud</translation>
 <translation id="8759829385824155666">Types de chiffrement Kerberos autorisés</translation>
@@ -5291,24 +5194,6 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
       Si la règle est définie sur "False" ou n'est pas définie, les états liés aux affichages et aux graphiques ne sont pas transmis. Si elle est définie sur "True", ils sont envoyés.</translation>
 <translation id="891435090623616439">codée comme une chaîne JSON, pour plus de détails voir <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Autoriser les utilisateurs à gérer les certificats CA installés.</translation>
-<translation id="8926275581598789324">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
-
-          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'action à effectuer en cas d'inactivité est mise en œuvre (lorsque l'appareil fonctionne sur batterie).
-
-          Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> met en œuvre l'action à effectuer en cas d'inactivité (laquelle peut être définie séparément) au terme du délai d'inactivité de l'utilisateur.
-
-          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
-
-          La valeur de la règle doit être indiquée en millisecondes.</translation>
-<translation id="8929997566627164343">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
-
-          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'action à effectuer en cas d'inactivité est réalisée (lorsque l'appareil fonctionne sur secteur).
-
-          Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> met en œuvre l'action à effectuer en cas d'inactivité (laquelle peut être définie séparément) au terme du délai d'inactivité de l'utilisateur.
-
-          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
-
-          La valeur de la règle doit être indiquée en millisecondes.</translation>
 <translation id="8934944553121392674">Détermine les imprimantes de <ph name="DEVICE_PRINTERS_POLICY" /> qui sont à la disposition des utilisateurs.
 
       Indique quelle règle d'accès est utilisée pour la configuration groupée des imprimantes. Si <ph name="PRINTERS_ALLOW_ALL" /> est sélectionné, toutes les imprimantes sont affichées. Si <ph name="PRINTERS_BLACKLIST" /> est sélectionné, <ph name="DEVICE_PRINTERS_BLACKLIST" /> est utilisé pour limiter l'accès aux imprimantes spécifiées. Si <ph name="PRINTERS_WHITELIST" /> est sélectionné, <ph name="DEVICE_PRINTERS_WHITELIST" /> 

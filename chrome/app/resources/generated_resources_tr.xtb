@@ -376,6 +376,7 @@
 <translation id="1508491105858779599">Cihazın kilidini açmak için parmağınızı parmak izi sensörünün üzerine yerleştirin.</translation>
 <translation id="1508575541972276599">Geçerli sürüm: Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">USB üzerinden herhangi bir <ph name="DEVICE_NAME_AND_VENDOR" /> cihazına erişme</translation>
+<translation id="1509960214886564027">Birçok sitedeki özellikler bozulabilir</translation>
 <translation id="1510030919967934016">Bu sayfanın konumunuzu izlemesi engellendi.</translation>
 <translation id="1510055949674985293">Bu Resim için QR kodu oluştur</translation>
 <translation id="1510238584712386396">Başlatıcı</translation>
@@ -1045,7 +1046,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="237828693408258535">Bu sayfa çevrilsin mi?</translation>
 <translation id="2378346380592252785"><ph name="SHARE_PATH" /> ile ilgili kimlik bilgilerini güncelleyin.</translation>
 <translation id="2378982052244864789">Uzantı dizinini seçin.</translation>
-<translation id="2379232090534544565">Bir site, ses ve video girişine erişiyor</translation>
 <translation id="2379281330731083556">Sistem iletişim kutusunu kullanarak yazdır... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Göndermeden önce sor (önerilir)</translation>
 <translation id="2382818385048255866">Uzantılarınızı kontrol edin</translation>
@@ -1454,7 +1454,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2903457445916429186">Seçili öğeleri aç</translation>
 <translation id="2903882649406874750"><ph name="HOST" /> sitesinin sensörlere erişimini her zaman engelle</translation>
 <translation id="2904456025988372123">Bir site ilk dosyadan sonraki dosyaları otomatik olarak indirmeye çalıştığında bana sor</translation>
-<translation id="2905789169763945526">Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde tarama etkinliğinizi görmek için çerezlerinizi kullanamaz. Bazı siteler düzgün çalışmayabilir.</translation>
 <translation id="2907619724991574506">Başlangıç URL'leri</translation>
 <translation id="2907798539022650680">"<ph name="NAME" />" ile bağlantı kurulamadı: <ph name="DETAILS" />
 Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
@@ -1584,7 +1583,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3088128611727407543">Uygulama profili hazırlanıyor...</translation>
 <translation id="3088325635286126843">&amp;Yeniden adlandır…</translation>
 <translation id="3089137131053189723">Arama temizlendi</translation>
-<translation id="3090193911106258841">Ses ve video girişlerine erişiliyor</translation>
 <translation id="3090819949319990166">Harici crx dosyası <ph name="TEMP_CRX_FILE" /> hedefine kopyalanamıyor.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" eşlendi</translation>
 <translation id="3092699946856346803">Lütfen SIM kartınızı takıp tekrar deneyin</translation>
@@ -1646,7 +1644,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3165390001037658081">Bazı operatörler bu özelliği engelleyebilir.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Ayrıca, oturum açmayı atlayabilir ve <ph name="LINK_START" />misafir olarak göz atabilirsiniz<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">Bir site, video girişine erişiyor</translation>
 <translation id="3177909033752230686">Sayfanın Dili:</translation>
 <translation id="3179982752812949580">Metin yazı tipi</translation>
 <translation id="3181954750937456830">Gizli Göz Atma (sizi ve cihazınızı tehlikelerden korur)</translation>
@@ -1857,7 +1854,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3459697287128633276">Hesabınızın Google Play Store'a erişmesini sağlamak için lütfen Kimlik Sağlayıcınızı kullanarak kimliğinizi doğrulayın.</translation>
 <translation id="3462311546193741693">Bu işlem, çoğu sitedeki oturumunuzu kapatır. Google Hesabınızda oturumunuz açık kalacağından senkronize edilmiş verileriniz temizlenebilecektir.</translation>
 <translation id="3462413494201477527">Hesap kurulumu iptal edilsin mi?</translation>
-<translation id="3464012987031883895">Bir site, ses girişine erişiyor</translation>
 <translation id="346431825526753">Bu hesap çocuklar içindir ve <ph name="CUSTODIAN_EMAIL" /> tarafından yönetilmektedir</translation>
 <translation id="3468298837301810372">Etiket</translation>
 <translation id="3468999815377931311">Android telefon</translation>
@@ -1879,7 +1875,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3487007233252413104">anonim işlev</translation>
 <translation id="348780365869651045">AppCache bekleniyor...</translation>
 <translation id="3488065109653206955">Kısmen etkinleştirildi</translation>
-<translation id="3489025949017384019">Birçok site düzgün çalışmayabilir</translation>
 <translation id="3492788708641132712">Senkronizasyon çalışmıyor. Tekrar oturum açmayı deneyin.</translation>
 <translation id="3493486281776271508">İnternet bağlantısı gerekiyor</translation>
 <translation id="3493881266323043047">Geçerlilik</translation>
@@ -1941,7 +1936,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3574210789297084292">oturum aç</translation>
 <translation id="3574917942258583917">Yine de gizli moddan çıkılsın mı?</translation>
 <translation id="3575121482199441727">Bu site için izin ver</translation>
-<translation id="3575919114596668130">Family Link ebeveyn ayarlarınız geçerli olmaya devam eder. Daha önce bir uygulamayı veya siteyi engellediyseniz bunu tekrar yapmanız gerekmez.</translation>
 <translation id="3576324189521867626">Başarıyla yüklendi</translation>
 <translation id="3578594933904494462">Bu sekmenin içeriği paylaşılıyor.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;, bir yazıcıyı (&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;) sahibi olduğunuz bir grupla paylaşmak istiyor: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Kabul ederseniz tüm grup üyeleri yazdırma işlemlerini o yazıcıdan yaptırabilecek.</translation>
@@ -3725,7 +3719,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6006484371116297560">Klasik</translation>
 <translation id="6007240208646052708">Sesli arama özelliği dilinizde kullanılamaz.</translation>
 <translation id="6009781704028455063">Yerleşik sensör</translation>
-<translation id="6010869025736512584">Video girişine erişiliyor</translation>
 <translation id="6011074160056912900">Ethernet ağı</translation>
 <translation id="6011193465932186973">Parmak izi</translation>
 <translation id="6011449291337289699">Site verilerini temizle</translation>
@@ -4113,7 +4106,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641"><ph name="NETWORK_TYPE" /> bir ağa bağlısınız.</translation>
 <translation id="6527303717912515753">Paylaş</translation>
-<translation id="6528189551082329571">Bu türdeki bağlantıları her zaman ilişkilendirilmiş uygulamada aç</translation>
 <translation id="6528513914570774834">Bu cihazın diğer kullanıcılarının bu ağı kullanmalarına izin verin</translation>
 <translation id="652948702951888897">Chrome geçmişi</translation>
 <translation id="6530186581263215931">Bu ayarlar yöneticiniz tarafınızdan uygulanıyor</translation>
@@ -4683,7 +4675,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7310598146671372464">Giriş yapılamadı. Sunucu belirtilen Kerberos şifreleme türlerini desteklemiyor. Lütfen yöneticinizle iletişim kurun.</translation>
 <translation id="7311079019872751559">Korumalı alan içinde olmayan eklenti erişimi</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde tarama etkinliğinizi görmek için çerezlerinizi kullanamaz.  Bazı siteler düzgün çalışmayabilir.</translation>
 <translation id="7321545336522791733">Sunucuya ulaşılamıyor</translation>
 <translation id="7324297612904500502">Beta Forumu</translation>
 <translation id="7325209047678309347">Kağıt sıkıştı</translation>
@@ -5079,7 +5070,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Not:<ph name="END_BOLD" /> İşlem sırasında sistem yeniden başlatılacaktır</translation>
 <translation id="7828731929332799387">Bu, üçüncü taraf bağlamında mevcut tüm çerezleri ve site verilerini siler. Devam etmek istiyor musunuz?</translation>
-<translation id="7829298379596169484">Ses girişine erişiliyor</translation>
 <translation id="7829877209233347340">Bir ebeveynden okul hesabı ekleme izni vermesi için oturum açmasını isteyin</translation>
 <translation id="7830594666202422257">Linux'a bağlan</translation>
 <translation id="7831491651892296503">Ağ yapılandırılırken hata oluştu</translation>
@@ -5818,7 +5808,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8800004011501252845">Bu adresin hedefleri gösteriliyor:</translation>
 <translation id="8800034312320686233">Site çalışmıyor mu?</translation>
 <translation id="8803953437405899238">Tek tıklamayla yeni sekme açın</translation>
-<translation id="8804398419035066391">İşbirliği yapan web siteleriyle iletişim kurma</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Sekmeyi Başka Bir Pencereye Taşı}other{Sekmeleri Başka Bir Pencereye Taşı}}</translation>
 <translation id="8805140816472474147">Senkronizasyonu başlatmak için senkronizasyon ayarlarını onaylayın.</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> yanlışlıkla kapatılan sekmeleri yeniden açabilir</translation>
@@ -6028,7 +6017,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="9055636786322918818">RC4 şifrelemesini uygula. RC4 şifreleri güvenli olmadığından bu seçeneğin kullanılması, riskinizi artırır.</translation>
 <translation id="9056810968620647706">Eşleştirme bulunamadı.</translation>
 <translation id="9057354806206861646">Programı güncelle</translation>
-<translation id="9058976525724291037">Çocuğunuz bu cihaza başka bir Google hesabı daha eklemek istiyor. Family Link'te yönetilen cihazlara yalnızca Eğitim için G Suite hesapları eklenebilir.</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933"><ph name="ERROR_LINE_START" />. ila <ph name="ERROR_LINE_END" />. satır arasında hata</translation>
 <translation id="9064142312330104323">Google Profil fotoğrafı (yükleniyor)</translation>

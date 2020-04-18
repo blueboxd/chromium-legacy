@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1188239144602654184">Стартиране на AR</translation>
 <translation id="1197267115302279827">Преместване на отметки</translation>
-<translation id="119944043368869598">Изчистване на всички</translation>
 <translation id="1201402288615127009">Напред</translation>
 <translation id="1204037785786432551">Изтегляне на връзката</translation>
 <translation id="1206892813135768548">Копиране на текста на връзката</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Основни</translation>
 <translation id="1671236975893690980">Предстои изтегляне…</translation>
 <translation id="1672586136351118594">Да не се показва отново</translation>
+<translation id="1688867105868176567">Да се изчистят ли данните за сайта?</translation>
 <translation id="1692118695553449118">Синхронизирането е включено</translation>
 <translation id="169515064810179024">Блокиране на достъпа на сайтовете до сензорите за движение</translation>
 <translation id="1717218214683051432">Сензори за движение</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">Сензори за движение или светлина</translation>
 <translation id="4759238208242260848">Изтегляния</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 изтегляне завърши.}other{# изтегляния завършиха.}}</translation>
-<translation id="4797039098279997504">Докоснете, за да се върнете към <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Шифроването с пропуск не включва начините на плащане и адресите от Google Pay.
 
 За да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048">Тъй като излизате от профил, управляван от <ph name="DOMAIN_NAME" />, данните ви в Chrome ще бъдат изтрити от това устройство. Те ще останат в профила ви в Google.</translation>
 <translation id="4943703118917034429">Виртуална реалност</translation>
 <translation id="4943872375798546930">Няма резултати</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> споделя екрана ви</translation>
 <translation id="4961107849584082341">Превод на тази страница на който и да е език</translation>
 <translation id="4962975101802056554">Отмяна на всички разрешения за устройството</translation>
 <translation id="4970824347203572753">Не се предлага за местоположението ви</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">Инстал. на уеб приложението</translation>
 <translation id="5132942445612118989">Синхронизиране на паролите, историята ви и др. на всички устройства</translation>
 <translation id="5139940364318403933">Научете как да използвате Google Диск</translation>
-<translation id="515227803646670480">Изчистване на съхраняваните данни</translation>
 <translation id="5152843274749979095">Никое от поддържаните приложения не е инсталирано</translation>
 <translation id="5161254044473106830">Изисква се заглавие</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 изтегляне не бе успешно.}other{# изтегляния не бяха успешни.}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">Запазени пароли</translation>
 <translation id="5876056640971328065">Поставяне на видеоклипа на пауза</translation>
 <translation id="5884076754568147479">За да ви помага да изпълнявате задачи, Google ще получава URL адресите и съдържанието на сайтовете, в които използвате Асистент, както и данните, които изпращате чрез услугата</translation>
-<translation id="5902828464777634901">Ще се изтрият всички локални данни, съхранявани от този уебсайт, включително „бисквитките“.</translation>
 <translation id="5919204609460789179">Актуализирайте <ph name="PRODUCT_NAME" />, за да стартира синхронизирането</translation>
 <translation id="5937580074298050696">Спестени: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Нулиране</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117">Таймерът ви за <ph name="FQDN" /> изтече и ще се стартира отново утре.</translation>
 <translation id="6738867403308150051">Изтегля се…</translation>
 <translation id="6766622839693428701">Прекарайте пръст надолу, за да затворите.</translation>
-<translation id="6766758767654711248">Докоснете, за да посетите сайта</translation>
 <translation id="6767294960381293877">Списъкът с устройства, с които да се сподели даден раздел, е отворен на половин височина.</translation>
 <translation id="6782111308708962316">Забраняване на уебсайтовете на трети страни да запазват и четат данни в „бисквитки“</translation>
 <translation id="6790428901817661496">Пускане</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">На някои уебсайтове можете да извършвате плащания чрез посочените по-горе поддържани приложения за плащане на устройството ви.</translation>
 <translation id="8816026460808729765">Блокиране на достъпа на сайтовете до сензорите</translation>
 <translation id="8820817407110198400">Отметки</translation>
-<translation id="8833831881926404480">Сайт споделя екрана ви</translation>
 <translation id="883806473910249246">При изтеглянето на съдържанието възникна грешка.</translation>
 <translation id="8840953339110955557">Тази страница може да се различава от онлайн версията.</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -377,6 +377,7 @@
 <translation id="1508491105858779599">Plaas jou vinger op die vingerafdruksensor om die toestel te ontsluit.</translation>
 <translation id="1508575541972276599">Huidige weergawe is Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Kry toegang tot enige <ph name="DEVICE_NAME_AND_VENDOR" /> via USB</translation>
+<translation id="1509960214886564027">Kenmerke op baie werwe kan breek</translation>
 <translation id="1510030919967934016">Hierdie bladsy word gekeer om jou ligging na te spoor.</translation>
 <translation id="1510055949674985293">Genereer QR-kode vir hierdie prent</translation>
 <translation id="1510238584712386396">Lanseerder</translation>
@@ -1046,7 +1047,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="237828693408258535">Vertaal hierdie bladsy?</translation>
 <translation id="2378346380592252785">Dateer eiebewyse vir <ph name="SHARE_PATH" /> op.</translation>
 <translation id="2378982052244864789">Kies die uitbreidinggids.</translation>
-<translation id="2379232090534544565">'n Werf het tans toegang tot oudio- en video-invoer</translation>
 <translation id="2379281330731083556">Druk uit deur stelseldialoog te gebruik … <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Vra voordat gestuur word (aanbeveel)</translation>
 <translation id="2382818385048255866">Gaan jou uitbreidings na</translation>
@@ -1455,7 +1455,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2903457445916429186">Maak gekose items oop</translation>
 <translation id="2903882649406874750">Blokkeer altyd <ph name="HOST" /> se toegang tot sensors</translation>
 <translation id="2904456025988372123">Vra wanneer 'n werf probeer om lêers ná die eerste lêer outomaties af te laai</translation>
-<translation id="2905789169763945526">Terwyl jy in Incognito is, kan werwe nie jou webkoekies gebruik om jou blaai-aktiwiteit op verskillende werwe te sien nie, byvoorbeeld, om advertensies te personaliseer. Sommige werwe sal dalk nie behoorlik werk nie.</translation>
 <translation id="2907619724991574506">Afskop-URL'e</translation>
 <translation id="2907798539022650680">Kon nie aan "<ph name="NAME" />" koppel nie: <ph name="DETAILS" />
     Bedienerboodskap: <ph name="SERVER_MSG" /></translation>
@@ -1585,7 +1584,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3088128611727407543">Berei tans programprofiel voor …</translation>
 <translation id="3088325635286126843">Hernoem …</translation>
 <translation id="3089137131053189723">Soektog is uitgevee</translation>
-<translation id="3090193911106258841">Gaan tans by oudio- en video-invoer in</translation>
 <translation id="3090819949319990166">Kan nie eksterne crx-lêer na <ph name="TEMP_CRX_FILE" /> kopieer nie.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" saamgebind</translation>
 <translation id="3092699946856346803">Sit jou SIM in en probeer weer</translation>
@@ -1647,7 +1645,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3165390001037658081">Sommige diensverskaffers kan hierdie funksie blokkeer.</translation>
 <translation id="3169472444629675720">Ontdek</translation>
 <translation id="3170072451822350649">Jy kan ook aanmelding oorslaan en <ph name="LINK_START" />as 'n gas blaai<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">'n Werf het tans toegang tot video-invoer</translation>
 <translation id="3177909033752230686">Bladsytaal:</translation>
 <translation id="3179982752812949580">Tekslettertipe</translation>
 <translation id="3181954750937456830">Veiligblaai (beskerm jou en jou toestel teen gevaarlike werwe)</translation>
@@ -1858,7 +1855,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3459697287128633276">Staaf met jou identiteitsverskaffer om jou rekening te aktiveer om toegang tot die Google Play Winkel te kry.</translation>
 <translation id="3462311546193741693">Meld jou by die meeste werwe af. Jy sal by jou Google-rekening aangemeld bly sodat jou gesinkroniseerde data uitgevee kan word.</translation>
 <translation id="3462413494201477527">Kanselleer rekeningopstelling?</translation>
-<translation id="3464012987031883895">'n Werf het tans toegang tot oudio-invoer</translation>
 <translation id="346431825526753">Dit is 'n rekening vir kinders wat deur <ph name="CUSTODIAN_EMAIL" /> bestuur word.</translation>
 <translation id="3468298837301810372">Etiket</translation>
 <translation id="3468999815377931311">Android-foon</translation>
@@ -1880,7 +1876,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3487007233252413104">anonieme funksie</translation>
 <translation id="348780365869651045">Wag tans vir programkas …</translation>
 <translation id="3488065109653206955">Deels geaktiveer</translation>
-<translation id="3489025949017384019">Baie werwe sal dalk nie behoorlik werk nie</translation>
 <translation id="3492788708641132712">Sinkronisering werk tans nie. Probeer weer aanmeld.</translation>
 <translation id="3493486281776271508">Internetverbinding word vereis</translation>
 <translation id="3493881266323043047">Geldigheid</translation>
@@ -1942,7 +1937,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3574210789297084292">meld aan</translation>
 <translation id="3574917942258583917">Verlaat incognitomodus in elk geval?</translation>
 <translation id="3575121482199441727">Laat vir hierdie werf toe</translation>
-<translation id="3575919114596668130">Jou Family Link-ouerinstellings sal steeds van toepassing wees. As jy voorheen 'n program of werf geblokkeer het, sal jy dit nie weer hoef te doen nie.</translation>
 <translation id="3576324189521867626">Suksesvol geïnstalleer</translation>
 <translation id="3578594933904494462">Hierdie oortjie se inhoud word tans gedeel.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; wil 'n drukker deel &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; met 'n groep wat jy besit: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. As jy aanvaar, sal alle groeplede na daardie drukker kan uitdruk.</translation>
@@ -3727,7 +3721,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6006484371116297560">Klassiek</translation>
 <translation id="6007240208646052708">Stemsoektog is nie in jou taal beskikbaar nie.</translation>
 <translation id="6009781704028455063">Ingeboude sensor</translation>
-<translation id="6010869025736512584">Gaan tans by video-invoer in</translation>
 <translation id="6011074160056912900">Ethernet-netwerk</translation>
 <translation id="6011193465932186973">Vingerafdruk</translation>
 <translation id="6011449291337289699">Vee werfdata uit</translation>
@@ -4116,7 +4109,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">Jy is aan 'n <ph name="NETWORK_TYPE" />-netwerk gekoppel.</translation>
 <translation id="6527303717912515753">Deel</translation>
-<translation id="6528189551082329571">Maak hierdie soort skakels altyd in die geassosieerde program oop</translation>
 <translation id="6528513914570774834">Laat ander gebruikers van hierdie toestel toe om hierdie netwerk te gebruik</translation>
 <translation id="652948702951888897">Chrome-geskiedenis</translation>
 <translation id="6530186581263215931">Hierdie instellings word deur jou administrateur afgedwing</translation>
@@ -4686,7 +4678,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7310598146671372464">Kon nie aanmeld nie. Die bediener steun nie gespesifiseerde Kerberos-enkripsietipes nie. Kontak asseblief jou administrateur.</translation>
 <translation id="7311079019872751559">Inproptoegang nie gesandput nie</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">Werwe kan nie jou webkoekies gebruik om jou blaai-aktiwiteit op verskillende werwe te sien nie, byvoorbeeld om advertensies te publiseer.  Sommige werwe sal dalk nie behoorlik werk nie.</translation>
 <translation id="7321545336522791733">Bediener onbereikbaar</translation>
 <translation id="7324297612904500502">Beta-forum</translation>
 <translation id="7325209047678309347">Papier sit vas</translation>
@@ -5084,7 +5075,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Let wel:<ph name="END_BOLD" /> Die stelsel sal tydens die proses herselflaai.</translation>
 <translation id="7828731929332799387">Dit sal alle webkoekies en werfdata uitvee wat in derdeparty-kontekste beskikbaar is. Wil jy voortgaan?</translation>
-<translation id="7829298379596169484">Gaan tans by oudio-invoer in</translation>
 <translation id="7829877209233347340">Vra 'n ouer om aan te meld om toestemming te gee om 'n skoolrekening by te voeg</translation>
 <translation id="7830594666202422257">Koppel aan Linux</translation>
 <translation id="7831491651892296503">Kon nie netwerk opstel nie</translation>
@@ -5822,7 +5812,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8800004011501252845">Wys tans bestemmings vir</translation>
 <translation id="8800034312320686233">Werk werf nie?</translation>
 <translation id="8803953437405899238">Maak 'n nuwe oortjie met een klik oop</translation>
-<translation id="8804398419035066391">Kommunikeer met webwerwe wat saamwerk</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Skuif oortjie na 'n ander venster toe}other{Skuif oortjies na 'n ander venster toe}}</translation>
 <translation id="8805140816472474147">Bevestig sinkroniseringinstellings om sinkronisering te begin.</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> kan oortjies wat per ongeluk toegemaak is, weer oopmaak</translation>
@@ -6032,7 +6021,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="9055636786322918818">Laat RC4-enkripsie toe. As jy hierdie opsie gebruik, verhoog dit jou risiko aangesien die RC4-syfers onveilig is.</translation>
 <translation id="9056810968620647706">Geen passings is gevind nie.</translation>
 <translation id="9057354806206861646">Opdateringskedule</translation>
-<translation id="9058976525724291037">Jou kind wil 'n ander Google-rekening by hierdie toestel voeg. Slegs G Suite for Education-rekeninge mag by Family Link-bestuurde toestelle gevoeg word.</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Fout vanaf reël <ph name="ERROR_LINE_START" /> tot <ph name="ERROR_LINE_END" /></translation>
 <translation id="9064142312330104323">Google-profielfoto (laai tans)</translation>

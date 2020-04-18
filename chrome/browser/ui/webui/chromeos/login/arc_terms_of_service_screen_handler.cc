@@ -201,6 +201,13 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
   builder->Add("oobeModalDialogClose", IDS_CHROMEOS_OOBE_CLOSE_DIALOG);
   builder->Add("arcOverlayLoading", IDS_ARC_POPUP_HELP_LOADING);
   builder->Add("arcLearnMoreText", IDS_ARC_OPT_IN_DIALOG_LEARN_MORE_LINK_TEXT);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kArcTosHostForTests)) {
+    builder->Add("arcTosHostNameForTesting",
+                 base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                     switches::kArcTosHostForTests));
+  }
 }
 
 void ArcTermsOfServiceScreenHandler::OnMetricsModeChanged(bool enabled,

@@ -26,7 +26,6 @@
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1188239144602654184">Влези во AR</translation>
 <translation id="1197267115302279827">Премести обележувачи</translation>
-<translation id="119944043368869598">Избриши ги сите</translation>
 <translation id="1201402288615127009">Следно</translation>
 <translation id="1204037785786432551">Преземи линк</translation>
 <translation id="1206892813135768548">Копирај текст од врска</translation>
@@ -91,6 +90,7 @@
 <translation id="1670399744444387456">Основно</translation>
 <translation id="1671236975893690980">Преземањето чека на ред…</translation>
 <translation id="1672586136351118594">Не прикажувај повторно</translation>
+<translation id="1688867105868176567">Дали да се исчистат сите податоци?</translation>
 <translation id="1692118695553449118">Синхронизацијата е вклучена</translation>
 <translation id="169515064810179024">Блокирајте го пристапот до сензорите за движење за сајтовите</translation>
 <translation id="1717218214683051432">Сензори за движење</translation>
@@ -507,7 +507,6 @@
 <translation id="4751476147751820511">Сензори за движење или светлина</translation>
 <translation id="4759238208242260848">Преземања</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 преземање е завршено.}one{# преземање е завршено.}other{# преземања се завршени.}}</translation>
-<translation id="4797039098279997504">Допрете за да се вратите на <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Шифрирањето на лозинката не ги вклучува начините на плаќање и адресите од Google Pay.
 
 За да ја промените поставкава, <ph name="BEGIN_LINK" />ресетирајте ја синхронизацијата<ph name="END_LINK" /></translation>
@@ -534,7 +533,6 @@
 <translation id="4932247056774066048">Бидејќи се одјавувате од сметка управувана од <ph name="DOMAIN_NAME" />, вашите податоци на Chrome ќе се избришат од уредов. Тие ќе останат во вашата сметка на Google.</translation>
 <translation id="4943703118917034429">Виртуелна реалност</translation>
 <translation id="4943872375798546930">Нема резултати</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> го споделува вашиот екран</translation>
 <translation id="4961107849584082341">Преведете ја страницава на кој било јазик</translation>
 <translation id="4962975101802056554">Повлечи ги сите дозволи за уредот</translation>
 <translation id="4970824347203572753">Не е достапно во вашата локација</translation>
@@ -559,7 +557,6 @@
 <translation id="5129038482087801250">Инсталирај веб-апликација</translation>
 <translation id="5132942445612118989">Синхронизирајте ги лозинките, историјата и друго на сите уреди</translation>
 <translation id="5139940364318403933">Дознајте како се користи Google Drive</translation>
-<translation id="515227803646670480">Избриши складирани податоци</translation>
 <translation id="5152843274749979095">Не се инсталирани поддржани апликации</translation>
 <translation id="5161254044473106830">Потребен е наслов</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 неуспешно преземање.}one{# неуспешно преземање.}other{# неуспешни преземања.}}</translation>
@@ -667,7 +664,6 @@
 <translation id="5869522115854928033">Зачувани лозинки</translation>
 <translation id="5876056640971328065">Паузирајте го видеото</translation>
 <translation id="5884076754568147479">За да ви помогне да завршувате задачи, Google ќе ги добива URL-адресите и содржините на сајтовите на кои го користите „Помошникот“, како и податоците што ги испраќате преку „Помошникот“</translation>
-<translation id="5902828464777634901">Сите локални податоци зачувани од веб-локацијата, вклучувајќи ги колачињата, ќе се избришат.</translation>
 <translation id="5919204609460789179">Ажурирајте го <ph name="PRODUCT_NAME" /> за да започнете со синхронизирање</translation>
 <translation id="5937580074298050696">Заштедено: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Ресетирај</translation>
@@ -787,7 +783,6 @@
 <translation id="671481426037969117">Тајмерот за <ph name="FQDN" /> истече. Ќе започне одново утре.</translation>
 <translation id="6738867403308150051">Се презема…</translation>
 <translation id="6766622839693428701">Повлечете надолу за да затворите.</translation>
-<translation id="6766758767654711248">Допрете за да одите на сајтот</translation>
 <translation id="6767294960381293877">Списокот со уреди за споделување картичка е отворен на половина екран.</translation>
 <translation id="6782111308708962316">Спречи ги веб-сајтовите на трети лица да зачувуваат и читаат податоци за колачињата</translation>
 <translation id="6790428901817661496">Репродуцирај</translation>
@@ -1048,7 +1043,6 @@
 <translation id="8812260976093120287">На некои веб-сајтови, може да плаќате со горенаведените поддржани апликации за плаќање на вашиот уред.</translation>
 <translation id="8816026460808729765">Блокирајте го пристапот до сензорите за сајтовите</translation>
 <translation id="8820817407110198400">Обележувачи</translation>
-<translation id="8833831881926404480">Еден сајт го споделува вашиот екран</translation>
 <translation id="883806473910249246">Грешка при преземањето на содржината.</translation>
 <translation id="8840953339110955557">Страницава може да се разликува од онлајн верзијата.</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -294,7 +294,7 @@ template("generate_mini_installer") {
 generate_mini_installer("mini_installer") {
   out_dir = root_out_dir
   chrome_dll_file = "$root_out_dir/chrome.dll"
-  chrome_dll_target = "//chrome:main_dll"
+  chrome_dll_target = "//chrome:chrome_dll"
 }
 
 # previous_version_mini_installer.exe can't be generated in an x86 Debug

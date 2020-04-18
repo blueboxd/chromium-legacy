@@ -179,7 +179,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '3c8fb8b1adc4db96ba1ca84a2e0b57250e39e67d',
+  'v8_revision': '171cc405301be9f491c97c7bac87b87b4c99d975',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'b1943cb1302dcbeaa2eee2a9689366afe1dfd1d6',
+  'devtools_frontend_revision': '30b6825fa7b1be052beee080633ccfb6be2b9c49',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -521,7 +521,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'a9131baeb2bb7cdf7222d0adca2f14a5581a8c25',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '2ffd66d74c85f3e19135155dbcb57ccca8f457a3',
       'condition': 'checkout_ios',
   },
 

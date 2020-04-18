@@ -103,8 +103,7 @@ gfx::Image ExtensionActionTestHelperViews::GetIcon(int index) {
 void ExtensionActionTestHelperViews::Press(int index) {
   browser_actions_container_->GetToolbarActionViewAt(index)
       ->view_controller()
-      ->ExecuteAction(
-          true, ToolbarActionViewController::InvocationSource::kToolbarButton);
+      ->ExecuteAction(true);
 }
 
 std::string ExtensionActionTestHelperViews::GetExtensionId(int index) {

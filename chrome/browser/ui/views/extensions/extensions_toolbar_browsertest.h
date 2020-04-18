@@ -15,10 +15,6 @@
 class ExtensionsToolbarContainer;
 class ToolbarActionView;
 
-namespace extensions {
-class Extension;
-}
-
 // Base class for browser tests that use the toolbar area. This is used for
 // browser test fixtures that are generally related to the
 // ExtensionsToolbarContainer in the ToolbarView area.
@@ -45,12 +41,10 @@ class ExtensionsToolbarBrowserTest : public DialogBrowserTest {
     return extensions_;
   }
 
-  // Loads and returns a test extension from |chrome::DIR_TEST_DATA|.
-  // |allow_incognito| is used to declare whether the extension is allowed to
-  // run in incognito.
-  scoped_refptr<const extensions::Extension> LoadTestExtension(
-      const std::string& path,
-      bool allow_incognito = false);
+  // Loads a test extension from |chrome::DIR_TEST_DATA|. |allow_incognito| is
+  // used to declare whether the extension is allowed to run in incognito.
+  void LoadTestExtension(const std::string& extension,
+                         bool allow_incognito = false);
 
   // Adds |extension| to the back of |extensions_|.
   void AppendExtension(scoped_refptr<const extensions::Extension> extension);

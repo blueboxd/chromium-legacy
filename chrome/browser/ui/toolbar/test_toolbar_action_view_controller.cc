@@ -76,8 +76,7 @@ ui::MenuModel* TestToolbarActionViewController::GetContextMenu() {
   return nullptr;
 }
 
-bool TestToolbarActionViewController::ExecuteAction(bool by_user,
-                                                    InvocationSource source) {
+bool TestToolbarActionViewController::ExecuteAction(bool by_user) {
   ++execute_action_count_;
   return false;
 }

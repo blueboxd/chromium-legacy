@@ -79,9 +79,8 @@ class ScriptExecutor {
 
   // Callback from ExecuteScript. The arguments are (error, on_url, result).
   // Success is implied by an empty error.
-  typedef base::Callback<
-      void(const std::string&, const GURL&, const base::ListValue&)>
-      ScriptFinishedCallback;
+  using ScriptFinishedCallback = base::OnceCallback<
+      void(const std::string&, const GURL&, const base::ListValue&)>;
 
   // Executes a script. The arguments match ExtensionMsg_ExecuteCode_Params in
   // extension_messages.h (request_id is populated automatically).
@@ -106,7 +105,7 @@ class ScriptExecutor {
                      bool user_gesture,
                      base::Optional<CSSOrigin> css_origin,
                      ResultType result_type,
-                     const ScriptFinishedCallback& callback);
+                     ScriptFinishedCallback callback);
 
   // Set the observer for ScriptsExecutedNotification callbacks.
   void set_observer(ScriptsExecutedNotification observer) {

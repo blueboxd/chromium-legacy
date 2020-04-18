@@ -401,8 +401,7 @@ TEST_P(ExtensionActionViewControllerUnitTest, OnlyHostPermissionsAppearance) {
 
   // After triggering the action it should have access, which is reflected in
   // the tooltip.
-  action_controller->ExecuteAction(
-      true, ToolbarActionViewController::InvocationSource::kToolbarButton);
+  action_controller->ExecuteAction(true);
   image_source = action_controller->GetIconImageSourceForTesting(web_contents,
                                                                  view_size());
   EXPECT_FALSE(image_source->grayscale());

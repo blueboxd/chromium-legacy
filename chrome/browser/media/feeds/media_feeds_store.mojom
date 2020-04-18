@@ -185,9 +185,6 @@ struct PlayNextCandidate {
 
   // The identifiers for the content. We will store up to one of each type.
   array<Identifier> identifiers;
-
-  // The images for the episode.
-  array<media_session.mojom.MediaImage> images;
 };
 
 // https://schema.org/TVEpisode
@@ -199,23 +196,14 @@ struct TVEpisode {
   int64 episode_number;
   int64 season_number;
 
-  // The duration of the content.
-  mojo_base.mojom.TimeDelta duration;
-
   // The identifiers for the episode. We will store up to one of each type.
   array<Identifier> identifiers;
-
-  // Information about a live stream event.
-  LiveDetails? live;
-
-  // The images for the episode.
-  array<media_session.mojom.MediaImage> images;
 };
 
 // Details specific to live content.
 struct LiveDetails {
   // The date/time the feed item became live.
-  mojo_base.mojom.Time start_time;
+  mojo_base.mojom.Time? start_time;
 
   // The date/time the feed item finished becoming live.
   mojo_base.mojom.Time? end_time;
@@ -270,7 +258,7 @@ struct MediaFeedItem {
   // The duration of this feed item.
   mojo_base.mojom.TimeDelta? duration;
 
-  // Information about a live stream event.
+  // Whether the feed item is live.
   LiveDetails? live;
 
   // The TV episode data associated with the content.

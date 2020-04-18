@@ -31,7 +31,7 @@ class TestToolbarActionViewController : public ToolbarActionViewController {
   void HidePopup() override;
   gfx::NativeView GetPopupNativeView() override;
   ui::MenuModel* GetContextMenu() override;
-  bool ExecuteAction(bool by_user, InvocationSource source) override;
+  bool ExecuteAction(bool by_user) override;
   void UpdateState() override;
   bool DisabledClickOpensMenu() const override;
   PageInteractionStatus GetPageInteractionStatus(

@@ -87,13 +87,6 @@ message Action {
   int64 start_time_secs = 2;
 }
 
-// Details specific to live content.
-// https://wicg.github.io/media-feeds/#media-item-live-metadata
-message LiveDetails {
-  int64 start_time_secs = 1;
-  int64 end_time_secs = 2;
-}
-
 // The content that should be suggested to play next if the user has finished
 // watching the current content.
 message PlayNextCandidate {
@@ -112,9 +105,6 @@ message PlayNextCandidate {
 
   // The identifiers for the content. We will store up to one of each type.
   repeated Identifier identifier = 6;
-
-  // Images for this episode.
-  repeated Image image = 7;
 }
 
 // https://schema.org/TVEpisode
@@ -128,15 +118,6 @@ message TVEpisode {
 
   // The identifiers for the episode. We will store up to one of each type.
   repeated Identifier identifier = 4;
-
-  // The duration of the content in seconds.
-  int64 duration_secs = 5;
-
-  // Images for this episode.
-  repeated Image image = 6;
-
-  // Details specific to live content.
-  LiveDetails live_details = 7;
 }
 
 // A reference to an image along with the width and height in px. Only stores

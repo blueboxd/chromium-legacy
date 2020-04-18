@@ -691,11 +691,6 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
       item->tv_episode->episode_number = 2;
       item->tv_episode->identifiers.push_back(CreateIdentifier(
           media_feeds::mojom::Identifier::Type::kTMSId, "TEST3"));
-      item->tv_episode->duration = base::TimeDelta::FromMinutes(40);
-      item->tv_episode->live = media_feeds::mojom::LiveDetails::New();
-      item->tv_episode->live->start_time =
-          base::Time::FromDeltaSinceWindowsEpoch(
-              base::TimeDelta::FromSeconds(15));
       item->play_next_candidate = media_feeds::mojom::PlayNextCandidate::New();
       item->play_next_candidate->name = "Next TV Episode Name";
       item->play_next_candidate->season_number = 1;
@@ -723,18 +718,6 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
         item->images.push_back(image);
       }
 
-      {
-        media_session::MediaImage image;
-        image.src = GURL("https://www.example.org/episode-image.png");
-        item->tv_episode->images.push_back(image);
-      }
-
-      {
-        media_session::MediaImage image;
-        image.src = GURL("https://www.example.org/next-image.png");
-        item->play_next_candidate->images.push_back(image);
-      }
-
       items.push_back(std::move(item));
     }
 
@@ -759,8 +742,6 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
       item->action_status =
           media_feeds::mojom::MediaFeedItemActionStatus::kPotential;
       item->live = media_feeds::mojom::LiveDetails::New();
-      item->live->start_time = base::Time::FromDeltaSinceWindowsEpoch(
-          base::TimeDelta::FromSeconds(30));
       item->safe_search_result = media_feeds::mojom::SafeSearchResult::kUnsafe;
       items.push_back(std::move(item));
     }

@@ -70,6 +70,12 @@ void PrinterHandler::StartGetEulaUrl(const std::string& destination_id,
                                      GetEulaUrlCallback callback) {
   NOTREACHED();
 }
+
+void PrinterHandler::StartPrinterStatusRequest(
+    const std::string& printer_id,
+    PrinterStatusRequestCallback callback) {
+  NOTREACHED();
+}
 #endif
 
 }  // namespace printing

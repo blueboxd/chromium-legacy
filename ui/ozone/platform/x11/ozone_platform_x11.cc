@@ -60,7 +60,6 @@ constexpr OzonePlatform::PlatformProperties kX11PlatformProperties{
     /*needs_view_token=*/false,
     /*custom_frame_pref_default=*/false,
     /*use_system_title_bar=*/true,
-    /*requires_mojo=*/false,
 
     // When the Ozone X11 backend is running, use a UI loop to grab Expose
     // events. See GLSurfaceGLX and https://crbug.com/326995.

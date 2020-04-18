@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gfx/linux/gbm_wrapper.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
-#include "ui/ozone/platform/drm/gpu/drm_thread_message_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_pixmap.h"
 #include "ui/ozone/platform/drm/gpu/proxy_helpers.h"
@@ -61,12 +61,6 @@ class GbmDeviceGenerator : public DrmDeviceGenerator {
 DrmThreadProxy::DrmThreadProxy() = default;
 
 DrmThreadProxy::~DrmThreadProxy() = default;
-
-// Used only with the paramtraits implementation.
-void DrmThreadProxy::BindThreadIntoMessagingProxy(
-    InterThreadMessagingProxy* messaging_proxy) {
-  messaging_proxy->SetDrmThread(&drm_thread_);
-}
 
 void DrmThreadProxy::StartDrmThread(base::OnceClosure receiver_drainer) {
   drm_thread_.Start(std::move(receiver_drainer),

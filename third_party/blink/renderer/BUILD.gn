@@ -116,7 +116,6 @@ config("config") {
       "blink-gc-plugin",
     ]
 
-    # TODO(bikineev): Remove when clang pre-built has been updated.
     # Disallow members in stack allocated classes.
     cflags += [
       "-Xclang",

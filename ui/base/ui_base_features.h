@@ -83,14 +83,6 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kUseCommonSelectPopup;
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUseCommonSelectPopupEnabled();
 
-// Use mojo communication in the drm platform instead of paramtraits. Remove
-// this switch (and associated code) when the drm platform always uses mojo
-// communication.
-// TODO(rjkroege): Remove in http://crbug.com/806092.
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kEnableOzoneDrmMojo;
-COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsOzoneDrmMojo();
-
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kHandwritingGesture;

@@ -276,7 +276,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // may also have started at this point.
   ui::OzonePlatform::InitParams params;
   params.single_process = false;
-  params.using_mojo = features::IsOzoneDrmMojo();
   ui::OzonePlatform::InitializeForGPU(params);
   const std::vector<gfx::BufferFormat> supported_buffer_formats_for_texturing =
       ui::OzonePlatform::GetInstance()
@@ -560,7 +559,6 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 #if defined(USE_OZONE)
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
-  params.using_mojo = features::IsOzoneDrmMojo();
   ui::OzonePlatform::InitializeForGPU(params);
   const std::vector<gfx::BufferFormat> supported_buffer_formats_for_texturing =
       ui::OzonePlatform::GetInstance()

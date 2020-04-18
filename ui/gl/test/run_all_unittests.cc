@@ -47,7 +47,6 @@ class GlTestSuite : public base::TestSuite {
     // and GPU components.
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
-    params.using_mojo = true;
 
     // This initialization must be done after TaskEnvironment has
     // initialized the UI thread.

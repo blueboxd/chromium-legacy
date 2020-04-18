@@ -97,9 +97,6 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
 
   void OnDrmServiceStarted();
 
-  // TODO(rjkroege): Get rid of the need for this method in a subsequent CL.
-  void PollForSingleThreadReady(int previous_delay);
-
   void GpuConfigureNativeDisplayCallback(int64_t display_id,
                                          bool success) const;
 

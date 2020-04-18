@@ -1441,6 +1441,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityFigcaption) {
   RunHtmlTest(FILE_PATH_LITERAL("figcaption.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityFigcaptionNested) {
+  RunHtmlTest(FILE_PATH_LITERAL("figcaption-nested.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityFigure) {
   RunHtmlTest(FILE_PATH_LITERAL("figure.html"));
 }

@@ -4947,6 +4947,7 @@ def make_install_properties(cg_context, function_name, class_name,
             "v8::Local<v8::Object> instance_object",
             "v8::Local<v8::Object> prototype_object",
             "v8::Local<v8::Function> interface_object",
+            "v8::Local<v8::FunctionTemplate> interface_template",
         ]
     else:
         arg_decls = [
@@ -4973,6 +4974,7 @@ def make_install_properties(cg_context, function_name, class_name,
                 "instance_object",
                 "prototype_object",
                 "interface_object",
+                "interface_template",
             ]
         else:
             args = [
@@ -5009,6 +5011,7 @@ def make_install_properties(cg_context, function_name, class_name,
             "instance_object": "instance_object",
             "prototype_object": "prototype_object",
             "interface_object": "interface_object",
+            "interface_template": "interface_template",
         })
     else:
         body.add_template_vars({
@@ -5714,9 +5717,11 @@ const WrapperTypeInfo ${class_name}::wrapper_type_info_{{
     {active_script_wrappable_inheritance},
 }};"""
     class_like = cg_context.class_like
-    install_context_dependent_func = (
-        "${class_name}::InstallContextDependentAdapter"
-        if install_context_dependent_func_name else "nullptr")
+    if install_context_dependent_func_name:
+        install_context_dependent_func = _format(
+            "${class_name}::{}", install_context_dependent_func_name)
+    else:
+        install_context_dependent_func = "nullptr"
     if class_like.inherited:
         wrapper_type_info_of_inherited = "{}::GetWrapperTypeInfo()".format(
             v8_bridge_class_name(class_like.inherited))
@@ -5912,6 +5917,15 @@ def generate_interface(interface):
     api_class_def.set_base_template_vars(cg_context.template_bindings())
     api_class_def.bottom_section.append(
         TextNode("friend class {};".format(blink_class_name(interface))))
+    api_base_class_def = CxxNamespaceNode(
+        name="bindings",
+        body=TextNode(
+            _format(
+                "template class {export} "
+                "V8InterfaceBridge<{class_name}, {blink_impl_class}>;",
+                export=component_export(api_component),
+                class_name=cg_context.class_name,
+                blink_impl_class=blink_class_name(interface))))
     if is_cross_components:
         impl_class_def = CxxClassDefNode(
             impl_class_name,
@@ -6262,7 +6276,12 @@ def generate_interface(interface):
         _collect_include_headers(interface))
 
     # Assemble the parts.
-    api_header_blink_ns.body.append(api_class_def)
+    api_header_blink_ns.body.extend([
+        api_class_def,
+        EmptyNode(),
+        api_base_class_def,
+        EmptyNode(),
+    ])
     if is_cross_components:
         impl_header_blink_ns.body.append(impl_class_def)
 

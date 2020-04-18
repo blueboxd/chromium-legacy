@@ -20,7 +20,6 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/ozone/demo/skia/skia_renderer_factory.h"
 #include "ui/ozone/demo/window_manager.h"
-#include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
 
 int main(int argc, char** argv) {
@@ -56,17 +55,6 @@ int main(int argc, char** argv) {
       ->SetCurrentLayoutByName("us");
 
   ui::OzonePlatform::InitializeForGPU(params);
-
-  std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper;
-  if (!ui::OzonePlatform::GetInstance()
-           ->GetPlatformProperties()
-           .requires_mojo) {
-    // OzoneGpuTestHelper transports Chrome IPC messages between host & gpu code
-    // in single process mode. We don't use both Chrome IPC and mojo, so only
-    // initialize it for non-mojo platforms.
-    gpu_helper = std::make_unique<ui::OzoneGpuTestHelper>();
-    gpu_helper->Initialize(base::ThreadTaskRunnerHandle::Get());
-  }
 
   base::RunLoop run_loop;
 

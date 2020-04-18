@@ -45,7 +45,8 @@ class PLATFORM_EXPORT V8InterfaceBridgeBase {
                const DOMWrapperWorld& world,
                v8::Local<v8::Object> instance_object,
                v8::Local<v8::Object> prototype_object,
-               v8::Local<v8::Function> interface_object);
+               v8::Local<v8::Function> interface_object,
+               v8::Local<v8::FunctionTemplate> interface_template);
 };
 
 template <class V8T, class T>
@@ -78,17 +79,6 @@ class V8InterfaceBridge : public V8InterfaceBridgeBase {
   static T* ToImplWithTypeCheck(v8::Isolate* isolate,
                                 v8::Local<v8::Value> value) {
     return ToWrappable(isolate, value);
-  }
-
-  static void InstallContextDependentAdapter(
-      v8::Local<v8::Context> context,
-      const DOMWrapperWorld& world,
-      v8::Local<v8::Object> instance_object,
-      v8::Local<v8::Object> prototype_object,
-      v8::Local<v8::Function> interface_object,
-      v8::Local<v8::FunctionTemplate> interface_template) {
-    V8T::InstallContextDependentProperties(context, world, instance_object,
-                                           prototype_object, interface_object);
   }
 };
 

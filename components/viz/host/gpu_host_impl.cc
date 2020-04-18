@@ -283,36 +283,17 @@ void GpuHostImpl::InitOzone() {
   // The Ozone/Wayland requires mojo communication to be established to be
   // functional with a separate gpu process. Thus, using the PlatformProperties,
   // check if there is such a requirement.
-  if (features::IsOzoneDrmMojo() ||
-      ui::OzonePlatform::GetInstance()->GetPlatformProperties().requires_mojo) {
-    // TODO(rjkroege): Remove the legacy IPC code paths when no longer
-    // necessary. https://crbug.com/806092
-    auto interface_binder = base::BindRepeating(&GpuHostImpl::BindInterface,
-                                                weak_ptr_factory_.GetWeakPtr());
-    auto terminate_callback = base::BindOnce(&GpuHostImpl::TerminateGpuProcess,
-                                             weak_ptr_factory_.GetWeakPtr());
+  auto interface_binder = base::BindRepeating(&GpuHostImpl::BindInterface,
+                                              weak_ptr_factory_.GetWeakPtr());
+  auto terminate_callback = base::BindOnce(&GpuHostImpl::TerminateGpuProcess,
+                                           weak_ptr_factory_.GetWeakPtr());
 
-    ui::OzonePlatform::GetInstance()
-        ->GetGpuPlatformSupportHost()
-        ->OnGpuServiceLaunched(params_.restart_id,
-                               params_.main_thread_task_runner,
-                               host_thread_task_runner_, interface_binder,
-                               std::move(terminate_callback));
-  } else {
-    auto send_callback = base::BindRepeating(
-        [](base::WeakPtr<GpuHostImpl> host, IPC::Message* message) {
-          if (host)
-            host->delegate_->SendGpuProcessMessage(message);
-          else
-            delete message;
-        },
-        weak_ptr_factory_.GetWeakPtr());
-    ui::OzonePlatform::GetInstance()
-        ->GetGpuPlatformSupportHost()
-        ->OnGpuProcessLaunched(params_.restart_id,
-                               params_.main_thread_task_runner,
-                               host_thread_task_runner_, send_callback);
-  }
+  ui::OzonePlatform::GetInstance()
+      ->GetGpuPlatformSupportHost()
+      ->OnGpuServiceLaunched(params_.restart_id,
+                             params_.main_thread_task_runner,
+                             host_thread_task_runner_, interface_binder,
+                             std::move(terminate_callback));
 }
 
 void GpuHostImpl::TerminateGpuProcess(const std::string& message) {

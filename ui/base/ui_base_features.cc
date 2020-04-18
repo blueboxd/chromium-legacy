@@ -186,13 +186,6 @@ bool IsUseCommonSelectPopupEnabled() {
 const base::Feature kWebUIA11yEnhancements{"WebUIA11yEnhancements",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableOzoneDrmMojo = {"OzoneDrmMojo",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsOzoneDrmMojo() {
-  return base::FeatureList::IsEnabled(kEnableOzoneDrmMojo);
-}
-
 #if defined(OS_CHROMEOS)
 const base::Feature kHandwritingGesture = {"HandwritingGesture",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

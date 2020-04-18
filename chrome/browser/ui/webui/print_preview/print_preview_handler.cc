@@ -649,6 +649,11 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getEulaUrl", base::BindRepeating(&PrintPreviewHandler::HandleGetEulaUrl,
                                         base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "requestPrinterStatus",
+      base::BindRepeating(
+          &PrintPreviewHandler::HandleRequestPrinterStatusUpdate,
+          base::Unretained(this)));
 #endif
 }
 
@@ -1585,5 +1590,24 @@ void PrintPreviewHandler::SendManipulateSettingsForTest(
     const base::DictionaryValue& settings) {
   FireWebUIListener("manipulate-settings-for-test", settings);
 }
+
+#if defined(OS_CHROMEOS)
+void PrintPreviewHandler::HandleRequestPrinterStatusUpdate(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetList().size());
+  PrinterHandler* handler = GetPrinterHandler(PrinterType::kLocal);
+  handler->StartPrinterStatusRequest(
+      args->GetList()[0].GetString(),
+      base::BindOnce(&PrintPreviewHandler::OnPrinterStatusUpdated,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void PrintPreviewHandler::OnPrinterStatusUpdated(
+    const base::Value& cups_printer_status) {
+  // "printer-status-update" will also trigger non-PrintPreview UI for
+  // consuming fresh printer statuses.
+  FireWebUIListener("printer-status-update", cups_printer_status);
+}
+#endif
 
 }  // namespace printing

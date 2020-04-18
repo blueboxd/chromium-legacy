@@ -3409,6 +3409,20 @@ void AXNodeObject::ComputeAriaOwnsChildren(
   AXObjectCache().UpdateAriaOwns(this, id_vector, owned_children);
 }
 
+// According to the standard, the figcaption should only be the first or
+// last child: https://html.spec.whatwg.org/#the-figcaption-element
+static Element* GetChildFigcaption(const Node& node) {
+  Element* element = ElementTraversal::FirstChild(node);
+  if (element->HasTagName(html_names::kFigcaptionTag))
+    return element;
+
+  element = ElementTraversal::LastChild(node);
+  if (element->HasTagName(html_names::kFigcaptionTag))
+    return element;
+
+  return nullptr;
+}
+
 // Based on
 // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
 String AXNodeObject::NativeTextAlternative(
@@ -3660,13 +3674,7 @@ String AXNodeObject::NativeTextAlternative(
       name_sources->back().type = name_from;
       name_sources->back().native_source = kAXTextFromNativeHTMLFigcaption;
     }
-    Element* figcaption = nullptr;
-    for (Element& element : ElementTraversal::DescendantsOf(*(GetNode()))) {
-      if (element.HasTagName(html_names::kFigcaptionTag)) {
-        figcaption = &element;
-        break;
-      }
-    }
+    Element* figcaption = GetChildFigcaption(*(GetNode()));
     if (figcaption) {
       AXObject* figcaption_ax_object = AXObjectCache().GetOrCreate(figcaption);
       if (figcaption_ax_object) {

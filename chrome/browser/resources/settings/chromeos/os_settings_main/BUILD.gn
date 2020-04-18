@@ -29,14 +29,13 @@ js_library("os_settings_main") {
 #  ]
 #}
 
-# TODO: Fix and re-enable
-#js_library("os_settings_main.m") {
-#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_settings_main/os_settings_main.m.js" ]
-#  deps = [
-#    # TODO: Fill those in.
-#  ]
-#  extra_deps = [ ":os_settings_main_module" ]
-#}
+js_library("os_settings_main.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_settings_main/os_settings_main.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":os_settings_main_module" ]
+}
 
 import("//tools/polymer/polymer.gni")
 
@@ -46,9 +45,9 @@ group("polymer3_elements") {
     #":os_settings_main_module"
   ]
 }
-# TODO: Fix and re-enable
-#polymer_modulizer("os_settings_main") {
-#  js_file = "os_settings_main.js"
-#  html_file = "os_settings_main.html"
-#  html_type = "dom-module"
-#}
+
+polymer_modulizer("os_settings_main") {
+  js_file = "os_settings_main.js"
+  html_file = "os_settings_main.html"
+  html_type = "dom-module"
+}

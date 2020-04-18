@@ -52,6 +52,8 @@ class PrinterHandler {
 #if defined(OS_CHROMEOS)
   using GetEulaUrlCallback =
       base::OnceCallback<void(const std::string& license)>;
+  using PrinterStatusRequestCallback =
+      base::OnceCallback<void(const base::Value& cups_printer_status)>;
 #endif
 
   // Creates an instance of a PrinterHandler for extension printers.
@@ -121,6 +123,12 @@ class PrinterHandler {
   // |callback| should be called in response to the request.
   virtual void StartGetEulaUrl(const std::string& destination_id,
                                GetEulaUrlCallback callback);
+
+  // Initiates a status request for specified printer.
+  // |printer_id|: Printer id.
+  // |callback|: should be called in response to the request.
+  virtual void StartPrinterStatusRequest(const std::string& printer_id,
+                                         PrinterStatusRequestCallback callback);
 #endif
 };
 

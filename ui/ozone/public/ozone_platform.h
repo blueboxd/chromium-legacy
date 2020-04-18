@@ -71,14 +71,6 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // operate as a single process for platforms (i.e. drm) that are usually
     // split between a host and viz specific portion.
     bool single_process = false;
-
-    // Setting this to true indicates that the platform implementation should
-    // use mojo. Setting this to true requires calling |AddInterfaces|
-    // afterwards in the Viz process. Note that this param is only checked in
-    // Ozone DRM. Other platforms either never use mojo or always use mojo
-    // regardless of this param.
-    // TODO(crbug.com/806092): Remove after legacy IPC-based Ozone is removed.
-    bool using_mojo = false;
   };
 
   // Struct used to indicate platform properties.
@@ -94,10 +86,6 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // Determines whether switching between system and custom frames is
     // supported.
     bool use_system_title_bar = false;
-
-    // Determines if the platform requires mojo communication for the IPC.
-    // Currently used only by the Ozone/Wayland platform.
-    bool requires_mojo = false;
 
     // Determines the type of message pump that should be used for GPU main
     // thread.

@@ -32,14 +32,12 @@
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_overlay_manager_gpu.h"
-#include "ui/ozone/platform/drm/gpu/drm_thread_message_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 #include "ui/ozone/platform/drm/gpu/proxy_helpers.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/drm_device_connector.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
-#include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 #include "ui/ozone/platform/drm/host/drm_native_display_delegate.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
@@ -87,13 +85,6 @@ class OzonePlatformGbm : public OzonePlatform {
   InputController* GetInputController() override {
     return event_factory_ozone_->input_controller();
   }
-  IPC::MessageFilter* GetGpuMessageFilter() override {
-    if (using_mojo_) {
-      return nullptr;
-    } else {
-      return gpu_message_filter_.get();
-    }
-  }
 
   std::unique_ptr<PlatformScreen> CreateScreen() override {
     NOTREACHED();
@@ -101,11 +92,7 @@ class OzonePlatformGbm : public OzonePlatform {
   }
 
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
-    if (using_mojo_) {
       return drm_device_connector_.get();
-    } else {
-      return gpu_platform_support_host_.get();
-    }
   }
 
   std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
@@ -115,14 +102,10 @@ class OzonePlatformGbm : public OzonePlatform {
   // In multi-process mode, this function must be executed in Viz as it sets up
   // the callbacks needed for Mojo receivers. In single process mode, it may be
   // called on any thread. It must follow one of |InitializeUI| or
-  // |InitializeGPU|. Invocations of this method when not using mojo will be
-  // ignored. While the caller may choose to invoke this method before entering
-  // the sandbox, the actual interface adding has to happen on the DRM Device
-  // thread and so will be deferred until the DRM thread is running.
+  // |InitializeGPU|. While the caller may choose to invoke this method before
+  // entering the sandbox, the actual interface adding has to happen on the DRM
+  // Device thread and so will be deferred until the DRM thread is running.
   void AddInterfaces(mojo::BinderMap* binders) override {
-    if (!using_mojo_)
-      return;
-
     binders->Add<ozone::mojom::DrmDevice>(
         base::BindRepeating(&OzonePlatformGbm::CreateDrmDeviceReceiver,
                             weak_factory_.GetWeakPtr()),
@@ -153,10 +136,7 @@ class OzonePlatformGbm : public OzonePlatform {
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
-    GpuThreadAdapter* adapter = gpu_platform_support_host_.get();
-    if (using_mojo_) {
-      adapter = host_drm_device_.get();
-    }
+    GpuThreadAdapter* adapter = host_drm_device_.get();
 
     auto platform_window = std::make_unique<DrmWindowHost>(
         delegate, properties.bounds, adapter, event_factory_ozone_.get(),
@@ -185,16 +165,13 @@ class OzonePlatformGbm : public OzonePlatform {
   }
 
   void InitializeUI(const InitParams& args) override {
-    // Ozone drm can operate in three modes configured at runtime.
-    //   1. legacy mode where host and viz components communicate
-    //      via param traits IPC. This will be soon deprecated in favor of 3.
-    //   2. single-process mode where host and viz components
+    // Ozone drm can operate in two modes configured at runtime.
+    //   1. single-process mode where host and viz components
     //      communicate via in-process mojo. Single-process mode can be single
     //      or multi-threaded.
-    //   3. multi-process mode where host and viz components communicate
+    //   2. multi-process mode where host and viz components communicate
     //      via mojo IPC.
 
-    using_mojo_ = args.using_mojo;
     host_thread_ = base::PlatformThread::CurrentRef();
 
     device_manager_ = CreateDeviceManager();
@@ -216,37 +193,21 @@ class OzonePlatformGbm : public OzonePlatform {
 
     GpuThreadAdapter* adapter;
 
-    if (using_mojo_) {
-      host_drm_device_ = base::MakeRefCounted<HostDrmDevice>(cursor_.get());
-      drm_device_connector_ =
-          std::make_unique<DrmDeviceConnector>(host_drm_device_);
-      adapter = host_drm_device_.get();
-    } else {
-      gpu_platform_support_host_ =
-          std::make_unique<DrmGpuPlatformSupportHost>(cursor_.get());
-      adapter = gpu_platform_support_host_.get();
-    }
+    host_drm_device_ = base::MakeRefCounted<HostDrmDevice>(cursor_.get());
+    drm_device_connector_ =
+        std::make_unique<DrmDeviceConnector>(host_drm_device_);
+    adapter = host_drm_device_.get();
 
     display_manager_ = std::make_unique<DrmDisplayHostManager>(
         adapter, device_manager_.get(), &host_properties_,
         event_factory_ozone_->input_controller());
     cursor_factory_ozone_ = std::make_unique<BitmapCursorFactoryOzone>();
 
-    if (using_mojo_)
-      host_drm_device_->SetDisplayManager(display_manager_.get());
+    host_drm_device_->SetDisplayManager(display_manager_.get());
   }
 
   void InitializeGPU(const InitParams& args) override {
-    using_mojo_ = args.using_mojo;
     gpu_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-
-    InterThreadMessagingProxy* itmp;
-    if (!using_mojo_) {
-      scoped_refptr<DrmThreadMessageProxy> message_proxy(
-          new DrmThreadMessageProxy());
-      itmp = message_proxy.get();
-      gpu_message_filter_ = std::move(message_proxy);
-    }
 
     // NOTE: Can't start the thread here since this is called before sandbox
     // initialization in multi-process Chrome.
@@ -254,9 +215,6 @@ class OzonePlatformGbm : public OzonePlatform {
 
     surface_factory_ =
         std::make_unique<GbmSurfaceFactory>(drm_thread_proxy_.get());
-    if (!using_mojo_) {
-      drm_thread_proxy_->BindThreadIntoMessagingProxy(itmp);
-    }
 
     overlay_manager_ =
         std::make_unique<DrmOverlayManagerGpu>(drm_thread_proxy_.get());
@@ -266,12 +224,14 @@ class OzonePlatformGbm : public OzonePlatform {
     if (!single_process())
       return;
 
-    // In single process/mojo mode we need to make sure DrainReceiverRequest is
-    // executed on this thread before we start the drm device.
-    const bool block_for_drm_thread = using_mojo_;
+    // Note we exit this code above when running in multiple processes and so
+    // following code only executes in single process mode. In single process
+    // mode we need to make sure DrainReceiverRequest is executed on this thread
+    // before we start the drm device.
+    const bool block_for_drm_thread = true;
     StartDrmThread(block_for_drm_thread);
 
-    if (using_mojo_ && host_thread_ == base::PlatformThread::CurrentRef()) {
+    if (host_thread_ == base::PlatformThread::CurrentRef()) {
       CHECK(has_initialized_ui()) << "Mojo single-thread mode requires "
                                      "InitializeUI to be called first.";
       // Connect host and gpu here since OnGpuServiceLaunched() is not called in
@@ -319,12 +279,9 @@ class OzonePlatformGbm : public OzonePlatform {
     }
   }
 
-  bool using_mojo_ = false;
-
   // Objects in the GPU process.
   std::unique_ptr<DrmThreadProxy> drm_thread_proxy_;
   std::unique_ptr<GbmSurfaceFactory> surface_factory_;
-  scoped_refptr<IPC::MessageFilter> gpu_message_filter_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   std::unique_ptr<DrmOverlayManager> overlay_manager_;
 
@@ -334,16 +291,11 @@ class OzonePlatformGbm : public OzonePlatform {
       pending_gpu_adapter_receivers_;
   bool drm_thread_started_ = false;
 
-  // gpu_platform_support_host_ is the IPC bridge to the GPU process while
   // host_drm_device_ is the mojo bridge to the Viz process. Only one can be in
   // use at any time.
-  // TODO(rjkroege): Remove gpu_platform_support_host_ once ozone/drm with mojo
-  // has reached the stable channel.
-  // A raw pointer to either |gpu_platform_support_host_| or |host_drm_device_|
-  // is passed to |display_manager_| in InitializeUI(). To avoid a use after
-  // free, the following two members should be declared before the two managers,
-  // so that they're deleted after them.
-  std::unique_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
+  // A raw pointer to |host_drm_device_| is passed to |display_manager_| in
+  // InitializeUI(). To avoid a use after free, the following two members should
+  // be declared before the two managers, so that they're deleted after them.
 
   // Objects in the host process.
 #if BUILDFLAG(USE_XKBCOMMON)

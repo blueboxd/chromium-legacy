@@ -54,6 +54,9 @@ class LocalPrinterHandlerChromeos : public PrinterHandler {
                   PrintCallback callback) override;
   void StartGetEulaUrl(const std::string& destination_id,
                        GetEulaUrlCallback cb) override;
+  void StartPrinterStatusRequest(
+      const std::string& printer_id,
+      PrinterStatusRequestCallback callback) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LocalPrinterHandlerChromeosTest,
@@ -82,6 +85,10 @@ class LocalPrinterHandlerChromeos : public PrinterHandler {
                           GetCapabilityCallback cb,
                           bool record_usb_setup_source,
                           chromeos::PrinterSetupResult result);
+
+  void OnPrinterStatusUpdated(
+      PrinterStatusRequestCallback callback,
+      const chromeos::CupsPrinterStatus& cups_printers_status);
 
   Profile* const profile_;
   content::WebContents* const preview_web_contents_;

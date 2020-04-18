@@ -218,7 +218,6 @@ void Env::Init() {
   // instead of checking flags here.
   params.single_process = command_line->HasSwitch("single-process") ||
                           command_line->HasSwitch("in-process-gpu");
-  params.using_mojo = features::IsOzoneDrmMojo();
 
   ui::OzonePlatform::InitializeForUI(params);
 #endif

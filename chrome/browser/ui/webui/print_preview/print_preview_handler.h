@@ -310,6 +310,14 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void OnPrintResult(const std::string& callback_id,
                      const base::Value& error);
 
+#if defined(OS_CHROMEOS)
+  // Called to initiate a status request for a printer.
+  void HandleRequestPrinterStatusUpdate(const base::ListValue* args);
+
+  // Invokes Web UI Listener "printer-status-update" with new printer status.
+  void OnPrinterStatusUpdated(const base::Value& cups_printer_status);
+#endif
+
   // A count of how many requests received to regenerate preview data.
   // Initialized to 0 then incremented and emitted to a histogram.
   int regenerate_preview_request_count_ = 0;

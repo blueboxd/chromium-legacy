@@ -40,7 +40,6 @@ class GlTestsSuite : public base::TestSuite {
     // Make Ozone run in single-process mode.
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
-    params.using_mojo = true;
 
     // This initialization must be done after TaskEnvironment has
     // initialized the UI thread.

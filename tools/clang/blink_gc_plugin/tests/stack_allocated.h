@@ -24,7 +24,7 @@ class StackObject {
     void Trace(Visitor* visitor) { visitor->Trace(m_obj); }
 
 private:
-    Member<HeapObject> m_obj; // Does not need tracing.
+    HeapObject* m_obj; // Does not need tracing.
 };
 
 class HeapObject : public GarbageCollected<HeapObject> {

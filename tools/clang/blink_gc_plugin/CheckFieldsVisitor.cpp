@@ -78,16 +78,14 @@ void CheckFieldsVisitor::AtValue(Value* edge) {
     return;
   }
 
-  if (options_.no_members_in_stack_allocated) {
-    // Members/WeakMembers are prohibited if the host is stack allocated, but
-    // heap collections with Members are okay.
-    if (stack_allocated_host_ && Parent() &&
-        (Parent()->IsMember() || Parent()->IsWeakMember())) {
-      if (!GrandParent() || !GrandParent()->IsCollection()) {
-        invalid_fields_.push_back(
-            std::make_pair(current_, kMemberInStackAllocated));
-        return;
-      }
+  // Members/WeakMembers are prohibited if the host is stack allocated, but
+  // heap collections with Members are okay.
+  if (stack_allocated_host_ && Parent() &&
+      (Parent()->IsMember() || Parent()->IsWeakMember())) {
+    if (!GrandParent() || !GrandParent()->IsCollection()) {
+      invalid_fields_.push_back(
+          std::make_pair(current_, kMemberInStackAllocated));
+      return;
     }
   }
 
@@ -117,8 +115,7 @@ void CheckFieldsVisitor::AtValue(Value* edge) {
         current_, InvalidSmartPtr(Parent())));
     return;
   }
-  if (Parent()->IsRawPtr() &&
-      !(stack_allocated_host_ && options_.no_members_in_stack_allocated)) {
+  if (Parent()->IsRawPtr() && !stack_allocated_host_) {
     RawPtr* rawPtr = static_cast<RawPtr*>(Parent());
     Error error = rawPtr->HasReferenceType() ?
         kReferencePtrToGCManaged : kRawPtrToGCManaged;

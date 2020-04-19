@@ -62,7 +62,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chromeos/constants/chromeos_switches.h"
 #endif

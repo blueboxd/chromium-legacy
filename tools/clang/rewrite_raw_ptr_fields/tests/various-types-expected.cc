@@ -26,4 +26,4 @@ struct MyStruct {
 };
 
 // [1] non-supported-type - type that won't ever be either
-// A) allocated by PartitionAllc or B) derived from CheckedPtrSupport.
+// A) allocated by PartitionAlloc or B) derived from CheckedPtrSupport.

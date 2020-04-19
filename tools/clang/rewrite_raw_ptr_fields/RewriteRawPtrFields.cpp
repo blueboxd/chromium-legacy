@@ -34,6 +34,7 @@
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/ErrorOr.h"
+#include "llvm/Support/FormatVariadic.h"
 #include "llvm/Support/LineIterator.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Path.h"
@@ -52,10 +53,14 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
 
   void run(const MatchFinder::MatchResult& result) override {
     const clang::SourceManager& source_manager = *result.SourceManager;
+
     const clang::FieldDecl* field_decl =
         result.Nodes.getNodeAs<clang::FieldDecl>("fieldDecl");
+    assert(field_decl && "matcher should bind 'fieldDecl'");
+
     const clang::TypeSourceInfo* type_source_info =
         field_decl->getTypeSourceInfo();
+    assert(type_source_info && "assuming |type_source_info| is always present");
 
     clang::QualType pointer_type = type_source_info->getType();
     assert(type_source_info->getType()->isPointerType() &&
@@ -78,16 +83,31 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
         field_decl->getBeginLoc(),
         field_decl->getLocation().getLocWithOffset(-1));
 
+    // Calculate |replacement_text|.
+    std::string replacement_text = GenerateNewText(pointer_type);
+    if (field_decl->isMutable())
+      replacement_text.insert(0, "mutable ");
+
     // Generate and add a replacement.
     replacements_->emplace_back(
         source_manager, clang::CharSourceRange::getCharRange(replacement_range),
-        GenerateNewText(pointer_type));
+        replacement_text);
   }
 
  private:
   std::string GenerateNewText(const clang::QualType& pointer_type) {
+    std::string result;
+
     assert(pointer_type->isPointerType() && "caller must pass a pointer type!");
     clang::QualType pointee_type = pointer_type->getPointeeType();
+
+    // Preserve qualifiers.
+    assert(!pointer_type.isRestrictQualified() &&
+           "|restrict| is a C-only qualifier and CheckedPtr<T> needs C++");
+    if (pointer_type.isConstQualified())
+      result += "const ";
+    if (pointer_type.isVolatileQualified())
+      result += "volatile ";
 
     // Convert pointee type to string.
     clang::LangOptions lang_options;
@@ -95,10 +115,9 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
     printing_policy.SuppressTagKeyword = 1;  // s/class Pointee/Pointee/
     std::string pointee_type_as_string =
         pointee_type.getAsString(printing_policy);
+    result += llvm::formatv("CheckedPtr<{0}>", pointee_type_as_string);
 
-    // TODO(lukasza): Preserve qualifiers from |pointer_type| by generating
-    // results from fresh AST (rather than via string concatenation).
-    return std::string("CheckedPtr<") + pointee_type_as_string + ">";
+    return result;
   }
 
   std::vector<Replacement>* const replacements_;

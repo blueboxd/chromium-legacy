@@ -1995,7 +1995,7 @@
   {
     "name": "enable-start-surface",
     "owners": [ "gogerald"],
-    "expiry_milestone": 83
+    "expiry_milestone": 86
   },
   {
     "name": "enable-storage-pressure-ui",

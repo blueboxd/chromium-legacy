@@ -45,9 +45,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "extensions/common/constants.h"
 #endif

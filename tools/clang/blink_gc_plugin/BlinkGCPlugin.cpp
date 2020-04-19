@@ -34,7 +34,9 @@ class BlinkGCPluginAction : public PluginASTAction {
       if (arg == "dump-graph") {
         options_.dump_graph = true;
       } else if (arg == "no-members-in-stack-allocated") {
-        options_.no_members_in_stack_allocated = true;
+        // TODO(bikineev): Flag is on by default. Remove after
+        // third_party/blink/renderer/BUILD.gn has been updated.
+        continue;
       } else if (arg == "enable-weak-members-in-unmanaged-classes") {
         options_.enable_weak_members_in_unmanaged_classes = true;
       } else {

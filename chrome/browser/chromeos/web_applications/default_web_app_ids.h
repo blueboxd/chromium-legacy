@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_DEFAULT_WEB_APP_IDS_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_DEFAULT_WEB_APP_IDS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_WEB_APPLICATIONS_DEFAULT_WEB_APP_IDS_H_
+#define CHROME_BROWSER_CHROMEOS_WEB_APPLICATIONS_DEFAULT_WEB_APP_IDS_H_
 
 namespace chromeos {
 namespace default_web_apps {
@@ -48,4 +48,4 @@ constexpr char kMediaAppId[] = "jhdjimmaggjajfjphpljagpgkidjilnj";
 }  // namespace default_web_apps
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_DEFAULT_WEB_APP_IDS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_WEB_APPLICATIONS_DEFAULT_WEB_APP_IDS_H_

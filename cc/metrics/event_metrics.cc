@@ -51,6 +51,9 @@ const char* EventMetrics::GetTypeName() const {
     case ui::ET_MOUSEWHEEL:
       return "MouseWheel";
     case ui::ET_KEY_PRESSED:
+      // TODO(crbug/1071645): Currently, all ET_KEY_PRESSED events are reported
+      // under EventLatency.KeyPressed histogram. This includes both key-down
+      // and key-char events. Consider reporting them separately.
       return "KeyPressed";
     case ui::ET_KEY_RELEASED:
       return "KeyReleased";

@@ -28655,6 +28655,13 @@ Called by update_feature_policy_enum.py.-->
   <int value="5" label="GNOME failure"/>
 </enum>
 
+<enum name="FormInputAccessoryAction">
+  <int value="0" label="PreviousElement"/>
+  <int value="1" label="NextElement"/>
+  <int value="2" label="Done"/>
+  <int value="3" label="Unkown"/>
+</enum>
+
 <enum name="FoundationFileSystemError">
   <int value="0" label="NSNoError"/>
   <int value="4" label="NSFileNoSuchFileError"/>

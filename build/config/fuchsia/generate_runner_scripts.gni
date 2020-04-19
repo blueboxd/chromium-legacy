@@ -87,7 +87,11 @@ template("fuchsia_package_runner") {
       # Runner scripts require access to "ids.txt" for symbolization, and to
       # the "package" from which to get the name & version to deploy, which
       # are outputs of the archive manifest generation action.
-      invoker.package + "__archive-manifest",
+      "${invoker.package}__archive-manifest",
+
+      # Runner scripts require access to "meta.far" from which to calculate the
+      # expected Merkle root for the package, to verify it has been cached.
+      "${invoker.package}__archive-metadata",
     ]
     if (defined(invoker.data_deps)) {
       data_deps += invoker.data_deps
@@ -113,6 +117,7 @@ template("fuchsia_package_runner") {
       data += [
         # Host tools for arm64 test bots.
         "//third_party/fuchsia-sdk/sdk/tools/arm64/fvm",
+        "//third_party/fuchsia-sdk/sdk/tools/arm64/merkleroot",
         "//third_party/fuchsia-sdk/sdk/tools/arm64/pm",
         "//third_party/fuchsia-sdk/sdk/tools/arm64/symbolize",
         "//third_party/fuchsia-sdk/sdk/tools/arm64/zbi",
@@ -122,6 +127,7 @@ template("fuchsia_package_runner") {
       data += [
         # Host tools for x64 test bots.
         "//third_party/fuchsia-sdk/sdk/tools/x64/fvm",
+        "//third_party/fuchsia-sdk/sdk/tools/x64/merkleroot",
         "//third_party/fuchsia-sdk/sdk/tools/x64/pm",
         "//third_party/fuchsia-sdk/sdk/tools/x64/symbolize",
         "//third_party/fuchsia-sdk/sdk/tools/x64/zbi",
@@ -141,6 +147,7 @@ template("fuchsia_package_runner") {
         data_deps += [
           package_dep_target,
           package_dep_target + "__archive-manifest",
+          package_dep_target + "__archive-metadata",
         ]
         package_dep_path = rebase_path(
                 get_label_info(package_dep_target, "target_gen_dir") + "/" +

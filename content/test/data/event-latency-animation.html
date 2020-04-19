@@ -36,12 +36,14 @@
 
   <body>
     <button id="button">Press here with space</button>
+    <input id="input" placeholder="Type something here">
     <div>
       <div id="raf-box"></div>
       <div id="main-box"></div>
     </div>
     <script>
       var button = document.getElementById('button');
+      var input = document.getElementById('input');
       var rafBox = document.getElementById('raf-box');
       var mainBox = document.getElementById('main-box');
 
@@ -50,6 +52,10 @@
 
       var focusButton = function() {
         button.focus();
+      };
+
+      var focusInput = function() {
+        input.focus();
       };
 
       var rafAnimate = function(time) {

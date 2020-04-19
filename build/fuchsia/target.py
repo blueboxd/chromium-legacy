@@ -24,6 +24,11 @@ _ATTACH_RETRY_SECONDS = 60
 _INSTALL_TIMEOUT_SECS = 5 * 60
 
 
+def _GetPackageUri(package_name):
+  """Returns the URI for the specified package name."""
+  return 'fuchsia-pkg://fuchsia.com/%s' % (package_name)
+
+
 def _GetPackageInfo(package_path):
   """Returns a tuple with the name and version of a package."""
 
@@ -252,18 +257,37 @@ class Target(object):
 
     with self.GetAmberRepo() as amber_repo:
       # Publish all packages to the serving TUF repository under |tuf_root|.
-      for next_package_path in package_paths:
-        amber_repo.PublishPackage(next_package_path)
+      for package_path in package_paths:
+        amber_repo.PublishPackage(package_path)
 
-      # Install all packages.
-      for next_package_path in package_paths:
-        install_package_name, package_version = \
-            _GetPackageInfo(next_package_path)
-        logging.info('Installing %s version %s.' %
-                     (install_package_name, package_version))
-        return_code = self.RunCommand(['amberctl', 'get_up', '-n',
-                                       install_package_name, '-v',
-                                       package_version],
-                                       timeout_secs=_INSTALL_TIMEOUT_SECS)
+      # Resolve all packages, to have them pulled into the device/VM cache.
+      for package_path in package_paths:
+        package_name, package_version = _GetPackageInfo(package_path)
+        logging.info('Resolving %s into cache.' % (package_name))
+        return_code = self.RunCommand(
+            ['pkgctl', 'resolve',
+             _GetPackageUri(package_name), '>/dev/null'],
+            timeout_secs=_INSTALL_TIMEOUT_SECS)
         if return_code != 0:
-          raise Exception('Error while installing %s.' % install_package_name)
+          raise Exception('Error while resolving %s.' % package_name)
+
+      # Verify that the newly resolved versions of packages are reported.
+      for package_path in package_paths:
+        # Use pkgctl get-hash to determine which version will be resolved.
+        package_name, package_version = _GetPackageInfo(package_path)
+        pkgctl = self.RunCommandPiped(
+            ['pkgctl', 'get-hash',
+             _GetPackageUri(package_name)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+        pkgctl_out, pkgctl_err = pkgctl.communicate()
+
+        # Read the expected version from the meta.far Merkel hash file alongside
+        # the package's FAR.
+        meta_far_path = os.path.join(os.path.dirname(package_path), 'meta.far')
+        meta_far_merkel = subprocess.check_output(
+            [common.GetHostToolPathFromPlatform('merkleroot'),
+             meta_far_path]).split()[0]
+        if pkgctl_out != meta_far_merkel:
+          raise Exception('Hash mismatch for %s after resolve (%s vs %s).' %
+                          (package_name, pkgctl_out, meta_far_merkel))

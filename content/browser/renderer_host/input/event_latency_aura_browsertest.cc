@@ -54,6 +54,8 @@ class EventLatencyBrowserTest : public ContentBrowserTest {
 
   void FocusButton() const { ASSERT_TRUE(ExecJs(shell(), "focusButton()")); }
 
+  void FocusInput() const { ASSERT_TRUE(ExecJs(shell(), "focusInput()")); }
+
   void StartAnimations() const {
     ASSERT_TRUE(ExecJs(shell(), "startAnimations()"));
   }
@@ -74,8 +76,8 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButton) {
                                          ->GetRootWindow());
 
   // Press and release the space key. Since the button on the test page is
-  // focused, this should change the visuals of the button and generate a
-  // compositor frame with appropriate event latency metrics.
+  // focused, this should change the visuals of the button and generate
+  // compositor frames with appropriate event latency metrics.
   generator.PressKey(ui::VKEY_SPACE, 0);
   generator.ReleaseKey(ui::VKEY_SPACE, 0);
   RunUntilInputProcessed(GetWidgetHost());
@@ -83,6 +85,17 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButton) {
   FetchHistogramsFromChildProcesses();
 
   base::HistogramTester::CountsMap expected_counts = {
+      {"EventLatency.KeyPressed.BrowserToRendererCompositor", 1},
+      {"EventLatency.KeyPressed.BeginImplFrameToSendBeginMainFrame", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit", 1},
+      {"EventLatency.KeyPressed.Commit", 1},
+      {"EventLatency.KeyPressed.EndCommitToActivation", 1},
+      {"EventLatency.KeyPressed.Activation", 1},
+      {"EventLatency.KeyPressed.EndActivateToSubmitCompositorFrame", 1},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame",
+       1},
+      {"EventLatency.KeyPressed.TotalLatency", 1},
       {"EventLatency.KeyReleased.BrowserToRendererCompositor", 1},
       {"EventLatency.KeyReleased.BeginImplFrameToSendBeginMainFrame", 1},
       {"EventLatency.KeyReleased.SendBeginMainFrameToCommit", 1},
@@ -115,8 +128,8 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButtonWithAnimation) {
                                          ->GetRootWindow());
 
   // Press and release the space key. Since the button on the test page is
-  // focused, this should change the visuals of the button and generate a
-  // compositor frame with appropriate event latency metrics.
+  // focused, this should change the visuals of the button and generate
+  // compositor frames with appropriate event latency metrics.
   generator.PressKey(ui::VKEY_SPACE, 0);
   generator.ReleaseKey(ui::VKEY_SPACE, 0);
   RunUntilInputProcessed(GetWidgetHost());
@@ -124,6 +137,17 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButtonWithAnimation) {
   FetchHistogramsFromChildProcesses();
 
   base::HistogramTester::CountsMap expected_counts = {
+      {"EventLatency.KeyPressed.BrowserToRendererCompositor", 1},
+      {"EventLatency.KeyPressed.BeginImplFrameToSendBeginMainFrame", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit", 1},
+      {"EventLatency.KeyPressed.Commit", 1},
+      {"EventLatency.KeyPressed.EndCommitToActivation", 1},
+      {"EventLatency.KeyPressed.Activation", 1},
+      {"EventLatency.KeyPressed.EndActivateToSubmitCompositorFrame", 1},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame",
+       1},
+      {"EventLatency.KeyPressed.TotalLatency", 1},
       {"EventLatency.KeyReleased.BrowserToRendererCompositor", 1},
       {"EventLatency.KeyReleased.BeginImplFrameToSendBeginMainFrame", 1},
       {"EventLatency.KeyReleased.SendBeginMainFrameToCommit", 1},
@@ -135,6 +159,50 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButtonWithAnimation) {
        "SubmitCompositorFrameToPresentationCompositorFrame",
        1},
       {"EventLatency.KeyReleased.TotalLatency", 1},
+  };
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix("EventLatency."),
+              testing::ContainerEq(expected_counts));
+}
+
+// Tests that entering a character in a textbox leads to appropriate event
+// latency metrics being reported even though the page has an animation running.
+IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressInInputWithAnimation) {
+  base::HistogramTester histogram_tester;
+
+  ASSERT_NO_FATAL_FAILURE(LoadTestPage());
+  StartAnimations();
+  FocusInput();
+
+  ui::test::EventGenerator generator(shell()
+                                         ->web_contents()
+                                         ->GetRenderWidgetHostView()
+                                         ->GetNativeView()
+                                         ->GetRootWindow());
+
+  // Enter a character into the focused textbox. This should generate compositor
+  // frames with appropriate event latency metrics.
+  generator.PressKey(ui::VKEY_A, 0);
+  generator.ReleaseKey(ui::VKEY_A, 0);
+  RunUntilInputProcessed(GetWidgetHost());
+
+  FetchHistogramsFromChildProcesses();
+
+  // TODO(crbug/1071645): Since this is this first key-press after the textbox
+  // is focused, there would be two reports, one for the RawKeyDown that causes
+  // some style changes (due to :focus-visible behavior) and one for the Char
+  // that inserts the actual character. These should be reported separately.
+  base::HistogramTester::CountsMap expected_counts = {
+      {"EventLatency.KeyPressed.BrowserToRendererCompositor", 2},
+      {"EventLatency.KeyPressed.BeginImplFrameToSendBeginMainFrame", 2},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit", 2},
+      {"EventLatency.KeyPressed.Commit", 2},
+      {"EventLatency.KeyPressed.EndCommitToActivation", 2},
+      {"EventLatency.KeyPressed.Activation", 2},
+      {"EventLatency.KeyPressed.EndActivateToSubmitCompositorFrame", 2},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame",
+       2},
+      {"EventLatency.KeyPressed.TotalLatency", 2},
   };
   EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix("EventLatency."),
               testing::ContainerEq(expected_counts));

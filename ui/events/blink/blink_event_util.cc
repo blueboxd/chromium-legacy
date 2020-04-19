@@ -1018,13 +1018,13 @@ EventType WebEventTypeToEventType(WebInputEvent::Type type) {
     case WebInputEvent::kMouseWheel:
       return ET_MOUSEWHEEL;
     case WebInputEvent::kRawKeyDown:
-      return ET_UNKNOWN;
+      return ET_KEY_PRESSED;
     case WebInputEvent::kKeyDown:
       return ET_KEY_PRESSED;
     case WebInputEvent::kKeyUp:
       return ET_KEY_RELEASED;
     case WebInputEvent::kChar:
-      return ET_UNKNOWN;
+      return ET_KEY_PRESSED;
     case WebInputEvent::kGestureScrollBegin:
       return ET_GESTURE_SCROLL_BEGIN;
     case WebInputEvent::kGestureScrollEnd:

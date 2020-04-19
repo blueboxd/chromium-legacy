@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
 #import "components/autofill/core/browser/keyboard_accessory_metrics_logger.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -15,11 +16,37 @@
 #error "This file requires ARC support."
 #endif
 
-namespace autofill {
+namespace {
+
 NSString* const kFormSuggestionAssistButtonPreviousElement = @"previousTap";
 NSString* const kFormSuggestionAssistButtonNextElement = @"nextTap";
 NSString* const kFormSuggestionAssistButtonDone = @"done";
-}  // namespace autofill
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class FormInputAccessoryAction {
+  kPreviousElement = 0,
+  kNextElement = 1,
+  kDone = 2,
+  kUnknown = 3,
+  kMaxValue = kUnknown,
+};
+
+FormInputAccessoryAction UMAActionForAssistAction(NSString* assistAction) {
+  if ([assistAction isEqual:kFormSuggestionAssistButtonPreviousElement]) {
+    return FormInputAccessoryAction::kPreviousElement;
+  }
+  if ([assistAction isEqual:kFormSuggestionAssistButtonNextElement]) {
+    return FormInputAccessoryAction::kNextElement;
+  }
+  if ([assistAction isEqual:kFormSuggestionAssistButtonDone]) {
+    return FormInputAccessoryAction::kDone;
+  }
+  NOTREACHED();
+  return FormInputAccessoryAction::kUnknown;
+}
+
+}  // namespace
 
 namespace {
 
@@ -170,9 +197,27 @@ NSArray* FindDescendantToolbarItemsForActionName(
     return NO;
 
   UIBarButtonItem* item = descendants.firstObject;
+  if (!item.enabled) {
+    return NO;
+  }
+  if (![[item target] respondsToSelector:[item action]]) {
+    return NO;
+  }
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-  [[item target] performSelector:[item action] withObject:item];
+  @try {
+    // In some cases the keyboard is causing an exception when dismissing. Note:
+    // this also happens without interactions with the input accessory, here we
+    // can only catch the exceptions initiated here.
+    [[item target] performSelector:[item action] withObject:item];
+  } @catch (NSException* exception) {
+    NOTREACHED() << exception.debugDescription;
+    UMA_HISTOGRAM_ENUMERATION(
+        "FormInputAccessory.ExecuteFormAssistActionException",
+        UMAActionForAssistAction(actionName));
+    return NO;
+  }
 #pragma clang diagnostic pop
   return YES;
 }
@@ -223,7 +268,7 @@ NSArray* FindDescendantToolbarItemsForActionName(
 // if that fails, fallbacks on JavaScript. Logs metrics if loggingButtonPressed
 // is YES.
 - (void)closeKeyboardLoggingButtonPressed:(BOOL)loggingButtonPressed {
-  NSString* actionName = autofill::kFormSuggestionAssistButtonDone;
+  NSString* actionName = kFormSuggestionAssistButtonDone;
   BOOL performedAction = [self executeFormAssistAction:actionName];
 
   if (!performedAction && [_lastFocusFormActivityWebFrameID length]) {
@@ -241,7 +286,7 @@ NSArray* FindDescendantToolbarItemsForActionName(
 // bar if that fails, fallbacks on JavaScript. Logs metrics if
 // loggingButtonPressed is YES.
 - (void)selectPreviousElementLoggingButtonPressed:(BOOL)loggingButtonPressed {
-  NSString* actionName = autofill::kFormSuggestionAssistButtonPreviousElement;
+  NSString* actionName = kFormSuggestionAssistButtonPreviousElement;
   BOOL performedAction = [self executeFormAssistAction:actionName];
 
   if (!performedAction) {
@@ -259,7 +304,7 @@ NSArray* FindDescendantToolbarItemsForActionName(
 // accessory bar if that fails, fallbacks on JavaScript. Logs metrics if
 // loggingButtonPressed is YES.
 - (void)selectNextElementLoggingButtonPressed:(BOOL)loggingButtonPressed {
-  NSString* actionName = autofill::kFormSuggestionAssistButtonNextElement;
+  NSString* actionName = kFormSuggestionAssistButtonNextElement;
   BOOL performedAction = [self executeFormAssistAction:actionName];
 
   if (!performedAction) {

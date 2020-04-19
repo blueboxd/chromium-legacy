@@ -4136,6 +4136,14 @@ const CSSValue* MathStyle::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.MathStyle());
 }
 
+const CSSValue* MathSuperscriptShiftStyle::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return CSSIdentifierValue::Create(style.MathSuperscriptShiftStyle());
+}
+
 const CSSValue* MaxBlockSize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,

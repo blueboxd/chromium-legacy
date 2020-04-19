@@ -234,6 +234,7 @@ mask
 maskSourceType
 maskType
 mathStyle
+mathSuperscriptShiftStyle
 maxBlockSize
 maxHeight
 maxInlineSize

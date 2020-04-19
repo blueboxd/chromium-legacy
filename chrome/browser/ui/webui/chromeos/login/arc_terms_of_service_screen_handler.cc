@@ -70,8 +70,6 @@ ArcTermsOfServiceScreenHandler::~ArcTermsOfServiceScreenHandler() {
 void ArcTermsOfServiceScreenHandler::RegisterMessages() {
   BaseScreenHandler::RegisterMessages();
 
-  AddCallback("arcTermsOfServiceSkip",
-              &ArcTermsOfServiceScreenHandler::HandleSkip);
   AddCallback("arcTermsOfServiceAccept",
               &ArcTermsOfServiceScreenHandler::HandleAccept);
 }
@@ -428,23 +426,6 @@ void ArcTermsOfServiceScreenHandler::RecordConsents(
     consent_auditor->RecordArcGoogleLocationServiceConsent(
         account_id, location_service_consent);
   }
-}
-
-void ArcTermsOfServiceScreenHandler::HandleSkip(
-    const std::string& tos_content) {
-  DCHECK(!arc::IsArcDemoModeSetupFlow());
-
-  if (!NeedDispatchEventOnAction())
-    return;
-
-  // Record consents as not accepted for consents that are under user control
-  // when the user skips ARC setup.
-  RecordConsents(tos_content, !arc_managed_, /*tos_accepted=*/false,
-                 !backup_restore_managed_, /*backup_accepted=*/false,
-                 !location_services_managed_, /*location_accepted=*/false);
-
-  for (auto& observer : observer_list_)
-    observer.OnSkip();
 }
 
 void ArcTermsOfServiceScreenHandler::HandleAccept(

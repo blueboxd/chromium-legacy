@@ -1,10 +1,20 @@
 <!DOCTYPE html>
 <html>
-<link href="resources/grid.css" rel="stylesheet">
-<link href="resources/grid-alignment.css" rel="stylesheet">
-<script src="../../resources/check-layout.js"></script>
+<title>CSS Grid: grid-tempalte-{rows|colums} dynamic updates</title>
+<link rel="author" title="Julien Chaffraix" href="mailto:jchaffraix@chromium.org">
+<link rel="help" href="https://drafts.csswg.org/css-grid-1/#track-sizing">
+<link rel="help" href="https://bugs.webkit.org/show_bug.cgi?id=112501">
+<link rel="stylesheet" href="/css/support/grid.css">
+<link rel="stylesheet" href="/css/support/alignment.css">
+<link rel="stylesheet" type="text/css" href="/fonts/ahem.css"/>
+<meta name="assert" content="This test checks that grid-tempalte-{rows|colums} dynamic updates properly relayout the grid items.">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
 <script>
-function testLayout(gridElementID, gridTracks, size)
+setup({ explicit_done: true });
+
+function testLayout(gridElementID, gridTracks, size, last = false)
 {
     var gridElement = document.getElementById(gridElementID);
     gridElement.style.gridTemplateColumns = gridTracks.columns;
@@ -12,7 +22,7 @@ function testLayout(gridElementID, gridTracks, size)
     var gridItem = gridElement.firstChild.nextSibling;
     gridItem.setAttribute("data-expected-width", size.width);
     gridItem.setAttribute("data-expected-height", size.height);
-    checkLayout("#" + gridElementID, document.getElementById("test-output"));
+    checkLayout("#" + gridElementID, last);
 }
 
 function updateRowsColumns()
@@ -40,13 +50,10 @@ function updateRowsColumns()
     testLayout("unconstrainedGrid", { 'rows': 'auto', 'columns': 'minmax(150px, max-content)' }, { 'width': '150', 'height': '10' });
     testLayout("unconstrainedGrid", { 'rows': 'auto', 'columns': 'auto' }, { 'width': '120', 'height': '10' });
     testLayout("unconstrainedGrid", { 'rows': 'auto', 'columns': 'minmax(min-content, 1fr) 3fr' }, { 'width': '250', 'height': '10' });
-    testLayout("unconstrainedGrid", { 'rows': 'auto', 'columns': 'minmax(min-content, 3fr) 3fr' }, { 'width': '500', 'height': '10' });
+    testLayout("unconstrainedGrid", { 'rows': 'auto', 'columns': 'minmax(min-content, 3fr) 3fr' }, { 'width': '500', 'height': '10' }, true);
 }
-
-window.addEventListener("load", updateRowsColumns, false);
 </script>
-<body>
-<div>This test checks that grid-{rows|columns} dynamic updates properly relayout the grid items.</div>
+<body onload="document.fonts.ready.then(() => { updateRowsColumns(); })">
 <div class="constrainedContainer">
     <div class="grid" id="constrainedGrid" style="height: 100%">
         <div class="sizedToGridArea">XXXXX XXXXXX</div>
@@ -64,8 +71,6 @@ window.addEventListener("load", updateRowsColumns, false);
         <div class="sizedToGridArea">XXXXX XXXXXX</div>
     </div>
 </div>
-
-<div id="test-output"></div>
 
 </body>
 </html>

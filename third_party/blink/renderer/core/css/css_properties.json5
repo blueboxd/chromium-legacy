@@ -2413,6 +2413,16 @@
       runtime_flag: "CSSMathStyle"
     },
     {
+      name: "math-superscript-shift-style",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      field_template: "keyword",
+      inherited: true,
+      keywords: ["inline", "display"],
+      typedom_types: ["Keyword"],
+      default_value: "display",
+      runtime_flag: "CSSMathSuperscriptShiftStyle"
+    },
+    {
       name: "max-height",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       is_descriptor: true,

@@ -233,6 +233,7 @@ All changes to this list should go through Blink's feature review process: http:
     mask-source-type
     mask-type
     math-style
+    math-superscript-shift-style
     max-block-size
     max-height
     max-inline-size

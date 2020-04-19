@@ -42805,6 +42805,7 @@ Called by update_use_counter_css.py.-->
   <int value="656" label="math-style"/>
   <int value="657" label="aspect-ratio"/>
   <int value="658" label="appearance"/>
+  <int value="659" label="math-superscript-shift-style"/>
 </enum>
 
 <enum name="MappedEditingCommands">

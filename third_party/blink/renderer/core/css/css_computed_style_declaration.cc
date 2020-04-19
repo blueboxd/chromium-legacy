@@ -203,7 +203,8 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kCy, CSSPropertyID::kX, CSSPropertyID::kY, CSSPropertyID::kR,
     CSSPropertyID::kRx, CSSPropertyID::kRy, CSSPropertyID::kTranslate,
     CSSPropertyID::kRotate, CSSPropertyID::kScale, CSSPropertyID::kCaretColor,
-    CSSPropertyID::kLineBreak, CSSPropertyID::kMathStyle};
+    CSSPropertyID::kLineBreak, CSSPropertyID::kMathStyle,
+    CSSPropertyID::kMathSuperscriptShiftStyle};
 
 CSSValueID CssIdentifierForFontSizeKeyword(int keyword_size) {
   DCHECK_NE(keyword_size, 0);

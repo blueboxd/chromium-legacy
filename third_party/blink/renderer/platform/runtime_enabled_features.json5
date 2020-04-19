@@ -463,6 +463,11 @@
       implied_by: ["MathMLCore"],
     },
     {
+      name: "CSSMathSuperscriptShiftStyle",
+      status: "experimental",
+      implied_by: ["MathMLCore"],
+    },
+    {
       name: "CSSModules",
       status: "experimental",
     },

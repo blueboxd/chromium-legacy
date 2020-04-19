@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '62687b1ec3c8eafe3c867d8b282ad152d0531095',
+  'skia_revision': '0c9327e48e9ced86096eb2d7fe24014db185b217',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '171cc405301be9f491c97c7bac87b87b4c99d975',
+  'v8_revision': '372da931d6d5ce7e7021950b1e5bbd04405ec02a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -521,7 +521,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '2ffd66d74c85f3e19135155dbcb57ccca8f457a3',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '23a372798c4844dae04c18fa3b9fee67292c328d',
       'condition': 'checkout_ios',
   },
 
@@ -1447,7 +1447,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '87eece9421e14660f5e9352118ae7712563565f2',
+    Var('webrtc_git') + '/src.git' + '@' + 'ed005be788151394c59372c39d3e65fae2dc16c6',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1522,7 +1522,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3ce055109dd8822d5c4f8e3d7f560dddfa636424',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@bf3571fa2a278f6076548cb7114ab16ef424fb0d',
     'condition': 'checkout_src_internal',
   },
 

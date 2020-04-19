@@ -231,7 +231,6 @@ class WizardController {
   void OnFingerprintSetupScreenExit(FingerprintSetupScreen::Result result);
   void OnDiscoverScreenExit();
   void OnArcTermsOfServiceScreenExit(ArcTermsOfServiceScreen::Result result);
-  void OnArcTermsOfServiceSkipped();
   void OnArcTermsOfServiceAccepted();
   void OnRecommendAppsScreenExit(RecommendAppsScreen::Result result);
   void OnAppDownloadingScreenExit();

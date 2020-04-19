@@ -29,9 +29,6 @@ class ArcTermsOfServiceScreenViewObserver {
  public:
   virtual ~ArcTermsOfServiceScreenViewObserver() = default;
 
-  // Called when the user skips the PlayStore Terms of Service.
-  virtual void OnSkip() = 0;
-
   // Called when the user accepts the PlayStore Terms of Service.
   virtual void OnAccept(bool review_arc_settings) = 0;
 
@@ -123,7 +120,6 @@ class ArcTermsOfServiceScreenHandler
   // configured for Public Session.
   void DoShowForDemoModeSetup();
 
-  void HandleSkip(const std::string& tos_content);
   void HandleAccept(bool enable_backup_restore,
                     bool enable_location_services,
                     bool review_arc_settings,

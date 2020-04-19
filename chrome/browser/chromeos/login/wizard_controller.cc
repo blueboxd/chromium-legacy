@@ -1143,21 +1143,12 @@ void WizardController::OnArcTermsOfServiceScreenExit(
     case ArcTermsOfServiceScreen::Result::ACCEPTED:
       OnArcTermsOfServiceAccepted();
       break;
-    case ArcTermsOfServiceScreen::Result::SKIPPED:
-      OnArcTermsOfServiceSkipped();
-      break;
     case ArcTermsOfServiceScreen::Result::BACK:
       DCHECK(demo_setup_controller_);
       DCHECK(StartupUtils::IsEulaAccepted());
       ShowNetworkScreen();
       break;
   }
-}
-
-void WizardController::OnArcTermsOfServiceSkipped() {
-  // If the user finished with the PlayStore Terms of Service, advance to the
-  // assistant opt-in flow screen.
-  ShowAssistantOptInFlowScreen();
 }
 
 void WizardController::OnArcTermsOfServiceAccepted() {

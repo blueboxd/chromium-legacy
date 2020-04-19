@@ -20,7 +20,6 @@ namespace {
 
 constexpr char kUserActionAccepted[] = "accepted";
 constexpr char kUserActionBack[] = "go-back";
-constexpr char kUserActionSkip[] = "skip";
 
 }  // namespace
 
@@ -31,8 +30,6 @@ std::string ArcTermsOfServiceScreen::GetResultString(Result result) {
   switch (result) {
     case Result::ACCEPTED:
       return "Accepted";
-    case Result::SKIPPED:
-      return "Skipped";
     case Result::BACK:
       return "Back";
   }
@@ -89,16 +86,9 @@ void ArcTermsOfServiceScreen::OnUserAction(const std::string& action_id) {
     exit_callback_.Run(Result::ACCEPTED);
   } else if (action_id == kUserActionBack) {
     exit_callback_.Run(Result::BACK);
-  } else if (action_id == kUserActionSkip) {
-    exit_callback_.Run(Result::SKIPPED);
   } else {
     BaseScreen::OnUserAction(action_id);
   }
-}
-
-void ArcTermsOfServiceScreen::OnSkip() {
-  // This would check if the screen is already hidden.
-  HandleUserAction(kUserActionSkip);
 }
 
 void ArcTermsOfServiceScreen::OnAccept(bool review_arc_settings) {

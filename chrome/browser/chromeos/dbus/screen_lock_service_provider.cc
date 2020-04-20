@@ -22,8 +22,8 @@ void ScreenLockServiceProvider::Start(
       kScreenLockServiceInterface, kScreenLockServiceShowLockScreenMethod,
       base::BindRepeating(&ScreenLockServiceProvider::ShowLockScreen,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ScreenLockServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ScreenLockServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ScreenLockServiceProvider::OnExported(const std::string& interface_name,

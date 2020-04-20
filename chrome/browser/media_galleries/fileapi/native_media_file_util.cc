@@ -62,7 +62,7 @@ void DidOpenSnapshot(storage::AsyncFileUtil::CreateOrOpenCallback callback,
     return;
   }
   std::move(callback).Run(std::move(file),
-                          base::Bind(&HoldFileRef, std::move(file_ref)));
+                          base::BindOnce(&HoldFileRef, std::move(file_ref)));
 }
 
 }  // namespace

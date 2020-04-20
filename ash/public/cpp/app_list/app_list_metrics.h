@@ -84,6 +84,8 @@ enum SearchResultType {
   ASSISTANT,
   // An OsSettingsResult.
   OS_SETTINGS,
+  // A Plugin VM App Result.
+  PLUGIN_VM_APP,
   // Boundary is always last.
   SEARCH_RESULT_TYPE_BOUNDARY
 };

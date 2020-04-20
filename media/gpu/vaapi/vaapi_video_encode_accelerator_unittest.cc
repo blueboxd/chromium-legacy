@@ -71,7 +71,6 @@ TEST_P(VaapiVEAInitializeTest, SpatialLayerAndTemporalLayerEncoding) {
 }
 
 constexpr VaapiVEAInitializeTestParam kTestCases[] = {
-    {3u, 1u, false},  // Temporal Layer only.
     {1u, 3u, false},  // Spatial Layer only.
     {3u, 3u, false},  // Temporal + Spatial Layer.
 };

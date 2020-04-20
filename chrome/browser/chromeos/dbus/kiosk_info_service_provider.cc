@@ -26,8 +26,8 @@ void KioskInfoService::Start(
       kKioskAppServiceGetRequiredPlatformVersionMethod,
       base::Bind(&KioskInfoService::GetKioskAppRequiredPlatformVersion,
                  weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&KioskInfoService::OnExported,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&KioskInfoService::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void KioskInfoService::OnExported(const std::string& interface_name,

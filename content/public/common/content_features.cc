@@ -143,6 +143,10 @@ const base::Feature kConversionMeasurement{"ConversionMeasurement",
 const base::Feature kCookieDeprecationMessages{
     "CookieDeprecationMessages", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables Blink cooperative scheduling.
+const base::Feature kCooperativeScheduling{"CooperativeScheduling",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables crash reporting via Reporting API.
 // https://www.w3.org/TR/reporting/#crash-report
 const base::Feature kCrashReporting{"CrashReporting",

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import androidx.annotation.Nullable;
 
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.url.GURL;
 import org.chromium.url.URI;
 
 import java.net.URISyntaxException;
@@ -31,7 +32,9 @@ public class UriUtils {
      *
      * @param method The payment method name to parse.
      * @return The parsed URI payment method name or null if not valid.
+     * @deprecated org.chromium.url.URI class was deprecated.
      */
+    @Deprecated
     @Nullable
     public static URI parseUriFromString(String method) {
         URI uri;
@@ -49,6 +52,24 @@ public class UriUtils {
                 || UrlConstants.HTTP_SCHEME.equals(uri.getScheme());
 
         return uri;
+    }
+
+    /**
+     * Returns false for invalid URL format or a relative URI.
+     *
+     * @param url The payment method name.
+     * @return TRUE if given url is valid and not a relative URI.
+     */
+    public static boolean isURLValid(GURL url) {
+        if (url == null) return false;
+        if (!url.isValid()) return false;
+        if (url.getScheme().isEmpty()) return false;
+        if (!UrlConstants.HTTPS_SCHEME.equals(url.getScheme())
+                && !UrlConstants.HTTP_SCHEME.equals(url.getScheme())) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

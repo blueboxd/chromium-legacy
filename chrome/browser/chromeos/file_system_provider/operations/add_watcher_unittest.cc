@@ -55,9 +55,9 @@ TEST_F(FileSystemProviderOperationsAddWatcherTest, Execute) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  AddWatcher add_watcher(NULL, file_system_info_, base::FilePath(kEntryPath),
-                         true /* recursive */,
-                         base::Bind(&util::LogStatusCallback, &callback_log));
+  AddWatcher add_watcher(
+      NULL, file_system_info_, base::FilePath(kEntryPath), true /* recursive */,
+      base::BindOnce(&util::LogStatusCallback, &callback_log));
   add_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -88,9 +88,9 @@ TEST_F(FileSystemProviderOperationsAddWatcherTest, Execute_NoListener) {
   util::LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  AddWatcher add_watcher(NULL, file_system_info_, base::FilePath(kEntryPath),
-                         true /* recursive */,
-                         base::Bind(&util::LogStatusCallback, &callback_log));
+  AddWatcher add_watcher(
+      NULL, file_system_info_, base::FilePath(kEntryPath), true /* recursive */,
+      base::BindOnce(&util::LogStatusCallback, &callback_log));
   add_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -102,9 +102,9 @@ TEST_F(FileSystemProviderOperationsAddWatcherTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  AddWatcher add_watcher(NULL, file_system_info_, base::FilePath(kEntryPath),
-                         true /* recursive */,
-                         base::Bind(&util::LogStatusCallback, &callback_log));
+  AddWatcher add_watcher(
+      NULL, file_system_info_, base::FilePath(kEntryPath), true /* recursive */,
+      base::BindOnce(&util::LogStatusCallback, &callback_log));
   add_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -122,9 +122,9 @@ TEST_F(FileSystemProviderOperationsAddWatcherTest, OnError) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  AddWatcher add_watcher(NULL, file_system_info_, base::FilePath(kEntryPath),
-                         true /* recursive */,
-                         base::Bind(&util::LogStatusCallback, &callback_log));
+  AddWatcher add_watcher(
+      NULL, file_system_info_, base::FilePath(kEntryPath), true /* recursive */,
+      base::BindOnce(&util::LogStatusCallback, &callback_log));
   add_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));

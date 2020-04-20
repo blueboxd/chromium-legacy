@@ -125,8 +125,8 @@ WebApkIconHasher::WebApkIconHasher(
 
   download_timeout_timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_ms),
-      base::Bind(&WebApkIconHasher::OnDownloadTimedOut,
-                 base::Unretained(this)));
+      base::BindOnce(&WebApkIconHasher::OnDownloadTimedOut,
+                     base::Unretained(this)));
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();

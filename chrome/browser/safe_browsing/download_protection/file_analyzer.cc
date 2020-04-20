@@ -141,8 +141,8 @@ void FileAnalyzer::StartExtractZipFeatures() {
   // analyzer is refcounted, it might outlive the request.
   zip_analyzer_ = new SandboxedZipAnalyzer(
       tmp_path_,
-      base::BindRepeating(&FileAnalyzer::OnZipAnalysisFinished,
-                          weakptr_factory_.GetWeakPtr()),
+      base::BindOnce(&FileAnalyzer::OnZipAnalysisFinished,
+                     weakptr_factory_.GetWeakPtr()),
       LaunchFileUtilService());
   zip_analyzer_->Start();
 }
@@ -204,8 +204,8 @@ void FileAnalyzer::StartExtractRarFeatures() {
   // analyzer is refcounted, it might outlive the request.
   rar_analyzer_ = new SandboxedRarAnalyzer(
       tmp_path_,
-      base::BindRepeating(&FileAnalyzer::OnRarAnalysisFinished,
-                          weakptr_factory_.GetWeakPtr()),
+      base::BindOnce(&FileAnalyzer::OnRarAnalysisFinished,
+                     weakptr_factory_.GetWeakPtr()),
       LaunchFileUtilService());
   rar_analyzer_->Start();
 }

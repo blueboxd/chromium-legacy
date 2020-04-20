@@ -66,13 +66,12 @@ void MTPReadFileWorker::ReadDataChunkFromDeviceFile(
   auto* mtp_device_manager =
       StorageMonitor::GetInstance()->media_transfer_protocol_manager();
   mtp_device_manager->ReadFileChunk(
-      device_handle_,
-      snapshot_file_details_ptr->file_id(),
+      device_handle_, snapshot_file_details_ptr->file_id(),
       snapshot_file_details_ptr->bytes_written(),
       snapshot_file_details_ptr->BytesToRead(),
-      base::Bind(&MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&snapshot_file_details)));
+      base::BindOnce(&MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&snapshot_file_details)));
 }
 
 void MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile(

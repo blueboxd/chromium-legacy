@@ -200,7 +200,7 @@ TEST_F(NGPhysicalTextFragmentTest, Ellipsis) {
   EXPECT_FALSE(truncated.IsHiddenForPaint());
   EXPECT_EQ(u8"abc", GetText(truncated));
 
-  EXPECT_EQ(NGTextType::kGenerated, ellipsis.TextType());
+  EXPECT_EQ(NGTextType::kLayoutGenerated, ellipsis.TextType());
   EXPECT_TRUE(ellipsis.IsGeneratedText());
   EXPECT_FALSE(ellipsis.IsHiddenForPaint());
   EXPECT_EQ(u8"\u2026", GetText(ellipsis));
@@ -245,8 +245,8 @@ TEST_F(NGPhysicalTextFragmentTest, SoftHyphen) {
   EXPECT_EQ(NGTextType::kNormal, abc.TextType());
   // Note: ShapeResult::RunInfo.width_ == 0 for U+00AD
   EXPECT_EQ(u8"abc\u00AD", GetText(abc));
-  EXPECT_EQ(NGTextType::kGenerated, shy.TextType());
-  // Note: |ComputedStyle::HypenString()| returns "-" or U+2010 based on
+  EXPECT_EQ(NGTextType::kLayoutGenerated, shy.TextType());
+  // Note: |ComputedStyle::HyphenString()| returns "-" or U+2010 based on
   // glyph availability.
   if (GetText(shy) != "-")
     EXPECT_EQ(u8"\u2010", GetText(shy));

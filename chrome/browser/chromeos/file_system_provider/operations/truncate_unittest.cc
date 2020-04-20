@@ -61,7 +61,7 @@ TEST_F(FileSystemProviderOperationsTruncateTest, Execute) {
 
   Truncate truncate(NULL, file_system_info_, base::FilePath(kFilePath),
                     kTruncateLength,
-                    base::Bind(&util::LogStatusCallback, &callback_log));
+                    base::BindOnce(&util::LogStatusCallback, &callback_log));
   truncate.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -93,7 +93,7 @@ TEST_F(FileSystemProviderOperationsTruncateTest, Execute_NoListener) {
 
   Truncate truncate(NULL, file_system_info_, base::FilePath(kFilePath),
                     kTruncateLength,
-                    base::Bind(&util::LogStatusCallback, &callback_log));
+                    base::BindOnce(&util::LogStatusCallback, &callback_log));
   truncate.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -112,7 +112,7 @@ TEST_F(FileSystemProviderOperationsTruncateTest, Execute_ReadOnly) {
 
   Truncate truncate(NULL, file_system_info_, base::FilePath(kFilePath),
                     kTruncateLength,
-                    base::Bind(&util::LogStatusCallback, &callback_log));
+                    base::BindOnce(&util::LogStatusCallback, &callback_log));
   truncate.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -126,7 +126,7 @@ TEST_F(FileSystemProviderOperationsTruncateTest, OnSuccess) {
 
   Truncate truncate(NULL, file_system_info_, base::FilePath(kFilePath),
                     kTruncateLength,
-                    base::Bind(&util::LogStatusCallback, &callback_log));
+                    base::BindOnce(&util::LogStatusCallback, &callback_log));
   truncate.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -146,7 +146,7 @@ TEST_F(FileSystemProviderOperationsTruncateTest, OnError) {
 
   Truncate truncate(NULL, file_system_info_, base::FilePath(kFilePath),
                     kTruncateLength,
-                    base::Bind(&util::LogStatusCallback, &callback_log));
+                    base::BindOnce(&util::LogStatusCallback, &callback_log));
   truncate.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));

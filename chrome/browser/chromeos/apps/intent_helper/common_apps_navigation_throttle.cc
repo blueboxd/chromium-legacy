@@ -26,6 +26,7 @@ apps::PickerEntryType GetPickerEntryType(apps::mojom::AppType app_type) {
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kCrostini:
+    case apps::mojom::AppType::kPluginVm:
     case apps::mojom::AppType::kExtension:
       break;
     case apps::mojom::AppType::kArc:
@@ -238,7 +239,7 @@ bool CommonAppsNavigationThrottle::ShouldDeferNavigation(
       base::BindOnce(
           &CommonAppsNavigationThrottle::OnDeferredNavigationProcessed,
           weak_factory_.GetWeakPtr()));
-  return false;
+  return true;
 }
 
 void CommonAppsNavigationThrottle::OnDeferredNavigationProcessed(

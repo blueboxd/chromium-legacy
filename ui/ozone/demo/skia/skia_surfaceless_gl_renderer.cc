@@ -264,8 +264,8 @@ void SurfacelessSkiaGlRenderer::RenderFrame() {
 
   back_buffer_ ^= 1;
   gl_surface_->SwapBuffersAsync(
-      base::BindRepeating(&SurfacelessSkiaGlRenderer::PostRenderFrameTask,
-                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&SurfacelessSkiaGlRenderer::PostRenderFrameTask,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::DoNothing());
 }
 

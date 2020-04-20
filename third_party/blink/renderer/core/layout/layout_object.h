@@ -766,6 +766,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return obj && obj->IsAfterContent();
   }
 
+  // Returns true if the text is generated (from, e.g., list marker,
+  // pseudo-element, ...) instead of from a DOM text node. See
+  // |NGTextType::kLayoutGenerated| for the other type of generated text.
+  bool IsStyleGenerated() const;
+
   bool HasCounterNodeMap() const { return bitfields_.HasCounterNodeMap(); }
   void SetHasCounterNodeMap(bool has_counter_node_map) {
     bitfields_.SetHasCounterNodeMap(has_counter_node_map);

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import itertools
+
 from .attribute import Attribute
 from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
@@ -56,9 +58,9 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             assert named_constructors is None or isinstance(
                 named_constructors, (list, tuple))
             assert operations is None or isinstance(operations, (list, tuple))
-            assert iterable is None or isinstance(iterable, Iterable)
-            assert maplike is None or isinstance(maplike, Maplike)
-            assert setlike is None or isinstance(setlike, Setlike)
+            assert iterable is None or isinstance(iterable, Iterable.IR)
+            assert maplike is None or isinstance(maplike, Maplike.IR)
+            assert setlike is None or isinstance(setlike, Setlike.IR)
 
             attributes = attributes or []
             constants = constants or []
@@ -117,16 +119,36 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.setlike = setlike
 
         def iter_all_members(self):
-            for attribute in self.attributes:
-                yield attribute
-            for constant in self.constants:
-                yield constant
-            for constructor in self.constructors:
-                yield constructor
-            for named_constructor in self.named_constructors:
-                yield named_constructor
-            for operation in self.operations:
-                yield operation
+            list_of_members = [
+                self.attributes,
+                self.constants,
+                self.constructors,
+                self.named_constructors,
+                self.operations,
+            ]
+            if self.iterable:
+                list_of_members.append(self.iterable.operations)
+            if self.maplike:
+                list_of_members.append(self.maplike.attributes)
+                list_of_members.append(self.maplike.operations)
+            if self.setlike:
+                list_of_members.append(self.setlike.attributes)
+                list_of_members.append(self.setlike.operations)
+            return itertools.chain(*list_of_members)
+
+        def iter_all_overload_groups(self):
+            list_of_groups = [
+                self.constructor_groups,
+                self.named_constructor_groups,
+                self.operation_groups,
+            ]
+            if self.iterable:
+                list_of_groups.append(self.iterable.operation_groups)
+            if self.maplike:
+                list_of_groups.append(self.maplike.operation_groups)
+            if self.setlike:
+                list_of_groups.append(self.setlike.operation_groups)
+            return itertools.chain(*list_of_groups)
 
     def __init__(self, ir):
         assert isinstance(ir, Interface.IR)
@@ -207,9 +229,10 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                 assert len(attributes) == 1
                 attribute = attributes[0]
             self._stringifier = Stringifier(operation, attribute, owner=self)
-        self._iterable = ir.iterable
-        self._maplike = ir.maplike
-        self._setlike = ir.setlike
+        self._iterable = (Iterable(ir.iterable, owner=self)
+                          if ir.iterable else None)
+        self._maplike = Maplike(ir.maplike, owner=self) if ir.maplike else None
+        self._setlike = Setlike(ir.setlike, owner=self) if ir.setlike else None
 
     @property
     def is_mixin(self):
@@ -511,19 +534,46 @@ class Stringifier(WithOwner):
 class Iterable(WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-iterable"""
 
-    def __init__(self, key_type=None, value_type=None, debug_info=None):
-        assert key_type is None or isinstance(key_type, IdlType)
-        # iterable is declared in either form of
-        #     iterable<value_type>
-        #     iterable<key_type, value_type>
-        # thus |value_type| can't be None.  However, we put it after |key_type|
-        # to be consistent with the format of IDL.
-        assert isinstance(value_type, IdlType), "value_type must be specified"
+    class IR(WithDebugInfo):
+        def __init__(self,
+                     key_type=None,
+                     value_type=None,
+                     operations=None,
+                     debug_info=None):
+            assert key_type is None or isinstance(key_type, IdlType)
+            assert isinstance(value_type, IdlType)
+            assert operations is None or isinstance(operations, (list, tuple))
+            operations = operations or []
+            assert all(
+                isinstance(operation, Operation.IR)
+                for operation in operations)
 
-        WithDebugInfo.__init__(self, debug_info)
+            WithDebugInfo.__init__(self, debug_info)
 
-        self._key_type = key_type
-        self._value_type = value_type
+            self.key_type = key_type
+            self.value_type = value_type
+            self.operations = list(operations)
+            self.operation_groups = []
+
+    def __init__(self, ir, owner):
+        assert isinstance(ir, Iterable.IR)
+        assert isinstance(owner, Interface)
+
+        WithDebugInfo.__init__(self, ir)
+
+        self._key_type = ir.key_type
+        self._value_type = ir.value_type
+        self._operations = tuple([
+            Operation(operation_ir, owner=owner)
+            for operation_ir in ir.operations
+        ])
+        self._operation_groups = tuple([
+            OperationGroup(
+                group_ir,
+                filter(lambda x: x.identifier == group_ir.identifier,
+                       self._operations),
+                owner=owner) for group_ir in ir.operation_groups
+        ])
 
     @property
     def key_type(self):
@@ -535,74 +585,197 @@ class Iterable(WithDebugInfo):
         """Returns the value type."""
         return self._value_type
 
+    @property
+    def attributes(self):
+        """Returns attributes supported by an iterable declaration."""
+        return ()
+
+    @property
+    def operations(self):
+        """Returns operations supported by an iterable declaration."""
+        return self._operations
+
+    @property
+    def operation_groups(self):
+        """
+        Returns groups of overloaded operations supported by an iterable
+        declaration.
+        """
+        return self._operation_groups
+
 
 class Maplike(WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-maplike"""
 
-    def __init__(self,
-                 key_type,
-                 value_type,
-                 is_readonly=False,
-                 debug_info=None):
-        assert isinstance(key_type, IdlType)
-        assert isinstance(value_type, IdlType)
-        assert isinstance(is_readonly, bool)
+    class IR(WithDebugInfo):
+        def __init__(self,
+                     key_type,
+                     value_type,
+                     is_readonly,
+                     attributes=None,
+                     operations=None,
+                     debug_info=None):
+            assert isinstance(key_type, IdlType)
+            assert isinstance(value_type, IdlType)
+            assert isinstance(is_readonly, bool)
+            assert attributes is None or isinstance(attributes, (list, tuple))
+            assert operations is None or isinstance(operations, (list, tuple))
+            attributes = attributes or []
+            operations = operations or []
+            assert all(
+                isinstance(attribute, Attribute.IR)
+                for attribute in attributes)
+            assert all(
+                isinstance(operation, Operation.IR)
+                for operation in operations)
 
-        WithDebugInfo.__init__(self, debug_info)
+            WithDebugInfo.__init__(self, debug_info)
 
-        self._key_type = key_type
-        self._value_type = value_type
-        self._is_readonly = is_readonly
+            self.key_type = key_type
+            self.value_type = value_type
+            self.is_readonly = is_readonly
+            self.attributes = list(attributes)
+            self.operations = list(operations)
+            self.operation_groups = []
+
+    def __init__(self, ir, owner):
+        assert isinstance(ir, Maplike.IR)
+        assert isinstance(owner, Interface)
+
+        WithDebugInfo.__init__(self, ir)
+
+        self._key_type = ir.key_type
+        self._value_type = ir.value_type
+        self._is_readonly = ir.is_readonly
+        self._attributes = tuple([
+            Attribute(attribute_ir, owner=owner)
+            for attribute_ir in ir.attributes
+        ])
+        self._operations = tuple([
+            Operation(operation_ir, owner=owner)
+            for operation_ir in ir.operations
+        ])
+        self._operation_groups = tuple([
+            OperationGroup(
+                group_ir,
+                filter(lambda x: x.identifier == group_ir.identifier,
+                       self._operations),
+                owner=owner) for group_ir in ir.operation_groups
+        ])
 
     @property
     def key_type(self):
-        """
-        Returns its key type.
-        @return IdlType
-        """
+        """Returns the key type."""
         return self._key_type
 
     @property
     def value_type(self):
-        """
-        Returns its value type.
-        @return IdlType
-        """
+        """Returns the value type."""
         return self._value_type
 
     @property
     def is_readonly(self):
-        """
-        Returns True if it's readonly.
-        @return bool
-        """
+        """Returns True if this is a readonly maplike."""
         return self._is_readonly
+
+    @property
+    def attributes(self):
+        """Returns attributes supported by a maplike declaration."""
+        return self._attributes
+
+    @property
+    def operations(self):
+        """Returns operations supported by a maplike declaration."""
+        return self._operations
+
+    @property
+    def operation_groups(self):
+        """
+        Returns groups of overloaded operations supported by a maplike
+        declaration.
+        """
+        return self._operation_groups
 
 
 class Setlike(WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-setlike"""
 
-    def __init__(self, value_type, is_readonly=False, debug_info=None):
-        assert isinstance(value_type, IdlType)
-        assert isinstance(is_readonly, bool)
+    class IR(WithDebugInfo):
+        def __init__(self,
+                     value_type,
+                     is_readonly,
+                     attributes=None,
+                     operations=None,
+                     debug_info=None):
+            assert isinstance(value_type, IdlType)
+            assert isinstance(is_readonly, bool)
+            assert attributes is None or isinstance(attributes, (list, tuple))
+            assert operations is None or isinstance(operations, (list, tuple))
+            attributes = attributes or []
+            operations = operations or []
+            assert all(
+                isinstance(attribute, Attribute.IR)
+                for attribute in attributes)
+            assert all(
+                isinstance(operation, Operation.IR)
+                for operation in operations)
 
-        WithDebugInfo.__init__(self, debug_info)
+            WithDebugInfo.__init__(self, debug_info)
 
-        self._value_type = value_type
-        self._is_readonly = is_readonly
+            self.value_type = value_type
+            self.is_readonly = is_readonly
+            self.attributes = list(attributes)
+            self.operations = list(operations)
+            self.operation_groups = []
+
+    def __init__(self, ir, owner):
+        assert isinstance(ir, Setlike.IR)
+        assert isinstance(owner, Interface)
+
+        WithDebugInfo.__init__(self, ir)
+
+        self._value_type = ir.value_type
+        self._is_readonly = ir.is_readonly
+        self._attributes = tuple([
+            Attribute(attribute_ir, owner=owner)
+            for attribute_ir in ir.attributes
+        ])
+        self._operations = tuple([
+            Operation(operation_ir, owner=owner)
+            for operation_ir in ir.operations
+        ])
+        self._operation_groups = tuple([
+            OperationGroup(
+                group_ir,
+                filter(lambda x: x.identifier == group_ir.identifier,
+                       self._operations),
+                owner=owner) for group_ir in ir.operation_groups
+        ])
 
     @property
     def value_type(self):
-        """
-        Returns its value type.
-        @return IdlType
-        """
+        """Returns the value type."""
         return self._value_type
 
     @property
     def is_readonly(self):
-        """
-        Returns True if it's readonly.
-        @return bool
-        """
+        """Returns True if this is a readonly setlike."""
         return self._is_readonly
+
+    @property
+    def attributes(self):
+        """Returns attributes supported by a setlike declaration."""
+        return self._attributes
+
+    @property
+    def operations(self):
+        """Returns operations supported by a setlike declaration."""
+        return self._operations
+
+    @property
+    def operation_groups(self):
+        """
+        Returns groups of overloaded operations supported by a setlike
+        declaration.
+        """
+        return self._operation_groups

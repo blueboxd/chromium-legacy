@@ -209,8 +209,8 @@ void NetworkProfileHandler::Init() {
 
   // Request the initial profile list.
   ShillManagerClient::Get()->GetProperties(
-      base::Bind(&NetworkProfileHandler::GetManagerPropertiesCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&NetworkProfileHandler::GetManagerPropertiesCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 NetworkProfileHandler::~NetworkProfileHandler() {

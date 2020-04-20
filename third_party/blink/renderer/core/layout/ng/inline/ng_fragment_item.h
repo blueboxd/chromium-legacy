@@ -245,7 +245,7 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
     if (Type() == kText)
       return static_cast<NGTextType>(sub_type_);
     if (Type() == kGeneratedText)
-      return NGTextType::kGenerated;
+      return NGTextType::kLayoutGenerated;
     NOTREACHED() << this;
     return NGTextType::kNormal;
   }
@@ -365,10 +365,6 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   unsigned type_ : 2;           // ItemType
   unsigned sub_type_ : 3;       // NGTextType or NGLineBoxType
   unsigned style_variant_ : 2;  // NGStyleVariant
-  // TODO(yosin): We'll remove |is_generated_text_| field when we construct
-  // |NGFragmentItem| without |NGPhysicalTextFragment| because usage of this
-  // varaible, IsGeneratedText(), is not hot.
-  unsigned is_generated_text_ : 1;  // NGPhysicalTextFragment::IsGenerated()
   unsigned is_hidden_for_paint_ : 1;
   // Note: For |TextItem| and |GeneratedTextItem|, |text_direction_| equals to
   // |ShapeResult::Direction()|.

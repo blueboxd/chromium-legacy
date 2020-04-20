@@ -301,6 +301,8 @@ api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
       return api::autotest_private::AppType::APP_TYPE_CROSTINI;
     case apps::mojom::AppType::kExtension:
       return api::autotest_private::AppType::APP_TYPE_EXTENSION;
+    case apps::mojom::AppType::kPluginVm:
+      return api::autotest_private::AppType::APP_TYPE_PLUGINVM;
     case apps::mojom::AppType::kWeb:
       return api::autotest_private::AppType::APP_TYPE_WEB;
     case apps::mojom::AppType::kUnknown:

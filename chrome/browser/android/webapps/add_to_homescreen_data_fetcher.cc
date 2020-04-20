@@ -134,7 +134,7 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
   // Bind the InterfacePtr into the callback so that it's kept alive until
   // there's either a connection error or a response.
   auto* web_app_info_proxy = chrome_render_frame.get();
-  web_app_info_proxy->GetWebApplicationInfo(base::Bind(
+  web_app_info_proxy->GetWebApplicationInfo(base::BindOnce(
       &AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo,
       weak_ptr_factory_.GetWeakPtr(), base::Passed(&chrome_render_frame)));
 }
@@ -188,8 +188,8 @@ void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
   // worst, a dynamically-generated launcher icon.
   data_timeout_timer_.Start(
       FROM_HERE, data_timeout_ms_,
-      base::Bind(&AddToHomescreenDataFetcher::OnDataTimedout,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&AddToHomescreenDataFetcher::OnDataTimedout,
+                     weak_ptr_factory_.GetWeakPtr()));
   start_time_ = base::TimeTicks::Now();
 
   installable_manager_->GetData(
@@ -316,8 +316,8 @@ void AddToHomescreenDataFetcher::FetchFavicon() {
       ShortcutHelper::GetIdealHomescreenIconSizeInPx() - 1;
   favicon_service->GetLargestRawFaviconForPageURL(
       shortcut_info_.url, icon_types, threshold_to_get_any_largest_icon,
-      base::Bind(&AddToHomescreenDataFetcher::OnFaviconFetched,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&AddToHomescreenDataFetcher::OnFaviconFetched,
+                     weak_ptr_factory_.GetWeakPtr()),
       &favicon_task_tracker_);
 }
 

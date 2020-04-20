@@ -322,7 +322,8 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
   // Enable the technology.
   listener_->reset_list_updates();
   ShillManagerClient::Get()->EnableTechnology(
-      shill::kTypeWifi, base::DoNothing(), base::Bind(&ErrorCallbackFunction));
+      shill::kTypeWifi, base::DoNothing(),
+      base::BindOnce(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, listener_->technology_list_updates());
   EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(shill::kTypeWifi));
@@ -405,7 +406,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   base::Value scan_interval(3);
   ShillServiceClient::Get()->SetProperty(
       dbus::ObjectPath(kTestServicePath), shill::kScanIntervalProperty,
-      scan_interval, base::DoNothing(), base::Bind(&ErrorCallbackFunction));
+      scan_interval, base::DoNothing(), base::BindOnce(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
   // Property change triggers an update (but not a service list update).
   EXPECT_EQ(1, listener_->property_updates(
@@ -417,7 +418,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   ShillServiceClient::Get()->SetProperty(
       dbus::ObjectPath(kTestServicePath), shill::kStateProperty,
       base::Value(shill::kStateReady), base::DoNothing(),
-      base::Bind(&ErrorCallbackFunction));
+      base::BindOnce(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, listener_->list_updates(shill::kServiceCompleteListProperty));
 
@@ -468,7 +469,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
   ShillServiceClient::Get()->SetProperty(
       dbus::ObjectPath(kTestServicePath1), shill::kIPConfigProperty,
       base::Value(kTestIPConfigPath), base::DoNothing(),
-      base::Bind(&ErrorCallbackFunction));
+      base::BindOnce(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
   // IPConfig property change on the service should trigger an IPConfigs update.
   EXPECT_EQ(1, listener_->property_updates(

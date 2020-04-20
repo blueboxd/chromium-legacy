@@ -58,7 +58,7 @@ class MockPerfHistoryService
     receiver_.Bind(
         mojo::PendingReceiver<media::mojom::blink::VideoDecodePerfHistory>(
             std::move(handle)));
-    receiver_.set_disconnect_handler(base::BindRepeating(
+    receiver_.set_disconnect_handler(base::BindOnce(
         &MockPerfHistoryService::OnConnectionError, base::Unretained(this)));
   }
 
@@ -80,9 +80,9 @@ class MockLearningTaskControllerService
                    media::learning::mojom::blink::LearningTaskController>
                        pending_receiver) {
     receiver_.Bind(std::move(pending_receiver));
-    receiver_.set_disconnect_handler(base::BindRepeating(
-        &MockLearningTaskControllerService::OnConnectionError,
-        base::Unretained(this)));
+    receiver_.set_disconnect_handler(
+        base::BindOnce(&MockLearningTaskControllerService::OnConnectionError,
+                       base::Unretained(this)));
   }
 
   void OnConnectionError() { receiver_.reset(); }
@@ -125,7 +125,7 @@ class FakeMediaMetricsProvider
     receiver_.Bind(
         mojo::PendingReceiver<media::mojom::blink::MediaMetricsProvider>(
             std::move(handle)));
-    receiver_.set_disconnect_handler(base::BindRepeating(
+    receiver_.set_disconnect_handler(base::BindOnce(
         &FakeMediaMetricsProvider::OnConnectionError, base::Unretained(this)));
   }
 

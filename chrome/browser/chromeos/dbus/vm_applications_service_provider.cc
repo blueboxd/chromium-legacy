@@ -35,22 +35,22 @@ void VmApplicationsServiceProvider::Start(
       vm_tools::apps::kVmApplicationsServiceUpdateApplicationListMethod,
       base::BindRepeating(&VmApplicationsServiceProvider::UpdateApplicationList,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&VmApplicationsServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&VmApplicationsServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       vm_tools::apps::kVmApplicationsServiceInterface,
       vm_tools::apps::kVmApplicationsServiceLaunchTerminalMethod,
       base::BindRepeating(&VmApplicationsServiceProvider::LaunchTerminal,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&VmApplicationsServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&VmApplicationsServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       vm_tools::apps::kVmApplicationsServiceInterface,
       vm_tools::apps::kVmApplicationsServiceUpdateMimeTypesMethod,
       base::BindRepeating(&VmApplicationsServiceProvider::UpdateMimeTypes,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&VmApplicationsServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&VmApplicationsServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VmApplicationsServiceProvider::OnExported(

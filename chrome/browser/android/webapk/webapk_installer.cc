@@ -702,8 +702,8 @@ void WebApkInstaller::SendRequest(
 
   timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(webapk_server_timeout_ms_),
-      base::Bind(&WebApkInstaller::OnResult, weak_ptr_factory_.GetWeakPtr(),
-                 WebApkInstallResult::FAILURE));
+      base::BindOnce(&WebApkInstaller::OnResult, weak_ptr_factory_.GetWeakPtr(),
+                     WebApkInstallResult::FAILURE));
 
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = server_url_;

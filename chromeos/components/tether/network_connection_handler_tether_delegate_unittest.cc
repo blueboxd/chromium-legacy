@@ -114,8 +114,8 @@ class NetworkConnectionHandlerTetherDelegateTest : public testing::Test {
   void CallTetherConnect(const std::string& guid) {
     test_network_connection_handler_->CallTetherConnect(
         guid,
-        base::Bind(&NetworkConnectionHandlerTetherDelegateTest::OnSuccess,
-                   base::Unretained(this)),
+        base::BindOnce(&NetworkConnectionHandlerTetherDelegateTest::OnSuccess,
+                       base::Unretained(this)),
         base::Bind(&NetworkConnectionHandlerTetherDelegateTest::OnError,
                    base::Unretained(this)));
   }
@@ -123,8 +123,8 @@ class NetworkConnectionHandlerTetherDelegateTest : public testing::Test {
   void CallTetherDisconnect(const std::string& guid) {
     test_network_connection_handler_->CallTetherDisconnect(
         guid,
-        base::Bind(&NetworkConnectionHandlerTetherDelegateTest::OnSuccess,
-                   base::Unretained(this)),
+        base::BindOnce(&NetworkConnectionHandlerTetherDelegateTest::OnSuccess,
+                       base::Unretained(this)),
         base::Bind(&NetworkConnectionHandlerTetherDelegateTest::OnError,
                    base::Unretained(this)));
   }

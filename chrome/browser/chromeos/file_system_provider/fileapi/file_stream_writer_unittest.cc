@@ -113,9 +113,8 @@ TEST_F(FileSystemProviderFileStreamWriter, Write) {
       base::MakeRefCounted<net::StringIOBuffer>(kTextToWrite);
 
   {
-    const int result = writer.Write(io_buffer.get(),
-                                    sizeof(kTextToWrite) - 1,
-                                    base::Bind(&LogValue, &write_log));
+    const int result = writer.Write(io_buffer.get(), sizeof(kTextToWrite) - 1,
+                                    base::BindOnce(&LogValue, &write_log));
     EXPECT_EQ(net::ERR_IO_PENDING, result);
     base::RunLoop().RunUntilIdle();
 
@@ -134,9 +133,8 @@ TEST_F(FileSystemProviderFileStreamWriter, Write) {
   // Write additional data to be sure, that the writer's offset is shifted
   // properly.
   {
-    const int result = writer.Write(io_buffer.get(),
-                                    sizeof(kTextToWrite) - 1,
-                                    base::Bind(&LogValue, &write_log));
+    const int result = writer.Write(io_buffer.get(), sizeof(kTextToWrite) - 1,
+                                    base::BindOnce(&LogValue, &write_log));
     EXPECT_EQ(net::ERR_IO_PENDING, result);
     base::RunLoop().RunUntilIdle();
 
@@ -164,13 +162,14 @@ TEST_F(FileSystemProviderFileStreamWriter, Cancel) {
   scoped_refptr<net::IOBuffer> io_buffer =
       base::MakeRefCounted<net::StringIOBuffer>(kTextToWrite);
 
-  const int write_result = writer.Write(io_buffer.get(),
-                                        sizeof(kTextToWrite) - 1,
-                                        base::Bind(&LogValue, &write_log));
+  const int write_result =
+      writer.Write(io_buffer.get(), sizeof(kTextToWrite) - 1,
+                   base::BindOnce(&LogValue, &write_log));
   EXPECT_EQ(net::ERR_IO_PENDING, write_result);
 
   std::vector<int> cancel_log;
-  const int cancel_result = writer.Cancel(base::Bind(&LogValue, &cancel_log));
+  const int cancel_result =
+      writer.Cancel(base::BindOnce(&LogValue, &cancel_log));
   EXPECT_EQ(net::ERR_IO_PENDING, cancel_result);
   base::RunLoop().RunUntilIdle();
 
@@ -188,7 +187,8 @@ TEST_F(FileSystemProviderFileStreamWriter, Cancel_NotRunning) {
       base::MakeRefCounted<net::StringIOBuffer>(kTextToWrite);
 
   std::vector<int> cancel_log;
-  const int cancel_result = writer.Cancel(base::Bind(&LogValue, &cancel_log));
+  const int cancel_result =
+      writer.Cancel(base::BindOnce(&LogValue, &cancel_log));
   EXPECT_EQ(net::ERR_UNEXPECTED, cancel_result);
   base::RunLoop().RunUntilIdle();
 
@@ -204,9 +204,8 @@ TEST_F(FileSystemProviderFileStreamWriter, Write_WrongFile) {
   scoped_refptr<net::IOBuffer> io_buffer =
       base::MakeRefCounted<net::StringIOBuffer>(kTextToWrite);
 
-  const int result = writer.Write(io_buffer.get(),
-                                  sizeof(kTextToWrite) - 1,
-                                  base::Bind(&LogValue, &write_log));
+  const int result = writer.Write(io_buffer.get(), sizeof(kTextToWrite) - 1,
+                                  base::BindOnce(&LogValue, &write_log));
   EXPECT_EQ(net::ERR_IO_PENDING, result);
   base::RunLoop().RunUntilIdle();
 
@@ -229,9 +228,8 @@ TEST_F(FileSystemProviderFileStreamWriter, Write_Append) {
   scoped_refptr<net::IOBuffer> io_buffer =
       base::MakeRefCounted<net::StringIOBuffer>(kTextToWrite);
 
-  const int result = writer.Write(io_buffer.get(),
-                                  sizeof(kTextToWrite) - 1,
-                                  base::Bind(&LogValue, &write_log));
+  const int result = writer.Write(io_buffer.get(), sizeof(kTextToWrite) - 1,
+                                  base::BindOnce(&LogValue, &write_log));
   EXPECT_EQ(net::ERR_IO_PENDING, result);
   base::RunLoop().RunUntilIdle();
 

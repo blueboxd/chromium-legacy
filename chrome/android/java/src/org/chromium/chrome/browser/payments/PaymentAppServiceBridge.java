@@ -24,7 +24,7 @@ import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
-import org.chromium.url.URI;
+import org.chromium.url.GURL;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -90,18 +90,17 @@ public class PaymentAppServiceBridge implements PaymentAppFactoryInterface {
 
         /** Called when an installed payment handler is found. */
         @CalledByNative("PaymentAppServiceCallback")
-        private void onInstalledPaymentHandlerFound(long registrationId, String scope,
-                @Nullable String name, @Nullable String userHint, String origin,
-                @Nullable Bitmap icon, String[] methodNameArray, boolean explicitlyVerified,
-                Object[] capabilities, String[] preferredRelatedApplications,
-                Object supportedDelegations) {
+        private void onInstalledPaymentHandlerFound(long registrationId, GURL scope,
+                @Nullable String name, @Nullable String userHint, @Nullable Bitmap icon,
+                String[] methodNameArray, boolean explicitlyVerified, Object[] capabilities,
+                String[] preferredRelatedApplications, Object supportedDelegations) {
             ThreadUtils.assertOnUiThread();
 
             WebContents webContents = mDelegate.getParams().getWebContents();
             ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
 
             ServiceWorkerPaymentApp app = createInstalledServiceWorkerPaymentApp(webContents,
-                    registrationId, scope, name, userHint, origin, icon, methodNameArray,
+                    registrationId, scope, name, userHint, icon, methodNameArray,
                     explicitlyVerified, (ServiceWorkerPaymentApp.Capabilities[]) capabilities,
                     preferredRelatedApplications, (SupportedDelegations) supportedDelegations);
             if (app == null) return;
@@ -167,8 +166,8 @@ public class PaymentAppServiceBridge implements PaymentAppFactoryInterface {
 
         /** Called when an installable payment handler is found. */
         @CalledByNative("PaymentAppServiceCallback")
-        private void onInstallablePaymentHandlerFound(@Nullable String name, String swUrl,
-                String scope, boolean useCache, @Nullable Bitmap icon, String methodName,
+        private void onInstallablePaymentHandlerFound(@Nullable String name, GURL swUrl, GURL scope,
+                boolean useCache, @Nullable Bitmap icon, String methodName,
                 String[] preferredRelatedApplications, Object supportedDelegations) {
             ThreadUtils.assertOnUiThread();
 
@@ -238,46 +237,37 @@ public class PaymentAppServiceBridge implements PaymentAppFactoryInterface {
     }
 
     private static @Nullable ServiceWorkerPaymentApp createInstalledServiceWorkerPaymentApp(
-            WebContents webContents, long registrationId, String scope, @Nullable String name,
-            @Nullable String userHint, String origin, @Nullable Bitmap icon,
-            String[] methodNameArray, boolean explicitlyVerified,
-            ServiceWorkerPaymentApp.Capabilities[] capabilities,
+            WebContents webContents, long registrationId, GURL scope, @Nullable String name,
+            @Nullable String userHint, @Nullable Bitmap icon, String[] methodNameArray,
+            boolean explicitlyVerified, ServiceWorkerPaymentApp.Capabilities[] capabilities,
             String[] preferredRelatedApplications, SupportedDelegations supportedDelegations) {
         ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
         if (activity == null) return null;
-
-        URI scopeUri = UriUtils.parseUriFromString(scope);
-        if (scopeUri == null) {
-            Log.e(TAG, "%s service worker scope is not a valid URI", scope);
-            return null;
+        if (!UriUtils.isURLValid(scope)) {
+            Log.e(TAG, "service worker scope is not a valid URL");
         }
 
-        return new ServiceWorkerPaymentApp(webContents, registrationId, scopeUri, name, userHint,
-                origin, icon == null ? null : new BitmapDrawable(activity.getResources(), icon),
+        return new ServiceWorkerPaymentApp(webContents, registrationId, scope, name, userHint,
+                icon == null ? null : new BitmapDrawable(activity.getResources(), icon),
                 methodNameArray, capabilities, preferredRelatedApplications, supportedDelegations);
     }
 
     private static @Nullable ServiceWorkerPaymentApp createInstallableServiceWorkerPaymentApp(
-            WebContents webContents, @Nullable String name, String swUrl, String scope,
+            WebContents webContents, @Nullable String name, GURL swUrl, GURL scope,
             boolean useCache, @Nullable Bitmap icon, String methodName,
             String[] preferredRelatedApplications, SupportedDelegations supportedDelegations) {
         Context context = ChromeActivity.fromWebContents(webContents);
         if (context == null) return null;
-        URI swUri = UriUtils.parseUriFromString(swUrl);
-        if (swUri == null) {
-            Log.e(TAG, "%s service worker installation url is not a valid URI", swUrl);
-            return null;
+        if (!UriUtils.isURLValid(swUrl)) {
+            Log.e(TAG, "service worker installation url is not a valid URL");
+        }
+        if (!UriUtils.isURLValid(scope)) {
+            Log.e(TAG, "service worker scope is not a valid URL");
         }
 
-        URI scopeUri = UriUtils.parseUriFromString(scope);
-        if (scopeUri == null) {
-            Log.e(TAG, "%s service worker scope is not a valid URI", scope);
-            return null;
-        }
-
-        return new ServiceWorkerPaymentApp(webContents, name, scopeUri.getHost(), swUri, scopeUri,
-                useCache, icon == null ? null : new BitmapDrawable(context.getResources(), icon),
-                methodName, preferredRelatedApplications, supportedDelegations);
+        return new ServiceWorkerPaymentApp(webContents, name, swUrl, scope, useCache,
+                icon == null ? null : new BitmapDrawable(context.getResources(), icon), methodName,
+                preferredRelatedApplications, supportedDelegations);
     }
 
     @NativeMethods

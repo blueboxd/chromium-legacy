@@ -486,9 +486,8 @@ void MediaGalleriesPreferences::EnsureInitialized(base::OnceClosure callback) {
   // return and add media galleries to it (hence why the APIHasBeenUsed check
   // needs to happen here rather than inside OnStorageMonitorInit itself).
   StorageMonitor::GetInstance()->EnsureInitialized(
-      base::Bind(&MediaGalleriesPreferences::OnStorageMonitorInit,
-                 weak_factory_.GetWeakPtr(),
-                 APIHasBeenUsed(profile_)));
+      base::BindOnce(&MediaGalleriesPreferences::OnStorageMonitorInit,
+                     weak_factory_.GetWeakPtr(), APIHasBeenUsed(profile_)));
 }
 
 bool MediaGalleriesPreferences::IsInitialized() const { return initialized_; }

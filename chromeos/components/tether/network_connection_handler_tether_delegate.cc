@@ -71,8 +71,8 @@ void NetworkConnectionHandlerTetherDelegate::DisconnectFromNetwork(
       request_num, Callbacks(std::move(success_callback), error_callback));
   tether_disconnector_->DisconnectFromNetwork(
       tether_network_guid,
-      base::Bind(&NetworkConnectionHandlerTetherDelegate::OnRequestSuccess,
-                 weak_ptr_factory_.GetWeakPtr(), request_num),
+      base::BindOnce(&NetworkConnectionHandlerTetherDelegate::OnRequestSuccess,
+                     weak_ptr_factory_.GetWeakPtr(), request_num),
       base::Bind(&NetworkConnectionHandlerTetherDelegate::OnRequestError,
                  weak_ptr_factory_.GetWeakPtr(), request_num),
       TetherSessionCompletionLogger::SessionCompletionReason::
@@ -110,8 +110,8 @@ void NetworkConnectionHandlerTetherDelegate::ConnectToNetwork(
       request_num, Callbacks(std::move(success_callback), error_callback));
   tether_connector_->ConnectToNetwork(
       tether_network_guid,
-      base::Bind(&NetworkConnectionHandlerTetherDelegate::OnRequestSuccess,
-                 weak_ptr_factory_.GetWeakPtr(), request_num),
+      base::BindOnce(&NetworkConnectionHandlerTetherDelegate::OnRequestSuccess,
+                     weak_ptr_factory_.GetWeakPtr(), request_num),
       base::Bind(&NetworkConnectionHandlerTetherDelegate::OnRequestError,
                  weak_ptr_factory_.GetWeakPtr(), request_num));
 }

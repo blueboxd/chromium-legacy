@@ -32,7 +32,7 @@ import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentShippingOption;
-import org.chromium.url.URI;
+import org.chromium.url.GURL;
 
 import java.util.HashMap;
 import java.util.List;
@@ -140,7 +140,7 @@ public class ServiceWorkerPaymentAppBridge {
      * Fires a "canmakepayment" event for the payment app with the registration ID.
      */
     public static void fireCanMakePaymentEvent(WebContents webContents, long registrationId,
-            String serviceWorkerScope, String paymentRequestId, String topOrigin,
+            GURL serviceWorkerScope, String paymentRequestId, String topOrigin,
             String paymentRequestOrigin, PaymentMethodData[] methodData,
             PaymentDetailsModifier[] modifiers, @Nullable String currency,
             CanMakePaymentEventCallback callback) {
@@ -167,8 +167,8 @@ public class ServiceWorkerPaymentAppBridge {
      * @param canShowOwnUI     Whether the payment handler is allowed to show its own UI.
      * @param callback         Called after the payment app is finished running.
      */
-    public static void invokePaymentApp(WebContents webContents, long registrationId,
-            String swScope, String origin, String iframeOrigin, String paymentRequestId,
+    public static void invokePaymentApp(WebContents webContents, long registrationId, GURL swScope,
+            String origin, String iframeOrigin, String paymentRequestId,
             Set<PaymentMethodData> methodData, PaymentItem total,
             Set<PaymentDetailsModifier> modifiers, PaymentOptions paymentOptions,
             List<PaymentShippingOption> shippingOptions, PaymentHandlerHost host,
@@ -200,7 +200,7 @@ public class ServiceWorkerPaymentAppBridge {
      * @param callback              Called after the payment app is finished running.
      * @param appName               The installable app name.
      * @param icon                  The installable app icon.
-     * @param swUri                 The URI to get the app's service worker js script.
+     * @param swUrl                 The URL to get the app's service worker js script.
      * @param scope                 The scope of the service worker that should be registered.
      * @param useCache              Whether to use cache when registering the service worker.
      * @param method                Supported method name of the app.
@@ -211,7 +211,7 @@ public class ServiceWorkerPaymentAppBridge {
             PaymentItem total, Set<PaymentDetailsModifier> modifiers, PaymentOptions paymentOptions,
             List<PaymentShippingOption> shippingOptions, PaymentHandlerHost host,
             PaymentApp.InstrumentDetailsCallback callback, String appName, @Nullable Bitmap icon,
-            URI swUri, URI scope, boolean useCache, String method,
+            GURL swUrl, GURL scope, boolean useCache, String method,
             SupportedDelegations supportedDelegations) {
         ThreadUtils.assertOnUiThread();
 
@@ -219,8 +219,8 @@ public class ServiceWorkerPaymentAppBridge {
                 iframeOrigin, paymentRequestId, methodData.toArray(new PaymentMethodData[0]), total,
                 modifiers.toArray(new PaymentDetailsModifier[0]), paymentOptions,
                 shippingOptions.toArray(new PaymentShippingOption[0]),
-                host.getNativePaymentHandlerHost(), callback, appName, icon, swUri.toString(),
-                scope.toString(), useCache, method, supportedDelegations.getShippingAddress(),
+                host.getNativePaymentHandlerHost(), callback, appName, icon, swUrl, scope, useCache,
+                method, supportedDelegations.getShippingAddress(),
                 supportedDelegations.getPayerName(), supportedDelegations.getPayerEmail(),
                 supportedDelegations.getPayerPhone());
     }
@@ -234,7 +234,7 @@ public class ServiceWorkerPaymentAppBridge {
      * @param paymentRequestId The payment request identifier.
      * @param callback         Called after abort invoke payment app is finished running.
      */
-    public static void abortPaymentApp(WebContents webContents, long registrationId, String swScope,
+    public static void abortPaymentApp(WebContents webContents, long registrationId, GURL swScope,
             String paymentRequestId, PaymentApp.AbortCallback callback) {
         ThreadUtils.assertOnUiThread();
 
@@ -302,9 +302,8 @@ public class ServiceWorkerPaymentAppBridge {
      * Get the ukm source id for the invoked payment app.
      * @param swScope The scope of the invoked payment app.
      */
-    public static long getSourceIdForPaymentAppFromScope(URI swScope) {
-        return ServiceWorkerPaymentAppBridgeJni.get().getSourceIdForPaymentAppFromScope(
-                swScope.toString());
+    public static long getSourceIdForPaymentAppFromScope(GURL swScope) {
+        return ServiceWorkerPaymentAppBridgeJni.get().getSourceIdForPaymentAppFromScope(swScope);
     }
 
     /**
@@ -505,9 +504,9 @@ public class ServiceWorkerPaymentAppBridge {
     interface Natives {
         void hasServiceWorkerPaymentApps(HasServiceWorkerPaymentAppsCallback callback);
         void getServiceWorkerPaymentAppsInfo(GetServiceWorkerPaymentAppsInfoCallback callback);
-        void invokePaymentApp(WebContents webContents, long registrationId,
-                String serviceWorkerScope, String topOrigin, String paymentRequestOrigin,
-                String paymentRequestId, PaymentMethodData[] methodData, PaymentItem total,
+        void invokePaymentApp(WebContents webContents, long registrationId, GURL serviceWorkerScope,
+                String topOrigin, String paymentRequestOrigin, String paymentRequestId,
+                PaymentMethodData[] methodData, PaymentItem total,
                 PaymentDetailsModifier[] modifiers, PaymentOptions paymentOptions,
                 PaymentShippingOption[] shippingOptions, long nativePaymentHandlerObject,
                 boolean canShowOwnUI, PaymentApp.InstrumentDetailsCallback callback);
@@ -517,18 +516,17 @@ public class ServiceWorkerPaymentAppBridge {
                 PaymentDetailsModifier[] modifiers, PaymentOptions paymentOptions,
                 PaymentShippingOption[] shippingOptions, long nativePaymentHandlerObject,
                 PaymentApp.InstrumentDetailsCallback callback, String appName,
-                @Nullable Bitmap icon, String swUrl, String scope, boolean useCache, String method,
+                @Nullable Bitmap icon, GURL swUrl, GURL scope, boolean useCache, String method,
                 boolean supportedDelegationsShippingAddress, boolean supportedDelegationsPayerName,
                 boolean supportedDelegationsPayerEmail, boolean supportedDelegationsPayerPhone);
-        void abortPaymentApp(WebContents webContents, long registrationId,
-                String serviceWorkerScope, String paymentRequestId,
-                PaymentApp.AbortCallback callback);
+        void abortPaymentApp(WebContents webContents, long registrationId, GURL serviceWorkerScope,
+                String paymentRequestId, PaymentApp.AbortCallback callback);
         void fireCanMakePaymentEvent(WebContents webContents, long registrationId,
-                String serviceWorkerScope, String paymentRequestId, String topOrigin,
+                GURL serviceWorkerScope, String paymentRequestId, String topOrigin,
                 String paymentRequestOrigin, PaymentMethodData[] methodData,
                 PaymentDetailsModifier[] modifiers, String currency,
                 CanMakePaymentEventCallback callback);
         void onClosingPaymentAppWindow(WebContents webContents, int reason);
-        long getSourceIdForPaymentAppFromScope(String swScope);
+        long getSourceIdForPaymentAppFromScope(GURL swScope);
     }
 }

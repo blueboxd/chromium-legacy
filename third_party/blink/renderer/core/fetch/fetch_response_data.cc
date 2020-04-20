@@ -273,17 +273,16 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
   if (base::FeatureList::IsEnabled(
           network::features::kCrossOriginEmbedderPolicy)) {
     network::CrossOriginEmbedderPolicy coep;
-    auto it =
-        response->headers.find(network::CrossOriginEmbedderPolicy::kHeaderName);
-    if (it != response->headers.end()) {
+    String value;
+    if (HeaderList()->Get(network::CrossOriginEmbedderPolicy::kHeaderName,
+                          value)) {
       std::tie(coep.value, coep.reporting_endpoint) =
-          network::CrossOriginEmbedderPolicy::Parse(it->value.Utf8());
+          network::CrossOriginEmbedderPolicy::Parse(value.Utf8());
     }
-    it = response->headers.find(
-        network::CrossOriginEmbedderPolicy::kReportOnlyHeaderName);
-    if (it != response->headers.end()) {
+    if (HeaderList()->Get(
+            network::CrossOriginEmbedderPolicy::kReportOnlyHeaderName, value)) {
       std::tie(coep.report_only_value, coep.report_only_reporting_endpoint) =
-          network::CrossOriginEmbedderPolicy::Parse(it->value.Utf8());
+          network::CrossOriginEmbedderPolicy::Parse(value.Utf8());
     }
     response->cross_origin_embedder_policy = std::move(coep);
   }

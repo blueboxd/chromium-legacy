@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/profiles/independent_otr_profile_manager.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
@@ -28,7 +28,8 @@ class Widget;
 // TODO(weili): This dialog shares a lot of common code with the one in
 // chrome/browser/chromeos/hats/, should be merged into one.
 class HatsWebDialog : public ui::WebDialogDelegate,
-                      public views::DialogDelegateView {
+                      public views::DialogDelegateView,
+                      public ProfileObserver {
  public:
   // Create an instance of HatsWebDialog and load its content without showing.
   static void Create(Browser* browser, const std::string& site_id);
@@ -73,16 +74,14 @@ class HatsWebDialog : public ui::WebDialogDelegate,
   virtual void OnLoadTimedOut();
   virtual const base::TimeDelta ContentLoadingTimeout() const;
 
-  Profile* off_the_record_profile() {
-    return otr_profile_registration_->profile();
-  }
+  Profile* otr_profile_for_testing() { return otr_profile_; }
 
   void CreateWebDialog(Browser* browser);
-  void OnOriginalProfileDestroyed(Profile* profile);
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override;
   void Show(views::Widget* widget, bool accept);
 
-  std::unique_ptr<IndependentOTRProfileManager::OTRProfileRegistration>
-      otr_profile_registration_;
+  Profile* otr_profile_;
   Browser* browser_;
   const std::string site_id_;
 
@@ -91,11 +90,11 @@ class HatsWebDialog : public ui::WebDialogDelegate,
 
   // The widget created for preloading. It is owned by us until it is shown to
   // user.
-  views::Widget* preloading_widget_{nullptr};
-  views::WebDialogView* webview_{nullptr};
+  views::Widget* preloading_widget_ = nullptr;
+  views::WebDialogView* webview_ = nullptr;
 
   // Indicate whether HaTS resources were loaded successfully.
-  bool resource_loaded_{false};
+  bool resource_loaded_ = false;
 
   base::WeakPtrFactory<HatsWebDialog> weak_factory_{this};
 

@@ -53,7 +53,7 @@ TEST_F(FileSystemProviderOperationsConfigureTest, Execute) {
   util::StatusCallbackLog callback_log;
 
   Configure configure(NULL, file_system_info_,
-                      base::Bind(&util::LogStatusCallback, &callback_log));
+                      base::BindOnce(&util::LogStatusCallback, &callback_log));
   configure.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -82,7 +82,7 @@ TEST_F(FileSystemProviderOperationsConfigureTest, Execute_NoListener) {
   util::StatusCallbackLog callback_log;
 
   Configure configure(NULL, file_system_info_,
-                      base::Bind(&util::LogStatusCallback, &callback_log));
+                      base::BindOnce(&util::LogStatusCallback, &callback_log));
   configure.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -95,7 +95,7 @@ TEST_F(FileSystemProviderOperationsConfigureTest, OnSuccess) {
   util::StatusCallbackLog callback_log;
 
   Configure configure(NULL, file_system_info_,
-                      base::Bind(&util::LogStatusCallback, &callback_log));
+                      base::BindOnce(&util::LogStatusCallback, &callback_log));
   configure.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -115,7 +115,7 @@ TEST_F(FileSystemProviderOperationsConfigureTest, OnError) {
   util::StatusCallbackLog callback_log;
 
   Configure configure(NULL, file_system_info_,
-                      base::Bind(&util::LogStatusCallback, &callback_log));
+                      base::BindOnce(&util::LogStatusCallback, &callback_log));
   configure.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));

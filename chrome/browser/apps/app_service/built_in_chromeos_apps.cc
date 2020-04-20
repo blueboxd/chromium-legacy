@@ -16,8 +16,6 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -165,12 +163,6 @@ void BuiltInChromeOsApps::Launch(const std::string& app_id,
     base::RecordAction(base::UserMetricsAction("ShowDiscover"));
     chromeos::DiscoverWindowManager::GetInstance()
         ->ShowChromeDiscoverPageForProfile(profile_);
-  } else if (app_id == plugin_vm::kPluginVmAppId) {
-    if (plugin_vm::IsPluginVmEnabled(profile_)) {
-      plugin_vm::PluginVmManager::GetForProfile(profile_)->LaunchPluginVm();
-    } else {
-      plugin_vm::ShowPluginVmInstallerView(profile_);
-    }
   } else if (app_id == ash::kReleaseNotesAppId) {
     base::RecordAction(
         base::UserMetricsAction("ReleaseNotes.SuggestionChipLaunched"));
@@ -231,12 +223,6 @@ void BuiltInChromeOsApps::GetMenuModel(const std::string& app_id,
     AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
   }
 
-  if (app_id == plugin_vm::kPluginVmAppId &&
-      plugin_vm::IsPluginVmRunning(profile_)) {
-    AddCommandItem(ash::STOP_APP, IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM,
-                   &menu_items);
-  }
-
   std::move(callback).Run(std::move(menu_items));
 }
 
@@ -251,5 +237,4 @@ void BuiltInChromeOsApps::OnPreferredAppSet(
     apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) {
   NOTIMPLEMENTED();
 }
-
 }  // namespace apps

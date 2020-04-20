@@ -11,6 +11,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
@@ -76,21 +77,17 @@ void HatsWebDialog::Create(Browser* browser, const std::string& site_id) {
 }
 
 HatsWebDialog::HatsWebDialog(Browser* browser, const std::string& site_id)
-    : otr_profile_registration_(
-          IndependentOTRProfileManager::GetInstance()
-              ->CreateFromOriginalProfile(
-                  browser->profile(),
-                  base::BindOnce(&HatsWebDialog::OnOriginalProfileDestroyed,
-                                 base::Unretained(this)))),
+    : otr_profile_(browser->profile()->GetOffTheRecordProfile(
+          Profile::OTRProfileID::CreateUnique("HaTS:WebDialog"))),
       browser_(browser),
       site_id_(site_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  Profile* profile = off_the_record_profile();
-  DCHECK(profile->IsIndependentOffTheRecordProfile());
+  otr_profile_->AddObserver(this);
 
   // As this is not a user-facing profile, force enable cookies for the
   // resources loaded by HaTS.
-  auto* settings_map = HostContentSettingsMapFactory::GetForProfile(profile);
+  auto* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(otr_profile_);
   settings_map->SetContentSettingCustomScope(
       ContentSettingsPattern::FromString("[*.]google.com"),
       ContentSettingsPattern::Wildcard(), ContentSettingsType::COOKIES,
@@ -103,6 +100,10 @@ HatsWebDialog::HatsWebDialog(Browser* browser, const std::string& site_id)
 
 HatsWebDialog::~HatsWebDialog() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (otr_profile_) {
+    otr_profile_->RemoveObserver(this);
+    ProfileDestroyer::DestroyProfileWhenAppropriate(otr_profile_);
+  }
 }
 
 ui::ModalType HatsWebDialog::GetDialogModalType() const {
@@ -230,10 +231,9 @@ const base::TimeDelta HatsWebDialog::ContentLoadingTimeout() const {
 void HatsWebDialog::CreateWebDialog(Browser* browser) {
   // Create a web dialog aligned to the bottom center of the location bar.
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
-  webview_ =
-      new views::WebDialogView(off_the_record_profile(), this,
-                               std::make_unique<ChromeWebContentsHandler>(),
-                               /* use_dialog_frame= */ true);
+  webview_ = new views::WebDialogView(
+      otr_profile_, this, std::make_unique<ChromeWebContentsHandler>(),
+      /* use_dialog_frame= */ true);
   webview_->SetPreferredSize(
       gfx::Size(kDefaultHatsDialogWidth, kDefaultHatsDialogHeight));
   preloading_widget_ = constrained_window::CreateBrowserModalDialogViews(
@@ -255,10 +255,9 @@ void HatsWebDialog::CreateWebDialog(Browser* browser) {
                                       weak_factory_.GetWeakPtr()));
 }
 
-void HatsWebDialog::OnOriginalProfileDestroyed(Profile* profile) {
-  if (otr_profile_registration_ &&
-      profile == otr_profile_registration_->profile())
-    otr_profile_registration_.reset();
+void HatsWebDialog::OnProfileWillBeDestroyed(Profile* profile) {
+  DCHECK(profile == otr_profile_);
+  otr_profile_ = nullptr;
 }
 
 void HatsWebDialog::Show(views::Widget* widget, bool accept) {

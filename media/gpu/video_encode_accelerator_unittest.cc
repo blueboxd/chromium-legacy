@@ -1136,8 +1136,8 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
 
   decoder_->Initialize(
       config, false, nullptr,
-      base::BindRepeating(&VideoFrameQualityValidator::InitializeCB,
-                          base::Unretained(this)),
+      base::BindOnce(&VideoFrameQualityValidator::InitializeCB,
+                     base::Unretained(this)),
       base::BindRepeating(&VideoFrameQualityValidator::VerifyOutputFrame,
                           base::Unretained(this)),
       base::NullCallback());
@@ -2567,8 +2567,8 @@ void VEANoInputClient::RequireBitstreamBuffers(
   // Timer is used to make sure there is no output frame in 100ms.
   timer_.reset(new base::OneShotTimer());
   timer_->Start(FROM_HERE, base::TimeDelta::FromMilliseconds(100),
-                base::Bind(&VEANoInputClient::SetState, base::Unretained(this),
-                           CS_FINISHED));
+                base::BindOnce(&VEANoInputClient::SetState,
+                               base::Unretained(this), CS_FINISHED));
 }
 
 void VEANoInputClient::BitstreamBufferReady(

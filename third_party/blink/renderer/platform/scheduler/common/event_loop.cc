@@ -47,6 +47,42 @@ void EventLoop::PerformIsolateGlobalMicrotasksCheckpoint(v8::Isolate* isolate) {
   v8::MicrotasksScope::PerformCheckpoint(isolate);
 }
 
+void EventLoop::Disable() {
+  loop_enabled_ = false;
+
+  for (auto* scheduler : schedulers_) {
+    scheduler->SetPreemptedForCooperativeScheduling(
+        FrameOrWorkerScheduler::Preempted(true));
+  }
+  // TODO(keishi): Disable microtaskqueue too.
+}
+
+void EventLoop::Enable() {
+  loop_enabled_ = true;
+
+  for (auto* scheduler : schedulers_) {
+    scheduler->SetPreemptedForCooperativeScheduling(
+        FrameOrWorkerScheduler::Preempted(false));
+  }
+  // TODO(keishi): Enable microtaskqueue too.
+}
+
+void EventLoop::AttachScheduler(FrameOrWorkerScheduler* scheduler) {
+  DCHECK(loop_enabled_);
+  DCHECK(!schedulers_.Contains(scheduler));
+  schedulers_.insert(scheduler);
+}
+
+void EventLoop::DetachScheduler(FrameOrWorkerScheduler* scheduler) {
+  DCHECK(loop_enabled_);
+  DCHECK(schedulers_.Contains(scheduler));
+  schedulers_.erase(scheduler);
+}
+
+bool EventLoop::IsSchedulerAttachedForTest(FrameOrWorkerScheduler* scheduler) {
+  return schedulers_.Contains(scheduler);
+}
+
 // static
 void EventLoop::RunPendingMicrotask(void* data) {
   TRACE_EVENT0("renderer.scheduler", "RunPendingMicrotask");

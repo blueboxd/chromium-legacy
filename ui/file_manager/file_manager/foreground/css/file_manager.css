@@ -1784,8 +1784,10 @@ body[type='full-page'] .thumbnail-frame > .img-container {
   position: relative;
 }
 
-body[type='full-page'] .thumbnail-frame > .img-container,
-body[type='full-page'] .detail-name .detail-icon {
+html:not(.pointer-active) body[type='full-page'] .thumbnail-frame > .img-container,
+body[type='full-page'] .thumbnail-frame > .img-container:active,
+html:not(.pointer-active) body[type='full-page'] .detail-name .detail-icon,
+body[type='full-page'] .detail-name .detail-icon:active {
   cursor: pointer;
 }
 
@@ -1859,11 +1861,15 @@ body.files-ng #list-container .thumbnail-grid li {
 
 body.files-ng grid .thumbnail-bottom .detail-icon {
   color: var(--google-grey-700);
-  cursor: pointer;
   height: 40px;
   padding-inline-end: 6px;
   padding-inline-start: 6px;
   width: 32px;
+}
+
+html:not(.pointer-active) body.files-ng grid .thumbnail-bottom .detail-icon,
+body.files-ng grid .thumbnail-bottom .detail-icon:active {
+  cursor: pointer;
 }
 
 .thumbnail-grid .thumbnail-frame {

@@ -1,8 +1,6 @@
 // META: script=/resources/testdriver.js
 // META: script=/resources/testdriver-vendor.js
 
-// https://w3c.github.io/wake-lock/
-
 'use strict';
 
 promise_test(async t => {

@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -244,6 +245,12 @@ bool ScriptRunner::ExecuteAsyncTask() {
 }
 
 void ScriptRunner::ExecuteTask() {
+  // This method is triggered by ScriptRunner::PostTask, and runs directly from
+  // the scheduler. So, the call stack is safe to reenter.
+  scheduler::CooperativeSchedulingManager::AllowedStackScope
+      whitelisted_stack_scope(
+          scheduler::CooperativeSchedulingManager::Instance());
+
   if (IsExecutionSuspended())
     return;
 

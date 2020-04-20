@@ -113,10 +113,10 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
     ShillServiceClient::Get()->SetProperty(
         dbus::ObjectPath(network.path()), shill::kProxyConfigProperty,
         base::Value(proxy_config_str),
-        base::Bind(&NotifyNetworkStateHandler, network.path()),
-        base::Bind(&network_handler::ShillErrorCallbackFunction,
-                   "SetProxyConfig.SetProperty Failed", network.path(),
-                   network_handler::ErrorCallback()));
+        base::BindOnce(&NotifyNetworkStateHandler, network.path()),
+        base::BindOnce(&network_handler::ShillErrorCallbackFunction,
+                       "SetProxyConfig.SetProperty Failed", network.path(),
+                       network_handler::ErrorCallback()));
   }
 }
 

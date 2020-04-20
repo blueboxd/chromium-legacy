@@ -73,29 +73,29 @@ void ChromeFeaturesServiceProvider::Start(
       kChromeFeaturesServiceIsFeatureEnabledMethod,
       base::BindRepeating(&ChromeFeaturesServiceProvider::IsFeatureEnabled,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChromeFeaturesServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       kChromeFeaturesServiceInterface,
       kChromeFeaturesServiceIsCrostiniEnabledMethod,
       base::BindRepeating(&ChromeFeaturesServiceProvider::IsCrostiniEnabled,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChromeFeaturesServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       kChromeFeaturesServiceInterface,
       kChromeFeaturesServiceIsPluginVmEnabledMethod,
       base::BindRepeating(&ChromeFeaturesServiceProvider::IsPluginVmEnabled,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChromeFeaturesServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       kChromeFeaturesServiceInterface,
       kChromeFeaturesServiceIsUsbguardEnabledMethod,
       base::BindRepeating(&ChromeFeaturesServiceProvider::IsUsbguardEnabled,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChromeFeaturesServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       kChromeFeaturesServiceInterface,
       kChromeFeaturesServiceIsCryptohomeDistributedModelEnabledMethod,
@@ -110,8 +110,8 @@ void ChromeFeaturesServiceProvider::Start(
       base::BindRepeating(
           &ChromeFeaturesServiceProvider::IsVmManagementCliAllowed,
           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChromeFeaturesServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeFeaturesServiceProvider::OnExported(

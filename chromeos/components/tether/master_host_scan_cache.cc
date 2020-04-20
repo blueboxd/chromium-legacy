@@ -172,8 +172,8 @@ void MasterHostScanCache::StartTimer(const std::string& tether_network_guid) {
   found_iter->second->Start(
       FROM_HERE,
       base::TimeDelta::FromMinutes(kNumMinutesBeforeCacheEntryExpires),
-      base::Bind(&MasterHostScanCache::OnTimerFired,
-                 weak_ptr_factory_.GetWeakPtr(), tether_network_guid));
+      base::BindOnce(&MasterHostScanCache::OnTimerFired,
+                     weak_ptr_factory_.GetWeakPtr(), tether_network_guid));
 }
 
 void MasterHostScanCache::OnTimerFired(const std::string& tether_network_guid) {

@@ -559,22 +559,6 @@ void CorsURLLoader::SetCorsFlagIfNeeded() {
     return;
   }
 
-  // When a request is initiated in a unique opaque origin (e.g., in a sandboxed
-  // iframe) and the blob is also created in the context, |request_initiator|
-  // is a unique opaque origin and url::Origin::Create(request_.url) is another
-  // unique opaque origin. url::Origin::IsSameOriginWith(p, q) returns false
-  // when both |p| and |q| are opaque, but in this case we want to say that the
-  // request is a same-origin request. Hence we don't set |fetch_cors_flag_|,
-  // assuming the request comes from a renderer and the origin is checked there
-  // (in BaseFetchContext::CanRequest).
-  // In the future blob URLs will not come here because there will be a
-  // separate URLLoaderFactory for blobs.
-  // TODO(yhirano): Remove this logic at the time.
-  if (request_.url.SchemeIsBlob() && request_.request_initiator->opaque() &&
-      url::Origin::Create(request_.url).opaque()) {
-    return;
-  }
-
   fetch_cors_flag_ = true;
 }
 

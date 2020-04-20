@@ -216,8 +216,8 @@ class D3D11VideoDecoderTest : public ::testing::Test {
     }
     decoder_->Initialize(
         config, low_delay, cdm_context,
-        base::BindRepeating(&D3D11VideoDecoderTest::CheckExpectedStatus,
-                            base::Unretained(this), expectation),
+        base::BindOnce(&D3D11VideoDecoderTest::CheckExpectedStatus,
+                       base::Unretained(this), expectation),
         base::DoNothing(), base::DoNothing());
     base::RunLoop().RunUntilIdle();
   }

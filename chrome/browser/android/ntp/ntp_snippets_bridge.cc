@@ -199,8 +199,8 @@ void NTPSnippetsBridge::FetchSuggestionImage(
   content_suggestions_service_->FetchSuggestionImage(
       ContentSuggestion::ID(Category::FromIDValue(j_category_id),
                             ConvertJavaStringToUTF8(env, id_within_category)),
-      base::Bind(&NTPSnippetsBridge::OnImageFetched,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&NTPSnippetsBridge::OnImageFetched,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void NTPSnippetsBridge::FetchSuggestionFavicon(
@@ -216,8 +216,8 @@ void NTPSnippetsBridge::FetchSuggestionFavicon(
       ContentSuggestion::ID(Category::FromIDValue(j_category_id),
                             ConvertJavaStringToUTF8(env, id_within_category)),
       j_minimum_size_px, j_desired_size_px,
-      base::Bind(&NTPSnippetsBridge::OnImageFetched,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&NTPSnippetsBridge::OnImageFetched,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void NTPSnippetsBridge::Fetch(
@@ -238,9 +238,9 @@ void NTPSnippetsBridge::Fetch(
       category,
       std::set<std::string>(known_suggestion_ids.begin(),
                             known_suggestion_ids.end()),
-      base::Bind(&NTPSnippetsBridge::OnSuggestionsFetched,
-                 weak_ptr_factory_.GetWeakPtr(), success_callback,
-                 failure_callback, category));
+      base::BindOnce(&NTPSnippetsBridge::OnSuggestionsFetched,
+                     weak_ptr_factory_.GetWeakPtr(), success_callback,
+                     failure_callback, category));
 }
 
 void NTPSnippetsBridge::ReloadSuggestions(JNIEnv* env,

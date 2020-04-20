@@ -34,6 +34,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.BasicCardNetwork;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
+import org.chromium.url.GURL;
 
 import java.util.concurrent.TimeoutException;
 
@@ -252,22 +253,18 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
 
                 ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
                 delegate.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents,
-                        0 /* registrationId */,
-                        UriUtils.parseUriFromString("https://bobpay.com") /* scope */,
-                        "BobPay" /* label */, "https://bobpay.com" /* sublabel*/,
-                        "https://bobpay.com" /* tertiarylabel */, icon /* icon */,
+                        0 /* registrationId */, new GURL("https://bobpay.com") /* scope */,
+                        "BobPay" /* label */, "https://bobpay.com" /* sublabel*/, icon /* icon */,
                         bobpayMethodNames /* methodNames */, bobpayCapabilities /* capabilities */,
                         new String[0] /* preferredRelatedApplicationIds */,
                         new SupportedDelegations()));
-                delegate.onPaymentAppCreated(
-                        new ServiceWorkerPaymentApp(webContents, 0 /* registrationId */,
-                                UriUtils.parseUriFromString("https://alicepay.com") /* scope */,
-                                "AlicePay" /* label */, "https://bobpay.com" /* sublabel*/,
-                                "https://alicepay.com" /* tertiarylabel */, icon /* icon */,
-                                alicepayMethodNames /* methodNames */,
-                                alicepayCapabilities /* capabilities */,
-                                new String[0] /* preferredRelatedApplicationIds */,
-                                new SupportedDelegations()));
+                delegate.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents,
+                        0 /* registrationId */, new GURL("https://alicepay.com") /* scope */,
+                        "AlicePay" /* label */, "https://bobpay.com" /* sublabel*/, icon /* icon */,
+                        alicepayMethodNames /* methodNames */,
+                        alicepayCapabilities /* capabilities */,
+                        new String[0] /* preferredRelatedApplicationIds */,
+                        new SupportedDelegations()));
                 delegate.onDoneCreatingPaymentApps(this);
             }
         });

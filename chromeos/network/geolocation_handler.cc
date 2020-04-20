@@ -42,8 +42,8 @@ GeolocationHandler::~GeolocationHandler() {
 
 void GeolocationHandler::Init() {
   ShillManagerClient::Get()->GetProperties(
-      base::Bind(&GeolocationHandler::ManagerPropertiesCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&GeolocationHandler::ManagerPropertiesCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
   ShillManagerClient::Get()->AddPropertyChangedObserver(this);
 }
 
@@ -137,8 +137,8 @@ void GeolocationHandler::HandlePropertyChanged(const std::string& key,
 
 void GeolocationHandler::RequestGeolocationObjects() {
   ShillManagerClient::Get()->GetNetworksForGeolocation(
-      base::Bind(&GeolocationHandler::GeolocationCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&GeolocationHandler::GeolocationCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GeolocationHandler::GeolocationCallback(

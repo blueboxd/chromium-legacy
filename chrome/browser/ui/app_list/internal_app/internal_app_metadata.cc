@@ -109,15 +109,6 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
          /*searchable_string_resource_id=*/0});
   }
 
-  if (get_all || plugin_vm::IsPluginVmAllowedForProfile(profile)) {
-    internal_app_list->push_back(
-        {plugin_vm::kPluginVmAppId, IDS_PLUGIN_VM_APP_NAME,
-         IDR_LOGO_PLUGIN_VM_DEFAULT_192,
-         /*recommendable=*/true,
-         /*searchable=*/true,
-         /*show_in_launcher=*/true, apps::BuiltInAppName::kPluginVm,
-         /*searchable_string_resource_id=*/0});
-  }
   return *internal_app_list;
 }
 

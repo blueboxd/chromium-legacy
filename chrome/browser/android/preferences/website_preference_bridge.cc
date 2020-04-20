@@ -747,8 +747,8 @@ static void JNI_WebsitePreferenceBridge_FetchLocalStorageInfo(
   auto local_storage_helper =
       base::MakeRefCounted<browsing_data::LocalStorageHelper>(profile);
   local_storage_helper->StartFetching(
-      base::Bind(&OnLocalStorageModelInfoLoaded, profile, fetch_important,
-                 ScopedJavaGlobalRef<jobject>(java_callback)));
+      base::BindOnce(&OnLocalStorageModelInfoLoaded, profile, fetch_important,
+                     ScopedJavaGlobalRef<jobject>(java_callback)));
 }
 
 static void JNI_WebsitePreferenceBridge_FetchStorageInfo(

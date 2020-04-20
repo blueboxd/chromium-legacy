@@ -21,4 +21,12 @@ Agent::~Agent() = default;
 
 void Agent::Trace(Visitor* visitor) {}
 
+void Agent::AttachDocument(Document* document) {
+  event_loop_->AttachScheduler(document->GetScheduler());
+}
+
+void Agent::DetachDocument(Document* document) {
+  event_loop_->DetachScheduler(document->GetScheduler());
+}
+
 }  // namespace blink

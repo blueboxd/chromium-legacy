@@ -815,6 +815,18 @@ TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
   EXPECT_EQ(3u, observer.UpdatedCharacterDataRecords()[3]->new_length_);
 }
 
+TEST_F(DocumentTest, AttachExecutionContext) {
+  EXPECT_TRUE(
+      GetDocument().GetAgent()->event_loop()->IsSchedulerAttachedForTest(
+          GetDocument().GetScheduler()));
+  Document* doc = GetDocument().implementation().createHTMLDocument("foo");
+  EXPECT_EQ(GetDocument().GetAgent(), doc->GetAgent());
+  GetDocument().Shutdown();
+  EXPECT_FALSE(doc->GetAgent()->event_loop()->IsSchedulerAttachedForTest(
+      doc->GetScheduler()));
+  doc->Shutdown();
+}
+
 // This tests that meta-theme-color can be found correctly
 TEST_F(DocumentTest, ThemeColor) {
   {

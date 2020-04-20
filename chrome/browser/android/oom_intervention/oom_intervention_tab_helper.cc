@@ -319,9 +319,9 @@ void OomInterventionTabHelper::OnNearOomDetected() {
   DCHECK(!renderer_detection_timer_.IsRunning());
   renderer_detection_timer_.Start(
       FROM_HERE, kRendererHighMemoryUsageDetectionWindow,
-      base::BindRepeating(&OomInterventionTabHelper::
-                              OnDetectionWindowElapsedWithoutHighMemoryUsage,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&OomInterventionTabHelper::
+                         OnDetectionWindowElapsedWithoutHighMemoryUsage,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OomInterventionTabHelper::

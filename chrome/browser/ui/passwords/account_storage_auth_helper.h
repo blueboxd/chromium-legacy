@@ -17,6 +17,7 @@ namespace signin {
 enum class ReauthResult;
 }
 
+class SigninViewController;
 class Profile;
 
 // Responsible for triggering authentication flows related to the passwords
@@ -43,6 +44,12 @@ class AccountStorageAuthHelper {
   // metrics recording and represents where the sign-in was triggered.
   void TriggerSignIn(signin_metrics::AccessPoint access_point);
 
+  void SetSigninViewControllerGetterForTesting(
+      base::RepeatingCallback<SigninViewController*()>
+          signin_view_controller_getter) {
+    signin_view_controller_getter_ = std::move(signin_view_controller_getter);
+  }
+
  private:
   void OnOptInReauthCompleted(
       base::OnceCallback<
@@ -52,6 +59,8 @@ class AccountStorageAuthHelper {
 
   Profile* const profile_;
   password_manager::PasswordFeatureManager* const password_feature_manager_;
+  base::RepeatingCallback<SigninViewController*()>
+      signin_view_controller_getter_;
   base::WeakPtrFactory<AccountStorageAuthHelper> weak_ptr_factory_{this};
 };
 

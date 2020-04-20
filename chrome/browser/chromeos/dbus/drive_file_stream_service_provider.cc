@@ -24,8 +24,8 @@ void DriveFileStreamServiceProvider::Start(
       drivefs::kDriveFileStreamOpenIpcChannelMethod,
       base::BindRepeating(&DriveFileStreamServiceProvider::HandleOpenIpcChannel,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating([](const std::string& interface_name,
-                             const std::string& method_name, bool success) {
+      base::BindOnce([](const std::string& interface_name,
+                        const std::string& method_name, bool success) {
         LOG_IF(ERROR, !success)
             << "Failed to export " << interface_name << "." << method_name;
       }));

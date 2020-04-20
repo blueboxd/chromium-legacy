@@ -1432,11 +1432,11 @@ external/wpt/url/url-constructor.html [ Pass ] # wpt_subtest_failure
 external/wpt/url/url-origin.html [ Pass ] # wpt_subtest_failure
 external/wpt/url/url-setters.html [ Pass ] # wpt_subtest_failure
 external/wpt/vibration/silent-ignore.html [ Failure Pass ]
-external/wpt/wake-lock/idlharness.https.any.html [ Pass Failure Crash ]
-external/wpt/wake-lock/wakelock-enabled-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Pass Failure ] # wpt_subtest_failure
-external/wpt/wake-lock/wakelock-enabled-by-feature-policy-attribute.https.sub.html [ Pass Failure ] # wpt_subtest_failure
-external/wpt/wake-lock/wakelock-enabled-by-feature-policy.https.sub.html [ Pass Failure ] # wpt_subtest_failure
-external/wpt/wake-lock/wakelock-enabled-on-self-origin-by-feature-policy.https.sub.html [ Pass Failure ] # wpt_subtest_failure
+external/wpt/screen-wake-lock/idlharness.https.any.html [ Pass Failure Crash ]
+external/wpt/screen-wake-lock/wakelock-enabled-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Pass Failure ] # wpt_subtest_failure
+external/wpt/screen-wake-lock/wakelock-enabled-by-feature-policy-attribute.https.sub.html [ Pass Failure ] # wpt_subtest_failure
+external/wpt/screen-wake-lock/wakelock-enabled-by-feature-policy.https.sub.html [ Pass Failure ] # wpt_subtest_failure
+external/wpt/screen-wake-lock/wakelock-enabled-on-self-origin-by-feature-policy.https.sub.html [ Pass Failure ] # wpt_subtest_failure
 external/wpt/wasm/jsapi/table/grow-reftypes.tentative.any.worker.html [ Failure ]
 external/wpt/wasm/serialization/module/broadcastchannel-success-and-failure.html [ Timeout ] # wpt_subtest_failure
 external/wpt/wasm/serialization/module/broadcastchannel-success.html [ Timeout ] # wpt_subtest_failure

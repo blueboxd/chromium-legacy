@@ -142,6 +142,7 @@ void AppServiceProxy::Initialize() {
     extension_apps_ = std::make_unique<ExtensionApps>(
         app_service_, profile_, apps::mojom::AppType::kExtension,
         &instance_registry_);
+    plugin_vm_apps_ = std::make_unique<PluginVmApps>(app_service_, profile_);
     if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
       web_apps_ = std::make_unique<WebApps>(app_service_, profile_,
                                             &instance_registry_);
@@ -369,6 +370,7 @@ void AppServiceProxy::FlushMojoCallsForTesting() {
   built_in_chrome_os_apps_->FlushMojoCallsForTesting();
   crostini_apps_->FlushMojoCallsForTesting();
   extension_apps_->FlushMojoCallsForTesting();
+  plugin_vm_apps_->FlushMojoCallsForTesting();
   if (web_apps_) {
     web_apps_->FlushMojoCallsForTesting();
   } else {

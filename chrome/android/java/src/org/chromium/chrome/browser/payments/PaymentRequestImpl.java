@@ -1373,7 +1373,7 @@ public class PaymentRequestImpl
         assert mInvokedPaymentApp instanceof ServiceWorkerPaymentApp;
         assert org.chromium.components.embedder_support.util.Origin.create(url.getSpec())
                 .equals(org.chromium.components.embedder_support.util.Origin.create(
-                        ((ServiceWorkerPaymentApp) mInvokedPaymentApp).getScope().toString()));
+                        ((ServiceWorkerPaymentApp) mInvokedPaymentApp).getScope().getSpec()));
 
         if (mPaymentHandlerUi != null) return false;
         mPaymentHandlerUi = new PaymentHandlerCoordinator();

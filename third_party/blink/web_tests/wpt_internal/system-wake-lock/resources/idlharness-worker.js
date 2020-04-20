@@ -1,13 +1,11 @@
 'use strict';
 
-// https://w3c.github.io/wake-lock/
-
 importScripts("/resources/testharness.js");
 importScripts("/resources/WebIDLParser.js", "/resources/idlharness.js");
 
 idl_test(
-  ['wake-lock'],
-  ['dom', 'html', 'permissions'],
+  ['../../wpt_internal/system-wake-lock/resources/system-wake-lock'],
+  ['dom', 'html'],
   async idl_array => {
     idl_array.add_objects({ WorkerNavigator: ['navigator'] });
 

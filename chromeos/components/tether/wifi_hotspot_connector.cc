@@ -83,8 +83,8 @@ void WifiHotspotConnector::ConnectToWifiHotspot(
   callback_ = callback;
   timer_->Start(FROM_HERE,
                 base::TimeDelta::FromSeconds(kConnectionTimeoutSeconds),
-                base::Bind(&WifiHotspotConnector::OnConnectionTimeout,
-                           weak_ptr_factory_.GetWeakPtr()));
+                base::BindOnce(&WifiHotspotConnector::OnConnectionTimeout,
+                               weak_ptr_factory_.GetWeakPtr()));
   connection_attempt_start_time_ = clock_->Now();
 
   // If Wi-Fi is enabled, continue with creating the configuration of the

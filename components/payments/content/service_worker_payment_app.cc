@@ -233,8 +233,8 @@ void ServiceWorkerPaymentApp::InvokePaymentApp(Delegate* delegate) {
         installable_web_app_info_->icon == nullptr
             ? SkBitmap()
             : *(installable_web_app_info_->icon),
-        installable_web_app_info_->sw_js_url,
-        installable_web_app_info_->sw_scope,
+        GURL(installable_web_app_info_->sw_js_url),
+        GURL(installable_web_app_info_->sw_scope),
         installable_web_app_info_->sw_use_cache, installable_enabled_method_,
         installable_web_app_info_->supported_delegations,
         base::BindOnce(

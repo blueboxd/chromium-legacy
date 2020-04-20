@@ -65,13 +65,13 @@ class CORE_EXPORT NGInlineCursorPosition {
   bool IsText() const;
 
   // True if the current position is a generatd text. It is error to call at
-  // end.
+  // end. This includes both style-generated (e.g., `content` property, see
+  // |IsStyleGenerated()|) and layout-generated (hyphens and ellipsis, see
+  // |IsLayoutGeneratedText()|.)
   bool IsGeneratedText() const;
 
-  // True if fragment is |NGFragmentItem::kGeneratedText| or
-  // |NGPhysicalTextFragment::kGeneratedText|.
-  // TODO(yosin): We should rename |IsGeneratedTextType()| to another name.
-  bool IsGeneratedTextType() const;
+  // True if fragment is layout-generated (hyphens and ellipsis.)
+  bool IsLayoutGeneratedText() const;
 
   // True if the current position is a line break. It is error to call at end.
   bool IsLineBreak() const;

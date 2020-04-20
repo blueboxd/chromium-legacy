@@ -1267,6 +1267,7 @@ message AppInfo {
     TYPE_CROSTINI = 3;   // Linux (via Crostini) app.
     TYPE_EXTENSION = 4;  // Extension-backed app.
     TYPE_WEB = 5;        // Web app.
+    TYPE_PLUGINVM = 6;   // Plugin VM app.
   }
 
   enum Status {
@@ -2711,6 +2712,8 @@ message App {
     EXTENSION = 4;
     // Progressive web app.
     WEB = 5;
+    // Plugin VM app.
+    PLUGIN_VM = 6;
   }
 
   // ID of the installed application. Package name for Android apps and 32

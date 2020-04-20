@@ -111,13 +111,13 @@ void SkiaGlRenderer::RenderFrame() {
 
   if (gl_surface_->SupportsAsyncSwap()) {
     gl_surface_->SwapBuffersAsync(
-        base::BindRepeating(&SkiaGlRenderer::PostRenderFrameTask,
-                            weak_ptr_factory_.GetWeakPtr()),
-        base::BindRepeating(&SkiaGlRenderer::OnPresentation,
-                            weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SkiaGlRenderer::PostRenderFrameTask,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&SkiaGlRenderer::OnPresentation,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     PostRenderFrameTask(
-        gl_surface_->SwapBuffers(base::BindRepeating(
+        gl_surface_->SwapBuffers(base::BindOnce(
             &SkiaGlRenderer::OnPresentation, weak_ptr_factory_.GetWeakPtr())),
         nullptr);
   }
@@ -130,8 +130,8 @@ void SkiaGlRenderer::PostRenderFrameTask(
     gpu_fence->Wait();
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindRepeating(&SkiaGlRenderer::RenderFrame,
-                                     weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&SkiaGlRenderer::RenderFrame,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SkiaGlRenderer::Draw(SkCanvas* canvas, float fraction) {

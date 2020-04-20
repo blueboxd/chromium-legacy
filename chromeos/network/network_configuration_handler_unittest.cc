@@ -367,7 +367,7 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties) {
   base::DictionaryValue result;
   network_configuration_handler_->GetShillProperties(
       kServicePath,
-      base::Bind(&CopyProperties, &success, &service_path, &result),
+      base::BindOnce(&CopyProperties, &success, &service_path, &result),
       base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
 
@@ -399,7 +399,7 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties_TetherNetwork) {
   network_configuration_handler_->GetShillProperties(
       // Tether networks use service path and GUID interchangeably.
       kTetherGuid,
-      base::Bind(&CopyProperties, &success, &service_path, &result),
+      base::BindOnce(&CopyProperties, &success, &service_path, &result),
       base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
 
@@ -653,8 +653,8 @@ TEST_F(NetworkConfigurationHandlerTest, StubGetNameFromWifiHex) {
   // Get Properties
   network_configuration_handler_->GetShillProperties(
       service_path,
-      base::Bind(&NetworkConfigurationHandlerTest::GetPropertiesCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&NetworkConfigurationHandlerTest::GetPropertiesCallback,
+                     base::Unretained(this)),
       base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
 
@@ -763,8 +763,8 @@ TEST_F(NetworkConfigurationHandlerTest, AlwaysOnVpn) {
       base::DoNothing(), base::Bind(&ErrorCallback));
 
   ShillManagerClient::Get()->GetProperties(
-      Bind(&NetworkConfigurationHandlerTest::ManagerGetPropertiesCallback,
-           base::Unretained(this), "ManagerGetProperties"));
+      BindOnce(&NetworkConfigurationHandlerTest::ManagerGetPropertiesCallback,
+               base::Unretained(this), "ManagerGetProperties"));
   base::RunLoop().RunUntilIdle();
   std::string package_result;
   EXPECT_EQ("ManagerGetProperties", success_callback_name_);

@@ -71,8 +71,8 @@ class TetherDisconnectorImplTest : public testing::Test {
           session_completion_reason) {
     tether_disconnector_->DisconnectFromNetwork(
         tether_network_guid,
-        base::Bind(&TetherDisconnectorImplTest::SuccessCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&TetherDisconnectorImplTest::SuccessCallback,
+                       base::Unretained(this)),
         base::Bind(&TetherDisconnectorImplTest::ErrorCallback,
                    base::Unretained(this)),
         session_completion_reason);

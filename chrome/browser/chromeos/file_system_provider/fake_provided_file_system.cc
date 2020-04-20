@@ -180,8 +180,8 @@ AbortCallback FakeProvidedFileSystem::ReadDirectory(
     }
   }
 
-  return PostAbortableTask(base::Bind(
-      callback, base::File::FILE_OK, entry_list, false /* has_more */));
+  return PostAbortableTask(base::BindOnce(callback, base::File::FILE_OK,
+                                          entry_list, false /* has_more */));
 }
 
 AbortCallback FakeProvidedFileSystem::OpenFile(const base::FilePath& entry_path,
@@ -227,20 +227,16 @@ AbortCallback FakeProvidedFileSystem::ReadFile(
   if (opened_file_it == opened_files_.end() ||
       opened_file_it->second.file_path.AsUTF8Unsafe() != kFakeFilePath) {
     return PostAbortableTask(
-        base::Bind(callback,
-                   0 /* chunk_length */,
-                   false /* has_more */,
-                   base::File::FILE_ERROR_INVALID_OPERATION));
+        base::BindOnce(callback, 0 /* chunk_length */, false /* has_more */,
+                       base::File::FILE_ERROR_INVALID_OPERATION));
   }
 
   const Entries::const_iterator entry_it =
       entries_.find(opened_file_it->second.file_path);
   if (entry_it == entries_.end()) {
     return PostAbortableTask(
-        base::Bind(callback,
-                   0 /* chunk_length */,
-                   false /* has_more */,
-                   base::File::FILE_ERROR_INVALID_OPERATION));
+        base::BindOnce(callback, 0 /* chunk_length */, false /* has_more */,
+                       base::File::FILE_ERROR_INVALID_OPERATION));
   }
 
   // Send the response byte by byte.
@@ -249,10 +245,9 @@ AbortCallback FakeProvidedFileSystem::ReadFile(
 
   // Reading behind EOF is fine, it will just return 0 bytes.
   if (current_offset >= *entry_it->second->metadata->size || !current_length) {
-    return PostAbortableTask(base::Bind(callback,
-                                        0 /* chunk_length */,
-                                        false /* has_more */,
-                                        base::File::FILE_OK));
+    return PostAbortableTask(base::BindOnce(callback, 0 /* chunk_length */,
+                                            false /* has_more */,
+                                            base::File::FILE_OK));
   }
 
   const FakeEntry* const entry = entry_it->second.get();

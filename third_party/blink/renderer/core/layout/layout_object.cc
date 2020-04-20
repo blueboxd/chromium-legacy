@@ -345,6 +345,14 @@ bool LayoutObject::IsHR() const {
   return IsA<HTMLHRElement>(GetNode());
 }
 
+bool LayoutObject::IsStyleGenerated() const {
+  if (const auto* layout_text_fragment = ToLayoutTextFragmentOrNull(this))
+    return !layout_text_fragment->AssociatedTextNode();
+
+  const Node* node = GetNode();
+  return !node || node->IsPseudoElement();
+}
+
 void LayoutObject::SetIsInsideFlowThreadIncludingDescendants(
     bool inside_flow_thread) {
   LayoutObject* next;

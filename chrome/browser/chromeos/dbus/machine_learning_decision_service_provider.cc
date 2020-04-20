@@ -29,8 +29,8 @@ void MachineLearningDecisionServiceProvider::Start(
       base::BindRepeating(
           &MachineLearningDecisionServiceProvider::ShouldDeferScreenDim,
           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&MachineLearningDecisionServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&MachineLearningDecisionServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MachineLearningDecisionServiceProvider::OnExported(

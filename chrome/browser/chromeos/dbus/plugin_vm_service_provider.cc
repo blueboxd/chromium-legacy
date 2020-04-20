@@ -35,14 +35,14 @@ void PluginVmServiceProvider::Start(
       kPluginVmServiceInterface, kPluginVmServiceGetLicenseDataMethod,
       base::BindRepeating(&PluginVmServiceProvider::GetLicenseData,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&PluginVmServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PluginVmServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       kPluginVmServiceInterface, kPluginVmServiceShowSettingsPage,
       base::BindRepeating(&PluginVmServiceProvider::ShowSettingsPage,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&PluginVmServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PluginVmServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PluginVmServiceProvider::OnExported(const std::string& interface_name,

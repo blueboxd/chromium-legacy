@@ -323,9 +323,9 @@ class NetworkStateHandlerTest : public testing::Test {
   void SetServiceProperty(const std::string& service_path,
                           const std::string& key,
                           const base::Value& value) {
-    ShillServiceClient::Get()->SetProperty(dbus::ObjectPath(service_path), key,
-                                           value, base::DoNothing(),
-                                           base::Bind(&ErrorCallbackFunction));
+    ShillServiceClient::Get()->SetProperty(
+        dbus::ObjectPath(service_path), key, value, base::DoNothing(),
+        base::BindOnce(&ErrorCallbackFunction));
   }
 
   void SetProperties(NetworkState* network, const base::Value& properties) {

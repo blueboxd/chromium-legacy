@@ -125,8 +125,8 @@ void HostScanSchedulerImpl::ScanFinished() {
   last_scan_end_timestamp_ = clock_->Now();
   host_scan_batch_timer_->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kMaxNumSecondsBetweenBatchScans),
-      base::Bind(&HostScanSchedulerImpl::LogHostScanBatchMetric,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&HostScanSchedulerImpl::LogHostScanBatchMetric,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HostScanSchedulerImpl::OnSessionStateChanged() {

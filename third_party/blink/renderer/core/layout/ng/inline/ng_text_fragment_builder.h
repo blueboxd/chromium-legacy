@@ -44,10 +44,6 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
   scoped_refptr<const NGPhysicalTextFragment> ToTextFragment();
 
  private:
-  // Returns true if the text is generated (from, e.g., list marker,
-  // pseudo-element, ...) instead of from a DOM text node.
-  bool IsGeneratedText() const;
-
   String text_;
   unsigned start_offset_;
   unsigned end_offset_;

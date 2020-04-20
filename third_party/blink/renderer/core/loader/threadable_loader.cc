@@ -319,7 +319,8 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
     return;
   }
 
-  if (cors::IsCorsEnabledRequestMode(request.GetMode())) {
+  if (!out_of_blink_cors_ &&
+      cors::IsCorsEnabledRequestMode(request.GetMode())) {
     // Save the request to fallback_request_for_service_worker to use when the
     // service worker doesn't handle (call respondWith()) a CORS enabled
     // request.

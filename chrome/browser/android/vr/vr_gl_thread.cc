@@ -485,46 +485,45 @@ void VrGLThread::UpdateWebInputIndices(int selection_start,
                                        int composition_end) {
   task_runner()->PostTask(
       FROM_HERE,
-      base::BindRepeating(&BrowserUiInterface::UpdateWebInputIndices,
-                          weak_browser_ui_, selection_start, selection_end,
-                          composition_start, composition_end));
+      base::BindOnce(&BrowserUiInterface::UpdateWebInputIndices,
+                     weak_browser_ui_, selection_start, selection_end,
+                     composition_start, composition_end));
 }
 
 void VrGLThread::OnSwapContents(int new_content_id) {
-  task_runner()->PostTask(
-      FROM_HERE, base::BindRepeating(&BrowserUiInterface::OnSwapContents,
-                                     weak_browser_ui_, new_content_id));
+  task_runner()->PostTask(FROM_HERE,
+                          base::BindOnce(&BrowserUiInterface::OnSwapContents,
+                                         weak_browser_ui_, new_content_id));
 }
 
 void VrGLThread::SetDialogLocation(float x, float y) {
-  task_runner()->PostTask(
-      FROM_HERE, base::BindRepeating(&BrowserUiInterface::SetDialogLocation,
-                                     weak_browser_ui_, x, y));
+  task_runner()->PostTask(FROM_HERE,
+                          base::BindOnce(&BrowserUiInterface::SetDialogLocation,
+                                         weak_browser_ui_, x, y));
 }
 
 void VrGLThread::SetDialogFloating(bool floating) {
-  task_runner()->PostTask(
-      FROM_HERE, base::BindRepeating(&BrowserUiInterface::SetDialogFloating,
-                                     weak_browser_ui_, floating));
+  task_runner()->PostTask(FROM_HERE,
+                          base::BindOnce(&BrowserUiInterface::SetDialogFloating,
+                                         weak_browser_ui_, floating));
 }
 
 void VrGLThread::ShowPlatformToast(const base::string16& text) {
-  task_runner()->PostTask(
-      FROM_HERE, base::BindRepeating(&BrowserUiInterface::ShowPlatformToast,
-                                     weak_browser_ui_, text));
+  task_runner()->PostTask(FROM_HERE,
+                          base::BindOnce(&BrowserUiInterface::ShowPlatformToast,
+                                         weak_browser_ui_, text));
 }
 
 void VrGLThread::CancelPlatformToast() {
   task_runner()->PostTask(
-      FROM_HERE, base::BindRepeating(&BrowserUiInterface::CancelPlatformToast,
-                                     weak_browser_ui_));
+      FROM_HERE, base::BindOnce(&BrowserUiInterface::CancelPlatformToast,
+                                weak_browser_ui_));
 }
 
 void VrGLThread::OnContentBoundsChanged(int width, int height) {
   task_runner()->PostTask(
-      FROM_HERE,
-      base::BindRepeating(&BrowserUiInterface::OnContentBoundsChanged,
-                          weak_browser_ui_, width, height));
+      FROM_HERE, base::BindOnce(&BrowserUiInterface::OnContentBoundsChanged,
+                                weak_browser_ui_, width, height));
 }
 
 void VrGLThread::PerformKeyboardInputForTesting(

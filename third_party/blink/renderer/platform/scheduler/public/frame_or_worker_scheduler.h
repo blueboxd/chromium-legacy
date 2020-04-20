@@ -85,6 +85,10 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
 
   virtual ~FrameOrWorkerScheduler();
 
+  using Preempted = util::StrongAlias<class PreemptedTag, bool>;
+  // Stops any tasks from running while we yield and run a nested loop.
+  virtual void SetPreemptedForCooperativeScheduling(Preempted) = 0;
+
   // Notifies scheduler that this execution context has started using a feature
   // which impacts scheduling decisions.
   // When the feature stops being used, this handle should be destroyed.

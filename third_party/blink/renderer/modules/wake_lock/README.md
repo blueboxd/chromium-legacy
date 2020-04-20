@@ -52,7 +52,7 @@ Larger parts of the Blink implementation are tested as browser and unit tests:
 * `chrome/browser/wake_lock` has unit tests for `WakeLockPermissionContext`, and browser tests for end-to-end behavior testing.
 * content_shell implements its own permission logic that mimics what is done in `//chrome` in [`shell_permission_manager.cc`](/content/shell/browser/shell_permission_manager.cc).
 
-[web platform tests]: ../../../web_tests/external/wpt/wake-lock/
+[web platform tests]: ../../../web_tests/external/wpt/screen-wake-lock/
 [web tests]: ../../../web_tests/wake-lock/
 
 ## Example workflows

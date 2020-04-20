@@ -27,6 +27,7 @@
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "url/android/gurl_android.h"
 #include "url/origin.h"
 
 namespace {
@@ -93,11 +94,11 @@ void OnPaymentAppsCreated(
     // TODO(crbug.com/846077): Find a proper way to make use of user hint.
     Java_PaymentAppServiceCallback_onInstalledPaymentHandlerFound(
         env, jcallback, app_info.second->registration_id,
-        ConvertUTF8ToJavaString(env, app_info.second->scope.spec()),
+        url::GURLAndroid::FromNativeGURL(env, app_info.second->scope),
         app_info.second->name.empty()
             ? nullptr
             : ConvertUTF8ToJavaString(env, app_info.second->name),
-        nullptr, ConvertUTF8ToJavaString(env, app_info.second->scope.host()),
+        nullptr,
         app_info.second->icon == nullptr
             ? nullptr
             : gfx::ConvertToJavaBitmap(app_info.second->icon.get()),
@@ -118,8 +119,10 @@ void OnPaymentAppsCreated(
     Java_PaymentAppServiceCallback_onInstallablePaymentHandlerFound(
         env, jcallback,
         ConvertUTF8ToJavaString(env, installable_app.second->name),
-        ConvertUTF8ToJavaString(env, installable_app.second->sw_js_url),
-        ConvertUTF8ToJavaString(env, installable_app.second->sw_scope),
+        url::GURLAndroid::FromNativeGURL(
+            env, GURL(installable_app.second->sw_js_url)),
+        url::GURLAndroid::FromNativeGURL(
+            env, GURL(installable_app.second->sw_scope)),
         installable_app.second->sw_use_cache,
         installable_app.second->icon == nullptr
             ? nullptr

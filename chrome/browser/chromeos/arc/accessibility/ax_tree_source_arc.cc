@@ -137,7 +137,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   if (event_data->event_type == AXEventType::VIEW_FOCUSED) {
     AccessibilityInfoDataWrapper* focused_node =
         GetFromId(event_data->source_id);
-    if (focused_node) {
+    if (focused_node && focused_node->IsVisibleToUser()) {
       // Sometimes Android sets focus on unfocusable node, e.g. ListView.
       AccessibilityInfoDataWrapper* adjusted_node =
           FindFirstFocusableNode(focused_node);
@@ -159,7 +159,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     if (!is_range_change) {
       AccessibilityInfoDataWrapper* selected_node =
           GetSelectedNodeInfoFromAdapterView(event_data);
-      if (!selected_node)
+      if (!selected_node || !selected_node->IsVisibleToUser())
         return;
 
       android_focused_id_ = selected_node->GetId();

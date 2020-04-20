@@ -497,36 +497,6 @@
             ]
         }
     ],
-    "AudioProcessSandboxMac": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "AudioProcess_APM",
-                    "enable_features": [
-                        "WebRtcApmInAudioService"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AudioProcessSandboxWindows": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "AudioProcess_APM",
-                    "enable_features": [
-                        "WebRtcApmInAudioService"
-                    ]
-                }
-            ]
-        }
-    ],
     "AudioServiceSandboxLinux": [
         {
             "platforms": [
@@ -534,14 +504,9 @@
             ],
             "experiments": [
                 {
-                    "name": "AudioProcess_APM",
-                    "params": {
-                        "timeout_seconds": "180"
-                    },
+                    "name": "AudioProcessSandboxLinux",
                     "enable_features": [
-                        "AudioServiceOutOfProcessKillAtHang",
-                        "AudioServiceSandbox",
-                        "WebRtcApmInAudioService"
+                        "AudioServiceSandbox"
                     ]
                 }
             ]

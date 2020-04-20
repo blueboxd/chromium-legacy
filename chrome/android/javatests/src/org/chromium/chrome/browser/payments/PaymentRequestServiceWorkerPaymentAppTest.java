@@ -28,6 +28,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.BasicCardNetwork;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
+import org.chromium.url.GURL;
 
 import java.util.concurrent.TimeoutException;
 
@@ -78,10 +79,9 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
                                         1 /* height */, Bitmap.Config.ARGB_8888))
                         : null;
                 delegate.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents,
-                        0 /* registrationId */, UriUtils.parseUriFromString(scope) /*scope*/, name,
-                        "test@bobpay.com" /* userHint */, "https://bobpay.com" /* origin */,
-                        icon /* icon */, supportedMethodNames /* methodNames */,
-                        capabilities /* capabilities */,
+                        0 /* registrationId */, new GURL(scope) /*scope*/, name,
+                        "test@bobpay.com" /* userHint */, icon /* icon */,
+                        supportedMethodNames /* methodNames */, capabilities /* capabilities */,
                         new String[0] /* preferredRelatedApplicationIds */, supportedDelegations));
                 delegate.onDoneCreatingPaymentApps(this);
             }

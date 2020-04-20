@@ -397,6 +397,10 @@ const char kCookiesWithoutSameSiteMustBeSecureDescription[] =
     "attribute, it will be rejected. This flag only has an effect if "
     "\"SameSite by default cookies\" is also enabled.";
 
+const char kCooperativeSchedulingName[] = "Cooperative Scheduling";
+const char kCooperativeSchedulingDescription[] =
+    "Enables cooperative scheduling in Blink.";
+
 const char kCreditCardAssistName[] = "Credit Card Assisted Filling";
 const char kCreditCardAssistDescription[] =
     "Enable assisted credit card filling on certain sites.";

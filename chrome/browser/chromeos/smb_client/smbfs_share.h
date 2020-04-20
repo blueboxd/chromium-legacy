@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/smb_client/smb_errors.h"
 #include "chrome/browser/chromeos/smb_client/smb_url.h"
@@ -85,6 +86,12 @@ class SmbFsShare : public smbfs::SmbFsHost::Delegate {
   void OnUnmountDone(SmbFsShare::UnmountCallback callback,
                      chromeos::MountError result);
 
+  // Callback for smb_dialog::SmbCredentialsDialog::Show().
+  void OnSmbCredentialsDialogShowDone(RequestCredentialsCallback callback,
+                                      bool canceled,
+                                      const std::string& username,
+                                      const std::string& password);
+
   // smbfs::SmbFsHost::Delegate overrides:
   void OnDisconnected() override;
   void RequestCredentials(RequestCredentialsCallback callback) override;
@@ -102,6 +109,8 @@ class SmbFsShare : public smbfs::SmbFsHost::Delegate {
 
   base::TimeTicks allow_credential_request_expiry_;
   bool allow_credential_request_ = false;
+
+  base::WeakPtrFactory<SmbFsShare> weak_factory_{this};
 };
 
 }  // namespace smb_client

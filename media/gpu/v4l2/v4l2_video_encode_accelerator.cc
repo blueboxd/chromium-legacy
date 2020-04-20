@@ -200,8 +200,11 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
 
   TRACE_EVENT0("media,gpu", "V4L2VEA::Initialize");
   VLOGF(2) << ": " << config.AsHumanReadableString();
-  if (config.HasTemporalLayer() || config.HasSpatialLayer()) {
-    VLOGF(1) << "Neither temporal nor spatial layer encoding is supported";
+
+  // V4L2VEA doesn't support temporal layers but we let it pass here to support
+  // simulcast.
+  if (config.HasSpatialLayer()) {
+    VLOGF(1) << "Spatial layer encoding is supported";
     return false;
   }
 

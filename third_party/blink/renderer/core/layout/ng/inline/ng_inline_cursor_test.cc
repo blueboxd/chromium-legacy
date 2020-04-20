@@ -74,7 +74,7 @@ class NGInlineCursorTest : public NGLayoutTest,
     if (cursor.Current().IsLineBox())
       return "#linebox";
 
-    if (cursor.Current().IsGeneratedTextType()) {
+    if (cursor.Current().IsLayoutGeneratedText()) {
       StringBuilder result;
       result.Append("#'");
       result.Append(cursor.CurrentText());

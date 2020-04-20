@@ -200,11 +200,9 @@ void RequestManager::ResetTimer(int request_id) {
     return;
 
   request_it->second->timeout_timer.Start(
-      FROM_HERE,
-      timeout_,
-      base::Bind(&RequestManager::OnRequestTimeout,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 request_id));
+      FROM_HERE, timeout_,
+      base::BindOnce(&RequestManager::OnRequestTimeout,
+                     weak_ptr_factory_.GetWeakPtr(), request_id));
 }
 
 bool RequestManager::IsInteractingWithUser() const {

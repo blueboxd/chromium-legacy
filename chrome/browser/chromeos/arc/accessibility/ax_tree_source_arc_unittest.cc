@@ -993,6 +993,7 @@ TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
   list->id = 1;
   SetProperty(list, AXBooleanProperty::FOCUSABLE, true);
   SetProperty(list, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(list, AXBooleanProperty::VISIBLE_TO_USER, true);
   SetProperty(list, AXIntListProperty::CHILD_NODE_IDS,
               std::vector<int>({2, 3, 4}));
 
@@ -1010,6 +1011,7 @@ TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
   simple_item->id = 3;
   SetProperty(simple_item, AXBooleanProperty::FOCUSABLE, true);
   SetProperty(simple_item, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(simple_item, AXBooleanProperty::VISIBLE_TO_USER, true);
   simple_item->collection_item_info = AXCollectionItemInfoData::New();
 
   // This node is not focusable.
@@ -1017,6 +1019,7 @@ TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
   AXNodeInfoData* wrap_node = event->node_data.back().get();
   wrap_node->id = 4;
   SetProperty(wrap_node, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(wrap_node, AXBooleanProperty::VISIBLE_TO_USER, true);
   SetProperty(wrap_node, AXIntListProperty::CHILD_NODE_IDS,
               std::vector<int>({5}));
   wrap_node->collection_item_info = AXCollectionItemInfoData::New();
@@ -1027,6 +1030,7 @@ TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
   item->id = 5;
   SetProperty(item, AXBooleanProperty::FOCUSABLE, true);
   SetProperty(item, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(item, AXBooleanProperty::VISIBLE_TO_USER, true);
 
   // A selected event from Slider is kValueChanged.
   event->source_id = slider->id;
@@ -1055,7 +1059,14 @@ TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
   EXPECT_TRUE(CallGetTreeData(&data));
   EXPECT_EQ(simple_item->id, data.focus_id);
 
+  // An event from an invisible node is dropped.
+  SetProperty(simple_item, AXBooleanProperty::VISIBLE_TO_USER, false);
+  CallNotifyAccessibilityEvent(event.get());
+  EXPECT_EQ(2,
+            GetDispatchedEventCount(ax::mojom::Event::kFocus));  // not changed
+
   // A selected event from non collection node is dropped.
+  SetProperty(simple_item, AXBooleanProperty::VISIBLE_TO_USER, true);
   event->source_id = item->id;
   event->int_properties->clear();
   CallNotifyAccessibilityEvent(event.get());
@@ -1123,6 +1134,7 @@ TEST_F(AXTreeSourceArcTest, OnFocusEvent) {
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
               std::vector<int>({1, 2}));
   SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(root, AXBooleanProperty::VISIBLE_TO_USER, true);
   root->collection_info = AXCollectionInfoData::New();
   root->collection_info->row_count = 2;
   root->collection_info->column_count = 1;
@@ -1396,6 +1408,7 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
   node1->id = 1;
   SetProperty(node1, AXBooleanProperty::FOCUSABLE, true);
   SetProperty(node1, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(node1, AXBooleanProperty::VISIBLE_TO_USER, true);
   node1->bounds_in_screen = gfx::Rect(0, 0, 50, 50);
 
   event->node_data.emplace_back(AXNodeInfoData::New());
@@ -1403,6 +1416,7 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
   node2->id = 2;
   SetProperty(node2, AXBooleanProperty::FOCUSABLE, true);
   SetProperty(node2, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(node2, AXBooleanProperty::VISIBLE_TO_USER, true);
   node2->bounds_in_screen = gfx::Rect(50, 50, 100, 100);
 
   // Add a child node to |node1|, but it's not an important node.

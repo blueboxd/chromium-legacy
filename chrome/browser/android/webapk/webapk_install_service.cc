@@ -55,9 +55,9 @@ void WebApkInstallService::InstallAsync(content::WebContents* web_contents,
   auto observer = std::make_unique<LifetimeObserver>(web_contents);
   WebApkInstaller::InstallAsync(
       browser_context_, shortcut_info, primary_icon, is_primary_icon_maskable,
-      base::Bind(&WebApkInstallService::OnFinishedInstall,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&observer),
-                 shortcut_info, primary_icon, is_primary_icon_maskable));
+      base::BindOnce(&WebApkInstallService::OnFinishedInstall,
+                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&observer),
+                     shortcut_info, primary_icon, is_primary_icon_maskable));
 }
 
 void WebApkInstallService::UpdateAsync(

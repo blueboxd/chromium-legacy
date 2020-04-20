@@ -50,8 +50,8 @@ class TestPlatformDelegate : public ui::PlatformWindowDelegate {
 void RunPendingTasks(scoped_refptr<base::TaskRunner> task_runner) {
   base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  task_runner->PostTask(FROM_HERE,
-                        Bind(&base::WaitableEvent::Signal, Unretained(&done)));
+  task_runner->PostTask(
+      FROM_HERE, BindOnce(&base::WaitableEvent::Signal, Unretained(&done)));
   done.Wait();
 }
 

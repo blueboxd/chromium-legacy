@@ -200,25 +200,35 @@ void SmbFsShare::RequestCredentials(RequestCredentialsCallback callback) {
 
   smb_dialog::SmbCredentialsDialog::Show(
       mount_id_, share_url_.ToString(),
-      base::BindOnce(
-          [](RequestCredentialsCallback callback, bool canceled,
-             const std::string& username, const std::string& password) {
-            if (canceled) {
-              std::move(callback).Run(true /* cancel */, "" /* username */,
-                                      "" /* workgroup */, "" /* password */);
-              return;
-            }
-
-            std::string parsed_username = username;
-            std::string workgroup;
-            ParseUserName(username, &parsed_username, &workgroup);
-            std::move(callback).Run(false /* cancel */, parsed_username,
-                                    workgroup, password);
-          },
-          std::move(callback)));
+      base::BindOnce(&SmbFsShare::OnSmbCredentialsDialogShowDone,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
   // Reset the allow dialog state to prevent showing another dialog to the user
   // immediately after they've dismissed one.
   allow_credential_request_ = false;
+}
+
+void SmbFsShare::OnSmbCredentialsDialogShowDone(
+    RequestCredentialsCallback callback,
+    bool canceled,
+    const std::string& username,
+    const std::string& password) {
+  if (canceled) {
+    std::move(callback).Run(true /* cancel */, "" /* username */,
+                            "" /* workgroup */, "" /* password */);
+    return;
+  }
+
+  std::string parsed_username = username;
+  std::string workgroup;
+  ParseUserName(username, &parsed_username, &workgroup);
+
+  // Save updated credentials for future suspend/resume.
+  options_.username = parsed_username;
+  options_.workgroup = workgroup;
+  options_.password = password;
+
+  std::move(callback).Run(false /* cancel */, parsed_username, workgroup,
+                          password);
 }
 
 void SmbFsShare::SetMounterCreationCallbackForTest(

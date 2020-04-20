@@ -61,6 +61,8 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.is_deleter = is_deleter
             self.is_stringifier = False
             self.stringifier_attribute = None
+            self.is_iterator = False
+            self.is_optionally_defined = False
 
     def __init__(self, ir, owner):
         assert isinstance(ir, Operation.IR)
@@ -79,6 +81,8 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
         self._is_deleter = ir.is_deleter
         self._is_stringifier = ir.is_stringifier
         self._stringifier_attribute = ir.stringifier_attribute
+        self._is_iterator = ir.is_iterator
+        self._is_optionally_defined = ir.is_optionally_defined
 
     @property
     def is_special_operation(self):
@@ -95,23 +99,48 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
 
     @property
     def is_getter(self):
+        """Returns True if this is an indexed or named getter operation."""
         return self._is_getter
 
     @property
     def is_setter(self):
+        """Returns True if this is an indexed or named setter operation."""
         return self._is_setter
 
     @property
     def is_deleter(self):
+        """Returns True if this is a named deleter operation."""
         return self._is_deleter
 
     @property
     def is_stringifier(self):
+        """Returns True if this is a stringifier operation."""
         return self._is_stringifier
 
     @property
     def stringifier_attribute(self):
+        """
+        Returns the identifier of an attribute when the stringifying target is
+        an attribute.
+        """
         return self._stringifier_attribute
+
+    @property
+    def is_iterator(self):
+        """
+        Returns True if this operation must be exposed as @@iterator in
+        addition to a property with the identifier.
+        """
+        return self._is_iterator
+
+    @property
+    def is_optionally_defined(self):
+        """
+        Returns True if this operation will be defined only when the interface
+        doesn't declare a member with the same identifier, i.e. this operation
+        will be shadowed by an own member declaration.
+        """
+        return self._is_optionally_defined
 
 
 class OperationGroup(OverloadGroup, WithExtendedAttributes,

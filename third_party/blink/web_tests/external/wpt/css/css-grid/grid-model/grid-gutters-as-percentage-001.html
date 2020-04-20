@@ -1,7 +1,12 @@
 <!DOCTYPE html>
-<link href="resources/grid.css" rel="stylesheet">
-<link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
-<link href="../css-intrinsic-dimensions/resources/height-keyword-classes.css" rel="stylesheet">
+<title>CSS Grid: grid gutters as percentage.</title>
+<link rel="author" title="Sergio Villar" href="mailto:svillar@igalia.com"/>
+<link rel="help" href="https://drafts.csswg.org/css-grid-1/#gutters"/>
+<meta name="assert" content="Check that when 'height' is indefinite, row gaps should be based on grid's 'auto' height."/>
+<link rel="stylesheet" href="/css/support/grid.css"/>
+<link rel="stylesheet" href="/css/support/width-keyword-classes.css"/>
+<link rel="stylesheet" href="/css/support/height-keyword-classes.css"/>
+<link rel="stylesheet" href="/fonts/ahem.css" type="text/css"/>
 <style>
 body { margin: 0; }
 .grid { font: 10px/1 Ahem; position: relative; }
@@ -19,11 +24,14 @@ body { margin: 0; }
 .positioned { position: absolute; width: 100%; height: 100%; }
 </style>
 
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
+<script type="text/javascript">
+    setup({ explicit_done: true });
+</script>
 
-<body onload="checkLayout('.grid')">
+<body onload="document.fonts.ready.then(() => { checkLayout('.grid'); })">
 <div id="log"></div>
 
 <p>Height is indefinite, so row gaps should be based on grid's 'auto' height. Column gaps based on a grid's 'auto' width, which will reduce the available space for tracks; however, they can grow exceeding their content's max-width.</p>

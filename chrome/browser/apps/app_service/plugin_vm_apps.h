@@ -1,0 +1,85 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_APPS_APP_SERVICE_PLUGIN_VM_APPS_H_
+#define CHROME_BROWSER_APPS_APP_SERVICE_PLUGIN_VM_APPS_H_
+
+#include <string>
+
+#include "base/macros.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
+
+class Profile;
+
+namespace apps {
+
+// An app publisher (in the App Service sense) of Plugin VM apps.
+//
+// See chrome/services/app_service/README.md.
+class PluginVmApps : public apps::mojom::Publisher {
+ public:
+  PluginVmApps(const mojo::Remote<apps::mojom::AppService>& app_service,
+               Profile* profile);
+  ~PluginVmApps() override;
+
+  void FlushMojoCallsForTesting();
+
+ private:
+  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
+
+  // apps::mojom::Publisher overrides.
+  void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
+               apps::mojom::ConnectOptionsPtr opts) override;
+  void LoadIcon(const std::string& app_id,
+                apps::mojom::IconKeyPtr icon_key,
+                apps::mojom::IconCompression icon_compression,
+                int32_t size_hint_in_dip,
+                bool allow_placeholder_icon,
+                LoadIconCallback callback) override;
+  void Launch(const std::string& app_id,
+              int32_t event_flags,
+              apps::mojom::LaunchSource launch_source,
+              int64_t display_id) override;
+  void LaunchAppWithFiles(const std::string& app_id,
+                          apps::mojom::LaunchContainer container,
+                          int32_t event_flags,
+                          apps::mojom::LaunchSource launch_source,
+                          apps::mojom::FilePathsPtr file_paths) override;
+  void LaunchAppWithIntent(const std::string& app_id,
+                           int32_t event_flags,
+                           apps::mojom::IntentPtr intent,
+                           apps::mojom::LaunchSource launch_source,
+                           int64_t display_id) override;
+  void SetPermission(const std::string& app_id,
+                     apps::mojom::PermissionPtr permission) override;
+  void Uninstall(const std::string& app_id,
+                 bool clear_site_data,
+                 bool report_abuse) override;
+  void PauseApp(const std::string& app_id) override;
+  void UnpauseApps(const std::string& app_id) override;
+  void GetMenuModel(const std::string& app_id,
+                    apps::mojom::MenuType menu_type,
+                    int64_t display_id,
+                    GetMenuModelCallback callback) override;
+  void OpenNativeSettings(const std::string& app_id) override;
+  void OnPreferredAppSet(
+      const std::string& app_id,
+      apps::mojom::IntentFilterPtr intent_filter,
+      apps::mojom::IntentPtr intent,
+      apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) override;
+
+  mojo::Receiver<apps::mojom::Publisher> receiver_{this};
+
+  Profile* const profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(PluginVmApps);
+};
+
+}  // namespace apps
+
+#endif  // CHROME_BROWSER_APPS_APP_SERVICE_PLUGIN_VM_APPS_H_

@@ -252,10 +252,9 @@ bool Service::RequestUnmount(const ProviderId& provider_id,
   if (file_system_it == file_system_map_.end())
     return false;
 
-  file_system_it->second->RequestUnmount(
-      base::Bind(&Service::OnRequestUnmountStatus,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_system_it->second->GetFileSystemInfo()));
+  file_system_it->second->RequestUnmount(base::BindOnce(
+      &Service::OnRequestUnmountStatus, weak_ptr_factory_.GetWeakPtr(),
+      file_system_it->second->GetFileSystemInfo()));
   return true;
 }
 

@@ -100,8 +100,9 @@ void MTPDeviceTaskHelper::OpenStorage(const std::string& storage_name,
   const std::string mode =
       read_only ? mtpd::kReadOnlyMode : mtpd::kReadWriteMode;
   GetMediaTransferProtocolManager()->OpenStorage(
-      storage_name, mode, base::Bind(&MTPDeviceTaskHelper::OnDidOpenStorage,
-                                     weak_ptr_factory_.GetWeakPtr(), callback));
+      storage_name, mode,
+      base::BindOnce(&MTPDeviceTaskHelper::OnDidOpenStorage,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void MTPDeviceTaskHelper::GetFileInfo(
@@ -115,9 +116,9 @@ void MTPDeviceTaskHelper::GetFileInfo(
   const std::vector<uint32_t> file_ids = {file_id};
   GetMediaTransferProtocolManager()->GetFileInfo(
       device_handle_, file_ids,
-      base::Bind(&MTPDeviceTaskHelper::OnGetFileInfo,
-                 weak_ptr_factory_.GetWeakPtr(), success_callback,
-                 error_callback));
+      base::BindOnce(&MTPDeviceTaskHelper::OnGetFileInfo,
+                     weak_ptr_factory_.GetWeakPtr(), success_callback,
+                     error_callback));
 }
 
 void MTPDeviceTaskHelper::CreateDirectory(
@@ -131,9 +132,9 @@ void MTPDeviceTaskHelper::CreateDirectory(
 
   GetMediaTransferProtocolManager()->CreateDirectory(
       device_handle_, parent_id, directory_name,
-      base::Bind(&MTPDeviceTaskHelper::OnCreateDirectory,
-                 weak_ptr_factory_.GetWeakPtr(), success_callback,
-                 error_callback));
+      base::BindOnce(&MTPDeviceTaskHelper::OnCreateDirectory,
+                     weak_ptr_factory_.GetWeakPtr(), success_callback,
+                     error_callback));
 }
 
 void MTPDeviceTaskHelper::ReadDirectory(
@@ -204,9 +205,9 @@ void MTPDeviceTaskHelper::RenameObject(
 
   GetMediaTransferProtocolManager()->RenameObject(
       device_handle_, object_id, new_name,
-      base::Bind(&MTPDeviceTaskHelper::OnRenameObject,
-                 weak_ptr_factory_.GetWeakPtr(), success_callback,
-                 error_callback));
+      base::BindOnce(&MTPDeviceTaskHelper::OnRenameObject,
+                     weak_ptr_factory_.GetWeakPtr(), success_callback,
+                     error_callback));
 }
 
 MTPDeviceTaskHelper::MTPEntry::MTPEntry() : file_id(0) {}
@@ -223,9 +224,9 @@ void MTPDeviceTaskHelper::CopyFileFromLocal(
 
   GetMediaTransferProtocolManager()->CopyFileFromLocal(
       device_handle_, source_file_descriptor, parent_id, file_name,
-      base::Bind(&MTPDeviceTaskHelper::OnCopyFileFromLocal,
-                 weak_ptr_factory_.GetWeakPtr(), success_callback,
-                 error_callback));
+      base::BindOnce(&MTPDeviceTaskHelper::OnCopyFileFromLocal,
+                     weak_ptr_factory_.GetWeakPtr(), success_callback,
+                     error_callback));
 }
 
 void MTPDeviceTaskHelper::DeleteObject(
@@ -236,9 +237,9 @@ void MTPDeviceTaskHelper::DeleteObject(
 
   GetMediaTransferProtocolManager()->DeleteObject(
       device_handle_, object_id,
-      base::Bind(&MTPDeviceTaskHelper::OnDeleteObject,
-                 weak_ptr_factory_.GetWeakPtr(), success_callback,
-                 error_callback));
+      base::BindOnce(&MTPDeviceTaskHelper::OnDeleteObject,
+                     weak_ptr_factory_.GetWeakPtr(), success_callback,
+                     error_callback));
 }
 
 void MTPDeviceTaskHelper::CloseStorage() const {
@@ -428,8 +429,8 @@ void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
   GetMediaTransferProtocolManager()->ReadFileChunk(
       device_handle_, request.file_id,
       base::checked_cast<uint32_t>(request.offset), bytes_to_read,
-      base::Bind(&MTPDeviceTaskHelper::OnDidReadBytes,
-                 weak_ptr_factory_.GetWeakPtr(), request, file_info));
+      base::BindOnce(&MTPDeviceTaskHelper::OnDidReadBytes,
+                     weak_ptr_factory_.GetWeakPtr(), request, file_info));
 }
 
 void MTPDeviceTaskHelper::OnDidReadBytes(

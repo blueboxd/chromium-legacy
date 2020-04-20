@@ -339,8 +339,8 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   // are up to date after any recent configuration.
   configuration_handler_->GetShillProperties(
       service_path,
-      base::Bind(&NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect,
-                 AsWeakPtr(), check_error_state),
+      base::BindOnce(&NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect,
+                     AsWeakPtr(), check_error_state),
       base::Bind(&NetworkConnectionHandlerImpl::HandleConfigurationFailure,
                  AsWeakPtr(), service_path));
 }

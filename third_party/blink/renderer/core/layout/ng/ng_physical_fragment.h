@@ -121,9 +121,7 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsRenderedLegend() const {
     return IsBox() && BoxType() == NGBoxType::kRenderedLegend;
   }
-  bool IsMathMLFraction() const {
-    return IsBox() && is_generated_text_or_math_fraction_;
-  }
+  bool IsMathMLFraction() const { return IsBox() && is_math_fraction_; }
 
   // Return true if this fragment corresponds directly to an entry in the CSS
   // box tree [1]. Note that anonymous blocks also exist in the CSS box
@@ -409,6 +407,7 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
   unsigned has_borders_ : 1;
   unsigned has_padding_ : 1;
+  unsigned is_math_fraction_ : 1;
 
   // The following are only used by NGPhysicalBoxFragment but are initialized
   // for all types to allow methods using them to be inlined.
@@ -417,10 +416,6 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned is_painted_atomically_ : 1;
   unsigned has_baseline_ : 1;
   unsigned has_last_baseline_ : 1;
-
-  // The following bitfield is shared between NGPhysicalTextFragment and
-  // NGPhysicalBoxFragment.
-  unsigned is_generated_text_or_math_fraction_ : 1;
 
   // The following bitfields are only to be used by NGPhysicalTextFragment
   // (it's defined here to save memory, since that class has no bitfields).

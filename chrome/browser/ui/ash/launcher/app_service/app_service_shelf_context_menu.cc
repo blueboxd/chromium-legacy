@@ -241,6 +241,8 @@ bool AppServiceShelfContextMenu::IsCommandIdChecked(int command_id) const {
       FALLTHROUGH;
     case apps::mojom::AppType::kBuiltIn:
       FALLTHROUGH;
+    case apps::mojom::AppType::kPluginVm:
+      FALLTHROUGH;
     default:
       return ShelfContextMenu::IsCommandIdChecked(command_id);
   }
@@ -429,6 +431,8 @@ void AppServiceShelfContextMenu::SetLaunchType(int command_id) {
       FALLTHROUGH;
     case apps::mojom::AppType::kBuiltIn:
       FALLTHROUGH;
+    case apps::mojom::AppType::kPluginVm:
+      FALLTHROUGH;
     default:
       return;
   }
@@ -492,6 +496,8 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
         return true;
       return false;
     }
+    case apps::mojom::AppType::kPluginVm:
+      FALLTHROUGH;
     case apps::mojom::AppType::kBuiltIn: {
       bool show_in_launcher = false;
       apps::AppServiceProxy* proxy =

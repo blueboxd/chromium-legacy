@@ -131,9 +131,9 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Write) {
   // calling the inner file stream writer.
   {
     std::vector<int> write_log;
-    const int result = writer.Write(short_text_buffer_.get(),
-                                    short_text_buffer_->size(),
-                                    base::Bind(&LogValue<int>, &write_log));
+    const int result =
+        writer.Write(short_text_buffer_.get(), short_text_buffer_->size(),
+                     base::BindOnce(&LogValue<int>, &write_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(short_text_buffer_->size(), result);
@@ -149,9 +149,9 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Write) {
     inner_flush_log.clear();
 
     std::vector<int> write_log;
-    const int result = writer.Write(short_text_buffer_.get(),
-                                    short_text_buffer_->size(),
-                                    base::Bind(&LogValue<int>, &write_log));
+    const int result =
+        writer.Write(short_text_buffer_.get(), short_text_buffer_->size(),
+                     base::BindOnce(&LogValue<int>, &write_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(net::ERR_IO_PENDING, result);
@@ -172,7 +172,7 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Write) {
     inner_flush_log.clear();
 
     std::vector<int> flush_log;
-    const int result = writer.Flush(base::Bind(&LogValue<int>, &flush_log));
+    const int result = writer.Flush(base::BindOnce(&LogValue<int>, &flush_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(net::ERR_IO_PENDING, result);
@@ -206,9 +206,9 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Write_WithError) {
   // not be generated unless the intermediate buffer is flushed.
   {
     std::vector<int> write_log;
-    const int result = writer.Write(short_text_buffer_.get(),
-                                    short_text_buffer_->size(),
-                                    base::Bind(&LogValue<int>, &write_log));
+    const int result =
+        writer.Write(short_text_buffer_.get(), short_text_buffer_->size(),
+                     base::BindOnce(&LogValue<int>, &write_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(short_text_buffer_->size(), result);
@@ -224,9 +224,9 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Write_WithError) {
     inner_flush_log.clear();
 
     std::vector<int> write_log;
-    const int result = writer.Write(short_text_buffer_.get(),
-                                    short_text_buffer_->size(),
-                                    base::Bind(&LogValue<int>, &write_log));
+    const int result =
+        writer.Write(short_text_buffer_.get(), short_text_buffer_->size(),
+                     base::BindOnce(&LogValue<int>, &write_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(net::ERR_IO_PENDING, result);
@@ -255,9 +255,9 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Write_Directly) {
   // Write few bytes first, so the intermediate buffer is not empty.
   {
     std::vector<int> write_log;
-    const int result = writer.Write(short_text_buffer_.get(),
-                                    short_text_buffer_->size(),
-                                    base::Bind(&LogValue<int>, &write_log));
+    const int result =
+        writer.Write(short_text_buffer_.get(), short_text_buffer_->size(),
+                     base::BindOnce(&LogValue<int>, &write_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(short_text_buffer_->size(), result);
@@ -272,9 +272,9 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Write_Directly) {
     inner_flush_log.clear();
 
     std::vector<int> write_log;
-    const int result = writer.Write(long_text_buffer_.get(),
-                                    long_text_buffer_->size(),
-                                    base::Bind(&LogValue<int>, &write_log));
+    const int result =
+        writer.Write(long_text_buffer_.get(), long_text_buffer_->size(),
+                     base::BindOnce(&LogValue<int>, &write_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(net::ERR_IO_PENDING, result);
@@ -293,9 +293,9 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Write_Directly) {
     inner_flush_log.clear();
 
     std::vector<int> write_log;
-    const int result = writer.Write(long_text_buffer_.get(),
-                                    long_text_buffer_->size(),
-                                    base::Bind(&LogValue<int>, &write_log));
+    const int result =
+        writer.Write(long_text_buffer_.get(), long_text_buffer_->size(),
+                     base::BindOnce(&LogValue<int>, &write_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(net::ERR_IO_PENDING, result);
@@ -321,14 +321,14 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Cancel) {
   // buffered writes which do not invoke flushing the intermediate buffer finish
   // immediately, so they are not cancellable.
   std::vector<int> write_log;
-  const int write_result = writer.Write(long_text_buffer_.get(),
-                                        long_text_buffer_->size(),
-                                        base::Bind(&LogValue<int>, &write_log));
+  const int write_result =
+      writer.Write(long_text_buffer_.get(), long_text_buffer_->size(),
+                   base::BindOnce(&LogValue<int>, &write_log));
   EXPECT_EQ(net::ERR_IO_PENDING, write_result);
 
   std::vector<int> cancel_log;
   const int cancel_result =
-      writer.Cancel(base::Bind(&LogValue<int>, &cancel_log));
+      writer.Cancel(base::BindOnce(&LogValue<int>, &cancel_log));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(net::ERR_IO_PENDING, cancel_result);
@@ -347,9 +347,9 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Flush) {
 
   // Write less bytes than size of the intermediate buffer.
   std::vector<int> write_log;
-  const int write_result = writer.Write(short_text_buffer_.get(),
-                                        short_text_buffer_->size(),
-                                        base::Bind(&LogValue<int>, &write_log));
+  const int write_result =
+      writer.Write(short_text_buffer_.get(), short_text_buffer_->size(),
+                   base::BindOnce(&LogValue<int>, &write_log));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(short_text_buffer_->size(), write_result);
@@ -360,7 +360,8 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Flush) {
   // Calling Flush() will force flushing the intermediate buffer before it's
   // filled out.
   std::vector<int> flush_log;
-  const int flush_result = writer.Flush(base::Bind(&LogValue<int>, &flush_log));
+  const int flush_result =
+      writer.Flush(base::BindOnce(&LogValue<int>, &flush_log));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(net::ERR_IO_PENDING, flush_result);
@@ -385,9 +386,9 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Flush_AfterWriteError) {
   // Write less bytes than size of the intermediate buffer. This should succeed
   // since the inner file stream writer is not invoked.
   std::vector<int> write_log;
-  const int write_result = writer.Write(short_text_buffer_.get(),
-                                        short_text_buffer_->size(),
-                                        base::Bind(&LogValue<int>, &write_log));
+  const int write_result =
+      writer.Write(short_text_buffer_.get(), short_text_buffer_->size(),
+                   base::BindOnce(&LogValue<int>, &write_log));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(short_text_buffer_->size(), write_result);
@@ -398,7 +399,8 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Flush_AfterWriteError) {
   // Calling Flush() will force flushing the intermediate buffer before it's
   // filled out. That should cause failing.
   std::vector<int> flush_log;
-  const int flush_result = writer.Flush(base::Bind(&LogValue<int>, &flush_log));
+  const int flush_result =
+      writer.Flush(base::BindOnce(&LogValue<int>, &flush_log));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(net::ERR_IO_PENDING, flush_result);

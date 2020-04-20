@@ -751,7 +751,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, AutoConnectDisallowed) {
   std::unique_ptr<base::DictionaryValue> dictionary;
   managed_handler()->GetManagedProperties(
       kUser1, wifi2_service_path,
-      base::Bind(
+      base::BindOnce(
           [](std::unique_ptr<base::DictionaryValue>* dictionary_out,
              const std::string& service_path,
              const base::DictionaryValue& dictionary) {
@@ -936,7 +936,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, ActiveProxySettingsPreference) {
   // Get properties and verify that proxy is used.
   managed_handler()->GetManagedProperties(
       kUser1, wifi_service_path,
-      base::Bind(
+      base::BindOnce(
           [](std::unique_ptr<base::DictionaryValue>* dictionary_out,
              base::RepeatingClosure quit_closure,
              const std::string& service_path,
@@ -973,7 +973,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, ActiveProxySettingsPreference) {
   // Fetch managed properties after preference is set.
   managed_handler()->GetManagedProperties(
       kUser1, wifi_service_path,
-      base::Bind(
+      base::BindOnce(
           [](std::unique_ptr<base::DictionaryValue>* dictionary_out,
              base::RepeatingClosure quit_closure,
              const std::string& service_path,

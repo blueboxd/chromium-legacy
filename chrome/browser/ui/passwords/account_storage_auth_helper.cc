@@ -28,19 +28,22 @@ using ReauthSucceeded =
 AccountStorageAuthHelper::AccountStorageAuthHelper(
     Profile* profile,
     password_manager::PasswordFeatureManager* password_feature_manager)
-    : profile_(profile), password_feature_manager_(password_feature_manager) {}
+    : profile_(profile),
+      password_feature_manager_(password_feature_manager),
+      signin_view_controller_getter_(base::BindRepeating(
+          [](Profile* profile) -> SigninViewController* {
+            if (Browser* browser = chrome::FindBrowserWithProfile(profile))
+              return browser->signin_view_controller();
+            return nullptr;
+          },
+          profile_)) {}
 
 AccountStorageAuthHelper::~AccountStorageAuthHelper() = default;
 
 void AccountStorageAuthHelper::TriggerOptInReauth(
     base::OnceCallback<void(ReauthSucceeded)> reauth_callback) {
-  Browser* browser = chrome::FindBrowserWithProfile(profile_);
-  if (!browser) {
-    std::move(reauth_callback).Run(ReauthSucceeded(false));
-    return;
-  }
   SigninViewController* signin_view_controller =
-      browser->signin_view_controller();
+      signin_view_controller_getter_.Run();
   if (!signin_view_controller) {
     std::move(reauth_callback).Run(ReauthSucceeded(false));
     return;
@@ -68,11 +71,8 @@ void AccountStorageAuthHelper::TriggerOptInReauth(
 void AccountStorageAuthHelper::TriggerSignIn(
     signin_metrics::AccessPoint access_point) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  Browser* browser = chrome::FindBrowserWithProfile(profile_);
-  if (!browser)
-    return;
   if (SigninViewController* signin_controller =
-          browser->signin_view_controller()) {
+          signin_view_controller_getter_.Run()) {
     signin_controller->ShowDiceAddAccountTab(access_point, std::string());
   }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)

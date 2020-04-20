@@ -180,8 +180,9 @@ void ConnectionPreserverImpl::SetPreservedConnection(
 
   preserved_connection_timer_->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kTimeoutSeconds),
-      base::Bind(&ConnectionPreserverImpl::RemovePreservedConnectionIfPresent,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &ConnectionPreserverImpl::RemovePreservedConnectionIfPresent,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ConnectionPreserverImpl::RemovePreservedConnectionIfPresent() {

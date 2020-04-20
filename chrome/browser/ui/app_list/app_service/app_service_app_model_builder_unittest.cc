@@ -19,6 +19,8 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
@@ -54,6 +56,7 @@
 using crostini::CrostiniTestHelper;
 using extensions::AppSorting;
 using extensions::ExtensionSystem;
+using plugin_vm::PluginVmTestHelper;
 using ::testing::_;
 using ::testing::Matcher;
 
@@ -635,4 +638,65 @@ TEST_F(CrostiniAppTest, DisableCrostini) {
   RegistryService()->ClearApplicationList(crostini::kCrostiniDefaultVmName, "");
   CrostiniTestHelper::DisableCrostini(testing_profile());
   EXPECT_EQ(0u, GetModelItemCount());
+}
+
+class PluginVmAppTest : public testing::Test {
+ public:
+  void SetUp() override {
+    testing_profile_ = std::make_unique<TestingProfile>();
+    test_helper_ = std::make_unique<PluginVmTestHelper>(testing_profile_.get());
+    CreateBuilder();
+  }
+
+  void TearDown() override { ResetBuilder(); }
+
+ protected:
+  // Destroys any existing builder in the correct order.
+  void ResetBuilder() {
+    builder_.reset();
+    controller_.reset();
+    model_updater_.reset();
+  }
+
+  // Creates a new builder, destroying any existing one.
+  void CreateBuilder() {
+    ResetBuilder();
+
+    app_service_test_.UninstallAllApps(testing_profile_.get());
+    testing_profile_->SetGuestSession(false);
+    app_service_test_.SetUp(testing_profile_.get());
+    model_updater_ = std::make_unique<FakeAppListModelUpdater>();
+    controller_ = std::make_unique<test::TestAppListControllerDelegate>();
+    builder_ = std::make_unique<AppServiceAppModelBuilder>(controller_.get());
+    builder_->Initialize(nullptr, testing_profile_.get(), model_updater_.get());
+
+    RemoveApps(apps::mojom::AppType::kPluginVm, testing_profile_.get(),
+               model_updater_.get());
+  }
+
+  content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<TestingProfile> testing_profile_;
+  std::unique_ptr<PluginVmTestHelper> test_helper_;
+
+  apps::AppServiceTest app_service_test_;
+  std::unique_ptr<AppServiceAppModelBuilder> builder_;
+  std::unique_ptr<FakeAppListModelUpdater> model_updater_;
+  std::unique_ptr<test::TestAppListControllerDelegate> controller_;
+};
+
+TEST_F(PluginVmAppTest, PluginVmDisabled) {
+  EXPECT_FALSE(plugin_vm::IsPluginVmAllowedForProfile(testing_profile_.get()));
+  EXPECT_THAT(GetModelContent(model_updater_.get()), testing::IsEmpty());
+}
+
+TEST_F(PluginVmAppTest, PluginVmEnabled) {
+  test_helper_->AllowPluginVm();
+
+  // Reset the AppModelBuilder, so that it is created in a state where
+  // Plugin VM was enabled.
+  CreateBuilder();
+
+  EXPECT_EQ(std::vector<std::string>{l10n_util::GetStringUTF8(
+                IDS_PLUGIN_VM_APP_NAME)},
+            GetModelContent(model_updater_.get()));
 }

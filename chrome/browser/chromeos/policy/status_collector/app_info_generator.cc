@@ -42,6 +42,8 @@ em::AppInfo::AppType ExtractAppType(const apps::mojom::AppType app_type) {
       return em::AppInfo::AppType::AppInfo_AppType_TYPE_BUILTIN;
     case apps::mojom::AppType::kCrostini:
       return em::AppInfo::AppType::AppInfo_AppType_TYPE_CROSTINI;
+    case apps::mojom::AppType::kPluginVm:
+      return em::AppInfo::AppType::AppInfo_AppType_TYPE_PLUGINVM;
     case apps::mojom::AppType::kExtension:
       return em::AppInfo::AppType::AppInfo_AppType_TYPE_EXTENSION;
     case apps::mojom::AppType::kWeb:

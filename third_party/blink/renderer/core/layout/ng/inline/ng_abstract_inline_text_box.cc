@@ -155,7 +155,7 @@ NGInlineCursor NGAbstractInlineTextBox::GetCursorOnLine() const {
 
 String NGAbstractInlineTextBox::GetTextContent() const {
   const NGInlineCursor& cursor = GetCursor();
-  if (cursor.Current().IsGeneratedTextType())
+  if (cursor.Current().IsLayoutGeneratedText())
     return cursor.Current().Text(cursor).ToString();
   if (const NGPaintFragment* paint_fragment = cursor.CurrentPaintFragment()) {
     return To<NGPhysicalTextFragment>(paint_fragment->PhysicalFragment())

@@ -45,6 +45,8 @@ enterprise_management::App::AppType AppTypeForReporting(
       return enterprise_management::App::CROSTINI;
     case apps::mojom::AppType::kExtension:
       return enterprise_management::App::EXTENSION;
+    case apps::mojom::AppType::kPluginVm:
+      return enterprise_management::App::PLUGIN_VM;
     case apps::mojom::AppType::kWeb:
       return enterprise_management::App::WEB;
     default:

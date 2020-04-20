@@ -215,9 +215,8 @@ void VideoCaptureJpegDecoderImpl::FinishInitialization() {
       decoder_task_runner_, std::move(remote_decoder));
 
   decoder_->InitializeAsync(
-      this,
-      base::BindRepeating(&VideoCaptureJpegDecoderImpl::OnInitializationDone,
-                          weak_ptr_factory_.GetWeakPtr()));
+      this, base::BindOnce(&VideoCaptureJpegDecoderImpl::OnInitializationDone,
+                           weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VideoCaptureJpegDecoderImpl::OnInitializationDone(bool success) {

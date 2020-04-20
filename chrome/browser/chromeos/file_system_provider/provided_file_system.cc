@@ -543,9 +543,9 @@ void ProvidedFileSystem::Abort(int operation_request_id) {
           ABORT, std::unique_ptr<RequestManager::HandlerInterface>(
                      new operations::Abort(
                          event_router_, file_system_info_, operation_request_id,
-                         base::Bind(&ProvidedFileSystem::OnAbortCompleted,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    operation_request_id))))) {
+                         base::BindOnce(&ProvidedFileSystem::OnAbortCompleted,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        operation_request_id))))) {
     // If the aborting event is not handled, then the operation should simply
     // be not aborted. Instead we'll wait until it completes.
     LOG(ERROR) << "Failed to create an abort request.";

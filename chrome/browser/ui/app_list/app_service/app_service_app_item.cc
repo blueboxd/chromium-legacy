@@ -52,6 +52,10 @@ std::unique_ptr<app_list::AppContextMenu> AppServiceAppItem::MakeAppContextMenu(
       return std::make_unique<CrostiniAppContextMenu>(profile, app_id,
                                                       controller);
 
+    case apps::mojom::AppType::kPluginVm:
+      return std::make_unique<app_list::AppContextMenu>(delegate, profile,
+                                                        app_id, controller);
+
     case apps::mojom::AppType::kWeb:
       if (base::FeatureList::IsEnabled(
               features::kDesktopPWAsWithoutExtensions)) {

@@ -484,30 +484,37 @@ class IdlCompiler(object):
 
         self._ir_map.move_to_new_phase()
 
-        for old_ir in old_irs:
-            assert not old_ir.constructor_groups
-            assert not old_ir.named_constructor_groups
-            assert not old_ir.operation_groups
-            new_ir = self._maybe_make_copy(old_ir)
-            self._ir_map.add(new_ir)
+        def make_groups(group_ir_class, operations):
             sort_key = lambda x: x.identifier
-            new_ir.constructor_groups = [
-                ConstructorGroup.IR(constructors=list(constructors))
-                for identifier, constructors in itertools.groupby(
-                    sorted(new_ir.constructors, key=sort_key), key=sort_key)
-            ]
-            new_ir.named_constructor_groups = [
-                ConstructorGroup.IR(constructors=list(constructors))
-                for identifier, constructors in itertools.groupby(
-                    sorted(new_ir.named_constructors, key=sort_key),
-                    key=sort_key)
-            ]
-            new_ir.operation_groups = [
-                OperationGroup.IR(operations=list(operations))
-                for identifier, operations in itertools.groupby(
-                    sorted(new_ir.operations, key=sort_key), key=sort_key)
+            return [
+                group_ir_class(list(operations_in_group))
+                for identifier, operations_in_group in itertools.groupby(
+                    sorted(operations, key=sort_key), key=sort_key)
                 if identifier
             ]
+
+        for old_ir in old_irs:
+            new_ir = self._maybe_make_copy(old_ir)
+            self._ir_map.add(new_ir)
+
+            assert not new_ir.constructor_groups
+            assert not new_ir.named_constructor_groups
+            assert not new_ir.operation_groups
+            new_ir.constructor_groups = make_groups(ConstructorGroup.IR,
+                                                    new_ir.constructors)
+            new_ir.named_constructor_groups = make_groups(
+                ConstructorGroup.IR, new_ir.named_constructors)
+            new_ir.operation_groups = make_groups(OperationGroup.IR,
+                                                  new_ir.operations)
+
+            if not isinstance(new_ir, Interface.IR):
+                continue
+
+            for item in (new_ir.iterable, new_ir.maplike, new_ir.setlike):
+                if item:
+                    assert not item.operation_groups
+                    item.operation_groups = make_groups(
+                        OperationGroup.IR, item.operations)
 
     def _propagate_extattrs_to_overload_group(self):
         ANY_OF = ('CrossOrigin', 'Custom', 'LenientThis', 'NotEnumerable',
@@ -523,9 +530,7 @@ class IdlCompiler(object):
             new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
 
-            for group in itertools.chain(new_ir.constructor_groups,
-                                         new_ir.named_constructor_groups,
-                                         new_ir.operation_groups):
+            for group in new_ir.iter_all_overload_groups():
                 for key in ANY_OF:
                     if any(key in overload.extended_attributes
                            for overload in group):
@@ -547,9 +552,7 @@ class IdlCompiler(object):
             new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
 
-            for group in itertools.chain(new_ir.constructor_groups,
-                                         new_ir.named_constructor_groups,
-                                         new_ir.operation_groups):
+            for group in new_ir.iter_all_overload_groups():
                 exposures = map(lambda overload: overload.exposure, group)
 
                 # [Exposed]

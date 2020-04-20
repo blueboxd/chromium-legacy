@@ -623,6 +623,10 @@ void WebRuntimeFeatures::EnableConsolidatedMovementXY(bool enable) {
   RuntimeEnabledFeatures::SetConsolidatedMovementXYEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableCooperativeScheduling(bool enable) {
+  RuntimeEnabledFeatures::SetCooperativeSchedulingEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableMouseSubframeNoImplicitCapture(bool enable) {
   RuntimeEnabledFeatures::SetMouseSubframeNoImplicitCaptureEnabled(enable);
 }

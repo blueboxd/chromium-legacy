@@ -43,7 +43,7 @@ class ScopedFileOpener::Runner
       if (file_system_.get()) {
         file_system_->CloseFile(
             file_handle_,
-            base::Bind(
+            base::BindOnce(
                 &ScopedFileOpener::Runner::OnCloseFileAfterAbortCompleted, this,
                 file_handle_));
       }
@@ -83,8 +83,9 @@ class ScopedFileOpener::Runner
       // not handled by the extension. In either case, close the file now.
       file_system_->CloseFile(
           file_handle,
-          base::Bind(&ScopedFileOpener::Runner::OnCloseFileAfterAbortCompleted,
-                     this, file_handle_));
+          base::BindOnce(
+              &ScopedFileOpener::Runner::OnCloseFileAfterAbortCompleted, this,
+              file_handle_));
       return;
     }
 

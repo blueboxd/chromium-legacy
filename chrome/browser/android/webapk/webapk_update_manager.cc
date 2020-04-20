@@ -224,5 +224,5 @@ static void JNI_WebApkUpdateManager_UpdateWebApkFromFile(
       ConvertJavaStringToUTF8(env, java_update_request_path);
   WebApkInstallService::Get(profile)->UpdateAsync(
       base::FilePath(update_request_path),
-      base::Bind(&OnUpdated, callback_ref));
+      base::BindOnce(&OnUpdated, callback_ref));
 }

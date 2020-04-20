@@ -224,8 +224,8 @@ void NetworkSmsHandler::Init() {
   ShillManagerClient::Get()->AddPropertyChangedObserver(this);
   // Request network manager properties so that we can get the list of devices.
   ShillManagerClient::Get()->GetProperties(
-      base::Bind(&NetworkSmsHandler::ManagerPropertiesCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&NetworkSmsHandler::ManagerPropertiesCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void NetworkSmsHandler::RequestUpdate(bool request_existing) {

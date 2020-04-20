@@ -267,10 +267,10 @@ void PartnerBookmarksReader::GetFaviconFromCacheOrServer(
     FaviconFetchedCallback callback) {
   GetLargeIconService()->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       page_url, kPartnerBookmarksMinimumFaviconSizePx, desired_favicon_size_px,
-      base::Bind(&PartnerBookmarksReader::OnGetFaviconFromCacheFinished,
-                 base::Unretained(this), page_url,
-                 base::Passed(std::move(callback)), fallback_to_server,
-                 from_server, desired_favicon_size_px),
+      base::BindOnce(&PartnerBookmarksReader::OnGetFaviconFromCacheFinished,
+                     base::Unretained(this), page_url,
+                     base::Passed(std::move(callback)), fallback_to_server,
+                     from_server, desired_favicon_size_px),
       &favicon_task_tracker_);
 }
 
@@ -324,9 +324,10 @@ void PartnerBookmarksReader::OnGetFaviconFromCacheFinished(
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           page_url, false /* may_page_url_be_private */,
           false /* should_trim_page_url_path */, traffic_annotation,
-          base::Bind(&PartnerBookmarksReader::OnGetFaviconFromServerFinished,
-                     base::Unretained(this), page_url, desired_favicon_size_px,
-                     base::Passed(std::move(callback))));
+          base::BindOnce(
+              &PartnerBookmarksReader::OnGetFaviconFromServerFinished,
+              base::Unretained(this), page_url, desired_favicon_size_px,
+              base::Passed(std::move(callback))));
 }
 
 void PartnerBookmarksReader::OnGetFaviconFromServerFinished(

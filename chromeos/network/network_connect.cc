@@ -211,8 +211,8 @@ void NetworkConnectImpl::CallConnectToNetwork(const std::string& network_id,
 
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
       network->path(),
-      base::Bind(&NetworkConnectImpl::OnConnectSucceeded,
-                 weak_factory_.GetWeakPtr(), network_id),
+      base::BindOnce(&NetworkConnectImpl::OnConnectSucceeded,
+                     weak_factory_.GetWeakPtr(), network_id),
       base::Bind(&NetworkConnectImpl::OnConnectFailed,
                  weak_factory_.GetWeakPtr(), network_id),
       check_error_state, ConnectCallbackMode::ON_COMPLETED);

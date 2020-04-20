@@ -126,8 +126,8 @@ class LastDownloadFinderTest : public testing::Test {
             profile, ServiceAccessType::EXPLICIT_ACCESS);
     history_service->CreateDownload(
         CreateTestDownloadRow(kBinaryFileName),
-        base::Bind(&LastDownloadFinderTest::OnDownloadCreated,
-                   base::Unretained(this)));
+        base::BindOnce(&LastDownloadFinderTest::OnDownloadCreated,
+                       base::Unretained(this)));
   }
 
   // LastDownloadFinder::LastDownloadCallback implementation that
@@ -213,9 +213,8 @@ class LastDownloadFinderTest : public testing::Test {
             profile, ServiceAccessType::EXPLICIT_ACCESS);
     history_service->CreateDownload(
         download,
-        base::Bind(&LastDownloadFinderTest::ContinueOnDownloadCreated,
-                   base::Unretained(this),
-                   run_loop.QuitClosure()));
+        base::BindOnce(&LastDownloadFinderTest::ContinueOnDownloadCreated,
+                       base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
 

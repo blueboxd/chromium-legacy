@@ -287,6 +287,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableSmsReceiver, features::kSmsReceiver, kDisableOnly},
     {wf::EnableConsolidatedMovementXY, features::kConsolidatedMovementXY,
      kUseFeatureState},
+    {wf::EnableCooperativeScheduling, features::kCooperativeScheduling,
+     kUseFeatureState},
     {wf::EnableMouseSubframeNoImplicitCapture,
      features::kMouseSubframeNoImplicitCapture, kUseFeatureState},
     {wf::EnableCookieDeprecationMessages, features::kCookieDeprecationMessages,

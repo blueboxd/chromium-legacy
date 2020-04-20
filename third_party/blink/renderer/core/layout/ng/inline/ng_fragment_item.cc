@@ -21,7 +21,6 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
       type_(kText),
       sub_type_(static_cast<unsigned>(text.TextType())),
       style_variant_(static_cast<unsigned>(text.StyleVariant())),
-      is_generated_text_(text.IsGeneratedText()),
       is_hidden_for_paint_(text.IsHiddenForPaint()),
       text_direction_(static_cast<unsigned>(text.ResolvedDirection())),
       ink_overflow_computed_(false),
@@ -32,7 +31,7 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
     DCHECK_EQ(text_.shape_result->EndIndex(), EndOffset());
   }
 #endif
-  if (text.TextType() == NGTextType::kGenerated) {
+  if (text.TextType() == NGTextType::kLayoutGenerated) {
     type_ = kGeneratedText;
     // Note: Because of |text_| and |generated_text_| are in same union and
     // we initialize |text_| instead of |generated_text_|, we should construct
@@ -152,8 +151,13 @@ bool NGFragmentItem::IsEmptyLineBox() const {
 }
 
 bool NGFragmentItem::IsGeneratedText() const {
-  if (Type() == kText || Type() == kGeneratedText)
-    return is_generated_text_;
+  if (Type() == kGeneratedText) {
+    DCHECK_EQ(TextType(), NGTextType::kLayoutGenerated);
+    return true;
+  }
+  DCHECK_NE(TextType(), NGTextType::kLayoutGenerated);
+  if (Type() == kText)
+    return GetLayoutObject()->IsStyleGenerated();
   NOTREACHED();
   return false;
 }

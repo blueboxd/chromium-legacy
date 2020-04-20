@@ -218,7 +218,7 @@ class CORE_EXPORT ThreadableLoader final
   const ResourceLoaderOptions resource_loader_options_;
 
   // True when feature OutOfBlinkCors is enabled (https://crbug.com/736308).
-  bool out_of_blink_cors_;
+  const bool out_of_blink_cors_;
 
   // Corresponds to the CORS flag in the Fetch spec.
   bool cors_flag_ = false;

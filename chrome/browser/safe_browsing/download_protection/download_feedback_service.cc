@@ -140,9 +140,9 @@ void DownloadFeedbackService::BeginFeedbackForDownload(
 
   download->StealDangerousDownload(
       download_command == DownloadCommands::DISCARD,
-      base::Bind(&DownloadFeedbackService::BeginFeedbackOrDeleteFile,
-                 file_task_runner_, weak_ptr_factory_.GetWeakPtr(),
-                 pings->ping_request(), pings->ping_response()));
+      base::BindOnce(&DownloadFeedbackService::BeginFeedbackOrDeleteFile,
+                     file_task_runner_, weak_ptr_factory_.GetWeakPtr(),
+                     pings->ping_request(), pings->ping_response()));
   if (download_command == DownloadCommands::KEEP) {
     DownloadItemModel model(download);
     DownloadCommands(&model).ExecuteCommand(download_command);

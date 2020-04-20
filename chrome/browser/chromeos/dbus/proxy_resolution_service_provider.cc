@@ -106,8 +106,8 @@ void ProxyResolutionServiceProvider::Start(
       kNetworkProxyServiceInterface, kNetworkProxyServiceResolveProxyMethod,
       base::BindRepeating(&ProxyResolutionServiceProvider::DbusResolveProxy,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ProxyResolutionServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ProxyResolutionServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool ProxyResolutionServiceProvider::OnOriginThread() {

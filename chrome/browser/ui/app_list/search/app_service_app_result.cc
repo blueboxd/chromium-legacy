@@ -121,6 +121,8 @@ ash::SearchResultType AppServiceAppResult::GetSearchResultType() const {
       return ash::PLAY_STORE_APP;
     case apps::mojom::AppType::kBuiltIn:
       return ash::INTERNAL_APP;
+    case apps::mojom::AppType::kPluginVm:
+      return ash::PLUGIN_VM_APP;
     case apps::mojom::AppType::kCrostini:
       return ash::CROSTINI_APP;
     case apps::mojom::AppType::kExtension:

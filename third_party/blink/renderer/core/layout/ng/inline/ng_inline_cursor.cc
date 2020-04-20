@@ -217,11 +217,11 @@ bool NGInlineCursorPosition::IsGeneratedText() const {
   return false;
 }
 
-bool NGInlineCursorPosition::IsGeneratedTextType() const {
+bool NGInlineCursorPosition::IsLayoutGeneratedText() const {
   if (paint_fragment_) {
     if (auto* text_fragment = DynamicTo<NGPhysicalTextFragment>(
             paint_fragment_->PhysicalFragment())) {
-      return text_fragment->TextType() == NGTextType::kGenerated;
+      return text_fragment->TextType() == NGTextType::kLayoutGenerated;
     }
     return false;
   }
@@ -244,7 +244,7 @@ bool NGInlineCursor::IsInlineLeaf() const {
   if (Current().IsHiddenForPaint())
     return false;
   if (Current().IsText())
-    return !Current().IsGeneratedTextType();
+    return !Current().IsLayoutGeneratedText();
   if (!Current().IsAtomicInline())
     return false;
   return !Current().IsListMarker();
@@ -383,7 +383,7 @@ TextDirection NGInlineCursorPosition::BaseDirection() const {
 
 UBiDiLevel NGInlineCursorPosition::BidiLevel() const {
   if (IsText()) {
-    if (IsGeneratedTextType()) {
+    if (IsLayoutGeneratedText()) {
       // TODO(yosin): Until we have clients, we don't support bidi-level for
       // ellipsis and soft hyphens.
       NOTREACHED() << this;

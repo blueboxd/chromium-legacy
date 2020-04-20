@@ -349,6 +349,8 @@ static int {{overloads.camel_case_name}}MethodMaxArg() {
 {##############################################################################}
 {% macro overload_resolution_method(overloads, world_suffix) %}
 static void {{overloads.camel_case_name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   {% set fall_through_to_partial_overloads = not is_partial and overloads.has_partial_overloads %}
 
   {% if overloads.measure_all_as %}

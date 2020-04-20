@@ -69,9 +69,18 @@ class PLATFORM_EXPORT EventLoop final : public WTF::RefCounted<EventLoop> {
   // empty.
   static void PerformIsolateGlobalMicrotasksCheckpoint(v8::Isolate* isolate);
 
+  // Disables or enables all controlled frames.
+  void Disable();
+  void Enable();
+
+  void AttachScheduler(FrameOrWorkerScheduler*);
+  void DetachScheduler(FrameOrWorkerScheduler*);
+
   // Returns the MicrotaskQueue instance to be associated to v8::Context. Pass
   // it to v8::Context::New().
   v8::MicrotaskQueue* microtask_queue() const { return microtask_queue_.get(); }
+
+  bool IsSchedulerAttachedForTest(FrameOrWorkerScheduler*);
 
  private:
   friend class WTF::RefCounted<EventLoop>;

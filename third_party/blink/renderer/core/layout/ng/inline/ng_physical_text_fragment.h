@@ -40,7 +40,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   NGTextType TextType() const { return static_cast<NGTextType>(sub_type_); }
   // Returns true if the text is generated (from, e.g., list marker,
   // pseudo-element, ...) instead of from a DOM text node.
-  bool IsGeneratedText() const { return is_generated_text_or_math_fraction_; }
+  bool IsGeneratedText() const;
   // True if this is a forced line break.
   bool IsLineBreak() const {
     return TextType() == NGTextType::kForcedLineBreak;

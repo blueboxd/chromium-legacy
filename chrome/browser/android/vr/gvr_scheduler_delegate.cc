@@ -545,8 +545,8 @@ void GvrSchedulerDelegate::SubmitDrawnFrame(FrameType frame_type,
   }
   if (fence) {
     webxr_delayed_gvr_submit_.Reset(
-        base::BindRepeating(&GvrSchedulerDelegate::DrawFrameSubmitWhenReady,
-                            base::Unretained(this)));
+        base::BindOnce(&GvrSchedulerDelegate::DrawFrameSubmitWhenReady,
+                       base::Unretained(this)));
     task_runner()->PostTask(
         FROM_HERE, base::BindOnce(webxr_delayed_gvr_submit_.callback(),
                                   frame_type, head_pose, std::move(fence)));
@@ -574,8 +574,8 @@ void GvrSchedulerDelegate::DrawFrameSubmitWhenReady(
     }
     if (!fence->HasCompleted()) {
       webxr_delayed_gvr_submit_.Reset(
-          base::BindRepeating(&GvrSchedulerDelegate::DrawFrameSubmitWhenReady,
-                              base::Unretained(this)));
+          base::BindOnce(&GvrSchedulerDelegate::DrawFrameSubmitWhenReady,
+                         base::Unretained(this)));
       if (use_polling) {
         // Poll the fence status at a short interval. This burns some CPU, but
         // avoids excessive waiting on devices which don't handle timeouts

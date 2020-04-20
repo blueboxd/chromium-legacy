@@ -613,12 +613,12 @@ void ChromeCleanerControllerImpl::OnChromeCleanerFetchedAndVerified(
   ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
       extension_service_, extension_registry_, executable_path,
       *reporter_invocation_, metrics_status,
-      base::Bind(&ChromeCleanerControllerImpl::WeakOnPromptUser,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&ChromeCleanerControllerImpl::OnConnectionClosed,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&ChromeCleanerControllerImpl::OnCleanerProcessDone,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ChromeCleanerControllerImpl::WeakOnPromptUser,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ChromeCleanerControllerImpl::OnConnectionClosed,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ChromeCleanerControllerImpl::OnCleanerProcessDone,
+                     weak_factory_.GetWeakPtr()),
       // Our callbacks should be dispatched to the UI thread only.
       base::ThreadTaskRunnerHandle::Get());
 

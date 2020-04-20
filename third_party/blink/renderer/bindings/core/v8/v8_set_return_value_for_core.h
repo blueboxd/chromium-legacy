@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/platform/bindings/v8_set_return_value.h"
 
 namespace blink {
@@ -14,6 +15,15 @@ namespace blink {
 namespace bindings {
 
 class NativeValueTraitsStringAdapter;
+
+// ScriptValue
+template <typename CallbackInfo, typename... ExtraArgs>
+void V8SetReturnValue(const CallbackInfo& info,
+                      const ScriptValue& value,
+                      ExtraArgs... extra_args) {
+  // Ignore all |extra_args| given as inputs for optimization.
+  V8SetReturnValue(info, value.V8Value());
+}
 
 // String types
 template <typename CallbackInfo>

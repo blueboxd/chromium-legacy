@@ -203,8 +203,8 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
   void Connect(const std::string& service_path) {
     network_connection_handler_->ConnectToNetwork(
         service_path,
-        base::Bind(&NetworkConnectionHandlerImplTest::SuccessCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&NetworkConnectionHandlerImplTest::SuccessCallback,
+                       base::Unretained(this)),
         base::Bind(&NetworkConnectionHandlerImplTest::ErrorCallback,
                    base::Unretained(this)),
         true /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
@@ -214,8 +214,8 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
   void Disconnect(const std::string& service_path) {
     network_connection_handler_->DisconnectNetwork(
         service_path,
-        base::Bind(&NetworkConnectionHandlerImplTest::SuccessCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&NetworkConnectionHandlerImplTest::SuccessCallback,
+                       base::Unretained(this)),
         base::Bind(&NetworkConnectionHandlerImplTest::ErrorCallback,
                    base::Unretained(this)));
     task_environment_.RunUntilIdle();

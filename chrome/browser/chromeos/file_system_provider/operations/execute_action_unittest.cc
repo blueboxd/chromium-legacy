@@ -64,7 +64,7 @@ TEST_F(FileSystemProviderOperationsExecuteActionTest, Execute) {
 
   ExecuteAction execute_action(
       NULL, file_system_info_, entry_paths_, kActionId,
-      base::Bind(&util::LogStatusCallback, &callback_log));
+      base::BindOnce(&util::LogStatusCallback, &callback_log));
   execute_action.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -99,7 +99,7 @@ TEST_F(FileSystemProviderOperationsExecuteActionTest, Execute_NoListener) {
 
   ExecuteAction execute_action(
       NULL, file_system_info_, entry_paths_, kActionId,
-      base::Bind(&util::LogStatusCallback, &callback_log));
+      base::BindOnce(&util::LogStatusCallback, &callback_log));
   execute_action.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -113,7 +113,7 @@ TEST_F(FileSystemProviderOperationsExecuteActionTest, OnSuccess) {
 
   ExecuteAction execute_action(
       NULL, file_system_info_, entry_paths_, kActionId,
-      base::Bind(&util::LogStatusCallback, &callback_log));
+      base::BindOnce(&util::LogStatusCallback, &callback_log));
   execute_action.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -133,7 +133,7 @@ TEST_F(FileSystemProviderOperationsExecuteActionTest, OnError) {
 
   ExecuteAction execute_action(
       NULL, file_system_info_, entry_paths_, kActionId,
-      base::Bind(&util::LogStatusCallback, &callback_log));
+      base::BindOnce(&util::LogStatusCallback, &callback_log));
   execute_action.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));

@@ -28,6 +28,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "url/android/gurl_android.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -356,7 +357,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_FireCanMakePaymentEvent(
     JNIEnv* env,
     const JavaParamRef<jobject>& jweb_contents,
     jlong registration_id,
-    const JavaParamRef<jstring>& jservice_worker_scope,
+    const JavaParamRef<jobject>& jservice_worker_scope,
     const JavaParamRef<jstring>& jpayment_request_id,
     const JavaParamRef<jstring>& jtop_origin,
     const JavaParamRef<jstring>& jpayment_request_origin,
@@ -413,7 +414,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_FireCanMakePaymentEvent(
   content::PaymentAppProvider::GetInstance()->CanMakePayment(
       web_contents->GetBrowserContext(), registration_id,
       url::Origin::Create(
-          GURL(ConvertJavaStringToUTF8(env, jservice_worker_scope))),
+          *url::GURLAndroid::ToNativeGURL(env, jservice_worker_scope)),
       ConvertJavaStringToUTF8(env, jpayment_request_id), std::move(event_data),
       base::BindOnce(&OnCanMakePayment,
                      ScopedJavaGlobalRef<jobject>(env, jcallback)));
@@ -423,7 +424,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_InvokePaymentApp(
     JNIEnv* env,
     const JavaParamRef<jobject>& jweb_contents,
     jlong registration_id,
-    const JavaParamRef<jstring>& jservice_worker_scope,
+    const JavaParamRef<jobject>& jservice_worker_scope,
     const JavaParamRef<jstring>& jtop_origin,
     const JavaParamRef<jstring>& jpayment_request_origin,
     const JavaParamRef<jstring>& jpayment_request_id,
@@ -444,7 +445,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_InvokePaymentApp(
       payment_handler_host);
 
   url::Origin sw_scope_origin = url::Origin::Create(
-      GURL(ConvertJavaStringToUTF8(env, jservice_worker_scope)));
+      *url::GURLAndroid::ToNativeGURL(env, jservice_worker_scope));
   int64_t reg_id = base::checked_cast<int64_t>(registration_id);
 
   auto* host =
@@ -477,8 +478,8 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
     const JavaParamRef<jobject>& jcallback,
     const JavaParamRef<jstring>& japp_name,
     const JavaParamRef<jobject>& jicon,
-    const JavaParamRef<jstring>& jsw_js_url,
-    const JavaParamRef<jstring>& jsw_scope,
+    const JavaParamRef<jobject>& jsw_js_url,
+    const JavaParamRef<jobject>& jsw_scope,
     jboolean juse_cache,
     const JavaParamRef<jstring>& jmethod,
     // Flatten supported_delegations to avoid performance penalty.
@@ -499,11 +500,12 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
       jmethod_data, jtotal, jmodifiers, jpayment_options, jshipping_options,
       payment_handler_host);
 
-  std::string sw_scope = ConvertJavaStringToUTF8(env, jsw_scope);
+  std::unique_ptr<GURL> sw_scope =
+      url::GURLAndroid::ToNativeGURL(env, jsw_scope);
 
   auto* host =
       reinterpret_cast<payments::PaymentHandlerHost*>(payment_handler_host);
-  host->set_sw_origin_for_logs(url::Origin::Create(GURL(sw_scope)));
+  host->set_sw_origin_for_logs(url::Origin::Create(*sw_scope));
   host->set_payment_request_id_for_logs(event_data->payment_request_id);
 
   content::SupportedDelegations supported_delegations;
@@ -516,7 +518,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
   content::PaymentAppProvider::GetInstance()->InstallAndInvokePaymentApp(
       web_contents, std::move(event_data),
       ConvertJavaStringToUTF8(env, japp_name), icon_bitmap,
-      ConvertJavaStringToUTF8(env, jsw_js_url), sw_scope, juse_cache,
+      *url::GURLAndroid::ToNativeGURL(env, jsw_js_url), *sw_scope, juse_cache,
       ConvertJavaStringToUTF8(env, jmethod), supported_delegations,
       base::BindOnce(
           &payments::PaymentHandlerHost::set_registration_id_for_logs,
@@ -529,7 +531,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_AbortPaymentApp(
     JNIEnv* env,
     const JavaParamRef<jobject>& jweb_contents,
     jlong registration_id,
-    const JavaParamRef<jstring>& jservice_worker_scope,
+    const JavaParamRef<jobject>& jservice_worker_scope,
     const JavaParamRef<jstring>& jpayment_request_id,
     const JavaParamRef<jobject>& jcallback) {
   content::WebContents* web_contents =
@@ -538,7 +540,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_AbortPaymentApp(
   content::PaymentAppProvider::GetInstance()->AbortPayment(
       web_contents->GetBrowserContext(), registration_id,
       url::Origin::Create(
-          GURL(ConvertJavaStringToUTF8(env, jservice_worker_scope))),
+          *url::GURLAndroid::ToNativeGURL(env, jservice_worker_scope)),
       ConvertJavaStringToUTF8(env, jpayment_request_id),
       base::BindOnce(&OnPaymentAppAborted,
                      ScopedJavaGlobalRef<jobject>(env, jcallback)));
@@ -559,12 +561,12 @@ static void JNI_ServiceWorkerPaymentAppBridge_OnClosingPaymentAppWindow(
 static jlong
 JNI_ServiceWorkerPaymentAppBridge_GetSourceIdForPaymentAppFromScope(
     JNIEnv* env,
-    const JavaParamRef<jstring>& jscope) {
+    const JavaParamRef<jobject>& jscope) {
   // At this point we know that the payment handler window is open for the
   // payment app associated with this scope. Since this getter is called inside
   // PaymentApp::getUkmSourceId() function which in turn gets called for the
   // invoked app inside PaymentRequestImpl::openPaymentHandlerWindowInternal.
   return content::PaymentAppProvider::GetInstance()
       ->GetSourceIdForPaymentAppFromScope(
-          GURL(ConvertJavaStringToUTF8(env, jscope)).GetOrigin());
+          url::GURLAndroid::ToNativeGURL(env, jscope).get()->GetOrigin());
 }

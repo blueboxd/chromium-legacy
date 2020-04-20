@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(HatsWebDialogBrowserTest, Cookies) {
       Create(browser(), base::TimeDelta::FromSeconds(100));
 
   settings_map = HostContentSettingsMapFactory::GetForProfile(
-      dialog->off_the_record_profile());
+      dialog->otr_profile_for_testing());
   GURL url1("https://survey.google.com/");
   GURL url2("https://survey.g.doubleclick.net/");
   EXPECT_EQ(CONTENT_SETTING_ALLOW,

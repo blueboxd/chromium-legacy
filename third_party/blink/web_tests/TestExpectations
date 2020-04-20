@@ -2205,6 +2205,11 @@ crbug.com/441840 external/wpt/css/css-shapes/shape-outside/values/shape-outside-
 crbug.com/441840 external/wpt/css/css-shapes/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 [ Win ] external/wpt/css/css-shapes/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
+crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-import.html [ Failure ]
+crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-delayed.html [ Timeout ]
+crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-immediate-promise.html [ Timeout ]
+crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-promise.html [ Timeout ]
+
 crbug.com/676270 [ Mac ] external/wpt/css/css-text/hyphens/hyphens-auto-001.html [ Failure ]
 crbug.com/1022415 [ Mac ] external/wpt/css/css-text/hyphens/hyphens-auto-010.html [ Failure ]
 crbug.com/963369 external/wpt/css/css-text/hyphens/hyphens-out-of-flow-001.html [ Failure ]
@@ -2235,6 +2240,8 @@ crbug.com/1008029 [ Mac ] external/wpt/css/css-text/white-space/pre-wrap-018.htm
 crbug.com/1008029 external/wpt/css/css-text/white-space/pre-wrap-019.html [ Failure ]
 crbug.com/1008029 external/wpt/css/css-text/white-space/textarea-pre-wrap-012.html [ Failure ]
 crbug.com/1008029 external/wpt/css/css-text/white-space/textarea-pre-wrap-013.html [ Failure ]
+crbug.com/1071928 external/wpt/css/css-text/white-space/white-space-intrinsic-size-013.html [ Failure ]
+crbug.com/1071928 external/wpt/css/css-text/white-space/white-space-intrinsic-size-014.html [ Failure ]
 
 # Handling of trailing other spaces is not implemented yet.
 crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-001.html [ Skip ]
@@ -3167,15 +3174,9 @@ crbug.com/626703 [ Win ] external/wpt/css/css-images/image-orientation/image-ori
 crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-border-image.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-border-image.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-border-image.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/white-space-intrinsic-size-013.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/white-space-intrinsic-size-013.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/white-space/white-space-intrinsic-size-013.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-background-image.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-background-image.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-background-image.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/white-space-intrinsic-size-014.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/white-space-intrinsic-size-014.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/white-space/white-space-intrinsic-size-014.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/svg/painting/reftests/display-none-mask.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/svg/painting/reftests/display-none-mask.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/svg/painting/reftests/display-none-mask.html [ Failure ]

@@ -138,8 +138,8 @@ class WifiHotspotDisconnectorImplTest : public testing::Test {
   void CallDisconnect(const std::string& wifi_network_guid) {
     wifi_hotspot_disconnector_->DisconnectFromWifiHotspot(
         wifi_network_guid,
-        base::Bind(&WifiHotspotDisconnectorImplTest::SuccessCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&WifiHotspotDisconnectorImplTest::SuccessCallback,
+                       base::Unretained(this)),
         base::Bind(&WifiHotspotDisconnectorImplTest::ErrorCallback,
                    base::Unretained(this)));
   }

@@ -249,8 +249,8 @@ class TetherConnectorImplTest : public testing::Test {
   void CallConnect(const std::string& tether_network_guid) {
     tether_connector_->ConnectToNetwork(
         tether_network_guid,
-        base::Bind(&TetherConnectorImplTest::SuccessCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&TetherConnectorImplTest::SuccessCallback,
+                       base::Unretained(this)),
         base::Bind(&TetherConnectorImplTest::ErrorCallback,
                    base::Unretained(this)));
   }

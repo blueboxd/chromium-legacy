@@ -249,6 +249,9 @@ extern const char kCookieDeprecationMessagesDescription[];
 extern const char kCookiesWithoutSameSiteMustBeSecureName[];
 extern const char kCookiesWithoutSameSiteMustBeSecureDescription[];
 
+extern const char kCooperativeSchedulingName[];
+extern const char kCooperativeSchedulingDescription[];
+
 extern const char kCreditCardAssistName[];
 extern const char kCreditCardAssistDescription[];
 

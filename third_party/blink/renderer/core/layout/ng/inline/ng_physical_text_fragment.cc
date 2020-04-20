@@ -52,8 +52,6 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
   DCHECK_LE(text_offset_.end, source.EndOffset());
   DCHECK(shape_result_ || IsFlowControl()) << *this;
   base_or_resolved_direction_ = source.base_or_resolved_direction_;
-  is_generated_text_or_math_fraction_ =
-      source.is_generated_text_or_math_fraction_;
   ink_overflow_computed_ = false;
   is_first_for_node_ = source.is_first_for_node_;
 }
@@ -68,9 +66,14 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
   DCHECK(shape_result_ || IsFlowControl()) << *this;
   base_or_resolved_direction_ =
       static_cast<unsigned>(builder->ResolvedDirection());
-  is_generated_text_or_math_fraction_ = builder->IsGeneratedText();
   ink_overflow_computed_ = false;
   is_first_for_node_ = builder->is_first_for_node_;
+}
+
+bool NGPhysicalTextFragment::IsGeneratedText() const {
+  if (UNLIKELY(TextType() == NGTextType::kLayoutGenerated))
+    return true;
+  return GetLayoutObject()->IsStyleGenerated();
 }
 
 LayoutUnit NGPhysicalTextFragment::InlinePositionForOffset(

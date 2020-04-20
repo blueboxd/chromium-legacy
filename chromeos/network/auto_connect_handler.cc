@@ -401,11 +401,11 @@ void AutoConnectHandler::CallShillConnectToBestServices() {
                  << AutoConnectReasonsToString(auto_connect_reasons_) << "]";
 
   ShillManagerClient::Get()->ConnectToBestServices(
-      base::Bind(&AutoConnectHandler::NotifyAutoConnectInitiated,
-                 weak_ptr_factory_.GetWeakPtr(), auto_connect_reasons_),
-      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 "ConnectToBestServices Failed", "",
-                 network_handler::ErrorCallback()));
+      base::BindOnce(&AutoConnectHandler::NotifyAutoConnectInitiated,
+                     weak_ptr_factory_.GetWeakPtr(), auto_connect_reasons_),
+      base::BindOnce(&network_handler::ShillErrorCallbackFunction,
+                     "ConnectToBestServices Failed", "",
+                     network_handler::ErrorCallback()));
 }
 
 }  // namespace chromeos

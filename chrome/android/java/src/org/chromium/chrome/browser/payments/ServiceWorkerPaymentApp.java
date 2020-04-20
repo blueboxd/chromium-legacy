@@ -18,7 +18,7 @@ import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequestDetailsUpdate;
 import org.chromium.payments.mojom.PaymentShippingOption;
-import org.chromium.url.URI;
+import org.chromium.url.GURL;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,7 +38,7 @@ import java.util.Set;
 public class ServiceWorkerPaymentApp extends PaymentApp {
     private final WebContents mWebContents;
     private final long mRegistrationId;
-    private final URI mScope;
+    private final GURL mScope;
     private final Set<String> mMethodNames;
     private final Capabilities[] mCapabilities;
     private final boolean mCanPreselect;
@@ -48,7 +48,7 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
     // Below variables are used for installable service worker payment app specifically.
     private final boolean mNeedsInstallation;
     private final String mAppName;
-    private final URI mSwUri;
+    private final GURL mSwUrl;
     private final boolean mUseCache;
 
     /* The endpoint for payment handler communication, such as the
@@ -109,7 +109,6 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
      *                                       worker.
      * @param name                           The name of the payment app.
      * @param userHint                       The user hint of the payment app.
-     * @param origin                         The origin of the payment app.
      * @param icon                           The drawable icon of the payment app.
      * @param methodNames                    A set of payment method names supported by the payment
      *                                       app.
@@ -119,13 +118,13 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
      * @param preferredRelatedApplicationIds A set of preferred related application Ids.
      * @param supportedDelegations           Supported delegations of the payment app.
      */
-    public ServiceWorkerPaymentApp(WebContents webContents, long registrationId, URI scope,
-            @Nullable String name, @Nullable String userHint, String origin,
-            @Nullable BitmapDrawable icon, String[] methodNames, Capabilities[] capabilities,
+    public ServiceWorkerPaymentApp(WebContents webContents, long registrationId, GURL scope,
+            @Nullable String name, @Nullable String userHint, @Nullable BitmapDrawable icon,
+            String[] methodNames, Capabilities[] capabilities,
             String[] preferredRelatedApplicationIds, SupportedDelegations supportedDelegations) {
         // Do not display duplicate information.
-        super(scope.toString(), TextUtils.isEmpty(name) ? origin : name, userHint,
-                TextUtils.isEmpty(name) ? null : origin, icon);
+        super(scope.getSpec(), TextUtils.isEmpty(name) ? scope.getHost() : name, userHint,
+                TextUtils.isEmpty(name) ? null : scope.getHost(), icon);
         mWebContents = webContents;
         mRegistrationId = registrationId;
         mScope = scope;
@@ -148,7 +147,7 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
 
         mNeedsInstallation = false;
         mAppName = name;
-        mSwUri = null;
+        mSwUrl = null;
         mUseCache = false;
         mUkmSourceId = 0;
     }
@@ -159,8 +158,7 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
      *
      * @param webContents                     The web contents where PaymentRequest was invoked.
      * @param name                            The name of the payment app.
-     * @param origin                          The origin of the payment app.
-     * @param swUri                           The URI to get the service worker js script.
+     * @param swUrl                           The URL to get the service worker js script.
      * @param scope                           The registration scope of the corresponding service
      *                                        worker.
      * @param useCache                        Whether cache is used to register the service worker.
@@ -169,13 +167,12 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
      * @param preferredRelatedApplicationIds  A set of preferred related application Ids.
      * @param supportedDelegations            Supported delegations of the payment app.
      */
-    public ServiceWorkerPaymentApp(WebContents webContents, @Nullable String name, String origin,
-            URI swUri, URI scope, boolean useCache, @Nullable BitmapDrawable icon,
-            String methodName, String[] preferredRelatedApplicationIds,
-            SupportedDelegations supportedDelegations) {
+    public ServiceWorkerPaymentApp(WebContents webContents, @Nullable String name, GURL swUrl,
+            GURL scope, boolean useCache, @Nullable BitmapDrawable icon, String methodName,
+            String[] preferredRelatedApplicationIds, SupportedDelegations supportedDelegations) {
         // Do not display duplicate information.
-        super(scope.toString(), TextUtils.isEmpty(name) ? origin : name, null,
-                TextUtils.isEmpty(name) ? null : origin, icon);
+        super(scope.getSpec(), TextUtils.isEmpty(name) ? scope.getHost() : name, null,
+                TextUtils.isEmpty(name) ? null : scope.getHost(), icon);
 
         mWebContents = webContents;
         // No registration ID before the app is registered (installed).
@@ -195,7 +192,7 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
 
         mNeedsInstallation = true;
         mAppName = name;
-        mSwUri = swUri;
+        mSwUrl = swUrl;
         mUseCache = useCache;
         mUkmSourceId = 0;
     }
@@ -210,7 +207,7 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
         mPaymentHandlerHost = host;
     }
 
-    /*package*/ URI getScope() {
+    /*package*/ GURL getScope() {
         return mScope;
     }
 
@@ -282,12 +279,12 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
                     iframeOrigin, id, new HashSet<>(methodData.values()), total,
                     new HashSet<>(modifiers.values()), paymentOptions, shippingOptions,
                     mPaymentHandlerHost, callback, mAppName, icon == null ? null : icon.getBitmap(),
-                    mSwUri, mScope, mUseCache, mMethodNames.toArray(new String[0])[0],
+                    mSwUrl, mScope, mUseCache, mMethodNames.toArray(new String[0])[0],
                     mSupportedDelegations);
         } else {
-            ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mRegistrationId,
-                    mScope.toString(), origin, iframeOrigin, id, new HashSet<>(methodData.values()),
-                    total, new HashSet<>(modifiers.values()), paymentOptions, shippingOptions,
+            ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mRegistrationId, mScope,
+                    origin, iframeOrigin, id, new HashSet<>(methodData.values()), total,
+                    new HashSet<>(modifiers.values()), paymentOptions, shippingOptions,
                     mPaymentHandlerHost, mCanShowOwnUI, callback);
         }
     }
@@ -313,7 +310,7 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
     @Override
     public void abortPaymentApp(String id, AbortCallback callback) {
         ServiceWorkerPaymentAppBridge.abortPaymentApp(
-                mWebContents, mRegistrationId, mScope.toString(), id, callback);
+                mWebContents, mRegistrationId, mScope, id, callback);
     }
 
     @Override

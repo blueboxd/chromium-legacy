@@ -231,8 +231,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute) {
   GetMetadata get_metadata(
       NULL, file_system_info_, base::FilePath(kDirectoryPath),
       ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
-      base::Bind(&CallbackLogger::OnGetMetadata,
-                 base::Unretained(&callback_logger)));
+      base::BindOnce(&CallbackLogger::OnGetMetadata,
+                     base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -266,8 +266,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute_NoListener) {
   GetMetadata get_metadata(
       NULL, file_system_info_, base::FilePath(kDirectoryPath),
       ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
-      base::Bind(&CallbackLogger::OnGetMetadata,
-                 base::Unretained(&callback_logger)));
+      base::BindOnce(&CallbackLogger::OnGetMetadata,
+                     base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -287,8 +287,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
           ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME |
           ProvidedFileSystemInterface::METADATA_FIELD_MIME_TYPE |
           ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
-      base::Bind(&CallbackLogger::OnGetMetadata,
-                 base::Unretained(&callback_logger)));
+      base::BindOnce(&CallbackLogger::OnGetMetadata,
+                     base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -347,8 +347,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess_InvalidMetadata) {
           ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME |
           ProvidedFileSystemInterface::METADATA_FIELD_MIME_TYPE |
           ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
-      base::Bind(&CallbackLogger::OnGetMetadata,
-                 base::Unretained(&callback_logger)));
+      base::BindOnce(&CallbackLogger::OnGetMetadata,
+                     base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -396,8 +396,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnError) {
   GetMetadata get_metadata(
       NULL, file_system_info_, base::FilePath(kDirectoryPath),
       ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
-      base::Bind(&CallbackLogger::OnGetMetadata,
-                 base::Unretained(&callback_logger)));
+      base::BindOnce(&CallbackLogger::OnGetMetadata,
+                     base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));

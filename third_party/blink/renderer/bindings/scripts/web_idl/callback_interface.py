@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import itertools
+
 from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
@@ -62,10 +64,14 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
             self.operation_groups = []
 
         def iter_all_members(self):
-            for constant in self.constants:
-                yield constant
-            for operation in self.operations:
-                yield operation
+            list_of_members = [
+                self.constants,
+                self.operations,
+            ]
+            return itertools.chain(*list_of_members)
+
+        def iter_all_overload_groups(self):
+            return iter(self.operation_groups)
 
     def __init__(self, ir):
         assert isinstance(ir, CallbackInterface.IR)

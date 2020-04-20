@@ -28,8 +28,8 @@ void LibvdaServiceProvider::Start(
       libvda::kLibvdaServiceInterface, libvda::kProvideMojoConnectionMethod,
       base::BindRepeating(&LibvdaServiceProvider::ProvideMojoConnection,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&LibvdaServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&LibvdaServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LibvdaServiceProvider::OnExported(const std::string& interface_name,

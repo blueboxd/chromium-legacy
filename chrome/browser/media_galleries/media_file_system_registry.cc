@@ -311,9 +311,12 @@ class ExtensionGalleriesHost
     for (auto id = galleries.begin(); id != galleries.end(); ++id) {
       device_ids->insert(galleries_info.find(*id)->second.device_id);
     }
-    MediaStorageUtil::FilterAttachedDevices(device_ids, base::Bind(
-        &ExtensionGalleriesHost::GetMediaFileSystemsForAttachedDevices, this,
-        base::Owned(device_ids), galleries, galleries_info, callback));
+    MediaStorageUtil::FilterAttachedDevices(
+        device_ids,
+        base::BindOnce(
+            &ExtensionGalleriesHost::GetMediaFileSystemsForAttachedDevices,
+            this, base::Owned(device_ids), galleries, galleries_info,
+            callback));
   }
 
   // Checks if |gallery| is attached and if so, registers the file system and
@@ -327,9 +330,9 @@ class ExtensionGalleriesHost
     device_ids->insert(gallery.device_id);
     MediaStorageUtil::FilterAttachedDevices(
         device_ids,
-        base::Bind(&ExtensionGalleriesHost::RegisterAttachedMediaFileSystem,
-                   this, base::Owned(device_ids), gallery,
-                   base::Passed(&callback)));
+        base::BindOnce(&ExtensionGalleriesHost::RegisterAttachedMediaFileSystem,
+                       this, base::Owned(device_ids), gallery,
+                       base::Passed(&callback)));
   }
 
   // Revoke the file system for |id| if this extension has created one for |id|.

@@ -847,8 +847,8 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
     PaymentRequestEventDataPtr event_data,
     const std::string& app_name,
     const SkBitmap& app_icon,
-    const std::string& sw_js_url,
-    const std::string& sw_scope,
+    const GURL& sw_js_url,
+    const GURL& sw_scope,
     bool sw_use_cache,
     const std::string& method,
     const SupportedDelegations& supported_delegations,
@@ -856,11 +856,7 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
     InvokePaymentAppCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  DCHECK(base::IsStringUTF8(sw_js_url));
-  GURL url = GURL(sw_js_url);
-  DCHECK(base::IsStringUTF8(sw_scope));
-  GURL scope = GURL(sw_scope);
-  if (!url.is_valid() || !scope.is_valid() || method.empty()) {
+  if (!sw_js_url.is_valid() || !sw_scope.is_valid() || method.empty()) {
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
@@ -881,9 +877,9 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
   }
 
   PaymentAppInstaller::Install(
-      web_contents, app_name, string_encoded_icon, url, scope, sw_use_cache,
-      method, supported_delegations,
-      base::BindOnce(&OnInstallPaymentApp, url::Origin::Create(scope),
+      web_contents, app_name, string_encoded_icon, sw_js_url, sw_scope,
+      sw_use_cache, method, supported_delegations,
+      base::BindOnce(&OnInstallPaymentApp, url::Origin::Create(sw_scope),
                      std::move(event_data), std::move(registration_id_callback),
                      std::move(callback)));
 }

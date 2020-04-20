@@ -279,8 +279,11 @@ bool VaapiVideoEncodeAccelerator::Initialize(const Config& config,
   DCHECK_EQ(state_, kUninitialized);
 
   VLOGF(2) << "Initializing VAVEA, " << config.AsHumanReadableString();
-  if (config.HasTemporalLayer() || config.HasSpatialLayer()) {
-    VLOGF(1) << "Neither temporal nor spatial layer encoding is supported";
+
+  // VaapiVEA doesn't support temporal layers but we let it pass here to support
+  // simulcast.
+  if (config.HasSpatialLayer()) {
+    VLOGF(1) << "Spatial layer encoding is supported";
     return false;
   }
 

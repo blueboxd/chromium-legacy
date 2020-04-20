@@ -127,7 +127,7 @@ class UIProxyConfigServiceTest : public testing::Test {
     ASSERT_TRUE(shill_json_dict);
     ShillManagerClient::Get()->ConfigureService(
         *shill_json_dict, base::DoNothing(),
-        base::Bind([](const std::string& name, const std::string& msg) {}));
+        base::BindOnce([](const std::string& name, const std::string& msg) {}));
     base::RunLoop().RunUntilIdle();
   }
 

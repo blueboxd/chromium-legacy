@@ -88,6 +88,7 @@ enum AppType {
   kExtension,  // Extension-backed app.
   kWeb,        // Web app.
   kMacNative,  // Native Mac app.
+  kPluginVm,   // Plugin VM app.
 };
 
 // Whether an app is ready to launch, i.e. installed.

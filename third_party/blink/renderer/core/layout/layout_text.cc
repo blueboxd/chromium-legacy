@@ -375,7 +375,7 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
       }
       // We don't put generated texts, e.g. ellipsis, hyphen, etc. not in text
       // content, into results. Note: CSS "content" aren't categorized this.
-      if (cursor.Current().IsGeneratedTextType())
+      if (cursor.Current().IsLayoutGeneratedText())
         continue;
       // When the corresponding DOM range contains collapsed whitespaces, NG
       // produces one fragment but legacy produces multiple text boxes broken at

@@ -177,8 +177,8 @@ VrShell::VrShell(JNIEnv* env,
   if (!can_load_new_assets_) {
     waiting_for_assets_component_timer_.Start(
         FROM_HERE, kAssetsComponentWaitDelay,
-        base::BindRepeating(&VrShell::OnAssetsComponentWaitTimeout,
-                            weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&VrShell::OnAssetsComponentWaitTimeout,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   AssetsLoader::GetInstance()->SetOnComponentReadyCallback(base::BindRepeating(
@@ -954,7 +954,7 @@ void VrShell::PollCapturingState() {
     }
   }
 
-  geolocation_config_->IsHighAccuracyLocationBeingCaptured(base::BindRepeating(
+  geolocation_config_->IsHighAccuracyLocationBeingCaptured(base::BindOnce(
       [](VrShell* shell, BrowserUiInterface* ui,
          CapturingStateModel* active_capturing,
          CapturingStateModel* background_capturing,

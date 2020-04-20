@@ -22,8 +22,8 @@ void LockToSingleUserServiceProvider::Start(
       lock_to_single_user::kNotifyVmStartingMethod,
       base::BindRepeating(&LockToSingleUserServiceProvider::NotifyVmStarting,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&LockToSingleUserServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&LockToSingleUserServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LockToSingleUserServiceProvider::OnExported(

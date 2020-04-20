@@ -133,8 +133,8 @@ bool KeyboardLockController::HandleKeyEvent(
     // fullscreen/mouselock/keyboardlock.
     hold_timer_.Start(
         FROM_HERE, kHoldEscapeTime,
-        base::BindRepeating(&KeyboardLockController::HandleUserHeldEscape,
-                            base::Unretained(this)));
+        base::BindOnce(&KeyboardLockController::HandleUserHeldEscape,
+                       base::Unretained(this)));
   }
 
   return true;

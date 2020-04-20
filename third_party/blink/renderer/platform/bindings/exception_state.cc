@@ -125,6 +125,12 @@ void ExceptionState::ThrowTypeError(const String& message) {
                                                  AddExceptionContext(message)));
 }
 
+void ExceptionState::ThrowWasmCompileError(const String& message) {
+  SetException(ToExceptionCode(ESErrorType::kWasmCompileError), message,
+               V8ThrowException::CreateWasmCompileError(
+                   isolate_, AddExceptionContext(message)));
+}
+
 void ExceptionState::ThrowDOMException(DOMExceptionCode exception_code,
                                        const char* message) {
   ThrowDOMException(exception_code, String(message));
@@ -141,6 +147,10 @@ void ExceptionState::ThrowRangeError(const char* message) {
 
 void ExceptionState::ThrowTypeError(const char* message) {
   ThrowTypeError(String(message));
+}
+
+void ExceptionState::ThrowWasmCompileError(const char* message) {
+  ThrowWasmCompileError(String(message));
 }
 
 void ExceptionState::RethrowV8Exception(v8::Local<v8::Value> value) {
@@ -245,6 +255,11 @@ void NonThrowableExceptionState::ThrowTypeError(const String& message) {
   DCHECK_AT(false, file_, line_) << "TypeError should not be thrown.";
 }
 
+void NonThrowableExceptionState::ThrowWasmCompileError(const String& message) {
+  DCHECK_AT(false, file_, line_)
+      << "WebAssembly.CompileError should not be thrown.";
+}
+
 void NonThrowableExceptionState::RethrowV8Exception(v8::Local<v8::Value>) {
   DCHECK_AT(false, file_, line_) << "An exception should not be rethrown.";
 }
@@ -270,6 +285,12 @@ void DummyExceptionStateForTesting::ThrowSecurityError(
 
 void DummyExceptionStateForTesting::ThrowTypeError(const String& message) {
   SetException(ToExceptionCode(ESErrorType::kTypeError), message,
+               v8::Local<v8::Value>());
+}
+
+void DummyExceptionStateForTesting::ThrowWasmCompileError(
+    const String& message) {
+  SetException(ToExceptionCode(ESErrorType::kWasmCompileError), message,
                v8::Local<v8::Value>());
 }
 

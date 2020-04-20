@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Chrome යාවත්කාලීන කළ නොහැක. තවත් විකල්ප</translation>
 <translation id="1332501820983677155">Google Chrome විශේෂාංග කෙටි මං</translation>
 <translation id="1360432990279830238">වැරී, සමමුහුර්ත කිරීම අක්‍රිය කරන්නේද?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" />, <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">අඩවි <ph name="SITE_NAME" /> එක් කරන ලදී</translation>
 <translation id="1373696734384179344">තෝරාගත් අන්තර්ගතය බාගැනීමට ප්‍රමාණවත් මතකයක් නැත.</translation>
 <translation id="1376578503827013741">ගණනය කරමින්...</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">ලිපින තීරුව තුළ ඉතිහාසය හා ස්වයං සම්පූර්ණ කිරීම් හිස් කරයි.</translation>
 <translation id="2021896219286479412">පූර්ණ තිර අඩවි පාලන</translation>
 <translation id="2025115093177348061">ආවර්ධිත යථාර්ථය</translation>
+<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> වෙත ආපසු යාමට තට්ටු කරන්න</translation>
 <translation id="2038563949887743358">ඩෙස්ක්ටොප් අඩවිය ඉල්ලීම ක්‍රියාත්මක කරන්න</translation>
 <translation id="2041019821020695769">Chrome හට ඔබ දැනුම්දීම් යැවීමට ඉඩ දීමට, <ph name="BEGIN_LINK" />Android සැකසීම්<ph name="END_LINK" /> තුළ ද දැනුම්දීම් සක්‍රීය කරන්න.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> හට ද Chrome හි දත්ත තිබේ</translation>
@@ -301,6 +303,7 @@
 <translation id="3207960819495026254">පිටුසලකුණු කළ</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> මකන ලදි</translation>
 <translation id="321773570071367578">ඔබට ඔබේ මුර-වැකිකඩ අමතක වී ඇත්නම් හෝ මෙම සැකසීම් වෙනස් කිරීමට අවශ්‍ය නම්, <ph name="BEGIN_LINK" />සමමුහුර්ත කිරීම නැවත සකසන්න<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">මෙය <ph name="ORIGIN" /> සහ ඔබේ මුල් තිරය මත එහි යෙදුම විසින් ගබඩා කරනු ලැබූ සියලුම දත්ත සහ කුකී ඉවත් කරයි.</translation>
 <translation id="3227137524299004712">මයික්‍රෆෝනය:</translation>
 <translation id="3232754137068452469">වෙබ් යෙදුම</translation>
 <translation id="3236059992281584593">මිනිත්තු 1ක් ඉතිරියි</translation>
@@ -535,6 +538,7 @@
 <translation id="4943872375798546930">ප්‍රතිඵල නැත</translation>
 <translation id="4961107849584082341">මෙම පිටුව ඕනෑම භාෂාවකට පරිවර්තන කරන්න</translation>
 <translation id="4962975101802056554">උපාංගය සඳහා සියලුම අවසර අහෝසි කරන්න</translation>
+<translation id="4964199952259983386">Chrome හට AR භාවිත කිරීමට ඉඩ දීමට, <ph name="BEGIN_LINK" />Android සැකසීම්<ph name="END_LINK" /> තුළ කැමරාව ද සක්‍රීය කරන්න.</translation>
 <translation id="4970824347203572753">ඔබේ ස්ථානයේ නොලැබේ</translation>
 <translation id="497421865427891073">ඉදිරියට යන්න</translation>
 <translation id="4988210275050210843">ගොනුව බාගනිමින් (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@
 <translation id="5684874026226664614">අපොයි. මෙම පිටුව පැටවිය නොහැකි විය.</translation>
 <translation id="5686790454216892815">ගොනු නාමය දිග වැඩිය</translation>
 <translation id="5689516760719285838">ස්ථානය</translation>
+<translation id="5690795753582697420">Android සැකසීම් තුළ කැමරාව අක්‍රිය කර ඇත</translation>
 <translation id="5694049548840660018">පහසුවෙන් ආපසු නිවසට යන්න</translation>
 <translation id="569536719314091526">තවත් විකල්ප බොත්තමෙන් මෙම පිටුව ඕනෑම භාෂාවකට පරිවර්තන කරන්න</translation>
 <translation id="5710871682236653961">ඔබ NFC උපාංග තට්ටු කරන විට වෙබ් අඩවිවලට තොරතුරු යැවීමට සහ ලැබීමට ඉඩ දීමට පෙර අසන්න (නිර්දේශිතයි)</translation>
@@ -665,6 +670,7 @@
 <translation id="5876056640971328065">විඩියෝව විරාම කරන්න</translation>
 <translation id="5884076754568147479">ඔබට කාර්ය භාර සම්පූර්ණ කිරීමට උදවු කිරීමට, Google විසින් URL සහ ඔබේ සහකරු භාවිත කරන වෙබ් අඩවිවල අන්තර්ගතය මෙන්ම ඔබ සහකරු හරහා ඉදිරිපත් කරන තොරතුරු ලබා ගැනේ</translation>
 <translation id="5919204609460789179">සමමුහුර්ත වීම ආරම්භ කිරීමට <ph name="PRODUCT_NAME" /> යාවත්කාලීන කරන්න</translation>
+<translation id="5922853908706496913">ඔබේ තිරය බෙදා ගැනීම</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> සුරැකිණි</translation>
 <translation id="5939518447894949180">නැවත සකසන්න</translation>
 <translation id="5942872142862698679">සෙවීම සඳහා Google භාවිත කරමින්</translation>
@@ -875,6 +881,7 @@
 <translation id="751961395872307827">අඩවියට සම්බන්ධ විය නොහැකිය</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">යෝජනා ලබා ගත නොහැක</translation>
+<translation id="7554752735887601236">වෙබ් අඩවියක් ඔබේ මයික්‍රොෆෝනය භාවිත කරයි</translation>
 <translation id="7559975015014302720">සැහැල්ලු ප්‍රකාරය ක්‍රියා විරහිතයි</translation>
 <translation id="7562080006725997899">බ්‍රව්ස් කිරීමේ දත්ත හිස් කරන්න</translation>
 <translation id="756809126120519699">Chrome දත්ත හිස් කෙරිණි</translation>
@@ -911,7 +918,9 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />... සහ තවත් <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />... සහ තවත් <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />... සහ තවත් <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">එක් කරන්න</translation>
 <translation id="780301667611848630">එපා, ස්තූතියි</translation>
+<translation id="7804248752222191302">වෙබ් අඩවියක් ඔබේ කැමරාව භාවිත කරයි</translation>
 <translation id="7810647596859435254">විවෘත කරන්න...</translation>
+<translation id="7817023149356982970">ඔබ මෙම වෙබ් අඩවියන් වරනු ලැබේ.</translation>
 <translation id="7821588508402923572">ඔබගේ දත්ත සුරැකුම් මෙහි දිස් වනු ඇත</translation>
 <translation id="7828557259026017104">කුකීස් යනු ඔබ පැමිණෙන වෙබ් අඩවිවලින් නිර්මාණ කෙරෙන ගොනු වේ. වෙබ් අඩවි ඔබේ මනාප මතක තබා ගැනීමට ඒවා භාවිත කරයි. තෙවන පාර්ශ්ව කුකී වෙනත් වෙබ් අඩවිවලින් නිර්මාණ කෙරේ. මෙම වෙබ් පිටුවලට ඔබ පැමිණෙන වෙබ් අඩවිය මත ඔබ දකින රූප හෝ දැන්වීම් වැනි සමහර අන්තර්ගත හිමි වේ.</translation>
 <translation id="783819812427904514">වීඩියෝව නිහඬ නොකරන්න</translation>
@@ -990,8 +999,10 @@
 <translation id="8364299278605033898">ජනප්‍රිය වෙබ් අඩවි බලන්න</translation>
 <translation id="8368027906805972958">නොදන්නා හෝ සහය නොදැක්වෙන උපාංගය (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">නිශ්චිත අඩවියක් සඳහා පසුබිම සමමුහුර්ත කිරීමට ඉඩ දෙන්න.</translation>
+<translation id="83792324527827022">වෙබ් අඩවියක් ඔබේ කැමරාව සහ මයික්‍රොෆෝනය භාවිත කරයි</translation>
 <translation id="8380167699614421159">මෙම වෙබ් අඩවිය ආක්‍රමණික හෝ නොමඟ යවන දැන්වීම් පෙන්වයි</translation>
 <translation id="8393700583063109961">පණිවිඩය යවන්න</translation>
+<translation id="8394832520002899662">වෙබ් අඩවියට ආපසු යාමට තට්ටු කරන්න</translation>
 <translation id="8413126021676339697">සම්පූර්ණ ඉතිහාසය පෙන්වන්න</translation>
 <translation id="8427875596167638501">පෙරදසුන් පටිත්ත අඩක් විවෘතයි</translation>
 <translation id="8428213095426709021">සැකසුම්</translation>
@@ -1034,6 +1045,8 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{සංඥා ප්‍රබලතා මට්ටම: කණු #}one{සංඥා ප්‍රබලතා මට්ටම: කණු #}other{සංඥා ප්‍රබලතා මට්ටම: කණු #}}</translation>
 <translation id="868929229000858085">ඔබේ සම්බන්ධතා සොයන්න</translation>
 <translation id="869891660844655955">කල් ඉකුත් වීමේ දිනය:</translation>
+<translation id="8702612070107455751">නොබැඳි දත්ත කිසිවක් හිස් කෙරේ.</translation>
+<translation id="8737217482364735741">මෙය <ph name="ORIGIN" /> විසින් ගබා කරනු ලැබූ සියලුම දත්ත සහ කුකී ඉවත් කරයි.</translation>
 <translation id="8748850008226585750">අන්තර්ගත සැඟවිණි</translation>
 <translation id="8751914237388039244">රූපයක් තෝරන්න</translation>
 <translation id="8758557275681689734">ඔබේ සියලුම විවෘත පටිති බලන්න</translation>
@@ -1080,6 +1093,7 @@
 <translation id="9100610230175265781">රහස් පදය අවශ්‍යයි</translation>
 <translation id="9102803872260866941">පෙරදසුන් පටිත්ත විවෘතයි</translation>
 <translation id="9104217018994036254">පටිත්තක් බෙදා ගැනීම සඳහා වන උපාංග ලැයිස්තුව.</translation>
+<translation id="9108312223223904744">දුරකථනය ආරක්‍ෂක යතුරු සහයක් ලෙස</translation>
 <translation id="9133397713400217035">නොබැඳිව ගවේෂණ කරන්න</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">මූලිකය පෙන්වන්න</translation>

@@ -266,9 +266,10 @@ void FileSystemEntryFunction::PrepareFilesForWritableApp(
                     : std::set<base::FilePath>{};
   app_file_handler_util::PrepareFilesForWritableApp(
       paths, browser_context(), path_directory_set_,
-      base::Bind(&FileSystemEntryFunction::RegisterFileSystemsAndSendResponse,
-                 this, paths),
-      base::Bind(&FileSystemEntryFunction::HandleWritableFileError, this));
+      base::BindOnce(
+          &FileSystemEntryFunction::RegisterFileSystemsAndSendResponse, this,
+          paths),
+      base::BindOnce(&FileSystemEntryFunction::HandleWritableFileError, this));
 }
 
 void FileSystemEntryFunction::RegisterFileSystemsAndSendResponse(

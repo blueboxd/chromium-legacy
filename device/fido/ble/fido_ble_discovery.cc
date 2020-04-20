@@ -60,7 +60,7 @@ void FidoBleDiscovery::OnSetPowered() {
       base::AdaptCallbackForRepeating(
           base::BindOnce(&FidoBleDiscovery::OnStartDiscoverySessionWithFilter,
                          weak_factory_.GetWeakPtr())),
-      base::BindRepeating(
+      base::BindOnce(
           []() { FIDO_LOG(ERROR) << "Failed to start BLE discovery"; }));
 }
 

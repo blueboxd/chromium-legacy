@@ -64,10 +64,8 @@ CancelCallback FakeDriveServiceWrapper::AddNewDirectory(
     FileResourceCallback callback) {
   if (make_directory_conflict_) {
     FakeDriveService::AddNewDirectory(
-        parent_resource_id,
-        directory_name,
-        options,
-        base::Bind(&DidAddFileOrDirectoryForMakingConflict));
+        parent_resource_id, directory_name, options,
+        base::BindOnce(&DidAddFileOrDirectoryForMakingConflict));
   }
   return FakeDriveService::AddNewDirectory(parent_resource_id, directory_name,
                                            options, std::move(callback));
@@ -99,12 +97,9 @@ CancelCallback FakeDriveUploader::UploadNewFile(
 
   if (make_file_conflict_) {
     fake_drive_service_->AddNewFile(
-        content_type,
-        kFileContent,
-        parent_resource_id,
-        title,
+        content_type, kFileContent, parent_resource_id, title,
         false,  // shared_with_me
-        base::Bind(&DidAddFileOrDirectoryForMakingConflict));
+        base::BindOnce(&DidAddFileOrDirectoryForMakingConflict));
   }
 
   fake_drive_service_->AddNewFile(

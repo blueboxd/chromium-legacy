@@ -55,17 +55,12 @@ class BackingVisitor : public Visitor {
       EXPECT_TRUE(header->TryMark());
   }
 
-  bool VisitEphemeronKeyValuePair(
-      const void* key,
-      const void* value,
-      EphemeronTracingCallback key_trace_callback,
-      EphemeronTracingCallback value_trace_callback) final {
-    const bool key_is_dead = key_trace_callback(this, key);
-    if (key_is_dead)
-      return true;
-    const bool value_is_dead = value_trace_callback(this, value);
-    DCHECK(!value_is_dead);
-    return false;
+  void VisitEphemeron(const void* key,
+                      const void* value,
+                      TraceCallback value_trace_callback) final {
+    if (!HeapObjectHeader::FromPayload(key)->IsMarked())
+      return;
+    value_trace_callback(this, value);
   }
 
   // Unused overrides.

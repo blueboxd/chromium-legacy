@@ -164,5 +164,5 @@ void NightLightClient::RequestGeoposition() {
   provider_.RequestGeolocation(
       kGeolocationRequestTimeout, false /* send_wifi_access_points */,
       false /* send_cell_towers */,
-      base::Bind(&NightLightClient::OnGeoposition, base::Unretained(this)));
+      base::BindOnce(&NightLightClient::OnGeoposition, base::Unretained(this)));
 }

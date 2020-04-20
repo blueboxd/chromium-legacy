@@ -138,7 +138,7 @@ void DeviceNetworkConfigurationUpdater::ApplyNetworkPolicy(
 
 void DeviceNetworkConfigurationUpdater::OnDataRoamingSettingChanged() {
   chromeos::CrosSettingsProvider::TrustedStatus trusted_status =
-      cros_settings_->PrepareTrustedValues(base::Bind(
+      cros_settings_->PrepareTrustedValues(base::BindOnce(
           &DeviceNetworkConfigurationUpdater::OnDataRoamingSettingChanged,
           weak_factory_.GetWeakPtr()));
 

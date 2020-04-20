@@ -869,8 +869,8 @@ void AppActivityRegistry::ScheduleTimeLimitCheckForApp(const AppId& app_id) {
 
   app_details.app_limit_timer->Start(
       FROM_HERE, time_limit.value(),
-      base::BindRepeating(&AppActivityRegistry::CheckTimeLimitForApp,
-                          base::Unretained(this), app_id));
+      base::BindOnce(&AppActivityRegistry::CheckTimeLimitForApp,
+                     base::Unretained(this), app_id));
 }
 
 base::Optional<base::TimeDelta> AppActivityRegistry::GetTimeLeftForApp(

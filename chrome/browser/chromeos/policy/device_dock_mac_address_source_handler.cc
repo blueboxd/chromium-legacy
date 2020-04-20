@@ -36,7 +36,7 @@ DeviceDockMacAddressHandler::~DeviceDockMacAddressHandler() = default;
 void DeviceDockMacAddressHandler::OnDockMacAddressSourcePolicyChanged() {
   // Wait for the |cros_settings_| to become trusted.
   const chromeos::CrosSettingsProvider::TrustedStatus status =
-      cros_settings_->PrepareTrustedValues(base::BindRepeating(
+      cros_settings_->PrepareTrustedValues(base::BindOnce(
           &DeviceDockMacAddressHandler::OnDockMacAddressSourcePolicyChanged,
           weak_factory_.GetWeakPtr()));
   if (status != chromeos::CrosSettingsProvider::TRUSTED)

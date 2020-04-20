@@ -158,8 +158,8 @@ class PreSigninPolicyFetcherTestBase : public testing::Test {
 
   void ExecuteFetchPolicy() {
     pre_signin_policy_fetcher_->FetchPolicy(
-        base::Bind(&PreSigninPolicyFetcherTestBase::OnPolicyRetrieved,
-                   base::Unretained(this)));
+        base::BindOnce(&PreSigninPolicyFetcherTestBase::OnPolicyRetrieved,
+                       base::Unretained(this)));
     task_environment_.RunUntilIdle();
   }
 

@@ -329,7 +329,7 @@ class LockScreenValueStoreMigratorImplTest : public testing::Test {
     base::RunLoop run_loop;
     task_runner_->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &LockScreenValueStoreMigratorImplTest::ReleaseValueStoreCaches,
             base::Unretained(this)),
         run_loop.QuitClosure());

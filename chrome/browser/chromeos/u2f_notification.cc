@@ -70,7 +70,7 @@ void U2FNotification::CheckStatus(base::Optional<std::set<std::string>> flags) {
   }
 
   CrosSettings* settings = CrosSettings::Get();
-  switch (settings->PrepareTrustedValues(base::BindRepeating(
+  switch (settings->PrepareTrustedValues(base::BindOnce(
       &U2FNotification::CheckStatus, weak_factory_.GetWeakPtr(), flags))) {
     case CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
       // Retry happens via the callback registered above.

@@ -383,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MemoryTracing) {
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND};
 
   base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(
-      args, base::BindRepeating(OnMemoryDumpDone, expected_names,
-                                run_loop.QuitClosure()));
+      args,
+      base::BindOnce(OnMemoryDumpDone, expected_names, run_loop.QuitClosure()));
   run_loop.Run();
 }

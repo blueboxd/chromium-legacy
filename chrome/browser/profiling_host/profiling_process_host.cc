@@ -97,10 +97,10 @@ void UploadTraceToCrashServer(std::string upload_url,
   if (!upload_url.empty())
     uploader->SetUploadURL(upload_url);
 
-  uploader->DoUpload(file_contents, content::TraceUploader::COMPRESSED_UPLOAD,
-                     std::move(metadata),
-                     content::TraceUploader::UploadProgressCallback(),
-                     base::Bind(&OnTraceUploadComplete, base::Owned(uploader)));
+  uploader->DoUpload(
+      file_contents, content::TraceUploader::COMPRESSED_UPLOAD,
+      std::move(metadata), content::TraceUploader::UploadProgressCallback(),
+      base::BindOnce(&OnTraceUploadComplete, base::Owned(uploader)));
 }
 
 }  // namespace

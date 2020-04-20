@@ -137,7 +137,7 @@
 ) قبل الحد الأقصى للتاريخ (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">شكل</translation>
 <translation id="5453733299334684579">عنصر متفرع</translation>
-<translation id="5466621249238537318">يُرجى تحديد ملف واحد أو أكثر.</translation>
+<translation id="5466621249238537318">يُرجى اختيار ملف واحد أو أكثر.</translation>
 <translation id="5468998798572797635">إنهاء وضع ملء الشاشة</translation>
 <translation id="5516424706154626233">منتقي التاريخ</translation>
 <translation id="5537725057119320332">إرسال</translation>
@@ -198,7 +198,7 @@
 <translation id="7139483182332611405">تمهيد</translation>
 <translation id="7214187073215825913">معلومات المحتوى</translation>
 <translation id="7238347055216017155">التوكيد</translation>
-<translation id="7263440858009898357">يُرجى تحديد عنصر من القائمة.</translation>
+<translation id="7263440858009898357">يُرجى اختيار عنصر من القائمة.</translation>
 <translation id="727747134524199931">عنوان العمود</translation>
 <translation id="7320576522385648310">التخزين مؤقتًا</translation>
 <translation id="7353453495576941748">إسهام</translation>
@@ -242,7 +242,7 @@
 <translation id="8415319359811155763">جزء</translation>
 <translation id="8433900881053900389">شريط الأدوات</translation>
 <translation id="8444882422881193423">عدد الملفات: <ph name="NUMBER_OF_FILES" /></translation>
-<translation id="8451268428117625855">يُرجى تحديد ملف.</translation>
+<translation id="8451268428117625855">يُرجى اختيار ملف.</translation>
 <translation id="8461852803063341183">زر الاختيار</translation>
 <translation id="8474886197722836894">إهداء</translation>
 <translation id="8531739829932800271">قائمة بالأخطاء</translation>

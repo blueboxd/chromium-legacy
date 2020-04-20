@@ -148,8 +148,8 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
     DCHECK(context_.GetKey()->GetLabel().empty());
     authenticator_->AddKey(
         context_, key, false /* no key exists */,
-        base::Bind(&SupervisedUserLoginFlow::OnNewKeyAdded,
-                   weak_factory_.GetWeakPtr(), Passed(&data_copy)));
+        base::BindOnce(&SupervisedUserLoginFlow::OnNewKeyAdded,
+                       weak_factory_.GetWeakPtr(), Passed(&data_copy)));
   } else if (SupervisedUserAuthentication::SCHEMA_SALT_HASHED ==
              current_schema) {
     VLOG(1) << "Updating the key";
@@ -162,8 +162,8 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
     DCHECK_EQ(context_.GetKey()->GetLabel(), kCryptohomeSupervisedUserKeyLabel);
     authenticator_->UpdateKeyAuthorized(
         context_, key, signature,
-        base::Bind(&SupervisedUserLoginFlow::OnPasswordUpdated,
-                   weak_factory_.GetWeakPtr(), Passed(&data_copy)));
+        base::BindOnce(&SupervisedUserLoginFlow::OnPasswordUpdated,
+                       weak_factory_.GetWeakPtr(), Passed(&data_copy)));
   } else {
     NOTREACHED() << "Unsupported password schema";
   }
@@ -178,8 +178,8 @@ void SupervisedUserLoginFlow::OnNewKeyAdded(
   auth->MarkKeyIncomplete(account_id().GetUserEmail(), true /* incomplete */);
   authenticator_->RemoveKey(
       context_, kLegacyCryptohomeSupervisedUserKeyLabel,
-      base::Bind(&SupervisedUserLoginFlow::OnOldKeyRemoved,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&SupervisedUserLoginFlow::OnOldKeyRemoved,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void SupervisedUserLoginFlow::OnOldKeyRemoved() {

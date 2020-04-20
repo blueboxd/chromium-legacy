@@ -89,6 +89,7 @@ constexpr char kManifestUpdateCheckStatus[] =
     "Extensions.ForceInstalledFailureUpdateCheckStatus";
 constexpr char kDisableReason[] =
     "Extensions.ForceInstalledNotLoadedDisableReason";
+constexpr char kBlacklisted[] = "Extensions.ForceInstalledAndBlackListed";
 }  // namespace
 
 namespace extensions {
@@ -244,6 +245,21 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   fake_timer_->Fire();
   histogram_tester_.ExpectUniqueSample(
       kDisableReason, disable_reason::DisableReason::DISABLE_NONE, 1);
+}
+
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       ExtensionForceInstalledAndBlacklisted) {
+  SetupForceList();
+  auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  registry_->AddBlacklisted(ext1.get());
+  auto ext2 = ExtensionBuilder(kExtensionName2).SetID(kExtensionId2).Build();
+  registry_->AddEnabled(ext2.get());
+  tracker_->OnExtensionLoaded(&profile_, ext2.get());
+  // InstallationTracker should still keep running as kExtensionId1 is installed
+  // but not loaded.
+  EXPECT_TRUE(fake_timer_->IsRunning());
+  fake_timer_->Fire();
+  histogram_tester_.ExpectUniqueSample(kBlacklisted, 1, 1);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest,

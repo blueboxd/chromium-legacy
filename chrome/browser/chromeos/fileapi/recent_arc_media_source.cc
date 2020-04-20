@@ -156,8 +156,8 @@ void RecentArcMediaSource::MediaRoot::GetRecentFiles(Params params) {
   }
 
   runner->GetRecentDocuments(kMediaDocumentsProviderAuthority, root_id_,
-                             base::Bind(&MediaRoot::OnGetRecentDocuments,
-                                        weak_ptr_factory_.GetWeakPtr()));
+                             base::BindOnce(&MediaRoot::OnGetRecentDocuments,
+                                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RecentArcMediaSource::MediaRoot::OnGetRecentDocuments(
@@ -218,8 +218,8 @@ void RecentArcMediaSource::MediaRoot::ScanDirectory(
   }
 
   root->ReadDirectory(
-      path, base::Bind(&RecentArcMediaSource::MediaRoot::OnReadDirectory,
-                       weak_ptr_factory_.GetWeakPtr(), path));
+      path, base::BindOnce(&RecentArcMediaSource::MediaRoot::OnReadDirectory,
+                           weak_ptr_factory_.GetWeakPtr(), path));
 }
 
 void RecentArcMediaSource::MediaRoot::OnReadDirectory(

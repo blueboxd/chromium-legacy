@@ -12,21 +12,19 @@
 
 namespace blink {
 
-class FrameOrImportedDocument;
+class Document;
+class DocumentLoader;
 
 // FrameResourceFetcherProperties is a ResourceFetcherProperties implementation
 // for Frame.
 class CORE_EXPORT FrameResourceFetcherProperties final
     : public ResourceFetcherProperties {
  public:
-  explicit FrameResourceFetcherProperties(FrameOrImportedDocument&);
+  FrameResourceFetcherProperties(DocumentLoader& document_loader,
+                                 Document& document);
   ~FrameResourceFetcherProperties() override = default;
 
   void Trace(Visitor*) override;
-
-  const FrameOrImportedDocument& GetFrameOrImportedDocument() const {
-    return *frame_or_imported_document_;
-  }
 
   // ResourceFetcherProperties implementation
   const FetchClientSettingsObject& GetFetchClientSettingsObject()
@@ -45,7 +43,8 @@ class CORE_EXPORT FrameResourceFetcherProperties final
   const KURL& WebBundlePhysicalUrl() const override;
 
  private:
-  const Member<FrameOrImportedDocument> frame_or_imported_document_;
+  const Member<DocumentLoader> document_loader_;
+  const Member<Document> document_;
   Member<const FetchClientSettingsObject> fetch_client_settings_object_;
   const KURL web_bundle_physical_url_;
 };

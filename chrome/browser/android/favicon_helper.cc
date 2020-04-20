@@ -412,9 +412,9 @@ void FaviconHelper::OnFaviconDownloaded(
   favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
 
-  service->SetOnDemandFavicons(
-      page_url, image_url, icon_type, image,
-      base::Bind(&OnEnsureIconIsAvailableFinished, j_availability_callback));
+  service->SetOnDemandFavicons(page_url, image_url, icon_type, image,
+                               base::BindOnce(&OnEnsureIconIsAvailableFinished,
+                                              j_availability_callback));
 }
 
 // static

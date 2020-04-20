@@ -198,7 +198,7 @@ void WakeEventPage::OnWakeEventPageResponse(int request_id, bool success) {
   } else {
     content::WorkerThread::PostTask(
         request_data->thread_id,
-        base::Bind(request_data->on_response, success));
+        base::BindOnce(request_data->on_response, success));
   }
 }
 

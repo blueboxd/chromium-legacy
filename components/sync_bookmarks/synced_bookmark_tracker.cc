@@ -216,6 +216,22 @@ const SyncedBookmarkTracker::Entity* SyncedBookmarkTracker::GetEntityForSyncId(
   return it != sync_id_to_entities_map_.end() ? it->second.get() : nullptr;
 }
 
+const SyncedBookmarkTracker::Entity*
+SyncedBookmarkTracker::GetTombstoneEntityForGuid(
+    const std::string& guid) const {
+  const syncer::ClientTagHash client_tag_hash =
+      syncer::ClientTagHash::FromUnhashed(syncer::BOOKMARKS, guid);
+
+  for (const Entity* tombstone_entity : ordered_local_tombstones_) {
+    if (tombstone_entity->metadata()->client_tag_hash() ==
+        client_tag_hash.value()) {
+      return tombstone_entity;
+    }
+  }
+
+  return nullptr;
+}
+
 SyncedBookmarkTracker::Entity* SyncedBookmarkTracker::AsMutableEntity(
     const Entity* entity) {
   DCHECK(entity);
@@ -725,6 +741,28 @@ void SyncedBookmarkTracker::UpdateBookmarkNodePointer(
       bookmark_node_to_entities_map_[old_node];
   bookmark_node_to_entities_map_[new_node]->set_bookmark_node(new_node);
   bookmark_node_to_entities_map_.erase(old_node);
+}
+
+void SyncedBookmarkTracker::UndeleteTombstoneForBookmarkNode(
+    const Entity* entity,
+    const bookmarks::BookmarkNode* node) {
+  DCHECK(entity);
+  DCHECK(node);
+  DCHECK(entity->metadata()->is_deleted());
+  const syncer::ClientTagHash client_tag_hash =
+      syncer::ClientTagHash::FromUnhashed(syncer::BOOKMARKS, node->guid());
+  // The same entity must be used only for the same bookmark node.
+  DCHECK_EQ(entity->metadata()->client_tag_hash(), client_tag_hash.value());
+  DCHECK_EQ(GetTombstoneEntityForGuid(node->guid()), entity);
+  DCHECK(bookmark_node_to_entities_map_.find(node) ==
+         bookmark_node_to_entities_map_.end());
+  DCHECK_EQ(GetEntityForSyncId(entity->metadata()->server_id()), entity);
+
+  base::Erase(ordered_local_tombstones_, entity);
+  Entity* mutable_entity = AsMutableEntity(entity);
+  mutable_entity->metadata()->set_is_deleted(false);
+  mutable_entity->set_bookmark_node(node);
+  bookmark_node_to_entities_map_[node] = mutable_entity;
 }
 
 void SyncedBookmarkTracker::AckSequenceNumber(const Entity* entity) {

@@ -4311,8 +4311,8 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
   download->Resume(true);
   // Now simulate that history DB is loaded.
   manager->OnHistoryQueryComplete(
-      base::Bind(CreateCompletedDownload, base::Unretained(manager), guid,
-                 target_path, std::move(url_chain), origin_file_size));
+      base::BindOnce(CreateCompletedDownload, base::Unretained(manager), guid,
+                     target_path, std::move(url_chain), origin_file_size));
   // Download should continue and complete.
   ASSERT_TRUE(waiter.WaitForFinished());
   download::DownloadItem* history_download = manager->GetDownloadByGuid(guid);
@@ -4865,7 +4865,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PRE_DownloadTest_History) {
   observer.WaitForStored();
   HistoryServiceFactory::GetForProfile(browser()->profile(),
                                        ServiceAccessType::IMPLICIT_ACCESS)
-      ->FlushForTest(base::Bind(&base::RunLoop::QuitCurrentWhenIdleDeprecated));
+      ->FlushForTest(
+          base::BindOnce(&base::RunLoop::QuitCurrentWhenIdleDeprecated));
   content::RunMessageLoop();
 }
 
@@ -4925,7 +4926,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {
   std::unique_ptr<DownloadUrlParameters> params(
       content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           web_contents, url, TRAFFIC_ANNOTATION_FOR_TESTS));
-  params->set_callback(base::Bind(&SetHiddenDownloadCallback));
+  params->set_callback(base::BindOnce(&SetHiddenDownloadCallback));
   download_manager->DownloadUrl(std::move(params));
   observer->WaitForFinished();
 

@@ -386,7 +386,7 @@ class AutoLaunchNotificationDelegate
       auto_launch_notification_timer_->Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kAutoLaunchNotificationDelay),
-          base::Bind(
+          base::BindOnce(
               &AutoLaunchNotificationDelegate::CloseAutoLaunchNotification,
               weak_factory_.GetWeakPtr()));
     } else if (auto_launch_notification_timer_ &&
@@ -847,7 +847,7 @@ void ExistingUserController::OnStartEnableDebuggingScreen() {
 }
 
 void ExistingUserController::OnStartKioskEnableScreen() {
-  KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(base::Bind(
+  KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(base::BindOnce(
       &ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted,
       weak_factory_.GetWeakPtr()));
 }
@@ -908,7 +908,7 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
     // On a device that is already owned we might want to allow users to
     // re-enroll if the policy information is invalid.
     CrosSettingsProvider::TrustedStatus trusted_status =
-        CrosSettings::Get()->PrepareTrustedValues(base::Bind(
+        CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(
             &ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
             weak_factory_.GetWeakPtr(), status));
     if (trusted_status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
@@ -1214,8 +1214,8 @@ void ExistingUserController::OnPasswordChangeDetected() {
   // Must not proceed without signature verification.
   if (CrosSettingsProvider::TRUSTED !=
       cros_settings_->PrepareTrustedValues(
-          base::Bind(&ExistingUserController::OnPasswordChangeDetected,
-                     weak_factory_.GetWeakPtr()))) {
+          base::BindOnce(&ExistingUserController::OnPasswordChangeDetected,
+                         weak_factory_.GetWeakPtr()))) {
     // Value of owner email is still not verified.
     // Another attempt will be invoked after verification completion.
     return;
@@ -1706,15 +1706,16 @@ void ExistingUserController::StartAutoLoginTimer() {
             << "ms";
     auto_login_timer_->Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(auto_login_delay_),
-        base::Bind(&ExistingUserController::OnPublicSessionAutoLoginTimerFire,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(
+            &ExistingUserController::OnPublicSessionAutoLoginTimerFire,
+            weak_factory_.GetWeakPtr()));
   } else {
     VLOG(2) << "ARC kiosk autologin will be fired in " << auto_login_delay_
             << "ms";
     auto_login_timer_->Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(auto_login_delay_),
-        base::Bind(&ExistingUserController::OnArcKioskAutoLoginTimerFire,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&ExistingUserController::OnArcKioskAutoLoginTimerFire,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -1826,9 +1827,9 @@ void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
   // Wait for the |cros_settings_| to become either trusted or permanently
   // untrusted.
   const CrosSettingsProvider::TrustedStatus status =
-      cros_settings_->PrepareTrustedValues(
-          base::Bind(&ExistingUserController::ContinueLoginIfDeviceNotDisabled,
-                     weak_factory_.GetWeakPtr(), continuation));
+      cros_settings_->PrepareTrustedValues(base::BindOnce(
+          &ExistingUserController::ContinueLoginIfDeviceNotDisabled,
+          weak_factory_.GetWeakPtr(), continuation));
   if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
     return;
 
@@ -1855,9 +1856,9 @@ void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
     return;
   }
 
-  CryptohomeClient::Get()->WaitForServiceToBeAvailable(
-      base::Bind(&ExistingUserController::ContinueLoginWhenCryptohomeAvailable,
-                 weak_factory_.GetWeakPtr(), continuation));
+  CryptohomeClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
+      &ExistingUserController::ContinueLoginWhenCryptohomeAvailable,
+      weak_factory_.GetWeakPtr(), continuation));
 }
 
 void ExistingUserController::DoCompleteLogin(

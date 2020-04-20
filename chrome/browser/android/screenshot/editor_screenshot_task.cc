@@ -52,8 +52,8 @@ void JNI_EditorScreenshotTask_GrabWindowSnapshotAsync(
   gfx::Rect window_bounds(window_width, window_height);
   ui::GrabWindowSnapshotAsyncPNG(
       window_android, window_bounds,
-      base::Bind(&JNI_EditorScreenshotTask_SnapshotCallback, env,
-                 ScopedJavaGlobalRef<jobject>(env, jcallback)));
+      base::BindOnce(&JNI_EditorScreenshotTask_SnapshotCallback, env,
+                     ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
 }  // namespace android

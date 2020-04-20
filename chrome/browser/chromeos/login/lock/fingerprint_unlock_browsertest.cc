@@ -61,8 +61,8 @@ class FingerprintUnlockTest : public InProcessBrowserTest {
   void EnrollFingerprint() {
     FakeBiodClient::Get()->StartEnrollSession(
         "test-user", std::string(),
-        base::BindRepeating(&FingerprintUnlockTest::OnStartSession,
-                            base::Unretained(this)));
+        base::BindOnce(&FingerprintUnlockTest::OnStartSession,
+                       base::Unretained(this)));
     if (!fingerprint_session_started_) {
       base::RunLoop run_loop;
       fingerprint_session_callback_ = run_loop.QuitClosure();

@@ -576,8 +576,8 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
       return;
     favicon_service->GetFaviconImageForPageURL(
         url,
-        base::Bind(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
-                   weak_ptr_factory_.GetWeakPtr(), command_id),
+        base::BindOnce(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
+                       weak_ptr_factory_.GetWeakPtr(), command_id),
         &local_tab_cancelable_task_tracker_);
   } else {
     favicon::HistoryUiFaviconRequestHandler*

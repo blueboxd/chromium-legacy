@@ -22,7 +22,8 @@ class ReauthTabHelper : public content::WebContentsUserData<ReauthTabHelper>,
   using ReauthCallback = base::OnceCallback<void(signin::ReauthResult)>;
 
   // Creates a new ReauthTabHelper and attaches it to |web_contents|. If an
-  // instance is already attached, does nothing.
+  // instance is already attached, no replacement happens, just notifies the
+  // caller by invoking |callback| with signin::ReauthResult::kCancelled.
   // Initializes a helper with:
   // - |callback| to be called when the reauth flow is complete.
   // - |reauth_url| that should be the final destination of the reauth flow.

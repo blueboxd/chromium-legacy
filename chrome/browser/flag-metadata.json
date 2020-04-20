@@ -966,6 +966,11 @@
     "expiry_milestone": 89
   },
   {
+    "name": "edit-bookmarks-ios",
+    "owners": [ "edchin", "rohitrao" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "elastic-overscroll-win",
     "owners": [ "arakeri@microsoft.com" ],
     "expiry_milestone": 90
@@ -2632,12 +2637,12 @@
   {
     "name": "improved-cookie-controls",
     "owners": [ "dullweber", "huanzhong" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 86
   },
   {
     "name": "improved-cookie-controls-for-third-party-cookie-blocking",
     "owners": [ "dullweber", "huanzhong" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 86
   },
   {
     "name": "impulse-scroll-animations",
@@ -3424,7 +3429,7 @@
     "name": "privacy-settings-redesign",
     "owners": ["harrisonsean", "msramek",
       "chrome-friendly-settings@google.com"],
-    "expiry_milestone": 84
+    "expiry_milestone": 86
   },
   {
     "name": "proactive-tab-freeze",

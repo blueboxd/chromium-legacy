@@ -206,8 +206,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
   // of items, which are needed to compute inline static positions.
   LayoutUnit line_offset_for_text_align = ApplyTextAlign(line_info);
 
-  NGTextFragmentBuilder text_builder(ConstraintSpace().GetWritingMode());
-
   // Compute heights of all inline items by placing the dominant baseline at 0.
   // The baseline is adjusted after the height of the line box is computed.
   const ComputedStyle& line_style = line_info->LineStyle();
@@ -229,6 +227,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
   if (quirks_mode_ && line_style.Display() == EDisplay::kListItem)
     box->ComputeTextMetrics(line_style, baseline_type_);
 
+  bool has_logical_text_items = false;
   for (NGInlineItemResult& item_result : *line_items) {
     DCHECK(item_result.item);
     const NGInlineItem& item = *item_result.item;
@@ -237,8 +236,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
       DCHECK(item.GetLayoutObject()->IsText() ||
              item.GetLayoutObject()->IsLayoutNGListItem());
       DCHECK(item_result.shape_result);
-
-      text_builder.SetIsFirstForNode(item_result.IsFirstForNode());
 
       if (UNLIKELY(quirks_mode_))
         box->EnsureTextMetrics(*item.Style(), baseline_type_);
@@ -251,18 +248,18 @@ void NGInlineLayoutAlgorithm::CreateLine(
 
       DCHECK(item.TextType() == NGTextType::kNormal ||
              item.TextType() == NGTextType::kSymbolMarker);
-      text_builder.SetItem(line_info->ItemsData(), &item_result,
-                           box->text_height);
       if (UNLIKELY(item_result.hyphen_shape_result)) {
         LayoutUnit hyphen_inline_size = item_result.HyphenInlineSize();
-        line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
+        line_box_.AddChild(&item_result, box->text_top,
                            item_result.inline_size - hyphen_inline_size,
-                           item.BidiLevel());
+                           box->text_height, item.BidiLevel());
         PlaceHyphen(item_result, hyphen_inline_size, box);
       } else {
-        line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
-                           item_result.inline_size, item.BidiLevel());
+        line_box_.AddChild(&item_result, box->text_top, item_result.inline_size,
+                           box->text_height, item.BidiLevel());
       }
+      has_logical_text_items = true;
+
       // Text boxes always need full paint invalidations.
       item.GetLayoutObject()->ClearNeedsLayoutWithFullPaintInvalidation();
 
@@ -323,6 +320,13 @@ void NGInlineLayoutAlgorithm::CreateLine(
                     line_info->AvailableWidth() - line_info->TextIndent() &&
                 node_.GetLayoutBlockFlow()->ShouldTruncateOverflowingText()) ||
                ShouldTruncateForLineClamp(*line_info))) {
+    // TODO(kojii): |NGLineTruncator| does not support |Child|-based truncation
+    // yet, so create |NGPhysicalTextFragment| first.
+    if (has_logical_text_items) {
+      line_box_.CreateTextFragments(ConstraintSpace().GetWritingMode(),
+                                    line_info->ItemsData().text_content);
+      has_logical_text_items = false;
+    }
     NGLineTruncator truncator(*line_info);
     auto* input =
         DynamicTo<HTMLInputElement>(node_.GetLayoutBlockFlow()->GetNode());
@@ -333,6 +337,12 @@ void NGInlineLayoutAlgorithm::CreateLine(
       inline_size =
           truncator.TruncateLine(inline_size, &line_box_, box_states_);
     }
+  }
+
+  if (has_logical_text_items &&
+      !RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    line_box_.CreateTextFragments(ConstraintSpace().GetWritingMode(),
+                                  line_info->ItemsData().text_content);
   }
 
   // Negative margins can make the position negative, but the inline size is
@@ -379,6 +389,11 @@ void NGInlineLayoutAlgorithm::CreateLine(
   // Update item index of the box states in the context.
   context_->SetItemIndex(line_info->ItemsData().items,
                          line_info->EndItemIndex());
+
+  if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())) {
+    NGFragmentItem::Create(&line_box_, line_info->ItemsData().text_content,
+                           ConstraintSpace().GetWritingMode());
+  }
 
   // Even if we have something in-flow, it may just be empty items that
   // shouldn't trigger creation of a line. Exit now if that's the case.
@@ -444,7 +459,8 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
     box->EnsureTextMetrics(*item.Style(), baseline_type_);
 
   NGTextFragmentBuilder text_builder(ConstraintSpace().GetWritingMode());
-  text_builder.SetItem(line_info.ItemsData(), item_result, box->text_height);
+  text_builder.SetItem(line_info.ItemsData().text_content, item_result,
+                       box->text_height);
   text_builder.SetIsFirstForNode(item_result->IsFirstForNode());
   line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
                      item_result->inline_size, item.BidiLevel());
@@ -1126,7 +1142,9 @@ void NGInlineLayoutAlgorithm::BidiReorder(TextDirection base_direction) {
   visual_items.ReserveInitialCapacity(line_box_.size());
   for (unsigned logical_index : indices_in_visual_order) {
     visual_items.AddChild(std::move(line_box_[logical_index]));
-    DCHECK(!line_box_[logical_index].HasInFlowFragment());
+    DCHECK(!line_box_[logical_index].HasInFlowFragment() ||
+           // |item_result| will not be null by moving.
+           line_box_[logical_index].item_result);
   }
   DCHECK_EQ(line_box_.size(), visual_items.size());
   line_box_ = std::move(visual_items);

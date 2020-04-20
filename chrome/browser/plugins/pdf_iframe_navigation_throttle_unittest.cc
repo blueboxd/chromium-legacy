@@ -110,7 +110,7 @@ TEST_F(PDFIFrameNavigationThrottleTest, InterceptPDFOnly) {
   // Load plugins to keep this test synchronous.
 #if BUILDFLAG(ENABLE_PLUGINS)
   base::RunLoop run_loop;
-  content::PluginService::GetInstance()->GetPlugins(base::BindRepeating(
+  content::PluginService::GetInstance()->GetPlugins(base::BindOnce(
       [](base::RunLoop* run_loop,
          const std::vector<content::WebPluginInfo>& plugins) {
         run_loop->Quit();

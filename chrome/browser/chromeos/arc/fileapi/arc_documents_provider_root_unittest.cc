@@ -1045,7 +1045,7 @@ TEST_F(ArcDocumentsProviderRootTest, WatchChanged) {
     base::RunLoop run_loop;
     root_->AddWatcher(base::FilePath(FILE_PATH_LITERAL("dir")),
                       watcher_callback,
-                      base::Bind(
+                      base::BindOnce(
                           [](base::RunLoop* run_loop, base::File::Error error) {
                             run_loop->Quit();
                             EXPECT_EQ(base::File::FILE_OK, error);
@@ -1072,7 +1072,7 @@ TEST_F(ArcDocumentsProviderRootTest, WatchChanged) {
     base::RunLoop run_loop;
     root_->RemoveWatcher(
         base::FilePath(FILE_PATH_LITERAL("dir")),
-        base::Bind(
+        base::BindOnce(
             [](base::RunLoop* run_loop, base::File::Error error) {
               run_loop->Quit();
               EXPECT_EQ(base::File::FILE_OK, error);
@@ -1095,7 +1095,7 @@ TEST_F(ArcDocumentsProviderRootTest, WatchDeleted) {
     base::RunLoop run_loop;
     root_->AddWatcher(base::FilePath(FILE_PATH_LITERAL("dir")),
                       watcher_callback,
-                      base::Bind(
+                      base::BindOnce(
                           [](base::RunLoop* run_loop, base::File::Error error) {
                             run_loop->Quit();
                             EXPECT_EQ(base::File::FILE_OK, error);
@@ -1124,7 +1124,7 @@ TEST_F(ArcDocumentsProviderRootTest, WatchDeleted) {
     base::RunLoop run_loop;
     root_->RemoveWatcher(
         base::FilePath(FILE_PATH_LITERAL("dir")),
-        base::Bind(
+        base::BindOnce(
             [](base::RunLoop* run_loop, base::File::Error error) {
               run_loop->Quit();
               EXPECT_EQ(base::File::FILE_OK, error);
@@ -1138,7 +1138,7 @@ TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrl) {
   base::RunLoop run_loop;
   root_->ResolveToContentUrl(
       base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
-      base::Bind(
+      base::BindOnce(
           [](base::RunLoop* run_loop, const GURL& url) {
             run_loop->Quit();
             EXPECT_EQ(GURL("content://org.chromium.test/document/photo-id"),
@@ -1152,7 +1152,7 @@ TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrlRoot) {
   base::RunLoop run_loop;
   root_->ResolveToContentUrl(
       base::FilePath(FILE_PATH_LITERAL("")),
-      base::Bind(
+      base::BindOnce(
           [](base::RunLoop* run_loop, const GURL& url) {
             run_loop->Quit();
             EXPECT_EQ(GURL("content://org.chromium.test/document/root-id"),
@@ -1165,7 +1165,7 @@ TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrlRoot) {
 TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrlNoSuchFile) {
   base::RunLoop run_loop;
   root_->ResolveToContentUrl(base::FilePath(FILE_PATH_LITERAL("missing")),
-                             base::Bind(
+                             base::BindOnce(
                                  [](base::RunLoop* run_loop, const GURL& url) {
                                    run_loop->Quit();
                                    EXPECT_EQ(GURL(), url);
@@ -1180,7 +1180,7 @@ TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrlDups) {
   // order returned from FileSystemInstance.
   root_->ResolveToContentUrl(
       base::FilePath(FILE_PATH_LITERAL("dups/dup (2).mp4")),
-      base::Bind(
+      base::BindOnce(
           [](base::RunLoop* run_loop, const GURL& url) {
             run_loop->Quit();
             EXPECT_EQ(GURL("content://org.chromium.test/document/dup3-id"),

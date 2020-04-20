@@ -107,8 +107,9 @@ void VersionInfoUpdater::StartUpdate(bool is_chrome_branded) {
       chromeos::features::kArcAdbSideloadingFeature)) {
     chromeos::SessionManagerClient* client =
         chromeos::SessionManagerClient::Get();
-    client->QueryAdbSideload(base::Bind(&VersionInfoUpdater::OnQueryAdbSideload,
-                                        weak_pointer_factory_.GetWeakPtr()));
+    client->QueryAdbSideload(
+        base::BindOnce(&VersionInfoUpdater::OnQueryAdbSideload,
+                       weak_pointer_factory_.GetWeakPtr()));
   }
 }
 

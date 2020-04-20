@@ -32,8 +32,8 @@ BluetoothGattApplicationServiceProviderImpl::
       base::Bind(
           &BluetoothGattApplicationServiceProviderImpl::GetManagedObjects,
           weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&BluetoothGattApplicationServiceProviderImpl::OnExported,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BluetoothGattApplicationServiceProviderImpl::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   CreateAttributeServiceProviders(bus, services);
 }

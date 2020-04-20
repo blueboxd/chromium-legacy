@@ -127,7 +127,7 @@ class FileTasksBrowserTest : public InProcessBrowserTest {
       // task_verifier callback is invoked synchronously from
       // FindAllTypesOfTasks.
       FindAllTypesOfTasks(browser()->profile(), entries, file_urls,
-                          base::BindRepeating(&VerifyTasks, &remaining, test));
+                          base::BindOnce(&VerifyTasks, &remaining, test));
     }
     EXPECT_EQ(0, remaining);
   }

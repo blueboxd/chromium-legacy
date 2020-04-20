@@ -187,10 +187,10 @@ void FidoBleConnection::Connect(ConnectionCallback callback) {
   FIDO_LOG(DEBUG) << "Creating a GATT connection...";
   // TODO(crbug.com/1007780): This function should take OnceCallbacks.
   device->CreateGattConnection(
-      base::BindRepeating(&FidoBleConnection::OnCreateGattConnection,
-                          weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&FidoBleConnection::OnCreateGattConnectionError,
-                          weak_factory_.GetWeakPtr()),
+      base::BindOnce(&FidoBleConnection::OnCreateGattConnection,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&FidoBleConnection::OnCreateGattConnectionError,
+                     weak_factory_.GetWeakPtr()),
       BluetoothUUID(kCableAdvertisementUUID128));
 }
 

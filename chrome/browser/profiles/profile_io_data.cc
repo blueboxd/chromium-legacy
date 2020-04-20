@@ -209,8 +209,8 @@ void StartNSSInitOnIOThread(const AccountId& account_id,
 
   if (IsTPMTokenEnabledForNSS()) {
     if (crypto::IsTPMTokenReady(
-            base::Bind(&StartTPMSlotInitializationOnIOThread, account_id,
-                       username_hash))) {
+            base::BindOnce(&StartTPMSlotInitializationOnIOThread, account_id,
+                           username_hash))) {
       StartTPMSlotInitializationOnIOThread(account_id, username_hash);
     } else {
       DVLOG(1) << "Waiting for tpm ready ...";

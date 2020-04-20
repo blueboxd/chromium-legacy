@@ -138,7 +138,7 @@ class AvailabilityProberTest : public testing::Test {
             timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
             kCacheRevalidateAfter, task_environment_.GetMockTickClock(),
             task_environment_.GetMockClock());
-    prober->SetOnCompleteCallback(base::BindRepeating(
+    prober->SetOnCompleteCallback(base::BindOnce(
         &AvailabilityProberTest::OnProbeComplete, base::Unretained(this)));
     return prober;
   }

@@ -573,10 +573,10 @@ void PepperUDPSocketMessageFilter::DoBindCallback(
 #if defined(OS_CHROMEOS)
   pepper_socket_utils::OpenUDPFirewallHole(
       *local_addr_out,
-      base::BindRepeating(&PepperUDPSocketMessageFilter::OnFirewallHoleOpened,
-                          firewall_hole_weak_ptr_factory_.GetWeakPtr(),
-                          base::Passed(std::move(listener_receiver)), context,
-                          net_address));
+      base::BindOnce(&PepperUDPSocketMessageFilter::OnFirewallHoleOpened,
+                     firewall_hole_weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(std::move(listener_receiver)), context,
+                     net_address));
 #else   // !defined(OS_CHROMEOS)
   OnBindComplete(std::move(listener_receiver), context, net_address);
 #endif  // !defined(OS_CHROMEOS)

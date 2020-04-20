@@ -137,7 +137,7 @@ void KioskCryptohomeRemover::RegisterPrefs(PrefRegistrySimple* registry) {
 void KioskCryptohomeRemover::RemoveObsoleteCryptohomes() {
   chromeos::CryptohomeClient* client = chromeos::CryptohomeClient::Get();
   client->WaitForServiceToBeAvailable(
-      base::Bind(&PerformDelayedCryptohomeRemovals));
+      base::BindOnce(&PerformDelayedCryptohomeRemovals));
 }
 
 void KioskCryptohomeRemover::CancelDelayedCryptohomeRemoval(

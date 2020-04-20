@@ -149,7 +149,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedPolicyViolation) {
   mojo::Remote<Geolocation> geolocation;
   service_remote()->CreateGeolocation(
       geolocation.BindNewPipeAndPassReceiver(), true,
-      base::BindRepeating([](blink::mojom::PermissionStatus status) {
+      base::BindOnce([](blink::mojom::PermissionStatus status) {
         EXPECT_EQ(blink::mojom::PermissionStatus::DENIED, status);
       }));
 
@@ -173,7 +173,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedNoPolicyViolation) {
   mojo::Remote<Geolocation> geolocation;
   service_remote()->CreateGeolocation(
       geolocation.BindNewPipeAndPassReceiver(), true,
-      base::BindRepeating([](blink::mojom::PermissionStatus status) {
+      base::BindOnce([](blink::mojom::PermissionStatus status) {
         EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED, status);
       }));
 
@@ -200,7 +200,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedSync) {
   mojo::Remote<Geolocation> geolocation;
   service_remote()->CreateGeolocation(
       geolocation.BindNewPipeAndPassReceiver(), true,
-      base::BindRepeating([](blink::mojom::PermissionStatus status) {
+      base::BindOnce([](blink::mojom::PermissionStatus status) {
         EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED, status);
       }));
 
@@ -227,7 +227,7 @@ TEST_F(GeolocationServiceTest, PermissionDeniedSync) {
   mojo::Remote<Geolocation> geolocation;
   service_remote()->CreateGeolocation(
       geolocation.BindNewPipeAndPassReceiver(), true,
-      base::BindRepeating([](blink::mojom::PermissionStatus status) {
+      base::BindOnce([](blink::mojom::PermissionStatus status) {
         EXPECT_EQ(blink::mojom::PermissionStatus::DENIED, status);
       }));
 
@@ -252,7 +252,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedAsync) {
   mojo::Remote<Geolocation> geolocation;
   service_remote()->CreateGeolocation(
       geolocation.BindNewPipeAndPassReceiver(), true,
-      base::BindRepeating([](blink::mojom::PermissionStatus status) {
+      base::BindOnce([](blink::mojom::PermissionStatus status) {
         EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED, status);
       }));
 
@@ -282,7 +282,7 @@ TEST_F(GeolocationServiceTest, PermissionDeniedAsync) {
   mojo::Remote<Geolocation> geolocation;
   service_remote()->CreateGeolocation(
       geolocation.BindNewPipeAndPassReceiver(), true,
-      base::BindRepeating([](blink::mojom::PermissionStatus status) {
+      base::BindOnce([](blink::mojom::PermissionStatus status) {
         EXPECT_EQ(blink::mojom::PermissionStatus::DENIED, status);
       }));
 
@@ -301,7 +301,7 @@ TEST_F(GeolocationServiceTest, ServiceClosedBeforePermissionResponse) {
   mojo::Remote<Geolocation> geolocation;
   service_remote()->CreateGeolocation(
       geolocation.BindNewPipeAndPassReceiver(), true,
-      base::BindRepeating([](blink::mojom::PermissionStatus) {
+      base::BindOnce([](blink::mojom::PermissionStatus) {
         ADD_FAILURE() << "PositionStatus received unexpectedly.";
       }));
   // Don't immediately respond to the request.

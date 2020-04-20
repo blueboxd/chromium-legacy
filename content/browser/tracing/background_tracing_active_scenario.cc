@@ -269,7 +269,7 @@ class LegacyTracingSession
   void AbortScenario(const base::RepeatingClosure& on_abort_callback) override {
     if (TracingControllerImpl::GetInstance()->IsTracing()) {
       TracingControllerImpl::GetInstance()->StopTracing(
-          TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
+          TracingControllerImpl::CreateCallbackEndpoint(base::BindOnce(
               [](const base::RepeatingClosure& on_abort_callback,
                  std::unique_ptr<std::string>) { on_abort_callback.Run(); },
               std::move(on_abort_callback))));

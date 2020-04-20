@@ -280,7 +280,7 @@ void EnterpriseEnrollmentHelperImpl::GetDeviceAttributeUpdatePermission() {
 
   client->GetDeviceAttributeUpdatePermission(
       auth_data_->Clone(),
-      base::Bind(
+      base::BindOnce(
           &EnterpriseEnrollmentHelperImpl::OnDeviceAttributeUpdatePermission,
           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -297,7 +297,7 @@ void EnterpriseEnrollmentHelperImpl::UpdateDeviceAttributes(
 
   client->UpdateDeviceAttributes(
       auth_data_->Clone(), asset_id, location,
-      base::Bind(
+      base::BindOnce(
           &EnterpriseEnrollmentHelperImpl::OnDeviceAttributeUploadCompleted,
           weak_ptr_factory_.GetWeakPtr()));
 }

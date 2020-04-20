@@ -133,7 +133,7 @@ void ResetScreen::CheckIfPowerwashAllowed(
     // Check if powerwash is only allowed by the admin specifically for the
     // purpose of installing a TPM firmware update.
     tpm_firmware_update::GetAvailableUpdateModes(
-        base::Bind(&OnUpdateModesAvailable, base::Passed(&callback)),
+        base::BindOnce(&OnUpdateModesAvailable, base::Passed(&callback)),
         base::TimeDelta());
     return;
   }
@@ -223,8 +223,8 @@ void ResetScreen::ShowImpl() {
   } else {
     chromeos::DBusThreadManager::Get()
         ->GetUpdateEngineClient()
-        ->CanRollbackCheck(base::Bind(&ResetScreen::OnRollbackCheck,
-                                      weak_ptr_factory_.GetWeakPtr()));
+        ->CanRollbackCheck(base::BindOnce(&ResetScreen::OnRollbackCheck,
+                                          weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (dialog_type < reset::DIALOG_VIEW_TYPE_SIZE) {

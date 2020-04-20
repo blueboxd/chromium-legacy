@@ -474,8 +474,8 @@ DownloadTargetDeterminerTest::RunDownloadTargetDeterminer(
   DownloadTargetDeterminer::Start(
       item, initial_virtual_path, DownloadPathReservationTracker::UNIQUIFY,
       download_prefs_.get(), delegate(),
-      base::Bind(&CompletionCallbackWrapper, run_loop.QuitClosure(),
-                 &target_info));
+      base::BindOnce(&CompletionCallbackWrapper, run_loop.QuitClosure(),
+                     &target_info));
   run_loop.Run();
   ::testing::Mock::VerifyAndClearExpectations(delegate());
   return target_info;

@@ -242,9 +242,8 @@ void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
 
   favicon_service->GetFaviconImageForPageURL(
       entry->GetURL(),
-      base::Bind(&BackForwardMenuModel::OnFavIconDataAvailable,
-                 base::Unretained(this),
-                 entry->GetUniqueID()),
+      base::BindOnce(&BackForwardMenuModel::OnFavIconDataAvailable,
+                     base::Unretained(this), entry->GetUniqueID()),
       &cancelable_task_tracker_);
 }
 

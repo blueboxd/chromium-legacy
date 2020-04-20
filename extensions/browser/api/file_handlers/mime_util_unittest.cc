@@ -126,7 +126,7 @@ TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
   {
     std::string result;
     GetMimeTypeForLocalPath(browser_context(), amr_mime_file_path_,
-                            base::BindRepeating(&OnMimeTypeResult, &result));
+                            base::BindOnce(&OnMimeTypeResult, &result));
     content::RunAllTasksUntilIdle();
     // The MIME type for AMR files is supposed to be "audio/AMR" (note: upper
     // case). However, platforms are inconsistent in this and some, including

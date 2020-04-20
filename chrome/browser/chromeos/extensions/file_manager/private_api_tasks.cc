@@ -213,7 +213,7 @@ FileManagerPrivateInternalGetFileTasksFunction::Run() {
           chrome_details_.GetProfile());
   mime_type_collector_->CollectForLocalPaths(
       local_paths_,
-      base::Bind(
+      base::BindOnce(
           &FileManagerPrivateInternalGetFileTasksFunction::OnMimeTypesCollected,
           this));
 
@@ -226,9 +226,10 @@ void FileManagerPrivateInternalGetFileTasksFunction::OnMimeTypesCollected(
       std::make_unique<app_file_handler_util::IsDirectoryCollector>(
           chrome_details_.GetProfile());
   is_directory_collector_->CollectForEntriesPaths(
-      local_paths_, base::Bind(&FileManagerPrivateInternalGetFileTasksFunction::
-                                   OnAreDirectoriesAndMimeTypesCollected,
-                               this, base::Passed(std::move(mime_types))));
+      local_paths_,
+      base::BindOnce(&FileManagerPrivateInternalGetFileTasksFunction::
+                         OnAreDirectoriesAndMimeTypesCollected,
+                     this, base::Passed(std::move(mime_types))));
 }
 
 void FileManagerPrivateInternalGetFileTasksFunction::

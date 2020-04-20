@@ -1,0 +1,86 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package enterprise_connectors;
+
+enum AnalysisConnector {
+  ANALYSIS_CONNECTOR_UNSPECIFIED = 0;
+  ON_FILE_DOWNLOADED = 1;
+  ON_FILE_ATTACHED = 2;
+  ON_BULK_DATA_ENTRY = 3;
+}
+
+// Scanning request sent from Chrome to an analysis service.
+message ContentAnalysisRequest {
+  optional AnalysisConnector analysis_connector = 1;
+
+  // The TokenID for Enterprise-enrolled devices.  This identifies a specific
+  // chrome instance.
+  optional string device_token = 2;
+
+  // Firebase Cloud Messaging token used to notify this client of the verdict.
+  // This identifies a specific chrome instance.
+  optional string fcm_notification_token = 3;
+
+  // Token used to correlate requests and responses. This is different than the
+  // FCM token, in that it is unique for each request.
+  optional string request_token = 4;
+
+  // The tags configured for the URL that triggered the content analysis.
+  repeated string tags = 5;
+}
+
+// Scanning response sent from an analysis service to Chrome.
+message ContentAnalysisResponse {
+  // Token used to correlate requests and responses. Corresponds to field in
+  // ContentAnalysisRequest with the same name.
+  optional string request_token = 1;
+
+  // The status of the response.
+  enum Status {
+    STATUS_UNKNOWN = 0;
+    SUCCESS = 1;
+    FAILURE = 2;
+  }
+  optional Status status = 2;
+
+  // Identifies the kind of detection that caused a trigger.
+  message MatchedDetector {
+    // Unique identifier for this detector.
+    optional string detector_id = 1;
+
+    // Display name of this detector.
+    optional string display_name = 2;
+
+    // Type of this detector.
+    optional string detector_type = 3;
+  }
+
+  // Identifies the detection rules that were triggered by the content uploaded
+  // with the analysis request.
+  message TriggeredRule {
+    enum Action {
+      ACTION_UNKNOWN = 0;
+      REPORT_ONLY = 1;
+      WARN = 2;
+      BLOCK = 3;
+    }
+    optional Action action = 1;
+    optional string rule_name = 2;
+    optional int64 rule_id = 3;
+    optional string rule_resource_name = 4;
+    optional string rule_severity = 5;
+    repeated MatchedDetector matched_detectors = 6;
+
+    // The tag of the analysis that triggered this rule.
+    optional string tag = 7;
+  }
+
+  // Only relevant when status is SUCCESS above.
+  repeated TriggeredRule triggered_rules = 3;
+}

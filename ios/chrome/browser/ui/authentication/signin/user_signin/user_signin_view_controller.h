@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/authentication/authentication_flow.h"
+
 // Delegate that interacts with the user sign-in coordinator.
 @protocol UserSigninViewControllerDelegate
 
@@ -29,7 +31,8 @@
 @end
 
 // View controller used to show sign-in UI.
-@interface UserSigninViewController : UIViewController
+@interface UserSigninViewController
+    : UIViewController <AuthenticationFlowDelegate>
 
 // The delegate.
 @property(nonatomic, weak) id<UserSigninViewControllerDelegate> delegate;

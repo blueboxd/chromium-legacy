@@ -184,9 +184,8 @@ void CloudExternalDataManagerBaseTest::SetExternalDataReference(
 
 ExternalDataFetcher::FetchCallback
 CloudExternalDataManagerBaseTest::ConstructFetchCallback(int id) {
-  return base::Bind(&CloudExternalDataManagerBaseTest::OnFetchDone,
-                    base::Unretained(this),
-                    id);
+  return base::BindOnce(&CloudExternalDataManagerBaseTest::OnFetchDone,
+                        base::Unretained(this), id);
 }
 
 void CloudExternalDataManagerBaseTest::ResetCallbackData() {

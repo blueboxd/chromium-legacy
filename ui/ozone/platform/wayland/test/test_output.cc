@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/wayland/test/test_output.h"
 
-#include <wayland-server-protocol-core.h>
+#include <wayland-server-protocol.h>
 
 namespace wl {
 

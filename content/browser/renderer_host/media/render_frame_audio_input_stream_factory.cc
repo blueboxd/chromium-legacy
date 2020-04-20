@@ -326,12 +326,11 @@ void RenderFrameAudioInputStreamFactory::Core::
   } else {
     EnumerateOutputDevices(
         media_stream_manager_,
-        base::BindRepeating(
-            &TranslateDeviceId, output_device_id, salt_and_origin,
-            base::BindRepeating(&RenderFrameAudioInputStreamFactory::Core::
-                                    AssociateTranslatedOutputDeviceForAec,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                input_stream_id)));
+        base::BindOnce(&TranslateDeviceId, output_device_id, salt_and_origin,
+                       base::BindRepeating(
+                           &RenderFrameAudioInputStreamFactory::Core::
+                               AssociateTranslatedOutputDeviceForAec,
+                           weak_ptr_factory_.GetWeakPtr(), input_stream_id)));
   }
 }
 

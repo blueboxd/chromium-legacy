@@ -283,8 +283,8 @@ void UserScriptLoader::StartLoad() {
     changed_hosts_.insert(id_pair.host_id);
 
   LoadScripts(std::move(scripts_to_load), changed_hosts_, added_script_ids,
-              base::Bind(&UserScriptLoader::OnScriptsLoaded,
-                         weak_factory_.GetWeakPtr()));
+              base::BindOnce(&UserScriptLoader::OnScriptsLoaded,
+                             weak_factory_.GetWeakPtr()));
 
   clear_scripts_ = false;
   added_scripts_map_.clear();

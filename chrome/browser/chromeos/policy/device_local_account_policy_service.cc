@@ -436,8 +436,8 @@ void DeviceLocalAccountPolicyService::UpdateAccountListIfNonePending() {
 void DeviceLocalAccountPolicyService::UpdateAccountList() {
   chromeos::CrosSettingsProvider::TrustedStatus status =
       cros_settings_->PrepareTrustedValues(
-          base::Bind(&DeviceLocalAccountPolicyService::UpdateAccountList,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&DeviceLocalAccountPolicyService::UpdateAccountList,
+                         weak_factory_.GetWeakPtr()));
   switch (status) {
     case chromeos::CrosSettingsProvider::TRUSTED:
       waiting_for_cros_settings_ = false;
@@ -564,10 +564,9 @@ void DeviceLocalAccountPolicyService::DeleteBrokers(PolicyBrokerMap* map) {
     if (extension_loader->IsCacheRunning()) {
       DCHECK(!IsExtensionCacheDirectoryBusy(it->second->account_id()));
       busy_extension_cache_directories_.insert(it->second->account_id());
-      extension_loader->StopCache(base::Bind(
+      extension_loader->StopCache(base::BindOnce(
           &DeviceLocalAccountPolicyService::OnObsoleteExtensionCacheShutdown,
-          weak_factory_.GetWeakPtr(),
-          it->second->account_id()));
+          weak_factory_.GetWeakPtr(), it->second->account_id()));
     }
 
     delete it->second;

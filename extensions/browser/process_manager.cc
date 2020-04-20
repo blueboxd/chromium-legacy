@@ -269,8 +269,8 @@ ProcessManager::ProcessManager(BrowserContext* context,
   if (!context->IsOffTheRecord()) {
     ExtensionSystem::Get(context)->ready().Post(
         FROM_HERE,
-        base::Bind(&ProcessManager::MaybeCreateStartupBackgroundHosts,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&ProcessManager::MaybeCreateStartupBackgroundHosts,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,

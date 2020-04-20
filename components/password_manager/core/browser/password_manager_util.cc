@@ -42,6 +42,7 @@
 
 using autofill::GaiaIdHash;
 using autofill::PasswordForm;
+using password_manager::metrics_util::PasswordAccountStorageUserState;
 
 namespace password_manager_util {
 namespace {

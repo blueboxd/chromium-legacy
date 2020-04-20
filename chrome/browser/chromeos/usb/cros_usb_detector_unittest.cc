@@ -165,13 +165,15 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
 
   void AttachDeviceToVm(const std::string& vm_name, const std::string& guid) {
     cros_usb_detector_->AttachUsbDeviceToVm(
-        vm_name, guid, base::Bind([](bool result) { EXPECT_TRUE(result); }));
+        vm_name, guid,
+        base::BindOnce([](bool result) { EXPECT_TRUE(result); }));
     base::RunLoop().RunUntilIdle();
   }
 
   void DetachDeviceFromVm(const std::string& vm_name, const std::string& guid) {
     cros_usb_detector_->DetachUsbDeviceFromVm(
-        vm_name, guid, base::Bind([](bool result) { EXPECT_TRUE(result); }));
+        vm_name, guid,
+        base::BindOnce([](bool result) { EXPECT_TRUE(result); }));
     base::RunLoop().RunUntilIdle();
   }
 

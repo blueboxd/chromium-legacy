@@ -64,8 +64,8 @@ class DeviceQuirksPolicyTest : public policy::DevicePolicyCrosBrowserTest {
 
     quirks::QuirksManager::Get()->RequestIccProfilePath(
         kProductId, kDisplayName,
-        base::Bind(&DeviceQuirksPolicyTest::OnQuirksClientFinished,
-                   base::Unretained(this)));
+        base::BindOnce(&DeviceQuirksPolicyTest::OnQuirksClientFinished,
+                       base::Unretained(this)));
 
     run_loop.Run();
 

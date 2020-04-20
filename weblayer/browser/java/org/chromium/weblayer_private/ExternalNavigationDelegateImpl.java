@@ -49,8 +49,6 @@ import java.util.List;
  */
 public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegate {
     private static final String PDF_VIEWER = "com.google.android.apps.docs";
-    private static final String PDF_MIME = "application/pdf";
-    private static final String PDF_SUFFIX = ".pdf";
     private static final String PDF_EXTENSION = "pdf";
 
     protected final Context mApplicationContext;
@@ -97,7 +95,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
      * @param intent Intent to open.
      */
     public static void forcePdfViewerAsIntentHandlerIfNeeded(Intent intent) {
-        if (intent == null || !isPdfIntent(intent)) return;
+        if (intent == null || !ExternalNavigationHandler.isPdfIntent(intent)) return;
         resolveIntent(intent, true /* allowSelfOpen (ignored) */);
     }
 
@@ -133,7 +131,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             if (packageName.equals(pName)) {
                 canSelfOpen = true;
             } else if (PDF_VIEWER.equals(pName)) {
-                if (isPdfIntent(intent)) {
+                if (ExternalNavigationHandler.isPdfIntent(intent)) {
                     intent.setClassName(pName, resolveInfo.activityInfo.name);
                     // TODO(crbug.com/1031465): Use IntentHandler.java's version of this constant
                     // once it's componentized.
@@ -148,13 +146,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             }
         }
         return !canSelfOpen || allowSelfOpen || hasPdfViewer;
-    }
-
-    private static boolean isPdfIntent(Intent intent) {
-        if (intent == null || intent.getData() == null) return false;
-        String filename = intent.getData().getLastPathSegment();
-        return (filename != null && filename.endsWith(PDF_SUFFIX))
-                || PDF_MIME.equals(intent.getType());
     }
 
     @Override

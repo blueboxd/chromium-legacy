@@ -211,8 +211,8 @@ class AutoEnrollmentController::SystemClockSyncWaiter
     state_ = SystemClockSyncState::kWaitingForSync;
 
     timeout_timer_.Start(FROM_HERE, kSystemClockSyncWaitTimeout,
-                         base::BindRepeating(&SystemClockSyncWaiter::OnTimeout,
-                                             weak_ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&SystemClockSyncWaiter::OnTimeout,
+                                        weak_ptr_factory_.GetWeakPtr()));
 
     chromeos::SystemClockClient::Get()->WaitForServiceToBeAvailable(
         base::BindOnce(&SystemClockSyncWaiter::OnGotSystemClockServiceAvailable,
@@ -435,8 +435,8 @@ void AutoEnrollmentController::Start() {
 
   // Arm the belts-and-suspenders timer to avoid hangs.
   safeguard_timer_.Start(FROM_HERE, kSafeguardTimeout,
-                         base::BindRepeating(&AutoEnrollmentController::Timeout,
-                                             weak_ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&AutoEnrollmentController::Timeout,
+                                        weak_ptr_factory_.GetWeakPtr()));
   request_state_keys_tries_ = 0;
 
   // The system clock sync state is not known yet, and this

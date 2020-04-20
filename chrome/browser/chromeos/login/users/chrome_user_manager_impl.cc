@@ -768,8 +768,8 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
   // Schedule a callback if device policy has not yet been verified.
   if (CrosSettingsProvider::TRUSTED !=
       cros_settings_->PrepareTrustedValues(
-          base::Bind(&ChromeUserManagerImpl::RetrieveTrustedDevicePolicies,
-                     weak_factory_.GetWeakPtr()))) {
+          base::BindOnce(&ChromeUserManagerImpl::RetrieveTrustedDevicePolicies,
+                         weak_factory_.GetWeakPtr()))) {
     return;
   }
 

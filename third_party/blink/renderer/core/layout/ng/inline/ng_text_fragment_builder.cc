@@ -22,7 +22,7 @@ NGTextFragmentBuilder::NGTextFragmentBuilder(
       shape_result_(fragment.TextShapeResult()),
       text_type_(fragment.TextType()) {}
 
-void NGTextFragmentBuilder::SetItem(const NGInlineItemsData& items_data,
+void NGTextFragmentBuilder::SetItem(const String& text_content,
                                     NGInlineItemResult* item_result,
                                     LayoutUnit line_height) {
   DCHECK(item_result);
@@ -33,7 +33,7 @@ void NGTextFragmentBuilder::SetItem(const NGInlineItemsData& items_data,
   DCHECK(item->Style());
 
   text_type_ = item->TextType();
-  text_ = items_data.text_content;
+  text_ = text_content;
   start_offset_ = item_result->start_offset;
   end_offset_ = item_result->end_offset;
   resolved_direction_ = item->Direction();

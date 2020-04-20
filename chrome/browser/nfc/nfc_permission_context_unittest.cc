@@ -85,8 +85,8 @@ void NfcPermissionContextTests::RequestNfcPermission(
     bool user_gesture) {
   nfc_permission_context_->RequestPermission(
       web_contents, id, requesting_frame, user_gesture,
-      base::Bind(&NfcPermissionContextTests::PermissionResponse,
-                 base::Unretained(this), id));
+      base::BindOnce(&NfcPermissionContextTests::PermissionResponse,
+                     base::Unretained(this), id));
   content::RunAllTasksUntilIdle();
 }
 

@@ -199,11 +199,9 @@ void RulesCacheDelegate::ReadFromStorage(const std::string& extension_id) {
     return;
   waiting_for_extensions_.insert(extension_id);
   store->GetExtensionValue(
-      extension_id,
-      storage_key_,
-      base::Bind(&RulesCacheDelegate::ReadFromStorageCallback,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 extension_id));
+      extension_id, storage_key_,
+      base::BindOnce(&RulesCacheDelegate::ReadFromStorageCallback,
+                     weak_ptr_factory_.GetWeakPtr(), extension_id));
 }
 
 void RulesCacheDelegate::ReadFromStorageCallback(

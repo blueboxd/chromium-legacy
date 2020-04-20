@@ -124,8 +124,8 @@ TEST_F(ServerBackedStateKeysBrokerTest, Refresh) {
 
 TEST_F(ServerBackedStateKeysBrokerTest, Request) {
   broker_.RequestStateKeys(
-      base::Bind(&ServerBackedStateKeysBrokerTest::HandleStateKeysCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ServerBackedStateKeysBrokerTest::HandleStateKeysCallback,
+                     base::Unretained(this)));
   mocked_main_runner_->RunUntilIdle();
   ExpectGood();
   EXPECT_TRUE(callback_invoked_);
@@ -137,8 +137,8 @@ TEST_F(ServerBackedStateKeysBrokerTest, RequestFailure) {
       std::vector<std::string>());
 
   broker_.RequestStateKeys(
-      base::Bind(&ServerBackedStateKeysBrokerTest::HandleStateKeysCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ServerBackedStateKeysBrokerTest::HandleStateKeysCallback,
+                     base::Unretained(this)));
   mocked_main_runner_->RunUntilIdle();
   EXPECT_TRUE(callback_invoked_);
   EXPECT_TRUE(callback_state_keys_.empty());

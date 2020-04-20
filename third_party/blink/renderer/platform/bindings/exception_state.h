@@ -122,6 +122,9 @@ class PLATFORM_EXPORT ExceptionState {
   virtual void ThrowRangeError(const String& message);
   virtual void ThrowTypeError(const String& message);
 
+  // Throws WebAssembly Error object.
+  virtual void ThrowWasmCompileError(const String& message);
+
   // These overloads reduce the binary code size because the call sites do not
   // need the conversion by String::String(const char*) that is inlined at each
   // call site. As there are many call sites that pass in a const char*, this
@@ -132,6 +135,7 @@ class PLATFORM_EXPORT ExceptionState {
                           const char* unsanitized_message = nullptr);
   void ThrowRangeError(const char* message);
   void ThrowTypeError(const char* message);
+  void ThrowWasmCompileError(const char* message);
 
   // Rethrows a v8::Value as an exception.
   virtual void RethrowV8Exception(v8::Local<v8::Value>);
@@ -197,6 +201,7 @@ class PLATFORM_EXPORT NonThrowableExceptionState final : public ExceptionState {
   void ThrowSecurityError(const String& sanitized_message,
                           const String& unsanitized_message) override;
   void ThrowRangeError(const String& message) override;
+  void ThrowWasmCompileError(const String& message) override;
   void RethrowV8Exception(v8::Local<v8::Value>) override;
   ExceptionState& ReturnThis() { return *this; }
 
@@ -240,6 +245,7 @@ class PLATFORM_EXPORT DummyExceptionStateForTesting final
   void ThrowSecurityError(const String& sanitized_message,
                           const String& unsanitized_message) override;
   void ThrowRangeError(const String& message) override;
+  void ThrowWasmCompileError(const String& message) override;
   void RethrowV8Exception(v8::Local<v8::Value>) override;
   ExceptionState& ReturnThis() { return *this; }
 };

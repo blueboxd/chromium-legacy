@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
+import sys
+
 import file_operations
 import process_operations
 import registry_operations
@@ -21,7 +24,7 @@ def Verify(property_dict, variable_expander):
       'Files': file_operations.VerifyFileExpectation,
       'Processes': process_operations.VerifyProcessExpectation,
       'RegistryEntries': registry_operations.VerifyRegistryEntryExpectation,
-  }, property_dict, variable_expander)
+  }, False, property_dict, variable_expander)
 
 
 def Clean(property_dict, variable_expander):
@@ -30,23 +33,22 @@ def Clean(property_dict, variable_expander):
   Args:
     property_dict: A property dictionary mapping type names to expectations.
     variable_expander: A VariableExpander.
-
-  Raises:
-    AssertionError: If an expectation is not satisfied.
   """
   _Walk({
       'Files': file_operations.CleanFile,
       'Processes': process_operations.CleanProcess,
       'RegistryEntries': registry_operations.CleanRegistryEntry,
-  }, property_dict, variable_expander)
+  }, True, property_dict, variable_expander)
 
 
-def _Walk(operations, property_dict, variable_expander):
+def _Walk(operations, continue_on_error, property_dict, variable_expander):
   """Traverses |property_dict|, invoking |operations| for each
    expectation.
 
   Args:
     operations: A dictionary mapping property dict type names to functions.
+    continue_on_error: True if the traversal will log and continue in case of
+      exceptions.
     property_dict: A property dictionary mapping type names to expectations.
     variable_expander: A VariableExpander.
   """
@@ -58,7 +60,13 @@ def _Walk(operations, property_dict, variable_expander):
         condition = variable_expander.Expand(expectation_dict['condition'])
         if not _EvaluateCondition(condition):
           continue
-      operation(expectation_name, expectation_dict, variable_expander)
+      try:
+        operation(expectation_name, expectation_dict, variable_expander)
+      except:
+        if not continue_on_error:
+          raise
+        logging.error('Error while processing expectation %s: %s' %
+                      (expectation_name, sys.exc_info()[1]))
 
 
 def _EvaluateCondition(condition):

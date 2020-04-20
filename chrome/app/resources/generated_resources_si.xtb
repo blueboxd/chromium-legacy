@@ -418,6 +418,11 @@
 <translation id="1555130319947370107">නිල්</translation>
 <translation id="1556537182262721003">දිගු නාමාවලිය පැතිකඩ තුළට ගෙනයා නොහැකි විය.</translation>
 <translation id="155865706765934889">ස්පර්ශ පුවරුව</translation>
+<translation id="1560763881671211335">G Suite for Education පරිපාලකයින් තම පරිශීලකයින් G Suite for Education ගිණුමකට පුරනය වී සිටින විට ඔවුන්ට ප්‍රවේශ විය හැකි Google සේවා මොනවාදැයි තීරණ කරති. පාසල් පරිපාලකයින් ඔවුන්ගේ බාල වයසැති පරිශීලකයින් විසින් සේවා භාවිත කරනු ලැබීමට කැමැත්ත ලබා දීම හෝ ලබා ගැනීම අවශ්‍ය කෙරේ.
+
+    (ඉතිහාසය, පිටුසන්, සහ මුරපද ඇතුළුව) බ්‍රවුස් කිරීමේ දත්ත Family Link ගිණුම සමඟ ගබඩා කෙරේ, පාසල් ගිණුම සමඟ නොවේ.
+
+    ඔබේ Family Link මාපිය සැකසීම් තවමත් යෙදෙයි. ඔබ පෙර යෙදුමක් හෝ වෙබ් අඩවියක් අවහිර කර ඇති නම්, ඔබට නැවත එය කිරීමට නොහැකි වෙයි.</translation>
 <translation id="1566049601598938765">වෙබ් අඩවිය</translation>
 <translation id="15662109988763471">තෝරන ලද මුද්‍රණ යන්ත්‍රය ලද නොහැක, නැති නම් නිවැරදිව ස්ථාපන කර නැත. ඔබේ මුද්‍රණ යන්ත්‍රය පරීක්‍ෂා කරන්න නැති නම් වෙනත් මුද්‍රණ යන්ත්‍රයක් තෝරා උත්සාහ කර බලන්න.</translation>
 <translation id="1567387640189251553">ඔබ ඔබගේ මුරපදය අවසානයට ඇතුළත් කළ අවස්ථාවෙන් පසු වෙනස් යතුරු පුවරුවක් සම්බන්ධ කර ඇත. එය ඔබගේ යතුරු පහර සොරකම් කිරීමට උත්සාහ ගන්නවා විය හැක.</translation>
@@ -1197,6 +1202,7 @@
 <translation id="258095186877893873">දිග</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (වේදිකාව<ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos ප්‍රවේශපත්‍රය ලබා ගත නොහැකි විය. නැවත උත්සාහ කරන්න, නැති නම් ඔබේ සංවිධානයේ උපාංග පරිපාලකයා සම්බන්ධ කර ගන්න. (දෝෂ කේතය <ph name="ERROR_CODE" />).</translation>
+<translation id="2585013490795742997"><ph name="QUERY" /> සඳහා 1 සෙවුම් ප්‍රතිඵලයක් සංදර්ශන කෙරේ</translation>
 <translation id="2585724835339714757">මෙම පටිත්ත ඔබගේ තිරය බෙදාගනිමින් සිටියි.</translation>
 <translation id="2586657967955657006">පසුරු පුවරුව</translation>
 <translation id="2586672484245266891">කෙටි URL එකක් ඇතුළු කරන්න</translation>
@@ -1883,6 +1889,7 @@
 <translation id="3498215018399854026">අපට ඔබේ දෙමව්පියන් වෙත ලඟාවිය නොහැකි විය. කරුණාකර නැවත උත්සහ කරන්න.</translation>
 <translation id="3500417806337761827">පංගුව නැංවීමේ දෝෂය. දැනටමත් නංවා ඇත SMB පංගු සංඛ්‍යාව ඉතා වැඩියි.</translation>
 <translation id="3505030558724226696">උපාංග පිවිසුම ඉවත් කරන්න</translation>
+<translation id="3507132249039706973">සම්මත ආරක්‍ෂාව සක්‍රීයයි</translation>
 <translation id="3507421388498836150">"<ph name="EXTENSION_NAME" />" සඳහා වත්මන් අවසර</translation>
 <translation id="3507888235492474624">බ්ලූටූත් උපාංග යළි ස්කෑන් කරන්න</translation>
 <translation id="3508492320654304609">ඔබේ පුරන දත්ත මැකීමට නොහැකි විය</translation>
@@ -3237,6 +3244,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5352033265844765294">කාල මුද්‍රා තැබීම</translation>
 <translation id="5353252989841766347">Chrome වෙතින් මුරපද නිර්යාත කරන්න</translation>
 <translation id="5355099869024327351">සහකරුට ඔබට දැනුම් දීම් පෙන්වීමට අවසර දෙන්න</translation>
+<translation id="5355191726083956201">වැඩිදියුණු කළ ආරක්‍ෂාව සක්‍රීයයි</translation>
 <translation id="5355926466126177564">"<ph name="EXTENSION_NAME" />" දිගුව ඔබ Omnibox වෙතින් සොයන විට කුමන පිටුව පෙන්වන්නේද යන්න වෙනස් කර තිබේ.</translation>
 <translation id="5359910752122114278">1 ප්‍රතිඑලයක්</translation>
 <translation id="5360150013186312835">මෙවලම් තීරුවෙහි පෙන්වන්න</translation>
@@ -3549,6 +3557,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="577322787686508614">මෙය මත කියවීම් මෙහෙයුමට අවසර නොදේ: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">ගොනු යෙදුම විවෘත කරන්න</translation>
 <translation id="577624874850706961">කුකීස් සොයන්න</translation>
+<translation id="5776858208024364029"><ph name="QUERY" /> සඳහා සෙවීම් ප්‍රතිඵල <ph name="NUMBER" />ක් සංදර්ශන කිරීම</translation>
 <translation id="5777468213129569553">Chrome විවෘත කරන්න</translation>
 <translation id="5778747455497889540">පහත දැක්වෙනුයේ ඔබේ පරිගණකයට පවරන ලද අහඹු ලෙස සාදා ඇති සුරක්ෂිත මොඩියුල මුරපදයයි:</translation>
 <translation id="5780011244986845107">ඔබ තෝරාගත් ෆෝල්ඩරයේ සංවේදී ගොනු අඩංගුයි. මෙම ෆෝල්ඩරය සඳහා ස්ථිර කියවීමේ ප්‍රවේශයට "<ph name="APP_NAME" />" හට අවසර දීමට අවශ්‍ය බව ඔබට තහවුරුද?</translation>
@@ -4103,6 +4112,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6518133107902771759">තහවුරු කරන්න</translation>
 <translation id="651942933739530207">ඔබට ඔබේ තිරය සහ ශ්‍රව්‍ය නිමැවුම් <ph name="APP_NAME" /> හුවමාරු කිරීමට අවශ්‍යද?</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />] <ph name="FILE_INFO" /><ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">සෙවීම් ප්‍රතිඵල <ph name="LIST_SIZE" /> න් <ph name="LIST_POSITION" />: <ph name="SEARCH_RESULT_TEXT" />. කොටසට සංචලන වීමට Enter ඔබන්න.</translation>
 <translation id="652492607360843641">ඔබ <ph name="NETWORK_TYPE" /> ජාලයකට සම්බන්ධ වී සිටියි.</translation>
 <translation id="6527303717912515753">බෙදාගන්න</translation>
 <translation id="6528513914570774834">මෙම උපාංගයේ වෙනත් පරිශීලකයින්ට මෙම ජාලය භාවිතා කිරීමට ඉඩ දෙන්න</translation>
@@ -4114,6 +4124,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6532206849875187177">සුරක්‍ෂිතතාව සහ පුරනය</translation>
 <translation id="6532527800157340614">ඔබේ ප්‍රවේශ ටෝකනය ලබා ගත නොහැකි බැවින් පුරනය අසමත් විය. ඔබගේ අන්තර්ජාල සම්බන්ධතාව පරීක්‍ෂා කර නැවත උත්සාහ කරන්න.</translation>
 <translation id="6532663472409656417">ව්‍යවසාය ලියාපදිංචි කළා</translation>
+<translation id="6535331821390304775">සැම විටම <ph name="ORIGIN" /> හට මෙම වර්ගයේ සබැඳි සම්බන්ධිත යෙදුම තුළ විවෘත කිරීමට ඉඩ දෙන්න</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />සටහන:<ph name="END_BOLD" /> දත්ත රැස්කිරීමෙන් ක්‍රියාකාරීත්වය දුර්වල විය හැකි බැවින් ඔබ කරන දේ ඔබ දන්නේ නම් ‍හෝ ඔබගෙන් මෙසේ කරන්න යැයි ඉල්ලා ඇත්නම් පමණක් සබල කරන්න.</translation>
 <translation id="6541638731489116978">මෙම වෙබ් අඩවිය ඔබේ චලන සංවේදක වෙත ප්‍රවේශ වීමෙන් අවහිර කරනු ලැබ ඇත.</translation>
 <translation id="6545665334409411530">පුනරාවර්තන අනුපාතය</translation>
@@ -4243,6 +4254,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6727969043791803658">සම්බන්ධිතයි, බැටරිය <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6732801395666424405">සහතිකය පටවා නොමැත</translation>
 <translation id="6732900235521116609">කෙටිමඟ ඉවත් කළ නොහැක</translation>
+<translation id="6734468588183300211">අප්‍රසිද්ධය තුළ සිටින විට, විවිධ වෙබ් අඩවි අතරින් ඔබේ බ්‍රවුස් කිරීමේ ක්‍රියාකාරකම් බැලීමට, උදාහරණයක් වශයෙන්, දැන්වීම් පුද්ගලායන කිරීමට වෙබ් අඩවිවලට ඔබේ කුකී භාවිත නොකළ හැක. සමහර වෙබ් අඩවි මත විශේෂාංග කැඩී ගිය හැක.</translation>
 <translation id="6735304988756581115">කුකීස් සහ වෙනත් සයිට් දත්ත පෙන්වන්න..</translation>
 <translation id="6736243959894955139">ලිපිනය</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4255,6 +4267,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="674632704103926902">තට්ටු ඇදගෙන යාම සබල කරන්න</translation>
 <translation id="6748217015615267851">විදහාපානය: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">ඔබට ඉදිරියට හැක, නමුත් ඔබගේ සමමුහුර්තක දත්ත හා සැකසුම් යළි පිහිටුවීම සිදුවේ. සියලුම පෙදෙසි දත්ත නැති වනු ඇත.</translation>
+<translation id="6749006854028927059">විවිධ වෙබ් අඩවි අතරින් ඔබේ බ්‍රවුස් කිරීමේ ක්‍රියාකාරකම් බැලීමට, උදාහරණයක් වශයෙන්, දැන්වීම් පුද්ගලායන කිරීමට වෙබ් අඩවිවලට ඔබේ කුකී භාවිත නොකළ හැක. සමහර වෙබ් අඩවි මත විශේෂාංග කැඩී ගිය හැක.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Incognito)</translation>
 <translation id="6757101664402245801">URL පිටපත් කරන ලදී</translation>
 <translation id="6758056191028427665">අපි සිදු කරන්නේ කෙසේදැයි අපට දන්වන්න.</translation>
@@ -4346,6 +4359,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="686664946474413495">වර්ණ උෂ්ණත්වය</translation>
 <translation id="6871644448911473373">OCSP ප්‍රතිචාරකරු: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">ඔබ ඇතුළු කළ මුරපදය සේවාදායකය විසින් ප්‍රතික්ෂේප කරන ලදී.</translation>
+<translation id="6874170800191969835"><ph name="SEARCH_RESULT_TEXT" /> වෙත සංචලන වන්න.</translation>
 <translation id="6876155724392614295">පාපැදිය</translation>
 <translation id="6876469544038980967">උපකාරී නොවේ</translation>
 <translation id="6878422606530379992">සංවේදකවලට ඉඩ දී ඇත</translation>
@@ -4616,6 +4630,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="7235737137505019098">ඔබේ ආරක්‍ෂක යතුරේ තවත් කිසියම් ගිණුම් සඳහා ප්‍රමාණවත් නිදහස් ඉඩ නැත.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, විස්තර</translation>
 <translation id="7240339475467890413">නව හොට්ස්පොට් වෙත සම්බන්ධ වන්නද?</translation>
+<translation id="7240847845291869311">ඔබේ දරුවා මෙම උපාංගය මත G Suite for Education Google ගිණුමක් එක් කිරීමට කැමතියි. <ph name="LINK_BEGIN" />G Suite for Education පෞද්ගලිකත්ව දැනුම් දීම<ph name="LINK_END" /> G Suite for Education පරිශීලකයින්ට සහ මාපියන්ට නිෂ්පාදනය රැස් කරන්නේ කුමන දත්තද, එය රැස් කිරීමට හේතුව, සහ එයින් කෙරෙන්නේ කුමක්ද යන්න තේරුම් ගැනීමට උදවු කිරීමට අදහස් කරයි.</translation>
 <translation id="7241389281993241388">කරුණාකර සේවාදායක සහතිකය ආයාත කිරීමට <ph name="TOKEN_NAME" /> වෙත පුරන්න.</translation>
 <translation id="7241443820034350811">ඔබේ ආරක්‍ෂක යතුර ලැයිස්තු කර නැති නම්, එහි බොත්තම අවම වශයෙන් තත්පර 5කට ඔබන්න.</translation>
 <translation id="7243632151880336635">හිස් කර වරන්න</translation>
@@ -5197,6 +5212,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="7987814697832569482">සැම විටම මෙම VPN හරහා සම්බන්ධ කරන්න</translation>
 <translation id="7988355189918024273">ප්‍රවේශ්‍යතා විශේෂාංග සබල කරන්න</translation>
 <translation id="7991296728590311172">ප්‍රවේශය මාරු කිරීමේ සැකසීම්</translation>
+<translation id="7992202128769240372"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> සීමාව ඉක්මවයි</translation>
 <translation id="7994350303002908848">VM පේනු මෘදුකාංගය ස්ථාපන කළ නොහැකි විය. නැවත උත්සාහ කරන්න, නැති නම් ඔබේ සංවිධානයේ උපාංග පරිපාලකයා සම්බන්ධ කර ගන්න. දෝෂ කේතය: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">EAP ආකාරය</translation>
 <translation id="7997826902155442747">ක්‍රියාවලි ප්‍රමුඛතාව</translation>

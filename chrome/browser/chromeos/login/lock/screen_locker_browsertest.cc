@@ -58,8 +58,8 @@ class ScreenLockerTest : public InProcessBrowserTest {
 
     FakeBiodClient::Get()->StartEnrollSession(
         "test-user", std::string(),
-        base::BindRepeating(&ScreenLockerTest::OnStartSession,
-                            base::Unretained(this)));
+        base::BindOnce(&ScreenLockerTest::OnStartSession,
+                       base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
 
     FakeBiodClient::Get()->SendEnrollScanDone(

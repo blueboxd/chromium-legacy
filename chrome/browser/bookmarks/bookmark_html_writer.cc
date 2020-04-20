@@ -527,8 +527,8 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
       favicon_service->GetRawFaviconForPageURL(
           GURL(url), {favicon_base::IconType::kFavicon}, gfx::kFaviconSize,
           /*fallback_to_host=*/false,
-          base::Bind(&BookmarkFaviconFetcher::OnFaviconDataAvailable,
-                     base::Unretained(this)),
+          base::BindOnce(&BookmarkFaviconFetcher::OnFaviconDataAvailable,
+                         base::Unretained(this)),
           &cancelable_task_tracker_);
       return true;
     } else {

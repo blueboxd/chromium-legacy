@@ -142,6 +142,16 @@ enum AuthenticationButtonType {
                        : UIInterfaceOrientationMaskPortrait;
 }
 
+#pragma mark - AuthenticationFlowDelegate
+
+- (void)didPresentDialog {
+  [self.activityIndicator stopAnimating];
+}
+
+- (void)didDismissDialog {
+  [self.activityIndicator startAnimating];
+}
+
 #pragma mark - MDCActivityIndicator
 
 - (void)startAnimatingActivityIndicator {

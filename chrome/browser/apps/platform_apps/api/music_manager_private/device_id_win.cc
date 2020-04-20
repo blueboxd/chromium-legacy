@@ -211,8 +211,8 @@ void DeviceId::GetRawDeviceId(const IdCallback& callback) {
 
   base::ThreadPool::PostTask(
       FROM_HERE, traits(),
-      base::Bind(&GetMacAddress, base::Bind(&DeviceId::IsValidMacAddress),
-                 base::Bind(&GetMacAddressCallback, callback)));
+      base::BindOnce(&GetMacAddress, base::Bind(&DeviceId::IsValidMacAddress),
+                     base::Bind(&GetMacAddressCallback, callback)));
 }
 
 }  // namespace api

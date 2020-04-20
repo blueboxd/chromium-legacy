@@ -92,11 +92,12 @@ class PermissionContextBaseFeaturePolicyTest
       permissions::PermissionContextBase* pcb,
       content::RenderFrameHost* rfh) {
     permissions::PermissionRequestID id(rfh, request_id_++);
-    pcb->RequestPermission(content::WebContents::FromRenderFrameHost(rfh), id,
-                           rfh->GetLastCommittedURL(), /*user_gesture=*/true,
-                           base::Bind(&PermissionContextBaseFeaturePolicyTest::
-                                          RequestPermissionForFrameFinished,
-                                      base::Unretained(this)));
+    pcb->RequestPermission(
+        content::WebContents::FromRenderFrameHost(rfh), id,
+        rfh->GetLastCommittedURL(), /*user_gesture=*/true,
+        base::BindOnce(&PermissionContextBaseFeaturePolicyTest::
+                           RequestPermissionForFrameFinished,
+                       base::Unretained(this)));
     EXPECT_NE(CONTENT_SETTING_DEFAULT, last_request_result_);
     ContentSetting result = last_request_result_;
     last_request_result_ = CONTENT_SETTING_DEFAULT;

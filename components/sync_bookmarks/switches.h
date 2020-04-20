@@ -15,6 +15,8 @@ extern const base::Feature kMergeBookmarksUsingGUIDs;
 // TODO(crbug.com/1066962): remove this code when most of bookmarks are
 // reuploaded.
 extern const base::Feature kSyncReuploadBookmarkFullTitles;
+// TODO(crbug.com/1071061): remove after launching.
+extern const base::Feature kSyncProcessBookmarkRestoreAfterDeletion;
 
 }  // namespace switches
 

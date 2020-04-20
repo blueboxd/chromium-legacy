@@ -89,8 +89,8 @@ class TestChromeOSMetricsProvider : public ChromeOSMetricsProvider {
  public:
   TestChromeOSMetricsProvider()
       : ChromeOSMetricsProvider(metrics::MetricsLogUploader::UMA) {
-    AsyncInit(base::Bind(&TestChromeOSMetricsProvider::GetIdleCallback,
-                         base::Unretained(this)));
+    AsyncInit(base::BindOnce(&TestChromeOSMetricsProvider::GetIdleCallback,
+                             base::Unretained(this)));
     base::RunLoop().Run();
   }
 

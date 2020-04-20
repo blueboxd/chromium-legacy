@@ -169,7 +169,7 @@ void SigninViewControllerFakeReauthDelegateView::OnCancel() {
 
 void SigninViewControllerFakeReauthDelegateView::OnClose() {
   if (reauth_callback_)
-    std::move(reauth_callback_).Run(signin::ReauthResult::kDismissedByUser);
+    std::move(reauth_callback_).Run(signin::ReauthResult::kCancelled);
 }
 
 void SigninViewControllerFakeReauthDelegateView::

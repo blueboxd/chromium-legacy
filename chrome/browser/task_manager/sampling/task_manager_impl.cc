@@ -591,8 +591,8 @@ void TaskManagerImpl::OnReceivedMemoryDump(
 void TaskManagerImpl::Refresh() {
   if (IsResourceRefreshEnabled(REFRESH_TYPE_GPU_MEMORY)) {
     content::GpuDataManager::GetInstance()->RequestVideoMemoryUsageStatsUpdate(
-        base::Bind(&TaskManagerImpl::OnVideoMemoryUsageStatsUpdate,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&TaskManagerImpl::OnVideoMemoryUsageStatsUpdate,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (IsResourceRefreshEnabled(REFRESH_TYPE_MEMORY_FOOTPRINT) &&

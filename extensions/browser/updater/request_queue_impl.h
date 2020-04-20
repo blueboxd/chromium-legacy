@@ -91,10 +91,9 @@ void RequestQueue<T>::StartNextRequest() {
   if (next_release > now) {
     // Not ready for the next update check yet, call this method when it is
     // time.
-    timer_.Start(
-        FROM_HERE,
-        next_release - now,
-        base::Bind(&RequestQueue<T>::StartNextRequest, base::Unretained(this)));
+    timer_.Start(FROM_HERE, next_release - now,
+                 base::BindOnce(&RequestQueue<T>::StartNextRequest,
+                                base::Unretained(this)));
     return;
   }
 

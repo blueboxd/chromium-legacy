@@ -45,8 +45,8 @@ void KioskEnableScreen::ShowImpl() {
   if (view_)
     view_->Show();
   KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(
-      base::Bind(&KioskEnableScreen::OnGetConsumerKioskAutoLaunchStatus,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&KioskEnableScreen::OnGetConsumerKioskAutoLaunchStatus,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void KioskEnableScreen::OnGetConsumerKioskAutoLaunchStatus(
@@ -82,8 +82,8 @@ void KioskEnableScreen::HandleEnable() {
     return;
   }
   KioskAppManager::Get()->EnableConsumerKioskAutoLaunch(
-      base::Bind(&KioskEnableScreen::OnEnableConsumerKioskAutoLaunch,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&KioskEnableScreen::OnEnableConsumerKioskAutoLaunch,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void KioskEnableScreen::OnEnableConsumerKioskAutoLaunch(bool success) {

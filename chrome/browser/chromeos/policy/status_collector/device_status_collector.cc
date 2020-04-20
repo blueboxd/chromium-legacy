@@ -1227,8 +1227,8 @@ void DeviceStatusCollector::UpdateReportingSettings() {
   // back when they are available.
   if (chromeos::CrosSettingsProvider::TRUSTED !=
       cros_settings_->PrepareTrustedValues(
-          base::Bind(&DeviceStatusCollector::UpdateReportingSettings,
-                     weak_factory_.GetWeakPtr()))) {
+          base::BindOnce(&DeviceStatusCollector::UpdateReportingSettings,
+                         weak_factory_.GetWeakPtr()))) {
     return;
   }
 

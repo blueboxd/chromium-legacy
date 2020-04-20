@@ -187,8 +187,8 @@ void ChildStatusCollector::UpdateReportingSettings() {
   // back when they are available.
   if (chromeos::CrosSettingsProvider::TRUSTED !=
       cros_settings_->PrepareTrustedValues(
-          base::BindRepeating(&ChildStatusCollector::UpdateReportingSettings,
-                              weak_factory_.GetWeakPtr()))) {
+          base::BindOnce(&ChildStatusCollector::UpdateReportingSettings,
+                         weak_factory_.GetWeakPtr()))) {
     return;
   }
 

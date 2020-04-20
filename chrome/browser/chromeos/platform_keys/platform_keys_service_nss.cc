@@ -967,8 +967,9 @@ void RemoveCertificateWithDB(std::unique_ptr<RemoveCertificateState> state,
 
   bool certificate_found = nss_cert->isperm;
   cert_db->DeleteCertAndKeyAsync(
-      std::move(nss_cert), base::Bind(&DidRemoveCertificate,
-                                      base::Passed(&state), certificate_found));
+      std::move(nss_cert),
+      base::BindOnce(&DidRemoveCertificate, base::Passed(&state),
+                     certificate_found));
 }
 
 // Does the actual work to determine which tokens are available.

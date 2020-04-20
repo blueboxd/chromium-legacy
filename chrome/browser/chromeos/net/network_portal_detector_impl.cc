@@ -453,8 +453,8 @@ void NetworkPortalDetectorImpl::StartAttempt() {
                  << portal_test_url_;
   captive_portal_detector_->DetectCaptivePortal(
       portal_test_url_,
-      base::Bind(&NetworkPortalDetectorImpl::OnAttemptCompleted,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&NetworkPortalDetectorImpl::OnAttemptCompleted,
+                     weak_factory_.GetWeakPtr()),
       NO_TRAFFIC_ANNOTATION_YET);
   attempt_timeout_.Reset(
       base::Bind(&NetworkPortalDetectorImpl::OnAttemptTimeout,

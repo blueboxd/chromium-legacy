@@ -174,9 +174,9 @@ void ClientAppMetadataProviderService::GetClientAppMetadata(
   if (was_already_in_progress)
     return;
 
-  device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&ClientAppMetadataProviderService::OnBluetoothAdapterFetched,
-                 weak_ptr_factory_.GetWeakPtr()));
+  device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
+      &ClientAppMetadataProviderService::OnBluetoothAdapterFetched,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ClientAppMetadataProviderService::Shutdown() {
@@ -196,14 +196,14 @@ void ClientAppMetadataProviderService::Shutdown() {
 void ClientAppMetadataProviderService::OnBluetoothAdapterFetched(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) {
   base::SysInfo::GetHardwareInfo(
-      base::Bind(&ClientAppMetadataProviderService::OnHardwareInfoFetched,
-                 weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter));
+      base::BindOnce(&ClientAppMetadataProviderService::OnHardwareInfoFetched,
+                     weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter));
 }
 
 void ClientAppMetadataProviderService::OnHardwareInfoFetched(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
     base::SysInfo::HardwareInfo hardware_info) {
-  GetInstanceId()->GetID(base::Bind(
+  GetInstanceId()->GetID(base::BindOnce(
       &ClientAppMetadataProviderService::OnInstanceIdFetched,
       weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter, hardware_info));
 }
@@ -218,9 +218,10 @@ void ClientAppMetadataProviderService::OnInstanceIdFetched(
           kCryptAuthV2EnrollmentAuthorizedEntity /* authorized_entity */,
       kInstanceIdScope /* scope */, base::TimeDelta() /* time_to_live */,
       std::map<std::string, std::string>() /* options */, {} /* flags */,
-      base::Bind(&ClientAppMetadataProviderService::OnInstanceIdTokenFetched,
-                 weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter,
-                 hardware_info, instance_id));
+      base::BindOnce(
+          &ClientAppMetadataProviderService::OnInstanceIdTokenFetched,
+          weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter, hardware_info,
+          instance_id));
 }
 
 void ClientAppMetadataProviderService::OnInstanceIdTokenFetched(

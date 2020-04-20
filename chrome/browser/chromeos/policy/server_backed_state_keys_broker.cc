@@ -57,8 +57,8 @@ void ServerBackedStateKeysBroker::FetchStateKeys() {
   if (!requested_) {
     requested_ = true;
     session_manager_client_->GetServerBackedStateKeys(
-        base::Bind(&ServerBackedStateKeysBroker::StoreStateKeys,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&ServerBackedStateKeysBroker::StoreStateKeys,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 

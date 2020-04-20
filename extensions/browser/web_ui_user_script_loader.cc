@@ -123,8 +123,8 @@ void WebUIUserScriptLoader::CreateWebUIURLFetchers(
       // WebUIUserScriptLoader is also safe.
       std::unique_ptr<WebUIURLFetcher> fetcher(new WebUIURLFetcher(
           render_process_id, render_frame_id, script_file->url(),
-          base::Bind(&WebUIUserScriptLoader::OnSingleWebUIURLFetchComplete,
-                     base::Unretained(this), script_file.get())));
+          base::BindOnce(&WebUIUserScriptLoader::OnSingleWebUIURLFetchComplete,
+                         base::Unretained(this), script_file.get())));
       fetchers_.push_back(std::move(fetcher));
     }
   }

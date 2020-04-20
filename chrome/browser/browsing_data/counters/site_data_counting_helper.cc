@@ -119,9 +119,9 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
       BrowsingDataMediaLicenseHelper::Create(file_system_context);
   if (media_license_helper_) {
     tasks_ += 1;
-    media_license_helper_->StartFetching(base::BindRepeating(
-        &SiteDataCountingHelper::SitesWithMediaLicensesCallback,
-        base::Unretained(this)));
+    media_license_helper_->StartFetching(
+        base::BindOnce(&SiteDataCountingHelper::SitesWithMediaLicensesCallback,
+                       base::Unretained(this)));
   }
 #endif
 

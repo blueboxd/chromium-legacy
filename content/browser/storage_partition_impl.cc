@@ -1444,9 +1444,9 @@ void StoragePartitionImpl::Initialize() {
     base::RepeatingCallback<void(const url::Origin)>
         send_notification_function = base::BindRepeating(
             [](StorageNotificationService* service, const url::Origin origin) {
-              base::PostTask(FROM_HERE, {BrowserThread::UI},
-                             base::BindRepeating(
-                                 &StorageNotificationService::
+              base::PostTask(
+                  FROM_HERE, {BrowserThread::UI},
+                  base::BindOnce(&StorageNotificationService::
                                      MaybeShowStoragePressureNotification,
                                  base::Unretained(service), std::move(origin)));
             },

@@ -66,11 +66,10 @@ class DeviceCloudPolicyStoreChromeOSTest
     base::RunLoop loop;
     chromeos::InstallAttributes::LockResult result;
     install_attributes_->LockDevice(
-        DEVICE_MODE_ENTERPRISE,
-        PolicyBuilder::kFakeDomain,
+        DEVICE_MODE_ENTERPRISE, PolicyBuilder::kFakeDomain,
         std::string(),  // realm
         PolicyBuilder::kFakeDeviceId,
-        base::Bind(&CopyLockResult, &loop, &result));
+        base::BindOnce(&CopyLockResult, &loop, &result));
     loop.Run();
     ASSERT_EQ(chromeos::InstallAttributes::LOCK_SUCCESS, result);
   }

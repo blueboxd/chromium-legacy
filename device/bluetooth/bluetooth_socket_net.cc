@@ -170,13 +170,10 @@ void BluetoothSocketNet::DoReceive(
   }
 
   auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(buffer_size);
-  int read_result =
-      tcp_socket_->Read(buffer.get(),
-                        buffer->size(),
-                        base::Bind(&BluetoothSocketNet::OnSocketReadComplete,
-                                   this,
-                                   success_callback,
-                                   error_callback));
+  int read_result = tcp_socket_->Read(
+      buffer.get(), buffer->size(),
+      base::BindOnce(&BluetoothSocketNet::OnSocketReadComplete, this,
+                     success_callback, error_callback));
 
   read_buffer_ = buffer;
   if (read_result != net::ERR_IO_PENDING)

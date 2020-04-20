@@ -138,8 +138,8 @@ void SetCustomizedDefaultWallpaperAfterCheck(
     user_image_loader::StartWithFilePath(
         task_runner, file_path, ImageDecoder::DEFAULT_CODEC,
         0,  // Do not crop.
-        base::Bind(&OnCustomizedDefaultWallpaperDecoded, wallpaper_url,
-                   resized_small_path, resized_large_path));
+        base::BindOnce(&OnCustomizedDefaultWallpaperDecoded, wallpaper_url,
+                       resized_small_path, resized_large_path));
   }
 }
 

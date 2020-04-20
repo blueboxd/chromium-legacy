@@ -87,8 +87,8 @@ void AppFirewallHole::SetVisible(bool app_visible) {
   if (app_visible_) {
     if (!firewall_hole_) {
       FirewallHole::Open(type_, port_, "" /* all interfaces */,
-                         base::Bind(&AppFirewallHole::OnFirewallHoleOpened,
-                                    weak_factory_.GetWeakPtr()));
+                         base::BindOnce(&AppFirewallHole::OnFirewallHoleOpened,
+                                        weak_factory_.GetWeakPtr()));
     }
   } else {
     firewall_hole_.reset(nullptr);

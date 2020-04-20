@@ -7,8 +7,13 @@
 
 #include "base/feature_list.h"
 
+// Feature flag for supporting the EditBookmarks enterprise policy on iOS.
+extern const base::Feature kEditBookmarksIOS;
 // Feature flag for supporting the ManagedBookmarks enterprise policy on iOS.
 extern const base::Feature kManagedBookmarksIOS;
+
+// Returns true if EditBookmarksEnabled enterprise policy is supported on iOS.
+bool IsEditBookmarksIOSEnabled();
 
 // Returns true if the core enterprise policy infrastructure is enabled. Does
 // not control whether policy data is parsed and made user visible; that is

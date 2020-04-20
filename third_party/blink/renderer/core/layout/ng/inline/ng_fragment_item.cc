@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
@@ -38,6 +39,29 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
     // |generated_text_.text_| instead copying, |generated_text_.text = ...|.
     new (&generated_text_.text) String(text.Text().ToString());
   }
+  DCHECK(!IsFormattingContextRoot());
+}
+
+NGFragmentItem::NGFragmentItem(NGInlineItemResult&& item_result,
+                               const PhysicalSize& size)
+    : layout_object_(item_result.item->GetLayoutObject()),
+      text_({std::move(item_result.shape_result), item_result.TextOffset()}),
+      rect_({PhysicalOffset(), size}),
+      type_(kText),
+      sub_type_(static_cast<unsigned>(item_result.item->TextType())),
+      style_variant_(static_cast<unsigned>(item_result.item->StyleVariant())),
+      is_hidden_for_paint_(false),  // TODO(kojii): not supported yet.
+      text_direction_(static_cast<unsigned>(item_result.item->Direction())),
+      ink_overflow_computed_(false),
+      is_first_for_node_(item_result.IsFirstForNode()) {
+#if DCHECK_IS_ON()
+  if (text_.shape_result) {
+    DCHECK_EQ(text_.shape_result->StartIndex(), StartOffset());
+    DCHECK_EQ(text_.shape_result->EndIndex(), EndOffset());
+  }
+#endif
+  // TODO(kojii): Generated text not supported yet.
+  DCHECK_NE(TextType(), NGTextType::kLayoutGenerated);
   DCHECK(!IsFormattingContextRoot());
 }
 
@@ -85,6 +109,43 @@ NGFragmentItem::NGFragmentItem(const NGInlineItem& inline_item,
   DCHECK(layout_object_);
   DCHECK(layout_object_->IsLayoutInline());
   DCHECK(!IsFormattingContextRoot());
+}
+
+// static
+void NGFragmentItem::Create(NGLineBoxFragmentBuilder::ChildList* child_list,
+                            const String& text_content,
+                            WritingMode writing_mode) {
+  for (auto& child : *child_list) {
+    DCHECK(!child.fragment_item);
+
+    if (child.fragment) {
+      child.fragment_item = base::AdoptRef(new NGFragmentItem(*child.fragment));
+      continue;
+    }
+
+    if (child.item_result) {
+      child.fragment_item = base::AdoptRef(new NGFragmentItem(
+          std::move(*child.item_result),
+          ToPhysicalSize({child.inline_size, child.rect.size.block_size},
+                         writing_mode)));
+      continue;
+    }
+
+    if (child.layout_result) {
+      const NGPhysicalBoxFragment& fragment =
+          To<NGPhysicalBoxFragment>(child.layout_result->PhysicalFragment());
+      child.fragment_item = base::AdoptRef(
+          new NGFragmentItem(fragment, child.ResolvedDirection()));
+      continue;
+    }
+
+    if (child.inline_item) {
+      child.fragment_item = base::AdoptRef(new NGFragmentItem(
+          *child.inline_item,
+          ToPhysicalSize(child.rect.size,
+                         child.inline_item->Style()->GetWritingMode())));
+    }
+  }
 }
 
 NGFragmentItem::~NGFragmentItem() {

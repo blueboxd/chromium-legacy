@@ -24,7 +24,7 @@ NativeIOFileHost::NativeIOFileHost(
   // base::Unretained is safe here because this NativeIOFileHost owns
   // |receiver_|. So, the unretained NativeIOFileHost is guaranteed to outlive
   // |receiver_| and the closure that it uses.
-  receiver_.set_disconnect_handler(base::BindRepeating(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &NativeIOFileHost::OnReceiverDisconnect, base::Unretained(this)));
 }
 

@@ -524,12 +524,10 @@ void LocalToRemoteSyncer::UploadExistingFile(
   drive::UploadExistingFileOptions options;
   options.etag = remote_file_tracker_->synced_details().etag();
   drive_uploader()->UploadExistingFile(
-      remote_file_tracker_->file_id(),
-      local_path_,
-      "application/octet_stream",
+      remote_file_tracker_->file_id(), local_path_, "application/octet_stream",
       options,
-      base::Bind(&LocalToRemoteSyncer::DidUploadExistingFile,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)),
+      base::BindOnce(&LocalToRemoteSyncer::DidUploadExistingFile,
+                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)),
       google_apis::ProgressCallback());
 }
 
@@ -600,10 +598,9 @@ void LocalToRemoteSyncer::UpdateRemoteMetadata(
   DCHECK(remote_file_tracker_);
 
   drive_service()->GetFileResource(
-      file_id,
-      base::Bind(&LocalToRemoteSyncer::DidGetRemoteMetadata,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_id, base::Passed(&token)));
+      file_id, base::BindOnce(&LocalToRemoteSyncer::DidGetRemoteMetadata,
+                              weak_ptr_factory_.GetWeakPtr(), file_id,
+                              base::Passed(&token)));
 }
 
 void LocalToRemoteSyncer::DidGetRemoteMetadata(
@@ -648,8 +645,8 @@ void LocalToRemoteSyncer::UploadNewFile(std::unique_ptr<SyncTaskToken> token) {
       remote_parent_folder_tracker_->file_id(), local_path_,
       title.AsUTF8Unsafe(), GetMimeTypeFromTitle(title),
       drive::UploadNewFileOptions(),
-      base::Bind(&LocalToRemoteSyncer::DidUploadNewFile,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)),
+      base::BindOnce(&LocalToRemoteSyncer::DidUploadNewFile,
+                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)),
       google_apis::ProgressCallback());
 }
 

@@ -97,8 +97,8 @@ void OsAndPoliciesUpdateChecker::ScheduleUpdateCheck() {
   // Safe to use "this" as |update_check_task_executor_| is a member of this
   // class.
   update_check_task_executor_.Start(
-      base::BindRepeating(&OsAndPoliciesUpdateChecker::StartUpdateCheck,
-                          base::Unretained(this)),
+      base::BindOnce(&OsAndPoliciesUpdateChecker::StartUpdateCheck,
+                     base::Unretained(this)),
       base::BindOnce(&OsAndPoliciesUpdateChecker::OnUpdateCheckFailure,
                      base::Unretained(this)));
 }
@@ -135,8 +135,8 @@ void OsAndPoliciesUpdateChecker::StartUpdateCheck() {
     update_engine_client_->AddObserver(this);
 
   update_engine_client_->RequestUpdateCheck(
-      base::BindRepeating(&OsAndPoliciesUpdateChecker::OnUpdateCheckStarted,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&OsAndPoliciesUpdateChecker::OnUpdateCheckStarted,
+                     weak_factory_.GetWeakPtr()));
 
   // Do nothing for the initial idle stage when the update check state machine
   // has just started.
@@ -213,9 +213,9 @@ void OsAndPoliciesUpdateChecker::OnUpdateCheckStarted(
 }
 
 void OsAndPoliciesUpdateChecker::RefreshPolicies(bool update_check_result) {
-  g_browser_process->policy_service()->RefreshPolicies(base::BindRepeating(
-      &OsAndPoliciesUpdateChecker::OnRefreshPoliciesCompletion,
-      weak_factory_.GetWeakPtr(), update_check_result));
+  g_browser_process->policy_service()->RefreshPolicies(
+      base::BindOnce(&OsAndPoliciesUpdateChecker::OnRefreshPoliciesCompletion,
+                     weak_factory_.GetWeakPtr(), update_check_result));
 }
 
 void OsAndPoliciesUpdateChecker::OnRefreshPoliciesCompletion(

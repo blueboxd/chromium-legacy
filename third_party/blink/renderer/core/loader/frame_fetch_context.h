@@ -54,7 +54,6 @@ class ContentSecurityPolicy;
 class CoreProbeSink;
 class Document;
 class DocumentLoader;
-class FrameOrImportedDocument;
 class LocalFrame;
 class LocalFrameClient;
 class Settings;
@@ -64,11 +63,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
  public:
   static ResourceFetcher* CreateFetcherForCommittedDocument(DocumentLoader&,
                                                             Document&);
-  // Used for creating a FrameFetchContext for an imported Document.
-  // |document_loader_| will be set to nullptr.
-  static ResourceFetcher* CreateFetcherForImportedDocument(Document* document);
-
-  FrameFetchContext(const FrameOrImportedDocument&,
+  FrameFetchContext(DocumentLoader& document_loader,
+                    Document& document,
                     const DetachableResourceFetcherProperties&);
   ~FrameFetchContext() override = default;
 
@@ -195,7 +191,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   CoreProbeSink* Probe() const;
 
-  Member<const FrameOrImportedDocument> frame_or_imported_document_;
+  Member<DocumentLoader> document_loader_;
+  Member<Document> document_;
 
   // The value of |save_data_enabled_| is read once per frame from
   // NetworkStateNotifier, which is guarded by a mutex lock, and cached locally

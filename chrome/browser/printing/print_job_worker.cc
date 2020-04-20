@@ -490,8 +490,8 @@ void PrintJobWorker::SpoolPage(PrintedPage* page) {
   // Signal everyone that the page is printed.
   DCHECK(print_job_);
   print_job_->PostTask(
-      FROM_HERE, base::BindRepeating(
-                     &PageNotificationCallback, base::RetainedRef(print_job_),
+      FROM_HERE,
+      base::BindOnce(&PageNotificationCallback, base::RetainedRef(print_job_),
                      JobEventDetails::PAGE_DONE, printing_context_->job_id(),
                      base::RetainedRef(document_), base::RetainedRef(page)));
 }

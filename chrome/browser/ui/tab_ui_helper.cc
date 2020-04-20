@@ -87,8 +87,8 @@ void TabUIHelper::NotifyInitialNavigationDelayed(bool is_navigation_delayed) {
   // When fetching favicon from history, we first try the exact URL, and then
   // fall back to the host.
   FetchFaviconFromHistory(web_contents()->GetVisibleURL(),
-                          base::Bind(&TabUIHelper::OnURLFaviconFetched,
-                                     weak_ptr_factory_.GetWeakPtr()));
+                          base::BindOnce(&TabUIHelper::OnURLFaviconFetched,
+                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TabUIHelper::DidStopLoading() {
@@ -130,8 +130,8 @@ void TabUIHelper::OnURLFaviconFetched(
   }
 
   FetchFaviconFromHistory(web_contents()->GetVisibleURL().GetWithEmptyPath(),
-                          base::Bind(&TabUIHelper::OnHostFaviconFetched,
-                                     weak_ptr_factory_.GetWeakPtr()));
+                          base::BindOnce(&TabUIHelper::OnHostFaviconFetched,
+                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TabUIHelper::OnHostFaviconFetched(

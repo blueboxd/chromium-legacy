@@ -535,9 +535,12 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
     }
   }
 
-  user_manager::known_user::SetBooleanPref(
-      multi_user_util::GetAccountIdFromProfile(profile_),
-      kUserSpokenFeedbackEnabled, enabled);
+  if (!chromeos::ProfileHelper::IsSigninProfile(profile_) &&
+      !chromeos::ProfileHelper::IsLockScreenAppProfile(profile_)) {
+    user_manager::known_user::SetBooleanPref(
+        multi_user_util::GetAccountIdFromProfile(profile_),
+        kUserSpokenFeedbackEnabled, enabled);
+  }
 
   if (enabled) {
     chromevox_loader_->SetProfile(

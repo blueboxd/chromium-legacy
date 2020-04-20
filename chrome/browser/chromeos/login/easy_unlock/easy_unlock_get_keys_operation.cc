@@ -30,8 +30,8 @@ EasyUnlockGetKeysOperation::~EasyUnlockGetKeysOperation() {}
 void EasyUnlockGetKeysOperation::Start() {
   // Register for asynchronous notification of cryptohome being ready.
   CryptohomeClient::Get()->WaitForServiceToBeAvailable(
-      base::Bind(&EasyUnlockGetKeysOperation::OnCryptohomeAvailable,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EasyUnlockGetKeysOperation::OnCryptohomeAvailable,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EasyUnlockGetKeysOperation::OnCryptohomeAvailable(bool available) {

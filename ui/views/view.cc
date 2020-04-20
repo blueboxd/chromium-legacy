@@ -49,6 +49,7 @@
 #include "ui/views/border.h"
 #include "ui/views/buildflags.h"
 #include "ui/views/context_menu_controller.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
@@ -1972,7 +1973,14 @@ void View::OnBlur() {}
 
 void View::Focus() {
   OnFocus();
-  ScrollViewToVisible();
+
+  // If this is the contents root of a |ScrollView|, focus should bring the
+  // |ScrollView| to visible rather than resetting its content scroll position.
+  ScrollView* scroll_view = ScrollView::GetScrollViewForContents(this);
+  if (scroll_view)
+    scroll_view->ScrollViewToVisible();
+  else
+    ScrollViewToVisible();
 
   for (ViewObserver& observer : observers_)
     observer.OnViewFocused(this);

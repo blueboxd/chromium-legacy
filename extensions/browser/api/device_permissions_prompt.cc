@@ -86,8 +86,8 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
     if (observer) {
       auto* device_manager = UsbDeviceManager::Get(browser_context());
       if (device_manager && !manager_observer_.IsObserving(device_manager)) {
-        device_manager->GetDevices(
-            base::Bind(&UsbDevicePermissionsPrompt::OnDevicesEnumerated, this));
+        device_manager->GetDevices(base::BindOnce(
+            &UsbDevicePermissionsPrompt::OnDevicesEnumerated, this));
         manager_observer_.Add(device_manager);
       }
     }

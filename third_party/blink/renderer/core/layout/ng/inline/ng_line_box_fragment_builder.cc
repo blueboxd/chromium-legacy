@@ -6,8 +6,10 @@
 
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -36,6 +38,27 @@ void NGLineBoxFragmentBuilder::Reset() {
 
 void NGLineBoxFragmentBuilder::SetIsEmptyLineBox() {
   line_box_type_ = NGPhysicalLineBoxFragment::kEmptyLineBox;
+}
+
+void NGLineBoxFragmentBuilder::ChildList::CreateTextFragments(
+    WritingMode writing_mode,
+    const String& text_content) {
+  NGTextFragmentBuilder text_builder(writing_mode);
+  for (auto& child : *this) {
+    if (NGInlineItemResult* item_result = child.item_result) {
+      DCHECK(item_result->item);
+      const NGInlineItem& item = *item_result->item;
+      DCHECK(item.Type() == NGInlineItem::kText ||
+             item.Type() == NGInlineItem::kControl);
+      DCHECK(item.TextType() == NGTextType::kNormal ||
+             item.TextType() == NGTextType::kSymbolMarker);
+      text_builder.SetIsFirstForNode(item_result->IsFirstForNode());
+      text_builder.SetItem(text_content, item_result,
+                           child.rect.size.block_size);
+      DCHECK(!child.fragment);
+      child.fragment = text_builder.ToTextFragment();
+    }
+  }
 }
 
 NGLineBoxFragmentBuilder::Child*

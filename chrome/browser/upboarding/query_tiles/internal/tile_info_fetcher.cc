@@ -37,8 +37,8 @@ class TileInfoFetcherImpl : public TileInfoFetcher {
                                                    traffic_annotation);
 
     url_loader_->SetOnResponseStartedCallback(
-        base::BindRepeating(&TileInfoFetcherImpl::OnResponseStarted,
-                            weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&TileInfoFetcherImpl::OnResponseStarted,
+                       weak_ptr_factory_.GetWeakPtr()));
     // TODO(hesen): Estimate max size of response then replace to
     // DownloadToString method.
     url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(

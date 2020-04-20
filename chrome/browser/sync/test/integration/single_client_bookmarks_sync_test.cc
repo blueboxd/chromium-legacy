@@ -25,6 +25,7 @@
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"
 #include "components/sync_bookmarks/switches.h"
+#include "components/undo/bookmark_undo_service.h"
 #include "content/public/test/test_launcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,6 +52,7 @@ using bookmarks_helper::Create1xFaviconFromPNGFile;
 using bookmarks_helper::CreateFavicon;
 using bookmarks_helper::GetBookmarkBarNode;
 using bookmarks_helper::GetBookmarkModel;
+using bookmarks_helper::GetBookmarkUndoService;
 using bookmarks_helper::GetOtherNode;
 using bookmarks_helper::GetUniqueNodeByURL;
 using bookmarks_helper::ModelMatchesVerifier;
@@ -1021,6 +1023,44 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                                                /*kLeftEmpty=*/2));
   EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
                                                /*kInferred=*/3));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       ShouldStartTrackingRestoredBookmark) {
+  ASSERT_TRUE(SetupClients());
+  DisableVerifier();
+  ASSERT_TRUE(SetupSync());
+
+  BookmarkModel* bookmark_model = GetBookmarkModel(kSingleProfileIndex);
+  const BookmarkNode* bookmark_bar_node =
+      GetBookmarkBarNode(kSingleProfileIndex);
+
+  // First add a new bookmark.
+  const std::string title = "Title";
+  const BookmarkNode* node = bookmark_model->AddFolder(
+      bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16(title));
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
+  const std::vector<sync_pb::SyncEntity> server_bookmarks_before =
+      fake_server_->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
+  ASSERT_EQ(1u, server_bookmarks_before.size());
+
+  // Remove the node and undo the action.
+  bookmark_model->Remove(node);
+  BookmarkUndoService* undo_service =
+      GetBookmarkUndoService(kSingleProfileIndex);
+  undo_service->undo_manager()->Undo();
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
+
+  // Check that the bookmark was committed again.
+  const std::vector<sync_pb::SyncEntity> server_bookmarks_after =
+      fake_server_->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
+  ASSERT_EQ(1u, server_bookmarks_after.size());
+  EXPECT_GT(server_bookmarks_after.front().version(),
+            server_bookmarks_before.front().version());
+  EXPECT_EQ(server_bookmarks_after.front().id_string(),
+            server_bookmarks_before.front().id_string());
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,

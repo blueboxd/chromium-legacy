@@ -118,7 +118,9 @@ inline bool IsDOMExceptionCode(ExceptionCode exception_code) {
              static_cast<ExceptionCode>(DOMExceptionCode::kNumOfCodes);
 }
 
-// Exception codes that correspond to ECMAScript Error objects.
+// Exception codes that correspond to ECMAScript Error objects and
+// other errors derived from ECMAScript's NativeError class like
+// WebAssembly errors.
 // https://tc39.github.io/ecma262/#sec-error-objects
 enum class ESErrorType : ExceptionCode {
   kError = 1000,    // ECMAScript Error object
@@ -126,8 +128,11 @@ enum class ESErrorType : ExceptionCode {
   kReferenceError,  // ECMAScript ReferenceError object
   // Note that ECMAScript SyntaxError object is different from DOMException's
   // SyntaxError. See also the comment at |DOMExceptionCode::kSyntaxError|.
-  kSyntaxError,  // ECMAScript SyntaxError object
-  kTypeError,    // ECMAScript TypeError object
+  kSyntaxError,       // ECMAScript SyntaxError object
+  kTypeError,         // ECMAScript TypeError object
+  kWasmCompileError,  // WebAssembly.CompileError object
+  kWasmLinkError,     // WebAssembly.LinkError object
+  kWasmRuntimeError,  // WebAssembly.RuntimeError object
 };
 
 // Exception codes used only inside ExceptionState implementation.

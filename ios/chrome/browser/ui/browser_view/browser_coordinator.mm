@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
+#import "ios/chrome/browser/ui/activity_services/activity_service_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_all_password_coordinator.h"
@@ -30,6 +31,7 @@
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
+#import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -79,7 +81,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface BrowserCoordinator () <AutofillSecurityAlertPresenter,
+@interface BrowserCoordinator () <ActivityServiceCommands,
+                                  AutofillSecurityAlertPresenter,
                                   BrowserCoordinatorCommands,
                                   FormInputAccessoryCoordinatorNavigator,
                                   PageInfoCommands,
@@ -108,6 +111,10 @@
 
 // Presents a QLPreviewController in order to display USDZ format 3D models.
 @property(nonatomic, strong) ARQuickLookCoordinator* ARQuickLookCoordinator;
+
+// Coordinator for the activity view.
+@property(nonatomic, strong)
+    ActivityServiceCoordinator* activityServiceCoordinator;
 
 // Coordinator to add new credit card.
 @property(nonatomic, strong)
@@ -216,6 +223,8 @@
                                 forProtocol:@protocol(FindInPageCommands)];
   [self createViewController];
   [self startChildCoordinators];
+  [self.dispatcher startDispatchingToTarget:self
+                                forProtocol:@protocol(ActivityServiceCommands)];
   [self.dispatcher
       startDispatchingToTarget:self
                    forProtocol:@protocol(BrowserCoordinatorCommands)];
@@ -259,6 +268,9 @@
 
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox {
+  [self.activityServiceCoordinator stop];
+  self.activityServiceCoordinator = nil;
+
   [self.passKitCoordinator stop];
 
   [self.openInMediator disableAll];
@@ -327,6 +339,8 @@
   // Dispatcher should be instantiated so that it can be passed to child
   // coordinators.
   DCHECK(self.dispatcher);
+
+  /* ActivityServiceCoordinator is created and started by a command. */
 
   self.ARQuickLookCoordinator = [[ARQuickLookCoordinator alloc]
       initWithBaseViewController:self.viewController
@@ -410,6 +424,9 @@
 
 // Stops child coordinators.
 - (void)stopChildCoordinators {
+  [self.activityServiceCoordinator stop];
+  self.activityServiceCoordinator = nil;
+
   [self.allPasswordCoordinator stop];
   self.allPasswordCoordinator = nil;
 
@@ -496,6 +513,22 @@
     presenter = presenter.presentedViewController;
   }
   [presenter presentViewController:alert animated:YES completion:nil];
+}
+
+#pragma mark - ActivityServiceCommands
+
+- (void)sharePage {
+  self.activityServiceCoordinator = [[ActivityServiceCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
+  self.activityServiceCoordinator.positionProvider =
+      [self.viewController activityServicePositioner];
+  [self.activityServiceCoordinator start];
+}
+
+- (void)hideActivityView {
+  [self.activityServiceCoordinator stop];
+  self.activityServiceCoordinator = nil;
 }
 
 #pragma mark - BrowserCoordinatorCommands

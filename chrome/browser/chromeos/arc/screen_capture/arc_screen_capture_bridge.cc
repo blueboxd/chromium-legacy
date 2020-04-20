@@ -116,8 +116,8 @@ void ArcScreenCaptureBridge::RequestPermission(
   pending_permissions_map_.find(package_name)
       ->second.picker->Show(
           picker_params, std::move(source_lists),
-          base::BindRepeating(&ArcScreenCaptureBridge::PermissionPromptCallback,
-                              base::Unretained(this), package_name));
+          base::BindOnce(&ArcScreenCaptureBridge::PermissionPromptCallback,
+                         base::Unretained(this), package_name));
 }
 
 void ArcScreenCaptureBridge::PermissionPromptCallback(

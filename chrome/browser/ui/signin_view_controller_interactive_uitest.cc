@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
+#include "base/callback.h"
+#include "base/test/mock_callback.h"
 #include "build/build_config.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/signin_view_controller.h"
@@ -11,7 +17,10 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 class SignInViewControllerBrowserTest : public InProcessBrowserTest {
  public:
@@ -22,6 +31,10 @@ class SignInViewControllerBrowserTest : public InProcessBrowserTest {
     // test.
     ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
         browser()->window()->GetNativeWindow()));
+  }
+
+  signin::IdentityManager* GetIdentityManager() {
+    return IdentityManagerFactory::GetForProfile(browser()->profile());
   }
 };
 
@@ -46,4 +59,15 @@ IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, Accelerators) {
   wait_for_new_tab.Wait();
 
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
+}
+
+IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, AbortOngoingReauth) {
+  base::MockCallback<base::OnceCallback<void(signin::ReauthResult)>>
+      reauth_callback;
+  signin::MakePrimaryAccountAvailable(GetIdentityManager(), "alice@gmail.com");
+  std::unique_ptr<SigninViewController::ReauthAbortHandle> abort_handle =
+      browser()->signin_view_controller()->ShowReauthPrompt(
+          GetIdentityManager()->GetPrimaryAccountId(), reauth_callback.Get());
+  EXPECT_CALL(reauth_callback, Run(signin::ReauthResult::kCancelled));
+  abort_handle.reset();
 }

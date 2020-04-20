@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 
+#import "base/ios/block_types.h"
 #include "base/logging.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/main/browser.h"
@@ -408,6 +409,7 @@ NSError* IdentityMissingError() {
   DCHECK_NE(SHOULD_CLEAR_DATA_USER_CHOICE, shouldClearData);
   _shouldSignOut = YES;
   _shouldClearData = shouldClearData;
+
   [self continueSignin];
 }
 
@@ -443,8 +445,28 @@ NSError* IdentityMissingError() {
   [self cancelFlow];
 }
 
-- (UIViewController*)presentingViewController {
-  return _presentingViewController;
+- (void)dismissPresentingViewControllerAnimated:(BOOL)animated
+                                     completion:(ProceduralBlock)completion {
+  [_presentingViewController dismissViewControllerAnimated:animated
+                                                completion:^() {
+                                                  [_delegate didDismissDialog];
+                                                  if (completion) {
+                                                    completion();
+                                                  }
+                                                }];
+}
+
+- (void)presentViewController:(UIViewController*)viewController
+                     animated:(BOOL)animated
+                   completion:(ProceduralBlock)completion {
+  [_presentingViewController presentViewController:viewController
+                                          animated:animated
+                                        completion:^() {
+                                          [_delegate didPresentDialog];
+                                          if (completion) {
+                                            completion();
+                                          }
+                                        }];
 }
 
 #pragma mark - Used for testing

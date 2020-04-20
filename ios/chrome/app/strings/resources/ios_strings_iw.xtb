@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">התרחקות</translation>
 <translation id="2230173723195178503">דף האינטרנט נטען</translation>
 <translation id="2239626343334228536">מנקה נתוני גלישה…</translation>
+<translation id="2245545499420671379">‏חסימת קובצי cookie של צד שלישי במצב אנונימי</translation>
 <translation id="2257567812274161158">הסנכרון לא פועל.</translation>
 <translation id="2267753748892043616">חשבון חדש</translation>
 <translation id="2268044343513325586">צמצם</translation>
@@ -418,6 +419,7 @@
 
 הנתונים שלך הוצפנו ב-<ph name="TIME" /> באמצעות ביטוי הסיסמה לסינכרון. הזן אותו כדי להתחיל בסינכרון.</translation>
 <translation id="6418346271604475326">‏מכין PDF</translation>
+<translation id="6426067060178468363">‏אישור קובצי cookie</translation>
 <translation id="6434591244308415567">אירעה שגיאה. יש לנסות שוב מאוחר יותר.</translation>
 <translation id="6445051938772793705">ארץ</translation>
 <translation id="6445981559479772097">ההודעה נשלחה.</translation>
@@ -543,6 +545,7 @@
 <translation id="8076014560081431679">הגדרות אתרים שנשמרו לא יימחקו ועשויות לשקף את הרגלי הגלישה שלך. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">יש קובץ זמין להורדה. האפשרויות זמינות בחלק התחתון של המסך.</translation>
 <translation id="8131740175452115882">אישור</translation>
+<translation id="8174524257672181687">‏חסימה של כל קובצי ה-cookie (לא מומלץ)</translation>
 <translation id="8197543752516192074">תרגום הדף</translation>
 <translation id="8205564605687841303">בטל</translation>
 <translation id="8225985093977202398">תמונות וקבצים במטמון</translation>

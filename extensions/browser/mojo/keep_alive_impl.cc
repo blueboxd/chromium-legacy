@@ -30,7 +30,7 @@ KeepAliveImpl::KeepAliveImpl(content::BrowserContext* context,
   ProcessManager::Get(context_)->IncrementLazyKeepaliveCount(
       extension_, Activity::MOJO, std::string());
   receiver_.set_disconnect_handler(
-      base::Bind(&KeepAliveImpl::OnDisconnected, base::Unretained(this)));
+      base::BindOnce(&KeepAliveImpl::OnDisconnected, base::Unretained(this)));
   extension_registry_observer_.Add(ExtensionRegistry::Get(context_));
 }
 

@@ -283,9 +283,8 @@ void SocketsUdpSendFunction::StartSendTo() {
     return;
   }
 
-  socket->SendTo(
-      io_buffer_, io_buffer_size_, addresses_.front(),
-      base::BindRepeating(&SocketsUdpSendFunction::OnCompleted, this));
+  socket->SendTo(io_buffer_, io_buffer_size_, addresses_.front(),
+                 base::BindOnce(&SocketsUdpSendFunction::OnCompleted, this));
 }
 
 void SocketsUdpSendFunction::OnCompleted(int net_result) {

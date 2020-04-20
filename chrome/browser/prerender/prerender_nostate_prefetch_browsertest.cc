@@ -186,8 +186,8 @@ class NoStatePrefetchBrowserTest
         new content::AppCacheInfoCollection();
     appcache_service->GetAllAppCacheInfo(
         info_collection.get(),
-        base::Bind(ProcessAppCacheInfo, manifest_url, callback, found_manifest,
-                   info_collection));
+        base::BindOnce(ProcessAppCacheInfo, manifest_url, callback,
+                       found_manifest, info_collection));
   }
 
   // Look through |info_collection| for an entry matching |target_manifest|,

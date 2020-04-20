@@ -360,8 +360,8 @@ void MediaPerceptionAPIManager::SetStateInternal(APIStateCallback callback,
 void MediaPerceptionAPIManager::GetDiagnostics(
     const APIGetDiagnosticsCallback& callback) {
   chromeos::MediaAnalyticsClient::Get()->GetDiagnostics(
-      base::Bind(&MediaPerceptionAPIManager::GetDiagnosticsCallback,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&MediaPerceptionAPIManager::GetDiagnosticsCallback,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void MediaPerceptionAPIManager::UpstartStartProcessCallback(

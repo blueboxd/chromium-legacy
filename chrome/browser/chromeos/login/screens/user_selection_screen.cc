@@ -307,8 +307,8 @@ class UserSelectionScreen::DircryptoMigrationChecker {
     }
 
     CryptohomeClient::Get()->WaitForServiceToBeAvailable(
-        base::Bind(&DircryptoMigrationChecker::RunCryptohomeCheck,
-                   weak_ptr_factory_.GetWeakPtr(), account_id));
+        base::BindOnce(&DircryptoMigrationChecker::RunCryptohomeCheck,
+                       weak_ptr_factory_.GetWeakPtr(), account_id));
   }
 
  private:

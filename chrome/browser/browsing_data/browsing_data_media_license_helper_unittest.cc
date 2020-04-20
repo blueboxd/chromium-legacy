@@ -118,9 +118,9 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
   // object, then blocks until the callback is executed.
   void FetchMediaLicenses() {
     AwaitCompletionHelper await_completion;
-    helper_->StartFetching(
-        base::Bind(&BrowsingDataMediaLicenseHelperTest::OnFetchMediaLicenses,
-                   base::Unretained(this), await_completion.NotifyClosure()));
+    helper_->StartFetching(base::BindOnce(
+        &BrowsingDataMediaLicenseHelperTest::OnFetchMediaLicenses,
+        base::Unretained(this), await_completion.NotifyClosure()));
     await_completion.BlockUntilNotified();
   }
 
@@ -197,8 +197,9 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
     filesystem_context_->OpenPluginPrivateFileSystem(
         url::Origin::Create(origin), storage::kFileSystemTypePluginPrivate,
         fsid, plugin_name, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        base::Bind(&BrowsingDataMediaLicenseHelperTest::OnFileSystemOpened,
-                   base::Unretained(this), await_completion.NotifyClosure()));
+        base::BindOnce(&BrowsingDataMediaLicenseHelperTest::OnFileSystemOpened,
+                       base::Unretained(this),
+                       await_completion.NotifyClosure()));
     await_completion.BlockUntilNotified();
     return fsid;
   }
@@ -230,8 +231,9 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
         storage::QuotaManager::kNoLimit);
     file_util->EnsureFileExists(
         std::move(operation_context), file_url,
-        base::Bind(&BrowsingDataMediaLicenseHelperTest::OnFileCreated,
-                   base::Unretained(this), await_completion.NotifyClosure()));
+        base::BindOnce(&BrowsingDataMediaLicenseHelperTest::OnFileCreated,
+                       base::Unretained(this),
+                       await_completion.NotifyClosure()));
     await_completion.BlockUntilNotified();
     return file_url;
   }
@@ -256,8 +258,9 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
             new storage::FileSystemOperationContext(filesystem_context_));
     file_util->Touch(
         std::move(operation_context), file_url, time_stamp, time_stamp,
-        base::Bind(&BrowsingDataMediaLicenseHelperTest::OnFileTouched,
-                   base::Unretained(this), await_completion.NotifyClosure()));
+        base::BindOnce(&BrowsingDataMediaLicenseHelperTest::OnFileTouched,
+                       base::Unretained(this),
+                       await_completion.NotifyClosure()));
     await_completion.BlockUntilNotified();
   }
 

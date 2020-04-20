@@ -3676,8 +3676,8 @@ void NavigationRequest::RestartCommitTimeout() {
   if (!renderer_host->IsBlocked()) {
     commit_timeout_timer_.Start(
         FROM_HERE, g_commit_timeout,
-        base::BindRepeating(&NavigationRequest::OnCommitTimeout,
-                            weak_factory_.GetWeakPtr()));
+        base::BindOnce(&NavigationRequest::OnCommitTimeout,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 

@@ -26,7 +26,7 @@
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/password_access_authenticator.h"
-#include "components/password_manager/core/browser/password_account_storage_opt_in_watcher.h"
+#include "components/password_manager/core/browser/password_account_storage_settings_watcher.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/ui/export_progress_status.h"
@@ -168,8 +168,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   GoogleAccountAuthenticator account_storage_opt_in_reauthenticator_;
 
-  std::unique_ptr<password_manager::PasswordAccountStorageOptInWatcher>
-      password_account_storage_opt_in_watcher_;
+  std::unique_ptr<password_manager::PasswordAccountStorageSettingsWatcher>
+      password_account_storage_settings_watcher_;
 
   PasswordCheckDelegate password_check_delegate_;
 

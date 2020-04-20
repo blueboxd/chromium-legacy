@@ -57,6 +57,7 @@ class PermissionParamsListBuilder {
      * @param fullUrl Full URL of the site whose permissions are being displayed.
      * @param systemSettingsActivityRequiredListener Listener for when we need the user to enable
      *                                               a system setting to proceed.
+     * @param shouldShowTitle Should show section title for permissions in Page Info UI.
      * @param displayPermissionsCallback Callback to run to display fresh permissions in response to
      *                                   user interaction with a permission entry.
      */

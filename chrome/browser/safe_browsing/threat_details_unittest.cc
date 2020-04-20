@@ -105,8 +105,8 @@ class ThreatDetailsWrap : public ThreatDetails {
                       history_service,
                       referrer_chain_provider,
                       /*trim_to_ad_tags=*/false,
-                      base::Bind(&ThreatDetailsWrap::ThreatDetailsDone,
-                                 base::Unretained(this))),
+                      base::BindOnce(&ThreatDetailsWrap::ThreatDetailsDone,
+                                     base::Unretained(this))),
         run_loop_(nullptr),
         done_callback_count_(0) {}
 
@@ -125,8 +125,8 @@ class ThreatDetailsWrap : public ThreatDetails {
                       history_service,
                       referrer_chain_provider,
                       trim_to_ad_tags,
-                      base::Bind(&ThreatDetailsWrap::ThreatDetailsDone,
-                                 base::Unretained(this))),
+                      base::BindOnce(&ThreatDetailsWrap::ThreatDetailsDone,
+                                     base::Unretained(this))),
         run_loop_(nullptr),
         done_callback_count_(0) {}
 

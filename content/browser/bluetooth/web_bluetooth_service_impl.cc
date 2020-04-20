@@ -361,7 +361,7 @@ WebBluetoothServiceImpl::ScanningClient::ScanningClient(
       callback_(std::move(callback)),
       prompt_controller_(prompt_controller) {
   DCHECK(options_->filters.has_value() || options_->accept_all_advertisements);
-  client_.set_disconnect_handler(base::BindRepeating(
+  client_.set_disconnect_handler(base::BindOnce(
       &ScanningClient::DisconnectionHandler, base::Unretained(this)));
 }
 

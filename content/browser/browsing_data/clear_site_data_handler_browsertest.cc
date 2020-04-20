@@ -188,9 +188,9 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
         storage_partition()->GetCookieManagerForBrowserProcess();
     base::RunLoop run_loop;
     net::CookieList cookie_list;
-    cookie_manager->GetAllCookies(base::BindRepeating(
-        &ClearSiteDataHandlerBrowserTest::GetCookiesCallback,
-        run_loop.QuitClosure(), base::Unretained(&cookie_list)));
+    cookie_manager->GetAllCookies(
+        base::BindOnce(&ClearSiteDataHandlerBrowserTest::GetCookiesCallback,
+                       run_loop.QuitClosure(), base::Unretained(&cookie_list)));
     run_loop.Run();
     return cookie_list;
   }

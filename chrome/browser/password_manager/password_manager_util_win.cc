@@ -342,9 +342,9 @@ void GetOsPasswordStatus() {
   // This task calls ::LogonUser(), hence MayBlock().
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&GetOsPasswordStatusInternal, prefs_weak, status_weak),
-      base::Bind(&ReplyOsPasswordStatus, base::Passed(&prefs),
-                 base::Passed(&status)));
+      base::BindOnce(&GetOsPasswordStatusInternal, prefs_weak, status_weak),
+      base::BindOnce(&ReplyOsPasswordStatus, base::Passed(&prefs),
+                     base::Passed(&status)));
 }
 
 // Authenticate the user using the old Windows credential prompt.

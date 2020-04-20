@@ -196,7 +196,7 @@ void DataReductionProxySettingsAndroid::QueryDataUsage(
   Settings()
       ->data_reduction_proxy_service()
       ->compression_stats()
-      ->GetHistoricalDataUsage(base::Bind(
+      ->GetHistoricalDataUsage(base::BindOnce(
           &DataReductionProxySettingsAndroid::OnQueryDataUsageComplete,
           weak_factory_.GetWeakPtr(), JavaObjectWeakGlobalRef(env, obj),
           base::android::ScopedJavaGlobalRef<jobject>(j_result_obj), num_days));

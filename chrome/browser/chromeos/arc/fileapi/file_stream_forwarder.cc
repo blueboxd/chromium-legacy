@@ -91,8 +91,8 @@ void FileStreamForwarder::DoRead() {
   }
   const int result = stream_reader_->Read(
       buf_.get(), std::min<int64_t>(buf_->size(), remaining_size_),
-      base::Bind(&FileStreamForwarder::OnReadCompleted,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FileStreamForwarder::OnReadCompleted,
+                     weak_ptr_factory_.GetWeakPtr()));
   if (result != net::ERR_IO_PENDING) {
     // Read result is returned synchronously.
     OnReadCompleted(result);

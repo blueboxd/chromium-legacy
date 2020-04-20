@@ -90,8 +90,8 @@ class URLHelper {
     file_system_context_ = std::move(context);
     extensions::app_file_handler_util::GetMimeTypeForLocalPath(
         profile, isolated_file_system_.url.path(),
-        base::BindRepeating(&URLHelper::OnGotMimeTypeOnUIThread,
-                            base::Unretained(this), base::Passed(&lifetime)));
+        base::BindOnce(&URLHelper::OnGotMimeTypeOnUIThread,
+                       base::Unretained(this), base::Passed(&lifetime)));
   }
 
   void OnGotMimeTypeOnUIThread(Lifetime lifetime,
@@ -205,8 +205,8 @@ void ExternalFileResolver::OnHelperResultObtained(
   file_system_context_ = std::move(file_system_context);
   file_system_context_->external_backend()->GetRedirectURLForContents(
       isolated_file_system_.url,
-      base::BindRepeating(&ExternalFileResolver::OnRedirectURLObtained,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ExternalFileResolver::OnRedirectURLObtained,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ExternalFileResolver::OnRedirectURLObtained(const GURL& redirect_url) {

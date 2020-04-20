@@ -100,9 +100,9 @@ void EnumerateImesOnBlockingSequence(
     }
 
     nb_imes++;
-    task_runner->PostTask(FROM_HERE,
-                          base::BindRepeating(on_ime_enumerated, dll_path,
-                                              size_of_image, time_date_stamp));
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(on_ime_enumerated, dll_path, size_of_image,
+                                  time_date_stamp));
   }
 
   task_runner->PostTask(FROM_HERE, std::move(on_enumeration_finished));

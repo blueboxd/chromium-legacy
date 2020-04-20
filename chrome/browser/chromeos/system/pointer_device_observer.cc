@@ -47,15 +47,13 @@ void PointerDeviceObserver::OnInputDeviceConfigurationChanged(
 }
 
 void PointerDeviceObserver::CheckTouchpadExists() {
-  InputDeviceSettings::Get()->TouchpadExists(
-      base::Bind(&PointerDeviceObserver::OnTouchpadExists,
-                 weak_factory_.GetWeakPtr()));
+  InputDeviceSettings::Get()->TouchpadExists(base::BindOnce(
+      &PointerDeviceObserver::OnTouchpadExists, weak_factory_.GetWeakPtr()));
 }
 
 void PointerDeviceObserver::CheckMouseExists() {
-  InputDeviceSettings::Get()->MouseExists(
-      base::Bind(&PointerDeviceObserver::OnMouseExists,
-                 weak_factory_.GetWeakPtr()));
+  InputDeviceSettings::Get()->MouseExists(base::BindOnce(
+      &PointerDeviceObserver::OnMouseExists, weak_factory_.GetWeakPtr()));
 }
 
 void PointerDeviceObserver::OnTouchpadExists(bool exists) {

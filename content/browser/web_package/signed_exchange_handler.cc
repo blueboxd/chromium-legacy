@@ -252,10 +252,10 @@ void SignedExchangeHandler::DoHeaderLoop() {
   DCHECK(state_ == State::kReadingPrologueBeforeFallbackUrl ||
          state_ == State::kReadingPrologueFallbackUrlAndAfter ||
          state_ == State::kReadingHeaders);
-  int rv = source_->Read(
-      header_read_buf_.get(), header_read_buf_->BytesRemaining(),
-      base::BindRepeating(&SignedExchangeHandler::DidReadHeader,
-                          base::Unretained(this), false /* sync */));
+  int rv =
+      source_->Read(header_read_buf_.get(), header_read_buf_->BytesRemaining(),
+                    base::BindOnce(&SignedExchangeHandler::DidReadHeader,
+                                   base::Unretained(this), false /* sync */));
   if (rv != net::ERR_IO_PENDING)
     DidReadHeader(true /* sync */, rv);
 }

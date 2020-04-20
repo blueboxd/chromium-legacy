@@ -141,9 +141,9 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
       account_storage_opt_in_reauthenticator_(
           base::BindRepeating(&PasswordsPrivateDelegateImpl::InvokeGoogleReauth,
                               base::Unretained(this))),
-      password_account_storage_opt_in_watcher_(
+      password_account_storage_settings_watcher_(
           std::make_unique<
-              password_manager::PasswordAccountStorageOptInWatcher>(
+              password_manager::PasswordAccountStorageSettingsWatcher>(
               profile_->GetPrefs(),
               ProfileSyncServiceFactory::GetForProfile(profile_),
               base::BindRepeating(&PasswordsPrivateDelegateImpl::
@@ -517,7 +517,7 @@ void PasswordsPrivateDelegateImpl::OnAccountStorageOptInStateChanged() {
 }
 
 void PasswordsPrivateDelegateImpl::Shutdown() {
-  password_account_storage_opt_in_watcher_.reset();
+  password_account_storage_settings_watcher_.reset();
   password_manager_porter_.reset();
   password_manager_presenter_.reset();
 }

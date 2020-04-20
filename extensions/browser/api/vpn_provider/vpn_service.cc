@@ -352,8 +352,9 @@ void VpnService::NetworkListChanged() {
     }
 
     network_configuration_handler_->GetShillProperties(
-        iter->path(), base::Bind(&VpnService::OnGetPropertiesSuccess,
-                                 weak_factory_.GetWeakPtr()),
+        iter->path(),
+        base::BindOnce(&VpnService::OnGetPropertiesSuccess,
+                       weak_factory_.GetWeakPtr()),
         base::Bind(&VpnService::OnGetPropertiesFailure,
                    weak_factory_.GetWeakPtr()));
   }
@@ -541,7 +542,7 @@ void VpnService::OnExtensionUnloaded(
     shill_client_->UpdateConnectionState(
         active_configuration_->object_path(),
         static_cast<uint32_t>(api_vpn::VPN_CONNECTION_STATE_FAILURE),
-        base::DoNothing(), base::Bind(DoNothingFailureCallback));
+        base::DoNothing(), base::BindOnce(DoNothingFailureCallback));
   }
   if (reason == extensions::UnloadedExtensionReason::DISABLE ||
       reason == extensions::UnloadedExtensionReason::BLACKLIST) {

@@ -77,10 +77,10 @@ void ChromeBrowserCloudManagementRegistrar::
       enterprise_management::DeviceRegisterRequest::BROWSER);
   registration_helper_->StartRegistrationWithEnrollmentToken(
       enrollment_token, client_id,
-      base::BindRepeating(&ChromeBrowserCloudManagementRegistrar::
-                              CallCloudManagementRegistrationCallback,
-                          base::Unretained(this), base::Passed(&policy_client),
-                          callback));
+      base::BindOnce(&ChromeBrowserCloudManagementRegistrar::
+                         CallCloudManagementRegistrationCallback,
+                     base::Unretained(this), base::Passed(&policy_client),
+                     callback));
 }
 
 void ChromeBrowserCloudManagementRegistrar::

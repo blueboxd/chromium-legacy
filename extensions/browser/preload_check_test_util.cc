@@ -42,8 +42,8 @@ void PreloadCheckRunner::WaitForIdle() {
 }
 
 PreloadCheck::ResultCallback PreloadCheckRunner::GetCallback() {
-  return base::Bind(&PreloadCheckRunner::OnCheckComplete,
-                    base::Unretained(this));
+  return base::BindOnce(&PreloadCheckRunner::OnCheckComplete,
+                        base::Unretained(this));
 }
 
 void PreloadCheckRunner::OnCheckComplete(const PreloadCheck::Errors& errors) {

@@ -40,10 +40,10 @@ void Adapter::ConnectToDevice(const std::string& address,
 
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   device->CreateGattConnection(
-      base::Bind(&Adapter::OnGattConnected, weak_ptr_factory_.GetWeakPtr(),
-                 copyable_callback),
-      base::Bind(&Adapter::OnConnectError, weak_ptr_factory_.GetWeakPtr(),
-                 copyable_callback));
+      base::BindOnce(&Adapter::OnGattConnected, weak_ptr_factory_.GetWeakPtr(),
+                     copyable_callback),
+      base::BindOnce(&Adapter::OnConnectError, weak_ptr_factory_.GetWeakPtr(),
+                     copyable_callback));
 }
 
 void Adapter::GetDevices(GetDevicesCallback callback) {
@@ -77,10 +77,10 @@ void Adapter::SetClient(mojo::PendingRemote<mojom::AdapterClient> client) {
 void Adapter::StartDiscoverySession(StartDiscoverySessionCallback callback) {
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   adapter_->StartDiscoverySession(
-      base::Bind(&Adapter::OnStartDiscoverySession,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback),
-      base::Bind(&Adapter::OnDiscoverySessionError,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+      base::BindOnce(&Adapter::OnStartDiscoverySession,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback),
+      base::BindOnce(&Adapter::OnDiscoverySessionError,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
 
 void Adapter::AdapterPresentChanged(device::BluetoothAdapter* adapter,

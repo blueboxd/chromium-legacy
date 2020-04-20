@@ -323,8 +323,8 @@ void ChromeRestartRequest::RestartJob() {
   // of the socket-pair alive for the duration of the RPC.
   SessionManagerClient::Get()->RestartJob(
       remote_auth_fd.get(), argv_,
-      base::Bind(&ChromeRestartRequest::OnRestartJob, AsWeakPtr(),
-                 base::Passed(&local_auth_fd)));
+      base::BindOnce(&ChromeRestartRequest::OnRestartJob, AsWeakPtr(),
+                     base::Passed(&local_auth_fd)));
 }
 
 void ChromeRestartRequest::OnRestartJob(base::ScopedFD local_auth_fd,

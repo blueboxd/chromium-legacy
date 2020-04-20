@@ -378,10 +378,10 @@ void DownloadHistory::MaybeAddToHistory(download::DownloadItem* item) {
     data->set_info(download_row);
   else
     data->clear_info();
-  history_->CreateDownload(download_row,
-                           base::BindRepeating(&DownloadHistory::ItemAdded,
-                                               weak_ptr_factory_.GetWeakPtr(),
-                                               download_id, download_row));
+  history_->CreateDownload(
+      download_row, base::BindOnce(&DownloadHistory::ItemAdded,
+                                   weak_ptr_factory_.GetWeakPtr(), download_id,
+                                   download_row));
 }
 
 void DownloadHistory::ItemAdded(uint32_t download_id,

@@ -316,8 +316,8 @@ FileManagerPrivateInternalZipSelectionFunction::Run() {
   }
 
   (new ZipFileCreator(
-       base::Bind(&FileManagerPrivateInternalZipSelectionFunction::OnZipDone,
-                  this),
+       base::BindOnce(
+           &FileManagerPrivateInternalZipSelectionFunction::OnZipDone, this),
        src_dir, src_relative_paths, dest_file))
       ->Start(LaunchFileUtilService());
   return RespondLater();
@@ -509,8 +509,8 @@ FileManagerPrivateInternalGetMimeTypeFunction::Run() {
 
   app_file_handler_util::GetMimeTypeForLocalPath(
       chrome_details.GetProfile(), file_system_url.path(),
-      base::Bind(&FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType,
-                 this));
+      base::BindOnce(
+          &FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType, this));
 
   return RespondLater();
 }

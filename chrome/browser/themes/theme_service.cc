@@ -659,11 +659,12 @@ void ThemeService::BuildFromExtension(const extensions::Extension* extension,
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
   build_extension_task_tracker_.PostTaskAndReply(
       task_runner.get(), FROM_HERE,
-      base::Bind(&BrowserThemePack::BuildFromExtension,
-                 base::RetainedRef(extension), base::RetainedRef(pack.get())),
-      base::Bind(&ThemeService::OnThemeBuiltFromExtension,
-                 weak_ptr_factory_.GetWeakPtr(), extension->id(), pack,
-                 suppress_infobar));
+      base::BindOnce(&BrowserThemePack::BuildFromExtension,
+                     base::RetainedRef(extension),
+                     base::RetainedRef(pack.get())),
+      base::BindOnce(&ThemeService::OnThemeBuiltFromExtension,
+                     weak_ptr_factory_.GetWeakPtr(), extension->id(), pack,
+                     suppress_infobar));
 }
 
 void ThemeService::OnThemeBuiltFromExtension(

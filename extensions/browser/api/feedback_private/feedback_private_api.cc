@@ -213,7 +213,7 @@ FeedbackPrivateGetSystemInformationFunction::Run() {
       ExtensionsAPIClient::Get()
           ->GetFeedbackPrivateDelegate()
           ->CreateSystemLogsFetcher(browser_context());
-  fetcher->Fetch(base::Bind(
+  fetcher->Fetch(base::BindOnce(
       &FeedbackPrivateGetSystemInformationFunction::OnCompleted, this));
 
   return RespondLater();
@@ -262,8 +262,8 @@ ExtensionFunction::ResponseAction FeedbackPrivateReadLogSourceFunction::Run() {
 
   if (!log_source_manager->FetchFromSource(
           api_params->params, extension_id(),
-          base::Bind(&FeedbackPrivateReadLogSourceFunction::OnCompleted,
-                     this))) {
+          base::BindOnce(&FeedbackPrivateReadLogSourceFunction::OnCompleted,
+                         this))) {
     return RespondNow(Error(base::StringPrintf(
         "Unable to initiate fetch from log source %s.",
         feedback_private::ToString(api_params->params.source))));

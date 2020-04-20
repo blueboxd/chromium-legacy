@@ -331,9 +331,8 @@ void AppWindow::Init(const GURL& url,
   ExtensionRegistry::Get(browser_context_)->AddObserver(this);
 
   // Close when the browser process is exiting.
-  app_delegate_->SetTerminatingCallback(
-      base::Bind(&NativeAppWindow::Close,
-                 base::Unretained(native_app_window_.get())));
+  app_delegate_->SetTerminatingCallback(base::BindOnce(
+      &NativeAppWindow::Close, base::Unretained(native_app_window_.get())));
 
   app_window_contents_->LoadContents(new_params.creator_process_id);
 }

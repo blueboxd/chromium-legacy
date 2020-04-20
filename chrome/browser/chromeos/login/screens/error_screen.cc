@@ -337,8 +337,8 @@ void ErrorScreen::StartGuestSessionAfterOwnershipCheck(
   // Make sure to disallow guest login if it's explicitly disabled.
   CrosSettingsProvider::TrustedStatus trust_status =
       CrosSettings::Get()->PrepareTrustedValues(
-          base::Bind(&ErrorScreen::StartGuestSessionAfterOwnershipCheck,
-                     weak_factory_.GetWeakPtr(), ownership_status));
+          base::BindOnce(&ErrorScreen::StartGuestSessionAfterOwnershipCheck,
+                         weak_factory_.GetWeakPtr(), ownership_status));
   switch (trust_status) {
     case CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
       // Wait for a callback.

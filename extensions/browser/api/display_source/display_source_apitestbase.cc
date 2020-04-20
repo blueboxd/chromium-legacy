@@ -508,8 +508,9 @@ void MockDisplaySourceConnectionDelegate::ReceiveMediaPacket() {
 
   int net_result = socket_->RecvFrom(
       recvfrom_buffer_.get(), kBufferSize, &end_point_,
-      base::Bind(&MockDisplaySourceConnectionDelegate::OnMediaPacketReceived,
-                 base::Unretained(this)));
+      base::BindOnce(
+          &MockDisplaySourceConnectionDelegate::OnMediaPacketReceived,
+          base::Unretained(this)));
 
   if (net_result != net::ERR_IO_PENDING)
     OnMediaPacketReceived(net_result);

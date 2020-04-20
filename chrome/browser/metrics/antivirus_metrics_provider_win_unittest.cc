@@ -116,8 +116,8 @@ TEST_P(AntiVirusMetricsProviderTest, GetMetricsFullName) {
   // The usage of base::Unretained(this) is safe here because |provider_|, who
   // owns the callback, will go away before |this|.
   provider_.AsyncInit(
-      base::Bind(&AntiVirusMetricsProviderTest::GetMetricsCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&AntiVirusMetricsProviderTest::GetMetricsCallback,
+                     base::Unretained(this)));
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(got_results_);
 }

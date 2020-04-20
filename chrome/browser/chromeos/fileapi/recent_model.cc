@@ -188,7 +188,7 @@ void RecentModel::OnGetRecentFilesCompleted(FileType file_type) {
   // Starts a timer to clear cache.
   cache_clear_timer_.Start(
       FROM_HERE, kCacheExpiration,
-      base::Bind(&RecentModel::ClearCache, weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&RecentModel::ClearCache, weak_ptr_factory_.GetWeakPtr()));
 
   // Invoke all pending callbacks.
   std::vector<GetRecentFilesCallback> callbacks_to_call;

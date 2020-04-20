@@ -271,8 +271,8 @@ TEST_F(DeviceSettingsServiceTest, OnTPMTokenReadyForNonOwner) {
   OwnerSettingsServiceChromeOS* service =
       OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile_.get());
   ASSERT_TRUE(service);
-  service->IsOwnerAsync(base::Bind(&DeviceSettingsServiceTest::OnIsOwner,
-                                   base::Unretained(this)));
+  service->IsOwnerAsync(base::BindOnce(&DeviceSettingsServiceTest::OnIsOwner,
+                                       base::Unretained(this)));
 
   owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_->GetSigningKey());
   ReloadDeviceSettings();
@@ -350,8 +350,8 @@ TEST_F(DeviceSettingsServiceTest, OnTPMTokenReadyForOwner) {
   OwnerSettingsServiceChromeOS* service =
       OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile_.get());
   ASSERT_TRUE(service);
-  service->IsOwnerAsync(base::Bind(&DeviceSettingsServiceTest::OnIsOwner,
-                                   base::Unretained(this)));
+  service->IsOwnerAsync(base::BindOnce(&DeviceSettingsServiceTest::OnIsOwner,
+                                       base::Unretained(this)));
   ReloadDeviceSettings();
 
   EXPECT_FALSE(device_settings_service_->HasPrivateOwnerKey());
@@ -406,8 +406,8 @@ TEST_F(DeviceSettingsServiceTest, IsCurrentUserOwnerAsyncWithLoadedCerts) {
   OwnerSettingsServiceChromeOS* service =
       OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile_.get());
   ASSERT_TRUE(service);
-  service->IsOwnerAsync(base::Bind(&DeviceSettingsServiceTest::OnIsOwner,
-                                   base::Unretained(this)));
+  service->IsOwnerAsync(base::BindOnce(&DeviceSettingsServiceTest::OnIsOwner,
+                                       base::Unretained(this)));
   // The callback should be called immediately.
   base::RunLoop().RunUntilIdle();
 
@@ -476,8 +476,8 @@ TEST_F(DeviceSettingsServiceTest, LoadDeferredDuringOwnershipEstablishment) {
   OwnerSettingsServiceChromeOS* service =
       OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile_.get());
   ASSERT_TRUE(service);
-  service->IsOwnerAsync(base::Bind(&DeviceSettingsServiceTest::OnIsOwner,
-                                   base::Unretained(this)));
+  service->IsOwnerAsync(base::BindOnce(&DeviceSettingsServiceTest::OnIsOwner,
+                                       base::Unretained(this)));
   ReloadDeviceSettings();
 
   // No load operation should happen until OwnerSettingsService loads the

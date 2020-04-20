@@ -41,14 +41,14 @@ void FeedbackService::SendFeedback(scoped_refptr<FeedbackData> feedback_data,
 
   if (!feedback_data->attached_file_uuid().empty()) {
     BlobReader::Read(browser_context_, feedback_data->attached_file_uuid(),
-                     base::Bind(&FeedbackService::AttachedFileCallback,
-                                AsWeakPtr(), feedback_data, callback));
+                     base::BindOnce(&FeedbackService::AttachedFileCallback,
+                                    AsWeakPtr(), feedback_data, callback));
   }
 
   if (!feedback_data->screenshot_uuid().empty()) {
     BlobReader::Read(browser_context_, feedback_data->screenshot_uuid(),
-                     base::Bind(&FeedbackService::ScreenshotCallback,
-                                AsWeakPtr(), feedback_data, callback));
+                     base::BindOnce(&FeedbackService::ScreenshotCallback,
+                                    AsWeakPtr(), feedback_data, callback));
   }
 
   CompleteSendFeedback(feedback_data, callback);

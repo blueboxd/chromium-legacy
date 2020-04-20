@@ -327,9 +327,10 @@ void ProfileResetter::ResetShortcuts() {
 #if defined(OS_WIN)
   base::ThreadPool::CreateCOMSTATaskRunner(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
-      ->PostTaskAndReply(FROM_HERE, base::Bind(&ResetShortcutsOnBlockingThread),
-                         base::Bind(&ProfileResetter::MarkAsDone,
-                                    weak_ptr_factory_.GetWeakPtr(), SHORTCUTS));
+      ->PostTaskAndReply(
+          FROM_HERE, base::BindOnce(&ResetShortcutsOnBlockingThread),
+          base::BindOnce(&ProfileResetter::MarkAsDone,
+                         weak_ptr_factory_.GetWeakPtr(), SHORTCUTS));
 #else
   MarkAsDone(SHORTCUTS);
 #endif

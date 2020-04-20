@@ -64,8 +64,9 @@ void IntersectCertificates(
       FROM_HERE,
       {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&IntersectOnWorkerThread, certs1, certs2, intersection_ptr),
-      base::Bind(callback, base::Passed(&intersection)));
+      base::BindOnce(&IntersectOnWorkerThread, certs1, certs2,
+                     intersection_ptr),
+      base::BindOnce(callback, base::Passed(&intersection)));
 }
 
 // =================== ClientCertificateRequest ================================

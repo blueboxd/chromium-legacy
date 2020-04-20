@@ -108,7 +108,7 @@ DriveApiErrorCode FakeDriveServiceHelper::AddFile(
   drive_uploader_->UploadNewFile(
       parent_folder_id, temp_file, title, "application/octet-stream",
       drive::UploadNewFileOptions(),
-      base::Bind(&UploadResultCallback, &error, &file),
+      base::BindOnce(&UploadResultCallback, &error, &file),
       google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
@@ -126,7 +126,7 @@ DriveApiErrorCode FakeDriveServiceHelper::UpdateFile(
   drive_uploader_->UploadExistingFile(
       file_id, temp_file, "application/octet-stream",
       drive::UploadExistingFileOptions(),
-      base::Bind(&UploadResultCallback, &error, &file),
+      base::BindOnce(&UploadResultCallback, &error, &file),
       google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
   return error;

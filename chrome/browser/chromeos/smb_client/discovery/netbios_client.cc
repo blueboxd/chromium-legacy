@@ -81,7 +81,7 @@ void NetBiosClient::BindSocket() {
 void NetBiosClient::OpenPort(uint16_t port) {
   FirewallHole::Open(
       FirewallHole::PortType::UDP, port, "" /* all interfaces */,
-      base::BindRepeating(&NetBiosClient::OnOpenPortComplete, AsWeakPtr()));
+      base::BindOnce(&NetBiosClient::OnOpenPortComplete, AsWeakPtr()));
 }
 
 void NetBiosClient::SetBroadcast() {

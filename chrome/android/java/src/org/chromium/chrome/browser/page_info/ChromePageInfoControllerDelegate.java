@@ -12,6 +12,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Consumer;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -26,15 +27,19 @@ import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.CookieControlsBridge;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.page_info.PageInfoControllerDelegate;
+import org.chromium.components.page_info.PageInfoView;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
+import org.chromium.components.page_info.SystemSettingsActivityRequiredListener;
 import org.chromium.components.page_info.VrHandler;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -75,6 +80,7 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
     private String mOfflinePageCreationDate;
     private @OfflinePageState int mOfflinePageState;
     private OfflinePageLoadUrlDelegate mOfflinePageLoadUrlDelegate;
+    private PermissionParamsListBuilder mPermissionParamsListBuilder;
 
     // Bridge updating the CookieControlsView when cookie settings change.
     private CookieControlsBridge mBridge;
@@ -342,6 +348,38 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
     @Override
     public void setThirdPartyCookieBlockingEnabledForSite(boolean blockCookies) {
         mBridge.setThirdPartyCookieBlockingEnabledForSite(blockCookies);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void createPermissionParamsListBuilder(AndroidPermissionDelegate permissionDelegate,
+            String fullUrl, boolean shouldShowTitle,
+            SystemSettingsActivityRequiredListener systemSettingsActivityRequiredListener,
+            Callback<PageInfoView.PermissionParams> displayPermissionsCallback) {
+        mPermissionParamsListBuilder = new PermissionParamsListBuilder(mActivity,
+                permissionDelegate, fullUrl, shouldShowTitle,
+                systemSettingsActivityRequiredListener, displayPermissionsCallback);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addPermissionEntry(
+            String name, int type, @ContentSettingValues int currentSettingValue) {
+        assert (mPermissionParamsListBuilder != null);
+        mPermissionParamsListBuilder.addPermissionEntry(name, type, currentSettingValue);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void updatePermissionDisplay(PageInfoView view) {
+        assert (mPermissionParamsListBuilder != null);
+        view.setPermissions(mPermissionParamsListBuilder.build());
     }
 
     @VisibleForTesting

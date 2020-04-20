@@ -507,8 +507,8 @@ void CertProvisioningWorkerImpl::ScheduleNextStep(base::TimeDelta delay) {
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CertProvisioningWorkerImpl::DoStep,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&CertProvisioningWorkerImpl::DoStep,
+                     weak_factory_.GetWeakPtr()),
       delay);
 
   is_waiting_ = true;

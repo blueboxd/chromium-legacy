@@ -168,9 +168,9 @@ void LoginProfilePolicyProvider::Shutdown() {
 void LoginProfilePolicyProvider::RefreshPolicies() {
   waiting_for_device_policy_refresh_ = true;
   weak_factory_.InvalidateWeakPtrs();
-  device_policy_service_->RefreshPolicies(base::Bind(
-      &LoginProfilePolicyProvider::OnDevicePolicyRefreshDone,
-      weak_factory_.GetWeakPtr()));
+  device_policy_service_->RefreshPolicies(
+      base::BindOnce(&LoginProfilePolicyProvider::OnDevicePolicyRefreshDone,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void LoginProfilePolicyProvider::OnPolicyUpdated(const PolicyNamespace& ns,

@@ -475,8 +475,9 @@ void NoteTakingHelper::UpdateAndroidApps() {
   if (!helper)
     return;
   helper->RequestIntentHandlerList(
-      CreateIntentInfo(GURL()), base::Bind(&NoteTakingHelper::OnGotAndroidApps,
-                                           weak_ptr_factory_.GetWeakPtr()));
+      CreateIntentInfo(GURL()),
+      base::BindOnce(&NoteTakingHelper::OnGotAndroidApps,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 arc::mojom::ActivityNamePtr AppIdToActivityName(const std::string& id) {

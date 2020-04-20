@@ -35,7 +35,6 @@
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_password.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
-#import "ios/chrome/browser/ui/activity_services/share_protocol.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/commands/qr_generation_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
@@ -55,7 +54,6 @@ NSString* const kActivityServicesSnackbarCategory =
     @"ActivityServicesSnackbarCategory";
 
 @interface ActivityServiceController () {
-  BOOL _active;
   __weak id<ActivityServicePassword> _passwordProvider;
   __weak id<ActivityServicePresentation> _presentationProvider;
   UIActivityViewController* _activityViewController;
@@ -91,20 +89,20 @@ NSString* const kActivityServicesSnackbarCategory =
 
 @implementation ActivityServiceController
 
+#pragma mark - Public
+
 + (ActivityServiceController*)sharedInstance {
   static ActivityServiceController* instance =
       [[ActivityServiceController alloc] init];
   return instance;
 }
 
-#pragma mark - ShareProtocol
-
 - (BOOL)isActive {
-  return _active;
+  return [_activityViewController isBeingPresented];
 }
 
 - (void)cancelShareAnimated:(BOOL)animated {
-  if (!_active) {
+  if (![self isActive]) {
     return;
   }
   DCHECK(_activityViewController);
@@ -138,7 +136,7 @@ NSString* const kActivityServicesSnackbarCategory =
         positionProvider:(id<ActivityServicePositioner>)positionProvider
     presentationProvider:(id<ActivityServicePresentation>)presentationProvider {
   DCHECK(data);
-  DCHECK(!_active);
+  DCHECK(![self isActive]);
 
   CGRect fromRect = CGRectZero;
   UIView* inView = nil;
@@ -195,7 +193,6 @@ NSString* const kActivityServicesSnackbarCategory =
                                       error:activityError];
   }];
 
-  _active = YES;
   _activityViewController.modalPresentationStyle = UIModalPresentationPopover;
   _activityViewController.popoverPresentationController.sourceView = inView;
   _activityViewController.popoverPresentationController.sourceRect = fromRect;
@@ -209,14 +206,12 @@ NSString* const kActivityServicesSnackbarCategory =
   _passwordProvider = nil;
   _presentationProvider = nil;
   _activityViewController = nil;
-  _active = NO;
 }
 
 - (void)shareFinishedWithActivityType:(NSString*)activityType
                             completed:(BOOL)completed
                         returnedItems:(NSArray*)returnedItems
                                 error:(NSError*)activityError {
-  DCHECK(_active);
   DCHECK(_passwordProvider);
   DCHECK(_presentationProvider);
 
@@ -435,25 +430,21 @@ NSString* const kActivityServicesSnackbarCategory =
                                  completionHandler:^(BOOL completed) {
                                    if (shown || !completed || ![message length])
                                      return;
-                                   TriggerHapticFeedbackForNotification(
-                                       UINotificationFeedbackTypeSuccess);
-                                   [weakSelf showSnackbar:message];
+                                   [weakSelf shareDidComplete:shareStatus
+                                            completionMessage:message];
                                    shown = YES;
                                  }];
       break;
     }
     default:
+      [self shareDidComplete:ShareTo::SHARE_UNKNOWN_RESULT
+           completionMessage:nil];
       break;
   }
 }
 
 - (void)shareDidComplete:(ShareTo::ShareResult)shareStatus
        completionMessage:(NSString*)message {
-  // The shareTo dialog dismisses itself instead of through
-  // |-dismissViewControllerAnimated:completion:| so we must notify the
-  // presentation provider here so that it can clear its presenting state.
-  [_presentationProvider activityServiceDidEndPresenting];
-
   switch (shareStatus) {
     case ShareTo::SHARE_SUCCESS:
       if ([message length]) {
@@ -479,6 +470,11 @@ NSString* const kActivityServicesSnackbarCategory =
     case ShareTo::SHARE_UNKNOWN_RESULT:
       break;
   }
+
+  // The shareTo dialog dismisses itself instead of through
+  // |-dismissViewControllerAnimated:completion:| so we must notify the
+  // presentation provider here so that it can clear its presenting state.
+  [_presentationProvider activityServiceDidEndPresenting];
 }
 
 - (void)showErrorAlert:(int)titleMessageId message:(int)messageId {

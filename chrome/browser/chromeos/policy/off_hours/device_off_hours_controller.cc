@@ -36,8 +36,8 @@ DeviceOffHoursController::DeviceOffHoursController()
   if (system_clock_client) {
     system_clock_client->AddObserver(this);
     system_clock_client->WaitForServiceToBeAvailable(
-        base::Bind(&DeviceOffHoursController::SystemClockInitiallyAvailable,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&DeviceOffHoursController::SystemClockInitiallyAvailable,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (chromeos::PowerManagerClient::Get())
@@ -180,8 +180,8 @@ void DeviceOffHoursController::StartOffHoursTimer(base::TimeDelta delay) {
   DCHECK_GT(delay, base::TimeDelta());
   DVLOG(1) << "OffHours mode timer starts for " << delay;
   timer_->Start(FROM_HERE, delay,
-                base::Bind(&DeviceOffHoursController::UpdateOffHoursMode,
-                           weak_ptr_factory_.GetWeakPtr()));
+                base::BindOnce(&DeviceOffHoursController::UpdateOffHoursMode,
+                               weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeviceOffHoursController::StopOffHoursTimer() {
@@ -195,8 +195,8 @@ void DeviceOffHoursController::SystemClockUpdated() {
   // system time synchronization with the network time asynchronously.
   // Information will be received by NetworkSynchronizationUpdated method.
   chromeos::SystemClockClient::Get()->GetLastSyncInfo(
-      base::Bind(&DeviceOffHoursController::NetworkSynchronizationUpdated,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DeviceOffHoursController::NetworkSynchronizationUpdated,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeviceOffHoursController::SystemClockInitiallyAvailable(
@@ -204,8 +204,8 @@ void DeviceOffHoursController::SystemClockInitiallyAvailable(
   if (!service_is_available)
     return;
   chromeos::SystemClockClient::Get()->GetLastSyncInfo(
-      base::Bind(&DeviceOffHoursController::NetworkSynchronizationUpdated,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DeviceOffHoursController::NetworkSynchronizationUpdated,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeviceOffHoursController::NetworkSynchronizationUpdated(

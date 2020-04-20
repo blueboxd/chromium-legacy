@@ -96,8 +96,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
   if (_navigationController) {
     [_navigationController cleanUpSettings];
     _navigationController = nil;
-    [[_delegate presentingViewController] dismissViewControllerAnimated:NO
-                                                             completion:nil];
+    [_delegate dismissPresentingViewControllerAnimated:NO completion:nil];
   }
   [self stopWatchdogTimer];
 }
@@ -282,10 +281,9 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
                            fromEmail:lastSignedInEmail
                              toEmail:[identity userEmail]
                           isSignedIn:isSignedIn];
-  [[_delegate presentingViewController]
-      presentViewController:_navigationController
-                   animated:YES
-                 completion:nil];
+  [_delegate presentViewController:_navigationController
+                          animated:YES
+                        completion:nil];
 }
 
 - (void)clearDataFromBrowser:(Browser*)browser
@@ -465,8 +463,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
     [[strongSelf delegate] didChooseClearDataPolicy:shouldClearData];
   };
   [_navigationController cleanUpSettings];
-  [[_delegate presentingViewController] dismissViewControllerAnimated:YES
-                                                           completion:block];
+  [_delegate dismissPresentingViewControllerAnimated:YES completion:block];
 }
 
 #pragma mark - SettingsNavigationControllerDelegate
@@ -483,8 +480,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
     [[strongSelf delegate] didChooseCancel];
   };
   [_navigationController cleanUpSettings];
-  [[_delegate presentingViewController] dismissViewControllerAnimated:YES
-                                                           completion:block];
+  [_delegate dismissPresentingViewControllerAnimated:YES completion:block];
 }
 
 - (void)settingsWasDismissed {

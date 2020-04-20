@@ -140,8 +140,9 @@ void BackgroundProfilingTriggers::PerformMemoryUsageChecks() {
         memory_instrumentation::MemoryInstrumentation::GetInstance()
             ->RequestPrivateMemoryFootprint(
                 base::kNullProcessId,
-                base::Bind(&BackgroundProfilingTriggers::OnReceivedMemoryDump,
-                           std::move(weak_ptr), std::move(result)));
+                base::BindOnce(
+                    &BackgroundProfilingTriggers::OnReceivedMemoryDump,
+                    std::move(weak_ptr), std::move(result)));
       },
       weak_ptr_factory_.GetWeakPtr());
   Supervisor::GetInstance()->GetProfiledPids(std::move(callback));

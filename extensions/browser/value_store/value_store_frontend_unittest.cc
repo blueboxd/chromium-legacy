@@ -48,8 +48,8 @@ class ValueStoreFrontendTest : public testing::Test {
   }
 
   bool Get(const std::string& key, std::unique_ptr<base::Value>* output) {
-    storage_->Get(key, base::Bind(&ValueStoreFrontendTest::GetAndWait,
-                                  base::Unretained(this), output));
+    storage_->Get(key, base::BindOnce(&ValueStoreFrontendTest::GetAndWait,
+                                      base::Unretained(this), output));
     content::RunAllTasksUntilIdle();
     return !!output->get();
   }

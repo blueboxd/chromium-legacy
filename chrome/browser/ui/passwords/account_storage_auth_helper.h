@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/signin_view_controller.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 
 namespace password_manager {
@@ -58,9 +59,15 @@ class AccountStorageAuthHelper {
       signin::ReauthResult result);
 
   Profile* const profile_;
+
   password_manager::PasswordFeatureManager* const password_feature_manager_;
+
   base::RepeatingCallback<SigninViewController*()>
       signin_view_controller_getter_;
+
+  // Aborts ongoing reauths if AccountStorageAuthHelper gets destroyed.
+  std::unique_ptr<SigninViewController::ReauthAbortHandle> reauth_abort_handle_;
+
   base::WeakPtrFactory<AccountStorageAuthHelper> weak_ptr_factory_{this};
 };
 

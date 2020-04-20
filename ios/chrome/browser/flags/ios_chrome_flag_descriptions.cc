@@ -186,6 +186,10 @@ const char kDownloadInfobarMessagesUIDescription[] =
 const char kDragAndDropName[] = "Drag and Drop";
 const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 
+const char kEditBookmarksIOSName[] = "Edit Bookmarks IOS";
+const char kEditBookmarksIOSDescription[] =
+    "Enables support for the EditBookmarksEnabled enterprise policy on iOS";
+
 const char kEmbedderBlockRestoreUrlName[] =
     "Allow embedders to prevent certain URLs from restoring.";
 const char kEmbedderBlockRestoreUrlDescription[] =

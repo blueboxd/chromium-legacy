@@ -139,9 +139,9 @@ void StatsReportingController::SetWithServiceAsync(
     // Service is not yet ready. Listen for changes in its readiness so we can
     // write the value once it is ready. Uses weak pointers, so if everything
     // is shutdown and deleted in the meantime, this callback isn't run.
-    service->IsOwnerAsync(base::BindRepeating(
-        &StatsReportingController::SetWithServiceCallback, this->as_weak_ptr(),
-        service->as_weak_ptr(), enabled));
+    service->IsOwnerAsync(
+        base::BindOnce(&StatsReportingController::SetWithServiceCallback,
+                       this->as_weak_ptr(), service->as_weak_ptr(), enabled));
   } else {
     // Service is either null, or ready - use it right now.
     SetWithService(service, enabled);

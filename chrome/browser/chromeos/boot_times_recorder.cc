@@ -230,8 +230,8 @@ void BootTimesRecorder::Stats::RecordStatsWithCallback(
     const base::Closure& callback) const {
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&BootTimesRecorder::Stats::RecordStatsAsync,
-                 base::Owned(new Stats(*this)), name),
+      base::BindOnce(&BootTimesRecorder::Stats::RecordStatsAsync,
+                     base::Owned(new Stats(*this)), name),
       callback);
 }
 

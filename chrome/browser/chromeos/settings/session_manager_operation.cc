@@ -252,8 +252,8 @@ StoreSettingsOperation::~StoreSettingsOperation() {}
 void StoreSettingsOperation::Run() {
   session_manager_client()->StoreDevicePolicy(
       policy_->SerializeAsString(),
-      base::Bind(&StoreSettingsOperation::HandleStoreResult,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&StoreSettingsOperation::HandleStoreResult,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void StoreSettingsOperation::HandleStoreResult(bool success) {

@@ -708,7 +708,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2166472654199325139">Non filtrare i siti di contenuti per adulti</translation>
 <translation id="2166746572083670600">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> userà per memorizzare i dati utente.
 
-      Se imposti questo criterio, <ph name="PRODUCT_NAME" /> userà la directory specificata a prescindere dalla specifica o meno da parte dell'utente del flag "--user-data-dir". Per evitare perdite di dati o altri errori imprevisti, questo criterio non deve essere impostato su una directory usata per altri scopi perché <ph name="PRODUCT_NAME" /> gestisce i relativi contenuti.
+      Se imposti questo criterio, <ph name="PRODUCT_NAME" /> userà la directory indicata a prescindere dalla specifica o meno da parte dell'utente del flag "--user-data-dir". Per evitare perdite di dati o altri errori imprevisti, questo criterio non deve essere impostato su una directory usata per altri scopi perché <ph name="PRODUCT_NAME" /> gestisce i relativi contenuti.
 
       Visita la pagina https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.
 

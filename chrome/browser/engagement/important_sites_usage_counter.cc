@@ -51,8 +51,8 @@ void ImportantSitesUsageCounter::RunAndDestroySelfWhenFinished() {
                      base::Unretained(this)));
   tasks_ += 1;
   dom_storage_context_->GetLocalStorageUsage(
-      base::Bind(&ImportantSitesUsageCounter::ReceiveLocalStorageUsage,
-                 base::Unretained(this)));
+      base::BindOnce(&ImportantSitesUsageCounter::ReceiveLocalStorageUsage,
+                     base::Unretained(this)));
 }
 
 void ImportantSitesUsageCounter::GetQuotaUsageOnIOThread() {

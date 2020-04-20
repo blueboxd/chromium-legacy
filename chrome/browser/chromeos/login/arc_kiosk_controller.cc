@@ -49,9 +49,10 @@ void ArcKioskController::StartArcKiosk(const AccountId& account_id) {
 
   arc_kiosk_splash_screen_view_->SetDelegate(this);
   arc_kiosk_splash_screen_view_->Show();
-  splash_wait_timer_.Start(FROM_HERE, kArcKioskSplashScreenMinTime,
-                           base::Bind(&ArcKioskController::CloseSplashScreen,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  splash_wait_timer_.Start(
+      FROM_HERE, kArcKioskSplashScreenMinTime,
+      base::BindOnce(&ArcKioskController::CloseSplashScreen,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   login_performer_ = std::make_unique<ChromeLoginPerformer>(this);
   login_performer_->LoginAsArcKioskAccount(account_id);

@@ -190,10 +190,10 @@ void SpeechRecognizerOnIO::NotifyRecognitionStateChanged(
 
 void SpeechRecognizerOnIO::StartSpeechTimeout(int timeout_seconds) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  speech_timeout_->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(timeout_seconds),
-      base::BindRepeating(&SpeechRecognizerOnIO::SpeechTimeout,
-                          weak_factory_.GetWeakPtr()));
+  speech_timeout_->Start(FROM_HERE,
+                         base::TimeDelta::FromSeconds(timeout_seconds),
+                         base::BindOnce(&SpeechRecognizerOnIO::SpeechTimeout,
+                                        weak_factory_.GetWeakPtr()));
 }
 
 void SpeechRecognizerOnIO::SpeechTimeout() {

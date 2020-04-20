@@ -287,10 +287,12 @@ void BluetoothRemoteGattCharacteristic::StopNotifySession(
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
   NotifySessionCommand* command = new NotifySessionCommand(
-      base::Bind(&BluetoothRemoteGattCharacteristic::ExecuteStopNotifySession,
-                 GetWeakPtr(), session, repeating_callback),
-      base::Bind(&BluetoothRemoteGattCharacteristic::CancelStopNotifySession,
-                 GetWeakPtr(), repeating_callback));
+      base::BindOnce(
+          &BluetoothRemoteGattCharacteristic::ExecuteStopNotifySession,
+          GetWeakPtr(), session, repeating_callback),
+      base::BindOnce(
+          &BluetoothRemoteGattCharacteristic::CancelStopNotifySession,
+          GetWeakPtr(), repeating_callback));
 
   pending_notify_commands_.push(std::unique_ptr<NotifySessionCommand>(command));
   if (pending_notify_commands_.size() == 1) {

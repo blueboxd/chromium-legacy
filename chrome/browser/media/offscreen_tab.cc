@@ -403,8 +403,8 @@ void OffscreenTab::DieIfContentCaptureEnded() {
   // Schedule the timer to check again in a second.
   capture_poll_timer_.Start(
       FROM_HERE, kPollInterval,
-      base::BindRepeating(&OffscreenTab::DieIfContentCaptureEnded,
-                          base::Unretained(this)));
+      base::BindOnce(&OffscreenTab::DieIfContentCaptureEnded,
+                     base::Unretained(this)));
 }
 
 void OffscreenTab::DieIfOriginalProfileDestroyed(Profile* profile) {

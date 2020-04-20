@@ -38,8 +38,8 @@ DesktopSessionDurationTracker* DesktopSessionDurationTracker::Get() {
 
 void DesktopSessionDurationTracker::StartTimer(base::TimeDelta duration) {
   timer_.Start(FROM_HERE, duration,
-               base::Bind(&DesktopSessionDurationTracker::OnTimerFired,
-                          weak_factory_.GetWeakPtr()));
+               base::BindOnce(&DesktopSessionDurationTracker::OnTimerFired,
+                              weak_factory_.GetWeakPtr()));
 }
 
 void DesktopSessionDurationTracker::OnVisibilityChanged(

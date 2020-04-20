@@ -50,7 +50,7 @@ void JNI_TestRulesetPublisher_CreateAndPublishRulesetDisallowingSuffixForTesting
   publisher.Reset(env, publisher_param);
   auto* ruleset_service =
       g_browser_process->subresource_filter_ruleset_service();
-  ruleset_service->SetRulesetPublishedCallbackForTesting(base::BindRepeating(
+  ruleset_service->SetRulesetPublishedCallbackForTesting(base::BindOnce(
       &OnRulesetPublished, base::Passed(&creator), ruleset_service, publisher));
   ruleset_service->IndexAndStoreAndPublishRulesetIfNeeded(
       unindexed_ruleset_info);

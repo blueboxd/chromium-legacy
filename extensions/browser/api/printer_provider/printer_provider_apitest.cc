@@ -201,8 +201,8 @@ class PrinterProviderApiTest : public ShellApiTest {
     bool success;
     std::string print_status;
     PrinterProviderAPI::PrintCallback callback =
-        base::Bind(&RecordPrintResultAndRunCallback, &success, &print_status,
-                   run_loop.QuitClosure());
+        base::BindOnce(&RecordPrintResultAndRunCallback, &success,
+                       &print_status, run_loop.QuitClosure());
 
     switch (data_type) {
       case PRINT_REQUEST_DATA_TYPE_NOT_SET:
@@ -238,9 +238,9 @@ class PrinterProviderApiTest : public ShellApiTest {
 
     base::RunLoop run_loop;
     std::string result;
-    StartCapabilityRequest(
-        extension_id,
-        base::Bind(&RecordDictAndRunCallback, &result, run_loop.QuitClosure()));
+    StartCapabilityRequest(extension_id,
+                           base::BindOnce(&RecordDictAndRunCallback, &result,
+                                          run_loop.QuitClosure()));
 
     ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
@@ -267,8 +267,8 @@ class PrinterProviderApiTest : public ShellApiTest {
     base::RunLoop run_loop;
     StartGetUsbPrinterInfoRequest(
         extension_id, *device,
-        base::Bind(&ExpectValueAndRunCallback, expected_printer_info.get(),
-                   run_loop.QuitClosure()));
+        base::BindOnce(&ExpectValueAndRunCallback, expected_printer_info.get(),
+                       run_loop.QuitClosure()));
     run_loop.Run();
 
     ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -358,8 +358,8 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintRequestAppUnloaded) {
   bool success = false;
   std::string status;
   StartPrintRequestUsingDocumentBytes(
-      extension_id, base::Bind(&RecordPrintResultAndRunCallback, &success,
-                               &status, run_loop.QuitClosure()));
+      extension_id, base::BindOnce(&RecordPrintResultAndRunCallback, &success,
+                                   &status, run_loop.QuitClosure()));
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
@@ -402,9 +402,9 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetCapabilityAppUnloaded) {
 
   base::RunLoop run_loop;
   std::string result;
-  StartCapabilityRequest(
-      extension_id,
-      base::Bind(&RecordDictAndRunCallback, &result, run_loop.QuitClosure()));
+  StartCapabilityRequest(extension_id,
+                         base::BindOnce(&RecordDictAndRunCallback, &result,
+                                        run_loop.QuitClosure()));
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
@@ -780,8 +780,8 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetUsbPrinterInfo) {
   base::RunLoop run_loop;
   StartGetUsbPrinterInfoRequest(
       extension_id, *device,
-      base::Bind(&ExpectValueAndRunCallback, expected_printer_info.get(),
-                 run_loop.QuitClosure()));
+      base::BindOnce(&ExpectValueAndRunCallback, expected_printer_info.get(),
+                     run_loop.QuitClosure()));
   run_loop.Run();
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();

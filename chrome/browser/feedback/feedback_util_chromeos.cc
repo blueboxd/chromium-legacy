@@ -55,7 +55,7 @@ void SendSysLogFeedback(Profile* profile,
   system_logs::SystemLogsFetcher* fetcher =
       system_logs::BuildChromeSystemLogsFetcher();
   fetcher->Fetch(
-      base::Bind(&OnGetSystemInformation, profile, description, callback));
+      base::BindOnce(&OnGetSystemInformation, profile, description, callback));
 }
 
 }  // namespace feedback_util

@@ -94,7 +94,7 @@ void GetFileSizeOnIOThread(scoped_refptr<storage::FileSystemContext> context,
       url,
       storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
           storage::FileSystemOperation::GET_METADATA_FIELD_SIZE,
-      base::Bind(
+      base::BindOnce(
           [](ArcFileSystemBridge::GetFileSizeCallback callback,
              base::File::Error result, const base::File::Info& file_info) {
             int64_t size = -1;
@@ -275,7 +275,7 @@ void ArcFileSystemBridge::GetFileType(const std::string& url,
       GetFileSystemURL(*context, url_decoded);
   extensions::app_file_handler_util::GetMimeTypeForLocalPath(
       profile_, file_system_url_and_handle.url.path(),
-      base::Bind(
+      base::BindOnce(
           [](GetFileTypeCallback callback, const std::string& mime_type) {
             std::move(callback).Run(mime_type.empty()
                                         ? base::nullopt

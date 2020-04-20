@@ -53,7 +53,7 @@ TEST_F(DocumentScanInterfaceChromeosTest, ListScanners) {
        {lorgnette::kScannerPropertyType, kScannerType}});
 
   base::RunLoop run_loop;
-  scan_interface_.ListScanners(base::Bind(
+  scan_interface_.ListScanners(base::BindOnce(
       [](base::RunLoop* run_loop,
          const std::vector<DocumentScanInterface::ScannerDescription>&
              descriptions,
@@ -79,7 +79,7 @@ TEST_F(DocumentScanInterfaceChromeosTest, ScanFailure) {
   base::RunLoop run_loop;
   scan_interface_.Scan(
       "Monet", DocumentScanInterface::kScanModeColor, 4096,
-      base::Bind(
+      base::BindOnce(
           [](base::RunLoop* run_loop, const std::string& scanned_image,
              const std::string& mime_type, const std::string& error) {
             run_loop->Quit();
@@ -102,7 +102,7 @@ TEST_F(DocumentScanInterfaceChromeosTest, ScanSuccess) {
   base::RunLoop run_loop;
   scan_interface_.Scan(
       kScannerName, DocumentScanInterface::kScanModeColor, kResolution,
-      base::Bind(
+      base::BindOnce(
           [](base::RunLoop* run_loop, const std::string& scanned_image,
              const std::string& mime_type, const std::string& error) {
             run_loop->Quit();

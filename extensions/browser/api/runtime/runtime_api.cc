@@ -188,8 +188,8 @@ RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
   DCHECK(!browser_context_->IsOffTheRecord());
 
   ExtensionSystem::Get(context)->ready().Post(
-      FROM_HERE, base::Bind(&RuntimeAPI::OnExtensionsReady,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&RuntimeAPI::OnExtensionsReady,
+                                weak_ptr_factory_.GetWeakPtr()));
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
   process_manager_observer_.Add(ProcessManager::Get(browser_context_));
 
@@ -379,8 +379,8 @@ RuntimeAPI::RestartAfterDelayStatus RuntimeAPI::ScheduleDelayedRestart(
 
   restart_after_delay_timer_.Start(
       FROM_HERE, delay_till_restart,
-      base::Bind(&RuntimeAPI::OnDelayedRestartTimerTimeout,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&RuntimeAPI::OnDelayedRestartTimerTimeout,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   return was_throttled ? RestartAfterDelayStatus::FAILED_THROTTLED
                        : RestartAfterDelayStatus::SUCCESS_RESTART_SCHEDULED;

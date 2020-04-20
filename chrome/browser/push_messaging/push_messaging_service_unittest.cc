@@ -177,9 +177,9 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
 
   push_service->SubscribeFromWorker(
       origin, kTestServiceWorkerId, std::move(options),
-      base::Bind(&PushMessagingServiceTest::DidRegister, base::Unretained(this),
-                 &subscription_id, &endpoint, &p256dh, &auth,
-                 run_loop.QuitClosure()));
+      base::BindOnce(&PushMessagingServiceTest::DidRegister,
+                     base::Unretained(this), &subscription_id, &endpoint,
+                     &p256dh, &auth, run_loop.QuitClosure()));
 
   EXPECT_EQ(0u, subscription_id.size());  // this must be asynchronous
 

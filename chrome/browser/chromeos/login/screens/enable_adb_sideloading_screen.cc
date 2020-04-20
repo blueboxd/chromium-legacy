@@ -76,8 +76,8 @@ void EnableAdbSideloadingScreen::ShowImpl() {
   chromeos::SessionManagerClient* client =
       chromeos::SessionManagerClient::Get();
   client->QueryAdbSideload(
-      base::Bind(&EnableAdbSideloadingScreen::OnQueryAdbSideload,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EnableAdbSideloadingScreen::OnQueryAdbSideload,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnableAdbSideloadingScreen::OnQueryAdbSideload(
@@ -134,8 +134,8 @@ void EnableAdbSideloadingScreen::OnEnable() {
   chromeos::SessionManagerClient* client =
       chromeos::SessionManagerClient::Get();
   client->EnableAdbSideload(
-      base::Bind(&EnableAdbSideloadingScreen::OnEnableAdbSideload,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EnableAdbSideloadingScreen::OnEnableAdbSideload,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnableAdbSideloadingScreen::OnEnableAdbSideload(

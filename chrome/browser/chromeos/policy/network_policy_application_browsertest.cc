@@ -203,9 +203,8 @@ class NetworkPolicyApplicationTest : public LoginManagerTest {
     base::RunLoop run_loop;
     ShillServiceClient::Get()->Connect(
         dbus::ObjectPath(service_path), run_loop.QuitClosure(),
-        base::BindRepeating(
-            &NetworkPolicyApplicationTest::OnConnectToServiceFailed,
-            base::Unretained(this), run_loop.QuitClosure()));
+        base::BindOnce(&NetworkPolicyApplicationTest::OnConnectToServiceFailed,
+                       base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
 

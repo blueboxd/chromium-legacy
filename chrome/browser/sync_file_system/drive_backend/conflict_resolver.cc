@@ -283,10 +283,9 @@ void ConflictResolver::UpdateFileMetadata(
     const std::string& file_id,
     std::unique_ptr<SyncTaskToken> token) {
   drive_service()->GetFileResource(
-      file_id,
-      base::Bind(&ConflictResolver::DidGetRemoteMetadata,
-                 weak_ptr_factory_.GetWeakPtr(), file_id,
-                 base::Passed(&token)));
+      file_id, base::BindOnce(&ConflictResolver::DidGetRemoteMetadata,
+                              weak_ptr_factory_.GetWeakPtr(), file_id,
+                              base::Passed(&token)));
 }
 
 void ConflictResolver::DidGetRemoteMetadata(

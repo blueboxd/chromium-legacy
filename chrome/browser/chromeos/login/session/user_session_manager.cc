@@ -1506,7 +1506,7 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
           content::BrowserContext::GetDefaultStoragePartition(profile),
           transfer_auth_cookies_on_first_login,
           transfer_saml_auth_cookies_on_subsequent_login,
-          base::Bind(
+          base::BindOnce(
               &UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
               AsWeakPtr(), profile));
     } else {

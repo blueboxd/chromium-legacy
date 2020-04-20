@@ -38,8 +38,8 @@ class DriveFsNativeMessageHost : public extensions::NativeMessageHost {
     }
 
     drive_service_->GetDriveFsInterface()->SendNativeMessageRequest(
-        message, base::Bind(&DriveFsNativeMessageHost::OnDriveFsResponse,
-                            weak_ptr_factory_.GetWeakPtr()));
+        message, base::BindOnce(&DriveFsNativeMessageHost::OnDriveFsResponse,
+                                weak_ptr_factory_.GetWeakPtr()));
   }
 
   void Start(Client* client) override { client_ = client; }

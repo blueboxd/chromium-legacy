@@ -61,8 +61,8 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   void StartFetching() {
     fetching_completed_ = false;
     helper_->StartFetching(
-        base::Bind(&BrowsingDataQuotaHelperTest::FetchCompleted,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&BrowsingDataQuotaHelperTest::FetchCompleted,
+                       weak_factory_.GetWeakPtr()));
   }
 
   void RegisterClient(const MockOriginData* data, std::size_t data_len) {
@@ -79,16 +79,16 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     quota_ = -1;
     quota_manager_->SetPersistentHostQuota(
         host, quota,
-        base::Bind(&BrowsingDataQuotaHelperTest::GotPersistentHostQuota,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&BrowsingDataQuotaHelperTest::GotPersistentHostQuota,
+                       weak_factory_.GetWeakPtr()));
   }
 
   void GetPersistentHostQuota(const std::string& host) {
     quota_ = -1;
     quota_manager_->GetPersistentHostQuota(
         host,
-        base::Bind(&BrowsingDataQuotaHelperTest::GotPersistentHostQuota,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&BrowsingDataQuotaHelperTest::GotPersistentHostQuota,
+                       weak_factory_.GetWeakPtr()));
   }
 
   void GotPersistentHostQuota(blink::mojom::QuotaStatusCode status,

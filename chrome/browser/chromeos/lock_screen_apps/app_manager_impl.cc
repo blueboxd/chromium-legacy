@@ -186,8 +186,8 @@ void AppManagerImpl::Initialize(
   note_taking_helper_observer_.Add(chromeos::NoteTakingHelper::Get());
 
   lock_screen_profile_creator_->AddCreateProfileCallback(
-      base::Bind(&AppManagerImpl::OnLockScreenProfileLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&AppManagerImpl::OnLockScreenProfileLoaded,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AppManagerImpl::OnLockScreenProfileLoaded() {

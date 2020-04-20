@@ -140,12 +140,9 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
     // starts the animation timer so we can show animation until we receive
     // it.
     bool result = client_->RequestTextCheck(
-        browser_context,
-        SpellingServiceClient::SUGGEST,
-        params.misspelled_word,
-        base::Bind(&SpellingMenuObserver::OnTextCheckComplete,
-                   base::Unretained(this),
-                   SpellingServiceClient::SUGGEST));
+        browser_context, SpellingServiceClient::SUGGEST, params.misspelled_word,
+        base::BindOnce(&SpellingMenuObserver::OnTextCheckComplete,
+                       base::Unretained(this), SpellingServiceClient::SUGGEST));
     if (result) {
       loading_frame_ = 0;
       animation_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),

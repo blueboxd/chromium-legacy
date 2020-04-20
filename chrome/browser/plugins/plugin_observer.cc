@@ -57,8 +57,8 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
         observer_(observer),
         plugin_renderer_remote_(std::move(plugin_renderer_remote)) {
     plugin_renderer_remote_.set_disconnect_handler(
-        base::Bind(&PluginObserver::RemovePluginPlaceholderHost,
-                   base::Unretained(observer_), this));
+        base::BindOnce(&PluginObserver::RemovePluginPlaceholderHost,
+                       base::Unretained(observer_), this));
     DCHECK(installer);
   }
 
@@ -83,8 +83,8 @@ class PluginObserver::ComponentObserver
         component_id_(component_id),
         plugin_renderer_remote_(std::move(plugin_renderer_remote)) {
     plugin_renderer_remote_.set_disconnect_handler(
-        base::Bind(&PluginObserver::RemoveComponentObserver,
-                   base::Unretained(observer_), this));
+        base::BindOnce(&PluginObserver::RemoveComponentObserver,
+                       base::Unretained(observer_), this));
     g_browser_process->component_updater()->AddObserver(this);
   }
 

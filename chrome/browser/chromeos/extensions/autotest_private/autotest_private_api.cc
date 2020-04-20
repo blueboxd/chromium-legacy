@@ -1111,7 +1111,7 @@ ExtensionFunction::ResponseAction
 AutotestPrivateRefreshEnterprisePoliciesFunction::Run() {
   DVLOG(1) << "AutotestPrivateRefreshEnterprisePoliciesFunction";
 
-  g_browser_process->policy_service()->RefreshPolicies(base::Bind(
+  g_browser_process->policy_service()->RefreshPolicies(base::BindOnce(
       &AutotestPrivateRefreshEnterprisePoliciesFunction::RefreshDone, this));
   return RespondLater();
 }
@@ -3706,8 +3706,8 @@ AutotestPrivateWaitForLauncherStateFunction::Run() {
   auto target_state = ToAppListViewState(params->launcher_state);
   if (WaitForLauncherState(
           target_state,
-          base::Bind(&AutotestPrivateWaitForLauncherStateFunction::Done,
-                     this))) {
+          base::BindOnce(&AutotestPrivateWaitForLauncherStateFunction::Done,
+                         this))) {
     return AlreadyResponded();
   }
   return RespondLater();

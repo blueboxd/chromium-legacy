@@ -270,7 +270,8 @@ ExtensionFunction::ResponseAction FileSystemProviderNotifyFunction::Run() {
           ? ParseChanges(*params->options.changes.get())
           : base::WrapUnique(new ProvidedFileSystemObserver::Changes),
       params->options.tag.get() ? *params->options.tag.get() : "",
-      base::Bind(&FileSystemProviderNotifyFunction::OnNotifyCompleted, this));
+      base::BindOnce(&FileSystemProviderNotifyFunction::OnNotifyCompleted,
+                     this));
 
   return RespondLater();
 }

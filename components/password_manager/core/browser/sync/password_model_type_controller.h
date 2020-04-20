@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/password_manager/core/browser/password_account_storage_opt_in_watcher.h"
+#include "components/password_manager/core/browser/password_account_storage_settings_watcher.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -60,7 +60,7 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
   syncer::SyncService* const sync_service_;
   const base::RepeatingClosure state_changed_callback_;
 
-  PasswordAccountStorageOptInWatcher account_storage_opt_in_watcher_;
+  PasswordAccountStorageSettingsWatcher account_storage_settings_watcher_;
 
   // Passed in to LoadModels(), and cached here for later use in Stop().
   syncer::SyncMode sync_mode_ = syncer::SyncMode::kFull;

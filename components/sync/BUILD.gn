@@ -630,6 +630,7 @@ source_set("unit_tests") {
     "model/sync_data_unittest.cc",
     "model/sync_error_unittest.cc",
     "model_impl/client_tag_based_model_type_processor_unittest.cc",
+    "model_impl/client_tag_based_remote_update_handler_unittest.cc",
     "model_impl/in_memory_metadata_change_list_unittest.cc",
     "model_impl/model_type_store_backend_unittest.cc",
     "model_impl/model_type_store_impl_unittest.cc",

@@ -799,6 +799,56 @@ TEST_F(ScrollViewTest, ScrollChildToVisibleOnFocus) {
   EXPECT_EQ(415 - viewport_height, offset.y());
 }
 
+// Verifies that ScrollView scrolls into view when its contents root is focused.
+TEST_F(ScrollViewTest, ScrollViewToVisibleOnContentsRootFocus) {
+  ScrollViewTestApi outer_test_api(scroll_view_.get());
+  auto outer_contents = std::make_unique<CustomView>();
+  outer_contents->SetPreferredSize(gfx::Size(500, 1000));
+  auto* outer_contents_ptr =
+      scroll_view_->SetContents(std::move(outer_contents));
+
+  auto inner_scroll_view = std::make_unique<ScrollView>();
+  auto* inner_scroll_view_ptr =
+      outer_contents_ptr->AddChildView(std::move(inner_scroll_view));
+
+  ScrollViewTestApi inner_test_api(inner_scroll_view_ptr);
+  auto inner_contents = std::make_unique<FixedView>();
+  inner_contents->SetPreferredSize(gfx::Size(500, 1000));
+  auto* inner_contents_ptr =
+      inner_scroll_view_ptr->SetContents(std::move(inner_contents));
+
+  inner_scroll_view_ptr->SetBoundsRect(gfx::Rect(0, 510, 100, 100));
+  inner_scroll_view_ptr->Layout();
+  EXPECT_EQ(gfx::Point(), inner_test_api.IntegralViewOffset());
+
+  scroll_view_->SetBoundsRect(gfx::Rect(0, 0, 200, 200));
+  scroll_view_->Layout();
+  EXPECT_EQ(gfx::Point(), outer_test_api.IntegralViewOffset());
+
+  // Scroll the inner scroll view to y=405 height=10. This should make the y
+  // position of the inner content at (405 + 10) - inner_viewport_height
+  // (scroll region bottom aligned). The outer scroll view should not scroll.
+  inner_contents_ptr->ScrollRectToVisible(gfx::Rect(0, 405, 10, 10));
+  const int inner_viewport_height =
+      inner_test_api.contents_viewport()->height();
+  gfx::ScrollOffset inner_offset = inner_test_api.CurrentOffset();
+  EXPECT_EQ(415 - inner_viewport_height, inner_offset.y());
+  gfx::ScrollOffset outer_offset = outer_test_api.CurrentOffset();
+  EXPECT_EQ(0, outer_offset.y());
+
+  // Set focus to the inner scroll view's contents root. This should cause the
+  // outer scroll view to scroll to y=510 height=100 so that the y position of
+  // the outer content is at (510 + 100) - outer_viewport_height (scroll region
+  // bottom aligned). The inner scroll view should not scroll.
+  inner_contents_ptr->SetFocus();
+  const int outer_viewport_height =
+      outer_test_api.contents_viewport()->height();
+  inner_offset = inner_test_api.CurrentOffset();
+  EXPECT_EQ(415 - inner_viewport_height, inner_offset.y());
+  outer_offset = outer_test_api.CurrentOffset();
+  EXPECT_EQ(610 - outer_viewport_height, outer_offset.y());
+}
+
 // Verifies ClipHeightTo() uses the height of the content when it is between the
 // minimum and maximum height values.
 TEST_F(ScrollViewTest, ClipHeightToNormalContentHeight) {

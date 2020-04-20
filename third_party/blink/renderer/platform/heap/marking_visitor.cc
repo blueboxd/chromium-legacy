@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_page.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 
 namespace blink {
@@ -105,17 +106,13 @@ void MarkingVisitorCommon::VisitBackingStoreWeakly(
     weak_table_worklist_.Push(weak_desc);
 }
 
-bool MarkingVisitorCommon::VisitEphemeronKeyValuePair(
-    const void* key,
-    const void* value,
-    EphemeronTracingCallback key_trace_callback,
-    EphemeronTracingCallback value_trace_callback) {
-  const bool key_is_dead = key_trace_callback(this, key);
-  if (key_is_dead)
-    return true;
-  const bool value_is_dead = value_trace_callback(this, value);
-  DCHECK(!value_is_dead);
-  return false;
+void MarkingVisitorCommon::VisitEphemeron(const void* key,
+                                          const void* value,
+                                          TraceCallback value_trace_callback) {
+  if (!HeapObjectHeader::FromPayload(key)
+           ->IsMarked<HeapObjectHeader::AccessMode::kAtomic>())
+    return;
+  value_trace_callback(this, value);
 }
 
 void MarkingVisitorCommon::VisitBackingStoreOnly(
@@ -226,7 +223,9 @@ MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
 }
 
 void MarkingVisitor::DynamicallyMarkAddress(ConstAddress address) {
-  HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(address);
+  HeapObjectHeader* const header =
+      HeapObjectHeader::FromInnerAddress<HeapObjectHeader::AccessMode::kAtomic>(
+          address);
   DCHECK(header);
   DCHECK(!IsInConstruction(header));
   if (MarkHeaderNoTracing(header)) {

@@ -296,10 +296,9 @@ File::Error CannedSyncableFileSystem::OpenFileSystem() {
   if (backend()->sync_context()) {
     // Register 'this' as a sync status observer.
     RunOnThread(
-        io_task_runner_.get(),
-        FROM_HERE,
-        base::Bind(&CannedSyncableFileSystem::InitializeSyncStatusObserver,
-                   base::Unretained(this)));
+        io_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&CannedSyncableFileSystem::InitializeSyncStatusObserver,
+                       base::Unretained(this)));
   }
   return result_;
 }
@@ -606,8 +605,8 @@ void CannedSyncableFileSystem::DoVerifyFile(
   EXPECT_TRUE(io_task_runner_->RunsTasksInCurrentSequence());
   EXPECT_TRUE(is_filesystem_opened_);
   operation_runner()->CreateSnapshotFile(
-      url,
-      base::Bind(&OnCreateSnapshotFileAndVerifyData, expected_data, callback));
+      url, base::BindOnce(&OnCreateSnapshotFileAndVerifyData, expected_data,
+                          callback));
 }
 
 void CannedSyncableFileSystem::DoGetMetadataAndPlatformPath(
@@ -618,7 +617,8 @@ void CannedSyncableFileSystem::DoGetMetadataAndPlatformPath(
   EXPECT_TRUE(io_task_runner_->RunsTasksInCurrentSequence());
   EXPECT_TRUE(is_filesystem_opened_);
   operation_runner()->CreateSnapshotFile(
-      url, base::Bind(&OnCreateSnapshotFile, info, platform_path, callback));
+      url,
+      base::BindOnce(&OnCreateSnapshotFile, info, platform_path, callback));
 }
 
 void CannedSyncableFileSystem::DoReadDirectory(

@@ -144,15 +144,15 @@ void BluetoothEventRouter::StartDiscoverySessionImpl(
   if (pre_set_iter != pre_set_filter_map_.end()) {
     adapter->StartDiscoverySessionWithFilter(
         std::unique_ptr<device::BluetoothDiscoveryFilter>(pre_set_iter->second),
-        base::Bind(&BluetoothEventRouter::OnStartDiscoverySession,
-                   weak_ptr_factory_.GetWeakPtr(), extension_id, callback),
+        base::BindOnce(&BluetoothEventRouter::OnStartDiscoverySession,
+                       weak_ptr_factory_.GetWeakPtr(), extension_id, callback),
         error_callback);
     pre_set_filter_map_.erase(pre_set_iter);
     return;
   }
   adapter->StartDiscoverySession(
-      base::Bind(&BluetoothEventRouter::OnStartDiscoverySession,
-                 weak_ptr_factory_.GetWeakPtr(), extension_id, callback),
+      base::BindOnce(&BluetoothEventRouter::OnStartDiscoverySession,
+                     weak_ptr_factory_.GetWeakPtr(), extension_id, callback),
       error_callback);
 }
 
@@ -209,8 +209,8 @@ void BluetoothEventRouter::SetDiscoveryFilter(
   // new filter) in as this extension's session
   adapter->StartDiscoverySessionWithFilter(
       std::move(discovery_filter),
-      base::Bind(&BluetoothEventRouter::OnStartDiscoverySession,
-                 weak_ptr_factory_.GetWeakPtr(), extension_id, callback),
+      base::BindOnce(&BluetoothEventRouter::OnStartDiscoverySession,
+                     weak_ptr_factory_.GetWeakPtr(), extension_id, callback),
       error_callback);
 }
 

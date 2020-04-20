@@ -314,8 +314,8 @@ class FileSystemDirectoryURLLoader : public FileSystemEntryURLLoader {
         entry_url,
         FileSystemOperation::GET_METADATA_FIELD_SIZE |
             FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
-        base::BindRepeating(&FileSystemDirectoryURLLoader::DidGetMetadata,
-                            base::AsWeakPtr(this), index));
+        base::BindOnce(&FileSystemDirectoryURLLoader::DidGetMetadata,
+                       base::AsWeakPtr(this), index));
   }
 
   void DidGetMetadata(size_t index,

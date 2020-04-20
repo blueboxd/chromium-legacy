@@ -128,7 +128,7 @@ void LoginDisplayHostCommon::StartAppLaunch(const std::string& app_id,
   // Wait for the |CrosSettings| to become either trusted or permanently
   // untrusted.
   const CrosSettingsProvider::TrustedStatus status =
-      CrosSettings::Get()->PrepareTrustedValues(base::Bind(
+      CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(
           &LoginDisplayHostCommon::StartAppLaunch, weak_factory_.GetWeakPtr(),
           app_id, diagnostic_mode, is_auto_launch));
   if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
@@ -181,8 +181,8 @@ void LoginDisplayHostCommon::StartWebKiosk(const AccountId& account_id) {
   // untrusted.
   const CrosSettingsProvider::TrustedStatus status =
       CrosSettings::Get()->PrepareTrustedValues(
-          base::Bind(&LoginDisplayHostCommon::StartWebKiosk,
-                     weak_factory_.GetWeakPtr(), account_id));
+          base::BindOnce(&LoginDisplayHostCommon::StartWebKiosk,
+                         weak_factory_.GetWeakPtr(), account_id));
   if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
     return;
 

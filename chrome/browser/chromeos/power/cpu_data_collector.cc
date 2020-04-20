@@ -459,15 +459,16 @@ void CpuDataCollector::PostSampleCpuState() {
 
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&SampleCpuStateAsync, base::Unretained(cpu_count),
-                 base::Unretained(cpu_idle_state_names),
-                 base::Unretained(idle_samples),
-                 base::Unretained(cpu_freq_state_names),
-                 base::Unretained(freq_samples)),
-      base::Bind(&CpuDataCollector::SaveCpuStateSamplesOnUIThread,
-                 weak_ptr_factory_.GetWeakPtr(), base::Owned(cpu_count),
-                 base::Owned(cpu_idle_state_names), base::Owned(idle_samples),
-                 base::Owned(cpu_freq_state_names), base::Owned(freq_samples)));
+      base::BindOnce(&SampleCpuStateAsync, base::Unretained(cpu_count),
+                     base::Unretained(cpu_idle_state_names),
+                     base::Unretained(idle_samples),
+                     base::Unretained(cpu_freq_state_names),
+                     base::Unretained(freq_samples)),
+      base::BindOnce(
+          &CpuDataCollector::SaveCpuStateSamplesOnUIThread,
+          weak_ptr_factory_.GetWeakPtr(), base::Owned(cpu_count),
+          base::Owned(cpu_idle_state_names), base::Owned(idle_samples),
+          base::Owned(cpu_freq_state_names), base::Owned(freq_samples)));
 }
 
 void CpuDataCollector::SaveCpuStateSamplesOnUIThread(

@@ -137,7 +137,7 @@ class BlockingLoginTest
     InstallAttributes::LockResult result;
     InstallAttributes::Get()->LockDevice(
         policy::DEVICE_MODE_ENTERPRISE, domain, std::string(), "100200300",
-        base::Bind(&CopyLockResult, &loop, &result));
+        base::BindOnce(&CopyLockResult, &loop, &result));
     loop.Run();
     EXPECT_EQ(InstallAttributes::LOCK_SUCCESS, result);
     RunUntilIdle();

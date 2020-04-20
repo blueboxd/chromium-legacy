@@ -130,7 +130,7 @@ void ServiceProcessControl::SetMojoHandle(
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider> handle) {
   remote_interfaces_.Close();
   remote_interfaces_.Bind(std::move(handle));
-  remote_interfaces_.SetConnectionLostClosure(base::Bind(
+  remote_interfaces_.SetConnectionLostClosure(base::BindOnce(
       &ServiceProcessControl::OnChannelError, base::Unretained(this)));
 
   // TODO(hclam): Handle error connecting to channel.

@@ -460,7 +460,7 @@ BrowserPolicyConnectorChromeOS::CreatePolicyProviders() {
 void BrowserPolicyConnectorChromeOS::SetTimezoneIfPolicyAvailable() {
   typedef chromeos::CrosSettingsProvider Provider;
   Provider::TrustedStatus result =
-      chromeos::CrosSettings::Get()->PrepareTrustedValues(base::Bind(
+      chromeos::CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(
           &BrowserPolicyConnectorChromeOS::SetTimezoneIfPolicyAvailable,
           weak_ptr_factory_.GetWeakPtr()));
 

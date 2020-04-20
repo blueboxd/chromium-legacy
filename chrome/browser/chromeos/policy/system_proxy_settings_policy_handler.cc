@@ -34,7 +34,7 @@ SystemProxySettingsPolicyHandler::~SystemProxySettingsPolicyHandler() {}
 
 void SystemProxySettingsPolicyHandler::OnSystemProxySettingsPolicyChanged() {
   chromeos::CrosSettingsProvider::TrustedStatus status =
-      cros_settings_->PrepareTrustedValues(base::Bind(
+      cros_settings_->PrepareTrustedValues(base::BindOnce(
           &SystemProxySettingsPolicyHandler::OnSystemProxySettingsPolicyChanged,
           base::Unretained(this)));
   if (status != chromeos::CrosSettingsProvider::TRUSTED)

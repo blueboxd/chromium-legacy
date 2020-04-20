@@ -319,8 +319,8 @@ void LocalFileSyncContext::HandleRemoteDelete(
 
   file_system_context->operation_runner()->Remove(
       url_for_sync, true /* recursive */,
-      base::Bind(&LocalFileSyncContext::DidApplyRemoteChange,
-                 this, url, callback));
+      base::BindOnce(&LocalFileSyncContext::DidApplyRemoteChange, this, url,
+                     callback));
 }
 
 void LocalFileSyncContext::HandleRemoteAddOrUpdate(
@@ -339,7 +339,7 @@ void LocalFileSyncContext::HandleRemoteAddOrUpdate(
 
   file_system_context->operation_runner()->Remove(
       url_for_sync, true /* recursive */,
-      base::Bind(
+      base::BindOnce(
           &LocalFileSyncContext::DidRemoveExistingEntryForRemoteAddOrUpdate,
           this, base::RetainedRef(file_system_context), change, local_path, url,
           callback));
@@ -448,10 +448,12 @@ void LocalFileSyncContext::GetFileMetadata(
   FileSystemURL url_for_sync = CreateSyncableFileSystemURLForSync(
       file_system_context, url);
   file_system_context->operation_runner()->GetMetadata(
-      url_for_sync, FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
-                        FileSystemOperation::GET_METADATA_FIELD_SIZE |
-                        FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
-      base::Bind(&LocalFileSyncContext::DidGetFileMetadata, this, callback));
+      url_for_sync,
+      FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+          FileSystemOperation::GET_METADATA_FIELD_SIZE |
+          FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
+      base::BindOnce(&LocalFileSyncContext::DidGetFileMetadata, this,
+                     callback));
 }
 
 void LocalFileSyncContext::HasPendingLocalChanges(
@@ -579,8 +581,8 @@ void LocalFileSyncContext::ScheduleNotifyChangesUpdatedOnIOThread(
   } else if (!timer_on_io_->IsRunning()) {
     timer_on_io_->Start(
         FROM_HERE, NotifyChangesDuration(),
-        base::Bind(&LocalFileSyncContext::NotifyAvailableChangesOnIOThread,
-                   base::Unretained(this)));
+        base::BindOnce(&LocalFileSyncContext::NotifyAvailableChangesOnIOThread,
+                       base::Unretained(this)));
   }
 }
 

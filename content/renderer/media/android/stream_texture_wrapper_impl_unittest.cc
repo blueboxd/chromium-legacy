@@ -37,7 +37,7 @@ TEST_F(StreamTextureWrapperImplTest, ConstructionDestruction_ShouldSucceed) {
   stream_texture_wrapper->Initialize(
       base::DoNothing(), gfx::Size(0, 0),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-      base::BindRepeating(
+      base::BindOnce(
           [](int* result_out, bool result) { *result_out = result ? 1 : 2; },
           &result));
   base::RunLoop().RunUntilIdle();

@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_DATA_SOURCE_H_
 #define UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_DATA_SOURCE_H_
 
-#include <wayland-server-protocol-core.h>
+#include <wayland-server-protocol.h>
 
 #include <memory>
 #include <string>

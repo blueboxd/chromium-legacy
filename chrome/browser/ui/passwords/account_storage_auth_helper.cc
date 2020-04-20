@@ -13,7 +13,6 @@
 #include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/signin_view_controller.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/consent_level.h"
@@ -61,7 +60,13 @@ void AccountStorageAuthHelper::TriggerOptInReauth(
     return;
   }
 
-  signin_view_controller->ShowReauthPrompt(
+  // In the rare case of concurrent requests, only consider the first one.
+  if (reauth_abort_handle_) {
+    std::move(reauth_callback).Run(ReauthSucceeded(false));
+    return;
+  }
+
+  reauth_abort_handle_ = signin_view_controller->ShowReauthPrompt(
       primary_account_id,
       base::BindOnce(&AccountStorageAuthHelper::OnOptInReauthCompleted,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -81,6 +86,8 @@ void AccountStorageAuthHelper::TriggerSignIn(
 void AccountStorageAuthHelper::OnOptInReauthCompleted(
     base::OnceCallback<void(ReauthSucceeded)> reauth_callback,
     signin::ReauthResult result) {
+  reauth_abort_handle_.reset();
+
   bool succeeded = result == signin::ReauthResult::kSuccess;
   if (succeeded)
     password_feature_manager_->SetAccountStorageOptIn(true);

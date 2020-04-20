@@ -17,7 +17,7 @@ ExtensionFunction::ResponseAction
 MediaPerceptionPrivateGetStateFunction::Run() {
   MediaPerceptionAPIManager* manager =
       MediaPerceptionAPIManager::Get(browser_context());
-  manager->GetState(base::Bind(
+  manager->GetState(base::BindOnce(
       &MediaPerceptionPrivateGetStateFunction::GetStateCallback, this));
   return RespondLater();
 }
@@ -88,8 +88,8 @@ MediaPerceptionPrivateSetStateFunction::Run() {
       MediaPerceptionAPIManager::Get(browser_context());
   manager->SetState(
       params->state,
-      base::Bind(&MediaPerceptionPrivateSetStateFunction::SetStateCallback,
-                 this));
+      base::BindOnce(&MediaPerceptionPrivateSetStateFunction::SetStateCallback,
+                     this));
   return RespondLater();
 }
 

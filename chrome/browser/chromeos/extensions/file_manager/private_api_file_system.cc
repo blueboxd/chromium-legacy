@@ -502,7 +502,7 @@ void FileManagerPrivateInternalAddFileWatchFunction::
 
   watcher_manager->AddWatcher(
       file_system_url, false /* recursive */,
-      base::Bind(
+      base::BindOnce(
           &StatusCallbackToResponseCallback,
           base::Bind(&PostResponseCallbackTaskToUIThread,
                      base::Bind(&FileWatchFunctionBase::RespondWith, this))),
@@ -535,7 +535,7 @@ void FileManagerPrivateInternalRemoveFileWatchFunction::
 
   watcher_manager->RemoveWatcher(
       file_system_url, false /* recursive */,
-      base::Bind(
+      base::BindOnce(
           &StatusCallbackToResponseCallback,
           base::Bind(&PostResponseCallbackTaskToUIThread,
                      base::Bind(&FileWatchFunctionBase::RespondWith, this))));

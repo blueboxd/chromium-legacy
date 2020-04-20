@@ -385,7 +385,7 @@ void DnsProbeServiceImpl::SetupDnsConfigChangeNotifications() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   dns_config_change_manager_getter_.Run()->RequestNotifications(
       receiver_.BindNewPipeAndPassRemote());
-  receiver_.set_disconnect_handler(base::BindRepeating(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &DnsProbeServiceImpl::OnDnsConfigChangeManagerConnectionError,
       base::Unretained(this)));
 }

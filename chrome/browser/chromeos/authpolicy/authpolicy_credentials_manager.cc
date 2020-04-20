@@ -88,8 +88,8 @@ AuthPolicyCredentialsManager::AuthPolicyCredentialsManager(Profile* profile)
       base::Bind(
           &AuthPolicyCredentialsManager::OnUserKerberosFilesChangedCallback,
           weak_factory_.GetWeakPtr()),
-      base::Bind(&AuthPolicyCredentialsManager::OnSignalConnectedCallback,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&AuthPolicyCredentialsManager::OnSignalConnectedCallback,
+                     weak_factory_.GetWeakPtr()));
 
   SetupAccountManager(profile, user->GetAccountId());
 }

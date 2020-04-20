@@ -81,9 +81,9 @@ void StatusChangeChecker::StartBlockingWait() {
   DCHECK(!run_loop_.running());
 
   base::OneShotTimer timer;
-  timer.Start(FROM_HERE, timeout_,
-              base::BindRepeating(&StatusChangeChecker::OnTimeout,
-                                  base::Unretained(this)));
+  timer.Start(
+      FROM_HERE, timeout_,
+      base::BindOnce(&StatusChangeChecker::OnTimeout, base::Unretained(this)));
 
   run_loop_.Run();
 }

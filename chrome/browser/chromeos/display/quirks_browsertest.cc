@@ -58,8 +58,8 @@ class QuirksBrowserTest : public InProcessBrowserTest {
 
     quirks::QuirksManager::Get()->RequestIccProfilePath(
         product_id, std::string(),
-        base::Bind(&QuirksBrowserTest::OnQuirksClientFinished,
-                   base::Unretained(this)));
+        base::BindOnce(&QuirksBrowserTest::OnQuirksClientFinished,
+                       base::Unretained(this)));
 
     run_loop.Run();
 

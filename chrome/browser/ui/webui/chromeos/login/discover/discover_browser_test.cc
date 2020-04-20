@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager_observer.h"
-#include "chrome/browser/ui/webui/chromeos/login/discover/wait_for_did_start_navigate.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace chromeos {

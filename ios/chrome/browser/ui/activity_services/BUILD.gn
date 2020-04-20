@@ -17,7 +17,6 @@ source_set("activity_services") {
     "chrome_activity_item_source.mm",
     "chrome_activity_item_thumbnail_generator.h",
     "chrome_activity_item_thumbnail_generator.mm",
-    "share_protocol.h",
     "share_to_data.h",
     "share_to_data.mm",
     "share_to_data_builder.h",
@@ -59,8 +58,8 @@ source_set("activity_services") {
 source_set("coordinator") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "activity_service_legacy_coordinator.h",
-    "activity_service_legacy_coordinator.mm",
+    "activity_service_coordinator.h",
+    "activity_service_coordinator.mm",
   ]
   deps = [
     ":activity_services",

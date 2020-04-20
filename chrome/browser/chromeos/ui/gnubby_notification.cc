@@ -68,8 +68,8 @@ void GnubbyNotification::ShowNotification() {
       *GnubbyNotification::notification_prompt_);
   GnubbyNotification::update_dismiss_notification_timer_->Start(
       FROM_HERE, kNotificationTimeout,
-      base::BindRepeating(&GnubbyNotification::DismissNotification,
-                          base::Unretained(this)));
+      base::BindOnce(&GnubbyNotification::DismissNotification,
+                     base::Unretained(this)));
   GnubbyNotification::notificationActive = true;
 }
 

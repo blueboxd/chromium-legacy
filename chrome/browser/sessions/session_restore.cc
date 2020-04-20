@@ -144,7 +144,8 @@ class SessionRestoreImpl : public BrowserListObserver {
         SessionServiceFactory::GetForProfile(profile_);
     DCHECK(session_service);
     session_service->GetLastSession(
-        base::Bind(&SessionRestoreImpl::OnGotSession, base::Unretained(this)),
+        base::BindOnce(&SessionRestoreImpl::OnGotSession,
+                       base::Unretained(this)),
         &cancelable_task_tracker_);
 
     if (synchronous_) {

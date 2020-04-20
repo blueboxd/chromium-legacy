@@ -200,8 +200,8 @@ void SystemMonitor::UpdateObservedMetrics() {
   } else if (!refresh_timer_.IsRunning() ||
              refresh_interval != refresh_timer_.GetCurrentDelay()) {
     refresh_timer_.Start(FROM_HERE, refresh_interval,
-                         base::BindRepeating(&SystemMonitor::RefreshCallback,
-                                             base::Unretained(this)));
+                         base::BindOnce(&SystemMonitor::RefreshCallback,
+                                        base::Unretained(this)));
   }
 }
 
@@ -213,9 +213,9 @@ void SystemMonitor::RefreshCallback() {
       base::BindOnce(&SystemMonitor::NotifyObservers,
                      weak_factory_.GetWeakPtr()));
 
-  refresh_timer_.Start(FROM_HERE, refresh_timer_.GetCurrentDelay(),
-                       base::BindRepeating(&SystemMonitor::RefreshCallback,
-                                           base::Unretained(this)));
+  refresh_timer_.Start(
+      FROM_HERE, refresh_timer_.GetCurrentDelay(),
+      base::BindOnce(&SystemMonitor::RefreshCallback, base::Unretained(this)));
 }
 
 void SystemMonitor::NotifyObservers(SystemMonitor::MetricVector metrics) {

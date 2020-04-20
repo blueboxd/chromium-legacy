@@ -187,8 +187,8 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
       enterprise_management::DeviceRegisterRequest::BROWSER));
   registration_helper_->StartRegistration(
       identity_manager(), identity_manager()->GetPrimaryAccountId(),
-      base::Bind(&UserPolicySigninService::OnRegistrationComplete,
-                 base::Unretained(this)));
+      base::BindOnce(&UserPolicySigninService::OnRegistrationComplete,
+                     base::Unretained(this)));
 }
 
 void UserPolicySigninService::OnRegistrationComplete() {

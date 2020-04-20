@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include <wayland-server-protocol-core.h>
+#include <wayland-server-protocol.h>
 
 #include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"

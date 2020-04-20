@@ -106,7 +106,7 @@ EasyUnlockCreateKeysOperation::ChallengeCreator::ChallengeCreator(
 EasyUnlockCreateKeysOperation::ChallengeCreator::~ChallengeCreator() {}
 
 void EasyUnlockCreateKeysOperation::ChallengeCreator::Start() {
-  easy_unlock_client_->GenerateEcP256KeyPair(base::Bind(
+  easy_unlock_client_->GenerateEcP256KeyPair(base::BindOnce(
       &ChallengeCreator::OnEcKeyPairGenerated, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -131,8 +131,8 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::OnEcKeyPairGenerated(
   ec_public_key_ = ec_public_key;
   easy_unlock_client_->PerformECDHKeyAgreement(
       ec_private_key, device_pub_key,
-      base::Bind(&ChallengeCreator::OnEskGenerated,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChallengeCreator::OnEskGenerated,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EasyUnlockCreateKeysOperation::ChallengeCreator::OnEskGenerated(
@@ -150,8 +150,8 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::OnEskGenerated(
 void EasyUnlockCreateKeysOperation::ChallengeCreator::WrapTPMPublicKey() {
   easy_unlock_client_->WrapPublicKey(
       easy_unlock::kKeyAlgorithmRSA, tpm_pub_key_,
-      base::Bind(&ChallengeCreator::OnTPMPublicKeyWrapped,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChallengeCreator::OnTPMPublicKeyWrapped,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EasyUnlockCreateKeysOperation::ChallengeCreator::OnTPMPublicKeyWrapped(
@@ -175,8 +175,8 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::GeneratePayload() {
 
   easy_unlock_client_->CreateSecureMessage(
       session_key_, options,
-      base::Bind(&ChallengeCreator::OnPayloadMessageGenerated,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChallengeCreator::OnPayloadMessageGenerated,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EasyUnlockCreateKeysOperation::ChallengeCreator::OnPayloadMessageGenerated(
@@ -188,8 +188,8 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::OnPayloadMessageGenerated(
 
   easy_unlock_client_->UnwrapSecureMessage(
       payload_message, options,
-      base::Bind(&ChallengeCreator::OnPayloadGenerated,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChallengeCreator::OnPayloadGenerated,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EasyUnlockCreateKeysOperation::ChallengeCreator::OnPayloadGenerated(
@@ -208,8 +208,8 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::OnPayloadGenerated(
 
   easy_unlock_client_->CreateSecureMessage(
       payload, options,
-      base::Bind(&ChallengeCreator::OnChallengeGenerated,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChallengeCreator::OnChallengeGenerated,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EasyUnlockCreateKeysOperation::ChallengeCreator::OnChallengeGenerated(
@@ -297,8 +297,8 @@ void EasyUnlockCreateKeysOperation::OnChallengeCreated(size_t index,
   }
 
   SystemSaltGetter::Get()->GetSystemSalt(
-      base::Bind(&EasyUnlockCreateKeysOperation::OnGetSystemSalt,
-                 weak_ptr_factory_.GetWeakPtr(), index));
+      base::BindOnce(&EasyUnlockCreateKeysOperation::OnGetSystemSalt,
+                     weak_ptr_factory_.GetWeakPtr(), index));
 }
 
 void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
@@ -354,8 +354,8 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
       cryptohome::CreateAuthorizationRequest(std::string() /* label */,
                                              auth_key->GetSecret()),
       request,
-      base::Bind(&EasyUnlockCreateKeysOperation::OnKeyCreated,
-                 weak_ptr_factory_.GetWeakPtr(), index, user_key));
+      base::BindOnce(&EasyUnlockCreateKeysOperation::OnKeyCreated,
+                     weak_ptr_factory_.GetWeakPtr(), index, user_key));
 }
 
 void EasyUnlockCreateKeysOperation::OnKeyCreated(

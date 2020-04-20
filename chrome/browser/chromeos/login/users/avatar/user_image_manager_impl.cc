@@ -337,7 +337,8 @@ void UserImageManagerImpl::Job::LoadImage(base::FilePath image_path,
         parent_->background_task_runner_, image_path_,
         ChooseCodecFromPath(image_path_),
         0,  // Do not crop.
-        base::Bind(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), false));
+        base::BindOnce(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(),
+                       false));
   } else {
     NOTREACHED();
     NotifyJobDone();
@@ -384,7 +385,7 @@ void UserImageManagerImpl::Job::SetToImageData(
   user_image_loader::StartWithData(
       parent_->background_task_runner_, std::move(data),
       ImageDecoder::DEFAULT_CODEC, login::kMaxUserImageSize,
-      base::Bind(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), true));
+      base::BindOnce(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), true));
 }
 
 void UserImageManagerImpl::Job::SetToPath(const base::FilePath& path,
@@ -401,7 +402,7 @@ void UserImageManagerImpl::Job::SetToPath(const base::FilePath& path,
   user_image_loader::StartWithFilePath(
       parent_->background_task_runner_, path, ImageDecoder::DEFAULT_CODEC,
       resize ? login::kMaxUserImageSize : 0,
-      base::Bind(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), true));
+      base::BindOnce(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), true));
 }
 
 void UserImageManagerImpl::Job::OnLoadImageDone(
@@ -647,8 +648,8 @@ void UserImageManagerImpl::UserProfileCreated() {
         g_ignore_profile_data_download_delay_
             ? base::TimeDelta()
             : base::TimeDelta::FromSeconds(kProfileDataDownloadDelaySec),
-        base::Bind(&UserImageManagerImpl::DownloadProfileData,
-                   base::Unretained(this), kProfileDownloadReasonLoggedIn));
+        base::BindOnce(&UserImageManagerImpl::DownloadProfileData,
+                       base::Unretained(this), kProfileDownloadReasonLoggedIn));
     // Schedule periodic refreshes of the profile data.
     profile_download_periodic_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kProfileRefreshIntervalSec),
@@ -886,8 +887,8 @@ void UserImageManagerImpl::OnProfileDownloadFailure(
     profile_download_one_shot_timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromSeconds(kProfileDataDownloadRetryIntervalSec),
-        base::Bind(&UserImageManagerImpl::DownloadProfileData,
-                   base::Unretained(this), kProfileDownloadReasonRetry));
+        base::BindOnce(&UserImageManagerImpl::DownloadProfileData,
+                       base::Unretained(this), kProfileDownloadReasonRetry));
   }
 
   user_manager_->NotifyUserProfileImageUpdateFailed(*GetUser());

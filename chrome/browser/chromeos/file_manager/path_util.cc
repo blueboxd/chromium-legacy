@@ -474,7 +474,7 @@ void ConvertToContentUrls(
                                                       &file_path);
       if (documents_provider_root) {
         documents_provider_root->ResolveToContentUrl(
-            file_path, base::BindRepeating(single_content_url_callback, index));
+            file_path, base::BindOnce(single_content_url_callback, index));
         continue;
       }
     }

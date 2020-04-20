@@ -1544,6 +1544,7 @@ if (!is_android) {
 
     if (enable_dice_support) {
       sources += [
+        "../browser/policy/cloud/user_policy_signin_service_browsertest.cc",
         "../browser/signin/dice_browsertest.cc",
         "../browser/unified_consent/unified_consent_browsertest.cc",
       ]
@@ -2443,8 +2444,6 @@ if (!is_android) {
         "../browser/ui/webui/chromeos/login/discover/modules/discover_module_redeem_offers_test.cc",
         "../browser/ui/webui/chromeos/login/discover/modules/discover_module_set_wallpaper_test.cc",
         "../browser/ui/webui/chromeos/login/discover/modules/discover_module_sync_files_test.cc",
-        "../browser/ui/webui/chromeos/login/discover/wait_for_did_start_navigate.cc",
-        "../browser/ui/webui/chromeos/login/discover/wait_for_did_start_navigate.h",
         "../browser/ui/webui/chromeos/login/js_calls_container_test_api.cc",
         "../browser/ui/webui/chromeos/login/js_calls_container_test_api.h",
         "../browser/ui/webui/chromeos/login/oobe_display_chooser_browsertest.cc",

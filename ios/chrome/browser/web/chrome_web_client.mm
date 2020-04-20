@@ -265,8 +265,7 @@ std::string ChromeWebClient::GetProduct() const {
 }
 
 bool ChromeWebClient::ForceMobileVersionByDefault(const GURL& url) {
-  DCHECK(base::FeatureList::IsEnabled(
-      web::features::kUseDefaultUserAgentInWebClient));
+  DCHECK(web::features::UseWebClientDefaultUserAgent());
   if (base::FeatureList::IsEnabled(web::kMobileGoogleSRP)) {
     return google_util::IsGoogleSearchUrl(url);
   }
@@ -276,8 +275,7 @@ bool ChromeWebClient::ForceMobileVersionByDefault(const GURL& url) {
 web::UserAgentType ChromeWebClient::GetDefaultUserAgent(
     id<UITraitEnvironment> web_view,
     const GURL& url) {
-  DCHECK(base::FeatureList::IsEnabled(
-      web::features::kUseDefaultUserAgentInWebClient));
+  DCHECK(web::features::UseWebClientDefaultUserAgent());
   if (ForceMobileVersionByDefault(url))
     return web::UserAgentType::MOBILE;
   BOOL isRegularRegular = web_view.traitCollection.horizontalSizeClass ==

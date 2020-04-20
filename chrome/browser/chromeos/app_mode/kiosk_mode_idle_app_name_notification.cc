@@ -120,8 +120,8 @@ void KioskModeIdleAppNameNotification::ResetTimer() {
     timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kIdleAppNameNotificationTimeoutMs),
-        base::Bind(&KioskModeIdleAppNameNotification::OnTimeout,
-                   base::Unretained(this)));
+        base::BindOnce(&KioskModeIdleAppNameNotification::OnTimeout,
+                       base::Unretained(this)));
   }
 }
 

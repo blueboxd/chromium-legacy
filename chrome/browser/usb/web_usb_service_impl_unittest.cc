@@ -102,7 +102,7 @@ class MockDeviceManagerClient : public UsbDeviceManagerClient {
   mojo::PendingAssociatedRemote<UsbDeviceManagerClient>
   CreateInterfacePtrAndBind() {
     auto client = receiver_.BindNewEndpointAndPassRemote();
-    receiver_.set_disconnect_handler(base::BindRepeating(
+    receiver_.set_disconnect_handler(base::BindOnce(
         &MockDeviceManagerClient::OnConnectionError, base::Unretained(this)));
     return client;
   }

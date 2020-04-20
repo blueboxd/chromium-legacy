@@ -64,8 +64,9 @@ void ManifestUpdateTask::DidFinishLoad(
   params.valid_primary_icon = true;
   params.valid_manifest = true;
   InstallableManager::FromWebContents(web_contents())
-      ->GetData(params, base::Bind(&ManifestUpdateTask::OnDidGetInstallableData,
-                                   AsWeakPtr()));
+      ->GetData(params,
+                base::BindOnce(&ManifestUpdateTask::OnDidGetInstallableData,
+                               AsWeakPtr()));
 }
 
 // content::WebContentsObserver:

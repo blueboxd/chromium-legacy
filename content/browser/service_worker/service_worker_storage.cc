@@ -56,7 +56,8 @@ void MaybeNotifyWriteFailed(
   }
 }
 
-const base::FilePath::CharType kDatabaseName[] = FILE_PATH_LITERAL("Database");
+const base::FilePath::CharType kDatabaseName[] =
+    FILE_PATH_LITERAL("Database");
 const base::FilePath::CharType kDiskCacheName[] =
     FILE_PATH_LITERAL("ScriptCache");
 
@@ -67,7 +68,8 @@ ServiceWorkerStorage::InitialData::InitialData()
       next_version_id(blink::mojom::kInvalidServiceWorkerVersionId),
       next_resource_id(blink::mojom::kInvalidServiceWorkerResourceId) {}
 
-ServiceWorkerStorage::InitialData::~InitialData() = default;
+ServiceWorkerStorage::InitialData::~InitialData() {
+}
 
 ServiceWorkerStorage::DidDeleteRegistrationParams::DidDeleteRegistrationParams(
     int64_t registration_id,
@@ -894,8 +896,7 @@ void ServiceWorkerStorage::PurgeResources(
 }
 
 void ServiceWorkerStorage::ApplyPolicyUpdates(
-    const std::vector<storage::mojom::LocalStoragePolicyUpdatePtr>&
-        policy_updates) {
+    std::vector<storage::mojom::LocalStoragePolicyUpdatePtr> policy_updates) {
   for (const auto& update : policy_updates) {
     GURL url = update->origin.GetURL();
     if (!update->purge_on_shutdown)
@@ -1302,9 +1303,10 @@ void ServiceWorkerStorage::ReadInitialDataFromDB(
   std::unique_ptr<ServiceWorkerStorage::InitialData> data(
       new ServiceWorkerStorage::InitialData());
 
-  ServiceWorkerDatabase::Status status = database->GetNextAvailableIds(
-      &data->next_registration_id, &data->next_version_id,
-      &data->next_resource_id);
+  ServiceWorkerDatabase::Status status =
+      database->GetNextAvailableIds(&data->next_registration_id,
+                                    &data->next_version_id,
+                                    &data->next_resource_id);
   if (status != ServiceWorkerDatabase::Status::kOk) {
     original_task_runner->PostTask(
         FROM_HERE,

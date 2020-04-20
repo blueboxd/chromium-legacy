@@ -409,7 +409,7 @@ void SystemLogUploader::RefreshUploadSettings() {
   // If trusted values are not available, register this function to be called
   // back when they are available.
   chromeos::CrosSettings* settings = chromeos::CrosSettings::Get();
-  auto trust_status = settings->PrepareTrustedValues(base::Bind(
+  auto trust_status = settings->PrepareTrustedValues(base::BindOnce(
       &SystemLogUploader::RefreshUploadSettings, weak_factory_.GetWeakPtr()));
   if (trust_status != chromeos::CrosSettingsProvider::TRUSTED)
     return;

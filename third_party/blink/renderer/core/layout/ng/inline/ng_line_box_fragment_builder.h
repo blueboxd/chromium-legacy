@@ -21,6 +21,7 @@ namespace blink {
 
 class ComputedStyle;
 class NGInlineBreakToken;
+struct NGInlineItemResult;
 
 class CORE_EXPORT NGLineBoxFragmentBuilder final
     : public NGContainerFragmentBuilder {
@@ -75,9 +76,12 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   struct Child {
     DISALLOW_NEW();
 
+    scoped_refptr<NGFragmentItem> fragment_item;
     scoped_refptr<const NGLayoutResult> layout_result;
     scoped_refptr<const NGPhysicalTextFragment> fragment;
     const NGInlineItem* inline_item = nullptr;
+    // |NGInlineItemResult| to create a text fragment from.
+    NGInlineItemResult* item_result = nullptr;
     LayoutObject* out_of_flow_positioned_box = nullptr;
     LayoutObject* unpositioned_float = nullptr;
     // The offset of the border box, initially in this child coordinate system.
@@ -134,7 +138,16 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           inline_size(inline_size),
           children_count(children_count),
           bidi_level(bidi_level) {}
-    // Create an in-flow |NGPhysicalTextFragment|.
+    // Create an in-flow text fragment.
+    Child(NGInlineItemResult* item_result,
+          LayoutUnit block_offset,
+          LayoutUnit inline_size,
+          LayoutUnit text_height,
+          UBiDiLevel bidi_level)
+        : item_result(item_result),
+          rect(LayoutUnit(), block_offset, LayoutUnit(), text_height),
+          inline_size(inline_size),
+          bidi_level(bidi_level) {}
     Child(scoped_refptr<const NGPhysicalTextFragment> fragment,
           LogicalOffset offset,
           LayoutUnit inline_size,
@@ -170,9 +183,12 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           bidi_level(bidi_level) {}
 
     bool HasInFlowFragment() const {
+      if (fragment_item)
+        return true;
       if (fragment)
         return true;
-
+      if (item_result)
+        return true;
       if (layout_result && !layout_result->PhysicalFragment().IsFloating())
         return true;
 
@@ -279,6 +295,10 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     void MoveInInlineDirection(LayoutUnit, unsigned start, unsigned end);
     void MoveInBlockDirection(LayoutUnit);
     void MoveInBlockDirection(LayoutUnit, unsigned start, unsigned end);
+
+    // Create |NGPhysicalTextFragment| for all text children.
+    void CreateTextFragments(WritingMode writing_mode,
+                             const String& text_content);
 
    private:
     void WillInsertChild(unsigned index);

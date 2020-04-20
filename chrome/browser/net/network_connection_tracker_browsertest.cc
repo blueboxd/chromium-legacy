@@ -96,8 +96,9 @@ class NetworkConnectionTrackerBrowserTest : public InProcessBrowserTest {
           network_service_test.BindNewPipeAndPassReceiver());
       base::RunLoop run_loop;
       network_service_test->SimulateNetworkChange(
-          type, base::Bind([](base::RunLoop* run_loop) { run_loop->Quit(); },
-                           base::Unretained(&run_loop)));
+          type,
+          base::BindOnce([](base::RunLoop* run_loop) { run_loop->Quit(); },
+                         base::Unretained(&run_loop)));
       run_loop.Run();
       return;
     }

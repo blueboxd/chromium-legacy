@@ -207,8 +207,8 @@ class ForwardingAudioStreamFactoryTest : public RenderViewHostTestHarness {
       mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {
     stream_factory_.receiver_.Bind(std::move(receiver));
     stream_factory_.receiver_.set_disconnect_handler(
-        base::BindRepeating(&audio::FakeStreamFactory::ResetReceiver,
-                            base::Unretained(&stream_factory_)));
+        base::BindOnce(&audio::FakeStreamFactory::ResetReceiver,
+                       base::Unretained(&stream_factory_)));
   }
 
   base::WeakPtr<MockBroker> ExpectLoopbackBrokerConstruction(

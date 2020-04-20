@@ -121,7 +121,7 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     fetcher->SetURLLoaderFactoryForTesting(
         test_url_loader_factory_.GetSafeWeakWrapper());
-    fetcher->Fetch(base::Bind(
+    fetcher->Fetch(base::BindOnce(
         [](bool* output_fetch_success, std::string* output_auth_code,
            base::RunLoop* run_loop, bool fetch_success,
            const std::string& auth_code) {

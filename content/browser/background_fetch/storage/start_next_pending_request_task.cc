@@ -79,8 +79,8 @@ void StartNextPendingRequestTask::DidGetPendingRequests(
       {{ActiveRequestKey(active_request_.unique_id(),
                          active_request_.request_index()),
         active_request_.SerializeAsString()}},
-      base::BindRepeating(&StartNextPendingRequestTask::DidStoreActiveRequest,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&StartNextPendingRequestTask::DidStoreActiveRequest,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void StartNextPendingRequestTask::DidStoreActiveRequest(

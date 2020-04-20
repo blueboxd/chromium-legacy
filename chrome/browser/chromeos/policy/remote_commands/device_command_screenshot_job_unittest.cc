@@ -270,7 +270,7 @@ TEST_F(DeviceCommandScreenshotTest, Success) {
                           kMockUploadUrl);
   bool success = job->Run(
       base::Time::Now(), base::TimeTicks::Now(),
-      base::Bind(
+      base::BindOnce(
           &DeviceCommandScreenshotTest::VerifyResults, base::Unretained(this),
           base::Unretained(job.get()), RemoteCommandJob::SUCCEEDED,
           CreatePayloadFromResultCode(DeviceCommandScreenshotJob::SUCCESS)));
@@ -283,13 +283,13 @@ TEST_F(DeviceCommandScreenshotTest, FailureUserInput) {
       std::make_unique<MockScreenshotDelegate>(nullptr, false)));
   InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
                           kMockUploadUrl);
-  bool success =
-      job->Run(base::Time::Now(), base::TimeTicks::Now(),
-               base::Bind(&DeviceCommandScreenshotTest::VerifyResults,
-                          base::Unretained(this), base::Unretained(job.get()),
-                          RemoteCommandJob::FAILED,
-                          CreatePayloadFromResultCode(
-                              DeviceCommandScreenshotJob::FAILURE_USER_INPUT)));
+  bool success = job->Run(
+      base::Time::Now(), base::TimeTicks::Now(),
+      base::BindOnce(&DeviceCommandScreenshotTest::VerifyResults,
+                     base::Unretained(this), base::Unretained(job.get()),
+                     RemoteCommandJob::FAILED,
+                     CreatePayloadFromResultCode(
+                         DeviceCommandScreenshotJob::FAILURE_USER_INPUT)));
   EXPECT_TRUE(success);
   run_loop_.Run();
 }
@@ -304,11 +304,11 @@ TEST_F(DeviceCommandScreenshotTest, Failure) {
                           kMockUploadUrl);
   bool success = job->Run(
       base::Time::Now(), base::TimeTicks::Now(),
-      base::Bind(&DeviceCommandScreenshotTest::VerifyResults,
-                 base::Unretained(this), base::Unretained(job.get()),
-                 RemoteCommandJob::FAILED,
-                 CreatePayloadFromResultCode(
-                     DeviceCommandScreenshotJob::FAILURE_AUTHENTICATION)));
+      base::BindOnce(&DeviceCommandScreenshotTest::VerifyResults,
+                     base::Unretained(this), base::Unretained(job.get()),
+                     RemoteCommandJob::FAILED,
+                     CreatePayloadFromResultCode(
+                         DeviceCommandScreenshotJob::FAILURE_AUTHENTICATION)));
   EXPECT_TRUE(success);
   run_loop_.Run();
 }

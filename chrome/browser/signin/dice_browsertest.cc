@@ -160,7 +160,7 @@ std::unique_ptr<HttpResponse> HandleSigninURL(
     header_value = it->second;
 
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindRepeating(callback, header_value));
+                 base::BindOnce(callback, header_value));
 
   // Add the SIGNIN dice header.
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
@@ -302,7 +302,7 @@ std::unique_ptr<HttpResponse> HandleChromeSigninEmbeddedURL(
   if (it != request.headers.end())
     dice_request_header = it->second;
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindRepeating(callback, dice_request_header));
+                 base::BindOnce(callback, dice_request_header));
 
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
   http_response->AddCustomHeader("Cache-Control", "no-store");

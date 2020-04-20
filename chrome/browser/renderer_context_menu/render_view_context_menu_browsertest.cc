@@ -1162,7 +1162,7 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   bool response_received = false;
   chrome_render_frame->RequestImageForContextNode(
       0, gfx::Size(2048, 2048), chrome::mojom::ImageFormat::JPEG,
-      base::Bind(callback, &response_received, run_loop.QuitClosure()));
+      base::BindOnce(callback, &response_received, run_loop.QuitClosure()));
   run_loop.Run();
 
   // The browser should receive a response from the renderer, because the

@@ -34,6 +34,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -472,6 +473,11 @@ void TriggerAllFaviconLoading(BookmarkModel* model) {
 
 }  // namespace
 
+BookmarkUndoService* GetBookmarkUndoService(int index) {
+  return BookmarkUndoServiceFactory::GetForProfile(
+      sync_datatype_helper::test()->GetProfile(index));
+}
+
 BookmarkModel* GetBookmarkModel(int index) {
   return BookmarkModelFactory::GetForBrowserContext(
       sync_datatype_helper::test()->GetProfile(index));
@@ -659,7 +665,7 @@ void CheckFaviconExpired(int profile, const GURL& icon_url) {
   favicon_base::FaviconRawBitmapResult bitmap_result;
   favicon_service->GetRawFavicon(
       icon_url, favicon_base::IconType::kFavicon, 0,
-      base::Bind(&OnGotFaviconData, run_loop.QuitClosure(), &bitmap_result),
+      base::BindOnce(&OnGotFaviconData, run_loop.QuitClosure(), &bitmap_result),
       &task_tracker);
   run_loop.Run();
 
@@ -679,7 +685,7 @@ void CheckHasNoFavicon(int profile, const GURL& page_url) {
   favicon_service->GetRawFaviconForPageURL(
       page_url, {favicon_base::IconType::kFavicon}, 0,
       /*fallback_to_host=*/false,
-      base::Bind(&OnGotFaviconData, run_loop.QuitClosure(), &bitmap_result),
+      base::BindOnce(&OnGotFaviconData, run_loop.QuitClosure(), &bitmap_result),
       &task_tracker);
   run_loop.Run();
 
@@ -1124,8 +1130,8 @@ void BookmarkModelStatusChangeChecker::PostCheckExitCondition() {
   // that the checker doesn't immediately kick in while bookmarks are modified.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindRepeating(&BookmarkModelStatusChangeChecker::CheckExitCondition,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BookmarkModelStatusChangeChecker::CheckExitCondition,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 BookmarksMatchChecker::BookmarksMatchChecker() {

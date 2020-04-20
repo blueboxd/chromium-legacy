@@ -523,7 +523,7 @@ BluetoothTestBase::GetReentrantStartNotifySessionSuccessCallback(
     BluetoothRemoteGattCharacteristic* characteristic) {
   if (expected == Call::EXPECTED)
     ++expected_success_callback_calls_;
-  return base::Bind(
+  return base::BindOnce(
       &BluetoothTestBase::ReentrantStartNotifySessionSuccessCallback,
       weak_factory_.GetWeakPtr(), expected, characteristic);
 }

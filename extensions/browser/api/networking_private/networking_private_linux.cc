@@ -220,13 +220,13 @@ void NetworkingPrivateLinux::GetState(
   base::DictionaryValue* network_prop_ptr = network_properties.get();
   dbus_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&NetworkingPrivateLinux::GetCachedNetworkProperties,
-                 base::Unretained(this), guid,
-                 base::Unretained(network_prop_ptr),
-                 base::Unretained(error_ptr)),
-      base::Bind(&GetCachedNetworkPropertiesCallback, base::Passed(&error),
-                 base::Passed(&network_properties), success_callback,
-                 failure_callback));
+      base::BindOnce(&NetworkingPrivateLinux::GetCachedNetworkProperties,
+                     base::Unretained(this), guid,
+                     base::Unretained(network_prop_ptr),
+                     base::Unretained(error_ptr)),
+      base::BindOnce(&GetCachedNetworkPropertiesCallback, base::Passed(&error),
+                     base::Passed(&network_properties), success_callback,
+                     failure_callback));
 }
 
 void NetworkingPrivateLinux::GetCachedNetworkProperties(
@@ -309,12 +309,12 @@ void NetworkingPrivateLinux::GetNetworks(
   NetworkMap* network_map_ptr = network_map.get();
   dbus_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&NetworkingPrivateLinux::GetAllWiFiAccessPoints,
-                 base::Unretained(this), configured_only, visible_only, limit,
-                 base::Unretained(network_map_ptr)),
-      base::Bind(&NetworkingPrivateLinux::OnAccessPointsFound,
-                 base::Unretained(this), base::Passed(&network_map),
-                 success_callback, failure_callback));
+      base::BindOnce(&NetworkingPrivateLinux::GetAllWiFiAccessPoints,
+                     base::Unretained(this), configured_only, visible_only,
+                     limit, base::Unretained(network_map_ptr)),
+      base::BindOnce(&NetworkingPrivateLinux::OnAccessPointsFound,
+                     base::Unretained(this), base::Passed(&network_map),
+                     success_callback, failure_callback));
 }
 
 bool NetworkingPrivateLinux::GetNetworksForScanRequest() {
@@ -330,12 +330,12 @@ bool NetworkingPrivateLinux::GetNetworksForScanRequest() {
   NetworkMap* network_map_ptr = network_map.get();
   dbus_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&NetworkingPrivateLinux::GetAllWiFiAccessPoints,
-                 base::Unretained(this), false /* configured_only */,
-                 false /* visible_only */, 0 /* limit */,
-                 base::Unretained(network_map_ptr)),
-      base::Bind(&NetworkingPrivateLinux::OnAccessPointsFoundViaScan,
-                 base::Unretained(this), base::Passed(&network_map)));
+      base::BindOnce(&NetworkingPrivateLinux::GetAllWiFiAccessPoints,
+                     base::Unretained(this), false /* configured_only */,
+                     false /* visible_only */, 0 /* limit */,
+                     base::Unretained(network_map_ptr)),
+      base::BindOnce(&NetworkingPrivateLinux::OnAccessPointsFoundViaScan,
+                     base::Unretained(this), base::Passed(&network_map)));
 
   return true;
 }
@@ -518,10 +518,10 @@ void NetworkingPrivateLinux::StartConnect(
   std::string* error_ptr = error.get();
   dbus_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&NetworkingPrivateLinux::ConnectToNetwork,
-                 base::Unretained(this), guid, base::Unretained(error_ptr)),
-      base::Bind(&OnNetworkConnectOperationCompleted, base::Passed(&error),
-                 success_callback, failure_callback));
+      base::BindOnce(&NetworkingPrivateLinux::ConnectToNetwork,
+                     base::Unretained(this), guid, base::Unretained(error_ptr)),
+      base::BindOnce(&OnNetworkConnectOperationCompleted, base::Passed(&error),
+                     success_callback, failure_callback));
 }
 
 void NetworkingPrivateLinux::StartDisconnect(
@@ -537,10 +537,10 @@ void NetworkingPrivateLinux::StartDisconnect(
   std::string* error_ptr = error.get();
   dbus_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&NetworkingPrivateLinux::DisconnectFromNetwork,
-                 base::Unretained(this), guid, base::Unretained(error_ptr)),
-      base::Bind(&OnNetworkConnectOperationCompleted, base::Passed(&error),
-                 success_callback, failure_callback));
+      base::BindOnce(&NetworkingPrivateLinux::DisconnectFromNetwork,
+                     base::Unretained(this), guid, base::Unretained(error_ptr)),
+      base::BindOnce(&OnNetworkConnectOperationCompleted, base::Passed(&error),
+                     success_callback, failure_callback));
 }
 
 void NetworkingPrivateLinux::SetWifiTDLSEnabledState(

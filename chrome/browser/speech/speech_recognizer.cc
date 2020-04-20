@@ -193,7 +193,7 @@ void SpeechRecognizer::EventListener::StartSpeechTimeout(int timeout_seconds) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   speech_timeout_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(timeout_seconds),
-      base::Bind(&SpeechRecognizer::EventListener::SpeechTimeout, this));
+      base::BindOnce(&SpeechRecognizer::EventListener::SpeechTimeout, this));
 }
 
 void SpeechRecognizer::EventListener::StopSpeechTimeout() {

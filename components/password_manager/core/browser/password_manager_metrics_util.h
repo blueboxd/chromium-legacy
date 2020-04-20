@@ -10,7 +10,6 @@
 #include <string>
 
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 
@@ -432,6 +431,29 @@ enum class GenerationDialogChoice {
   // The user rejected the generated password.
   kRejected = 1,
   kMaxValue = kRejected
+};
+
+// Represents the state of the user wrt. sign-in and account-scoped storage.
+// Used for metrics.
+enum class PasswordAccountStorageUserState {
+  // Signed-out user (and no account storage opt-in exists).
+  kSignedOutUser,
+  // Signed-out user, but an account storage opt-in exists.
+  kSignedOutAccountStoreUser,
+  // Signed-in user, not opted in to the account storage (but will save
+  // passwords to the account storage by default).
+  kSignedInUser,
+  // Signed-in user, not opted in to the account storage, and has explicitly
+  // chosen to save passwords only on the device.
+  kSignedInUserSavingLocally,
+  // Signed-in user, opted in to the account storage, and saving passwords to
+  // the account storage.
+  kSignedInAccountStoreUser,
+  // Signed-in user and opted in to the account storage, but has chosen to save
+  // passwords only on the device.
+  kSignedInAccountStoreUserSavingLocally,
+  // Syncing user.
+  kSyncUser,
 };
 
 // Log the |reason| a user dismissed the password manager UI except save/update

@@ -605,6 +605,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInfobarUIRebootOnlyiOS13Name,
      flag_descriptions::kInfobarUIRebootOnlyiOS13Description, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kInfobarUIRebootOnlyiOS13)},
+    {"edit-bookmarks-ios", flag_descriptions::kEditBookmarksIOSName,
+     flag_descriptions::kEditBookmarksIOSDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEditBookmarksIOS)},
 };
 
 // Add all switches from experimental flags to |command_line|.

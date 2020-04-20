@@ -84,8 +84,9 @@ void FileFlusher::Job::Start() {
 
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&FileFlusher::Job::FlushAsync, base::Unretained(this)),
-      base::Bind(&FileFlusher::Job::FinishOnUIThread, base::Unretained(this)));
+      base::BindOnce(&FileFlusher::Job::FlushAsync, base::Unretained(this)),
+      base::BindOnce(&FileFlusher::Job::FinishOnUIThread,
+                     base::Unretained(this)));
 }
 
 void FileFlusher::Job::Cancel() {

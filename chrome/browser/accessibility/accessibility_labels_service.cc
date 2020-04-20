@@ -103,7 +103,7 @@ void AccessibilityLabelsService::Init() {
   // Log whether the feature is enabled after startup. This must be run on the
   // UI thread because it accesses prefs.
   content::BrowserAccessibilityState::GetInstance()
-      ->AddUIThreadHistogramCallback(base::BindRepeating(
+      ->AddUIThreadHistogramCallback(base::BindOnce(
           &AccessibilityLabelsService::UpdateAccessibilityLabelsHistograms,
           weak_factory_.GetWeakPtr()));
 }

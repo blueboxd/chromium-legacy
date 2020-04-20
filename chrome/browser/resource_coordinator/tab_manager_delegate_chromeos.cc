@@ -851,7 +851,7 @@ void TabManagerDelegate::DistributeOomScoreInRange(
 
   if (oom_scores_to_change.size()) {
     GetDebugDaemonClient()->SetOomScoreAdj(oom_scores_to_change,
-                                           base::Bind(&OnSetOomScoreAdj));
+                                           base::BindOnce(&OnSetOomScoreAdj));
   }
 }
 

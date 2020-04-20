@@ -418,8 +418,8 @@ void KeyPermissions::GetPermissionsForExtension(
     const PermissionsCallback& callback) {
   extensions_state_store_->GetExtensionValue(
       extension_id, kStateStorePlatformKeys,
-      base::Bind(&KeyPermissions::CreatePermissionObjectAndPassToCallback,
-                 weak_factory_.GetWeakPtr(), extension_id, callback));
+      base::BindOnce(&KeyPermissions::CreatePermissionObjectAndPassToCallback,
+                     weak_factory_.GetWeakPtr(), extension_id, callback));
 }
 
 bool KeyPermissions::CanUserGrantPermissionFor(

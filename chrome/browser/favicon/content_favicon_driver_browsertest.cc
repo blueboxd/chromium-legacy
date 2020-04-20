@@ -238,7 +238,7 @@ class ContentFaviconDriverTest : public InProcessBrowserTest {
     base::RunLoop loop;
     favicon_service()->GetFaviconForPageURL(
         url, {icon_type}, desired_size_in_dip,
-        base::Bind(
+        base::BindOnce(
             [](std::vector<favicon_base::FaviconRawBitmapResult>* save_results,
                base::RunLoop* loop,
                const std::vector<favicon_base::FaviconRawBitmapResult>&

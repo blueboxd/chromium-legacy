@@ -60,31 +60,31 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothMediaEndpointServiceProviderImpl
         kBluetoothMediaEndpointInterface, kSetConfiguration,
         base::Bind(&BluetoothMediaEndpointServiceProviderImpl::SetConfiguration,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&BluetoothMediaEndpointServiceProviderImpl::OnExported,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BluetoothMediaEndpointServiceProviderImpl::OnExported,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         kBluetoothMediaEndpointInterface, kSelectConfiguration,
         base::Bind(
             &BluetoothMediaEndpointServiceProviderImpl::SelectConfiguration,
             weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&BluetoothMediaEndpointServiceProviderImpl::OnExported,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BluetoothMediaEndpointServiceProviderImpl::OnExported,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         kBluetoothMediaEndpointInterface, kClearConfiguration,
         base::Bind(
             &BluetoothMediaEndpointServiceProviderImpl::ClearConfiguration,
             weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&BluetoothMediaEndpointServiceProviderImpl::OnExported,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BluetoothMediaEndpointServiceProviderImpl::OnExported,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         kBluetoothMediaEndpointInterface, kRelease,
         base::Bind(&BluetoothMediaEndpointServiceProviderImpl::Release,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&BluetoothMediaEndpointServiceProviderImpl::OnExported,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BluetoothMediaEndpointServiceProviderImpl::OnExported,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   ~BluetoothMediaEndpointServiceProviderImpl() override {

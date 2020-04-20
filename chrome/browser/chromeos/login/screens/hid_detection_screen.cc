@@ -452,10 +452,10 @@ void HIDDetectionScreen::InitializeAdapter(
 
 void HIDDetectionScreen::StartBTDiscoverySession() {
   adapter_->StartDiscoverySession(
-      base::Bind(&HIDDetectionScreen::OnStartDiscoverySession,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&HIDDetectionScreen::FindDevicesError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&HIDDetectionScreen::OnStartDiscoverySession,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&HIDDetectionScreen::FindDevicesError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HIDDetectionScreen::ProcessConnectedDevicesList() {

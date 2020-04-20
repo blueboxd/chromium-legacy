@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">Blue</translation>
 <translation id="1556537182262721003">Could not move extension directory into profile.</translation>
 <translation id="155865706765934889">Touchpad</translation>
+<translation id="1560763881671211335">G Suite for Education administrators determine which Google services their users can access while signed in to a G Suite for Education account. School administrators are required to provide or obtain consent for the use of the services by users who are minors.
+
+    Browsing data (including history, bookmarks and passwords) will be stored with the Family Link account and not with the school account.
+
+    Your Family Link parental settings will still apply. If you've previously blocked an app or site, you won't have to do it again.</translation>
 <translation id="1566049601598938765">Website</translation>
 <translation id="15662109988763471">The selected printer is not available or not installed correctly. Check your printer or try selecting another printer.</translation>
 <translation id="1567387640189251553">A different keyboard has been connected since you last entered your password. It may be attempting to steal your keystrokes.</translation>
@@ -1200,6 +1205,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="258095186877893873">Long</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Couldn't get Kerberos ticket. Try again, or contact your organisation's device admin. (Error code <ph name="ERROR_CODE" />).</translation>
+<translation id="2585013490795742997">Displaying one search result for <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">This tab is sharing your screen.</translation>
 <translation id="2586657967955657006">Clipboard</translation>
 <translation id="2586672484245266891">Please enter a shorter URL</translation>
@@ -1886,6 +1892,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3498215018399854026">We could not reach your parent at the moment. Please try again.</translation>
 <translation id="3500417806337761827">Error mounting share. Too many SMB shares are already mounted.</translation>
 <translation id="3505030558724226696">Revoke device access</translation>
+<translation id="3507132249039706973">Standard protection is on</translation>
 <translation id="3507421388498836150">Current Permissions for "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507888235492474624">Re-scan Bluetooth devices</translation>
 <translation id="3508492320654304609">Your sign-in data couldn't be deleted</translation>
@@ -3239,6 +3246,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5352033265844765294">Time Stamping</translation>
 <translation id="5353252989841766347">Export Passwords From Chrome</translation>
 <translation id="5355099869024327351">Allow the Assistant to show you notifications</translation>
+<translation id="5355191726083956201">Enhanced protection is on</translation>
 <translation id="5355926466126177564">The extension "<ph name="EXTENSION_NAME" />" has changed the page that is shown when you search from the Omnibox.</translation>
 <translation id="5359910752122114278">1 result</translation>
 <translation id="5360150013186312835">Show in Toolbar</translation>
@@ -3550,6 +3558,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="577322787686508614">Read operation is not permitted on: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Open Files app</translation>
 <translation id="577624874850706961">Search cookies</translation>
+<translation id="5776858208024364029">Displaying <ph name="NUMBER" /> search results for <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Open Chrome</translation>
 <translation id="5778747455497889540">Below is the randomly generated secure module password that has been assigned to your computer:</translation>
 <translation id="5780011244986845107">The folder that you selected contains sensitive files. Are you sure that you want to grant '<ph name="APP_NAME" />' permanent read access to this folder?</translation>
@@ -4106,6 +4115,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Search result <ph name="LIST_POSITION" /> of <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Press Enter to navigate to the section.</translation>
 <translation id="652492607360843641">You're connected to a <ph name="NETWORK_TYPE" /> network.</translation>
 <translation id="6527303717912515753">Share</translation>
 <translation id="6528513914570774834">Allow other users of this device to use this network</translation>
@@ -4117,6 +4127,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6532206849875187177">Security and sign-in</translation>
 <translation id="6532527800157340614">Sign-in failed because your access token could not be retrieved. Please check your network connection and try again.</translation>
 <translation id="6532663472409656417">Enterprise enrolled</translation>
+<translation id="6535331821390304775">Always allow <ph name="ORIGIN" /> to open links of this type in the associated app</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Note:<ph name="END_BOLD" /> Only enable if you know what you are doing or if you have been asked to do so, as collection of data may reduce performance.</translation>
 <translation id="6541638731489116978">This site has been blocked from accessing your motion sensors.</translation>
 <translation id="6545665334409411530">Repeat rate</translation>
@@ -4246,6 +4257,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6727969043791803658">Connected, <ph name="BATTERY_PERCENTAGE" />% battery</translation>
 <translation id="6732801395666424405">Certificates not loaded</translation>
 <translation id="6732900235521116609">Can’t remove shortcut</translation>
+<translation id="6734468588183300211">While in Incognito, sites can't use your cookies to see your browsing activity across different sites; for example, to personalise ads. Features on some sites may break.</translation>
 <translation id="6735304988756581115">Show cookies and other site data...</translation>
 <translation id="6736243959894955139">Address</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4258,6 +4270,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="674632704103926902">Enable tap dragging</translation>
 <translation id="6748217015615267851">Renderer: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">You may proceed, but only your synced data and settings will be restored. All local data will be lost.</translation>
+<translation id="6749006854028927059">Sites can't use your cookies to see your browsing activity across different sites, for example, to personalise ads. Features on some sites may break.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Incognito)</translation>
 <translation id="6757101664402245801">URL copied</translation>
 <translation id="6758056191028427665">Let us know how we’re doing.</translation>
@@ -4349,6 +4362,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="686664946474413495">Colour temperature</translation>
 <translation id="6871644448911473373">OCSP Responder: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">The password that you entered was rejected by the server.</translation>
+<translation id="6874170800191969835">Navigated to <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Cycle</translation>
 <translation id="6876469544038980967">Not helpful</translation>
 <translation id="6878422606530379992">Sensors allowed</translation>
@@ -4619,6 +4633,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7235737137505019098">Your security key does not have enough space for any more accounts.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, details</translation>
 <translation id="7240339475467890413">Connect to new hotspot?</translation>
+<translation id="7240847845291869311">Your child wants to add a G Suite for Education Google Account to this device. The <ph name="LINK_BEGIN" />G Suite for Education privacy notice<ph name="LINK_END" /> is meant to help G Suite for Education users and parents understand what data the product collects, why it is collected and what is done with it.</translation>
 <translation id="7241389281993241388">Please sign in to <ph name="TOKEN_NAME" /> to import the client certificate.</translation>
 <translation id="7241443820034350811">If your security key isn't listed, press its button for at least 5 seconds.</translation>
 <translation id="7243632151880336635">Clear and Sign Out</translation>
@@ -5201,6 +5216,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7987814697832569482">Always connect through this VPN</translation>
 <translation id="7988355189918024273">Enable accessibility features</translation>
 <translation id="7991296728590311172">Switch Access settings</translation>
+<translation id="7992202128769240372">Exceeds limit of <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">Couldn't install Plugin VM. Please try again, or contact your organisation's device administrator. Error code: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">EAP method</translation>
 <translation id="7997826902155442747">Process Priority</translation>

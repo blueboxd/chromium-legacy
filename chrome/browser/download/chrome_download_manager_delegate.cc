@@ -883,7 +883,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
           download, suggested_path, download_dir,
           base::FilePath() /* fallback_directory */, true,
           DownloadPathReservationTracker::UNIQUIFY,
-          base::BindRepeating(
+          base::BindOnce(
               &ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone,
               weak_ptr_factory_.GetWeakPtr(), native_window, callback));
       return;
@@ -1074,8 +1074,8 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrl(
     DVLOG(2) << __func__ << "() Start SB URL check for download = "
              << download->DebugString(false);
     if (service->MaybeCheckDownloadUrl(
-            download, base::Bind(&CheckDownloadUrlDone, callback,
-                                 is_content_check_supported))) {
+            download, base::BindOnce(&CheckDownloadUrlDone, callback,
+                                     is_content_check_supported))) {
       return;
     }
   }
@@ -1374,9 +1374,9 @@ void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
 #if defined(OS_ANDROID)
   DownloadControllerBase::Get()->AcquireFileAccessPermission(
       web_contents_getter,
-      base::Bind(&OnDownloadAcquireFileAccessPermissionDone,
-                 web_contents_getter, url, request_method,
-                 std::move(request_initiator), base::Passed(&cb)));
+      base::BindOnce(&OnDownloadAcquireFileAccessPermissionDone,
+                     web_contents_getter, url, request_method,
+                     std::move(request_initiator), base::Passed(&cb)));
 #else
   CheckCanDownload(web_contents_getter, url, request_method,
                    std::move(request_initiator),

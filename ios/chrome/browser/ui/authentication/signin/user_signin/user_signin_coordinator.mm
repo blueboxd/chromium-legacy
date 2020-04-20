@@ -494,6 +494,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
       presentingViewController:self.viewController];
   authenticationFlow.dispatcher = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), BrowsingDataCommands);
+  authenticationFlow.delegate = self.viewController;
 
   [self.mediator
       authenticateWithIdentity:self.unifiedConsentCoordinator.selectedIdentity

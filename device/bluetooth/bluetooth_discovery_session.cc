@@ -78,8 +78,9 @@ void BluetoothDiscoverySession::Stop(base::Closure success_callback,
                  std::move(success_callback));
   adapter_->RemoveDiscoverySession(
       this, discovery_session_removed_callback,
-      base::Bind(&BluetoothDiscoverySession::OnDiscoverySessionRemovalFailed,
-                 weak_ptr_factory_.GetWeakPtr(), std::move(error_callback)));
+      base::BindOnce(
+          &BluetoothDiscoverySession::OnDiscoverySessionRemovalFailed,
+          weak_ptr_factory_.GetWeakPtr(), std::move(error_callback)));
 }
 
 // static

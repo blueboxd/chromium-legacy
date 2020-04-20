@@ -109,9 +109,6 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
   void ClearUserDataForAllRegistrationsByKeyPrefix(
       const std::string& key_prefix,
       ClearUserDataForAllRegistrationsByKeyPrefixCallback callback) override;
-  void ApplyPolicyUpdates(
-      const std::vector<storage::mojom::LocalStoragePolicyUpdatePtr>
-          policy_updates) override;
 
   const std::unique_ptr<ServiceWorkerStorage> storage_;
 };

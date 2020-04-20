@@ -35,7 +35,7 @@ class Receiver {
         file_reader_(new FileReader(
             resource,
             FileReader::OptionalFileSequenceTask(),
-            base::Bind(&Receiver::DidReadFile, base::Unretained(this)))) {}
+            base::BindOnce(&Receiver::DidReadFile, base::Unretained(this)))) {}
 
   void Run() {
     file_reader_->Start();

@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
 #import "ios/public/provider/chrome/browser/voice/logo_animation_controller.h"
 
+@protocol ActivityServicePositioner;
 class Browser;
 @class BrowserContainerViewController;
 @class BrowserViewControllerDependencyFactory;
@@ -59,6 +60,10 @@ class Browser;
 // Presenter used to display accessories over the toolbar (e.g. Find In Page).
 @property(nonatomic, strong)
     ToolbarAccessoryPresenter* toolbarAccessoryPresenter;
+
+// Positioner for activity services attached to the toolbar.
+@property(nonatomic, readonly) id<ActivityServicePositioner>
+    activityServicePositioner;
 
 // Whether the receiver is currently the primary BVC.
 - (void)setPrimary:(BOOL)primary;

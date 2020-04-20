@@ -728,8 +728,8 @@ TEST_F(ProfileAttributesStorageTest, DownloadHighResAvatarTest) {
   // Simulate downloading a high-res avatar.
   ProfileAvatarDownloader avatar_downloader(
       kIconIndex,
-      base::Bind(&ProfileAttributesStorage::SaveAvatarImageAtPathNoCallback,
-                 base::Unretained(storage()), entry->GetPath()));
+      base::BindOnce(&ProfileAttributesStorage::SaveAvatarImageAtPathNoCallback,
+                     base::Unretained(storage()), entry->GetPath()));
 
   // Put a real bitmap into "bitmap": a 2x2 bitmap of green 32 bit pixels.
   SkBitmap bitmap;

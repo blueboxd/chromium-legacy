@@ -399,9 +399,8 @@ void RemoteToLocalSyncer::HandleMissingRemoteMetadata(
 
   drive_service()->GetFileResource(
       dirty_tracker_->file_id(),
-      base::Bind(&RemoteToLocalSyncer::DidGetRemoteMetadata,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&token)));
+      base::BindOnce(&RemoteToLocalSyncer::DidGetRemoteMetadata,
+                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
 }
 
 void RemoteToLocalSyncer::DidGetRemoteMetadata(

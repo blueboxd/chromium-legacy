@@ -107,9 +107,10 @@ void StatusUploader::RefreshUploadFrequency() {
   // If trusted values are not available, register this function to be called
   // back when they are available.
   chromeos::CrosSettings* settings = chromeos::CrosSettings::Get();
-  if (chromeos::CrosSettingsProvider::TRUSTED != settings->PrepareTrustedValues(
-          base::Bind(&StatusUploader::RefreshUploadFrequency,
-                     weak_factory_.GetWeakPtr()))) {
+  if (chromeos::CrosSettingsProvider::TRUSTED !=
+      settings->PrepareTrustedValues(
+          base::BindOnce(&StatusUploader::RefreshUploadFrequency,
+                         weak_factory_.GetWeakPtr()))) {
     return;
   }
 
@@ -217,8 +218,8 @@ void StatusUploader::OnStatusReceived(StatusCollectorParams callback_params) {
   client_->UploadDeviceStatus(callback_params.device_status.get(),
                               callback_params.session_status.get(),
                               callback_params.child_status.get(),
-                              base::Bind(&StatusUploader::OnUploadCompleted,
-                                         weak_factory_.GetWeakPtr()));
+                              base::BindOnce(&StatusUploader::OnUploadCompleted,
+                                             weak_factory_.GetWeakPtr()));
 }
 
 void StatusUploader::OnUploadCompleted(bool success) {

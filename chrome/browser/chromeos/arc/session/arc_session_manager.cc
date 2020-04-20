@@ -1011,8 +1011,8 @@ void ArcSessionManager::OnAndroidManagementChecked(
       sign_in_start_time_ = base::TimeTicks::Now();
       arc_sign_in_timer_.Start(
           FROM_HERE, GetArcSignInTimeout(),
-          base::Bind(&ArcSessionManager::OnArcSignInTimeout,
-                     weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&ArcSessionManager::OnArcSignInTimeout,
+                         weak_ptr_factory_.GetWeakPtr()));
       StartArc();
       // Since opt-in is an explicit user (or admin) action, relax the
       // cgroups restriction now.

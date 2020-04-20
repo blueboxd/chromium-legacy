@@ -189,10 +189,7 @@ class GC_PLUGIN_IGNORE(
                                TraceDescriptor,
                                WeakCallback,
                                const void*) final;
-  bool VisitEphemeronKeyValuePair(const void*,
-                                  const void*,
-                                  EphemeronTracingCallback,
-                                  EphemeronTracingCallback) final;
+  void VisitEphemeron(const void*, const void*, TraceCallback) final;
 
   // Unused Visitor overrides.
   void VisitWeak(const void* object,
@@ -348,27 +345,20 @@ class GC_PLUGIN_IGNORE(
    public:
     EphemeronItem(Traceable key,
                   Traceable value,
-                  Visitor::EphemeronTracingCallback key_tracing_callback,
-                  Visitor::EphemeronTracingCallback value_tracing_callback)
+                  TraceCallback value_tracing_callback)
         : key_(key),
           value_(value),
-          key_tracing_callback_(key_tracing_callback),
           value_tracing_callback_(value_tracing_callback) {}
 
     bool Process(V8EmbedderGraphBuilder* builder) {
-      Traceable key = nullptr;
-      {
-        TraceKeysScope scope(builder, &key);
-        key_tracing_callback_(builder, const_cast<void*>(key_));
-      }
-      if (!key) {
+      if (!key_) {
         // Don't trace the value if the key is nullptr.
         return true;
       }
-      if (!builder->StateExists(key))
+      if (!builder->StateExists(key_))
         return false;
       {
-        TraceValuesScope scope(builder, key);
+        TraceValuesScope scope(builder, key_);
         value_tracing_callback_(builder, const_cast<void*>(value_));
       }
       return true;
@@ -377,8 +367,7 @@ class GC_PLUGIN_IGNORE(
    private:
     Traceable key_;
     Traceable value_;
-    Visitor::EphemeronTracingCallback key_tracing_callback_;
-    Visitor::EphemeronTracingCallback value_tracing_callback_;
+    TraceCallback value_tracing_callback_;
   };
 
   State* GetOrCreateState(Traceable traceable,
@@ -437,32 +426,6 @@ class GC_PLUGIN_IGNORE(
     }
   }
 
-  class TraceKeysScope final {
-    STACK_ALLOCATED();
-    DISALLOW_COPY_AND_ASSIGN(TraceKeysScope);
-
-   public:
-    explicit TraceKeysScope(V8EmbedderGraphBuilder* graph_builder,
-                            Traceable* key_holder)
-        : graph_builder_(graph_builder), key_holder_(key_holder) {
-      DCHECK(!graph_builder_->trace_keys_scope_);
-      graph_builder_->trace_keys_scope_ = this;
-    }
-    ~TraceKeysScope() {
-      DCHECK(graph_builder_->trace_keys_scope_);
-      graph_builder_->trace_keys_scope_ = nullptr;
-    }
-
-    void SetKey(Traceable key) {
-      DCHECK(!*key_holder_);
-      *key_holder_ = key;
-    }
-
-   private:
-    V8EmbedderGraphBuilder* const graph_builder_;
-    Traceable* key_holder_;
-  };
-
   class TraceValuesScope final {
     STACK_ALLOCATED();
     DISALLOW_COPY_AND_ASSIGN(TraceValuesScope);
@@ -478,8 +441,6 @@ class GC_PLUGIN_IGNORE(
    private:
     V8EmbedderGraphBuilder* const graph_builder_;
   };
-
-  TraceKeysScope* trace_keys_scope_ = nullptr;
 
   v8::Isolate* const isolate_;
   Graph* const graph_;
@@ -665,10 +626,6 @@ void V8EmbedderGraphBuilder::VisitRoot(const void* object,
 
 void V8EmbedderGraphBuilder::Visit(const void* object,
                                    TraceDescriptor wrapper_descriptor) {
-  if (trace_keys_scope_) {
-    trace_keys_scope_->SetKey(object);
-    return;
-  }
   const void* traceable = wrapper_descriptor.base_object_payload;
   const GCInfo& info =
       GCInfo::From(HeapObjectHeader::FromPayload(traceable)->GcInfoIndex());
@@ -750,14 +707,12 @@ void V8EmbedderGraphBuilder::VisitBackingStoreWeakly(
   }
 }
 
-bool V8EmbedderGraphBuilder::VisitEphemeronKeyValuePair(
+void V8EmbedderGraphBuilder::VisitEphemeron(
     const void* key,
     const void* value,
-    EphemeronTracingCallback key_trace_callback,
-    EphemeronTracingCallback value_trace_callback) {
+    TraceCallback value_trace_callback) {
   ephemeron_worklist_.push_back(std::unique_ptr<EphemeronItem>{
-      new EphemeronItem(key, value, key_trace_callback, value_trace_callback)});
-  return true;
+      new EphemeronItem(key, value, value_trace_callback)});
 }
 
 void V8EmbedderGraphBuilder::VisitPendingActivities() {

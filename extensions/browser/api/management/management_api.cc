@@ -490,8 +490,8 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
       requirements_checker_ =
           std::make_unique<RequirementsChecker>(target_extension);
       requirements_checker_->Start(
-          base::Bind(&ManagementSetEnabledFunction::OnRequirementsChecked,
-                     this));  // This bind creates a reference.
+          base::BindOnce(&ManagementSetEnabledFunction::OnRequirementsChecked,
+                         this));  // This bind creates a reference.
       return RespondLater();
     }
     // Handle parental approval for child accounts that have the

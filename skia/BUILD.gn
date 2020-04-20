@@ -382,7 +382,6 @@ component("skia") {
 
   # Remove unused util sources.
   sources -= [
-    "//third_party/skia/src/utils/SkCamera.cpp",
     "//third_party/skia/src/utils/SkFrontBufferedStream.cpp",
     "//third_party/skia/src/utils/SkInterpolator.cpp",
     "//third_party/skia/src/utils/SkParsePath.cpp",

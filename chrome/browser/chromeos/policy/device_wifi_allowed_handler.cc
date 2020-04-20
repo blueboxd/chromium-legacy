@@ -32,8 +32,8 @@ DeviceWiFiAllowedHandler::~DeviceWiFiAllowedHandler() = default;
 void DeviceWiFiAllowedHandler::OnWiFiPolicyChanged() {
   chromeos::CrosSettingsProvider::TrustedStatus status =
       cros_settings_->PrepareTrustedValues(
-          base::BindRepeating(&DeviceWiFiAllowedHandler::OnWiFiPolicyChanged,
-                              weak_factory_.GetWeakPtr()));
+          base::BindOnce(&DeviceWiFiAllowedHandler::OnWiFiPolicyChanged,
+                         weak_factory_.GetWeakPtr()));
   if (status != chromeos::CrosSettingsProvider::TRUSTED)
     return;
 

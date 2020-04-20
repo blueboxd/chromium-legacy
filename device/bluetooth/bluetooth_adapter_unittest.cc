@@ -207,7 +207,7 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
                   run_loop_quit.Run();
                 }
               }),
-          base::Bind(&TestBluetoothAdapter::TestErrorCallback, this));
+          base::BindOnce(&TestBluetoothAdapter::TestErrorCallback, this));
     };
   }
 
@@ -216,8 +216,8 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
       base::RepeatingClosure run_loop_quit) {
     StartDiscoverySessionWithFilter(
         std::move(discovery_filter),
-        base::Bind(&TestBluetoothAdapter::OnStartDiscoverySessionQuitLoop, this,
-                   run_loop_quit),
+        base::BindOnce(&TestBluetoothAdapter::OnStartDiscoverySessionQuitLoop,
+                       this, run_loop_quit),
         base::DoNothing());
   }
 

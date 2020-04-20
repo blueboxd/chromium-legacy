@@ -30,8 +30,8 @@ EasyUnlockRemoveKeysOperation::~EasyUnlockRemoveKeysOperation() {}
 void EasyUnlockRemoveKeysOperation::Start() {
   if (user_context_.GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN) {
     SystemSaltGetter::Get()->GetSystemSalt(
-        base::Bind(&EasyUnlockRemoveKeysOperation::OnGetSystemSalt,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&EasyUnlockRemoveKeysOperation::OnGetSystemSalt,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -57,8 +57,8 @@ void EasyUnlockRemoveKeysOperation::RemoveKey() {
       cryptohome::CreateAuthorizationRequest(auth_key->GetLabel(),
                                              auth_key->GetSecret()),
       request,
-      base::Bind(&EasyUnlockRemoveKeysOperation::OnKeyRemoved,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EasyUnlockRemoveKeysOperation::OnKeyRemoved,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EasyUnlockRemoveKeysOperation::OnKeyRemoved(

@@ -279,8 +279,8 @@ class DataItemTest : public testing::Test {
     base::RunLoop run_loop;
     task_runner_->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&DataItemTest::ReleaseValueStoreCache,
-                   base::Unretained(this)),
+        base::BindOnce(&DataItemTest::ReleaseValueStoreCache,
+                       base::Unretained(this)),
         run_loop.QuitClosure());
     run_loop.Run();
   }

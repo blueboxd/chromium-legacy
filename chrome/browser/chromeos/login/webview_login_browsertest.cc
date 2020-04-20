@@ -118,7 +118,7 @@ void InjectCookie(content::StoragePartition* storage_partition) {
   cookie_manager->SetCanonicalCookie(
       cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
       net::CookieOptions(),
-      base::Bind(&InjectCookieDoneCallback, run_loop.QuitClosure()));
+      base::BindOnce(&InjectCookieDoneCallback, run_loop.QuitClosure()));
   run_loop.Run();
 }
 

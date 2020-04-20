@@ -60,12 +60,12 @@ class CachedPolicyKeyLoaderTest : public testing::Test {
   void OnPolicyKeyLoaded() { ++policy_key_loaded_callback_invocations_; }
 
   void CallEnsurePolicyKeyLoaded() {
-    cached_policy_key_loader_->EnsurePolicyKeyLoaded(base::Bind(
+    cached_policy_key_loader_->EnsurePolicyKeyLoaded(base::BindOnce(
         &CachedPolicyKeyLoaderTest::OnPolicyKeyLoaded, base::Unretained(this)));
   }
 
   void CallReloadPolicyKey() {
-    cached_policy_key_loader_->ReloadPolicyKey(base::Bind(
+    cached_policy_key_loader_->ReloadPolicyKey(base::BindOnce(
         &CachedPolicyKeyLoaderTest::OnPolicyKeyLoaded, base::Unretained(this)));
   }
 

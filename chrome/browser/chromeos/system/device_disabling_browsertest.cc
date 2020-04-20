@@ -161,9 +161,8 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   // try to show the offline error screen.
   base::RunLoop connect_run_loop;
   DBusThreadManager::Get()->GetShillServiceClient()->Connect(
-      dbus::ObjectPath("/service/eth1"),
-      connect_run_loop.QuitClosure(),
-      base::Bind(&ErrorCallbackFunction));
+      dbus::ObjectPath("/service/eth1"), connect_run_loop.QuitClosure(),
+      base::BindOnce(&ErrorCallbackFunction));
   connect_run_loop.Run();
 
   // Skip to the login screen.

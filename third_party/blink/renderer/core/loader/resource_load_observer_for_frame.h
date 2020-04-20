@@ -15,16 +15,17 @@
 namespace blink {
 
 class CoreProbeSink;
-class FrameOrImportedDocument;
+class Document;
+class DocumentLoader;
 class ResourceFetcherProperties;
 
 // ResourceLoadObserver implementation associated with a frame.
 class CORE_EXPORT ResourceLoadObserverForFrame final
     : public ResourceLoadObserver {
  public:
-  ResourceLoadObserverForFrame(
-      const FrameOrImportedDocument& frame_or_imported_document,
-      const ResourceFetcherProperties& properties);
+  ResourceLoadObserverForFrame(DocumentLoader& loader,
+                               Document& document,
+                               const ResourceFetcherProperties& properties);
   ~ResourceLoadObserverForFrame() override;
 
   // ResourceLoadObserver implementation.
@@ -63,11 +64,10 @@ class CORE_EXPORT ResourceLoadObserverForFrame final
   CoreProbeSink* GetProbe();
   void CountUsage(WebFeature);
 
-  // There are some overlap between |frame_or_imported_document| and
-  // |fetcher_properties_|.
-  // Use this when you want to access frame, document, etc. directly.
-  const Member<const FrameOrImportedDocument> frame_or_imported_document_;
-  // Use this whenever possible.
+  // There are some overlap between |document_loader_|, |document_| and
+  // |fetcher_properties_|. Use |fetcher_properties_| whenever possible.
+  const Member<DocumentLoader> document_loader_;
+  const Member<Document> document_;
   const Member<const ResourceFetcherProperties> fetcher_properties_;
 };
 

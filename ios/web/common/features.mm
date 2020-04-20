@@ -48,5 +48,12 @@ const base::Feature kIOSLookalikeUrlNavigationSuggestionsUI{
     "IOSLookalikeUrlNavigationSuggestionsUI",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+bool UseWebClientDefaultUserAgent() {
+  if (@available(iOS 13, *)) {
+    return base::FeatureList::IsEnabled(kUseDefaultUserAgentInWebClient);
+  }
+  return false;
+}
+
 }  // namespace features
 }  // namespace web

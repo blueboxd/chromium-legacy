@@ -29,8 +29,8 @@ class NSSCertDatabaseChromeOSManager : public base::SupportsUserData::Data {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     crypto::ScopedPK11Slot private_slot(crypto::GetPrivateSlotForChromeOSUser(
         username_hash,
-        base::Bind(&NSSCertDatabaseChromeOSManager::DidGetPrivateSlot,
-                   weak_ptr_factory_.GetWeakPtr())));
+        base::BindOnce(&NSSCertDatabaseChromeOSManager::DidGetPrivateSlot,
+                       weak_ptr_factory_.GetWeakPtr())));
     if (private_slot)
       DidGetPrivateSlot(std::move(private_slot));
   }

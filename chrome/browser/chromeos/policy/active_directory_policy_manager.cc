@@ -248,8 +248,9 @@ UserActiveDirectoryPolicyManager::UserActiveDirectoryPolicyManager(
   if (waiting_for_initial_policy_fetch_) {
     initial_policy_timeout_.Start(
         FROM_HERE, initial_policy_fetch_timeout,
-        base::Bind(&UserActiveDirectoryPolicyManager::OnBlockingFetchTimeout,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(
+            &UserActiveDirectoryPolicyManager::OnBlockingFetchTimeout,
+            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

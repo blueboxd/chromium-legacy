@@ -38,11 +38,11 @@ class BlobMediaDataSource : public chrome::mojom::MediaDataSource {
   void StartBlobRequest(chrome::mojom::MediaDataSource::ReadCallback callback,
                         int64_t position,
                         int64_t length) {
-    BlobReader::Read(browser_context_, blob_uuid_,
-                     base::BindRepeating(&BlobMediaDataSource::OnBlobReaderDone,
-                                         weak_factory_.GetWeakPtr(),
-                                         base::Passed(&callback)),
-                     position, length);
+    BlobReader::Read(
+        browser_context_, blob_uuid_,
+        base::BindOnce(&BlobMediaDataSource::OnBlobReaderDone,
+                       weak_factory_.GetWeakPtr(), base::Passed(&callback)),
+        position, length);
   }
 
   void OnBlobReaderDone(chrome::mojom::MediaDataSource::ReadCallback callback,

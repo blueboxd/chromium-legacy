@@ -80,7 +80,6 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
     private final WindowAndroid mWindowAndroid;
     private final WebContents mWebContents;
-    private final PermissionParamsListBuilder mPermissionParamsListBuilder;
     private final PageInfoControllerDelegate mDelegate;
 
     // A pointer to the C++ object for this UI.
@@ -233,8 +232,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         if (isSheet(activity)) mView.setBackgroundColor(Color.WHITE);
         // TODO(crbug.com/1040091): Remove when cookie controls are launched.
         boolean showTitle = viewParams.cookieControlsShown;
-        mPermissionParamsListBuilder = new PermissionParamsListBuilder(
-                activity, mWindowAndroid, mFullUrl, showTitle, this, mView::setPermissions);
+        mDelegate.createPermissionParamsListBuilder(
+                mWindowAndroid, mFullUrl, showTitle, this, mView::setPermissions);
 
         mNativePageInfoController = PageInfoControllerJni.get().init(this, mWebContents);
         mDelegate.createCookieControlsBridge(this);
@@ -296,7 +295,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     @CalledByNative
     private void addPermissionSection(
             String name, int type, @ContentSettingValues int currentSettingValue) {
-        mPermissionParamsListBuilder.addPermissionEntry(name, type, currentSettingValue);
+        mDelegate.addPermissionEntry(name, type, currentSettingValue);
     }
 
     /**
@@ -304,7 +303,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      */
     @CalledByNative
     private void updatePermissionDisplay() {
-        mView.setPermissions(mPermissionParamsListBuilder.build());
+        mDelegate.updatePermissionDisplay(mView);
     }
 
     /**

@@ -222,8 +222,8 @@ void ViscaWebcam::Send(const std::vector<char>& command,
   if (commands_.size() == 1) {
     serial_connection_->Send(
         std::vector<uint8_t>(command.begin(), command.end()),
-        base::Bind(&ViscaWebcam::OnSendCompleted, base::Unretained(this),
-                   callback));
+        base::BindOnce(&ViscaWebcam::OnSendCompleted, base::Unretained(this),
+                       callback));
   }
 }
 
@@ -351,8 +351,8 @@ void ViscaWebcam::ProcessNextCommand() {
   const CommandCompleteCallback next_callback = commands_.front().second;
   serial_connection_->Send(
       std::vector<uint8_t>(next_command.begin(), next_command.end()),
-      base::Bind(&ViscaWebcam::OnSendCompleted, base::Unretained(this),
-                 next_callback));
+      base::BindOnce(&ViscaWebcam::OnSendCompleted, base::Unretained(this),
+                     next_callback));
 }
 
 void ViscaWebcam::GetPan(const GetPTZCompleteCallback& callback) {

@@ -187,8 +187,9 @@ class LocalFileSyncContextTest : public testing::Test {
     ASSERT_TRUE(io_task_runner_->RunsTasksInCurrentSequence());
     file_error_ = base::File::FILE_ERROR_FAILED;
     file_system->operation_runner()->Truncate(
-        url, 1, base::Bind(&LocalFileSyncContextTest::DidModifyFile,
-                           base::Unretained(this)));
+        url, 1,
+        base::BindOnce(&LocalFileSyncContextTest::DidModifyFile,
+                       base::Unretained(this)));
   }
 
   base::File::Error WaitUntilModifyFileIsDone() {

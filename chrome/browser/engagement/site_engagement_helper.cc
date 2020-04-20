@@ -84,7 +84,7 @@ void SiteEngagementService::Helper::PeriodicTracker::StartTimer(
     base::TimeDelta delay) {
   pause_timer_->Start(
       FROM_HERE, delay,
-      base::Bind(
+      base::BindOnce(
           &SiteEngagementService::Helper::PeriodicTracker::TrackingStarted,
           base::Unretained(this)));
 }

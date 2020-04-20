@@ -110,7 +110,7 @@ bool MediaInternalsAudioFocusHelper::EnsureServiceConnection() {
   if (!audio_focus_.is_bound()) {
     GetMediaSessionService().BindAudioFocusManager(
         audio_focus_.BindNewPipeAndPassReceiver());
-    audio_focus_.set_disconnect_handler(base::BindRepeating(
+    audio_focus_.set_disconnect_handler(base::BindOnce(
         &MediaInternalsAudioFocusHelper::OnMojoError, base::Unretained(this)));
   }
 
@@ -119,15 +119,15 @@ bool MediaInternalsAudioFocusHelper::EnsureServiceConnection() {
     GetMediaSessionService().BindAudioFocusManagerDebug(
         audio_focus_debug_.BindNewPipeAndPassReceiver());
     audio_focus_debug_.set_disconnect_handler(
-        base::BindRepeating(&MediaInternalsAudioFocusHelper::OnDebugMojoError,
-                            base::Unretained(this)));
+        base::BindOnce(&MediaInternalsAudioFocusHelper::OnDebugMojoError,
+                       base::Unretained(this)));
   }
 
   // Add the observer to receive audio focus events.
   if (!receiver_.is_bound()) {
     audio_focus_->AddObserver(receiver_.BindNewPipeAndPassRemote());
 
-    receiver_.set_disconnect_handler(base::BindRepeating(
+    receiver_.set_disconnect_handler(base::BindOnce(
         &MediaInternalsAudioFocusHelper::OnMojoError, base::Unretained(this)));
   }
 

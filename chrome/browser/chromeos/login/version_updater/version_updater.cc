@@ -107,7 +107,7 @@ void VersionUpdater::SetUpdateOverCellularOneTimePermission() {
       ->GetUpdateEngineClient()
       ->SetUpdateOverCellularOneTimePermission(
           update_info_.update_version, update_info_.update_size,
-          base::BindRepeating(
+          base::BindOnce(
               &VersionUpdater::OnSetUpdateOverCellularOneTimePermission,
               weak_ptr_factory_.GetWeakPtr()));
 }
@@ -175,8 +175,8 @@ void VersionUpdater::RequestUpdateCheck() {
   DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
   VLOG(1) << "Initiate update check";
   DBusThreadManager::Get()->GetUpdateEngineClient()->RequestUpdateCheck(
-      base::BindRepeating(&VersionUpdater::OnUpdateCheckStarted,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&VersionUpdater::OnUpdateCheckStarted,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VersionUpdater::UpdateStatusChanged(

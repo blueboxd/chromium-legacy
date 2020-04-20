@@ -470,7 +470,7 @@ bool WebViewInternalExecuteCodeFunction::LoadFile(const std::string& file,
   if (!extension()) {
     if (LoadFileForWebUI(
             *details_->file,
-            base::Bind(
+            base::BindOnce(
                 &WebViewInternalExecuteCodeFunction::DidLoadAndLocalizeFile,
                 this, file)))
       return true;

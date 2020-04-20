@@ -305,12 +305,9 @@ int32_t FileIOResource::Write(int64_t offset,
       int64_t result =
           file_system_resource_->AsPPB_FileSystem_API()->RequestQuota(
               increase,
-              base::Bind(&FileIOResource::OnRequestWriteQuotaComplete,
-                         this,
-                         offset,
-                         base::Passed(&copy),
-                         bytes_to_write,
-                         callback));
+              base::BindOnce(&FileIOResource::OnRequestWriteQuotaComplete, this,
+                             offset, base::Passed(&copy), bytes_to_write,
+                             callback));
       if (result == PP_OK_COMPLETIONPENDING)
         return PP_OK_COMPLETIONPENDING;
       DCHECK(result == increase);
@@ -339,9 +336,8 @@ int32_t FileIOResource::SetLength(int64_t length,
       int32_t result =
           file_system_resource_->AsPPB_FileSystem_API()->RequestQuota(
               increase,
-              base::Bind(&FileIOResource::OnRequestSetLengthQuotaComplete,
-                         this,
-                         length, callback));
+              base::BindOnce(&FileIOResource::OnRequestSetLengthQuotaComplete,
+                             this, length, callback));
       if (result == PP_OK_COMPLETIONPENDING) {
         state_manager_.SetPendingOperation(
             FileIOStateManager::OPERATION_EXCLUSIVE);

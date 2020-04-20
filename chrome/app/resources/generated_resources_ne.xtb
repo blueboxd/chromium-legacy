@@ -73,7 +73,7 @@
 <translation id="1093457606523402488">दर्शनीय नेटवर्कहरू:</translation>
 <translation id="1094607894174825014">पढ्ने वा लेख्ने कार्य अमान्य अफसेटसहित "<ph name="DEVICE_NAME" />" मा अनुरोध गरिएको थियो</translation>
 <translation id="1097658378307015415">साइन इन गर्नु अघि, कृपया सञ्जाल <ph name="NETWORK_ID" /> सक्रिय गर्नको लागि पाहुनाको रूपमा प्रवेश गर्नुहोस्</translation>
-<translation id="1099962274138857708"><ph name="DEVICE_NAME" /> बाट छवि कपि गरियो</translation>
+<translation id="1099962274138857708"><ph name="DEVICE_NAME" /> बाट छवि कपी गरियो</translation>
 <translation id="1103523840287552314">सँधै अनुवाद गर्नुहोस् <ph name="LANGUAGE" /></translation>
 <translation id="1104038495841596279">हामीले तपाईंको SIM कार्ड पत्ता लगाउन सकेनौँ</translation>
 <translation id="1108600514891325577">&amp;रोक्नुहोस्</translation>
@@ -3229,7 +3229,7 @@
 <translation id="5341980496415249280">कृपया प्रतीक्षा गर्नुहोस्, प्याकिङ गर्दै...</translation>
 <translation id="5342091991439452114">PIN अनिवार्य रूपले कम्तीमा <ph name="MINIMUM" /> अङ्कको हुनु पर्छ</translation>
 <translation id="5344036115151554031">Linux पुनर्स्थापना गर्दै</translation>
-<translation id="535123479159372765">अर्को यन्त्रबाट पाठ कपि गरियो</translation>
+<translation id="535123479159372765">अर्को यन्त्रबाट पाठ कपी गरियो</translation>
 <translation id="5352033265844765294">समय स्याम्पिङ</translation>
 <translation id="5353252989841766347">Chrome का पासवर्डहरूलाई निर्यात गर्नुहोस्</translation>
 <translation id="5355099869024327351">सहायकलाई तपाईंलाई सूचनाहरू देखाउन दिनुहोस्</translation>
@@ -3792,7 +3792,7 @@
 <translation id="6097480669505687979">तपाईँले ठाउँ खाली गर्नुभएन भने प्रयोगकर्ता र डेटालाई स्वतः हटाइन सक्छ।</translation>
 <translation id="6097600385983390082">आवाजमार्फत खोजी गर्ने सुविधा बन्द गरियो</translation>
 <translation id="6098793583803863900">खतरापूर्ण सामग्री छ कि भनी पत्ता लगाउन एउटा अज्ञात फाइल स्क्यान गरिँदै छ।</translation>
-<translation id="609942571968311933"><ph name="DEVICE_NAME" /> बाट पाठ कपि गरियो</translation>
+<translation id="609942571968311933"><ph name="DEVICE_NAME" /> बाट पाठ कपी गरियो</translation>
 <translation id="6100736666660498114">सुरुवात मेनु</translation>
 <translation id="6101226222197207147">नयाँ एप थपियो (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">सुरक्षासम्बन्धी उन्नत सुविधाले यो फाइललाई रोक लगाएको छ।</translation>
@@ -4993,7 +4993,7 @@
 <translation id="7766838926148951335">अनुमतिहरू स्वीकार गर्नुहोस्</translation>
 <translation id="7768770796815395237">परिवर्तन गर्नुहोस्</translation>
 <translation id="7769672763586021400">मोडेलको ID</translation>
-<translation id="7770612696274572992">अर्को यन्त्रबाट छवि कपि गरियो</translation>
+<translation id="7770612696274572992">अर्को यन्त्रबाट छवि कपी गरियो</translation>
 <translation id="7770651108375708429">Wi-Fi को जडान विच्छेद गर्नुहोस्</translation>
 <translation id="7771452384635174008">सजावट</translation>
 <translation id="7772032839648071052">पासफ्रेज पक्का</translation>

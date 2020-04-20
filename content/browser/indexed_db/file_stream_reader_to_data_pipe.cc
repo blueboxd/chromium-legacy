@@ -60,8 +60,8 @@ void FileStreamReaderToDataPipe::ReadMore() {
       new network::NetToMojoIOBuffer(pending_write_.get()));
   int result =
       reader_->Read(buffer.get(), base::checked_cast<int>(read_bytes),
-                    base::BindRepeating(&FileStreamReaderToDataPipe::DidRead,
-                                        base::Unretained(this)));
+                    base::BindOnce(&FileStreamReaderToDataPipe::DidRead,
+                                   base::Unretained(this)));
 
   if (result != net::ERR_IO_PENDING)
     DidRead(result);

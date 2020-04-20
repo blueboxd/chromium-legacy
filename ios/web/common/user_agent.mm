@@ -56,8 +56,7 @@ namespace web {
 std::string GetUserAgentTypeDescription(UserAgentType type) {
   switch (type) {
     case UserAgentType::AUTOMATIC:
-      DCHECK(base::FeatureList::IsEnabled(
-          features::kUseDefaultUserAgentInWebClient));
+      DCHECK(features::UseWebClientDefaultUserAgent());
       return std::string(kUserAgentTypeAutomaticDescription);
     case UserAgentType::NONE:
       return std::string(kUserAgentTypeNoneDescription);

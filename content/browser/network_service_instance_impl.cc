@@ -292,7 +292,7 @@ network::mojom::NetworkService* GetNetworkService() {
       (*g_network_service_remote)
           ->SetClient(std::move(client_remote), CreateNetworkServiceParams());
       g_network_service_is_responding = false;
-      g_network_service_remote->QueryVersion(base::BindRepeating(
+      g_network_service_remote->QueryVersion(base::BindOnce(
           [](base::Time start_time, uint32_t) {
             g_network_service_is_responding = true;
             base::TimeDelta delta = base::Time::Now() - start_time;
@@ -488,7 +488,7 @@ base::TimeDelta GetTimeSinceLastNetworkServiceCrash() {
 void PingNetworkService(base::OnceClosure closure) {
   GetNetworkService();
   // Unfortunately, QueryVersion requires a RepeatingCallback.
-  g_network_service_remote->QueryVersion(base::BindRepeating(
+  g_network_service_remote->QueryVersion(base::BindOnce(
       [](base::OnceClosure closure, uint32_t) {
         if (closure)
           std::move(closure).Run();

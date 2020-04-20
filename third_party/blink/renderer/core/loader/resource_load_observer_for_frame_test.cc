@@ -6,7 +6,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
-#include "third_party/blink/renderer/core/loader/frame_or_imported_document.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -39,8 +38,7 @@ TEST(ResourceLoadObserverForFrameTest, MemoryCacheCertificateError) {
       std::make_unique<DummyPageHolder>(IntSize(), nullptr, client);
   LocalFrame& frame = dummy_page_holder->GetFrame();
   auto* observer = MakeGarbageCollected<ResourceLoadObserverForFrame>(
-      *MakeGarbageCollected<FrameOrImportedDocument>(
-          *frame.GetDocument()->Loader(), *frame.GetDocument()),
+      *frame.GetDocument()->Loader(), *frame.GetDocument(),
       *MakeGarbageCollected<TestResourceFetcherProperties>());
   KURL url("https://www.example.com/");
   ResourceRequest resource_request(url);

@@ -205,9 +205,9 @@ void EnrollmentScreen::ClearAuth(const base::Closure& callback) {
     callback.Run();
     return;
   }
-  enrollment_helper_->ClearAuth(base::Bind(&EnrollmentScreen::OnAuthCleared,
-                                           weak_ptr_factory_.GetWeakPtr(),
-                                           callback));
+  enrollment_helper_->ClearAuth(base::BindOnce(&EnrollmentScreen::OnAuthCleared,
+                                               weak_ptr_factory_.GetWeakPtr(),
+                                               callback));
 }
 
 void EnrollmentScreen::OnAuthCleared(const base::Closure& callback) {

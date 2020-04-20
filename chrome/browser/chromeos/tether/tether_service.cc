@@ -723,8 +723,8 @@ bool TetherService::HandleFeatureStateMetricIfUninitialized() {
   // metric value is actually correct.
   timer_->Start(FROM_HERE,
                 base::TimeDelta::FromSeconds(kMetricFalsePositiveSeconds),
-                base::BindRepeating(&TetherService::RecordTetherFeatureState,
-                                    weak_ptr_factory_.GetWeakPtr()));
+                base::BindOnce(&TetherService::RecordTetherFeatureState,
+                               weak_ptr_factory_.GetWeakPtr()));
 
   return true;
 }

@@ -239,11 +239,9 @@ void AutomaticRebootManager::OnUserActivity(const ui::Event* event) {
   // the timer fires predictably in tests.
   login_screen_idle_timer_.reset(new base::OneShotTimer);
   login_screen_idle_timer_->Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kLoginManagerIdleTimeoutMs),
-      base::Bind(&AutomaticRebootManager::MaybeReboot,
-                 base::Unretained(this),
-                 false));
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kLoginManagerIdleTimeoutMs),
+      base::BindOnce(&AutomaticRebootManager::MaybeReboot,
+                     base::Unretained(this), false));
 }
 
 void AutomaticRebootManager::OnUserSessionStarted(bool is_primary_user) {
@@ -350,10 +348,10 @@ void AutomaticRebootManager::Reschedule() {
   if (!grace_start_timer_)
     grace_start_timer_.reset(new base::OneShotTimer);
   VLOG(1) << "Scheduling reboot attempt in " << (grace_start_time - now);
-  grace_start_timer_->Start(FROM_HERE,
-                            std::max(grace_start_time - now, base::TimeDelta()),
-                            base::Bind(&AutomaticRebootManager::RequestReboot,
-                                       base::Unretained(this)));
+  grace_start_timer_->Start(
+      FROM_HERE, std::max(grace_start_time - now, base::TimeDelta()),
+      base::BindOnce(&AutomaticRebootManager::RequestReboot,
+                     base::Unretained(this)));
 
   const base::TimeTicks grace_end_time = grace_start_time +
       base::TimeDelta::FromMilliseconds(kGracePeriodMs);
@@ -364,7 +362,7 @@ void AutomaticRebootManager::Reschedule() {
   VLOG(1) << "Scheduling unconditional reboot in " << (grace_end_time - now);
   grace_end_timer_->Start(
       FROM_HERE, std::max(grace_end_time - now, base::TimeDelta()),
-      base::Bind(&AutomaticRebootManager::Reboot, base::Unretained(this)));
+      base::BindOnce(&AutomaticRebootManager::Reboot, base::Unretained(this)));
 }
 
 void AutomaticRebootManager::RequestReboot() {

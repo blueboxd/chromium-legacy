@@ -27,6 +27,8 @@
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/permissions/weblayer_permissions_client.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
+#include "weblayer/browser/translate_accept_languages_factory.h"
+#include "weblayer/browser/translate_ranker_factory.h"
 #include "weblayer/browser/webui/web_ui_controller_factory.h"
 #include "weblayer/public/main.h"
 
@@ -70,6 +72,8 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   HostContentSettingsMapFactory::GetInstance();
   StatefulSSLHostStateDelegateFactory::GetInstance();
   CookieSettingsFactory::GetInstance();
+  TranslateAcceptLanguagesFactory::GetInstance();
+  TranslateRankerFactory::GetInstance();
 }
 
 void StopMessageLoop(base::OnceClosure quit_closure) {

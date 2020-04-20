@@ -168,8 +168,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     } else {
       // It is possible that there isn't a last committed item, for example if a
       // new tab is being opened via JavaScript.
-      if (base::FeatureList::IsEnabled(
-              web::features::kUseDefaultUserAgentInWebClient)) {
+      if (web::features::UseWebClientDefaultUserAgent()) {
         userAgentType = web::UserAgentType::AUTOMATIC;
       } else {
         userAgentType = web::UserAgentType::MOBILE;

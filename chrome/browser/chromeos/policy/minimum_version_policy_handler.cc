@@ -101,8 +101,8 @@ bool MinimumVersionPolicyHandler::IsPolicyApplicable() {
 void MinimumVersionPolicyHandler::OnPolicyChanged() {
   chromeos::CrosSettingsProvider::TrustedStatus status =
       cros_settings_->PrepareTrustedValues(
-          base::Bind(&MinimumVersionPolicyHandler::OnPolicyChanged,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&MinimumVersionPolicyHandler::OnPolicyChanged,
+                         weak_factory_.GetWeakPtr()));
   if (status != chromeos::CrosSettingsProvider::TRUSTED ||
       !IsPolicyApplicable())
     return;

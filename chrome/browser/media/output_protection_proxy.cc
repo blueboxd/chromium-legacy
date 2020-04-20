@@ -44,8 +44,8 @@ void OutputProtectionProxy::QueryStatus(const QueryStatusCallback& callback) {
 
 #if defined(OS_CHROMEOS)
   output_protection_delegate_.QueryStatus(
-      base::Bind(&OutputProtectionProxy::ProcessQueryStatusResult,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&OutputProtectionProxy::ProcessQueryStatusResult,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 #else  // defined(OS_CHROMEOS)
   ProcessQueryStatusResult(callback, true, 0, 0);
 #endif  // defined(OS_CHROMEOS)

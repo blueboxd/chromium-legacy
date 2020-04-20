@@ -144,9 +144,10 @@ void BackgroundApplicationListModel::Application::RequestIcon(
   extensions::ExtensionResource resource =
       extensions::IconsInfo::GetIconResource(
           extension_, size, ExtensionIconSet::MATCH_BIGGER);
-  extensions::ImageLoader::Get(model_->profile_)->LoadImageAsync(
-      extension_, resource, gfx::Size(size, size),
-      base::Bind(&Application::OnImageLoaded, AsWeakPtr()));
+  extensions::ImageLoader::Get(model_->profile_)
+      ->LoadImageAsync(
+          extension_, resource, gfx::Size(size, size),
+          base::BindOnce(&Application::OnImageLoaded, AsWeakPtr()));
 }
 
 BackgroundApplicationListModel::~BackgroundApplicationListModel() = default;

@@ -236,7 +236,7 @@ void GetAvailableUpdateModes(
     // For enterprise-managed devices, always honor the device setting.
     CrosSettings* const cros_settings = CrosSettings::Get();
     switch (cros_settings->PrepareTrustedValues(
-        base::BindRepeating(&GetAvailableUpdateModes, callback, timeout))) {
+        base::BindOnce(&GetAvailableUpdateModes, callback, timeout))) {
       case CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
         // Retry happens via the callback registered above.
         return;

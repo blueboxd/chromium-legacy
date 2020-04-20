@@ -10,6 +10,7 @@
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/language/core/browser/language_prefs.h"
 #include "components/permissions/permission_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
@@ -19,6 +20,8 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_state/core/security_state.h"
+#include "components/translate/core/browser/translate_pref_names.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/variations_client.h"
 #include "components/variations/variations_http_header_provider.h"
@@ -235,6 +238,11 @@ void BrowserContextImpl::RegisterPrefs(
   HostContentSettingsMap::RegisterProfilePrefs(pref_registry);
   safe_browsing::RegisterProfilePrefs(pref_registry);
   security_state::RegisterProfilePrefs(pref_registry);
+  language::LanguagePrefs::RegisterProfilePrefs(pref_registry);
+  translate::TranslatePrefs::RegisterProfilePrefs(pref_registry);
+  pref_registry->RegisterBooleanPref(
+      prefs::kOfferTranslateEnabled, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #if defined(OS_ANDROID)
   cdm::MediaDrmStorageImpl::RegisterProfilePrefs(pref_registry);
   permissions::GeolocationPermissionContextAndroid::RegisterProfilePrefs(

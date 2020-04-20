@@ -9,6 +9,9 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/common/channel_info.h"
 
+const base::Feature kEditBookmarksIOS{"EditBookmarksIOS",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kManagedBookmarksIOS{"ManagedBookmarksIOS",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -25,6 +28,10 @@ bool IsEnableEnterprisePolicySwitchPresent() {
 }
 
 }  // namespace
+
+bool IsEditBookmarksIOSEnabled() {
+  return base::FeatureList::IsEnabled(kEditBookmarksIOS);
+}
 
 bool IsEnterprisePolicyEnabled() {
   // Policy is enabled by default for non-stable channels.

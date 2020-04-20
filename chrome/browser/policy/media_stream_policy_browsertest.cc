@@ -124,8 +124,8 @@ class MediaStreamDevicesControllerBrowserTest
     // and microphone permissions at the same time.
     webrtc::MediaStreamDevicesController::RequestPermissions(
         request, MediaCaptureDevicesDispatcher::GetInstance(),
-        base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
-                   base::Unretained(this)));
+        base::BindOnce(&MediaStreamDevicesControllerBrowserTest::Accept,
+                       base::Unretained(this)));
     quit_closure_.Run();
   }
 
@@ -137,8 +137,8 @@ class MediaStreamDevicesControllerBrowserTest
     // and microphone permissions at the same time.
     webrtc::MediaStreamDevicesController::RequestPermissions(
         request, MediaCaptureDevicesDispatcher::GetInstance(),
-        base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
-                   base::Unretained(this)));
+        base::BindOnce(&MediaStreamDevicesControllerBrowserTest::Accept,
+                       base::Unretained(this)));
     quit_closure_.Run();
   }
 

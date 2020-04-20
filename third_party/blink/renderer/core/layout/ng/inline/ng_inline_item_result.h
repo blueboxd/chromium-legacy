@@ -32,6 +32,7 @@ struct CORE_EXPORT NGInlineItemResult {
   DISALLOW_NEW();
 
  public:
+  NGTextOffset TextOffset() const { return {start_offset, end_offset}; }
   unsigned Length() const {
     DCHECK_GT(end_offset, start_offset);
     return end_offset - start_offset;

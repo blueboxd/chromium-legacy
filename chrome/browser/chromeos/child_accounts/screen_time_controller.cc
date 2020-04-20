@@ -218,8 +218,8 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
     VLOG(1) << "Scheduling state change timer in " << next_get_state_time - now;
     next_state_timer_->Start(
         FROM_HERE, next_get_state_time - now,
-        base::BindRepeating(&ScreenTimeController::CheckTimeLimit,
-                            base::Unretained(this), "next_state_timer_"));
+        base::BindOnce(&ScreenTimeController::CheckTimeLimit,
+                       base::Unretained(this), "next_state_timer_"));
   }
 }
 
@@ -341,8 +341,8 @@ void ScreenTimeController::ScheduleUsageTimeLimitWarning(
             << " minutes.";
     usage_time_limit_warning_timer_->Start(
         FROM_HERE, delay,
-        base::BindRepeating(&ScreenTimeController::UsageTimeLimitWarning,
-                            base::Unretained(this)));
+        base::BindOnce(&ScreenTimeController::UsageTimeLimitWarning,
+                       base::Unretained(this)));
   }
 }
 

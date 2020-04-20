@@ -109,7 +109,7 @@ void WaitForPermanentlyUntrustedStatusAndRun(const base::Closure& callback) {
   while (true) {
     const CrosSettingsProvider::TrustedStatus status =
         CrosSettings::Get()->PrepareTrustedValues(
-            base::Bind(&WaitForPermanentlyUntrustedStatusAndRun, callback));
+            base::BindOnce(&WaitForPermanentlyUntrustedStatusAndRun, callback));
     switch (status) {
       case CrosSettingsProvider::PERMANENTLY_UNTRUSTED:
         callback.Run();

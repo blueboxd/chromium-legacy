@@ -92,7 +92,9 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
     return false;
   }
 
-  if (options_->hasPrototype()) {
+  // TODO(crbug.com/1070871): ElementRegistrationOptions.prototype has a default
+  // value, but we check |hasPrototype()| here for backward compatibility.
+  if (options_->hasPrototype() && !options_->prototype().IsNull()) {
     DCHECK(options_->prototype().IsObject());
     prototype_ = options_->prototype().V8Value().As<v8::Object>();
   } else {

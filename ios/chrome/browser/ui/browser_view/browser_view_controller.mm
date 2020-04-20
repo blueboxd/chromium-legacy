@@ -65,8 +65,7 @@
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
-#import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
-#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
@@ -321,8 +320,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - BVC
 
-@interface BrowserViewController () <ActivityServicePresentation,
-                                     BubblePresenterDelegate,
+@interface BrowserViewController () <BubblePresenterDelegate,
                                      CaptivePortalDetectorTabHelperDelegate,
                                      CRWWebStateDelegate,
                                      CRWWebStateObserver,
@@ -404,9 +402,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // The controller that shows the bookmarking UI after the user taps the star
   // button.
   BookmarkInteractionController* _bookmarkInteractionController;
-
-  // Coordinator for the share menu (Activity Services).
-  ActivityServiceLegacyCoordinator* _activityServiceCoordinator;
 
   // Coordinator for displaying alerts.
   AlertCoordinator* _alertCoordinator;
@@ -1023,6 +1018,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - Public methods
 
+- (id<ActivityServicePositioner>)activityServicePositioner {
+  return [self.primaryToolbarCoordinator activityServicePositioner];
+}
+
 - (void)setPrimary:(BOOL)primary {
   [self.tabModel setPrimary:primary];
   if (primary) {
@@ -1189,7 +1188,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox {
-  [_activityServiceCoordinator cancelShare];
   [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:NO];
   [_bookmarkInteractionController dismissSnackbar];
   if (dismissOmnibox) {
@@ -1296,7 +1294,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self uninstallDelegatesForWebState:webStateList->GetWebStateAt(index)];
 
   // Disconnect child coordinators.
-  [_activityServiceCoordinator stop];
   [self.popupMenuCoordinator stop];
   [self.tabStripCoordinator stop];
   self.tabStripCoordinator = nil;
@@ -2081,15 +2078,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK([self isViewLoaded]);
 
   [self.sideSwipeController addHorizontalGesturesToView:self.view];
-
-  // Create child coordinators.
-  _activityServiceCoordinator = [[ActivityServiceLegacyCoordinator alloc]
-      initWithBaseViewController:self
-                         browser:self.browser];
-  _activityServiceCoordinator.positionProvider =
-      [self.primaryToolbarCoordinator activityServicePositioner];
-  _activityServiceCoordinator.presentationProvider = self;
-  [_activityServiceCoordinator start];
 
   // TODO(crbug.com/1024288): Remove these lines along the legacy code removal.
   if (!IsDownloadInfobarMessagesUIEnabled()) {
@@ -4474,21 +4462,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     }
   }
   return nil;
-}
-
-#pragma mark - ActivityServicePresentation
-
-- (void)presentActivityServiceViewController:(UIViewController*)controller {
-  [self presentViewController:controller animated:YES completion:nil];
-}
-
-- (void)activityServiceDidEndPresenting {
-}
-
-- (void)showActivityServiceErrorAlertWithStringTitle:(NSString*)title
-                                             message:(NSString*)message {
-  [_activityServiceCoordinator showErrorAlertWithStringTitle:title
-                                                     message:message];
 }
 
 #pragma mark - CaptivePortalDetectorTabHelperDelegate

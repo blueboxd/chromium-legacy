@@ -586,8 +586,8 @@ void VolumeManager::Initialize() {
   // Subscribe to storage monitor for MTP notifications.
   if (storage_monitor::StorageMonitor::GetInstance()) {
     storage_monitor::StorageMonitor::GetInstance()->EnsureInitialized(
-        base::Bind(&VolumeManager::OnStorageMonitorInitialized,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&VolumeManager::OnStorageMonitorInitialized,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Subscribe to ARC file system events.

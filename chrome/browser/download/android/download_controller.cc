@@ -320,8 +320,9 @@ void DownloadController::StartAndroidDownload(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   AcquireFileAccessPermission(
-      wc_getter, base::Bind(&DownloadController::StartAndroidDownloadInternal,
-                            base::Unretained(this), wc_getter, info));
+      wc_getter,
+      base::BindOnce(&DownloadController::StartAndroidDownloadInternal,
+                     base::Unretained(this), wc_getter, info));
 }
 
 void DownloadController::StartAndroidDownloadInternal(
@@ -465,8 +466,8 @@ void DownloadController::StartContextMenuDownload(
       base::Bind(&GetWebContents, process_id, routing_id));
 
   AcquireFileAccessPermission(
-      wc_getter, base::Bind(&CreateContextMenuDownload, wc_getter, params,
-                            is_link, extra_headers));
+      wc_getter, base::BindOnce(&CreateContextMenuDownload, wc_getter, params,
+                                is_link, extra_headers));
 }
 
 bool DownloadController::IsInterruptedDownloadAutoResumable(

@@ -138,7 +138,7 @@ template <typename T, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling,
                               blink::HeapVectorBacking<T, Traits>,
                               void> {
-  static bool Trace(blink::Visitor* visitor, const void* self) {
+  static void Trace(blink::Visitor* visitor, const void* self) {
     // HeapVectorBacking does not know the exact size of the vector
     // and just knows the capacity of the vector. Due to the constraint,
     // HeapVectorBacking can support only the following objects:
@@ -194,7 +194,6 @@ struct TraceInCollectionTrait<kNoWeakHandling,
                                                                    array[i]);
       }
     }
-    return false;
   }
 };
 

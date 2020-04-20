@@ -55,8 +55,8 @@ void MouseCursorOverlayController::OnMouseMoved(const gfx::PointF& location) {
       mouse_move_start_location_ = location;
       mouse_activity_ended_timer_.Start(
           FROM_HERE, kIdleTimeout,
-          base::BindRepeating(&MouseCursorOverlayController::OnMouseHasGoneIdle,
-                              base::Unretained(this)));
+          base::BindOnce(&MouseCursorOverlayController::OnMouseHasGoneIdle,
+                         base::Unretained(this)));
       break;
     case kStartingToMove:
       if (std::abs(location.x() - mouse_move_start_location_.x()) >
@@ -85,8 +85,8 @@ void MouseCursorOverlayController::OnMouseClicked(const gfx::PointF& location) {
   } else {
     mouse_activity_ended_timer_.Start(
         FROM_HERE, kIdleTimeout,
-        base::BindRepeating(&MouseCursorOverlayController::OnMouseHasGoneIdle,
-                            base::Unretained(this)));
+        base::BindOnce(&MouseCursorOverlayController::OnMouseHasGoneIdle,
+                       base::Unretained(this)));
   }
   set_mouse_move_behavior(kRecentlyMovedOrClicked);
 

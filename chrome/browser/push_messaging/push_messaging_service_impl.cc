@@ -948,8 +948,8 @@ void PushMessagingServiceImpl::DidClearPushSubscriptionId(
 
   if (PushMessagingAppIdentifier::UseInstanceID(app_id)) {
     GetInstanceIDDriver()->GetInstanceID(app_id)->DeleteID(
-        base::Bind(&PushMessagingServiceImpl::DidDeleteID,
-                   weak_factory_.GetWeakPtr(), app_id, was_subscribed));
+        base::BindOnce(&PushMessagingServiceImpl::DidDeleteID,
+                       weak_factory_.GetWeakPtr(), app_id, was_subscribed));
 
   } else {
     auto unregister_callback =
@@ -1030,10 +1030,10 @@ void PushMessagingServiceImpl::DidDeleteServiceWorkerRegistration(
       blink::mojom::PushUnregistrationReason::SERVICE_WORKER_UNREGISTERED,
       origin, service_worker_registration_id, app_identifier.app_id(),
       std::string() /* sender_id */,
-      base::Bind(&UnregisterCallbackToClosure,
-                 service_worker_unregistered_callback_for_testing_.is_null()
-                     ? base::DoNothing()
-                     : service_worker_unregistered_callback_for_testing_));
+      base::BindOnce(&UnregisterCallbackToClosure,
+                     service_worker_unregistered_callback_for_testing_.is_null()
+                         ? base::DoNothing()
+                         : service_worker_unregistered_callback_for_testing_));
 }
 
 void PushMessagingServiceImpl::SetServiceWorkerUnregisteredCallbackForTesting(
@@ -1062,7 +1062,7 @@ void PushMessagingServiceImpl::DidDeleteServiceWorkerDatabase() {
         app_identifier.origin(),
         app_identifier.service_worker_registration_id(),
         app_identifier.app_id(), std::string() /* sender_id */,
-        base::Bind(&UnregisterCallbackToClosure, completed_closure));
+        base::BindOnce(&UnregisterCallbackToClosure, completed_closure));
   }
 }
 

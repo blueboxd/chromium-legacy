@@ -160,7 +160,7 @@ TEST_F(ChromeContentBrowserClientWindowTest, OpenURL) {
     scoped_refptr<content::SiteInstance> site_instance =
         content::SiteInstance::Create(browser()->profile());
     client.OpenURL(site_instance.get(), params,
-                   base::Bind(&DidOpenURLForWindowTest, &web_contents));
+                   base::BindOnce(&DidOpenURLForWindowTest, &web_contents));
 
     EXPECT_TRUE(web_contents);
 

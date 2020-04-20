@@ -192,8 +192,8 @@ OwnerSettingsServiceChromeOS::OwnerSettingsServiceChromeOS(
   if (TPMTokenLoader::IsInitialized()) {
     TPMTokenLoader::TPMTokenStatus tpm_token_status =
         TPMTokenLoader::Get()->IsTPMTokenEnabled(
-            base::Bind(&OwnerSettingsServiceChromeOS::OnTPMTokenReady,
-                       weak_factory_.GetWeakPtr()));
+            base::BindOnce(&OwnerSettingsServiceChromeOS::OnTPMTokenReady,
+                           weak_factory_.GetWeakPtr()));
     waiting_for_tpm_token_ =
         tpm_token_status == TPMTokenLoader::TPM_TOKEN_STATUS_UNDETERMINED;
   }
@@ -211,8 +211,8 @@ OwnerSettingsServiceChromeOS::OwnerSettingsServiceChromeOS(
   }
 
   UserSessionManager::GetInstance()->WaitForEasyUnlockKeyOpsFinished(
-      base::Bind(&OwnerSettingsServiceChromeOS::OnEasyUnlockKeyOpsFinished,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&OwnerSettingsServiceChromeOS::OnEasyUnlockKeyOpsFinished,
+                     weak_factory_.GetWeakPtr()));
   // The ProfileManager may be null in unit tests.
   if (g_browser_process->profile_manager())
     g_browser_process->profile_manager()->AddObserver(this);

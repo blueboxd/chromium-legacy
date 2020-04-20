@@ -75,8 +75,9 @@ class UpdateCheckResultAwaiter {
   }
 
   void SetCallback() {
-    GetManifestUpdateManager(browser_).SetResultCallbackForTesting(base::Bind(
-        &UpdateCheckResultAwaiter::OnResult, base::Unretained(this)));
+    GetManifestUpdateManager(browser_).SetResultCallbackForTesting(
+        base::BindOnce(&UpdateCheckResultAwaiter::OnResult,
+                       base::Unretained(this)));
   }
 
   ManifestUpdateResult AwaitNextResult() && {

@@ -338,12 +338,12 @@ void BluetoothLowEnergyEventRouter::Connect(
 
   connecting_devices_.insert(connect_id);
   device->CreateGattConnection(
-      base::Bind(&BluetoothLowEnergyEventRouter::OnCreateGattConnection,
-                 weak_ptr_factory_.GetWeakPtr(), persistent, extension_id,
-                 device_address, callback),
-      base::Bind(&BluetoothLowEnergyEventRouter::OnConnectError,
-                 weak_ptr_factory_.GetWeakPtr(), extension_id, device_address,
-                 error_callback));
+      base::BindOnce(&BluetoothLowEnergyEventRouter::OnCreateGattConnection,
+                     weak_ptr_factory_.GetWeakPtr(), persistent, extension_id,
+                     device_address, callback),
+      base::BindOnce(&BluetoothLowEnergyEventRouter::OnConnectError,
+                     weak_ptr_factory_.GetWeakPtr(), extension_id,
+                     device_address, error_callback));
 }
 
 void BluetoothLowEnergyEventRouter::Disconnect(
@@ -631,11 +631,11 @@ void BluetoothLowEnergyEventRouter::ReadCharacteristicValue(
   }
 
   characteristic->ReadRemoteCharacteristic(
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergyEventRouter::OnReadRemoteCharacteristicSuccess,
           weak_ptr_factory_.GetWeakPtr(), instance_id, callback),
-      base::Bind(&BluetoothLowEnergyEventRouter::OnError,
-                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+      base::BindOnce(&BluetoothLowEnergyEventRouter::OnError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
@@ -671,8 +671,8 @@ void BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
 
   characteristic->WriteRemoteCharacteristic(
       value, callback,
-      base::Bind(&BluetoothLowEnergyEventRouter::OnError,
-                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+      base::BindOnce(&BluetoothLowEnergyEventRouter::OnError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothLowEnergyEventRouter::StartCharacteristicNotifications(
@@ -728,12 +728,12 @@ void BluetoothLowEnergyEventRouter::StartCharacteristicNotifications(
 
   pending_session_calls_.insert(session_id);
   characteristic->StartNotifySession(
-      base::Bind(&BluetoothLowEnergyEventRouter::OnStartNotifySession,
-                 weak_ptr_factory_.GetWeakPtr(), persistent, extension_id,
-                 instance_id, callback),
-      base::Bind(&BluetoothLowEnergyEventRouter::OnStartNotifySessionError,
-                 weak_ptr_factory_.GetWeakPtr(), extension_id, instance_id,
-                 error_callback));
+      base::BindOnce(&BluetoothLowEnergyEventRouter::OnStartNotifySession,
+                     weak_ptr_factory_.GetWeakPtr(), persistent, extension_id,
+                     instance_id, callback),
+      base::BindOnce(&BluetoothLowEnergyEventRouter::OnStartNotifySessionError,
+                     weak_ptr_factory_.GetWeakPtr(), extension_id, instance_id,
+                     error_callback));
 }
 
 void BluetoothLowEnergyEventRouter::StopCharacteristicNotifications(
@@ -759,7 +759,7 @@ void BluetoothLowEnergyEventRouter::StopCharacteristicNotifications(
     return;
   }
 
-  session->GetSession()->Stop(base::Bind(
+  session->GetSession()->Stop(base::BindOnce(
       &BluetoothLowEnergyEventRouter::OnStopNotifySession,
       weak_ptr_factory_.GetWeakPtr(), extension_id, instance_id, callback));
 }
@@ -794,10 +794,11 @@ void BluetoothLowEnergyEventRouter::ReadDescriptorValue(
   }
 
   descriptor->ReadRemoteDescriptor(
-      base::Bind(&BluetoothLowEnergyEventRouter::OnReadRemoteDescriptorSuccess,
-                 weak_ptr_factory_.GetWeakPtr(), callback),
-      base::Bind(&BluetoothLowEnergyEventRouter::OnError,
-                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+      base::BindOnce(
+          &BluetoothLowEnergyEventRouter::OnReadRemoteDescriptorSuccess,
+          weak_ptr_factory_.GetWeakPtr(), callback),
+      base::BindOnce(&BluetoothLowEnergyEventRouter::OnError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothLowEnergyEventRouter::WriteDescriptorValue(
@@ -832,8 +833,8 @@ void BluetoothLowEnergyEventRouter::WriteDescriptorValue(
 
   descriptor->WriteRemoteDescriptor(
       value, callback,
-      base::Bind(&BluetoothLowEnergyEventRouter::OnError,
-                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+      base::BindOnce(&BluetoothLowEnergyEventRouter::OnError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothLowEnergyEventRouter::SetAdapterForTesting(
@@ -1322,8 +1323,8 @@ void BluetoothLowEnergyEventRouter::RegisterGattService(
       base::Bind(&BluetoothLowEnergyEventRouter::OnRegisterGattServiceSuccess,
                  weak_ptr_factory_.GetWeakPtr(), service_id, extension->id(),
                  callback),
-      base::Bind(&BluetoothLowEnergyEventRouter::OnError,
-                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+      base::BindOnce(&BluetoothLowEnergyEventRouter::OnError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothLowEnergyEventRouter::UnregisterGattService(
@@ -1350,8 +1351,8 @@ void BluetoothLowEnergyEventRouter::UnregisterGattService(
       base::Bind(&BluetoothLowEnergyEventRouter::OnUnregisterGattServiceSuccess,
                  weak_ptr_factory_.GetWeakPtr(), service_id, extension->id(),
                  callback),
-      base::Bind(&BluetoothLowEnergyEventRouter::OnError,
-                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+      base::BindOnce(&BluetoothLowEnergyEventRouter::OnError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothLowEnergyEventRouter::HandleRequestResponse(

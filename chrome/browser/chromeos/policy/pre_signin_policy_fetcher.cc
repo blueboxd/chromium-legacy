@@ -75,8 +75,8 @@ void PreSigninPolicyFetcher::FetchPolicy(PolicyFetchResultCallback callback) {
   chromeos::CryptohomeClient::Get()->MountEx(
       cryptohome::CreateAccountIdentifierFromAccountId(account_id_), auth,
       mount,
-      base::Bind(&PreSigninPolicyFetcher::OnMountTemporaryUserHome,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PreSigninPolicyFetcher::OnMountTemporaryUserHome,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool PreSigninPolicyFetcher::ForceTimeoutForTesting() {
@@ -99,8 +99,8 @@ void PreSigninPolicyFetcher::OnMountTemporaryUserHome(
 
   session_manager_client_->RetrievePolicyForUserWithoutSession(
       cryptohome::CreateAccountIdentifierFromAccountId(account_id_),
-      base::Bind(&PreSigninPolicyFetcher::OnCachedPolicyRetrieved,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PreSigninPolicyFetcher::OnCachedPolicyRetrieved,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PreSigninPolicyFetcher::OnCachedPolicyRetrieved(
@@ -115,7 +115,7 @@ void PreSigninPolicyFetcher::OnCachedPolicyRetrieved(
                                  &policy_key_dir));
     cached_policy_key_loader_ = std::make_unique<CachedPolicyKeyLoaderChromeOS>(
         cryptohome_client_, task_runner_, account_id_, policy_key_dir);
-    cached_policy_key_loader_->EnsurePolicyKeyLoaded(base::Bind(
+    cached_policy_key_loader_->EnsurePolicyKeyLoaded(base::BindOnce(
         &PreSigninPolicyFetcher::OnPolicyKeyLoaded,
         weak_ptr_factory_.GetWeakPtr(), retrieve_policy_response, policy_blob));
   } else {
@@ -218,8 +218,8 @@ void PreSigninPolicyFetcher::OnCachedPolicyValidated(
   // Start a timer that will limit how long we wait for fresh policy.
   policy_fetch_timeout_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kPolicyFetchTimeoutSecs),
-      base::Bind(&PreSigninPolicyFetcher::OnPolicyFetchTimeout,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PreSigninPolicyFetcher::OnPolicyFetchTimeout,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   cloud_policy_client_->FetchPolicy();
 }

@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include <wayland-server-protocol-core.h>
+#include <wayland-server-protocol.h>
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"

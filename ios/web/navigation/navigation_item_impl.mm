@@ -53,7 +53,7 @@ NavigationItemImpl::NavigationItemImpl()
       should_skip_serialization_(false),
       navigation_initiation_type_(web::NavigationInitiationType::NONE),
       is_untrusted_(false) {
-  if (base::FeatureList::IsEnabled(features::kUseDefaultUserAgentInWebClient)) {
+  if (features::UseWebClientDefaultUserAgent()) {
     // TODO(crbug.com/1025227): Once it is enabled by default, move it to the
     // default constructor.
     user_agent_type_ = UserAgentType::AUTOMATIC;
@@ -111,10 +111,9 @@ void NavigationItemImpl::SetURL(const GURL& url) {
   if (!wk_navigation_util::URLNeedsUserAgentType(url)) {
     SetUserAgentType(UserAgentType::NONE);
   } else if (GetUserAgentForInheritance() == web::UserAgentType::NONE) {
-    UserAgentType type =
-        base::FeatureList::IsEnabled(features::kUseDefaultUserAgentInWebClient)
-            ? UserAgentType::AUTOMATIC
-            : UserAgentType::MOBILE;
+    UserAgentType type = features::UseWebClientDefaultUserAgent()
+                             ? UserAgentType::AUTOMATIC
+                             : UserAgentType::MOBILE;
     SetUserAgentType(type);
   }
 }
@@ -226,8 +225,7 @@ bool NavigationItemImpl::IsUntrusted() {
 UserAgentType NavigationItemImpl::GetUserAgentType(
     id<UITraitEnvironment> web_view) const {
   if (user_agent_type_ == UserAgentType::AUTOMATIC) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kUseDefaultUserAgentInWebClient));
+    DCHECK(features::UseWebClientDefaultUserAgent());
     return GetWebClient()->GetDefaultUserAgent(web_view, url_);
   }
   return user_agent_type_;

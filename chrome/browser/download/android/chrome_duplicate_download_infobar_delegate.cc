@@ -92,7 +92,7 @@ bool ChromeDuplicateDownloadInfoBarDelegate::Accept() {
       download_item_, file_path_, download_dir,
       base::FilePath(), /* fallback_directory */
       true, download::DownloadPathReservationTracker::UNIQUIFY,
-      base::Bind(&CreateNewFileDone, file_selected_callback_));
+      base::BindOnce(&CreateNewFileDone, file_selected_callback_));
   return true;
 }
 

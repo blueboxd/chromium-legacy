@@ -251,8 +251,8 @@ void EnrollmentHandlerChromeOS::StartEnrollment() {
 
   VLOG(1) << "Requesting state keys.";
   state_keys_broker_->RequestStateKeys(
-      base::Bind(&EnrollmentHandlerChromeOS::HandleStateKeysResult,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EnrollmentHandlerChromeOS::HandleStateKeysResult,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 std::unique_ptr<CloudPolicyClient> EnrollmentHandlerChromeOS::ReleaseClient() {
@@ -627,8 +627,8 @@ void EnrollmentHandlerChromeOS::StartLockDevice() {
 
   install_attributes_->LockDevice(
       device_mode_, domain_, realm_, device_id_,
-      base::Bind(&EnrollmentHandlerChromeOS::HandleLockDeviceResult,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EnrollmentHandlerChromeOS::HandleLockDeviceResult,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnrollmentHandlerChromeOS::HandleDMTokenStoreResult(bool success) {

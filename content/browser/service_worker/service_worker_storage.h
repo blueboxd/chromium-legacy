@@ -295,8 +295,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   // Applies |policy_updates|.
   void ApplyPolicyUpdates(
-      const std::vector<storage::mojom::LocalStoragePolicyUpdatePtr>&
-          policy_updates);
+      std::vector<storage::mojom::LocalStoragePolicyUpdatePtr> policy_updates);
 
   void LazyInitializeForTest();
 
@@ -501,8 +500,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,
       const std::string& key_prefix,
       GetUserDataForAllRegistrationsInDBCallback callback);
-  static void DeleteAllDataForOriginsFromDB(ServiceWorkerDatabase* database,
-                                            const std::set<GURL>& origins);
+  static void DeleteAllDataForOriginsFromDB(
+      ServiceWorkerDatabase* database,
+      const std::set<GURL>& origins);
   static void PerformStorageCleanupInDB(ServiceWorkerDatabase* database);
 
   // Posted by the underlying cache implementation after it finishes making

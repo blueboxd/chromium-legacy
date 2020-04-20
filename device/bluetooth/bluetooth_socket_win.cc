@@ -336,12 +336,9 @@ void BluetoothSocketWin::DoAccept(
     const ErrorCompletionCallback& error_callback) {
   DCHECK(socket_thread()->task_runner()->RunsTasksInCurrentSequence());
   int result = tcp_socket()->Accept(
-      &accept_socket_,
-      &accept_address_,
-      base::Bind(&BluetoothSocketWin::OnAcceptOnSocketThread,
-                 this,
-                 success_callback,
-                 error_callback));
+      &accept_socket_, &accept_address_,
+      base::BindOnce(&BluetoothSocketWin::OnAcceptOnSocketThread, this,
+                     success_callback, error_callback));
   if (result != net::OK && result != net::ERR_IO_PENDING) {
     LOG(WARNING) << "Failed to accept, net err=" << result;
     PostErrorCompletion(error_callback, kFailedToAccept);

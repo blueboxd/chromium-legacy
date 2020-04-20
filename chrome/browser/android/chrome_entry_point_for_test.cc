@@ -33,13 +33,12 @@ bool NativeInit(base::android::LibraryProcessType) {
       command_line->GetSwitchValueASCII(
           service_manager::switches::kServiceSandboxType) ==
           service_manager::switches::kNetworkSandbox) {
-    ChromeContentUtilityClient::SetNetworkBinderCreationCallback(
-        base::BindRepeating(
-            [](content::NetworkServiceTestHelper* helper,
-               service_manager::BinderRegistry* registry) {
-              helper->RegisterNetworkBinders(registry);
-            },
-            GetNetworkServiceTestHelper()));
+    ChromeContentUtilityClient::SetNetworkBinderCreationCallback(base::BindOnce(
+        [](content::NetworkServiceTestHelper* helper,
+           service_manager::BinderRegistry* registry) {
+          helper->RegisterNetworkBinders(registry);
+        },
+        GetNetworkServiceTestHelper()));
   }
 
   return android::OnJNIOnLoadInit();

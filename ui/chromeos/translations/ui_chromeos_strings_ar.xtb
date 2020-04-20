@@ -236,7 +236,7 @@
 <translation id="3798449238516105146">الإصدار</translation>
 <translation id="3801082500826908679">الفاروية</translation>
 <translation id="3809272675881623365">أرنب</translation>
-<translation id="3811494700605067549">تم تحديد ملف واحد</translation>
+<translation id="3811494700605067549">تم اختيار ملف واحد</translation>
 <translation id="3815016854028376614">‏أسلوب الإدخال لنظام Zhuyin</translation>
 <translation id="3825863595139017598">لوحة المفاتيح المنغولية</translation>
 <translation id="38275787300541712">‏اضغط على Enter عند الانتهاء</translation>
@@ -669,7 +669,7 @@
 <translation id="8525306231823319788">ملء الشاشة</translation>
 <translation id="8551494947769799688">اللاتفية</translation>
 <translation id="8561206103590473338">فيل</translation>
-<translation id="8569764466147087991">تحديد ملف لفتحه</translation>
+<translation id="8569764466147087991">اختيار ملف لفتحه</translation>
 <translation id="8579285237314169903">جارٍ مزامنة <ph name="NUMBER_OF_FILES" /> من البنود...</translation>
 <translation id="8600173386174225982">تم تغيير قائمة الملف إلى عرض الصور المصغرة.</translation>
 <translation id="8601932370724196034">‏ملف صورة Crostini</translation>
@@ -703,7 +703,7 @@
 <translation id="912419004897138677">برنامج ترميز</translation>
 <translation id="9129931661813833980">تثبيت المجلد</translation>
 <translation id="9130775360844693113">سيحصل أعضاء '<ph name="DESTINATION_NAME" />' على إمكانية الوصول إلى هذه العناصر.</translation>
-<translation id="9131598836763251128">تحديد ملف واحد أو أكثر</translation>
+<translation id="9131598836763251128">اختيار ملف واحد أو أكثر</translation>
 <translation id="9133055936679483811">تعذّر الضغط. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="9134524245363717059">‏تم تصميم هذا الملف لأجهزة الكمبيوتر التي تستخدم برنامج Macintosh. هذا غير متوافق مع جهازك الذي يعمل بنظام تشغيل Chrome. يُرجى البحث في سوق Chrome الإلكتروني للحصول على تطبيق بديل مناسب.</translation>
 <translation id="913758436357682283">لوحة مفاتيح ميانمار ميانسان</translation>

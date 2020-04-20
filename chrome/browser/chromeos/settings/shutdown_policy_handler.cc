@@ -26,9 +26,9 @@ ShutdownPolicyHandler::~ShutdownPolicyHandler() {}
 
 void ShutdownPolicyHandler::NotifyDelegateWithShutdownPolicy() {
   CrosSettingsProvider::TrustedStatus status =
-      cros_settings_->PrepareTrustedValues(
-          base::Bind(&ShutdownPolicyHandler::NotifyDelegateWithShutdownPolicy,
-                     weak_factory_.GetWeakPtr()));
+      cros_settings_->PrepareTrustedValues(base::BindOnce(
+          &ShutdownPolicyHandler::NotifyDelegateWithShutdownPolicy,
+          weak_factory_.GetWeakPtr()));
   if (status != CrosSettingsProvider::TRUSTED)
     return;
 

@@ -347,7 +347,9 @@ void StreamFromResponseCallback(
     return;
 
   if (!response->BodyBuffer()) {
-    exception_state.ThrowTypeError("Response object has a null body.");
+    // Since the status is 2xx (ok), this must be status 204 (No Content),
+    // status 205 (Reset Content) or a malformed status 200 (OK).
+    exception_state.ThrowWasmCompileError("Empty WebAssembly module");
     return;
   }
 

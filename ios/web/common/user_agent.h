@@ -23,8 +23,7 @@ enum class UserAgentType : short {
   // TODO(crbug.com/1025227): Update comments.
   // The default user agent type if kUseDefaultUserAgentInWebClient isn't
   // enabled.
-  // Used
-  // to specify a mobile browser user agent.
+  // Used to specify a mobile browser user agent.
   MOBILE,
 
   // Used to specify a desktop browser user agent.

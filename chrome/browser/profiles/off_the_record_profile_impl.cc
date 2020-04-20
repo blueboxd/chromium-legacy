@@ -150,8 +150,10 @@ void OffTheRecordProfileImpl::Init() {
       this);
 
   // Always crash when incognito is not available.
-  // Guest profiles may always be OTR. Check IncognitoModePrefs otherwise.
+  // Guest profiles may always be OTR, and non primary OTRs are always allowed.
+  // Check IncognitoModePrefs otherwise.
   CHECK(profile_->IsGuestSession() || profile_->IsSystemProfile() ||
+        IsIndependentOffTheRecordProfile() ||
         IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
             IncognitoModePrefs::DISABLED);
 

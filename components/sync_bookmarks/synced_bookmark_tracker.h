@@ -154,6 +154,9 @@ class SyncedBookmarkTracker {
   const SyncedBookmarkTracker::Entity* GetEntityForBookmarkNode(
       const bookmarks::BookmarkNode* node) const;
 
+  // Returns null if no tombstone entity is found.
+  const Entity* GetTombstoneEntityForGuid(const std::string& guid) const;
+
   // Starts tracking local bookmark |bookmark_node|, which must not be tracked
   // beforehand. The rest of the arguments represent the initial metadata.
   // Returns the tracked entity.
@@ -239,6 +242,12 @@ class SyncedBookmarkTracker {
   // the internal state of the tracker accordingly.
   void UpdateBookmarkNodePointer(const bookmarks::BookmarkNode* old_node,
                                  const bookmarks::BookmarkNode* new_node);
+
+  // Used to start tracking an entity that overwrites a previous local tombstone
+  // (e.g. user-initiated bookmark deletion undo). |entity| must be owned by
+  // this tracker.
+  void UndeleteTombstoneForBookmarkNode(const Entity* entity,
+                                        const bookmarks::BookmarkNode* node);
 
   // Set the value of |EntityMetadata.acked_sequence_number| for |entity| to be
   // equal to |EntityMetadata.sequence_number| such that it is not returned in

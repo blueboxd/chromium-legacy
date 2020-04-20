@@ -28,6 +28,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
+class BookmarkUndoService;
 class GURL;
 
 namespace bookmarks {
@@ -44,6 +45,9 @@ MATCHER_P(HasGuid, expected_guid, "") {
   const bookmarks::BookmarkNode* actual_node = arg;
   return actual_node->guid() == expected_guid;
 }
+
+// Used to access the bookmark undo service within a particular sync profile.
+BookmarkUndoService* GetBookmarkUndoService(int index) WARN_UNUSED_RESULT;
 
 // Used to access the bookmark model within a particular sync profile.
 bookmarks::BookmarkModel* GetBookmarkModel(int index) WARN_UNUSED_RESULT;

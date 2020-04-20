@@ -35,7 +35,7 @@ TEST(ModuleListTest, TestCase) {
   HMODULE new_dll = ::LoadLibrary(L"msvidc32.dll");
   ASSERT_NE(static_cast<HMODULE>(NULL), new_dll);
   base::ScopedClosureRunner release_new_dll(
-      base::Bind(base::IgnoreResult(&::FreeLibrary), new_dll));
+      base::BindOnce(base::IgnoreResult(&::FreeLibrary), new_dll));
 
   // Verify that there is an increase in the snapshot size.
   ASSERT_TRUE(

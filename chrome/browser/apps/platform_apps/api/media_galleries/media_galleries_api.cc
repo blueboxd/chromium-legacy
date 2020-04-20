@@ -630,10 +630,11 @@ void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
     const std::string& blob_uuid) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  BlobReader::Read(GetProfile(), blob_uuid,
-                   base::Bind(&MediaGalleriesGetMetadataFunction::GetMetadata,
-                              this, metadata_type, blob_uuid),
-                   0, net::kMaxBytesToSniff);
+  BlobReader::Read(
+      GetProfile(), blob_uuid,
+      base::BindOnce(&MediaGalleriesGetMetadataFunction::GetMetadata, this,
+                     metadata_type, blob_uuid),
+      0, net::kMaxBytesToSniff);
 }
 
 void MediaGalleriesGetMetadataFunction::GetMetadata(

@@ -343,10 +343,10 @@ class OpenSystemSettingsHelper {
     // Only the watchers that were succesfully initialized are counted.
     registry_watcher_count_ = registry_key_watchers_.size();
 
-    timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMinutes(2),
-        base::Bind(&OpenSystemSettingsHelper::ConcludeInteraction,
-                   weak_ptr_factory_.GetWeakPtr(), ConcludeReason::TIMEOUT));
+    timer_.Start(FROM_HERE, base::TimeDelta::FromMinutes(2),
+                 base::BindOnce(&OpenSystemSettingsHelper::ConcludeInteraction,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                ConcludeReason::TIMEOUT));
   }
 
   ~OpenSystemSettingsHelper() {
@@ -391,10 +391,9 @@ class OpenSystemSettingsHelper {
     auto reg_key = std::make_unique<base::win::RegKey>(HKEY_CURRENT_USER,
                                                        key_path, KEY_NOTIFY);
 
-    if (reg_key->Valid() &&
-        reg_key->StartWatching(
-            base::Bind(&OpenSystemSettingsHelper::OnRegistryKeyChanged,
-                       weak_ptr_factory_.GetWeakPtr()))) {
+    if (reg_key->Valid() && reg_key->StartWatching(base::BindOnce(
+                                &OpenSystemSettingsHelper::OnRegistryKeyChanged,
+                                weak_ptr_factory_.GetWeakPtr()))) {
       registry_key_watchers_.push_back(std::move(reg_key));
     }
   }
@@ -484,8 +483,8 @@ IsPinnedToTaskbarHelper::IsPinnedToTaskbarHelper(
   remote_util_win_.set_disconnect_handler(base::BindOnce(
       &IsPinnedToTaskbarHelper::OnConnectionError, base::Unretained(this)));
   remote_util_win_->IsPinnedToTaskbar(
-      base::Bind(&IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult,
-                 base::Unretained(this)));
+      base::BindOnce(&IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult,
+                     base::Unretained(this)));
 }
 
 void IsPinnedToTaskbarHelper::OnConnectionError() {

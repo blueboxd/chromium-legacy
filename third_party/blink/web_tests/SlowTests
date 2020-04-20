@@ -601,6 +601,8 @@ crbug.com/983642 [ Win ] virtual/gpu/fast/canvas/color-space/canvas-createImageB
 # Slow when using Vulkan.
 crbug.com/994331 compositing/lots-of-img-layers.html [ Slow ]
 
+crbug.com/1071114 external/wpt/css/css-fonts/test_font_family_parsing.html [ Slow ]
+crbug.com/1071418 external/wpt/css/css-transitions/idlharness.html [ Slow ]
 crbug.com/1048204 external/wpt/selection/idlharness.window.html [ Slow ]
 
 # This test contains a slow loading image that results in timeouts.

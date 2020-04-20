@@ -640,12 +640,10 @@ void WebViewGuest::CreateNewGuestWebViewWindow(
   base::DictionaryValue create_params;
   create_params.SetString(webview::kStoragePartitionId, storage_partition_id);
 
-  guest_manager->CreateGuest(WebViewGuest::Type,
-                             embedder_web_contents(),
-                             create_params,
-                             base::Bind(&WebViewGuest::NewGuestWebViewCallback,
-                                        weak_ptr_factory_.GetWeakPtr(),
-                                        params));
+  guest_manager->CreateGuest(
+      WebViewGuest::Type, embedder_web_contents(), create_params,
+      base::BindOnce(&WebViewGuest::NewGuestWebViewCallback,
+                     weak_ptr_factory_.GetWeakPtr(), params));
 }
 
 void WebViewGuest::NewGuestWebViewCallback(const content::OpenURLParams& params,
@@ -1088,9 +1086,9 @@ void WebViewGuest::NavigateGuest(const std::string& src,
   // content scripts will be ready.
   if (force_navigation) {
     SignalWhenReady(
-        base::Bind(&WebViewGuest::LoadURLWithParams,
-                   weak_ptr_factory_.GetWeakPtr(), url, content::Referrer(),
-                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL, force_navigation));
+        base::BindOnce(&WebViewGuest::LoadURLWithParams,
+                       weak_ptr_factory_.GetWeakPtr(), url, content::Referrer(),
+                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, force_navigation));
     return;
   }
   LoadURLWithParams(url, content::Referrer(), ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
@@ -1416,8 +1414,8 @@ void WebViewGuest::EnterFullscreenModeForTab(
   request_info.SetString(webview::kOrigin, origin.spec());
   web_view_permission_helper_->RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_FULLSCREEN, request_info,
-      base::Bind(&WebViewGuest::OnFullscreenPermissionDecided,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&WebViewGuest::OnFullscreenPermissionDecided,
+                     weak_ptr_factory_.GetWeakPtr()),
       false /* allowed_by_default */);
 
   // TODO(lazyboy): Right now the guest immediately goes fullscreen within its
@@ -1443,7 +1441,7 @@ void WebViewGuest::RequestToLockMouse(WebContents* web_contents,
                                       bool last_unlocked_by_target) {
   web_view_permission_helper_->RequestPointerLockPermission(
       user_gesture, last_unlocked_by_target,
-      base::Bind(
+      base::BindOnce(
           base::IgnoreResult(&WebContents::GotLockMousePermissionResponse),
           base::Unretained(web_contents)));
 }
@@ -1525,13 +1523,12 @@ void WebViewGuest::RequestNewWindowPermission(WindowOpenDisposition disposition,
   request_info.SetString(webview::kWindowOpenDisposition,
                          WindowOpenDispositionToString(disposition));
 
-  web_view_permission_helper_->
-      RequestPermission(WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW,
-                        request_info,
-                        base::Bind(&WebViewGuest::OnWebViewNewWindowResponse,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   guest->guest_instance_id()),
-                                   false /* allowed_by_default */);
+  web_view_permission_helper_->RequestPermission(
+      WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW, request_info,
+      base::BindOnce(&WebViewGuest::OnWebViewNewWindowResponse,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     guest->guest_instance_id()),
+      false /* allowed_by_default */);
 }
 
 GURL WebViewGuest::ResolveURL(const std::string& src) {

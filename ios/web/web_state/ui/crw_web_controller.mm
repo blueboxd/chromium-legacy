@@ -1396,8 +1396,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // Do not attach the context menu controller immediately as the JavaScript
   // delegate must be specified.
   web::UserAgentType defaultUserAgent =
-      base::FeatureList::IsEnabled(
-          web::features::kUseDefaultUserAgentInWebClient)
+      web::features::UseWebClientDefaultUserAgent()
           ? web::UserAgentType::AUTOMATIC
           : web::UserAgentType::MOBILE;
   web::NavigationItem* item = self.currentNavItem;

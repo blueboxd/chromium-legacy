@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "components/signin/public/base/signin_buildflags.h"
@@ -50,6 +51,12 @@ enum class ReauthResult;
 // Chrome OS has its own sign-in flow and doesn't use DICE.
 class SigninViewController {
  public:
+  // Handle that will stop ongoing reauths upon destruction.
+  class ReauthAbortHandle {
+   public:
+    virtual ~ReauthAbortHandle() = default;
+  };
+
   explicit SigninViewController(Browser* browser);
   virtual ~SigninViewController();
 
@@ -101,9 +108,8 @@ class SigninViewController {
   // Calls |reauth_callback| on completion of the reauth flow, or on error. The
   // callback may be called synchronously. The user may also ignore the reauth
   // indefinitely.
-  // The reauth prompt that is currently displayed can be cancelled by
-  // CloseModalSignin().
-  virtual void ShowReauthPrompt(
+  // Returns a handle that aborts the ongoing reauth on destruction.
+  virtual std::unique_ptr<ReauthAbortHandle> ShowReauthPrompt(
       const CoreAccountId& account_id,
       base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
 
@@ -140,6 +146,8 @@ class SigninViewController {
   Browser* browser_;
 
   SigninViewControllerDelegate* delegate_;
+
+  base::WeakPtrFactory<SigninViewController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SigninViewController);
 };

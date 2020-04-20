@@ -51,10 +51,11 @@ class BudgetDatabaseTest : public ::testing::Test {
   // Spend budget for the origin.
   bool SpendBudget(double amount) {
     base::RunLoop run_loop;
-    db_.SpendBudget(origin(),
-                    base::Bind(&BudgetDatabaseTest::WriteBudgetComplete,
-                               base::Unretained(this), run_loop.QuitClosure()),
-                    amount);
+    db_.SpendBudget(
+        origin(),
+        base::BindOnce(&BudgetDatabaseTest::WriteBudgetComplete,
+                       base::Unretained(this), run_loop.QuitClosure()),
+        amount);
     run_loop.Run();
     return success_;
   }

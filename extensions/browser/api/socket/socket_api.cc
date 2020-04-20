@@ -426,7 +426,7 @@ void SocketBindFunction::AsyncWorkStart() {
   }
 
   socket->Bind(address_, port_,
-               base::BindRepeating(&SocketBindFunction::OnCompleted, this));
+               base::BindOnce(&SocketBindFunction::OnCompleted, this));
 }
 void SocketBindFunction::OnCompleted(int net_result) {
   Socket* socket = GetSocket(socket_id_);

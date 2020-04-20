@@ -71,7 +71,7 @@ class KioskProfileLoader::CryptohomedChecker
   ~CryptohomedChecker() {}
 
   void StartCheck() {
-    CryptohomeClient::Get()->WaitForServiceToBeAvailable(base::Bind(
+    CryptohomeClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
         &CryptohomedChecker::OnServiceAvailibityChecked, AsWeakPtr()));
   }
 
@@ -97,8 +97,8 @@ class KioskProfileLoader::CryptohomedChecker
       return;
     }
 
-    CryptohomeClient::Get()->IsMounted(
-        base::Bind(&CryptohomedChecker::OnCryptohomeIsMounted, AsWeakPtr()));
+    CryptohomeClient::Get()->IsMounted(base::BindOnce(
+        &CryptohomedChecker::OnCryptohomeIsMounted, AsWeakPtr()));
   }
 
   void OnCryptohomeIsMounted(base::Optional<bool> is_mounted) {

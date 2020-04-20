@@ -473,8 +473,8 @@ class RemoveFaviconTester {
     favicon_service_->GetRawFaviconForPageURL(
         page_url, {favicon_base::IconType::kFavicon}, gfx::kFaviconSize,
         /*fallback_to_host=*/false,
-        base::Bind(&RemoveFaviconTester::SaveResultAndQuit,
-                   base::Unretained(this)),
+        base::BindOnce(&RemoveFaviconTester::SaveResultAndQuit,
+                       base::Unretained(this)),
         &tracker_);
     run_loop.Run();
   }
@@ -646,8 +646,8 @@ class RemovePluginDataTester {
     // TestBrowsingDataFlashLSOHelper is synchronous, so we can immediately
     // return the fetched domains.
     helper_->StartFetching(
-        base::Bind(&RemovePluginDataTester::OnSitesWithFlashDataFetched,
-                   base::Unretained(this)));
+        base::BindOnce(&RemovePluginDataTester::OnSitesWithFlashDataFetched,
+                       base::Unretained(this)));
     return domains_;
   }
 

@@ -63,6 +63,9 @@ public class ExternalNavigationHandler {
     private static final String PLAY_APP_PATH = "/store/apps/details";
     private static final String PLAY_HOSTNAME = "play.google.com";
 
+    private static final String PDF_MIME = "application/pdf";
+    private static final String PDF_SUFFIX = ".pdf";
+
     @VisibleForTesting
     public static final String EXTRA_BROWSER_FALLBACK_URL = "browser_fallback_url";
 
@@ -1119,6 +1122,15 @@ public class ExternalNavigationHandler {
         return intent.filterEquals(other)
                 && (intent.getSelector() == other.getSelector()
                         || intent.getSelector().filterEquals(other.getSelector()));
+    }
+
+    // TODO(crbug.com/1071390): Make this method private if/once its consumers have been moved into
+    // this class.
+    public static boolean isPdfIntent(Intent intent) {
+        if (intent == null || intent.getData() == null) return false;
+        String filename = intent.getData().getLastPathSegment();
+        return (filename != null && filename.endsWith(PDF_SUFFIX))
+                || PDF_MIME.equals(intent.getType());
     }
 
     // TODO(crbug.com/1071390): Make this method private once its consumers have been moved into

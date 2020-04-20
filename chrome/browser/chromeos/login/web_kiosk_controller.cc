@@ -57,8 +57,8 @@ void WebKioskController::StartWebKiosk(const AccountId& account_id) {
     return;
 
   splash_wait_timer_.Start(FROM_HERE, kWebKioskSplashScreenMinTime,
-                           base::Bind(&WebKioskController::OnTimerFire,
-                                      weak_ptr_factory_.GetWeakPtr()));
+                           base::BindOnce(&WebKioskController::OnTimerFire,
+                                          weak_ptr_factory_.GetWeakPtr()));
 
   login_performer_ = std::make_unique<ChromeLoginPerformer>(this);
   login_performer_->LoginAsWebKioskAccount(account_id_);

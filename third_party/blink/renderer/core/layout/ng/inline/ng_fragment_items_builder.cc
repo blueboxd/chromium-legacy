@@ -79,66 +79,43 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
 
   for (Child* child_iter = child_begin; child_iter != child_end;) {
     Child& child = *child_iter;
-    if (const NGPhysicalTextFragment* text = child.fragment.get()) {
-      items_.emplace_back(base::MakeRefCounted<NGFragmentItem>(*text),
-                          child.rect.offset);
+    // OOF children should have been added to their parent box fragments.
+    DCHECK(!child.out_of_flow_positioned_box);
+    if (!child.fragment_item) {
       ++child_iter;
       continue;
     }
 
-    if (child.layout_result || child.inline_item) {
-      // Create an item if this box has no inline children.
-      scoped_refptr<NGFragmentItem> item;
-      if (child.layout_result) {
-        const NGPhysicalBoxFragment& box =
-            To<NGPhysicalBoxFragment>(child.layout_result->PhysicalFragment());
-        item = base::MakeRefCounted<NGFragmentItem>(box,
-                                                    child.ResolvedDirection());
-      } else {
-        DCHECK(child.inline_item);
-        item = base::MakeRefCounted<NGFragmentItem>(
-            *child.inline_item,
-            ToPhysicalSize(child.rect.size,
-                           child.inline_item->Style()->GetWritingMode()));
-      }
-
-      // Take the fast path when we know |child| does not have child items.
-      if (child.children_count <= 1) {
-        items_.emplace_back(std::move(item), child.rect.offset);
-        ++child_iter;
-        continue;
-      }
-      DCHECK(!item->IsFloating());
-
-      // Children of inline boxes are flattened and added to |items_|, with the
-      // count of descendant items to preserve the tree structure.
-      //
-      // Add an empty item so that the start of the box can be set later.
-      wtf_size_t box_start_index = items_.size();
-      items_.emplace_back(child.rect.offset);
-
-      // Add all children, including their desendants, skipping this item.
-      CHECK_GE(child.children_count, 1u);  // 0 will loop infinitely.
-      Child* end_child_iter = child_iter + child.children_count;
-      CHECK_LE(end_child_iter - child_begin, child_end - child_begin);
-      AddItems(child_iter + 1, end_child_iter);
-      child_iter = end_child_iter;
-
-      // All children are added. Compute how many items are actually added. The
-      // number of items added maybe different from |child.children_count|.
-      wtf_size_t item_count = items_.size() - box_start_index;
-
-      // Create an item for the start of the box.
-      item->SetDescendantsCount(item_count);
-      DCHECK(!items_[box_start_index].item);
-      items_[box_start_index].item = std::move(item);
+    if (child.children_count <= 1) {
+      items_.emplace_back(std::move(child.fragment_item), child.rect.offset);
+      ++child_iter;
       continue;
     }
+    DCHECK(child.fragment_item->IsContainer());
+    DCHECK(!child.fragment_item->IsFloating());
 
-    // OOF children should have been added to their parent box fragments.
-    // TODO(kojii): Consider handling them in NGFragmentItem too.
-    DCHECK(!child.out_of_flow_positioned_box);
-    ++child_iter;
+    // Children of inline boxes are flattened and added to |items_|, with the
+    // count of descendant items to preserve the tree structure.
+    //
+    // Add an empty item so that the start of the box can be set later.
+    wtf_size_t box_start_index = items_.size();
+    items_.emplace_back(child.rect.offset);
+
+    // Add all children, including their desendants, skipping this item.
+    CHECK_GE(child.children_count, 1u);  // 0 will loop infinitely.
+    Child* end_child_iter = child_iter + child.children_count;
+    CHECK_LE(end_child_iter - child_begin, child_end - child_begin);
+    AddItems(child_iter + 1, end_child_iter);
+    child_iter = end_child_iter;
+
+    // All children are added. Compute how many items are actually added. The
+    // number of items added maybe different from |child.children_count|.
+    wtf_size_t item_count = items_.size() - box_start_index;
+
+    // Create an item for the start of the box.
+    child.fragment_item->SetDescendantsCount(item_count);
+    DCHECK(!items_[box_start_index].item);
+    items_[box_start_index].item = std::move(child.fragment_item);
   }
 }
 

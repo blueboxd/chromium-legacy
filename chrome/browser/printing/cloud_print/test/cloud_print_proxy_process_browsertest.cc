@@ -242,7 +242,7 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
 
   EXPECT_TRUE(server.Init());
   EXPECT_TRUE(state->SignalReady(service_process.io_task_runner().get(),
-                                 base::Bind(&ShutdownTask)));
+                                 base::BindOnce(&ShutdownTask)));
 #if defined(OS_MACOSX)
   mock_launchd.SignalReady();
 #endif

@@ -65,8 +65,8 @@ std::vector<ash::NotifierMetadata> WebPageNotifierController::GetNotifierList(
     // that URL.
     favicon_service->GetFaviconImageForPageURL(
         url,
-        base::Bind(&WebPageNotifierController::OnFaviconLoaded,
-                   base::Unretained(this), url),
+        base::BindOnce(&WebPageNotifierController::OnFaviconLoaded,
+                       base::Unretained(this), url),
         favicon_tracker_.get());
   }
 

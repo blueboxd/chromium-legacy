@@ -103,9 +103,9 @@ void PreviewsLitePageRedirectURLLoader::StartOriginProbe(
       net::HttpRequestHeaders(), retry_policy, timeout_policy,
       traffic_annotation, 10 /* max_cache_entries */,
       base::TimeDelta::FromHours(24) /* revalidate_cache_after */);
-  origin_connectivity_prober_->SetOnCompleteCallback(base::BindRepeating(
-      &PreviewsLitePageRedirectURLLoader::OnOriginProbeComplete,
-      weak_ptr_factory_.GetWeakPtr()));
+  origin_connectivity_prober_->SetOnCompleteCallback(
+      base::BindOnce(&PreviewsLitePageRedirectURLLoader::OnOriginProbeComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
   origin_connectivity_prober_->SendNowIfInactive(
       false /* send_only_in_foreground */);
 }

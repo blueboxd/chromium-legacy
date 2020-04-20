@@ -420,8 +420,8 @@ void ClientSideDetectionHost::OnPhishingPreClassificationDone(
     phishing_detection_start_time_ = tick_clock_->NowTicks();
     phishing_detector_->StartPhishingDetection(
         browse_info_->url,
-        base::BindRepeating(&ClientSideDetectionHost::PhishingDetectionDone,
-                            weak_factory_.GetWeakPtr()));
+        base::BindOnce(&ClientSideDetectionHost::PhishingDetectionDone,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -469,8 +469,8 @@ void ClientSideDetectionHost::PhishingDetectionDone(
       // the client verdict request.
       feature_extractor_->ExtractFeatures(
           browse_info_.get(), std::move(verdict),
-          base::Bind(&ClientSideDetectionHost::FeatureExtractionDone,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&ClientSideDetectionHost::FeatureExtractionDone,
+                         weak_factory_.GetWeakPtr()));
     }
   }
 }

@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/frame_or_imported_document.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
@@ -20,30 +19,32 @@
 namespace blink {
 
 FrameResourceFetcherProperties::FrameResourceFetcherProperties(
-    FrameOrImportedDocument& frame_or_imported_document)
-    : frame_or_imported_document_(frame_or_imported_document),
+    DocumentLoader& document_loader,
+    Document& document)
+    : document_loader_(document_loader),
+      document_(document),
       fetch_client_settings_object_(
           MakeGarbageCollected<FetchClientSettingsObjectImpl>(
-              *frame_or_imported_document.GetDocument().ToExecutionContext())),
-      web_bundle_physical_url_(
-          frame_or_imported_document_->GetMasterDocumentLoader()
-              .WebBundlePhysicalUrl()) {}
+              *document.ToExecutionContext())),
+      web_bundle_physical_url_(document_loader.WebBundlePhysicalUrl()) {}
 
 void FrameResourceFetcherProperties::Trace(Visitor* visitor) {
-  visitor->Trace(frame_or_imported_document_);
+  visitor->Trace(document_loader_);
+  visitor->Trace(document_);
   visitor->Trace(fetch_client_settings_object_);
   ResourceFetcherProperties::Trace(visitor);
 }
 
 bool FrameResourceFetcherProperties::IsMainFrame() const {
-  return frame_or_imported_document_->GetFrame().IsMainFrame();
+  LocalFrame* frame = document_->GetFrame();
+  DCHECK(frame);
+  return frame->IsMainFrame();
 }
 
 mojom::ControllerServiceWorkerMode
 FrameResourceFetcherProperties::GetControllerServiceWorkerMode() const {
   auto* service_worker_network_provider =
-      frame_or_imported_document_->GetMasterDocumentLoader()
-          .GetServiceWorkerNetworkProvider();
+      document_loader_->GetServiceWorkerNetworkProvider();
   if (!service_worker_network_provider)
     return blink::mojom::ControllerServiceWorkerMode::kNoController;
   return service_worker_network_provider->GetControllerServiceWorkerMode();
@@ -53,32 +54,31 @@ int64_t FrameResourceFetcherProperties::ServiceWorkerId() const {
   DCHECK_NE(GetControllerServiceWorkerMode(),
             blink::mojom::ControllerServiceWorkerMode::kNoController);
   auto* service_worker_network_provider =
-      frame_or_imported_document_->GetMasterDocumentLoader()
-          .GetServiceWorkerNetworkProvider();
+      document_loader_->GetServiceWorkerNetworkProvider();
   DCHECK(service_worker_network_provider);
   return service_worker_network_provider->ControllerServiceWorkerID();
 }
 
 bool FrameResourceFetcherProperties::IsPaused() const {
-  return frame_or_imported_document_->GetFrame().GetPage()->Paused();
+  LocalFrame* frame = document_->GetFrame();
+  DCHECK(frame);
+  return frame->GetPage()->Paused();
 }
 
 bool FrameResourceFetcherProperties::IsLoadComplete() const {
-  return frame_or_imported_document_->GetDocument().LoadEventFinished();
+  return document_->LoadEventFinished();
 }
 
 bool FrameResourceFetcherProperties::ShouldBlockLoadingSubResource() const {
-  DocumentLoader* document_loader =
-      frame_or_imported_document_->GetDocumentLoader();
-  if (!document_loader)
-    return false;
-
-  FrameLoader& loader = frame_or_imported_document_->GetFrame().Loader();
-  return document_loader != loader.GetDocumentLoader();
+  LocalFrame* frame = document_->GetFrame();
+  DCHECK(frame);
+  return document_loader_ != frame->Loader().GetDocumentLoader();
 }
 
 bool FrameResourceFetcherProperties::IsSubframeDeprioritizationEnabled() const {
-  Settings* settings = frame_or_imported_document_->GetFrame().GetSettings();
+  LocalFrame* frame = document_->GetFrame();
+  DCHECK(frame);
+  Settings* settings = frame->GetSettings();
   if (!settings) {
     return false;
   }
@@ -105,8 +105,9 @@ bool FrameResourceFetcherProperties::IsSubframeDeprioritizationEnabled() const {
 }
 
 scheduler::FrameStatus FrameResourceFetcherProperties::GetFrameStatus() const {
-  return scheduler::GetFrameStatus(
-      frame_or_imported_document_->GetFrame().GetFrameScheduler());
+  LocalFrame* frame = document_->GetFrame();
+  DCHECK(frame);
+  return scheduler::GetFrameStatus(frame->GetFrameScheduler());
 }
 
 const KURL& FrameResourceFetcherProperties::WebBundlePhysicalUrl() const {

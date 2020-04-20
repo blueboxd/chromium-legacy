@@ -188,6 +188,9 @@ bool FindPrefs(const AccountId& account_id,
     return false;
   }
 
+  if (!account_id.is_valid())
+    return false;
+
   const base::ListValue* known_users = local_state->GetList(kKnownUsers);
   for (size_t i = 0; i < known_users->GetSize(); ++i) {
     const base::DictionaryValue* element = nullptr;
@@ -216,6 +219,9 @@ void UpdatePrefs(const AccountId& account_id,
       UserManager::Get()->IsUserNonCryptohomeDataEphemeral(account_id)) {
     return;
   }
+
+  if (!account_id.is_valid())
+    return;
 
   ListPrefUpdate update(local_state, kKnownUsers);
   for (size_t i = 0; i < update->GetSize(); ++i) {
@@ -644,6 +650,9 @@ void RemovePrefs(const AccountId& account_id) {
 
   // Local State may not be initialized in tests.
   if (!local_state)
+    return;
+
+  if (!account_id.is_valid())
     return;
 
   ListPrefUpdate update(local_state, kKnownUsers);

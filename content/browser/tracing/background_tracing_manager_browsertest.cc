@@ -351,8 +351,8 @@ class TestTriggerHelper {
  public:
   BackgroundTracingManager::StartedFinalizingCallback receive_closure(
       bool expected) {
-    return base::BindRepeating(&TestTriggerHelper::OnTriggerReceive,
-                               base::Unretained(this), expected);
+    return base::BindOnce(&TestTriggerHelper::OnTriggerReceive,
+                          base::Unretained(this), expected);
   }
 
   void WaitForTriggerReceived() { wait_for_trigger_received_.Run(); }

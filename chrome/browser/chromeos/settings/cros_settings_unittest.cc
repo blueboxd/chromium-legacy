@@ -117,7 +117,7 @@ class CrosSettingsTest : public testing::Test {
     // the TRUSTED values.
     EXPECT_EQ(
         CrosSettingsProvider::TRUSTED,
-        CrosSettings::Get()->PrepareTrustedValues(base::Bind(&NotReached)));
+        CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(&NotReached)));
 
     const base::Value* pref_value = CrosSettings::Get()->GetPref(pref);
     EXPECT_TRUE(pref_value) << "for pref=" << pref;

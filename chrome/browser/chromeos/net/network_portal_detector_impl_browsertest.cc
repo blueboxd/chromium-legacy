@@ -65,7 +65,7 @@ void ErrorCallbackFunction(const std::string& error_name,
 void SetConnected(const std::string& service_path) {
   DBusThreadManager::Get()->GetShillServiceClient()->Connect(
       dbus::ObjectPath(service_path), base::DoNothing(),
-      base::Bind(&ErrorCallbackFunction));
+      base::BindOnce(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -95,11 +95,11 @@ class NetworkPortalDetectorImplBrowserTest
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
         dbus::ObjectPath(kWifiServicePath), shill::kStateProperty,
         base::Value(shill::kStateRedirectFound), base::DoNothing(),
-        base::Bind(&ErrorCallbackFunction));
+        base::BindOnce(&ErrorCallbackFunction));
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
         dbus::ObjectPath(kWifiServicePath), shill::kProbeUrlProperty,
         base::Value(kProbeUrl), base::DoNothing(),
-        base::Bind(&ErrorCallbackFunction));
+        base::BindOnce(&ErrorCallbackFunction));
 
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
         nullptr /* profile */);

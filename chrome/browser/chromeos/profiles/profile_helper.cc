@@ -449,8 +449,8 @@ void ProfileHelperImpl::ClearSigninProfile(
     return;
   }
   on_clear_profile_stage_finished_ = base::BarrierClosure(
-      3, base::Bind(&ProfileHelperImpl::OnSigninProfileCleared,
-                    weak_factory_.GetWeakPtr()));
+      3, base::BindOnce(&ProfileHelperImpl::OnSigninProfileCleared,
+                        weak_factory_.GetWeakPtr()));
   LOG_ASSERT(!browsing_data_remover_);
   browsing_data_remover_ =
       content::BrowserContext::GetBrowsingDataRemover(GetSigninProfile());

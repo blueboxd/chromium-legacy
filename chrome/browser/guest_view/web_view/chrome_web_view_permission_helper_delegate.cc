@@ -73,11 +73,10 @@ void ChromeWebViewPermissionHelperDelegate::BlockedUnauthorizedPlugin(
   info.SetString(std::string(kPluginName), name);
   info.SetString(std::string(kPluginIdentifier), identifier);
   web_view_permission_helper()->RequestPermission(
-      WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN,
-      info,
-      base::Bind(&ChromeWebViewPermissionHelperDelegate::OnPermissionResponse,
-                 weak_factory_.GetWeakPtr(),
-                 identifier),
+      WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN, info,
+      base::BindOnce(
+          &ChromeWebViewPermissionHelperDelegate::OnPermissionResponse,
+          weak_factory_.GetWeakPtr(), identifier),
       true /* allowed_by_default */);
   base::RecordAction(
       base::UserMetricsAction("WebView.Guest.PluginLoadRequest"));

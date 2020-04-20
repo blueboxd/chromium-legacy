@@ -55,8 +55,8 @@ class BluetoothAdapterWinTest : public testing::Test {
       : ui_task_runner_(new base::TestSimpleTaskRunner()),
         bluetooth_task_runner_(new base::TestSimpleTaskRunner()),
         adapter_(new BluetoothAdapterWin(
-            base::Bind(&BluetoothAdapterWinTest::RunInitCallback,
-                       base::Unretained(this)))),
+            base::BindOnce(&BluetoothAdapterWinTest::RunInitCallback,
+                           base::Unretained(this)))),
         adapter_win_(static_cast<BluetoothAdapterWin*>(adapter_.get())),
         observer_(adapter_),
         init_callback_called_(false) {
@@ -111,13 +111,13 @@ class BluetoothAdapterWinTest : public testing::Test {
 
   void CallStartDiscoverySession() {
     adapter_win_->StartDiscoverySession(
-        base::BindRepeating(
+        base::BindOnce(
             &BluetoothAdapterWinTest::DiscoverySessionCallbackPassthrough,
             base::Unretained(this),
             base::BindRepeating(
                 &BluetoothAdapterWinTest::IncrementNumStartDiscoveryCallbacks,
                 base::Unretained(this))),
-        base::BindRepeating(
+        base::BindOnce(
             &BluetoothAdapterWinTest::IncrementNumStartDiscoveryErrorCallbacks,
             base::Unretained(this)));
   }

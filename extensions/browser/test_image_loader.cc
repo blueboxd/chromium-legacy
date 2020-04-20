@@ -39,7 +39,7 @@ SkBitmap TestImageLoader::LoadAndGetBitmap(const Extension* extension,
   ImageLoader image_loader;
   image_loader.LoadImageAsync(
       extension, extension->GetResource(path), gfx::Size(size, size),
-      base::Bind(&TestImageLoader::OnImageLoaded, base::Unretained(this)));
+      base::BindOnce(&TestImageLoader::OnImageLoaded, base::Unretained(this)));
 
   // If |image_| still hasn't been loaded (i.e. it is being loaded
   // asynchronously), wait for it.

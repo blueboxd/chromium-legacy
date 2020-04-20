@@ -198,8 +198,8 @@ void OnShellExtensionPathEnumerated(
   }
 
   task_runner->PostTask(
-      FROM_HERE, base::BindRepeating(std::move(on_shell_extension_enumerated),
-                                     path, size_of_image, time_date_stamp));
+      FROM_HERE, base::BindOnce(std::move(on_shell_extension_enumerated), path,
+                                size_of_image, time_date_stamp));
 }
 
 void EnumerateShellExtensionsOnBlockingSequence(

@@ -105,6 +105,11 @@ class MockModelTypeWorker : public CommitQueue {
   syncer::UpdateResponseData GenerateTypeRootUpdateData(
       const ModelType& model_type);
 
+  // Returns an UpdateResponseData representing an update received from
+  // the server for a deleted entity.
+  syncer::UpdateResponseData GenerateTombstoneUpdateData(
+      const ClientTagHash& tag_hash);
+
   // Triggers a server-side deletion of the entity with |tag_hash|; updates
   // server state accordingly.
   void TombstoneFromServer(const ClientTagHash& tag_hash);

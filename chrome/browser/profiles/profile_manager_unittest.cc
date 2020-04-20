@@ -431,12 +431,12 @@ TEST_F(ProfileManagerTest, LoadNonExistingProfile) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   profile_manager->LoadProfile(
       profile_name, false /* incognito */,
-      base::Bind(&ExpectNullProfile, run_loop_1.QuitClosure()));
+      base::BindOnce(&ExpectNullProfile, run_loop_1.QuitClosure()));
   run_loop_1.Run();
 
   profile_manager->LoadProfile(
       profile_name, true /* incognito */,
-      base::Bind(&ExpectNullProfile, run_loop_2.QuitClosure()));
+      base::BindOnce(&ExpectNullProfile, run_loop_2.QuitClosure()));
   run_loop_2.Run();
 }
 
@@ -457,23 +457,23 @@ TEST_F(ProfileManagerTest, LoadExistingProfile) {
   bool incognito = false;
   profile_manager->LoadProfile(
       profile_name, incognito,
-      base::Bind(&ExpectProfileWithName, profile_name, incognito,
-                 load_profile.QuitClosure()));
+      base::BindOnce(&ExpectProfileWithName, profile_name, incognito,
+                     load_profile.QuitClosure()));
   load_profile.Run();
 
   base::RunLoop load_profile_incognito;
   incognito = true;
   profile_manager->LoadProfile(
       profile_name, incognito,
-      base::Bind(&ExpectProfileWithName, profile_name, incognito,
-                 load_profile_incognito.QuitClosure()));
+      base::BindOnce(&ExpectProfileWithName, profile_name, incognito,
+                     load_profile_incognito.QuitClosure()));
   load_profile_incognito.Run();
 
   // Loading some other non existing profile should still return null.
   base::RunLoop load_other_profile;
   profile_manager->LoadProfile(
       other_name, false,
-      base::Bind(&ExpectNullProfile, load_other_profile.QuitClosure()));
+      base::BindOnce(&ExpectNullProfile, load_other_profile.QuitClosure()));
   load_other_profile.Run();
 }
 

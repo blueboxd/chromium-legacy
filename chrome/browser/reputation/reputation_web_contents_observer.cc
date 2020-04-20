@@ -175,7 +175,7 @@ void ReputationWebContentsObserver::MaybeShowSafetyTip(
 
   ReputationService* service = ReputationService::Get(profile_);
   service->GetReputationStatus(
-      url, base::BindRepeating(
+      url, base::BindOnce(
                &ReputationWebContentsObserver::HandleReputationCheckResult,
                weak_factory_.GetWeakPtr(), navigation_source_id,
                record_ukm_if_tip_not_shown));

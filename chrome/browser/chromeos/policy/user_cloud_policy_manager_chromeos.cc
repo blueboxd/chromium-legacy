@@ -175,9 +175,8 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
     DCHECK_EQ(enforcement_type_, PolicyEnforcement::kPolicyRequired);
     policy_refresh_timeout_.Start(
         FROM_HERE, policy_refresh_timeout,
-        base::BindRepeating(
-            &UserCloudPolicyManagerChromeOS::OnPolicyRefreshTimeout,
-            base::Unretained(this)));
+        base::BindOnce(&UserCloudPolicyManagerChromeOS::OnPolicyRefreshTimeout,
+                       base::Unretained(this)));
   }
 
   // Register for notification that profile creation is complete - this is used

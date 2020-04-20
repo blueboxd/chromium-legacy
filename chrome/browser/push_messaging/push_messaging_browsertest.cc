@@ -436,7 +436,7 @@ void PushMessagingBrowserTest::SetupOrphanedPushSubscription(
   base::RunLoop run_loop;
   push_service()->SubscribeFromWorker(
       requesting_origin, service_worker_registration_id, std::move(options),
-      base::Bind(&DidRegister, run_loop.QuitClosure()));
+      base::BindOnce(&DidRegister, run_loop.QuitClosure()));
   run_loop.Run();
 
   PushMessagingAppIdentifier app_identifier =
@@ -471,8 +471,8 @@ void PushMessagingBrowserTest::LegacySubscribeSuccessfully(
     gcm::GCMClient::Result register_result = gcm::GCMClient::UNKNOWN_ERROR;
     gcm_driver_->Register(
         app_identifier.app_id(), {kManifestSenderId},
-        base::Bind(&LegacyRegisterCallback, run_loop.QuitClosure(),
-                   &subscription_id, &register_result));
+        base::BindOnce(&LegacyRegisterCallback, run_loop.QuitClosure(),
+                       &subscription_id, &register_result));
     run_loop.Run();
     ASSERT_EQ(gcm::GCMClient::SUCCESS, register_result);
   }
@@ -537,7 +537,7 @@ void PushMessagingBrowserTest::DeleteInstanceIDAsIfGCMStoreReset(
   instance_id::InstanceID::Result delete_result =
       instance_id::InstanceID::UNKNOWN_ERROR;
   base::RunLoop run_loop;
-  instance_id_driver->GetInstanceID(app_id)->DeleteID(base::Bind(
+  instance_id_driver->GetInstanceID(app_id)->DeleteID(base::BindOnce(
       &InstanceIDResultCallback, run_loop.QuitClosure(), &delete_result));
   run_loop.Run();
   ASSERT_EQ(instance_id::InstanceID::SUCCESS, delete_result);

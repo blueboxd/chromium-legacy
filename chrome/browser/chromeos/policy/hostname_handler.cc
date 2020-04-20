@@ -103,8 +103,8 @@ void HostnameHandler::DefaultNetworkChanged(
 void HostnameHandler::OnDeviceHostnamePropertyChanged() {
   chromeos::CrosSettingsProvider::TrustedStatus status =
       cros_settings_->PrepareTrustedValues(
-          base::BindRepeating(&HostnameHandler::OnDeviceHostnamePropertyChanged,
-                              weak_factory_.GetWeakPtr()));
+          base::BindOnce(&HostnameHandler::OnDeviceHostnamePropertyChanged,
+                         weak_factory_.GetWeakPtr()));
   if (status != chromeos::CrosSettingsProvider::TRUSTED)
     return;
 

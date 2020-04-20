@@ -257,8 +257,7 @@ void CacheStorageContextImpl::ShutdownOnTaskRunner() {
       special_storage_policy_->HasSessionOnlyOrigins()) {
     cache_manager_->GetAllOriginsUsage(
         CacheStorageOwner::kCacheAPI,
-        // TODO(jsbell): Make this BindOnce.
-        base::BindRepeating(
+        base::BindOnce(
             [](scoped_refptr<CacheStorageManager> cache_manager,
                scoped_refptr<storage::SpecialStoragePolicy>
                    special_storage_policy,

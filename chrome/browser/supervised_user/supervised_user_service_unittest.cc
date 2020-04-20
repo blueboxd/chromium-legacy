@@ -202,8 +202,8 @@ class SupervisedUserServiceTest : public ::testing::Test {
  protected:
   void AddURLAccessRequest(const GURL& url, AsyncResultHolder* result_holder) {
     supervised_user_service_->AddURLAccessRequest(
-        url, base::Bind(&AsyncResultHolder::SetResult,
-                        base::Unretained(result_holder)));
+        url, base::BindOnce(&AsyncResultHolder::SetResult,
+                            base::Unretained(result_holder)));
   }
 
   signin::IdentityTestEnvironment* identity_test_env() {

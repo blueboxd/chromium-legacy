@@ -157,7 +157,7 @@ void LocaleChangeGuard::Check() {
 
   ash::LocaleUpdateController::Get()->OnLocaleChanged(
       cur_locale, from_locale_, to_locale_,
-      base::Bind(&LocaleChangeGuard::OnResult, AsWeakPtr()));
+      base::BindOnce(&LocaleChangeGuard::OnResult, AsWeakPtr()));
 }
 
 void LocaleChangeGuard::OnResult(ash::LocaleNotificationResult result) {

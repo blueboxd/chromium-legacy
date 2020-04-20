@@ -76,7 +76,7 @@ TEST_F(PushMessagingNotificationManagerTest,
   bool was_called = false;
   manager.EnforceUserVisibleOnlyRequirements(
       app_url.GetOrigin(), 0l,
-      base::BindRepeating(
+      base::BindOnce(
           [](bool* was_called, bool did_show_generic_notification) {
             *was_called = true;
           },

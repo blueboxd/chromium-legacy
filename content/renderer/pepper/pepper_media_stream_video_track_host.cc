@@ -537,8 +537,8 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
   const bool enabled = true;
   track_ = blink::MediaStreamVideoTrack::CreateVideoTrack(
       source,
-      base::BindRepeating(&PepperMediaStreamVideoTrackHost::OnTrackStarted,
-                          base::Unretained(this)),
+      base::BindOnce(&PepperMediaStreamVideoTrackHost::OnTrackStarted,
+                     base::Unretained(this)),
       enabled);
   // Note: The call to CreateVideoTrack() returned a track that holds a
   // ref-counted reference to |webkit_source| (and, implicitly, |source|).

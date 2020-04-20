@@ -15,6 +15,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
+#include "components/sync_bookmarks/switches.h"
 
 namespace sync_bookmarks {
 
@@ -97,17 +98,30 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
 
   // Local bookmark creations should have used a random GUID so it's safe to
   // use it as originator client item ID, without the risk for collision.
-  const std::string sync_id = node->guid();
-  const int64_t server_version = syncer::kUncommittedVersion;
-  const base::Time creation_time = base::Time::Now();
   const sync_pb::UniquePosition unique_position =
-      ComputePosition(*parent, index, sync_id).ToProto();
+      ComputePosition(*parent, index, node->guid()).ToProto();
 
   sync_pb::EntitySpecifics specifics =
       CreateSpecificsFromBookmarkNode(node, model, /*force_favicon_load=*/true,
                                       /*include_guid=*/true);
-  const SyncedBookmarkTracker::Entity* entity = bookmark_tracker_->Add(
-      node, sync_id, server_version, creation_time, unique_position, specifics);
+
+  // It is possible that a created bookmark was restored after deletion and
+  // the tombstone was not committed yet. In that case the existing entity
+  // should be updated.
+  const SyncedBookmarkTracker::Entity* entity =
+      bookmark_tracker_->GetTombstoneEntityForGuid(node->guid());
+  const base::Time creation_time = base::Time::Now();
+  if (entity && base::FeatureList::IsEnabled(
+                    switches::kSyncProcessBookmarkRestoreAfterDeletion)) {
+    bookmark_tracker_->UndeleteTombstoneForBookmarkNode(entity, node);
+    bookmark_tracker_->Update(entity, entity->metadata()->server_version(),
+                              creation_time, unique_position, specifics);
+  } else {
+    entity =
+        bookmark_tracker_->Add(node, node->guid(), syncer::kUncommittedVersion,
+                               creation_time, unique_position, specifics);
+  }
+
   // Mark the entity that it needs to be committed.
   bookmark_tracker_->IncrementSequenceNumber(entity);
   nudge_for_commit_closure_.Run();

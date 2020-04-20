@@ -288,9 +288,10 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
         ->network_configuration_handler()
         ->GetShillProperties(
             service_path,
-            base::Bind(&NetworkingPrivateApiTest::OnNetworkProperties,
-                       base::Unretained(this), service_path,
-                       base::Unretained(&properties), run_loop.QuitClosure()),
+            base::BindOnce(&NetworkingPrivateApiTest::OnNetworkProperties,
+                           base::Unretained(this), service_path,
+                           base::Unretained(&properties),
+                           run_loop.QuitClosure()),
             base::Bind(&NetworkingPrivateApiTest::OnShillError,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();

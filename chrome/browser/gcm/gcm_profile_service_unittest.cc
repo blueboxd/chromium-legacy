@@ -185,11 +185,9 @@ void GCMProfileServiceTest::RegisterAndWaitForCompletion(
     const std::vector<std::string>& sender_ids) {
   base::RunLoop run_loop;
   gcm_profile_service_->driver()->Register(
-      kTestAppID,
-      sender_ids,
-      base::Bind(&GCMProfileServiceTest::RegisterCompleted,
-                 base::Unretained(this),
-                 run_loop.QuitClosure()));
+      kTestAppID, sender_ids,
+      base::BindOnce(&GCMProfileServiceTest::RegisterCompleted,
+                     base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -197,9 +195,8 @@ void GCMProfileServiceTest::UnregisterAndWaitForCompletion() {
   base::RunLoop run_loop;
   gcm_profile_service_->driver()->Unregister(
       kTestAppID,
-      base::Bind(&GCMProfileServiceTest::UnregisterCompleted,
-                 base::Unretained(this),
-                 run_loop.QuitClosure()));
+      base::BindOnce(&GCMProfileServiceTest::UnregisterCompleted,
+                     base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -207,12 +204,9 @@ void GCMProfileServiceTest::SendAndWaitForCompletion(
     const OutgoingMessage& message) {
   base::RunLoop run_loop;
   gcm_profile_service_->driver()->Send(
-      kTestAppID,
-      kUserID,
-      message,
-      base::Bind(&GCMProfileServiceTest::SendCompleted,
-                 base::Unretained(this),
-                 run_loop.QuitClosure()));
+      kTestAppID, kUserID, message,
+      base::BindOnce(&GCMProfileServiceTest::SendCompleted,
+                     base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 }
 

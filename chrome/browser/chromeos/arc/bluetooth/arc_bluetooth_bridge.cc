@@ -1024,8 +1024,8 @@ void ArcBluetoothBridge::OnSetDiscoverable(bool discoverable,
   if (success && discoverable && timeout > 0) {
     discoverable_off_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(timeout),
-        base::Bind(&ArcBluetoothBridge::SetDiscoverable,
-                   weak_factory_.GetWeakPtr(), false, 0));
+        base::BindOnce(&ArcBluetoothBridge::SetDiscoverable,
+                       weak_factory_.GetWeakPtr(), false, 0));
   }
 
   auto status =
@@ -1436,10 +1436,11 @@ void ArcBluetoothBridge::ConnectLEDevice(
       GattConnection(GattConnection::ConnectionState::CONNECTING, nullptr));
   mojom::BluetoothAddressPtr remote_addr_clone = remote_addr.Clone();
   device->CreateGattConnection(
-      base::Bind(&ArcBluetoothBridge::OnGattConnected,
-                 weak_factory_.GetWeakPtr(), base::Passed(&remote_addr)),
-      base::Bind(&ArcBluetoothBridge::OnGattConnectError,
-                 weak_factory_.GetWeakPtr(), base::Passed(&remote_addr_clone)));
+      base::BindOnce(&ArcBluetoothBridge::OnGattConnected,
+                     weak_factory_.GetWeakPtr(), base::Passed(&remote_addr)),
+      base::BindOnce(&ArcBluetoothBridge::OnGattConnectError,
+                     weak_factory_.GetWeakPtr(),
+                     base::Passed(&remote_addr_clone)));
 }
 
 void ArcBluetoothBridge::DisconnectLEDevice(
@@ -1619,8 +1620,8 @@ void ArcBluetoothBridge::ReadGattCharacteristic(
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
   characteristic->ReadRemoteCharacteristic(
-      base::Bind(&OnGattReadDone, repeating_callback),
-      base::Bind(&OnGattReadError, repeating_callback));
+      base::BindOnce(&OnGattReadDone, repeating_callback),
+      base::BindOnce(&OnGattReadError, repeating_callback));
 }
 
 void ArcBluetoothBridge::WriteGattCharacteristic(
@@ -1641,12 +1642,12 @@ void ArcBluetoothBridge::WriteGattCharacteristic(
       base::AdaptCallbackForRepeating(std::move(callback));
   if (prepare) {
     characteristic->PrepareWriteRemoteCharacteristic(
-        value->value, base::Bind(&OnGattOperationDone, repeating_callback),
-        base::Bind(&OnGattOperationError, repeating_callback));
+        value->value, base::BindOnce(&OnGattOperationDone, repeating_callback),
+        base::BindOnce(&OnGattOperationError, repeating_callback));
   } else {
     characteristic->WriteRemoteCharacteristic(
-        value->value, base::Bind(&OnGattOperationDone, repeating_callback),
-        base::Bind(&OnGattOperationError, repeating_callback));
+        value->value, base::BindOnce(&OnGattOperationDone, repeating_callback),
+        base::BindOnce(&OnGattOperationError, repeating_callback));
   }
 }
 
@@ -1667,8 +1668,8 @@ void ArcBluetoothBridge::ReadGattDescriptor(
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
   descriptor->ReadRemoteDescriptor(
-      base::Bind(&OnGattReadDone, repeating_callback),
-      base::Bind(&OnGattReadError, repeating_callback));
+      base::BindOnce(&OnGattReadDone, repeating_callback),
+      base::BindOnce(&OnGattReadError, repeating_callback));
 }
 
 void ArcBluetoothBridge::WriteGattDescriptor(
@@ -1696,8 +1697,8 @@ void ArcBluetoothBridge::WriteGattDescriptor(
   if (descriptor->GetUUID() !=
       BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid()) {
     descriptor->WriteRemoteDescriptor(
-        value->value, base::Bind(&OnGattOperationDone, repeating_callback),
-        base::Bind(&OnGattOperationError, repeating_callback));
+        value->value, base::BindOnce(&OnGattOperationDone, repeating_callback),
+        base::BindOnce(&OnGattOperationError, repeating_callback));
     return;
   }
 
@@ -1719,18 +1720,18 @@ void ArcBluetoothBridge::WriteGattDescriptor(
     case ENABLE_NOTIFICATION_VALUE:
       characteristic->StartNotifySession(
           device::BluetoothGattCharacteristic::NotificationType::kNotification,
-          base::Bind(&ArcBluetoothBridge::OnGattNotifyStartDone,
-                     weak_factory_.GetWeakPtr(), repeating_callback,
-                     char_id_str),
-          base::Bind(&OnGattOperationError, repeating_callback));
+          base::BindOnce(&ArcBluetoothBridge::OnGattNotifyStartDone,
+                         weak_factory_.GetWeakPtr(), repeating_callback,
+                         char_id_str),
+          base::BindOnce(&OnGattOperationError, repeating_callback));
       return;
     case ENABLE_INDICATION_VALUE:
       characteristic->StartNotifySession(
           device::BluetoothGattCharacteristic::NotificationType::kIndication,
-          base::Bind(&ArcBluetoothBridge::OnGattNotifyStartDone,
-                     weak_factory_.GetWeakPtr(), repeating_callback,
-                     char_id_str),
-          base::Bind(&OnGattOperationError, repeating_callback));
+          base::BindOnce(&ArcBluetoothBridge::OnGattNotifyStartDone,
+                         weak_factory_.GetWeakPtr(), repeating_callback,
+                         char_id_str),
+          base::BindOnce(&OnGattOperationError, repeating_callback));
       return;
     default:
       repeating_callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
@@ -1977,7 +1978,7 @@ void ArcBluetoothBridge::StartService(int32_t service_handle,
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
   service->Register(base::Bind(&OnGattOperationDone, repeating_callback),
-                    base::Bind(&OnGattOperationError, repeating_callback));
+                    base::BindOnce(&OnGattOperationError, repeating_callback));
 }
 
 void ArcBluetoothBridge::StopService(int32_t service_handle,
@@ -1991,8 +1992,9 @@ void ArcBluetoothBridge::StopService(int32_t service_handle,
   // the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  service->Unregister(base::Bind(&OnGattOperationDone, repeating_callback),
-                      base::Bind(&OnGattOperationError, repeating_callback));
+  service->Unregister(
+      base::Bind(&OnGattOperationDone, repeating_callback),
+      base::BindOnce(&OnGattOperationError, repeating_callback));
 }
 
 void ArcBluetoothBridge::DeleteService(int32_t service_handle,
@@ -2457,8 +2459,8 @@ void ArcBluetoothBridge::EnqueueLocalPowerChange(
   SendBluetoothPoweredStateBroadcast(local_power_changes_.front());
   power_intent_timer_.Start(
       FROM_HERE, kPowerIntentTimeout,
-      base::Bind(&ArcBluetoothBridge::DequeueLocalPowerChange,
-                 weak_factory_.GetWeakPtr(), powered));
+      base::BindOnce(&ArcBluetoothBridge::DequeueLocalPowerChange,
+                     weak_factory_.GetWeakPtr(), powered));
 }
 
 void ArcBluetoothBridge::DequeueLocalPowerChange(
@@ -2485,8 +2487,8 @@ void ArcBluetoothBridge::DequeueLocalPowerChange(
   SendBluetoothPoweredStateBroadcast(last_change);
   power_intent_timer_.Start(
       FROM_HERE, kPowerIntentTimeout,
-      base::Bind(&ArcBluetoothBridge::DequeueLocalPowerChange,
-                 weak_factory_.GetWeakPtr(), last_change));
+      base::BindOnce(&ArcBluetoothBridge::DequeueLocalPowerChange,
+                     weak_factory_.GetWeakPtr(), last_change));
 }
 
 void ArcBluetoothBridge::EnqueueRemotePowerChange(

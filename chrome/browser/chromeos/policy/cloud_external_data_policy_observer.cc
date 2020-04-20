@@ -233,7 +233,7 @@ void CloudExternalDataPolicyObserver::OnDeviceLocalAccountsChanged() {
 void CloudExternalDataPolicyObserver::RetrieveDeviceLocalAccounts() {
   // Schedule a callback if device policy has not yet been verified.
   if (chromeos::CrosSettingsProvider::TRUSTED !=
-      cros_settings_->PrepareTrustedValues(base::Bind(
+      cros_settings_->PrepareTrustedValues(base::BindOnce(
           &CloudExternalDataPolicyObserver::RetrieveDeviceLocalAccounts,
           weak_factory_.GetWeakPtr()))) {
     return;

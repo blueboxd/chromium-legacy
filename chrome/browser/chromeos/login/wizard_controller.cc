@@ -1330,8 +1330,8 @@ void WizardController::InitiateOOBEUpdate() {
     DBusThreadManager::Get()
         ->GetUpdateEngineClient()
         ->SetUpdateOverCellularPermission(
-            true, base::Bind(&WizardController::StartOOBEUpdate,
-                             weak_factory_.GetWeakPtr()));
+            true, base::BindOnce(&WizardController::StartOOBEUpdate,
+                                 weak_factory_.GetWeakPtr()));
   } else {
     StartOOBEUpdate();
   }
@@ -1380,8 +1380,8 @@ void WizardController::StartTimezoneResolve() {
       base::TimeDelta::FromSeconds(kResolveTimeZoneTimeoutSeconds),
       false /* send_wifi_geolocation_data */,
       false /* send_cellular_geolocation_data */,
-      base::Bind(&WizardController::OnLocationResolved,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&WizardController::OnLocationResolved,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void WizardController::PerformPostEulaActions() {
@@ -1649,7 +1649,7 @@ void WizardController::AutoLaunchKioskApp() {
   // Wait for the |CrosSettings| to become either trusted or permanently
   // untrusted.
   const CrosSettingsProvider::TrustedStatus status =
-      CrosSettings::Get()->PrepareTrustedValues(base::Bind(
+      CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(
           &WizardController::AutoLaunchKioskApp, weak_factory_.GetWeakPtr()));
   if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
     return;
@@ -1683,8 +1683,8 @@ void WizardController::AutoLaunchWebKioskApp() {
   // untrusted.
   const CrosSettingsProvider::TrustedStatus status =
       CrosSettings::Get()->PrepareTrustedValues(
-          base::Bind(&WizardController::AutoLaunchWebKioskApp,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&WizardController::AutoLaunchWebKioskApp,
+                         weak_factory_.GetWeakPtr()));
   if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
     return;
 
@@ -1847,8 +1847,8 @@ void WizardController::OnLocationResolved(const Geoposition& position,
   // cancelled on destruction.
   GetTimezoneProvider()->RequestTimezone(
       position, timeout - elapsed,
-      base::Bind(&WizardController::OnTimezoneResolved,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&WizardController::OnTimezoneResolved,
+                     weak_factory_.GetWeakPtr()));
 }
 
 bool WizardController::SetOnTimeZoneResolvedForTesting(

@@ -152,12 +152,7 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(user_data_directory_.CreateUniqueTempDir());
-    SetUpStorage();
-  }
 
-  void TearDown() override { DestroyStorage(); }
-
-  void SetUpStorage() {
     auto storage = ServiceWorkerStorage::Create(
         user_data_directory_.GetPath(),
         /*database_task_runner=*/base::ThreadTaskRunnerHandle::Get(),
@@ -166,16 +161,10 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
         std::make_unique<ServiceWorkerStorageControlImpl>(std::move(storage));
   }
 
-  void DestroyStorage() {
+  void TearDown() override {
     storage_impl_.reset();
     disk_cache::FlushCacheThreadForTesting();
     content::RunAllTasksUntilIdle();
-  }
-
-  void RestartStorage() {
-    DestroyStorage();
-    SetUpStorage();
-    LazyInitializeForTest();
   }
 
   storage::mojom::ServiceWorkerStorageControl* storage() {
@@ -1108,48 +1097,6 @@ TEST_F(ServiceWorkerStorageControlImplTest,
   result = GetUserDataForAllRegistrationsByKeyPrefix("prefix");
   ASSERT_EQ(result.status, DatabaseStatus::kOk);
   EXPECT_EQ(result.values.size(), 0UL);
-}
-
-// Tests that apply policy updates work.
-TEST_F(ServiceWorkerStorageControlImplTest, ApplyPolicyUpdates) {
-  const GURL kScope1("https://foo.example.com/");
-  const GURL kScriptUrl1("https://foo.example.com/sw.js");
-  const GURL kScope2("https://bar.example.com/");
-  const GURL kScriptUrl2("https://bar.example.com/sw.js");
-  const int64_t kScriptSize = 10;
-
-  LazyInitializeForTest();
-
-  // Preparation: Create and store two registrations.
-  DatabaseStatus status;
-  const int64_t registration_id1 = GetNewRegistrationId();
-  const int64_t version_id1 = GetNewVersionId();
-  status = CreateAndStoreRegistration(registration_id1, version_id1, kScope1,
-                                      kScriptUrl1, kScriptSize);
-  ASSERT_EQ(status, DatabaseStatus::kOk);
-  const int64_t registration_id2 = GetNewRegistrationId();
-  const int64_t version_id2 = GetNewVersionId();
-  status = CreateAndStoreRegistration(registration_id2, version_id2, kScope2,
-                                      kScriptUrl2, kScriptSize);
-  ASSERT_EQ(status, DatabaseStatus::kOk);
-
-  // Update policies to purge the registration for |kScope2| on shutdown.
-  std::vector<storage::mojom::LocalStoragePolicyUpdatePtr> updates;
-  updates.push_back(storage::mojom::LocalStoragePolicyUpdate::New(
-      url::Origin::Create(kScope2.GetOrigin()), /*purge_on_shutdown=*/true));
-  storage()->ApplyPolicyUpdates(std::move(updates));
-
-  // Restart the storage and check the registration for |kScope1| exists
-  // but not for |kScope2|.
-  RestartStorage();
-  {
-    FindRegistrationResult result = FindRegistrationForScope(kScope1);
-    ASSERT_EQ(result->status, DatabaseStatus::kOk);
-  }
-  {
-    FindRegistrationResult result = FindRegistrationForScope(kScope2);
-    ASSERT_EQ(result->status, DatabaseStatus::kErrorNotFound);
-  }
 }
 
 }  // namespace content

@@ -66,12 +66,21 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
 
   enum ItemType { kText, kGeneratedText, kLine, kBox };
 
+  // Create a text item.
   // TODO(kojii): Should be able to create without once creating fragments.
-  NGFragmentItem(const NGPhysicalTextFragment& text);
+  explicit NGFragmentItem(const NGPhysicalTextFragment& text);
+  // Create a box item.
   NGFragmentItem(const NGPhysicalBoxFragment& box,
                  TextDirection resolved_direction);
+  // Create a culled box item.
   NGFragmentItem(const NGInlineItem& inline_item, const PhysicalSize& size);
+  // Create a line item.
   NGFragmentItem(const NGPhysicalLineBoxFragment& line, wtf_size_t item_count);
+
+  // Create |NGFragmentItem| for all items in |child_list|.
+  static void Create(NGLineBoxFragmentBuilder::ChildList* child_list,
+                     const String& text_content,
+                     WritingMode writing_mode);
 
   ~NGFragmentItem() final;
 
@@ -339,6 +348,9 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
                               const NGFragmentItems& items) const;
 
  private:
+  // Create a text item.
+  NGFragmentItem(NGInlineItemResult&& item_result, const PhysicalSize& size);
+
   const LayoutBox* InkOverflowOwnerBox() const;
   LayoutBox* MutableInkOverflowOwnerBox();
 

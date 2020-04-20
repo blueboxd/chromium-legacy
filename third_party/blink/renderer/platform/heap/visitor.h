@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_VISITOR_H_
 
 #include <memory>
+#include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -234,6 +235,17 @@ class PLATFORM_EXPORT Visitor {
     TraceTrait<T>::Trace(this, &t);
   }
 
+  template <typename T>
+  void TraceEphemeron(const WeakMember<T>& key,
+                      const void* value,
+                      TraceCallback value_trace_callback) {
+    T* t = key.Get();
+    if (!t)
+      return;
+    VisitEphemeron(TraceTrait<T>::GetTraceDescriptor(t).base_object_payload,
+                   value, value_trace_callback);
+  }
+
   // Registers an instance method using |RegisterWeakCallback|. See description
   // below.
   template <typename T, void (T::*method)(const WeakCallbackInfo&)>
@@ -280,14 +292,7 @@ class PLATFORM_EXPORT Visitor {
 
   // Visits ephemeron pairs which are a combination of weak and strong keys and
   // values.
-  using EphemeronTracingCallback = bool (*)(Visitor*, const void*);
-  virtual bool VisitEphemeronKeyValuePair(
-      const void* key,
-      const void* value,
-      EphemeronTracingCallback key_trace_callback,
-      EphemeronTracingCallback value_trace_callback) {
-    return true;
-  }
+  virtual void VisitEphemeron(const void*, const void*, TraceCallback) {}
 
   // Visits cross-component references to V8.
 

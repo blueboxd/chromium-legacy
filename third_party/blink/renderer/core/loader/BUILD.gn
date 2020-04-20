@@ -41,8 +41,6 @@ blink_core_sources("loader") {
     "frame_loader_state_machine.cc",
     "frame_loader_state_machine.h",
     "frame_loader_types.h",
-    "frame_or_imported_document.cc",
-    "frame_or_imported_document.h",
     "frame_resource_fetcher_properties.cc",
     "frame_resource_fetcher_properties.h",
     "history_item.cc",

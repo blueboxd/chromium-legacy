@@ -94,6 +94,11 @@ id<GREYMatcher> SkipSigninButton() {
   GREYAssertNotEqual([FirstRunAppInterface isUMACollectionEnabled],
                      [FirstRunAppInterface isUMACollectionEnabledByDefault],
                      @"Metrics reporting pref is incorrect.");
+
+  // Ensure that we have completed First Run, otherwise Earl Grey test crashes
+  // on check that the sign-in coordinator is no longer running.
+  [[EarlGrey selectElementWithMatcher:SkipSigninButton()]
+      performAction:grey_tap()];
 }
 
 // Dismisses the first run screens.

@@ -108,7 +108,7 @@ bool BluetoothTestBlueZ::PlatformSupportsLowEnergy() {
 void BluetoothTestBlueZ::InitWithFakeAdapter() {
   base::RunLoop run_loop;
   adapter_ = new bluez::BluetoothAdapterBlueZ(
-      base::Bind(&AdapterCallback, run_loop.QuitClosure()));
+      base::BindOnce(&AdapterCallback, run_loop.QuitClosure()));
   run_loop.Run();
   adapter_->SetPowered(true, base::DoNothing(), base::DoNothing());
 }

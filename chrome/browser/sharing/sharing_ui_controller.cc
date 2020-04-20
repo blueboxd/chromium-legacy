@@ -184,8 +184,8 @@ void SharingUiController::SendMessageToDevice(
   sharing_service_->SendMessageToDevice(
       device, base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get()),
       std::move(sharing_message),
-      base::Bind(&SharingUiController::OnMessageSentToDevice,
-                 weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
+      base::BindOnce(&SharingUiController::OnMessageSentToDevice,
+                     weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
 }
 
 void SharingUiController::UpdateIcon() {

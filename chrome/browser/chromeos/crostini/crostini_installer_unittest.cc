@@ -156,8 +156,8 @@ class CrostiniInstallerTest : public testing::Test {
         CrostiniManager::RestartOptions{},
         base::BindRepeating(&MockCallbacks::OnProgress,
                             base::Unretained(&mock_callbacks_)),
-        base::BindRepeating(&MockCallbacks::OnFinished,
-                            base::Unretained(&mock_callbacks_)));
+        base::BindOnce(&MockCallbacks::OnFinished,
+                       base::Unretained(&mock_callbacks_)));
   }
 
   void Cancel() {

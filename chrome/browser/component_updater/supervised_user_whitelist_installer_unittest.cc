@@ -361,7 +361,7 @@ TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
   // has succeeded.
   component->installer->Install(
       unpacked_path, std::string(), nullptr,
-      base::Bind(
+      base::BindOnce(
           [](WhitelistLoadObserver* observer,
              const update_client::CrxInstaller::Result& result) {
             EXPECT_EQ(0, result.error);

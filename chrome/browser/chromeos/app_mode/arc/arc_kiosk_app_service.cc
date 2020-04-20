@@ -105,8 +105,8 @@ void ArcKioskAppService::OnMaintenanceSessionCreated() {
   // Safe to bind |this| as timer is auto-cancelled on destruction.
   maintenance_timeout_timer_.Start(
       FROM_HERE, kArcKioskMaintenanceSessionTimeout,
-      base::Bind(&ArcKioskAppService::OnMaintenanceSessionFinished,
-                 base::Unretained(this)));
+      base::BindOnce(&ArcKioskAppService::OnMaintenanceSessionFinished,
+                     base::Unretained(this)));
 }
 
 void ArcKioskAppService::OnMaintenanceSessionFinished() {

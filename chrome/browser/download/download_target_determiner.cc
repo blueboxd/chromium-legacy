@@ -423,8 +423,8 @@ DownloadTargetDeterminer::Result
 
   delegate_->ReserveVirtualPath(
       download_, virtual_path_, create_target_directory_, conflict_action_,
-      base::Bind(&DownloadTargetDeterminer::ReserveVirtualPathDone,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DownloadTargetDeterminer::ReserveVirtualPathDone,
+                     weak_ptr_factory_.GetWeakPtr()));
   return QUIT_DOLOOP;
 }
 

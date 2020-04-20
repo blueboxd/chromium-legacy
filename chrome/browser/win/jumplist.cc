@@ -341,12 +341,12 @@ void JumpList::InitializeTimerForUpdate() {
     timer_.Reset();
   } else {
     // base::Unretained is safe since |this| is guaranteed to outlive timer_.
-    timer_.Start(
-        FROM_HERE,
-        profile_->GetUserData(chrome::kJumpListIconDirname)
-            ? kShortDelayForUpdate
-            : kLongDelayForUpdate,
-        base::Bind(&JumpList::ProcessNotifications, base::Unretained(this)));
+    timer_.Start(FROM_HERE,
+                 profile_->GetUserData(chrome::kJumpListIconDirname)
+                     ? kShortDelayForUpdate
+                     : kLongDelayForUpdate,
+                 base::BindOnce(&JumpList::ProcessNotifications,
+                                base::Unretained(this)));
   }
 }
 
@@ -401,7 +401,7 @@ void JumpList::ProcessTopSitesNotification() {
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(profile_);
   if (top_sites) {
-    top_sites->GetMostVisitedURLs(base::Bind(
+    top_sites->GetMostVisitedURLs(base::BindOnce(
         &JumpList::OnMostVisitedURLsAvailable, weak_ptr_factory_.GetWeakPtr()));
   }
 }
@@ -537,7 +537,7 @@ void JumpList::StartLoadingFavicon() {
   // cancelable_task_tracker_.
   task_id_ = favicon_service->GetFaviconImageForPageURL(
       GURL(icon_urls_.front().first),
-      base::Bind(&JumpList::OnFaviconDataAvailable, base::Unretained(this)),
+      base::BindOnce(&JumpList::OnFaviconDataAvailable, base::Unretained(this)),
       &cancelable_task_tracker_);
 }
 

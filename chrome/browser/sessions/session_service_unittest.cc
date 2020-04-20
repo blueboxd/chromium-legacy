@@ -1270,7 +1270,7 @@ TEST_F(SessionServiceTest, GetSessionsAndDestroy) {
   helper_.RunTaskOnBackendThread(
       FROM_HERE,
       base::BindOnce(&SimulateWaitForTesting, base::Unretained(&flag)));
-  service()->GetLastSession(base::Bind(&OnGotPreviousSession),
+  service()->GetLastSession(base::BindOnce(&OnGotPreviousSession),
                             &cancelable_task_tracker);
   helper_.RunTaskOnBackendThread(FROM_HERE, run_loop.QuitClosure());
   delete helper_.ReleaseService();

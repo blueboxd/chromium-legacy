@@ -140,8 +140,8 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     ++num_pending_;
     extractor_->ExtractFeatures(
         browse_info_.get(), std::move(request),
-        base::Bind(&BrowserFeatureExtractorTest::ExtractFeaturesDone,
-                   base::Unretained(this)));
+        base::BindOnce(&BrowserFeatureExtractorTest::ExtractFeaturesDone,
+                       base::Unretained(this)));
     return key;
   }
 

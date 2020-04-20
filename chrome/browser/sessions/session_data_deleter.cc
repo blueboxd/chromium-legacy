@@ -111,8 +111,8 @@ void SessionDataDeleter::Run(
   if (!storage_policy_.get() || !storage_policy_->HasSessionOnlyOrigins())
     return;
 
-  cookie_manager_->GetAllCookies(
-      base::Bind(&SessionDataDeleter::DeleteSessionOnlyOriginCookies, this));
+  cookie_manager_->GetAllCookies(base::BindOnce(
+      &SessionDataDeleter::DeleteSessionOnlyOriginCookies, this));
   // Note that from this point on |*this| is kept alive by scoped_refptr<>
   // references automatically taken by |Bind()|, so when the last callback
   // created by Bind() is released (after execution of that function), the

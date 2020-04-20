@@ -68,9 +68,8 @@ void TracingControllerAndroid::StopTracing(
       base::android::ConvertJavaStringToUTF8(env, jfilepath));
   ScopedJavaGlobalRef<jobject> global_callback(env, callback);
   auto endpoint = TracingController::CreateFileEndpoint(
-      file_path,
-      base::BindRepeating(&TracingControllerAndroid::OnTracingStopped,
-                          weak_factory_.GetWeakPtr(), global_callback));
+      file_path, base::BindOnce(&TracingControllerAndroid::OnTracingStopped,
+                                weak_factory_.GetWeakPtr(), global_callback));
   if (compressfile) {
     endpoint =
         TracingControllerImpl::CreateCompressedStringEndpoint(endpoint, true);

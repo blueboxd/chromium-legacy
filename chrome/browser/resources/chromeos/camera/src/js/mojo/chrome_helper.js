@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assertBoolean} from '../chrome_util.js';
+
 /**
  * The singleton instance of ChromeHelper. Initialized by the first
  * invocation of getInstance().
@@ -22,16 +24,37 @@ export class ChromeHelper {
      * @type {!chromeosCamera.mojom.CameraAppHelperRemote}
      */
     this.remote_ = chromeosCamera.mojom.CameraAppHelper.getRemote();
+
+    /**
+     * Whether device is in tablet mode.
+     * @type {?boolean}
+     */
+    this.isTabletMode_ = null;
+  }
+
+  /**
+   * Starts tablet mode monitor monitoring tablet mode state of device.
+   * @return {!Promise}
+   */
+  async initTabletModeMonitor() {
+    const monitorCallbackRouter =
+        new chromeosCamera.mojom.TabletModeMonitorCallbackRouter();
+    monitorCallbackRouter.update.addListener((tableMode) => {
+      this.isTabletMode_ = tableMode;
+    });
+
+    this.isTabletMode_ =
+        (await this.remote_.setTabletMonitor(
+             monitorCallbackRouter.$.bindNewPipeAndPassRemote()))
+            .isTabletMode;
   }
 
   /**
    * Checks if the device is under tablet mode currently.
-   * @return {!Promise<boolean>}
+   * @return {boolean}
    */
-  async isTabletMode() {
-    return await this.remote_.isTabletMode().then(({isTabletMode}) => {
-      return isTabletMode;
-    });
+  isTabletMode() {
+    return assertBoolean(this.isTabletMode_);
   }
 
   /**

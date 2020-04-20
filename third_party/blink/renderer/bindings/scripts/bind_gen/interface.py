@@ -846,18 +846,6 @@ def make_check_security_of_return_value(cg_context):
     return node
 
 
-def make_cooperative_scheduling_safepoint(cg_context):
-    assert isinstance(cg_context, CodeGenContext)
-
-    node = TextNode("scheduler::CooperativeSchedulingManager::Instance()"
-                    "->Safepoint();")
-    node.accumulate(
-        CodeGenAccumulator.require_include_headers([
-            "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
-        ]))
-    return node
-
-
 def make_log_activity(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
@@ -1663,8 +1651,6 @@ def make_overload_dispatcher_function_def(cg_context, function_name):
 
     if cg_context.operation_group:
         body.append(make_operation_entry(cg_context))
-        body.append(EmptyNode())
-        body.append(make_cooperative_scheduling_safepoint(cg_context))
         body.append(EmptyNode())
 
     if cg_context.constructor_group:

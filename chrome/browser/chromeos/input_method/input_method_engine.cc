@@ -224,7 +224,7 @@ bool InputMethodEngine::SetCursorPosition(int context_id,
 
 bool InputMethodEngine::SetSuggestion(int context_id,
                                       const base::string16& text,
-                                      const base::string16& confirmed_text,
+                                      const size_t confirmed_length,
                                       const bool show_tab,
                                       std::string* error) {
   if (!IsActive()) {
@@ -239,7 +239,7 @@ bool InputMethodEngine::SetSuggestion(int context_id,
   IMEAssistiveWindowHandlerInterface* aw_handler =
       ui::IMEBridge::Get()->GetAssistiveWindowHandler();
   if (aw_handler)
-    aw_handler->ShowSuggestion(text, confirmed_text, show_tab);
+    aw_handler->ShowSuggestion(text, confirmed_length, show_tab);
   return true;
 }
 
@@ -270,6 +270,11 @@ bool InputMethodEngine::AcceptSuggestion(int context_id, std::string* error) {
     return false;
   }
 
+  FinishComposingText(context_id_, error);
+  if (!error->empty()) {
+    return false;
+  }
+
   IMEAssistiveWindowHandlerInterface* aw_handler =
       ui::IMEBridge::Get()->GetAssistiveWindowHandler();
   if (aw_handler) {
@@ -277,6 +282,11 @@ bool InputMethodEngine::AcceptSuggestion(int context_id, std::string* error) {
     if (suggestion_text.empty()) {
       *error = kSuggestionNotFound;
       return false;
+    }
+    size_t confirmed_length = aw_handler->GetConfirmedLength();
+    if (confirmed_length > 0) {
+      DeleteSurroundingText(context_id_, -confirmed_length, confirmed_length,
+                            error);
     }
     CommitText(context_id_, (base::UTF16ToUTF8(suggestion_text)).c_str(),
                error);

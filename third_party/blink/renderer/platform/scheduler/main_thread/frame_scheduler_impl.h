@@ -80,9 +80,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
       FrameScheduler::FrameType frame_type);
   ~FrameSchedulerImpl() override;
 
-  // FrameOrWorkerScheduler implementation:
-  void SetPreemptedForCooperativeScheduling(Preempted) override;
-
   // FrameScheduler implementation:
   void SetFrameVisible(bool frame_visible) override;
   bool IsFrameVisible() const override;
@@ -317,8 +314,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   TraceableState<bool, TracingCategoryName::kInfo> subresource_loading_paused_;
   StateTracer<TracingCategoryName::kInfo> url_tracer_;
   TraceableState<bool, TracingCategoryName::kInfo> task_queues_throttled_;
-  TraceableState<bool, TracingCategoryName::kInfo>
-      preempted_for_cooperative_scheduling_;
   // TODO(kraynov): https://crbug.com/827113
   // Trace the count of aggressive throttling opt outs.
   int aggressive_throttling_opt_out_count;

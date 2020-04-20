@@ -50,9 +50,9 @@ class AssistiveSuggester {
       const ::input_method::InputMethodEngineBase::KeyboardEvent& event);
 
  private:
-  // Check if any suggestion text should be displayed according to the
+  // Returns if any suggestion text should be displayed according to the
   // surrounding text information.
-  void Suggest(const base::string16& text, int cursor_pos, int anchor_pos);
+  bool Suggest(const base::string16& text, int cursor_pos, int anchor_pos);
 
   void DismissSuggestion();
 

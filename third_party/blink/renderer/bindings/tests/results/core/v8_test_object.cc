@@ -74,7 +74,6 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -6408,8 +6407,6 @@ static void OverloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void OverloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(2, info.Length())) {
@@ -6481,8 +6478,6 @@ static void OverloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void OverloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(2, info.Length())) {
@@ -6547,8 +6542,6 @@ static void OverloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void OverloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -6607,8 +6600,6 @@ static void OverloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void OverloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -6679,8 +6670,6 @@ static void OverloadedMethodE2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void OverloadedMethodEMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -6751,8 +6740,6 @@ static void OverloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void OverloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -6821,8 +6808,6 @@ static void OverloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void OverloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -6891,8 +6876,6 @@ static void OverloadedMethodH2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void OverloadedMethodHMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -6945,8 +6928,6 @@ static void OverloadedMethodI2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void OverloadedMethodIMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -7007,8 +6988,6 @@ static void OverloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void OverloadedMethodJMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -7077,8 +7056,6 @@ static void OverloadedMethodL2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void OverloadedMethodLMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(2, info.Length())) {
@@ -7152,8 +7129,6 @@ static void OverloadedMethodN2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void OverloadedMethodNMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -7251,8 +7226,6 @@ static void PromiseOverloadMethod3Method(const v8::FunctionCallbackInfo<v8::Valu
 }
 
 static void PromiseOverloadMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(2, info.Length())) {
@@ -7313,8 +7286,6 @@ static void OverloadedPerWorldBindingsMethod2Method(const v8::FunctionCallbackIn
 }
 
 static void OverloadedPerWorldBindingsMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -7354,8 +7325,6 @@ static void OverloadedPerWorldBindingsMethod2MethodForMainWorld(const v8::Functi
 }
 
 static void OverloadedPerWorldBindingsMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -7409,8 +7378,6 @@ static void OverloadedStaticMethod2Method(const v8::FunctionCallbackInfo<v8::Val
 }
 
 static void OverloadedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(2, info.Length())) {
@@ -7681,8 +7648,6 @@ static void MeasureOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Va
 }
 
 static void MeasureOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -7732,8 +7697,6 @@ static void DeprecateAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8
 }
 
 static void DeprecateAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -7781,8 +7744,6 @@ static void DeprecateAsSameValueOverloadedMethod2Method(const v8::FunctionCallba
 }
 
 static void DeprecateAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
 
   bool is_arity_error = false;
@@ -7830,8 +7791,6 @@ static void MeasureAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::
 }
 
 static void MeasureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -7881,8 +7840,6 @@ static void MeasureAsSameValueOverloadedMethod2Method(const v8::FunctionCallback
 }
 
 static void MeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -7964,8 +7921,6 @@ static void CeReactionsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8
 }
 
 static void CeReactionsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -8011,8 +7966,6 @@ static void DeprecateAsMeasureAsSameValueOverloadedMethod2Method(const v8::Funct
 }
 
 static void DeprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -8064,8 +8017,6 @@ static void DeprecateAsSameValueMeasureAsOverloadedMethod2Method(const v8::Funct
 }
 
 static void DeprecateAsSameValueMeasureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
 
   bool is_arity_error = false;
@@ -8117,8 +8068,6 @@ static void DeprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(const 
 }
 
 static void DeprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureA);
 
   bool is_arity_error = false;
@@ -8432,8 +8381,6 @@ static void RuntimeEnabledOverloadedVoidMethod2Method(const v8::FunctionCallback
 }
 
 static void RuntimeEnabledOverloadedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -8550,8 +8497,6 @@ static int PartiallyRuntimeEnabledOverloadedVoidMethodMethodMaxArg() {
 }
 
 static void PartiallyRuntimeEnabledOverloadedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
   bool is_arity_error = false;
 
   switch (std::min(test_object_v8_internal::PartiallyRuntimeEnabledOverloadedVoidMethodMethodMaxArg(), info.Length())) {

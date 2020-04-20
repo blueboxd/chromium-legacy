@@ -59,7 +59,7 @@ jumbo_component("webview") {
     "//ui/views",
   ]
 
-  if (is_linux || is_android) {
+  if (is_linux || is_android || is_fuchsia) {
     sources += [ "unhandled_keyboard_event_handler_default.cc" ]
   }
 }

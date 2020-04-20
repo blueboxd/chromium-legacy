@@ -58,10 +58,10 @@ using device::BluetoothAdvertisement;
 using device::BluetoothDevice;
 using device::BluetoothDiscoveryFilter;
 using device::BluetoothDiscoverySession;
-using device::BluetoothGattConnection;
-using device::BluetoothGattNotifySession;
 using device::BluetoothGattCharacteristic;
+using device::BluetoothGattConnection;
 using device::BluetoothGattDescriptor;
+using device::BluetoothGattNotifySession;
 using device::BluetoothGattService;
 using device::BluetoothLocalGattCharacteristic;
 using device::BluetoothLocalGattDescriptor;
@@ -452,7 +452,8 @@ ArcBluetoothBridge* ArcBluetoothBridge::GetForBrowserContext(
 
 ArcBluetoothBridge::ArcBluetoothBridge(content::BrowserContext* context,
                                        ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service) {
+    : arc_bridge_service_(bridge_service),
+      bluetooth_arc_connection_observer_(this) {
   arc_bridge_service_->app()->AddObserver(this);
   arc_bridge_service_->intent_helper()->AddObserver(this);
 
@@ -1120,27 +1121,28 @@ void ArcBluetoothBridge::SetAdapterProperty(
 
 void ArcBluetoothBridge::StartDiscovery() {
   discovery_queue_.Push(base::BindOnce(&ArcBluetoothBridge::StartDiscoveryImpl,
-                                       weak_factory_.GetWeakPtr(), false));
+                                       weak_factory_.GetWeakPtr()));
 }
 
-void ArcBluetoothBridge::StartDiscoveryImpl(bool le_scan) {
+void ArcBluetoothBridge::StartDiscoveryImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(bluetooth_adapter_);
+  if (!bluetooth_adapter_) {
+    LOG(DFATAL) << "Bluetooth adapter does not exist.";
+    return;
+  }
 
   if (discovery_session_) {
     LOG(ERROR) << "Discovery session already running; Reset timeout.";
-    discovery_off_timer_.Start(FROM_HERE, kDiscoveryTimeout,
-                               base::Bind(&ArcBluetoothBridge::CancelDiscovery,
-                                          weak_factory_.GetWeakPtr()));
+    discovery_off_timer_.Start(
+        FROM_HERE, kDiscoveryTimeout,
+        base::BindOnce(&ArcBluetoothBridge::CancelDiscovery,
+                       weak_factory_.GetWeakPtr()));
     discovered_devices_.clear();
     discovery_queue_.Pop();
     return;
   }
 
-  bluetooth_adapter_->StartDiscoverySessionWithFilter(
-      le_scan ? std::make_unique<BluetoothDiscoveryFilter>(
-                    device::BLUETOOTH_TRANSPORT_LE)
-              : nullptr,
+  bluetooth_adapter_->StartDiscoverySession(
       base::Bind(&ArcBluetoothBridge::OnDiscoveryStarted,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ArcBluetoothBridge::OnDiscoveryError,
@@ -1152,15 +1154,47 @@ void ArcBluetoothBridge::CancelDiscovery() {
                                        weak_factory_.GetWeakPtr()));
 }
 
+void ArcBluetoothBridge::StartLEScanImpl() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!bluetooth_adapter_) {
+    LOG(DFATAL) << "Bluetooth adapter does not exist.";
+    return;
+  }
+
+  if (le_scan_session_) {
+    LOG(ERROR) << "Discovery session for LE scan already running.";
+    le_scan_off_timer_.Start(
+        FROM_HERE, kDiscoveryTimeout,
+        base::BindOnce(&ArcBluetoothBridge::StopLEScanByTimer,
+                       weak_factory_.GetWeakPtr()));
+    discovery_queue_.Pop();
+    return;
+  }
+
+  bluetooth_adapter_->StartDiscoverySessionWithFilter(
+      std::make_unique<BluetoothDiscoveryFilter>(
+          device::BLUETOOTH_TRANSPORT_LE),
+      base::Bind(&ArcBluetoothBridge::OnLEScanStarted,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&ArcBluetoothBridge::OnLEScanError,
+                 weak_factory_.GetWeakPtr()));
+}
+
 void ArcBluetoothBridge::CancelDiscoveryImpl() {
   discovery_off_timer_.Stop();
-  discovery_session_.reset();
+  discovery_session_ = nullptr;
   auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->bluetooth(), OnDiscoveryStateChanged);
   if (bluetooth_instance != nullptr) {
     bluetooth_instance->OnDiscoveryStateChanged(
         mojom::BluetoothDiscoveryState::STOPPED);
   }
+  discovery_queue_.Pop();
+}
+
+void ArcBluetoothBridge::StopLEScanImpl() {
+  le_scan_off_timer_.Stop();
+  le_scan_session_ = nullptr;
   discovery_queue_.Pop();
 }
 
@@ -1205,9 +1239,10 @@ void ArcBluetoothBridge::OnDiscoveryStarted(
   // We need to set timer to turn device discovery off because of the difference
   // between Android API (do device discovery once) and Chrome API (do device
   // discovery until user turns it off).
-  discovery_off_timer_.Start(FROM_HERE, kDiscoveryTimeout,
-                             base::Bind(&ArcBluetoothBridge::CancelDiscovery,
-                                        weak_factory_.GetWeakPtr()));
+  discovery_off_timer_.Start(
+      FROM_HERE, kDiscoveryTimeout,
+      base::BindOnce(&ArcBluetoothBridge::CancelDiscovery,
+                     weak_factory_.GetWeakPtr()));
   discovery_session_ = std::move(session);
   discovered_devices_.clear();
 
@@ -1217,6 +1252,24 @@ void ArcBluetoothBridge::OnDiscoveryStarted(
     bluetooth_instance->OnDiscoveryStateChanged(
         mojom::BluetoothDiscoveryState::STARTED);
   }
+  discovery_queue_.Pop();
+}
+
+void ArcBluetoothBridge::OnLEScanStarted(
+    std::unique_ptr<BluetoothDiscoverySession> session) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // TODO(b/152463320): Android expects to stop the LE scan by itself but not by
+  // a timer automatically. We set this timer here due to the potential
+  // complains about the power consumption since we cannot set scan parameters
+  // and filters now.
+  le_scan_off_timer_.Start(
+      FROM_HERE, kDiscoveryTimeout,
+      base::BindOnce(&ArcBluetoothBridge::StopLEScanByTimer,
+                     weak_factory_.GetWeakPtr()));
+  le_scan_session_ = std::move(session);
+
+  // Android doesn't need a callback for discovery started event for a LE scan.
   discovery_queue_.Pop();
 }
 
@@ -1290,12 +1343,22 @@ void ArcBluetoothBridge::GetConnectionState(
 }
 
 void ArcBluetoothBridge::StartLEScan() {
-  discovery_queue_.Push(base::BindOnce(&ArcBluetoothBridge::StartDiscoveryImpl,
-                                       weak_factory_.GetWeakPtr(), true));
+  discovery_queue_.Push(base::BindOnce(&ArcBluetoothBridge::StartLEScanImpl,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 void ArcBluetoothBridge::StopLEScan() {
-  CancelDiscovery();
+  discovery_queue_.Push(base::BindOnce(&ArcBluetoothBridge::StopLEScanImpl,
+                                       weak_factory_.GetWeakPtr()));
+}
+
+void ArcBluetoothBridge::StopLEScanByTimer() {
+  // If the scan is stopped by the timer, it is possible that the following scan
+  // client in Android cannot start the scan successfully but that client will
+  // not get an error.
+  LOG(WARNING) << "The discovery session for LE scan is stopped by the timer";
+  discovery_queue_.Push(base::BindOnce(&ArcBluetoothBridge::StopLEScanImpl,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 void ArcBluetoothBridge::OnGattConnectStateChanged(
@@ -2283,6 +2346,11 @@ void ArcBluetoothBridge::OnDiscoveryError() {
   discovery_queue_.Pop();
 }
 
+void ArcBluetoothBridge::OnLEScanError() {
+  LOG(WARNING) << "failed to start LE scan";
+  discovery_queue_.Pop();
+}
+
 void ArcBluetoothBridge::OnPairing(mojom::BluetoothAddressPtr addr) const {
   auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->bluetooth(), OnBondStateChanged);
@@ -3030,5 +3098,22 @@ ArcBluetoothBridge::RfcommListeningSocket::RfcommListeningSocket() = default;
 ArcBluetoothBridge::RfcommListeningSocket::~RfcommListeningSocket() = default;
 ArcBluetoothBridge::RfcommConnectingSocket::RfcommConnectingSocket() = default;
 ArcBluetoothBridge::RfcommConnectingSocket::~RfcommConnectingSocket() = default;
+
+ArcBluetoothBridge::BluetoothArcConnectionObserver::
+    BluetoothArcConnectionObserver(ArcBluetoothBridge* arc_bluetooth_bridge)
+    : arc_bluetooth_bridge_(arc_bluetooth_bridge) {
+  arc_bluetooth_bridge_->arc_bridge_service_->bluetooth()->AddObserver(this);
+}
+
+ArcBluetoothBridge::BluetoothArcConnectionObserver::
+    ~BluetoothArcConnectionObserver() {
+  arc_bluetooth_bridge_->arc_bridge_service_->bluetooth()->RemoveObserver(this);
+}
+
+void ArcBluetoothBridge::BluetoothArcConnectionObserver::OnConnectionClosed() {
+  // Stops the ongoing discovery sessions.
+  arc_bluetooth_bridge_->CancelDiscovery();
+  arc_bluetooth_bridge_->StopLEScan();
+}
 
 }  // namespace arc

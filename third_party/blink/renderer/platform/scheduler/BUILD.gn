@@ -11,7 +11,6 @@ blink_platform_sources("scheduler") {
   sources = [
     "common/cancelable_closure_holder.cc",
     "common/cancelable_closure_holder.h",
-    "common/cooperative_scheduling_manager.cc",
     "common/dummy_schedulers.cc",
     "common/event_loop.cc",
     "common/features.h",
@@ -119,7 +118,6 @@ blink_platform_sources("scheduler") {
     "main_thread/widget_scheduler.cc",
     "main_thread/widget_scheduler.h",
     "public/aggregated_metric_reporter.h",
-    "public/cooperative_scheduling_manager.h",
     "public/dummy_schedulers.h",
     "public/event_loop.h",
     "public/frame_or_worker_scheduler.h",
@@ -211,7 +209,6 @@ jumbo_source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "common/cooperative_scheduling_manager_unittest.cc",
     "common/idle_helper_unittest.cc",
     "common/metrics_helper_unittest.cc",
     "common/post_cancellable_task_unittest.cc",

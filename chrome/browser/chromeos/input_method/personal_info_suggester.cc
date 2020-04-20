@@ -16,6 +16,7 @@ namespace chromeos {
 
 namespace {
 
+const size_t kMaxConfirmedTextLength = 10;
 const char kAssistEmailPrefix[] = "my email is ";
 const char kAssistNamePrefix[] = "my name is ";
 const char kAssistAddressPrefix[] = "my address is ";
@@ -64,63 +65,86 @@ void PersonalInfoSuggester::OnBlur() {
 SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
     const InputMethodEngineBase::KeyboardEvent& event) {
   if (suggestion_shown_) {
-    suggestion_shown_ = false;
     if (event.key == "Tab" || event.key == "Right") {
       AcceptSuggestion();
       return SuggestionStatus::kAccept;
+    } else if (event.key == "Esc") {
+      DismissSuggestion();
+      return SuggestionStatus::kDismiss;
     }
-    DismissSuggestion();
-    return SuggestionStatus::kDismiss;
   }
   return SuggestionStatus::kNotHandled;
 }
 
 bool PersonalInfoSuggester::Suggest(const base::string16& text) {
+  if (suggestion_shown_) {
+    size_t text_length = text.length();
+    bool matched = false;
+    for (size_t offset = 0;
+         offset < suggestion_.length() && offset < text_length &&
+         offset < kMaxConfirmedTextLength;
+         offset++) {
+      base::string16 text_before = text.substr(0, text_length - offset);
+      base::string16 confirmed_text = text.substr(text_length - offset);
+      if (base::StartsWith(suggestion_, confirmed_text,
+                           base::CompareCase::INSENSITIVE_ASCII) &&
+          suggestion_ == GetSuggestion(text_before)) {
+        matched = true;
+        ShowSuggestion(suggestion_, offset);
+        break;
+      }
+    }
+    return matched;
+  } else {
+    suggestion_ = GetSuggestion(text);
+    if (!suggestion_.empty())
+      ShowSuggestion(suggestion_, 0);
+    return suggestion_shown_;
+  }
+}
+
+base::string16 PersonalInfoSuggester::GetSuggestion(
+    const base::string16& text) {
   proposed_action_type_ = ProposeAssistiveAction(text);
 
   if (proposed_action_type_ == AssistiveType::kGenericAction)
-    return false;
+    return base::EmptyString16();
 
+  if (proposed_action_type_ == AssistiveType::kPersonalEmail)
+    return base::UTF8ToUTF16(profile_->GetProfileUserName());
+
+  auto autofill_profiles = personal_data_manager_->GetProfilesToSuggest();
+  if (autofill_profiles.empty())
+    return base::EmptyString16();
+
+  // Currently, we are just picking the first candidate, will improve the
+  // strategy in the future.
+  auto* profile = autofill_profiles[0];
   base::string16 suggestion;
-  if (proposed_action_type_ == AssistiveType::kPersonalEmail) {
-    suggestion = base::UTF8ToUTF16(profile_->GetProfileUserName());
-  } else {
-    auto autofill_profiles = personal_data_manager_->GetProfilesToSuggest();
-    if (autofill_profiles.empty())
-      return false;
-
-    // Currently, we are just picking the first candidate, will improve the
-    // strategy in the future.
-    auto* profile = autofill_profiles[0];
-    switch (proposed_action_type_) {
-      case AssistiveType::kPersonalName:
-        suggestion = profile->GetRawInfo(autofill::ServerFieldType::NAME_FULL);
-        break;
-      case AssistiveType::kPersonalAddress:
-        suggestion = profile->GetRawInfo(
-            autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS);
-        break;
-      case AssistiveType::kPersonalPhoneNumber:
-        suggestion = profile->GetRawInfo(
-            autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+  switch (proposed_action_type_) {
+    case AssistiveType::kPersonalName:
+      suggestion = profile->GetRawInfo(autofill::ServerFieldType::NAME_FULL);
+      break;
+    case AssistiveType::kPersonalAddress:
+      suggestion = profile->GetRawInfo(
+          autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS);
+      break;
+    case AssistiveType::kPersonalPhoneNumber:
+      suggestion = profile->GetRawInfo(
+          autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER);
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
-
-  if (suggestion.empty())
-    return false;
-  ShowSuggestion(suggestion);
-  suggestion_shown_ = true;
-  return true;
+  return suggestion;
 }
 
-void PersonalInfoSuggester::ShowSuggestion(const base::string16& text) {
+void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
+                                           const size_t confirmed_length) {
   std::string error;
-  engine_->SetSuggestion(context_id_, text, base::EmptyString16(), true,
-                         &error);
+  suggestion_shown_ = true;
+  engine_->SetSuggestion(context_id_, text, confirmed_length, true, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }
@@ -132,6 +156,7 @@ AssistiveType PersonalInfoSuggester::GetProposeActionType() {
 
 void PersonalInfoSuggester::AcceptSuggestion() {
   std::string error;
+  suggestion_shown_ = false;
   engine_->AcceptSuggestion(context_id_, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Failed to accept suggestion. " << error;
@@ -140,6 +165,7 @@ void PersonalInfoSuggester::AcceptSuggestion() {
 
 void PersonalInfoSuggester::DismissSuggestion() {
   std::string error;
+  suggestion_shown_ = false;
   engine_->DismissSuggestion(context_id_, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Failed to dismiss suggestion. " << error;

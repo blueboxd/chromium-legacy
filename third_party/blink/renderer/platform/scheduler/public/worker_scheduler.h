@@ -67,9 +67,6 @@ class PLATFORM_EXPORT WorkerScheduler : public FrameOrWorkerScheduler {
   void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
                              const SchedulingPolicy& policy) override;
 
-  // FrameOrWorkerScheduler implementation:
-  void SetPreemptedForCooperativeScheduling(Preempted) override {}
-
  protected:
   scoped_refptr<NonMainThreadTaskQueue> ThrottleableTaskQueue();
   scoped_refptr<NonMainThreadTaskQueue> UnpausableTaskQueue();

@@ -61,8 +61,6 @@ bool AssistiveSuggester::OnKeyEvent(
   if (context_id_ == -1)
     return false;
 
-  // If the user pressed Tab after we show suggestion, we adopt the suggestion,
-  // otherwise we dismiss it.
   // We only track keydown event because the suggesting action is triggered by
   // surrounding text change, which is triggered by a keydown event. As a
   // result, the next key event after suggesting would be a keyup event of the
@@ -76,7 +74,7 @@ bool AssistiveSuggester::OnKeyEvent(
         return true;
       case SuggestionStatus::kDismiss:
         current_suggester_ = nullptr;
-        return false;
+        return true;
       case SuggestionStatus::kBrowsing:
         return true;
       default:
@@ -108,37 +106,40 @@ bool AssistiveSuggester::OnSurroundingTextChanged(const base::string16& text,
   if (context_id_ == -1)
     return false;
 
-  if (IsSuggestionShown()) {
+  if (!Suggest(text, cursor_pos, anchor_pos)) {
     DismissSuggestion();
   }
-  Suggest(text, cursor_pos, anchor_pos);
   return IsSuggestionShown();
 }
 
-void AssistiveSuggester::Suggest(const base::string16& text,
+bool AssistiveSuggester::Suggest(const base::string16& text,
                                  int cursor_pos,
                                  int anchor_pos) {
   int len = static_cast<int>(text.length());
-  if (cursor_pos > 0 && cursor_pos <= len &&
-      base::IsAsciiWhitespace(text[cursor_pos - 1]) &&
-      cursor_pos == anchor_pos &&
-      (cursor_pos == len || base::IsAsciiWhitespace(text[cursor_pos]))) {
+  if (cursor_pos > 0 && cursor_pos <= len && cursor_pos == anchor_pos &&
+      (cursor_pos == len || base::IsAsciiWhitespace(text[cursor_pos])) &&
+      (base::IsAsciiWhitespace(text[cursor_pos - 1]) || IsSuggestionShown())) {
     // |text| could be very long, we get at most |kMaxTextBeforeCursorLength|
     // characters before cursor.
     int start_pos = std::max(0, cursor_pos - kMaxTextBeforeCursorLength);
     base::string16 text_before_cursor =
         text.substr(start_pos, cursor_pos - start_pos);
+
+    if (IsSuggestionShown()) {
+      return current_suggester_->Suggest(text_before_cursor);
+    }
     if (IsAssistPersonalInfoEnabled() &&
         personal_info_suggester_.Suggest(text_before_cursor)) {
       current_suggester_ = &personal_info_suggester_;
+      return true;
     } else if (IsEmojiSuggestAdditionEnabled() &&
                emoji_suggester_.Suggest(text_before_cursor)) {
       current_suggester_ = &emoji_suggester_;
       RecordAssistiveCoverage(current_suggester_->GetProposeActionType());
-    } else {
-      current_suggester_ = nullptr;
+      return true;
     }
   }
+  return false;
 }
 
 void AssistiveSuggester::DismissSuggestion() {

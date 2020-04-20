@@ -12,6 +12,7 @@ then
   exit 1
 fi
 
+origdir=`pwd`
 workdir=`mktemp -d`
 if [[ -z $workdir ]]
 then
@@ -65,7 +66,7 @@ major=`echo $version | sed 's/\.[0-9.]\+$//'`
 gsutil -h Content-Type:text/plain cp latest gs://chromedriver/LATEST_RELEASE_$build
 gsutil -h Content-Type:text/plain cp latest gs://chromedriver/LATEST_RELEASE_$major
 
-if [[ -f notes.txt ]]
+if [[ -f $origdir/notes.txt ]]
 then
-  gsutil cp notes.txt gs://chromedriver/$version/notes.txt
+  gsutil cp $origdir/notes.txt gs://chromedriver/$version/notes.txt
 fi

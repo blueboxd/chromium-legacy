@@ -23,12 +23,15 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEAssistiveWindowHandlerInterface {
 
   // Called when showing/hiding suggestion window.
   virtual void ShowSuggestion(const base::string16& text,
-                              const base::string16& confirmed_text,
+                              const size_t confirmed_length,
                               const bool show_tab) {}
   virtual void HideSuggestion() {}
 
   // Called to get the current suggestion text.
   virtual base::string16 GetSuggestionText() const = 0;
+
+  // Called to get length of the confirmed part of suggestion text.
+  virtual size_t GetConfirmedLength() const = 0;
 
   // Called when the application changes its caret bounds.
   virtual void SetBounds(const gfx::Rect& cursor_bounds) = 0;

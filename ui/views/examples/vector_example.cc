@@ -105,10 +105,10 @@ class VectorIconGallery : public View,
   void ButtonPressed(Button* sender, const ui::Event& event) override {
     DCHECK_EQ(file_go_button_, sender);
     base::ScopedAllowBlockingForTesting allow_blocking;
-#if defined(OS_POSIX)
-    base::FilePath path(base::UTF16ToUTF8(file_chooser_->GetText()));
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
     base::FilePath path(file_chooser_->GetText());
+#else
+    base::FilePath path(base::UTF16ToUTF8(file_chooser_->GetText()));
 #endif
     base::ReadFileToString(path, &contents_);
     // Skip over comments.

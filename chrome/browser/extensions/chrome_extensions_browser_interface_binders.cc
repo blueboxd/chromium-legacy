@@ -30,6 +30,7 @@
 #include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "ui/aura/window.h"
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
@@ -119,9 +120,10 @@ void ConnectToCameraAppHelper(
     mojo::PendingReceiver<chromeos_camera::mojom::CameraAppHelper> receiver) {
   auto handle_result_callback = base::BindRepeating(
       &HandleCameraResult, source->GetProcess()->GetBrowserContext());
+  auto* window = source->GetNativeView()->GetToplevelWindow();
   auto camera_app_helper =
       std::make_unique<chromeos_camera::CameraAppHelperImpl>(
-          std::move(handle_result_callback));
+          std::move(handle_result_callback), window);
   mojo::MakeSelfOwnedReceiver(std::move(camera_app_helper),
                               std::move(receiver));
 }

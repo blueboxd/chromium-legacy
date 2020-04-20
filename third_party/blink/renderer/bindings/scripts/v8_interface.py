@@ -68,7 +68,6 @@ INTERFACE_CPP_INCLUDES = frozenset([
     'bindings/core/v8/native_value_traits_impl.h',
     'bindings/core/v8/v8_dom_configuration.h',
     'core/execution_context/execution_context.h',
-    'platform/scheduler/public/cooperative_scheduling_manager.h',
     'platform/bindings/exception_messages.h',
     'platform/bindings/exception_state.h',
     'platform/bindings/v8_object_constructor.h',

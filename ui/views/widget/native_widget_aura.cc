@@ -1072,7 +1072,7 @@ void NativeWidgetAura::SetInitialFocus(ui::WindowShowState show_state) {
 // Widget, public:
 
 namespace {
-#if BUILDFLAG(ENABLE_DESKTOP_AURA)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) && (defined(OS_WIN) || defined(OS_LINUX))
 void CloseWindow(aura::Window* window) {
   if (window) {
     Widget* widget = Widget::GetWidgetForNativeView(window);

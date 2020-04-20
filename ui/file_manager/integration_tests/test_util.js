@@ -581,6 +581,18 @@ const ENTRIES = {
     typeText: 'JPEG image'
   }),
 
+  // Used to differentiate between .jpg and .jpeg handling.
+  sampleJpeg: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'small.jpg',
+    targetPath: 'sample.jpeg',
+    mimeType: 'image/jpeg',
+    lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+    nameText: 'sample.jpeg',
+    sizeText: '1 KB',
+    typeText: 'JPEG image'
+  }),
+
   brokenJpeg: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'broken.jpg',

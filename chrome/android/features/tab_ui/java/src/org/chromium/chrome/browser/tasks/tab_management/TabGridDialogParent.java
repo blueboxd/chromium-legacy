@@ -150,14 +150,6 @@ public class TabGridDialogParent
         mBasicFadeInAnimation.play(dialogFadeInAnimator);
         mBasicFadeInAnimation.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
         mBasicFadeInAnimation.setDuration(DIALOG_ANIMATION_DURATION);
-        mBasicFadeInAnimation.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                // Hide the dummy views for zoom-in and zoom-out animation.
-                mBackgroundFrame.setAlpha(0f);
-                mAnimationCardView.setAlpha(0f);
-            }
-        });
 
         mBasicFadeOutAnimation = new AnimatorSet();
         ObjectAnimator dialogFadeOutAnimator =
@@ -167,17 +159,7 @@ public class TabGridDialogParent
         mBasicFadeOutAnimation.setDuration(DIALOG_ANIMATION_DURATION);
         mBasicFadeOutAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
-            public void onAnimationStart(Animator animation) {
-                // Hide the dummy views for zoom-in and zoom-out animation.
-                mBackgroundFrame.setAlpha(0f);
-                mAnimationCardView.setAlpha(0f);
-            }
-
-            @Override
             public void onAnimationEnd(Animator animation) {
-                // Restore the dummy views for zoom-in and zoom-out animation.
-                mBackgroundFrame.setAlpha(1f);
-                mAnimationCardView.setAlpha(1f);
                 // Restore the original card.
                 if (mItemView == null) return;
                 mItemView.setAlpha(1f);
@@ -387,10 +369,21 @@ public class TabGridDialogParent
             @Override
             public void onAnimationStart(Animator animation) {
                 // At the beginning of the first half of the showing animation, the white frame and
-                // the animation card should be above the the dialog view.
+                // the animation card should be above the the dialog view, and their alpha should be
+                // set to 1.
                 mBackgroundFrame.bringToFront();
                 mAnimationCardView.bringToFront();
                 mDialogContainerView.setAlpha(0f);
+                mBackgroundFrame.setAlpha(1f);
+                mAnimationCardView.setAlpha(1f);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // At the end of the showing animation, reset the alpha of animation related views
+                // to 0.
+                mBackgroundFrame.setAlpha(0f);
+                mAnimationCardView.setAlpha(0f);
             }
         });
 
@@ -466,6 +459,16 @@ public class TabGridDialogParent
         cardZoomInAlphaAnimator.setStartDelay(DIALOG_ALPHA_ANIMATION_DURATION);
         cardZoomInAlphaAnimator.setInterpolator(Interpolators.LINEAR_INTERPOLATOR);
 
+        cardZoomInAlphaAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                // At the beginning of the second half of the hiding animation, the white frame and
+                // the animation card should be above the the dialog view.
+                mBackgroundFrame.bringToFront();
+                mAnimationCardView.bringToFront();
+            }
+        });
+
         // During the whole dialog hiding animation, the frame background scales down and moves so
         // that it looks like the dialog zooms in and becomes the card.
         final ObjectAnimator frameZoomInMoveYAnimator = ObjectAnimator.ofFloat(
@@ -485,21 +488,28 @@ public class TabGridDialogParent
         frameZoomInAnimatorSet.setDuration(DIALOG_ANIMATION_DURATION);
         frameZoomInAnimatorSet.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
 
+        frameZoomInAnimatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                // At the beginning of the hiding animation, the alpha of white frame needs to be
+                // restored to 1.
+                mBackgroundFrame.setAlpha(1f);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // At the end of the hiding animation, reset the alpha of animation related views to
+                // 0.
+                mBackgroundFrame.setAlpha(0f);
+                mAnimationCardView.setAlpha(0f);
+            }
+        });
+
         // At the end of the dialog hiding animation, the original tab grid card fades in.
         final ObjectAnimator tabFadeInAnimator =
                 ObjectAnimator.ofFloat(mItemView, View.ALPHA, 0f, 1f);
         tabFadeInAnimator.setDuration(CARD_FADE_ANIMATION_DURATION);
         tabFadeInAnimator.setStartDelay(DIALOG_ANIMATION_DURATION - CARD_FADE_ANIMATION_DURATION);
-
-        cardZoomInAlphaAnimator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                // At the beginning of the second half of the hiding animation, the white frame and
-                // the animation card should be above the the dialog view.
-                mBackgroundFrame.bringToFront();
-                mAnimationCardView.bringToFront();
-            }
-        });
 
         // Setup the dialog hiding animation.
         mHideDialogAnimation = new AnimatorSet();

@@ -3152,6 +3152,12 @@ crbug.com/1067277 external/wpt/css/css-content/element-replacement-on-replaced-e
 crbug.com/1069300 external/wpt/css/css-pseudo/active-selection-063.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/operators/mo-form-dynamic-002.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/operators/mo-form-dynamic-002.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/operators/mo-form-dynamic-002.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/mathml/relations/css-styling/color-002.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/mathml/relations/css-styling/color-002.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/relations/css-styling/color-002.html [ Failure ]

@@ -368,9 +368,6 @@
       status: "test",
     },
     {
-      name: "CooperativeScheduling"
-    },
-    {
       name: "CorsRFC1918",
     },
     {

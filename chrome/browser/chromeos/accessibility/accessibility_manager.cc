@@ -205,15 +205,13 @@ class ChromeVoxDeferredLoader : public content::UtteranceEventDelegate,
  public:
   explicit ChromeVoxDeferredLoader(AccessibilityManager* manager)
       : manager_(manager) {
-    Profile* profile = manager_->profile();
-    if (profile->HasOffTheRecordProfile())
-      profile = profile->GetOffTheRecordProfile();
-    std::vector<content::VoiceData> voices;
-    content::TtsController::GetInstance()->GetVoices(profile, &voices);
-    if (voices.empty())
-      content::TtsController::GetInstance()->AddVoicesChangedDelegate(this);
-    else
+    timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(500), this,
+                 &ChromeVoxDeferredLoader::OnTimer);
+
+    if (IsGoogleTtsVoiceAvailable())
       SendWarmupUtterance();
+    else
+      content::TtsController::GetInstance()->AddVoicesChangedDelegate(this);
   }
 
   ~ChromeVoxDeferredLoader() override {
@@ -236,12 +234,7 @@ class ChromeVoxDeferredLoader : public content::UtteranceEventDelegate,
 
   // content::VoicesChangedDelegate:
   void OnVoicesChanged() override {
-    Profile* profile = manager_->profile();
-    if (profile->HasOffTheRecordProfile())
-      profile = profile->GetOffTheRecordProfile();
-    std::vector<content::VoiceData> voices;
-    content::TtsController::GetInstance()->GetVoices(profile, &voices);
-    if (!voices.empty()) {
+    if (IsGoogleTtsVoiceAvailable()) {
       content::TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
       SendWarmupUtterance();
     }
@@ -254,12 +247,25 @@ class ChromeVoxDeferredLoader : public content::UtteranceEventDelegate,
     std::unique_ptr<content::TtsUtterance> utterance =
         content::TtsUtterance::Create(profile);
     utterance->SetEventDelegate(this);
+    utterance->SetEngineId(extension_misc::kGoogleSpeechSynthesisExtensionId);
     content::TtsController::GetInstance()->SpeakOrEnqueue(std::move(utterance));
-    timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(500), this,
-                 &ChromeVoxDeferredLoader::OnTimer);
   }
 
   void OnTimer() { manager_->PlaySpokenFeedbackToggleCountdown(tick_count_++); }
+
+  bool IsGoogleTtsVoiceAvailable() {
+    Profile* profile = manager_->profile();
+    if (profile->HasOffTheRecordProfile())
+      profile = profile->GetOffTheRecordProfile();
+    std::vector<content::VoiceData> voices;
+    content::TtsController::GetInstance()->GetVoices(profile, &voices);
+    for (size_t i = 0; i < voices.size(); i++) {
+      if (voices[i].engine_id ==
+          extension_misc::kGoogleSpeechSynthesisExtensionId)
+        return true;
+    }
+    return false;
+  }
 
   AccessibilityManager* manager_;
   int tick_count_ = 0;

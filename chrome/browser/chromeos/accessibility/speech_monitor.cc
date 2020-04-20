@@ -6,6 +6,7 @@
 
 #include "base/strings/pattern.h"
 #include "base/task/post_task.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/tts_controller.h"
 
@@ -58,6 +59,7 @@ void SpeechMonitor::GetVoices(std::vector<content::VoiceData>* out_voices) {
   content::VoiceData& voice = out_voices->back();
   voice.native = true;
   voice.name = "SpeechMonitor";
+  voice.engine_id = extension_misc::kGoogleSpeechSynthesisExtensionId;
   voice.events.insert(content::TTS_EVENT_END);
 }
 

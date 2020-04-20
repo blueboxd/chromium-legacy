@@ -29,7 +29,7 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
 
   // Shows suggestion text.
   void Show(const base::string16& text,
-            const base::string16& confirmed_text,
+            const size_t confirmed_length,
             const bool show_tab);
 
   void SetBounds(const gfx::Rect& cursor_bounds);
@@ -38,7 +38,7 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
   friend class SuggestionWindowViewTest;
 
   void UpdateSuggestion(const base::string16& text,
-                        const base::string16& confirmed_text,
+                        const size_t confirmed_length,
                         const bool show_tab);
 
   // views::BubbleDialogDelegateView:

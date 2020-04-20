@@ -346,8 +346,15 @@ class ArcBluetoothBridge
       int32_t adv_handle,
       ReleaseAdvertisementHandleCallback callback);
 
-  void StartDiscoveryImpl(bool le_scan);
+  // StartDiscovery() is used for scanning both BR/EDR and LE devices, while
+  // StartLEScan() is only for LE devices.
+  void StartDiscoveryImpl();
   void CancelDiscoveryImpl();
+  void StartLEScanImpl();
+  void StopLEScanImpl();
+
+  // The callback function triggered by le_scan_off_timer_.
+  void StopLEScanByTimer();
 
   // Power state change on Bluetooth adapter.
   enum class AdapterPowerState { TURN_OFF, TURN_ON };
@@ -359,6 +366,9 @@ class ArcBluetoothBridge
   void OnDiscoveryStarted(
       std::unique_ptr<device::BluetoothDiscoverySession> session);
   void OnDiscoveryError();
+  void OnLEScanStarted(
+      std::unique_ptr<device::BluetoothDiscoverySession> session);
+  void OnLEScanError();
   void OnPairing(mojom::BluetoothAddressPtr addr) const;
   void OnPairedDone(mojom::BluetoothAddressPtr addr) const;
   void OnPairedError(
@@ -572,8 +582,16 @@ class ArcBluetoothBridge
 
   scoped_refptr<bluez::BluetoothAdapterBlueZ> bluetooth_adapter_;
   scoped_refptr<device::BluetoothAdvertisement> advertisment_;
+  // Discovery session created by StartDiscovery().
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
-  // Discovered devices in the current discovery session.
+  // Discovery session created by StartLEScan().
+  std::unique_ptr<device::BluetoothDiscoverySession> le_scan_session_;
+  // Discovered devices in the current discovery session started by
+  // StartDiscovery(). We don't need to keep track of this for StartLEScan()
+  // since Android don't have a callback for new found devices in LE scan. When
+  // a new advertisement of an LE device comes, DeviceAdertismentReceived() will
+  // be called and we pass the result to Android via OnLEDeviceFound(), and then
+  // it will notify the LE scanner in Android.
   std::set<std::string> discovered_devices_;
   std::unordered_map<std::string,
                      std::unique_ptr<device::BluetoothGattNotifySession>>
@@ -605,8 +623,12 @@ class ArcBluetoothBridge
   };
   std::unordered_map<std::string, GattConnection> gatt_connections_;
 
-  // Timer to turn discovery off.
+  // Timer to turn off discovery_session_.
   base::OneShotTimer discovery_off_timer_;
+  // Timer to turn off le_scan_session_.
+  // TODO(b/152463320): Remove this timer after the platform side supports
+  // setting scan parameters and filters.
+  base::OneShotTimer le_scan_off_timer_;
   // Timer to turn adapter discoverable off.
   base::OneShotTimer discoverable_off_timer_;
   // Adapter discoverable timeout value.
@@ -636,6 +658,8 @@ class ArcBluetoothBridge
   std::map<int32_t, scoped_refptr<device::BluetoothAdvertisement>>
       advertisements_;
   ArcBluetoothTaskQueue advertisement_queue_;
+  // This queue will hold requests from both Start/CancelDiscovery() and
+  // Start/StopLEScan().
   ArcBluetoothTaskQueue discovery_queue_;
 
   // Rfcomm sockets that live in Chrome.
@@ -643,6 +667,26 @@ class ArcBluetoothBridge
       listening_sockets_;
   std::set<std::unique_ptr<RfcommConnectingSocket>, base::UniquePtrComparator>
       connecting_sockets_;
+
+  // Observes the ARC connection to Bluetooth service in Android. We need to do
+  // some cleanup when it is down.
+  class BluetoothArcConnectionObserver
+      : public ConnectionObserver<mojom::BluetoothInstance> {
+   public:
+    explicit BluetoothArcConnectionObserver(
+        ArcBluetoothBridge* arc_bluetooth_bridge);
+    BluetoothArcConnectionObserver(const BluetoothArcConnectionObserver&) =
+        delete;
+    BluetoothArcConnectionObserver& operator=(
+        const BluetoothArcConnectionObserver&) = delete;
+    ~BluetoothArcConnectionObserver() override;
+    // ConnectionObserver<mojom::BluetoothInstance> override.
+    void OnConnectionClosed() override;
+
+   private:
+    ArcBluetoothBridge* arc_bluetooth_bridge_;
+  };
+  BluetoothArcConnectionObserver bluetooth_arc_connection_observer_;
 
   THREAD_CHECKER(thread_checker_);
 

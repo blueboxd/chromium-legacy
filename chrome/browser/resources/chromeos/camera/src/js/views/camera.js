@@ -210,15 +210,22 @@ export class Camera extends View {
     });
     chrome.app.window.current().onMinimized.addListener(() => this.start());
 
-    document.addEventListener('visibilitychange', async () => {
-      const isTabletBackground = await this.isTabletBackground_();
+    document.addEventListener('visibilitychange', () => {
       const recording = state.get(state.State.TAKING) && state.get(Mode.VIDEO);
-      if (isTabletBackground && !recording) {
+      if (this.isTabletBackground_() && !recording) {
         this.start();
       }
     });
 
     this.configuring_ = null;
+  }
+
+  /**
+   * Initializes camera view.
+   * @return {!Promise}
+   */
+  async initialize() {
+    await ChromeHelper.getInstance().initTabletModeMonitor();
   }
 
   /**
@@ -231,22 +238,20 @@ export class Camera extends View {
   }
 
   /**
-   * @return {!Promise<boolean>} Resolved to boolean value indicating whether
-   * window is put to background in tablet mode.
+   * @return {boolean} Whether window is put to background in tablet mode.
    * @private
    */
-  async isTabletBackground_() {
-    const isTabletMode = await ChromeHelper.getInstance().isTabletMode();
-    return isTabletMode && !this.isVisible_;
+  isTabletBackground_() {
+    return ChromeHelper.getInstance().isTabletMode() && !this.isVisible_;
   }
 
   /**
    * Whether app window is suspended.
-   * @return {!Promise<boolean>}
+   * @return {boolean}
    */
-  async isSuspended() {
+  isSuspended() {
     return this.locked_ || chrome.app.window.current().isMinimized() ||
-        state.get(state.State.SUSPEND) || await this.isTabletBackground_();
+        state.get(state.State.SUSPEND) || this.isTabletBackground_();
   }
 
   /**
@@ -356,6 +361,16 @@ export class Camera extends View {
       toast.show(this.preview_.toString());
       return true;
     }
+    if ((key === 'AudioVolumeUp' || key === 'AudioVolumeDown') &&
+        ChromeHelper.getInstance().isTabletMode() &&
+        state.get(state.State.STREAMING)) {
+      if (state.get(state.State.TAKING)) {
+        this.endTake_();
+      } else {
+        this.beginTake_();
+      }
+      return true;
+    }
     return false;
   }
 
@@ -414,7 +429,7 @@ export class Camera extends View {
     }
     for (const {resolution: captureR, previewCandidates} of resolCandidates) {
       for (const constraints of previewCandidates) {
-        if (await this.isSuspended()) {
+        if (this.isSuspended()) {
           throw new CameraSuspendedError();
         }
         try {
@@ -469,7 +484,7 @@ export class Camera extends View {
   async start_() {
     try {
       await this.infoUpdater_.lockDeviceInfo(async () => {
-        if (!await this.isSuspended()) {
+        if (!this.isSuspended()) {
           for (const id of await this.options_.videoDeviceIds()) {
             if (await this.startWithDevice_(id)) {
               // Make the different active camera announced by screen reader.

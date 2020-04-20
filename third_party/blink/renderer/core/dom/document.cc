@@ -3222,10 +3222,6 @@ void Document::Initialize() {
   // ExecutionContextLifecycleObserver::contextDestroyed wouldn't be fired.
   network_state_observer_ =
       MakeGarbageCollected<NetworkStateObserver>(GetExecutionContext());
-
-  // Check for frame_ so we only attach documents with its own scheduler.
-  if (frame_)
-    GetAgent()->AttachDocument(this);
 }
 
 void Document::Shutdown() {
@@ -3375,12 +3371,6 @@ void Document::Shutdown() {
   lifecycle_.AdvanceTo(DocumentLifecycle::kStopped);
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!View()->IsAttached());
-
-  // Check for frame_ so we only detach documents with its own scheduler.
-  // TODO(bokan): Can this happen? |frame_| is dereferenced above and CHECKed
-  // at top.
-  if (frame_)
-    GetAgent()->DetachDocument(this);
 
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!View()->IsAttached());

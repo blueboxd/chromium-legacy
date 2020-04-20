@@ -127,7 +127,7 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
         : candidate_id_ = static_cast<int>(candidates_.size()) - 1;
     engine_->SetCursorPosition(context_id_, candidate_id_, &error);
     status = SuggestionStatus::kBrowsing;
-  } else {
+  } else if (event.key == "Esc") {
     DismissSuggestion();
     suggestion_shown_ = false;
     status = SuggestionStatus::kDismiss;
@@ -139,18 +139,19 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
 }
 
 bool EmojiSuggester::Suggest(const base::string16& text) {
-  if (emoji_map_.empty())
+  if (emoji_map_.empty() || !base::IsAsciiWhitespace(text[text.length() - 1]))
     return false;
   std::string last_word = GetLastWord(base::UTF16ToUTF8(text));
   if (!last_word.empty() && emoji_map_.count(last_word)) {
     ShowSuggestion(last_word);
-    suggestion_shown_ = true;
+    return true;
   }
-  return suggestion_shown_;
+  return false;
 }
 
 void EmojiSuggester::ShowSuggestion(const std::string& text) {
   std::string error;
+  suggestion_shown_ = true;
   candidates_.clear();
   const std::vector<std::string>& candidates = emoji_map_.at(text);
   for (size_t i = 0; i < candidates.size(); i++) {
@@ -173,6 +174,7 @@ void EmojiSuggester::ShowSuggestion(const std::string& text) {
 
 void EmojiSuggester::DismissSuggestion() {
   std::string error;
+  suggestion_shown_ = false;
   engine_->SetCandidateWindowVisible(false, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Failed to dismiss suggestion. " << error;

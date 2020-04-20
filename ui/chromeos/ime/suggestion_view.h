@@ -44,7 +44,7 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::View {
   ~SuggestionView() override;
 
   void SetView(const base::string16& text,
-               const base::string16& confirmed_text,
+               const size_t confirmed_length,
                const bool show_tab);
 
  private:
@@ -60,7 +60,7 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::View {
   // child views will be deleted when |this| is deleted.
 
   void SetSuggestionText(const base::string16& text,
-                         const base::string16& confirmed_text);
+                         const size_t confirmed_length);
 
   // The suggestion label renders suggestions.
   views::StyledLabel* suggestion_label_ = nullptr;

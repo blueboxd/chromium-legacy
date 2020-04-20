@@ -6,6 +6,14 @@ module chromeos_camera.mojom;
 
 import "components/arc/mojom/camera_intent.mojom";
 
+// Interface for monitoring tablet mode state of device. The state is detected
+// from Chrome browser process and is notified to Chrome Camera App in renderer
+// process.
+interface TabletModeMonitor {
+  // Updates with the latest changed tablet mode state.
+  Update(bool is_tablet_mode);
+};
+
 // Interface for communication between Chrome Camera App (Remote) and Chrome
 // (Receiver).
 interface CameraAppHelper {
@@ -26,4 +34,10 @@ interface CameraAppHelper {
 
   // Triggers the end of event tracing for given |event|.
   StopPerfEventTrace(string event);
+
+  // Registers an TabletModeMonitor instance and returns the tablet mode
+  // initial state. Calling the Update() whenever the tablet mode state
+  // changes.
+  SetTabletMonitor(pending_remote<TabletModeMonitor> monitor)
+      => (bool is_tablet_mode);
 };

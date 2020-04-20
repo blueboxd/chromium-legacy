@@ -305,12 +305,8 @@
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.hello.nameText);
 
-    // Check: the correct mimeType should be displayed (note: MIME type
-    // identification differs depending on the metadata provider for the
-    // underlying volume. Here, it is reported as text/plain for ENTRIES.hello,
-    // because the file is on Drive, later (see
-    // openQuickViewTextFileWithUnknownMimeType) it is not reported because the
-    // file is on the local filesystem).
+    // Check: the correct mimeType should be displayed (see crbug.com/1067499
+    // for details on mimeType differences between Drive and local filesystem).
     const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq('text/plain', mimeType);
   };
@@ -988,7 +984,7 @@
   };
 
   /**
-   * Tests opening Quick View containing an audio file.
+   * Tests opening Quick View containing an audio file on Drive.
    */
   testcase.openQuickViewAudioOnDrive = async () => {
     const caller = getCaller();
@@ -1093,9 +1089,9 @@
   };
 
   /**
-   * Tests opening Quick View containing an image.
+   * Tests opening Quick View containing an image with extension 'jpg'.
    */
-  testcase.openQuickViewImage = async () => {
+  testcase.openQuickViewImageJpg = async () => {
     const caller = getCaller();
 
     /**
@@ -1143,8 +1139,59 @@
   };
 
   /**
-   * Tests opening Quick View on an JPEG image that has EXIF displays the EXIF
-   * information in the QuickView Metadata Box.
+   * Tests opening Quick View containing an image with extension 'jpeg'.
+   */
+  testcase.openQuickViewImageJpeg = async () => {
+    const caller = getCaller();
+
+    /**
+     * The <webview> resides in the <files-safe-media type="image"> shadow DOM,
+     * which is a child of the #quick-view shadow DOM.
+     */
+    const webView =
+        ['#quick-view', 'files-safe-media[type="image"]', 'webview'];
+
+    // Open Files app on Downloads containing ENTRIES.sampleJpeg.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.sampleJpeg], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.sampleJpeg.nameText);
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewImageLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || elements[0].attributes.loaded !== '') {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+    await repeatUntil(async () => {
+      return checkWebViewImageLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [webView, ['display']]));
+    });
+
+    // Get the <webview> document.body backgroundColor style.
+    const getBackgroundStyle =
+        'window.getComputedStyle(document.body).backgroundColor';
+    const backgroundColor = await remoteCall.callRemoteTestUtil(
+        'deepExecuteScriptInWebView', appId, [webView, getBackgroundStyle]);
+
+    // Check: the <webview> body backgroundColor should be transparent black.
+    chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('image/jpeg', mimeType);
+  };
+
+  /**
+   * Tests opening Quick View on an JPEG image that has EXIF
+   * displays the EXIF information in the QuickView Metadata
+   * Box.
    */
   testcase.openQuickViewImageExif = async () => {
     const caller = getCaller();
@@ -1457,7 +1504,7 @@
   };
 
   /**
-   * Tests opening Quick View containing a video on DriveFS.
+   * Tests opening Quick View containing a video on Drive.
    */
   testcase.openQuickViewVideoOnDrive = async () => {
     const caller = getCaller();
@@ -1500,6 +1547,10 @@
 
     // Check: the <webview> body backgroundColor should be transparent black.
     chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('video/webm', mimeType);
 
     // Close Quick View.
     await closeQuickView(appId);

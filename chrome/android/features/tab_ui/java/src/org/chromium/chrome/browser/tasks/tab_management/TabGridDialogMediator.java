@@ -295,6 +295,8 @@ public class TabGridDialogMediator {
             if (mAnimationSourceViewProvider != null) {
                 mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW,
                         mAnimationSourceViewProvider.getAnimationSourceViewForTab(mCurrentTabId));
+            } else {
+                mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
             }
             updateDialog();
             updateDialogScrollPosition();

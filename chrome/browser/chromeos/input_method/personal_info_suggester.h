@@ -40,11 +40,11 @@ class PersonalInfoSuggester : public Suggester {
   AssistiveType GetProposeActionType() override;
 
  private:
-  // Get the suggestion according to |text_before_cursor|.
-  base::string16 GetPersonalInfoSuggestion(
-      const base::string16& text_before_cursor);
+  // Get the suggestion according to |text|.
+  base::string16 GetSuggestion(const base::string16& text);
 
-  void ShowSuggestion(const base::string16& text);
+  void ShowSuggestion(const base::string16& text,
+                      const size_t confirmed_length);
 
   void AcceptSuggestion();
 
@@ -64,6 +64,9 @@ class PersonalInfoSuggester : public Suggester {
 
   // If we are showing a suggestion right now.
   bool suggestion_shown_ = false;
+
+  // The current suggestion text shown.
+  base::string16 suggestion_;
 };
 
 }  // namespace chromeos

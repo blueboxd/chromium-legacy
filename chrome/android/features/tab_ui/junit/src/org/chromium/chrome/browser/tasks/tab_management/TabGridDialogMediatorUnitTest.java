@@ -924,6 +924,29 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    public void showDialog_FromStrip_SetupAnimation() {
+        // For strip we don't play zoom-in/zoom-out for show/hide dialog, and thus
+        // the animationParamsProvider is null.
+        mMediator = new TabGridDialogMediator(mContext, mDialogController, mModel,
+                mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null,
+                mShareDelegateSupplier, "");
+        mMediator.initWithNative(mTabSelectionEditorController, mTabGroupTitleEditor);
+        // Mock that the dialog is hidden and animation source view is set to some mock view for
+        // testing purpose.
+        mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, mock(View.class));
+        // Mock that tab1 and tab2 are in a group.
+        List<Tab> tabgroup = new ArrayList<>(Arrays.asList(mTab1, mTab2));
+        createTabGroup(tabgroup, TAB1_ID);
+
+        mMediator.onReset(tabgroup);
+
+        assertThat(mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE), equalTo(true));
+        // Animation source view should be set to null so that dialog will setup basic animation.
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(null));
+    }
+
+    @Test
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void testDialogToolbarMenu_SelectionMode() {
         Callback<Integer> callback = mMediator.getToolbarMenuCallbackForTesting();

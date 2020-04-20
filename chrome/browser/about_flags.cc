@@ -4723,11 +4723,6 @@ const FeatureEntry kFeatureEntries[] = {
          password_manager::features::kPasswordManagerOnboardingAndroid)},
 #endif  // defined(OS_ANDROID)
 
-    {"enable-cooperative-scheduling",
-     flag_descriptions::kCooperativeSchedulingName,
-     flag_descriptions::kCooperativeSchedulingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kCooperativeScheduling)},
-
     {"enable-defer-all-script", flag_descriptions::kEnableDeferAllScriptName,
      flag_descriptions::kEnableDeferAllScriptDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kDeferAllScriptPreviews)},

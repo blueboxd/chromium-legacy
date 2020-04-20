@@ -125,7 +125,7 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   // show_tab - whether to show "tab" in the suggestion window.
   bool SetSuggestion(int context_id,
                      const base::string16& text,
-                     const base::string16& confirmed_text,
+                     const size_t confirmed_length,
                      const bool show_tab,
                      std::string* error);
 

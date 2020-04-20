@@ -174,6 +174,7 @@ export class App {
    * @return {!Promise}
    */
   async start() {
+    await this.cameraView_.initialize();
     let ackMigrate = false;
     filesystem
         .initialize(() => {

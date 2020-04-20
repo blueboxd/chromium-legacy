@@ -48,12 +48,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/dialog_frame"
+        android:alpha="0.0"
         android:background="@drawable/tab_grid_dialog_background">
     </View>
     <FrameLayout
         android:id="@+id/dialog_animation_card_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:alpha="0.0">
         <include layout="@layout/tab_grid_card_item"/>
     </FrameLayout>
 </FrameLayout>

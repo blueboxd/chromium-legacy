@@ -19,8 +19,6 @@ namespace scheduler {
 class EventLoop;
 }
 
-class Document;
-
 // Corresponding spec concept is:
 // https://html.spec.whatwg.org/C#integration-with-the-javascript-agent-formalism
 //
@@ -44,9 +42,6 @@ class CORE_EXPORT Agent : public GarbageCollected<Agent> {
   }
 
   virtual void Trace(Visitor*);
-
-  void AttachDocument(Document*);
-  void DetachDocument(Document*);
 
   const base::UnguessableToken& cluster_id() const { return cluster_id_; }
 

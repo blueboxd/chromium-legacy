@@ -23,7 +23,13 @@ Initial
     {
       "name": "LayoutImage IMG class='visible composited box'",
       "bounds": [100, 100],
+      "drawsContent": false,
       "transform": 3
+    },
+    {
+      "name": "ContentsLayer for LayoutImage IMG class='visible composited box'",
+      "bounds": [184, 124],
+      "transform": 4
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
@@ -60,6 +66,17 @@ Initial
         [0, 0, 1, 0],
         [20, 20, 0, 1]
       ]
+    },
+    {
+      "id": 4,
+      "parent": 3,
+      "transform": [
+        [0.54347825050354, 0, 0, 0],
+        [0, 0.806451618671417, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ],
+      "origin": [0, 0]
     }
   ]
 }
@@ -69,7 +86,7 @@ After step 1
   "layers": [
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [785, 1670],
+      "bounds": [785, 1942],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
@@ -82,110 +99,30 @@ After step 1
     {
       "name": "LayoutImage IMG class='hidden composited box'",
       "bounds": [100, 100],
+      "drawsContent": false,
       "transform": 2
+    },
+    {
+      "name": "ContentsLayer for LayoutImage IMG class='hidden composited box'",
+      "bounds": [184, 124],
+      "transform": 3
     },
     {
       "name": "LayoutNGBlockFlow DIV class='composited hidden container'",
       "position": [-4, -4],
       "bounds": [757, 153],
       "drawsContent": false,
-      "transform": 3
+      "transform": 4
     },
     {
       "name": "LayoutImage IMG class='visible composited box'",
       "bounds": [100, 100],
-      "transform": 4
-    },
-    {
-      "name": "ContentsLayer for Vertical Scrollbar Layer",
-      "position": [785, 0],
-      "bounds": [15, 600],
-      "contentsOpaque": true
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [18, 10, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [20, 20, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [18, 320, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [20, 20, 0, 1]
-      ]
-    }
-  ]
-}
-
-After step 2
-{
-  "layers": [
-    {
-      "name": "Scrolling Contents Layer",
-      "bounds": [785, 2953],
-      "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "LayoutNGBlockFlow DIV class='composited container'",
-      "bounds": [749, 145],
-      "drawsContent": false,
-      "transform": 1
-    },
-    {
-      "name": "LayoutImage IMG class='hidden composited box'",
-      "bounds": [100, 100],
-      "transform": 2
-    },
-    {
-      "name": "LayoutNGBlockFlow DIV class='composited hidden container'",
-      "position": [-4, -4],
-      "bounds": [757, 153],
-      "transform": 3
-    },
-    {
-      "name": "LayoutImage IMG class='composited box'",
-      "bounds": [100, 100],
-      "transform": 4
-    },
-    {
-      "name": "LayoutNGBlockFlow DIV class='composited hidden container'",
-      "position": [-4, -4],
-      "bounds": [757, 153],
       "drawsContent": false,
       "transform": 5
     },
     {
-      "name": "LayoutImage IMG class='visible composited box'",
-      "bounds": [100, 100],
+      "name": "ContentsLayer for LayoutImage IMG class='visible composited box'",
+      "bounds": [184, 124],
       "transform": 6
     },
     {
@@ -217,25 +154,17 @@ After step 2
     },
     {
       "id": 3,
+      "parent": 2,
       "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
+        [0.54347825050354, 0, 0, 0],
+        [0, 0.806451618671417, 0, 0],
         [0, 0, 1, 0],
-        [18, 165, 0, 1]
-      ]
+        [0, 0, 0, 1]
+      ],
+      "origin": [0, 0]
     },
     {
       "id": 4,
-      "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [20, 20, 0, 1]
-      ]
-    },
-    {
-      "id": 5,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -244,14 +173,187 @@ After step 2
       ]
     },
     {
-      "id": 6,
-      "parent": 5,
+      "id": 5,
+      "parent": 4,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [20, 20, 0, 1]
       ]
+    },
+    {
+      "id": 6,
+      "parent": 5,
+      "transform": [
+        [0.54347825050354, 0, 0, 0],
+        [0, 0.806451618671417, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ],
+      "origin": [0, 0]
+    }
+  ]
+}
+
+After step 2
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [785, 3769],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV class='composited container'",
+      "bounds": [749, 145],
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
+      "name": "LayoutImage IMG class='hidden composited box'",
+      "bounds": [100, 100],
+      "drawsContent": false,
+      "transform": 2
+    },
+    {
+      "name": "ContentsLayer for LayoutImage IMG class='hidden composited box'",
+      "bounds": [184, 124],
+      "transform": 3
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV class='composited hidden container'",
+      "position": [-4, -4],
+      "bounds": [757, 153],
+      "transform": 4
+    },
+    {
+      "name": "LayoutImage IMG class='composited box'",
+      "bounds": [100, 100],
+      "drawsContent": false,
+      "transform": 5
+    },
+    {
+      "name": "ContentsLayer for LayoutImage IMG class='composited box'",
+      "bounds": [184, 124],
+      "transform": 6
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV class='composited hidden container'",
+      "position": [-4, -4],
+      "bounds": [757, 153],
+      "drawsContent": false,
+      "transform": 7
+    },
+    {
+      "name": "LayoutImage IMG class='visible composited box'",
+      "bounds": [100, 100],
+      "drawsContent": false,
+      "transform": 8
+    },
+    {
+      "name": "ContentsLayer for LayoutImage IMG class='visible composited box'",
+      "bounds": [184, 124],
+      "transform": 9
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [18, 10, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [20, 20, 0, 1]
+      ]
+    },
+    {
+      "id": 3,
+      "parent": 2,
+      "transform": [
+        [0.54347825050354, 0, 0, 0],
+        [0, 0.806451618671417, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ],
+      "origin": [0, 0]
+    },
+    {
+      "id": 4,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [18, 165, 0, 1]
+      ]
+    },
+    {
+      "id": 5,
+      "parent": 4,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [20, 20, 0, 1]
+      ]
+    },
+    {
+      "id": 6,
+      "parent": 5,
+      "transform": [
+        [0.54347825050354, 0, 0, 0],
+        [0, 0.806451618671417, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ],
+      "origin": [0, 0]
+    },
+    {
+      "id": 7,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [18, 320, 0, 1]
+      ]
+    },
+    {
+      "id": 8,
+      "parent": 7,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [20, 20, 0, 1]
+      ]
+    },
+    {
+      "id": 9,
+      "parent": 8,
+      "transform": [
+        [0.54347825050354, 0, 0, 0],
+        [0, 0.806451618671417, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ],
+      "origin": [0, 0]
     }
   ]
 }

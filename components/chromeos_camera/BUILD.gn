@@ -198,6 +198,7 @@ source_set("camera_app_helper") {
   deps = [
     "common:camera_app_helper",
     "//ash/public/cpp",
+    "//ui/aura",
   ]
 }
 

@@ -61,29 +61,31 @@ SuggestionView::SuggestionView() {
 SuggestionView::~SuggestionView() = default;
 
 void SuggestionView::SetView(const base::string16& text,
-                             const base::string16& confirmed_text,
+                             const size_t confirmed_length,
                              const bool show_tab) {
-  SetSuggestionText(text, confirmed_text);
+  SetSuggestionText(text, confirmed_length);
   suggestion_width_ = suggestion_label_->GetPreferredSize().width();
   annotation_label_->SetVisible(show_tab);
 }
 
 void SuggestionView::SetSuggestionText(const base::string16& text,
-                                       const base::string16& confirmed_text) {
-  // SetText clears the existing style.
+                                       const size_t confirmed_length) {
+  // SetText clears the existing style only if the text to set is different from
+  // the previous one.
+  suggestion_label_->SetText(base::EmptyString16());
   suggestion_label_->SetText(text);
-  size_t offset = confirmed_text.length();
-  if (offset != 0) {
+  if (confirmed_length != 0) {
     views::StyledLabel::RangeStyleInfo confirmed_style;
     confirmed_style.custom_font = kSuggestionFont;
     confirmed_style.override_color = kConfirmedTextColor;
-    suggestion_label_->AddStyleRange(gfx::Range(0, offset), confirmed_style);
+    suggestion_label_->AddStyleRange(gfx::Range(0, confirmed_length),
+                                     confirmed_style);
   }
 
   views::StyledLabel::RangeStyleInfo suggestion_style;
   suggestion_style.custom_font = kSuggestionFont;
   suggestion_style.override_color = kSuggestionColor;
-  suggestion_label_->AddStyleRange(gfx::Range(offset, text.length()),
+  suggestion_label_->AddStyleRange(gfx::Range(confirmed_length, text.length()),
                                    suggestion_style);
 }
 
